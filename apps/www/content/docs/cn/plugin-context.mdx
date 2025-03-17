@@ -1,0 +1,168 @@
+---
+title: 插件上下文
+description: 理解并利用 Plate 插件中的插件上下文。
+---
+
+插件上下文是一个在所有插件方法中都可用的对象，提供了对编辑器实例、插件配置和实用函数的访问。
+
+## 访问插件上下文
+
+### 插件方法
+
+插件上下文作为所有插件方法的第一个参数可用：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onKeyDown: (ctx) => {
+      // ctx 是插件上下文
+      console.info(ctx.editor, ctx.plugin);
+    },
+  },
+});
+```
+
+### `getEditorPlugin`
+
+当你需要访问另一个插件的上下文时，这个函数特别有用。它允许跨插件通信和交互，从而实现更复杂和相互关联的插件行为。
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onKeyDown: ({ editor }) => {
+      const linkCtx = getEditorPlugin(LinkPlugin);
+    },
+  },
+});
+```
+
+### `useEditorPlugin`
+
+在 React 组件中，你可以使用 `useEditorPlugin` 钩子来访问插件上下文：
+
+```ts
+const MyComponent = () => {
+  const { editor, plugin, type } = useEditorPlugin(MyPlugin);
+  
+  return <div>{type}</div>;
+};
+```
+
+## 插件上下文属性
+
+### `editor`
+
+当前的 `PlateEditor` 实例：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onChange: ({ editor }) => {
+      console.info('编辑器值:', editor.children);
+    },
+  },
+});
+```
+
+### `plugin`
+
+当前插件的配置：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onKeyDown: ({ plugin }) => {
+      console.info('插件键:', plugin.key);
+    },
+  },
+});
+```
+
+### `getOption`
+
+一个用于获取插件特定选项值的函数：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { myOption: 'default' },
+  handlers: {
+    onClick: ({ getOption }) => {
+      const myOption = getOption('myOption');
+      console.info('我的选项值:', myOption);
+    },
+  },
+});
+```
+
+### `getOptions`
+
+一个用于获取插件所有选项的函数：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { option1: 'value1', option2: 'value2' },
+  handlers: {
+    onClick: ({ getOptions }) => {
+      const options = getOptions();
+      console.info('所有选项:', options);
+    },
+  },
+});
+```
+
+### `setOption`
+
+一个用于设置插件特定选项值的函数：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { count: 0 },
+  handlers: {
+    onClick: ({ setOption }) => {
+      setOption('count', 1);
+    },
+  },
+});
+```
+
+### `setOptions`
+
+一个用于设置插件多个选项的函数：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { option1: 'value1', option2: 'value2' },
+  handlers: {
+    onClick: ({ setOptions }) => {
+      setOptions({
+        option1: 'newValue1',
+        option2: 'newValue2',
+      });
+    },
+  },
+});
+```
+
+### `type`
+
+与插件关联的节点类型：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  node: { type: 'myNodeType' },
+  handlers: {
+    onKeyDown: ({ type }) => {
+      console.info('节点类型:', type);
+    },
+  },
+});
+```

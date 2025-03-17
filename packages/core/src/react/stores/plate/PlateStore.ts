@@ -1,21 +1,19 @@
-import type { TNodeEntry, TSelection, ValueOf } from '@udecode/slate';
-import type { TEditableProps } from '@udecode/slate-react';
-import type { Range } from 'slate';
+import type { NodeEntry, TRange, TSelection, ValueOf } from '@udecode/slate';
+import type { Nullable } from '@udecode/utils';
 
-import type { Nullable } from '../../../lib';
+import type { EditableProps } from '../../../lib';
 import type { PlateEditor } from '../../editor';
 
 export type PlateChangeKey =
   | 'versionDecorate'
   | 'versionEditor'
-  | 'versionSelection';
+  | 'versionSelection'
+  | 'versionValue';
 
 export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
-  decorate: NonNullable<(options: { editor: E; entry: TNodeEntry }) => Range[]>;
-
+  decorate: NonNullable<(options: { editor: E; entry: NodeEntry }) => TRange[]>;
   /** Whether `Editable` is rendered so slate DOM is resolvable. */
   isMounted: boolean;
-
   /**
    * Whether the editor is primary. If no editor is active, then PlateController
    * will use the first-mounted primary editor.
@@ -23,26 +21,19 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
    * @default true
    */
   primary: boolean;
-
   //  Whether the editor is read-only.
   readOnly: boolean;
-
-  renderElement: NonNullable<TEditableProps['renderElement']>;
-
-  renderLeaf: NonNullable<TEditableProps['renderLeaf']>;
-
+  renderElement: NonNullable<EditableProps['renderElement']>;
+  renderLeaf: NonNullable<EditableProps['renderLeaf']>;
   /**
    * Version incremented when calling `redecorate`. This is a dependency of the
    * `decorate` function.
    */
   versionDecorate: number;
-
   /** Version incremented on each editor change. */
   versionEditor: number;
-
   /** Version incremented on each editor.selection change. */
   versionSelection: number;
-
   /** Version incremented on each editor.children change. */
   versionValue: number;
   /** Controlled callback called when the editor state changes. */
@@ -59,30 +50,18 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
    * @default random id
    */
   id: string;
-
   /** A reference to the editor container element. */
-  containerRef: React.RefObject<HTMLDivElement>;
-
+  containerRef: React.RefObject<HTMLDivElement | null>;
   /**
    * Slate editor reference.
    *
    * @default createPlateFallbackEditor()
    */
   editor: E;
-
   /**
    * A reference to the editor scroll container element.
    *
    * @default containerRef
    */
-  scrollRef: React.RefObject<HTMLDivElement>;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
 };
-
-//  A list of store keys to be exposed in `editor.api.plate.set`.
-export const EXPOSED_STORE_KEYS = [
-  'readOnly',
-  'onChange',
-  'decorate',
-  'renderElement',
-  'renderLeaf',
-] as const;

@@ -1,6 +1,6 @@
-import type { Registry } from './schema';
+import type { Registry } from 'shadcx/registry';
 
-export const themes: Registry = [
+export const themes: Registry['items'] = [
   {
     cssVars: {
       dark: {

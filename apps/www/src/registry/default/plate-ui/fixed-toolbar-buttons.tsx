@@ -9,19 +9,18 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { useEditorReadOnly } from '@udecode/plate-common/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@udecode/plate-font/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
-import { ListStyleType } from '@udecode/plate-indent-list';
 import {
   AudioPlugin,
   FilePlugin,
   ImagePlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
+import { useEditorReadOnly } from '@udecode/plate/react';
 import {
   ArrowUpToLineIcon,
   BaselineIcon,
@@ -43,8 +42,13 @@ import { ColorDropdownMenu } from './color-dropdown-menu';
 import { CommentToolbarButton } from './comment-toolbar-button';
 import { EmojiDropdownMenu } from './emoji-dropdown-menu';
 import { ExportToolbarButton } from './export-toolbar-button';
+import { FontSizeToolbarButton } from './font-size-toolbar-button';
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
-import { IndentListToolbarButton } from './indent-list-toolbar-button';
+import { ImportToolbarButton } from './import-toolbar-button';
+import {
+  BulletedIndentListToolbarButton,
+  NumberedIndentListToolbarButton,
+} from './indent-list-toolbar-button';
 import { IndentTodoToolbarButton } from './indent-todo-toolbar-button';
 import { IndentToolbarButton } from './indent-toolbar-button';
 import { InsertDropdownMenu } from './insert-dropdown-menu';
@@ -81,11 +85,14 @@ export function FixedToolbarButtons() {
             <ExportToolbarButton>
               <ArrowUpToLineIcon />
             </ExportToolbarButton>
+
+            <ImportToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>
             <InsertDropdownMenu />
             <TurnIntoDropdownMenu />
+            <FontSizeToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>
@@ -136,8 +143,8 @@ export function FixedToolbarButtons() {
           <ToolbarGroup>
             <AlignDropdownMenu />
 
-            <IndentListToolbarButton nodeType={ListStyleType.Disc} />
-            <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
+            <NumberedIndentListToolbarButton />
+            <BulletedIndentListToolbarButton />
             <IndentTodoToolbarButton />
             <ToggleToolbarButton />
           </ToolbarGroup>

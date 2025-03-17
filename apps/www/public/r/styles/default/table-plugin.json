@@ -4,12 +4,14 @@
   ],
   "files": [
     {
-      "content": "'use client';\n\nimport { TablePlugin } from '@udecode/plate-table/react';\n\nexport const tablePlugin = TablePlugin.configure({\n  options: {\n    enableMerging: true,\n  },\n});\n",
       "path": "components/editor/plugins/table-plugin.ts",
-      "target": "components/editor/plugins/table-plugin.ts",
-      "type": "registry:component"
+      "content": "'use client';\n\nimport { TablePlugin } from '@udecode/plate-table/react';\n\nexport const tablePlugin = TablePlugin.configure({\n  options: {},\n});\n",
+      "type": "registry:component",
+      "target": "components/editor/plugins/table-plugin.ts"
     }
   ],
   "name": "table-plugin",
-  "type": "registry:component"
+  "type": "registry:component",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

@@ -1,5 +1,51 @@
 # @udecode/plate-media
 
+## 44.0.6
+
+### Patch Changes
+
+- [#4081](https://github.com/udecode/plate/pull/4081) by [@regmsif](https://github.com/regmsif) – fix: image edit link button not pressable
+
+## 44.0.0
+
+### Major Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `zustand-x@2`. [Migration](https://github.com/udecode/zustand-x/blob/main/packages/zustand-x/CHANGELOG.md#600) needed only if you use one of these stores:
+
+  - `ImagePreviewStore`
+  - `FloatingMediaStore`
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `jotai-x@2`. [Migration](https://github.com/udecode/jotai-x/blob/main/packages/jotai-x/CHANGELOG.md#211) needed only if you use one of these stores:
+
+  - `useCommentStore`
+  - `usePlaceholderStore`
+  - `useResizableStore`
+  - `useTableStore`
+
+## 43.0.0
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Fix parsers to use custom node type
+
+## 42.1.1
+
+### Patch Changes
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – Remove useless html parser.
+
+## 42.0.5
+
+### Patch Changes
+
+- [#3943](https://github.com/udecode/plate/pull/3943) by [@felixfeng33](https://github.com/felixfeng33) – Support deserialization from PlateStatic.
+
+## 42.0.0
+
+## 41.0.0
+
 ## 40.2.7
 
 ### Patch Changes

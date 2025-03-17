@@ -1,5 +1,4 @@
-import { someNode } from '@udecode/plate-common';
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 import { LinkPlugin, triggerFloatingLink } from '../index';
 
@@ -7,7 +6,7 @@ export const useLinkToolbarButtonState = () => {
   const pressed = useEditorSelector(
     (editor) =>
       !!editor?.selection &&
-      someNode(editor, {
+      editor.api.some({
         match: { type: editor.getType(LinkPlugin) },
       }),
     []
@@ -27,6 +26,7 @@ export const useLinkToolbarButton = (
     props: {
       pressed: state.pressed,
       onClick: () => {
+        editor.tf.focus();
         triggerFloatingLink(editor, { focused: true });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

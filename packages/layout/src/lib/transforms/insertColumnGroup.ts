@@ -1,11 +1,4 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  findNode,
-  insertNodes,
-  select,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
 import type { TColumnGroupElement } from '../types';
 
@@ -14,41 +7,37 @@ import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 export const insertColumnGroup = (
   editor: SlateEditor,
   {
-    layout = 2,
+    columns = 2,
     select: selectProp,
     ...options
   }: InsertNodesOptions & {
-    layout?: number[] | number;
+    columns?: number;
   } = {}
 ) => {
-  const columnLayout = Array.isArray(layout)
-    ? layout
-    : Array(layout).fill(Math.floor(100 / layout));
+  const width = 100 / columns;
 
-  withoutNormalizing(editor, () => {
-    insertNodes<TColumnGroupElement>(
-      editor,
+  editor.tf.withoutNormalizing(() => {
+    editor.tf.insertNodes<TColumnGroupElement>(
       {
-        children: columnLayout.map((width) => ({
+        children: new Array(columns).fill(null).map(() => ({
           children: [editor.api.create.block()],
           type: BaseColumnItemPlugin.key,
           width: `${width}%`,
         })),
-        layout: columnLayout,
         type: BaseColumnPlugin.key,
       },
       options
     );
 
     if (selectProp) {
-      const entry = findNode(editor, {
+      const entry = editor.api.node({
         at: options.at,
         match: { type: editor.getType(BaseColumnPlugin) },
       });
 
       if (!entry) return;
 
-      select(editor, entry[1].concat([0]));
+      editor.tf.select(entry[1].concat([0]));
     }
   });
 };

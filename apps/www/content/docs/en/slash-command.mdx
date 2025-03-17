@@ -1,0 +1,109 @@
+---
+title: Slash Command
+docs:
+  - route: /docs/combobox
+    title: Combobox
+  - route: components/slash-input-element
+    title: Slash Input Element
+  - route: https://pro.platejs.org/docs/components/slash-input-element
+    title: Slash Input Element
+---
+
+<ComponentPreview name="slash-command-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Quick access to various editor commands
+- Keyboard navigation and filtering
+  {/* - AI assistance integration */}
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-slash-command
+```
+
+## Usage
+
+```tsx
+import { SlashPlugin, SlashInputPlugin } from '@udecode/plate-slash-command/react';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  SlashPlugin,
+];
+```
+
+```tsx
+const components = {
+  // ...otherComponents,
+  [SlashInputPlugin.key]: SlashInputElement,
+};
+```
+
+See also:
+- [SlashInputElement](/components/slash-input-element)
+
+How to use:
+
+1. Type `/` anywhere in your document to open the slash menu
+2. Start typing to filter options or use arrow keys to navigate
+3. Press Enter or click to select an option
+4. Press Escape to close the menu without selecting
+
+Available options include:
+- Headings
+- Lists
+
+<Callout>
+  💡 Use keywords to quickly find options. For example, type '/ul' for Bulleted List.
+</Callout>
+
+## Examples
+
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+<ComponentPreviewPro name="slash-menu-pro" />
+
+## Plugins
+
+### `SlashPlugin`
+
+Plugin for slash command functionality. Extends [TriggerComboboxPlugin](/docs/combobox#options).
+
+<API name="SlashPlugin">
+<APIOptions type="SlashPluginOptions">
+  <APIItem name="createComboboxInput" type="() => TSlashInputElement" optional>
+    Function to create combobox input element.
+    - **Default:** 
+    ```tsx
+    () => ({
+      children: [{ text: '' }],
+      type: SlashInputPlugin.key,
+    });
+    ```
+  </APIItem>
+  <APIItem name="trigger" type="string" optional>
+    Character that triggers slash command combobox.
+    - **Default:** `'/'`
+  </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+    RegExp to match character before trigger.
+    - **Default:** `/^\s?$/`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `SlashInputPlugin`
+
+Plugin for slash input functionality.

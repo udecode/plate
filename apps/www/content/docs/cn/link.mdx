@@ -1,0 +1,578 @@
+---
+title: 链接
+docs:
+  - route: /docs/components/link-element
+    title: 链接元素
+  - route: /docs/components/link-floating-toolbar
+    title: 链接浮动工具栏
+  - route: /docs/components/link-toolbar-button
+    title: 链接工具栏按钮
+---
+
+<ComponentPreview name="link-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 支持超链接的插入、编辑和删除。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-link
+```
+
+## 使用
+
+```tsx
+import { LinkPlugin } from '@udecode/plate-link/react';
+
+const plugins = [
+  // ...其他插件
+  LinkPlugin.configure({
+    render: { afterEditable: () => <LinkFloatingToolbar /> },
+  }),
+];
+```
+
+## 快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + K">在选中的文本上添加链接。</KeyTableItem>
+</KeyTable>
+
+## 插件转换
+
+### `editor.tf.insert.link`
+
+将链接节点插入编辑器。
+
+<API name="insert.link">
+<APIParameters>
+  <APIItem name="options" type="object">
+    插入链接的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="InsertLinkOptions">
+  <APIItem name="createLinkNodeOptions" type="CreateLinkNodeOptions">
+    创建链接节点的选项。
+  </APIItem>
+  <APIItem name="insertOptions" type="InsertNodesOptions" optional>
+    插入节点的附加选项。
+  </APIItem>
+ </APIOptions>
+</API>
+
+## 插件 API
+
+### `editor.api.floatingLink.hide`
+
+隐藏浮动链接并重置其状态。
+
+### `editor.api.floatingLink.reset`
+
+重置浮动链接状态，不更改 openEditorId。
+
+### `editor.api.floatingLink.show`
+
+为指定的模式和编辑器 ID 显示浮动链接。
+
+<API name="floatingLink.show">
+<APIParameters>
+<APIItem name="mode" type="FloatingLinkMode">
+设置浮动链接的模式（'edit' 或 'insert'）。
+</APIItem>
+<APIItem name="editorId" type="string">
+显示浮动链接的编辑器 ID。
+</APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.link.getAttributes`
+
+获取链接元素的属性。
+
+<API name="link.getAttributes">
+<APIParameters>
+<APIItem name="element" type="TLinkElement">
+要获取属性的链接元素。
+</APIItem>
+</APIParameters>
+
+<APIReturns type="React.AnchorHTMLAttributes<HTMLAnchorElement>">
+链接元素的 HTML 属性。
+</APIReturns>
+</API>
+
+### `editor.api.link.submitFloatingLink`
+
+如果 URL 有效，则插入链接，关闭浮动链接并聚焦编辑器。
+
+<APIReturns type="boolean">
+如果链接成功插入，则返回 `true`。
+</APIReturns>
+
+## 插件
+
+### `LinkPlugin`
+
+用于链接格式化的插件。
+
+<API name="LinkPlugin">
+<APIOptions type="object">
+<APIItem name="forceSubmit" type="boolean" optional>
+确定是否强制提交链接表单。
+</APIItem>
+<APIItem name="rangeBeforeOptions" type="RangeBeforeOptions" optional>
+允许自定义 rangeBeforeOptions 的配置。
+- **默认值:**
+```ts
+{
+  matchString: ' ',
+  skipInvalid: true,
+  afterMatch: true,
+}
+```
+</APIItem>
+<APIItem name="triggerFloatingLinkHotkeys" type="string | string[]" optional>
+触发浮动链接的快捷键。
+- **默认值:** **`'meta+k, ctrl+k'`**
+</APIItem>
+<APIItem name="allowedSchemes" type="string[]" optional>
+允许的 URL 协议列表。
+- **默认值:** **`['http', 'https', 'mailto', 'tel']`**
+</APIItem>
+<APIItem name="dangerouslySkipSanitization" type="boolean" optional>
+确定是否跳过链接的清理。
+- **默认值:** **`false`**
+</APIItem>
+<APIItem name="defaultLinkAttributes" type="AnchorHTMLAttributes&lt;HTMLAnchorElement&gt;" optional>
+链接元素的默认 HTML 属性。
+- **默认值:** **`{}`**
+</APIItem>
+<APIItem name="keepSelectedTextOnPaste" type="boolean" optional>
+默认情况下，粘贴链接时保留选中的文本。
+- **默认值:** **`true`**
+</APIItem>
+<APIItem name="isUrl" type="(text: string) => boolean" optional>
+用于验证 URL 的回调函数。
+- **默认值:** **`isUrl`**
+</APIItem>
+<APIItem name="getUrlHref" type="(url: string) => string | undefined" optional>
+用于获取 URL 的 href 的回调函数。它返回一个与文本内容不同的可选链接。例如，对于 `google.com`，返回 `https://google.com`。
+</APIItem>
+<APIItem name="transformInput" type="(url: string | null) => string | undefined" optional>
+用于在验证之前转换用户提交的 URL 的回调函数。
+</APIItem>
+<APIItem name="getLinkUrl" type="(prevUrl: string | null) => Promise<string | null>" optional>
+在快捷键或工具栏鼠标按下时，调用此函数以获取链接 URL。默认行为是使用浏览器的原生 `prompt`。
+</APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `insertLink`
+
+将链接节点插入编辑器。
+
+<API name="insertLink">
+<APIParameters>
+  <APIItem name="createLinkNodeOptions" type="CreateLinkNodeOptions">
+    创建链接节点的选项。
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    插入节点的附加选项。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `submitFloatingLink`
+
+如果 URL 有效，则插入链接，关闭浮动链接并聚焦编辑器。
+
+- 如果 URL 有效，则插入链接。
+- 如果文本为空，则使用 URL 作为文本。
+- 关闭浮动链接。
+- 聚焦编辑器。
+
+<API name="submitFloatingLink">
+<APIReturns type="boolean">
+如果链接成功插入，则返回 `true`。
+</APIReturns>
+</API>
+
+### `triggerFloatingLink`
+
+触发浮动链接。
+
+<API name="triggerFloatingLink">
+<APIOptions type="object">
+<APIItem name="focused" type="boolean" optional>
+  是否聚焦浮动链接。
+</APIItem>
+</APIOptions>
+</API>
+
+### `triggerFloatingLinkEdit`
+
+触发浮动链接编辑。
+
+<API name="triggerFloatingLinkEdit">
+<APIReturns type="boolean">
+如果链接成功编辑，则返回 `true`。
+</APIReturns>
+</API>
+
+### `triggerFloatingLinkInsert`
+
+触发浮动链接。在以下情况下不触发：
+- 选择跨多个块
+- 选择有多个叶子节点
+- 最低选择不是文本
+- 选择包含链接节点
+
+<API name="triggerFloatingLinkInsert">
+<APIOptions type="TriggerFloatingLinkOptions">
+  <APIItem name="focused" type="boolean" optional>
+    是否聚焦浮动链接。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  如果链接成功插入，则返回 `true`。
+</APIReturns>
+</API>
+
+### `unwrapLink`
+
+解包链接节点。
+
+<API name="unwrapLink">
+<APIOptions type="UnwrapLinkOptions">
+  <APIItem name="split" type="boolean" optional>
+    如果为 `true`，则在选择在链接内部时拆分节点。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `upsertLink`
+
+插入或更新链接节点。行为取决于当前选择和选项：
+
+- 如果选择在链接中或不是 URL：
+  - 如果 `insertTextInLink: true`，则在链接中插入 URL 作为文本
+  - 否则，如果 `text` 为空，则将其设置为 URL
+  - 除非 `skipValidation: true`，否则验证 URL
+- 如果选择扩展或在链接中 `update: true`：
+  - 删除链接节点并获取链接文本
+- 然后：
+  - 插入带有更新 URL 和目标的链接节点
+  - 如果提供了 `text`，则替换链接文本
+
+<API name="upsertLink">
+<APIParameters>
+  <APIItem name="options" type="UpsertLinkOptions">
+    插入或更新链接的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="UpsertLinkOptions">
+  <APIItem name="url" type="string">
+    链接的 URL。
+  </APIItem>
+  <APIItem name="text" type="string" optional>
+    链接的文本内容。
+  </APIItem>
+  <APIItem name="target" type="string" optional>
+    链接的目标属性。
+  </APIItem>
+  <APIItem name="insertTextInLink" type="boolean" optional>
+    如果为 `true`，则在链接中插入 URL 作为文本。
+  </APIItem>
+  <APIItem name="insertNodesOptions" type="InsertNodesOptions" optional>
+    插入节点的选项。
+  </APIItem>
+  <APIItem name="skipValidation" type="boolean" optional>
+    如果为 `true`，则跳过 URL 验证。
+    - **默认值:** `false`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  如果链接成功插入或更新，则返回 `true`。
+</APIReturns>
+</API>
+
+### `upsertLinkText`
+
+如果文本与链接上方文本不同，则用新的文本节点替换链接子节点。新的文本节点具有与链接中第一个文本节点相同的标记。
+
+<API name="upsertLinkText">
+<APIOptions type="UpsertLinkTextOptions">
+      <APIItem name="text" type="string" optional>
+        用于替换链接子节点的新文本。
+      </APIItem>
+</APIOptions>
+</API>
+
+### `validateUrl`
+
+根据插件选项验证 URL。
+
+<API name="validateUrl">
+<APIOptions type="ValidateUrlOptions">
+  <APIItem name="url" type="string">
+    要验证的 URL。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  如果 URL 有效，则返回 `true`。
+</APIReturns>
+</API>
+
+### `wrapLink`
+
+用拆分的方式包裹链接节点。
+
+<API name="wrapLink">
+<APIOptions type="WrapLinkOptions">
+  <APIItem name="url" type="string">
+    链接的 URL。
+  </APIItem>
+  <APIItem name="target" type="string" optional>
+    链接的目标属性。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `CreateLinkNodeOptions`
+
+创建新链接节点的选项。
+
+<API name="CreateLinkNodeOptions">
+<APIOptions type="object">
+  <APIItem name="url" type="string">
+    正在创建的链接节点的 URL。
+  </APIItem>
+  <APIItem name="text" type="string" optional>
+    链接节点显示的文本。如果未提供，则使用 URL 作为显示文本。
+  </APIItem>
+  <APIItem name="target" type="string" optional>
+    指定打开 URL 的位置：
+    - `_blank`: 新标签页
+    - `_self`: 同一框架
+    - `_parent`: 父框架
+    - `_top`: 整个窗口
+  </APIItem>
+  <APIItem name="children" type="TText[]" optional>
+    表示链接内容的文本节点数组。
+  </APIItem>
+</APIOptions>
+</API>
+
+## API 组件
+
+### `FloatingLinkNewTabInput`
+
+控制链接是否在新标签页中打开的输入组件。
+
+<API name="FloatingLinkNewTabInput">
+<APIState>
+  <APIItem name="checked" type="boolean">
+    链接是否应在新标签页中打开。
+  </APIItem>
+  <APIItem name="setChecked" type="React.Dispatch<React.SetStateAction<boolean>>">
+    更新选中状态的函数。
+  </APIItem>
+  <APIItem name="ref" type="RefObject<HTMLInputElement>">
+    输入元素的引用。
+  </APIItem>
+</APIState>
+</API>
+
+### `FloatingLinkUrlInput`
+
+用于输入和编辑链接 URL 的输入组件。
+
+<API name="FloatingLinkUrlInput">
+<APIState>
+  <APIItem name="ref" type="RefObject<HTMLInputElement>">
+    输入元素的引用。
+  </APIItem>
+</APIState>
+</API>
+
+### `LinkOpenButton`
+
+用于打开链接 URL 的按钮组件。
+
+<API name="LinkOpenButton">
+<APIState>
+  <APIItem name="element" type="TLinkElement">
+    包含要打开的 URL 的链接元素。
+  </APIItem>
+</APIState>
+</API>
+
+### `useFloatingLinkEdit`
+
+浮动链接编辑功能的行为钩子。
+
+<API name="useFloatingLinkEdit">
+<APIState>
+  <APIItem name="floating" type="object" optional>
+    虚拟浮动返回的对象。
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="ref" type="function">
+    浮动元素的引用回调。
+  </APIItem>
+  <APIItem name="props" type="object">
+    浮动元素的属性。
+    <APISubList>
+      <APISubListItem parent="props" name="style" type="object">
+        浮动链接的样式。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="editButtonProps" type="object">
+    编辑按钮的属性。
+    <APISubList>
+      <APISubListItem parent="editButtonProps" name="onClick" type="function">
+        点击编辑按钮时调用的函数。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="unlinkButtonProps" type="object">
+    取消链接按钮的属性。
+    <APISubList>
+      <APISubListItem parent="unlinkButtonProps" name="onClick" type="function">
+        点击取消链接按钮时调用的函数。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useFloatingLinkEnter`
+
+监听 Enter 键按下事件并提交编辑器中的浮动链接。
+
+### `useFloatingLinkEscape`
+
+监听 Escape 键按下事件并处理编辑器中浮动链接的行为。
+
+### `useFloatingLinkInsert`
+
+插入链接的行为钩子。
+
+<API name="useFloatingLinkInsert">
+<APIState>
+  <APIItem name="floating" type="ReturnType<typeof useFloatingLinkInsertState>">
+    虚拟浮动返回的对象。
+  </APIItem>
+  <APIItem name="refClickOutside" type="React.Ref">
+    浮动元素的引用。
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="ref" type="function">
+    浮动元素的引用回调。
+  </APIItem>
+  <APIItem name="props" type="object">
+    浮动元素的属性。
+    <APISubList>
+      <APISubListItem parent="props" name="style" type="object">
+        浮动链接的样式。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="textInputProps" type="object">
+    文本输入的属性。
+    <APISubList>
+      <APISubListItem parent="textInputProps" name="onChange" type="function">
+        文本输入值更改时调用的函数。
+      </APISubListItem>
+      <APISubListItem parent="textInputProps" name="defaultValue" type="string">
+        文本输入的默认值。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useLink`
+
+链接元素的行为钩子。
+
+<API name="useLink">
+<APIOptions type="UseLinkOptions">
+  <APIItem name="element" type="TLinkElement">
+    链接元素。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    链接元素的属性。
+    <APISubList>
+      <APISubListItem parent="props" name="onMouseOver" type="function">
+        鼠标悬停在链接上时调用的函数。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useLinkToolbarButton`
+
+链接工具栏按钮的行为钩子。
+
+<API name="useLinkToolbarButton">
+<APIState>
+  <APIItem name="pressed" type="boolean">
+    选择是否在链接中。
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    工具栏按钮的属性。
+    <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        链接是否按下。
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        点击按钮时调用的函数。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useVirtualFloatingLink`
+
+用于管理链接虚拟浮动的自定义钩子。
+
+<API name="useVirtualFloatingLink">
+<APIOptions type="object">
+  <APIItem name="editorId" type="string">
+    链接所属的编辑器 ID。
+  </APIItem>
+  <APIItem name="floatingOptions" type="UseVirtualFloatingOptions" optional>
+    虚拟浮动的选项。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="UseVirtualFloatingReturn">
+  `useVirtualFloating` 钩子的返回值。
+</APIReturns>
+</API>

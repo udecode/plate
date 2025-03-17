@@ -1,0 +1,190 @@
+---
+title: 主题化
+description: 使用 CSS 变量或 Tailwind CSS 进行主题化。
+---
+
+你可以选择使用 CSS 变量或 Tailwind CSS 工具类来进行主题化。
+
+## 工具类
+
+```tsx /bg-zinc-950/ /text-zinc-50/ /dark:bg-white/ /dark:text-zinc-950/
+<div className="bg-zinc-950 dark:bg-white" />
+```
+
+要使用工具类进行主题化，请在 `components.json` 文件中将 `tailwind.cssVariables` 设置为 `false`。
+
+```json {8} title="components.json"
+{
+  "style": "default",
+  "rsc": true,
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "app/globals.css",
+    "baseColor": "slate",
+    "cssVariables": false
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils"
+  }
+}
+```
+
+## CSS 变量
+
+```tsx /bg-background/ /text-foreground/
+<div className="bg-background text-foreground" />
+```
+
+要使用 CSS 变量进行主题化，请在 `components.json` 文件中将 `tailwind.cssVariables` 设置为 `true`。
+
+```json {8} title="components.json"
+{
+  "style": "default",
+  "rsc": true,
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "app/globals.css",
+    "baseColor": "slate",
+    "cssVariables": true
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils"
+  }
+}
+```
+
+### 约定
+
+我们使用简单的 `background` 和 `foreground` 约定来表示颜色。`background` 变量用于组件的背景颜色，`foreground` 变量用于文本颜色。
+
+<Callout className="mt-4">
+
+当变量用于组件的背景颜色时，`background` 后缀会被省略。
+
+</Callout>
+
+给定以下 CSS 变量：
+
+```css
+--primary: 222.2 47.4% 11.2%;
+--primary-foreground: 210 40% 98%;
+```
+
+以下组件的 `background` 颜色将是 `hsl(var(--primary))`，`foreground` 颜色将是 `hsl(var(--primary-foreground))`。
+
+```tsx
+<div className="bg-primary text-primary-foreground">Hello</div>
+```
+
+<Callout>
+
+**CSS 变量必须在没有颜色空间函数的情况下定义**。有关更多信息，请参阅 [Tailwind CSS 文档](https://tailwindcss.com/docs/customizing-colors#using-css-variables)。
+
+</Callout>
+
+### 变量列表
+
+以下是可用于自定义的变量列表：
+
+<Steps>
+
+```css title="<body /> 等的默认背景颜色"
+--background: 0 0% 100%;
+--foreground: 222.2 47.4% 11.2%;
+```
+
+```css title="用于 <TabsList />、<Skeleton /> 和 <Switch /> 等静音背景"
+--muted: 210 40% 96.1%;
+--muted-foreground: 215.4 16.3% 46.9%;
+```
+
+```css title="用于 <Card /> 的背景颜色"
+--card: 0 0% 100%;
+--card-foreground: 222.2 47.4% 11.2%;
+```
+
+```css title="用于 <DropdownMenu />、<HoverCard />、<Popover /> 等弹出框的背景颜色"
+--popover: 0 0% 100%;
+--popover-foreground: 222.2 47.4% 11.2%;
+```
+
+```css title="默认边框颜色"
+--border: 214.3 31.8% 91.4%;
+```
+
+```css title="用于 <Input />、<Select />、<Textarea /> 等输入框的边框颜色"
+--input: 214.3 31.8% 91.4%;
+```
+
+```css title="用于 <Button /> 的主要颜色"
+--primary: 222.2 47.4% 11.2%;
+--primary-foreground: 210 40% 98%;
+```
+
+```css title="用于 <Button /> 的次要颜色"
+--secondary: 210 40% 96.1%;
+--secondary-foreground: 222.2 47.4% 11.2%;
+```
+
+```css title="用于 <DropdownMenuItem>、<SelectItem> 等悬停效果的强调色"
+--accent: 210 40% 96.1%;
+--accent-foreground: 222.2 47.4% 11.2%;
+```
+
+```css title="用于 <Button variant="destructive"> 等破坏性操作的颜色"
+--destructive: 0 100% 50%;
+--destructive-foreground: 210 40% 98%;
+```
+
+```css title="用于焦点环的颜色"
+--ring: 215 20.2% 65.1%;
+```
+
+```css title="用于卡片、输入框和按钮的边框半径"
+--radius: 0.5rem;
+```
+
+</Steps>
+
+### 添加新颜色
+
+要添加新颜色，你需要将它们添加到你的 CSS 文件和 `tailwind.config.js` 文件中。
+
+```css title="app/globals.css"
+:root {
+  --warning: 38 92% 50%;
+  --warning-foreground: 48 96% 89%;
+}
+
+.dark {
+  --warning: 48 96% 89%;
+  --warning-foreground: 38 92% 50%;
+}
+```
+
+```js {5-6} title="tailwind.config.js"
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        warning: "hsl(var(--warning))",
+        "warning-foreground": "hsl(var(--warning-foreground))",
+      },
+    },
+  },
+}
+```
+
+你现在可以在组件中使用 `warning` 工具类。
+
+```tsx /bg-warning/ /text-warning-foreground/
+<div className="bg-warning text-warning-foreground" />
+```
+
+### 其他颜色格式
+
+我推荐使用 [HSL 颜色](https://www.smashingmagazine.com/2021/07/hsl-colors-css/) 进行主题化，但如果你愿意，也可以使用其他颜色格式。
+
+有关使用 `rgb`、`rgba` 或 `hsl` 颜色的更多信息，请参阅 [Tailwind CSS 文档](https://tailwindcss.com/docs/customizing-colors#using-css-variables)。

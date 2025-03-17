@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-floating",
-  "version": "40.0.0",
+  "version": "44.0.0",
   "description": "React floating UI for Plate",
   "keywords": [
     "plate",
@@ -44,21 +44,16 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@floating-ui/core": "^1.6.7",
-    "@floating-ui/react": "^0.26.23"
+    "@floating-ui/core": "^1.6.9",
+    "@floating-ui/react": "^0.27.3"
   },
   "devDependencies": {
-    "@udecode/plate-common": "workspace:^"
+    "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=40.2.8",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.103.0",
-    "slate-dom": ">=0.111.0",
-    "slate-history": ">=0.93.0",
-    "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.111.0"
+    "@udecode/plate": ">=46.0.4",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

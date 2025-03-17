@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
 
-import type { PluginConfig } from '@udecode/plate-common';
+import type { PluginConfig } from '@udecode/plate';
 
 import {
   type DOMHandler,
   createTPlatePlugin,
-  findEventRange,
-  useEditorPlugin,
-} from '@udecode/plate-common/react';
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import type { CursorData, CursorState } from './types';
 
@@ -19,14 +18,15 @@ export type CursorOverlayConfig = PluginConfig<
     cursors: Record<string, CursorState<CursorData>>;
   },
   {
-    cursorOverlay: CursorOverlayApi;
+    cursorOverlay: {
+      addCursor: (
+        id: string,
+        cursor: Omit<CursorState<CursorData>, 'id'>
+      ) => void;
+      removeCursor: (id: (string & {}) | 'drag' | 'selection') => void;
+    };
   }
 >;
-
-type CursorOverlayApi = {
-  addCursor: (id: string, cursor: Omit<CursorState<CursorData>, 'id'>) => void;
-  removeCursor: (id: (string & {}) | 'drag' | 'selection') => void;
-};
 
 const getRemoveCursorHandler =
   (id: string): DOMHandler<CursorOverlayConfig> =>
@@ -38,29 +38,29 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
   key: 'cursorOverlay',
   options: { cursors: {} },
 })
-  .extendApi<CursorOverlayApi>(({ editor, plugin }) => ({
-    addCursor: (id, cursor) => {
-      const newCursors = { ...editor.getOptions(plugin).cursors };
-      newCursors[id] = {
-        id,
-        ...cursor,
-      };
-      editor.setOption(plugin, 'cursors', newCursors);
-    },
-    removeCursor: (id) => {
-      const newCursors = { ...editor.getOptions(plugin).cursors };
+  .extendApi<CursorOverlayConfig['api']['cursorOverlay']>(
+    ({ editor, plugin }) => ({
+      addCursor: (id, cursor) => {
+        const newCursors = { ...editor.getOptions(plugin).cursors };
+        newCursors[id] = {
+          id,
+          ...cursor,
+        };
+        editor.setOption(plugin, 'cursors', newCursors);
+      },
+      removeCursor: (id) => {
+        const newCursors = { ...editor.getOptions(plugin).cursors };
 
-      if (!newCursors[id]) return;
+        if (!newCursors[id]) return;
 
-      delete newCursors[id];
-      editor.setOption(plugin, 'cursors', newCursors);
-    },
-  }))
-  .extend(() => ({
-    extendEditor: ({ api, editor, getOptions }) => {
-      const { setSelection } = editor;
-
-      editor.setSelection = (...args) => {
+        delete newCursors[id];
+        editor.setOption(plugin, 'cursors', newCursors);
+      },
+    })
+  )
+  .overrideEditor(({ api, editor, getOptions, tf: { setSelection } }) => ({
+    transforms: {
+      setSelection(props) {
         if (getOptions().cursors?.selection) {
           setTimeout(() => {
             api.cursorOverlay.addCursor('selection', {
@@ -69,23 +69,11 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
           }, 0);
         }
 
-        setSelection(...args);
-      };
-
-      return editor;
+        setSelection(props);
+      },
     },
-    useHooks: ({ api, setOption }) => {
-      const { editor } = useEditorPlugin(BlockSelectionPlugin);
-      const isSelecting = editor.useOption(BlockSelectionPlugin, 'isSelecting');
-
-      useEffect(() => {
-        if (isSelecting) {
-          setTimeout(() => {
-            api.cursorOverlay.removeCursor('selection');
-          }, 0);
-        }
-      }, [isSelecting, setOption, api.cursorOverlay]);
-    },
+  }))
+  .extend(() => ({
     handlers: {
       onBlur: ({ api, editor, event }) => {
         if (!editor.selection) return;
@@ -113,7 +101,7 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
 
         if (types.some((type) => type.startsWith('Files'))) return;
 
-        const range = findEventRange(editor, event);
+        const range = editor.api.findEventRange(event);
 
         if (!range) return;
 
@@ -123,5 +111,16 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
       },
       onDrop: getRemoveCursorHandler('drag') as any,
       onFocus: getRemoveCursorHandler('selection') as any,
+    },
+    useHooks: ({ api, setOption }) => {
+      const isSelecting = usePluginOption(BlockSelectionPlugin, 'isSelecting');
+
+      useEffect(() => {
+        if (isSelecting) {
+          setTimeout(() => {
+            api.cursorOverlay.removeCursor('selection');
+          }, 0);
+        }
+      }, [isSelecting, setOption, api.cursorOverlay]);
     },
   }));

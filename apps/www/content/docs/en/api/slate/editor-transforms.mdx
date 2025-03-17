@@ -1,0 +1,918 @@
+---
+title: Editor Transforms
+description: API reference for editor transformation operations in Slate.
+---
+
+Transforms are helper functions that manipulate a Slate document.
+
+## Node Operations
+
+### `duplicateNodes`
+
+Duplicates nodes at a location and inserts them after that location.
+
+<API name="duplicateNodes">
+<APIOptions type="DuplicateNodesOptions">
+  <APIItem name="...options" type="InsertNodesOptions" optional>
+    `insertNodes` options.
+  </APIItem>
+  <APIItem name="at" type="At" optional>
+    Location to duplicate from and insert after. Defaults to selection.
+  </APIItem>
+  <APIItem name="block" type="boolean" optional>
+    If true, duplicates blocks above location. Ignored if `nodes` provided.
+  </APIItem>
+  <APIItem name="nodes" type="NodeEntry[]" optional>
+    Specific nodes to duplicate. Takes precedence over `block`.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertFragment`
+
+Insert a fragment of nodes at a location.
+
+<API name="insertFragment">
+<APIParameters>
+  <APIItem name="fragment" type="N[]">
+    Fragment of nodes to insert.
+  </APIItem>
+  <APIItem name="options" type="InsertFragmentOptions" optional />
+</APIParameters>
+
+<APIOptions type="InsertFragmentOptions">
+  <APIItem name="at" type="At" optional>
+    Location to insert at. Defaults to selection.
+  </APIItem>
+  <APIItem name="hanging" type="boolean" optional>
+    Whether range is hanging.
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    Allow insertion in void nodes.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertNode`
+
+Insert a single node atomically.
+
+<API name="insertNode">
+<APIParameters>
+  <APIItem name="node" type="N">
+    Node to insert.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional />
+</APIParameters>
+</API>
+
+### `insertNodes`
+
+Insert one or more nodes atomically.
+
+<API name="insertNodes">
+<APIParameters>
+  <APIItem name="nodes" type="N | N[]">
+    Node(s) to insert.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional />
+</APIParameters>
+
+<APIOptions type="InsertNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional>
+    Common query options.
+  </APIItem>
+  <APIItem name="batchDirty" type="boolean" optional />
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="nextBlock" type="boolean" optional>
+    Insert after the current block if `removeEmpty` caused it to be removed.
+  </APIItem>
+  <APIItem name="removeEmpty" type="QueryNodeOptions | boolean" optional>
+    Remove the current block if empty. Defaults to removing an empty paragraph, but can be customized.
+  </APIItem>
+  <APIItem name="select" type="boolean" optional>
+    Select inserted nodes.
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    Allow insertion in void nodes.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `liftNodes`
+
+Lift nodes at the specified location upwards in the document tree. If necessary, the parent node is split.
+
+<API name="liftNodes">
+<APIOptions type="LiftNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `mergeNodes`
+
+Merge a node at the specified location with the previous node at the same depth. Resulting empty container nodes are removed.
+
+<API name="mergeNodes">
+<APIOptions type="MergeNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="mergeNode" type="(editor: E, options: { at: Path; to: Path }) => void" optional>
+    Custom function to handle node merging.
+  </APIItem>
+  <APIItem name="removeEmptyAncestor" type="(editor: E, options: { at: Path }) => void" optional>
+    Custom function to remove empty ancestor after merging.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `moveNodes`
+
+Move the nodes from an origin to a destination.
+
+<API name="moveNodes">
+<APIOptions type="MoveNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="to" type="Path">
+    Destination path.
+  </APIItem>
+  <APIItem name="children" type="boolean" optional>
+    Move only children of the node at the location.
+  </APIItem>
+  <APIItem name="fromIndex" type="number" optional>
+    Start index of the children to move. Default is 0.
+  </APIItem>
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `removeNodes`
+
+Remove nodes at a location.
+
+<API name="removeNodes">
+<APIOptions type="RemoveNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="children" type="boolean" optional>
+    When true, remove all children of the node at the specified location.
+  </APIItem>
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="previousEmptyBlock" type="boolean" optional>
+    Remove the previous empty block if it exists.
+  </APIItem>
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `replaceNodes`
+
+Replace nodes at a location with new nodes.
+
+<API name="replaceNodes">
+<APIParameters>
+  <APIItem name="nodes" type="N | N[]">
+    The new node(s) to insert.
+  </APIItem>
+  <APIItem name="options" type="ReplaceNodesOptions" optional />
+</APIParameters>
+
+<APIOptions type="ReplaceNodesOptions">
+  <APIItem name="...options" type="InsertNodesOptions" optional>
+    `insertNodes` options.
+  </APIItem>
+  <APIItem name="children" type="boolean" optional>
+    Replace all children of the node at the specified location instead of the node itself.
+  </APIItem>
+  <APIItem name="removeNodes" type="Omit<RemoveNodesOptions, 'at'>" optional>
+    Options for removing nodes before the replacement.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `reset`
+
+Reset the editor state including history, selection and children.
+
+<API name="reset">
+<APIOptions type="ResetOptions">
+  <APIItem name="...options" type="ReplaceNodesOptions" optional>
+    `replaceNodes` options.
+  </APIItem>
+  <APIItem name="children" type="boolean" optional>
+    When true, only reset the children without clearing history/operations.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `setNodes`
+
+Set properties on nodes.
+
+<API name="setNodes">
+<APIParameters>
+  <APIItem name="props" type="Partial<NodeProps<N>>">
+    Properties to set. Use `undefined` to unset.
+  </APIItem>
+  <APIItem name="options" type="SetNodesOptions" optional />
+</APIParameters>
+
+<APIOptions type="SetNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="compare" type="(prop: Partial<Descendant>, node: Partial<Descendant>) => boolean" optional />
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="marks" type="boolean" optional>
+    When true, only apply to text nodes in non-void or markable void nodes.
+  </APIItem>
+  <APIItem name="merge" type="(prop: Partial<Descendant>, node: Partial<Descendant>) => object" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="split" type="boolean" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `splitNodes`
+
+Split nodes at a location.
+
+<API name="splitNodes">
+<APIOptions type="SplitNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="always" type="boolean" optional />
+  <APIItem name="height" type="number" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `toggleBlock`
+
+Toggle the block type at a location.
+
+<API name="toggleBlock">
+<APIParameters>
+  <APIItem name="type" type="string">
+    The block type to toggle.
+  </APIItem>
+  <APIItem name="options" type="ToggleBlockOptions" optional />
+</APIParameters>
+
+<APIOptions type="ToggleBlockOptions">
+  <APIItem name="...options" type="SetNodesOptions" optional>
+    Options to pass to `setNodes`.
+  </APIItem>
+  <APIItem name="defaultType" type="string" optional>
+    The default block type when untoggling. Defaults to paragraph.
+  </APIItem>
+  <APIItem name="someOptions" type="EditorNodesOptions" optional>
+    Options for determining if the block is active.
+  </APIItem>
+  <APIItem name="wrap" type="boolean" optional>
+    If true, toggles wrapping with `type`. Otherwise, sets the block type directly.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `unsetNodes`
+
+Remove properties from nodes.
+
+<API name="unsetNodes">
+<APIParameters>
+  <APIItem name="props" type="string | string[]">
+    Property key(s) to remove.
+  </APIItem>
+  <APIItem name="options" type="UnsetNodesOptions" optional />
+</APIParameters>
+
+<APIOptions type="UnsetNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="split" type="boolean" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `unwrapNodes`
+
+Unwrap a node at a location. If necessary, the parent node is split.
+
+<API name="unwrapNodes">
+<APIOptions type="UnwrapNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="split" type="boolean" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `wrapNodes`
+
+Wrap nodes at a location in the `element` container.
+
+<API name="wrapNodes">
+<APIParameters>
+  <APIItem name="element" type="N">
+    The wrapper element.
+  </APIItem>
+  <APIItem name="options" type="WrapNodesOptions" optional />
+</APIParameters>
+
+<APIOptions type="WrapNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="children" type="boolean" optional>
+    When true, wrap all children into a single container element.
+  </APIItem>
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="split" type="boolean" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+## Text Operations
+
+### `delete`
+
+Delete text at a location.
+
+<API name="delete">
+<APIOptions type="DeleteTextOptions">
+  <APIItem name="at" type="At" optional />
+  <APIItem name="distance" type="number" optional>
+    Number of characters (or other unit) to delete. Default is 1.
+  </APIItem>
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="reverse" type="boolean" optional>
+    If true, delete backward.
+  </APIItem>
+  <APIItem name="unit" type="'character' | 'word' | 'line' | 'block'" optional>
+    Unit to delete by.
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `deleteBackward`
+
+Delete text backward.
+
+<API name="deleteBackward">
+<APIParameters>
+  <APIItem name="unit" type="'character' | 'word' | 'line' | 'block'" optional>
+    Defaults to `'character'`.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `deleteForward`
+
+Delete text forward.
+
+<API name="deleteForward">
+<APIParameters>
+  <APIItem name="unit" type="'character' | 'word' | 'line' | 'block'" optional>
+    Defaults to `'character'`.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `deleteFragment`
+
+Delete a fragment of nodes.
+
+<API name="deleteFragment">
+<APIOptions type="EditorFragmentDeletionOptions">
+  <APIItem name="direction" type="'forward' | 'backward'" optional>
+    Direction to delete.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertText`
+
+Insert text at a location, optionally with marks. The behavior depends on the provided options:
+
+1. If `at` is specified in options, inserts at that location regardless of selection
+2. Otherwise, if there's a selection:
+   - If `marks` is true (default) and editor has marks, inserts text with those marks
+   - If no marks, inserts plain text
+3. If neither `at` nor selection exists, no text is inserted
+
+<API name="insertText">
+<APIParameters>
+  <APIItem name="text" type="string">
+    Text to insert.
+  </APIItem>
+  <APIItem name="options" type="InsertTextOptions" optional />
+</APIParameters>
+
+<APIOptions type="InsertTextOptions">
+  <APIItem name="at" type="TLocation" optional>
+    Location to insert text at. Takes precedence over current selection.
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    Whether to allow insertion in void nodes.
+  </APIItem>
+  <APIItem name="marks" type="boolean" optional>
+    - **Default:** `true`
+    When true and editor has marks, the inserted text will include those marks.
+    When false, inserts plain text without marks.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertBreak`
+
+Insert a block break at the current selection.
+
+### `insertSoftBreak`
+
+Insert a soft break at the current selection. A soft break is a new line in the current block.
+
+### `deselect`
+
+Unset the selection.
+
+### `move`
+
+Move the selection's point forward or backward.
+
+<API name="move">
+<APIOptions type="object">
+  <APIItem name="distance" type="number" optional>
+    How many units to move. Defaults to 1.
+  </APIItem>
+  <APIItem name="unit" type="'offset' | 'character' | 'word' | 'line'" optional>
+    Defaults to `'character'`.
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    Move backward if true.
+  </APIItem>
+  <APIItem name="edge" type="'anchor' | 'focus' | 'start' | 'end'" optional>
+    Which edge to move.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Mark Operations
+
+### `addMark`
+
+Add a custom property to the leaf text nodes within non-void nodes or void nodes that `editor.markableVoid()` allows in the current selection. If the selection is currently collapsed, the marks will be added to the `editor.marks` property instead, and applied when text is inserted next.
+
+<API name="addMark">
+<APIParameters>
+  <APIItem name="key" type="string">
+    Mark key to add.
+  </APIItem>
+  <APIItem name="value" type="any">
+    Value for the mark.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `addMarks`
+
+Add multiple marks to the current selection.
+
+```ts
+editor.tf.addMarks({ bold: true, italic: true })
+editor.tf.addMarks({ bold: subscript }, { remove: 'superscript' })
+editor.tf.addMarks({ bold: true }, { remove: ['italic', 'underline'] })
+```
+
+<API name="addMarks">
+<APIParameters>
+  <APIItem name="marks" type="Record<string, any>">
+    Key-value pairs of mark props.
+  </APIItem>
+  <APIItem name="options" type="AddMarksOptions" optional />
+</APIParameters>
+
+<APIOptions type="AddMarksOptions">
+  <APIItem name="remove" type="string[] | string" optional>
+    Mark keys to remove first. For mutually exclusive marks, e.g. subscript/superscript.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `removeMark`
+
+Remove a mark from text in the selection.
+
+<API name="removeMark">
+<APIParameters>
+  <APIItem name="key" type="string">
+    Mark key to remove.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `removeMarks`
+
+Remove marks from text nodes in the current selection or from `editor.marks`. The behavior depends on the selection state and options:
+
+1. If selection is expanded or is in a markable void node:
+   - Remove specified mark keys from text nodes
+2. If selection is collapsed and no custom range provided:
+   - Remove specified keys from `editor.marks`
+   - If no keys specified, clear all marks from `editor.marks`
+3. If custom range provided (`at` option):
+   - Only remove marks from text nodes in that range
+
+```ts
+editor.tf.removeMarks()             // remove all marks
+editor.tf.removeMarks('bold')       // remove the 'bold' mark
+editor.tf.removeMarks(['bold','italic'])
+editor.tf.removeMarks('bold', { at: range })
+```
+
+<API name="removeMarks">
+<APIParameters>
+  <APIItem name="keys" type="string | string[]" optional>
+    Mark key(s) to remove. If not provided and selection is collapsed, clears all marks from `editor.marks`.
+  </APIItem>
+  <APIItem name="options" type="RemoveMarksOptions" optional />
+</APIParameters>
+
+<APIOptions type="RemoveMarksOptions">
+  <APIItem name="...options" type="UnsetNodesOptions" optional />
+  <APIItem name="at" type="TRange" optional>
+    Custom range to remove marks from. Takes precedence over current selection.
+  </APIItem>
+  <APIItem name="shouldChange" type="boolean" optional>
+    - **Default:** `true`
+    Whether to trigger onChange when modifying editor.marks.
+  </APIItem>
+  <APIItem name="split" type="boolean" optional>
+    Whether to split nodes when removing marks.
+  </APIItem>
+  <APIItem name="match" type="(node: Node, path: Path) => boolean" optional>
+    Custom function to filter which nodes to remove marks from.
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    Whether to allow removing marks from void nodes.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `toggleMark`
+
+Toggle a mark on or off in the current selection. If the mark exists, removes it. If it doesn't exist:
+1. Removes any specified marks in the `remove` option 
+2. Adds the mark with value `true`
+
+```ts
+editor.tf.toggleMark('bold')                                // Toggle bold on/off
+editor.tf.toggleMark('subscript', { remove: 'superscript'}) // Remove superscript before adding subscript
+```
+
+<API name="toggleMark">
+<APIParameters>
+  <APIItem name="key" type="string">
+    The mark key to toggle.
+  </APIItem>
+  <APIItem name="options" type="ToggleMarkOptions" optional />
+</APIParameters>
+
+<APIOptions type="ToggleMarkOptions">
+  <APIItem name="remove" type="string[] | string" optional>
+    Mark key(s) to remove before adding the mark. Useful for mutually exclusive marks like subscript/superscript.
+    The specified mark key is always removed in addition to these marks.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Selection
+
+### `collapse`
+
+Collapse the selection to a point.
+
+<API name="collapse">
+<APIOptions type="object">
+  <APIItem name="edge" type="'anchor' | 'focus' | 'start' | 'end'" optional>
+    Edge to collapse to. Defaults to `'anchor'`.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `deselect`
+
+Unset the current selection.
+
+### `move`
+
+Move the selection's point.
+
+<API name="move">
+<APIOptions type="object">
+  <APIItem name="distance" type="number" optional>
+    Defaults to 1.
+  </APIItem>
+  <APIItem name="unit" type="'offset' | 'character' | 'word' | 'line'" optional>
+    Defaults to `'character'`.
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    If true, move backward.
+  </APIItem>
+  <APIItem name="edge" type="'anchor' | 'focus' | 'start' | 'end'" optional>
+    Which edge to move.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `select`
+
+Set the selection to a new value specified by `at`. When a selection already exists, this method just calls `setSelection`.
+
+```ts
+editor.tf.select(at)
+editor.tf.select(at, { edge: 'end' })
+editor.tf.select(at, { edge: 'start' })
+```
+
+<API name="select">
+<APIParameters>
+  <APIItem name="at" type="At">
+    Location to select.
+  </APIItem>
+  <APIItem name="options" type="SelectOptions" optional />
+</APIParameters>
+
+<APIOptions type="SelectOptions">
+  <APIItem name="edge" type="'start' | 'end'" optional>
+    Select the start or end edge above `at`.
+  </APIItem>
+  <APIItem name="focus" type="boolean" optional>
+    Focus the editor before selecting.
+  </APIItem>
+  <APIItem name="next" type="boolean" optional>
+    Select the start of the next sibling.
+  </APIItem>
+  <APIItem name="previous" type="boolean" optional>
+    Select the end of the previous sibling.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `setPoint`
+
+Set new properties on one of the selection's points.
+
+<API name="setPoint">
+<APIParameters>
+  <APIItem name="props" type="Partial<Point>">
+    Point properties to update.
+  </APIItem>
+  <APIItem name="options" type="object" optional />
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="edge" type="'anchor' | 'focus' | 'start' | 'end'" optional>
+    Which edge of the selection to set.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `setSelection`
+
+Set new properties on an active selection. Since the value is a `Partial<Range>`, this method can only handle updates to an existing selection. If there is no active selection the operation will be void. Use `select` if you'd like to create a selection when there is none.
+
+<API name="setSelection">
+<APIParameters>
+  <APIItem name="props" type="Partial<TRange>">
+    A partial range to update existing selection properties.
+  </APIItem>
+</APIParameters>
+</API>
+
+## DOM Operations
+
+### `blur`
+
+Blur the editor.
+
+### `deselectDOM`
+
+Deselect the editor's DOM selection in addition to `deselect`.
+
+### `focus`
+
+Focus the editor.
+
+```ts
+editor.tf.focus()
+editor.tf.focus({ edge: 'end' })
+editor.tf.focus({ edge: 'endEditor' })
+```
+
+<API name="focus">
+<APIOptions type="FocusOptions">
+  <APIItem name="at" type="At" optional>
+    Select this location before focusing.
+  </APIItem>
+  <APIItem name="edge" type="'start' | 'startEditor' | 'end' | 'endEditor'" optional>
+    Focus at the edge of the location or the editor.
+  </APIItem>
+  <APIItem name="retries" type="number" optional>
+    Number of attempts to refocus.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertData`
+
+Insert data from a `DataTransfer` into the editor. Calls:
+
+1. `insertFragmentData(editor: ReactEditor, data: DataTransfer)`
+2. `insertTextData(editor: ReactEditor, data: DataTransfer)`
+
+<API name="insertData">
+<APIParameters>
+  <APIItem name="data" type="DataTransfer">
+    Data to insert from clipboard or drag event.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `insertFragmentData`
+
+Insert fragment data from a `DataTransfer` into the editor.
+
+<API name="insertFragmentData">
+<APIParameters>
+  <APIItem name="data" type="DataTransfer">
+    Data to parse as fragment.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean" />
+</API>
+
+### `insertTextData`
+
+Insert text data from a `DataTransfer` into the editor.
+
+<API name="insertTextData">
+<APIParameters>
+  <APIItem name="data" type="DataTransfer">
+    Text data to insert.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean" />
+</API>
+
+### `setFragmentData`
+
+Sets data from the currently selected fragment on a `DataTransfer`.
+
+<API name="setFragmentData">
+<APIParameters>
+  <APIItem name="data" type="DataTransfer">
+    DataTransfer to store the fragment.
+  </APIItem>
+</APIParameters>
+</API>
+
+## History Operations
+
+### `redo`
+
+Redo to the next saved state.
+
+### `undo`
+
+Undo to the previous saved state.
+
+### `setSplittingOnce`
+
+<API name="setSplittingOnce">
+<APIParameters>
+  <APIItem name="value" type="boolean">
+    Whether the next operation should split into a new batch in history.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withMerging`
+
+Apply a series of changes inside a synchronous `fn`, These operations will
+be merged into the previous history.
+
+<API name="withMerging">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    Batched changes to merge into the previous history point.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withNewBatch`
+
+Apply a series of changes inside a synchronous `fn`, ensuring that the first
+operation starts a new batch in the history. Subsequent operations will be
+merged as usual.
+
+<API name="withNewBatch">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    Batched changes in a new history point.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withoutMerging`
+
+Apply a series of changes inside a synchronous `fn`, without merging any of
+the new operations into previous save point in the history.
+
+<API name="withoutMerging">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    Changes not merged into any existing history point.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withoutSaving`
+
+Apply a series of changes inside a synchronous `fn`, without saving any of
+their operations into the history.
+
+<API name="withoutSaving">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    Changes not saved into history at all.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Core Operations
+
+### `apply`
+
+Apply an operation in the editor.
+
+<API name="apply">
+<APIParameters>
+  <APIItem name="operation" type="Operation<N>">
+    Operation to apply.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `normalizeNode`
+
+Normalize a node according to the editor's schema.
+
+<API name="normalizeNode">
+<APIParameters>
+  <APIItem name="entry" type="NodeEntry<N>">
+    The node entry to normalize.
+  </APIItem>
+  <APIItem name="options" type="{ operation?: Operation }" optional />
+</APIParameters>
+
+<APIOptions type="{ operation?: Operation }">
+  <APIItem name="operation" type="Operation" optional>
+    The triggering operation.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `normalize`
+
+Normalize dirty nodes in the editor.
+
+<API name="normalize">
+<APIOptions type="EditorNormalizeOptions">
+  <APIItem name="force" type="boolean" optional>
+    When true, forcibly re-normalize all nodes.
+  </APIItem>
+  <APIItem name="operation" type="Operation" optional />
+</APIOptions>
+</API>
+
+### `withoutNormalizing`
+
+Call a function, deferring normalization until after it completes.
+
+<API name="withoutNormalizing">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    A synchronous function to execute without normalization in between operations.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  True if normalization was performed afterwards.
+</APIReturns>
+</API>

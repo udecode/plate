@@ -3,15 +3,17 @@ import React from 'react';
 import {
   createPrimitiveComponent,
   useEditorPlugin,
-} from '@udecode/plate-common/react';
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import { encodeUrlIfNeeded, safeDecodeUrl } from '../../../lib';
 import { LinkPlugin } from '../../LinkPlugin';
 
 export const useFloatingLinkUrlInputState = () => {
-  const { getOptions, useOption } = useEditorPlugin(LinkPlugin);
-  const updated = useOption('updated');
+  const { getOptions } = useEditorPlugin(LinkPlugin);
+  const updated = usePluginOption(LinkPlugin, 'updated');
   const ref = React.useRef<HTMLInputElement>(null);
+  const focused = React.useRef(false);
 
   React.useEffect(() => {
     if (ref.current && updated) {
@@ -19,6 +21,9 @@ export const useFloatingLinkUrlInputState = () => {
         const input = ref.current;
 
         if (!input) return;
+        if (focused.current) return;
+
+        focused.current = true;
 
         const url = getOptions().url;
         input.focus();

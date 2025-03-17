@@ -1,23 +1,17 @@
 import {
-  type ExtendEditor,
-  type TAncestor,
-  type TAncestorEntry,
-  type TDescendant,
-  type TDescendantEntry,
+  type Ancestor,
+  type AncestorEntry,
+  type Descendant,
+  type DescendantEntry,
+  type ElementEntry,
+  type OverrideEditor,
+  type Path,
   type TElement,
-  type TElementEntry,
   type TText,
-  findNode,
-  getCommonNode,
-  getNode,
-  getNodeString,
-  getNodeTexts,
-  getNodes,
-  insertElements,
-  isElement,
-  removeNodes,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+  ElementApi,
+  NodeApi,
+  PathApi,
+} from '@udecode/plate';
 
 import {
   type ListConfig,
@@ -26,29 +20,28 @@ import {
 } from './BaseListPlugin';
 import { isListRoot } from './queries';
 
-export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
+export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
   editor,
+  tf: { insertFragment },
 }) => {
-  const { insertFragment } = editor;
-
   const listItemType = editor.getType(BaseListItemPlugin);
   const listItemContentType = editor.getType(BaseListItemContentPlugin);
 
   const getFirstAncestorOfType = (
-    root: TDescendant,
-    entry: TDescendantEntry,
+    root: Descendant,
+    entry: DescendantEntry,
     type: string
-  ): TAncestorEntry => {
-    let ancestor: Path = Path.parent(entry[1]);
+  ): AncestorEntry => {
+    let ancestor: Path = PathApi.parent(entry[1]);
 
-    while (getNode<TElement>(root, ancestor)!.type !== type) {
-      ancestor = Path.parent(ancestor);
+    while (NodeApi.get<TElement>(root, ancestor)!.type !== type) {
+      ancestor = PathApi.parent(ancestor);
     }
 
-    return [getNode<TAncestor>(root, ancestor)!, ancestor];
+    return [NodeApi.get<Ancestor>(root, ancestor)!, ancestor];
   };
 
-  const findListItemsWithContent = (first: TDescendant): TDescendant[] => {
+  const findListItemsWithContent = (first: Descendant): Descendant[] => {
     let prev = null;
     let node = first;
 
@@ -58,10 +51,10 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
         (node.children as TElement[])[0].type !== listItemContentType)
     ) {
       prev = node;
-      [node] = node.children as TDescendant[];
+      [node] = node.children as Descendant[];
     }
 
-    return prev ? (prev.children as TDescendant[]) : [node];
+    return prev ? (prev.children as Descendant[]) : [node];
   };
 
   /**
@@ -71,26 +64,26 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
    * @returns If argument is not a list root, returns it, otherwise returns ul[]
    *   or li[].
    */
-  const trimList = (listRoot: TDescendant): TElement[] => {
+  const trimList = (listRoot: Descendant): TElement[] => {
     if (!isListRoot(editor, listRoot)) {
       return [listRoot as TElement];
     }
 
-    const _texts = getNodeTexts(listRoot);
+    const _texts = NodeApi.texts(listRoot);
     const textEntries = Array.from(_texts);
 
     const commonAncestorEntry = textEntries.reduce(
       (commonAncestor, textEntry) =>
-        Path.isAncestor(commonAncestor[1], textEntry[1])
+        PathApi.isAncestor(commonAncestor[1], textEntry[1])
           ? commonAncestor
-          : (getCommonNode(listRoot, textEntry[1], commonAncestor[1]) as any),
+          : (NodeApi.common(listRoot, textEntry[1], commonAncestor[1]) as any),
       // any list item would do, we grab the first one
       getFirstAncestorOfType(listRoot, textEntries[0], listItemType)
     );
 
     const [first, ...rest] = isListRoot(
       editor,
-      commonAncestorEntry[0] as TDescendant
+      commonAncestorEntry[0] as Descendant
     )
       ? (commonAncestorEntry[0] as any).children
       : [commonAncestorEntry[0]];
@@ -98,7 +91,7 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
     return [...findListItemsWithContent(first), ...rest];
   };
 
-  const wrapNodeIntoListItem = (node: TDescendant): TElement => {
+  const wrapNodeIntoListItem = (node: Descendant): TElement => {
     return node.type === listItemType
       ? (node as TElement)
       : ({
@@ -111,26 +104,28 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
    * Checks if the fragment only consists of a single LIC in which case it is
    * considered the user's intention was to copy a text, not a list
    */
-  const isSingleLic = (fragment: TDescendant[]) => {
+  const isSingleLic = (fragment: Descendant[]) => {
     const isFragmentOnlyListRoot =
       fragment.length === 1 && isListRoot(editor, fragment[0]);
 
     return (
       isFragmentOnlyListRoot &&
-      [...getNodes({ children: fragment } as any)]
-        .filter((entry): entry is TElementEntry => isElement(entry[0]))
+      [...NodeApi.nodes({ children: fragment } as any)]
+        .filter((entry): entry is ElementEntry =>
+          ElementApi.isElement(entry[0])
+        )
         .filter(([node]) => node.type === listItemContentType).length === 1
     );
   };
 
   const getTextAndListItemNodes = (
-    fragment: TDescendant[],
-    liEntry: TElementEntry,
-    licEntry: TElementEntry
+    fragment: Descendant[],
+    liEntry: ElementEntry,
+    licEntry: ElementEntry
   ) => {
     const [, liPath] = liEntry;
     const [licNode, licPath] = licEntry;
-    const isEmptyNode = !getNodeString(licNode);
+    const isEmptyNode = !NodeApi.string(licNode);
     const [first, ...rest] = fragment
       .flatMap(trimList)
       .map(wrapNodeIntoListItem);
@@ -143,14 +138,14 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
         listItemNodes = rest as TElement[];
       } else if (isEmptyNode) {
         // FIXME: is there a more direct way to set this?
-        const li = getNode(editor, liPath);
+        const li = NodeApi.get(editor, liPath);
         const [, ...currentSublists] = li!.children as TElement[];
         const [newLic, ...newSublists] = first.children as TElement[];
-        insertElements(editor, newLic, {
-          at: Path.next(licPath),
+        editor.tf.insertNodes(newLic, {
+          at: PathApi.next(licPath),
           select: true,
         });
-        removeNodes(editor, {
+        editor.tf.removeNodes({
           at: licPath,
         });
 
@@ -158,13 +153,13 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
           if (currentSublists?.length) {
             // TODO: any better way to compile the path where the LIs of the newly inserted element will be inserted?
             const path = [...liPath, 1, 0];
-            insertElements(editor, newSublists[0].children as TElement[], {
+            editor.tf.insertNodes(newSublists[0].children as TElement[], {
               at: path,
               select: true,
             });
           } else {
-            insertElements(editor, newSublists, {
-              at: Path.next(licPath),
+            editor.tf.insertNodes(newSublists, {
+              at: PathApi.next(licPath),
               select: true,
             });
           }
@@ -184,62 +179,70 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
     return { listItemNodes, textNode };
   };
 
-  editor.insertFragment = (fragment) => {
-    let liEntry = findNode<TElement>(editor, {
-      match: { type: listItemType },
-      mode: 'lowest',
-    });
+  return {
+    transforms: {
+      insertFragment(fragment) {
+        let liEntry = editor.api.node<TElement>({
+          match: { type: listItemType },
+          mode: 'lowest',
+        });
 
-    // not inserting into a list item, delegate to other plugins
-    if (!liEntry) {
-      return insertFragment(
-        isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
-      );
-    }
+        // not inserting into a list item, delegate to other plugins
+        if (!liEntry) {
+          return insertFragment(
+            isListRoot(editor, fragment[0])
+              ? [{ text: '' }, ...fragment]
+              : fragment
+          );
+        }
 
-    // delete selection (if necessary) so that it can check if needs to insert into an empty block
-    insertFragment([{ text: '' }] as any);
+        // delete selection (if necessary) so that it can check if needs to insert into an empty block
+        insertFragment([{ text: '' }] as any);
 
-    // refetch to find the currently selected LI after the deletion above is performed
-    liEntry = findNode<TElement>(editor, {
-      match: { type: listItemType },
-      mode: 'lowest',
-    });
+        // refetch to find the currently selected LI after the deletion above is performed
+        liEntry = editor.api.node<TElement>({
+          match: { type: listItemType },
+          mode: 'lowest',
+        });
 
-    // Check again if liEntry is undefined after the deletion above.
-    // This prevents unexpected behavior when pasting while a list is highlighted
-    if (!liEntry) {
-      return insertFragment(
-        isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
-      );
-    }
+        // Check again if liEntry is undefined after the deletion above.
+        // This prevents unexpected behavior when pasting while a list is highlighted
+        if (!liEntry) {
+          return insertFragment(
+            isListRoot(editor, fragment[0])
+              ? [{ text: '' }, ...fragment]
+              : fragment
+          );
+        }
 
-    const licEntry = findNode<TElement>(editor, {
-      match: { type: listItemContentType },
-      mode: 'lowest',
-    });
+        const licEntry = editor.api.node<TElement>({
+          match: { type: listItemContentType },
+          mode: 'lowest',
+        });
 
-    if (!licEntry) {
-      return insertFragment(
-        isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
-      );
-    }
+        if (!licEntry) {
+          return insertFragment(
+            isListRoot(editor, fragment[0])
+              ? [{ text: '' }, ...fragment]
+              : fragment
+          );
+        }
 
-    const { listItemNodes, textNode } = getTextAndListItemNodes(
-      fragment,
-      liEntry!,
-      licEntry
-    );
+        const { listItemNodes, textNode } = getTextAndListItemNodes(
+          fragment,
+          liEntry!,
+          licEntry
+        );
 
-    insertFragment<TText>([textNode]); // insert text if needed
+        insertFragment<TText>([textNode]); // insert text if needed
 
-    const [, liPath] = liEntry!;
+        const [, liPath] = liEntry!;
 
-    return insertElements(editor, listItemNodes, {
-      at: Path.next(liPath),
-      select: true,
-    });
+        return editor.tf.insertNodes(listItemNodes, {
+          at: PathApi.next(liPath),
+          select: true,
+        });
+      },
+    },
   };
-
-  return editor;
 };

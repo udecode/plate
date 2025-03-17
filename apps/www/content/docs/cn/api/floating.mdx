@@ -1,0 +1,156 @@
+---
+title: 浮动
+description: 浮动 UI 组件和钩子的 API 参考。
+---
+
+<PackageInfo>
+
+## 功能
+
+- 跟随光标位置的虚拟浮动元素
+- 在文本选择时出现的浮动工具栏
+- 基于 Floating UI 构建
+- 可自定义的定位和行为
+- 在滚动和调整大小时自动更新
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-floating
+```
+
+## API 钩子
+
+### `useVirtualFloating`
+
+创建一个带有受控虚拟元素的浮动元素，通常用于跟随光标位置。
+
+<API name="useVirtualFloating">
+<APIOptions type="UseVirtualFloatingOptions">
+  <APIItem name="getBoundingClientRect" type="() => ClientRectObject" optional>
+    获取边界客户端矩形的函数。
+    - **默认值:** 返回一个位于 (0,0) 的零大小矩形
+  </APIItem>
+  <APIItem name="open" type="boolean" optional>
+    控制浮动元素的可见性。
+  </APIItem>
+  <APIItem name="whileElementsMounted" type="function" optional>
+    元素挂载时的回调。
+    - **默认值:** `autoUpdate`（在滚动和调整大小时更新）
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="style" type="React.CSSProperties">
+    应用于浮动元素的样式对象。
+  </APIItem>
+  <APIItem name="virtualElementRef" type="React.MutableRefObject">
+    虚拟元素的引用。
+  </APIItem>
+  <APIItem name="refs" type="object">
+    用于浮动 UI 定位的引用。
+  </APIItem>
+  <APIItem name="update" type="() => void">
+    手动更新定位的函数。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useFloatingToolbar`
+
+创建一个在编辑器中选择文本时出现的浮动工具栏。
+
+<API name="useFloatingToolbar">
+<APIOptions type="FloatingToolbarState">
+  <APIItem name="floatingOptions" type="UseVirtualFloatingOptions" optional>
+    传递给 `useVirtualFloating` 的选项。
+  </APIItem>
+  <APIItem name="hideToolbar" type="boolean" optional>
+    强制隐藏工具栏。
+  </APIItem>
+  <APIItem name="showWhenReadOnly" type="boolean" optional>
+    在只读模式下显示工具栏。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="clickOutsideRef" type="React.RefObject">
+    用于检测工具栏外部点击的引用。
+  </APIItem>
+  <APIItem name="hidden" type="boolean">
+    工具栏是否应隐藏。
+  </APIItem>
+  <APIItem name="props" type="object">
+    应用于工具栏元素的属性。
+  </APIItem>
+  <APIItem name="ref" type="React.RefObject">
+    附加到工具栏元素的引用。
+  </APIItem>
+</APIReturns>
+</API>
+
+## API
+
+### `getBoundingClientRect`
+
+获取编辑器中某个位置或位置数组的边界客户端矩形。
+
+<API name="getBoundingClientRect">
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="at" type="Location | Location[]" optional>
+    要获取边界矩形的位置或位置数组。如果未提供，则使用当前编辑器选择。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="DOMRect | undefined">
+  所有指定位置的合并边界客户端矩形，如果未找到有效矩形则返回 undefined。
+</APIReturns>
+</API>
+
+### `getDOMSelectionBoundingClientRect`
+
+<API name="getDOMSelectionBoundingClientRect">
+<APIReturns type="ClientRectObject">
+  DOM 选择的边界客户端矩形。如果不存在选择，则返回一个位于 (0,0) 的零大小矩形。
+</APIReturns>
+</API>
+
+### `getRangeBoundingClientRect`
+
+获取特定 Slate 范围的边界客户端矩形。
+
+<API name="getRangeBoundingClientRect">
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="at" type="TRange | null">
+    要获取边界矩形的 Slate 范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="ClientRectObject">
+  范围的边界客户端矩形。如果范围为空或无效，则返回一个位于 (0,0) 的零大小矩形。
+</APIReturns>
+</API>
+
+### `getSelectionBoundingClientRect`
+
+获取当前编辑器选择的边界客户端矩形。
+
+<API name="getSelectionBoundingClientRect">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="ClientRectObject">
+  选择的边界客户端矩形。如果选择未展开，则返回一个位于 (0,0) 的零大小矩形。
+</APIReturns>
+</API>

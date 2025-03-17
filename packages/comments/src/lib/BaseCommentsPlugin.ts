@@ -1,147 +1,158 @@
 import {
+  type EditorNodesOptions,
+  type NodeEntry,
   type PluginConfig,
-  type Value,
-  type WithPartial,
+  type SetNodesOptions,
   createTSlatePlugin,
-  getNodeString,
-  nanoid,
-} from '@udecode/plate-common';
+  TextApi,
+} from '@udecode/plate';
 
-import type { CommentUser, TComment } from './types';
+import type { TCommentText } from './types';
 
+import {
+  getCommentCount,
+  getCommentKey,
+  getCommentKeyId,
+  getCommentKeys,
+  getDraftCommentKey,
+  isCommentKey,
+  isCommentNodeById,
+} from './utils';
 import { withComments } from './withComments';
 
 export type BaseCommentsConfig = PluginConfig<
   'comment',
+  {},
   {
-    activeCommentId: string | null;
-    addingCommentId: string | null;
-    comments: Record<string, TComment>;
-    focusTextarea: boolean;
-    myUserId: string | null;
-    newValue: Value;
-    users: Record<string, CommentUser>;
-    onCommentAdd: ((value: WithPartial<TComment, 'userId'>) => void) | null;
-    onCommentDelete: ((id: string) => void) | null;
-    onCommentUpdate:
-      | ((value: Partial<Omit<TComment, 'id'>> & Pick<TComment, 'id'>) => void)
-      | null;
-  } & CommentsSelectors,
+    comment: {
+      has: (options: { id: string }) => boolean;
+      node: (
+        options?: EditorNodesOptions & { id?: string; isDraft?: boolean }
+      ) => NodeEntry<TCommentText> | undefined;
+      nodeId: (leaf: TCommentText) => string | undefined;
+      nodes: (
+        options?: EditorNodesOptions & { id?: string; isDraft?: boolean }
+      ) => NodeEntry<TCommentText>[];
+    };
+  },
   {
-    comment: CommentsApi;
+    comment: {
+      removeMark: () => void;
+      setDraft: (options?: SetNodesOptions) => void;
+      unsetMark: (options: { id: string }) => void;
+    };
   }
 >;
 
-export type CommentsSelectors = {
-  activeComment?: () => TComment | null;
-  commentById?: (id: string | null) => TComment | null;
-  myUser?: () => CommentUser | null;
-  newText?: () => string;
-  userById?: (id: string | null) => CommentUser | null;
-};
-
-export type CommentsApi = {
-  addComment: (
-    value: WithPartial<TComment, 'createdAt' | 'id' | 'userId'>
-  ) => WithPartial<TComment, 'userId'>;
-  addRawComment: (id: string) => void;
-  removeComment: (id: string | null) => void;
-  resetNewCommentValue: () => void;
-  updateComment: (id: string | null, value: Partial<TComment>) => void;
-};
-
 export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
   key: 'comment',
-  extendEditor: withComments,
   node: { isLeaf: true },
-  options: {
-    activeCommentId: null,
-    addingCommentId: null,
-    comments: {},
-    focusTextarea: false,
-    myUserId: null,
-    newValue: [{ children: [{ text: '' }], type: 'p' }],
-    users: {},
-    onCommentAdd: null,
-    onCommentDelete: null,
-    onCommentUpdate: null,
-  },
 })
-  .extendOptions<Partial<CommentsSelectors>>(({ getOptions }) => ({
-    activeComment: () => {
-      const { activeCommentId, comments } = getOptions();
+  .overrideEditor(withComments)
+  .extendApi<BaseCommentsConfig['api']['comment']>(({ editor, type }) => ({
+    has: (options: { id: string }): boolean => {
+      const { id } = options;
 
-      return activeCommentId ? comments[activeCommentId] : null;
+      const regex = new RegExp(`"${getCommentKey(id)}":true`);
+
+      return regex.test(JSON.stringify(editor.children));
     },
-    commentById: (id) => {
-      if (!id) return null;
+    node: (options = {}) => {
+      const { id, isDraft, ...rest } = options;
 
-      return getOptions().comments[id];
+      return editor.api.node<TCommentText>({
+        ...rest,
+        match: (n) => {
+          if (isDraft) return n[type] && n[getDraftCommentKey()];
+
+          return id ? isCommentNodeById(n, id) : n[type];
+        },
+      });
     },
-    myUser: () => {
-      const { myUserId, users } = getOptions();
+    nodeId: (leaf) => {
+      const ids: string[] = [];
+      const keys = Object.keys(leaf);
 
-      if (!myUserId) return null;
+      if (keys.includes(getDraftCommentKey())) return;
 
-      return users[myUserId];
+      keys.forEach((key) => {
+        if (!isCommentKey(key) || key === getDraftCommentKey()) return;
+
+        // block the resolved id
+
+        const id = getCommentKeyId(key);
+        ids.push(id);
+      });
+
+      return ids.at(-1);
     },
-    newText: () => {
-      const { newValue } = getOptions();
+    nodes: (options = {}) => {
+      const { id, isDraft, ...rest } = options;
 
-      return getNodeString(newValue?.[0]);
-    },
-    userById: (id) => {
-      if (!id) return null;
-
-      return getOptions().users[id];
+      return [
+        ...editor.api.nodes<TCommentText>({
+          ...rest,
+          match: (n) => {
+            if (isDraft) return n[type] && n[getDraftCommentKey()];
+            return id ? isCommentNodeById(n, id) : n[type];
+          },
+        }),
+      ];
     },
   }))
-  .extendApi<Partial<CommentsApi>>(({ getOptions, setOptions }) => ({
-    addComment: (value) => {
-      const { myUserId } = getOptions();
-      const id = value.id ?? nanoid();
-      const newComment: WithPartial<TComment, 'userId'> = {
-        id,
-        createdAt: Date.now(),
-        userId: myUserId ?? undefined,
-        ...value,
-      };
+  .extendTransforms<BaseCommentsConfig['transforms']['comment']>(
+    ({ api, editor, tf, type }) => ({
+      removeMark: () => {
+        const nodeEntry = api.comment.node();
 
-      if (newComment.userId) {
-        setOptions((draft) => {
-          draft.comments[id] = newComment as TComment;
+        if (!nodeEntry) return;
+
+        const keys = getCommentKeys(nodeEntry[0]);
+
+        editor.tf.withoutNormalizing(() => {
+          keys.forEach((key) => {
+            editor.tf.removeMark(key);
+          });
+
+          editor.tf.removeMark(BaseCommentsPlugin.key);
         });
-      }
+      },
+      setDraft: (options = {}) => {
+        tf.setNodes(
+          {
+            [getDraftCommentKey()]: true,
+            [type]: true,
+          },
+          { match: TextApi.isText, split: true, ...options }
+        );
+      },
+      unsetMark: (options) => {
+        const { id } = options;
 
-      return newComment;
-    },
-    addRawComment: (id) => {
-      const { myUserId } = getOptions();
+        const nodes = api.comment.nodes({ id, at: [] });
 
-      if (!myUserId) return;
+        if (!nodes) return;
 
-      setOptions((draft) => {
-        draft.comments[id] = {
-          id,
-          userId: myUserId,
-        } as TComment;
-      });
-    },
-    removeComment: (id) => {
-      if (!id) return;
+        nodes.forEach(([node]) => {
+          const isOverlapping = getCommentCount(node) > 1;
 
-      setOptions((draft) => {
-        delete draft.comments[id];
-      });
-    },
-    resetNewCommentValue: () => {
-      setOptions({ newValue: [{ children: [{ text: '' }], type: 'p' }] });
-    },
-    updateComment: (id, value) => {
-      if (!id) return;
+          let unsetKeys: string[] = [];
 
-      setOptions((draft) => {
-        draft.comments[id] = { ...draft.comments[id], ...value };
-      });
-    },
-  }));
+          if (isOverlapping) {
+            unsetKeys = [getDraftCommentKey(), getCommentKey(id)];
+          } else {
+            unsetKeys = [
+              BaseCommentsPlugin.key,
+              getDraftCommentKey(),
+              getCommentKey(id),
+            ];
+          }
+
+          editor.tf.unsetNodes<TCommentText>(unsetKeys, {
+            at: [],
+            match: (n) => n === node,
+          });
+        });
+      },
+    })
+  );

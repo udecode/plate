@@ -1,10 +1,18 @@
 import {
+  type EditorBeforeOptions,
   type PluginConfig,
-  type RangeBeforeOptions,
   createTSlatePlugin,
+  getEditorPlugin,
   isUrl,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
+import {
+  RemoveEmptyNodesPlugin,
+  withRemoveEmptyNodes,
+} from '@udecode/plate-normalizers';
 
+import type { TLinkElement } from './types';
+
+import { getLinkAttributes } from './utils/getLinkAttributes';
 import { validateUrl } from './utils/index';
 import { withLink } from './withLink';
 
@@ -17,23 +25,43 @@ export type BaseLinkConfig = PluginConfig<
      * @default ['http', 'https', 'mailto', 'tel']
      */
     allowedSchemes?: string[];
-
     /**
      * Skips sanitation of links.
      *
      * @default false
      */
     dangerouslySkipSanitization?: boolean;
-
+    defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
     forceSubmit?: boolean;
-
+    /**
+     * Keeps selected text on pasting links by default.
+     *
+     * @default true
+     */
+    keepSelectedTextOnPaste?: boolean;
+    /**
+     * Allow custom config for rangeBeforeOptions.
+     *
+     * @example
+     *   {
+     *     "matchString": " ",
+     *     "skipInvalid": true,
+     *     "afterMatch": true
+     *   }
+     */
+    rangeBeforeOptions?: EditorBeforeOptions;
+    /**
+     * Hotkeys to trigger floating link.
+     *
+     * @default 'meta+k, ctrl+k'
+     */
+    triggerFloatingLinkHotkeys?: string[] | string;
     /**
      * On keyboard shortcut or toolbar mousedown, get the link url by calling
      * this promise. The default behavior is to use the browser's native
      * `prompt`.
      */
     getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
-
     /**
      * Callback to optionally get the href for a url
      *
@@ -41,34 +69,12 @@ export type BaseLinkConfig = PluginConfig<
      *   text content (example https://google.com for google.com)
      */
     getUrlHref?: (url: string) => string | undefined;
-
     /**
      * Callback to validate an url.
      *
      * @default isUrl
      */
     isUrl?: (text: string) => boolean;
-
-    /**
-     * Keeps selected text on pasting links by default.
-     *
-     * @default true
-     */
-    keepSelectedTextOnPaste?: boolean;
-
-    /**
-     * Allow custom config for rangeBeforeOptions.
-     *
-     * @example
-     *   default
-     *   {
-     *   matchString: ' ',
-     *   skipInvalid: true,
-     *   afterMatch: true,
-     *   }
-     */
-    rangeBeforeOptions?: RangeBeforeOptions;
-
     /**
      * Transform the content of the URL input before validating it. Useful for
      * adding a protocol to a URL. E.g. `google.com` -> `https://google.com`
@@ -79,41 +85,42 @@ export type BaseLinkConfig = PluginConfig<
      * @returns The transformed URL.
      */
     transformInput?: (url: string) => string | undefined;
-
-    /**
-     * Hotkeys to trigger floating link.
-     *
-     * @default 'meta+k, ctrl+k'
-     */
-    triggerFloatingLinkHotkeys?: string[] | string;
   }
 >;
 
 /** Enables support for hyperlinks. */
 export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
   key: 'a',
-  extendEditor: withLink,
   node: {
     dangerouslyAllowAttributes: ['target'],
     isElement: true,
     isInline: true,
+    props: ({ editor, element }) => ({
+      nodeProps: getLinkAttributes(editor, element as TLinkElement),
+    }),
   },
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     dangerouslySkipSanitization: false,
+    defaultLinkAttributes: {},
     isUrl,
     keepSelectedTextOnPaste: true,
     rangeBeforeOptions: {
       afterMatch: true,
+      matchBlockStart: true,
       matchString: ' ',
       skipInvalid: true,
     },
   },
-}).extend(({ editor, type }) => ({
   parsers: {
     html: {
       deserializer: {
-        parse: ({ element }) => {
+        rules: [
+          {
+            validNodeName: 'A',
+          },
+        ],
+        parse: ({ editor, element, type }) => {
           const url = element.getAttribute('href');
 
           if (url && validateUrl(editor, url)) {
@@ -124,12 +131,19 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
             };
           }
         },
-        rules: [
-          {
-            validNodeName: 'A',
-          },
-        ],
       },
     },
   },
-}));
+})
+  .overrideEditor(withLink)
+  .overrideEditor(
+    ({ editor, type }) =>
+      withRemoveEmptyNodes(
+        getEditorPlugin(
+          editor,
+          RemoveEmptyNodesPlugin.configure({
+            options: { types: type },
+          })
+        )
+      ) as any
+  );

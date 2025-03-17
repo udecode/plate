@@ -1,10 +1,5 @@
-import type { Point, Range } from 'slate';
+import type { SlateEditor } from '@udecode/plate';
 
-import {
-  type SlateEditor,
-  deleteText,
-  insertText,
-} from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 
 import type { AutoformatTextRule } from '../types';
@@ -20,7 +15,7 @@ export const autoformatText = (
   editor: SlateEditor,
   { format, match: _match, text, trigger }: AutoformatTextOptions
 ) => {
-  const selection = editor.selection as Range;
+  const selection = editor.selection!;
   const matches = castArray(_match);
 
   // dup
@@ -45,7 +40,7 @@ export const autoformatText = (
       matched;
 
     if (end) {
-      deleteText(editor, {
+      editor.tf.delete({
         at: {
           anchor: beforeEndMatchPoint,
           focus: selection.anchor,
@@ -56,19 +51,19 @@ export const autoformatText = (
       format(editor, matched);
     } else {
       const formatEnd = Array.isArray(format) ? format[1] : format;
-      editor.insertText(formatEnd);
+      editor.tf.insertText(formatEnd);
 
       if (beforeStartMatchPoint) {
         const formatStart = Array.isArray(format) ? format[0] : format;
 
-        deleteText(editor, {
+        editor.tf.delete({
           at: {
-            anchor: beforeStartMatchPoint as Point,
-            focus: afterStartMatchPoint as Point,
+            anchor: beforeStartMatchPoint!,
+            focus: afterStartMatchPoint!,
           },
         });
 
-        insertText(editor, formatStart, {
+        editor.tf.insertText(formatStart, {
           at: beforeStartMatchPoint,
         });
       }

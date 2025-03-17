@@ -1,0 +1,156 @@
+---
+title: 选择
+---
+
+{/* <ComponentPreview name="playground-demo" id="delete" /> */}
+
+<PackageInfo>
+
+## 功能
+
+- 设置按下退格键时要删除的元素类型列表
+- 设置按下退格键时要选择的元素类型列表，而不是删除
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-select
+```
+
+## 使用
+
+```tsx
+import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
+```
+
+```tsx
+const plugins = [
+  // ...其他插件
+  SelectOnBackspacePlugin.configure({
+    options: {
+      query: {
+        allow: ['img', 'hr'],
+      },
+    },
+  }),
+  DeletePlugin,
+];
+```
+
+## 插件
+
+### `DeletePlugin`
+
+该插件在按下删除键（向前删除）时，如果匹配查询选项，则删除空块。
+
+<API name="DeletePlugin">
+<APIOptions>
+  <APIItem name="query" type="QueryNodeOptions" optional>
+    用于过滤哪些空块可以被删除的查询选项。
+    - **默认值:** `{ allow: ['p'] }`
+  </APIItem>
+</APIOptions>
+
+示例：
+
+```tsx
+const plugins = [
+  DeletePlugin.configure({
+    options: {
+      // 仅删除空段落和块引用
+      query: {
+        allow: ['p', 'blockquote'],
+      },
+    },
+  }),
+];
+```
+
+行为：
+1. 检查当前块是否为空并匹配查询选项
+2. 如果为真：删除整个块
+3. 如果为假：使用默认的删除行为
+
+```tsx
+// 空段落后跟代码块
+<editor>
+  <p>
+    <cursor />
+  </p>
+  <codeblock>
+    <codeline>test</codeline>
+  </codeblock>
+</editor>
+
+// 按下删除键将删除空段落而不是什么都不做
+<editor>
+  <codeblock>
+    <codeline>test</codeline>
+  </codeblock>
+</editor>
+```
+</API>
+
+### `SelectOnBackspacePlugin`
+
+该插件在按下退格键时选择节点而不是删除它们。
+
+<API name="SelectOnBackspacePlugin">
+<APIOptions>
+  <APIItem name="query" type="QueryNodeOptions">
+    用于确定哪些节点触发选择的查询选项。
+  </APIItem>
+  <APIItem name="removeNodeIfEmpty" type="boolean" optional>
+    是否在退格时删除空节点。
+    - **默认值:** `false`
+  </APIItem>
+</APIOptions>
+
+示例：
+
+```tsx
+const plugins = [
+  SelectOnBackspacePlugin.configure({
+    options: {
+      // 选择这些节点而不是删除它们
+      query: {
+        allow: ['img', 'hr'],
+      },
+      // 如果为空则删除当前节点
+      removeNodeIfEmpty: true,
+    },
+  }),
+];
+```
+
+行为：
+1. 当在块的开头按下退格键时：
+2. 检查前一个节点是否匹配查询选项
+3. 如果为真：
+   - 选择前一个节点而不是删除
+   - 可选地删除当前节点（如果为空）
+4. 如果为假：使用默认的退格行为
+
+```tsx
+// 图像后的空段落
+<editor>
+  <img src="..." />
+  <p>
+    <cursor />
+  </p>
+</editor>
+
+// 按下退格键将选择图像而不是删除它
+<editor>
+  <img src="..." selected />
+  <p></p>
+</editor>
+
+// 如果 removeNodeIfEmpty 为 true，则空段落也会被删除
+<editor>
+  <img src="..." selected />
+</editor>
+```
+</API>

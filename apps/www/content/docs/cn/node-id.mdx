@@ -1,0 +1,164 @@
+---
+title: 节点ID
+---
+
+{/* <ComponentPreview name="playground-demo" id="node-id" /> */}
+
+<PackageInfo>
+
+## 功能
+
+- 自动为编辑器中的节点分配和管理唯一ID的插件
+- 可配置的ID生成和存储
+- 处理节点操作（插入、拆分）并保留ID
+- 可选的ID重用，用于撤销/重做和复制/粘贴操作
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-node-id
+```
+
+## 使用
+
+```tsx
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+```
+
+```tsx
+const plugins = [
+  // ...其他插件
+  NodeIdPlugin.configure({
+    options: {
+      idKey: 'id',
+      filterInline: true,
+      filterText: true,
+      idCreator: () => nanoid(10),
+    },
+  }),
+];
+```
+
+## 插件
+
+### `NodeIdPlugin`
+
+自动为编辑器中的节点分配和管理唯一ID的插件。
+
+<API name="NodeIdPlugin">
+<APIOptions type="object">
+  <APIItem name="disableInsertOverrides" type="boolean" optional>
+    禁用插入节点时使用现有ID。
+    - 当为 `false` 时：如果文档中不存在现有ID，则保留现有ID
+    - 当为 `true` 时：始终生成新ID
+    - **默认值:** `false`
+  </APIItem>
+  <APIItem name="filterInline" type="boolean" optional>
+    过滤内联元素节点，使其不接收ID。
+    - **默认值:** `true`
+  </APIItem>
+  <APIItem name="filterText" type="boolean" optional>
+    过滤文本节点，使其不接收ID。
+    - **默认值:** `true`
+  </APIItem>
+  <APIItem name="idCreator" type="() => any" optional>
+    生成唯一ID的函数。
+    - **默认值:** `() => nanoid(10)`
+  </APIItem>
+  <APIItem name="idKey" type="string" optional>
+    用于存储节点ID的属性键。
+    - **默认值:** `'id'`
+  </APIItem>
+  <APIItem name="normalizeInitialValue" type="boolean" optional>
+    是否规范化初始值中的所有节点。
+    - 当为 `false` 时：仅检查第一个和最后一个节点
+    - 当为 `true` 时：规范化所有节点
+    - **默认值:** `false`
+  </APIItem>
+  <APIItem name="reuseId" type="boolean" optional>
+    在撤销/重做和复制/粘贴时重用ID。
+    - 当为 `true` 时：如果文档中不存在ID，则保留ID
+    - 当为 `false` 时：始终生成新ID（跨文档更安全）
+    - **默认值:** `false`
+  </APIItem>
+  <APIItem name="allow" type="string[]" optional>
+    应接收ID的节点类型。
+  </APIItem>
+  <APIItem name="exclude" type="string[]" optional>
+    不应接收ID的节点类型。
+  </APIItem>
+  <APIItem name="filter" type="(node: NodeEntry) => boolean" optional>
+    自定义过滤函数，用于确定哪些节点应接收ID。
+    - **默认值:** `() => true`
+  </APIItem>
+</APIOptions>
+</API>
+
+## 行为
+
+该插件处理以下几种场景：
+
+1. **节点插入**:
+```tsx
+<editor>
+  <hp id="10">test</hp>
+</editor>
+
+// 插入具有现有ID的节点（例如复制/粘贴）
+editor.tf.insertNode(<hp id="10">inserted</hp>);
+// 结果为:
+<editor>
+  <hp id="10">test</hp>
+  <hp id="1">inserted</hp>  {/* 获取新ID */}
+</editor>
+
+// 插入多个节点
+editor.tf.insertNodes([
+  <hp>inserted</hp>,
+  <hp>test</hp>,
+]);
+// 结果为:
+<editor>
+  <hp id="10">test</hp>
+  <hp id="1">inserted</hp>  
+  <hp id="2">test</hp>      
+</editor>
+```
+
+2. **节点拆分**:
+```tsx
+// 拆分前
+<hp id="1">te|st</hp>
+// 拆分后:
+<hp id="1">te</hp>
+<hp id="2">st</hp>
+```
+
+3. **过滤**:
+```tsx
+// 当 filterText=false 时
+<hp id="1">
+  <htext id="2">text</htext>
+</hp>
+
+// 当 allow=['p'] exclude=['blockquote'] 时
+<hp id="1">text</hp>
+<hblockquote>quote</hblockquote>
+```
+
+4. **撤销/重做**:
+```tsx
+// 当 reuseId=true 时
+editor.tf.insertNode(<hp id="1">text</hp>);
+editor.undo();
+editor.redo();
+// 如果ID未被使用，节点保留 id="1"
+
+// 当 reuseId=false 时
+editor.tf.insertNode(<hp id="1">text</hp>);
+editor.undo();
+editor.redo();
+// 节点获取新ID id="2"
+```

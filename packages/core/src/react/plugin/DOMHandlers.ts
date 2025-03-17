@@ -104,13 +104,13 @@ export interface DOMHandlers<C extends AnyPluginConfig = PluginConfig> {
   // Image Events
   onLoad?: DOMHandler<C, React.SyntheticEvent>;
   onLoadCapture?: DOMHandler<C, React.SyntheticEvent>;
-  onLoadStart?: DOMHandler<C, React.SyntheticEvent>;
-  onLoadStartCapture?: DOMHandler<C, React.SyntheticEvent>;
   onLoadedData?: DOMHandler<C, React.SyntheticEvent>;
   onLoadedDataCapture?: DOMHandler<C, React.SyntheticEvent>;
-
   onLoadedMetadata?: DOMHandler<C, React.SyntheticEvent>;
   onLoadedMetadataCapture?: DOMHandler<C, React.SyntheticEvent>;
+
+  onLoadStart?: DOMHandler<C, React.SyntheticEvent>;
+  onLoadStartCapture?: DOMHandler<C, React.SyntheticEvent>;
   onLostPointerCapture?: DOMHandler<C, React.PointerEvent>;
   onLostPointerCaptureCapture?: DOMHandler<C, React.PointerEvent>;
   onMouseDown?: DOMHandler<C, React.MouseEvent>;

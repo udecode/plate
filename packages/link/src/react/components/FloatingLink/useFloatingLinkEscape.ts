@@ -1,15 +1,15 @@
 import {
-  focusEditor,
   useEditorPlugin,
   useHotkeys,
-} from '@udecode/plate-common/react';
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 
 export const useFloatingLinkEscape = () => {
-  const { api, editor, getOptions, useOption } = useEditorPlugin(LinkPlugin);
+  const { api, editor, getOptions } = useEditorPlugin(LinkPlugin);
 
-  const open = useOption('isOpen', editor.id);
+  const open = usePluginOption(LinkPlugin, 'isOpen', editor.id);
 
   useHotkeys(
     'escape',
@@ -22,20 +22,20 @@ export const useFloatingLinkEscape = () => {
 
       if (mode === 'edit' && isEditing) {
         api.floatingLink.show('edit', editor.id);
-        focusEditor(editor, editor.selection!);
+        editor.tf.focus({ at: editor.selection! });
 
         return;
       }
       if (mode === 'insert') {
-        focusEditor(editor, editor.selection!);
+        editor.tf.focus({ at: editor.selection! });
       }
 
       api.floatingLink.hide();
     },
     {
+      enabled: open,
       enableOnContentEditable: true,
       enableOnFormTags: ['INPUT'],
-      enabled: open,
     },
     []
   );

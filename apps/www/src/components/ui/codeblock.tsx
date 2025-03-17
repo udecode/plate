@@ -3,21 +3,23 @@
 
 'use client';
 
-import { type FC, memo } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-
+import React, { type FC, memo } from 'react';
+import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
 import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 import { Icons } from '@/components/icons';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Button } from '@/registry/default/plate-ui/button';
 
+const SyntaxHighlighter =
+  Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
+
+type languageMap = Record<string, string | undefined>;
+
 interface Props {
   language: string;
   value: string;
 }
-
-type languageMap = Record<string, string | undefined>;
 
 export const programmingLanguages: languageMap = {
   c: '.c',
@@ -93,7 +95,6 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
   };
 
   return (
-    // eslint-disable-next-line tailwindcss/no-custom-classname
     <div className="codeblock relative w-full bg-zinc-950 font-sans">
       <div className="flex w-full items-center justify-between bg-zinc-800 px-6 py-1 pr-4 text-zinc-100">
         <span className="text-xs lowercase">{language}</span>
@@ -102,7 +103,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           <Button
             size="sm"
             variant="ghost"
-            className="hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 hover:[&_svg]:text-muted-foreground"
+            className="hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 [&_svg]:hover:text-muted-foreground"
             onClick={downloadAsFile}
           >
             <Icons.download className="size-4" />
@@ -113,7 +114,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           <Button
             size="sm"
             variant="ghost"
-            className="text-xs hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 hover:[&_svg]:text-muted-foreground"
+            className="text-xs hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 [&_svg]:hover:text-muted-foreground"
             onClick={onCopy}
           >
             {isCopied ? (
@@ -129,7 +130,6 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
 
       <SyntaxHighlighter
         style={coldarkDark}
-        PreTag="div"
         codeTagProps={{
           style: {
             fontFamily: 'var(--font-mono)',
@@ -146,6 +146,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
         lineNumberStyle={{
           userSelect: 'none',
         }}
+        PreTag="div"
         showLineNumbers
       >
         {value}

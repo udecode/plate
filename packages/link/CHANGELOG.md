@@ -1,5 +1,38 @@
 # @udecode/plate-link
 
+## 44.0.4
+
+### Patch Changes
+
+- [#4073](https://github.com/udecode/plate/pull/4073) by [@EvanSmith93](https://github.com/EvanSmith93) – Editor auto focuses when opening the insert link modal
+
+## 44.0.0
+
+## 43.0.0
+
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Fix parsers to use custom node type
+
+## 42.0.0
+
+## 41.0.0
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Move `node.props` plugin attributes from `/react` to `/`
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Fix floating link url input being focused when focusing the placeholder input
+
 ## 40.0.0
 
 ## 39.1.9

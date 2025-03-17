@@ -1,11 +1,11 @@
-import emojiMartData from '@emoji-mart/data' with { type: 'json' };
-
 import type {
   Emoji,
   EmojiLibrary,
   Emojis,
   IEmojiLibrary,
 } from './EmojiLibrary.types';
+
+import { DEFAULT_EMOJI_LIBRARY } from '../../constants';
 
 export type THash = Record<string, string>;
 
@@ -14,7 +14,7 @@ export class EmojiInlineLibrary implements IEmojiLibrary {
   protected _hash: THash = {};
   protected _keys: string[] = [];
 
-  constructor(library: EmojiLibrary = emojiMartData as any) {
+  constructor(library: EmojiLibrary = DEFAULT_EMOJI_LIBRARY) {
     this._emojis = library.emojis;
     this.init();
   }

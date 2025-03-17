@@ -1,0 +1,81 @@
+---
+title: Next.js
+description: 安装并配置 Next.js。
+---
+
+<Callout>
+
+**如果你正在使用 React 19，请查看 [Next.js 15 + React 19](https://ui.shadcn.com/docs/react-19) 指南。**
+
+</Callout>
+
+## 快速开始
+
+选择你的编辑器以开始。以下命令将初始化你的项目并添加编辑器（[浏览可用的编辑器](/editors)）：
+
+[Minimal Editor](https://template.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-basic
+```
+
+[AI Editor](https://playground.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-ai
+```
+
+这将在 `app/editor` 中添加一个页面，并在 `components/plate-ui` 中添加所有必要的组件作为起点。
+
+## 手动安装
+
+如果你更喜欢逐步设置你的项目，请按照以下说明操作：
+
+<Steps>
+
+### 创建项目
+
+运行 `init` 命令以创建一个新的 Next.js 项目或设置现有项目：
+
+```bash
+npx shadcx@latest init plate
+```
+
+### 配置 components.json
+
+你将被询问几个问题来配置 `components.json`：
+
+```txt showLineNumbers
+你想使用哪种颜色作为基础颜色？› Slate
+你想使用 CSS 变量来定义颜色吗？› 否 / 是
+```
+
+### 添加组件
+
+你现在可以开始向你的项目添加组件。
+
+```bash
+npx shadcx@latest add -r plate
+```
+
+上述命令将向你的项目添加 `ParagraphElement` 组件。
+
+### 注册组件
+
+要添加更多组件到你的插件中，请参阅 [插件组件](/docs/plugin-components#register-components)。
+
+### 添加编辑器（可选）
+
+选择你的编辑器以开始（[浏览可用的编辑器](/editors)）。
+
+[Minimal Editor](https://template.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-basic
+```
+
+[AI Editor](https://playground.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-ai
+```
+
+这将在你的项目中添加一个 `/editor` 页面，并添加所有必要的组件作为起点。
+
+</Steps>

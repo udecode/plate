@@ -3,12 +3,15 @@
 
 'use client';
 
-import { type FC, memo } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import React, { type FC, memo } from 'react';
+import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
 
 import { cn } from '@udecode/cn';
 
 import { CopyButton, CopyNpmCommandButton } from './copy-button';
+
+const SyntaxHighlighter =
+  Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
 
 const CodeBlock: FC<{
   language: string;
@@ -22,7 +25,7 @@ const CodeBlock: FC<{
     <div className={cn('relative', className)}>
       {npm ? (
         <CopyNpmCommandButton
-          className="absolute right-4 top-4"
+          className="absolute top-4 right-4"
           commands={{
             __bunCommand__: 'bun add ' + value,
             __npmCommand__: 'npm install ' + value,
@@ -31,17 +34,15 @@ const CodeBlock: FC<{
           }}
         />
       ) : (
-        <CopyButton className="absolute right-4 top-4" value={value} />
+        <CopyButton className="absolute top-4 right-4" value={value} />
       )}
 
       <SyntaxHighlighter
-        // eslint-disable-next-line tailwindcss/no-custom-classname
         className={cn(
-          'codeblock relative max-h-[650px] w-full overflow-auto rounded-lg border !bg-zinc-950 font-sans dark:!bg-zinc-900',
+          'codeblock relative max-h-[650px] w-full overflow-auto rounded-lg border bg-zinc-950! font-sans dark:bg-zinc-900!',
           fixedHeight && 'h-[650px]'
         )}
         style={customSyntaxHighlighterTheme as any}
-        PreTag="div"
         codeTagProps={{
           style: {
             fontFamily:
@@ -51,6 +52,7 @@ const CodeBlock: FC<{
           },
         }}
         language={npm ? 'bash' : language}
+        PreTag="div"
         showLineNumbers={false}
       >
         {npm ? 'npm install ' + value : value}
@@ -169,18 +171,18 @@ export const customSyntaxHighlighterTheme = {
     color: '#79b8ff',
   },
   'code[class*="language-"]': {
-    MozHyphens: 'none',
-    MozTabSize: '4',
-    OTabSize: '4',
-    WebkitHyphens: 'none',
     background: 'none',
     color: '#e1e4e8',
     fontFamily: "Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace",
     hyphens: 'none',
     lineHeight: '1.5',
+    MozHyphens: 'none',
+    MozTabSize: '4',
     msHyphens: 'none',
+    OTabSize: '4',
     tabSize: '4',
     textAlign: 'left',
+    WebkitHyphens: 'none',
     whiteSpace: 'pre',
     wordBreak: 'normal',
     wordSpacing: 'normal',
@@ -230,21 +232,21 @@ export const customSyntaxHighlighterTheme = {
     color: '#ffab70',
   },
   'pre[class*="language-"]': {
-    MozHyphens: 'none',
-    MozTabSize: '4',
-    OTabSize: '4',
-    WebkitHyphens: 'none',
     background: '#24292e',
     color: '#e1e4e8',
     fontFamily: "Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace",
     hyphens: 'none',
     lineHeight: '1.5',
     margin: '0.5em 0',
+    MozHyphens: 'none',
+    MozTabSize: '4',
     msHyphens: 'none',
+    OTabSize: '4',
     overflow: 'auto',
     padding: '1em',
     tabSize: '4',
     textAlign: 'left',
+    WebkitHyphens: 'none',
     whiteSpace: 'pre',
     wordBreak: 'normal',
     wordSpacing: 'normal',

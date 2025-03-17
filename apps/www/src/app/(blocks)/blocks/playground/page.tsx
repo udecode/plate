@@ -1,10 +1,35 @@
-import type { Block } from '@/registry/schema';
+import { Suspense } from 'react';
+
+import type { Metadata } from 'next';
 
 import { cn } from '@udecode/cn';
 
-import PlaygroundDemo from '@/registry/default/example/playground-demo';
+import PlaygroundDemo from '@/registry/default/examples/playground-demo';
 
-const block: Block = {
+const title = 'Playground';
+const description = 'npx shadcx@latest add plate/editor-ai';
+
+export const metadata: Metadata = {
+  description,
+  openGraph: {
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
+  title,
+  twitter: {
+    card: 'summary_large_image',
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
+};
+
+const block: any = {
   code: '',
   highlightedCode: '',
   name: 'playground',
@@ -14,11 +39,12 @@ const block: Block = {
 export default function PlaygroundPage() {
   return (
     <div
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       className={cn('themes-wrapper bg-background', block.container?.className)}
     >
       {/* <BlockWrapper block={block}> */}
-      <PlaygroundDemo className="h-dvh" />
+      <Suspense fallback={null}>
+        <PlaygroundDemo className="h-dvh" />
+      </Suspense>
       {/* {chunks?.map((chunk, index) => (
           <BlockChunk
             key={chunk.name}

@@ -1,0 +1,379 @@
+---
+title: Plate Plugin
+description: API reference for Plate plugins.
+---
+
+Plate plugins are objects passed to `Plate` [plugins](/docs/api/core/plate-components#plugins) prop.
+
+## Plugin Properties
+
+<API name="Properties">
+<APIAttributes>
+<APIItem name="key" type="C['key']" required>
+Unique identifier used by Plate to store the plugins by key in `editor.plugins`.
+</APIItem>
+
+<APIItem name="api" type="Record<string, Function>">
+An object of API functions provided by the plugin. These functions are accessible via `editor.api[key]`.
+</APIItem>
+
+<APIItem name="transforms" type="Record<string, Function>">
+Transform functions provided by the plugin that modify the editor state. These are accessible via `editor.tf[key]`.
+</APIItem>
+
+<APIItem name="options" type="Record<string, any>">
+Extended properties used by the plugin as options.
+</APIItem>
+
+<APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
+Event handlers for various editor events, including `onChange`.
+</APIItem>
+
+<APIItem name="inject" type="object">
+Defines how the plugin injects functionality into other plugins or the editor.
+
+<APISubList>
+<APISubListItem parent="inject" name="nodeProps" type="Record<string, any>" optional>
+Properties used by Plate to inject props into any node component.
+</APISubListItem>
+
+
+<APISubListItem parent="inject" name="excludePlugins" type="string[]" optional>
+An array of plugin keys to exclude from node prop injection.
+</APISubListItem>
+
+<APISubListItem parent="inject" name="excludeBelowPlugins" type="string[]" optional>
+An array of plugin keys. Node prop injection will be excluded for any nodes that are descendants of elements with these plugin types.
+</APISubListItem>
+<APISubListItem parent="inject" name="isBlock" type="boolean" optional>
+If true, only matches block elements. Used to restrict prop injection to block-level nodes.
+</APISubListItem>
+
+<APISubListItem parent="inject" name="isElement" type="boolean" optional>
+If true, only matches element nodes. Used to restrict prop injection to element nodes.
+</APISubListItem>
+<APISubListItem parent="inject" name="isLeaf" type="boolean" optional>
+If true, only matches leaf nodes. Used to restrict prop injection to leaf nodes.
+</APISubListItem>
+<APISubListItem parent="inject" name="maxLevel" type="number" optional>
+Maximum nesting level for node prop injection. Nodes deeper than this level will not receive injected props.
+</APISubListItem>
+<APISubListItem parent="inject" name="plugins" type="Record<string, Partial<PlatePlugin>>" optional>
+Property that can be used by a plugin to allow other plugins to inject code.
+</APISubListItem>
+<APISubListItem parent="inject" name="targetPluginToInject" type="function" optional>
+A function that returns a plugin config to be injected into other plugins `inject.plugins` specified by targetPlugins.
+</APISubListItem>
+<APISubListItem parent="inject" name="targetPlugins" type="string[]" optional>
+Plugin keys used by `InjectNodeProps` and the `targetPluginToInject` function.
+
+- **Default:** `[ParagraphPlugin.key]`
+</APISubListItem>
+</APISubList>
+</APIItem>
+
+<APIItem name="node" type="object">
+Defines the node-specific configuration for the plugin.
+
+<APISubList>
+<APISubListItem parent="node" name="isElement" type="boolean" optional>
+Indicates if this plugin's nodes should be rendered as elements.
+</APISubListItem>
+<APISubListItem parent="node" name="isInline" type="boolean" optional>
+Indicates if this plugin's elements should be treated as inline.
+</APISubListItem>
+<APISubListItem parent="node" name="isLeaf" type="boolean" optional>
+Indicates if this plugin's nodes should be rendered as leaves.
+</APISubListItem>
+<APISubListItem parent="node" name="isMarkableVoid" type="boolean" optional>
+Indicates if this plugin's void elements should be markable.
+</APISubListItem>
+<APISubListItem parent="node" name="isSelectable" type="boolean" optional>
+Indicates if this plugin's nodes should be selectable.
+
+- **Default:** `true`
+</APISubListItem>
+<APISubListItem parent="node" name="isVoid" type="boolean" optional>
+Indicates if this plugin's elements should be treated as void.
+</APISubListItem>
+<APISubListItem parent="node" name="type" type="string" optional>
+Specifies the type identifier for this plugin's nodes.
+
+- **Default:** `plugin.key`
+</APISubListItem>
+<APISubListItem parent="node" name="component" type="NodeComponent | null" optional>
+React component used to render this plugin's nodes.
+</APISubListItem>
+<APISubListItem parent="node" name="props" type="NodeProps<WithAnyKey<C>>" optional>
+Additional props to be passed to the node component.
+</APISubListItem>
+</APISubList>
+</APIItem>
+
+<APIItem name="override" type="object">
+Allows overriding components and plugins by key.
+
+<APISubList>
+<APISubListItem parent="override" name="components" type="Record<string, NodeComponent>" optional>
+Replace plugin `NodeComponent` by key.
+</APISubListItem>
+<APISubListItem parent="override" name="plugins" type="Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>" optional>
+Extend `PlatePlugin` by key.
+</APISubListItem>
+<APISubListItem parent="override" name="enabled" type="Partial<Record<string, boolean>>" optional>
+Enable or disable plugins.
+</APISubListItem>
+</APISubList>
+</APIItem>
+
+<APIItem name="parser" type="Nullable<Parser<WithAnyKey<C>>>">
+Defines how the plugin parses content.
+</APIItem>
+
+<APIItem name="parsers" type="object">
+Defines serializers and deserializers for various formats.
+
+<APISubList>
+<APISubListItem parent="parsers" name="html" type="Nullable<{ deserializer?: HtmlDeserializer<WithAnyKey<C>>; serializer?: HtmlSerializer<WithAnyKey<C>> }>" optional>
+HTML parser configuration.
+</APISubListItem>
+<APISubListItem parent="parsers" name="htmlReact" type="Nullable<{ serializer?: HtmlReactSerializer<WithAnyKey<C>> }>" optional>
+HTML React serializer configuration.
+</APISubListItem>
+</APISubList>
+</APIItem>
+
+<APIItem name="render" type="object">
+Defines how the plugin renders components.
+
+<APISubList>
+<APISubListItem parent="render" name="aboveEditable" type="Component" optional>
+Component rendered above the Editable component but inside the Slate wrapper.
+</APISubListItem>
+<APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
+Create a function that generates a parent React node for all other plugins' node components.
+</APISubListItem>
+<APISubListItem parent="render" name="aboveSlate" type="Component" optional>
+Component rendered above the Slate wrapper.
+</APISubListItem>
+<APISubListItem parent="render" name="afterEditable" type="EditableSiblingComponent" optional>
+Renders a component after the Editable component.
+</APISubListItem>
+<APISubListItem parent="render" name="beforeEditable" type="EditableSiblingComponent" optional>
+Renders a component before the Editable component.
+</APISubListItem>
+<APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
+Create a function that generates a React node below all other plugins' node React node, but above their children.
+</APISubListItem>
+<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateRenderElementProps<TElement, C>) => React.ReactNode" optional>
+Renders a component after the direct children of the root element. This differs from `belowNodes` in that it's the direct child of `PlateElement` rather than wrapping the children that could be nested. This is useful when you need components relative to the root element. Note: this is not used in Plate Core but in `PlateElement`. If you're not using `PlateElement`, you'll need to use this plugin field on your own.
+</APISubListItem>
+<APISubListItem parent="render" name="node" type="NodeComponent" optional>
+Renders the node component.
+</APISubListItem>
+</APISubList>
+</APIItem>
+
+<APIItem name="shortcuts" type="Shortcuts">
+Defines keyboard shortcuts for the plugin.
+</APIItem>
+
+<APIItem name="useOptionsStore" type="StoreApi<C['key'], C['options']>">
+Zustand store for managing plugin options.
+</APIItem>
+
+<APIItem name="dependencies" type="string[]">
+An array of plugin keys that this plugin depends on.
+</APIItem>
+
+<APIItem name="enabled" type="boolean" optional>
+Enables or disables the plugin. Used by Plate to determine if the plugin should be used.
+</APIItem>
+
+<APIItem name="plugins" type="any[]">
+Recursive plugin support to allow having multiple plugins in a single plugin.
+</APIItem>
+
+<APIItem name="priority" type="number">
+Defines the order in which plugins are registered and executed.
+
+- **Default:** `100`
+</APIItem>
+
+<APIItem name="decorate" type="Decorate<WithAnyKey<C>>" optional>
+Property used by Plate to decorate editor ranges.
+</APIItem>
+
+<APIItem name="extendEditor" type="ExtendEditor<WithAnyKey<C>>" optional>
+Function to extend the editor instance. Used primarily for integrating legacy Slate plugins that need direct editor mutation. Only one `extendEditor` is allowed per plugin.
+
+```ts
+extendEditor: ({ editor }) => {
+  // Example: Integrating a legacy Slate plugin
+  return withYjs(editor);
+}
+```
+</APIItem>
+
+<APIItem name="useHooks" type="() => void" optional>
+Hook called when the editor is initialized.
+</APIItem>
+</APIAttributes>
+</API>
+
+## Plugin Methods
+
+<API name="Methods">
+<APIMethods>
+<APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => PlatePluginConfig)) => PlatePlugin">
+Creates a new plugin instance with updated options.
+
+```ts
+(config: PlatePluginConfig<C['key'], InferOptions<C>, InferApi<C>, InferTransforms<C>> | ((ctx: PlatePluginContext<C>) => PlatePluginConfig<C['key'], InferOptions<C>, InferApi<C>, InferTransforms<C>>)) => PlatePlugin<C>
+```
+</APIItem>
+
+<APIItem name="extend" type="(config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
+Creates a new plugin instance with additional configuration.
+
+```ts
+(extendConfig: Partial<PlatePlugin> | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="extendPlugin" type="(key: string, config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
+Extends an existing nested plugin or adds a new one if not found. Supports deep nesting.
+
+```ts
+(key: string, extendConfig: Partial<PlatePlugin> | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="withComponent" type="function">
+Sets or replaces the component associated with a plugin.
+
+```ts
+(component: NodeComponent) => PlatePlugin<C>
+```
+</APIItem>
+
+<APIItem name="overrideEditor" type="function">
+Creates a new plugin instance with overridden editor methods. Provides access to original methods via `tf` and `api` parameters. Can be called multiple times to layer different overrides.
+
+```ts
+overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
+  transforms: {
+    // Override transforms
+    deleteForward(options) {
+      deleteForward(options);
+    },
+  },
+  api: {
+    // Override API methods
+    isInline(element) {
+      return isInline(element);
+    },
+  },
+})) => PlatePlugin<C>
+```
+
+- Preferred method for modifying editor behavior
+- Type-safe access to original methods
+- Clean separation between transforms and API
+- Can be chained multiple times
+</APIItem>
+
+<APIItem name="extendApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
+Extends the plugin's API.
+
+```ts
+(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="extendEditorApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
+Extends the editor's API with plugin-specific methods.
+
+```ts
+(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="extendTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
+Extends the plugin's transforms.
+
+```ts
+(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="extendEditorTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
+Extends the editor's transforms with plugin-specific methods.
+
+```ts
+(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="extendSelectors" type="(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin">
+Extends the plugin with selectors.
+
+```ts
+(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin
+```
+</APIItem>
+</APIMethods>
+</API>
+
+## Plugin Context
+
+<API name="Context">
+<APIAttributes>
+<APIItem name="editor" type="PlateEditor">
+The current editor instance.
+</APIItem>
+<APIItem name="plugin" type="EditorPlatePlugin<C>">
+The current plugin instance.
+</APIItem>
+<APIItem name="getOption" type="function">
+Function to get a specific option value.
+</APIItem>
+<APIItem name="getOptions" type="function">
+Function to get all options for the plugin.
+</APIItem>
+<APIItem name="setOption" type="function">
+Function to set a specific option value.
+</APIItem>
+<APIItem name="setOptions" type="function">
+Function to set multiple options.
+</APIItem>
+</APIAttributes>
+</API>
+
+For more detailed information on specific aspects of Plate plugins, refer to the individual guides on [Plugin Configuration](/docs/plugin), [Plugin Methods](/docs/plugin-methods), [Plugin Context](/docs/plugin-context), [Plugin Components](/docs/plugin-components), and [Plugin Shortcuts](/docs/plugin-shortcuts).
+
+## Generic Types
+
+<API name="GenericTypes">
+<APIAttributes>
+<APIItem name="C" type="AnyPluginConfig = PluginConfig">
+Represents the plugin configuration. This type extends `PluginConfig` which includes `key`, `options`, `api`, and `transforms`.
+</APIItem>
+</APIAttributes>
+</API>
+
+Usage example:
+
+```typescript
+type MyPluginConfig = PluginConfig<
+  'myPlugin',
+  { customOption: boolean },
+  { getData: () => string },
+  { customTransform: () => void }
+>;
+
+const MyPlugin = createPlatePlugin<MyPluginConfig>({
+  key: 'myPlugin',
+  // plugin implementation
+});
+```

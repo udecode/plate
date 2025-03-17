@@ -1,28 +1,19 @@
 import {
+  type Point,
   type SlateEditor,
   type TElement,
-  createPointRef,
-  deleteText,
-  findNode,
-  getEditorString,
-  getPointAfter,
-  getPointBefore,
-  isBlock,
-  isElementEmpty,
-  isRangeAcrossBlocks,
-  isStartPoint,
-  moveSelection,
-  nanoid,
-  removeNodes,
-  unhangCharacterRange,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { type Range, Point } from 'slate';
+  type TRange,
+  ElementApi,
+  PathApi,
+  PointApi,
+  TextApi,
+} from '@udecode/plate';
+
+import type { TSuggestionElement } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import { findSuggestionId } from '../queries/findSuggestionId';
-import { findSuggestionNode } from '../queries/index';
-import { getSuggestionCurrentUserKey } from './getSuggestionProps';
+import { findSuggestionProps } from '../queries/';
+import { getInlineSuggestionData, isCurrentUserSuggestion } from '../utils';
 import { setSuggestionNodes } from './setSuggestionNodes';
 
 /**
@@ -31,23 +22,29 @@ import { setSuggestionNodes } from './setSuggestionNodes';
  */
 export const deleteSuggestion = (
   editor: SlateEditor,
-  at: Range,
+  at: TRange,
   {
     reverse,
   }: {
     reverse?: boolean;
   } = {}
 ) => {
-  withoutNormalizing(editor, () => {
+  let resId: string | undefined;
+
+  editor.tf.withoutNormalizing(() => {
     const { anchor: from, focus: to } = at;
 
-    const suggestionId = findSuggestionId(editor, from) ?? nanoid();
+    const { id, createdAt: createdAt } = findSuggestionProps(editor, {
+      at: from,
+      type: 'remove',
+    });
 
-    const toRef = createPointRef(editor, to);
+    resId = id;
+
+    const toRef = editor.api.pointRef(to);
 
     let pointCurrent: Point | undefined;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       pointCurrent = editor.selection?.anchor;
 
@@ -58,13 +55,13 @@ export const deleteSuggestion = (
       if (!pointTarget) break;
       // don't delete across blocks
       if (
-        !isRangeAcrossBlocks(editor, {
+        !editor.api.isAt({
           at: { anchor: pointCurrent, focus: pointTarget },
+          blocks: true,
         })
       ) {
         // always 0 when across blocks
-        const str = getEditorString(
-          editor,
+        const str = editor.api.string(
           reverse
             ? {
                 anchor: pointTarget,
@@ -79,15 +76,15 @@ export const deleteSuggestion = (
         if (str.length === 0) break;
       }
 
-      const getPoint = reverse ? getPointBefore : getPointAfter;
+      const getPoint = reverse ? editor.api.before : editor.api.after;
 
-      const pointNext = getPoint(editor, pointCurrent, {
+      const pointNext: Point | undefined = getPoint(pointCurrent, {
         unit: 'character',
       });
 
       if (!pointNext) break;
 
-      let range = reverse
+      let range: TRange = reverse
         ? {
             anchor: pointNext,
             focus: pointCurrent,
@@ -96,63 +93,118 @@ export const deleteSuggestion = (
             anchor: pointCurrent,
             focus: pointNext,
           };
-      range = unhangCharacterRange(editor, range);
+      range = editor.api.unhangRange(range, { character: true });
 
       // if the current point is in block addition suggestion, delete block
-      const entryBlock = findNode<TElement>(editor, {
+      const entryBlock = editor.api.node<TElement>({
         at: pointCurrent,
+        block: true,
         match: (n) =>
-          isBlock(editor, n) &&
           n[BaseSuggestionPlugin.key] &&
-          !n.suggestionDeletion &&
-          n[getSuggestionCurrentUserKey(editor)],
+          TextApi.isText(n) &&
+          getInlineSuggestionData(n)?.type === 'insert' &&
+          isCurrentUserSuggestion(editor, n),
       });
 
       if (
         entryBlock &&
-        isStartPoint(editor, pointCurrent, entryBlock[1]) &&
-        isElementEmpty(editor, entryBlock[0] as any)
+        editor.api.isStart(pointCurrent, entryBlock[1]) &&
+        editor.api.isEmpty(entryBlock[0] as any)
       ) {
-        removeNodes(editor, {
+        editor.tf.removeNodes({
           at: entryBlock[1],
         });
 
         continue;
       }
+      // if the range is across blocks, delete the line break
+      if (editor.api.isAt({ at: range, blocks: true })) {
+        const previousAboveNode = editor.api.above({ at: range.anchor });
+
+        if (previousAboveNode && ElementApi.isElement(previousAboveNode[0])) {
+          const isBlockSuggestion = editor
+            .getApi(BaseSuggestionPlugin)
+            .suggestion.isBlockSuggestion(previousAboveNode[0]);
+
+          if (isBlockSuggestion) {
+            const node = previousAboveNode[0] as TSuggestionElement;
+
+            if (node.suggestion.type === 'insert') {
+              editor
+                .getApi(BaseSuggestionPlugin)
+                .suggestion.withoutSuggestions(() => {
+                  editor.tf.unsetNodes([BaseSuggestionPlugin.key], {
+                    at: previousAboveNode[1],
+                  });
+                  editor.tf.mergeNodes({
+                    at: PathApi.next(previousAboveNode[1]),
+                  });
+                });
+            }
+            if (node.suggestion.type === 'remove') {
+              editor.tf.move({
+                reverse,
+                unit: 'character',
+              });
+            }
+            break;
+          }
+
+          if (!isBlockSuggestion) {
+            editor.tf.setNodes(
+              {
+                [BaseSuggestionPlugin.key]: {
+                  id,
+                  createdAt,
+                  type: 'remove',
+                  userId:
+                    editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+                },
+              },
+              { at: previousAboveNode[1] }
+            );
+            editor.tf.move({
+              reverse,
+              unit: 'character',
+            });
+            break;
+          }
+        }
+
+        break;
+      }
       // move selection if still the same
-      if (Point.equals(pointCurrent, editor.selection!.anchor)) {
-        moveSelection(editor, {
+      if (PointApi.equals(pointCurrent, editor.selection!.anchor)) {
+        editor.tf.move({
           reverse,
           unit: 'character',
         });
       }
-      // skip if the range is across blocks
-      if (
-        isRangeAcrossBlocks(editor, {
-          at: range,
-        })
-      ) {
-        continue;
-      }
 
       // if the current point is in addition suggestion, delete
-      const entryText = findSuggestionNode(editor, {
+      const entryText = editor.getApi(BaseSuggestionPlugin).suggestion.node({
         at: range,
+        isText: true,
         match: (n) =>
-          !n.suggestionDeletion && n[getSuggestionCurrentUserKey(editor)],
+          TextApi.isText(n) &&
+          getInlineSuggestionData(n)?.type === 'insert' &&
+          isCurrentUserSuggestion(editor, n),
       });
 
       if (entryText) {
-        deleteText(editor, { at: range, unit: 'character' });
+        editor.tf.delete({ at: range, unit: 'character' });
 
         continue;
       }
 
       setSuggestionNodes(editor, {
         at: range,
+        createdAt: createdAt as number,
         suggestionDeletion: true,
-        suggestionId,
+        suggestionId: id,
       });
     }
   });
+
+  return resId;
 };

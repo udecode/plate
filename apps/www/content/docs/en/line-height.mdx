@@ -1,0 +1,84 @@
+---
+title: Line Height
+docs:
+  - route: /docs/components/line-height-dropdown-menu
+    title: Line Height Dropdown Menu
+---
+
+<ComponentPreview name="line-height-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Set line height for selected blocks.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-line-height
+```
+
+## Usage
+
+```tsx
+import { LineHeightPlugin } from '@udecode/plate-line-height/react';
+
+const plugins = [
+  // ...otherPlugins,
+  LineHeightPlugin,
+];
+```
+
+## Plugins
+
+### `LineHeightPlugin`
+
+Plugin for setting line height on blocks.
+
+## API
+
+### `setLineHeight`
+
+Sets the line height for selected nodes in the editor.
+
+<API name="setLineHeight">
+<APIOptions type="SetLineHeightOptions">
+  <APIItem name="value" type="number">
+    Line height value to set.
+  </APIItem>
+  <APIItem name="setNodesOptions" type="SetNodesOptions">
+    Additional options for setting nodes.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Hooks
+
+### `useLineHeightDropdownMenu`
+
+The behavior hook for the line height dropdown menu.
+
+<API name="useLineHeightDropdownMenu">
+<APIState>
+  <APIItem name="value" type="number">
+    Current line height value.
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="radioGroupProps" type="object">
+    Props for the radio group.
+  <APISubList>
+    <APISubListItem parent="radioGroupProps" name="value" type="string">
+      Current line height value.
+    </APISubListItem>
+    <APISubListItem parent="radioGroupProps" name="onValueChange" type="function">
+      Handler to update line height value.
+    </APISubListItem>
+  </APISubList>
+  </APIItem>
+</APIReturns>
+</API>

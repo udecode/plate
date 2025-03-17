@@ -1,0 +1,49 @@
+---
+title: Highlight
+docs:
+  - route: /docs/components/highlight-leaf
+    title: Highlight Leaf
+---
+
+<ComponentPreview name="highlight-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Provides text marking tools for content review and referencing
+- Uses inline `<mark>` elements supporting markers (background color)
+- Enables support for highlights for reviewing and referencing content
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-highlight
+```
+
+## Usage
+
+```tsx
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+
+const plugins = [
+  // ...otherPlugins,
+  HighlightPlugin,
+];
+```
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Shift + H">
+    Apply a highlight to the selected text.
+  </KeyTableItem>
+</KeyTable>
+
+## Plugins
+
+### `HighlightPlugin`
+
+Plugin for adding highlight functionality to text.

@@ -3,3 +3,4 @@
  */
 
 export * from './setBlockBackgroundColor';
+export * from './setFontSize';

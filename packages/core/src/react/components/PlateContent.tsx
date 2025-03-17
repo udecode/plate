@@ -1,25 +1,25 @@
 import React, { useRef } from 'react';
 
 import { useComposedRef } from '@udecode/react-utils';
-import { type TEditableProps, focusEditorEdge } from '@udecode/slate-react';
-import { Editable } from 'slate-react';
+
+import type { EditableProps } from '../../lib/types/EditableProps';
 
 import { useEditableProps } from '../hooks';
+import { Editable } from '../slate-react';
 import { type PlateStoreState, useEditorRef } from '../stores';
 import { EditorHotkeysEffect } from './EditorHotkeysEffect';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
 import { EditorRefEffect } from './EditorRefEffect';
-import { EditorStateEffect } from './EditorStateEffect';
 import { PlateControllerEffect } from './PlateControllerEffect';
 import { PlateSlate } from './PlateSlate';
 
-export type PlateContentProps = Omit<TEditableProps, 'decorate'> & {
+export type PlateContentProps = Omit<EditableProps, 'decorate'> & {
   /** Autofocus when it becomes editable (readOnly false -> readOnly true) */
   autoFocusOnEditable?: boolean;
   decorate?: PlateStoreState['decorate'];
   disabled?: boolean;
   /** R enders the editable content. */
-  renderEditable?: (editable: React.ReactElement) => React.ReactNode;
+  renderEditable?: (editable: React.ReactElement<any>) => React.ReactNode;
 };
 
 /**
@@ -93,7 +93,7 @@ const PlateContent = React.forwardRef(
 
         <EditorMethodsEffect id={id} />
         <EditorHotkeysEffect id={id} editableRef={editableRef} />
-        <EditorStateEffect id={id} />
+        {/* <EditorStateEffect id={id} /> */}
         <EditorRefEffect id={id} />
         <PlateControllerEffect id={id} />
 
@@ -115,7 +115,7 @@ const PlateContent = React.forwardRef(
 
     React.useEffect(() => {
       if (autoFocusOnEditable && prevReadOnly.current && !readOnly) {
-        focusEditorEdge(editor, { edge: 'end' });
+        editor.tf.focus({ edge: 'endEditor' });
       }
 
       prevReadOnly.current = readOnly;

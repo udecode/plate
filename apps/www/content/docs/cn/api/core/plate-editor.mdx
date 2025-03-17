@@ -1,0 +1,133 @@
+---
+title: Plate 编辑器
+description: Plate 编辑器的 API 参考。
+---
+
+一个自定义的编辑器接口，扩展了基础的 **`Editor`** 接口，并包含了 Plate 库特有的额外属性和方法。
+
+## 核心属性
+
+<API name="属性">
+<APIAttributes>
+  <APIItem name="id" type="any">
+    编辑器的唯一标识符。
+  </APIItem>
+  <APIItem name="key" type="any">
+    用于唯一标识编辑器的键。
+  </APIItem>
+  <APIItem name="currentKeyboardEvent" type="KeyboardEventLike | null">
+    编辑器当前正在处理的键盘事件，如果没有事件正在处理则为 null。
+  </APIItem>
+  <APIItem name="isFallback" type="boolean">
+    编辑器是否为备用编辑器。
+    
+    - **默认值:** `false`
+  </APIItem>
+  <APIItem name="prevSelection" type="TRange | null">
+    编辑器中的上一个选区范围。
+  </APIItem>
+  <APIItem name="pluginList" type="AnyEditorPlatePlugin[]">
+    编辑器当前正在使用的插件数组。
+  </APIItem>
+  <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
+    按键索引的插件记录。
+  </APIItem>
+</APIAttributes>
+</API>
+## API 方法
+
+<API name="API">
+<APIMethods>
+  <APIItem name="getApi" type="(plugin: PlatePlugin) => EditorApi & PlatePlugin['api']">
+    获取插件的类型化 API。
+  </APIItem>
+  <APIItem name="getTransforms" type="(plugin: PlatePlugin) => EditorTransforms & PlatePlugin['transforms']">
+    获取插件的类型化转换。
+  </APIItem>
+  <APIItem name="getPlugin" type="(plugin: PlatePlugin) => PlatePlugin">
+    通过键或基础插件获取编辑器插件实例。
+  </APIItem>
+  <APIItem name="getType" type="(plugin: PlatePlugin) => string">
+    获取与插件关联的节点类型。
+  </APIItem>
+</APIMethods>
+</API>
+
+## 选项方法
+
+<API name="选项">
+<APIMethods>
+  <APIItem name="getOption" type="(plugin: PlatePlugin, optionKey: string) => any">
+    获取插件的特定选项值。
+  </APIItem>
+  <APIItem name="getOptions" type="(plugin: PlatePlugin) => any">
+    获取插件的所有选项。
+  </APIItem>
+  <APIItem name="setOption" type="(plugin: PlatePlugin, optionKey: string, value: any) => void">
+    设置插件的特定选项值。
+  </APIItem>
+  <APIItem name="setOptions" type="(plugin: PlatePlugin, options: (draft: object) => void | Partial<object>) => void">
+    设置插件的多个选项。
+  </APIItem>
+  <APIItem name="getOptionsStore" type="(plugin: PlatePlugin) => any">
+    获取插件的 zustand-x 选项存储。
+  </APIItem>
+</APIMethods>
+</API>
+
+## 核心插件 API
+
+### `DebugPlugin`
+
+<API name="DebugPlugin">
+<APIListAPI>
+  <APIItem name="editor.api.debug.log" type="(...args: any[]) => void">
+    在 'log' 级别记录消息。
+  </APIItem>
+  <APIItem name="editor.api.debug.info" type="(...args: any[]) => void">
+    在 'info' 级别记录消息。
+  </APIItem>
+  <APIItem name="editor.api.debug.warn" type="(...args: any[]) => void">
+    在 'warn' 级别记录消息。
+  </APIItem>
+  <APIItem name="editor.api.debug.error" type="(...args: any[]) => void">
+    在 'error' 级别记录消息。
+  </APIItem>
+</APIListAPI>
+</API>
+
+### `HtmlPlugin`
+
+<API name="HtmlPlugin">
+<APIListAPI>
+  <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement }) => Descendant[]">
+    将 HTML 内容反序列化为 Slate 节点。
+  </APIItem>
+</APIListAPI>
+</API>
+
+### `ReactPlugin`
+
+<API name="ReactPlugin">
+<APITransforms>
+  <APIItem name="editor.tf.reset" type="() => void">
+    重置编辑器状态，同时保持焦点（如果编辑器之前有焦点）。
+  </APIItem>
+</APITransforms>
+</API>
+
+### `SlateReactExtensionPlugin`
+
+<API name="SlateReactExtensionPlugin">
+<APIListAPI>
+  <APIItem name="editor.api.redecorate" type="() => void">
+    重新装饰编辑器。
+  </APIItem>
+</APIListAPI>
+
+<APITransforms>
+  <APIItem name="editor.tf.setValue" type="(value: Value) => void">
+    替换编辑器值。有关更多信息，请参阅 [受控值](/docs/controlled)。
+  </APIItem>
+</APITransforms>
+</API>

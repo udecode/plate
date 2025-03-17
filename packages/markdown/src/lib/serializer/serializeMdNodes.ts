@@ -1,4 +1,4 @@
-import type { TDescendant } from '@udecode/plate-common';
+import type { Descendant, TElement } from '@udecode/plate';
 
 import merge from 'lodash/merge.js';
 
@@ -13,13 +13,13 @@ import {
 
 /** Convert Slate nodes to Markdown. */
 export const serializeMdNodes = (
-  nodes: TDescendant[],
+  nodes: Descendant[],
   options: Partial<
     {
+      customNodes?: Partial<Record<string, Partial<SerializeMdNodeOptions>>>;
       nodes?: Partial<
         Record<keyof MdNodeTypes, Partial<SerializeMdNodeOptions>>
       >;
-      customNodes?: Partial<Record<string, Partial<SerializeMdNodeOptions>>>;
     } & Omit<SerializeMdOptions, 'customNodes' | 'nodes'>
   > = {}
 ) => {
@@ -44,7 +44,8 @@ export const serializeMdNodes = (
     nodes.length === 0 ||
     (nodes.length === 1 &&
       nodes[0].type === optionsNodes.p.type &&
-      (nodes[0].children as TDescendant[])[0].text === '')
+      (nodes[0] as TElement).children.length === 1 &&
+      (nodes[0].children as Descendant[])[0].text === '')
   ) {
     return '';
   }

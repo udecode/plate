@@ -1,0 +1,90 @@
+---
+title: Plate Components
+description: API reference for Plate component.
+---
+
+`Plate` is the root component loading the editor state into a store provider.   
+
+`PlateContent` is the component that renders the editor.
+
+## `<Plate>`
+
+<API name="Plate">
+<APIProps>
+<APIItem name="children" type="ReactNode">
+Children components have access to the plate store. 
+</APIItem>
+<APIItem name="editor" type="PlateEditor">
+A controlled `editor` instance. This prop is required.
+</APIItem>
+<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => TRange[]" optional>
+See [Slate docs](https://docs.slatejs.org/concepts/09-rendering#decorations).
+</APIItem>
+<APIItem name="onChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
+Controlled callback called when the editor state changes.
+</APIItem>
+<APIItem name="onSelectionChange" type="(selection: TRange | null) => void" optional>
+Callback called when the editor selection changes.
+</APIItem>
+<APIItem name="onValueChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
+Callback called when the editor value changes.
+</APIItem>
+<APIItem name="primary" type="boolean" optional>
+Controls whether the editor is considered active by default when used with a PlateController.
+
+- **Default:** `true`
+</APIItem>
+<APIItem name="readOnly" type="boolean" optional>
+If true, the editor is in read-only mode.
+</APIItem>
+<APIItem name="renderElement" type="FC<RenderElementProps>" optional>
+Custom render function for elements.
+</APIItem>
+<APIItem name="renderLeaf" type="FC<RenderLeafProps>" optional>
+Custom render function for leaf nodes.
+</APIItem>
+</APIProps>
+</API>
+
+## `<PlateContent>`
+
+<API name="PlateContent">
+Props for the [Editable](https://docs.slatejs.org/libraries/slate-react/editable) component. Extends `TextareaHTMLAttributes<HTMLDivElement>`.
+
+<APIProps>
+<APIItem name="autoFocusOnEditable" type="boolean" optional>
+Automatically focus the editor when it transitions from read-only to editable mode (when `readOnly` changes from `true` to `false`).
+</APIItem>
+<APIItem name="renderEditable" type="(editable: ReactNode) => ReactNode" optional>
+Custom `Editable` node.
+
+- **Default:** `<Editable {...props} />`
+</APIItem>
+<APIItem name="as" type="React.ElementType" optional />
+<APIItem name="autoFocus" type="boolean" optional />
+<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => TRange[]" optional />
+<APIItem name="disableDefaultStyles" type="boolean" optional />
+<APIItem name="onDOMBeforeInput" type="(event: Event) => void" optional />
+<APIItem name="onKeyDown" type="(event: KeyboardEvent) => void" optional />
+<APIItem name="placeholder" type="string" optional />
+<APIItem name="readOnly" type="boolean" optional />
+<APIItem name="renderElement" type="FC<RenderElementProps>" optional />
+<APIItem name="renderLeaf" type="FC<RenderLeafProps>" optional />
+<APIItem name="renderPlaceholder" type="FC<RenderPlaceholderProps>" optional />
+<APIItem name="role" type="string" optional />
+<APIItem name="scrollSelectionIntoView" type="(editor: ReactEditor, domRange: DOMRange) => void" optional />
+<APIItem name="style" type="CSSProperties" optional />
+</APIProps>
+</API>
+
+## How Plate Works
+
+`Plate` requires an `editor` prop, which should be an instance of `PlateEditor`. If `editor` is `null`, `Plate` will not render anything.
+
+The `Plate` component does not handle the creation of the editor or the management of plugins. These responsibilities are handled by `createPlateEditor`.
+
+`Plate` provides a store for the editor state and renders its children. It uses `PlateStoreProvider` to make the editor state and related functions available to its children components.
+
+The rendering logic for elements and leaves is primarily handled by the plugins system, with `renderElement` and `renderLeaf` props serving as fallbacks if no plugin is found for a specific node type.
+
+For more details on creating and configuring the editor, refer to the [Editor Configuration](/docs/editor) guide.

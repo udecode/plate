@@ -1,0 +1,109 @@
+---
+title: Equation
+docs:
+  - route: https://pro.platejs.org/docs/components/equation-element
+    title: Equation Element
+  - route: https://pro.platejs.org/docs/components/inline-equation-element
+    title: Inline Equation Element
+  - route: https://pro.platejs.org/docs/components/inline-equation-toolbar-button
+    title: Inline Equation Toolbar Button
+---
+
+<ComponentPreview name="equation-demo" />
+
+<PackageInfo>
+
+## Features
+
+- LaTeX syntax support for complex mathematical expressions
+- Both inline and block equation formats
+- Real-time rendering of equations using KaTeX
+- Easy editing and navigation within equations
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-math
+```
+
+## Usage
+
+```tsx
+import { EquationPlugin, InlineEquationPlugin } from '@udecode/plate-math/react';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  EquationPlugin,
+  InlineEquationPlugin,
+]
+```
+
+```tsx
+const components = {
+  // ...otherComponents,
+  [EquationPlugin.key]: EquationElement,
+  [InlineEquationPlugin.key]: InlineEquationElement,
+}
+```
+
+- [EquationElement](https://pro.platejs.org/docs/components/equation-element) (Plus)
+- [InlineEquationElement](https://pro.platejs.org/docs/components/inline-equation-element) (Plus)
+
+## Examples
+
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+<ComponentPreviewPro name="equation-pro" />
+
+## Plugins
+
+### `EquationPlugin`
+
+Plugin for block equation elements.
+
+### `InlineEquationPlugin`
+
+Plugin for inline equation elements.
+
+## Transforms
+
+### `editor.tf.insert.equation`
+
+<API name="insert.equation">
+<APIOptions type="InsertNodesOptions">
+    Options for the insert nodes transform.
+</APIOptions>
+</API>
+
+### `editor.tf.insert.inlineEquation`
+
+Inserts an inline equation.
+
+<API name="insert.inlineEquation">
+<APIParameters>
+  <APIItem name="texExpression" type="string" optional>
+    The LaTeX expression to insert. Empty equation if not provided.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Types
+
+### `TEquationElement`
+
+```typescript
+interface TEquationElement extends TElement {
+  texExpression: string;
+}
+```

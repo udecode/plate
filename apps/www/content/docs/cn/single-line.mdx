@@ -1,0 +1,37 @@
+---
+title: 单行
+---
+
+<ComponentPreview name="single-line-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 将编辑器限制为单行文本
+- 适用于简短内容或标题
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-break
+```
+
+## 使用
+
+```tsx
+import { SingleLinePlugin } from '@udecode/plate-break/react';
+
+const plugins = [
+  // ...其他插件
+  SingleLinePlugin,
+];
+```
+
+## 插件
+
+### `SingleLinePlugin`
+
+该插件将编辑器内容限制为单行文本。

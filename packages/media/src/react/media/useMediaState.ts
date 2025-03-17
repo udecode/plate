@@ -1,16 +1,21 @@
 import React from 'react';
 
-import { useEditorRef, useElement } from '@udecode/plate-common/react';
-import { useFocused, useReadOnly, useSelected } from 'slate-react';
+import {
+  useEditorRef,
+  useElement,
+  useFocused,
+  useReadOnly,
+  useSelected,
+} from '@udecode/plate/react';
 
 import type { TMediaElement } from '../../lib/media/types';
 
 import { BaseVideoPlugin } from '../../lib';
+import { BaseMediaEmbedPlugin, VIDEO_PROVIDERS } from '../../lib/media-embed';
 import {
   type EmbedUrlParser,
   parseMediaUrl,
 } from '../../lib/media/parseMediaUrl';
-import { BaseMediaEmbedPlugin, VIDEO_PROVIDERS } from '../../lib/media-embed';
 
 export const useMediaState = ({
   urlParsers,

@@ -1,0 +1,103 @@
+---
+title: 基本标记
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: 标记工具栏按钮
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 包含常用的文本样式功能：加粗、斜体、下划线、删除线、下标、上标和代码。
+
+</PackageInfo>
+
+## 插件
+
+- `BoldPlugin` 用于 `bold` 标记
+- `ItalicPlugin` 用于 `italic` 标记
+- `UnderlinePlugin` 用于 `underline` 标记
+- `StrikethroughPlugin` 用于 `strikethrough` 标记
+- `SubscriptPlugin` 用于 `subscript` 标记
+- `SuperscriptPlugin` 用于 `superscript` 标记
+- `CodePlugin` 用于 `code` 标记
+
+## 安装
+
+```bash
+npm install @udecode/plate-basic-marks
+```
+
+## 使用
+
+```tsx
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+
+const plugins = [
+  // ...其他插件
+  BasicMarksPlugin,
+];
+```
+
+## 快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + B">
+    切换所选文本的加粗格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + I">
+    切换所选文本的斜体格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + U">
+    切换所选文本的下划线格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + E">
+    切换所选文本的代码格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + X">
+    切换所选文本的删除线格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + ,">
+    切换所选文本的下标格式。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + .">
+    切换所选文本的上标格式。
+  </KeyTableItem>
+</KeyTable>
+
+## 插件
+
+### `BasicMarksPlugin`
+
+包含所有基本标记插件的插件。
+
+### `BoldPlugin`
+
+用于加粗格式的插件。
+
+### `CodePlugin`
+
+用于代码格式的插件。
+
+### `ItalicPlugin`
+
+用于斜体格式的插件。
+
+### `UnderlinePlugin`
+
+用于下划线格式的插件。
+
+### `StrikethroughPlugin`
+
+用于删除线格式的插件。
+
+### `SubscriptPlugin`
+
+用于下标格式的插件。
+
+### `SuperscriptPlugin`
+
+用于上标格式的插件。

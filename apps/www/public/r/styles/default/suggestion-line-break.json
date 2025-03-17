@@ -1,0 +1,32 @@
+{
+  "dependencies": [
+    "@udecode/plate-suggestion"
+  ],
+  "doc": {
+    "description": "A line break component for suggestion.",
+    "docs": [
+      {
+        "route": "/docs/suggestion"
+      }
+    ],
+    "examples": [
+      "comments-demo",
+      "comments-pro"
+    ]
+  },
+  "files": [
+    {
+      "path": "plate-ui/suggestion-line-break.tsx",
+      "content": "'use client';\nimport React, { useRef } from 'react';\n\nimport type { TSuggestionData } from '@udecode/plate-suggestion';\n\nimport { cn } from '@udecode/cn';\nimport { type RenderNodeWrapper, usePluginOption } from '@udecode/plate/react';\nimport { CornerDownLeftIcon } from 'lucide-react';\n\nimport {\n  type SuggestionConfig,\n  suggestionPlugin,\n} from '@/components/editor/plugins/suggestion-plugin';\n\nexport const SuggestionBelowNodes: RenderNodeWrapper<SuggestionConfig> = ({\n  api,\n  element,\n}) => {\n  if (!api.suggestion.isBlockSuggestion(element)) return;\n\n  const suggestionData = element.suggestion;\n\n  if (!suggestionData?.isLineBreak) return;\n\n  return function Component({ children }) {\n    return (\n      <React.Fragment>\n        {children}\n        <SuggestionLineBreak suggestionData={suggestionData} />\n      </React.Fragment>\n    );\n  };\n};\n\nfunction SuggestionLineBreak({\n  suggestionData,\n}: {\n  suggestionData: TSuggestionData;\n}) {\n  const { type } = suggestionData;\n  const isRemove = type === 'remove';\n  const isInsert = type === 'insert';\n\n  const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');\n  const hoverSuggestionId = usePluginOption(suggestionPlugin, 'hoverId');\n\n  const isActive = activeSuggestionId === suggestionData.id;\n  const isHover = hoverSuggestionId === suggestionData.id;\n\n  const spanRef = useRef<HTMLSpanElement>(null);\n\n  return (\n    <span\n      ref={spanRef}\n      className={cn(\n        'absolute border-b-2 border-b-brand/[.24] bg-brand/[.08] text-justify text-brand/80 no-underline transition-colors duration-200',\n        isInsert &&\n          (isActive || isHover) &&\n          'border-b-brand/[.60] bg-brand/[.13]',\n        isRemove &&\n          'border-b-gray-300 bg-gray-300/25 text-gray-400 line-through',\n        isRemove &&\n          (isActive || isHover) &&\n          'border-b-gray-500 bg-gray-400/25 text-gray-500 no-underline'\n      )}\n      style={{\n        bottom: 4.5,\n        height: 21,\n      }}\n      contentEditable={false}\n    >\n      <CornerDownLeftIcon className=\"mt-0.5 size-4\" />\n    </span>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/suggestion-line-break.tsx"
+    }
+  ],
+  "name": "suggestion-line-break",
+  "registryDependencies": [
+    "suggestion-plugin"
+  ],
+  "type": "registry:ui",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
+}

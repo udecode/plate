@@ -1,0 +1,638 @@
+---
+title: Plate Core
+description: API reference for @udecode/plate-core.
+---
+
+## API
+
+### `createPlateEditor`
+
+Generates a new instance of a `PlateEditor`, initialized with a set of plugins and their configurations.
+
+<API name="createPlateEditor">
+<APIOptions type="CreatePlateEditorOptions">
+  <APIItem name="id" type="any" optional>
+    Unique identifier for the editor.
+  </APIItem>
+  <APIItem name="editor" type="E" optional>
+    Initial editor without `withPlate`.
+  </APIItem>
+  <APIItem name="plugins" type="P[]" optional>
+    An array of editor plugins.
+  </APIItem>
+  <APIItem name="value" type="V" optional>
+    Initial value of the editor.
+  </APIItem>
+  <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
+    Select the editor after initialization.
+    - **Default:** `false`
+    - `true` | 'end': Select the end of the editor
+    - `false`: Do not select anything
+    - `'start'`: Select the start of the editor
+  </APIItem>
+  <APIItem name="maxLength" type="number" optional>
+    Specifies the maximum number of characters allowed in the editor.
+  </APIItem>
+  <APIItem name="selection" type="TSelection" optional>
+    Initial selection for the editor.
+  </APIItem>
+  <APIItem name="shouldNormalizeEditor" type="boolean" optional>
+    When `true`, it will normalize the initial `value` passed to the `editor`.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="rootPlugin" type="(plugin: AnyPlatePlugin) => AnyPlatePlugin" optional>
+    Function to configure the root plugin.
+  </APIItem>
+  <APIItem name="api" type="object" optional>
+    API methods for the editor.
+  </APIItem>
+  <APIItem name="decorate" type="function" optional>
+    Decoration function for the editor.
+  </APIItem>
+  <APIItem name="extendEditor" type="function" optional>
+    Function to extend the editor.
+  </APIItem>
+  <APIItem name="handlers" type="object" optional>
+    Event handlers for the editor.
+  </APIItem>
+  <APIItem name="inject" type="object" optional>
+    Injection configuration for the editor.
+  </APIItem>
+  <APIItem name="normalizeInitialValue" type="function" optional>
+    Function to normalize the initial value.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    Additional options for the editor.
+  </APIItem>
+  <APIItem name="override" type="object" optional>
+    Override configuration for the editor.
+  </APIItem>
+  <APIItem name="priority" type="number" optional>
+    Priority of the editor plugin.
+  </APIItem>
+  <APIItem name="render" type="object" optional>
+    Render functions for the editor.
+  </APIItem>
+  <APIItem name="shortcuts" type="object" optional>
+    Keyboard shortcuts for the editor.
+  </APIItem>
+  <APIItem name="transforms" type="object" optional>
+    Transform functions for the editor.
+  </APIItem>
+  <APIItem name="useHooks" type="function" optional>
+    Hook to use with the editor.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="PlateEditor">
+  An editor instance with plugins and config applied.
+</APIReturns>
+</API>
+
+For more details on editor configuration, refer to the [Editor Configuration](/docs/editor) guide.
+
+### `createPlatePlugin`
+
+Creates a new Plate plugin with the given configuration, supporting extension, nested plugin manipulation, and runtime configuration.
+
+<API name="createPlatePlugin">
+<APIParameters>
+  <APIItem name="config" type="PlatePluginConfig | ((editor: PlateEditor) => PlatePluginConfig)">
+    The configuration object for the plugin, or a function that returns the configuration. If a function is provided, it will be executed when the plugin is resolved with the editor.
+
+    For details on the `PlatePluginConfig` type, refer to the [PlatePlugin API](/docs/api/core/plate-plugin#plugin-properties).
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlatePlugin">
+  A new plugin instance.
+</APIReturns>
+</API>
+
+### `createTPlatePlugin`
+
+Explicitly typed version of `createPlatePlugin`.
+
+<API name="createTPlatePlugin">
+<APIParameters>
+  <APIItem name="config" type="TPlatePluginConfig<C> | ((editor: PlateEditor) => TPlatePluginConfig<C>)">
+    The configuration object for the plugin, or a function that returns the configuration. This version requires an explicit type parameter `C` extending `AnyPluginConfig`.
+
+    For details on the `TPlatePluginConfig` type, refer to the [PlatePlugin API](/docs/api/core/plate-plugin#plugin-properties).
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlatePlugin<C>">
+  A new plugin instance.
+</APIReturns>
+</API>
+
+### `toPlatePlugin`
+
+Extends a SlatePlugin to create a React PlatePlugin.
+
+<API name="toPlatePlugin">
+<APIParameters>
+  <APIItem name="basePlugin" type="SlatePlugin">
+    The base SlatePlugin to be extended.
+  </APIItem>
+  <APIItem name="extendConfig" type="PlatePluginConfig | ((ctx: PlatePluginContext<C>) => PlatePluginConfig)" optional>
+    A function or object that provides the extension configuration. If a function, it receives the plugin context and should return a partial PlatePlugin. If an object, it should be a partial PlatePlugin configuration.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlatePlugin">
+  A new plugin instance that combines the base SlatePlugin functionality with React-specific features defined in the extension configuration.
+</APIReturns>
+</API>
+
+### `toTPlatePlugin`
+
+Explicitly typed version of `toPlatePlugin`.
+
+<API name="toTPlatePlugin">
+<APIParameters>
+  <APIItem name="basePlugin" type="SlatePlugin<TContext>">
+    The base SlatePlugin to be extended.
+  </APIItem>
+  <APIItem name="extendConfig" type="ExtendPluginConfig<C> | ((ctx: PlatePluginContext<TContext>) => ExtendPluginConfig<C>)" optional>
+    A function or object that provides the extension configuration. This version requires explicit type parameters for both the base plugin configuration (`TContext`) and the extension configuration (`C`).
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlatePlugin<C>">
+  A new plugin instance with precise type control.
+</APIReturns>
+</API>
+
+### `useEditorContainerRef`
+
+<API name="useEditorContainerRef">
+<APIReturns type="React.RefObject<HTMLDivElement>">
+  The editor container DOM reference.
+</APIReturns>
+</API>
+
+### `useEditorScrollRef`
+
+<API name="useEditorScrollRef">
+<APIReturns type="React.RefObject<HTMLDivElement>">
+  The editor scroll container DOM reference.
+</APIReturns>
+</API>
+
+### `useScrollRef`
+
+<API name="useScrollRef">
+<APIReturns type="React.RefObject<HTMLDivElement>">
+The editor scroll container reference. Returns the scroll ref if it exists, otherwise returns the container ref.
+</APIReturns>
+</API>
+
+### `useEditorPlugin`
+
+Get editor and plugin context.
+
+<API name="useEditorPlugin">
+<APIParameters>
+  <APIItem name="p" type="WithRequiredKey<P>">
+    The plugin or plugin configuration with a required key.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlatePluginContext">
+  <APIItem name="editor" type="PlateEditor">
+      The current editor instance.
+  </APIItem>
+  <APIItem name="plugin" type="PlatePlugin">
+      The plugin instance.
+  </APIItem>
+  <APIItem name="getOption" type="function">
+      Function to get a specific option value.
+  </APIItem>
+  <APIItem name="getOptions" type="function">
+      Function to get all options for the plugin.
+  </APIItem>
+  <APIItem name="setOption" type="function">
+      Function to set a specific option value.
+  </APIItem>
+  <APIItem name="setOptions" type="function">
+      Function to set multiple options.
+  </APIItem>
+  <APIItem name="store" type="PlateStore">
+      The Plate store for the editor.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useEditorRef`
+
+Get the Slate editor reference without re-rendering. The returned editor object is enhanced with a `store` property that provides access to the Plate store.
+
+<API name="useEditorRef">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    Editor ID used for accessing nested editors. When not provided, returns the closest editor instance in the React tree. Only use this parameter when working with nested editors to target a specific scope.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlateEditor & { store: PlateStore }">
+  The editor reference with attached store.
+</APIReturns>
+</API>
+
+### `useEditorSelector`
+
+Subscribe to a specific property of the editor.
+
+<API name="useEditorSelector">
+<APIParameters>
+  <APIItem name="selector" type="(editor: PlateEditor<V>, prev?: T) => T">
+    The selector function.
+  </APIItem>
+  <APIItem name="deps" type="DependencyList">
+    The dependency list for the selector function.
+  </APIItem>
+  <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
+    Options for the selector function.
+  </APIItem>
+</APIParameters>
+
+<APIOptions>
+  <APIItem name="id" type="string" optional>
+    The ID of the plate editor. Useful only when nesting editors. Default is using the closest editor id.
+  </APIItem>
+  <APIItem name="equalityFn" type="(a: T, b: T) => boolean" optional>
+    Equality function to determine whether the result of the selector function has changed. Default is `(a, b) => a === b`.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="T">
+  The return value of the selector function.
+</APIReturns>
+</API>
+
+### `useEditorState`
+
+Get the Slate editor reference with re-rendering.
+
+<API name="useEditorState">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    The ID of the plate editor. Default is using the closest editor id.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlateEditor">
+  The editor reference.
+</APIReturns>
+</API>
+
+
+### `useEditorReadOnly`
+
+Get the editor's `readOnly` state.
+
+<API name="useEditorReadOnly">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    The ID of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  Whether the editor is read-only.
+</APIReturns>
+</API>
+
+### `useEditorMounted`
+
+Get the editor's `isMounted` state.
+
+<API name="useEditorMounted">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    The ID of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  Whether the editor is mounted.
+</APIReturns>
+</API>
+
+### `useEditorSelection`
+
+Get the editor's selection. Memoized so it does not re-render if the range is the same.
+
+<API name="useEditorSelection">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    The ID of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns type="TRange | null">
+The current selection in the editor.
+</APIReturns>
+</API>
+
+### `useEditorVersion`
+
+Get the version of the editor value. That version is incremented on each editor change.
+
+<API name="useEditorVersion">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    The ID of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns type="number">
+The current version of the editor value.
+</APIReturns>
+</API>  
+
+### `useSelectionVersion`
+
+Get the version of the editor selection. That version is incremented on each selection change (the range being different).
+
+<API name="useSelectionVersion">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    The ID of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns type="number">
+The current version of the editor selection.
+</APIReturns>
+</API>
+
+### `useSelectionCollapsed`
+
+<API name="useSelectionCollapsed">
+<APIReturns type="boolean">
+Whether the current selection is collapsed.
+</APIReturns>
+</API>
+
+### `useSelectionExpanded`
+
+<API name="useSelectionExpanded">
+<APIReturns type="boolean">
+Whether the current selection is expanded.
+</APIReturns>
+</API>
+
+### `useSelectionWithinBlock`
+
+<API name="useSelectionWithinBlock">
+<APIReturns type="boolean">
+Whether the current selection is within a single block.
+</APIReturns>
+</API>
+
+### `useSelectionAcrossBlocks`
+
+<API name="useSelectionAcrossBlocks">
+<APIReturns type="boolean">
+Whether the current selection spans across multiple blocks.
+</APIReturns>
+</API>
+
+### `useSelectionFragment`
+
+Returns the fragment of the current selection, optionally unwrapping structural nodes.
+
+<API name="useSelectionFragment">
+<APIOptions type="GetSelectionFragmentOptions">
+  <APIItem name="structuralTypes" type="string[]" optional>
+    Array of structural types to unwrap from the fragment.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="TElement[]">
+  The fragment of the current selection. Returns an empty array if the selection is not expanded or if no fragment is found.
+</APIReturns>
+</API>
+
+### `useSelectionFragmentProp`
+
+Returns a prop value derived from the current selection fragment.
+    
+<API name="useSelectionFragmentProp">
+<APIOptions type="GetSelectionFragmentOptions & GetFragmentPropOptions" optional>
+<APIItem name="structuralTypes" type="string[]" optional>
+Array of structural types to unwrap from the fragment.
+</APIItem>
+<APIItem name="key" type="string" optional>
+The key of the property to extract from each node.
+</APIItem>
+<APIItem name="defaultValue" type="string" optional>
+The default value to return if no valid prop is found.
+</APIItem>
+<APIItem name="getProp" type="(node: TElement | TText) => any" optional>
+Custom function to extract the prop value from a node.
+</APIItem>
+<APIItem name="mode" type="'all' | 'block' | 'text'" optional>
+Determines how to traverse the fragment:
+- 'all': Check both block and text nodes
+- 'block': Only check block nodes
+- 'text': Only check text nodes
+  
+- **Default**: `'block'`
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+A value derived from the fragment nodes, or undefined if no consistent value is found across the specified nodes.
+</APIReturns>
+</API>
+
+### `useNodePath`
+
+Returns the path of a node in the editor.
+
+<API name="useNodePath">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    The node to find the path for.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  A memoized Path array representing the location of the node in the editor's tree structure.
+</APIReturns>
+</API>
+
+### `usePath`
+
+Get the memoized path of the closest element.
+
+<API name="usePath">
+<APIParameters>
+  <APIItem name="pluginKey" type="string" optional>
+    The key of the plugin to get the path for.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  The path of the element, or `undefined` if used outside of a node component's context.
+</APIReturns>
+</API>  
+
+### `usePluginOption`
+
+Hook to access plugin options from the plugin store. For usage inside `<Plate>`.
+
+<API name="usePluginOption">
+<APIParameters>
+  <APIItem name="plugin" type="PlatePlugin">
+    The plugin to get options from.
+  </APIItem>
+  <APIItem name="key" type="keyof (InferOptions<C> | InferSelectors<C>) | 'state'">
+    The key of the option or selector to access.
+  </APIItem>
+  <APIItem name="...args" type="any[]" optional>
+    Additional arguments:
+    - For selectors: The selector parameters
+    - Last argument can be an equality function `(a: T, b: T) => boolean`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="T">
+  The value of the option or selector result:
+  - For 'state': Returns the entire state object
+  - For selector keys: Returns the selector's return value
+  - For option keys: Returns the option value
+</APIReturns>
+
+```tsx
+// Access a simple option
+const value = usePluginOption(plugin, 'value');
+// Access a selector with parameters
+const doubleValue = usePluginOption(plugin, 'doubleValue', 2);
+// Access with equality function
+const value = usePluginOption(plugin, 'value', (a, b) => a === b);
+// Access entire state
+const state = usePluginOption(plugin, 'state');
+```
+
+</API>
+
+### `useEditorPluginOption`
+
+Hook to access plugin options from the plugin store. For usage outside `<Plate>`.
+
+<API name="useEditorPluginOption">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="plugin" type="PlatePlugin">
+    The plugin to get options from.
+  </APIItem>
+  <APIItem name="key" type="keyof (InferOptions<C> | InferSelectors<C>) | 'state'">
+    The key of the option or selector to access.
+  </APIItem>
+  <APIItem name="...args" type="any[]" optional>
+    Additional arguments:
+    - For selectors: The selector parameters
+    - Last argument can be an equality function `(a: T, b: T) => boolean`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="T">
+  The value of the option or selector result:
+  - For 'state': Returns the entire state object
+  - For selector keys: Returns the selector's return value
+  - For option keys: Returns the option value
+</APIReturns>
+
+```tsx
+// Access a simple option
+const value = useEditorPluginOption(editor, plugin, 'value');
+// Access a selector with parameters
+const doubleValue = useEditorPluginOption(editor, plugin, 'doubleValue', 2);
+// Access with equality function
+const value = useEditorPluginOption(editor, plugin, 'value', (a, b) => a === b);
+// Access entire state
+const state = useEditorPluginOption(editor, plugin, 'state');
+```
+</API>
+
+
+### `useElement`
+
+Get the element by plugin key.
+
+<API name="useElement">
+<APIParameters>
+  <APIItem name="pluginKey" type="string" optional>
+    The key of the plugin to get the element for.
+    - **Default:** `'element'`
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  The element of type `T extends TElement`, or an empty object if used outside of a node component's context.
+</APIReturns>
+</API>
+
+## Core plugins
+
+### `DebugPlugin`
+Provides debugging capabilities with configurable log levels and error handling. 
+
+See [Debugging](/docs/debugging) for more details.
+
+### `SlateExtensionPlugin & SlateReactExtensionPlugin`
+Extend core apis and improve default functionality.
+
+### `DOMPlugin & ReactPlugin`
+Integrates React-specific functionality into the editor.
+
+### `HistoryPlugin`
+Enables undo and redo functionality for the editor.
+
+### `InlineVoidPlugin`
+Manages inline and void elements in the editor.
+
+### `ParserPlugin`
+Handles parsing of content for the editor.
+
+### `LengthPlugin`
+Enforces a maximum length for the editor content.
+
+### `HtmlPlugin`
+Enables HTML serialization and deserialization.
+
+### `AstPlugin`
+Handles Abstract Syntax Tree (AST) operations for the editor.
+
+### `ParagraphPlugin`
+Provides paragraph formatting functionality.
+
+### `EventEditorPlugin`
+Manages editor events such as focus and blur.
+
+## Utils
+
+### `isType`
+
+Checks whether a node matches the provided type.
+
+<API name="isType">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor<V>">
+    The editor in which the node is present.
+  </APIItem>
+  <APIItem name="node" type="any">
+    The node to be checked.
+  </APIItem>
+  <APIItem name="key" type="string | string[]" optional>
+    The type or types to match the node against. Can be a string or an array of
+    strings.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  A boolean indicating whether the node's type matches the provided type or
+  types.
+</APIReturns>
+</API>

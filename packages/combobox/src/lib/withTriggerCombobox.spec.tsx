@@ -1,27 +1,26 @@
 /** @jsx jsxt */
 
-import {
-  type TriggerComboboxPluginOptions,
-  withTriggerCombobox,
-} from '@udecode/plate-combobox';
-import { createSlatePlugin } from '@udecode/plate-common';
-import { createSlateEditor } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { createSlatePlugin } from '@udecode/plate';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
+import { ParagraphPlugin } from '@udecode/plate/react';
+
+import type { TriggerComboboxPluginOptions } from './types';
+
+import { withTriggerCombobox } from './withTriggerCombobox';
 
 const ExampleComboboxPlugin = createSlatePlugin<
   string,
   TriggerComboboxPluginOptions
 >({
   key: 'exampleCombobox',
-  extendEditor: withTriggerCombobox,
   plugins: [
     createSlatePlugin({
       key: 'mention_input',
       node: { isElement: true, isInline: true, isVoid: true },
     }),
   ],
-});
+}).overrideEditor(withTriggerCombobox);
 
 const plugins = [
   ParagraphPlugin,
@@ -29,35 +28,39 @@ const plugins = [
   ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
     key: 'exampleCombobox1',
     options: {
+      trigger: ['@', '#'],
+      triggerPreviousCharPattern: /^$|^[\s"']$/,
       createComboboxInput: (trigger) => ({
         children: [{ text: '' }],
         trigger,
         type: 'mention_input',
       }),
-      trigger: ['@', '#'],
-      triggerPreviousCharPattern: /^$|^[\s"']$/,
     },
   }),
 
   ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
     key: 'exampleCombobox2',
     options: {
+      trigger: ':',
+      triggerPreviousCharPattern: /^\s?$/,
       createComboboxInput: () => ({
         children: [{ text: '' }],
         trigger: ':',
         type: 'mention_input',
       }),
-      trigger: ':',
-      triggerPreviousCharPattern: /^\s?$/,
     },
   }),
 ];
 
-const createEditorWithCombobox = (chidren: any) =>
-  createSlateEditor({
-    editor: (<editor>{chidren}</editor>) as any,
+const createEditorWithCombobox = (chidren: any) => {
+  const editor = (<editor>{chidren}</editor>) as any;
+
+  return createSlateEditor({
     plugins,
+    selection: editor.selection,
+    value: editor.children,
   });
+};
 
 jsxt;
 
@@ -71,7 +74,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -92,7 +95,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -113,7 +116,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -135,7 +138,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -153,7 +156,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -176,7 +179,7 @@ describe('withTriggerCombobox', () => {
           </hp>
         );
 
-        editor.insertText(trigger);
+        editor.tf.insertText(trigger);
 
         expect(editor.children).toEqual([
           <hp>
@@ -196,7 +199,7 @@ describe('withTriggerCombobox', () => {
       </hp>
     );
 
-    editor.insertText('a');
+    editor.tf.insertText('a');
 
     expect(editor.children).toEqual([<hp>a</hp>]);
   });
@@ -208,7 +211,7 @@ describe('withTriggerCombobox', () => {
       </hp>
     );
 
-    editor.insertText('@');
+    editor.tf.insertText('@');
 
     expect(editor.children).toEqual([
       <hp>

@@ -1,4 +1,4 @@
-import { createSlatePlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate';
 
 export const BaseFontColorPlugin = createSlatePlugin({
   key: 'color',
@@ -8,16 +8,10 @@ export const BaseFontColorPlugin = createSlatePlugin({
       nodeKey: 'color',
     },
   },
-}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         isLeaf: true,
-        parse({ element }) {
-          if (element.style.color) {
-            return { [type]: element.style.color };
-          }
-        },
         rules: [
           {
             validStyle: {
@@ -25,7 +19,12 @@ export const BaseFontColorPlugin = createSlatePlugin({
             },
           },
         ],
+        parse({ element, type }) {
+          if (element.style.color) {
+            return { [type]: element.style.color };
+          }
+        },
       },
     },
   },
-}));
+});

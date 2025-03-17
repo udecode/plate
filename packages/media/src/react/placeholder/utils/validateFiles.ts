@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/only-throw-error */
-import type { UploadConfig } from '../PlaceholderPlugin';
 import type { AllowedFileType } from '../internal/mimes';
+import type { UploadConfig } from '../PlaceholderPlugin';
 
 import { groupFilesByType } from './groupFilesByType';
 import { validateFileItem } from './validateFileItem';

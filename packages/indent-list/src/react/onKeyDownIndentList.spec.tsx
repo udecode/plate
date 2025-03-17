@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
-import { ParagraphPlugin, getEditorPlugin } from '@udecode/plate-common/react';
-import { createPlateEditor } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { getEditorPlugin, ParagraphPlugin } from '@udecode/plate/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { IndentListPlugin } from './IndentListPlugin';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
@@ -33,8 +33,9 @@ describe('when indented list and empty', () => {
 
     const event = new KeyboardEvent('keydown', { key: 'Enter' }) as any;
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ParagraphPlugin, IndentPlugin, IndentListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     onKeyDownIndentList({
@@ -82,8 +83,9 @@ describe('when indented and empty but not list', () => {
 
     const event = new KeyboardEvent('keydown', { key: 'Enter' }) as any;
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ParagraphPlugin, IndentPlugin, IndentListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     onKeyDownIndentList({

@@ -1,7 +1,4 @@
-import {
-  createSlatePlugin,
-  findHtmlParentElement,
-} from '@udecode/plate-common';
+import { createSlatePlugin, findHtmlParentElement } from '@udecode/plate';
 
 /** Enables support for code formatting */
 export const BaseCodePlugin = createSlatePlugin({
@@ -10,6 +7,10 @@ export const BaseCodePlugin = createSlatePlugin({
   parsers: {
     html: {
       deserializer: {
+        rules: [
+          { validNodeName: ['CODE'] },
+          { validStyle: { fontFamily: 'Consolas' } },
+        ],
         query({ element }) {
           const blockAbove = findHtmlParentElement(element, 'P');
 
@@ -17,10 +18,6 @@ export const BaseCodePlugin = createSlatePlugin({
 
           return !findHtmlParentElement(element, 'PRE');
         },
-        rules: [
-          { validNodeName: ['CODE'] },
-          { validStyle: { fontFamily: 'Consolas' } },
-        ],
       },
     },
   },

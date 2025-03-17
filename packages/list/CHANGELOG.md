@@ -1,5 +1,29 @@
 # @udecode/plate-list
 
+## 44.0.5
+
+### Patch Changes
+
+- [#4079](https://github.com/udecode/plate/pull/4079) by [@btabram](https://github.com/btabram) – More specific typescript types for TodoListPlugin
+
+## 44.0.0
+
+## 43.0.0
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Fix parsers to use custom node type
+
+## 42.0.0
+
+## 41.0.0
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Replace `findNodePath` with `findPath`
+
 ## 40.0.0
 
 ## 39.0.0

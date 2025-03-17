@@ -1,10 +1,7 @@
-import { isUrl } from '@udecode/plate-common';
+import { isUrl } from '@udecode/plate';
 
 const imageExtensions = new Set([
   '3dv',
-  'PI1',
-  'PI2',
-  'PI3',
   'ai',
   'amf',
   'art',
@@ -79,6 +76,9 @@ const imageExtensions = new Set([
   'pdn',
   'pgf',
   'pgm',
+  'PI1',
+  'PI2',
+  'PI3',
   'pict',
   'png',
   'pnm',

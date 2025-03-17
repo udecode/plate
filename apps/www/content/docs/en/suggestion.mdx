@@ -1,0 +1,225 @@
+---
+title: Suggestion
+docs:
+  - route: /docs/components/suggestion-leaf
+    title: Suggestion Leaf
+  - route: /docs/components/suggestion-toolbar-button
+    title: Suggestion Toolbar Button
+  - route: /docs/components/block-suggestion
+    title: Block suggestion
+  - route: /docs/components/block-discussion
+    title: Block discussion
+  - route: /docs/components/suggestion-line-break
+    title: Suggestion line break
+---
+
+<ComponentPreview name="comments-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Add suggestions as text marks
+- Add block suggestions
+- Track suggestion state and users
+- Undo/redo suggestion changes
+- Note: This is an experimental feature and the API is subject to change.
+
+</PackageInfo>
+
+## Installation
+```bash
+npm install @udecode/plate-suggestion
+```
+
+## Usage
+
+```tsx
+import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+  suggestionPlugin.configure({
+    render: { belowNodes: SuggestionBelowNodes as any },
+  }),
+  ],
+});
+```
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Shift + S">
+    Add a suggestion on the selected text.
+  </KeyTableItem>
+</KeyTable>
+
+## Examples
+
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+<ComponentPreviewPro name="comments-pro" />
+
+## Plugins
+
+### `SuggestionPlugin`
+
+## API
+
+### `editor.api.suggestion.addSuggestion`
+
+Adds a new suggestion.
+
+<API name="addSuggestion">
+<APIParameters>
+  <APIItem name="value" type="WithPartial<TSuggestion, 'id' | 'userId'>">
+    The suggestion value to add.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.suggestion.dataList`
+
+Gets an array of suggestion data from a text node.
+
+<API name="dataList">
+<APIParameters>
+  <APIItem name="node" type="TSuggestionText">
+    The suggestion text node.
+  </APIItem>
+</APIParameters>
+<APIReturns type="TInlineSuggestionData[]">
+  Array of suggestion data.
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.isBlockSuggestion`
+
+Checks if a node is a block suggestion element.
+
+<API name="isBlockSuggestion">
+<APIParameters>
+  <APIItem name="node" type="TElement">
+    The node to check.
+  </APIItem>
+</APIParameters>
+<APIReturns type="node is TSuggestionElement">
+  Whether the node is a block suggestion.
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.node`
+
+Gets a suggestion node entry.
+
+<API name="node">
+<APIOptions type="EditorNodesOptions & { id?: string; isText?: boolean }" optional>
+  Options for finding the node.
+</APIOptions>
+<APIReturns type="NodeEntry<TSuggestionElement | TSuggestionText> | undefined">
+  The suggestion node entry if found.
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.nodeId`
+
+Gets the ID of a suggestion from a node.
+
+<API name="nodeId">
+<APIParameters>
+  <APIItem name="node" type="TElement | TSuggestionText">
+    The node to get ID from.
+  </APIItem>
+</APIParameters>
+<APIReturns type="string | undefined">
+  The suggestion ID if found.
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.nodes`
+
+Gets all suggestion node entries matching the options.
+
+<API name="nodes">
+<APIOptions type="EditorNodesOptions" optional>
+  Options for finding the nodes.
+</APIOptions>
+<APIReturns type="NodeEntry<TElement | TSuggestionText>[]">
+  Array of suggestion node entries.
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.removeSuggestion`
+
+Removes a suggestion by ID.
+
+<API name="removeSuggestion">
+<APIParameters>
+  <APIItem name="id" type="string | null">
+    The ID of the suggestion to remove.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.suggestion.suggestionData`
+
+Gets suggestion data from a node.
+
+<API name="suggestionData">
+<APIParameters>
+  <APIItem name="node" type="TElement | TSuggestionText">
+    The node to get suggestion data from.
+  </APIItem>
+</APIParameters>
+<APIReturns type="TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined">
+  The suggestion data if found.
+</APIReturns>
+</API>
+
+### `editor.api.suggestion.updateSuggestion`
+
+Updates a suggestion by ID.
+
+<API name="updateSuggestion">
+<APIParameters>
+  <APIItem name="id" type="string | null">
+    The ID of the suggestion to update.
+  </APIItem>
+  <APIItem name="value" type="Partial<TSuggestion>">
+    The updated suggestion values.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.suggestion.withoutSuggestions`
+
+Executes a function with suggestions temporarily disabled.
+
+<API name="withoutSuggestions">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    The function to execute.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Types
+
+### `TSuggestionText`
+
+Interface for text nodes that can contain suggestions.
+
+<API name="TSuggestionText">
+<APIAttributes>
+  <APIItem name="suggestion" type="boolean" optional>
+    Indicates whether this is a suggestion.
+  </APIItem>
+  <APIItem name="suggestion_<id>" type="TInlineSuggestionData" optional>
+    Contains suggestion data. Multiple suggestions can be present in a single text node.
+  </APIItem>
+</APIAttributes>
+</API>

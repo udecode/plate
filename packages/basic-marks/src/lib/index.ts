@@ -6,6 +6,7 @@ export * from './BaseBasicMarksPlugin';
 export * from './BaseBoldPlugin';
 export * from './BaseCodePlugin';
 export * from './BaseItalicPlugin';
+export * from './BaseSkipMarkPlugin';
 export * from './BaseStrikethroughPlugin';
 export * from './BaseSubscriptPlugin';
 export * from './BaseSuperscriptPlugin';

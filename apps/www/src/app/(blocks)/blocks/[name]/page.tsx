@@ -5,13 +5,9 @@ import type { Metadata } from 'next';
 import { cn } from '@udecode/cn';
 import { notFound } from 'next/navigation';
 
-import { siteConfig } from '@/config/site';
-import { absoluteUrl } from '@/lib/absoluteUrl';
 import { getAllBlockIds } from '@/lib/blocks';
 import { getRegistryComponent, getRegistryItem } from '@/lib/registry';
 import { styles } from '@/registry/registry-styles';
-
-import '@/styles/mdx.css';
 
 const getCachedRegistryItem = React.cache(async (name: string) => {
   return await getRegistryItem(name, true);
@@ -30,32 +26,26 @@ export async function generateMetadata({
     return {};
   }
 
-  const title = item.name;
-  const description = item.description;
+  const title = `${item.description ? `${item.description}` : ''}`;
+  const description = `npx shadcx@latest add ${item.name}`;
 
   return {
     description,
     openGraph: {
-      description,
       images: [
         {
-          alt: siteConfig.name,
-          height: 630,
-          url: siteConfig.ogImage,
-          width: 1200,
+          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description ?? '')}`,
         },
       ],
-      title,
-      type: 'article',
-      url: absoluteUrl(`/blocks/${item.name}`),
     },
-    title: `${item.name}${item.description ? ` - ${item.description}` : ''}`,
+    title,
     twitter: {
       card: 'summary_large_image',
-      creator: '@shadcn',
-      description,
-      images: [siteConfig.ogImage],
-      title,
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description ?? '')}`,
+        },
+      ],
     },
   };
 }
@@ -86,9 +76,8 @@ export default async function BlockPage({
 
   return (
     <div
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       className={cn(
-        'themes-wrapper bg-background [&_[data-block-hide]]:hidden',
+        'themes-wrapper bg-background **:data-block-hide:hidden',
         item.meta?.containerClassName
       )}
     >

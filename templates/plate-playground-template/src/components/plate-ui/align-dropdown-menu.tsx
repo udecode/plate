@@ -4,16 +4,16 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import {
-  useAlignDropdownMenu,
-  useAlignDropdownMenuState,
-} from '@udecode/plate-alignment/react';
+import { setAlign } from '@udecode/plate-alignment';
+import { useEditorRef, useSelectionFragmentProp } from '@udecode/plate/react';
 import {
   AlignCenterIcon,
   AlignJustifyIcon,
   AlignLeftIcon,
   AlignRightIcon,
 } from 'lucide-react';
+
+import { STRUCTURAL_TYPES } from '@/components/editor/transforms';
 
 import {
   DropdownMenu,
@@ -45,13 +45,16 @@ const items = [
 ];
 
 export function AlignDropdownMenu({ children, ...props }: DropdownMenuProps) {
-  const state = useAlignDropdownMenuState();
-  const { radioGroupProps } = useAlignDropdownMenu(state);
+  const editor = useEditorRef();
+  const value = useSelectionFragmentProp({
+    defaultValue: 'start',
+    structuralTypes: STRUCTURAL_TYPES,
+    getProp: (node) => node.align,
+  });
 
   const openState = useOpenState();
   const IconValue =
-    items.find((item) => item.value === radioGroupProps.value)?.icon ??
-    AlignLeftIcon;
+    items.find((item) => item.value === value)?.icon ?? AlignLeftIcon;
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
@@ -62,7 +65,13 @@ export function AlignDropdownMenu({ children, ...props }: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="min-w-0" align="start">
-        <DropdownMenuRadioGroup {...radioGroupProps}>
+        <DropdownMenuRadioGroup
+          value={value}
+          onValueChange={(value: any) => {
+            setAlign(editor, { value: value });
+            editor.tf.focus();
+          }}
+        >
           {items.map(({ icon: Icon, value: itemValue }) => (
             <DropdownMenuRadioItem key={itemValue} value={itemValue} hideIcon>
               <Icon />

@@ -1,10 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  createSlateEditor,
-  getNode,
-} from '@udecode/plate-common';
+import { type SlateEditor, createSlateEditor, NodeApi } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { ListPlugin } from '../../react';
@@ -38,15 +34,16 @@ describe('clean up list items', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     const path = [0, 0];
-    const node = getNode(editor, path);
+    const node = NodeApi.get(editor, path);
 
-    editor.normalizeNode([node!, path]);
+    editor.tf.normalizeNode([node!, path]);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

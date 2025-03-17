@@ -3,8 +3,8 @@
 import React from 'react';
 
 import { withRef } from '@udecode/cn';
-import { useEditorRef } from '@udecode/plate-common/react';
 import { indentListItems, unindentListItems } from '@udecode/plate-list';
+import { useEditorRef } from '@udecode/plate/react';
 import { IndentIcon, OutdentIcon } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';

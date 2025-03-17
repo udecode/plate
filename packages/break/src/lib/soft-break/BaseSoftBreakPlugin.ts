@@ -2,14 +2,7 @@ import {
   type PluginConfig,
   type QueryNodeOptions,
   createTSlatePlugin,
-} from '@udecode/plate-common';
-
-export interface SoftBreakRule {
-  hotkey: string;
-
-  /** Filter the block types where the rule applies. */
-  query?: QueryNodeOptions;
-}
+} from '@udecode/plate';
 
 export type SoftBreakConfig = PluginConfig<
   'softBreak',
@@ -17,6 +10,13 @@ export type SoftBreakConfig = PluginConfig<
     rules?: SoftBreakRule[];
   }
 >;
+
+export interface SoftBreakRule {
+  hotkey: string;
+
+  /** Filter the block types where the rule applies. */
+  query?: QueryNodeOptions;
+}
 
 /**
  * Insert soft break following configurable rules. Each rule specifies a hotkey

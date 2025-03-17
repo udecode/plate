@@ -1,7 +1,6 @@
 import type React from 'react';
 
-import type { TEditableProps } from '@udecode/slate-react';
-
+import type { EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from '../plugin/DOMHandlers';
 
@@ -19,10 +18,13 @@ export const convertDomEventToSyntheticEvent = (
     currentTarget: domEvent.currentTarget!,
     defaultPrevented: domEvent.defaultPrevented,
     eventPhase: domEvent.eventPhase,
-    isDefaultPrevented: () => domEvent.defaultPrevented,
-    isPropagationStopped: () => propagationStopped,
     isTrusted: domEvent.isTrusted,
     nativeEvent: domEvent,
+    target: domEvent.target!,
+    timeStamp: domEvent.timeStamp,
+    type: domEvent.type,
+    isDefaultPrevented: () => domEvent.defaultPrevented,
+    isPropagationStopped: () => propagationStopped,
     persist: () => {
       throw new Error(
         'persist is not implemented for synthetic events created using convertDomEventToSyntheticEvent'
@@ -33,9 +35,6 @@ export const convertDomEventToSyntheticEvent = (
       propagationStopped = true;
       domEvent.stopPropagation();
     },
-    target: domEvent.target!,
-    timeStamp: domEvent.timeStamp,
-    type: domEvent.type,
   };
 };
 
@@ -76,7 +75,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
   {
     editableProps,
     handlerKey,
-  }: { handlerKey: K; editableProps?: Omit<TEditableProps, 'decorate'> | null }
+  }: { handlerKey: K; editableProps?: Omit<EditableProps, 'decorate'> | null }
 ): ((event: any) => void) | undefined => {
   const propsHandler = editableProps?.[handlerKey] as (
     event: any

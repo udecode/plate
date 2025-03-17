@@ -1,0 +1,225 @@
+---
+title: 从 Slate 迁移到 Plate
+description: 学习如何从 Slate 迁移到 Plate。
+---
+
+Plate 是基于 Slate 构建的，因此从纯 Slate 实现迁移到 Plate 相对简单。本指南将帮助你将基于 Slate 的编辑器过渡到 Plate。
+
+## 1. 安装 Plate
+
+首先，安装必要的 Plate 包。如果你是 Plate 的新手，建议先阅读 [介绍](/docs/getting-started) 以了解该库的概览。
+
+```bash
+npm install @udecode/plate
+```
+
+## 2. 替换 Slate 导入
+
+将你的 Slate 导入替换为 Plate 导入。Plate 重新导出了大多数 Slate 类型和函数：
+
+```ts
+// 之前
+import { createEditor } from 'slate';
+import { Slate, Editable, withReact } from 'slate-react';
+
+// 之后
+import { createPlateEditor, Plate, PlateContent } from '@udecode/plate/react';
+```
+
+## 3. 创建 Plate 编辑器
+
+将 `createEditor`、`withHistory` 和 `withReact` 替换为 `createPlateEditor`：
+
+```ts
+// 之前
+const editor = useMemo(() => withReact(withHistory(createEditor()))), []);
+
+// 之后
+const editor = createPlateEditor({
+  value,
+  plugins: [
+    // 在这里添加其他插件
+  ],
+});
+```
+
+有关编辑器配置的更多详细信息，请查看 [编辑器配置指南](/docs/editor)。
+
+## 4. 替换 Slate 和 Editable 组件
+
+将 `Slate` 和 `Editable` 组件替换为 Plate 的 `Plate` 组件：
+
+```tsx
+// 之前
+<Slate editor={editor} value={value}>
+  <Editable className="p-4" />
+</Slate>
+
+// 之后
+<Plate editor={editor}>
+  <PlateContent className="p-4" />
+</Plate>
+```
+
+## 5. 转换自定义元素和叶子
+
+对于自定义元素和叶子，创建 Plate 插件：
+
+```tsx
+// 之前
+const renderElement = useCallback(({ attributes, children, element }) => {
+  switch (element.type) {
+    case 'paragraph':
+      return <p {...attributes}>{children}</p>;
+    // ... 其他情况
+  }
+}, []);
+
+// 之后
+import { withCn, type PlateElement } from '@udecode/plate/react';
+
+const ParagraphElement = withRef<typeof PlateElement>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <PlateElement
+        asChild
+        className={cn('py-1', className)}
+        ref={ref}
+        {...props}
+      >
+        <p>{children}</p>
+      </PlateElement>
+    );
+  }
+);
+
+const ParagraphPlugin = createPlatePlugin({
+  key: 'p',
+  node: {
+    isElement: true,
+    type: 'paragraph',
+    component: ParagraphElement,
+  },
+});
+```
+
+有关创建插件的更多信息，请参阅 [插件配置指南](/docs/plugin) 和 [插件组件指南](/docs/plugin-components)。
+
+## 6. 将 Slate 插件转换为 Plate 插件
+
+如果你有自定义的 Slate 插件，将它们转换为 Plate 插件：
+
+```ts
+// 之前
+const withMyPlugin = (editor) => {
+  const { insertText } = editor;
+  editor.insertText = (text) => {
+    // 自定义逻辑
+    insertText(text);
+  };
+  return editor;
+};
+
+// 之后
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).overrideEditor(({ editor, tf: { insertText } }) => ({
+  transforms: {
+    insertText(text, options) {
+      // 自定义逻辑
+      insertText(text, options);
+    },
+  }
+}));
+
+// 添加新方法：
+const MyOtherPlugin = createPlatePlugin({
+  key: 'myOtherPlugin',
+}).extendEditorTransforms(({ editor }) => ({
+  newMethod(text) {
+    // 添加新功能
+  }
+}));
+```
+
+有关插件上下文的更多信息，请参阅 [插件上下文指南](/docs/plugin-context)。
+
+## 7. 更新事件处理程序
+
+更新你的事件处理程序以使用 Plate 的插件系统：
+
+```ts
+// 之前
+const onKeyDown = (event) => {
+  if (event.key === 'Tab') {
+    // 处理 Tab 键
+  }
+};
+
+// 之后
+const TabPlugin = createPlatePlugin({
+  key: 'tab',
+  handlers: {
+    onKeyDown: ({ editor, event }) => {
+      if (event.key === 'Tab') {
+        // 处理 Tab 键
+      }
+    },
+  },
+});
+```
+
+或者，你可以使用 Plate 的强大快捷键系统：
+
+```ts
+const TabPlugin = createPlatePlugin({
+  key: 'tab',
+  shortcuts: {
+    indent: {
+      handler: ({ editor }) => {
+        // 处理 Tab 键
+      },
+      keys: ['Tab'],
+    },
+  },
+});
+```
+
+有关使用快捷键的更多详细信息，请查看 [插件快捷键指南](/docs/plugin-shortcuts)。
+
+## 8. 适应 Plate 的 API
+
+熟悉 Plate 的 API 并使用其工具和钩子：
+
+```ts
+// 使用 Plate 的 transforms
+editor.tf.toggleMark('bold');
+
+// 使用 Plate 的调试 API
+editor.api.debug.log('Hello, Plate!');
+```
+
+有关编辑器方法的完整列表，请参阅 [编辑器方法指南](/docs/editor-methods)。
+
+## 9. 利用 Plate 的内置插件
+
+Plate 提供了许多内置插件，你可以在侧边栏中查看。使用它们快速添加功能：
+
+```ts
+import { BoldPlugin, ItalicPlugin, UnderlinePlugin } from '@udecode/plate/react';
+
+const plugins = [
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+  // ... 其他插件
+];
+
+const editor = createPlateEditor({ plugins });
+```
+
+## 10. 测试和优化
+
+迁移完成后，彻底测试你的编辑器以确保所有功能按预期工作。使用 Plate 的功能和最佳实践来优化你的实现。
+
+有关调试技巧和策略，请查看我们的 [调试指南](/docs/debugging)。

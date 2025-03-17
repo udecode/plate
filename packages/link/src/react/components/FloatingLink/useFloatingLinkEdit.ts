@@ -1,11 +1,9 @@
 import React from 'react';
 
 import {
-  getAboveNode,
-  getEndPoint,
-  getStartPoint,
-  someNode,
-} from '@udecode/plate-common';
+  getDOMSelectionBoundingClientRect,
+  getRangeBoundingClientRect,
+} from '@udecode/plate-floating';
 import {
   useComposedRef,
   useEditorPlugin,
@@ -13,11 +11,8 @@ import {
   useEditorVersion,
   useHotkeys,
   useOnClickOutside,
-} from '@udecode/plate-common/react';
-import {
-  getDOMSelectionBoundingClientRect,
-  getRangeBoundingClientRect,
-} from '@udecode/plate-floating';
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import type { LinkFloatingToolbarState } from './useFloatingLinkInsert';
 
@@ -31,17 +26,17 @@ import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 export const useFloatingLinkEditState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const { editor, getOptions, type, useOption } = useEditorPlugin(LinkPlugin);
+  const { editor, getOptions, type } = useEditorPlugin(LinkPlugin);
 
   const { triggerFloatingLinkHotkeys } = getOptions();
   const readOnly = useEditorReadOnly();
-  const isEditing = useOption('isEditing');
+  const isEditing = usePluginOption(LinkPlugin, 'isEditing');
   const version = useEditorVersion();
-  const mode = useOption('mode');
-  const open = useOption('isOpen', editor.id);
+  const mode = usePluginOption(LinkPlugin, 'mode');
+  const open = usePluginOption(LinkPlugin, 'isOpen', editor.id);
 
   const getBoundingClientRect = React.useCallback(() => {
-    const entry = getAboveNode(editor, {
+    const entry = editor.api.above({
       match: { type },
     });
 
@@ -49,8 +44,8 @@ export const useFloatingLinkEditState = ({
       const [, path] = entry;
 
       return getRangeBoundingClientRect(editor, {
-        anchor: getStartPoint(editor, path),
-        focus: getEndPoint(editor, path),
+        anchor: editor.api.start(path)!,
+        focus: editor.api.end(path)!,
       });
     }
 
@@ -88,7 +83,7 @@ export const useFloatingLinkEdit = ({
   React.useEffect(() => {
     if (
       editor.selection &&
-      someNode(editor, {
+      editor.api.some({
         match: { type: editor.getType(LinkPlugin) },
       })
     ) {

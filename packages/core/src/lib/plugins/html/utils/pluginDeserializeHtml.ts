@@ -1,4 +1,4 @@
-import { type AnyObject, isDefined } from '@udecode/utils';
+import { type AnyObject, type Nullable, isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray.js';
 
 import type { SlateEditor } from '../../../editor';
@@ -6,10 +6,42 @@ import type {
   AnyEditorPlugin,
   HtmlDeserializer,
 } from '../../../plugin/SlatePlugin';
-import type { Nullable } from '../../../types';
 
 import { getEditorPlugin } from '../../../plugin';
+import { isSlateNode } from '../../../static';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
+import { getDataNodeProps } from './getDataNodeProps';
+
+/**
+ * Get a deserializer and add default rules for deserializing plate static
+ * elements
+ */
+const getDeserializedWithStaticRules = (plugin: AnyEditorPlugin) => {
+  let deserializer = plugin.parsers?.html?.deserializer;
+
+  const rules = deserializer?.rules ?? [];
+
+  // Check if rules already contain slate-xxx className
+  const hasSlateRule = rules.some((rule) =>
+    rule.validClassName?.includes(`slate-${plugin.key}`)
+  );
+
+  const staticRules = hasSlateRule
+    ? rules
+    : [
+        {
+          validClassName: `slate-${plugin.key}`,
+          validNodeName: '*',
+        },
+        ...rules,
+      ];
+
+  if (!deserializer) deserializer = { rules: staticRules };
+
+  deserializer.rules = staticRules;
+
+  return deserializer;
+};
 
 /** Get a deserializer by type, node names, class names and styles. */
 export const pluginDeserializeHtml = (
@@ -21,11 +53,10 @@ export const pluginDeserializeHtml = (
   }: { element: HTMLElement; deserializeLeaf?: boolean }
 ): (Nullable<HtmlDeserializer> & { node: AnyObject }) | undefined => {
   const {
-    node: { isElement: isElementRoot, isLeaf: isLeafRoot, type },
-    parsers,
+    node: { isElement: isElementRoot, isLeaf: isLeafRoot },
   } = plugin;
 
-  const deserializer = parsers?.html?.deserializer;
+  const deserializer = getDeserializedWithStaticRules(plugin);
 
   if (!deserializer) return;
 
@@ -116,22 +147,39 @@ export const pluginDeserializeHtml = (
   ) {
     return;
   }
-  if (!parse) {
+  if (!parse)
     if (isElement) {
-      parse = () => ({ type: type });
+      parse = ({ type }) => ({ type: type });
     } else if (isLeaf) {
-      parse = () => ({ [type!]: true });
+      parse = ({ type }) => ({ [type!]: true });
     } else {
       return;
     }
-  }
 
-  let node =
-    parse({
-      ...(getEditorPlugin(editor, plugin) as any),
-      element: el,
-      node: {},
-    }) ?? {};
+  const parsedNode = (() => {
+    if (isSlateNode(el)) {
+      return {};
+    }
+
+    return (
+      parse({
+        ...(getEditorPlugin(editor, plugin) as any),
+        element: el,
+        node: {},
+      }) ?? {}
+    );
+  })();
+
+  const dataNodeProps = getDataNodeProps({
+    editor,
+    element: el,
+    plugin,
+  });
+
+  let node = {
+    ...parsedNode,
+    ...dataNodeProps,
+  };
 
   if (Object.keys(node).length === 0) return;
 
@@ -144,7 +192,7 @@ export const pluginDeserializeHtml = (
       node,
     });
 
-    if (res) {
+    if (res && !isSlateNode(el)) {
       node = {
         ...node,
         ...res,

@@ -1,11 +1,10 @@
 import React from 'react';
 
-import { DefaultElement } from 'slate-react';
-
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 import type { PlateRenderElementProps } from '../plugin/PlateRenderElementProps';
 
+import { DefaultElement } from '../slate-react';
 import { useElement } from '../stores';
 import { ElementProvider } from '../stores/element/useElementStore';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -17,7 +16,7 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  */
 export type RenderElement = (
   props: PlateRenderElementProps
-) => React.ReactElement | undefined;
+) => React.ReactElement<any> | undefined;
 
 function ElementContent({
   editor,
@@ -81,11 +80,16 @@ export const pluginRenderElement = (
   plugin: AnyEditorPlatePlugin
 ): RenderElement =>
   function render(nodeProps) {
-    const { element } = nodeProps;
+    const { element, path } = nodeProps;
 
     if (element.type === plugin.node.type) {
       return (
-        <ElementProvider element={element} scope={plugin.key}>
+        <ElementProvider
+          element={element}
+          entry={[element, path]}
+          path={path}
+          scope={plugin.key}
+        >
           <ElementContent
             editor={editor}
             nodeProps={nodeProps}

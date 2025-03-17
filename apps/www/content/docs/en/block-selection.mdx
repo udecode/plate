@@ -1,0 +1,483 @@
+---
+title: Block Selection
+docs:
+  - route: /docs/components/block-selection
+    title: Block Selection
+---
+
+<ComponentPreview name="block-selection-demo" />
+
+<PackageInfo>
+
+The Block Selection feature allows users to select and manipulate entire text blocks, as opposed to individual words or characters. This powerful functionality enhances the editing experience by providing efficient ways to manage large sections of content.
+
+## Features
+
+- Select entire blocks with a single action
+- Multi-block selection
+- Copy, cut, and delete operations on selected blocks
+- Keyboard shortcuts for quick selection:
+  - `Cmd+A`:
+    - First press: select the current block
+    - Double press: select all blocks
+  - Arrow keys: select the block above or below
+- Customizable styling for selected blocks
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-selection @udecode/plate-node-id
+```
+
+## Usage
+
+```tsx
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+
+const plugins = [
+  // ...otherPlugins,
+  NodeIdPlugin,
+  BlockSelectionPlugin,
+];
+```
+
+### `Exclude blocks from selection`
+
+You can exclude certain plugins from block selection using:
+
+```ts
+BlockSelectionPlugin.configure({
+  inject: {
+    // Exclude blocks below table rows
+    excludeBelowPlugins: ['tr'],
+    // Exclude block types
+    excludePlugins: ['table', 'code_line', 'column_group', 'column'],
+  }
+})
+```
+
+- `excludeBelowPlugins`: Plugin keys of non-selectable block descendants. Use this to prevent selection below specific blocks. For example, excluding 'tr' prevents selecting individual cells while still allowing table row selection.
+
+- `excludePlugins`: Plugin keys of non-selectable blocks.
+
+### Set scrollable container
+
+If you're using `EditorContainer` from [Editor](/docs/components/editor), you can skip this section.
+
+To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #${editor.uid}`, which are used with `document.querySelector()`.
+
+For this to work effectively:
+
+1. Add an `id` or `className` to your scroll container. If you're not sure about the container, you can add it to the `<Editor />` component. We recommend using `id={editor.uid}`.
+2. Use the appropriate selector in your configuration.
+3. Don't forget to set `position: relative` to the container.
+
+Default configuration:
+
+```js
+BlockSelectionPlugin.configure({
+  options: {
+    areaOptions: {
+      boundaries: `#${editor.uid}`,
+      container: `#${editor.uid}`,
+      selectables: `#${editor.uid} .slate-selectable`,
+    },
+  },
+});
+```
+
+### Set scroll speed
+
+Use `options.areaOptions.behaviour.scrolling.speedDivider` to set the scroll speed.
+
+The value `0.8` is our recommended speed since it's near the browser-native speed.
+
+```ts
+BlockSelectionPlugin.configure({
+  options: {
+    areaOptions: {
+      behaviour: {
+      scrolling: {
+        // You can slow down the scroll speed by setting a bigger value.
+        speedDivider: 1.5,
+      },
+      // The distance needed to move for the selection area to appear.
+      // If it's too small, it may cause the mouse click event to be blocked. 10 is a good default.
+      startThreshold: 4,
+    },
+  },
+});
+```
+
+### Add selectable element
+
+Add `data-plate-selectable="true"` to any element you want to start block selection.
+
+### Prevent unselect
+
+To prevent unselecting blocks when clicking on certain elements, add the `data-plate-prevent-unselect` attribute to those components
+
+For example:
+```tsx
+<YourSpecialButtoon data-plate-prevent-unselect />
+```
+
+### Full Page Selection
+
+#### Making Elements Selectable
+
+You can enable block selection for elements outside the `<Editor />` component, similar to the [Potion](https://potion.platejs.org/) template. Add the `data-plate-selectable` attribute to any component you want to make selectable:
+
+```tsx
+<Cover data-plate-selectable />
+<Sidebar data-plate-selectable />
+```
+
+This works for any element, even those outside the editor's DOM tree.
+
+#### Resetting Selection
+
+There are two ways to handle resetting selection across the full page:
+
+1. Direct API call:
+```tsx
+editor.api.blockSelection.deselect();
+```
+
+2. Click outside handler:
+```tsx
+const handleClickOutside = (event: MouseEvent) => {
+  if (!(event.target as HTMLElement).closest('[data-plate-selectable]')) {
+    editor.api.blockSelection.deselect();
+  }
+};
+```
+
+## Styling
+
+### Selection area
+
+Style the selection area by adding the `.slate-selection-area` class to your editor container component. For example:
+
+```js
+'[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
+```
+
+### Selected element
+
+To determine if an element is selected, use `useBlockSelected` hook. You can render a visual indicator around selected blocks using our [BlockSelection](/docs/components/block-selection) component or create your own.
+
+This component should be rendered inside each block element for consistent selection feedback. Plate UI is doing it by configuring the plugin this way:
+
+```tsx
+render: {
+  belowRootNodes: (props) => {
+    if (!props.className?.includes('slate-selectable')) return null;
+
+    return <BlockSelection />;
+  },
+},
+```
+
+## Plugins
+
+### `BlockSelectionPlugin`
+
+Plugin for block selection functionality.
+
+<API name="BlockSelectionPlugin">
+<APIOptions>
+  <APIItem name="areaOptions" type="PartialSelectionOptions" optional>
+    Options for the selection area.
+
+```ts
+{
+    boundaries: [`#${editor.uid}`],
+    container: [`#${editor.uid}`],
+    selectables: [`#${editor.uid} .slate-selectable`],
+    selectionAreaClass: 'slate-selection-area',
+}
+```
+  </APIItem>
+  <APIItem name="enableContextMenu" type="boolean" optional>
+    Enables or disables the context menu for block selection.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="isSelecting" type="boolean" optional>
+    Indicates whether block selection is currently active.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="onKeyDownSelecting" type="(e: KeyboardEvent) => void" optional>
+    A function to handle the keydown event when selecting.
+  </APIItem>
+  <APIItem name="query" type="QueryNodeOptions" optional>
+    Options for querying nodes during block selection.
+    - **Default:** `{ maxLevel: 1 }`
+  </APIItem>
+  <APIItem name="selectedIds" type="Set<string>" optional>
+    A set of IDs for the currently selected blocks.
+    - **Default:** `new Set()`
+  </APIItem>
+  <APIItem name="anchorId" type="string | null" optional>
+    (Internal) The ID of the anchor block in the current selection. Used for shift-based selection.
+    - **Default:** `null`
+  </APIItem>
+  <APIItem name="isSelectable" type="(element: TElement, path: Path) => boolean" optional>
+    Function to determine if a block element is selectable.
+    - **Default:** `() => true`
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `editor.api.blockSelection.add`
+
+Adds one or more blocks to the selection.
+
+<API name="add">
+<APIParameters>
+  <APIItem name="id" type="string | string[]">
+    The ID(s) of the block(s) to be selected.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.blockSelection.clear`
+
+Resets the set of selected IDs to an empty set.
+
+### `editor.api.blockSelection.delete`
+
+Removes one or more blocks from the selection.
+
+<API name="delete">
+<APIParameters>
+  <APIItem name="id" type="string | string[]">
+    The ID(s) of the block(s) to remove from selection.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.blockSelection.deselect`
+
+Deselects all blocks and sets the `isSelecting` flag to false.
+
+### `editor.api.blockSelection.focus`
+
+Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
+
+### `editor.api.blockSelection.getNodes`
+
+Gets the selected blocks in the editor.
+
+<API name="getNodes">
+<APIReturns type="NodeEntry[]">
+  Array of selected block entries.
+</APIReturns>
+</API>
+
+### `editor.api.blockSelection.has`
+
+Checks if one or more blocks are selected.
+
+<API name="has">
+<APIParameters>
+  <APIItem name="id" type="string | string[]">
+    The ID(s) of the block(s) to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="boolean">
+    Whether the block(s) are selected.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `editor.api.blockSelection.selectAll`
+
+Selects all selectable blocks in the editor.
+
+### `editor.api.blockSelection.set`
+
+Sets the selection to one or more blocks, clearing any existing selection.
+
+<API name="set">
+<APIParameters>
+  <APIItem name="id" type="string | string[]">
+    The ID(s) of the block(s) to be selected.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Transforms
+
+### `editor.tf.blockSelection.duplicate`
+
+Duplicate the selected blocks.
+
+### `editor.tf.blockSelection.removeNodes`
+
+Remove the selected nodes from the editor.
+
+### `editor.tf.blockSelection.select`
+
+Select the nodes returned by `getNodes()` and reset selected IDs.
+
+### `editor.tf.blockSelection.setNodes`
+
+Sets properties on the selected nodes.
+
+<API name="setNodes">
+<APIParameters>
+  <APIItem name="props" type="Partial<NodeProps<TElement>>">
+    Properties to set on selected nodes.
+  </APIItem>
+  <APIItem name="options" type="SetNodesOptions" optional>
+    Options for setting nodes.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.tf.blockSelection.setTexts`
+
+Sets text properties on the selected nodes.
+
+<API name="setTexts">
+<APIParameters>
+  <APIItem name="props" type="Partial<NodeProps<TText>>">
+    Text properties to set on selected nodes.
+  </APIItem>
+  <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>
+    Options for setting text nodes, excluding the 'at' property.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Hooks
+
+### `useBlockSelectable`
+
+A hook that provides props for making a block element selectable, including context menu behavior.
+
+<API name="useBlockSelectable">
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    Props to be spread on the block element.
+    <APISubList>
+      <APISubListItem parent="props" name="className" type="string">
+        Required class for selection functionality.
+        - **Default:** `'slate-selectable'`
+      </APISubListItem>
+      <APISubListItem parent="props" name="onContextMenu" type="(event: React.MouseEvent) => void">
+        Handles right-click context menu behavior:
+        - Opens context menu for selected blocks
+        - Opens for void elements
+        - Opens for elements with `data-plate-open-context-menu="true"`
+        - Adds block to selection with Shift key for multi-select
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useBlockSelected`
+
+<API name="useBlockSelected">
+<APIReturns type="boolean">
+  Whether the context block is selected.
+</APIReturns>
+</API>
+
+### `useBlockSelectionNodes`
+
+<API name="useBlockSelectionNodes">
+<APIReturns type="NodeEntry[]">
+  Array of selected block entries.
+</APIReturns>
+</API>
+
+### `useBlockSelectionFragment`
+
+<API name="useBlockSelectionFragment">
+<APIReturns type="Node[]">
+  Array of selected block nodes.
+</APIReturns>
+</API>
+
+### `useBlockSelectionFragmentProp`
+
+<API name="useBlockSelectionFragmentProp">
+<APIReturns type="Node[]">
+  Fragment prop for selected blocks.
+</APIReturns>
+</API>
+
+### `useSelectionArea`
+
+Initialize and manage selection area functionality.
+
+### `editor.api.blockSelection.isSelectable`
+
+<API name="isSelectable">
+<APIParameters>
+  <APIItem name="element" type="TElement">
+    Block element to check.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    Path to the block element.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  Whether the block is selectable.
+</APIReturns>
+</API>
+
+### `editor.api.blockSelection.moveSelection`
+
+Moves the selection up or down to the next selectable block.
+
+When moving up:
+- Gets the previous selectable block from the top-most selected block
+- Sets it as the new anchor
+- Clears previous selection and selects only this block
+When moving down:
+- Gets the next selectable block from the bottom-most selected block
+- Sets it as the new anchor
+- Clears previous selection and selects only this block
+
+<API name="moveSelection">
+<APIParameters>
+  <APIItem name="direction" type="'up' | 'down'">
+    Direction to move selection.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.blockSelection.shiftSelection`
+
+Expands or shrinks the selection based on the anchor block.
+
+For SHIFT + DOWN:
+- If anchor is top-most: Expands down by adding block below bottom-most
+- Otherwise: Shrinks from top-most (unless top-most is the anchor)
+For SHIFT + UP:
+- If anchor is bottom-most: Expands up by adding block above top-most
+- Otherwise: Shrinks from bottom-most (unless bottom-most is the anchor)
+The anchor block always remains selected. If no anchor is set, it defaults to:
+- Bottom-most block for SHIFT + UP
+- Top-most block for SHIFT + DOWN
+
+<API name="shiftSelection">
+<APIParameters>
+  <APIItem name="direction" type="'up' | 'down'">
+    Direction to expand/shrink selection.
+  </APIItem>
+</APIParameters>
+</API>
+

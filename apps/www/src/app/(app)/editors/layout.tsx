@@ -1,17 +1,37 @@
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 
-import {
-  PageActions,
-  PageHeader,
-  PageHeaderDescription,
-  PageHeaderHeading,
-} from '@/components/page-header';
-import { Button } from '@/registry/default/plate-ui/button';
+import { EditorDescription } from './editor-description';
+
+// SYNC
+
+const title = 'Building Editors for the Web';
+const description =
+  'Clean, modern building editors. Copy and paste into your apps. Works with all React frameworks.';
 
 export const metadata: Metadata = {
-  description:
-    'Beautifully designed. Copy and paste into your apps. Open Source.',
-  title: 'Building Editors.',
+  description,
+  openGraph: {
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(
+          title
+        )}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
+  title,
+  twitter: {
+    card: 'summary_large_image',
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(
+          title
+        )}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
 };
 
 export default function BlocksLayout({
@@ -20,28 +40,10 @@ export default function BlocksLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="container relative">
-      <PageHeader>
-        {/* <Announcement /> */}
-        <PageHeaderHeading>Building Editors for the Web</PageHeaderHeading>
-        <PageHeaderDescription>
-          Beautifully designed. Copy and paste into your apps. Open Source.
-        </PageHeaderDescription>
-        <PageActions>
-          <Button asChild size="lg">
-            <a href="#blocks">Browse Editors</a>
-          </Button>
-          {/* <Button asChild size="sm" variant="ghost">
-            <a
-              href="https://github.com/shadcn-ui/ui/discussions/new?category=blocks-request"
-              rel="noreferrer"
-              target="_blank"
-            >
-              Request a block
-            </a>
-          </Button> */}
-        </PageActions>
-      </PageHeader>
+    <div className="relative container">
+      <Suspense fallback={null}>
+        <EditorDescription />
+      </Suspense>
       <section id="blocks" className="scroll-mt-24">
         {children}
       </section>

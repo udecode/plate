@@ -1,13 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import {
-  deleteBackward,
-  getEditorString,
-  getPointBefore,
-  insertText,
-  isHotkey,
-} from '@udecode/plate-common';
-import { Range } from 'slate';
+import { isHotkey, RangeApi } from '@udecode/plate';
 
 import type { AutoformatConfig } from '../lib/BaseAutoformatPlugin';
 import type { AutoformatRule, AutoformatTextRule } from '../lib/types';
@@ -28,19 +21,19 @@ export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({
   // Abort if selection is not collapsed i.e. we're not deleting single character.
   const { selection } = editor;
 
-  if (!selection || !Range.isCollapsed(selection)) return;
+  if (!selection || !editor.api.isCollapsed()) return;
 
   // Get start and end point of selection.
   // For example: Text|
   //                  ^ cursor at the moment of pressing the hotkey
   // start, end will be equal to the location of the |
-  const [start, end] = Range.edges(selection);
+  const [start, end] = RangeApi.edges(selection);
 
   // Get location before the cursor.
   // before will be a point one character before | so:
   // Text|
   //    ^
-  const before = getPointBefore(editor, end, {
+  const before = editor.api.before(end, {
     distance: 1,
     unit: 'character',
   });
@@ -56,7 +49,7 @@ export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({
   // Text|
   //    ^
   // Between ^ and | is t
-  const char = getEditorString(editor, charRange);
+  const char = editor.api.string(charRange);
 
   if (!char) return false;
 
@@ -76,18 +69,18 @@ export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({
   event.preventDefault();
 
   // remove the shorthand character.
-  deleteBackward(editor, { unit: 'character' });
+  editor.tf.deleteBackward();
 
   // put back the orignal characters. This could match to a single string or an array.
   const rule = matchers[0] as AutoformatTextRule;
 
   if (rule && typeof rule.match === 'string') {
-    insertText(editor, rule.match);
+    editor.tf.insertText(rule.match);
   } else {
     const matchArray = rule.match as string[];
 
     if (matchArray && matchArray.length > 0) {
-      insertText(editor, matchArray[0]);
+      editor.tf.insertText(matchArray[0]);
     }
   }
 

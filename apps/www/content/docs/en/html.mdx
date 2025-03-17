@@ -1,0 +1,355 @@
+---
+title: Serializing HTML
+---
+
+<ComponentPreview name="html-demo" />
+
+## Slate -> HTML
+
+[Server-side example](/docs/examples/slate-to-html)
+
+### Usage
+
+```tsx
+// ...
+import { createSlateEditor, serializeHtml } from '@udecode/plate';
+import { EditorStatic } from '@/components/plate-ui/editor-static';
+
+// Create an editor and configure all the plugins you need
+const editor = createSlateEditor({
+  // ... your plugins ...
+});
+
+// Provide the components that map Slate nodes to HTML elements
+const components = {
+  // [ParagraphPlugin.key]: ParagraphElementStatic,
+  // [HeadingPlugin.key]: HeadingElementStatic,
+  // ...
+};
+
+// You can also pass a custom editor component and props.
+// For example, EditorStatic is a styled version of PlateStatic.
+const html = await serializeHtml(editor, {
+  components,
+  editorComponent: EditorStatic, // defaults to PlateStatic if not provided
+  props: { variant: 'none', className: 'p-2' },
+});
+```
+
+If you use a custom component, like [EditorStatic](/docs/components/editor), you must also ensure that all required styles and classes are included in your final HTML file. Since serialize only returns the inner editor HTML, you may need to wrap it in a full HTML document with any external CSS, scripts, or `<style>` tags.
+
+For example:
+
+```tsx
+// After serializing the content:
+const html = await serializeHtml(editor, {
+  components,
+  editorComponent: EditorStatic,
+  props: { variant: 'none' },
+});
+
+// Wrap the HTML in a full HTML document
+const fullHtml = `<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="/path/to/tailwind.css" />
+    <!-- other head elements -->
+  </head>
+  <body>
+    ${html}
+  </body>
+</html>`;
+```
+
+<Callout className="my-4">
+  **Note**: The serialization process converts Slate nodes into static HTML markup. Interactivity like React event handlers, client-side hooks, or components that rely on browser APIs won't work in the serialized output.
+</Callout>
+
+### Using Static Components
+
+When serializing Slate content to HTML, **you must use static versions** of your elements (i.e., no client-only code). Check out the [Plate Static](/docs/plate-static) guide for more details on creating a “static” version of your components that can safely run in a server environment.
+
+**Example:**
+
+```tsx
+import { createSlateEditor, serializeHtml } from '@udecode/plate';
+import { ParagraphElementStatic } from '@/components/plate-ui/paragraph-element-static';
+import { HeadingElementStatic } from '@/components/plate-ui/heading-element-static';
+import { ImageElementStatic } from '@/components/plate-ui/image-element-static';
+// ... etc.
+
+const editor = createSlateEditor({ /* your plugins */ });
+
+const components = {
+  [BaseParagraphPlugin.key]: ParagraphElementStatic,
+  [BaseHeadingPlugin.key]: HeadingElementStatic,
+  [BaseImagePlugin.key]: ImageElementStatic,
+};
+
+const html = await serializeHtml(editor, { components });
+```
+
+For a more complete static-render approach, see [Plate Static](/docs/plate-static).
+
+---
+
+## HTML -> Slate
+
+The HTML deserializer supports round-trip conversion, meaning you can export content to HTML and later import it back while maintaining the document structure, formatting, and attributes.
+
+### Usage
+
+The `editor.api.html.deserialize` function converts HTML content into a Slate value:
+
+```ts
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // all plugins that you want to deserialize
+  ],
+});
+
+// You can deserialize HTML strings
+editor.children = editor.api.html.deserialize('<p>Hello, world!</p>');
+
+// Or deserialize HTML previously exported from Plate
+const exportedHtml = await serializeHtml(editor, { components });
+const importedValue = editor.api.html.deserialize(exportedHtml);
+editor.children = importedValue;
+```
+
+### Plugin Deserialization Rules
+
+Below is a reference for the built-in HTML deserialization rules. Each plugin can parse specific tags, styles, and attributes.
+
+#### Text Formatting
+
+- **BoldPlugin**: `<strong>`, `<b>`, or `style="font-weight: 600|700|bold"`
+- **ItalicPlugin**: `<em>`, `<i>`, or `style="font-style: italic"`
+- **UnderlinePlugin**: `<u>` or `style="text-decoration: underline"`
+- **StrikethroughPlugin**: `<s>`, `<del>`, `<strike>`, or `style="text-decoration: line-through"`
+- **SubscriptPlugin**: `<sub>` or `style="vertical-align: sub"`
+- **SuperscriptPlugin**: `<sup>` or `style="vertical-align: super"`
+- **CodePlugin**: `<code>` or `style="font-family: Consolas"` (not within a `<pre>` tag)
+- **KbdPlugin**: `<kbd>`
+
+#### Paragraphs and Headings
+
+- **ParagraphPlugin**: `<p>`
+- **HeadingPlugin**: `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`
+
+#### Lists
+
+- **ListPlugin**:
+  - Unordered List: `<ul>`
+  - Ordered List: `<ol>`
+  - List Item: `<li>`
+- **IndentListPlugin**:
+  - List Item: `<li>`
+  - Uses `aria-level` for indentation
+
+#### Blocks
+
+- **BlockquotePlugin**: `<blockquote>`
+- **CodeBlockPlugin**:
+  - `<pre>` elements
+  - `<p>` elements with `fontFamily: 'Consolas'`
+  - Splits content into code lines
+  - Preserves language info if available
+- **HorizontalRulePlugin**: `<hr>`
+
+#### Links and Media
+
+- **LinkPlugin**: `<a>`
+- **ImagePlugin**: `<img>`
+- **MediaEmbedPlugin**: `<iframe>`
+
+#### Tables
+
+- **TablePlugin**:
+  - `<table>`
+  - `<tr>`
+  - `<td>`
+  - `<th>`
+
+#### Text Styling
+
+- **FontBackgroundColorPlugin**: `style="background-color: *"`
+- **FontColorPlugin**: `style="color: *"`
+- **FontFamilyPlugin**: `style="font-family: *"`
+- **FontSizePlugin**: `style="font-size: *"`
+- **FontWeightPlugin**: `style="font-weight: *"`
+- **HighlightPlugin**: `<mark>`
+
+#### Layout and Formatting
+
+- **AlignPlugin**: `style="text-align: *"`
+- **LineHeightPlugin**: `style="line-height: *"`
+
+### Deserialization Properties
+
+Plugins can define various properties to control HTML deserialization:
+
+- `parse`: A function to parse an HTML element into a Plate node
+- `query`: A function that determines if the deserializer should be applied
+- `rules`: An array of rule objects that define valid HTML elements and attributes
+- `isElement`: Indicates if the plugin deserializes elements
+- `isLeaf`: Indicates if the plugin deserializes leaf nodes
+- `attributeNames`: List of HTML attribute names to store in `node.attributes`
+- `withoutChildren`: Excludes child nodes from deserialization
+- `rules`: Array of rule objects for element matching
+  - `validAttribute`: Valid element attributes
+  - `validClassName`: Valid CSS class name
+  - `validNodeName`: Valid HTML tag names
+  - `validStyle`: Valid CSS styles
+
+### Customizing Deserialization
+
+You can modify how plugins parse HTML:
+
+```ts
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+
+const MyCodeBlockPlugin = CodeBlockPlugin.extend({
+  parsers: {
+    html: {
+      deserializer: {
+        parse: ({ element }) => {
+          const language = element.getAttribute('data-language');
+          const textContent = element.textContent || '';
+          const lines = textContent.split('\n');
+
+          return {
+            type: CodeBlockPlugin.key,
+            language,
+            children: lines.map((line) => ({
+              type: 'code_line',
+              children: [{ text: line }],
+            })),
+          };
+        },
+        rules: [
+          // inherit existing rules
+          ...CodeBlockPlugin.parsers.html.deserializer.rules,
+          { validAttribute: 'data-language' },
+        ],
+      },
+    },
+  },
+});
+```
+
+This customization adds support for a `data-language` attribute in code block deserialization and preserves the language information.
+
+### Advanced Deserialization Example
+
+The `IndentListPlugin` provides a more complex deserialization process:
+
+1. It transforms HTML list structures into indented paragraphs.
+2. It handles nested lists by preserving the indentation level.
+3. It uses the `aria-level` attribute to determine the indentation level.
+
+Here's a simplified version of its deserialization logic:
+
+```typescript
+export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
+  // ... other configurations ...
+  parsers: {
+    html: {
+      deserializer: {
+        isElement: true,
+        parse: ({ editor, element, getOptions }) => ({
+          indent: Number(element.getAttribute('aria-level')),
+          listStyleType: element.style.listStyleType,
+          type: editor.getType(ParagraphPlugin),
+        }),
+        rules: [
+          {
+            validNodeName: 'LI',
+          },
+        ],
+      },
+    },
+  },
+});
+```
+
+## API
+
+### `serializeHtml(editor, options)`
+
+Converts Slate nodes from `editor.children` into an HTML string.
+
+```ts
+const htmlString = await serializeHtml(editor, {
+  components,
+  stripClassNames: true,
+  preserveClassNames: ['slate-'],
+  stripDataAttributes: true,
+  editorComponent: MyCustomStaticWrapper,
+  props: { className: 'my-serialized' },
+});
+```
+
+<API name="serializeHtml">
+<APIOptions>
+<APIItem name="components" type="HTMLElement | string">
+A mapping of plugin keys to React components. Each component renders the corresponding Slate node as HTML.
+</APIItem>
+<APIItem name="editorComponent" type="React.ComponentType<T>">
+A React component to render the entire editor content. Defaults to `PlateStatic` if not provided. This component receives `components`, `editor`, and `props`.
+</APIItem>
+<APIItem name="props" type="Partial<T>" optional>
+Props to pass to the `editorComponent`. The generic type `T` extends `PlateStaticProps`.
+</APIItem>
+<APIItem name="preserveClassNames" type="string[]" optional>
+A list of class name prefixes to preserve if `stripClassNames` is enabled.
+</APIItem>
+<APIItem name="stripClassNames" type="boolean" optional>
+If `true`, remove class names from the output HTML except those listed in `preserveClassNames`.
+- **Default:** `false`
+</APIItem>
+<APIItem name="stripDataAttributes" type="boolean" optional>
+If `true`, remove `data-*` attributes from the output HTML.
+- **Default:** `false`
+</APIItem>
+</APIOptions>
+<APIReturns>
+<APIItem type="string">
+The serialized HTML string.
+</APIItem>
+</APIReturns>
+</API>
+
+### `editor.api.html.deserialize`
+
+Parses an HTML string or element into a Slate value.  
+
+```ts
+editor.children = editor.api.html.deserialize('<p>Deserialized</p>', {
+  collapseWhiteSpace: false,
+});
+```
+
+<API name="deserialize">
+<APIParameters>
+<APIItem name="element" type="HTMLElement | string">
+
+The HTML element or string to deserialize.
+
+</APIItem>
+<APIItem name="collapseWhiteSpace" type="boolean" optional>
+
+Flag to enable or disable the removal of whitespace from the serialized HTML.
+
+- **Default:** `true` (Whitespace will be removed.)
+</APIItem>
+</APIParameters>
+<APIReturns>
+<APIItem type="Descendant[]">
+
+The deserialized Slate value.
+</APIItem>
+</APIReturns>
+</API>

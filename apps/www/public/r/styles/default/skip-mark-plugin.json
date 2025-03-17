@@ -1,0 +1,17 @@
+{
+  "dependencies": [
+    "@udecode/plate-basic-marks"
+  ],
+  "files": [
+    {
+      "path": "components/editor/plugins/skip-mark-plugin.ts",
+      "content": "'use client';\nimport { CodePlugin, SkipMarkPlugin } from '@udecode/plate-basic-marks/react';\nimport { CommentsPlugin } from '@udecode/plate-comments/react';\nimport { SuggestionPlugin } from '@udecode/plate-suggestion/react';\n\nexport const skipMarkPlugin = SkipMarkPlugin.configure({\n  options: {\n    query: {\n      allow: [SuggestionPlugin.key, CodePlugin.key, CommentsPlugin.key],\n    },\n  },\n});\n",
+      "type": "registry:component",
+      "target": "components/editor/plugins/skip-mark-plugin.ts"
+    }
+  ],
+  "name": "skip-mark-plugin",
+  "type": "registry:component",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
+}

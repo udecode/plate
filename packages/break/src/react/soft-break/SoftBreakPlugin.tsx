@@ -1,4 +1,4 @@
-import { toPlatePlugin } from '@udecode/plate-common/react';
+import { toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseSoftBreakPlugin } from '../../lib/soft-break/BaseSoftBreakPlugin';
 import { onKeyDownSoftBreak } from './onKeyDownSoftBreak';

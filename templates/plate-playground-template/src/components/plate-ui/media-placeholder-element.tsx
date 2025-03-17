@@ -7,31 +7,20 @@ import type { TPlaceholderElement } from '@udecode/plate-media';
 
 import { cn } from '@udecode/cn';
 import {
-  insertNodes,
-  removeNodes,
-  withoutSavingHistory,
-} from '@udecode/plate-common';
-import {
-  findNodePath,
-  useEditorPlugin,
-  withHOC,
-  withRef,
-} from '@udecode/plate-common/react';
-import {
   AudioPlugin,
   FilePlugin,
   ImagePlugin,
   PlaceholderPlugin,
   PlaceholderProvider,
-  VideoPlugin,
   updateUploadHistory,
+  VideoPlugin,
 } from '@udecode/plate-media/react';
+import { PlateElement, useEditorPlugin, withHOC , withRef } from '@udecode/plate/react';
 import { AudioLines, FileUp, Film, ImageIcon } from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
 
 import { useUploadFile } from '@/lib/uploadthing';
 
-import { PlateElement } from './plate-element';
 import { Spinner } from './spinner';
 
 const CONTENT: Record<
@@ -67,12 +56,13 @@ const CONTENT: Record<
 export const MediaPlaceholderElement = withHOC(
   PlaceholderProvider,
   withRef<typeof PlateElement>(
-    ({ children, className, editor, nodeProps, ...props }, ref) => {
+    ({ children, className, nodeProps, ...props }, ref) => {
+      const editor = props.editor;
       const element = props.element as TPlaceholderElement;
 
       const { api } = useEditorPlugin(PlaceholderPlugin);
 
-      const { isUploading, progress, uploadFile, uploadedFile, uploadingFile } =
+      const { isUploading, progress, uploadedFile, uploadFile, uploadingFile } =
         useUploadFile();
 
       const loading = isUploading && uploadingFile;
@@ -107,10 +97,10 @@ export const MediaPlaceholderElement = withHOC(
       useEffect(() => {
         if (!uploadedFile) return;
 
-        const path = findNodePath(editor, element);
+        const path = editor.api.findPath(element);
 
-        withoutSavingHistory(editor, () => {
-          removeNodes(editor, { at: path });
+        editor.tf.withoutSaving(() => {
+          editor.tf.removeNodes({ at: path });
 
           const node = {
             children: [{ text: '' }],
@@ -123,7 +113,7 @@ export const MediaPlaceholderElement = withHOC(
             url: uploadedFile.url,
           };
 
-          insertNodes(editor, node, { at: path });
+          editor.tf.insertNodes(node, { at: path });
 
           updateUploadHistory(editor, node);
         });
@@ -152,16 +142,11 @@ export const MediaPlaceholderElement = withHOC(
       }, [isReplaced]);
 
       return (
-        <PlateElement
-          ref={ref}
-          className={cn('relative my-1', className)}
-          editor={editor}
-          {...props}
-        >
+        <PlateElement ref={ref} className={cn(className, 'my-1')} {...props}>
           {(!loading || !isImage) && (
             <div
               className={cn(
-                'flex cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 hover:bg-primary/10'
+                'flex cursor-pointer items-center rounded-sm bg-muted p-3 pr-9 select-none hover:bg-primary/10'
               )}
               onClick={() => !loading && openFilePicker()}
               contentEditable={false}
@@ -169,7 +154,7 @@ export const MediaPlaceholderElement = withHOC(
               <div className="relative mr-3 flex text-muted-foreground/80 [&_svg]:size-6">
                 {currentContent.icon}
               </div>
-              <div className="whitespace-nowrap text-sm text-muted-foreground">
+              <div className="text-sm whitespace-nowrap text-muted-foreground">
                 <div>
                   {loading ? uploadingFile?.name : currentContent.content}
                 </div>
@@ -211,7 +196,7 @@ export function ImageProgress({
 }: {
   file: File;
   className?: string;
-  imageRef?: React.RefObject<HTMLImageElement>;
+  imageRef?: React.RefObject<HTMLImageElement | null>;
   progress?: number;
 }) {
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
@@ -238,7 +223,7 @@ export function ImageProgress({
         src={objectUrl}
       />
       {progress < 100 && (
-        <div className="absolute bottom-1 right-1 flex items-center space-x-2 rounded-full bg-black/50 px-1 py-0.5">
+        <div className="absolute right-1 bottom-1 flex items-center space-x-2 rounded-full bg-black/50 px-1 py-0.5">
           <Spinner />
           <span className="text-xs font-medium text-white">
             {Math.round(progress)}%

@@ -3,8 +3,4 @@
  */
 
 export * from './CommentsPlugin';
-export * from './useHooksComments';
-export * from './components/index';
-export * from './queries/index';
-export * from './stores/index';
-export * from './transforms/index';
+export * from './hooks/index';

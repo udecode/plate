@@ -1,0 +1,146 @@
+---
+title: CLI
+description: 使用 CLI 将 Plate UI 组件添加到您的项目中。
+---
+
+## init
+
+使用 `init` 命令来初始化一个新项目的配置和依赖项，以便使用 Plate UI。
+
+`init` 命令会安装依赖项，配置 `tailwind.config.js`，并为项目设置 CSS 变量。
+
+```bash
+npx shadcx@latest init plate
+```
+
+您将被询问几个问题来配置 `components.json`：
+
+```txt showLineNumbers
+您希望使用哪种颜色作为基础颜色？› Slate
+您是否希望使用 CSS 变量来设置颜色？› yes
+```
+
+### 选项
+
+```txt
+用法: shadcx init [选项] [registry]
+
+初始化您的项目并安装依赖项
+
+选项:
+  -d, --defaults    使用默认值，即 slate 和 CSS 变量。(默认: false)
+  -f, --force       强制覆盖现有的 components.json。(默认: false)
+  -y, --yes         跳过确认提示。(默认: false)
+  -c, --cwd <cwd>   工作目录。默认为当前目录。
+  -a, --all         添加所有可用的组件。(默认: false)
+  -n, --name <name> registry 名称。(默认: plate)
+  -s, --silent      静默输出 (默认: false)
+  --src-dir         在创建新项目时使用 src 目录 (默认: false)
+  --pm <pm>         使用的包管理器 (npm, pnpm, yarn, bun)
+  -h, --help        显示命令帮助信息
+```
+
+## add
+
+使用 `add` 命令将 Plate UI 组件和依赖项添加到您的项目中。
+
+```bash
+# 使用前缀语法
+npx shadcx@latest add plate/editor plate/toolbar
+
+# 或混合使用（registry 将从找到的第一个前缀中获取）
+npx shadcx@latest add plate/editor toolbar
+
+# 或使用 registry 选项
+npx shadcx@latest add editor toolbar -r plate
+```
+
+您将看到一个组件列表供您选择：
+
+```txt
+您希望添加哪些组件？› 空格选择。A 切换全部。
+回车提交。
+
+◯  align-dropdown-menu
+◯  avatar
+◯  blockquote-element
+◯  button
+◯  checkbox
+◯  code-leaf
+◯  code-line-element
+◯  code-syntax-leaf
+◯  combobox
+```
+
+### 选项
+
+```txt
+用法: shadcx add [选项] [components...]
+
+向您的项目添加一个组件
+
+参数:
+  components         要添加的组件。
+
+选项:
+  -y, --yes         跳过确认提示。(默认: false)
+  -o, --overwrite   覆盖现有文件。(默认: false)
+  -c, --cwd <cwd>   工作目录。默认为当前目录。
+  -p, --path <path> 添加组件的路径。
+  -a, --all         添加所有可用的组件 (默认: false)
+  -s, --silent      静默输出 (默认: false)
+  --src-dir         在创建新项目时使用 src 目录 (默认: false)
+  -r, --registry    registry 名称或 URL
+  -l, --list        列出所有可用的 registry (默认: false)
+  -h, --help        显示命令帮助信息
+```
+
+## Monorepo
+
+在 monorepo 中，您可以使用 `-c` 或 `--cwd` 选项指定工作区的路径。
+
+```bash
+npx shadcx@latest init plate -c ./apps/www
+```
+
+或
+
+```bash
+npx shadcx@latest add plate/editor -c ./apps/www
+```
+
+## 示例 components.json
+
+以下是一个为 [shadcn/ui](https://ui.shadcn.com/) 和 Plate UI 配置的 `components.json` 文件示例：
+
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "baseColor": "slate",
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "ui": "@/components/ui",
+    "utils": "@/lib/utils"
+  },
+  "iconLibrary": "lucide",
+  "registries": {
+    "plate": {
+      "aliases": {
+        "ui": "@/components/plate-ui"
+      },
+      "url": "https://platejs.org/r"
+    }
+  }
+}
+```

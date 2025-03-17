@@ -1,0 +1,32 @@
+{
+  "dependencies": [
+    "@udecode/plate-font"
+  ],
+  "doc": {
+    "description": "A toolbar control for adjusting font size.",
+    "docs": [
+      {
+        "route": "/docs/font"
+      }
+    ],
+    "examples": [
+      "list-demo"
+    ]
+  },
+  "files": [
+    {
+      "path": "plate-ui/font-size-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { useState } from 'react';\n\nimport type { TElement } from '@udecode/plate';\n\nimport { cn } from '@udecode/cn';\nimport { toUnitLess } from '@udecode/plate-font';\nimport { FontSizePlugin } from '@udecode/plate-font/react';\nimport { HEADING_KEYS } from '@udecode/plate-heading';\nimport { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';\nimport { Minus, Plus } from 'lucide-react';\n\nimport { Popover, PopoverContent, PopoverTrigger } from './popover';\nimport { ToolbarButton } from './toolbar';\n\nconst DEFAULT_FONT_SIZE = '16';\n\nconst FONT_SIZE_MAP = {\n  [HEADING_KEYS.h1]: '36',\n  [HEADING_KEYS.h2]: '24',\n  [HEADING_KEYS.h3]: '20',\n} as const;\n\nconst FONT_SIZES = [\n  '8',\n  '9',\n  '10',\n  '12',\n  '14',\n  '16',\n  '18',\n  '24',\n  '30',\n  '36',\n  '48',\n  '60',\n  '72',\n  '96',\n] as const;\n\nexport function FontSizeToolbarButton() {\n  const [inputValue, setInputValue] = useState(DEFAULT_FONT_SIZE);\n  const [isFocused, setIsFocused] = useState(false);\n  const { api, editor } = useEditorPlugin(FontSizePlugin);\n\n  const cursorFontSize = useEditorSelector((editor) => {\n    const fontSize = editor.api.marks()?.[FontSizePlugin.key];\n\n    if (fontSize) {\n      return toUnitLess(fontSize as string);\n    }\n\n    const [block] = editor.api.block<TElement>() || [];\n\n    if (!block?.type) return DEFAULT_FONT_SIZE;\n\n    return block.type in FONT_SIZE_MAP\n      ? FONT_SIZE_MAP[block.type as keyof typeof FONT_SIZE_MAP]\n      : DEFAULT_FONT_SIZE;\n  }, []);\n\n  const handleInputChange = () => {\n    const newSize = toUnitLess(inputValue);\n\n    if (Number.parseInt(newSize) < 1 || Number.parseInt(newSize) > 100) {\n      editor.tf.focus();\n\n      return;\n    }\n    if (newSize !== toUnitLess(cursorFontSize)) {\n      api.fontSize.setMark(`${newSize}px`);\n    }\n\n    editor.tf.focus();\n  };\n\n  const handleFontSizeChange = (delta: number) => {\n    const newSize = Number(displayValue) + delta;\n    api.fontSize.setMark(`${newSize}px`);\n    editor.tf.focus();\n  };\n\n  const displayValue = isFocused ? inputValue : cursorFontSize;\n\n  return (\n    <div className=\"flex h-7 items-center gap-1 rounded-md bg-muted/60 p-0\">\n      <ToolbarButton onClick={() => handleFontSizeChange(-1)}>\n        <Minus />\n      </ToolbarButton>\n\n      <Popover open={isFocused} modal={false}>\n        <PopoverTrigger asChild>\n          <input\n            className={cn(\n              'h-full w-10 shrink-0 bg-transparent px-1 text-center text-sm hover:bg-muted'\n            )}\n            value={displayValue}\n            onBlur={() => {\n              setIsFocused(false);\n              handleInputChange();\n            }}\n            onChange={(e) => setInputValue(e.target.value)}\n            onFocus={() => {\n              setIsFocused(true);\n              setInputValue(toUnitLess(cursorFontSize));\n            }}\n            onKeyDown={(e) => {\n              if (e.key === 'Enter') {\n                e.preventDefault();\n                handleInputChange();\n              }\n            }}\n            data-plate-focus=\"true\"\n            type=\"text\"\n          />\n        </PopoverTrigger>\n        <PopoverContent\n          className=\"w-10 px-px py-1\"\n          onOpenAutoFocus={(e) => e.preventDefault()}\n        >\n          {FONT_SIZES.map((size) => (\n            <button\n              key={size}\n              className={cn(\n                'flex h-8 w-full items-center justify-center text-sm hover:bg-accent data-[highlighted=true]:bg-accent'\n              )}\n              onClick={() => {\n                api.fontSize.setMark(`${size}px`);\n                setIsFocused(false);\n              }}\n              data-highlighted={size === displayValue}\n              type=\"button\"\n            >\n              {size}\n            </button>\n          ))}\n        </PopoverContent>\n      </Popover>\n\n      <ToolbarButton onClick={() => handleFontSizeChange(1)}>\n        <Plus />\n      </ToolbarButton>\n    </div>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/font-size-toolbar-button.tsx"
+    }
+  ],
+  "name": "font-size-toolbar-button",
+  "registryDependencies": [
+    "popover",
+    "toolbar"
+  ],
+  "type": "registry:ui",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
+}

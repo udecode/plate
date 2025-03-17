@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
 
 import { TogglePlugin } from '../TogglePlugin';
 import { getEnclosingToggleIds } from './getEnclosingToggleIds';

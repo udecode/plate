@@ -1,5 +1,5 @@
-import { type PlateEditor, getEditorPlugin } from '@udecode/plate-common/react';
 import { deserializeInlineMd } from '@udecode/plate-markdown';
+import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import type { CopilotPluginConfig } from '../CopilotPlugin';
 
@@ -20,7 +20,7 @@ export const acceptCopilotNextWord = (editor: PlateEditor) => {
     });
 
     withoutAbort(editor, () => {
-      editor.insertFragment(deserializeInlineMd(editor, firstWord));
+      editor.tf.insertFragment(deserializeInlineMd(editor, firstWord));
     });
   }
 };

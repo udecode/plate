@@ -1,13 +1,15 @@
 import React from 'react';
 
-import { focusAtom } from 'jotai-optics';
-import { useFocused } from 'slate-react';
+import type { WritableAtom } from 'jotai/vanilla/atom';
 
+import { focusAtom } from 'jotai-optics';
+import { type JotaiStore, useAtomStoreSet, useAtomStoreValue } from 'jotai-x';
+
+import { useFocused } from '../slate-react';
 import {
   plateControllerStore,
   useEditorId,
-  usePlateControllerActions,
-  usePlateSelectors,
+  usePlateControllerLocalStore,
   usePlateStore,
 } from '../stores';
 
@@ -23,28 +25,34 @@ export const PlateControllerEffect = ({
 
   const currentStoreAtom = React.useMemo(
     () =>
-      focusAtom(plateControllerStore.atom.editorStores, (optic) =>
-        optic.prop(id)
+      focusAtom(
+        plateControllerStore.atom.editorStores as WritableAtom<
+          Record<string, JotaiStore | null>,
+          any,
+          any
+        >,
+        (optic) => optic.prop(id)
       ),
     [id]
   );
-  const setCurrentStore = usePlateControllerActions().atom(currentStoreAtom, {
-    warnIfNoStore: false,
-  });
-  const store = usePlateStore(id).store();
+  const setCurrentStore =
+    usePlateControllerLocalStore().setAtom(currentStoreAtom);
+  const store = usePlateStore(id);
 
-  const primary = usePlateSelectors(id).primary();
-  const setPrimaryEditorIds = usePlateControllerActions().primaryEditorIds({
-    warnIfNoStore: false,
-  });
+  const primary = useAtomStoreValue(store, 'primary');
+  const setPrimaryEditorIds = useAtomStoreSet(
+    usePlateControllerLocalStore(),
+    'primaryEditorIds'
+  );
 
   const focused = useFocused();
-  const setActiveId = usePlateControllerActions().activeId({
-    warnIfNoStore: false,
-  });
+  const setActiveId = useAtomStoreSet(
+    usePlateControllerLocalStore(),
+    'activeId'
+  );
 
   React.useEffect(() => {
-    setCurrentStore(store ?? null);
+    setCurrentStore((store as any) ?? null);
 
     return () => {
       setCurrentStore(null);

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useEditorString } from '@udecode/plate-common/react';
+import { useEditorString } from '@udecode/plate/react';
 
 import { useSelectedItems } from './useSelectedItems';
 
@@ -36,7 +36,7 @@ export const useSelectableItems = <
 
   return useMemo(() => {
     const uniqueItems = Array.from(new Set(items));
-    const trimmedSearch = search?.trim().replace(/\s+/g, ' ') || '';
+    const trimmedSearch = search?.trim().replaceAll(/\s+/g, ' ') || '';
 
     const searchItem =
       allowNew &&

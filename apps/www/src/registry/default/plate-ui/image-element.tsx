@@ -3,42 +3,36 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { useEditorRef, withHOC } from '@udecode/plate-common/react';
-import { useDraggable, useDraggableState } from '@udecode/plate-dnd';
+import { useDraggable } from '@udecode/plate-dnd';
 import { Image, ImagePlugin, useMediaState } from '@udecode/plate-media/react';
-import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
+import { ResizableProvider, useResizableValue } from '@udecode/plate-resizable';
+import { PlateElement, withHOC } from '@udecode/plate/react';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaPopover } from './media-popover';
-import { PlateElement } from './plate-element';
 import {
+  mediaResizeHandleVariants,
   Resizable,
   ResizeHandle,
-  mediaResizeHandleVariants,
 } from './resizable';
 
 export const ImageElement = withHOC(
   ResizableProvider,
   withRef<typeof PlateElement>(
     ({ children, className, nodeProps, ...props }, ref) => {
-      const editor = useEditorRef();
-
       const { align = 'center', focused, readOnly, selected } = useMediaState();
 
-      const width = useResizableStore().get.width();
+      const width = useResizableValue('width');
 
-      const state = editor.plugins.dnd
-        ? useDraggableState({ element: props.element })
-        : ({} as any);
-
-      const { isDragging } = state;
-      const { handleRef } = useDraggable(state);
+      const { isDragging, handleRef } = useDraggable({
+        element: props.element,
+      });
 
       return (
         <MediaPopover plugin={ImagePlugin}>
           <PlateElement
             ref={ref}
-            className={cn('py-2.5', className)}
+            className={cn(className, 'py-2.5')}
             {...props}
           >
             <figure className="group relative m-0" contentEditable={false}>

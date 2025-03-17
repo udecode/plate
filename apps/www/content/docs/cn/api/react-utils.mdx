@@ -1,0 +1,92 @@
+---
+title: React 工具
+description: \@udecode/react-utils 的 API 参考。
+---
+
+`@udecode/react-utils` 包含用于 React 的实用函数。
+
+## 组件
+
+### `<PortalBody>`
+
+使用 portal 在 `document.body` 中渲染 React 组件。
+
+### `<Text>`
+
+用于渲染 span 的通用组件。
+
+### `<Box>`
+
+用于渲染 div 的通用组件。
+
+## API
+
+### `createPrimitiveComponent`
+
+创建一个原始组件工厂，该工厂利用 hooks 来管理状态、属性，并将引用转发给子组件。
+
+<API name="createPrimitiveComponent">
+<APIParameters>
+  <APIItem name="element" type="React.ElementType">
+    基础组件或原生 HTML 元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Function">
+  返回一个带有状态和属性管理 hooks 的原始组件的函数。
+</APIReturns>
+</API>
+
+### `createPrimitiveElement`
+
+从元素类型创建一个组件。
+
+<API name="createPrimitiveElement">
+<APIParameters>
+  <APIItem name="element" type="React.ElementType">
+    原生 HTML 元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="React.FC">
+  返回一个渲染指定元素的函数组件。
+</APIReturns>
+</API>
+
+### `createSlotComponent`
+
+创建一个 Slot 组件，当你希望一个组件表现得像其子组件时非常有用。
+
+<API name="createSlotComponent">
+<APIParameters>
+  <APIItem name="element" type="React.ElementType">
+    基础组件或原生 HTML 元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Function">
+  返回一个 Slot 组件的函数。
+</APIReturns>
+</API>
+
+### `withProviders`
+
+一个将组件包装在多个providers中的函数。
+
+<API name="withProviders">
+<APIParameters>
+  <APIItem name="providers" type="any[]">
+    用于包装组件的providers。如果有任何希望providers接收的属性，只需传递一个数组。
+  </APIItem>
+  <APIItem name="WrappedComponent" type="FunctionComponent<T>">
+    要包装的组件。
+  </APIItem>
+  <APIItem name="props" type="T">
+    传递给包装组件的属性。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="FunctionComponent<T>">
+  返回一个由指定providers包装的新组件。
+</APIReturns>
+</API>

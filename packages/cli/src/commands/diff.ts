@@ -1,16 +1,17 @@
 import { existsSync, promises as fs } from "fs"
 import path from "path"
-import { Config, getConfig } from "@/src/utils/get-config"
-import { handleError } from "@/src/utils/handle-error"
-import { highlighter } from "@/src/utils/highlighter"
-import { logger } from "@/src/utils/logger"
 import {
   fetchTree,
   getItemTargetPath,
   getRegistryBaseColor,
   getRegistryIndex,
-} from "@/src/utils/registry"
-import { registryIndexSchema } from "@/src/utils/registry/schema"
+  REGISTRY_URL,
+} from "@/src/registry/api"
+import { registryIndexSchema } from "@/src/registry/schema"
+import { Config, getConfig } from "@/src/utils/get-config"
+import { handleError } from "@/src/utils/handle-error"
+import { highlighter } from "@/src/utils/highlighter"
+import { logger } from "@/src/utils/logger"
 import { transform } from "@/src/utils/transformers"
 import { Command } from "commander"
 import { diffLines, type Change } from "diff"
@@ -59,7 +60,9 @@ export const diff = new Command()
         process.exit(1)
       }
 
-      const registryIndex = await getRegistryIndex(options.registry)
+      const registryIndex = await getRegistryIndex(
+        options.registry ?? REGISTRY_URL
+      )
 
       if (!registryIndex) {
         handleError(new Error("Failed to fetch registry index."))
@@ -150,8 +153,15 @@ async function diffComponent(
   component: z.infer<typeof registryIndexSchema>[number],
   config: Config
 ) {
-  const payload = await fetchTree(config.style, [component])
-  const baseColor = await getRegistryBaseColor(config.tailwind.baseColor)
+  const payload = await fetchTree(
+    config.style,
+    [component],
+    config.url ?? REGISTRY_URL
+  )
+  const baseColor = await getRegistryBaseColor(
+    config.tailwind.baseColor,
+    config.url ?? REGISTRY_URL
+  )
 
   if (!payload) {
     return []

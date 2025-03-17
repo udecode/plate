@@ -4,5 +4,4 @@
 
 export * from './IndentListPlugin';
 export * from './onKeyDownIndentList';
-export * from './renderIndentListBelowNodes';
 export * from './hooks/index';

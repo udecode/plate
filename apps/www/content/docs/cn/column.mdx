@@ -1,0 +1,177 @@
+---
+title: 列
+docs:
+  - route: /docs/components/column-element
+    title: 列元素
+  - route: /docs/components/column-group-element
+    title: 列组元素
+---
+
+<ComponentPreview name="column-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 向文档中添加列。
+- 使用 `column-group-element` 工具栏选择多种列布局。
+- [ ] 可调整大小的列
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-layout
+```
+
+## 使用
+
+```tsx
+import { ColumnPlugin, ColumnItemPlugin } from '@udecode/plate-layout/react';
+
+const plugins = [
+  // ...其他插件
+  ColumnPlugin,
+];
+```
+
+## 插件
+
+### `ColumnPlugin`
+
+向文档中添加列插件。
+
+### `ColumnItemPlugin`
+
+向文档中添加列项插件。
+
+## 类型
+
+### `TColumnGroupElement`
+
+继承自 `TElement`。
+
+### `TColumnElement`
+
+继承自 `TElement`。
+
+<API name="TColumnElement">
+<APIAttributes>
+  <APIItem name="width" type="string" optional>
+    列的宽度（必须以 `%` 结尾）
+  </APIItem>
+</APIAttributes>
+</API>
+
+## 转换
+
+### `insertColumnGroup`
+
+插入一个包含两个空列的列组。
+
+<API name="insertColumnGroup">
+<APIOptions type="InsertNodesOptions & { columns?: number[] | number }">
+    - `columns`: 列宽数组或等宽列的数量（默认：2）
+    - 其他 `InsertNodesOptions` 用于控制插入行为
+  <APIItem name="columns" type="number[] | number" optional>
+    列宽数组或等宽列的数量（默认：2）
+  </APIItem>
+  <APIItem name="...InsertNodesOptions" type="InsertNodesOptions">
+    其他用于控制插入行为的选项
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertColumn`
+
+插入一个空列。
+
+<API name="insertColumn">
+<APIOptions type="InsertNodesOptions & { width?: string }">
+  <APIItem name="width" type="string" optional>
+    列宽（默认："33%"）
+  </APIItem>
+  <APIItem name="...InsertNodesOptions" type="InsertNodesOptions">
+    其他用于控制插入行为的选项
+  </APIItem>
+</APIOptions>
+</API>
+
+### `moveMiddleColumn`
+
+将中间列向左或向右移动。
+
+<API name="moveMiddleColumn">
+<APIParameters>
+  <APIItem name="nodeEntry" type="NodeEntry">
+    `column` 元素的节点entry
+  </APIItem>
+  <APIItem name="options" type="{ direction: 'left' | 'right' }">
+    控制中间列移动的方向
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果中间节点为空（并删除它），则返回 `false`，否则返回 `true`。
+</APIReturns>
+</API>
+
+### `toggleColumnGroup`
+
+将块转换为列组布局或更新现有列组的布局。
+
+<API name="toggleColumnGroup">
+- 如果目标块不是列组，则将其包装在新的列组中，并指定列数
+- 如果目标块已经是列组，则使用 `setColumns` 更新其列布局
+- 原始内容成为第一列的内容
+- 创建额外的列并填充空段落
+<APIOptions type="object">
+  <APIItem name="at" type="Location" optional>
+    切换列组的位置。
+  </APIItem>
+  <APIItem name="columns" type="number" optional>
+    要创建的等宽列的数量（默认：2）
+  </APIItem>
+  <APIItem name="widths" type="string[]" optional>
+    列宽数组（例如，['50%', '50%']）。优先于 `columns`。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `setColumns`
+
+更新现有列组的列布局。
+
+<API name="setColumns">
+- 当增加列时：
+  - 保留现有列内容
+  - 添加具有指定宽度的新空列
+- 当减少列时：
+  - 将删除列的内容合并到最后一个保留的列中
+  - 更新剩余列的宽度
+- 当保持相同列数时：
+  - 仅更新列宽
+<APIOptions type="object">
+  <APIItem name="at" type="Path">
+    列组元素的路径。
+  </APIItem>
+  <APIItem name="columns" type="number" optional>
+    要创建的等宽列的数量。
+  </APIItem>
+  <APIItem name="widths" type="string[]" optional>
+    列宽数组（例如，['33%', '67%']）。优先于 `columns`。
+  </APIItem>
+</APIOptions>
+</API>
+
+
+## 钩子
+
+### `useDebouncePopoverOpen`
+
+<API name="useDebouncePopoverOpen">
+<APIReturns type="boolean">
+  弹出框是否打开。
+</APIReturns>
+</API>

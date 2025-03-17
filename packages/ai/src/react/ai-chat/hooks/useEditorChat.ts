@@ -2,21 +2,17 @@
 
 import { useEffect } from 'react';
 
+import type { NodeEntry } from '@udecode/plate';
 import type { UseChatHelpers } from 'ai/react';
 
-import {
-  type TNodeEntry,
-  isCollapsed,
-  isSelectionExpanded,
-} from '@udecode/plate-common';
-import { useEditorPlugin } from '@udecode/plate-common/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 
 export type UseEditorChatOptions = {
   chat: UseChatHelpers;
-  onOpenBlockSelection?: (blocks: TNodeEntry[]) => void;
+  onOpenBlockSelection?: (blocks: NodeEntry[]) => void;
   onOpenChange?: (open: boolean) => void;
   onOpenCursor?: () => void;
   onOpenSelection?: () => void;
@@ -29,14 +25,14 @@ export const useEditorChat = ({
   onOpenCursor,
   onOpenSelection,
 }: UseEditorChatOptions) => {
-  const { editor, setOption, setOptions, useOption } =
-    useEditorPlugin(AIChatPlugin);
-  const open = useOption('open');
+  const { editor, setOption } = useEditorPlugin(AIChatPlugin);
+  const open = usePluginOption(AIChatPlugin, 'open');
 
   // Sync useChat with AIChatPlugin
   useEffect(() => {
     setOption('chat', chat);
-  }, [chat, setOption, setOptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chat.input, chat.messages, chat.isLoading, chat.data, chat.error]);
 
   useEffect(() => {
     onOpenChange?.(open);
@@ -56,12 +52,12 @@ export const useEditorChat = ({
           return;
         }
       }
-      if (onOpenCursor && isCollapsed(editor.selection)) {
+      if (onOpenCursor && editor.api.isCollapsed()) {
         onOpenCursor();
 
         return;
       }
-      if (onOpenSelection && isSelectionExpanded(editor)) {
+      if (onOpenSelection && editor.api.isExpanded()) {
         onOpenSelection();
 
         return;

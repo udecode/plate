@@ -1,6 +1,6 @@
-import type { NodeComponent } from './PlatePlugin';
+import type { NodeComponent, PluginConfig } from '../../lib';
 
-import { type PluginConfig, resolvePluginTest } from '../../lib';
+import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { createPlatePlugin } from './createPlatePlugin';
 
 describe('withComponent method', () => {
@@ -73,15 +73,15 @@ describe('withComponent method', () => {
         toggleSyntax: () => {},
       }))
       .extend(() => ({
+        options: {
+          hotkey: ['mod+opt+8', 'mod+shift+8'],
+        },
         extendEditor: ({ api, editor }) => {
           // No type error
           api.plugin.getSyntaxState();
           api.toggleSyntax();
 
           return editor;
-        },
-        options: {
-          hotkey: ['mod+opt+8', 'mod+shift+8'],
         },
       }));
 

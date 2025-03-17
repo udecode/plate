@@ -1,59 +1,20 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
-import { isHotkey } from '@udecode/plate-common';
-import { useEditorRef } from '@udecode/plate-common/react';
+import { isHotkey } from '@udecode/plate';
+import { useEditorRef } from '@udecode/plate/react';
 
-import {
-  imagePreviewActions,
-  useImagePreviewSelectors,
-} from './ImagePreviewStore';
+import { ImagePreviewStore, useImagePreviewValue } from './ImagePreviewStore';
 import { useZoom } from './useZoom';
 
-export const useImagePreviewState = ({
-  scrollSpeed,
-}: {
-  scrollSpeed: number;
-}) => {
+export const useImagePreview = ({ scrollSpeed }: { scrollSpeed: number }) => {
   const editor = useEditorRef();
-  const isOpen = useImagePreviewSelectors().isOpen(editor.id);
-  const scale = useImagePreviewSelectors().scale();
-  const translate = useImagePreviewSelectors().translate();
-  const setTranslate = imagePreviewActions.translate;
-  const boundingClientRect = useImagePreviewSelectors().boundingClientRect();
-  const currentPreview = useImagePreviewSelectors().currentPreview();
-  const setCurrentPreView = imagePreviewActions.currentPreview;
-  const previewList = useImagePreviewSelectors().previewList();
-  const isEditingScale = useImagePreviewSelectors().isEditingScale();
-  const setIsEditingScale = imagePreviewActions.isEditingScale;
+  const isOpen = useImagePreviewValue('isOpen', editor.id);
+  const scale = useImagePreviewValue('scale');
+  const translate = useImagePreviewValue('translate');
+  const boundingClientRect = useImagePreviewValue('boundingClientRect');
+  const currentPreview = useImagePreviewValue('currentPreview');
+  const previewList = useImagePreviewValue('previewList');
 
-  return {
-    boundingClientRect,
-    currentPreview,
-    editor,
-    isEditingScale,
-    isOpen,
-    previewList,
-    scale,
-    scrollSpeed,
-    setCurrentPreView,
-    setIsEditingScale,
-    setTranslate,
-    translate,
-  };
-};
-
-export const useImagePreview = ({
-  boundingClientRect,
-  currentPreview,
-  isOpen,
-  previewList,
-  scale,
-  scrollSpeed,
-  setCurrentPreView,
-  setIsEditingScale,
-  setTranslate,
-  translate,
-}: ReturnType<typeof useImagePreviewState>) => {
   // zoom in/out and move image
   useEffect(() => {
     const wheel = (e: WheelEvent) => {
@@ -85,7 +46,7 @@ export const useImagePreview = ({
         topOffset = y;
       }
 
-      setTranslate({
+      ImagePreviewStore.set('translate', {
         x: leftOffset,
         y: topOffset,
       });
@@ -113,7 +74,7 @@ export const useImagePreview = ({
   }, [currentPreview]);
 
   const onClose = useCallback(() => {
-    imagePreviewActions.close();
+    ImagePreviewStore.actions.close();
     // document.documentElement.style.overflowY = 'scroll';
   }, []);
 
@@ -163,7 +124,10 @@ export const useImagePreview = ({
       onClick: () => {
         if (typeof currentPreviewIndex !== 'number') return;
 
-        setCurrentPreView(previewList[currentPreviewIndex + 1]);
+        ImagePreviewStore.set(
+          'currentPreview',
+          previewList[currentPreviewIndex + 1]
+        );
       },
     },
     prevDisabled,
@@ -172,11 +136,14 @@ export const useImagePreview = ({
       onClick: () => {
         if (typeof currentPreviewIndex !== 'number') return;
 
-        setCurrentPreView(previewList[currentPreviewIndex - 1]);
+        ImagePreviewStore.set(
+          'currentPreview',
+          previewList[currentPreviewIndex - 1]
+        );
       },
     },
     scaleTextProps: {
-      onClick: () => setIsEditingScale(true),
+      onClick: () => ImagePreviewStore.set('isEditingScale', true),
     },
     zommOutProps: {
       disabled: zoomOutDisabled,

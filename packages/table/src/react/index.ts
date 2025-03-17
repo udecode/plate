@@ -4,17 +4,6 @@
 
 export * from './TablePlugin';
 export * from './onKeyDownTable';
-export * from './withDeleteTable';
-export * from './withGetFragmentTable';
-export * from './withInsertFragmentTable';
-export * from './withInsertTextTable';
-export * from './withMarkTable';
-export * from './withSelectionTable';
-export * from './withSetFragmentDataTable';
-export * from './withTable';
 export * from './components/index';
 export * from './hooks/index';
-export * from './merge/index';
-export * from './queries/index';
 export * from './stores/index';
-export * from './transforms/index';

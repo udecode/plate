@@ -1,67 +1,53 @@
-import type Slate from 'slate';
-
-import {
-  type ExtendEditor,
-  getNode,
-  getNodeEntries,
-  getNodeString,
-  getPoint,
-  getPointBefore,
-  isCollapsed,
-  queryNode,
-  removeNodes,
-  select,
-} from '@udecode/plate-common';
+import { type OverrideEditor, NodeApi, queryNode } from '@udecode/plate';
 
 import type { SelectOnBackspaceConfig } from './SelectOnBackspacePlugin';
 
 /** Set a list of element types to select on backspace */
-export const withSelectOnBackspace: ExtendEditor<SelectOnBackspaceConfig> = ({
+export const withSelectOnBackspace: OverrideEditor<SelectOnBackspaceConfig> = ({
   editor,
   getOptions,
-}) => {
-  const { deleteBackward } = editor;
+  tf: { deleteBackward },
+}) => ({
+  transforms: {
+    deleteBackward(unit) {
+      const { selection } = editor;
+      const { query, removeNodeIfEmpty } = getOptions();
 
-  editor.deleteBackward = (unit: 'block' | 'character' | 'line' | 'word') => {
-    const { selection } = editor;
-    const { query, removeNodeIfEmpty } = getOptions();
-
-    if (unit === 'character' && isCollapsed(selection)) {
-      const pointBefore = getPointBefore(editor, selection as Slate.Location, {
-        unit,
-      });
-
-      if (pointBefore) {
-        const [prevCell] = getNodeEntries(editor, {
-          at: pointBefore,
-          match: (node) => queryNode([node, pointBefore.path], query),
+      if (unit === 'character' && editor.api.isCollapsed()) {
+        const pointBefore = editor.api.before(selection!, {
+          unit: unit,
         });
 
-        if (!!prevCell && pointBefore) {
-          const point = getPoint(editor, selection as Slate.Location);
-          const selectedNode = getNode(editor, point.path);
+        if (pointBefore) {
+          const [prevCell] = editor.api.nodes({
+            at: pointBefore,
+            match: (node) => queryNode([node, pointBefore.path], query),
+          });
 
-          if (
-            removeNodeIfEmpty &&
-            selectedNode &&
-            !getNodeString(selectedNode as any)
-          ) {
-            // remove node if empty
-            removeNodes(editor);
+          if (!!prevCell && pointBefore) {
+            const point = editor.api.point(selection!)!;
+            const selectedNode = NodeApi.get(editor, point.path);
+
+            if (
+              removeNodeIfEmpty &&
+              selectedNode &&
+              !NodeApi.string(selectedNode as any)
+            ) {
+              // remove node if empty
+              editor.tf.removeNodes();
+            }
+
+            // don't delete image, set selection there
+            editor.tf.select(pointBefore);
+          } else {
+            deleteBackward(unit);
           }
-
-          // don't delete image, set selection there
-          select(editor, pointBefore);
         } else {
           deleteBackward(unit);
         }
       } else {
         deleteBackward(unit);
       }
-    } else {
-      deleteBackward(unit);
-    }
-  };
-
-  return editor;
-};
+    },
+  },
+});

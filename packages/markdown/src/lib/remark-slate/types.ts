@@ -1,4 +1,4 @@
-import type { SlateEditor, TElement } from '@udecode/plate-common';
+import type { SlateEditor, TElement } from '@udecode/plate';
 
 export type MdastElementType =
   | 'blockquote'
@@ -12,29 +12,9 @@ export type MdastElementType =
   | 'table'
   | 'thematicBreak';
 
-export type MdastTextType =
-  | 'delete'
-  | 'emphasis'
-  | 'html'
-  | 'inlineCode'
-  | 'strong'
-  | 'text';
-
-export type MdastNodeType = MdastElementType | MdastTextType;
-
-export interface TextPosition {
-  column: number;
-  line: number;
-  offset?: number;
-}
-
 export interface MdastNode {
   type: MdastNodeType;
   // mdast metadata
-  position?: {
-    end: TextPosition;
-    start: TextPosition;
-  };
   alt?: string;
   checked?: any;
   children?: MdastNode[];
@@ -42,11 +22,25 @@ export interface MdastNode {
   indent?: any;
   lang?: string;
   ordered?: boolean;
+  position?: {
+    end: TextPosition;
+    start: TextPosition;
+  };
   spread?: any;
   text?: string;
   url?: string;
   value?: string;
 }
+
+export type MdastNodeType = MdastElementType | MdastTextType;
+
+export type MdastTextType =
+  | 'delete'
+  | 'emphasis'
+  | 'html'
+  | 'inlineCode'
+  | 'strong'
+  | 'text';
 
 export type RemarkElementRule = {
   transform: (
@@ -59,6 +53,13 @@ export type RemarkElementRules = Partial<
   Record<MdastElementType, RemarkElementRule>
 >;
 
+export type RemarkPluginOptions = {
+  editor: SlateEditor;
+  elementRules: RemarkElementRules;
+  textRules: RemarkTextRules;
+  indentList?: boolean;
+};
+
 export type RemarkTextRule = {
   mark?: (options: RemarkPluginOptions) => string;
   transform?: (text: string) => string;
@@ -66,9 +67,8 @@ export type RemarkTextRule = {
 
 export type RemarkTextRules = Partial<Record<MdastTextType, RemarkTextRule>>;
 
-export type RemarkPluginOptions = {
-  editor: SlateEditor;
-  elementRules: RemarkElementRules;
-  textRules: RemarkTextRules;
-  indentList?: boolean;
-};
+export interface TextPosition {
+  column: number;
+  line: number;
+  offset?: number;
+}

@@ -1,0 +1,209 @@
+---
+title: TypeScript
+description: Configure TypeScript (tsconfig) for using Plate, including module resolution solutions.
+---
+
+Plate provides ESM packages, which require certain TypeScript (and bundler) configurations to ensure compatibility, especially when importing subpath modules like `@udecode/plate/react`. Below are several solutions and workarounds to make TypeScript happy.
+
+## Quick Summary
+
+1. **Recommended (Easiest):** Use TypeScript **5.0+** and set `"moduleResolution": "bundler"` in your `tsconfig.json`.
+2. **Alternate (Node resolution):** Keep `"moduleResolution": "node"` and map paths to `dist/react` (and potentially alias them in your bundler config).
+3. **Up-to-date Packages:** Ensure all `@udecode/plate-*` dependencies share the same major/minor version.
+
+
+## Recommended: `"moduleResolution": "bundler"`
+
+The simplest approach for modern bundlers (Vite, Next.js 14, etc.) is to enable the new TypeScript "bundler" resolution mode. Example:
+
+```jsonc
+// tsconfig.json
+{
+  "compilerOptions": {
+    // ...
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    // ...
+  }
+}
+```
+
+This aligns TypeScript's resolution logic more closely with modern bundlers and ESM packages. Below is a working excerpt from [Plate template](https://github.com/udecode/plate-template):
+
+```jsonc
+{
+  "compilerOptions": {
+    "strict": false,
+    "strictNullChecks": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "exactOptionalPropertyTypes": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+
+    "isolatedModules": true,
+
+    "allowJs": true,
+    "checkJs": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "jsx": "preserve",
+    "module": "esnext",
+    "target": "es2022",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "incremental": true,
+    "sourceMap": true,
+
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": ["node_modules"]
+}
+```
+
+- **`"moduleResolution": "bundler"`** was introduced in TypeScript 5.0.
+- If your TS version is older than 5.0, you **must** upgrade or stick to `"moduleResolution": "node"` plus manual path aliases.
+
+```jsonc
+// package.json
+{
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
+```
+
+If you see an error like `TS5023: Unknown compiler option 'moduleResolution'` (for `bundler`), it likely means your TypeScript version is below 5.0.
+
+## Workaround: `"moduleResolution": "node"` + Path Aliases
+
+If upgrading your entire project to TS 5.0 or changing the resolution mode is not possible:
+
+1. Keep `"moduleResolution": "node"`.
+2. Map each Plate subpath import to its `dist/react` types in `tsconfig.json` using `paths`.
+3. Alias these paths in your bundler config.
+
+### Example `tsconfig.json`
+
+```jsonc
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "paths": {
+      "@udecode/plate/react": [
+        "./node_modules/@udecode/plate/dist/react/index.d.ts"
+      ],
+      "@udecode/plate-core/react": [
+        "./node_modules/@udecode/plate-core/dist/react/index.d.ts"
+      ],
+      "@udecode/plate-list/react": [
+        "./node_modules/@udecode/plate-list/dist/react/index.d.ts"
+      ]
+      // ...repeat for all @udecode/plate-*/react packages
+    }
+  }
+}
+```
+
+### Example `vite.config.ts`
+
+```ts
+import { defineConfig } from 'vite';
+import path from 'path';
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@udecode/plate/react': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate/dist/react'
+      ),
+      '@udecode/plate-core/react': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate-core/dist/react'
+      ),
+      '@udecode/plate-list/react': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate-list/dist/react'
+      ),
+
+      // Non-/react base aliases:
+      '@udecode/plate': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate'
+      ),
+      '@udecode/plate-core': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate-core'
+      ),
+      '@udecode/plate-list': path.resolve(
+        __dirname,
+        'node_modules/@udecode/plate-list'
+      )
+    }
+  }
+});
+```
+
+**Note:**  
+- You must do this for every `@udecode/plate-*/react` import you use.  
+- For testing/Jest, replicate these aliases via `moduleNameMapper` or similar.
+
+## Ensure Matching Plate Versions
+
+Say you're upgrading one package to `42.0.3`, double-check that all your `@udecode/plate-*` packages are on the **latest version up to 42.0.3** (one package could stay at `42.0.2` if it has no `42.0.3` release). Mixing versions often leads to mismatches.
+
+## FAQ
+
+> I updated `moduleResolution` to `bundler` but it broke my older imports."
+
+If your codebase has older TS usage or relies on `node` resolution, try the path alias approach or fully migrate to a TS 5+ / ESM environment.
+
+> "I'm seeing `TS2305` about missing exports. Is that a resolution error or a real missing export?"  
+
+It can be either:
+- If the entire package is "not found," it's likely a resolution issue.  
+- If it's specifically "no exported member," double-check that you spelled the import correctly (no typos) and that your installed version actually has that export.
+
+> "Which minimum TS version do I need for `moduleResolution: bundler`?"  
+
+TypeScript 5.0 or higher.
+
+> "We switched to bundler resolution, but some older libraries in our project break."  
+
+If your older libraries aren't ESM-friendly, you might stick to `node` resolution and do manual path aliases. Some large codebases gradually upgrade or create separate build pipelines for legacy code.
+
+> "We see the error in Jest but not in Vite."  
+
+You'll need to replicate your alias/resolution changes for Jest. For example:
+
+```js
+// jest.config.js
+module.exports = {
+  // ...
+  moduleNameMapper: {
+    '^@udecode/plate/react$': '<rootDir>/node_modules/@udecode/plate/dist/react',
+    '^@udecode/plate-core/react$': '<rootDir>/node_modules/@udecode/plate-core/dist/react',
+    // ...
+  }
+};
+```

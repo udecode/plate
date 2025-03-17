@@ -1,17 +1,19 @@
 import React from 'react';
 
 import { act, render, renderHook } from '@testing-library/react';
-import { useFocused } from 'slate-react';
+import { useAtomStoreValue } from 'jotai-x';
 
 import { createPlateEditor } from '../editor';
-import { PlateController, usePlateControllerSelectors } from '../stores';
+import { useFocused } from '../slate-react';
+import { PlateController, usePlateControllerLocalStore } from '../stores';
 import { Plate } from './Plate';
 import { PlateControllerEffect } from './PlateControllerEffect';
 
 const DebugPlateController = () => {
-  const editorStores = usePlateControllerSelectors().editorStores();
-  const activeId = usePlateControllerSelectors().activeId();
-  const primaryEditorIds = usePlateControllerSelectors().primaryEditorIds();
+  const store = usePlateControllerLocalStore();
+  const editorStores = useAtomStoreValue(store, 'editorStores');
+  const activeId = useAtomStoreValue(store, 'activeId');
+  const primaryEditorIds = useAtomStoreValue(store, 'primaryEditorIds');
 
   return (
     <div>
@@ -49,8 +51,8 @@ const UnmountablePlate = ({
 
 const FocusedContext = React.createContext(false);
 
-jest.mock('slate-react', () => ({
-  ...jest.requireActual('slate-react'),
+jest.mock('../slate-react', () => ({
+  ...jest.requireActual('../slate-react'),
   useFocused: () => React.useContext(FocusedContext),
 }));
 

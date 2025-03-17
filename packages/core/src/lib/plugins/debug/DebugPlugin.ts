@@ -12,6 +12,8 @@ export type DebugErrorType =
   | 'USE_CREATE_PLUGIN'
   | 'USE_ELEMENT_CONTEXT';
 
+export type LogLevel = 'error' | 'info' | 'log' | 'warn';
+
 export class PlateError extends Error {
   constructor(
     message: string,
@@ -22,14 +24,10 @@ export class PlateError extends Error {
   }
 }
 
-export type LogLevel = 'error' | 'info' | 'log' | 'warn';
-
 export const DebugPlugin = createTSlatePlugin<DebugConfig>({
   key: 'debug',
   options: {
     isProduction: process.env.NODE_ENV === 'production',
-    logLevel:
-      process.env.NODE_ENV === 'production' ? 'error' : ('log' as LogLevel),
     logger: {
       error: (message, type, details) =>
         console.error(`${type ? `[${type}] ` : ''}${message}`, details),
@@ -40,6 +38,8 @@ export const DebugPlugin = createTSlatePlugin<DebugConfig>({
       warn: (message, type, details) =>
         console.warn(`${type ? `[${type}] ` : ''}${message}`, details),
     },
+    logLevel:
+      process.env.NODE_ENV === 'production' ? 'error' : ('log' as LogLevel),
     throwErrors: true,
   },
 }).extendEditorApi<DebugConfig['api']>(({ getOptions }) => {
@@ -51,15 +51,14 @@ export const DebugPlugin = createTSlatePlugin<DebugConfig>({
     type?: DebugErrorType,
     details?: any
   ) => {
+    if (process.env.NODE_ENV === 'production') return;
+
     const options = getOptions();
 
     if (options.isProduction && level === 'log') return;
     if (logLevels.indexOf(level) <= logLevels.indexOf(options.logLevel!)) {
       if (level === 'error' && options.throwErrors) {
-        const error =
-          message instanceof Error ? message : new PlateError(message, type);
-
-        throw error;
+        throw new PlateError(message, type);
       } else {
         options.logger[level]?.(message, type, details);
       }

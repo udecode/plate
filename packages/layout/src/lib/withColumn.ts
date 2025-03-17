@@ -1,121 +1,103 @@
-import {
-  type ExtendEditor,
-  createPathRef,
-  getAboveNode,
-  getLastChildPath,
-  isCollapsed,
-  isElement,
-  isStartPoint,
-  removeNodes,
-  unwrapNodes,
-} from '@udecode/plate-common';
+import { type OverrideEditor, ElementApi } from '@udecode/plate';
 
 import type { TColumnElement, TColumnGroupElement } from './types';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from './BaseColumnPlugin';
-import { insertColumn, moveMiddleColumn, setColumnWidth } from './transforms';
 
-export const withColumn: ExtendEditor = ({ editor }) => {
-  const { deleteBackward, isEmpty, normalizeNode } = editor;
-
-  editor.normalizeNode = (entry) => {
-    const [n, path] = entry;
-
-    if (isElement(n) && n.type === BaseColumnPlugin.key) {
-      const node = n as TColumnGroupElement;
-
-      if (
-        !node.children.some(
-          (child) =>
-            isElement(child) &&
-            child.type === editor.getType(BaseColumnItemPlugin)
-        )
-      ) {
-        removeNodes(editor, { at: path });
-
-        return;
-      }
-      if (node.children.length < 2) {
-        editor.withoutNormalizing(() => {
-          unwrapNodes(editor, { at: path });
-          unwrapNodes(editor, { at: path });
+export const withColumn: OverrideEditor = ({
+  editor,
+  tf: { deleteBackward, normalizeNode },
+}) => ({
+  transforms: {
+    deleteBackward(unit) {
+      if (editor.api.isCollapsed()) {
+        const entry = editor.api.above({
+          match: (n) =>
+            ElementApi.isElement(n) && n.type === BaseColumnItemPlugin.key,
         });
 
-        return;
+        if (entry) {
+          const [node, path] = entry;
+
+          if (node.children.length > 1) return deleteBackward(unit);
+
+          const isStart = editor.api.isStart(editor.selection?.anchor, path);
+
+          if (isStart) return;
+        }
       }
 
-      const prevChildrenCnt = node.children.length;
-      const currentLayout = node.layout;
+      deleteBackward(unit);
+    },
 
-      if (currentLayout) {
-        const currentChildrenCnt = currentLayout.length;
+    normalizeNode([n, path]) {
+      // If it's a column group, ensure it has valid children
+      if (ElementApi.isElement(n) && n.type === BaseColumnPlugin.key) {
+        const node = n as TColumnGroupElement;
 
-        const groupPathRef = createPathRef(editor, path);
+        // If no columns found, unwrap the column group
+        if (
+          !node.children.some(
+            (child) =>
+              ElementApi.isElement(child) &&
+              child.type === editor.getType(BaseColumnItemPlugin)
+          )
+        ) {
+          editor.tf.removeNodes({ at: path });
 
-        if (prevChildrenCnt === 2 && currentChildrenCnt === 3) {
-          const lastChildPath = getLastChildPath(entry);
-
-          insertColumn(editor, {
-            at: lastChildPath,
+          return;
+        }
+        // If only one column remains, unwrap the group (optional logic)
+        if (node.children.length < 2) {
+          editor.tf.withoutNormalizing(() => {
+            editor.tf.unwrapNodes({ at: path });
+            editor.tf.unwrapNodes({ at: path });
           });
 
-          setColumnWidth(editor, groupPathRef, currentLayout);
-
           return;
         }
-        if (prevChildrenCnt === 3 && currentChildrenCnt === 2) {
-          moveMiddleColumn(editor, entry, { direction: 'left' });
-          setColumnWidth(editor, groupPathRef, currentLayout);
 
-          return;
-        }
-        if (prevChildrenCnt === currentChildrenCnt) {
-          setColumnWidth(editor, groupPathRef, currentLayout);
+        // PERF: only run when the number of columns changes
+        editor.tf.withoutNormalizing(() => {
+          // Add new width normalization logic
+          const totalColumns = node.children.length;
+          let widths = node.children.map((col) => {
+            const parsed = Number.parseFloat(col.width);
+
+            return Number.isNaN(parsed) ? 0 : parsed;
+          });
+
+          const sum = widths.reduce((acc, w) => acc + w, 0);
+
+          if (sum !== 100) {
+            const diff = 100 - sum;
+            const adjustment = diff / totalColumns;
+
+            widths = widths.map((w) => w + adjustment);
+
+            // Update the columns with the new widths
+            widths.forEach((w, i) => {
+              const columnPath = path.concat([i]);
+              editor.tf.setNodes<TColumnElement>(
+                { width: `${w}%` },
+                { at: columnPath }
+              );
+            });
+          }
+        });
+      }
+      // If it's a column, ensure it has at least one block (optional)
+      if (ElementApi.isElement(n) && n.type === BaseColumnItemPlugin.key) {
+        const node = n as TColumnElement;
+
+        if (node.children.length === 0) {
+          editor.tf.removeNodes({ at: path });
 
           return;
         }
       }
-    }
-    if (isElement(n) && n.type === BaseColumnItemPlugin.key) {
-      const node = n as TColumnElement;
 
-      if (node.children.length === 0) {
-        removeNodes(editor, { at: path });
-
-        return;
-      }
-    }
-
-    return normalizeNode(entry);
-  };
-
-  editor.deleteBackward = (unit) => {
-    if (isCollapsed(editor.selection)) {
-      const entry = getAboveNode(editor, {
-        match: (n) => isElement(n) && n.type === BaseColumnItemPlugin.key,
-      });
-
-      if (entry) {
-        const [node, path] = entry;
-
-        if (node.children.length > 1) return deleteBackward(unit);
-
-        const isStart = isStartPoint(editor, editor.selection?.anchor, path);
-
-        if (isStart) return;
-      }
-    }
-
-    deleteBackward(unit);
-  };
-
-  editor.isEmpty = (element: any) => {
-    if (element?.type && element.type === BaseColumnItemPlugin.key) {
-      return element.children.length === 1 && isEmpty(element.children[0]);
-    }
-
-    return isEmpty(element);
-  };
-
-  return editor;
-};
+      return normalizeNode([n, path]);
+    },
+  },
+});

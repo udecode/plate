@@ -1,0 +1,291 @@
+---
+title: Unit Testing Plate
+description: Learn how to unit test Plate editor and plugins.
+---
+
+This guide outlines best practices for unit testing Plate plugins and components using `@udecode/plate-test-utils`.
+
+## Installation
+
+```bash
+npm install @udecode/plate-test-utils
+```
+
+## Setting Up Tests
+
+Add the JSX pragma at the top of your test file:
+
+```typescript
+/** @jsx jsx */
+
+import { jsx } from '@udecode/plate-test-utils';
+
+jsx; // so ESLint doesn't complain
+```
+
+This allows you to use JSX syntax for creating editor values.
+
+## Creating Test Cases
+
+### Editor State Representation
+
+Use JSX to represent editor states:
+
+```typescript
+const input = (
+  <editor>
+    <hp>
+      Hello<cursor /> world
+    </hp>
+  </editor>
+) as any as PlateEditor;
+```
+
+Node elements like `<hp />`, `<hul />`, `<hli />` represent different types of nodes.
+
+Special elements like `<cursor />`, `<anchor />`, and `<focus />` represent selection states.
+
+### Testing Transforms
+
+1. Create an input state
+2. Define the expected output state
+3. Use `createPlateEditor` to set up the editor
+4. Apply the transform(s) directly
+5. Assert the editor's new state
+
+Example testing bold formatting:
+
+```typescript
+it('should apply bold formatting', () => {
+  const input = (
+    <editor>
+      <hp>
+        Hello <anchor />
+        world
+        <focus />
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        Hello <htext bold>world</htext>
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const editor = createPlateEditor({
+    plugins: [BoldPlugin],
+    value: input.children,
+    selection: input.selection,
+  });
+
+  // Apply transform directly
+  editor.tf.toggleMark('bold');
+
+  expect(editor.children).toEqual(output.children);
+});
+```
+
+### Testing Selection
+
+Test how operations affect the editor's selection:
+
+```typescript
+it('should collapse selection on backspace', () => {
+  const input = (
+    <editor>
+      <hp>
+        He<anchor />llo wor<focus />ld
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        He<cursor />ld
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const editor = createPlateEditor({
+    value: input.children,
+    selection: input.selection,
+  });
+
+  editor.tf.deleteBackward();
+
+  expect(editor.children).toEqual(output.children);
+  expect(editor.selection).toEqual(output.selection);
+});
+```
+
+## Testing Key Events
+
+When you need to test keyboard handlers directly:
+
+```typescript
+it('should call the onKeyDown handler', () => {
+  const input = (
+    <editor>
+      <hp>
+        Hello <anchor />world<focus />
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  // Create a mock handler to verify it's called
+  const onKeyDownMock = jest.fn();
+
+  const editor = createPlateEditor({
+    value: input.children,
+    selection: input.selection,
+    plugins: [
+      {
+        key: 'test',
+        handlers: {
+          onKeyDown: onKeyDownMock,
+        },
+      },
+    ],
+  });
+
+  // Create the keyboard event
+  const event = new KeyboardEvent('keydown', {
+    key: 'Enter',
+  }) as any;
+
+  // Call the handler directly
+  editor.plugins.test.handlers.onKeyDown({
+    ...getEditorPlugin(editor, { key: 'test' }),
+    event,
+  });
+
+  // Verify the handler was called
+  expect(onKeyDownMock).toHaveBeenCalled();
+});
+```
+
+## Testing Complex Scenarios
+
+For complex plugins like tables, test various scenarios by directly applying transforms:
+
+```typescript
+describe('Table plugin', () => {
+  it('should insert a table', () => {
+    const input = (
+      <editor>
+        <hp>
+          Test<cursor />
+        </hp>
+      </editor>
+    ) as any as PlateEditor;
+
+    const output = (
+      <editor>
+        <hp>Test</hp>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <cursor />
+              </hp>
+            </htd>
+            <htd>
+              <hp></hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp></hp>
+            </htd>
+            <htd>
+              <hp></hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as PlateEditor;
+
+    const editor = createPlateEditor({
+      value: input.children,
+      selection: input.selection,
+      plugins: [TablePlugin],
+    });
+
+    // Call transform directly
+    editor.tf.insertTable({ rows: 2, columns: 2 });
+
+    expect(editor.children).toEqual(output.children);
+    expect(editor.selection).toEqual(output.selection);
+  });
+});
+```
+
+## Testing Plugins with Options
+
+Test how different plugin options affect behavior:
+
+```typescript
+describe('when undo is enabled', () => {
+  it('should undo text format upon delete', () => {
+    const input = (
+      <fragment>
+        <hp>
+          1/<cursor />
+        </hp>
+      </fragment>
+    ) as any;
+
+    const output = (
+      <fragment>
+        <hp>
+          1/4<cursor />
+        </hp>
+      </fragment>
+    ) as any;
+
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({
+          options: {
+            enableUndoOnDelete: true,
+            rules: [
+              {
+                format: '¼',
+                match: '1/4',
+                mode: 'text',
+              },
+            ],
+          },
+        }),
+      ],
+      value: input,
+    });
+
+    // Trigger the autoformat
+    editor.tf.insertText('4');
+
+    // Simulate backspace key
+    const event = new KeyboardEvent('keydown', {
+      key: 'backspace',
+    }) as any;
+
+    // Call the handler
+    editor.plugins[AutoformatPlugin.key].handlers.onKeyDown({
+      ...getEditorPlugin(editor, AutoformatPlugin),
+      event,
+    });
+
+    // With enableUndoOnDelete: true, pressing backspace should restore the original text
+    expect(input.children).toEqual(output.children);
+  });
+});
+```
+
+## Mocking vs. Real Transforms
+
+While mocking can be useful for isolating specific behaviors, Plate tests often assess actual editor children and selection after transforms. This approach ensures that plugins work correctly with the entire editor state.
+

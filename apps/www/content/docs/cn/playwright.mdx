@@ -1,0 +1,300 @@
+---
+title: Playwright 测试
+description: 学习如何编写与 Plate 集成的 Playwright 测试。
+---
+
+[Playwright](https://playwright.dev/) 支持在无头浏览器中进行端到端测试。本指南介绍了如何使用 `@udecode/plate-playwright` 将 Playwright 与 Plate 集成。
+
+## 设置
+
+<Steps>
+
+### 安装依赖
+
+按照 [Playwright 的指南](https://playwright.dev/docs/intro) 在你的应用中安装 Playwright，并确保你可以编写基本的端到端测试。
+
+```bash
+npm install @udecode/plate-playwright playwright
+```
+
+### 添加 PlaywrightPlugin
+
+为了让你的 Playwright 测试能够访问并与编辑器交互，你需要在编辑器中添加 `PlaywrightPlugin`：
+
+```tsx
+const editor = createPlateEditor({
+  plugins: [
+    // 其他插件...
+    PlaywrightPlugin.configure({ enabled: process.env.NODE_ENV !== 'production' }),
+  ]
+})
+```
+
+这将在 `window.platePlaywrightAdapter` 上暴露各种实用工具。
+
+### 获取编辑器句柄
+
+<Callout>
+
+**什么是编辑器句柄？**
+
+大多数 Playwright 测试代码在非浏览器环境中运行。与 Plate 编辑器交互需要使用 Playwright 的 `evaluate` 和 `evaluateHandle` [API](https://playwright.dev/docs/evaluating) 在浏览器上下文中运行 JavaScript。
+
+[句柄](https://playwright.dev/docs/handles) 引用浏览器中的 JavaScript 对象。编辑器句柄指的是你的 Plate 编辑器的 `editor` 实例（`JSHandle<PlateEditor>`）。
+
+</Callout>
+
+在你的 Playwright 测试中，获取编辑器句柄以便与 Plate 交互：
+
+```ts
+const editorHandle = await getEditorHandle(page);
+```
+
+对于多个编辑器，指定可编辑元素：
+
+```ts
+const editable = getEditable(page.getByTestId('my-editor-container'));
+const editorHandle = await getEditorHandle(page, editable);
+```
+
+定位器必须精确匹配一个 `[data-slate-editor]` 元素。
+
+### 开始编写测试
+
+有了 `editorHandle`，你现在可以编写针对编辑器的 Playwright 测试。
+
+</Steps>
+
+## 示例
+
+### 通过路径获取节点句柄
+
+使用 `getNodeByPath` 获取引用特定路径节点的句柄。要对节点的值进行断言，可以使用 `.jsonValue()` 将其转换为 JSON。
+
+```ts
+const nodeHandle = await getNodeByPath(page, editorHandle, [0]);
+
+expect(await nodeHandle.jsonValue()).toBe({
+  type: 'p',
+  children: [{ text: '我的段落' }],
+});
+```
+
+### 获取节点的类型
+
+```ts
+const firstNodeType = await getTypeAtPath(page, editorHandle, [0]);
+expect(firstNodeType).toBe('h1');
+```
+
+### 获取节点的 DOM 节点
+
+在 Playwright 中，你通常需要引用特定的 DOM 元素以便对其状态进行断言或执行涉及它的操作。
+
+`getDOMNodeByPath` 返回与给定路径的 Slate 节点对应的 DOM 节点的 [ElementHandle](https://playwright.dev/docs/api/class-elementhandle)。
+
+```ts
+const firstNodeEl = await getDOMNodeByPath(page, elementHandle, [0]);
+await firstNodeEl.hover();
+```
+
+### 点击节点
+
+```ts
+await clickAtPath(page, elementHandle, [0]);
+```
+
+### 获取选区
+
+```ts
+const selection = await getSelection(page, editorHandle);
+
+expect(selection).toBe({
+  anchor: { path: [0, 0], offset: 0 },
+  focus: { path: [0, 0], offset: 7 },
+});
+```
+
+### 选择一个点或范围
+
+为了在编辑器中的特定位置输入内容，你需要使用 `setSelection` 选择该点。
+
+如果你选择一个点（由 `path` 和 `offset` 组成），光标将放置在该点。如果你选择一个范围（由 `anchor` 和 `focus` 组成），该范围将被选中。如果你选择一个路径，该路径上的整个节点将被选中。
+
+确保在设置选区之前聚焦编辑器。使用 `editable.focus()` 聚焦编辑器在 WebKit 中可能无法正常工作，因此最好的方法是使用 `clickAtPath`。
+
+```ts
+// 点击第一段以聚焦编辑器
+await clickAtPath(page, editorHandle, [0]);
+
+await setSelection(page, editorHandle, {
+  path: [0, 0],
+  offset: 2,
+});
+
+await page.keyboard.type('你好，世界！');
+```
+
+## 导入的查询和转换
+
+你可能希望在 Playwright 测试中导入查询或转换，例如 `getBlockAbove` 或 `insertNodes` 并使用它们。
+
+不幸的是，这是不可能的。你只能在浏览器上下文中直接与 `editor` 实例交互（使用 `evaluate` 或 `evaluateHandle`），并且无法将导入的函数从 Playwright 的作用域传递到浏览器中。这是因为 `editor` 对象和 JavaScript 函数都无法充分序列化。
+
+最好的解决方法是像用户一样与编辑器交互，而不使用任何导入的查询或转换。这将使你的 Playwright 测试更有可能捕获应用程序中的错误。
+
+如果这不切实际，你可以在 `evaluate` 或 `evaluateHandle` 中调用 `editor` 对象上的方法。（如果你需要从浏览器返回对 DOM 节点或 JavaScript 对象的引用，请使用 `evaluateHandle`。如果你需要返回 JavaScript 对象的序列化副本，或者不需要返回任何值，请使用 `evaluate`。）
+
+请注意，虽然这些查询和转换不能直接在 Playwright 测试中使用，但它们在你的应用程序代码中与编辑器实例一起工作时是可用的。有关如何在应用程序中使用这些方法的更多信息，请参阅 [Editor Methods](/docs/editor-methods) 文档。
+
+有关 `evaluate` 和 `evaluateHandle` 的更多信息，请参阅 [Playwright 的文档](https://playwright.dev/docs/evaluating)。
+
+```ts
+await editorHandle.evaluate((editor) => {
+  editor.tf.insertNodes(/* ... */);
+});
+```
+
+有关 `evaluate` 和 `evaluateHandle` 的更多信息，请参阅 [Playwright 的文档](https://playwright.dev/docs/evaluating)。
+
+## API
+
+### `getEditorHandle`
+
+获取 Plate 编辑器实例的句柄。
+
+<API name="getEditorHandle">
+<APIParameters>
+  <APIItem name="page" type="Page">
+    Playwright 页面对象。
+  </APIItem>
+  <APIItem name="editable" type="Locator" optional>
+    可编辑元素的定位器。默认为第一个 [data-slate-editor]。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="EditorHandle">
+  Plate 编辑器实例的句柄。
+</APIReturns>
+</API>
+
+### `getNodeByPath`
+
+检索指定路径的节点。
+
+<API name="getNodeByPath">
+<APIParameters>
+  <APIItem name="page" type="Page">
+    Playwright 页面对象。
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    编辑器实例的句柄。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="JSHandle<TNode>">
+  路径节点的句柄。
+</APIReturns>
+</API>
+
+### `getDOMNodeByPath`
+
+获取给定路径的 Slate 节点的 DOM 节点。
+
+<API name="getDOMNodeByPath">
+<APIParameters>
+  <APIItem name="page" type="Page">
+    Playwright 页面对象。
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    编辑器实例的句柄。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="ElementHandle">
+  对应 DOM 节点的 ElementHandle。
+</APIReturns>
+</API>
+
+### `clickAtPath`
+
+模拟点击指定路径的节点。
+
+<API name="clickAtPath">
+<APIParameters>
+  <APIItem name="page" type="Page">
+    Playwright 页面对象。
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    编辑器实例的句柄。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    要点击的节点的路径。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `getSelection`
+
+检索当前编辑器的选区。
+
+<API name="getSelection">
+<APIParameters>
+  <APIItem name="page" type="Page">
+    Playwright 页面对象。
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    编辑器实例的句柄。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Selection">
+  当前编辑器的选区。
+</APIReturns>
+</API>
+
+### `setSelection`
+
+将编辑器选区设置为指定范围。
+
+<API name="setSelection">
+<APIParameters>
+  <APIItem name="page" type="Page">
+    Playwright 页面对象。
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    编辑器实例的句柄。
+  </APIItem>
+  <APIItem name="at" type="Location">
+    设置选区的位置。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `getTypeAtPath`
+
+获取指定路径节点的类型。
+
+<API name="getTypeAtPath">
+<APIParameters>
+  <APIItem name="page" type="Page">
+    Playwright 页面对象。
+  </APIItem>
+  <APIItem name="editorHandle" type="EditorHandle">
+    编辑器实例的句柄。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="string">
+  路径节点的类型。
+</APIReturns>
+</API>

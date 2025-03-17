@@ -1,16 +1,18 @@
-import type { TDescendant } from '@udecode/slate';
+import type { Descendant } from '@udecode/slate';
 
 import { jsx } from 'slate-hyperscript';
 
 import type { SlateEditor } from '../../../editor';
 
+import { isSlateVoid } from '../../../static';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
 
 /** Deserialize HTML to Element. */
 export const htmlElementToElement = (
   editor: SlateEditor,
-  element: HTMLElement
+  element: HTMLElement,
+  isSlate = false
 ) => {
   const deserialized = pipeDeserializeHtmlElement(editor, element);
 
@@ -19,12 +21,12 @@ export const htmlElementToElement = (
 
     let descendants =
       node.children ??
-      (deserializeHtmlNodeChildren(editor, element) as TDescendant[]);
+      (deserializeHtmlNodeChildren(editor, element, isSlate) as Descendant[]);
 
-    if (descendants.length === 0 || withoutChildren) {
+    if (descendants.length === 0 || withoutChildren || isSlateVoid(element)) {
       descendants = [{ text: '' }];
     }
 
-    return jsx('element', node, descendants) as TDescendant;
+    return jsx('element', node, descendants) as Descendant;
   }
 };

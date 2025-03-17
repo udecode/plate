@@ -1,5 +1,120 @@
 # @udecode/plate-ai
 
+## 46.0.8
+
+## 46.0.4
+
+## 46.0.3
+
+## 45.1.0
+
+## 45.0.6
+
+## 45.0.4
+
+## 44.0.3
+
+### Patch Changes
+
+- [#4070](https://github.com/udecode/plate/pull/4070) by [@supersimple33](https://github.com/supersimple33) – fix: ai chat loading
+
+## 44.0.0
+
+## 43.0.5
+
+### Patch Changes
+
+- [#4038](https://github.com/udecode/plate/pull/4038) by [@yf-yang](https://github.com/yf-yang) – Update types and docs of `aboveNodes` and `belowNodes`
+
+## 43.0.0
+
+### Minor Changes
+
+- [#4019](https://github.com/udecode/plate/pull/4019) by [@zbeyens](https://github.com/zbeyens) – Upgrade dependencies to latest
+
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
+## 42.2.3
+
+## 42.2.0
+
+### Patch Changes
+
+- [#3989](https://github.com/udecode/plate/pull/3989) by [@zbeyens](https://github.com/zbeyens) – Fix replaceSelection, insertBelow
+
+## 42.1.0
+
+### Minor Changes
+
+- [#3980](https://github.com/udecode/plate/pull/3980) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `useAIChatEditor`: add `editor` as first parameter:
+
+  ```tsx
+  const aiEditor = usePlateEditor({ plugins });
+  useAIChatEditor(aiEditor, content);
+  ```
+
+## 42.0.3
+
+### Patch Changes
+
+- [#3952](https://github.com/udecode/plate/pull/3952) by [@zbeyens](https://github.com/zbeyens) – Breaking changes (experimental):
+
+  - `AIChatPlugin`: Remove `createAIEditor` option
+  - Fix `editor.tf.replaceSelection`:
+    - Improved single block selection case with full range check
+    - Fixed text properties inheritance when replacing selection
+    - In block selection mode, select the replaced blocks
+  - Add `useAIChatEditor`: Creates an editor, registers in the AI chat plugin, and deserializes the
+    content into `editor.children` with block-level memoization.
+
+## 42.0.2
+
+### Patch Changes
+
+- [#3955](https://github.com/udecode/plate/pull/3955) by [@doctormarty](https://github.com/doctormarty) – Resolved the “Cannot assign to read only property ‘0’” error by creating a new array for the fragment instead of mutating it.
+
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – AI plugins are now experimental: pin the dependency to avoid breaking changes. No breaking changes for this release.
+
+## 41.0.14
+
+## 41.0.8
+
+## 41.0.6
+
+## 41.0.1
+
+### Patch Changes
+
+- [#3874](https://github.com/udecode/plate/pull/3874) by [@felixfeng33](https://github.com/felixfeng33) – Fix editor type using `SlateEditor` instead of `PlateEditor`.
+
+## 41.0.0
+
+### Minor Changes
+
+- [#3868](https://github.com/udecode/plate/pull/3868) by [@zbeyens](https://github.com/zbeyens) –
+  - `api.aiChat.replaceSelection()` – new option `format: 'none' | 'single' | 'all'`
+    - `'single'` (default):
+      - Single block: Applies block's formatting to inserted content
+      - Multiple blocks: Preserves source formatting
+    - `'all'`: Forces first block's formatting on all inserted blocks
+    - `'none'`: Preserves source formatting completely
+
+## 40.3.2
+
+### Patch Changes
+
+- [#3848](https://github.com/udecode/plate/pull/3848) by [@wststone](https://github.com/wststone) – `submitAIChat`: add `ChatRequestOptions` options
+
 ## 40.2.9
 
 ## 40.2.2

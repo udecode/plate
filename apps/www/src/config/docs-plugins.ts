@@ -41,7 +41,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
   {
     description: 'Provides quick access to block-specific actions.',
     href: '/docs/block-menu',
-    label: 'New',
     title: 'Block Menu',
   },
   {
@@ -52,7 +51,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
   {
     description: 'Highlight important information or add special notes.',
     href: '/docs/callout',
-    label: 'New',
     title: 'Callout',
   },
   {
@@ -83,9 +81,14 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Comments',
   },
   {
+    description: 'Add suggestions to text as marks.',
+    href: '/docs/suggestion',
+    label: 'Experimental',
+    title: 'Suggestion',
+  },
+  {
     description: 'A visual overlay for cursors and selections.',
     href: '/docs/cursor-overlay',
-    label: 'New',
     title: 'Cursor Overlay',
   },
   {
@@ -109,7 +112,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
     description:
       'Enables the insertion and rendering of LaTeX equations in your editor.',
     href: '/docs/equation',
-    label: 'New',
     title: 'Equation',
   },
   {
@@ -182,7 +184,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
   {
     description: 'Embed medias like videos or tweets into your document.',
     href: '/docs/media',
-    label: ['Element', 'New'],
+    label: ['Element'],
     title: 'Media',
   },
   {
@@ -200,7 +202,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
   {
     description: 'Automatically assign unique IDs to nodes in the document.',
     href: '/docs/node-id',
-    label: 'New',
     title: 'Node ID',
   },
   {
@@ -226,12 +227,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Serializing DOCX',
   },
   {
-    description: 'Copy paste from HTML to Slate.',
-    href: '/docs/html',
-    title: 'Serializing HTML',
-  },
-  {
-    description: 'Copy paste from Markdown to Slate.',
+    description: 'Markdown <-> Slate',
     href: '/docs/markdown',
     title: 'Serializing Markdown',
   },
@@ -244,7 +240,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
     description:
       'Slash command menu for quick insertion of various content types.',
     href: '/docs/slash-command',
-    label: 'New',
     title: 'Slash Command',
   },
   {
@@ -269,7 +264,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
     description:
       'Renders a table of contents element with clickable links to headings in the document.',
     href: '/docs/toc',
-    label: 'New',
     title: 'Table of Contents',
   },
   {
@@ -281,7 +275,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
   {
     description: 'Ensure a trailing block is always present in the document.',
     href: '/docs/trailing-block',
-    label: 'New',
     title: 'Trailing Block',
   },
 ];

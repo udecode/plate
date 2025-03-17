@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-block-quote",
-  "version": "40.0.0",
+  "version": "44.0.0",
   "description": "Block quote plugin for Plate",
   "keywords": [
     "plate",
@@ -50,17 +50,12 @@
     "typecheck": "yarn p:typecheck"
   },
   "devDependencies": {
-    "@udecode/plate-common": "workspace:^"
+    "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=40.2.8",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.103.0",
-    "slate-dom": ">=0.111.0",
-    "slate-history": ">=0.93.0",
-    "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.111.0"
+    "@udecode/plate": ">=46.0.4",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

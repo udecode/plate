@@ -1,7 +1,7 @@
 'use client';
 
+import emojiMartData from '@emoji-mart/data';
 import { CalloutPlugin } from '@udecode/plate-callout/react';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji/react';
@@ -16,16 +16,14 @@ import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import {
-  EquationPlugin,
-  InlineEquationPlugin,
-} from '@udecode/plate-math/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { FixedToolbarPlugin } from '@/components/editor/plugins/fixed-toolbar-plugin';
 import { FloatingToolbarPlugin } from '@/components/editor/plugins/floating-toolbar-plugin';
+import { BlockDiscussion } from '@/components/plate-ui/block-discussion';
+import { SuggestionBelowNodes } from '@/components/plate-ui/suggestion-line-break';
 
 import { aiPlugins } from './ai-plugins';
 import { alignPlugin } from './align-plugin';
@@ -36,6 +34,7 @@ import { commentsPlugin } from './comments-plugin';
 import { cursorOverlayPlugin } from './cursor-overlay-plugin';
 import { deletePlugins } from './delete-plugins';
 import { dndPlugins } from './dnd-plugins';
+import { equationPlugins } from './equation-plugins';
 import { exitBreakPlugin } from './exit-break-plugin';
 import { indentListPlugins } from './indent-list-plugins';
 import { lineHeightPlugin } from './line-height-plugin';
@@ -43,7 +42,9 @@ import { linkPlugin } from './link-plugin';
 import { mediaPlugins } from './media-plugins';
 import { mentionPlugin } from './mention-plugin';
 import { resetBlockTypePlugin } from './reset-block-type-plugin';
+import { skipMarkPlugin } from './skip-mark-plugin';
 import { softBreakPlugin } from './soft-break-plugin';
+import { suggestionPlugin } from './suggestion-plugin';
 import { tablePlugin } from './table-plugin';
 import { tocPlugin } from './toc-plugin';
 
@@ -57,8 +58,7 @@ export const viewPlugins = [
   TogglePlugin,
   tocPlugin,
   ...mediaPlugins,
-  InlineEquationPlugin,
-  EquationPlugin,
+  ...equationPlugins,
   CalloutPlugin,
   ColumnPlugin,
 
@@ -68,6 +68,7 @@ export const viewPlugins = [
   FontSizePlugin,
   HighlightPlugin,
   KbdPlugin,
+  skipMarkPlugin,
 
   // Block Style
   alignPlugin,
@@ -75,7 +76,12 @@ export const viewPlugins = [
   lineHeightPlugin,
 
   // Collaboration
-  commentsPlugin,
+  commentsPlugin.configure({
+    render: { aboveNodes: BlockDiscussion as any },
+  }),
+  suggestionPlugin.configure({
+    render: { belowNodes: SuggestionBelowNodes as any },
+  }),
 ] as const;
 
 export const editorPlugins = [
@@ -91,12 +97,12 @@ export const editorPlugins = [
   cursorOverlayPlugin,
   ...blockMenuPlugins,
   ...dndPlugins,
-  EmojiPlugin,
+  EmojiPlugin.configure({ options: { data: emojiMartData as any } }),
   exitBreakPlugin,
   resetBlockTypePlugin,
   ...deletePlugins,
   softBreakPlugin,
-  TrailingBlockPlugin.configure({ options: { type: ParagraphPlugin.key } }),
+  TrailingBlockPlugin,
 
   // Deserialization
   DocxPlugin,

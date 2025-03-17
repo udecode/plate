@@ -1,0 +1,144 @@
+---
+title: 提示框
+docs:
+  - route: https://pro.platejs.org/docs/components/callout-element
+    title: 提示框元素
+---
+
+<PackageInfo>
+
+## 特性
+
+- 可自定义的提示框块，用于突出显示重要信息
+- 支持不同的提示框变体（例如，信息、警告、错误）
+- 可以为提示框设置自定义图标或表情符号
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-callout
+```
+
+## 使用
+
+```tsx
+import { CalloutPlugin } from '@udecode/plate-callout/react';
+```
+
+```tsx
+const plugins = [
+  // ...其他插件,
+  CalloutPlugin,
+]
+```
+
+```tsx
+const components = {
+  // ...其他组件,
+  [CalloutPlugin.key]: CalloutElement,
+}
+```
+
+- [CalloutElement](https://pro.platejs.org/docs/components/callout-element) (Plus)
+
+## 示例
+
+### Plate UI
+
+开发中。
+
+### Plate Plus
+
+<ComponentPreviewPro name="callout-pro" />
+
+## 插件
+
+### `CalloutPlugin`
+
+提示框元素插件。
+
+## 转换
+
+### `editor.tf.insert.callout`
+
+向编辑器中插入一个提示框元素。
+
+<API name="callout">
+<APIOptions type="object">
+  <APIItem name="variant" type="string" optional>
+    要插入的提示框变体。
+  </APIItem>
+  <APIItem name="...InsertNodesOptions" type="InsertNodesOptions<V>">
+    来自 `InsertNodesOptions` 的其他选项。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 钩子
+
+### `useCalloutEmojiPicker`
+
+管理提示框的表情符号选择器功能。
+
+<API name="useCalloutEmojiPicker">
+<APIOptions type="UseCalloutEmojiPickerOptions">
+  <APIItem name="isOpen" type="boolean">
+    表情符号选择器是否打开。
+  </APIItem>
+  <APIItem name="setIsOpen" type="(isOpen: boolean) => void">
+    设置表情符号选择器打开状态的函数。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="emojiToolbarDropdownProps" type="object">
+    表情符号工具栏下拉菜单的属性。
+    <APISubList>
+      <APISubListItem parent="emojiToolbarDropdownProps" name="isOpen" type="boolean">
+        表情符号选择器是否打开。
+      </APISubListItem>
+      <APISubListItem parent="emojiToolbarDropdownProps" name="setIsOpen" type="(v: boolean) => void">
+        设置表情符号选择器打开状态的函数，尊重只读模式。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="props" type="object">
+    表情符号选择器组件的属性。
+    <APISubList>
+      <APISubListItem parent="props" name="isOpen" type="boolean">
+        表情符号选择器是否打开。
+      </APISubListItem>
+      <APISubListItem parent="props" name="setIsOpen" type="(isOpen: boolean) => void">
+        设置表情符号选择器打开状态的函数。
+      </APISubListItem>
+      <APISubListItem parent="props" name="onSelectEmoji" type="(options: { emojiValue?: any; icon?: any }) => void">
+        选择表情符号时调用的函数。它会更新提示框的图标并关闭选择器。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+## 类型
+
+### `TCalloutElement`
+
+```typescript
+interface TCalloutElement extends TElement {
+  variant?: string;
+  icon?: string;
+}
+```
+
+<API name="TCalloutElement">
+<APIAttributes>
+  <APIItem name="variant" type="string" optional>
+    提示框的变体。
+  </APIItem>
+  <APIItem name="icon" type="string" optional>
+    要显示的图标或表情符号。
+  </APIItem>
+</APIAttributes>
+</API>

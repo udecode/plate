@@ -1,22 +1,19 @@
 import {
+  type NodeEntry,
   type SlateEditor,
   type TNode,
-  type TNodeEntry,
-  moveNodes,
-  removeNodes,
-  unwrapNodes,
-} from '@udecode/plate-common';
-import { Node } from 'slate';
+  NodeApi,
+} from '@udecode/plate';
 
 import type { TColumnElement } from '../types';
 
 /**
- * Move the middle column to the left of right by options.direction. if the
- * middle node is empty return false and remove it.
+ * Move the middle column to the left if direction is 'left', or to the right if
+ * 'right'. If the middle node is empty, return false and remove it.
  */
 export const moveMiddleColumn = <N extends TNode>(
   editor: SlateEditor,
-  [node, path]: TNodeEntry<N>,
+  [node, path]: NodeEntry<N>,
   options?: {
     direction: 'left' | 'right';
   }
@@ -26,23 +23,29 @@ export const moveMiddleColumn = <N extends TNode>(
   if (direction === 'left') {
     const DESCENDANT_PATH = [1];
 
-    const middleChildNode = Node.get(node, DESCENDANT_PATH);
-    const isEmpty = editor.isEmpty(middleChildNode as any);
+    const middleChildNode = NodeApi.get<TColumnElement>(node, DESCENDANT_PATH);
 
-    const middleChildPathRef = editor.pathRef(path.concat(DESCENDANT_PATH));
+    if (!middleChildNode) return false;
+
+    // Check emptiness using Api.string
+    const isEmpty = NodeApi.string(middleChildNode) === '';
+
+    const middleChildPathRef = editor.api.pathRef(path.concat(DESCENDANT_PATH));
 
     if (isEmpty) {
-      removeNodes(editor, { at: middleChildPathRef.current! });
+      editor.tf.removeNodes({ at: middleChildPathRef.current! });
 
       return false;
     }
 
-    const firstNode = Node.descendant(node, [0]) as TColumnElement;
+    const firstNode = NodeApi.descendant<TColumnElement>(node, [0]);
+
+    if (!firstNode) return false;
 
     const firstLast = path.concat([0, firstNode.children.length]);
 
-    moveNodes(editor, { at: middleChildPathRef.current!, to: firstLast });
-    unwrapNodes(editor, { at: middleChildPathRef.current! });
+    editor.tf.moveNodes({ at: middleChildPathRef.current!, to: firstLast });
+    editor.tf.unwrapNodes({ at: middleChildPathRef.current! });
     middleChildPathRef.unref();
   }
 };

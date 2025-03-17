@@ -1,5 +1,41 @@
 # @udecode/plate-math
 
+## 44.0.0
+
+## 43.0.0
+
+### Minor Changes
+
+- [#4019](https://github.com/udecode/plate/pull/4019) by [@zbeyens](https://github.com/zbeyens) – Upgrade dependencies to latest
+
+## 42.0.0
+
+## 41.0.11
+
+### Patch Changes
+
+- [#3923](https://github.com/udecode/plate/pull/3923) by [@wststone](https://github.com/wststone) – fix: equation input undo history not working.
+
+## 41.0.4
+
+### Patch Changes
+
+- [`ddaa89a49075c341cdf7dde57a549435daa1845e`](https://github.com/udecode/plate/commit/ddaa89a49075c341cdf7dde57a549435daa1845e) by [@felixfeng33](https://github.com/felixfeng33) – Missing export
+
+## 41.0.3
+
+### Patch Changes
+
+- [#3888](https://github.com/udecode/plate/pull/3888) by [@felixfeng33](https://github.com/felixfeng33) – Add `getEquationHtml`
+
+## 41.0.0
+
+## 40.3.3
+
+### Patch Changes
+
+- [#3852](https://github.com/udecode/plate/pull/3852) by [@wststone](https://github.com/wststone) – Fixes #3851
+
 ## 40.0.0
 
 ## 39.2.0

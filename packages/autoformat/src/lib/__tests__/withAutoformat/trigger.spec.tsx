@@ -1,14 +1,11 @@
 /** @jsx jsxt */
 
+import { createPlateEditor, getEditorPlugin } from '@udecode/plate/react';
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import {
-  createPlateEditor,
-  getEditorPlugin,
-} from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { onKeyDownAutoformat } from '../../../react/onKeyDownAutoformat';
@@ -56,7 +53,7 @@ describe('when trigger is defined', () => {
       value: input,
     });
 
-    editor.insertText('_');
+    editor.tf.insertText('_');
 
     expect(input.children).toEqual(output.children);
   });
@@ -100,7 +97,7 @@ describe('when undo is enabled', () => {
       value: undoInput,
     });
 
-    editor.insertText('4'); // <-- this should triger the conversion
+    editor.tf.insertText('4'); // <-- this should triger the conversion
 
     const event = new KeyboardEvent('keydown', {
       key: 'backspace',
@@ -151,7 +148,7 @@ describe('when undo is disabled', () => {
       value: undoInput,
     });
 
-    editor.insertText('4'); // <-- this should triger the conversion
+    editor.tf.insertText('4'); // <-- this should triger the conversion
 
     const event = new KeyboardEvent('keydown', {
       key: 'backspace',

@@ -4,13 +4,15 @@
   ],
   "files": [
     {
-      "content": "import type { FileRouter } from 'uploadthing/next';\n\nimport { createRouteHandler, createUploadthing } from 'uploadthing/next';\n\nconst f = createUploadthing();\n\nconst ourFileRouter = {\n  editorUploader: f(['image', 'text', 'blob', 'pdf', 'video', 'audio'])\n    .middleware(() => {\n      return {};\n    })\n    .onUploadComplete(({ file }) => {\n      return { file };\n    }),\n} satisfies FileRouter;\n\nexport type OurFileRouter = typeof ourFileRouter;\n\nexport const { GET, POST } = createRouteHandler({\n  router: ourFileRouter,\n});\n",
       "path": "app/api/uploadthing/route.ts",
-      "target": "app/api/uploadthing/route.ts",
-      "type": "registry:lib"
+      "content": "import type { FileRouter } from 'uploadthing/next';\n\nimport { createRouteHandler, createUploadthing } from 'uploadthing/next';\n\nconst f = createUploadthing();\n\nconst ourFileRouter = {\n  editorUploader: f(['image', 'text', 'blob', 'pdf', 'video', 'audio'])\n    .middleware(() => {\n      return {};\n    })\n    .onUploadComplete(({ file }) => {\n      return { file };\n    }),\n} satisfies FileRouter;\n\nexport type OurFileRouter = typeof ourFileRouter;\n\nexport const { GET, POST } = createRouteHandler({\n  router: ourFileRouter,\n});\n",
+      "type": "registry:lib",
+      "target": "app/api/uploadthing/route.ts"
     }
   ],
   "name": "api-uploadthing",
   "registryDependencies": [],
-  "type": "registry:lib"
+  "type": "registry:lib",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

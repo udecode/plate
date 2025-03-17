@@ -1,17 +1,19 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
-import { isEditorEmpty } from '@udecode/plate-common';
+import { type SlateEditor, PathApi, RangeApi } from '@udecode/plate';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import cloneDeep from 'lodash/cloneDeep.js';
-import { Path, Range } from 'slate';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
+import { createFormattedBlocks } from './replaceSelectionAIChat';
+
 export const insertBelowAIChat = (
   editor: PlateEditor,
-  sourceEditor: PlateEditor
+  sourceEditor: SlateEditor,
+  { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
-  if (!sourceEditor || isEditorEmpty(sourceEditor)) return;
+  if (!sourceEditor || sourceEditor.api.isEmpty()) return;
 
   const isBlockSelecting = editor.getOption(
     BlockSelectionPlugin,
@@ -37,17 +39,55 @@ export const insertBelowAIChat = (
 
     if (!lastBlock) return;
 
-    const nextPath = Path.next(lastBlock[1]);
+    const nextPath = PathApi.next(lastBlock[1]);
 
-    insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
+    if (format === 'none') {
+      insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
+        at: nextPath,
+      });
+
+      return;
+    }
+
+    const formattedBlocks = createFormattedBlocks({
+      blocks: cloneDeep(sourceEditor.children),
+      format,
+      sourceBlock: lastBlock,
+    });
+
+    if (!formattedBlocks) return;
+
+    insertBlocksAndSelect(formattedBlocks, {
       at: nextPath,
     });
   } else {
-    const [, end] = Range.edges(editor.selection!);
+    const [, end] = RangeApi.edges(editor.selection!);
     const endPath = [end.path[0]];
+    const currentBlock = editor.api.node({
+      at: endPath,
+      block: true,
+      mode: 'lowest',
+    });
 
-    insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
-      at: Path.next(endPath),
+    if (!currentBlock) return;
+    if (format === 'none') {
+      insertBlocksAndSelect(cloneDeep(sourceEditor.children), {
+        at: PathApi.next(endPath),
+      });
+
+      return;
+    }
+
+    const formattedBlocks = createFormattedBlocks({
+      blocks: cloneDeep(sourceEditor.children),
+      format,
+      sourceBlock: currentBlock,
+    });
+
+    if (!formattedBlocks) return;
+
+    insertBlocksAndSelect(formattedBlocks, {
+      at: PathApi.next(endPath),
     });
   }
 };

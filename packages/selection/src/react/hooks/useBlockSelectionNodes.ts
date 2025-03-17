@@ -1,26 +1,20 @@
 import { useMemo } from 'react';
 
-import {
-  type GetFragmentPropOptions,
-  type TElement,
-  getFragmentProp,
-  getNodeEntries,
-} from '@udecode/plate-common';
-import { useEditorPlugin } from '@udecode/plate-common/react';
+import type { EditorPropOptions, TElement } from '@udecode/plate';
+
+import { useEditorRef, usePluginOption } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export function useBlockSelectionNodes() {
-  const { editor, useOption } = useEditorPlugin(BlockSelectionPlugin);
-  const selectedIds = useOption('selectedIds');
+  const editor = useEditorRef();
+  const selectedIds = usePluginOption(BlockSelectionPlugin, 'selectedIds');
 
   return useMemo(() => {
-    return [
-      ...getNodeEntries<TElement>(editor, {
-        at: [],
-        match: (n) => selectedIds?.has(n.id),
-      }),
-    ];
+    return editor.api.blocks<TElement>({
+      at: [],
+      match: (n) => !!n.id && selectedIds?.has(n.id as string),
+    });
   }, [editor, selectedIds]);
 }
 
@@ -31,9 +25,13 @@ export function useBlockSelectionFragment() {
 }
 
 export function useBlockSelectionFragmentProp(
-  options?: GetFragmentPropOptions
+  options?: Omit<EditorPropOptions, 'nodes'>
 ) {
+  const editor = useEditorRef();
   const fragment = useBlockSelectionFragment();
 
-  return useMemo(() => getFragmentProp(fragment, options), [fragment, options]);
+  return useMemo(
+    () => editor.api.prop({ nodes: fragment, ...options }),
+    [editor.api, fragment, options]
+  );
 }

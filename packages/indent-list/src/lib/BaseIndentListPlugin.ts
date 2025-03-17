@@ -1,17 +1,19 @@
 import {
   type PluginConfig,
+  type SlateRenderElementProps,
   type TElement,
   BaseParagraphPlugin,
-  HtmlPlugin,
   createTSlatePlugin,
+  HtmlPlugin,
   isHtmlBlockElement,
   postCleanHtml,
   traverseHtmlElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import type { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
 import type { ListStyleType } from './types';
 
+import { renderIndentListBelowNodes } from './renderIndentListBelowNodes';
 import { withIndentList } from './withIndentList';
 
 export const INDENT_LIST_KEYS = {
@@ -24,16 +26,23 @@ export const INDENT_LIST_KEYS = {
 export type BaseIndentListConfig = PluginConfig<
   'listStyleType',
   {
+    getSiblingIndentListOptions?: GetSiblingIndentListOptions<TElement>;
+    listStyleTypes?: Record<
+      string,
+      {
+        type: string;
+        isOrdered?: boolean;
+        liComponent?: React.FC<SlateRenderElementProps>;
+        markerComponent?: React.FC<Omit<SlateRenderElementProps, 'children'>>;
+      }
+    >;
     /** Map html element to list style type. */
     getListStyleType?: (element: HTMLElement) => ListStyleType;
-
-    getSiblingIndentListOptions?: GetSiblingIndentListOptions<TElement>;
   }
 >;
 
 export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
   key: 'listStyleType',
-  extendEditor: withIndentList,
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
@@ -79,18 +88,23 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
     html: {
       deserializer: {
         isElement: true,
-        parse: ({ editor, element, getOptions }) => ({
-          // gdoc uses aria-level attribute
-          indent: Number(element.getAttribute('aria-level')),
-          listStyleType: getOptions().getListStyleType?.(element),
-          type: editor.getType(BaseParagraphPlugin),
-        }),
         rules: [
           {
             validNodeName: 'LI',
           },
         ],
+        parse: ({ editor, element, getOptions }) => {
+          return {
+            // gdoc uses aria-level attribute
+            indent: Number(element.getAttribute('aria-level')),
+            listStyleType: getOptions().getListStyleType?.(element),
+            type: editor.getType(BaseParagraphPlugin),
+          };
+        },
       },
     },
   },
-});
+  render: {
+    belowNodes: renderIndentListBelowNodes,
+  },
+}).overrideEditor(withIndentList);

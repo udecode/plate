@@ -1,13 +1,11 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import {
   type InsertNodesOptions,
-  insertNodes,
+  type Path,
   nanoid,
-  withoutMergingHistory,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+  PathApi,
+} from '@udecode/plate';
 
 import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
@@ -39,8 +37,8 @@ export const insertMedia = (
       PlaceholderPlugin,
       'error',
       createUploadError(UploadErrorCode.TOO_MANY_FILES, {
-        fileType: null,
         files: Array.from(files),
+        fileType: null,
         maxFileCount: 1,
       })
     );
@@ -53,8 +51,8 @@ export const insertMedia = (
       PlaceholderPlugin,
       'error',
       createUploadError(UploadErrorCode.TOO_MANY_FILES, {
-        fileType: null,
         files: Array.from(files),
+        fileType: null,
         maxFileCount,
       })
     );
@@ -69,7 +67,7 @@ export const insertMedia = (
         currentAt = at;
       }
     } else {
-      currentAt = currentAt ? Path.next(currentAt) : undefined;
+      currentAt = currentAt ? PathApi.next(currentAt) : undefined;
     }
 
     const id = nanoid();
@@ -77,8 +75,7 @@ export const insertMedia = (
     api.placeholder.addUploadingFile(id, file);
 
     const insert = () => {
-      insertNodes<TPlaceholderElement>(
-        editor,
+      editor.tf.insertNodes<TPlaceholderElement>(
         {
           id,
           children: [{ text: '' }],
@@ -95,11 +92,11 @@ export const insertMedia = (
     );
 
     if (disableEmptyPlaceholder) {
-      withoutMergingHistory(editor, () => {
+      editor.tf.withoutMerging(() => {
         withHistoryMark(editor, insert);
       });
     } else {
-      withoutNormalizing(editor, insert);
+      editor.tf.withoutNormalizing(insert);
     }
   });
 };

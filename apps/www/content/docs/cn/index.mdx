@@ -1,0 +1,63 @@
+---
+title: 介绍
+description: 用于 React 的富文本编辑器框架。
+---
+
+Plate 是一个强大的工具包，它让你更容易使用 [Slate](https://docs.slatejs.org/) 进行开发，Slate 是一个流行的用于构建文本编辑器的框架。Plate 专注于四个主要领域：**核心**、**插件**、**基础组件** 和 **组件**。
+
+## 核心
+
+Plate 的核心是其插件系统，专为 **`slate`** 和 **`slate-react`** 设计，并支持服务器端渲染。它通过分离不同的功能并保持代码整洁，帮助你的项目保持组织性和高效性。核心功能在纯 JavaScript 中可用，允许服务器端渲染和非 React 使用。
+
+## 插件
+
+Plate 提供了广泛的插件包，增强了编辑器的行为、钩子、序列化、规范化和其他功能。这些插件是“无头”的，意味着它们默认没有样式。插件系统包括：
+
+- **状态管理**：每个插件都有自己的 Zustand 存储。
+- **快捷键**：为每个插件定义自定义热键。
+- **API 和转换**：插件可以定义自己的 API 方法和转换，通过 `editor.api` 和 `editor.transforms` 访问。
+- **TypeScript**：为插件和编辑器提供强大的类型推断。
+
+## 基础组件
+
+除了插件，Plate 还提供了基于 [Radix UI](https://www.radix-ui.com/) 的无样式且可访问的组件。这些组件是构建高质量设计系统的基础。
+
+## 组件
+
+为了帮助你快速上手并拥有一个视觉上吸引人的界面，Plate 提供了预构建的样式化组件，你可以使用我们的 CLI 进行定制。这些组件基于 [shadcn/ui](https://ui.shadcn.com/)，可以作为参考或起点，帮助你构建自己的组件库，从而创建一个独特、可访问且视觉上令人愉悦的用户界面。
+
+## 常见问题
+
+<Accordion type="multiple">
+
+<AccordionItem value="faq-2">
+<AccordionTrigger>
+支持哪些框架？
+</AccordionTrigger>
+<AccordionContent>
+
+[Slate](https://www.npmjs.com/package/slate) 和 [Slate React](https://www.npmjs.com/package/slate-react)。
+
+</AccordionContent>
+</AccordionItem>
+
+<AccordionItem value="faq-3">
+	<AccordionTrigger>
+	我可以在我的项目中使用吗？
+	</AccordionTrigger>
+	<AccordionContent>
+可以。免费用于个人和商业项目。无需署名，但如果你愿意分享你的编辑器应用 [这里](https://github.com/udecode/plate/discussions/2523)，我们将不胜感激！
+
+    </AccordionContent>
+
+</AccordionItem>
+
+</Accordion>
+
+## 致谢
+
+- [shadcn/ui](https://ui.shadcn.com/) - 用于 UI、文档和 CLI。
+- [Radix UI](https://radix-ui.com) - 用于基础组件。
+- [Vercel](https://vercel.com) - 用于托管。
+- [Shu Ding](https://shud.in) - 排版风格借鉴自他在 [Nextra](https://nextra.site) 上的工作。
+- [cmdk](https://cmdk.paco.me) - 用于 `<Command />` 组件。

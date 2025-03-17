@@ -1,4 +1,9 @@
-import type { TDescendant, TElement, TText } from '@udecode/plate-common';
+import {
+  type Descendant,
+  type TElement,
+  type TText,
+  BaseParagraphPlugin,
+} from '@udecode/plate';
 
 import type { MdastNode, RemarkElementRules } from './types';
 
@@ -28,14 +33,21 @@ export const remarkDefaultElementRules: RemarkElementRules = {
     },
   },
   code: {
-    transform: (node, options) => ({
-      children: (node.value || '').split('\n').map((line) => ({
-        children: [{ text: line } as TText],
-        type: options.editor.getType({ key: 'code_line' }),
-      })),
-      lang: node.lang ?? undefined,
-      type: options.editor.getType({ key: 'code_block' }),
-    }),
+    transform: (node, options) => {
+      const codeblock: TElement = {
+        children: (node.value || '').split('\n').map((line) => ({
+          children: [{ text: line } as TText],
+          type: options.editor.getType({ key: 'code_line' }),
+        })),
+        type: options.editor.getType({ key: 'code_block' }),
+      };
+
+      if (node.lang) {
+        codeblock.lang = node.lang;
+      }
+
+      return codeblock;
+    },
   },
   heading: {
     transform: (node, options) => {
@@ -71,65 +83,81 @@ export const remarkDefaultElementRules: RemarkElementRules = {
   },
   list: {
     transform: (node, options) => {
-      if (options.indentList) {
-        const listStyleType = node.ordered ? 'decimal' : 'disc';
-
-        const parseListItems = (
-          _node: MdastNode,
-          listItems: TElement[] = [],
-          indent = 1
-        ) => {
-          _node.children?.forEach((listItem) => {
-            if (!listItem.children) {
-              listItems.push({
-                children: remarkTransformElementChildren(listItem, options),
-                type: options.editor.getType({ key: 'p' }),
-              });
-
-              return listItems;
-            }
-
-            const [paragraph, ...subLists] = listItem.children;
-
-            listItems.push({
-              children: remarkTransformElementChildren(
-                paragraph || '',
-                options
-              ),
-              indent,
-              listStyleType,
-              type: options.editor.getType({ key: 'p' }),
-            });
-
-            subLists.forEach((subList) => {
-              if (subList.type === 'list') {
-                parseListItems(subList, listItems, indent + 1);
-              } else {
-                const result = remarkTransformNode(subList, options) as
-                  | TElement
-                  | TElement[];
-
-                if (Array.isArray(result)) {
-                  listItems.push(
-                    ...result.map((v) => ({ ...v, indent: indent + 1 }))
-                  );
-                } else {
-                  listItems.push({ ...result, indent: indent + 1 });
-                }
-              }
-            });
-          });
-
-          return listItems;
+      if (!options.indentList) {
+        return {
+          children: remarkTransformElementChildren(node, options),
+          type: options.editor.getType({ key: node.ordered ? 'ol' : 'ul' }),
         };
-
-        return parseListItems(node);
       }
 
-      return {
-        children: remarkTransformElementChildren(node, options),
-        type: options.editor.getType({ key: node.ordered ? 'ol' : 'ul' }),
+      const parseListItems = (
+        listNode: MdastNode,
+        listItems: TElement[] = [],
+        indent = 1,
+        startIndex = 1
+      ) => {
+        // Is this list bullet or ordered?
+        const isOrdered = !!listNode.ordered;
+        const listStyleType = isOrdered ? 'decimal' : 'disc';
+
+        listNode.children?.forEach((listItem, index) => {
+          if (listItem.type !== 'listItem') return;
+          if (!listItem.children) {
+            listItems.push({
+              children: remarkTransformElementChildren(listItem, options),
+              type: options.editor.getType(BaseParagraphPlugin),
+            });
+
+            return listItems;
+          }
+
+          // Each list item can have a "paragraph" + sub-lists
+          const [paragraph, ...subLists] = listItem.children;
+
+          const transformedListItem: TElement = {
+            children: remarkTransformElementChildren(paragraph || '', options),
+            indent,
+            listStyleType,
+            type: options.editor.getType(BaseParagraphPlugin),
+          };
+
+          // Only set listStart if *this* list is ordered
+          if (isOrdered) {
+            transformedListItem.listStart = startIndex + index;
+          }
+
+          listItems.push(transformedListItem);
+
+          // Process sub-lists (which may differ: bullet vs. ordered)
+          subLists.forEach((subList) => {
+            if (subList.type === 'list') {
+              // For a sub-list, we read its .ordered (could differ from parent)
+              const subListStart = (subList as any).start || 1;
+              parseListItems(subList, listItems, indent + 1, subListStart);
+            } else {
+              // If this child is not "list", transform normally
+              const result = remarkTransformNode(subList, options) as
+                | TElement
+                | TElement[];
+
+              if (Array.isArray(result)) {
+                listItems.push(
+                  ...result.map((v) => ({ ...v, indent: indent + 1 }))
+                );
+              } else {
+                listItems.push({ ...result, indent: indent + 1 });
+              }
+            }
+          });
+        });
+
+        return listItems;
       };
+
+      // Use start attribute if present on the top-level list
+      const startIndex = (node as any).start || 1;
+
+      return parseListItems(node, [], 1, startIndex);
     },
   },
   listItem: {
@@ -139,10 +167,10 @@ export const remarkDefaultElementRules: RemarkElementRules = {
           ({
             ...child,
             type:
-              child.type === options.editor.getType({ key: 'p' })
+              child.type === options.editor.getType(BaseParagraphPlugin)
                 ? options.editor.getType({ key: 'lic' })
                 : child.type,
-          }) as TDescendant
+          }) as Descendant
       ),
       type: options.editor.getType({ key: 'li' }),
     }),
@@ -154,11 +182,11 @@ export const remarkDefaultElementRules: RemarkElementRules = {
 
       const children = remarkTransformElementChildren(node, options);
 
-      const paragraphType = options.editor.getType({ key: 'p' });
+      const paragraphType = options.editor.getType(BaseParagraphPlugin);
       const splitBlockTypes = new Set([options.editor.getType({ key: 'img' })]);
 
       const elements: TElement[] = [];
-      let inlineNodes: TDescendant[] = [];
+      let inlineNodes: Descendant[] = [];
 
       const flushInlineNodes = () => {
         if (inlineNodes.length > 0) {
@@ -238,7 +266,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
                       if (!child.type) {
                         return {
                           children: [child],
-                          type: options.editor.getType({ key: 'p' }),
+                          type: options.editor.getType(BaseParagraphPlugin),
                         };
                       }
 

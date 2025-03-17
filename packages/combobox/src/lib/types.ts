@@ -1,16 +1,4 @@
-import type { SlateEditor, TElement } from '@udecode/plate-common';
-
-export interface TriggerComboboxPluginOptions {
-  createComboboxInput?: (trigger: string) => TElement;
-  trigger?: RegExp | string[] | string;
-  triggerPreviousCharPattern?: RegExp;
-  triggerQuery?: (editor: SlateEditor) => boolean;
-}
-
-export type ComboboxInputCursorState = {
-  atEnd: boolean;
-  atStart: boolean;
-};
+import type { SlateEditor, TElement } from '@udecode/plate';
 
 export type CancelComboboxInputCause =
   | 'arrowLeft'
@@ -20,3 +8,15 @@ export type CancelComboboxInputCause =
   | 'deselect'
   | 'escape'
   | 'manual';
+
+export type ComboboxInputCursorState = {
+  atEnd: boolean;
+  atStart: boolean;
+};
+
+export interface TriggerComboboxPluginOptions {
+  trigger?: RegExp | string[] | string;
+  triggerPreviousCharPattern?: RegExp;
+  createComboboxInput?: (trigger: string) => TElement;
+  triggerQuery?: (editor: SlateEditor) => boolean;
+}

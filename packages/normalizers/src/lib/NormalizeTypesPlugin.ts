@@ -1,21 +1,10 @@
-import type { Path } from 'slate';
-
 import {
-  type ErrorHandler,
+  type Path,
   type PluginConfig,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { withNormalizeTypes } from './withNormalizeTypes';
-
-interface Rule {
-  /** Path where the rule applies */
-  path: Path;
-  /** Force the type of the node at the given path */
-  strictType?: string;
-  /** Type of the inserted node at the given path if `strictType` is not provided */
-  type?: string;
-}
 
 export type NormalizeTypesConfig = PluginConfig<
   'normalizeTypes',
@@ -28,14 +17,23 @@ export type NormalizeTypesConfig = PluginConfig<
      * `type`.
      */
     rules?: Rule[];
-  } & ErrorHandler
+    onError?: (err: any) => void;
+  }
 >;
+
+interface Rule {
+  /** Path where the rule applies */
+  path: Path;
+  /** Force the type of the node at the given path */
+  strictType?: string;
+  /** Type of the inserted node at the given path if `strictType` is not provided */
+  type?: string;
+}
 
 /** @see {@link withNormalizeTypes} */
 export const NormalizeTypesPlugin = createTSlatePlugin<NormalizeTypesConfig>({
   key: 'normalizeTypes',
-  extendEditor: withNormalizeTypes,
   options: {
     rules: [],
   },
-});
+}).overrideEditor(withNormalizeTypes);

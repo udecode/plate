@@ -1,10 +1,7 @@
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import {
-  ParagraphPlugin,
-  createPlatePlugin,
-} from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { createPlatePlugin, ParagraphPlugin } from '@udecode/plate/react';
 
 /**
  * Enables support for basic elements:

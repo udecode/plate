@@ -1,47 +1,261 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 
 import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import type { TTableElement } from '@udecode/plate-table';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
-import { isSelectionExpanded } from '@udecode/plate-common';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { type TTableElement, setCellBackground } from '@udecode/plate-table';
 import {
+  TablePlugin,
+  TableProvider,
+  useTableBordersDropdownMenuContentState,
+  useTableElement,
+  useTableMergeState,
+} from '@udecode/plate-table/react';
+import {
+  PlateElement,
+  useEditorPlugin,
   useEditorRef,
   useEditorSelector,
   useElement,
+  usePluginOption,
+  useReadOnly,
   useRemoveNodeButton,
+  useSelected,
   withHOC,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 import {
-  TableProvider,
-  mergeTableCells,
-  unmergeTableCells,
-  useTableBordersDropdownMenuContentState,
-  useTableElement,
-  useTableElementState,
-  useTableMergeState,
-} from '@udecode/plate-table/react';
-import { type LucideProps, Combine, Trash2Icon, Ungroup } from 'lucide-react';
-import { useReadOnly, useSelected } from 'slate-react';
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  CombineIcon,
+  EraserIcon,
+  Grid2X2Icon,
+  PaintBucketIcon,
+  SquareSplitHorizontalIcon,
+  Trash2Icon,
+  XIcon,
+} from 'lucide-react';
 
-import { Button } from './button';
+import { DEFAULT_COLORS } from './color-constants';
+import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from './dropdown-menu';
-import { PlateElement } from './plate-element';
-import { Popover, PopoverContent, popoverVariants } from './popover';
+import { Popover, PopoverContent } from './popover';
+import {
+  BorderAll,
+  BorderBottom,
+  BorderLeft,
+  BorderNone,
+  BorderRight,
+  BorderTop,
+} from './table-icons';
+import { Toolbar, ToolbarButton, ToolbarGroup } from './toolbar';
+
+export const TableElement = withHOC(
+  TableProvider,
+  withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
+    const readOnly = useReadOnly();
+    const isSelectionAreaVisible = usePluginOption(
+      BlockSelectionPlugin,
+      'isSelectionAreaVisible'
+    );
+    const hasControls = !readOnly && !isSelectionAreaVisible;
+    const selected = useSelected();
+    const {
+      isSelectingCell,
+      marginLeft,
+      props: tableProps,
+    } = useTableElement();
+
+    const content = (
+      <PlateElement
+        className={cn(
+          className,
+          'overflow-x-auto py-5',
+          hasControls && '-ml-2 *:data-[slot=block-selection]:left-2'
+        )}
+        style={{ paddingLeft: marginLeft }}
+        {...props}
+      >
+        <div className="group/table relative w-fit">
+          <table
+            ref={ref}
+            className={cn(
+              'mr-0 ml-px table h-px table-fixed border-collapse',
+              isSelectingCell && 'selection:bg-transparent'
+            )}
+            {...tableProps}
+          >
+            <tbody className="min-w-full">{children}</tbody>
+          </table>
+        </div>
+      </PlateElement>
+    );
+
+    if (readOnly || !selected) {
+      return content;
+    }
+
+    return <TableFloatingToolbar>{content}</TableFloatingToolbar>;
+  })
+);
+
+export const TableFloatingToolbar = withRef<typeof PopoverContent>(
+  ({ children, ...props }, ref) => {
+    const { tf } = useEditorPlugin(TablePlugin);
+    const element = useElement<TTableElement>();
+    const { props: buttonProps } = useRemoveNodeButton({ element });
+    const collapsed = useEditorSelector(
+      (editor) => !editor.api.isExpanded(),
+      []
+    );
+
+    const { canMerge, canSplit } = useTableMergeState();
+
+    return (
+      <Popover open={canMerge || canSplit || collapsed} modal={false}>
+        <PopoverAnchor asChild>{children}</PopoverAnchor>
+        <PopoverContent
+          ref={ref}
+          asChild
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          contentEditable={false}
+          {...props}
+        >
+          <Toolbar
+            className="flex scrollbar-hide w-auto max-w-[80vw] flex-row overflow-x-auto rounded-md border bg-popover p-1 shadow-md print:hidden"
+            contentEditable={false}
+          >
+            <ToolbarGroup>
+              <ColorDropdownMenu tooltip="Background color">
+                <PaintBucketIcon />
+              </ColorDropdownMenu>
+              {canMerge && (
+                <ToolbarButton
+                  onClick={() => tf.table.merge()}
+                  onMouseDown={(e) => e.preventDefault()}
+                  tooltip="Merge cells"
+                >
+                  <CombineIcon />
+                </ToolbarButton>
+              )}
+              {canSplit && (
+                <ToolbarButton
+                  onClick={() => tf.table.split()}
+                  onMouseDown={(e) => e.preventDefault()}
+                  tooltip="Split cell"
+                >
+                  <SquareSplitHorizontalIcon />
+                </ToolbarButton>
+              )}
+
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <ToolbarButton tooltip="Cell borders">
+                    <Grid2X2Icon />
+                  </ToolbarButton>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuPortal>
+                  <TableBordersDropdownMenuContent />
+                </DropdownMenuPortal>
+              </DropdownMenu>
+
+              {collapsed && (
+                <ToolbarGroup>
+                  <ToolbarButton tooltip="Delete table" {...buttonProps}>
+                    <Trash2Icon />
+                  </ToolbarButton>
+                </ToolbarGroup>
+              )}
+            </ToolbarGroup>
+
+            {collapsed && (
+              <ToolbarGroup>
+                <ToolbarButton
+                  onClick={() => {
+                    tf.insert.tableRow({ before: true });
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  tooltip="Insert row before"
+                >
+                  <ArrowUp />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => {
+                    tf.insert.tableRow();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  tooltip="Insert row after"
+                >
+                  <ArrowDown />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => {
+                    tf.remove.tableRow();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  tooltip="Delete row"
+                >
+                  <XIcon />
+                </ToolbarButton>
+              </ToolbarGroup>
+            )}
+
+            {collapsed && (
+              <ToolbarGroup>
+                <ToolbarButton
+                  onClick={() => {
+                    tf.insert.tableColumn({ before: true });
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  tooltip="Insert column before"
+                >
+                  <ArrowLeft />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => {
+                    tf.insert.tableColumn();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  tooltip="Insert column after"
+                >
+                  <ArrowRight />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => {
+                    tf.remove.tableColumn();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  tooltip="Delete column"
+                >
+                  <XIcon />
+                </ToolbarButton>
+              </ToolbarGroup>
+            )}
+          </Toolbar>
+        </PopoverContent>
+      </Popover>
+    );
+  }
+);
 
 export const TableBordersDropdownMenuContent = withRef<
   typeof DropdownMenuPrimitive.Content
 >((props, ref) => {
+  const editor = useEditorRef();
   const {
     getOnSelectTableBorder,
     hasBottomBorder,
@@ -56,19 +270,16 @@ export const TableBordersDropdownMenuContent = withRef<
     <DropdownMenuContent
       ref={ref}
       className={cn('min-w-[220px]')}
+      onCloseAutoFocus={(e) => {
+        e.preventDefault();
+        editor.tf.focus();
+      }}
       align="start"
       side="right"
       sideOffset={0}
       {...props}
     >
       <DropdownMenuGroup>
-        <DropdownMenuCheckboxItem
-          checked={hasBottomBorder}
-          onCheckedChange={getOnSelectTableBorder('bottom')}
-        >
-          <BorderBottom />
-          <div>Bottom Border</div>
-        </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={hasTopBorder}
           onCheckedChange={getOnSelectTableBorder('top')}
@@ -77,18 +288,25 @@ export const TableBordersDropdownMenuContent = withRef<
           <div>Top Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          checked={hasLeftBorder}
-          onCheckedChange={getOnSelectTableBorder('left')}
-        >
-          <BorderLeft />
-          <div>Left Border</div>
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
           checked={hasRightBorder}
           onCheckedChange={getOnSelectTableBorder('right')}
         >
           <BorderRight />
           <div>Right Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={hasBottomBorder}
+          onCheckedChange={getOnSelectTableBorder('bottom')}
+        >
+          <BorderBottom />
+          <div>Bottom Border</div>
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem
+          checked={hasLeftBorder}
+          onCheckedChange={getOnSelectTableBorder('left')}
+        >
+          <BorderLeft />
+          <div>Left Border</div>
         </DropdownMenuCheckboxItem>
       </DropdownMenuGroup>
 
@@ -112,219 +330,54 @@ export const TableBordersDropdownMenuContent = withRef<
   );
 });
 
-export const TableFloatingToolbar = withRef<typeof PopoverContent>(
-  ({ children, ...props }, ref) => {
-    const element = useElement<TTableElement>();
-    const { props: buttonProps } = useRemoveNodeButton({ element });
+type ColorDropdownMenuProps = {
+  children: React.ReactNode;
+  tooltip: string;
+};
 
-    const selectionCollapsed = useEditorSelector(
-      (editor) => !isSelectionExpanded(editor),
-      []
-    );
+function ColorDropdownMenu({ children, tooltip }: ColorDropdownMenuProps) {
+  const [open, setOpen] = useState(false);
 
-    const readOnly = useReadOnly();
-    const selected = useSelected();
-    const editor = useEditorRef();
+  const editor = useEditorRef();
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
 
-    const collapsed = !readOnly && selected && selectionCollapsed;
-    const open = !readOnly && selected;
+  const onUpdateColor = useCallback(
+    (color: string) => {
+      setOpen(false);
+      setCellBackground(editor, { color, selectedCells: selectedCells ?? [] });
+    },
+    [selectedCells, editor]
+  );
 
-    const { canMerge, canUnmerge } = useTableMergeState();
+  const onClearColor = useCallback(() => {
+    setOpen(false);
+    setCellBackground(editor, {
+      color: null,
+      selectedCells: selectedCells ?? [],
+    });
+  }, [selectedCells, editor]);
 
-    const mergeContent = canMerge && (
-      <Button
-        variant="ghost"
-        onClick={() => mergeTableCells(editor)}
-        contentEditable={false}
-        isMenu
-      >
-        <Combine />
-        Merge
-      </Button>
-    );
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenuTrigger asChild>
+        <ToolbarButton tooltip={tooltip}>{children}</ToolbarButton>
+      </DropdownMenuTrigger>
 
-    const unmergeButton = canUnmerge && (
-      <Button
-        variant="ghost"
-        onClick={() => unmergeTableCells(editor)}
-        contentEditable={false}
-        isMenu
-      >
-        <Ungroup />
-        Unmerge
-      </Button>
-    );
-
-    const bordersContent = collapsed && (
-      <>
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" isMenu>
-              <BorderAll />
-              Borders
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuPortal>
-            <TableBordersDropdownMenuContent />
-          </DropdownMenuPortal>
-        </DropdownMenu>
-
-        <Button variant="ghost" contentEditable={false} isMenu {...buttonProps}>
-          <Trash2Icon />
-          Delete
-        </Button>
-      </>
-    );
-
-    return (
-      <Popover open={open} modal={false}>
-        <PopoverAnchor asChild>{children}</PopoverAnchor>
-        {(canMerge || canUnmerge || collapsed) && (
-          <PopoverContent
-            ref={ref}
-            className={cn(popoverVariants(), 'flex w-[220px] flex-col p-1')}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            {...props}
-          >
-            {unmergeButton}
-            {mergeContent}
-            {bordersContent}
-          </PopoverContent>
-        )}
-      </Popover>
-    );
-  }
-);
-
-export const TableElement = withHOC(
-  TableProvider,
-  withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
-    const { colSizes, isSelectingCell, marginLeft, minColumnWidth } =
-      useTableElementState();
-    const { colGroupProps, props: tableProps } = useTableElement();
-
-    return (
-      <TableFloatingToolbar>
-        <PlateElement
-          className={cn('overflow-x-auto', className)}
-          style={{ paddingLeft: marginLeft }}
-          {...props}
-        >
-          <table
-            ref={ref}
-            className={cn(
-              'my-4 ml-px mr-0 table h-px w-[calc(100%-6px)] table-fixed border-collapse',
-              isSelectingCell && '[&_*::selection]:bg-none'
-            )}
-            {...tableProps}
-          >
-            <colgroup {...colGroupProps}>
-              {colSizes.map((width, index) => (
-                <col
-                  key={index}
-                  style={{
-                    minWidth: minColumnWidth,
-                    width: width || undefined,
-                  }}
-                />
-              ))}
-            </colgroup>
-
-            <tbody className="min-w-full">{children}</tbody>
-          </table>
-        </PlateElement>
-      </TableFloatingToolbar>
-    );
-  })
-);
-
-const BorderAll = (props: LucideProps) => (
-  <svg
-    fill="currentColor"
-    focusable="false"
-    height="48"
-    role="img"
-    viewBox="0 0 24 24"
-    width="48"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <path d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6zm10 13h5a1 1 0 0 0 1-1v-5h-6v6zm-2-6H5v5a1 1 0 0 0 1 1h5v-6zm2-2h6V6a1 1 0 0 0-1-1h-5v6zm-2-6H6a1 1 0 0 0-1 1v5h6V5z" />
-  </svg>
-);
-
-const BorderBottom = (props: LucideProps) => (
-  <svg
-    fill="currentColor"
-    focusable="false"
-    height="48"
-    role="img"
-    viewBox="0 0 24 24"
-    width="48"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <path d="M13 5a1 1 0 1 0 0-2h-2a1 1 0 1 0 0 2h2zm-8 6a1 1 0 1 0-2 0v2a1 1 0 1 0 2 0v-2zm-2 7a1 1 0 1 1 2 0 1 1 0 0 0 1 1h12a1 1 0 0 0 1-1 1 1 0 1 1 2 0 3 3 0 0 1-3 3H6a3 3 0 0 1-3-3zm17-8a1 1 0 0 0-1 1v2a1 1 0 1 0 2 0v-2a1 1 0 0 0-1-1zM7 4a1 1 0 0 0-1-1 3 3 0 0 0-3 3 1 1 0 0 0 2 0 1 1 0 0 1 1-1 1 1 0 0 0 1-1zm11-1a1 1 0 1 0 0 2 1 1 0 0 1 1 1 1 1 0 1 0 2 0 3 3 0 0 0-3-3z" />
-  </svg>
-);
-
-const BorderLeft = (props: LucideProps) => (
-  <svg
-    fill="currentColor"
-    focusable="false"
-    height="48"
-    role="img"
-    viewBox="0 0 24 24"
-    width="48"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <path d="M6 21a1 1 0 1 0 0-2 1 1 0 0 1-1-1V6a1 1 0 0 1 1-1 1 1 0 0 0 0-2 3 3 0 0 0-3 3v12a3 3 0 0 0 3 3zm7-16a1 1 0 1 0 0-2h-2a1 1 0 1 0 0 2h2zm6 6a1 1 0 1 1 2 0v2a1 1 0 1 1-2 0v-2zm-5 9a1 1 0 0 1-1 1h-2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1zm4-17a1 1 0 1 0 0 2 1 1 0 0 1 1 1 1 1 0 1 0 2 0 3 3 0 0 0-3-3zm-1 17a1 1 0 0 0 1 1 3 3 0 0 0 3-3 1 1 0 1 0-2 0 1 1 0 0 1-1 1 1 1 0 0 0-1 1z" />
-  </svg>
-);
-
-const BorderNone = (props: LucideProps) => (
-  <svg
-    fill="currentColor"
-    focusable="false"
-    height="48"
-    role="img"
-    viewBox="0 0 24 24"
-    width="48"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <path d="M14 4a1 1 0 0 1-1 1h-2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1zm-9 7a1 1 0 1 0-2 0v2a1 1 0 1 0 2 0v-2zm14 0a1 1 0 1 1 2 0v2a1 1 0 1 1-2 0v-2zm-6 10a1 1 0 1 0 0-2h-2a1 1 0 1 0 0 2h2zM7 4a1 1 0 0 0-1-1 3 3 0 0 0-3 3 1 1 0 0 0 2 0 1 1 0 0 1 1-1 1 1 0 0 0 1-1zm11-1a1 1 0 1 0 0 2 1 1 0 0 1 1 1 1 1 0 1 0 2 0 3 3 0 0 0-3-3zM7 20a1 1 0 0 1-1 1 3 3 0 0 1-3-3 1 1 0 1 1 2 0 1 1 0 0 0 1 1 1 1 0 0 1 1 1zm11 1a1 1 0 1 1 0-2 1 1 0 0 0 1-1 1 1 0 1 1 2 0 3 3 0 0 1-3 3z" />
-  </svg>
-);
-
-const BorderRight = (props: LucideProps) => (
-  <svg
-    fill="currentColor"
-    focusable="false"
-    height="48"
-    role="img"
-    viewBox="0 0 24 24"
-    width="48"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <path d="M13 5a1 1 0 1 0 0-2h-2a1 1 0 1 0 0 2h2zm-8 6a1 1 0 1 0-2 0v2a1 1 0 1 0 2 0v-2zm9 9a1 1 0 0 1-1 1h-2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1zM6 3a1 1 0 0 1 0 2 1 1 0 0 0-1 1 1 1 0 0 1-2 0 3 3 0 0 1 3-3zm1 17a1 1 0 0 1-1 1 3 3 0 0 1-3-3 1 1 0 1 1 2 0 1 1 0 0 0 1 1 1 1 0 0 1 1 1zm11 1a1 1 0 1 1 0-2 1 1 0 0 0 1-1V6a1 1 0 0 0-1-1 1 1 0 1 1 0-2 3 3 0 0 1 3 3v12a3 3 0 0 1-3 3z" />
-  </svg>
-);
-
-const BorderTop = (props: LucideProps) => (
-  <svg
-    fill="currentColor"
-    focusable="false"
-    height="48"
-    role="img"
-    viewBox="0 0 24 24"
-    width="48"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <path d="M3 6a1 1 0 0 0 2 0 1 1 0 0 1 1-1h12a1 1 0 0 1 1 1 1 1 0 1 0 2 0 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3zm2 5a1 1 0 1 0-2 0v2a1 1 0 1 0 2 0v-2zm14 0a1 1 0 1 1 2 0v2a1 1 0 1 1-2 0v-2zm-5 9a1 1 0 0 1-1 1h-2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1zm-8 1a1 1 0 1 0 0-2 1 1 0 0 1-1-1 1 1 0 1 0-2 0 3 3 0 0 0 3 3zm11-1a1 1 0 0 0 1 1 3 3 0 0 0 3-3 1 1 0 1 0-2 0 1 1 0 0 1-1 1 1 1 0 0 0-1 1z" />
-  </svg>
-);
+      <DropdownMenuContent align="start">
+        <DropdownMenuGroup label="Colors">
+          <ColorDropdownMenuItems
+            className="px-2"
+            colors={DEFAULT_COLORS}
+            updateColor={onUpdateColor}
+          />
+        </DropdownMenuGroup>
+        <DropdownMenuGroup>
+          <DropdownMenuItem className="p-2" onClick={onClearColor}>
+            <EraserIcon />
+            <span>Clear</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

@@ -2,22 +2,14 @@ import React, { useCallback, useState } from 'react';
 
 import type { TextareaAutosizeProps } from 'react-textarea-autosize';
 
-import {
-  type TElement,
-  getNodeString,
-  getPointAfter,
-  isHotkey,
-  setNodes,
-} from '@udecode/plate-common';
+import { type TElement, isHotkey, NodeApi, PathApi } from '@udecode/plate';
 import {
   createPrimitiveComponent,
-  findNodePath,
-  focusEditor,
   useEditorRef,
   useElement,
-} from '@udecode/plate-common/react';
-import { Path } from 'slate';
-import { useReadOnly } from 'slate-react';
+  usePluginOption,
+  useReadOnly,
+} from '@udecode/plate/react';
 
 import type { TCaptionElement } from '../../lib';
 
@@ -26,18 +18,18 @@ import { TextareaAutosize } from './TextareaAutosize';
 
 /** Focus textareaRef when focusCaptionPath is set to the image path. */
 export const useCaptionTextareaFocus = (
-  textareaRef: React.RefObject<HTMLTextAreaElement>
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>
 ) => {
   const editor = useEditorRef();
   const element = useElement<TCaptionElement>();
 
-  const focusCaptionPath = editor.useOption(CaptionPlugin, 'focusEndPath');
+  const focusCaptionPath = usePluginOption(CaptionPlugin, 'focusEndPath');
 
   React.useEffect(() => {
     if (focusCaptionPath && textareaRef.current) {
-      const path = findNodePath(editor, element);
+      const path = editor.api.findPath(element);
 
-      if (path && Path.equals(path, focusCaptionPath)) {
+      if (path && PathApi.equals(path, focusCaptionPath)) {
         textareaRef.current.focus();
         editor.setOption(CaptionPlugin, 'focusEndPath', null);
       }
@@ -49,59 +41,52 @@ export const useCaptionTextareaState = () => {
   const element = useElement<TCaptionElement>();
   const editor = useEditorRef();
 
-  const [isComposing, setIsComposing] = useState(false)
+  const [isComposing, setIsComposing] = useState(false);
 
   const [captionValue, setCaptionValue] = useState<
     TextareaAutosizeProps['value']
   >(() => {
     const nodeCaption =
-      element.caption ?? ([{ children: [{ text: '' }] }] as [TElement])
-    return getNodeString(nodeCaption[0])
-  })
+      element.caption ?? ([{ children: [{ text: '' }] }] as [TElement]);
+
+    return NodeApi.string(nodeCaption[0]);
+  });
 
   const updateEditorCaptionValue = useCallback(
     (newValue: string) => {
-      const path = findNodePath(editor, element)
-      if (!path) {
-        return 
-      }
-
-      setNodes<TCaptionElement>(
-        editor,
+      editor.tf.setNodes<TCaptionElement>(
         { caption: [{ text: newValue }] },
-        { at: path },
-      )
+        { at: element }
+      );
     },
-    [editor, element],
-  )
+    [editor, element]
+  );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const newValue = e.target.value
-      setCaptionValue(newValue) 
+      const newValue = e.target.value;
+      setCaptionValue(newValue);
 
       if (!isComposing) {
-        updateEditorCaptionValue(newValue)
+        updateEditorCaptionValue(newValue);
       }
     },
-    [isComposing, updateEditorCaptionValue],
-  )
+    [isComposing, updateEditorCaptionValue]
+  );
 
   const handleCompositionStart = useCallback(() => {
-    setIsComposing(true)
-  }, [])
+    setIsComposing(true);
+  }, []);
 
   const handleCompositionEnd = useCallback(
     (e: React.CompositionEvent<HTMLTextAreaElement>) => {
-      setIsComposing(false)
-      const newValue = e.currentTarget.value
-      setCaptionValue(newValue) 
-      updateEditorCaptionValue(newValue) 
+      setIsComposing(false);
+      const newValue = e.currentTarget.value;
+      setCaptionValue(newValue);
+      updateEditorCaptionValue(newValue);
     },
-    [updateEditorCaptionValue],
-  )
-
-
+    [updateEditorCaptionValue]
+  );
 
   const readOnly = useReadOnly();
 
@@ -113,10 +98,10 @@ export const useCaptionTextareaState = () => {
     captionValue,
     element,
     readOnly,
-    handleChange,
-    handleCompositionStart,
-    handleCompositionEnd,
     textareaRef,
+    handleChange,
+    handleCompositionEnd,
+    handleCompositionStart,
   };
 };
 
@@ -124,37 +109,37 @@ export const useCaptionTextarea = ({
   captionValue,
   element,
   readOnly,
-  handleChange,
-  handleCompositionStart,
-  handleCompositionEnd,
   textareaRef,
+  handleChange,
+  handleCompositionEnd,
+  handleCompositionStart,
 }: ReturnType<typeof useCaptionTextareaState>) => {
   const editor = useEditorRef();
 
   const onKeyDown: TextareaAutosizeProps['onKeyDown'] = (e) => {
     // select image
     if (isHotkey('up', e)) {
-      const path = findNodePath(editor, element);
+      const path = editor.api.findPath(element);
 
       if (!path) return;
 
       e.preventDefault();
 
-      focusEditor(editor, path);
+      editor.tf.focus({ at: path });
     }
     // select next block
     if (isHotkey('down', e)) {
-      const path = findNodePath(editor, element);
+      const path = editor.api.findPath(element);
 
       if (!path) return;
 
-      const nextNodePath = getPointAfter(editor, path);
+      const nextNodePath = editor.api.after(path);
 
       if (!nextNodePath) return;
 
       e.preventDefault();
 
-      focusEditor(editor, nextNodePath);
+      editor.tf.focus({ at: nextNodePath });
     }
   };
 
@@ -171,10 +156,10 @@ export const useCaptionTextarea = ({
       readOnly,
       value: captionValue,
       onBlur,
-      onKeyDown,
       onChange: handleChange,
-      onCompositionStart: handleCompositionStart,
       onCompositionEnd: handleCompositionEnd,
+      onCompositionStart: handleCompositionStart,
+      onKeyDown,
     },
     ref: textareaRef,
   };

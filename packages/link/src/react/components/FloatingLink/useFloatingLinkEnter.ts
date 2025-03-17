@@ -1,12 +1,16 @@
-import { useEditorPlugin, useHotkeys } from '@udecode/plate-common/react';
+import {
+  useEditorRef,
+  useHotkeys,
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 import { submitFloatingLink } from '../../transforms/submitFloatingLink';
 
 export const useFloatingLinkEnter = () => {
-  const { editor, useOption } = useEditorPlugin(LinkPlugin);
+  const editor = useEditorRef();
 
-  const open = useOption('isOpen', editor.id);
+  const open = usePluginOption(LinkPlugin, 'isOpen', editor.id);
 
   useHotkeys(
     '*',
@@ -17,8 +21,8 @@ export const useFloatingLinkEnter = () => {
       }
     },
     {
-      enableOnFormTags: ['INPUT'],
       enabled: open,
+      enableOnFormTags: ['INPUT'],
     },
     []
   );

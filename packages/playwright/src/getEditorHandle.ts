@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import type { EditorHandle } from './types';
 
@@ -34,7 +34,6 @@ export const getEditorHandle = async <E extends PlateEditor = PlateEditor>(
 
     throw error;
   }
-  // eslint-disable-next-line unicorn/prefer-dom-node-dataset
   if ((await editableLocator.getAttribute('data-slate-editor')) === null) {
     throw new Error(
       'getEditorHandle: the element matched by the given locator is not a [data-slate-editor]. Use getEditable to locate the editable element before passing it to getEditorHandle.'

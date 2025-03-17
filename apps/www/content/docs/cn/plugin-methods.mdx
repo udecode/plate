@@ -1,0 +1,329 @@
+---
+title: 插件方法
+description: 探索可用于扩展 Plate 插件的各种方法。
+---
+
+## 配置方法
+
+在扩展插件时，默认情况下所有属性都会深度合并，但有两个例外：数组会完全替换，而 `options` 对象会浅合并。
+
+### .configure
+
+`.configure` 方法允许你覆盖插件的配置。
+
+```ts
+const ConfiguredPlugin = MyPlugin.configure({
+  options: {
+    myOption: '新值',
+  },
+});
+```
+
+你也可以使用一个函数来访问当前配置：
+
+```ts
+const ConfiguredPlugin = MyPlugin.configure(({ getOptions }) => ({
+  options: {
+    ...getOptions(),
+    myOption: `${getOptions().myOption} + 额外`,
+  },
+}));
+```
+
+- 它用于修改插件的现有属性。
+- 它不会向插件添加新属性。
+- 最后应用的配置是编辑器使用的配置。
+- 它不会返回扩展类型，而是保持原始插件类型。
+
+### .configurePlugin
+
+`.configurePlugin` 方法允许你配置嵌套插件的属性：
+
+```ts
+const TablePlugin = createPlatePlugin({
+  key: 'table',
+  plugins: [TableCellPlugin],
+}).configurePlugin(TableCellPlugin, {
+  options: {
+    cellOption: '已修改',
+  },
+});
+```
+
+- 它用于配置父插件中的嵌套插件。
+- 与 `.configure` 类似，它修改现有属性但不添加新属性。
+- 它适用于在不扩展类型的情况下调整子插件的行为。
+
+### .extend
+
+`.extend` 方法允许你扩展插件的配置和功能。
+
+```ts
+const ExtendedPlugin = MyPlugin.extend({
+  options: {
+    newOption: '新值',
+  },
+});
+```
+
+你也可以使用一个函数来访问当前配置和编辑器：
+
+```ts
+const ExtendedPlugin = MyPlugin.extend(({ editor, plugin }) => ({
+  options: {
+    newOption: '新值',
+  },
+  handlers: {
+    onKeyDown: () => {
+      // 自定义按键逻辑
+    },
+  },
+}));
+```
+
+- 它用于向插件添加新属性或修改现有属性。
+- 它返回一个具有扩展类型的新插件实例。
+- 它是可链式调用的，允许顺序应用多个扩展。
+
+### .extendPlugin
+
+`.extendPlugin` 方法允许你扩展嵌套插件的配置和功能：
+
+```ts
+const TablePlugin = createPlatePlugin({
+  key: 'table',
+  plugins: [TableCellPlugin],
+}).extendPlugin(TableCellPlugin, {
+  options: {
+    newCellOption: '已添加',
+  },
+  handlers: {
+    onKeyDown: () => {
+      // 自定义表格单元格的按键逻辑
+    },
+  },
+});
+```
+
+- 它用于扩展父插件中的嵌套插件。
+- 它可以向嵌套插件添加新属性并修改现有属性。
+- 它返回一个具有扩展嵌套插件的新父插件实例。
+
+### .configure 和 .extend 的区别
+
+虽然这两种方法都可以用于修改插件配置，但它们有一些关键区别：
+
+1. 链式调用：`.extend` 是可链式调用的，而 `.configure` 不是。
+2. 类型扩展：`.extend` 返回一个具有扩展类型的新插件实例，而 `.configure` 保持原始类型。
+3. 新属性：`.extend` 可以向插件配置添加新属性，而 `.configure` 仅修改现有属性。
+
+根据你是否需要扩展插件的类型和功能来选择适当的方法（使用 `.extend`）或仅修改现有配置（使用 `.configure`）。
+
+### .extendSelectors
+
+`extendSelectors` 方法允许你向插件添加可订阅的选择器：
+
+```ts
+const CounterPlugin = createPlatePlugin({
+  key: 'counter',
+  options: {
+    count: 0,
+  },
+}).extendSelectors(({ getOptions }) => ({
+  doubleCount: () => getOptions().count * 2,
+  isEven: () => getOptions().count % 2 === 0,
+}));
+```
+
+然后你可以在组件或其他插件方法中使用这些选择器：
+
+```tsx
+const CounterComponent = () => {
+  const count = usePluginOption(CounterPlugin, 'count');
+  const doubleCount = usePluginOption(CounterPlugin, 'doubleCount');
+  const isEven = usePluginOption(CounterPlugin, 'isEven');
+
+  return (
+    <div>
+      <p>计数: {count}</p>
+      <p>双倍计数: {doubleCount}</p>
+      <p>是否为偶数: {isEven ? '是' : '否'}</p>
+    </div>
+  );
+};
+```
+
+- 它允许你从插件选项中创建派生状态或计算值。
+- 使用 `getOption` 读取值。
+- 使用 `usePluginOption` 订阅值，当选项更改时重新计算，仅在结果更改时重新渲染。**这是与 `.extendApi` 的主要区别**。
+
+### .withComponent
+
+`withComponent` 方法允许你设置或替换与插件关联的组件。
+
+```ts
+const ParagraphPlugin = createPlatePlugin({
+  key: 'p',
+  node: {
+    isElement: true,
+    type: 'p',
+  },
+}).withComponent(ParagraphElement);
+```
+
+## API 和转换
+
+插件可以定义自己的 API 方法和转换，这些方法和转换将合并到编辑器的 API 和转换中。这是通过 `extendApi`、`extendEditorApi`、`extendTransforms` 和 `extendEditorTransforms` 方法实现的。
+
+### .extendApi
+
+使用 `extendApi` 添加插件特定的 API 方法：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).extendApi(() => ({
+  pluginMethod: () => '插件方法结果',
+}));
+
+// 访问插件的 API
+editor.api.myPlugin.api.pluginMethod();
+```
+
+### .extendEditorApi
+
+使用 `extendEditorApi` 添加根级别的 API 方法：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).extendEditorApi(({ getOptions }) => ({
+  editorMethod: () => getOptions().someOption,
+}));
+
+// 访问插件的 API
+editor.api.editorMethod();
+```
+
+### .extendTransforms
+
+使用 `extendTransforms` 添加插件特定的转换方法：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).extendTransforms(() => ({
+  pluginTransform: () => {
+    // 自定义转换逻辑
+  },
+}));
+
+// 访问插件的转换
+editor.tf.myPlugin.pluginTransform();
+
+// 注意：`editor.tf` 是 `editor.transforms` 的简写
+editor.transforms.myPlugin.pluginTransform();
+```
+
+### .extendEditorTransforms
+
+使用 `extendEditorTransforms` 添加根级别的转换方法：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).extendEditorTransforms(({ editor }) => ({
+  editorTransform: () => {
+    // 自定义编辑器转换逻辑
+  },
+}));
+
+// 访问插件的转换
+editor.tf.editorTransform();
+```
+
+### .overrideEditor
+
+`overrideEditor` 方法专门用于在不更改插件类型的情况下覆盖现有的编辑器方法：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).overrideEditor(({ editor, tf: { insertText }, api: { isInline } }) => ({
+  transforms: {
+    insertText(text, options) {
+      // 覆盖 insertText 行为
+      insertText(text, options);
+    },
+  },
+  api: {
+    isInline(element) {
+      // 覆盖 isInline 行为
+      return isInline(element);
+    },
+  },
+}));
+```
+
+- 专门用于覆盖现有的编辑器方法
+- 返回包装在 `transforms` 或 `api` 对象中的覆盖方法
+- 不能添加新方法（使用 `extendEditorTransforms` 或 `extendEditorApi` 代替）
+- 通过上下文提供对原始方法的访问
+
+### API 和转换的区别
+
+虽然目前在 Plate 中 API 和转换没有核心区别，但它们服务于不同的目的，并且设计时考虑了未来的可扩展性：
+
+- **转换：**
+  - 存储所有 Slate 转换和编辑器操作。结构上可能支持未来的中间件，允许更复杂的转换管道和开发工具。
+  - 通常用于修改编辑器状态的操作，例如插入、删除或转换内容。
+  - 示例：`editor.tf.toggleBlock()`，`editor.tf.toggleMark('bold')`
+
+- **API：**
+  - 存储所有查询、实用函数和其他不直接修改编辑器状态的方法。
+  - 示例：`editor.api.save()`，`editor.api.debug.log()`
+
+### 链式扩展
+
+你可以链式调用这些方法来创建一个全面的插件：
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: {
+    baseValue: 5,
+  },
+})
+  .extendApi(() => ({
+    pluginMethod: () => '插件方法',
+  }))
+  .extendEditorApi(({ getOptions }) => ({
+    multiply: (factor: number) => getOptions().baseValue * factor,
+  }))
+  .extendTransforms(() => ({
+    pluginTransform: () => {
+      // 插件特定的转换
+    },
+  }))
+  .extendEditorTransforms(({ editor }) => ({
+    editorTransform: () => {
+      // 编辑器特定的转换
+    },
+  }));
+
+editor.api.myPlugin.api.pluginMethod();
+editor.api.multiply(3);
+editor.tf.myPlugin.pluginTransform();
+editor.tf.editorTransform();
+```
+
+## 将 Slate 插件转换为 Plate 插件
+
+要将一个类型化的 Slate 插件转换为 Plate 插件，你可以使用 `toPlatePlugin`：
+
+```ts
+const CodeBlockPlugin = toPlatePlugin(createSlatePlugin({ key: 'code_block' }), {
+  handlers: {},
+  options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
+});
+```

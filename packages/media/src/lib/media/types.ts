@@ -1,4 +1,11 @@
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
+
+export interface MediaPluginOptions {
+  isUrl?: (text: string) => boolean;
+
+  /** Transforms the url. */
+  transformUrl?: (url: string) => string;
+}
 
 export interface TMediaElement extends TElement {
   url: string;
@@ -7,11 +14,4 @@ export interface TMediaElement extends TElement {
   isUpload?: boolean;
   name?: string;
   placeholderId?: string;
-}
-
-export interface MediaPluginOptions {
-  isUrl?: (text: string) => boolean;
-
-  /** Transforms the url. */
-  transformUrl?: (url: string) => string;
 }

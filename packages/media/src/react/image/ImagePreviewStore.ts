@@ -1,35 +1,37 @@
-import { createZustandStore } from '@udecode/plate-common';
+import { createZustandStore } from '@udecode/plate';
 
 export interface PreviewItem {
   url: string;
   id?: string;
 }
 
-export const ImagePreviewStore = createZustandStore('imagePreview')({
-  boundingClientRect: {} as DOMRect,
-  currentPreview: null as PreviewItem | null,
-  isEditingScale: false,
-  openEditorId: null as string | null,
-  previewList: [] as PreviewItem[],
-  scale: 1 as number,
-  translate: { x: 0, y: 0 },
-})
-  .extendActions((set) => ({
+export const ImagePreviewStore = createZustandStore(
+  {
+    boundingClientRect: {} as DOMRect,
+    currentPreview: null as PreviewItem | null,
+    isEditingScale: false,
+    openEditorId: null as string | null,
+    previewList: [] as PreviewItem[],
+    scale: 1 as number,
+    translate: { x: 0, y: 0 },
+  },
+  {
+    mutative: true,
+    name: 'imagePreview',
+  }
+)
+  .extendActions(({ set }) => ({
     close: () => {
-      set.currentPreview(null);
-      set.previewList([]);
-      set.openEditorId(null);
-      set.scale(1);
-      set.translate({ x: 0, y: 0 });
-      set.isEditingScale(false);
+      set('currentPreview', null);
+      set('previewList', []);
+      set('openEditorId', null);
+      set('scale', 1);
+      set('translate', { x: 0, y: 0 });
+      set('isEditingScale', false);
     },
   }))
-  .extendSelectors((state) => ({
-    isOpen: (editorId: string) => state.openEditorId === editorId,
+  .extendSelectors(({ get }) => ({
+    isOpen: (editorId: string) => get('openEditorId') === editorId,
   }));
 
-export const imagePreviewActions = ImagePreviewStore.set;
-
-export const imagePreviewSelectors = ImagePreviewStore.get;
-
-export const useImagePreviewSelectors = () => ImagePreviewStore.use;
+export const { useValue: useImagePreviewValue } = ImagePreviewStore;

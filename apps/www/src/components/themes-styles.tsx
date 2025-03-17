@@ -16,16 +16,18 @@ export function ThemesStyle() {
   return (
     <style>
       {`
-.themes-wrapper, [role="toolbar"], [data-radix-popper-content-wrapper]>div, [data-dialog], [data-popover] {
+.themes-wrapper,
+[data-chart] {
   ${Object.entries(themesConfig.activeTheme.cssVars.light)
-    .map(([key, value]) => `${key}: ${value};`)
+    .map(([key, value]) => `${key}: hsl(${value});`)
     .join('\n')}
   --radius: ${config.radius}rem;
 }
 
-.dark .themes-wrapper, .dark [role="toolbar"], .dark [data-radix-popper-content-wrapper]>div, .dark [data-dialog], .dark [data-popover] {
+.dark .themes-wrapper,
+.dark [data-chart] {
   ${Object.entries(themesConfig.activeTheme.cssVars.dark)
-    .map(([key, value]) => `${key}: ${value};`)
+    .map(([key, value]) => `${key}: hsl(${value});`)
     .join('\n')}
   --radius: ${config.radius}rem;
 }

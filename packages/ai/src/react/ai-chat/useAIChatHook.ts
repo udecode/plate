@@ -1,6 +1,5 @@
-import { getBlockAbove } from '@udecode/plate-common';
-import { useEditorPlugin } from '@udecode/plate-common/react';
 import { deserializeInlineMd } from '@udecode/plate-markdown';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
 import type { AIChatPluginConfig } from './AIChatPlugin';
@@ -10,8 +9,7 @@ import { useChatChunk } from './hooks/useChatChunk';
 
 export const useAIChatHooks = () => {
   const { editor, tf } = useEditorPlugin<AIPluginConfig>({ key: 'ai' });
-  const { useOption } = useEditorPlugin<AIChatPluginConfig>({ key: 'aiChat' });
-  const mode = useOption('mode');
+  const mode = usePluginOption({ key: 'aiChat' } as AIChatPluginConfig, 'mode');
 
   useChatChunk({
     onChunk: ({ isFirst, nodes }) => {
@@ -28,7 +26,7 @@ export const useAIChatHooks = () => {
     onFinish: ({ content }) => {
       if (mode !== 'insert') return;
 
-      const blockAbove = getBlockAbove(editor);
+      const blockAbove = editor.api.block();
 
       if (!blockAbove) return;
 

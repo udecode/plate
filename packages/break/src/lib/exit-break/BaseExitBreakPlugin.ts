@@ -1,6 +1,13 @@
-import { createTSlatePlugin } from '@udecode/plate-common';
+import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
 
-import type { ExitBreakConfig } from './types';
+import type { ExitBreakRule } from './types';
+
+export type ExitBreakConfig = PluginConfig<
+  'exitBreak',
+  {
+    rules?: ExitBreakRule[];
+  }
+>;
 
 /**
  * Insert soft break following configurable rules. Each rule specifies a hotkey

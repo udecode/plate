@@ -1,12 +1,10 @@
-import { useEditorRef } from '@udecode/plate-core/react';
 import {
-  type QueryNodeOptions,
-  isCollapsed,
-  isElementEmpty,
-  queryNode,
-} from '@udecode/slate';
-import { findNodePath } from '@udecode/slate-react';
-import { useComposing, useFocused, useSelected } from 'slate-react';
+  useComposing,
+  useEditorRef,
+  useFocused,
+  useSelected,
+} from '@udecode/plate-core/react';
+import { type QueryNodeOptions, queryNode } from '@udecode/slate';
 
 import type { PlateElementProps } from './PlateElement';
 
@@ -19,6 +17,7 @@ export interface PlaceholderProps extends PlateElementProps {
 export const usePlaceholderState = ({
   element,
   hideOnBlur = true,
+  path,
   query,
 }: PlaceholderProps) => {
   const focused = useFocused();
@@ -26,13 +25,13 @@ export const usePlaceholderState = ({
   const composing = useComposing();
   const editor = useEditorRef();
 
-  const isEmptyBlock = isElementEmpty(editor, element) && !composing;
+  const isEmptyBlock = editor.api.isEmpty(element) && !composing;
 
   const enabled =
     isEmptyBlock &&
-    (!query || queryNode([element, findNodePath(editor, element)!], query)) &&
+    (!query || queryNode([element, path!], query)) &&
     (!hideOnBlur ||
-      (isCollapsed(editor.selection) && hideOnBlur && focused && selected));
+      (editor.api.isCollapsed() && hideOnBlur && focused && selected));
 
   return {
     enabled,

@@ -1,7 +1,6 @@
 'use client';
 
 import type { AutoformatRule } from '@udecode/plate-autoformat';
-import type { SlateEditor } from '@udecode/plate-common';
 
 import {
   autoformatArrow,
@@ -23,18 +22,7 @@ import {
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
-import {
-  CodeBlockPlugin,
-  CodeLinePlugin,
-} from '@udecode/plate-code-block/react';
-import {
-  getParentNode,
-  insertNodes,
-  isElement,
-  isType,
-  setNodes,
-} from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
@@ -43,27 +31,10 @@ import {
   ListStyleType,
   toggleIndentList,
 } from '@udecode/plate-indent-list';
-import { TogglePlugin, openNextToggles } from '@udecode/plate-toggle/react';
+import { openNextToggles, TogglePlugin } from '@udecode/plate-toggle/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
 
-export const format = (editor: SlateEditor, customFormatting: any) => {
-  if (editor.selection) {
-    const parentEntry = getParentNode(editor, editor.selection);
-
-    if (!parentEntry) return;
-
-    const [node] = parentEntry;
-
-    if (
-      isElement(node) &&
-      !isType(editor, node, CodeBlockPlugin.key) &&
-      !isType(editor, node, CodeLinePlugin.key)
-    ) {
-      customFormatting();
-    }
-  }
-};
-
-export const autoformatMarks: AutoformatRule[] = [
+const autoformatMarks: AutoformatRule[] = [
   {
     match: '***',
     mode: 'mark',
@@ -136,7 +107,7 @@ export const autoformatMarks: AutoformatRule[] = [
   },
 ];
 
-export const autoformatBlocks: AutoformatRule[] = [
+const autoformatBlocks: AutoformatRule[] = [
   {
     match: '# ',
     mode: 'block',
@@ -173,16 +144,15 @@ export const autoformatBlocks: AutoformatRule[] = [
     type: BlockquotePlugin.key,
   },
   {
+    match: '```',
+    mode: 'block',
+    type: CodeBlockPlugin.key,
     format: (editor) => {
       insertEmptyCodeBlock(editor, {
         defaultType: ParagraphPlugin.key,
         insertNodesOptions: { select: true },
       });
     },
-    match: '```',
-    mode: 'block',
-    triggerAtBlockStart: false,
-    type: CodeBlockPlugin.key,
   },
   {
     match: '+ ',
@@ -191,67 +161,67 @@ export const autoformatBlocks: AutoformatRule[] = [
     type: TogglePlugin.key,
   },
   {
+    match: ['---', '—-', '___ '],
+    mode: 'block',
+    type: HorizontalRulePlugin.key,
     format: (editor) => {
-      setNodes(editor, { type: HorizontalRulePlugin.key });
-      insertNodes(editor, {
+      editor.tf.setNodes({ type: HorizontalRulePlugin.key });
+      editor.tf.insertNodes({
         children: [{ text: '' }],
         type: ParagraphPlugin.key,
       });
     },
-    match: ['---', '—-', '___ '],
-    mode: 'block',
-    type: HorizontalRulePlugin.key,
   },
 ];
 
-export const autoformatIndentLists: AutoformatRule[] = [
+const autoformatIndentLists: AutoformatRule[] = [
   {
+    match: ['* ', '- '],
+    mode: 'block',
+    type: 'list',
     format: (editor) => {
       toggleIndentList(editor, {
         listStyleType: ListStyleType.Disc,
       });
     },
-    match: ['* ', '- '],
-    mode: 'block',
-    type: 'list',
   },
   {
-    format: (editor) =>
-      toggleIndentList(editor, {
-        listStyleType: ListStyleType.Decimal,
-      }),
     match: [String.raw`^\d+\.$ `, String.raw`^\d+\)$ `],
     matchByRegex: true,
     mode: 'block',
     type: 'list',
+    format: (editor) =>
+      toggleIndentList(editor, {
+        listStyleType: ListStyleType.Decimal,
+      }),
   },
   {
+    match: ['[] '],
+    mode: 'block',
+    type: 'list',
     format: (editor) => {
       toggleIndentList(editor, {
         listStyleType: INDENT_LIST_KEYS.todo,
       });
-      setNodes(editor, {
+      editor.tf.setNodes({
         checked: false,
         listStyleType: INDENT_LIST_KEYS.todo,
       });
     },
-    match: ['[] '],
-    mode: 'block',
-    type: 'list',
   },
   {
+    match: ['[x] '],
+    mode: 'block',
+    type: 'list',
     format: (editor) => {
       toggleIndentList(editor, {
         listStyleType: INDENT_LIST_KEYS.todo,
       });
-      setNodes(editor, {
+      editor.tf.setNodes({
         checked: true,
         listStyleType: INDENT_LIST_KEYS.todo,
       });
     },
-    match: ['[x] '],
-    mode: 'block',
-    type: 'list',
   },
 ];
 
@@ -268,6 +238,14 @@ export const autoformatPlugin = AutoformatPlugin.configure({
       ...autoformatArrow,
       ...autoformatMath,
       ...autoformatIndentLists,
-    ],
+    ].map(
+      (rule): AutoformatRule => ({
+        ...rule,
+        query: (editor) =>
+          !editor.api.some({
+            match: { type: editor.getType(CodeBlockPlugin) },
+          }),
+      })
+    ),
   },
 });

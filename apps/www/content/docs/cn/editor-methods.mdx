@@ -1,0 +1,208 @@
+---
+title: 编辑器方法
+description: 探索可用于与 Plate 编辑器交互和自定义的各种方法。
+---
+
+本指南涵盖了 Plate 编辑器实例上可用的各种方法。
+
+## 访问编辑器
+
+访问编辑器实例的方式取决于你需要它的上下文。
+
+### 在 Plate 下方
+
+使用以下钩子之一：
+
+- `useEditorRef`：永不重新渲染。
+- `useEditorSelector`：仅在特定编辑器属性更改时重新渲染。
+- `useEditorState`：每次更改时重新渲染。
+
+```ts
+import { useEditorRef, useEditorSelector, useEditorState } from '@udecode/plate/react';
+
+const MyComponent = () => {
+  const editor = useEditorRef();
+  const hasSelection = useEditorSelector((editor) => !!editor.selection, []);
+  const editorState = useEditorState();
+  
+  // ...
+};
+```
+
+#### useEditorRef
+
+- 使用一个永远不会被替换的编辑器引用。这应该是默认选择。
+- 由于编辑器是一个通过引用更新的可变对象，`useEditorRef` 在回调中访问编辑器时总是足够的。
+- `useEditorRef` 永远不会导致你的组件重新渲染，因此它是性能最佳的选择。
+
+#### useEditorSelector
+
+- 订阅基于编辑器的特定选择器。这是订阅状态变化时性能最佳的选择。
+- 示例用法：`const hasSelection = useEditorSelector((editor) => !!editor.selection, []);`
+- 当你希望组件在特定变化时重新渲染时，可以使用 `useEditorSelector` 来访问相关属性。
+- 选择器函数在每次编辑器更改时（即每次按键或选择更改时）调用，但组件仅在返回值更改时重新渲染。
+- 为了正常工作，你应该确保返回值可以使用 `===` 进行比较。在大多数情况下，这意味着返回一个原始值，如数字、字符串或布尔值。
+- 你可以在 `useEditorSelector` 的选项中提供一个自定义的 `equalityFn`，以应对 `===` 不够用的情况。
+- 如果选择器函数依赖于任何局部作用域的变量，你应该将这些变量包含在依赖列表中。
+
+#### useEditorState
+
+- 每次编辑器更改时重新渲染。
+- 使用 `useEditorState` 会导致你的组件在用户每次按键或更改选择时重新渲染。
+- 对于大型文档或重新渲染特别昂贵的情况，这可能会导致性能问题。
+
+### 在 Plate 外部
+
+要在 `Plate` 组件外部访问编辑器或处理多个编辑器，请使用 `PlateController` 组件：
+
+```ts
+import { PlateController } from '@udecode/plate/react';
+
+const App = () => (
+  <PlateController>
+    <Toolbar />
+    <MyEditor />
+  </PlateController>
+);
+
+const Toolbar = () => {
+  const editor = useEditorState();
+  const isMounted = useEditorMounted();
+  // 在这里使用编辑器方法
+};
+```
+
+`PlateController` 管理活动的编辑器：
+- 默认情况下，第一个挂载的编辑器是活动的（可以通过在 `Plate` 上设置 `primary={false}` 来覆盖）。
+- 焦点更改会改变活动的编辑器。
+- 编辑器保持活动状态，直到另一个编辑器获得焦点或它被卸载。
+
+像 `useEditorRef` 和 `useEditorSelector` 这样的钩子在 `PlateController` 内部与活动的编辑器一起工作。如果没有活动的编辑器，它们会返回一个回退编辑器，该编辑器：
+- 提供查询的默认值。
+- 无法被修改。
+- 在状态更改操作时抛出错误。
+
+回退编辑器的场景：
+- 没有挂载的 `Plate` 组件。
+- 所有 `Plate` 组件都是非主要的。
+- 在 `PlateContent` 挂载期间。
+
+你可以使用 `useEditorMounted` 检查是否有任何编辑器已挂载：
+
+```ts
+const Toolbar = () => {
+  const editor = useEditorState();
+  const isMounted = useEditorMounted();
+  
+  if (!isMounted) {
+    return <div>编辑器未准备好</div>;
+  }
+  
+  return <div>{/* 工具栏内容 */}</div>;
+};
+```
+
+你也可以使用 `editor.isFallback` 来检查编辑器是否是回退实例。
+
+## API 方法
+
+### findPath
+
+查找节点的路径。默认是 `findNodePath`（遍历）。`withPlate` 会覆盖为使用 `ReactEditor.findPath`（记忆）。
+
+```ts
+const path = editor.findPath(node);
+```
+
+### getApi
+
+获取编辑器的类型化 API：
+
+```ts
+const api = editor.getApi(TablePlugin);
+api.api.create.tableCell(); // 类型安全的 API 方法
+```
+
+### getTransforms
+
+获取编辑器的类型化转换：
+
+```ts
+const tf = editor.getTransforms(TablePlugin);
+tf.insert.tableRow(); // 类型安全的转换方法
+```
+
+## 插件方法
+
+### getPlugin
+
+通过键或基础插件获取编辑器插件实例：
+
+```ts
+const paragraphPlugin = editor.getPlugin(ParagraphPlugin);
+const headingPlugin = editor.getPlugin({ key: 'heading' });
+```
+
+### getType
+
+获取与插件关联的节点类型：
+
+```ts
+const paragraphType = editor.getType(ParagraphPlugin);
+```
+
+## 选项方法
+
+### getOption
+
+获取插件的特定选项值：
+
+```ts
+const search = editor.getOption(FindReplacePlugin, 'search');
+```
+
+要订阅选项更改，请使用 `usePluginOption` 或 `usePluginOptions` 钩子。
+
+### getOptions
+
+获取插件的所有选项：
+
+```ts
+const linkOptions = editor.getOptions(LinkPlugin);
+```
+
+### setOption
+
+设置插件的特定选项值：
+
+```ts
+editor.setOption(FindReplacePlugin, 'search', 'hello');
+```
+
+### setOptions
+
+设置插件的多个选项：
+
+```ts
+editor.setOptions(FindReplacePlugin, {
+  search: 'hello',
+  caseSensitive: true,
+});
+```
+
+你也可以使用函数通过 Immer 更新选项：
+
+```ts
+editor.setOptions(FindReplacePlugin, (draft) => {
+  draft.search = 'hello';
+  draft.caseSensitive = true;
+});
+```
+
+### getOptionsStore
+
+获取插件的 [zustand-x](https://github.com/udecode/zustand-x) 选项存储：
+
+```ts
+const store = editor.getOptionsStore(FindReplacePlugin);
+```

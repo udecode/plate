@@ -1,0 +1,82 @@
+---
+title: Date
+docs:
+  - route: /docs/components/date-element
+    title: Date Element
+---
+
+<ComponentPreview name="date-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Insert and display dates within your text using inline date elements.
+- These dates can be easily selected and modified using a calendar interface.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-date
+```
+
+## Usage
+
+```tsx
+import { DatePlugin } from '@udecode/plate-date/react';
+
+const plugins = [
+  // ...otherPlugins,
+  DatePlugin,
+];
+```
+
+## Plugins
+
+### `DatePlugin`
+
+Plugin for adding date elements to your document.
+
+## API
+
+### `isPointNextToNode`
+
+Check if a point is next to a specific node type.
+
+<API name="isPointNextToNode">
+<APIParameters>
+  <APIItem name="nodeType" type="string">
+    The type of node to check for adjacency (e.g. 'date' for inline date elements).
+  </APIItem>
+  <APIItem name="options" type="object">
+    Options for checking adjacency.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="at" type="Point" optional>
+    Position to check from. Uses current selection anchor if not provided.
+  </APIItem>
+  <APIItem name="reverse" type="boolean">
+    Direction to check. If true, checks previous node; if false, checks next node.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Transforms
+
+### `editor.tf.insert.date`
+
+<API name="insert.date">
+<APIParameters>
+  <APIItem name="date" type="string" optional>
+    The date string to insert in 'YYYY-MM-DD' format.
+    - **Default:** Current date
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Options for inserting nodes.
+  </APIItem>
+</APIParameters>
+</API>

@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { findSuggestionNode } from '../queries/index';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey, getSuggestionUserIds } from './getSuggestionKeys';
 import { getSuggestionNodeEntries } from './getSuggestionNodeEntries';
 
@@ -9,15 +9,20 @@ export type TSuggestionCommonDescription = {
   userId: string;
 };
 
+export type TSuggestionDeletionDescription = {
+  deletedText: string;
+  type: 'deletion';
+} & TSuggestionCommonDescription;
+
+export type TSuggestionDescription =
+  | TSuggestionDeletionDescription
+  | TSuggestionInsertionDescription
+  | TSuggestionReplacementDescription;
+
 // TODO: Move to ../types
 export type TSuggestionInsertionDescription = {
   insertedText: string;
   type: 'insertion';
-} & TSuggestionCommonDescription;
-
-export type TSuggestionDeletionDescription = {
-  deletedText: string;
-  type: 'deletion';
 } & TSuggestionCommonDescription;
 
 export type TSuggestionReplacementDescription = {
@@ -25,11 +30,6 @@ export type TSuggestionReplacementDescription = {
   insertedText: string;
   type: 'replacement';
 } & TSuggestionCommonDescription;
-
-export type TSuggestionDescription =
-  | TSuggestionDeletionDescription
-  | TSuggestionInsertionDescription
-  | TSuggestionReplacementDescription;
 
 /**
  * Get the suggestion descriptions of the selected node. A node can have
@@ -39,12 +39,18 @@ export type TSuggestionDescription =
 export const getActiveSuggestionDescriptions = (
   editor: SlateEditor
 ): TSuggestionDescription[] => {
-  const aboveEntry = findSuggestionNode(editor);
+  const aboveEntry = editor.getApi(BaseSuggestionPlugin).suggestion.node({
+    isText: true,
+  });
 
   if (!aboveEntry) return [];
 
   const aboveNode = aboveEntry[0];
-  const suggestionId = aboveNode.suggestionId!;
+  const suggestionId = editor
+    .getApi(BaseSuggestionPlugin)
+    .suggestion.nodeId(aboveNode);
+
+  if (!suggestionId) return [];
 
   const userIds = getSuggestionUserIds(aboveNode);
 

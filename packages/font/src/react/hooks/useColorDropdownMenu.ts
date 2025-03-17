@@ -1,11 +1,6 @@
 import React from 'react';
 
-import { getMark, removeMark, select, setMarks } from '@udecode/plate-common';
-import {
-  focusEditor,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 export const useColorDropdownMenuState = ({
   closeOnSelect = true,
@@ -21,14 +16,12 @@ export const useColorDropdownMenuState = ({
   const editor = useEditorRef();
 
   const selectionDefined = useEditorSelector(
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     (editor) => !!editor.selection,
     []
   );
 
   const color = useEditorSelector(
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    (editor) => getMark(editor, nodeType) as string,
+    (editor) => editor.api.mark(nodeType) as string,
     [nodeType]
   );
 
@@ -47,10 +40,10 @@ export const useColorDropdownMenuState = ({
       if (editor.selection) {
         setSelectedColor(value);
 
-        select(editor, editor.selection);
-        focusEditor(editor);
+        editor.tf.select(editor.selection);
+        editor.tf.focus();
 
-        setMarks(editor, { [nodeType]: value });
+        editor.tf.addMarks({ [nodeType]: value });
       }
     },
     [editor, nodeType]
@@ -66,11 +59,11 @@ export const useColorDropdownMenuState = ({
 
   const clearColor = React.useCallback(() => {
     if (editor.selection) {
-      select(editor, editor.selection);
-      focusEditor(editor);
+      editor.tf.select(editor.selection);
+      editor.tf.focus();
 
       if (selectedColor) {
-        removeMark(editor, { key: nodeType });
+        editor.tf.removeMarks(nodeType);
       }
 
       closeOnSelect && onToggle();

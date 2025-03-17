@@ -1,5 +1,44 @@
 # @udecode/plate-suggestion
 
+## 46.0.1
+
+### Patch Changes
+
+- [#4124](https://github.com/udecode/plate/pull/4124) by [@felixfeng33](https://github.com/felixfeng33) – Fix `diffToSuggestions` to adapt to the new suggestion structure.
+
+## 45.0.3
+
+### Patch Changes
+
+- [#4101](https://github.com/udecode/plate/pull/4101) by [@felixfeng33](https://github.com/felixfeng33) – Fix suggestion `api.node` when pass id.
+
+## 45.0.0
+
+### Major Changes
+
+- [#4064](https://github.com/udecode/plate/pull/4064) by [@felixfeng33](https://github.com/felixfeng33) – Note: This plugin is currently in an experimental phase and breaking changes may be introduced without a major version bump.
+
+  - Add Suggestion UI
+  - Remove: `findSuggestionNode` use `findSuggestionProps.ts` instead
+  - Remove `addSuggestionMark.ts`
+  - Remove `useHooksSuggestion.ts` as we've updated the activeId logic to no longer depend on useEditorSelector
+
+## 44.0.2
+
+## 44.0.0
+
+## 43.0.0
+
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
+## 42.0.0
+
+## 41.0.0
+
 ## 40.2.8
 
 ### Patch Changes

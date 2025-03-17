@@ -1,5 +1,57 @@
 # @udecode/plate-docx-serializer
 
+## 46.0.7
+
+## 45.0.0
+
+## 44.0.6
+
+## 44.0.5
+
+## 44.0.0
+
+## 43.0.5
+
+## 43.0.3
+
+## 43.0.2
+
+## 43.0.0
+
+## 42.2.4
+
+## 42.2.3
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Fix parsers to use custom node type
+
+## 42.1.1
+
+### Patch Changes
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – Remove useless html parser.
+
+## 42.0.5
+
+### Patch Changes
+
+- [#3943](https://github.com/udecode/plate/pull/3943) by [@felixfeng33](https://github.com/felixfeng33) – Support deserialization from PlateStatic.
+
+## 42.0.1
+
+## 42.0.0
+
+## 41.0.10
+
+## 41.0.9
+
+## 41.0.7
+
+## 41.0.0
+
 ## 40.2.7
 
 ## 40.2.6

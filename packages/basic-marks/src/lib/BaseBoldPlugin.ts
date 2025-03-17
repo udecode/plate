@@ -1,4 +1,4 @@
-import { createSlatePlugin, someHtmlElement } from '@udecode/plate-common';
+import { createSlatePlugin, someHtmlElement } from '@udecode/plate';
 
 /** Enables support for bold formatting */
 export const BaseBoldPlugin = createSlatePlugin({
@@ -7,11 +7,6 @@ export const BaseBoldPlugin = createSlatePlugin({
   parsers: {
     html: {
       deserializer: {
-        query: ({ element }) =>
-          !someHtmlElement(
-            element,
-            (node) => node.style.fontWeight === 'normal'
-          ),
         rules: [
           { validNodeName: ['STRONG', 'B'] },
           {
@@ -20,6 +15,11 @@ export const BaseBoldPlugin = createSlatePlugin({
             },
           },
         ],
+        query: ({ element }) =>
+          !someHtmlElement(
+            element,
+            (node) => node.style.fontWeight === 'normal'
+          ),
       },
     },
   },

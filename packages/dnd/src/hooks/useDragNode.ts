@@ -1,6 +1,7 @@
 import { type DragSourceHookSpec, useDrag } from 'react-dnd';
 
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { TElement } from '@udecode/plate';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import type { DragItemNode } from '../types';
 
@@ -8,7 +9,7 @@ import { DndPlugin } from '../DndPlugin';
 
 export interface UseDragNodeOptions
   extends DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }> {
-  id: string;
+  element: TElement;
 }
 
 /**
@@ -30,8 +31,9 @@ export interface UseDragNodeOptions
  */
 export const useDragNode = (
   editor: PlateEditor,
-  { id, item, ...options }: UseDragNodeOptions
+  { element: staleElement, item, ...options }: UseDragNodeOptions
 ) => {
+  const elementId = staleElement.id as string;
   return useDrag<DragItemNode, unknown, { isDragging: boolean }>(
     () => ({
       collect: (monitor) => ({
@@ -46,15 +48,17 @@ export const useDragNode = (
         document.body.classList.add('dragging');
 
         const _item = typeof item === 'function' ? item(monitor) : item;
+        const [element] = editor.api.node<TElement>({ id: elementId, at: [] })!;
 
         return {
-          id,
+          id: elementId,
           editorId: editor.id,
+          element,
           ..._item,
         };
       },
       ...options,
     }),
-    []
+    [editor, elementId]
   );
 };

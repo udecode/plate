@@ -1,10 +1,11 @@
-import { useStableMemo } from '@udecode/plate-common/react';
+import { usePluginOption, useStableMemo } from '@udecode/plate/react';
 
 import {
   type EmojiSettingsType,
   EmojiFloatingIndexSearch,
   EmojiSettings,
 } from '../../lib';
+import { EmojiPlugin } from '../EmojiPlugin';
 import { FrequentEmojiStorage } from '../storage';
 import { EmojiFloatingLibrary } from '../utils';
 import { useEmojiPicker } from './useEmojiPicker';
@@ -18,18 +19,19 @@ export function useEmojiDropdownMenuState({
   closeOnSelect = true,
   settings = EmojiSettings,
 }: EmojiDropdownMenuOptions = {}) {
+  const data = usePluginOption(EmojiPlugin, 'data')!;
+
   const [emojiLibrary, indexSearch] = useStableMemo(() => {
     const frequentEmojiStorage = new FrequentEmojiStorage({
       limit: settings.showFrequent.limit,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     const emojiLibrary = EmojiFloatingLibrary.getInstance(
       settings,
-      frequentEmojiStorage
+      frequentEmojiStorage,
+      data
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     const indexSearch = EmojiFloatingIndexSearch.getInstance(emojiLibrary);
 
     return [emojiLibrary, indexSearch] as const;

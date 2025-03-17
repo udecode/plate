@@ -2,11 +2,9 @@ import {
   type ExtendConfig,
   type InsertNodesOptions,
   bindFirst,
-  getAncestorNode,
-  getNodeString,
-  removeNodes,
-} from '@udecode/plate-common';
-import { findEventRange, toTPlatePlugin } from '@udecode/plate-common/react';
+  NodeApi,
+} from '@udecode/plate';
+import { toTPlatePlugin } from '@udecode/plate/react';
 
 import type { AllowedFileType } from './internal/mimes';
 import type { MediaItemConfig, UploadError } from './type';
@@ -44,24 +42,6 @@ export const PlaceholderPlugin = toTPlatePlugin<
     { placeholder: PlaceholderApi }
   >
 >(BasePlaceholderPlugin, {
-  extendEditor: ({ editor }) => {
-    const { writeHistory } = editor;
-
-    editor.writeHistory = (stack, batch) => {
-      if (isHistoryMarking(editor)) {
-        const newBatch = {
-          ...batch,
-          [PlaceholderPlugin.key]: true,
-        };
-
-        return writeHistory(stack, newBatch);
-      }
-
-      writeHistory(stack, batch);
-    };
-
-    return editor;
-  },
   options: {
     disableEmptyPlaceholder: false,
     disableFileDrop: false,
@@ -109,6 +89,24 @@ export const PlaceholderPlugin = toTPlatePlugin<
     uploadingFiles: {},
   },
 })
+  .overrideEditor(({ editor, tf: { writeHistory } }) => ({
+    transforms: {
+      writeHistory(stack, batch) {
+        if (isHistoryMarking(editor)) {
+          const newBatch = {
+            ...batch,
+            [PlaceholderPlugin.key]: true,
+          };
+
+          writeHistory(stack, newBatch);
+
+          return;
+        }
+
+        return writeHistory(stack, batch);
+      },
+    },
+  }))
   .extendEditorTransforms(({ editor }) => ({
     insert: {
       media: bindFirst(insertMedia, editor),
@@ -155,7 +153,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
          * drop location. Find the location from the event and upload the files
          * at that location.
          */
-        const at = findEventRange(editor, event);
+        const at = editor.api.findEventRange(event);
 
         if (!at) return false;
 
@@ -173,13 +171,13 @@ export const PlaceholderPlugin = toTPlatePlugin<
           event.stopPropagation();
 
           let inserted = false;
-          const ancestor = getAncestorNode(editor);
+          const ancestor = editor.api.block({ highest: true });
 
           if (ancestor) {
             const [node, path] = ancestor;
 
-            if (getNodeString(node).length === 0) {
-              removeNodes(editor, { at: path });
+            if (NodeApi.string(node).length === 0) {
+              editor.tf.removeNodes({ at: path });
               tf.insert.media(files, { at: path, nextBlock: false });
               inserted = true;
             }

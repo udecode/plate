@@ -1,38 +1,30 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
-import {
-  type TNodeEntry,
-  duplicateBlocks,
-  getNodeEntry,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+import { PathApi } from '@udecode/plate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
-export const duplicateBlockSelectionNodes = (
-  editor: PlateEditor,
-  blocks: TNodeEntry[]
-) => {
-  duplicateBlocks(editor, blocks);
+export const duplicateBlockSelectionNodes = (editor: PlateEditor) => {
+  const blocks = editor.getApi(BlockSelectionPlugin).blockSelection.getNodes();
 
   const lastBlock = blocks.at(-1);
 
   if (!lastBlock) return;
 
-  const path = Path.next(lastBlock[1]);
+  editor.tf.duplicateNodes({ nodes: blocks });
+
+  const path = PathApi.next(lastBlock[1]);
 
   const ids = blocks
     .map((_, index) => {
       const targetPath = [path[0] + index];
-      const targetNode = getNodeEntry(editor, targetPath);
+      const targetNode = editor.api.node(targetPath);
 
-      return targetNode?.[0].id;
+      return targetNode?.[0].id as string;
     })
     .filter(Boolean);
 
-  const api = editor.getApi(BlockSelectionPlugin);
-
   setTimeout(() => {
-    api.blockSelection.setSelectedIds({ ids } as any);
+    editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(ids));
   }, 0);
 };

@@ -1,8 +1,8 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { getBlockAbove, isHotkey, queryNode } from '@udecode/plate-common';
+import { isHotkey, queryNode } from '@udecode/plate';
 
-import type { ExitBreakConfig } from '../../lib/exit-break/types';
+import type { ExitBreakConfig } from '../../lib';
 
 import { exitBreak } from '../../lib/exit-break/transforms/exitBreak';
 
@@ -15,7 +15,7 @@ export const onKeyDownExitBreak: KeyboardHandler<ExitBreakConfig> = ({
 
   if (event.defaultPrevented) return;
 
-  const entry = getBlockAbove(editor);
+  const entry = editor.api.block();
 
   if (!entry) return;
 

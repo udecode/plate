@@ -1,5 +1,31 @@
 # @udecode/plate-basic-marks
 
+## 46.0.5
+
+### Patch Changes
+
+- [#4138](https://github.com/udecode/plate/pull/4138) by [@felixfeng33](https://github.com/felixfeng33) – Fix mention plugin conflict with skip mark plugin
+
+## 45.0.0
+
+### Patch Changes
+
+- [#4064](https://github.com/udecode/plate/pull/4064) by [@felixfeng33](https://github.com/felixfeng33) – Add new plugin `SkipMarkPlugin`
+
+## 44.0.0
+
+## 43.0.1
+
+### Patch Changes
+
+- [#4023](https://github.com/udecode/plate/pull/4023) by [@ralphr123](https://github.com/ralphr123) – Fix editor shortcuts for subscript and superscript marks.
+
+## 43.0.0
+
+## 42.0.0
+
+## 41.0.0
+
 ## 40.0.0
 
 ## 39.0.0

@@ -1,0 +1,84 @@
+---
+title: Mention
+docs:
+  - route: /docs/combobox
+    title: Combobox
+  - route: /docs/components/mention-element
+    title: Mention Element
+  - route: /docs/components/mention-input-element
+    title: Mention Input Element
+---
+
+<ComponentPreview name="mention-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Provides smart autocompletion for mentioning users or applying tags.
+- Invoke combobox with `@` or `#` and select suggestion.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-mention
+```
+
+## Usage
+
+```tsx
+import { MentionPlugin } from '@udecode/plate-mention/react';
+
+const plugins = [
+  // ...otherPlugins,
+  MentionPlugin,
+];
+```
+
+## Plugins
+
+### `MentionPlugin`
+
+Plugin for mention functionality. Extends [TriggerComboboxPlugin](/docs/combobox#options).
+
+<API name="MentionPlugin">
+<APIOptions type="MentionPluginOptions">
+  <APIItem name="insertSpaceAfterMention" type="boolean" optional>
+    Whether to insert a space after the mention.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="trigger" type="string" optional>
+    Character that triggers the mention combobox.
+    - **Default:** `'@'`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `MentionInputPlugin`
+
+Plugin for mention input functionality.
+
+## API
+
+### `editor.api.insert.mention`
+
+Override this API method to customize how mentions are inserted.
+
+### `getMentionOnSelectItem`
+
+Gets handler for selecting mention combobox item.
+
+<API name="getMentionOnSelectItem">
+<APIOptions type="GetMentionOnSelectItemOptions">
+  <APIItem name="key" type="string" optional>
+    Plugin key for mention plugin.
+    - **Default:** `MentionPlugin.key`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="MentionOnSelectItem">
+  Handler for mention item selection.
+</APIReturns>
+</API>

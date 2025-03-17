@@ -1,4 +1,4 @@
-import { Key, toPlatePlugin } from '@udecode/plate-common/react';
+import { Key, toPlatePlugin } from '@udecode/plate/react';
 
 import {
   BaseBulletedListPlugin,
@@ -33,28 +33,29 @@ export const ListItemPlugin = toPlatePlugin(BaseListItemPlugin);
  * features.
  */
 export const ListPlugin = toPlatePlugin(BaseListPlugin, {
-  extendEditor: withList,
   plugins: [
     BulletedListPlugin,
     NumberedListPlugin,
     ListItemPlugin,
     ListItemContentPlugin,
   ],
-}).extend(({ editor }) => ({
-  shortcuts: {
-    toggleBulletedList: {
-      keys: [[Key.Mod, Key.Alt, '5']],
-      preventDefault: true,
-      handler: () => {
-        editor.getTransforms(ListPlugin).toggle.bulletedList();
+})
+  .overrideEditor(withList)
+  .extend(({ editor }) => ({
+    shortcuts: {
+      toggleBulletedList: {
+        keys: [[Key.Mod, Key.Alt, '5']],
+        preventDefault: true,
+        handler: () => {
+          editor.getTransforms(ListPlugin).toggle.bulletedList();
+        },
+      },
+      toggleNumberedList: {
+        keys: [[Key.Mod, Key.Alt, '6']],
+        preventDefault: true,
+        handler: () => {
+          editor.getTransforms(ListPlugin).toggle.numberedList();
+        },
       },
     },
-    toggleNumberedList: {
-      keys: [[Key.Mod, Key.Alt, '6']],
-      preventDefault: true,
-      handler: () => {
-        editor.getTransforms(ListPlugin).toggle.numberedList();
-      },
-    },
-  },
-}));
+  }));

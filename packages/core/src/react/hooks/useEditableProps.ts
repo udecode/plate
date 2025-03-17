@@ -1,17 +1,16 @@
 import React from 'react';
 
-import type { TEditableProps } from '@udecode/slate-react';
-
-import { useMemoOnce } from '@udecode/react-utils';
 import clsx from 'clsx';
+import { useAtomStoreValue } from 'jotai-x';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
+import type { EditableProps } from '../../lib';
 import type { PlateProps } from '../components';
 
-import { useEditorRef, usePlateSelectors } from '../stores';
+import { pipeDecorate } from '../../lib/static/utils/pipeDecorate';
+import { useEditorRef, usePlateStore } from '../stores';
 import { DOM_HANDLERS } from '../utils/dom-attributes';
-import { pipeDecorate } from '../utils/pipeDecorate';
 import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
 import { pipeRenderLeaf } from '../utils/pipeRenderLeaf';
@@ -20,23 +19,26 @@ export const useEditableProps = ({
   disabled,
   readOnly: readOnlyProp,
   ...editableProps
-}: Omit<TEditableProps, 'decorate'> &
-  Pick<PlateProps, 'decorate'> = {}): TEditableProps => {
+}: Omit<EditableProps, 'decorate'> &
+  Pick<PlateProps, 'decorate'> = {}): EditableProps => {
   const { id } = editableProps;
 
   const editor = useEditorRef(id);
-  const selectors = usePlateSelectors(id);
-  const versionDecorate = selectors.versionDecorate();
-  const storeReadOnly = selectors.readOnly();
-  const storeDecorate = selectors.decorate();
-  const storeRenderLeaf = selectors.renderLeaf();
-  const storeRenderElement = selectors.renderElement();
+  const store = usePlateStore(id);
+  const versionDecorate = useAtomStoreValue(store, 'versionDecorate');
+  const storeReadOnly = useAtomStoreValue(store, 'readOnly');
+  const storeDecorate = useAtomStoreValue(store, 'decorate');
+  const storeRenderLeaf = useAtomStoreValue(store, 'renderLeaf');
+  const storeRenderElement = useAtomStoreValue(store, 'renderElement');
 
-  const decorateMemo = useMemoOnce(() => {
-    return pipeDecorate(editor, storeDecorate ?? editableProps?.decorate);
+  const decorateMemo = React.useMemo(() => {
+    return pipeDecorate(
+      editor,
+      storeDecorate ?? (editableProps?.decorate as any)
+    );
   }, [editableProps?.decorate, editor, storeDecorate]);
 
-  const decorate: typeof decorateMemo = useMemoOnce(() => {
+  const decorate: typeof decorateMemo = React.useMemo(() => {
     if (!versionDecorate || !decorateMemo) return;
 
     return (entry) => decorateMemo(entry);
@@ -53,8 +55,8 @@ export const useEditableProps = ({
     return pipeRenderLeaf(editor, storeRenderLeaf ?? editableProps?.renderLeaf);
   }, [editableProps?.renderLeaf, editor, storeRenderLeaf]);
 
-  const props: TEditableProps = useDeepCompareMemo(() => {
-    const _props: TEditableProps = {
+  const props: EditableProps = useDeepCompareMemo(() => {
+    const _props: EditableProps = {
       decorate,
       renderElement,
       renderLeaf,

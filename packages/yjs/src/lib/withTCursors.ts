@@ -1,5 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
-// eslint-disable-next-line import/no-extraneous-dependencies
+import type { SlateEditor } from '@udecode/plate';
 import type { Awareness } from 'y-protocols/awareness';
 
 import {

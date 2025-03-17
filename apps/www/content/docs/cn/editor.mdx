@@ -1,0 +1,267 @@
+---
+title: 编辑器配置
+description: 学习如何配置和自定义 Plate 编辑器。
+---
+
+本指南涵盖了 Plate 编辑器的配置选项，包括基本设置、插件管理和高级配置技巧。
+
+## 基本编辑器配置
+
+要创建一个基本的 Plate 编辑器，你可以使用 `createPlateEditor` 函数，或者在 React 组件中使用 `usePlateEditor`：
+
+```ts
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin],
+});
+```
+
+### 初始值
+
+设置编辑器的初始内容：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin],
+  value: [
+    {
+      type: 'p',
+      children: [{ text: '你好，Plate！' }],
+    },
+  ],
+});
+```
+
+你也可以使用 HTML 字符串和相关的插件来初始化编辑器：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [BoldPlugin, ItalicPlugin],
+  value: '<p>这是 <b>加粗</b> 和 <i>斜体</i> 文本！</p>',
+});
+```
+
+有关支持 HTML 字符串反序列化的插件列表，请参阅 [插件反序列化规则](/docs/html#plugin-deserialization-rules) 部分。
+
+### 添加插件
+
+你可以通过将插件包含在 `plugins` 数组中来添加插件：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin, ListPlugin],
+});
+```
+
+### 最大长度
+
+设置编辑器的最大长度：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin],
+  maxLength: 100,
+});
+```
+
+## 高级配置
+
+### ID
+
+为编辑器设置自定义 ID：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin],
+  id: 'my-custom-editor-id',
+});
+```
+
+如果定义了 ID，你应该始终在任何编辑器检索方法中将其作为第一个参数传递。
+
+### 规范化
+
+控制编辑器是否应在初始化时规范化其内容：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin],
+  shouldNormalizeEditor: true,
+});
+```
+
+请注意，对于大型文档（如 playground 值），规范化可能需要几十毫秒。
+
+### 自动选择
+
+配置编辑器以自动选择一个范围：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin],
+  autoSelect: 'end', // 或 'start'，或 true
+});
+```
+
+这与自动聚焦不同：你可以在不聚焦编辑器的情况下选择文本。
+
+### 组件覆盖
+
+覆盖插件的默认组件：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin],
+  override: {
+    components: {
+      [ParagraphPlugin.key]: CustomParagraphComponent,
+      [HeadingPlugin.key]: CustomHeadingComponent,
+    },
+  },
+});
+```
+
+### 插件覆盖
+
+覆盖特定插件的配置：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin],
+  override: {
+    plugins: {
+      [ParagraphPlugin.key]: {
+        options: {
+          customOption: true,
+        },
+      },
+    },
+  },
+});
+```
+
+### 禁用插件
+
+禁用特定插件：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin, ListPlugin],
+  override: {
+    enabled: {
+      [HistoryPlugin.key]: false,
+    },
+  },
+});
+```
+
+### 覆盖插件
+
+你可以通过添加具有相同键的插件来覆盖核心插件或先前定义的插件。最后一个具有给定键的插件将生效：
+
+```ts
+const CustomParagraphPlugin = createPlatePlugin({
+  key: 'p',
+  // 自定义实现
+});
+
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, CustomParagraphPlugin],
+});
+```
+
+### 根插件
+
+从根插件中，你可以配置任何插件：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin],
+  rootPlugin: (plugin) =>
+    plugin.configurePlugin(LengthPlugin, {
+    options: {
+        maxLength: 100,
+      },
+    }),
+});
+```
+
+## 类型化编辑器
+
+`createPlateEditor` 会根据你传递的值和插件自动推断编辑器的类型。要显式创建类型，请使用泛型：
+
+### 插件类型
+
+```ts
+const editor = createPlateEditor<Value, typeof TablePlugin | typeof LinkPlugin>({
+  plugins: [TablePlugin, LinkPlugin],
+});
+
+// 使用
+editor.tf.insert.tableRow()
+```
+
+### 值类型
+
+对于更复杂的编辑器，你可以在单独的文件中定义类型（例如 `plate-types.ts`）：
+
+```ts
+import type { TElement, TText } from '@udecode/plate';
+import type { TPlateEditor } from '@udecode/plate/react';
+
+// 定义自定义元素类型
+interface ParagraphElement extends TElement {
+  align?: 'left' | 'center' | 'right' | 'justify';
+  children: RichText[];
+  type: typeof ParagraphPlugin.key;
+}
+
+interface ImageElement extends TElement {
+  children: [{ text: '' }]
+  type: typeof ImagePlugin.key;
+  url: string;
+}
+
+// 定义自定义文本类型
+interface FormattedText extends TText {
+  bold?: boolean;
+  italic?: boolean;
+}
+
+export type MyRootBlock = ParagraphElement | ImageElement;
+
+// 定义编辑器的值类型
+export type MyValue = MyRootBlock[];
+
+// 定义自定义编辑器类型
+export type MyEditor = TPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
+
+export const useMyEditorRef = () => useEditorRef<MyEditor>();
+
+// 使用
+const value: MyValue = [{
+  type: 'p',
+  children: [{ text: '你好，Plate！' }],
+}]
+
+const editorInferred = createPlateEditor({
+  plugins: [TablePlugin, LinkPlugin],
+  value,
+});
+
+// 或者
+const editorExplicit = createPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>({
+  plugins: [TablePlugin, LinkPlugin],
+  value,
+});
+```
+
+### 好处
+
+我们强烈建议使用类型化编辑器，原因如下：
+
+1. **类型安全**：编辑器会强制执行文档的结构，防止无效操作。
+2. **自动补全**：你的 IDE 可以根据自定义类型提供更好的自动补全建议。
+3. **重构**：在一个地方更改类型会突出显示整个代码库中需要进行的更改。
+4. **文档**：类型可以作为编辑器结构和功能的一种自我文档形式。

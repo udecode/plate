@@ -81,10 +81,9 @@ export function CopyButton({
   );
 }
 
-interface CopyWithClassNamesProps extends DropdownMenuTriggerProps {
-  classNames: string;
-  value: string;
-  className?: string;
+interface CopyNpmCommandButtonProps extends DropdownMenuTriggerProps {
+  commands: Required<NpmCommands>;
+  icon?: React.ReactNode;
 }
 
 export function CopyWithClassNames({
@@ -138,9 +137,10 @@ export function CopyWithClassNames({
   );
 }
 
-interface CopyNpmCommandButtonProps extends DropdownMenuTriggerProps {
-  commands: Required<NpmCommands>;
-  icon?: React.ReactNode;
+interface CopyWithClassNamesProps extends DropdownMenuTriggerProps {
+  classNames: string;
+  value: string;
+  className?: string;
 }
 
 export function CopyNpmCommandButton({

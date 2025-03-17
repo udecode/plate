@@ -1,13 +1,12 @@
-// eslint-disable-next-line max-classes-per-file
-import type { Node, Path, Text } from 'slate';
+import type { Path, TNode, TText } from '@udecode/slate';
 
 /** A weak map to hold anchor tokens. */
 
-const ANCHOR = new WeakMap<Node, [number, AnchorToken]>();
+const ANCHOR = new WeakMap<TNode, [number, AnchorToken]>();
 
 /** A weak map to hold focus tokens. */
 
-const FOCUS = new WeakMap<Node, [number, FocusToken]>();
+const FOCUS = new WeakMap<TNode, [number, FocusToken]>();
 
 /** All tokens inherit from a single constructor for `instanceof` checking. */
 
@@ -53,7 +52,7 @@ export class FocusToken extends Token {
 
 /** Add an anchor token to the end of a text node. */
 
-export const addAnchorToken = (text: Text, token: AnchorToken) => {
+export const addAnchorToken = (text: TText, token: AnchorToken) => {
   const offset = text.text.length;
   ANCHOR.set(text, [offset, token]);
 };
@@ -61,14 +60,14 @@ export const addAnchorToken = (text: Text, token: AnchorToken) => {
 /** Get the offset if a text node has an associated anchor token. */
 
 export const getAnchorOffset = (
-  text: Text
+  text: TText
 ): [number, AnchorToken] | undefined => {
   return ANCHOR.get(text);
 };
 
 /** Add a focus token to the end of a text node. */
 
-export const addFocusToken = (text: Text, token: FocusToken) => {
+export const addFocusToken = (text: TText, token: FocusToken) => {
   const offset = text.text.length;
   FOCUS.set(text, [offset, token]);
 };
@@ -76,7 +75,7 @@ export const addFocusToken = (text: Text, token: FocusToken) => {
 /** Get the offset if a text node has an associated focus token. */
 
 export const getFocusOffset = (
-  text: Text
+  text: TText
 ): [number, FocusToken] | undefined => {
   return FOCUS.get(text);
 };

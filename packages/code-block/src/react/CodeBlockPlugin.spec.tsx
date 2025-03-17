@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createSlatePlugin } from '@udecode/plate-common';
-import { BaseParagraphPlugin } from '@udecode/plate-common';
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createSlatePlugin } from '@udecode/plate';
+import { BaseParagraphPlugin } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { CodeBlockPlugin } from './CodeBlockPlugin';
 
@@ -34,23 +34,24 @@ describe('code block deserialization', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [
           BaseParagraphPlugin,
           CodeBlockPlugin,
           createSlatePlugin({
             key: 'a',
             parser: {
+              format: 'text/plain',
               deserialize() {
                 return [{ text: 'test' }];
               },
-              format: 'text/plain',
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
       });
 
-      editor.insertData({
+      editor.tf.insertData({
         getData: () => `<pre><code>test</code></pre>`,
       } as any);
 
@@ -77,11 +78,12 @@ describe('code block deserialization', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
-      editor.insertData({
+      editor.tf.insertData({
         getData: (format: string) =>
           format === 'text/html' && `<pre><code>test</code></pre>`,
       } as any);
@@ -117,11 +119,12 @@ describe('code block deserialization', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
-      editor.deleteBackward('character');
+      editor.tf.deleteBackward();
       expect(editor.children).toEqual(output.children);
     });
   });

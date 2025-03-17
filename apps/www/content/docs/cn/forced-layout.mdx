@@ -1,0 +1,62 @@
+---
+title: 强制布局
+---
+
+<PackageInfo>
+
+## 特性
+
+- 自动确保使用指定的元素以维护文档结构（例如，第一个块应为 H1 元素）。
+- 要强制特定类型的尾随块，请参阅 [尾随块](/docs/trailing-block)。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-normalizers
+```
+
+## 使用
+
+```tsx
+import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { HEADING_KEYS } from '@udecode/plate-heading/react';
+
+const plugins = [
+  // ...其他插件
+  NormalizeTypesPlugin.configure({
+    options: {
+      rules: [{ path: [0], strictType: 'h1' }],
+    },
+  }),
+];
+```
+
+## 插件
+
+### NormalizeTypesPlugin
+
+<API name="NormalizeTypesPlugin">
+<APIOptions>
+<APIItem name="rules" type="Rule[]" optional>
+用于规范化类型的规则对象数组。
+
+- **默认值:** `[]`
+</APIItem>
+</APIOptions>
+
+<APIOptions type="Rule">
+  <APIItem name="path" type="Path">
+    规则应用的路径。
+  </APIItem>
+  <APIItem name="strictType" type="string" optional>
+    强制指定路径节点的类型。
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    如果未提供 `strictType`，则插入节点的类型。
+  </APIItem>
+</APIOptions>
+</API>

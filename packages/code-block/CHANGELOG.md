@@ -1,5 +1,81 @@
 # @udecode/plate-code-block
 
+## 46.0.4
+
+### Patch Changes
+
+- [#4132](https://github.com/udecode/plate/pull/4132) by [@zbeyens](https://github.com/zbeyens) – Support invalid languages
+
+## 46.0.0
+
+### Major Changes
+
+- [#4122](https://github.com/udecode/plate/pull/4122) by [@zbeyens](https://github.com/zbeyens) – Migrated from `prismjs` to `highlight.js` + `lowlight` for syntax highlighting.
+
+  - Fix highlighting multi-lines tokens. Before, line tokens were computed line by line. Now, it's computed once for the whole block.
+  - Bundle size much lower.
+  - `CodeBlockPlugin`: remove `prism` option. Use `lowlight` option instead:
+
+  ```tsx
+  import { all, createLowlight } from 'lowlight';
+
+  const lowlight = createLowlight(all);
+
+  CodeBlockPlugin.configure({
+    options: {
+      lowlight,
+    },
+  });
+  ```
+
+  - New option: `defaultLanguage`
+  - Remove `syntax` option. Just omit `lowlight` option to disable syntax highlighting.
+  - Remove `syntaxPopularFirst` option. Control this behavior in your own components.
+  - Fix pasting code inside code blocks.
+  - Remove `useCodeBlockCombobox`, `useCodeBlockElement`, `useCodeSyntaxLeaf`, `useToggleCodeBlockButton`. The logic has been moved to the components.
+
+## 44.0.0
+
+## 43.1.0
+
+### Minor Changes
+
+- [#4043](https://github.com/udecode/plate/pull/4043) by [@patrick-hertling](https://github.com/patrick-hertling) – Ability to format a valid JSON string in a code block.
+
+## 43.0.0
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Fix parsers to use custom node type
+
+## 42.1.1
+
+### Patch Changes
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – Remove useless html parser.
+
+## 42.0.5
+
+### Patch Changes
+
+- [#3943](https://github.com/udecode/plate/pull/3943) by [@felixfeng33](https://github.com/felixfeng33) – Support deserialization from PlateStatic.
+
+## 42.0.0
+
+## 41.0.0
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Replace `findNodePath` with `findPath`
+
+## 40.3.4
+
+### Patch Changes
+
+- [#3858](https://github.com/udecode/plate/pull/3858) by [@wststone](https://github.com/wststone) – add vscode data paste handle
+
 ## 40.0.0
 
 ## 39.0.0

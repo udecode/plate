@@ -1,5 +1,83 @@
 # @udecode/plate-dnd
 
+## 46.0.6
+
+### Patch Changes
+
+- [#4146](https://github.com/udecode/plate/pull/4146) by [@12joan](https://github.com/12joan) – Fix: `onDropNode` uses a stale `element` object for the dragged node, resulting in incorrect drag operations.
+
+## 44.0.0
+
+## 43.0.1
+
+### Patch Changes
+
+- [#4020](https://github.com/udecode/plate/pull/4020) by [@felixfeng33](https://github.com/felixfeng33) – Fix dnd from file system
+
+## 43.0.0
+
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
+## 42.2.3
+
+### Patch Changes
+
+- [#4010](https://github.com/udecode/plate/pull/4010) by [@zbeyens](https://github.com/zbeyens) –
+  - `useDndNode`: `onDropHandler` can return `void`
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4000](https://github.com/udecode/plate/pull/4000) by [@12joan](https://github.com/12joan) – Improve performance of drag and drop
+
+## 42.0.0
+
+## 41.0.2
+
+### Patch Changes
+
+- [#3878](https://github.com/udecode/plate/pull/3878) by [@zbeyens](https://github.com/zbeyens) – Additional breaking changes to v41:
+
+  - Remove `useDraggableState`. Use `const { isDragging, previewRef, handleRef } = useDraggable`
+  - Remove `useDraggableGutter`. Set `contentEditable={false}` to your gutter element
+  - Remove `props` from `useDropLine`. Set `contentEditable={false}` to your drop line element
+  - Remove `withDraggable`, `useWithDraggable`. Use [`DraggableAboveNodes`](https://github.com/udecode/plate/pull/3878/files#diff-493c12ebed9c3ef9fd8c3a723909b18ad439a448c0132d2d93e5341ee0888ad2) instead
+
+## 41.0.0
+
+### Major Changes
+
+- [#3861](https://github.com/udecode/plate/pull/3861) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Removed `useDndBlock`, `useDragBlock`, and `useDropBlock` hooks in favor of `useDndNode`, `useDragNode`, and `useDropNode`.
+  - Removed `DndProvider` and `useDraggableStore`. Drop line state is now managed by `DndPlugin` as a single state object `dropTarget` containing both `id` and `line`.
+  - `useDropNode`: removed `onChangeDropLine` and `dropLine` options
+
+  Migration steps:
+
+  - Remove `DndProvider` from your draggable component (e.g. `draggable.tsx`)
+  - Replace `useDraggableStore` with `useEditorPlugin(DndPlugin).useOption`
+
+### Minor Changes
+
+- [#3861](https://github.com/udecode/plate/pull/3861) by [@zbeyens](https://github.com/zbeyens) –
+  - `useDndNode` now supports horizontal orientation. New option is `orientation?: 'horizontal' | 'vertical'`. Default is `vertical`.
+  - `useDraggableState`, `useDndNode`: add `canDropNode` callback option to query if a dragged node can be dropped onto a hovered node.
+  - `useDropLine`:
+    - Added `id` option to show dropline only for hovered element. Default is `useElement().id`.
+    - Added `orientation` option to filter droplines by orientation (`'horizontal' | 'vertical'`). Default is `vertical`.
+    - Returns empty dropline if orientation doesn't match (e.g., horizontal dropline in vertical orientation)
+    - Returns empty dropline if elementId doesn't match current hovered element
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Replace `findNodePath` with `findPath`
+
 ## 40.0.0
 
 ### Minor Changes

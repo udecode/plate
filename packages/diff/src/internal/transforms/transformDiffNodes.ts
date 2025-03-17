@@ -3,13 +3,10 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-/* eslint-disable no-restricted-syntax */
-import type { TDescendant } from '@udecode/plate-common';
-
-import isEqual from 'lodash/isEqual.js';
+import type { Descendant } from '@udecode/plate';
 
 import { type ComputeDiffOptions, computeDiff } from '../../lib/computeDiff';
-import { copyWithout } from '../utils/copy-without';
+import { isEqual } from '../utils/is-equal';
 
 /**
  * We try each of the Handler functions listed below until one of them matches.
@@ -18,10 +15,10 @@ import { copyWithout } from '../utils/copy-without';
  */
 
 type Handler = (
-  node: TDescendant,
-  nextNode: TDescendant,
+  node: Descendant,
+  nextNode: Descendant,
   options: ComputeDiffOptions
-) => TDescendant[] | false;
+) => Descendant[] | false;
 
 /**
  * Only the children have changed. Recursively call the top-level diff algorithm
@@ -31,20 +28,20 @@ const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
   if (
     node.children != null &&
     nextNode.children != null &&
-    isEqual(
-      copyWithout(node, ['children']),
-      copyWithout(nextNode, ['children'])
-    )
+    isEqual(node, nextNode, {
+      ignoreDeep: options.ignoreProps,
+      ignoreShallow: ['children'],
+    })
   ) {
     const children = computeDiff(
-      node.children as TDescendant[],
-      nextNode.children as TDescendant[],
+      node.children as Descendant[],
+      nextNode.children as Descendant[],
       options
     );
 
     return [
       {
-        ...node,
+        ...nextNode,
         children,
       },
     ];
@@ -91,10 +88,10 @@ const strategies: Handler[] = [childrenOnlyStrategy, propsOnlyStrategy];
 
 // Replace node at path by nextNode using the first strategy that works.
 export function transformDiffNodes(
-  node: TDescendant,
-  nextNode: TDescendant,
+  node: Descendant,
+  nextNode: Descendant,
   options: ComputeDiffOptions
-): TDescendant[] | false {
+): Descendant[] | false {
   // Try each strategy in turn
   for (const strategy of strategies) {
     // Attempt to generate operations with the current strategy and return the operations if the strategy succeeds

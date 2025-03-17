@@ -8,15 +8,21 @@ import type {
   SlatePlugins,
 } from './SlatePlugin';
 
-import { mergePlugins } from '../../internal/mergePlugins';
-import { isFunction } from '../utils/misc/isFunction';
+import { isFunction } from '../../internal/utils/isFunction';
+import { mergePlugins } from '../../internal/utils/mergePlugins';
 
-type SlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
+type SlatePluginConfig<
+  K extends string = any,
+  O = {},
+  A = {},
+  T = {},
+  S = {},
+> = Omit<
   Partial<
     Modify<
-      SlatePlugin<PluginConfig<K, O, A, T>>,
+      SlatePlugin<PluginConfig<K, O, A, T, S>>,
       {
-        node?: Partial<SlatePlugin<PluginConfig<K, O, A, T>>['node']>;
+        node?: Partial<SlatePlugin<PluginConfig<K, O, A, T, S>>['node']>;
       }
     >
   >,
@@ -74,9 +80,9 @@ type TSlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
  * @template A - The type of the plugin utilities.
  * @template T - The type of the plugin transforms.
  * @template S - The type of the plugin storage.
- * @param {Partial<SlatePlugin<K, O, A, T>>} config - The configuration object
- *   for the plugin.
- * @returns {SlatePlugin<K, O, A, T>} A new Plate plugin instance with the
+ * @param {Partial<SlatePlugin<K, O, A, T, S>>} config - The configuration
+ *   object for the plugin.
+ * @returns {SlatePlugin<K, O, A, T, S>} A new Plate plugin instance with the
  *   following properties and methods:
  *
  *   - All properties from the input config, merged with default values.
@@ -91,12 +97,13 @@ export function createSlatePlugin<
   O = {},
   A = {},
   T = {},
+  S = {},
 >(
   config:
-    | ((editor: SlateEditor) => SlatePluginConfig<K, O, A, T>)
-    | SlatePluginConfig<K, O, A, T> = {}
-): SlatePlugin<PluginConfig<K, O, A, T>> {
-  let baseConfig: Partial<SlatePlugin<PluginConfig<K, O, A, T>>>;
+    | ((editor: SlateEditor) => SlatePluginConfig<K, O, A, T, S>)
+    | SlatePluginConfig<K, O, A, T, S> = {}
+): SlatePlugin<PluginConfig<K, O, A, T, S>> {
+  let baseConfig: Partial<SlatePlugin<PluginConfig<K, O, A, T, S>>>;
   let initialExtension: any;
 
   if (isFunction(config)) {
@@ -114,10 +121,11 @@ export function createSlatePlugin<
       __apiExtensions: [],
       __configuration: null,
       __extensions: initialExtension ? [initialExtension] : [],
-      __optionExtensions: [],
+      __selectorExtensions: [],
       api: {},
       dependencies: [],
       editor: {},
+      handlers: {},
       inject: {},
       node: { type: key },
       options: {},
@@ -129,10 +137,9 @@ export function createSlatePlugin<
       render: {},
       shortcuts: {},
       transforms: {},
-      handlers: {},
     },
     config
-  ) as unknown as SlatePlugin<PluginConfig<K, O, A, T>>;
+  ) as unknown as SlatePlugin<PluginConfig<K, O, A, T, S>>;
 
   plugin.configure = (config) => {
     const newPlugin = { ...plugin };
@@ -197,10 +204,10 @@ export function createSlatePlugin<
     return createSlatePlugin(newPlugin) as any;
   };
 
-  plugin.extendOptions = (extension) => {
+  plugin.extendSelectors = (extension) => {
     const newPlugin = { ...plugin };
-    newPlugin.__optionExtensions = [
-      ...(newPlugin.__optionExtensions as any),
+    newPlugin.__selectorExtensions = [
+      ...(newPlugin.__selectorExtensions as any),
       extension,
     ];
 
@@ -232,6 +239,21 @@ export function createSlatePlugin<
     newPlugin.__apiExtensions = [
       ...(newPlugin.__apiExtensions as any),
       { extension, isPluginSpecific: true, isTransform: true },
+    ];
+
+    return createSlatePlugin(newPlugin) as any;
+  };
+
+  plugin.overrideEditor = (extension) => {
+    const newPlugin = { ...plugin };
+    newPlugin.__apiExtensions = [
+      ...(newPlugin.__apiExtensions as any),
+      {
+        extension,
+        isOverride: true,
+        isPluginSpecific: false,
+        isTransform: true,
+      },
     ];
 
     return createSlatePlugin(newPlugin) as any;

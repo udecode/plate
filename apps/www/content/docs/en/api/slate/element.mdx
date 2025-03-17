@@ -1,0 +1,206 @@
+---
+title: Element
+description: API reference for elements in Slate.
+---
+
+`TElement` objects are a type of `Node` in a Slate document that contain other `TElement` nodes or `Text` nodes.
+
+```typescript
+interface TElement {
+  children: Descendant[]
+  type: string
+  [key: string]: unknown
+}
+```
+
+## Element Behavior
+
+Elements can have different behaviors depending on the editor's configuration:
+
+### Block vs Inline
+
+Elements can be either "block" or "inline" as defined by plugin `node.isInline`:
+
+- Block elements can only be siblings with other block elements
+- Inline elements can be siblings with Text nodes or other inline elements
+
+### Void vs Non-void
+
+Elements can be either "void" or "non-void" as defined by plugin `node.isVoid`:
+
+- Non-void elements: Slate handles rendering of children (e.g., paragraph with Text and Inline children)
+- Void elements: Children are rendered by the Element's render code
+
+### Markable Voids
+
+Some void elements can support marks through plugin `node.markableVoid`. For example, a mention element might need to support bold or italic formatting.
+
+## `ElementAPI`
+
+### `isElementType`
+
+Check if a value implements the `TElement` interface and has `elementKey` matching a specified value. Defaults to checking the `'type'` key.
+
+<API name="isElementType">
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+  <APIItem name="elementVal" type="string">
+    The value to match against.
+  </APIItem>
+  <APIItem name="elementKey" type="string" optional>
+    The key to check. Defaults to `'type'`.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the value is an element with the specified key matching `elementVal`.
+</APIReturns>
+</API>
+
+### `isAncestor`
+
+Check if a value implements the `Ancestor` interface.
+
+<API name="isAncestor">
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the value is an ancestor node.
+</APIReturns>
+</API>
+
+### `isElement`
+
+Check if a value implements the `TElement` interface.
+
+<API name="isElement">
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the value is a Slate element.
+</APIReturns>
+</API>
+
+### `isElementList`
+
+Check if a value is an array of `TElement` objects.
+
+<API name="isElementList">
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the value is an array of elements.
+</APIReturns>
+</API>
+
+### `isElementProps`
+
+Check if a set of props is a partial of `TElement`.
+
+<API name="isElementProps">
+<APIParameters>
+  <APIItem name="props" type="any">
+    The props to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the props match element properties.
+</APIReturns>
+</API>
+
+### `matches`
+
+Check if an element matches a set of properties.
+
+<API name="matches">
+<APIParameters>
+  <APIItem name="element" type="TElement">
+    The element to check.
+  </APIItem>
+  <APIItem name="props" type="Partial<TElement>">
+    The properties to match against.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the element matches all provided properties.
+</APIReturns>
+</API>
+
+## Types
+
+### `TElement`
+
+`TElement` objects are a type of node in a Slate document that contain other element nodes or text nodes. They can be either "blocks" or "inlines" depending on the editor's configuration.
+
+`Element` is a type alias for `TElement`.
+
+<API name="TElement">
+<APIAttributes>
+  <APIItem name="children" type="Descendant[]">
+    An array of child nodes that can be either elements or text nodes.
+  </APIItem>
+  <APIItem name="type" type="string">
+    A string identifier that defines the element's type (e.g., 'paragraph', 'heading', etc.).
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `ElementEntry`
+
+Element entries represent an Element node and its path.
+
+<API name="ElementEntry">
+<APIAttributes>
+  <APIItem name="0" type="Element">
+    The Element node.
+  </APIItem>
+  <APIItem name="1" type="Path">
+    The path to the element.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `ElementOrTextOf`
+
+```ts
+type ElementOrTextOf<E extends Editor> = ElementOf<E> | TextOf<E>;
+```
+
+The `ElementOrTextOf` type represents either an element or a text node from a specific editor type.
+
+### `ElementOrTextIn`
+
+```ts
+type ElementOrTextIn<V extends Value> = ElementIn<V> | TextIn<V>;
+```
+
+The `ElementOrTextIn` type represents either an element or a text node from a specific value type.
+
+### `ElementOf`
+
+`ElementOf` is a utility type to get all the element node types from a given root node type.
+
+### `ElementIn`
+
+```ts
+type ElementIn<V extends Value> = ElementOf<V[number]>;
+```
+
+`ElementIn` is a utility type to get an element type from a Slate `Value` type.
+```

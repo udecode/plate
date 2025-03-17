@@ -1,0 +1,21 @@
+{
+  "dependencies": [
+    "@udecode/plate-math"
+  ],
+  "files": [
+    {
+      "path": "components/editor/plugins/equation-plugins.ts",
+      "content": "'use client';\n\nimport {\n  EquationPlugin,\n  InlineEquationPlugin,\n} from '@udecode/plate-math/react';\n\nexport const equationPlugins = [InlineEquationPlugin, EquationPlugin];\n",
+      "type": "registry:component",
+      "target": "components/editor/plugins/equation-plugins.ts"
+    }
+  ],
+  "name": "equation-plugins",
+  "registryDependencies": [
+    "equation-element",
+    "inline-equation-toolbar-button"
+  ],
+  "type": "registry:component",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
+}

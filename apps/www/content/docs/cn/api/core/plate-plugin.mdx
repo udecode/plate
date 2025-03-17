@@ -1,0 +1,379 @@
+---
+title: Plate 插件
+description: Plate 插件的 API 参考。
+---
+
+Plate 插件是传递给 `Plate` [插件](/docs/api/core/plate-components#plugins) 属性的对象。
+
+## 插件属性
+
+<API name="属性">
+<APIAttributes>
+<APIItem name="key" type="C['key']" required>
+唯一标识符，Plate 使用该标识符在 `editor.plugins` 中按 key 存储插件。
+</APIItem>
+
+<APIItem name="api" type="Record<string, Function>">
+插件提供的 API 函数对象。这些函数可以通过 `editor.api[key]` 访问。
+</APIItem>
+
+<APIItem name="transforms" type="Record<string, Function>">
+插件提供的用于修改编辑器状态的转换函数。这些函数可以通过 `editor.tf[key]` 访问。
+</APIItem>
+
+<APIItem name="options" type="Record<string, any>">
+插件使用的扩展属性作为选项。
+</APIItem>
+
+<APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
+各种编辑器事件的事件处理程序，包括 `onChange`。
+</APIItem>
+
+<APIItem name="inject" type="object">
+定义插件如何将功能注入到其他插件或编辑器中。
+
+<APISubList>
+<APISubListItem parent="inject" name="nodeProps" type="Record<string, any>" optional>
+Plate 用于将属性注入到任何节点组件中的属性。
+</APISubListItem>
+
+
+<APISubListItem parent="inject" name="excludePlugins" type="string[]" optional>
+要排除节点属性注入的插件 key 数组。
+</APISubListItem>
+
+<APISubListItem parent="inject" name="excludeBelowPlugins" type="string[]" optional>
+插件 key 数组。对于具有这些插件类型的元素的任何后代节点，将排除节点属性注入。
+</APISubListItem>
+<APISubListItem parent="inject" name="isBlock" type="boolean" optional>
+如果为 true，则仅匹配块级元素。用于将属性注入限制为块级节点。
+</APISubListItem>
+
+<APISubListItem parent="inject" name="isElement" type="boolean" optional>
+如果为 true，则仅匹配元素节点。用于将属性注入限制为元素节点。
+</APISubListItem>
+<APISubListItem parent="inject" name="isLeaf" type="boolean" optional>
+如果为 true，则仅匹配叶子节点。用于将属性注入限制为叶子节点。
+</APISubListItem>
+<APISubListItem parent="inject" name="maxLevel" type="number" optional>
+节点属性注入的最大嵌套级别。超过此级别的节点将不会接收注入的属性。
+</APISubListItem>
+<APISubListItem parent="inject" name="plugins" type="Record<string, Partial<PlatePlugin>>" optional>
+插件可以使用的属性，以允许其他插件注入代码。
+</APISubListItem>
+<APISubListItem parent="inject" name="targetPluginToInject" type="function" optional>
+返回要注入到其他插件 `inject.plugins` 中的插件配置的函数，由 targetPlugins 指定。
+</APISubListItem>
+<APISubListItem parent="inject" name="targetPlugins" type="string[]" optional>
+`InjectNodeProps` 和 `targetPluginToInject` 函数使用的插件 key。
+
+- **默认值:** `[ParagraphPlugin.key]`
+</APISubListItem>
+</APISubList>
+</APIItem>
+
+<APIItem name="node" type="object">
+定义插件的节点特定配置。
+
+<APISubList>
+<APISubListItem parent="node" name="isElement" type="boolean" optional>
+指示此插件的节点是否应渲染为元素。
+</APISubListItem>
+<APISubListItem parent="node" name="isInline" type="boolean" optional>
+指示此插件的元素是否应视为内联。
+</APISubListItem>
+<APISubListItem parent="node" name="isLeaf" type="boolean" optional>
+指示此插件的节点是否应渲染为叶子节点。
+</APISubListItem>
+<APISubListItem parent="node" name="isMarkableVoid" type="boolean" optional>
+指示此插件的 void 元素是否应可标记。
+</APISubListItem>
+<APISubListItem parent="node" name="isSelectable" type="boolean" optional>
+指示此插件的节点是否应可选择。
+
+- **默认值:** `true`
+</APISubListItem>
+<APISubListItem parent="node" name="isVoid" type="boolean" optional>
+指示此插件的元素是否应视为 void。
+</APISubListItem>
+<APISubListItem parent="node" name="type" type="string" optional>
+指定此插件节点的类型标识符。
+
+- **默认值:** `plugin.key`
+</APISubListItem>
+<APISubListItem parent="node" name="component" type="NodeComponent | null" optional>
+用于渲染此插件节点的 React 组件。
+</APISubListItem>
+<APISubListItem parent="node" name="props" type="NodeProps<WithAnyKey<C>>" optional>
+传递给节点组件的附加属性。
+</APISubListItem>
+</APISubList>
+</APIItem>
+
+<APIItem name="override" type="object">
+允许按 key 覆盖组件和插件。
+
+<APISubList>
+<APISubListItem parent="override" name="components" type="Record<string, NodeComponent>" optional>
+按 key 替换插件的 `NodeComponent`。
+</APISubListItem>
+<APISubListItem parent="override" name="plugins" type="Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>" optional>
+按 key 扩展 `PlatePlugin`。
+</APISubListItem>
+<APISubListItem parent="override" name="enabled" type="Partial<Record<string, boolean>>" optional>
+启用或禁用插件。
+</APISubListItem>
+</APISubList>
+</APIItem>
+
+<APIItem name="parser" type="Nullable<Parser<WithAnyKey<C>>>">
+定义插件如何解析内容。
+</APIItem>
+
+<APIItem name="parsers" type="object">
+定义各种格式的序列化和反序列化器。
+
+<APISubList>
+<APISubListItem parent="parsers" name="html" type="Nullable<{ deserializer?: HtmlDeserializer<WithAnyKey<C>>; serializer?: HtmlSerializer<WithAnyKey<C>> }>" optional>
+HTML 解析器配置。
+</APISubListItem>
+<APISubListItem parent="parsers" name="htmlReact" type="Nullable<{ serializer?: HtmlReactSerializer<WithAnyKey<C>> }>" optional>
+HTML React 序列化器配置。
+</APISubListItem>
+</APISubList>
+</APIItem>
+
+<APIItem name="render" type="object">
+定义插件如何渲染组件。
+
+<APISubList>
+<APISubListItem parent="render" name="aboveEditable" type="Component" optional>
+在 Editable 组件上方但在 Slate 包装器内部渲染的组件。
+</APISubListItem>
+<APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
+创建一个函数，生成所有其他插件节点组件的父 React 节点。
+</APISubListItem>
+<APISubListItem parent="render" name="aboveSlate" type="Component" optional>
+在 Slate 包装器上方渲染的组件。
+</APISubListItem>
+<APISubListItem parent="render" name="afterEditable" type="EditableSiblingComponent" optional>
+在 Editable 组件之后渲染的组件。
+</APISubListItem>
+<APISubListItem parent="render" name="beforeEditable" type="EditableSiblingComponent" optional>
+在 Editable 组件之前渲染的组件。
+</APISubListItem>
+<APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
+创建一个函数，生成在所有其他插件的节点 React 节点下方但位于其子节点上方的 React 节点。
+</APISubListItem>
+<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateRenderElementProps<TElement, C>) => React.ReactNode" optional>
+在根元素的直接子元素之后渲染组件。这与 `belowNodes` 的不同之处在于，它是 `PlateElement` 的直接子元素，而不是包装可能嵌套的子元素。当您需要相对于根元素的组件时，这很有用。注意：这不在 Plate Core 中使用，而是在 `PlateElement` 中使用。如果您不使用 `PlateElement`，则需要自行使用此插件字段。
+</APISubListItem>
+<APISubListItem parent="render" name="node" type="NodeComponent" optional>
+渲染节点组件。
+</APISubListItem>
+</APISubList>
+</APIItem>
+
+<APIItem name="shortcuts" type="Shortcuts">
+定义插件的键盘快捷键。
+</APIItem>
+
+<APIItem name="useOptionsStore" type="StoreApi<C['key'], C['options']>">
+用于管理插件选项的 Zustand 存储。
+</APIItem>
+
+<APIItem name="dependencies" type="string[]">
+此插件依赖的插件 key 数组。
+</APIItem>
+
+<APIItem name="enabled" type="boolean" optional>
+启用或禁用插件。Plate 使用此属性来确定是否应使用该插件。
+</APIItem>
+
+<APIItem name="plugins" type="any[]">
+递归插件支持，允许在单个插件中包含多个插件。
+</APIItem>
+
+<APIItem name="priority" type="number">
+定义插件注册和执行的顺序。
+
+- **默认值:** `100`
+</APIItem>
+
+<APIItem name="decorate" type="Decorate<WithAnyKey<C>>" optional>
+Plate 用于装饰编辑器范围的属性。
+</APIItem>
+
+<APIItem name="extendEditor" type="ExtendEditor<WithAnyKey<C>>" optional>
+用于扩展编辑器实例的函数。主要用于集成需要直接编辑器变异的旧版 Slate 插件。每个插件只允许一个 `extendEditor`。
+
+```ts
+extendEditor: ({ editor }) => {
+  // 示例：集成旧版 Slate 插件
+  return withYjs(editor);
+}
+```
+</APIItem>
+
+<APIItem name="useHooks" type="() => void" optional>
+在编辑器初始化时调用的钩子。
+</APIItem>
+</APIAttributes>
+</API>
+
+## 插件方法
+
+<API name="方法">
+<APIMethods>
+<APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => PlatePluginConfig)) => PlatePlugin">
+使用更新的选项创建新的插件实例。
+
+```ts
+(config: PlatePluginConfig<C['key'], InferOptions<C>, InferApi<C>, InferTransforms<C>> | ((ctx: PlatePluginContext<C>) => PlatePluginConfig<C['key'], InferOptions<C>, InferApi<C>, InferTransforms<C>>)) => PlatePlugin<C>
+```
+</APIItem>
+
+<APIItem name="extend" type="(config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
+使用附加配置创建新的插件实例。
+
+```ts
+(extendConfig: Partial<PlatePlugin> | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="extendPlugin" type="(key: string, config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
+扩展现有的嵌套插件，如果未找到则添加新的插件。支持深度嵌套。
+
+```ts
+(key: string, extendConfig: Partial<PlatePlugin> | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="withComponent" type="function">
+设置或替换与插件关联的组件。
+
+```ts
+(component: NodeComponent) => PlatePlugin<C>
+```
+</APIItem>
+
+<APIItem name="overrideEditor" type="function">
+创建具有覆盖编辑器方法的新插件实例。通过 `tf` 和 `api` 参数提供对原始方法的访问。可以多次调用以叠加不同的覆盖。
+
+```ts
+overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
+  transforms: {
+    // 覆盖转换
+    deleteForward(options) {
+      deleteForward(options);
+    },
+  },
+  api: {
+    // 覆盖 API 方法
+    isInline(element) {
+      return isInline(element);
+    },
+  },
+})) => PlatePlugin<C>
+```
+
+- 修改编辑器行为的首选方法
+- 类型安全的原始方法访问
+- 转换和 API 之间的清晰分离
+- 可以多次链式调用
+</APIItem>
+
+<APIItem name="extendApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
+扩展插件的 API。
+
+```ts
+(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="extendEditorApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
+使用插件特定方法扩展编辑器的 API。
+
+```ts
+(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="extendTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
+扩展插件的转换。
+
+```ts
+(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="extendEditorTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
+使用插件特定方法扩展编辑器的转换。
+
+```ts
+(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+```
+</APIItem>
+
+<APIItem name="extendSelectors" type="(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin">
+使用选择器扩展插件。
+
+```ts
+(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin
+```
+</APIItem>
+</APIMethods>
+</API>
+
+## 插件上下文
+
+<API name="上下文">
+<APIAttributes>
+<APIItem name="editor" type="PlateEditor">
+当前编辑器实例。
+</APIItem>
+<APIItem name="plugin" type="EditorPlatePlugin<C>">
+当前插件实例。
+</APIItem>
+<APIItem name="getOption" type="function">
+获取特定选项值的函数。
+</APIItem>
+<APIItem name="getOptions" type="function">
+获取插件所有选项的函数。
+</APIItem>
+<APIItem name="setOption" type="function">
+设置特定选项值的函数。
+</APIItem>
+<APIItem name="setOptions" type="function">
+设置多个选项的函数。
+</APIItem>
+</APIAttributes>
+</API>
+
+有关 Plate 插件特定方面的更多详细信息，请参阅 [插件配置](/docs/plugin)、[插件方法](/docs/plugin-methods)、[插件上下文](/docs/plugin-context)、[插件组件](/docs/plugin-components) 和 [插件快捷键](/docs/plugin-shortcuts) 的单独指南。
+
+## 泛型类型
+
+<API name="泛型类型">
+<APIAttributes>
+<APIItem name="C" type="AnyPluginConfig = PluginConfig">
+表示插件配置。此类型扩展了 `PluginConfig`，其中包括 `key`、`options`、`api` 和 `transforms`。
+</APIItem>
+</APIAttributes>
+</API>
+
+使用示例：
+
+```typescript
+type MyPluginConfig = PluginConfig<
+  'myPlugin',
+  { customOption: boolean },
+  { getData: () => string },
+  { customTransform: () => void }
+>;
+
+const MyPlugin = createPlatePlugin<MyPluginConfig>({
+  key: 'myPlugin',
+  // 插件实现
+});
+```

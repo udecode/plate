@@ -1,34 +1,23 @@
+/* eslint-disable perfectionist/sort-imports */
 import type { AnyPluginConfig, PluginConfig } from '../plugin/BasePlugin';
 import type { SlatePlugin } from '../plugin/SlatePlugin';
 
-import {
-  createSlatePlugin,
-  createTSlatePlugin,
-} from '../plugin/createSlatePlugin';
 import { AstPlugin } from './AstPlugin';
 import { DOMPlugin } from './DOMPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
 import { InlineVoidPlugin } from './InlineVoidPlugin';
 import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
-import { SlateNextPlugin } from './editor-protocol';
 import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';
 import { BaseParagraphPlugin } from './paragraph';
-
-// Somehow needed to avoid cyclic dependency
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _ = () => {
-  createSlatePlugin();
-  createTSlatePlugin();
-};
+import { SlateExtensionPlugin } from './slate-extension';
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 
 export type GetCorePluginsOptions = {
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
-
   /** Override the core plugins using the same key. */
   plugins?: AnyPluginConfig[];
 };
@@ -39,7 +28,7 @@ export const getCorePlugins = ({
 }: GetCorePluginsOptions) => {
   let corePlugins = [
     DebugPlugin as SlatePlugin<DebugConfig>,
-    SlateNextPlugin,
+    SlateExtensionPlugin,
     DOMPlugin,
     HistoryPlugin,
     InlineVoidPlugin,
@@ -80,18 +69,12 @@ export const getCorePlugins = ({
   return corePlugins;
 };
 
-type LogFunction = (
-  message: string,
-  type?: DebugErrorType,
-  details?: any
-) => void;
-
 export type DebugConfig = PluginConfig<
   'debug',
   {
     isProduction: boolean;
-    logLevel: LogLevel;
     logger: Partial<Record<LogLevel, LogFunction>>;
+    logLevel: LogLevel;
     throwErrors: boolean;
   },
   {
@@ -115,10 +98,8 @@ export type LengthConfig = PluginConfig<
   }
 >;
 
-export interface ToggleBlockOptions {
-  /** The default block type to revert to when untoggling. Defaults to paragraph. */
-  defaultType?: string;
-
-  /** The block type to apply or toggle. */
-  type?: string;
-}
+type LogFunction = (
+  message: string,
+  type?: DebugErrorType,
+  details?: any
+) => void;

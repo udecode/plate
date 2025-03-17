@@ -1,0 +1,214 @@
+---
+title: components.json
+description: 项目的配置文件。
+---
+
+`components.json` 文件用于保存项目的配置。
+
+我们使用它来了解项目的设置方式，并生成适合项目的自定义组件。
+
+<Callout className="mt-6">
+  注意：`components.json` 文件是可选的，**只有在使用 CLI** 向项目添加组件时才需要。如果你使用的是复制粘贴的方法，则不需要此文件。
+</Callout>
+
+你可以通过运行以下命令在项目中创建 `components.json` 文件：
+
+```bash
+npx shadcx@latest init plate
+```
+
+有关更多信息，请参阅 [CLI 部分](/docs/components/cli)。
+
+## $schema
+
+你可以在此处查看 `components.json` 的 JSON Schema [here](https://ui.shadcn.com/schema.json)。
+
+```json title="components.json"
+{
+  "$schema": "https://ui.shadcn.com/schema.json"
+}
+```
+
+## tailwind
+
+配置项，帮助 CLI 了解项目中 Tailwind CSS 的设置方式。
+
+有关如何设置 Tailwind CSS，请参阅 [安装部分](/docs/components/installation)。
+
+### tailwind.config
+
+`tailwind.config.js` 文件的路径。
+
+```json title="components.json"
+{
+  "tailwind": {
+    "config": "tailwind.config.js" | "tailwind.config.ts"
+  }
+}
+```
+
+### tailwind.css
+
+导入 Tailwind CSS 的 CSS 文件的路径。
+
+```json title="components.json"
+{
+  "tailwind": {
+    "css": "styles/global.css"
+  }
+}
+```
+
+### tailwind.baseColor
+
+用于生成组件的默认颜色调色板。**初始化后无法更改。**
+
+```json title="components.json"
+{
+  "tailwind": {
+    "baseColor": "slate" |"gray" | "neutral" | "stone" | "zinc"
+  }
+}
+```
+
+### tailwind.cssVariables
+
+你可以选择使用 CSS 变量或 Tailwind CSS 工具类来进行主题设置。
+
+要使用工具类进行主题设置，请将 `tailwind.cssVariables` 设置为 `false`。要使用 CSS 变量，请将 `tailwind.cssVariables` 设置为 `true`。
+
+```json title="components.json"
+{
+  "tailwind": {
+    "cssVariables": `true` | `false`
+  }
+}
+```
+
+有关更多信息，请参阅 [主题文档](/docs/components/theming)。
+
+**初始化后无法更改。** 要在 CSS 变量和工具类之间切换，你需要删除并重新安装组件。
+
+### tailwind.prefix
+
+用于 Tailwind CSS 工具类的前缀。组件将使用此前缀添加。
+
+```json title="components.json"
+{
+  "tailwind": {
+    "prefix": "plate-"
+  }
+}
+```
+
+## aliases
+
+CLI 使用这些值以及 `tsconfig.json` 或 `jsconfig.json` 文件中的 `paths` 配置，将生成的组件放置在正确的位置。
+
+路径别名必须在 `tsconfig.json` 或 `jsconfig.json` 文件中设置。
+
+<Callout className="mt-6">
+  **重要提示：** 如果你使用 `src` 目录，请确保它在 `tsconfig.json` 或 `jsconfig.json` 文件的 `paths` 中包含。
+</Callout>
+
+### aliases.utils
+
+工具函数的导入别名。
+
+```json title="components.json"
+{
+  "aliases": {
+    "utils": "@/lib/utils"
+  }
+}
+```
+
+### aliases.components
+
+组件的导入别名。
+
+```json title="components.json"
+{
+  "aliases": {
+    "components": "@/components"
+  }
+}
+```
+
+### aliases.ui
+
+`ui` 组件的导入别名。
+
+CLI 将使用 `aliases.ui` 值来确定 `ui` 组件的安装位置。如果你想自定义 `ui` 组件的安装目录，请使用此配置。
+
+```json title="components.json"
+{
+  "aliases": {
+    "ui": "@/components/plate-ui"
+  }
+}
+```
+
+### aliases.lib
+
+`lib` 函数（如 `format-date` 或 `generate-id`）的导入别名。
+
+```json title="components.json"
+{
+  "aliases": {
+    "lib": "@/lib"
+  }
+}
+```
+
+### aliases.hooks
+
+`hooks`（如 `use-media-query` 或 `use-toast`）的导入别名。
+
+```json title="components.json"
+{
+  "aliases": {
+    "hooks": "@/hooks"
+  }
+}
+```
+
+## registries
+
+`registries` 部分允许你为项目配置多个组件注册表。这在同时使用 Plate UI 组件和 [shadcn/ui](https://ui.shadcn.com/) 组件时特别有用。
+
+```json title="components.json"
+{
+  "registries": {
+    "plate": {
+      "url": "https://platejs.org/r",
+      "style": "default",
+      "aliases": {
+        "ui": "@/components/plate-ui"
+      }
+    }
+  }
+}
+```
+
+### registries.[name].url
+
+注册表的 URL。对于 Plate UI，这是 `https://platejs.org/r`。
+
+### registries.[name].style
+
+用于此注册表组件的样式。Plate UI 只有一种样式：`default`。
+
+### registries.[name].aliases
+
+此注册表的自定义别名。这允许你为此注册表的 UI 组件指定不同的位置。
+
+<Callout>
+
+在使用多个注册表时，你可以使用前缀语法来指定每个组件使用的注册表：
+
+```bash
+npx shadcx@latest add plate/button
+```
+
+</Callout>

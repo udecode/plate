@@ -1,4 +1,4 @@
-import { getHtmlComments } from '@udecode/plate-common';
+import { getHtmlComments } from '@udecode/plate';
 
 export const getVShapes = (document: Document): Record<string, string> => {
   const comments = getHtmlComments(document);
@@ -16,7 +16,7 @@ export const getVShapes = (document: Document): Record<string, string> => {
           vShapesMap[id] = spid;
         }
       });
-    } catch (error) {
+    } catch {
       // Cannot parse as XML, we're not interested in this comment
     }
 

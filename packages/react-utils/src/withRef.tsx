@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 
 type ElementType<P = any> =
+  | React.ComponentType<P>
   | {
       [K in keyof JSX.IntrinsicElements]: P extends JSX.IntrinsicElements[K]
         ? K
         : never;
-    }[keyof JSX.IntrinsicElements]
-  | React.ComponentType<P>;
+    }[keyof JSX.IntrinsicElements];
 
 type ForwardRefComponent<T, P = {}> = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<P> & React.RefAttributes<T>

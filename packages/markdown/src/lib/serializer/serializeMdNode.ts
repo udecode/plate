@@ -5,44 +5,28 @@ import type {
   MdNodeTypes,
 } from './types';
 
-type MarkFormats = Record<
-  | 'bold'
-  | 'boldItalic'
-  | 'boldItalicStrikethrough'
-  | 'code'
-  | 'italic'
-  | 'strikethrough'
-  | 'underline',
-  string[] | string | null
->;
-
 export type SerializeMdNodeOptions = {
   /** The type of the node. */
   type: string;
-
+  /**
+   * Whether the node is enabled. If false, the node will be considered as
+   * paragraph.
+   */
+  enabled?: boolean;
+  isLeaf?: boolean;
+  /**
+   * Whether the node is void. Required for empty void nodes to not be skipped.
+   * Default is true for `hr` and `img` nodes
+   */
+  isVoid?: boolean;
+  /** Whether the node should be skipped (serialized to empty string). */
+  skip?: boolean;
   /** Serialize node to markdown. */
   serialize?: (
     children: string,
     node: MdNodeType,
     opts: SerializeMdOptions
   ) => string;
-
-  /**
-   * Whether the node is enabled. If false, the node will be considered as
-   * paragraph.
-   */
-  enabled?: boolean;
-
-  isLeaf?: boolean;
-
-  /**
-   * Whether the node is void. Required for empty void nodes to not be skipped.
-   * Default is true for `hr` and `img` nodes
-   */
-  isVoid?: boolean;
-
-  /** Whether the node should be skipped (serialized to empty string). */
-  skip?: boolean;
 };
 
 export interface SerializeMdOptions {
@@ -79,7 +63,21 @@ export interface SerializeMdOptions {
    * @default ['disc', 'circle', 'square']
    */
   ulListStyleTypes?: string[];
+
+  /** @default 'insert' */
+  ignoreSuggestionType?: 'insert' | 'remove' | 'update';
 }
+
+type MarkFormats = Record<
+  | 'bold'
+  | 'boldItalic'
+  | 'boldItalicStrikethrough'
+  | 'code'
+  | 'italic'
+  | 'strikethrough'
+  | 'underline',
+  string[] | string | null
+>;
 
 const isLeafNode = (node: MdElementType | MdLeafType): node is MdLeafType => {
   return typeof (node as MdLeafType).text === 'string';
@@ -129,8 +127,9 @@ export function serializeMdNode(
         const listProps: any = {};
 
         const isIndentList = isLeafNode(c) ? false : !!c.listStyleType;
+        const isSelfIdentList = !!node.listStyleType;
 
-        if (isIndentList) {
+        if (isIndentList || isSelfIdentList) {
           ignoreParagraphNewlineProp = true;
           listProps.isList = true;
         } else {
@@ -206,8 +205,17 @@ export function serializeMdNode(
     type = nodes.p.type!;
     children = opts.breakTag;
   }
-  // Skip nodes that are empty, not a list and not void.
-  if (children === '' && !node.parent?.isList && !elOptions?.isVoid) {
+
+  // Skip nodes that are empty, not a list not in a table cell and not void .
+  const isInTableCell =
+    node.parent?.type === nodes.td.type || node.parent?.type === nodes.th.type;
+
+  if (
+    children === '' &&
+    !node.parent?.isList &&
+    !elOptions?.isVoid &&
+    !isInTableCell
+  ) {
     return;
   }
   if (isLeafNode(node)) {
@@ -265,6 +273,27 @@ export function serializeMdNode(
 
         if (leafOptions?.serialize) {
           children = leafOptions.serialize(children, leaf, opts);
+        }
+      }
+    }
+
+    // TODO: test
+    if ((node as any).suggestion) {
+      const ids: string[] = Object.keys(node).filter((key) => {
+        return key.startsWith(`suggestion_`);
+      });
+
+      const activeId = ids.at(-1);
+
+      if (activeId) {
+        const suggestionData = (node as any)[activeId];
+
+        const type = suggestionData.type as 'insert' | 'remove' | 'update';
+
+        const { ignoreSuggestionType = 'insert' } = opts;
+
+        if (type === ignoreSuggestionType) {
+          return;
         }
       }
     }

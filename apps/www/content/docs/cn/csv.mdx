@@ -1,0 +1,88 @@
+---
+title: 序列化 CSV
+---
+
+<ComponentPreview name="csv-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 将 CSV 内容转换为 Slate 值。
+
+<Callout className="my-4">
+  **注意**：目前不支持将 Slate 值转换为 CSV。
+</Callout>
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-csv
+```
+
+## 使用
+
+### CSV -> Slate
+
+```tsx
+import { CsvPlugin } from '@udecode/plate-csv';
+
+const plugins = [
+  // ...其他插件
+  CsvPlugin,
+];
+```
+
+## 插件
+
+### `CsvPlugin`
+
+<API name="CsvPlugin">
+<APIOptions>
+  <APIItem name="errorTolerance" type="number" optional>
+    CSV 数据中的错误容忍度，以百分比的小数形式表示。该值计算为错误数与总行数的比率。
+
+    - **默认值:** `0.25`（表示最多允许 25% 的行包含错误。）
+  </APIItem>
+  <APIItem name="parseOptions" type="ParseConfig" optional>
+    传递给 PapaParse 库用于解析 CSV 数据的选项。
+
+    - **默认值:** `{ header: true }`（表示 CSV 数据的第一行应被视为标题。）
+    - 有关这些选项的更多详细信息，请参阅 [PapaParse 文档](https://www.papaparse.com/docs#config)。
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `editor.api.csv.deserialize`
+
+接收一个 CSV（逗号分隔值）字符串并将其转换为 Slate 兼容的格式。此函数使用 `papaparse` 库来解析 CSV 数据。
+
+<API name="deserialize">
+<APIParameters>
+  <APIItem name="data" type="string">
+    要反序列化的 CSV 数据字符串。
+  </APIItem>
+  <APIItem name="errorTolerance" type="number" optional>
+    以小数形式表示的百分比，从 0 到 ∞，0 表示不允许任何错误。百分比基于错误数与行数的比率。
+    - **默认值:** `0.25`
+  </APIItem>
+  <APIItem name="parseOptions" type="ParseConfig">
+    传递给 PapaParse 库用于解析 CSV 数据的选项。
+    - **默认值:** `{ header: true }`
+    - 参阅 [PapaParse 文档](https://www.papaparse.com/docs#config)
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Descendant[]">
+  表示 Slate 格式的 CSV 数据的 `Descendant` 节点数组。如果解析失败，则返回 `undefined`。
+</APIReturns>
+</API>
+
+创建 CSV 数据的表格表示：
+- 标题（如果存在）成为第一行
+- 每个 CSV 行成为表格的一行
+- 使用插件：`ParagraphPlugin`、`TablePlugin`、`TableCellHeaderPlugin`、`TableRowPlugin` 和 `TableCellPlugin`

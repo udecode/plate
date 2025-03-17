@@ -1,0 +1,65 @@
+---
+title: 水平分割线
+docs:
+  - route: /docs/components/hr-element
+    title: Hr 元素
+---
+
+<ComponentPreview name="horizontal-rule-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 插入水平线以分隔内容或指示主题转换
+- 在新行开头输入三个破折号 (`---`) 以转换为水平分割线
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-horizontal-rule
+```
+
+## 使用
+
+```tsx
+import { insertNodes, setNodes } from '@udecode/plate';
+import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { SelectOnBackspacePlugin } from '@udecode/plate-select/react';
+
+const plugins = [
+  // ...其他插件,
+  HorizontalRulePlugin,
+  SelectOnBackspacePlugin.configure({
+    options: { query: { allow: [HorizontalRulePlugin.key] } },
+  }),
+  AutoformatPlugin.configure({
+    options: {
+      rules: [
+        {
+          mode: 'block',
+          type: HorizontalRulePlugin.key,
+          match: ['---', '—-', '___ '],
+          format: (editor) => {
+            setNodes(editor, { type: HorizontalRulePlugin.key });
+            insertNodes(editor, {
+              type: ParagraphPlugin.key,
+              children: [{ text: '' }],
+            });
+          },
+        },
+      ],
+    },
+  }),
+];
+```
+
+## 插件
+
+### `HorizontalRulePlugin`
+
+用于插入水平分割线以分隔内容的插件。

@@ -1,0 +1,5 @@
+---
+description: React components
+globs: *.tsx
+---
+- components: always export function, never export default except pages and layout, never type React.FC, use props inline type.

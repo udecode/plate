@@ -1,0 +1,35 @@
+{
+  "dependencies": [
+    "use-file-picker"
+  ],
+  "doc": {
+    "description": "A toolbar button to import editor content from a file.",
+    "docs": [
+      {
+        "route": "/docs/import",
+        "title": "Import"
+      }
+    ],
+    "examples": [
+      "basic-nodes-demo"
+    ],
+    "label": "New",
+    "title": "Import Toolbar Button"
+  },
+  "files": [
+    {
+      "path": "plate-ui/import-toolbar-button.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';\n\nimport { getEditorDOMFromHtmlString } from '@udecode/plate';\nimport { MarkdownPlugin } from '@udecode/plate-markdown';\nimport { useEditorRef } from '@udecode/plate/react';\nimport { ArrowUpToLineIcon } from 'lucide-react';\nimport { useFilePicker } from 'use-file-picker';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuGroup,\n  DropdownMenuItem,\n  DropdownMenuTrigger,\n  useOpenState,\n} from './dropdown-menu';\nimport { ToolbarButton } from './toolbar';\n\ntype ImportType = 'html' | 'markdown';\n\nexport function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {\n  const editor = useEditorRef();\n  const openState = useOpenState();\n\n  const [type, setType] = React.useState<ImportType>('html');\n  const accept = type === 'html' ? ['text/html'] : ['.md'];\n\n  const getFileNodes = (text: string, type: ImportType) => {\n    if (type === 'html') {\n      const editorNode = getEditorDOMFromHtmlString(text);\n      const nodes = editor.api.html.deserialize({\n        element: editorNode,\n      });\n\n      return nodes;\n    }\n\n    const nodes = editor.getApi(MarkdownPlugin).markdown.deserialize(text);\n\n    return nodes;\n  };\n\n  const { openFilePicker } = useFilePicker({\n    accept,\n    multiple: false,\n    onFilesSelected: async ({ plainFiles }) => {\n      const text = await plainFiles[0].text();\n\n      const nodes = getFileNodes(text, type);\n\n      editor.tf.insertNodes(nodes);\n    },\n  });\n\n  return (\n    <DropdownMenu modal={false} {...openState} {...props}>\n      <DropdownMenuTrigger asChild>\n        <ToolbarButton pressed={openState.open} tooltip=\"Import\" isDropdown>\n          <ArrowUpToLineIcon className=\"size-4\" />\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent align=\"start\">\n        <DropdownMenuGroup>\n          <DropdownMenuItem\n            onSelect={() => {\n              setType('html');\n              openFilePicker();\n            }}\n          >\n            Import from HTML\n          </DropdownMenuItem>\n\n          <DropdownMenuItem\n            onSelect={() => {\n              setType('markdown');\n              openFilePicker();\n            }}\n          >\n            Import from Markdown\n          </DropdownMenuItem>\n        </DropdownMenuGroup>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/import-toolbar-button.tsx"
+    }
+  ],
+  "name": "import-toolbar-button",
+  "registryDependencies": [
+    "dropdown-menu",
+    "toolbar"
+  ],
+  "type": "registry:ui",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
+}

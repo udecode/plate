@@ -1,11 +1,7 @@
 import React from 'react';
 
-import { isDefined, removeEditorText } from '@udecode/plate-common';
-import {
-  selectEditor,
-  useEditorRef,
-  useEditorString,
-} from '@udecode/plate-common/react';
+import { isDefined } from '@udecode/plate';
+import { useEditorRef, useEditorString } from '@udecode/plate/react';
 
 import type { TagLike } from '../lib';
 
@@ -30,8 +26,8 @@ export const useSelectEditorCombobox = ({
   // Remove text and select end of editor when combobox closes
   React.useEffect(() => {
     if (!open) {
-      removeEditorText(editor);
-      selectEditor(editor, { edge: 'end' });
+      editor.tf.removeNodes({ at: [], empty: false, text: true });
+      editor.tf.select([], { edge: 'end' });
     }
   }, [editor, open]);
 
@@ -46,5 +42,6 @@ export const useSelectEditorCombobox = ({
 
   React.useEffect(() => {
     onValueChange?.(selectedItems);
-  }, [selectedItems, onValueChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItems]);
 };

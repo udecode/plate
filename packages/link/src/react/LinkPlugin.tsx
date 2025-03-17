@@ -1,12 +1,8 @@
-import {
-  type ExtendConfig,
-  type OmitFirst,
-  bindFirst,
-} from '@udecode/plate-common';
-import { toTPlatePlugin } from '@udecode/plate-common/react';
+import { type ExtendConfig, type OmitFirst, bindFirst } from '@udecode/plate';
+import { toTPlatePlugin } from '@udecode/plate/react';
 
-import { type BaseLinkConfig, type TLinkElement, BaseLinkPlugin } from '../lib';
-import { getLinkAttributes } from './utils';
+import { type BaseLinkConfig, BaseLinkPlugin } from '../lib';
+import { getLinkAttributes } from '../lib/utils';
 
 export type FloatingLinkMode = '' | 'edit' | 'insert';
 
@@ -26,9 +22,8 @@ export type LinkConfig = ExtendConfig<
      *
      * @default { }
      */
-    defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
     triggerFloatingLinkHotkeys?: string;
-  } & LinkSelectors,
+  },
   {
     floatingLink: {
       hide: () => void;
@@ -38,17 +33,16 @@ export type LinkConfig = ExtendConfig<
     link: {
       getAttributes: OmitFirst<typeof getLinkAttributes>;
     };
+  },
+  {},
+  {
+    isOpen?: (editorId: string) => boolean;
   }
 >;
-
-export type LinkSelectors = {
-  isOpen?: (editorId: string) => boolean;
-};
 
 /** Enables support for hyperlinks. */
 export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
   options: {
-    defaultLinkAttributes: {},
     isEditing: false,
     mode: '' as FloatingLinkMode,
     mouseDown: false,
@@ -99,13 +93,6 @@ export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
       },
     },
   }))
-  .extendOptions(({ getOptions }) => ({
-    isOpen: (editorId: string) => getOptions().openEditorId === editorId,
-  }))
-  .extend(({ api }) => ({
-    node: {
-      props: ({ element }) => ({
-        nodeProps: api.link.getAttributes(element as TLinkElement),
-      }),
-    },
+  .extendSelectors<LinkConfig['selectors']>(({ getOptions }) => ({
+    isOpen: (editorId) => getOptions().openEditorId === editorId,
   }));

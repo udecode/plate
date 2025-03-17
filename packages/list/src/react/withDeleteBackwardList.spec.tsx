@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { ListPlugin } from './ListPlugin';
 
@@ -36,11 +36,12 @@ describe('li > lic * 2 with selection at second child start', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteBackward('character');
+    editor.tf.deleteBackward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -76,11 +77,12 @@ describe('li with selection at start', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteBackward('character');
+    editor.tf.deleteBackward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -136,11 +138,12 @@ describe('list + sublist where second item has multiple children', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteBackward('character');
+    editor.tf.deleteBackward();
 
     expect(editor.children).toEqual(expected.children);
   });

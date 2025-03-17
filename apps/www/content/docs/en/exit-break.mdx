@@ -1,0 +1,164 @@
+---
+title: Exit Break
+---
+
+<ComponentPreview name="exit-break-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Exit large text blocks with a single hotkey.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-break
+```
+
+## Usage
+
+```tsx
+import { ExitBreakPlugin } from '@udecode/plate-break/react';
+import { HEADING_LEVELS } from '@udecode/plate-heading';
+
+const plugins = [
+  // ...otherPlugins,
+  ExitBreakPlugin.configure({
+    options: {
+      rules: [
+        {
+          hotkey: 'mod+enter',
+        },
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: HEADING_LEVELS,
+          },
+          relative: true,
+          level: 1,
+        },
+      ],
+    },
+  }),
+];
+```
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Enter">
+    Start a new block after the selected block.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + Enter">
+    Start a new block before the selected block.
+  </KeyTableItem>
+</KeyTable>
+
+## Plugins
+
+### `ExitBreakPlugin`
+
+<API name="ExitBreakPlugin">
+<APIOptions>
+  <APIItem name="rules" type="ExitBreakRule[]" optional>
+    Array of rules for exit break behavior.
+    <APISubList>
+      <APISubListItem parent="rules" name="hotkey" type="string">
+        Hotkey to trigger exit break.
+      </APISubListItem>
+      <APISubListItem parent="rules" name="query" type="QueryNodeOptions & { start?: boolean; end?: boolean }" optional>
+        Object determining the conditions under which to exit.
+        
+        Extends QueryNodeOptions:
+        - `start`: Start of the block
+        - `end`: End of the block
+      </APISubListItem>
+      <APISubListItem parent="rules" name="level" type="number" optional>
+        Path level where to exit.
+        - **Default:** `1`
+      </APISubListItem>
+      <APISubListItem parent="rules" name="before" type="boolean" optional>
+        Whether to exit before the selected block.
+      </APISubListItem>
+      <APISubListItem parent="rules" name="defaultType" type="string" optional>
+        Default type of node to insert upon exit.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `exitBreak`
+
+Exit a large block using a shortcut.
+
+<API name="exitBreak">
+<APIOptions type="ExitBreakOptions">
+  <APIItem name="level" type="number" optional>
+    Path level where to exit.
+    - **Default:** `0`
+  </APIItem>
+  <APIItem name="relative" type="boolean" optional>
+    Whether to exit relative to the selection.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="defaultType" type="function" optional>
+    Default type of node to insert upon exit.
+    - **Default:** `editor.getType(ParagraphPlugin)`
+  </APIItem>
+  <APIItem name="query" type="object" optional>
+    Conditions for exit break.
+  </APIItem>
+  <APIItem name="before" type="boolean" optional>
+    Whether to exit before the selected block.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  Whether the exit break was successful.
+</APIReturns>
+</API>
+
+### `exitBreakAtEdges`
+
+Checks if the selection is at the edge of its parent block and performs an "exit break" operation if specified.
+
+<API name="exitBreakAtEdges">
+<APIParameters>
+  <APIItem name="options" type="object">
+    Options for checking edges.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="start" type="boolean" optional>
+    Whether to check if selection is at start of block.
+  </APIItem>
+  <APIItem name="end" type="boolean" optional>
+    Whether to check if selection is at end of block.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="queryEdge" type="boolean">
+    Whether the edge was queried.
+  </APIItem>
+  <APIItem name="isEdge" type="boolean">
+    Whether selection is at block edge.
+  </APIItem>
+  <APIItem name="isStart" type="boolean">
+    Whether selection is at block start.
+  </APIItem>
+</APIReturns>
+</API>

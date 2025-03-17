@@ -1,15 +1,17 @@
+import React from 'react';
+
 import type { z } from 'zod';
 
 import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { type SourceFile, Project, ScriptKind, SyntaxKind } from 'ts-morph';
-
-import { Index } from '../__registry__';
 import {
   type registryItemFileSchema,
   registryItemSchema,
-} from '../registry/schema';
+} from 'shadcx/registry';
+import { type SourceFile, Project, ScriptKind, SyntaxKind } from 'ts-morph';
+
+import { Index } from '../__registry__';
 import { fixImport } from './rehype-utils';
 
 const memoizedIndex: typeof Index = Object.fromEntries(
@@ -17,6 +19,12 @@ const memoizedIndex: typeof Index = Object.fromEntries(
 );
 
 export function getRegistryComponent(name: string) {
+  if (name === 'slate-to-html') {
+    return React.lazy(
+      () => import('@/registry/default/blocks/slate-to-html/page')
+    );
+  }
+
   return memoizedIndex.default[name]?.component;
 }
 
@@ -51,7 +59,7 @@ export async function getRegistryItem(name: string, prefetch = false) {
 
     const content =
       !prefetch || file.path === item.files[0].path
-        ? await getFileContent(file.path)
+        ? await getFileContent(file as any)
         : undefined;
 
     files.push({
@@ -63,7 +71,7 @@ export async function getRegistryItem(name: string, prefetch = false) {
 
   // Get meta.
   // Assume the first file is the main file.
-  const meta = await getFileMeta(files[0].path);
+  // const meta = await getFileMeta(files[0].path);
 
   // Fix file paths.
   files = fixFilePaths(files);
@@ -71,7 +79,7 @@ export async function getRegistryItem(name: string, prefetch = false) {
   const parsed = registryItemSchema.safeParse({
     ...result.data,
     files,
-    meta,
+    // meta,
   });
 
   if (!parsed.success) {
@@ -116,14 +124,14 @@ async function getAllItemFiles(
   return uniqueFiles;
 }
 
-async function getFileContent(filePath: string) {
-  const raw = await fs.readFile(path.join(process.cwd(), filePath), 'utf8');
+async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
+  const raw = await fs.readFile(path.join(process.cwd(), file.path), 'utf8');
 
   const project = new Project({
     compilerOptions: {},
   });
 
-  const tempFile = await createTempSourceFile(filePath);
+  const tempFile = await createTempSourceFile(file.path);
   const sourceFile = project.createSourceFile(tempFile, raw, {
     scriptKind: ScriptKind.TSX,
   });
@@ -194,7 +202,7 @@ function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
     }
   }
 
-  return target;
+  return target ?? '';
 }
 
 async function createTempSourceFile(filename: string) {

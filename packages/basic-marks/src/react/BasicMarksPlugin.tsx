@@ -1,4 +1,4 @@
-import { toPlatePlugin } from '@udecode/plate-common/react';
+import { toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseBasicMarksPlugin } from '../lib/BaseBasicMarksPlugin';
 import { BoldPlugin } from './BoldPlugin';

@@ -1,6 +1,5 @@
 import type { JSHandle, Page } from '@playwright/test';
-import type { TNode } from '@udecode/plate-common';
-import type { Path } from 'slate';
+import type { Path, TNode } from '@udecode/plate';
 
 import type { EditorHandle } from './types';
 

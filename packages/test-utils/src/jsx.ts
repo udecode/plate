@@ -1,5 +1,3 @@
-/* eslint-disable prettier/prettier */
-
 import {
   type HyperscriptShorthands,
   createHyperscript as createHyperscriptBase,
@@ -13,17 +11,8 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
-      htext: {
-        [key: string]: any;
-        // These optional params will show up in the autocomplete!
-        bold?: boolean;
-        children?: any;
-        code?: boolean;
-        italic?: boolean;
-        underline?: boolean;
-      };
-
       [key: string]: any;
+
       anchor: any;
       cursor: any;
       editor: any;
@@ -33,6 +22,15 @@ declare global {
       hli: any;
       hol: any;
       hp: any;
+      htext: {
+        [key: string]: any;
+        // These optional params will show up in the autocomplete!
+        bold?: boolean;
+        children?: any;
+        code?: boolean;
+        italic?: boolean;
+        underline?: boolean;
+      };
       hul: any;
       selection: any;
     }
@@ -71,7 +69,7 @@ const elements: HyperscriptShorthands = {
   hnli: { type: 'nli' },
   hol: { type: 'ol' },
   hp: { type: 'p' },
-  hplaceholder: { children: voidChildren ,type: 'placeholder'},
+  hplaceholder: { children: voidChildren, type: 'placeholder' },
   htable: { type: 'table' },
   htd: { type: 'td' },
   hth: { type: 'th' },
@@ -82,7 +80,6 @@ const elements: HyperscriptShorthands = {
   hul: { type: 'ul' },
   hvideo: { children: voidChildren, type: 'video' },
 };
-
 
 export const jsx = createHyperscript({
   creators: {

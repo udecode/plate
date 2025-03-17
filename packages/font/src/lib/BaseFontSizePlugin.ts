@@ -1,18 +1,32 @@
-import { createSlatePlugin } from '@udecode/plate-common';
+import {
+  type PluginConfig,
+  bindFirst,
+  createTSlatePlugin,
+} from '@udecode/plate';
 
-export const BaseFontSizePlugin = createSlatePlugin({
+import { setFontSize } from './transforms';
+
+export type BaseFontSizeConfig = PluginConfig<
+  'fontSize',
+  {},
+  {
+    fontSize: {
+      setMark: (fontSize: string) => void;
+    };
+  }
+>;
+
+export const BaseFontSizePlugin = createTSlatePlugin({
   key: 'fontSize',
   inject: {
     nodeProps: {
       nodeKey: 'fontSize',
     },
   },
-}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         isLeaf: true,
-        parse: ({ element }) => ({ [type]: element.style.fontSize }),
         rules: [
           {
             validStyle: {
@@ -20,7 +34,10 @@ export const BaseFontSizePlugin = createSlatePlugin({
             },
           },
         ],
+        parse: ({ element, type }) => ({ [type]: element.style.fontSize }),
       },
     },
   },
+}).extendApi(({ editor }) => ({
+  setMark: bindFirst(setFontSize, editor),
 }));

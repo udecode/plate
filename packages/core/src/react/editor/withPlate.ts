@@ -1,8 +1,7 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-import { type TEditor, type Value, createTEditor } from '@udecode/slate';
+import { type Editor, type Value, createEditor } from '@udecode/slate';
 
 import type { AnyPlatePlugin } from '../plugin';
-import type { PlateApiPlugin } from '../plugins';
+import type { SlateReactExtensionPlugin } from '../plugins';
 import type { PlateEditor, TPlateEditor } from './PlateEditor';
 
 import {
@@ -14,7 +13,7 @@ import {
 } from '../../lib';
 import { getPlateCorePlugins } from './getPlateCorePlugins';
 
-export type PlateCorePlugin = CorePlugin | typeof PlateApiPlugin;
+export type PlateCorePlugin = CorePlugin | typeof SlateReactExtensionPlugin;
 
 export type WithPlateOptions<
   V extends Value = Value,
@@ -36,8 +35,8 @@ export type WithPlateOptions<
     | 'transforms'
     | 'useHooks'
   > & {
-    rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
     value?: ((editor: PlateEditor) => V) | V | string;
+    rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
   };
 
 /**
@@ -51,52 +50,13 @@ export const withPlate = <
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
 >(
-  e: TEditor,
+  e: Editor,
   { plugins = [], ...options }: WithPlateOptions<V, P> = {}
 ): TPlateEditor<V, InferPlugins<P[]>> => {
   const editor = withSlate<V, P>(e, {
     ...options,
     plugins: [...getPlateCorePlugins(), ...plugins],
   } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
-
-  editor.useOptions = ((plugin: any, selector: any, equalityFn: any) => {
-    const store = editor.getOptionsStore(plugin);
-
-    if (!store) {
-      // editor.api.debug.warn(
-      //   `editor.useOptions: ${plugin.key} plugin is missing`,
-      //   'PLUGIN_MISSING'
-      // );
-
-      return {};
-    }
-
-    return store.useStore(selector, equalityFn);
-  }) as any;
-
-  editor.useOption = (plugin: any, key: any, ...args: any) => {
-    const store = editor.getOptionsStore(plugin);
-
-    if (!store) {
-      // editor.api.debug.warn(
-      //   `editor.useOption: ${plugin.key} plugin is missing`,
-      //   'PLUGIN_MISSING'
-      // );
-
-      return;
-    }
-
-    const useState = (store as any)?.use[key];
-
-    if (useState) {
-      return useState(...args);
-    }
-
-    editor.api.debug.error(
-      `editor.useOption: ${key} option is not defined in plugin ${plugin.key}`,
-      'OPTION_UNDEFINED'
-    );
-  };
 
   return editor;
 };
@@ -110,7 +70,7 @@ export type CreatePlateEditorOptions<
    *
    * @default createEditor()
    */
-  editor?: TEditor;
+  editor?: Editor;
 };
 
 /**
@@ -175,7 +135,7 @@ export const createPlateEditor = <
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
 >({
-  editor = createTEditor(),
+  editor = createEditor(),
   ...options
 }: CreatePlateEditorOptions<V, P> = {}): TPlateEditor<V, InferPlugins<P[]>> => {
   return withPlate<V, P>(editor, options);

@@ -1,12 +1,9 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  type TElementEntry,
-  getNodeEntry,
-} from '@udecode/plate-common';
-import { createPlateEditor } from '@udecode/plate-common/react';
+import type { ElementEntry, SlateEditor } from '@udecode/plate';
+
 import { jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';
@@ -33,16 +30,17 @@ describe('outdent code line', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [CodeBlockPlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
-      const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;
-      const codeLine = getNodeEntry(editor, [0, 0]) as TElementEntry;
+      const codeBlock = editor.api.node([0]) as ElementEntry;
+      const codeLine = editor.api.node([0, 0]) as ElementEntry;
 
       outdentCodeLine(editor, { codeBlock, codeLine });
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -65,16 +63,17 @@ describe('outdent code line', () => {
       ) as any as SlateEditor;
 
       const editor = createPlateEditor({
-        editor: input,
         plugins: [CodeBlockPlugin],
+        selection: input.selection,
+        value: input.children,
       });
 
-      const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;
-      const codeLine = getNodeEntry(editor, [0, 0]) as TElementEntry;
+      const codeBlock = editor.api.node([0]) as ElementEntry;
+      const codeLine = editor.api.node([0, 0]) as ElementEntry;
 
       outdentCodeLine(editor, { codeBlock, codeLine });
 
-      expect(input.children).toEqual(output.children);
+      expect(editor.children).toEqual(output.children);
     });
   });
 });

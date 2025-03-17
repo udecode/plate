@@ -1,0 +1,168 @@
+---
+title: Plate Controller
+description: PlateController 组件的 API 参考。
+---
+
+**`PlateController`** 是一个可选的提供者组件，用于从外部访问特定 [Plate Stores](/docs/api/core/store) 的 **`Plate`** 组件。
+
+## PlateController 存储
+
+<API name="PlateController">
+PlateController 存储包含基于 **`id`** 获取 Plate Store 所需的信息，并确定当前哪个 **`id`** 是活动的。
+
+<APIState>
+<APIItem name="activeId" type="string | null">
+最近聚焦的 Plate 编辑器的 **`id`**。
+
+- **默认值:** `null`
+</APIItem>
+
+<APIItem name="primaryEditorIds" type="string[]">
+所有主要 Plate 编辑器的 **`id`**。默认情况下，除非 **`primary={false}`** 被传递给其 **`Plate`** 组件，否则编辑器被视为主要编辑器。
+
+- **默认值:** `[]`
+</APIItem>
+
+<APIItem name="editorStores" type="Record<string, JotaiStore | null>">
+从每个挂载的 Plate 编辑器的 **`id`** 到该编辑器的 Plate Store 对应的 **`JotaiStore`** 的映射。
+
+- **默认值:** `{}`
+</APIItem>
+</APIState>
+</API>
+
+## 使用模式
+
+### 通过 ID 访问特定编辑器
+
+**`PlateController`** 可用于通过 **`id`** 访问特定编辑器的存储。请注意，如果找不到匹配的编辑器，将返回一个不可变的备用编辑器。
+
+```tsx
+const App = withHoc(PlateController, () => {
+  const mainEditor = useEditorRef('main');
+  
+  useEffect(() => {
+    if (!mainEditor.isFallback) {
+      console.info('Editor mounted', mainEditor);
+    }
+  }, [mainEditor]);
+  
+  return (
+    <>
+      <Plate editor={createPlateEditor({ id: 'main' })}>
+        <PlateContent />
+      </Plate>
+    
+      <Plate editor={createPlateEditor({ id: 'secondary' })}>
+        <PlateContent />
+      </Plate>
+    </>
+  );
+});
+```
+
+### 活动编辑器
+
+如果在 **`PlateController`** 内部使用 **`useEditorRef`** 等钩子而没有显式指定 **`id`**，它们将解析为当前活动的编辑器。
+
+活动编辑器的确定方式如下：
+
+1. 如果某个编辑器已被聚焦，则返回最后一个这样的编辑器。
+2. 如果某个编辑器是主要的，则返回第一个挂载的此类编辑器。
+3. 否则，返回一个不可变的备用编辑器。
+
+```tsx
+const App = withHoc(PlateController, () => {
+  const activeEditorId = useEditorId();
+  const isFallback = !useEditorMounted();
+  
+  const message = isFallback
+    ? '请聚焦一个编辑器'
+    : `活动编辑器: ${activeEditorId}`;
+  
+  return (
+    <main>
+      <p>{message}</p>
+      
+      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
+        <PlateContent />
+      </Plate>
+    
+      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
+        <PlateContent />
+      </Plate>
+    </main>
+  );
+});
+```
+
+## 处理备用编辑器
+
+当在 **`PlateController`** 内部调用的钩子无法找到匹配的 Plate Store 时，它将使用 Plate Store 的默认值。**`editor`** 的默认值是 **`createPlateFallbackEditor()`**。备用编辑器就像一个没有插件的空 Plate 编辑器，只是如果它接收到 Slate 操作（即它是不可变的，不能用于转换），它会抛出运行时错误。
+
+这样做的理由是确保查询编辑器的代码（例如确定工具栏按钮是否处于活动状态）在出现错误时静默失败并返回合理的默认值，而转换编辑器的代码（例如按下工具栏按钮）则会大声失败并抛出错误。
+
+有两种方法可以确定你正在使用的是备用编辑器还是真实编辑器：
+
+- **`useEditorMounted`** 如果没有找到挂载的编辑器，则返回 **`false`**
+- **`editor.isFallback`** 对于备用编辑器为 **`true`**
+
+在 **`PlateController`** 内部使用 **`useEditorRef`** 等钩子时，你应该编写防御性代码，以确保在出现备用编辑器时能够正确处理。例如，如果 **`useEditorMounted`** 返回 **`false`**，你可以禁用工具栏按钮，或者如果 **`editor.isFallback`** 为 **`true`**，则忽略事件。
+
+```tsx
+const App = withHoc(PlateController, () => {
+  const activeEditor = useEditorRef();
+  
+  const toggleBold = () => {
+    if (activeEditor.isFallback) return;
+    activeEditor.tf.toggleMark(BoldPlugin.key);
+  };
+  
+  return (
+    <main>
+      <button type="button" onClick={toggleBold}>
+        加粗
+      </button>
+      
+      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
+        <PlateContent />
+      </Plate>
+    
+      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
+        <PlateContent />
+      </Plate>
+    </main>
+  );
+});
+```
+
+```tsx
+const App = withHoc(PlateController, () => {
+  const activeEditor = useEditorRef();
+  const isFallback = !useEditorMounted();
+  
+  const toggleBold = () => {
+    activeEditor.tf.toggleMark(BoldPlugin.key);
+  };
+  
+  return (
+    <main>
+      <button
+        type="button"
+        onClick={toggleBold}
+        disabled={isFallback}
+      >
+        加粗
+      </button>
+      
+      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
+        <PlateContent />
+      </Plate>
+    
+      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
+        <PlateContent />
+      </Plate>
+    </main>
+  );
+});
+```

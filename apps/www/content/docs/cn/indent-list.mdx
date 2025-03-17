@@ -1,0 +1,259 @@
+---
+title: 缩进列表
+docs:
+  - route: /docs/components/indent-list-toolbar-button
+    title: 缩进列表工具栏按钮
+---
+
+<ComponentPreview name="indent-list-demo" />
+
+<Callout>
+
+Plate 提供了两种实现列表的方式：
+
+1. **此缩进列表插件** - 灵活的基于缩进的列表：
+   - 更类似于 Word/Google Docs 的行为
+   - 任何块都可以缩进以创建类似列表的结构
+   - 在 [AI 编辑器](/editors#editor-ai) 中使用
+   - 更适合自由形式的内容组织
+
+2. [**列表插件**](/docs/list) - 遵循严格嵌套规则的传统 HTML 规范列表：
+   - 遵循标准的 HTML 列表结构 (`ul`/`ol` > `li`)
+   - 保持一致的列表层次结构
+   - 最适合可能导出为 HTML/markdown 的内容
+   - 复杂度最高
+
+根据您的需求选择：
+- 当您需要更灵活的缩进行为时，使用 **缩进列表插件**
+- 当您需要标准的 HTML 列表兼容性时，使用 **列表插件**
+
+</Callout>
+
+<PackageInfo>
+
+## 功能
+
+- **灵活的块缩进**：
+  - 为任何块类型（段落、标题等）设置列表缩进
+  - 通过缩进将任何块转换为列表项
+  - 更直观的 Word/Google Docs 式行为
+
+- **简化的结构** - 与 [列表插件](/docs/list) 不同：
+  - 扁平化的 DOM 结构，每个缩进的块都是独立的
+  - 每个缩进的列表块由一个 `ul` 或 `ol` 和一个项目组成
+  - 不强制执行严格的父子关系
+  - 更适合自由形式的内容组织
+
+- **列表类型**：
+  - 项目符号列表（无序）
+  - 编号列表（有序）
+
+- **快捷键**：
+  - 结合自动格式化插件，使用 markdown 快捷键（`-`、`*`、`1.`）创建列表
+  - Tab/Shift+Tab 用于缩进控制
+
+有关底层缩进系统的更多信息，请参阅 [缩进文档](/docs/indent)。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-indent-list @udecode/plate-indent
+```
+
+## 使用
+
+```tsx
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
+
+const plugins = [
+  // ...其他插件,
+  HeadingPlugin,
+  IndentPlugin.configure({
+    inject: {
+      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+    }
+  }),
+  IndentListPlugin.configure({
+    inject: {
+      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+    }
+  }),
+];
+```
+
+## 插件
+
+### `IndentListPlugin`
+
+<API name="IndentListPlugin">
+<APIOptions>
+  <APIItem name="getSiblingIndentListOptions" type="GetSiblingIndentListOptions<TElement>" optional>
+    用于确定兄弟元素的缩进列表选项的函数。
+  </APIItem>
+  <APIItem name="getListStyleType" type="(element: HTMLElement) => ListStyleType" optional>
+    将 HTML 元素映射到列表样式类型的函数。
+  </APIItem>
+  <APIItem name="renderIndentListBelowNodes" type="(editor: PlateEditor) => React.ReactNode" optional>
+    用于在缩进列表节点下方渲染组件的函数。
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `getNextIndentList`
+
+<API name="getNextIndentList">
+<APIParameters>
+  <APIItem name="entry" type="ElementEntryOf">
+    当前元素的entry。
+  </APIItem>
+  <APIItem name="options" type="Partial<GetSiblingIndentListOptions>" optional>
+    获取下一个缩进列表的选项。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry | undefined">
+  下一个具有缩进列表的兄弟entry的entry，如果未找到则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `getPreviousIndentList`
+
+获取前一个具有缩进列表的兄弟entry。
+
+<API name="getPreviousIndentList">
+<APIParameters>
+  <APIItem name="entry" type="ElementEntryOf">
+    当前元素的entry。
+  </APIItem>
+  <APIItem name="options" type="Partial<GetSiblingIndentListOptions>" optional>
+    获取前一个缩进列表的选项。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry | undefined">
+  前一个具有缩进列表的兄弟entry的entry，如果未找到则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `indentList`
+
+增加所选块的缩进。
+
+<API name="indentList">
+<APIOptions type="IndentListOptions">
+  <APIItem name="listStyleType" type="ListStyleType | string" optional>
+    要使用的列表样式类型。
+    - **默认值:** `ListStyleType.Disc`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `outdentList`
+
+减少所选块的缩进。
+
+<API name="outdentList">
+<APIOptions type="IndentListOptions">
+  <APIItem name="listStyleType" type="ListStyleType | string" optional>
+    要使用的列表样式类型。
+    - **默认值:** `ListStyleType.Disc`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `someIndentList`
+
+检查所选块中是否有一些具有特定列表样式类型。
+
+<API name="someIndentList">
+<APIParameters>
+  <APIItem name="type" type="string | string[]">
+    要检查的列表样式类型。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `toggleIndentList`
+
+切换缩进列表。
+
+<API name="toggleIndentList">
+<APIOptions type="IndentListOptions">
+  <APIItem name="listStyleType" type="ListStyleType | string" optional>
+    要使用的列表样式类型。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 类型
+
+### `GetSiblingIndentListOptions`
+
+用于提供在文本块中获取兄弟缩进列表的选项。
+
+<API name="GetSiblingIndentListOptions">
+<APIOptions>
+  <APIItem name="getPreviousEntry" type="function">
+    此函数用于从给定entry中获取前一个兄弟entry。
+  </APIItem>
+  <APIItem name="getNextEntry" type="function">
+    此函数用于从给定entry中获取下一个兄弟entry。
+  </APIItem>
+  <APIItem name="query" type="function">
+    此函数用于在查找过程中验证兄弟节点。
+    如果返回 false，则检查下一个兄弟节点。
+  </APIItem>
+  <APIItem name="eqIndent" type="boolean">
+    指示当兄弟节点的缩进级别与当前节点相同时是否停止查找。如果为 true，则在找到具有相同缩进级别的兄弟节点时停止查找。
+  </APIItem>
+  <APIItem name="breakQuery" type="(node: TNode) => boolean | undefined">
+    一个接受 `TNode` 并返回布尔值或 undefined 的函数。
+    此函数用于指定查找过程应停止的条件。
+  </APIItem>
+  <APIItem name="breakOnLowerIndent" type="boolean">
+    指示当找到缩进级别较低的兄弟节点时是否停止查找。如果为 true，则在找到缩进级别较低的兄弟节点时停止查找。
+  </APIItem>
+  <APIItem name="breakOnEqIndentNeqListStyleType" type="boolean">
+    指示当找到具有相同缩进级别但列表样式类型不同的兄弟节点时是否停止查找。如果为 true，则在找到此类兄弟节点时停止查找。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 钩子
+
+### `useIndentListToolbarButton`
+
+缩进列表工具栏按钮的行为钩子。
+
+<API name="useIndentListToolbarButton">
+<APIState>
+  <APIItem name="nodeType" type="string">
+    列表样式类型。
+  </APIItem>
+  <APIItem name="pressed" type="boolean">
+    按钮是否被按下。
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    工具栏按钮的属性。
+     <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        按钮是否被按下。
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        处理点击事件的回调。切换指定节点类型的缩进列表并聚焦编辑器。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>

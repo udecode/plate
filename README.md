@@ -37,7 +37,7 @@ You can learn more about Plate by checking out our [documentation](https://plate
 
 ## Contributing
 
-To get started, check out our [contributing guide](CONTRIBUTING.md).
+To get started, check out our [contributing guide](tooling/CONTRIBUTING.md).
 
 ### Contributors
 

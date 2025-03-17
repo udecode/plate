@@ -1,0 +1,91 @@
+---
+title: Excalidraw
+docs:
+  - route: /docs/components/excalidraw-element
+    title: Excalidraw Element
+---
+
+<ComponentPreview name="excalidraw-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Integrates Excalidraw library for creation of drawings and diagrams.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-excalidraw
+```
+
+## Usage
+
+```tsx
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
+import { SelectOnBackspace } from '@udecode/plate-select';
+
+const plugins = [
+  // ...otherPlugins
+  ExcalidrawPlugin,
+  SelectOnBackspace.configure({
+    options: { query: { allow: [ExcalidrawPlugin.key] } },
+  }),
+];
+```
+
+## Plugins
+
+### `ExcalidrawPlugin`
+
+Excalidraw void element plugin.
+
+## API
+
+### `insertExcalidraw`
+
+Inserts an Excalidraw element into the editor.
+
+<API name="insertExcalidraw">
+<APIParameters>
+  <APIItem name="props" type="NodeProps<TExcalidrawElement>" optional>
+    Props for the Excalidraw element.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Options for inserting the Excalidraw element.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Hooks
+
+### `useExcalidrawElement`
+
+A behavior hook for the Excalidraw component.
+
+<API name="useExcalidrawElement">
+<APIState>
+  <APIItem name="element" type="TExcalidrawElement">
+    The Excalidraw element.
+  </APIItem>
+  <APIItem name="libraryItems" type="LibraryItems" optional>
+    Library items to display in the Excalidraw component.
+    - **Default:** `[]`
+  </APIItem>
+  <APIItem name="scrollToContent" type="boolean" optional>
+    Whether to scroll to content inside the Excalidraw component.
+    - **Default:** `true`
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="Excalidraw" type="any">
+    The Excalidraw component.
+  </APIItem>
+  <APIItem name="excalidrawProps" type="ExcalidrawProps">
+    Props to pass to the Excalidraw component.
+  </APIItem>
+</APIReturns>
+</API>

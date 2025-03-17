@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { RegistryEntry } from '@/registry/schema';
+import type { RegistryItem } from 'shadcx/registry';
 
 import { BlockCode } from '@/components/block-viewer';
 import { ComponentPreviewPro } from '@/components/component-preview-pro';
@@ -21,7 +21,7 @@ interface ComponentInstallationProps {
   __previewFiles__?: string;
   __tree__?: string;
   dependencies?: string[];
-  examples?: RegistryEntry[];
+  examples?: RegistryItem[];
   highlightedFiles?: any;
   inline?: boolean;
   item?: any;
@@ -62,19 +62,19 @@ export function ComponentInstallation({
   const dependenciesString = dependencies.join(' ');
 
   return (
-    <div className="mb-12 mt-4">
+    <div className="mt-4 mb-12">
       {!inline && <H2>Installation</H2>}
 
       <Tabs className="relative mt-6 w-full" defaultValue="cli">
         <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
           <TabsTrigger
-            className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
             value="cli"
           >
             CLI
           </TabsTrigger>
           <TabsTrigger
-            className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
             value="manual"
           >
             Manual
@@ -82,7 +82,7 @@ export function ComponentInstallation({
         </TabsList>
         <TabsContent value="cli">
           <CodeBlock
-            className="mb-4 mt-6"
+            className="mt-6 mb-4"
             value={`npx shadcx@latest add plate/${name}`}
             language="bash"
           />

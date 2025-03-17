@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 
@@ -27,7 +28,7 @@ jsxt;
 
 const url = 'http://google.com';
 
-const createEditor = (editor: any) =>
+const createTestEditor = (editor: any) =>
   createPlateEditor({
     editor,
     plugins: [BaseLinkPlugin],
@@ -38,14 +39,16 @@ describe('withLink', () => {
     describe('when inserting url text', () => {
       // https://github.com/udecode/editor-protocol/issues/34
       describe('when in a paragraph', () => {
-        const input = (
-          <editor>
-            <hp>
-              test
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
+        const input = createEditor(
+          (
+            <editor>
+              <hp>
+                test
+                <cursor />
+              </hp>
+            </editor>
+          ) as any
+        );
 
         const data: any = { getData: () => 'http://google.com' };
 
@@ -60,30 +63,32 @@ describe('withLink', () => {
         ) as any;
 
         it('should insert link', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
-          editor.insertData(data);
+          editor.tf.insertData(data);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
       // https://github.com/udecode/editor-protocol/issues/36
       describe('when only one edge in a link', () => {
-        const input = (
-          <editor>
-            <hp>
-              test{' '}
-              <ha url="http://google.com">
-                please
-                <anchor />
-                click
-              </ha>{' '}
-              here
-              <focus />.
-            </hp>
-          </editor>
-        ) as any;
+        const input = createEditor(
+          (
+            <editor>
+              <hp>
+                test{' '}
+                <ha url="http://google.com">
+                  please
+                  <anchor />
+                  click
+                </ha>{' '}
+                here
+                <focus />.
+              </hp>
+            </editor>
+          ) as any
+        );
 
         const data: any = { getData: () => 'http://google.com/test' };
 
@@ -100,25 +105,27 @@ describe('withLink', () => {
         it('should insert link', () => {
           jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>docs</fragment>);
 
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
-          editor.insertData(data);
+          editor.tf.insertData(data);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
       // https://github.com/udecode/editor-protocol/issues/37
       describe('when selection contains a link without the edges inside', () => {
-        const input = (
-          <editor>
-            <hp>
-              insert <anchor />
-              link <ha url={url}>here</ha>
-              <focus />.
-            </hp>
-          </editor>
-        ) as any;
+        const input = createEditor(
+          (
+            <editor>
+              <hp>
+                insert <anchor />
+                link <ha url={url}>here</ha>
+                <focus />.
+              </hp>
+            </editor>
+          ) as any
+        );
 
         const urlOutput = 'http://output.com';
 
@@ -131,12 +138,12 @@ describe('withLink', () => {
         ) as any;
 
         it('should delete and insert link', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
           const data: any = { getData: () => urlOutput };
-          editor.insertData(data);
+          editor.tf.insertData(data);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
     });
@@ -145,19 +152,21 @@ describe('withLink', () => {
       // https://github.com/udecode/editor-protocol/issues/38
       describe('when in a link', () => {
         it('should run default insertText', () => {
-          const input = (
-            <editor>
-              <hp>
-                test
-                <ha url="http://google.com">
-                  http://
-                  <cursor />
-                  google.com
-                </ha>
-                <htext />
-              </hp>
-            </editor>
-          ) as any;
+          const input = createEditor(
+            (
+              <editor>
+                <hp>
+                  test
+                  <ha url="http://google.com">
+                    http://
+                    <cursor />
+                    google.com
+                  </ha>
+                  <htext />
+                </hp>
+              </editor>
+            ) as any
+          );
 
           const data: any = { getData: () => 'docs' };
 
@@ -173,11 +182,11 @@ describe('withLink', () => {
 
           jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>docs</fragment>);
 
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
-          editor.insertData(data);
+          editor.tf.insertData(data);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
     });
@@ -185,14 +194,16 @@ describe('withLink', () => {
     describe('when inserting space', () => {
       // https://github.com/udecode/editor-protocol/issues/41
       describe('when after link', () => {
-        const input = (
-          <editor>
-            <hp>
-              link: <ha url="http://google.com">http://google.com</ha>
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
+        const input = createEditor(
+          (
+            <editor>
+              <hp>
+                link: <ha url="http://google.com">http://google.com</ha>
+                <cursor />
+              </hp>
+            </editor>
+          ) as any
+        );
 
         const text = ' ';
 
@@ -205,24 +216,26 @@ describe('withLink', () => {
         ) as any;
 
         it('should insert text', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
       // https://github.com/udecode/editor-protocol/issues/40
       describe('when after non-url text', () => {
-        const input = (
-          <editor>
-            <hp>
-              google.com
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
+        const input = createEditor(
+          (
+            <editor>
+              <hp>
+                google.com
+                <cursor />
+              </hp>
+            </editor>
+          ) as any
+        );
 
         const text = ' ';
 
@@ -233,24 +246,26 @@ describe('withLink', () => {
         ) as any;
 
         it('should insert text', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
       // https://github.com/udecode/editor-protocol/issues/39
       describe('when after url text', () => {
-        const input = (
-          <editor>
-            <hp>
-              link: http://google.com
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
+        const input = createEditor(
+          (
+            <editor>
+              <hp>
+                link: http://google.com
+                <cursor />
+              </hp>
+            </editor>
+          ) as any
+        );
 
         const text = ' ';
 
@@ -263,26 +278,28 @@ describe('withLink', () => {
         ) as any;
 
         it('should wrap the url with a link', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
       describe('when cursor is after link in next block', () => {
-        const input = (
-          <editor>
-            <hp>
-              link: <ha url="http://google.com">http://google.com</ha>
-            </hp>
-            <hp>
-              test
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
+        const input = createEditor(
+          (
+            <editor>
+              <hp>
+                link: <ha url="http://google.com">http://google.com</ha>
+              </hp>
+              <hp>
+                test
+                <cursor />
+              </hp>
+            </editor>
+          ) as any
+        );
 
         const text = ' ';
 
@@ -300,23 +317,25 @@ describe('withLink', () => {
         ) as any;
 
         it('should run default insertText', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
       describe('when creating new block', () => {
-        const input = (
-          <editor>
-            <hp>
-              http://google.com
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
+        const input = createEditor(
+          (
+            <editor>
+              <hp>
+                http://google.com
+                <cursor />
+              </hp>
+            </editor>
+          ) as any
+        );
 
         const output = (
           <editor>
@@ -332,24 +351,26 @@ describe('withLink', () => {
         ) as any;
 
         it('should wrap the url with a link ha', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
-          editor.insertBreak();
+          editor.tf.insertBreak();
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
       // https://github.com/udecode/editor-protocol/issues/42
       describe('when after url at start of block', () => {
-        const input = (
-          <editor>
-            <hp>
-              http://google.com
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
+        const input = createEditor(
+          (
+            <editor>
+              <hp>
+                http://google.com
+                <cursor />
+              </hp>
+            </editor>
+          ) as any
+        );
 
         const text = ' ';
 
@@ -363,23 +384,25 @@ describe('withLink', () => {
         ) as any;
 
         it('should wrap the url with a link ha', () => {
-          const editor = createEditor(input);
+          const editor = createTestEditor(input);
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
 
       describe('when getUrlHref', () => {
-        const input = (
-          <editor>
-            <hp>
-              google.com
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
+        const input = createEditor(
+          (
+            <editor>
+              <hp>
+                google.com
+                <cursor />
+              </hp>
+            </editor>
+          ) as any
+        );
 
         const text = ' ';
 
@@ -394,7 +417,6 @@ describe('withLink', () => {
 
         it('should insert link', () => {
           const editor = createPlateEditor({
-            editor: input,
             plugins: [
               BaseLinkPlugin.configure({
                 options: {
@@ -404,25 +426,29 @@ describe('withLink', () => {
                 },
               }),
             ],
+            selection: input.selection,
+            value: input.children,
           });
 
-          editor.insertText(text);
+          editor.tf.insertText(text);
 
-          expect(input.children).toEqual(output.children);
+          expect(editor.children).toEqual(output.children);
         });
       });
     });
 
     // https://github.com/udecode/editor-protocol/issues/62
     describe('when url with bold mark', () => {
-      const input = (
-        <editor>
-          <hp>
-            link: http://<htext bold>google</htext>.com
-            <cursor />
-          </hp>
-        </editor>
-      ) as any;
+      const input = createEditor(
+        (
+          <editor>
+            <hp>
+              link: http://<htext bold>google</htext>.com
+              <cursor />
+            </hp>
+          </editor>
+        ) as any
+      );
 
       const text = ' ';
 
@@ -438,24 +464,26 @@ describe('withLink', () => {
       ) as any;
 
       it('should wrap the url with a link', () => {
-        const editor = createEditor(input);
+        const editor = createTestEditor(input);
 
-        editor.insertText(text);
+        editor.tf.insertText(text);
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
     describe('pasting a link keeps the selected text but turns it into a link', () => {
-      const input = (
-        <editor>
-          <hp>
-            start <anchor />
-            of regular text
-            <focus />
-          </hp>
-        </editor>
-      ) as any;
+      const input = createEditor(
+        (
+          <editor>
+            <hp>
+              start <anchor />
+              of regular text
+              <focus />
+            </hp>
+          </editor>
+        ) as any
+      );
 
       const data: any = { getData: () => 'https://google.com' };
 
@@ -469,24 +497,26 @@ describe('withLink', () => {
       ) as any;
 
       it('should insert link', () => {
-        const editor = createEditor(input);
+        const editor = createTestEditor(input);
 
-        editor.insertData(data);
+        editor.tf.insertData(data);
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
     describe('pasting a link do not keep the selected text and turns it into a link', () => {
-      const input = (
-        <editor>
-          <hp>
-            start <anchor />
-            of regular text
-            <focus />
-          </hp>
-        </editor>
-      ) as any;
+      const input = createEditor(
+        (
+          <editor>
+            <hp>
+              start <anchor />
+              of regular text
+              <focus />
+            </hp>
+          </editor>
+        ) as any
+      );
 
       const data: any = { getData: () => 'https://google.com' };
 
@@ -511,22 +541,24 @@ describe('withLink', () => {
           });
         const editor = createModifiedEditor(input);
 
-        editor.insertData(data);
+        editor.tf.insertData(data);
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
   });
 
   describe('withRemoveEmptyNodes', () => {
     describe('when link becomes empty', () => {
-      const input = (
-        <editor>
-          <hp>
-            Before <ha url="http://example.com">link text</ha> after
-          </hp>
-        </editor>
-      ) as any;
+      const input = createEditor(
+        (
+          <editor>
+            <hp>
+              Before <ha url="http://example.com">link text</ha> after
+            </hp>
+          </editor>
+        ) as any
+      );
 
       const output = (
         <editor>
@@ -535,29 +567,31 @@ describe('withLink', () => {
       ) as any;
 
       it('should remove the empty link node', () => {
-        const editor = createEditor(input);
+        const editor = createTestEditor(input);
 
         // Select the entire link text
-        editor.select({
+        editor.tf.select({
           anchor: { offset: 0, path: [0, 1, 0] },
           focus: { offset: 9, path: [0, 1, 0] },
         });
 
         // Delete the selected text
-        editor.deleteFragment();
+        editor.tf.deleteFragment();
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
 
     describe('when link becomes empty but contains zero-width space', () => {
-      const input = (
-        <editor>
-          <hp>
-            Before <ha url="http://example.com">link text</ha> after
-          </hp>
-        </editor>
-      ) as any;
+      const input = createEditor(
+        (
+          <editor>
+            <hp>
+              Before <ha url="http://example.com">link text</ha> after
+            </hp>
+          </editor>
+        ) as any
+      );
 
       const output = (
         <editor>
@@ -568,21 +602,21 @@ describe('withLink', () => {
       ) as any;
 
       it('should not remove the link node', () => {
-        const editor = createEditor(input);
+        const editor = createTestEditor(input);
 
         // Select the entire link text
-        editor.select({
+        editor.tf.select({
           anchor: { offset: 0, path: [0, 1, 0] },
           focus: { offset: 9, path: [0, 1, 0] },
         });
 
         // Replace the selected text with a zero-width space
-        editor.insertText('\u200B');
+        editor.tf.insertText('\u200B');
 
         // Trigger normalization
-        editor.normalize();
+        editor.tf.normalize();
 
-        expect(input.children).toEqual(output.children);
+        expect(editor.children).toEqual(output.children);
       });
     });
   });

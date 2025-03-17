@@ -1,0 +1,247 @@
+---
+title: Comments
+docs:
+  - route: /docs/components/comment-leaf
+    title: Comment Leaf
+  - route: /docs/components/comment-toolbar-button
+    title: Comment Toolbar Button
+  - route: /docs/components/block-discussion
+    title: Block Discussion
+---
+
+<ComponentPreview name="comments-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Add comments as text marks.
+- Add overlapping comments.
+- Undo/redo resolution and deletion.
+
+</PackageInfo>
+
+## Installation
+```bash
+npm install @udecode/plate-comments
+```
+
+## Usage
+
+```tsx
+import { CommentsPlugin } from '@udecode/plate-comments/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+  commentsPlugin.configure({
+    render: { aboveNodes: BlockDiscussion as any },
+  }),
+  ],
+});
+```
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Shift + M">
+    Add a comment on the selected text.
+  </KeyTableItem>
+</KeyTable>
+
+## Examples
+
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+<ComponentPreviewPro name="comments-pro" />
+
+## Plugins
+
+### `CommentsPlugin`
+
+
+## API
+
+### `editor.tf.comment.removeMark`
+
+Removes the comment mark from the editor.
+
+### `editor.tf.comment.setDraft`
+
+Sets a draft comment mark at the current selection.
+
+### `editor.tf.comment.unsetMark`
+
+Unsets comment nodes with the specified ID from the editor.
+
+<API name="unsetMark">
+<APIParameters>
+  <APIItem name="id" type="string">
+    The ID of the comment nodes to unset.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.comment.has`
+
+Checks if a comment with the given ID exists.
+
+<API name="has">
+<APIParameters>
+  <APIItem name="id" type="string">
+    The ID of the comment to check.
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  Whether the comment exists.
+</APIReturns>
+</API>
+
+### `editor.api.comment.node`
+
+Gets a comment node entry.
+
+<API name="node">
+<APIOptions type="EditorNodesOptions & { id?: string; isDraft?: boolean }" optional>
+  Options for finding the node.
+</APIOptions>
+<APIReturns type="NodeEntry<TCommentText> | undefined">
+  The comment node entry if found.
+</APIReturns>
+</API>
+
+### `editor.api.comment.nodeId`
+
+Gets the ID of a comment from a leaf node.
+
+<API name="nodeId">
+<APIParameters>
+  <APIItem name="leaf" type="TCommentText">
+    The comment leaf node.
+  </APIItem>
+</APIParameters>
+<APIReturns type="string | undefined">
+  The comment ID if found.
+</APIReturns>
+</API>
+
+### `editor.api.comment.nodes`
+
+Gets all comment node entries matching the options.
+
+<API name="nodes">
+<APIOptions type="EditorNodesOptions & { id?: string; isDraft?: boolean }" optional>
+  Options for finding the nodes.
+</APIOptions>
+<APIReturns type="NodeEntry<TCommentText>[]">
+  Array of comment node entries.
+</APIReturns>
+</API>
+
+### `getCommentCount`
+
+Gets the count of non-draft comments in a comment node.
+
+<API name="getCommentCount">
+<APIParameters>
+  <APIItem name="node" type="TCommentText">
+    The comment node.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `getCommentKey`
+
+Generates a comment key based on the provided ID.
+
+<API name="getCommentKey">
+<APIParameters>
+  <APIItem name="id" type="string">
+    The ID of the comment.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `getCommentKeyId`
+
+Extracts the comment ID from a comment key.
+
+<API name="getCommentKeyId">
+<APIParameters>
+  <APIItem name="key" type="string">
+    The comment key.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `getCommentKeys`
+
+Returns an array of comment keys present in the given node.
+
+<API name="getCommentKeys">
+<APIParameters>
+  <APIItem name="node" type="TCommentText">
+    The node to check for comment keys.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `getDraftCommentKey`
+
+Gets the key used for draft comments.
+
+### `isCommentKey`
+
+Checks if a given key is a comment key.
+
+<API name="isCommentKey">
+<APIParameters>
+  <APIItem name="key" type="string">
+    The key to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  Whether the key is a comment key.
+</APIReturns>
+</API>
+
+### `isCommentNodeById`
+
+Checks if a given node is a comment with the specified ID.
+
+<API name="isCommentNodeById">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    The node to check.
+  </APIItem>
+  <APIItem name="id" type="string">
+    The ID of the comment.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  Whether the node is a comment with the specified ID.
+</APIReturns>
+</API>
+
+## Types
+
+### `TCommentText`
+
+Interface for text nodes that can contain comments.
+
+<API name="TCommentText">
+<APIAttributes>
+  <APIItem name="comment" type="boolean" optional>
+    Indicates whether this is a comment.
+  </APIItem>
+  <APIItem name="comment_<id>" type="boolean" optional>
+    Indicates the comment ID. Multiple comments can be present in a single text node.
+  </APIItem>
+</APIAttributes>
+</API>

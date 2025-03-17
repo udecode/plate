@@ -1,12 +1,12 @@
 import {
+  type ElementEntry,
+  type Path,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
-  getNode,
   match,
-  moveChildren,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+  NodeApi,
+  PathApi,
+} from '@udecode/plate';
 
 import { getListTypes } from '../queries/getListTypes';
 
@@ -19,22 +19,23 @@ export const moveListSiblingsAfterCursor = (
     at: Path;
     to: Path;
   }
-): number => {
+) => {
   const offset = at.at(-1)!;
-  at = Path.parent(at);
-  const listNode = getNode<TElement>(editor, at)!;
-  const listEntry: TElementEntry = [listNode, at];
+  at = PathApi.parent(at);
+  const listNode = NodeApi.get<TElement>(editor, at)!;
+  const listEntry: ElementEntry = [listNode, at];
 
   if (
     !match(listNode, [], { type: getListTypes(editor) }) ||
-    Path.isParent(at, to) // avoid moving nodes within its own list
+    PathApi.isParent(at, to) // avoid moving nodes within its own list
   ) {
-    return 0;
+    return false;
   }
 
-  return moveChildren(editor, {
-    at: listEntry as any,
-    fromStartIndex: offset + 1,
+  return editor.tf.moveNodes({
+    at: listEntry[1],
+    children: true,
+    fromIndex: offset + 1,
     to,
   });
 };

@@ -93,6 +93,25 @@ export const guidesNavItems: SidebarNavItem[] = [
     title: 'Controlled Value',
   },
   {
+    href: '/docs/form',
+    title: 'Form',
+  },
+  {
+    href: '/docs/plate-static',
+    label: 'New',
+    title: 'Plate Static',
+  },
+  {
+    description: 'HTML <-> Slate',
+    href: '/docs/html',
+    label: 'New',
+    title: 'Serializing HTML',
+  },
+  {
+    href: '/docs/typescript',
+    title: 'TypeScript',
+  },
+  {
     href: '/docs/debugging',
     title: 'Debugging',
   },
@@ -103,6 +122,11 @@ export const guidesNavItems: SidebarNavItem[] = [
   {
     href: '/docs/playwright',
     title: 'Playwright Testing',
+  },
+  {
+    href: '/docs/troubleshooting',
+    label: 'New',
+    title: 'Troubleshooting',
   },
 ];
 

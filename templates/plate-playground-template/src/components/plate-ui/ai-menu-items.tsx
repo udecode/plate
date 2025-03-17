@@ -2,18 +2,14 @@
 
 import { useEffect, useMemo } from 'react';
 
+import { type SlateEditor, NodeApi } from '@udecode/plate';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
-import {
-  getAncestorNode,
-  getEndPoint,
-  getNodeString,
-} from '@udecode/plate-common';
+import { useIsSelecting } from '@udecode/plate-selection/react';
 import {
   type PlateEditor,
-  focusEditor,
-  useEditorPlugin,
-} from '@udecode/plate-common/react';
-import { useIsSelecting } from '@udecode/plate-selection/react';
+  useEditorRef,
+  usePluginOption,
+} from '@udecode/plate/react';
 import {
   Album,
   BadgeHelp,
@@ -24,6 +20,7 @@ import {
   ListMinus,
   ListPlus,
   PenLine,
+  SmileIcon,
   Wand,
   X,
 } from 'lucide-react';
@@ -43,7 +40,7 @@ export const aiChatItems = {
     value: 'accept',
     onSelect: ({ editor }) => {
       editor.getTransforms(AIChatPlugin).aiChat.accept();
-      focusEditor(editor, getEndPoint(editor, editor.selection!));
+      editor.tf.focus({ edge: 'end' });
     },
   },
   continueWrite: {
@@ -51,11 +48,11 @@ export const aiChatItems = {
     label: 'Continue writing',
     value: 'continueWrite',
     onSelect: ({ editor }) => {
-      const ancestorNode = getAncestorNode(editor);
+      const ancestorNode = editor.api.block({ highest: true });
 
       if (!ancestorNode) return;
 
-      const isEmpty = getNodeString(ancestorNode[0]).trim().length === 0;
+      const isEmpty = NodeApi.string(ancestorNode[0]).trim().length === 0;
 
       void editor.getApi(AIChatPlugin).aiChat.submit({
         mode: 'insert',
@@ -76,6 +73,16 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor }) => {
       editor.getTransforms(AIPlugin).ai.undo();
       editor.getApi(AIChatPlugin).aiChat.hide();
+    },
+  },
+  emojify: {
+    icon: <SmileIcon />,
+    label: 'Emojify',
+    value: 'emojify',
+    onSelect: ({ editor }) => {
+      void editor.getApi(AIChatPlugin).aiChat.submit({
+        prompt: 'Emojify',
+      });
     },
   },
   explain: {
@@ -193,7 +200,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
       aiEditor,
       editor,
     }: {
-      aiEditor: PlateEditor;
+      aiEditor: SlateEditor;
       editor: PlateEditor;
     }) => void;
   }
@@ -224,6 +231,7 @@ const menuStateItems: Record<
     {
       items: [
         aiChatItems.improveWriting,
+        aiChatItems.emojify,
         aiChatItems.makeLonger,
         aiChatItems.makeShorter,
         aiChatItems.fixSpelling,
@@ -244,14 +252,13 @@ const menuStateItems: Record<
 };
 
 export const AIMenuItems = ({
-  aiEditorRef,
   setValue,
 }: {
-  aiEditorRef: React.MutableRefObject<PlateEditor | null>;
   setValue: (value: string) => void;
 }) => {
-  const { editor, useOption } = useEditorPlugin(AIChatPlugin);
-  const { messages } = useOption('chat');
+  const editor = useEditorRef();
+  const { messages } = usePluginOption(AIChatPlugin, 'chat');
+  const aiEditor = usePluginOption(AIChatPlugin, 'aiEditor')!;
   const isSelecting = useIsSelecting();
 
   const menuState = useMemo(() => {
@@ -285,7 +292,7 @@ export const AIMenuItems = ({
               value={menuItem.value}
               onSelect={() => {
                 menuItem.onSelect?.({
-                  aiEditor: aiEditorRef.current!,
+                  aiEditor,
                   editor: editor,
                 });
               }}

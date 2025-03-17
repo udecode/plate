@@ -1,29 +1,22 @@
 import {
+  type ElementEntry,
   type SlateEditor,
   type TElement,
-  type TElementEntry,
-  createPathRef,
   deleteMerge,
-  getNodeEntry,
-  getPreviousPath,
-  insertElements,
-  isExpanded,
-  removeNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+  PathApi,
+} from '@udecode/plate';
 
 import {
   BaseListItemContentPlugin,
   BaseListItemPlugin,
 } from '../BaseListPlugin';
 import { hasListChild } from '../queries/hasListChild';
-import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 import { moveListItemsToList } from './moveListItemsToList';
+import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
 export interface RemoveListItemOptions {
-  list: TElementEntry;
-  listItem: TElementEntry;
+  list: ElementEntry;
+  listItem: ElementEntry;
   reverse?: boolean;
 }
 
@@ -35,15 +28,15 @@ export const removeListItem = (
   const [liNode, liPath] = listItem;
 
   // Stop if the list item has no sublist
-  if (isExpanded(editor.selection) || !hasListChild(editor, liNode)) {
+  if (editor.api.isExpanded() || !hasListChild(editor, liNode)) {
     return false;
   }
 
-  const previousLiPath = getPreviousPath(liPath);
+  const previousLiPath = PathApi.previous(liPath);
 
   let success = false;
 
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     /**
      * If there is a previous li, we need to move sub-lis to the previous li. As
      * we need to delete first, we will:
@@ -55,14 +48,13 @@ export const removeListItem = (
      * 5. Remove tempLi
      */
     if (previousLiPath) {
-      const previousLi = getNodeEntry<TElement>(editor, previousLiPath);
+      const previousLi = editor.api.node<TElement>(previousLiPath);
 
       if (!previousLi) return;
 
       // 1
-      let tempLiPath = Path.next(liPath);
-      insertElements(
-        editor,
+      let tempLiPath = PathApi.next(liPath);
+      editor.tf.insertNodes(
         {
           children: [
             {
@@ -75,11 +67,11 @@ export const removeListItem = (
         { at: tempLiPath }
       );
 
-      const tempLi = getNodeEntry<TElement>(editor, tempLiPath);
+      const tempLi = editor.api.node<TElement>(tempLiPath);
 
       if (!tempLi) return;
 
-      const tempLiPathRef = createPathRef(editor, tempLi[1]);
+      const tempLiPathRef = editor.api.pathRef(tempLi[1]);
 
       // 2
       moveListItemSublistItemsToListItemSublist(editor, {
@@ -101,7 +93,7 @@ export const removeListItem = (
       });
 
       // 5
-      removeNodes(editor, { at: tempLiPath });
+      editor.tf.removeNodes({ at: tempLiPath });
 
       success = true;
 

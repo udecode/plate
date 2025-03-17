@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 export interface ResetNodePluginRule {
   /** Additional condition to the rule. */
@@ -13,10 +13,4 @@ export interface ResetNodePluginRule {
 
   /** Callback called when resetting. */
   onReset?: (editor: SlateEditor) => void;
-}
-
-export interface ResetNodePluginOptions {
-  disableEditorReset?: boolean;
-  disableFirstBlockReset?: boolean;
-  rules?: ResetNodePluginRule[];
 }

@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { ClientRectObject } from '@floating-ui/core';
 
-import { useIsomorphicLayoutEffect } from '@udecode/plate-common/react';
+import { useIsomorphicLayoutEffect } from '@udecode/plate/react';
 
 import {
   createVirtualElement,
@@ -18,8 +18,8 @@ import {
 } from '../libs/floating-ui';
 
 export interface UseVirtualFloatingOptions extends Partial<UseFloatingOptions> {
-  getBoundingClientRect?: () => ClientRectObject;
   open?: boolean;
+  getBoundingClientRect?: () => ClientRectObject;
 }
 
 export interface UseVirtualFloatingReturn<

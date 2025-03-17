@@ -2,26 +2,21 @@
 
 import * as React from 'react';
 
-import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
+import { type NodeEntry, isHotkey } from '@udecode/plate';
 import {
-  type TElement,
-  type TNodeEntry,
-  getAncestorNode,
-  getBlocks,
-  isElementEmpty,
-  isHotkey,
-  isSelectionAtBlockEnd,
-} from '@udecode/plate-common';
-import {
-  type PlateEditor,
-  toDOMNode,
-  useEditorPlugin,
-  useHotkeys,
-} from '@udecode/plate-common/react';
+  AIChatPlugin,
+  useEditorChat,
+  useLastAssistantMessage,
+} from '@udecode/plate-ai/react';
 import {
   BlockSelectionPlugin,
   useIsSelecting,
 } from '@udecode/plate-selection/react';
+import {
+  useEditorPlugin,
+  useHotkeys,
+  usePluginOption,
+} from '@udecode/plate/react';
 import { Loader2Icon } from 'lucide-react';
 
 import { useChat } from '@/registry/default/components/editor/use-chat';
@@ -32,12 +27,11 @@ import { Command, CommandList, InputCommand } from './command';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 
 export function AIMenu() {
-  const { api, editor, useOption } = useEditorPlugin(AIChatPlugin);
-  const open = useOption('open');
-  const mode = useOption('mode');
+  const { api, editor } = useEditorPlugin(AIChatPlugin);
+  const open = usePluginOption(AIChatPlugin, 'open');
+  const mode = usePluginOption(AIChatPlugin, 'mode');
   const isSelecting = useIsSelecting();
 
-  const aiEditorRef = React.useRef<PlateEditor | null>(null);
   const [value, setValue] = React.useState('');
 
   const chat = useChat();
@@ -46,6 +40,8 @@ export function AIMenu() {
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
     null
   );
+
+  const content = useLastAssistantMessage()?.content;
 
   const setOpen = (open: boolean) => {
     if (open) {
@@ -62,8 +58,8 @@ export function AIMenu() {
 
   useEditorChat({
     chat,
-    onOpenBlockSelection: (blocks: TNodeEntry[]) => {
-      show(toDOMNode(editor, blocks.at(-1)![0])!);
+    onOpenBlockSelection: (blocks: NodeEntry[]) => {
+      show(editor.api.toDOMNode(blocks.at(-1)![0])!);
     },
     onOpenChange: (open) => {
       if (!open) {
@@ -72,18 +68,18 @@ export function AIMenu() {
       }
     },
     onOpenCursor: () => {
-      const ancestor = getAncestorNode(editor)?.[0] as TElement;
+      const [ancestor] = editor.api.block({ highest: true })!;
 
-      if (!isSelectionAtBlockEnd(editor) && !isElementEmpty(editor, ancestor)) {
+      if (!editor.api.isAt({ end: true }) && !editor.api.isEmpty(ancestor)) {
         editor
           .getApi(BlockSelectionPlugin)
-          .blockSelection.addSelectedRow(ancestor.id as string);
+          .blockSelection.set(ancestor.id as string);
       }
 
-      show(toDOMNode(editor, ancestor)!);
+      show(editor.api.toDOMNode(ancestor)!);
     },
     onOpenSelection: () => {
-      show(toDOMNode(editor, getBlocks(editor).at(-1)![0])!);
+      show(editor.api.toDOMNode(editor.api.blocks().at(-1)![0])!);
     },
   });
 
@@ -97,7 +93,7 @@ export function AIMenu() {
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
-      <PopoverAnchor virtualRef={{ current: anchorElement }} />
+      <PopoverAnchor virtualRef={{ current: anchorElement! }} />
 
       <PopoverContent
         className="border-none bg-transparent p-0 shadow-none"
@@ -114,7 +110,7 @@ export function AIMenu() {
           }
         }}
         align="center"
-        avoidCollisions={false}
+        // avoidCollisions={false}
         side="bottom"
       >
         <Command
@@ -122,12 +118,12 @@ export function AIMenu() {
           value={value}
           onValueChange={setValue}
         >
-          {mode === 'chat' && isSelecting && messages.length > 0 && (
-            <AIChatEditor aiEditorRef={aiEditorRef} />
+          {mode === 'chat' && isSelecting && content && (
+            <AIChatEditor content={content} />
           )}
 
           {isLoading ? (
-            <div className="flex grow select-none items-center gap-2 p-2 text-sm text-muted-foreground">
+            <div className="flex grow items-center gap-2 p-2 text-sm text-muted-foreground select-none">
               <Loader2Icon className="size-4 animate-spin" />
               {messages.length > 1 ? 'Editing...' : 'Thinking...'}
             </div>
@@ -155,7 +151,7 @@ export function AIMenu() {
 
           {!isLoading && (
             <CommandList>
-              <AIMenuItems aiEditorRef={aiEditorRef} setValue={setValue} />
+              <AIMenuItems setValue={setValue} />
             </CommandList>
           )}
         </Command>

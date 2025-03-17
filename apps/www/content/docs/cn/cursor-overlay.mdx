@@ -1,0 +1,143 @@
+---
+title: 光标覆盖
+docs:
+  - route: /docs/components/cursor-overlay
+    title: 光标覆盖
+---
+
+<ComponentPreview name="cursor-overlay-demo" />
+
+<PackageInfo>
+
+光标覆盖功能为选择和光标位置提供视觉反馈，特别适用于在编辑器失去焦点或拖拽操作期间保持上下文。
+
+## 功能
+
+- 当另一个元素获得焦点时保持选择高亮
+- 动态选择（例如在 AI 流式处理期间）
+- 在拖拽操作期间显示光标位置
+- 可自定义光标和选择的样式
+- 对于外部 UI 交互（例如链接工具栏、AI 组合框）至关重要
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-selection
+```
+
+## 使用
+
+```tsx
+import { CursorOverlayPlugin } from '@udecode/plate-selection/react';
+import { CursorOverlay } from '@/components/plate-ui/cursor-overlay';
+```
+
+- [CursorOverlay](/docs/components/cursor-overlay)
+
+```tsx
+const plugins = [
+  // ...其他插件
+  CursorOverlayPlugin.configure({
+    render: { afterEditable: () => <CursorOverlay /> },
+  }),
+];
+```
+
+### 编辑器容器
+
+编辑器需要一个位于 `PlateContent` 上方的容器组件，以确保光标覆盖的正确定位：
+
+```tsx
+export const EditorContainer = (props: React.HTMLAttributes<HTMLDivElement>) => {
+  const editor = useEditorRef();
+  const containerRef = useEditorContainerRef();
+
+  return <div id={editor.uid} ref={containerRef} {...props} />;
+};
+```
+
+该组件在 [Editor](/docs/components/editor) 中可用。
+
+### 保持选择焦点
+
+为了在聚焦 UI 元素时保持编辑器的选择状态，请向这些元素添加 `data-plate-focus="true"` 属性：
+
+```tsx
+<ToolbarButton data-plate-focus="true">
+  {/* 工具栏内容 */}
+</ToolbarButton>
+```
+
+## 插件
+
+### `CursorOverlayPlugin`
+
+管理光标和选择覆盖的插件。
+
+<API name="CursorOverlayPlugin">
+<APIOptions>
+  <APIItem name="cursors" type="Record<string, CursorState<CursorData>>">
+    包含光标状态的对象。
+    - **默认值:** `{}`
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `editor.api.cursorOverlay.addCursor`
+
+添加具有指定键和状态的光标覆盖。
+
+<API name="addCursor">
+<APIParameters>
+  <APIItem name="key" type="string">
+    光标的唯一标识符（例如 'blur'、'drag'、'custom'）。
+  </APIItem>
+  <APIItem name="cursor" type="CursorState<CursorData>">
+    包括选择和可选样式数据的光标状态。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.cursorOverlay.removeCursor`
+
+通过键移除光标覆盖。
+
+<API name="removeCursor">
+<APIParameters>
+  <APIItem name="key" type="string">
+    要移除的光标的键。
+  </APIItem>
+</APIParameters>
+</API>
+
+## 钩子
+
+### `useCursorOverlay`
+
+管理光标和选择覆盖状态的钩子，提供实时光标位置和选择矩形。
+
+<API name="useCursorOverlay">
+<APIOptions type="object">
+  <APIItem name="minSelectionWidth" type="number" optional>
+    选择矩形的最小宽度（以像素为单位）。有助于使光标插入符更可见。
+    - **默认值:** `1`
+  </APIItem>
+  <APIItem name="refreshOnResize" type="boolean" optional>
+    是否在容器调整大小时重新计算光标位置。
+    - **默认值:** `true`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="cursors" type="CursorOverlayState<TCursorData>[]">
+    具有相应选择矩形和样式数据的光标状态数组。
+  </APIItem>
+  <APIItem name="refresh" type="() => void">
+    手动触发重新计算光标位置的函数。
+  </APIItem>
+</APIReturns>
+</API>

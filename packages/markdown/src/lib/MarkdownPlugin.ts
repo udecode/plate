@@ -4,7 +4,7 @@ import {
   bindFirst,
   createTSlatePlugin,
   isUrl,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { deserializeMd } from './deserializer/utils';
 import {
@@ -35,7 +35,6 @@ export type MarkdownConfig = PluginConfig<
      * @default false
      */
     splitLineBreaks?: boolean;
-
     /** Override text rules. */
     textRules?: RemarkTextRules;
   },
@@ -62,8 +61,8 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   }))
   .extend(({ api }) => ({
     parser: {
-      deserialize: ({ data }) => api.markdown.deserialize(data),
       format: 'text/plain',
+      deserialize: ({ data }) => api.markdown.deserialize(data),
       query: ({ data, dataTransfer }) => {
         const htmlData = dataTransfer.getData('text/html');
 

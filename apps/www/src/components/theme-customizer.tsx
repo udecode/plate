@@ -14,9 +14,9 @@ import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { Button } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';
 
+import { Label } from '../registry/default/plate-ui/label';
 import { CopyCodeButton, getThemeCode } from './copy-code-button';
 import { ThemesSwitcher } from './themes-selector-mini';
-import { Label } from '../registry/default/plate-ui/label';
 import { Skeleton } from './ui/skeleton';
 
 export function ThemeCustomizer() {
@@ -34,7 +34,7 @@ export function ThemeCustomizer() {
     <div className="flex h-full flex-col space-y-4 md:space-y-6">
       <div className="flex items-start justify-between px-6">
         <div className="space-y-1 pr-2">
-          <div className="font-semibold leading-none tracking-tight">
+          <div className="leading-none font-semibold tracking-tight">
             Customize
           </div>
           <div className="text-xs text-muted-foreground">
@@ -47,6 +47,8 @@ export function ThemeCustomizer() {
           className="ml-auto rounded-[0.5rem]"
           onClick={() => {
             setConfig({
+              installationType: 'cli',
+              packageManager: 'pnpm',
               radius: 0.5,
               style: 'default',
               theme: 'slate',
@@ -144,7 +146,7 @@ export function ThemeCustomizer() {
               </pre>
             </div>
           </div>
-          <CopyCodeButton className="absolute right-4 top-4" compact />
+          <CopyCodeButton className="absolute top-4 right-4" compact />
         </div>
       </div>
     </div>

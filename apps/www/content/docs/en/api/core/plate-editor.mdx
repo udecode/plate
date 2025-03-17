@@ -1,0 +1,133 @@
+---
+title: Plate Editor
+description: API reference for Plate editor.
+---
+
+A custom editor interface that extends the base **`Editor`** interface and includes additional properties and methods specific to the Plate library.
+
+## Core Properties
+
+<API name="Properties">
+<APIAttributes>
+  <APIItem name="id" type="any">
+    A unique identifier for the editor.
+  </APIItem>
+  <APIItem name="key" type="any">
+    A key that can be used to uniquely identify the editor.
+  </APIItem>
+  <APIItem name="currentKeyboardEvent" type="KeyboardEventLike | null">
+    The current keyboard event being processed by the editor, or null if no event is being processed.
+  </APIItem>
+  <APIItem name="isFallback" type="boolean">
+    Whether the editor is a fallback editor.
+    
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="prevSelection" type="TRange | null">
+    The previous selection range in the editor.
+  </APIItem>
+  <APIItem name="pluginList" type="AnyEditorPlatePlugin[]">
+    An array of plugins that are currently being used by the editor.
+  </APIItem>
+  <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
+    A record of plugins indexed by their keys.
+  </APIItem>
+</APIAttributes>
+</API>
+## API Methods
+
+<API name="API">
+<APIMethods>
+  <APIItem name="getApi" type="(plugin: PlatePlugin) => EditorApi & PlatePlugin['api']">
+    Retrieve the typed API for a plugin.
+  </APIItem>
+  <APIItem name="getTransforms" type="(plugin: PlatePlugin) => EditorTransforms & PlatePlugin['transforms']">
+    Get the typed transforms for a plugin.
+  </APIItem>
+  <APIItem name="getPlugin" type="(plugin: PlatePlugin) => PlatePlugin">
+    Retrieve the editor plugin instance by its key or base plugin.
+  </APIItem>
+  <APIItem name="getType" type="(plugin: PlatePlugin) => string">
+    Get the node type associated with a plugin.
+  </APIItem>
+</APIMethods>
+</API>
+
+## Option Methods
+
+<API name="Options">
+<APIMethods>
+  <APIItem name="getOption" type="(plugin: PlatePlugin, optionKey: string) => any">
+    Get a specific option value for a plugin.
+  </APIItem>
+  <APIItem name="getOptions" type="(plugin: PlatePlugin) => any">
+    Get all options for a plugin.
+  </APIItem>
+  <APIItem name="setOption" type="(plugin: PlatePlugin, optionKey: string, value: any) => void">
+    Set a specific option value for a plugin.
+  </APIItem>
+  <APIItem name="setOptions" type="(plugin: PlatePlugin, options: (draft: object) => void | Partial<object>) => void">
+    Set multiple options for a plugin.
+  </APIItem>
+  <APIItem name="getOptionsStore" type="(plugin: PlatePlugin) => any">
+    Get the zustand-x options store for a plugin.
+  </APIItem>
+</APIMethods>
+</API>
+
+## Core Plugin APIs
+
+### `DebugPlugin`
+
+<API name="DebugPlugin">
+<APIListAPI>
+  <APIItem name="editor.api.debug.log" type="(...args: any[]) => void">
+    Log a message at the 'log' level.
+  </APIItem>
+  <APIItem name="editor.api.debug.info" type="(...args: any[]) => void">
+    Log a message at the 'info' level.
+  </APIItem>
+  <APIItem name="editor.api.debug.warn" type="(...args: any[]) => void">
+    Log a message at the 'warn' level.
+  </APIItem>
+  <APIItem name="editor.api.debug.error" type="(...args: any[]) => void">
+    Log a message at the 'error' level.
+  </APIItem>
+</APIListAPI>
+</API>
+
+### `HtmlPlugin`
+
+<API name="HtmlPlugin">
+<APIListAPI>
+  <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement }) => Descendant[]">
+    Deserialize HTML content into Slate nodes.
+  </APIItem>
+</APIListAPI>
+</API>
+
+### `ReactPlugin`
+
+<API name="ReactPlugin">
+<APITransforms>
+  <APIItem name="editor.tf.reset" type="() => void">
+    Reset the editor state while maintaining focus if the editor was focused.
+  </APIItem>
+</APITransforms>
+</API>
+
+### `SlateReactExtensionPlugin`
+
+<API name="SlateReactExtensionPlugin">
+<APIListAPI>
+  <APIItem name="editor.api.redecorate" type="() => void">
+    Redecorate the editor.
+  </APIItem>
+</APIListAPI>
+
+<APITransforms>
+  <APIItem name="editor.tf.setValue" type="(value: Value) => void">
+    Replace the editor value. See [Controlled Value](/docs/controlled) for more information.
+  </APIItem>
+</APITransforms>
+</API>

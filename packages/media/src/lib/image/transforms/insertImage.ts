@@ -1,15 +1,11 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  insertNodes,
-} from '@udecode/plate-common';
+import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
 import { type TImageElement, BaseImagePlugin } from '../BaseImagePlugin';
 
-export const insertImage = <E extends SlateEditor>(
-  editor: E,
+export const insertImage = (
+  editor: SlateEditor,
   url: ArrayBuffer | string,
-  options: InsertNodesOptions<E> = {}
+  options: InsertNodesOptions = {}
 ) => {
   const text = { text: '' };
   const image: TImageElement = {
@@ -17,7 +13,7 @@ export const insertImage = <E extends SlateEditor>(
     type: editor.getType(BaseImagePlugin),
     url: url as any,
   };
-  insertNodes<TImageElement>(editor, image, {
+  editor.tf.insertNodes<TImageElement>(image, {
     nextBlock: true,
     ...(options as any),
   });

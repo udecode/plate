@@ -16,8 +16,8 @@ export const useBoundHotkeysProxy = () => {
 };
 
 interface Props {
-  addHotkey: (hotkey: Hotkey) => void;
   children: ReactNode;
+  addHotkey: (hotkey: Hotkey) => void;
   removeHotkey: (hotkey: Hotkey) => void;
 }
 

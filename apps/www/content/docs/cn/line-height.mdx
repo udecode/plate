@@ -1,0 +1,84 @@
+---
+title: 行高
+docs:
+  - route: /docs/components/line-height-dropdown-menu
+    title: 行高下拉菜单
+---
+
+<ComponentPreview name="line-height-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 为选中的块设置行高。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-line-height
+```
+
+## 使用
+
+```tsx
+import { LineHeightPlugin } from '@udecode/plate-line-height/react';
+
+const plugins = [
+  // ...其他插件,
+  LineHeightPlugin,
+];
+```
+
+## 插件
+
+### `LineHeightPlugin`
+
+用于在块上设置行高的插件。
+
+## API
+
+### `setLineHeight`
+
+为编辑器中的选中节点设置行高。
+
+<API name="setLineHeight">
+<APIOptions type="SetLineHeightOptions">
+  <APIItem name="value" type="number">
+    要设置的行高值。
+  </APIItem>
+  <APIItem name="setNodesOptions" type="SetNodesOptions">
+    设置节点的额外选项。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 钩子
+
+### `useLineHeightDropdownMenu`
+
+行高下拉菜单的行为钩子。
+
+<API name="useLineHeightDropdownMenu">
+<APIState>
+  <APIItem name="value" type="number">
+    当前行高值。
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="radioGroupProps" type="object">
+    单选组的属性。
+  <APISubList>
+    <APISubListItem parent="radioGroupProps" name="value" type="string">
+      当前行高值。
+    </APISubListItem>
+    <APISubListItem parent="radioGroupProps" name="onValueChange" type="function">
+      更新行高值的处理函数。
+    </APISubListItem>
+  </APISubList>
+  </APIItem>
+</APIReturns>
+</API>

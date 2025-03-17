@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import * as React from 'react';
 
 import * as SheetPrimitive from '@radix-ui/react-dialog';
+import { useStoreValue } from '@udecode/plate/react';
 import { ChevronsRight } from 'lucide-react';
 
 import { useViewport } from '@/hooks/use-viewport';
@@ -15,22 +16,19 @@ import {
   DialogTitle,
 } from '@/registry/default/plate-ui/dialog';
 
-import { settingsStore } from './context/settings-store';
+import { SettingsStore } from './context/settings-store';
 import { CustomizerTabs } from './customizer-tabs';
 import { Sheet, SheetContent } from './ui/sheet';
 
-import '@/styles/mdx.css';
-
 export default function CustomizerDrawer() {
-  const open = settingsStore.use.showSettings();
-  const setOpen = settingsStore.set.showSettings;
+  const open = useStoreValue(SettingsStore, 'showSettings');
   const cancelLoadingRef = useRef<any>('');
   const mounted = useMounted();
   const { width } = useViewport();
 
   useEffect(() => {
     if (open) {
-      settingsStore.set.loadingSettings(true);
+      SettingsStore.set('loadingSettings', true);
 
       if (cancelLoadingRef.current) {
         clearTimeout(cancelLoadingRef.current);
@@ -38,7 +36,7 @@ export default function CustomizerDrawer() {
       }
 
       cancelLoadingRef.current = setTimeout(() => {
-        settingsStore.set.loadingSettings(false);
+        SettingsStore.set('loadingSettings', false);
       }, 600);
     }
   }, [open]);
@@ -51,11 +49,11 @@ export default function CustomizerDrawer() {
         <Dialog
           open={open}
           onOpenChange={(value) => {
-            setOpen(value);
+            SettingsStore.set('showSettings', value);
           }}
           // shouldScaleBackground={false}
         >
-          <DialogContent className="max-h-[80vh] overflow-auto px-0 pb-6 pt-0">
+          <DialogContent className="max-h-[80vh] overflow-auto px-0 pt-0 pb-6">
             <CustomizerTabs />
           </DialogContent>
         </Dialog>
@@ -65,7 +63,7 @@ export default function CustomizerDrawer() {
         <Sheet
           open={open}
           onOpenChange={(value) => {
-            if (value) setOpen(true);
+            if (value) SettingsStore.set('showSettings', true);
           }}
           modal={false}
         >
@@ -76,11 +74,14 @@ export default function CustomizerDrawer() {
           >
             <DialogTitle className="sr-only">Customizer</DialogTitle>
 
-            <SheetPrimitive.Close asChild onClick={() => setOpen(false)}>
+            <SheetPrimitive.Close
+              asChild
+              onClick={() => SettingsStore.set('showSettings', false)}
+            >
               <Button
                 size="lg"
                 variant="ghost"
-                className="absolute left-4 top-4 size-8 p-0 px-1.5"
+                className="absolute top-4 left-4 size-8 p-0 px-1.5"
               >
                 <ChevronsRight className="size-5" />
                 <span className="sr-only">Close</span>

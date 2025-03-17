@@ -1,0 +1,66 @@
+---
+title: 尾部块
+---
+
+<ComponentPreview name="basic-elements-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 确保文档末尾始终存在特定类型的块
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-trailing-block
+```
+
+## 使用
+
+```tsx
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+```
+
+```tsx
+const plugins = [
+  // ...其他插件,
+  TrailingBlockPlugin.configure(() => ({
+    options: {
+      level: 0,
+      type: 'p',
+    },
+  })),
+];
+```
+
+## 插件
+
+### `TrailingBlockPlugin`
+
+用于确保文档末尾存在特定类型块的插件。
+
+<API name="TrailingBlockPlugin">
+<APIOptions>
+  <APIItem name="level" type="number" optional>
+    尾部节点的层级（0 为根层级）。
+    - **默认值:** `0`
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    尾部块的类型。
+    - **默认值:** `editor.getType(ParagraphPlugin)`
+  </APIItem>
+  <APIItem name="allow" type="string[]" optional>
+    过滤匹配这些类型的节点。
+    - **默认值:** `[]`（所有类型）
+  </APIItem>
+  <APIItem name="exclude" type="string[]" optional>
+    过滤不匹配这些类型的节点。
+  </APIItem>
+  <APIItem name="filter" type="(node: TNode) => boolean" optional>
+    自定义过滤函数。
+  </APIItem>
+</APIOptions>
+</API>

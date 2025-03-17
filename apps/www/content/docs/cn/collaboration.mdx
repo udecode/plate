@@ -1,0 +1,156 @@
+---
+title: 协作
+---
+
+<Callout className="my-4">
+
+**后端开发进行中** - 演示不可用。
+
+</Callout>
+
+<PackageInfo>
+
+## 功能
+
+- yjs 插件支持使用 [slate-yjs](https://docs.slate-yjs.dev/) 和 [Hocuspocus](https://docs.slate-yjs.dev/walkthroughs/collaboration-hocuspocus) 进行协作。
+- 默认情况下，除非你安装远程光标覆盖层并将其包含在配置中，否则不会渲染远程光标。
+- 光标会以略微淡化的方式渲染，并在悬停时变为实心。使用 `cursorOptions` 中的 `data` 字段来自定义显示名称和颜色。
+
+</PackageInfo>
+
+## 前端
+
+### 安装
+
+```bash
+npm install @udecode/plate-yjs
+```
+
+### 使用
+
+```tsx
+import { YjsPlugin } from '@udecode/plate-yjs/react';
+import { RemoteCursorOverlay } from '@/components/plate-ui/remote-cursor-overlay';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    YjsPlugin.configure({
+      render: {
+        afterEditable: RemoteCursorOverlay,
+      },
+      options: {
+        cursorOptions: {
+          autoSend: true,
+          data: { name: 'A plate user', color: '#5AC990' },
+        },
+        disableCursors: false,
+        hocuspocusProviderOptions: {
+          url: 'https://hocuspocus.test/hocuspocus',
+          name: 'test',
+        },
+      },
+    }),
+  ],
+});
+```
+
+### 编辑器容器
+
+编辑器需要在 `PlateContent` 上方有一个容器组件，以确保光标覆盖层的位置正确：
+
+```tsx
+export const EditorContainer = (
+  props: React.HTMLAttributes<HTMLDivElement>
+) => {
+  const editor = useEditorRef();
+  const containerRef = useEditorContainerRef();
+
+  return <div id={editor.uid} ref={containerRef} {...props} />;
+};
+```
+
+该组件在 [Editor](/docs/components/editor) 中可用。
+
+## 后端
+
+按照 [Hocuspocus 文档](https://tiptap.dev/hocuspocus/getting-started) 中的后端说明进行操作。
+
+## 插件
+
+### `YjsPlugin`
+
+<API name="YjsPlugin">
+<APIOptions>
+  <APIItem name="cursorOptions" type="WithCursorsOptions<TCursorData>" optional>
+    用于处理编辑器中光标的配置。这些选项会传递给 withCursors 函数。
+
+    参见 [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors)。
+  </APIItem>
+  <APIItem name="hocuspocusProviderOptions" type="HocuspocusProviderConfiguration" required>
+    Hocuspocus provider 的配置。
+
+    参见 [HocuspocusProviderConfiguration API](https://tiptap.dev/hocuspocus/provider/configuration)。
+  </APIItem>
+  <APIItem name="yjsOptions" type="WithYjsOptions" optional>
+    Yjs 集成的可选配置。这些选项会传递给 withYjs 函数。
+
+    参见 [WithYjsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#withyjs)。
+  </APIItem>
+  <APIItem name="disableCursors" type="boolean" optional>
+    一个标志，指示是否禁用编辑器中的光标功能。
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `useYjsStore`
+
+<API name="useYjsStore">
+<APIState>
+  <APIItem name="isConnected" type="boolean">
+    编辑器是否连接到 Hocuspocus 服务器。
+  </APIItem>
+  <APIItem name="isSynced" type="boolean">
+    编辑器是否与 Hocuspocus 服务器同步。
+  </APIItem>
+</APIState>
+</API>
+
+### `withTYjs`
+
+高阶函数，用于包装支持 Yjs 的 Plate 编辑器，允许实时协作编辑。
+
+## 类型
+
+### `PlateYjsEditorProps`
+
+扩展了 `YjsEditorProps` 和 [CursorEditor](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#cursoreditor)。
+
+<API name="PlateYjsEditorProps">
+<APIAttributes>
+
+<APIItem name="yjs" type="object">
+
+<APISubList>
+
+<APISubListItem parent="yjs" name="provider" type="HocuspocusProvider">
+
+Hocuspocus provider 实例。
+
+</APISubListItem>
+
+</APISubList>
+
+</APIItem>
+</APIAttributes>
+</API>
+
+### `YHistoryEditorProps`
+
+扩展了 `YjsEditorProps`, [YHistoryEditor](https://docs.slate-yjs.dev/api/slate-yjs-core/history-plugin#yhistoryeditor)。
+
+### `YjsEditorProps`
+
+参见 [YjsEditor API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#yjseditor)。

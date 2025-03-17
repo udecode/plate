@@ -1,0 +1,103 @@
+---
+title: Basic Marks
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Includes commonly used text styling features: bold, italic, underline, strikethrough, subscript, superscript, and code.
+
+</PackageInfo>
+
+## Plugins
+
+- `BoldPlugin` for `bold` mark
+- `ItalicPlugin` for `italic` mark
+- `UnderlinePlugin` for `underline` mark
+- `StrikethroughPlugin` for `strikethrough` mark
+- `SubscriptPlugin` for `subscript` mark
+- `SuperscriptPlugin` for `superscript` mark
+- `CodePlugin` for `code` mark
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-marks
+```
+
+## Usage
+
+```tsx
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+
+const plugins = [
+  // ...otherPlugins,
+  BasicMarksPlugin,
+];
+```
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + B">
+    Toggle the bold formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + I">
+    Toggle the italic formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + U">
+    Toggle the underline formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + E">
+    Toggle the code formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + X">
+    Toggle the strikethrough formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + ,">
+    Toggle the subscript formatting for the selected text.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + .">
+    Toggle the superscript formatting for the selected text.
+  </KeyTableItem>
+</KeyTable>
+
+## Plugins
+
+### `BasicMarksPlugin`
+
+Plugin that includes all basic mark plugins.
+
+### `BoldPlugin`
+
+Plugin for bold formatting.
+
+### `CodePlugin`
+
+Plugin for code formatting.
+
+### `ItalicPlugin`
+
+Plugin for italic formatting.
+
+### `UnderlinePlugin`
+
+Plugin for underline formatting.
+
+### `StrikethroughPlugin`
+
+Plugin for strikethrough formatting.
+
+### `SubscriptPlugin`
+
+Plugin for subscript formatting.
+
+### `SuperscriptPlugin`
+
+Plugin for superscript formatting.

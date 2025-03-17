@@ -1,11 +1,4 @@
-import {
-  type SlateEditor,
-  getBlockAbove,
-  getEditorPlugin,
-  insertText,
-  isEndPoint,
-  moveSelection,
-} from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
 
 import type { TMentionItemBase } from './types';
 
@@ -28,16 +21,16 @@ export const getMentionOnSelectItem =
     tf.insert.mention({ key: item.key, search, value: item.text });
 
     // move the selection after the element
-    moveSelection(editor, { unit: 'offset' });
+    editor.tf.move({ unit: 'offset' });
 
-    const pathAbove = getBlockAbove(editor)?.[1];
+    const pathAbove = editor.api.block()?.[1];
 
     const isBlockEnd =
       editor.selection &&
       pathAbove &&
-      isEndPoint(editor, editor.selection.anchor, pathAbove);
+      editor.api.isEnd(editor.selection.anchor, pathAbove);
 
     if (isBlockEnd && insertSpaceAfterMention) {
-      insertText(editor, ' ');
+      editor.tf.insertText(' ');
     }
   };

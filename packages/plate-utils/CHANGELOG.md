@@ -1,5 +1,85 @@
 # @udecode/plate-utils
 
+## 46.0.4
+
+## 46.0.2
+
+## 45.0.9
+
+## 45.0.8
+
+## 45.0.7
+
+## 45.0.6
+
+## 45.0.5
+
+## 45.0.2
+
+### Patch Changes
+
+- [#4090](https://github.com/udecode/plate/pull/4090) by [@zbeyens](https://github.com/zbeyens) – Add `belowRootNodes` render option to render content below root element but above children. Similar to `belowNodes` but renders directly in the element rather than wrapping. This is used in `PlateElement` to render the `BlockSelection` component below the root element.
+
+## 45.0.1
+
+## 44.0.7
+
+## 44.0.1
+
+## 44.0.0
+
+## 43.0.5
+
+## 43.0.4
+
+## 43.0.2
+
+## 43.0.0
+
+## 42.2.5
+
+## 42.2.2
+
+## 42.1.2
+
+## 42.1.1
+
+## 42.0.6
+
+## 42.0.5
+
+## 42.0.4
+
+## 42.0.3
+
+## 42.0.1
+
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+  - Removed unused `moveSelectionByOffset`, `getLastBlockDOMNode`, `useLastBlock`, `useLastBlockDOMNode`
+
+## 41.0.13
+
+### Patch Changes
+
+- [#3932](https://github.com/udecode/plate/pull/3932) by [@felixfeng33](https://github.com/felixfeng33) – Each `PlateElement` and `SlateElement` comes with a default `position: relative` style.
+  Remove `relative` className from all components
+
+## 41.0.5
+
+## 41.0.2
+
+## 41.0.0
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Replace `findNodePath` with `findPath`
+
+## 40.3.1
+
 ## 40.2.8
 
 ## 40.2.7

@@ -1,9 +1,3 @@
-import type { Emoji } from '@emoji-mart/data';
-import type { TriggerComboboxPluginOptions } from '@udecode/plate-combobox';
-import type { TDescendant } from '@udecode/plate-common';
-
-type ReverseMap<T> = T[keyof T];
-
 export type EmojiSettingsType = {
   buttonSize: {
     value: number;
@@ -22,9 +16,7 @@ export type EmojiSettingsType = {
   };
 };
 
-export type EmojiPluginOptions<TEmoji extends Emoji = Emoji> = {
-  createEmojiNode?: (emoji: TEmoji) => TDescendant;
-} & TriggerComboboxPluginOptions;
+type ReverseMap<T> = T[keyof T];
 
 export const EmojiCategory = {
   Activity: 'activity',
@@ -41,6 +33,16 @@ export const EmojiCategory = {
 
 export type EmojiCategoryList = ReverseMap<typeof EmojiCategory>;
 
+export type EmojiIconList<T = string> = {
+  categories: Record<EmojiCategoryList, { outline: T; solid: T }>;
+  search: {
+    delete: T;
+    loupe: T;
+  };
+};
+
+export type FrequentEmojis = Record<string, number>;
+
 export type i18nProps = {
   categories: Record<EmojiCategoryList, string>;
   clear: string;
@@ -51,13 +53,3 @@ export type i18nProps = {
   searchResult: string;
   skins: Record<'1' | '2' | '3' | '4' | '5' | '6' | 'choose', string>;
 };
-
-export type EmojiIconList<T = string> = {
-  search: {
-    delete: T;
-    loupe: T;
-  };
-  categories: Record<EmojiCategoryList, { outline: T; solid: T }>;
-};
-
-export type FrequentEmojis = Record<string, number>;

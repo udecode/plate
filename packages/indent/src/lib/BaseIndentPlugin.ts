@@ -3,27 +3,21 @@ import {
   type TElement,
   BaseParagraphPlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import { withIndent } from './withIndent';
-
-export interface TIndentElement extends TElement {
-  indent: number;
-}
 
 export type IndentConfig = PluginConfig<
   'indent',
   {
     /** Maximum number of indentation. */
     indentMax?: number;
-
     /**
      * Indentation offset used in `(offset * element.indent) + unit`.
      *
      * @default 40
      */
     offset?: number;
-
     /**
      * Indentation unit used in `(offset * element.indent) + unit`.
      *
@@ -33,9 +27,12 @@ export type IndentConfig = PluginConfig<
   }
 >;
 
+export interface TIndentElement extends TElement {
+  indent: number;
+}
+
 export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
   key: 'indent',
-  extendEditor: withIndent,
   inject: {
     isBlock: true,
     nodeProps: {
@@ -53,4 +50,4 @@ export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
     offset: 24,
     unit: 'px',
   },
-});
+}).overrideEditor(withIndent);

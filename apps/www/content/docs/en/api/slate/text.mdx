@@ -1,0 +1,215 @@
+---
+title: Text
+description: API reference for text nodes in Slate.
+---
+
+A Text node contains the actual text content of a Slate document along with any formatting properties. They are always leaf nodes in the document tree as they cannot contain any children.
+
+```ts
+type TText = {
+  text: string
+  [key: string]: unknown
+}
+```
+
+## `TextApi`
+
+### `decorations`
+
+<API name="decorations">
+<APIParameters>
+  <APIItem name="node" type="TText">
+    The text node to get leaves from.
+  </APIItem>
+  <APIItem name="decorations" type="DecoratedRange[]">
+    The array of decorated ranges to apply.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="TText[]">
+  An array of text nodes with the decorations applied.
+</APIReturns>
+</API>
+
+### `equals`
+
+<API name="equals">
+<APIParameters>
+  <APIItem name="text" type="TText">
+    The first text node to compare.
+  </APIItem>
+  <APIItem name="another" type="TText">
+    The second text node to compare.
+  </APIItem>
+  <APIItem name="options" type="TextEqualsOptions" optional>
+    Additional comparison options.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="TextEqualsOptions">
+  <APIItem name="loose" type="boolean" optional>
+    If `true`, the text content is not compared. This is used to check
+    whether sibling text nodes can be merged based only on their
+    formatting properties.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  `true` if the text nodes are equal according to the comparison rules.
+</APIReturns>
+</API>
+
+### `isText`
+
+<API name="isText">
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the value is a valid text node.
+</APIReturns>
+</API>
+
+### `isTextList`
+
+<API name="isTextList">
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the value is an array of text nodes.
+</APIReturns>
+</API>
+
+### `isTextProps`
+
+<API name="isTextProps">
+<APIParameters>
+  <APIItem name="props" type="any">
+    The props to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the props match a partial text node structure.
+</APIReturns>
+</API>
+
+### `matches`
+
+<API name="matches">
+<APIParameters>
+  <APIItem name="text" type="TText">
+    The text node to check.
+  </APIItem>
+  <APIItem name="props" type="Partial<TText>">
+    The properties to match against.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the text node matches the properties.
+</APIReturns>
+</API>
+
+## Types
+
+### `TText`
+
+`Text` is a type alias for `TText`.
+
+<API name="TText">
+<APIAttributes>
+  <APIItem name="text" type="string">
+    The text content of the node.
+  </APIItem>
+  <APIItem name="[key: string]" type="unknown">
+    Additional formatting properties that can be added to the text node.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `TextEntry` 
+
+Text entries represent a Text node and its path.
+
+<API name="TextEntry">
+<APIAttributes>
+  <APIItem name="0" type="TText">
+    The Text node.
+  </APIItem>
+  <APIItem name="1" type="Path">
+    The path to the text node.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `DecoratedRange`
+
+A range object that includes decoration information. Used to apply formatting or styling to specific ranges of text within a document.
+
+### `TextOf<N>`
+
+A utility type that extracts all possible text node types from a root node type.
+
+<API name="TextOf">
+<APIParameters>
+  <APIItem name="N" type="TNode">
+    The root node type to extract text types from.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `TextIn<V>`
+
+A utility type that extracts all text node types from a `Value` type.
+
+<API name="TextIn">
+<APIParameters>
+  <APIItem name="V" type="Value">
+    The `Value` type to extract text types from.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `MarksOf<N>`
+
+A utility type that extracts all possible mark types from a root node type. Marks are the formatting properties that can be applied to text nodes.
+
+<API name="MarksOf">
+<APIParameters>
+  <APIItem name="N" type="TNode">
+    The root node type to extract mark types from.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `MarksIn<V>`
+
+A utility type that extracts all mark types from a `Value` type. Similar to `MarksOf` but works specifically with editor `Value` types.
+
+<API name="MarksIn">
+<APIParameters>
+  <APIItem name="V" type="Value">
+    The `Value` type to extract mark types from.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `MarkKeysOf<N>`
+
+A utility type that extracts all possible mark property keys from a node type.
+
+<API name="MarkKeysOf">
+<APIParameters>
+  <APIItem name="N" type="TNode">
+    The node type to extract mark keys from.
+  </APIItem>
+</APIParameters>
+</API>

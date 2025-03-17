@@ -1,0 +1,310 @@
+---
+title: 快速开始
+description: 快速上手 Plate 的教程。
+---
+
+<Steps>
+
+### 创建项目
+
+你可以选择以下模板之一来开始：
+
+| 选项                                                                             | Plate | 插件  | AI  | 后端  |
+| -------------------------------------------------------------------------------- | ----- | ----- | --- | ----- |
+| [Notion 风格模板](https://pro.platejs.org/docs/templates/potion)                 | ✅    | ✅    | ✅  | ✅    |
+| [Plate 游乐场模板](https://github.com/udecode/plate-playground-template)         | ✅    | ✅    | ✅  |       |
+| [Plate 最小模板](https://github.com/udecode/plate-template)                      | ✅    |       |     |       |
+
+对于现有的 React 项目，请跳转到下一步。
+
+### 添加依赖
+
+首先，安装核心依赖：
+
+```bash
+npm install @udecode/plate
+```
+
+在本指南的示例中，我们还将使用这些插件：
+
+```bash
+npm install @udecode/plate-basic-marks @udecode/plate-heading @udecode/plate-block-quote @udecode/cn
+```
+
+- `@udecode/plate-basic-marks` 提供了粗体、斜体、下划线和代码格式。
+- `@udecode/plate-heading` 添加了 h1-h6 支持。
+- `@udecode/plate-block-quote` 添加了块引用支持。
+- `@udecode/cn` 帮助组件样式化（可选）。
+
+### TypeScript 要求
+
+确保你的 `tsconfig.json` 配置正确。Plate 推荐的设置需要 TypeScript 5.0+ 并使用 `"bundler"` 模块解析：
+
+```jsonc
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    // ... 其他选项
+  }
+}
+```
+
+<Callout>
+  **注意**：如果你不能使用 TypeScript 5.0+ 或 "bundler" 解析，请参阅 [TypeScript](/docs/typescript) 页面以获取使用路径别名的替代解决方案。
+</Callout>
+
+### 基本编辑器
+
+让我们从一个最小的编辑器设置开始。
+
+```tsx showLineNumbers {1-5,11-13}
+import {
+  usePlateEditor,
+  Plate,
+  PlateContent,
+} from '@udecode/plate/react';
+
+export default function BasicEditor() {
+  const editor = usePlateEditor();
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent placeholder="输入..." />
+    </Plate>
+  );
+}
+```
+
+`Plate` 管理编辑器状态，`PlateContent` 渲染编辑器内容。
+
+<ComponentPreview name="basic-editor-default-demo" padding="md" />
+
+### 样式
+
+让我们为编辑器添加一些样式：[Editor](/docs/components/editor) 是 `PlateContent` 的样式化版本。
+
+<ComponentPreview name="basic-editor-styling-demo" padding="md" />
+
+为了简单起见，我们将在以下代码片段中继续使用 `PlateContent`。
+
+<Callout className="mt-4">
+  **注意**：`Editor` 只是一个使用 Tailwind 的样式化编辑器示例，如果你使用它，请确保按照 [手动安装](/docs/components/installation/manual) 指南中的步骤进行安装。你可以创建自己的 `PlateContent` 样式化版本。
+  <ComponentSource name="editor" />
+</Callout>
+
+### 初始化编辑器的值
+
+让我们指定编辑器的初始内容：一个段落。
+
+```tsx showLineNumbers {3-12,16}
+// ...
+
+const value = [
+  {
+    type: 'p',
+    children: [
+      {
+        text: '这是一个可编辑的纯文本编辑器，带有 react 和历史插件，就像 <textarea> 一样！',
+      },
+    ],
+  },
+];
+
+export default function BasicEditor() {
+  const editor = usePlateEditor({
+    value,
+  });
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent />
+    </Plate>
+  );
+}
+```
+
+<Callout className="mt-4">
+  **注意**：Plate 使用 **`type`** 属性来启用插件按类型渲染节点。
+</Callout>
+
+<ComponentPreview name="basic-editor-value-demo" padding="md" />
+
+### 实现变更处理程序
+
+在这个阶段，监控编辑器的修改以正确存储值至关重要。**`onChange`** 属性将用于此目的。你还可以通过将值保存到本地存储或数据库并在需要时加载它来持久化编辑器的状态。
+
+```tsx showLineNumbers {4-5,8,14-17}
+// ...
+
+export default function BasicEditor() {
+  const localValue =
+    typeof window !== 'undefined' && localStorage.getItem('editorContent');
+
+  const editor = usePlateEditor({
+    value: localValue ? JSON.parse(localValue) : value,
+  });
+
+  return (
+    <Plate
+      editor={editor}
+      onChange={({ value }) => {
+        // 为了性能，请对你的保存逻辑进行防抖处理
+        localStorage.setItem('editorContent', JSON.stringify(value));
+      }}
+    >
+      <PlateContent />
+    </Plate>
+  );
+}
+```
+
+<ComponentPreview name="basic-editor-handler-demo" padding="md" />
+
+### 插件
+
+<Callout className="my-4">
+  查看 [插件](/docs/plugins) 部分中的完整插件列表。
+</Callout>
+
+让我们使用一些基本插件。
+
+```tsx showLineNumbers {3-9,17-23}
+// ...
+
+import {
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-marks/react';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+
+const value = [
+  // ...
+];
+
+export default function BasicEditor() {
+  const editor = usePlateEditor({
+    plugins: [
+      HeadingPlugin,
+      BlockquotePlugin,
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+    ],
+    value,
+  });
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent />
+    </Plate>
+  );
+}
+```
+
+<ComponentPreview name="basic-plugins-default-demo" padding="md" />
+
+插件工作正常。然而，由于我们没有指定任何自定义组件来渲染，编辑器使用的是默认（未样式化）的组件。具体来说，默认的元素组件是 **`div`**，默认的叶子组件是 **`span`**。
+
+<Callout className="mt-4">
+  **注意**：你不需要添加核心插件，如 **`ReactPlugin`**、**`HistoryPlugin`** 和 **`ParagraphPlugin`**，因为 **`usePlateEditor`** 已经包含了它们。
+</Callout>
+
+### 组件
+
+<Callout className="mt-4">
+  **注意**：Plate 插件是未样式化的，这意味着你可以完全控制标记和样式，因此你可以集成自己的设计系统或 [Plate UI](/docs/components)。
+</Callout>
+
+要在一个地方插入所有组件，请在 **`usePlateEditor`** 中使用 **`override.components`** 选项。我们将使用 **`withProps`** 辅助函数来传递带有 Tailwind CSS 类的附加属性。
+
+```tsx showLineNumbers {3,6-7,20-47}
+// ...
+
+import { withProps } from '@udecode/cn';
+import {
+  Plate,
+  PlateElement,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
+
+export default function BasicEditor() {
+  const editor = usePlateEditor({
+    plugins: [
+      HeadingPlugin,
+      BlockquotePlugin,
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+    ],
+    override: {
+      components: {
+        blockquote: withProps(PlateElement, {
+          as: 'blockquote',
+          className: 'mb-4 border-l-4 border-[#d0d7de] pl-4 text-[#636c76]',
+        }),
+        bold: withProps(PlateLeaf, { as: 'strong' }),
+        h1: withProps(PlateElement, {
+          as: 'h1',
+          className:
+            'mb-4 mt-6 text-3xl font-semibold tracking-tight lg:text-4xl',
+        }),
+        h2: withProps(PlateElement, {
+          as: 'h2',
+          className: 'mb-4 mt-6 text-2xl font-semibold tracking-tight',
+        }),
+        h3: withProps(PlateElement, {
+          as: 'h3',
+          className: 'mb-4 mt-6 text-xl font-semibold tracking-tight',
+        }),
+        italic: withProps(PlateLeaf, { as: 'em' }),
+        p: withProps(PlateElement, {
+          as: 'p',
+          className: 'mb-4',
+        }),
+        underline: withProps(PlateLeaf, { as: 'u' }),
+      },
+    },
+  });
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent />
+    </Plate>
+  );
+}
+```
+
+<ComponentPreview name="basic-plugins-components-demo" padding="md" />
+
+### 使用 HTML 字符串初始化编辑器的值
+
+你也可以使用 HTML 字符串和相应的插件来指定编辑器的初始内容。
+
+```tsx showLineNumbers {3,8}
+// ...
+
+const htmlValue = '<p>这是 <b>粗体</b> 和 <i>斜体</i> 文本！</p>';
+
+export default function BasicEditor() {
+  const editor = usePlateEditor({
+    // ...
+    value: htmlValue,
+  });
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent />
+    </Plate>
+  );
+}
+```
+
+### 完成！
+
+你现在可以在 [Playground](/#playground) 中玩耍并开始构建你自己的编辑器。
+
+</Steps>

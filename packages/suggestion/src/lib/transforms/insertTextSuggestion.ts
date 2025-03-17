@@ -1,35 +1,41 @@
-import {
-  type SlateEditor,
-  insertNodes,
-  isSelectionExpanded,
-  nanoid,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import type { TSuggestionText } from '../types';
 
-import { findSuggestionId } from '../queries/findSuggestionId';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { findSuggestionProps } from '../queries';
+import { getSuggestionKey } from '../utils';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
-import { getSuggestionProps } from './getSuggestionProps';
 
 export const insertTextSuggestion = (editor: SlateEditor, text: string) => {
-  withoutNormalizing(editor, () => {
-    const id = findSuggestionId(editor, editor.selection!) ?? nanoid();
+  editor.tf.withoutNormalizing(() => {
+    let resId: string | undefined;
+    const { id, createdAt: createdAt } = findSuggestionProps(editor, {
+      at: editor.selection!,
+      type: 'insert',
+    });
 
-    if (isSelectionExpanded(editor)) {
-      deleteFragmentSuggestion(editor);
+    if (editor.api.isExpanded()) {
+      resId = deleteFragmentSuggestion(editor);
     }
 
-    insertNodes<TSuggestionText>(
-      editor,
-      {
-        text,
-        ...getSuggestionProps(editor, id),
-      },
-      {
-        at: editor.selection!,
-        select: true,
-      }
-    );
+    editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
+      editor.tf.insertNodes<TSuggestionText>(
+        {
+          [getSuggestionKey(resId ?? id)]: {
+            id: resId ?? id,
+            createdAt: createdAt,
+            type: 'insert',
+            userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+          },
+          suggestion: true,
+          text,
+        },
+        {
+          at: editor.selection!,
+          select: true,
+        }
+      );
+    });
   });
 };

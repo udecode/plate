@@ -1,0 +1,48 @@
+---
+title: Vite
+description: 安装并配置 Vite。
+---
+
+<Steps>
+
+### 安装 shadcn/ui
+
+按照 [shadcn/ui](https://ui.shadcn.com/docs/installation/vite) 指南进行安装。
+
+### 运行 CLI
+
+使用 CLI 在你的项目中初始化 Plate：
+
+```bash
+npx shadcx@latest init plate
+```
+
+### 添加组件
+
+你现在可以开始将组件添加到 `components/plate-ui` 目录中：
+
+```bash
+npx shadcx@latest add -r plate
+```
+
+### 注册组件
+
+要将组件添加到你的插件中，请参阅 [插件组件](/docs/plugin-components#register-components)。
+
+### 添加编辑器（可选）
+
+选择你的编辑器以开始使用（[浏览可用的编辑器](/editors)）。
+
+[Minimal Editor](https://template.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-basic
+```
+
+[AI Editor](https://playground.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-ai
+```
+
+这将在 `app/editor` 中添加一个页面，并在 `components/plate-ui` 中添加所有必要的组件作为起点。
+
+</Steps>

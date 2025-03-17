@@ -1,0 +1,204 @@
+---
+title: 切换
+docs:
+  - route: /docs/components/toggle-element
+    title: 切换元素
+  - route: /docs/components/toggle-toolbar-button
+    title: 切换按钮
+---
+
+<ComponentPreview name="toggle-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 向文档中添加切换
+  - 切换默认是关闭的，可以打开以显示内部内容
+- 更多信息请参考 [缩进文档](/docs/indent)
+
+## 插件依赖
+
+- [缩进](/docs/indent)
+- [节点 ID](/docs/node-id)
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-indent @udecode/plate-node-id @udecode/plate-toggle
+```
+
+## 使用
+
+```tsx
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
+
+const plugins = [
+  // ...其他插件,
+  HeadingPlugin,
+  IndentPlugin.configure({
+    inject: {
+      targetPlugins: [TogglePlugin.key, ParagraphPlugin.key, HEADING_KEYS.h1],
+    },
+  }),
+  NodeIdPlugin,
+  TogglePlugin,
+];
+```
+
+## 插件
+
+### `TogglePlugin`
+
+用于管理切换功能的插件。
+
+<API name="TogglePlugin">
+<APIOptions type="object">
+  <APIItem name="openIds" type="Set<string>" optional>
+    打开的切换 ID 集合。
+    - **默认值:** `new Set()`
+  </APIItem>
+  <APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
+    检查切换是否打开的函数。
+    - **默认值:** `(id) => openIds.has(id)`
+  </APIItem>
+  <APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
+    检查是否有切换关闭的函数。
+    - **默认值:** `(ids) => ids.some(id => !isOpen(id))`
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `editor.api.toggle.toggleIds`
+
+切换指定切换的打开状态。
+
+<API name="editor.api.toggle.toggleIds">
+切换切换的打开状态。
+
+<APIParameters>
+  <APIItem name="ids" type="string[]">
+    要切换的元素 ID 数组。
+  </APIItem>
+  <APIItem name="force" type="boolean | null" optional>
+    强制切换状态：
+    - `true`: 展开所有切换
+    - `false`: 折叠所有切换
+    - `null`: 切换当前状态
+  </APIItem>
+</APIParameters>
+</API>
+
+### `openNextToggles`
+
+将当前选择的块标记为打开的切换。
+
+## 钩子
+
+### `useToggleToolbarButtonState`
+
+用于获取切换工具栏按钮状态的钩子。
+
+<API name="useToggleToolbarButtonState">
+<APIReturns type="object">
+  <APIItem name="pressed" type="boolean">
+    按钮是否被按下。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useToggleToolbarButton`
+
+用于处理切换工具栏按钮行为的钩子。
+
+<API name="useToggleToolbarButton">
+<APIState>
+  <APIItem name="pressed" type="boolean">
+    按钮是否被按下。
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    切换按钮的属性。
+    <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        按钮是否被按下。
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        切换节点类型并聚焦编辑器。
+      </APISubListItem>
+      <APISubListItem parent="props" name="onMouseDown" type="function">
+        防止点击时失去焦点。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useToggleButtonState`
+
+用于获取切换按钮状态的钩子。
+
+<API name="useToggleButtonState">
+获取切换按钮状态。
+
+<APIParameters>
+  <APIItem name="toggleId" type="string">
+    切换元素 ID。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="object">
+  <APIItem name="toggleId" type="string">
+    切换元素 ID。
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    切换是否展开。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useToggleButton`
+
+用于处理切换按钮行为的钩子。
+
+<API name="useToggleButton">
+处理切换按钮行为。
+
+<APIParameters>
+  <APIItem name="toggleId" type="string">
+    切换元素 ID。
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    切换是否展开。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="object">
+  <APIItem name="toggleId" type="string">
+    切换元素 ID。
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    切换是否展开。
+  </APIItem>
+  <APIItem name="buttonProps" type="object">
+    切换按钮的属性。
+    <APISubList>
+      <APISubListItem parent="buttonProps" name="onClick" type="function">
+        切换打开状态。
+      </APISubListItem>
+      <APISubListItem parent="buttonProps" name="onMouseDown" type="function">
+        防止点击时失去焦点。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>

@@ -1,14 +1,11 @@
-import React from 'react';
+import type { TElement } from '@udecode/plate';
 
-import type { TElement } from '@udecode/plate-common';
+import { usePluginOption } from '@udecode/plate/react';
 
-import { useTableStore } from '../../stores';
+import { TablePlugin } from '../../TablePlugin';
 
 export const useIsCellSelected = (element: TElement) => {
-  const selectedCells = useTableStore().get.selectedCells();
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
 
-  return React.useMemo(
-    () => !!selectedCells?.includes(element),
-    [element, selectedCells]
-  );
+  return !!selectedCells?.includes(element);
 };

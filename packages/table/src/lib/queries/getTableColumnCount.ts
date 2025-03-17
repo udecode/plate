@@ -1,6 +1,6 @@
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
 
-export const getTableColumnCount = (tableNode: TElement) => {
+export const getTableColumnCount = (tableNode: TElement): number => {
   if ((tableNode.children as TElement[])?.[0]?.children) {
     return (tableNode.children as TElement[])[0].children
       .map(

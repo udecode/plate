@@ -1,4 +1,4 @@
-import type { TTableElement, TableStoreSizeOverrides } from '../types';
+import type { TableStoreSizeOverrides, TTableElement } from '../types';
 
 import { getTableColumnCount } from './index';
 

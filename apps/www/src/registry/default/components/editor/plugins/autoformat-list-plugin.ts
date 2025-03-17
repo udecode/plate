@@ -1,12 +1,12 @@
 'use client';
 
+import type { SlateEditor } from '@udecode/plate';
 import type {
   AutoformatBlockRule,
   AutoformatRule,
 } from '@udecode/plate-autoformat';
-import type { SlateEditor } from '@udecode/plate-common';
-import type { TTodoListItemElement } from '@udecode/plate-list';
 
+import { ElementApi, isType } from '@udecode/plate';
 import {
   autoformatArrow,
   autoformatLegal,
@@ -27,19 +27,7 @@ import {
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
-import {
-  CodeBlockPlugin,
-  CodeLinePlugin,
-} from '@udecode/plate-code-block/react';
-import {
-  getParentNode,
-  insertNodes,
-  isBlock,
-  isElement,
-  isType,
-  setNodes,
-} from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
@@ -50,30 +38,30 @@ import {
   NumberedListPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list/react';
-import { TogglePlugin, openNextToggles } from '@udecode/plate-toggle/react';
+import { openNextToggles, TogglePlugin } from '@udecode/plate-toggle/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
 
-export const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
+const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
   unwrapList(editor);
 
-export const format = (editor: SlateEditor, customFormatting: any) => {
+const format = (editor: SlateEditor, customFormatting: any) => {
   if (editor.selection) {
-    const parentEntry = getParentNode(editor, editor.selection);
+    const parentEntry = editor.api.parent(editor.selection);
 
     if (!parentEntry) return;
 
     const [node] = parentEntry;
 
     if (
-      isElement(node) &&
-      !isType(editor, node, CodeBlockPlugin.key) &&
-      !isType(editor, node, CodeLinePlugin.key)
+      ElementApi.isElement(node) &&
+      !isType(editor, node, CodeBlockPlugin.key)
     ) {
       customFormatting();
     }
   }
 };
 
-export const formatList = (editor: SlateEditor, elementType: string) => {
+const formatList = (editor: SlateEditor, elementType: string) => {
   format(editor, () =>
     toggleList(editor, {
       type: elementType,
@@ -81,7 +69,7 @@ export const formatList = (editor: SlateEditor, elementType: string) => {
   );
 };
 
-export const autoformatMarks: AutoformatRule[] = [
+const autoformatMarks: AutoformatRule[] = [
   {
     match: '***',
     mode: 'mark',
@@ -154,7 +142,7 @@ export const autoformatMarks: AutoformatRule[] = [
   },
 ];
 
-export const autoformatBlocks: AutoformatRule[] = [
+const autoformatBlocks: AutoformatRule[] = [
   {
     match: '# ',
     mode: 'block',
@@ -198,17 +186,16 @@ export const autoformatBlocks: AutoformatRule[] = [
     type: BlockquotePlugin.key,
   },
   {
+    match: '```',
+    mode: 'block',
+    preFormat,
+    type: CodeBlockPlugin.key,
     format: (editor) => {
       insertEmptyCodeBlock(editor, {
         defaultType: ParagraphPlugin.key,
         insertNodesOptions: { select: true },
       });
     },
-    match: '```',
-    mode: 'block',
-    preFormat,
-    triggerAtBlockStart: false,
-    type: CodeBlockPlugin.key,
   },
   {
     match: '+ ',
@@ -217,34 +204,34 @@ export const autoformatBlocks: AutoformatRule[] = [
     type: TogglePlugin.key,
   },
   {
+    match: ['---', '—-', '___ '],
+    mode: 'block',
+    type: HorizontalRulePlugin.key,
     format: (editor) => {
-      setNodes(editor, { type: HorizontalRulePlugin.key });
-      insertNodes(editor, {
+      editor.tf.setNodes({ type: HorizontalRulePlugin.key });
+      editor.tf.insertNodes({
         children: [{ text: '' }],
         type: ParagraphPlugin.key,
       });
     },
-    match: ['---', '—-', '___ '],
-    mode: 'block',
-    type: HorizontalRulePlugin.key,
   },
 ];
 
-export const autoformatLists: AutoformatRule[] = [
+const autoformatLists: AutoformatRule[] = [
   {
-    format: (editor) => formatList(editor, BulletedListPlugin.key),
     match: ['* ', '- '],
     mode: 'block',
     preFormat,
     type: ListItemPlugin.key,
+    format: (editor) => formatList(editor, BulletedListPlugin.key),
   },
   {
-    format: (editor) => formatList(editor, NumberedListPlugin.key),
     match: [String.raw`^\d+\.$ `, String.raw`^\d+\)$ `],
     matchByRegex: true,
     mode: 'block',
     preFormat,
     type: ListItemPlugin.key,
+    format: (editor) => formatList(editor, NumberedListPlugin.key),
   },
   {
     match: '[] ',
@@ -252,17 +239,16 @@ export const autoformatLists: AutoformatRule[] = [
     type: TodoListPlugin.key,
   },
   {
-    format: (editor) =>
-      setNodes<TTodoListItemElement>(
-        editor,
-        { checked: true, type: TodoListPlugin.key },
-        {
-          match: (n) => isBlock(editor, n),
-        }
-      ),
     match: '[x] ',
     mode: 'block',
     type: TodoListPlugin.key,
+    format: (editor) =>
+      editor.tf.setNodes(
+        { checked: true, type: TodoListPlugin.key },
+        {
+          match: (n) => editor.api.isBlock(n),
+        }
+      ),
   },
 ];
 
@@ -279,6 +265,10 @@ export const autoformatListPlugin = AutoformatPlugin.configure({
       ...autoformatArrow,
       ...autoformatMath,
       ...autoformatLists,
-    ],
+    ].map((rule) => ({
+      ...rule,
+      query: (editor) =>
+        !editor.api.some({ match: { type: editor.getType(CodeBlockPlugin) } }),
+    })),
   },
 });

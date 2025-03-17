@@ -1,4 +1,4 @@
-import { Key, toPlatePlugin } from '@udecode/plate-common/react';
+import { Key, toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseUnderlinePlugin } from '../lib/BaseUnderlinePlugin';
 
@@ -10,7 +10,7 @@ export const UnderlinePlugin = toPlatePlugin(
         keys: [[Key.Mod, 'u']],
         preventDefault: true,
         handler: () => {
-          editor.tf.toggle.mark({ key: type });
+          editor.tf.toggleMark(type);
         },
       },
     },

@@ -1,0 +1,211 @@
+---
+title: Store
+description: API reference for Plate store.
+---
+
+`Plate` is using [jotai-x](https://github.com/udecode/jotai-x) to store the state of the editor.
+
+## Plate Store
+
+<API name="Store">
+The `PlateStoreState` object stores the state of the Plate editor. It contains information about the editor's ID, its current value, its plugins, and other settings.
+
+<APIState>
+<APIItem name="editor" type="PlateEditor">
+Slate editor reference.
+
+- **Default:** `createPlateFallbackEditor()`
+</APIItem>
+
+<APIItem name="id" type="string">
+A unique ID used as a provider scope. Use it if you have multiple `Plate` in the same React tree.
+
+- **Default:** random id
+</APIItem>
+
+<APIItem name="containerRef" type="React.RefObject<HTMLDivElement>">
+A reference to the editor container element.
+</APIItem>
+
+<APIItem name="decorate" type="function" optional>
+Function used to decorate ranges in the editor.
+
+```ts
+(options: { editor: PlateEditor; entry: NodeEntry }) => TRange[]
+```
+</APIItem>
+
+<APIItem name="isMounted" type="boolean" optional>
+Whether `Editable` is rendered so slate DOM is resolvable.
+</APIItem>
+
+<APIItem name="onChange" type="function" optional>
+Controlled callback called when the editor state changes.
+
+```ts
+(options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
+```
+</APIItem>
+
+<APIItem name="onSelectionChange" type="function" optional>
+Controlled callback called when the editor.selection changes.
+
+```ts
+(options: { editor: PlateEditor; selection: TSelection }) => void
+```
+</APIItem>
+
+<APIItem name="onValueChange" type="function" optional>
+Controlled callback called when the editor.children changes.
+
+```ts
+(options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
+```
+</APIItem>
+
+<APIItem name="primary" type="boolean" optional>
+Whether the editor is primary. If no editor is active, then PlateController will use the first-mounted primary editor.
+
+- **Default:** `true`
+</APIItem>
+
+<APIItem name="readOnly" type="boolean" optional>
+Whether the editor is read-only.
+</APIItem>
+
+<APIItem name="renderElement" type="function" optional>
+Function to render elements in the editor.
+</APIItem>
+
+<APIItem name="renderLeaf" type="function" optional>
+Function to render leaf nodes in the editor.
+</APIItem>
+
+<APIItem name="versionDecorate" type="number" optional>
+Version incremented when calling `redecorate`. This is a dependency of the `decorate` function.
+</APIItem>
+
+<APIItem name="versionEditor" type="number" optional>
+Version incremented on each editor change.
+</APIItem>
+
+<APIItem name="versionSelection" type="number" optional>
+Version incremented on each editor.selection change.
+</APIItem>
+
+<APIItem name="versionValue" type="number" optional>
+Version incremented on each editor.children change.
+</APIItem>
+</APIState>
+</API>
+
+## Accessing the Store
+
+```ts
+import { usePlateStore, useEditorRef, useEditorPlugin } from '@udecode/plate/react'
+
+// Direct store access
+const store = usePlateStore(id?) 
+
+// Via editor reference
+const store = useEditorRef().store
+
+// Via plugin context
+const store = useEditorPlugin(myPlugin).store
+```
+
+Note: The `id` parameter is optional and defaults to the closest editor.
+
+## Store Hooks
+
+The following hooks are available to interact with the Plate store:
+
+```ts
+import { usePlateState, usePlateValue, usePlateSet } from '@udecode/plate/react'
+```
+
+### usePlateState
+
+Get and set a store property value.
+
+```ts
+const [readOnly, setReadOnly] = usePlateState('readOnly', id?)
+```
+
+### usePlateValue
+
+Subscribe to a store property value.
+
+```ts
+const readOnly = usePlateValue('readOnly', id?)
+```
+
+### usePlateSet
+
+Set a store property value.
+
+```ts
+const setReadOnly = usePlateSet('readOnly', id?)
+```
+
+## Event Editor Store
+
+This store is an object whose property keys are event names (e.g. `'focus'`) and whose property values are [editor IDs](Plate#id).
+
+- This is useful when having [multiple editors](multiple-editors) and get one based on DOM events (e.g. the last focused editor).
+- One of the core plugins of [Plate](Plate) will store the following events.
+
+<API name="EventEditorStore">
+<APIState>
+<APIItem name="blur" type="string | null">
+
+Last editor ID that has been blurred.
+
+</APIItem>
+
+<APIItem name="focus" type="string | null">
+
+Editor ID that is currently being focused.
+
+</APIItem>
+
+<APIItem name="last" type="string | null">
+
+Last editor ID.
+
+</APIItem>
+</APIState>
+</API>
+
+
+```ts
+import { EventEditorStore, useEventEditorValue } from '@udecode/plate'
+
+// Get a value
+const focusedId = EventEditorStore.get('focus')
+
+// Set a value
+EventEditorStore.set('focus', editorId)
+
+// Subscribe to changes
+const focusedId = useEventEditorValue('focus')
+```
+
+### `useEventPlateId`
+
+Get the last event editor ID.
+
+<API name="useEventPlateId">
+<APIParameters>
+<APIItem name="id" type="string | null">
+
+Returned ID if defined.
+
+</APIItem>
+</APIParameters>
+
+<APIReturns type="string">
+  The plate id from the context if available, otherwise the last event editor
+  ID or `PLATE_SCOPE`.
+</APIReturns>
+</API>

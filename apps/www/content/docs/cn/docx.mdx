@@ -1,0 +1,44 @@
+---
+title: 序列化 Docx
+---
+
+<ComponentPreview name="docx-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 将 DOCX 内容转换为 Slate 值。
+
+<Callout className="my-4">
+  **注意**：目前不支持将 Slate 值转换为 DOCX。
+</Callout>
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-docx @udecode/plate-juice
+```
+
+## 使用
+
+### DOCX -> Slate
+
+```tsx
+import { JuicePlugin } from '@udecode/plate-juice';
+import { DocxPlugin } from '@udecode/plate-docx';
+
+const plugins = [
+  // ...其他插件,
+  DocxPlugin,
+  JuicePlugin,
+];
+```
+
+在粘贴 HTML 时，`@udecode/plate-juice` 用于将 CSS 属性内联到 `style` 属性中。
+
+## 插件
+
+### DocxPlugin

@@ -1,12 +1,8 @@
 import React from 'react';
 
-import type { UnknownObject } from '@udecode/plate-common';
-import type { Range } from 'slate';
+import type { TRange, UnknownObject } from '@udecode/plate';
 
-import {
-  useEditorRef,
-  useIsomorphicLayoutEffect,
-} from '@udecode/plate-common/react';
+import { useEditorRef, useIsomorphicLayoutEffect } from '@udecode/plate/react';
 
 import type { CursorOverlayProps } from '../components/CursorOverlay';
 import type { CursorState, SelectionRect } from '../types';
@@ -26,7 +22,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
 }: CursorOverlayProps<TCursorData> = {}) => {
   const editor = useEditorRef();
 
-  const selectionRectCache = React.useRef<WeakMap<Range, SelectionRect[]>>(
+  const selectionRectCache = React.useRef<WeakMap<TRange, SelectionRect[]>>(
     new WeakMap()
   );
 
@@ -92,7 +88,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
   }, [containerRef, cursorStates, editor, selectionRects]);
 
   // Update selection rects after paint
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useIsomorphicLayoutEffect(() => {
     updateSelectionRects();
   });

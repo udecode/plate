@@ -1,12 +1,10 @@
 import {
-  type GetNodeEntriesOptions,
+  type EditorNodesOptions,
+  type Path,
+  type PathRef,
   type SlateEditor,
-  createPathRef,
-  getNodeEntries,
-  getParentNode,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { type PathRef, Path } from 'slate';
+  PathApi,
+} from '@udecode/plate';
 
 import { BaseListItemContentPlugin } from '../BaseListPlugin';
 import { isListNested } from '../queries/isListNested';
@@ -15,7 +13,7 @@ import { moveListItemUp } from './moveListItemUp';
 import { removeFirstListItem } from './removeFirstListItem';
 
 export type MoveListItemsOptions = {
-  at?: GetNodeEntriesOptions['at'];
+  at?: EditorNodesOptions['at'];
   enableResetOnShiftTab?: boolean;
   increase?: boolean;
 };
@@ -28,7 +26,7 @@ export const moveListItems = (
     increase = true,
   }: MoveListItemsOptions = {}
 ) => {
-  const _nodes = getNodeEntries(editor, {
+  const _nodes = editor.api.nodes({
     at,
     match: {
       type: editor.getType(BaseListItemContentPlugin),
@@ -46,17 +44,17 @@ export const moveListItems = (
   // Filter out the nested lic, we just need to move the highest ones
   lics.forEach((lic) => {
     const licPath = lic[1];
-    const liPath = Path.parent(licPath);
+    const liPath = PathApi.parent(licPath);
 
     const isAncestor = highestLicPaths.some((path) => {
-      const highestLiPath = Path.parent(path);
+      const highestLiPath = PathApi.parent(path);
 
-      return Path.isAncestor(highestLiPath, liPath);
+      return PathApi.isAncestor(highestLiPath, liPath);
     });
 
     if (!isAncestor) {
       highestLicPaths.push(licPath);
-      highestLicPathRefs.push(createPathRef(editor, licPath));
+      highestLicPathRefs.push(editor.api.pathRef(licPath));
     }
   });
 
@@ -64,7 +62,7 @@ export const moveListItems = (
     ? highestLicPathRefs
     : highestLicPathRefs.reverse();
 
-  return withoutNormalizing(editor, () => {
+  return editor.tf.withoutNormalizing(() => {
     let moved = false;
 
     licPathRefsToMove.forEach((licPathRef) => {
@@ -72,11 +70,11 @@ export const moveListItems = (
 
       if (!licPath) return;
 
-      const listItem = getParentNode(editor, licPath);
+      const listItem = editor.api.parent(licPath);
 
       if (!listItem) return;
 
-      const parentList = getParentNode(editor, listItem[1]);
+      const parentList = editor.api.parent(listItem[1]);
 
       if (!parentList) return;
 

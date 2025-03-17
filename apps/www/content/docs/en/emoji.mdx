@@ -1,0 +1,58 @@
+---
+title: Emoji
+docs:
+  - route: /docs/combobox
+    title: Combobox
+  - route: /docs/components/emoji-input-element
+    title: Emoji Input Element
+  - route: /docs/components/emoji-dropdown-menu
+    title: Emoji Dropdown Menu
+---
+
+<ComponentPreview name="emoji-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Insert emoji inline.
+- Use the `:` shortcut followed by the emoji name (e.g., `:apple:` 🍎).
+- Autocomplete suggestions appear as you type.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-emoji @emoji-mart/data
+```
+
+## Usage
+
+```tsx
+import { EmojiPlugin } from '@udecode/plate-emoji/react';
+import emojiMartData from '@emoji-mart/data';
+
+const plugins = [
+  // ...otherPlugins,
+  EmojiPlugin.configure({ options: { data: emojiMartData } }),
+];
+```
+
+## Plugins
+
+### `EmojiPlugin`
+
+<API name="EmojiPlugin">
+  Extends [TriggerComboboxPlugin](/docs/combobox#options)
+<APIOptions>
+  <APIItem name="createEmojiNode" type="(emoji: TEmoji): ElementOrTextOf<any>" optional>
+    Function to specify the node inserted when an emoji is selected.
+    - **Default:** Inserts a text node with the emoji Unicode character
+  </APIItem>
+</APIOptions>
+</API>
+
+### `EmojiInputPlugin`
+
+Handles the input behavior for emoji insertion.

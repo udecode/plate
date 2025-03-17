@@ -1,12 +1,13 @@
-import type { Registry } from '@/registry/schema';
+import type { Registry } from 'shadcx/registry';
 
-const plugins: Registry = [
+const plugins: Registry['items'] = [
   {
     dependencies: [
       '@udecode/plate-callout',
       '@udecode/plate-date',
       '@udecode/plate-docx',
       '@udecode/plate-emoji',
+      '@emoji-mart/data@1.2.1',
       '@udecode/plate-font',
       '@udecode/plate-highlight',
       '@udecode/plate-horizontal-rule',
@@ -32,6 +33,7 @@ const plugins: Registry = [
       'align-plugin',
       'autoformat-plugin',
       'block-menu-plugins',
+      'equation-plugins',
       'cursor-overlay-plugin',
       'comments-plugin',
       'delete-plugins',
@@ -43,6 +45,8 @@ const plugins: Registry = [
       'media-plugins',
       'mention-plugin',
       'reset-block-type-plugin',
+      'skip-mark-plugin',
+      'suggestion-plugin',
       'soft-break-plugin',
       'table-plugin',
       'toc-plugin',
@@ -84,6 +88,21 @@ const plugins: Registry = [
       'hr-element',
       'link-element',
       'paragraph-element',
+    ],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-math'],
+    files: [
+      {
+        path: 'components/editor/plugins/equation-plugins.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'equation-plugins',
+    registryDependencies: [
+      'equation-element',
+      'inline-equation-toolbar-button',
     ],
     type: 'registry:component',
   },
@@ -150,7 +169,7 @@ const plugins: Registry = [
       '@udecode/plate-block-quote',
       '@udecode/plate-code-block',
       '@udecode/plate-heading',
-      'prismjs',
+      'lowlight',
     ],
     files: [
       {
@@ -165,11 +184,12 @@ const plugins: Registry = [
     dependencies: ['@udecode/plate-selection'],
     files: [
       {
-        path: 'components/editor/plugins/block-selection-plugins.ts',
+        path: 'components/editor/plugins/block-selection-plugins.tsx',
         type: 'registry:component',
       },
     ],
     name: 'block-selection-plugins',
+    registryDependencies: ['block-selection'],
     type: 'registry:component',
   },
   {
@@ -193,7 +213,38 @@ const plugins: Registry = [
       },
     ],
     name: 'comments-plugin',
-    registryDependencies: ['comments-popover'],
+    registryDependencies: ['block-discussion'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-basic-marks'],
+    files: [
+      {
+        path: 'components/editor/plugins/skip-mark-plugin.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'skip-mark-plugin',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-suggestion'],
+    files: [
+      {
+        path: 'components/editor/plugins/suggestion-plugin.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'plate-ui/suggestion-line-break.tsx',
+        type: 'registry:ui',
+      },
+      {
+        path: 'plate-ui/suggestion-toolbar-button.tsx',
+        type: 'registry:ui',
+      },
+    ],
+    name: 'suggestion-plugin',
+    registryDependencies: [],
     type: 'registry:component',
   },
   {
@@ -252,6 +303,7 @@ const plugins: Registry = [
       },
     ],
     name: 'dnd-plugins',
+    registryDependencies: ['draggable'],
     type: 'registry:component',
   },
   {
@@ -440,7 +492,7 @@ const plugins: Registry = [
   },
 ];
 
-export const components: Registry = [
+export const components: Registry['items'] = [
   ...plugins,
   {
     dependencies: ['ai', '@faker-js/faker'],

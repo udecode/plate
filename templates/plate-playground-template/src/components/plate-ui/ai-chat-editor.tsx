@@ -2,53 +2,108 @@
 
 import React, { memo } from 'react';
 
-import { AIChatPlugin, useLastAssistantMessage } from '@udecode/plate-ai/react';
+import { withProps } from '@udecode/cn';
+import { BaseParagraphPlugin, SlateLeaf } from '@udecode/plate';
+import { useAIChatEditor } from '@udecode/plate-ai/react';
 import {
-  type PlateEditor,
-  Plate,
-  useEditorPlugin,
-} from '@udecode/plate-common/react';
-import { deserializeMd } from '@udecode/plate-markdown';
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseItalicPlugin,
+  BaseStrikethroughPlugin,
+  BaseUnderlinePlugin,
+} from '@udecode/plate-basic-marks';
+import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodeSyntaxPlugin,
+} from '@udecode/plate-code-block';
+import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
+import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
+import { BaseLinkPlugin } from '@udecode/plate-link';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { usePlateEditor } from '@udecode/plate/react';
 
-import { Editor } from './editor';
+import {
+  TodoLiStatic,
+  TodoMarkerStatic,
+} from '@/components/plate-ui/indent-todo-marker-static';
 
-export const AIChatEditor = memo(
-  ({
-    aiEditorRef,
-  }: {
-    aiEditorRef: React.MutableRefObject<PlateEditor | null>;
-  }) => {
-    const { getOptions } = useEditorPlugin(AIChatPlugin);
-    const lastAssistantMessage = useLastAssistantMessage();
-    const content = lastAssistantMessage?.content ?? '';
+import { BlockquoteElementStatic } from './blockquote-element-static';
+import { CodeBlockElementStatic } from './code-block-element-static';
+import { CodeLeafStatic } from './code-leaf-static';
+import { CodeLineElementStatic } from './code-line-element-static';
+import { CodeSyntaxLeafStatic } from './code-syntax-leaf-static';
+import { EditorStatic } from './editor-static';
+import { HeadingElementStatic } from './heading-element-static';
+import { HrElementStatic } from './hr-element-static';
+import { LinkElementStatic } from './link-element-static';
+import { ParagraphElementStatic } from './paragraph-element-static';
 
-    const aiEditor = React.useMemo(() => {
-      const editor = getOptions().createAIEditor();
+const components = {
+  [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
+  [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
+  [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
+  [BaseCodeLinePlugin.key]: CodeLineElementStatic,
+  [BaseCodePlugin.key]: CodeLeafStatic,
+  [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
+  [BaseHorizontalRulePlugin.key]: HrElementStatic,
+  [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: 'em' }),
+  [BaseLinkPlugin.key]: LinkElementStatic,
+  [BaseParagraphPlugin.key]: ParagraphElementStatic,
+  [BaseStrikethroughPlugin.key]: withProps(SlateLeaf, { as: 's' }),
+  [BaseUnderlinePlugin.key]: withProps(SlateLeaf, { as: 'u' }),
+  [HEADING_KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
+  [HEADING_KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
+  [HEADING_KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
+};
 
-      const fragment = deserializeMd(editor, content);
-      editor.children =
-        fragment.length > 0 ? fragment : editor.api.create.value();
+const plugins = [
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodePlugin,
+  BaseCodeSyntaxPlugin,
+  BaseItalicPlugin,
+  BaseStrikethroughPlugin,
+  BaseUnderlinePlugin,
+  BaseHeadingPlugin,
+  BaseHorizontalRulePlugin,
+  BaseLinkPlugin,
+  BaseParagraphPlugin,
+  BaseIndentPlugin.extend({
+    inject: {
+      targetPlugins: [BaseParagraphPlugin.key],
+    },
+  }),
+  BaseIndentListPlugin.extend({
+    inject: {
+      targetPlugins: [BaseParagraphPlugin.key],
+    },
+    options: {
+      listStyleTypes: {
+        todo: {
+          liComponent: TodoLiStatic,
+          markerComponent: TodoMarkerStatic,
+          type: 'todo',
+        },
+      },
+    },
+  }),
+  MarkdownPlugin.configure({ options: { indentList: true } }),
+];
 
-      return editor;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+export const AIChatEditor = memo(({ content }: { content: string }) => {
+  const aiEditor = usePlateEditor({
+    plugins,
+  });
 
-    React.useEffect(() => {
-      if (aiEditor && content) {
-        aiEditorRef.current = aiEditor;
+  useAIChatEditor(aiEditor, content);
 
-        setTimeout(() => {
-          aiEditor.tf.setValue(deserializeMd(aiEditor, content));
-        }, 0);
-      }
-    }, [aiEditor, aiEditorRef, content]);
-
-    if (!content) return null;
-
-    return (
-      <Plate editor={aiEditor}>
-        <Editor variant="aiChat" readOnly />
-      </Plate>
-    );
-  }
-);
+  return (
+    <EditorStatic variant="aiChat" components={components} editor={aiEditor} />
+  );
+});

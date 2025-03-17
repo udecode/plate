@@ -1,0 +1,355 @@
+---
+title: 序列化 HTML
+---
+
+<ComponentPreview name="html-demo" />
+
+## Slate -> HTML
+
+[服务端示例](/docs/examples/slate-to-html)
+
+### 使用方法
+
+```tsx
+// ...
+import { createSlateEditor, serializeHtml } from '@udecode/plate';
+import { EditorStatic } from '@/components/plate-ui/editor-static';
+
+// 创建一个编辑器并配置所有需要的插件
+const editor = createSlateEditor({
+  // ... 你的插件 ...
+});
+
+// 提供将 Slate 节点映射到 HTML 元素的组件
+const components = {
+  // [ParagraphPlugin.key]: ParagraphElementStatic,
+  // [HeadingPlugin.key]: HeadingElementStatic,
+  // ...
+};
+
+// 你也可以传递自定义的编辑器组件和 props。
+// 例如，EditorStatic 是 PlateStatic 的样式版本。
+const html = await serializeHtml(editor, {
+  components,
+  editorComponent: EditorStatic, // 如果不提供，默认为 PlateStatic
+  props: { variant: 'none', className: 'p-2' },
+});
+```
+
+如果你使用自定义组件，比如 [EditorStatic](/docs/components/editor)，你还需要确保所有必需的样式和类都包含在最终的 HTML 文件中。由于 `serialize` 只返回编辑器内部的 HTML，你可能需要将其包装在一个完整的 HTML 文档中，包含任何外部 CSS、脚本或 `<style>` 标签。
+
+例如：
+
+```tsx
+// 序列化内容后：
+const html = await serializeHtml(editor, {
+  components,
+  editorComponent: EditorStatic,
+  props: { variant: 'none' },
+});
+
+// 将 HTML 包装在一个完整的 HTML 文档中
+const fullHtml = `<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="/path/to/tailwind.css" />
+    <!-- 其他 head 元素 -->
+  </head>
+  <body>
+    ${html}
+  </body>
+</html>`;
+```
+
+<Callout className="my-4">
+  **注意**：序列化过程将 Slate 节点转换为静态 HTML 标记。像 React 事件处理程序、客户端钩子或依赖浏览器 API 的组件这样的交互性在序列化输出中将不起作用。
+</Callout>
+
+### 使用静态组件
+
+当将 Slate 内容序列化为 HTML 时，**你必须使用静态版本** 的元素（即没有客户端代码）。查看 [Plate Static](/docs/plate-static) 指南，了解如何创建可以在服务器环境中安全运行的“静态”版本的组件。
+
+**示例：**
+
+```tsx
+import { createSlateEditor, serializeHtml } from '@udecode/plate';
+import { ParagraphElementStatic } from '@/components/plate-ui/paragraph-element-static';
+import { HeadingElementStatic } from '@/components/plate-ui/heading-element-static';
+import { ImageElementStatic } from '@/components/plate-ui/image-element-static';
+// ... 等等。
+
+const editor = createSlateEditor({ /* 你的插件 */ });
+
+const components = {
+  [BaseParagraphPlugin.key]: ParagraphElementStatic,
+  [BaseHeadingPlugin.key]: HeadingElementStatic,
+  [BaseImagePlugin.key]: ImageElementStatic,
+};
+
+const html = await serializeHtml(editor, { components });
+```
+
+有关更完整的静态渲染方法，请参阅 [Plate Static](/docs/plate-static)。
+
+---
+
+## HTML -> Slate
+
+HTML 反序列化器支持往返转换，这意味着你可以将内容导出为 HTML，稍后再将其导入，同时保持文档结构、格式和属性。
+
+### 使用方法
+
+`editor.api.html.deserialize` 函数将 HTML 内容转换为 Slate 值：
+
+```ts
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // 所有你想要反序列化的插件
+  ],
+});
+
+// 你可以反序列化 HTML 字符串
+editor.children = editor.api.html.deserialize('<p>Hello, world!</p>');
+
+// 或者反序列化从 Plate 导出的 HTML
+const exportedHtml = await serializeHtml(editor, { components });
+const importedValue = editor.api.html.deserialize(exportedHtml);
+editor.children = importedValue;
+```
+
+### 插件反序列化规则
+
+以下是内置的 HTML 反序列化规则的参考。每个插件可以解析特定的标签、样式和属性。
+
+#### 文本格式化
+
+- **BoldPlugin**: `<strong>`, `<b>`, 或 `style="font-weight: 600|700|bold"`
+- **ItalicPlugin**: `<em>`, `<i>`, 或 `style="font-style: italic"`
+- **UnderlinePlugin**: `<u>` 或 `style="text-decoration: underline"`
+- **StrikethroughPlugin**: `<s>`, `<del>`, `<strike>`, 或 `style="text-decoration: line-through"`
+- **SubscriptPlugin**: `<sub>` 或 `style="vertical-align: sub"`
+- **SuperscriptPlugin**: `<sup>` 或 `style="vertical-align: super"`
+- **CodePlugin**: `<code>` 或 `style="font-family: Consolas"`（不在 `<pre>` 标签内）
+- **KbdPlugin**: `<kbd>`
+
+#### 段落和标题
+
+- **ParagraphPlugin**: `<p>`
+- **HeadingPlugin**: `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`
+
+#### 列表
+
+- **ListPlugin**:
+  - 无序列表: `<ul>`
+  - 有序列表: `<ol>`
+  - 列表项: `<li>`
+- **IndentListPlugin**:
+  - 列表项: `<li>`
+  - 使用 `aria-level` 进行缩进
+
+#### 块
+
+- **BlockquotePlugin**: `<blockquote>`
+- **CodeBlockPlugin**:
+  - `<pre>` 元素
+  - `fontFamily: 'Consolas'` 的 `<p>` 元素
+  - 将内容拆分为代码行
+  - 如果可用，保留语言信息
+- **HorizontalRulePlugin**: `<hr>`
+
+#### 链接和媒体
+
+- **LinkPlugin**: `<a>`
+- **ImagePlugin**: `<img>`
+- **MediaEmbedPlugin**: `<iframe>`
+
+#### 表格
+
+- **TablePlugin**:
+  - `<table>`
+  - `<tr>`
+  - `<td>`
+  - `<th>`
+
+#### 文本样式
+
+- **FontBackgroundColorPlugin**: `style="background-color: *"`
+- **FontColorPlugin**: `style="color: *"`
+- **FontFamilyPlugin**: `style="font-family: *"`
+- **FontSizePlugin**: `style="font-size: *"`
+- **FontWeightPlugin**: `style="font-weight: *"`
+- **HighlightPlugin**: `<mark>`
+
+#### 布局和格式化
+
+- **AlignPlugin**: `style="text-align: *"`
+- **LineHeightPlugin**: `style="line-height: *"`
+
+### 反序列化属性
+
+插件可以定义各种属性来控制 HTML 反序列化：
+
+- `parse`: 将 HTML 元素解析为 Plate 节点的函数
+- `query`: 确定是否应应用反序列化器的函数
+- `rules`: 定义有效 HTML 元素和属性的规则对象数组
+- `isElement`: 指示插件是否反序列化元素
+- `isLeaf`: 指示插件是否反序列化叶子节点
+- `attributeNames`: 存储在 `node.attributes` 中的 HTML 属性名称列表
+- `withoutChildren`: 从反序列化中排除子节点
+- `rules`: 元素匹配的规则对象数组
+  - `validAttribute`: 有效的元素属性
+  - `validClassName`: 有效的 CSS 类名
+  - `validNodeName`: 有效的 HTML 标签名
+  - `validStyle`: 有效的 CSS 样式
+
+### 自定义反序列化
+
+你可以修改插件解析 HTML 的方式：
+
+```ts
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+
+const MyCodeBlockPlugin = CodeBlockPlugin.extend({
+  parsers: {
+    html: {
+      deserializer: {
+        parse: ({ element }) => {
+          const language = element.getAttribute('data-language');
+          const textContent = element.textContent || '';
+          const lines = textContent.split('\n');
+
+          return {
+            type: CodeBlockPlugin.key,
+            language,
+            children: lines.map((line) => ({
+              type: 'code_line',
+              children: [{ text: line }],
+            })),
+          };
+        },
+        rules: [
+          // 继承现有规则
+          ...CodeBlockPlugin.parsers.html.deserializer.rules,
+          { validAttribute: 'data-language' },
+        ],
+      },
+    },
+  },
+});
+```
+
+此自定义为代码块反序列化添加了对 `data-language` 属性的支持，并保留了语言信息。
+
+### 高级反序列化示例
+
+`IndentListPlugin` 提供了一个更复杂的反序列化过程：
+
+1. 它将 HTML 列表结构转换为缩进的段落。
+2. 它通过保留缩进级别来处理嵌套列表。
+3. 它使用 `aria-level` 属性来确定缩进级别。
+
+以下是其反序列化逻辑的简化版本：
+
+```typescript
+export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
+  // ... 其他配置 ...
+  parsers: {
+    html: {
+      deserializer: {
+        isElement: true,
+        parse: ({ editor, element, getOptions }) => ({
+          indent: Number(element.getAttribute('aria-level')),
+          listStyleType: element.style.listStyleType,
+          type: editor.getType(ParagraphPlugin),
+        }),
+        rules: [
+          {
+            validNodeName: 'LI',
+          },
+        ],
+      },
+    },
+  },
+});
+```
+
+## API
+
+### `serializeHtml(editor, options)`
+
+将 `editor.children` 中的 Slate 节点转换为 HTML 字符串。
+
+```ts
+const htmlString = await serializeHtml(editor, {
+  components,
+  stripClassNames: true,
+  preserveClassNames: ['slate-'],
+  stripDataAttributes: true,
+  editorComponent: MyCustomStaticWrapper,
+  props: { className: 'my-serialized' },
+});
+```
+
+<API name="serializeHtml">
+<APIOptions>
+<APIItem name="components" type="HTMLElement | string">
+将插件键映射到 React 组件。每个组件将相应的 Slate 节点渲染为 HTML。
+</APIItem>
+<APIItem name="editorComponent" type="React.ComponentType<T>">
+用于渲染整个编辑器内容的 React 组件。如果不提供，默认为 `PlateStatic`。此组件接收 `components`、`editor` 和 `props`。
+</APIItem>
+<APIItem name="props" type="Partial<T>" optional>
+传递给 `editorComponent` 的 props。泛型类型 `T` 扩展了 `PlateStaticProps`。
+</APIItem>
+<APIItem name="preserveClassNames" type="string[]" optional>
+如果启用了 `stripClassNames`，则保留这些类名前缀。
+</APIItem>
+<APIItem name="stripClassNames" type="boolean" optional>
+如果为 `true`，则从输出 HTML 中删除类名，除了 `preserveClassNames` 中列出的类名。
+- **默认值:** `false`
+</APIItem>
+<APIItem name="stripDataAttributes" type="boolean" optional>
+如果为 `true`，则从输出 HTML 中删除 `data-*` 属性。
+- **默认值:** `false`
+</APIItem>
+</APIOptions>
+<APIReturns>
+<APIItem type="string">
+序列化的 HTML 字符串。
+</APIItem>
+</APIReturns>
+</API>
+
+### `editor.api.html.deserialize`
+
+将 HTML 字符串或元素解析为 Slate 值。  
+
+```ts
+editor.children = editor.api.html.deserialize('<p>Deserialized</p>', {
+  collapseWhiteSpace: false,
+});
+```
+
+<API name="deserialize">
+<APIParameters>
+<APIItem name="element" type="HTMLElement | string">
+
+要反序列化的 HTML 元素或字符串。
+
+</APIItem>
+<APIItem name="collapseWhiteSpace" type="boolean" optional>
+
+启用或禁用从序列化 HTML 中删除空格的标志。
+
+- **默认值:** `true`（空格将被删除。）
+</APIItem>
+</APIParameters>
+<APIReturns>
+<APIItem type="Descendant[]">
+
+反序列化的 Slate 值。
+</APIItem>
+</APIReturns>
+</API>

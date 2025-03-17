@@ -1,10 +1,16 @@
-import { createAtomStore } from '@udecode/plate-common/react';
+import { createAtomStore } from '@udecode/plate/react';
 
 interface MediaStore {
   showCaption: boolean;
 }
 
-export const { MediaProvider, mediaStore, useMediaStore } = createAtomStore(
+export const {
+  MediaProvider,
+  mediaStore,
+  useMediaSet,
+  useMediaStore,
+  useMediaValue,
+} = createAtomStore(
   {
     showCaption: false,
   } as MediaStore,

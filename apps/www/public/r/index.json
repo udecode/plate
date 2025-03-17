@@ -51,18 +51,20 @@
       {
         "path": "plate-ui/blockquote-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/blockquote-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "blockquote-element",
-    "registryDependencies": [
-      "plate-element"
-    ],
+    "registryDependencies": [],
     "type": "registry:ui"
   },
   {
     "dependencies": [
       "@udecode/plate-code-block",
-      "prismjs"
+      "lowlight"
     ],
     "doc": {
       "description": "A code block with syntax highlighting and language selection.",
@@ -84,7 +86,7 @@
         "type": "registry:ui"
       },
       {
-        "path": "plate-ui/code-block-element.css",
+        "path": "plate-ui/code-block-element-static.tsx",
         "type": "registry:ui"
       },
       {
@@ -94,8 +96,7 @@
     ],
     "name": "code-block-element",
     "registryDependencies": [
-      "command",
-      "plate-element"
+      "command"
     ],
     "type": "registry:ui"
   },
@@ -118,6 +119,10 @@
     "files": [
       {
         "path": "plate-ui/code-leaf.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/code-leaf-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -146,12 +151,14 @@
       {
         "path": "plate-ui/code-line-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/code-line-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "code-line-element",
-    "registryDependencies": [
-      "plate-element"
-    ],
+    "registryDependencies": [],
     "type": "registry:ui"
   },
   {
@@ -176,6 +183,10 @@
     "files": [
       {
         "path": "plate-ui/code-syntax-leaf.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/code-syntax-leaf-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -206,12 +217,15 @@
       {
         "path": "plate-ui/column-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/column-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "column-element",
     "registryDependencies": [
-      "resizable",
-      "plate-element"
+      "resizable"
     ],
     "type": "registry:ui"
   },
@@ -237,13 +251,16 @@
       {
         "path": "plate-ui/column-group-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/column-group-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "column-group-element",
     "registryDependencies": [
       "command",
-      "resizable",
-      "plate-element"
+      "resizable"
     ],
     "type": "registry:ui"
   },
@@ -270,10 +287,74 @@
       {
         "path": "plate-ui/comment-leaf.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/comment-leaf-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "comment-leaf",
     "registryDependencies": [],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-suggestion"
+    ],
+    "doc": {
+      "description": "A text component for suggestion.",
+      "docs": [
+        {
+          "route": "/docs/suggestion"
+        }
+      ],
+      "examples": [
+        "comments-demo",
+        "comments-pro"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/suggestion-leaf.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/suggestion-leaf-static.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "suggestion-leaf",
+    "registryDependencies": [
+      "suggestion-plugin"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-suggestion"
+    ],
+    "doc": {
+      "description": "A line break component for suggestion.",
+      "docs": [
+        {
+          "route": "/docs/suggestion"
+        }
+      ],
+      "examples": [
+        "comments-demo",
+        "comments-pro"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/suggestion-line-break.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "suggestion-line-break",
+    "registryDependencies": [
+      "suggestion-plugin"
+    ],
     "type": "registry:ui"
   },
   {
@@ -299,18 +380,120 @@
       {
         "path": "plate-ui/date-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/date-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "date-element",
     "registryDependencies": [
-      "calendar",
-      "plate-element"
+      "calendar"
     ],
     "type": "registry:ui"
   },
   {
     "dependencies": [
-      "@udecode/plate-emoji"
+      "@udecode/plate-math",
+      "react-textarea-autosize"
+    ],
+    "doc": {
+      "description": "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
+      "docs": [
+        {
+          "route": "https://platejs.org/docs/equation",
+          "title": "Equation"
+        }
+      ],
+      "examples": [
+        "equation-demo"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/equation-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/equation-element-static.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/equation-popover.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "equation-element",
+    "registryDependencies": [
+      "popover"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-math"
+    ],
+    "doc": {
+      "description": "An inline LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
+      "docs": [
+        {
+          "route": "https://platejs.org/docs/equation",
+          "title": "Equation"
+        }
+      ],
+      "examples": [
+        "equation-demo"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/inline-equation-element.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/inline-equation-element-static.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "inline-equation-element",
+    "registryDependencies": [
+      "popover"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-math"
+    ],
+    "doc": {
+      "description": "A toolbar button for inserting and editing inline equations.",
+      "docs": [
+        {
+          "route": "https://platejs.org/docs/equation",
+          "title": "Equation"
+        }
+      ],
+      "examples": [
+        "equation-demo",
+        "floating-toolbar-demo"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/inline-equation-toolbar-button.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "inline-equation-toolbar-button",
+    "registryDependencies": [
+      "toolbar"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-emoji",
+      "@emoji-mart/data@1.2.1"
     ],
     "doc": {
       "description": "An input component for emoji search and insertion.",
@@ -335,7 +518,6 @@
     "name": "emoji-input-element",
     "registryDependencies": [
       "inline-combobox",
-      "plate-element",
       "use-debounce"
     ],
     "type": "registry:ui"
@@ -359,8 +541,34 @@
       }
     ],
     "name": "excalidraw-element",
+    "registryDependencies": [],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-font"
+    ],
+    "doc": {
+      "description": "A toolbar control for adjusting font size.",
+      "docs": [
+        {
+          "route": "/docs/font"
+        }
+      ],
+      "examples": [
+        "list-demo"
+      ]
+    },
+    "files": [
+      {
+        "path": "plate-ui/font-size-toolbar-button.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "font-size-toolbar-button",
     "registryDependencies": [
-      "plate-element"
+      "popover",
+      "toolbar"
     ],
     "type": "registry:ui"
   },
@@ -385,12 +593,14 @@
       {
         "path": "plate-ui/heading-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/heading-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "heading-element",
-    "registryDependencies": [
-      "plate-element"
-    ],
+    "registryDependencies": [],
     "type": "registry:ui"
   },
   {
@@ -409,6 +619,10 @@
     "files": [
       {
         "path": "plate-ui/highlight-leaf.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/highlight-leaf-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -437,12 +651,14 @@
       {
         "path": "plate-ui/hr-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/hr-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "hr-element",
-    "registryDependencies": [
-      "plate-element"
-    ],
+    "registryDependencies": [],
     "type": "registry:ui"
   },
   {
@@ -472,14 +688,17 @@
       {
         "path": "plate-ui/image-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/image-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "image-element",
     "registryDependencies": [
       "media-popover",
       "caption",
-      "resizable",
-      "plate-element"
+      "resizable"
     ],
     "type": "registry:ui"
   },
@@ -532,6 +751,10 @@
       {
         "path": "plate-ui/kbd-leaf.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/kbd-leaf-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "kbd-leaf",
@@ -560,12 +783,14 @@
       {
         "path": "plate-ui/link-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/link-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "link-element",
-    "registryDependencies": [
-      "plate-element"
-    ],
+    "registryDependencies": [],
     "type": "registry:ui"
   },
   {
@@ -590,9 +815,7 @@
       }
     ],
     "name": "list-element",
-    "registryDependencies": [
-      "plate-element"
-    ],
+    "registryDependencies": [],
     "type": "registry:ui"
   },
   {
@@ -619,12 +842,15 @@
       {
         "path": "plate-ui/media-audio-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/media-audio-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "media-audio-element",
     "registryDependencies": [
-      "caption",
-      "plate-element"
+      "caption"
     ],
     "type": "registry:ui"
   },
@@ -663,8 +889,7 @@
     "registryDependencies": [
       "media-popover",
       "caption",
-      "resizable",
-      "plate-element"
+      "resizable"
     ],
     "type": "registry:ui"
   },
@@ -692,12 +917,15 @@
       {
         "path": "plate-ui/media-file-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/media-file-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "media-file-element",
     "registryDependencies": [
-      "caption",
-      "plate-element"
+      "caption"
     ],
     "type": "registry:ui"
   },
@@ -729,7 +957,6 @@
     ],
     "name": "media-placeholder-element",
     "registryDependencies": [
-      "plate-element",
       "spinner",
       "uploadthing"
     ],
@@ -764,14 +991,17 @@
       {
         "path": "plate-ui/media-video-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/media-video-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "media-video-element",
     "registryDependencies": [
       "media-popover",
       "caption",
-      "resizable",
-      "plate-element"
+      "resizable"
     ],
     "type": "registry:ui"
   },
@@ -797,11 +1027,14 @@
       {
         "path": "plate-ui/mention-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/mention-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "mention-element",
     "registryDependencies": [
-      "plate-element",
       "use-mounted"
     ],
     "type": "registry:ui"
@@ -832,8 +1065,7 @@
     ],
     "name": "mention-input-element",
     "registryDependencies": [
-      "inline-combobox",
-      "plate-element"
+      "inline-combobox"
     ],
     "type": "registry:ui"
   },
@@ -858,12 +1090,14 @@
       {
         "path": "plate-ui/paragraph-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/paragraph-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "paragraph-element",
-    "registryDependencies": [
-      "plate-element"
-    ],
+    "registryDependencies": [],
     "type": "registry:ui"
   },
   {
@@ -923,7 +1157,6 @@
     "name": "slash-input-element",
     "registryDependencies": [
       "inline-combobox",
-      "plate-element",
       "transforms"
     ],
     "type": "registry:ui"
@@ -950,12 +1183,15 @@
       {
         "path": "plate-ui/table-cell-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/table-cell-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "table-cell-element",
     "registryDependencies": [
-      "resizable",
-      "plate-element"
+      "resizable"
     ],
     "type": "registry:ui"
   },
@@ -983,12 +1219,19 @@
       {
         "path": "plate-ui/table-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/table-icons.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/table-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "table-element",
     "registryDependencies": [
-      "dropdown-menu",
-      "plate-element"
+      "dropdown-menu"
     ],
     "type": "registry:ui"
   },
@@ -1012,12 +1255,14 @@
       {
         "path": "plate-ui/table-row-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/table-row-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "table-row-element",
-    "registryDependencies": [
-      "plate-element"
-    ],
+    "registryDependencies": [],
     "type": "registry:ui"
   },
   {
@@ -1068,6 +1313,10 @@
       {
         "path": "plate-ui/toc-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/toc-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "toc-element",
@@ -1097,8 +1346,7 @@
     ],
     "name": "todo-list-element",
     "registryDependencies": [
-      "checkbox",
-      "plate-element"
+      "checkbox"
     ],
     "type": "registry:ui"
   },
@@ -1121,12 +1369,15 @@
       {
         "path": "plate-ui/toggle-element.tsx",
         "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/toggle-element-static.tsx",
+        "type": "registry:ui"
       }
     ],
     "name": "toggle-element",
     "registryDependencies": [
-      "button",
-      "plate-element"
+      "button"
     ],
     "type": "registry:ui"
   },
@@ -1227,6 +1478,10 @@
     "files": [
       {
         "path": "plate-ui/checkbox.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/checkbox-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -1459,7 +1714,9 @@
       }
     ],
     "name": "tooltip",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "button"
+    ],
     "type": "registry:ui"
   },
   {
@@ -1527,7 +1784,9 @@
     "type": "registry:ui"
   },
   {
-    "dependencies": [],
+    "dependencies": [
+      "@udecode/plate-ai"
+    ],
     "doc": {
       "description": "A toolbar button for accessing AI features.",
       "docs": [
@@ -1621,7 +1880,6 @@
     "name": "block-context-menu",
     "registryDependencies": [
       "calendar",
-      "plate-element",
       "context-menu",
       "use-is-touch-device"
     ],
@@ -1655,6 +1913,37 @@
     ],
     "name": "block-selection",
     "registryDependencies": [],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "use-file-picker"
+    ],
+    "doc": {
+      "description": "A toolbar button to import editor content from a file.",
+      "docs": [
+        {
+          "route": "/docs/import",
+          "title": "Import"
+        }
+      ],
+      "examples": [
+        "basic-nodes-demo"
+      ],
+      "label": "New",
+      "title": "Import Toolbar Button"
+    },
+    "files": [
+      {
+        "path": "plate-ui/import-toolbar-button.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "import-toolbar-button",
+    "registryDependencies": [
+      "dropdown-menu",
+      "toolbar"
+    ],
     "type": "registry:ui"
   },
   {
@@ -1800,7 +2089,9 @@
       }
     ],
     "name": "comment-toolbar-button",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "comments-plugin"
+    ],
     "type": "registry:ui"
   },
   {
@@ -1809,13 +2100,13 @@
       "date-fns"
     ],
     "doc": {
-      "description": "A popover interface for managing comments and replies.",
+      "description": "A popover interface for managing discussions: comments, replies, suggestions.",
       "docs": [
         {
           "route": "/docs/comments"
         },
         {
-          "route": "https://pro.platejs.org/docs/components/comments-popover"
+          "route": "https://pro.platejs.org/docs/components/block-discussion"
         }
       ],
       "examples": [
@@ -1825,42 +2116,38 @@
     },
     "files": [
       {
-        "path": "plate-ui/comment-avatar.tsx",
+        "path": "plate-ui/block-discussion.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/block-suggestion.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/comment.tsx",
         "type": "registry:ui"
       },
       {
         "path": "plate-ui/comment-create-form.tsx",
         "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comment-item.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comment-more-dropdown.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comment-reply-items.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comment-resolve-button.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comment-value.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/comments-popover.tsx",
-        "type": "registry:ui"
       }
     ],
-    "name": "comments-popover",
+    "name": "block-discussion",
     "registryDependencies": [
+      "suggestion-plugin",
+      "button",
       "popover",
-      "avatar"
+      "avatar",
+      "dropdown-menu",
+      "editor",
+      "ai-leaf",
+      "avatar",
+      "date-element",
+      "emoji-input-element",
+      "inline-equation-element",
+      "link-element",
+      "mention-element",
+      "mention-input-element"
     ],
     "type": "registry:ui"
   },
@@ -1922,17 +2209,13 @@
         "dnd-pro"
       ],
       "usage": [
-        "import { DndPlugin } from '@udecode/plate-dnd';\nimport { NodeIdPlugin } from '@udecode/plate-node-id';\nimport { DndProvider } from 'react-dnd';\nimport { HTML5Backend } from 'react-dnd-html5-backend';\n\nimport { withDraggables } from './withDraggables';",
-        "export function MyEditor() {\n  const editor = usePlateEditor({\n    plugins: [\n      // ...otherPlugins,\n      NodeIdPlugin,\n      DndPlugin.configure({ options: { enableScroller: true } }),\n    ],\n    override: {\n      components: withDraggables({\n        // ...components\n      }),\n    }\n  });\n\n  return (\n    <DndProvider backend={HTML5Backend}>\n      <Plate editor={editor}>\n        <PlateContent />\n      </Plate>\n    </DndProvider>\n  );\n}"
+        "import { DndPlugin } from '@udecode/plate-dnd';\nimport { NodeIdPlugin } from '@udecode/plate-node-id';\nimport { DndProvider } from 'react-dnd';\nimport { HTML5Backend } from 'react-dnd-html5-backend';",
+        "export function MyEditor() {\n  const editor = usePlateEditor({\n    plugins: [\n      // ...otherPlugins,\n      NodeIdPlugin,\n      DndPlugin.configure({ options: { enableScroller: true } }),\n    ],\n    override: {\n      components: {\n        // ...components\n      },\n    }\n  });\n\n  return (\n    <DndProvider backend={HTML5Backend}>\n      <Plate editor={editor}>\n        <PlateContent />\n      </Plate>\n    </DndProvider>\n  );\n}"
       ]
     },
     "files": [
       {
         "path": "plate-ui/draggable.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/with-draggables.tsx",
         "type": "registry:ui"
       }
     ],
@@ -1961,6 +2244,10 @@
     "files": [
       {
         "path": "plate-ui/editor.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/editor-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -2004,6 +2291,7 @@
   {
     "dependencies": [
       "@udecode/plate-emoji",
+      "@emoji-mart/data@1.2.1",
       "@radix-ui/react-popover"
     ],
     "doc": {
@@ -2093,10 +2381,12 @@
       "color-dropdown-menu",
       "comment-toolbar-button",
       "emoji-dropdown-menu",
+      "font-size-toolbar-button",
       "history-toolbar-button",
       "indent-list-toolbar-button",
       "indent-todo-toolbar-button",
       "indent-toolbar-button",
+      "import-toolbar-button",
       "insert-dropdown-menu",
       "line-height-dropdown-menu",
       "link-toolbar-button",
@@ -2352,6 +2642,10 @@
     "files": [
       {
         "path": "plate-ui/indent-todo-marker.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/indent-todo-marker-static.tsx",
         "type": "registry:ui"
       }
     ],
@@ -2864,34 +3158,6 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-selection"
-    ],
-    "doc": {
-      "description": "A base element with block selection support.",
-      "docs": [
-        {
-          "route": "/docs/block-selection"
-        }
-      ],
-      "examples": [
-        "basic-nodes-demo"
-      ],
-      "label": "New"
-    },
-    "files": [
-      {
-        "path": "plate-ui/plate-element.tsx",
-        "type": "registry:ui"
-      }
-    ],
-    "name": "plate-element",
-    "registryDependencies": [
-      "block-selection"
-    ],
-    "type": "registry:ui"
-  },
-  {
-    "dependencies": [
       "react-resizable-panels"
     ],
     "doc": {
@@ -2938,6 +3204,10 @@
     "files": [
       {
         "path": "plate-ui/table-dropdown-menu.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/table-icons.tsx",
         "type": "registry:ui"
       }
     ],
@@ -3008,6 +3278,29 @@
       "toolbar",
       "transforms"
     ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@slate-yjs/react"
+    ],
+    "doc": {
+      "description": "A cursor overlay to display multiplayer cursors in the yjs plugin.",
+      "docs": [
+        {
+          "route": "/docs/collaboration"
+        }
+      ],
+      "examples": []
+    },
+    "files": [
+      {
+        "path": "plate-ui/remote-cursor-overlay.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "remote-cursor-overlay",
+    "registryDependencies": [],
     "type": "registry:ui"
   }
 ]

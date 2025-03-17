@@ -1,0 +1,247 @@
+---
+title: 评论
+docs:
+  - route: /docs/components/comment-leaf
+    title: 评论叶子节点
+  - route: /docs/components/comment-toolbar-button
+    title: 评论工具栏按钮
+  - route: /docs/components/block-discussion
+    title: 区块讨论
+---
+
+<ComponentPreview name="comments-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 将评论添加为文本标记。
+- 添加重叠评论。
+- 撤销/重做解决和删除操作。
+
+</PackageInfo>
+
+## 安装
+```bash
+npm install @udecode/plate-comments
+```
+
+## 使用
+
+```tsx
+import { CommentsPlugin } from '@udecode/plate-comments/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+  commentsPlugin.configure({
+    render: { aboveNodes: BlockDiscussion as any },
+  }),
+  ],
+});
+```
+
+## 快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Shift + M">
+    在选中的文本上添加评论。
+  </KeyTableItem>
+</KeyTable>
+
+## 示例
+
+### Plate UI
+
+参考上面的预览。
+
+### Plate Plus
+
+<ComponentPreviewPro name="comments-pro" />
+
+## 插件
+
+### `CommentsPlugin`
+
+
+## API
+
+### `editor.tf.comment.removeMark`
+
+从编辑器中移除评论标记。
+
+### `editor.tf.comment.setDraft`
+
+在当前选择处设置草稿评论标记。
+
+### `editor.tf.comment.unsetMark`
+
+从编辑器中取消设置指定ID的评论节点。
+
+<API name="unsetMark">
+<APIParameters>
+  <APIItem name="id" type="string">
+    要取消设置的评论节点的ID。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.comment.has`
+
+检查是否存在具有给定ID的评论。
+
+<API name="has">
+<APIParameters>
+  <APIItem name="id" type="string">
+    要检查的评论的ID。
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  评论是否存在。
+</APIReturns>
+</API>
+
+### `editor.api.comment.node`
+
+获取评论节点entry。
+
+<API name="node">
+<APIOptions type="EditorNodesOptions & { id?: string; isDraft?: boolean }" optional>
+  查找节点的选项。
+</APIOptions>
+<APIReturns type="NodeEntry<TCommentText> | undefined">
+  如果找到，返回评论节点entry。
+</APIReturns>
+</API>
+
+### `editor.api.comment.nodeId`
+
+从叶子节点获取评论的ID。
+
+<API name="nodeId">
+<APIParameters>
+  <APIItem name="leaf" type="TCommentText">
+    评论叶子节点。
+  </APIItem>
+</APIParameters>
+<APIReturns type="string | undefined">
+  如果找到，返回评论ID。
+</APIReturns>
+</API>
+
+### `editor.api.comment.nodes`
+
+获取所有匹配选项的评论节点entry。
+
+<API name="nodes">
+<APIOptions type="EditorNodesOptions & { id?: string; isDraft?: boolean }" optional>
+  查找节点的选项。
+</APIOptions>
+<APIReturns type="NodeEntry<TCommentText>[]">
+  评论节点entry的数组。
+</APIReturns>
+</API>
+
+### `getCommentCount`
+
+获取评论节点中非草稿评论的数量。
+
+<API name="getCommentCount">
+<APIParameters>
+  <APIItem name="node" type="TCommentText">
+    评论节点。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `getCommentKey`
+
+根据提供的ID生成评论键。
+
+<API name="getCommentKey">
+<APIParameters>
+  <APIItem name="id" type="string">
+    评论的ID。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `getCommentKeyId`
+
+从评论键中提取评论ID。
+
+<API name="getCommentKeyId">
+<APIParameters>
+  <APIItem name="key" type="string">
+    评论键。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `getCommentKeys`
+
+返回给定节点中存在的评论键数组。
+
+<API name="getCommentKeys">
+<APIParameters>
+  <APIItem name="node" type="TCommentText">
+    要检查评论键的节点。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `getDraftCommentKey`
+
+获取用于草稿评论的键。
+
+### `isCommentKey`
+
+检查给定的键是否为评论键。
+
+<API name="isCommentKey">
+<APIParameters>
+  <APIItem name="key" type="string">
+    要检查的键。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  该键是否为评论键。
+</APIReturns>
+</API>
+
+### `isCommentNodeById`
+
+检查给定节点是否为具有指定ID的评论。
+
+<API name="isCommentNodeById">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    要检查的节点。
+  </APIItem>
+  <APIItem name="id" type="string">
+    评论的ID。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  该节点是否为具有指定ID的评论。
+</APIReturns>
+</API>
+
+## 类型
+
+### `TCommentText`
+
+包含评论的文本节点的接口。
+
+<API name="TCommentText">
+<APIAttributes>
+  <APIItem name="comment" type="boolean" optional>
+    指示是否为评论。
+  </APIItem>
+  <APIItem name="comment_<id>" type="boolean" optional>
+    指示评论ID。单个文本节点中可以存在多个评论。
+  </APIItem>
+</APIAttributes>
+</API>

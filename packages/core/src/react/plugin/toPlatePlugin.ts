@@ -2,6 +2,7 @@ import type {
   AnyPluginConfig,
   InferApi,
   InferOptions,
+  InferSelectors,
   InferTransforms,
   PluginConfig,
   SlatePlugin,
@@ -17,6 +18,7 @@ type PlatePluginConfig<
   EO = {},
   EA = {},
   ET = {},
+  ES = {},
 > = Omit<
   Partial<
     PlatePlugin<
@@ -24,7 +26,8 @@ type PlatePluginConfig<
         C['key'],
         EO & InferOptions<C>,
         EA & InferApi<C>,
-        ET & InferTransforms<C>
+        ET & InferTransforms<C>,
+        ES & InferSelectors<C>
       >
     >
   >,
@@ -33,6 +36,7 @@ type PlatePluginConfig<
   api?: EA & Partial<InferApi<C>>;
   node?: Partial<PlatePlugin<C>['node']>;
   options?: EO & Partial<InferOptions<C>>;
+  selectors?: ES & Partial<InferSelectors<C>>;
   transforms?: ET & Partial<InferTransforms<C>>;
 };
 
@@ -40,8 +44,11 @@ const methodsToWrap: (keyof SlatePlugin)[] = [
   'configure',
   'configurePlugin',
   'extendEditorApi',
+  'extendSelectors',
   'extendApi',
   'extendEditorTransforms',
+  'extendTransforms',
+  'overrideEditor',
   'extend',
   'extendPlugin',
 ];
@@ -65,6 +72,7 @@ export function toPlatePlugin<
   EO = {},
   EA = {},
   ET = {},
+  ES = {},
 >(
   basePlugin: SlatePlugin<C>,
   extendConfig?:
@@ -75,7 +83,8 @@ export function toPlatePlugin<
     C['key'],
     EO & InferOptions<C>,
     EA & InferApi<C>,
-    ET & InferTransforms<C>
+    ET & InferTransforms<C>,
+    ES & InferSelectors<C>
   >
 > {
   const plugin = { ...basePlugin } as unknown as PlatePlugin;
@@ -140,7 +149,13 @@ export function toTPlatePlugin<
     | ((ctx: PlatePluginContext<TContext>) => ExtendPluginConfig<C>)
     | ExtendPluginConfig<C>
 ): PlatePlugin<
-  PluginConfig<C['key'], InferOptions<C>, InferApi<C>, InferTransforms<C>>
+  PluginConfig<
+    C['key'],
+    InferOptions<C>,
+    InferApi<C>,
+    InferTransforms<C>,
+    InferSelectors<C>
+  >
 > {
   return toPlatePlugin(basePlugin as any, extendConfig as any);
 }

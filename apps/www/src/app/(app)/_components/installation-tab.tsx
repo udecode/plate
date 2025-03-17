@@ -4,11 +4,12 @@ import * as React from 'react';
 import { useMemo, useState } from 'react';
 
 import { DndPlugin } from '@udecode/plate-dnd';
+import { useStoreValue } from '@udecode/plate/react';
 import { uniqBy } from 'lodash';
 
 import {
   type SettingsStoreValue,
-  settingsStore,
+  SettingsStore,
 } from '@/components/context/settings-store';
 import { Link } from '@/components/link';
 import * as Typography from '@/components/typography';
@@ -25,10 +26,81 @@ import {
   customizerItems,
   orderedPluginKeys,
 } from '@/config/customizer-items';
+import { useLocale } from '@/hooks/useLocale';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { Label } from '@/registry/default/plate-ui/label';
 
 import { InstallationCode } from './installation-code';
+
+const i18n = {
+  cn: {
+    addComponents: '添加组件',
+    addEditorPage:
+      '这将在你的项目中添加一个 `/editor` 页面，并包含所有必要的组件作为起点。',
+    allImports: '所有需要的导入：',
+    and: '和',
+    cliBased: 'CLI 安装',
+    configureCLI: '配置 CLI',
+    createPlugins: '创建插件',
+    createPluginsDesc: '创建你的插件并将组件链接到它们。',
+    forReliableSetup: '为了最可靠的设置，我们建议遵循我们的',
+    fullCode: '完整代码',
+    gettingStarted: '开始使用',
+    gettingStartedGuide: '完整指南，请参考',
+    imports: '导入',
+    install: '安装',
+    installation: '安装',
+    installDepsForComponents: '安装组件的依赖项',
+    installPeerDeps: '安装依赖项和 Plate：',
+    installPlateUI: '安装 Plate UI',
+    installPlugins: '安装插件',
+    installSelectedPlugins: '安装你选择的插件：',
+    manualInstallation: '手动安装',
+    next: '接下来，',
+    partialInstallation: '这里是基于你选择的插件和组件的部分安装步骤。',
+    renderEditor: '最后，渲染编辑器',
+    section: '部分。',
+    startFromAIEditor: '从 AI 编辑器开始',
+    startFromBasicEditor: '从基础编辑器开始',
+    thenAddComponents: '。然后，添加你选择的组件：',
+    useCommand: '使用以下命令将 AI 编辑器添加到你的项目：',
+  },
+  en: {
+    addComponents: 'Add Components',
+    addEditorPage:
+      'This will add an `/editor` page to your project along with all necessary components as a starting point.',
+    allImports: 'All the imports you need:',
+    and: 'and',
+    cliBased: 'CLI-based installation',
+    configureCLI: 'configure the CLI',
+    createPlugins: 'Create Plugins',
+    createPluginsDesc:
+      'Create your plugins and link your components into them.',
+    forReliableSetup: 'For the most reliable setup, we recommend following our',
+    fullCode: 'Full code',
+    gettingStarted: 'Getting Started',
+    gettingStartedGuide: 'For a complete guide, refer to the',
+    imports: 'Imports',
+    install: 'Install',
+    installation: 'Installation',
+    installDepsForComponents: 'Install the dependencies for the components',
+    installPeerDeps: 'Install the peer dependencies and Plate:',
+    installPlateUI: 'install Plate UI',
+    installPlugins: 'Install Plugins',
+    installSelectedPlugins: 'Install your selected plugins:',
+    manualInstallation: 'Manual installation',
+    next: 'Next,',
+    partialInstallation:
+      'Here are partial installation steps based on the plugins and components you have selected.',
+    renderEditor: 'Finally, render the editor',
+    section: 'section.',
+    startFromAIEditor: 'Start from AI Editor',
+    startFromBasicEditor: 'Start from Basic Editor',
+    thenAddComponents: '. Then, add the components you have selected:',
+    useCommand:
+      'Use the following command to add the AI editor to your project:',
+  },
+};
 
 function getEditorCodeGeneratorResult({
   checkedComponents,
@@ -63,8 +135,10 @@ function getEditorCodeGeneratorResult({
 }
 
 export default function InstallationTab() {
-  const checkedPlugins = settingsStore.use.checkedPlugins();
-  const checkedComponents = settingsStore.use.checkedComponents();
+  const locale = useLocale();
+  const content = i18n[locale as keyof typeof i18n];
+  const checkedPlugins = useStoreValue(SettingsStore, 'checkedPlugins');
+  const checkedComponents = useStoreValue(SettingsStore, 'checkedComponents');
   const mounted = useMounted();
   const [isManual, setIsManual] = useState(false);
   const [radioValue, setRadioValue] = useState('editor-basic');
@@ -234,7 +308,7 @@ export default function InstallationTab() {
           : ''
       }import { usePlateEditor, Plate${hasEditor ? '' : ', PlateContent'}${
         plateImports.length > 0 ? ', ' + plateImports : ''
-      } } from '@udecode/plate-common/react';`,
+      } } from '@udecode/plate/react';`,
       ...importsGroups,
       ...customImports,
       '',
@@ -309,7 +383,6 @@ export default function InstallationTab() {
     pluginsCode.push(formattedPlugin + ',');
   });
 
-  const hasDraggable = components.some((comp) => comp.id === 'draggable');
   const hasPlaceholder = components.some((comp) => comp.id === 'placeholder');
 
   const usageCode = [
@@ -318,11 +391,11 @@ export default function InstallationTab() {
     pluginsCode.join('\n'),
     '  ],',
     '  override: {',
-    `    components: ${hasDraggable ? 'withDraggables(' : ''}${hasPlaceholder ? 'withPlaceholders(' : ''}({`,
+    `    components: ${hasPlaceholder ? 'withPlaceholders(' : ''}({`,
     ...componentsWithPluginKey.map(
       ({ pluginKey, usage }) => `      [${pluginKey}]: ${usage},`
     ),
-    `    })${hasPlaceholder ? ')' : ''}${hasDraggable ? ')' : ''},`,
+    `    })${hasPlaceholder ? ')' : ''},`,
     '  },',
     '  value: [',
     '    {',
@@ -389,18 +462,18 @@ export default function InstallationTab() {
 
   return (
     <>
-      <H2>Installation</H2>
+      <H2>{content.installation}</H2>
 
       <Typography.P>
-        For a complete guide, refer to the{' '}
+        {content.gettingStartedGuide}{' '}
         <Link href="/docs/getting-started" target="_blank">
-          Getting Started
+          {content.gettingStarted}
         </Link>{' '}
-        section.
+        {content.section}
       </Typography.P>
 
       <Steps>
-        <Step>Install</Step>
+        <Step>{content.install}</Step>
         <RadioGroup
           value={radioValue}
           onValueChange={(value) => {
@@ -410,33 +483,33 @@ export default function InstallationTab() {
         >
           <div className="mt-4 flex items-center space-x-2">
             <RadioGroupItem id="r1" value="editor-basic" />
-            <Label htmlFor="r1">Start from Basic Editor</Label>
+            <Label htmlFor="r1">{content.startFromBasicEditor}</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem id="r2" value="editor-ai" />
-            <Label htmlFor="r2">Start from AI Editor</Label>
+            <Label htmlFor="r2">{content.startFromAIEditor}</Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem id="r3" value="manual" />
-            <Label htmlFor="r3">Manual installation</Label>
+            <Label htmlFor="r3">{content.manualInstallation}</Label>
           </div>
         </RadioGroup>
         {isManual ? (
           <div>
             <InstallationCode
               code={[
-                `npm install react react-dom slate slate-dom slate-react slate-history slate-hyperscript`,
-                `npm install @udecode/plate-common`,
+                `npm install react react-dom`,
+                `npm install @udecode/plate`,
               ].join('\n')}
               bash
             >
-              Install the peer dependencies and Plate:
+              {content.installPeerDeps}
             </InstallationCode>
             {someComponents && (
               <p className="mt-4">
-                Next,{' '}
+                {content.next}{' '}
                 <Link href="/docs/components/installation" target="_blank">
-                  install Plate UI
+                  {content.installPlateUI}
                 </Link>
                 .
               </p>
@@ -444,9 +517,7 @@ export default function InstallationTab() {
           </div>
         ) : (
           <div className="mt-6">
-            <Typography.P>
-              Use the following command to add the AI editor to your project:
-            </Typography.P>
+            <Typography.P>{content.useCommand}</Typography.P>
             <InstallationCode
               code={`npx shadcx@latest add plate/editor-${
                 radioValue === 'editor-ai' ? 'ai' : 'basic'
@@ -454,58 +525,56 @@ export default function InstallationTab() {
               bash
             ></InstallationCode>
             <Typography.P className="mt-4">
-              This will add an <code>/editor</code> page to your project along
-              with all necessary components as a starting point.
+              {content.addEditorPage}
             </Typography.P>
           </div>
         )}
         {isManual && somePlugins && (
           <>
-            <Step>Install Plugins</Step>
+            <Step>{content.installPlugins}</Step>
             <InstallationCode code={installCommands.plugins} bash>
-              Install your selected plugins:
+              {content.installSelectedPlugins}
             </InstallationCode>
           </>
         )}
         {isManual && someComponents && (
           <>
-            <Step>Add Components</Step>
+            <Step>{content.addComponents}</Step>
             <InstallationCode code={installCommands.components} bash>
               <Link href="/docs/components/installation" target="_blank">
-                Install the dependencies for the components
+                {content.installDepsForComponents}
               </Link>{' '}
-              and{' '}
+              {content.and}{' '}
               <Link href="/docs/components/cli" target="_blank">
-                configure the CLI
+                {content.configureCLI}
               </Link>
-              . Then, add the components you have selected:
+              . {content.thenAddComponents}
             </InstallationCode>
           </>
         )}
 
         {(isManual || radioValue === 'editor-basic') && (
           <>
-            <Step>Imports</Step>
+            <Step>{content.imports}</Step>
             <InstallationCode code={importsCode}>
-              Here are partial installation steps based on the plugins and
-              components you have selected.
+              {content.partialInstallation}
               <br />
-              For the most reliable setup, we recommend following our{' '}
+              {content.forReliableSetup}
               <Link href="/docs/components/installation" target="_blank">
-                CLI-based installation
+                {content.cliBased}
               </Link>
               .
               <br />
-              All the imports you need:
+              {content.allImports}
             </InstallationCode>
-            <Step>Create Plugins</Step>
+            <Step>{content.createPlugins}</Step>
             <InstallationCode code={usageCode}>
-              Create your plugins and link your components into them.
+              {content.createPluginsDesc}
             </InstallationCode>
 
             {radioValue === 'editor-basic' && (
               <>
-                <Step>Finally, render the editor</Step>
+                <Step>{content.renderEditor}</Step>
                 <InstallationCode code={plateCode} />
               </>
             )}
@@ -518,7 +587,7 @@ export default function InstallationTab() {
             >
               <AccordionItem className="" value="1">
                 <AccordionTrigger className="justify-start gap-1">
-                  Full code
+                  {content.fullCode}
                 </AccordionTrigger>
                 <AccordionContent>
                   <InstallationCode code={fullCode}></InstallationCode>

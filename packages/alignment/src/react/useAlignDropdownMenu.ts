@@ -1,47 +1,23 @@
-import { getNodeEntries, isBlock, isDefined } from '@udecode/plate-common';
-import {
-  focusEditor,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
+import { useEditorRef, useSelectionFragmentProp } from '@udecode/plate/react';
 
-import { type Alignment, BaseAlignPlugin, setAlign } from '../index';
+import { type Alignment, setAlign } from '../index';
 
-export const useAlignDropdownMenuState = () => {
-  const value: Alignment = useEditorSelector((editor) => {
-    let commonAlignment: string | undefined;
-    const codeBlockEntries = getNodeEntries(editor, {
-      match: (n) => isBlock(editor, n),
-    });
-    const nodes = Array.from(codeBlockEntries);
-    nodes.forEach(([node]) => {
-      const align: string = (node[BaseAlignPlugin.key] as string) || 'start';
-
-      if (!isDefined(commonAlignment)) {
-        commonAlignment = align;
-      } else if (commonAlignment !== align) {
-        commonAlignment = undefined;
-      }
-    });
-
-    if (isDefined(commonAlignment)) {
-      const nodeValue = commonAlignment;
-
-      if (nodeValue === 'left') return 'left';
-      if (nodeValue === 'center') return 'center';
-      if (nodeValue === 'right') return 'right';
-      if (nodeValue === 'end') return 'end';
-      if (nodeValue === 'justify') return 'justify';
-    }
-
-    return 'start';
-  }, []);
+/** @deprecated */
+export const useAlignDropdownMenuState = ({
+  structuralTypes,
+}: { structuralTypes?: string[] } = {}) => {
+  const value = useSelectionFragmentProp({
+    defaultValue: 'start',
+    structuralTypes,
+    getProp: (node) => node.align,
+  });
 
   return {
-    value,
+    value: value as Alignment,
   };
 };
 
+/** @deprecated */
 export const useAlignDropdownMenu = ({
   value,
 }: ReturnType<typeof useAlignDropdownMenuState>) => {
@@ -55,7 +31,7 @@ export const useAlignDropdownMenu = ({
           value: newValue as Alignment,
         });
 
-        focusEditor(editor);
+        editor.tf.focus();
       },
     },
   };

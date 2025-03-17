@@ -1,5 +1,26 @@
 # @udecode/plate-resizable
 
+## 44.0.0
+
+### Major Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `jotai-x@2`. [Migration](https://github.com/udecode/jotai-x/blob/main/packages/jotai-x/CHANGELOG.md#211) needed only if you use one of these stores:
+
+  - `useCommentStore`
+  - `usePlaceholderStore`
+  - `useResizableStore`
+  - `useTableStore`
+
+## 43.0.0
+
+## 42.0.0
+
+## 41.0.0
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Replace `findNodePath` with `findPath`
+
 ## 40.0.0
 
 ## 39.1.6

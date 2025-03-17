@@ -1,0 +1,156 @@
+---
+title: Collaboration
+---
+
+<Callout className="my-4">
+
+**Backend Development in Progress** - Demo Unavailable.
+
+</Callout>
+
+<PackageInfo>
+
+## Features
+
+- The yjs plugin enables support for collaboration using [slate-yjs](https://docs.slate-yjs.dev/) and [Hocuspocus](https://docs.slate-yjs.dev/walkthroughs/collaboration-hocuspocus).
+- By default remote cursors are not rendered unless you install the remote cursor overlay and include it in the config.
+- Cursors are rendered slightly faded and become solid on hover. Use the `data` field in `cursorOptions` to customise the display name and color.
+
+</PackageInfo>
+
+## Frontend
+
+### Installation
+
+```bash
+npm install @udecode/plate-yjs
+```
+
+### Usage
+
+```tsx
+import { YjsPlugin } from '@udecode/plate-yjs/react';
+import { RemoteCursorOverlay } from '@/components/plate-ui/remote-cursor-overlay';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    YjsPlugin.configure({
+      render: {
+        afterEditable: RemoteCursorOverlay,
+      },
+      options: {
+        cursorOptions: {
+          autoSend: true,
+          data: { name: 'A plate user', color: '#5AC990' },
+        },
+        disableCursors: false,
+        hocuspocusProviderOptions: {
+          url: 'https://hocuspocus.test/hocuspocus',
+          name: 'test',
+        },
+      },
+    }),
+  ],
+});
+```
+
+### Editor Container
+
+The editor requires a container component above `PlateContent` to ensure correct cursor overlay positioning:
+
+```tsx
+export const EditorContainer = (
+  props: React.HTMLAttributes<HTMLDivElement>
+) => {
+  const editor = useEditorRef();
+  const containerRef = useEditorContainerRef();
+
+  return <div id={editor.uid} ref={containerRef} {...props} />;
+};
+```
+
+This component is available in [Editor](/docs/components/editor).
+
+## Backend
+
+Follow the backend instructions in [Hocuspocus docs](https://tiptap.dev/hocuspocus/getting-started).
+
+## Plugins
+
+### `YjsPlugin`
+
+<API name="YjsPlugin">
+<APIOptions>
+  <APIItem name="cursorOptions" type="WithCursorsOptions<TCursorData>" optional>
+    Configuration for handling cursors in the editor. These options are passed to the withCursors function.
+
+    See [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors).
+  </APIItem>
+  <APIItem name="hocuspocusProviderOptions" type="HocuspocusProviderConfiguration" required>
+    Configuration for the Hocuspocus provider.
+
+    See [HocuspocusProviderConfiguration API](https://tiptap.dev/hocuspocus/provider/configuration).
+  </APIItem>
+  <APIItem name="yjsOptions" type="WithYjsOptions" optional>
+    Optional configuration for the Yjs integration. These options are passed to the withYjs function.
+
+    See [WithYjsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#withyjs).
+  </APIItem>
+  <APIItem name="disableCursors" type="boolean" optional>
+    A flag indicating whether to disable the cursor feature in the editor.
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `useYjsStore`
+
+<API name="useYjsStore">
+<APIState>
+  <APIItem name="isConnected" type="boolean">
+    Whether the editor is connected to the Hocuspocus server.
+  </APIItem>
+  <APIItem name="isSynced" type="boolean">
+    Whether the editor is synced with the Hocuspocus server.
+  </APIItem>
+</APIState>
+</API>
+
+### `withTYjs`
+
+Higher-order function that wraps a Plate editor with Yjs support, allowing for real-time collaborative editing.
+
+## Types
+
+### `PlateYjsEditorProps`
+
+Extends `YjsEditorProps` and [CursorEditor](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#cursoreditor).
+
+<API name="PlateYjsEditorProps">
+<APIAttributes>
+
+<APIItem name="yjs" type="object">
+
+<APISubList>
+
+<APISubListItem parent="yjs" name="provider" type="HocuspocusProvider">
+
+The Hocuspocus provider instance.
+
+</APISubListItem>
+
+</APISubList>
+
+</APIItem>
+</APIAttributes>
+</API>
+
+### `YHistoryEditorProps`
+
+Extends `YjsEditorProps`, [YHistoryEditor](https://docs.slate-yjs.dev/api/slate-yjs-core/history-plugin#yhistoryeditor).
+
+### `YjsEditorProps`
+
+See [YjsEditor API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#yjseditor).

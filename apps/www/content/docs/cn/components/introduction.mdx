@@ -1,0 +1,92 @@
+---
+title: 介绍
+description: 使用 shadcn/ui、Radix UI 和 Tailwind CSS 构建的可复用组件。
+---
+
+这**不是**一个组件库。它是一个可复用的组件集合，你可以将这些组件复制并粘贴到你的应用中。
+
+**为什么说这不是一个组件库？**
+
+我们的意思是，你不需要将其作为依赖项安装。它不通过 npm 提供或分发。
+
+选择你需要的组件。将代码复制并粘贴到你的项目中，并根据你的需求进行自定义。代码是你的。
+
+_你可以将其作为参考，构建你自己的组件库。_
+
+## 常见问题
+
+<Accordion type="multiple">
+
+<AccordionItem value="faq-0">
+<AccordionTrigger>
+
+它是 shadcn/ui 的替代品吗？
+
+</AccordionTrigger>
+<AccordionContent>
+
+不，它不是 [shadcn/ui](https://ui.shadcn.com/) 的替代品。
+相反，Plate UI 是一个基于 [shadcn/ui](https://ui.shadcn.com/) 和 [Radix UI](https://www.radix-ui.com/) 构建的扩展组件集合，专门为**富文本编辑器**设计。对于应用的其他部分，你应该继续使用其他组件，例如 [shadcn/ui](https://ui.shadcn.com/)。
+
+Plate UI 遵循与 [shadcn/ui](https://ui.shadcn.com/) 相同的约定、用法和模式，这意味着你可以无缝地将其与现有的 [shadcn/ui](https://ui.shadcn.com/) 组件集成，而不是替换它们。
+
+在 [shadcn/ui](https://ui.shadcn.com/) 之后，Plate UI 是第一个发布的组件注册表。
+
+</AccordionContent>
+
+</AccordionItem>
+
+<AccordionItem value="faq-1">
+<AccordionTrigger>
+为什么是复制/粘贴而不是打包为依赖项？
+</AccordionTrigger>
+<AccordionContent>
+这样做的目的是让你拥有对代码的所有权和控制权，允许你决定组件的构建和样式。
+
+从一些合理的默认值开始，然后根据你的需求自定义组件。
+
+将组件打包为 npm 包的缺点之一是样式与实现耦合在一起。_组件的设计应该与其实现分离。_
+
+</AccordionContent>
+
+</AccordionItem>
+
+<AccordionItem value="faq-2">
+<AccordionTrigger>
+    你计划将其发布为 npm 包吗？
+  </AccordionTrigger>
+  <AccordionContent>
+    不。我们没有计划将其发布为 npm 包。
+  </AccordionContent>
+</AccordionItem>
+<AccordionItem value="faq-3">
+<AccordionTrigger>
+支持哪些框架？
+</AccordionTrigger>
+<AccordionContent>
+
+[Plate](/docs) 以及任何支持 React 的框架。[Next.js](/docs/components/installation/next)、[Remix](/docs/components/remix) 等。
+
+</AccordionContent>
+</AccordionItem>
+
+<AccordionItem value="faq-4">
+	<AccordionTrigger>
+	我可以在我的项目中使用它吗？
+	</AccordionTrigger>
+	<AccordionContent>
+可以。免费用于个人和商业项目。不需要署名，但如果你愿意分享你的编辑器应用 [这里](https://github.com/udecode/plate/issues/818)，我们将不胜感激！
+
+    </AccordionContent>
+
+</AccordionItem>
+
+</Accordion>
+
+## 致谢
+
+- [shadcn/ui](https://ui.shadcn.com/) - 用于 UI、文档和 CLI。
+- [Radix UI](https://radix-ui.com) - 用于基础组件。
+- [Vercel](https://vercel.com) - 用于托管。
+- [Shu Ding](https://shud.in) - 排版样式借鉴了他的 Nextra 作品。
+- [cmdk](https://cmdk.paco.me) - 用于 `<Command />` 组件。

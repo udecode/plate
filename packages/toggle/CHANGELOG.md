@@ -1,5 +1,27 @@
 # @udecode/plate-toggle
 
+## 45.0.6
+
+### Patch Changes
+
+- [#4107](https://github.com/udecode/plate/pull/4107) by [@12joan](https://github.com/12joan) – Expect `NodeIn<Value>['id']` to have type `unknown` since the Node ID plugin may or may not be enabled.
+
+## 44.0.0
+
+## 43.0.5
+
+### Patch Changes
+
+- [#4038](https://github.com/udecode/plate/pull/4038) by [@yf-yang](https://github.com/yf-yang) – Update types and docs of `aboveNodes` and `belowNodes`
+
+## 43.0.3
+
+## 43.0.0
+
+## 42.0.0
+
+## 41.0.0
+
 ## 40.0.0
 
 ## 39.0.0

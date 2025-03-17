@@ -1,0 +1,224 @@
+---
+title: Combobox
+docs:
+  - route: /docs/mention
+    title: Mention Plugin
+  - route: /docs/slash-command
+    title: Slash Command Plugin
+  - route: /docs/emoji
+    title: Emoji Plugin
+---
+
+The `TriggerComboboxPluginOptions` configures your plugin to insert a combobox input element when the user types a specified trigger character.
+
+For example:
+- [Mention](/docs/mention) plugin inserts a combobox when typing `@`
+- [Slash Command](/docs/slash-command) plugin activates with `/`
+- [Emoji](/docs/emoji) plugin shows suggestions with `:`
+
+## Usage
+
+<Steps>
+
+<Step>
+Create an input plugin for the combobox:
+
+```ts
+const ComboboxInputPlugin = createPlatePlugin({
+  key: 'combobox_input',
+  node: {
+    isElement: true,
+    isInline: true,
+    isVoid: true,
+  },
+});
+```
+</Step>
+
+<Step>
+Create your main plugin with `withTriggerCombobox`:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'my_plugin',
+  // Plugin node options
+  node: {
+    isElement: true,
+    isInline: true,
+    isVoid: true,
+  },
+  // Combobox options
+  options: {
+    createComboboxInput: (trigger) => ({
+      children: [{ text: '' }],
+      trigger,
+      type: ComboboxInputPlugin.key,
+    }),
+    trigger: '@',
+    triggerPreviousCharPattern: /^\s?$/,
+  },
+  // Include the input plugin
+  plugins: [ComboboxInputPlugin],
+}).overrideEditor(withTriggerCombobox);
+```
+
+</Step>
+<Step>
+The input element component can be built using [Inline Combobox](/docs/components/inline-combobox).
+</Step>
+</Steps>
+
+## Examples 
+
+<ComponentPreview name="mention-demo" />
+<ComponentPreview name="slash-command-demo" />
+<ComponentPreview name="emoji-demo" />
+
+## Types
+
+### `TriggerComboboxPluginOptions`
+
+<API name="TriggerComboboxPluginOptions">
+<APIAttributes>
+  <APIItem name="createComboboxInput" type="(trigger: string) => TElement">
+    Function to create the input node when trigger is activated.
+  </APIItem>
+  <APIItem name="trigger" type="RegExp | string[] | string">
+    Character(s) that trigger the combobox. Can be:
+    - A single character (e.g. '@')
+    - An array of characters
+    - A regular expression
+  </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp">
+    Pattern to match the character before trigger.
+    - **Example:** `/^\s?$/` matches start of line or space
+  </APIItem>
+  <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>
+    Custom query function to control when trigger is active.
+  </APIItem>
+</APIAttributes>
+</API>
+
+## Hooks
+
+### `useComboboxInput`
+
+Hook for managing combobox input behavior and keyboard interactions.
+
+<API name="useComboboxInput">
+<APIOptions type="UseComboboxInputOptions">
+  <APIItem name="ref" type="RefObject<HTMLElement>">
+    Reference to the input element.
+  </APIItem>
+  <APIItem name="autoFocus" type="boolean" optional>
+    Auto focus the input when mounted.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnArrowLeftRight" type="boolean" optional>
+    Cancel on arrow keys.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnBackspace" type="boolean" optional>
+    Cancel on backspace at start.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnBlur" type="boolean" optional>
+    Cancel on blur.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnDeselect" type="boolean" optional>
+    Cancel when deselected.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnEscape" type="boolean" optional>
+    Cancel on escape key.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cursorState" type="ComboboxInputCursorState" optional>
+    Current cursor position state.
+  </APIItem>
+  <APIItem name="forwardUndoRedoToEditor" type="boolean" optional>
+    Forward undo/redo to editor.
+
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="onCancelInput" type="(cause: CancelComboboxInputCause) => void" optional>
+    Callback when input is cancelled.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="cancelInput" type="(cause?: CancelComboboxInputCause, focusEditor?: boolean) => void">
+    Function to cancel the input.
+  </APIItem>
+  <APIItem name="props" type="object">
+    Props for the input element.
+    <APISubList>
+      <APISubListItem parent="props" name="onBlur" type="EventHandler">
+        Blur event handler.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onKeyDown" type="EventHandler">
+        Keydown event handler.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="removeInput" type="(focusEditor?: boolean) => void">
+    Function to remove the input node.
+  </APIItem>
+</APIReturns>
+</API>
+
+Example:
+
+```tsx
+const MyCombobox = () => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const cursorState = useHTMLInputCursorState(inputRef);
+
+  const { props: inputProps, removeInput } = useComboboxInput({
+    ref: inputRef,
+    cursorState,
+    cancelInputOnBlur: false,
+    onCancelInput: (cause) => {
+      if (cause !== 'backspace') {
+        insertText(editor, trigger + value);
+      }
+      if (cause === 'arrowLeft' || cause === 'arrowRight') {
+        moveSelection(editor, {
+          distance: 1,
+          reverse: cause === 'arrowLeft',
+        });
+      }
+    },
+  });
+
+  return <input ref={inputRef} {...inputProps} />;
+};
+```
+
+### `useHTMLInputCursorState`
+
+Hook for tracking cursor position in an HTML input element.
+
+<API name="useHTMLInputCursorState">
+<APIParameters>
+  <APIItem name="ref" type="RefObject<HTMLInputElement>">
+    Reference to the input element to track.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="ComboboxInputCursorState">
+  <APIItem name="atStart" type="boolean">
+    Whether cursor is at the start of input.
+  </APIItem>
+  <APIItem name="atEnd" type="boolean">
+    Whether cursor is at the end of input.
+  </APIItem>
+</APIReturns>
+</API>

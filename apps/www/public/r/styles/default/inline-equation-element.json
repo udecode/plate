@@ -1,0 +1,38 @@
+{
+  "dependencies": [
+    "@udecode/plate-math"
+  ],
+  "doc": {
+    "description": "An inline LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
+    "docs": [
+      {
+        "route": "https://platejs.org/docs/equation",
+        "title": "Equation"
+      }
+    ],
+    "examples": [
+      "equation-demo"
+    ]
+  },
+  "files": [
+    {
+      "path": "plate-ui/inline-equation-element.tsx",
+      "content": "'use client';\n\nimport { useRef, useState } from 'react';\n\nimport type { TEquationElement } from '@udecode/plate-math';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { useEquationElement } from '@udecode/plate-math/react';\nimport {\n  PlateElement,\n  useEditorSelector,\n  useElement,\n  useSelected,\n} from '@udecode/plate/react';\nimport { RadicalIcon } from 'lucide-react';\n\nimport { EquationPopoverContent } from './equation-popover';\nimport { Popover, PopoverTrigger } from './popover';\n\nexport const InlineEquationElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const element = useElement<TEquationElement>();\n    const katexRef = useRef<HTMLDivElement | null>(null);\n    const selected = useSelected();\n    const isCollapsed = useEditorSelector(\n      (editor) => editor.api.isCollapsed(),\n      []\n    );\n    const [open, setOpen] = useState(selected && isCollapsed);\n\n    useEquationElement({\n      element,\n      katexRef: katexRef,\n      options: {\n        displayMode: true,\n        errorColor: '#cc0000',\n        fleqn: false,\n        leqno: false,\n        macros: { '\\\\f': '#1f(#2)' },\n        output: 'htmlAndMathml',\n        strict: 'warn',\n        throwOnError: false,\n        trust: false,\n      },\n    });\n\n    return (\n      <PlateElement\n        ref={ref}\n        className={cn(\n          'inline-block rounded-sm select-none [&_.katex-display]:my-0',\n          className\n        )}\n        {...props}\n      >\n        <Popover open={open} onOpenChange={setOpen} modal={false}>\n          <PopoverTrigger asChild>\n            <div\n              className={cn(\n                'after:absolute after:inset-0 after:-top-0.5 after:-left-1 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[\"\"]',\n                'h-6',\n                element.texExpression.length > 0 && open && 'after:bg-brand/15',\n                element.texExpression.length === 0 &&\n                  'text-muted-foreground after:bg-neutral-500/10',\n                className\n              )}\n              contentEditable={false}\n            >\n              <span\n                ref={katexRef}\n                className={cn(\n                  element.texExpression.length === 0 && 'hidden',\n                  'font-mono leading-none'\n                )}\n              />\n              {element.texExpression.length === 0 && (\n                <span>\n                  <RadicalIcon className=\"mr-1 inline-block h-[19px] w-4 py-[1.5px] align-text-bottom\" />\n                  New equation\n                </span>\n              )}\n            </div>\n          </PopoverTrigger>\n\n          <EquationPopoverContent\n            className=\"my-auto\"\n            open={open}\n            placeholder=\"E = mc^2\"\n            setOpen={setOpen}\n            isInline\n          />\n        </Popover>\n\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/inline-equation-element.tsx"
+    },
+    {
+      "path": "plate-ui/inline-equation-element-static.tsx",
+      "content": "import React from 'react';\n\nimport type { TEquationElement } from '@udecode/plate-math';\n\nimport { cn } from '@udecode/cn';\nimport { type SlateElementProps, SlateElement } from '@udecode/plate';\nimport { getEquationHtml } from '@udecode/plate-math';\n\nexport function InlineEquationElementStatic({\n  children,\n  className,\n  ...props\n}: SlateElementProps) {\n  const element = props.element as TEquationElement;\n\n  const html = getEquationHtml({\n    element,\n    options: {\n      displayMode: true,\n      errorColor: '#cc0000',\n      fleqn: false,\n      leqno: false,\n      macros: { '\\\\f': '#1f(#2)' },\n      output: 'htmlAndMathml',\n      strict: 'warn',\n      throwOnError: false,\n      trust: false,\n    },\n  });\n\n  return (\n    <SlateElement\n      className={cn(\n        'inline-block rounded-sm select-none [&_.katex-display]:my-0',\n        className\n      )}\n      {...props}\n    >\n      <div\n        className={cn(\n          'after:absolute after:inset-0 after:-top-0.5 after:-left-1 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[\"\"]',\n          'h-6',\n          element.texExpression.length === 0 &&\n            'text-muted-foreground after:bg-neutral-500/10',\n          className\n        )}\n      >\n        <span\n          className={cn(\n            element.texExpression.length === 0 && 'hidden',\n            'font-mono leading-none'\n          )}\n          dangerouslySetInnerHTML={{\n            __html: html,\n          }}\n        />\n      </div>\n      {children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/inline-equation-element-static.tsx"
+    }
+  ],
+  "name": "inline-equation-element",
+  "registryDependencies": [
+    "popover"
+  ],
+  "type": "registry:ui",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
+}

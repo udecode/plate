@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate } from '@udecode/plate-common/react';
+import { Plate } from '@udecode/plate/react';
 
 import { useCreateEditor } from '@/components/editor/use-create-editor';
 import { Editor, EditorContainer } from '@/components/plate-ui/editor';

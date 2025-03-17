@@ -1,6 +1,6 @@
 {
   "name": "@udecode/cn",
-  "version": "40.2.8",
+  "version": "44.0.1",
   "description": "React cn utils",
   "keywords": [
     "utils"
@@ -41,12 +41,12 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/react-utils": "40.2.8"
+    "@udecode/react-utils": "44.0.1"
   },
   "peerDependencies": {
     "class-variance-authority": ">=0.7.0",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
     "tailwind-merge": ">=2.2.0"
   },
   "publishConfig": {

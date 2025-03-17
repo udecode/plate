@@ -2,15 +2,15 @@
 import * as React from 'react';
 import type { ReactNode } from 'react';
 import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
+import { vscDarkPlus as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { cn } from '@udecode/cn';
-import { vscDarkPlus as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { CopyButton, CopyNpmCommandButton } from '@/components/copy-button';
 import * as Typography from '@/components/typography';
 
 const SyntaxHighlighter =
-  Prism as typeof React.Component<SyntaxHighlighterProps>;
+  Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
 
 export function InstallationCode({
   bash,
@@ -29,7 +29,7 @@ export function InstallationCode({
 
       <div className="relative">
         <SyntaxHighlighter
-          className="rounded-lg border !py-4"
+          className="rounded-lg border py-4!"
           style={theme}
           language={bash ? 'bash' : 'typescript'}
           showLineNumbers={false}
@@ -39,7 +39,7 @@ export function InstallationCode({
 
         {npmCommand ? (
           <CopyNpmCommandButton
-            className={cn('absolute right-4 top-4')}
+            className={cn('absolute top-4 right-4')}
             commands={{
               __bunCommand__: code.replaceAll('npm install', 'bun add'),
               __npmCommand__: code,
@@ -48,7 +48,7 @@ export function InstallationCode({
             }}
           />
         ) : (
-          <CopyButton className={cn('absolute right-4 top-4')} value={code} />
+          <CopyButton className={cn('absolute top-4 right-4')} value={code} />
         )}
       </div>
     </div>

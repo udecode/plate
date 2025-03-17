@@ -1,14 +1,10 @@
-import {
-  type PlatePlugin,
-  Key,
-  toPlatePlugin,
-} from '@udecode/plate-common/react';
+import { type PlatePlugin, Key, toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseHeadingPlugin } from '../lib/BaseHeadingPlugin';
 
 export const HeadingPlugin = toPlatePlugin(BaseHeadingPlugin, ({ plugin }) => ({
   plugins: (plugin as unknown as PlatePlugin).plugins.map((p) =>
-    (p as PlatePlugin).extend(({ editor, type }) => {
+    (p as PlatePlugin).extend(({ plugin }) => {
       const level = p.key.at(-1);
 
       if (level > 3) return {};
@@ -21,8 +17,8 @@ export const HeadingPlugin = toPlatePlugin(BaseHeadingPlugin, ({ plugin }) => ({
               [Key.Mod, Key.Shift, level],
             ],
             preventDefault: true,
-            handler: () => {
-              editor.tf.toggle.block({ type });
+            handler: ({ editor }) => {
+              editor.tf.toggleBlock(editor.getType(plugin));
             },
           },
         },

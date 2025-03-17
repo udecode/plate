@@ -1,12 +1,12 @@
 import React from 'react';
 
-import type { Nullable } from '@udecode/plate-common';
+import type { Nullable } from '@udecode/plate';
 
 import {
   createAtomStore,
   createPrimitiveComponent,
-} from '@udecode/plate-common/react';
-import { useReadOnly } from 'slate-react';
+  useReadOnly,
+} from '@udecode/plate/react';
 
 import type { ResizeDirection, ResizeEvent } from '../types';
 
@@ -20,10 +20,15 @@ const initialState: Nullable<ResizeHandleStoreState> = {
   onResize: null,
 };
 
-export const { ResizeHandleProvider, useResizeHandleStore } = createAtomStore(
-  initialState as ResizeHandleStoreState,
-  { name: 'resizeHandle' }
-);
+export const {
+  ResizeHandleProvider,
+  useResizeHandleSet,
+  useResizeHandleStore,
+  useResizeHandleValue,
+} = createAtomStore(initialState as ResizeHandleStoreState, {
+  name: 'resizeHandle',
+  suppressWarnings: true,
+});
 
 export type ResizeHandleOptions = {
   direction?: ResizeDirection;
@@ -45,7 +50,7 @@ export const useResizeHandleState = ({
   onTouchStart,
 }: ResizeHandleOptions) => {
   const readOnly = useReadOnly();
-  const onResizeStore = useResizeHandleStore().get.onResize();
+  const onResizeStore = useResizeHandleValue('onResize');
   const onResize = onResizeProp ?? onResizeStore;
 
   const [isResizing, setIsResizing] = React.useState(false);

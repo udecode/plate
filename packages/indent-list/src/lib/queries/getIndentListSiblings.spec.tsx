@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
 import {
+  type Descendant,
   type SlateEditor,
-  type TDescendant,
   type TElement,
-  getBlockAbove,
-} from '@udecode/plate-common';
+  createEditor,
+} from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { getIndentListSiblings } from './getIndentListSiblings';
@@ -27,11 +27,13 @@ describe('getIndentListSiblings', () => {
             1
           </hp>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
-      const editor = (<editor>{input}</editor>) as any as SlateEditor;
+      const editor = createEditor(
+        (<editor>{input}</editor>) as any as SlateEditor
+      );
 
-      const entry = getBlockAbove<TElement>(editor);
+      const entry = editor.api.block<TElement>();
 
       const siblings = getIndentListSiblings(editor, entry!);
 
@@ -72,7 +74,7 @@ describe('getIndentListSiblings', () => {
             21
           </hp>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
       const output = (
         <fragment>
@@ -87,11 +89,13 @@ describe('getIndentListSiblings', () => {
             23
           </hp>
         </fragment>
-      ) as any as TDescendant[];
+      ) as any as Descendant[];
 
-      const editor = (<editor>{input}</editor>) as any as SlateEditor;
+      const editor = createEditor(
+        (<editor>{input}</editor>) as any as SlateEditor
+      );
 
-      const entry = getBlockAbove<TElement>(editor);
+      const entry = editor.api.block<TElement>();
 
       const siblings = getIndentListSiblings(editor, entry!);
 

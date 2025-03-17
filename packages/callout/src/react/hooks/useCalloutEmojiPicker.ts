@@ -1,9 +1,8 @@
 import {
-  setNode,
   useEditorReadOnly,
   useEditorRef,
   useElement,
-} from '@udecode/plate-common/react';
+} from '@udecode/plate/react';
 
 import { type TCalloutElement, CALLOUT_STORAGE_KEY } from '../../lib';
 
@@ -35,9 +34,12 @@ export const useCalloutEmojiPicker = ({
       onSelectEmoji: (emojiValue: any) => {
         const icon = emojiValue.skins?.[0]?.native ?? emojiValue.icon;
 
-        setNode<TCalloutElement>(editor, element, {
-          icon,
-        });
+        editor.tf.setNodes<TCalloutElement>(
+          {
+            icon,
+          },
+          { at: element }
+        );
 
         localStorage.setItem(CALLOUT_STORAGE_KEY, icon);
         setIsOpen(false);

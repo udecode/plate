@@ -1,22 +1,28 @@
 import React from 'react';
 
-import type { PluginConfig } from '@udecode/plate-common';
+import type { Path, PluginConfig } from '@udecode/plate';
 import type { DropTargetMonitor } from 'react-dnd';
-import type { Path } from 'slate';
 
-import {
-  type PlateEditor,
-  createTPlatePlugin,
-} from '@udecode/plate-common/react';
+import { type PlateEditor, createTPlatePlugin } from '@udecode/plate/react';
 
-import type { DragItemNode, FileDragItemNode } from './types';
+import type {
+  DragItemNode,
+  DropLineDirection,
+  FileDragItemNode,
+} from './types';
 
 import { type ScrollerProps, DndScroller } from './components/Scroller';
+
+export const DRAG_ITEM_BLOCK = 'block';
 
 export type DndConfig = PluginConfig<
   'dnd',
   {
     draggingId?: string | null;
+    dropTarget?: {
+      id: string | null;
+      line: DropLineDirection;
+    };
     enableScroller?: boolean;
     isDragging?: boolean;
     scrollerProps?: Partial<ScrollerProps>;
@@ -33,10 +39,6 @@ export type DndConfig = PluginConfig<
 
 export const DndPlugin = createTPlatePlugin<DndConfig>({
   key: 'dnd',
-  options: {
-    draggingId: null,
-    isDragging: false,
-  },
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
       editor.setOption(plugin, 'isDragging', false);
@@ -67,6 +69,11 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
 
       return getOptions().isDragging;
     },
+  },
+  options: {
+    draggingId: null,
+    dropTarget: { id: null, line: '' },
+    isDragging: false,
   },
 }).extend(({ getOptions }) => ({
   render: {

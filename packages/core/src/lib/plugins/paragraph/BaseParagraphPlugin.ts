@@ -4,16 +4,18 @@ export type ParagraphConfig = PluginConfig<'p'>;
 
 export const BaseParagraphPlugin = createSlatePlugin({
   key: 'p',
-  node: { isElement: true },
+  node: {
+    isElement: true,
+  },
   parsers: {
     html: {
       deserializer: {
-        query: ({ element }) => element.style.fontFamily !== 'Consolas',
         rules: [
           {
             validNodeName: 'P',
           },
         ],
+        query: ({ element }) => element.style.fontFamily !== 'Consolas',
       },
     },
   },

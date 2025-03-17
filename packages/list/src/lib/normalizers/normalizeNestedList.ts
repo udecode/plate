@@ -1,13 +1,9 @@
 import {
+  type ElementEntry,
   type SlateEditor,
-  type TElement,
-  type TElementEntry,
-  getNodeEntry,
-  getParentNode,
   match,
-  moveNodes,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+  PathApi,
+} from '@udecode/plate';
 
 import { getListTypes } from '../queries/index';
 
@@ -16,11 +12,11 @@ import { getListTypes } from '../queries/index';
 // In other words, a nested list as a direct children of a list should be moved into a previous list item sibling
 export const normalizeNestedList = (
   editor: SlateEditor,
-  { nestedListItem }: { nestedListItem: TElementEntry }
+  { nestedListItem }: { nestedListItem: ElementEntry }
 ) => {
   const [, path] = nestedListItem;
 
-  const parentNode = getParentNode(editor, path);
+  const parentNode = editor.api.parent(path);
   const hasParentList =
     parentNode && match(parentNode[0], [], { type: getListTypes(editor) });
 
@@ -28,26 +24,21 @@ export const normalizeNestedList = (
     return false;
   }
 
-  let previousListItemPath: Path;
+  const previousListItemPath = PathApi.previous(path);
 
-  try {
-    previousListItemPath = Path.previous(path);
-  } catch (error) {
+  if (!previousListItemPath) {
     return false;
   }
 
   // Previous sibling is the new parent
-  const previousSiblingItem = getNodeEntry<TElement>(
-    editor,
-    previousListItemPath
-  );
+  const previousSiblingItem = editor.api.node(previousListItemPath);
 
   if (previousSiblingItem) {
     const [, previousPath] = previousSiblingItem;
     const newPath = previousPath.concat([1]);
 
     // Move the current item to the sublist
-    moveNodes(editor, {
+    editor.tf.moveNodes({
       at: path,
       to: newPath,
     });

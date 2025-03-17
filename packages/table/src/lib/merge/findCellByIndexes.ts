@@ -1,10 +1,8 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
 import type { TTableCellElement, TTableElement } from '../types';
 
-import { BaseTablePlugin } from '../BaseTablePlugin';
-import { getCellIndices } from '../merge/getCellIndices';
-import { computeCellIndices } from './computeCellIndices';
+import { getCellIndices } from '../utils/getCellIndices';
 import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 
 export const findCellByIndexes = (
@@ -13,23 +11,17 @@ export const findCellByIndexes = (
   searchRowIndex: number,
   searchColIndex: number
 ) => {
-  const { _cellIndices: cellIndices } = editor.getOptions(BaseTablePlugin);
-
   const allCells = table.children.flatMap(
     (current) => current.children
   ) as TTableCellElement[];
 
-  const foundCell = allCells.find((cell) => {
-    const cellElement = cell as TTableCellElement;
-
-    const indices =
-      getCellIndices(cellIndices!, cellElement) ||
-      computeCellIndices(editor, table, cellElement)!;
+  const foundCell = allCells.find((cellNode) => {
+    const indices = getCellIndices(editor, cellNode);
 
     const { col: _startColIndex, row: _startRowIndex } = indices;
     const { col: _endColIndex, row: _endRowIndex } = getCellIndicesWithSpans(
       indices,
-      cellElement
+      cellNode
     );
 
     if (

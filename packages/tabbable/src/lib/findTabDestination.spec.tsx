@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, type TNode, getNode } from '@udecode/plate-common';
-import { createSlateEditor } from '@udecode/plate-common';
+import { type SlateEditor, NodeApi } from '@udecode/plate';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import type { TabbableEntry } from './types';
@@ -14,38 +14,40 @@ import {
 jsxt;
 
 describe('findTabDestination', () => {
+  const e = (
+    <editor>
+      <hp>Line 1</hp>
+      <element type="my-void" void>
+        <htext />
+      </element>
+      <hp>Line 2</hp>
+      <hp>Line 3</hp>
+      <element type="my-void" void>
+        <htext />
+        <cursor />
+      </element>
+      <element type="my-void" void>
+        <htext />
+      </element>
+      <hp>Line 4</hp>
+    </editor>
+  ) as any as SlateEditor;
   const editor = createSlateEditor({
-    editor: (
-      <editor>
-        <hp>Line 1</hp>
-        <element type="my-void" void>
-          <htext />
-        </element>
-        <hp>Line 2</hp>
-        <hp>Line 3</hp>
-        <element type="my-void" void>
-          <htext />
-          <cursor />
-        </element>
-        <element type="my-void" void>
-          <htext />
-        </element>
-        <hp>Line 4</hp>
-      </editor>
-    ) as any as SlateEditor,
+    selection: e.selection,
+    value: e.children,
   });
 
   const voidPath1 = [1];
-  const voidSlateNode1 = getNode(editor, voidPath1) as TNode;
+  const voidSlateNode1 = NodeApi.get(editor, voidPath1);
   const voidDOMNode1 = document.createElement('div') as HTMLElement;
 
   const voidPath2 = [4];
-  const voidSlateNode2 = getNode(editor, voidPath2) as TNode;
+  const voidSlateNode2 = NodeApi.get(editor, voidPath2);
   const voidDOMNode2a = document.createElement('div') as HTMLElement;
   const voidDOMNode2b = document.createElement('div') as HTMLElement;
 
   const voidPath3 = [5];
-  const voidSlateNode3 = getNode(editor, voidPath3) as TNode;
+  const voidSlateNode3 = NodeApi.get(editor, voidPath3);
   const voidDOMNode3 = document.createElement('div') as HTMLElement;
 
   const tabbableEntries = [

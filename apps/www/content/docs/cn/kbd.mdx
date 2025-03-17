@@ -1,0 +1,49 @@
+---
+title: 键盘输入
+docs:
+  - route: /docs/components/kbd-leaf
+    title: Kbd Leaf
+---
+
+<ComponentPreview name="kbd-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 添加对键盘输入标记的支持
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-kbd
+```
+
+## 使用
+
+```tsx
+import { KbdPlugin } from '@udecode/plate-kbd';
+```
+
+```tsx
+const plugins = [
+  // ...其他插件,
+  KbdPlugin,
+];
+```
+
+```tsx
+const components = {
+  [KbdPlugin.key]: KbdLeaf,
+}
+```
+
+另请参阅: [KbdLeaf](/docs/components/kbd-leaf)
+
+## 插件
+
+### `KbdPlugin`
+
+用于键盘输入标记的插件。

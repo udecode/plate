@@ -4,9 +4,9 @@ import type { Emoji, EmojiMartData } from '@emoji-mart/data';
  * { unified: '1f389'; native: '🎉'; shortcodes: ':tada:'; } ]; version: 1; };
  */
 
-export type Emojis = Record<string, Emoji>;
-
 export type EmojiLibrary = EmojiMartData;
+
+export type Emojis = Record<string, Emoji>;
 
 export interface IEmojiLibrary {
   keys: string[];

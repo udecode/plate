@@ -3,8 +3,8 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { useComposedRef } from '@udecode/plate-common/react';
 import { useColorInput } from '@udecode/plate-font/react';
+import { useComposedRef } from '@udecode/plate/react';
 
 export const ColorInput = withRef<'input'>(
   ({ children, className, value = '#000000', ...props }, ref) => {
@@ -15,9 +15,11 @@ export const ColorInput = withRef<'input'>(
         {React.Children.map(children, (child) => {
           if (!child) return child;
 
-          return React.cloneElement(child as React.ReactElement, childProps);
+          return React.cloneElement(
+            child as React.ReactElement<any>,
+            childProps
+          );
         })}
-
         <input
           ref={useComposedRef(ref, inputRef)}
           className={cn('size-0 overflow-hidden border-0 p-0', className)}

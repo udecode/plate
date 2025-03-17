@@ -6,27 +6,32 @@ import { docExamples } from '@/registry/registry-examples';
 
 export const docsExamples: SidebarNavItem[] = [
   {
+    description: 'Slate to HTML',
+    href: '/docs/examples/slate-to-html',
+    label: 'New',
+    title: 'Slate to HTML',
+  },
+  {
     description: 'Export a Plate document to a file.',
     href: '/docs/examples/export',
     label: 'New',
     title: 'Export',
   },
   {
+    description: 'Server-side rendering.',
+    href: '/docs/examples/server-side',
+    title: 'Server-Side',
+  },
+  {
     description:
       "Show a diff of two different points in a Plate document's history.",
     href: '/docs/examples/version-history',
-    label: 'New',
     title: 'Version History',
   },
   {
     description: 'Nest editors in void nodes.',
     href: '/docs/examples/editable-voids',
     title: 'Editable Voids',
-  },
-  {
-    description: 'Rendering in iframes.',
-    href: '/docs/examples/iframe',
-    title: 'IFrame',
   },
   {
     description: 'Rendering hundreds of blocks.',
@@ -42,11 +47,6 @@ export const docsExamples: SidebarNavItem[] = [
     description: 'Decorate texts with markdown preview.',
     href: '/docs/examples/preview-markdown',
     title: 'Preview Markdown',
-  },
-  {
-    description: 'Server-side rendering.',
-    href: '/docs/examples/server-side',
-    title: 'Server-Side',
   },
   ...registryToNav(
     docExamples.filter(

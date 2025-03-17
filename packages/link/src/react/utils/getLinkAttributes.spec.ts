@@ -1,9 +1,9 @@
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import type { TLinkElement } from '../../lib/types';
 
+import { getLinkAttributes } from '../../lib';
 import { type LinkConfig, LinkPlugin } from '../LinkPlugin';
-import { getLinkAttributes } from './getLinkAttributes';
 
 const baseLink = {
   children: [{ text: 'Link text' }],
@@ -51,7 +51,7 @@ describe('getLinkAttributes', () => {
     const link: TLinkElement = {
       ...baseLink,
       target: '_self',
-      // eslint-disable-next-line no-script-url
+
       url: 'javascript://example.com/',
     };
 

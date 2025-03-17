@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 import type * as Y from 'yjs';
 
 import {
@@ -10,12 +10,10 @@ import {
 import type { YjsEditorProps } from './withTYjs';
 
 export type YHistoryEditor = {
-  redo: () => void;
-
-  undo: () => void;
-
   undoManager: Y.UndoManager;
   withoutSavingOrigin: unknown;
+  redo: () => void;
+  undo: () => void;
 } & YjsEditor;
 
 export type YHistoryEditorProps = Pick<

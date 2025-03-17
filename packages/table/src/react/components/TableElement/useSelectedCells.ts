@@ -1,10 +1,15 @@
 import React from 'react';
 
-import { useEditorRef } from '@udecode/plate-common/react';
-import { useReadOnly, useSelected } from 'slate-react';
+import {
+  useEditorPlugin,
+  useEditorRef,
+  usePluginOption,
+  useReadOnly,
+  useSelected,
+} from '@udecode/plate/react';
 
-import { getTableGridAbove } from '../../queries';
-import { useTableStore } from '../../stores';
+import { getTableGridAbove } from '../../../lib';
+import { TablePlugin } from '../../TablePlugin';
 
 /**
  * Many grid cells above and diff -> set No many grid cells above and diff ->
@@ -15,15 +20,15 @@ export const useSelectedCells = () => {
   const selected = useSelected();
   const editor = useEditorRef();
 
-  const [selectedCells, setSelectedCells] = useTableStore().use.selectedCells();
-  const setSelectedTable = useTableStore().set.selectedTable();
+  const { setOption } = useEditorPlugin(TablePlugin);
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
 
   React.useEffect(() => {
     if (!selected || readOnly) {
-      setSelectedCells(null);
-      setSelectedTable(null);
+      setOption('selectedCells', null);
+      setOption('selectedTables', null);
     }
-  }, [selected, editor, setSelectedCells, readOnly, setSelectedTable]);
+  }, [selected, editor, readOnly, setOption]);
 
   React.useEffect(() => {
     if (readOnly) return;
@@ -36,19 +41,12 @@ export const useSelectedCells = () => {
       const tables = tableEntries.map((entry) => entry[0]);
 
       if (JSON.stringify(cells) !== JSON.stringify(selectedCells)) {
-        setSelectedCells(cells);
-        setSelectedTable(tables);
+        setOption('selectedCells', cells);
+        setOption('selectedTables', tables);
       }
     } else if (selectedCells) {
-      setSelectedCells(null);
-      setSelectedTable(null);
+      setOption('selectedCells', null);
+      setOption('selectedTables', null);
     }
-  }, [
-    editor,
-    editor.selection,
-    readOnly,
-    selectedCells,
-    setSelectedCells,
-    setSelectedTable,
-  ]);
+  }, [editor, editor.selection, readOnly, selectedCells, setOption]);
 };

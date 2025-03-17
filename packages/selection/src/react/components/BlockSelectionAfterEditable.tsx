@@ -1,24 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {
-  findNode,
-  getEndPoint,
-  getNextNode,
-  getPreviousNode,
-  isHotkey,
-  removeNodes,
-} from '@udecode/plate-common';
+import { isHotkey, PathApi } from '@udecode/plate';
 import {
   type EditableSiblingComponent,
-  focusEditor,
-  isEditorReadOnly,
   useEditorPlugin,
   useEditorRef,
-} from '@udecode/plate-common/react';
+  usePluginOption,
+} from '@udecode/plate/react';
 
-import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
-
+import {
+  type BlockSelectionConfig,
+  BlockSelectionPlugin,
+} from '../BlockSelectionPlugin';
 import { useSelectionArea } from '../hooks';
 import {
   copySelectedBlocks,
@@ -28,10 +22,14 @@ import {
 
 export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const editor = useEditorRef();
-  const { api, getOption, getOptions, setOption, useOption } =
+  const { api, getOption, getOptions, setOption } =
     useEditorPlugin<BlockSelectionConfig>({ key: 'blockSelection' });
-  const isSelecting = useOption('isSelecting');
-  const selectedIds = useOption('selectedIds');
+
+  const isSelectingSome = usePluginOption(
+    BlockSelectionPlugin,
+    'isSelectingSome'
+  );
+  const selectedIds = usePluginOption(BlockSelectionPlugin, 'selectedIds');
 
   useSelectionArea();
 
@@ -48,84 +46,146 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   }, [setOption]);
 
   React.useEffect(() => {
-    if (isSelecting && inputRef.current) {
+    if (!isSelectingSome) {
+      setOption('anchorId', null);
+    }
+  }, [isSelectingSome, setOption]);
+
+  React.useEffect(() => {
+    if (isSelectingSome && inputRef.current) {
       inputRef.current.focus({ preventScroll: true });
     } else if (inputRef.current) {
       inputRef.current.blur();
     }
-  }, [isSelecting]);
+  }, [isSelectingSome]);
 
+  /** KeyDown logic */
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      const isReadonly = isEditorReadOnly(editor);
+      const isReadonly = editor.api.isReadOnly();
       getOptions().onKeyDownSelecting?.(e.nativeEvent);
 
-      // selecting commands
-      if (!getOptions().isSelecting) return;
-      if (isHotkey('escape')(e)) {
-        api.blockSelection.unselect();
+      if (!getOption('isSelectingSome')) return;
+      if (isHotkey('shift+up')(e)) {
+        e.preventDefault();
+        e.stopPropagation();
+        api.blockSelection.shiftSelection('up');
+
+        return;
       }
+      if (isHotkey('shift+down')(e)) {
+        e.preventDefault();
+        e.stopPropagation();
+        api.blockSelection.shiftSelection('down');
+
+        return;
+      }
+      // ESC => unselect all
+      if (isHotkey('escape')(e)) {
+        api.blockSelection.deselect();
+
+        return;
+      }
+      // Undo/redo
       if (isHotkey('mod+z')(e)) {
         editor.undo();
         selectInsertedBlocks(editor);
+
+        return;
       }
+      if (isHotkey('mod+a')(e)) {
+        api.blockSelection.selectAll();
+
+        return;
+      }
+
       if (isHotkey('mod+shift+z')(e)) {
         editor.redo();
         selectInsertedBlocks(editor);
+
+        return;
       }
-      // selecting some commands
+      // Only continue if we have "some" selection
       if (!getOption('isSelectingSome')) return;
+      // Enter => focus first selected block
       if (isHotkey('enter')(e)) {
-        // get the first block in the selection
-        const entry = findNode(editor, {
+        const entry = editor.api.node({
           at: [],
-          match: (n) => n.id && selectedIds!.has(n.id),
+          block: true,
+          match: (n) => !!n.id && selectedIds?.has(n.id as string),
         });
 
         if (entry) {
           const [, path] = entry;
-
-          // focus the end of that block
-          focusEditor(editor, getEndPoint(editor, path));
+          editor.tf.focus({ at: path, edge: 'end' });
           e.preventDefault();
         }
+
+        return;
       }
+      // Backspace/Delete => remove selected blocks
       if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
-        removeNodes(editor, {
-          at: [],
-          match: (n) => !!n.id && selectedIds!.has(n.id),
-        });
-      }
-      // TODO: skip toggle child
-      if (isHotkey('up')(e)) {
-        const firstId = [...selectedIds!][0];
-        const node = findNode(editor, {
-          at: [],
-          match: (n) => n.id && n.id === firstId,
-        });
-        const prev = getPreviousNode(editor, {
-          at: node?.[1],
+        e.preventDefault();
+        editor.tf.withoutNormalizing(() => {
+          const entries = [
+            ...editor.api.nodes({
+              at: [],
+              match: (n) => !!n.id && selectedIds?.has(n.id as string),
+            }),
+          ];
+
+          for (const [, path] of [...entries].reverse()) {
+            editor.tf.removeNodes({
+              at: path,
+            });
+          }
+
+          const entry = entries[0];
+
+          if (entry) {
+            if (editor.children.length === 0) {
+              editor.tf.focus();
+            } else {
+              const prevPath = isHotkey('backspace')(e)
+                ? PathApi.previous(entry[1])
+                : entry[1];
+
+              if (prevPath) {
+                const prevEntry = editor.api.block({ at: prevPath });
+
+                if (prevEntry) {
+                  setOption(
+                    'selectedIds',
+                    new Set([prevEntry[0].id as string])
+                  );
+                }
+              }
+            }
+          }
         });
 
-        const prevId = prev?.[0].id;
-        api.blockSelection.addSelectedRow(prevId);
+        return;
+      }
+      // If SHIFT not pressed => arrow up/down sets new anchor
+      if (isHotkey('up')(e)) {
+        e.preventDefault();
+        e.stopPropagation();
+        api.blockSelection.moveSelection('up');
+
+        return;
       }
       if (isHotkey('down')(e)) {
-        const lastId = [...selectedIds!].pop();
-        const node = findNode(editor, {
-          at: [],
-          match: (n) => n.id && n.id === lastId,
-        });
-        const next = getNextNode(editor, {
-          at: node?.[1],
-        });
-        const nextId = next?.[0].id;
-        api.blockSelection.addSelectedRow(nextId);
+        e.preventDefault();
+        e.stopPropagation();
+        api.blockSelection.moveSelection('down');
+
+        return;
       }
     },
-    [editor, selectedIds, api, getOptions, getOption]
+    [editor, getOptions, getOption, api.blockSelection, selectedIds, setOption]
   );
 
+  /** Handle copy / cut / paste in block selection */
   const handleCopy = React.useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
       e.preventDefault();
@@ -144,24 +204,39 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       if (getOption('isSelectingSome')) {
         copySelectedBlocks(editor);
 
-        if (!isEditorReadOnly(editor)) {
-          removeNodes(editor, {
-            at: [],
-            match: (n) => selectedIds!.has(n.id),
-          });
+        if (!editor.api.isReadOnly()) {
+          const entries = [
+            ...editor.api.nodes({
+              at: [],
+              match: (n) => selectedIds?.has(n.id as string),
+            }),
+          ];
 
-          focusEditor(editor);
+          if (entries.length > 0) {
+            editor.tf.withoutNormalizing(() => {
+              for (const [, path] of [...entries].reverse()) {
+                editor.tf.removeNodes({
+                  at: path,
+                });
+              }
+            });
+
+            const prevEntry = editor.api.block({ at: entries[0][1] });
+            if (prevEntry) {
+              setOption('selectedIds', new Set([prevEntry[0].id as string]));
+            }
+          }
         }
       }
     },
-    [editor, selectedIds, getOption]
+    [getOption, editor, selectedIds, setOption]
   );
 
   const handlePaste = React.useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
       e.preventDefault();
 
-      if (!isEditorReadOnly(editor)) {
+      if (!editor.api.isReadOnly()) {
         pasteSelectedBlocks(editor, e.nativeEvent);
       }
     },
@@ -175,7 +250,6 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   return ReactDOM.createPortal(
     <input
       ref={inputRef}
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       className="slate-shadow-input"
       style={{
         left: '-300px',

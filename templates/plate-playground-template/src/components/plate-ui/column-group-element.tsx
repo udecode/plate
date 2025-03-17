@@ -2,29 +2,27 @@
 
 import React from 'react';
 
-import type { TColumnElement } from '@udecode/plate-layout';
-
 import { cn, withRef } from '@udecode/cn';
-import { useElement, useRemoveNodeButton } from '@udecode/plate-common/react';
+import { type TColumnElement, setColumns } from '@udecode/plate-layout';
+import { useDebouncePopoverOpen } from '@udecode/plate-layout/react';
 import {
-  ColumnItemPlugin,
-  useColumnState,
-  useDebouncePopoverOpen,
-} from '@udecode/plate-layout/react';
+  PlateElement,
+  useEditorRef,
+  useElement,
+  useReadOnly,
+ useRemoveNodeButton } from '@udecode/plate/react';
 import { type LucideProps, Trash2Icon } from 'lucide-react';
-import { useReadOnly } from 'slate-react';
 
 import { Button } from './button';
-import { PlateElement } from './plate-element';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 import { Separator } from './separator';
 
 export const ColumnGroupElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
     return (
-      <PlateElement ref={ref} className={cn(className, 'my-2')} {...props}>
+      <PlateElement ref={ref} className={cn(className, 'mb-2')} {...props}>
         <ColumnFloatingToolbar>
-          <div className={cn('flex size-full gap-4 rounded')}>{children}</div>
+          <div className={cn('flex size-full rounded')}>{children}</div>
         </ColumnFloatingToolbar>
       </PlateElement>
     );
@@ -32,21 +30,20 @@ export const ColumnGroupElement = withRef<typeof PlateElement>(
 );
 
 export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
+  const editor = useEditorRef();
   const readOnly = useReadOnly();
-
-  const {
-    setDoubleColumn,
-    setDoubleSideDoubleColumn,
-    setLeftSideDoubleColumn,
-    setRightSideDoubleColumn,
-    setThreeColumn,
-  } = useColumnState();
-
-  const element = useElement<TColumnElement>(ColumnItemPlugin.key);
+  const element = useElement<TColumnElement>();
 
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
   const isOpen = useDebouncePopoverOpen();
+
+  const onColumnChange = (widths: string[]) => {
+    setColumns(editor, {
+      at: element,
+      widths,
+    });
+  };
 
   if (readOnly) return <>{children}</>;
 
@@ -61,26 +58,38 @@ export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
         sideOffset={10}
       >
         <div className="box-content flex items-center [&_svg]:size-4 [&_svg]:text-muted-foreground">
-          <Button size="icon" variant="ghost" onClick={setDoubleColumn}>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => onColumnChange(['50%', '50%'])}
+          >
             <DoubleColumnOutlined />
           </Button>
-          <Button size="icon" variant="ghost" onClick={setThreeColumn}>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => onColumnChange(['33%', '33%', '33%'])}
+          >
             <ThreeColumnOutlined />
           </Button>
           <Button
             size="icon"
             variant="ghost"
-            onClick={setRightSideDoubleColumn}
+            onClick={() => onColumnChange(['70%', '30%'])}
           >
             <RightSideDoubleColumnOutlined />
           </Button>
-          <Button size="icon" variant="ghost" onClick={setLeftSideDoubleColumn}>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => onColumnChange(['30%', '70%'])}
+          >
             <LeftSideDoubleColumnOutlined />
           </Button>
           <Button
             size="icon"
             variant="ghost"
-            onClick={setDoubleSideDoubleColumn}
+            onClick={() => onColumnChange(['25%', '50%', '25%'])}
           >
             <DoubleSideDoubleColumnOutlined />
           </Button>

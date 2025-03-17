@@ -31,7 +31,8 @@ describe('onKeyDownSelection', () => {
   //   ) as any;
   //
   //   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-  //     editor: input,
+  //     value: input.children,
+  // selection: input.selection,
   //     plugins: [BlockSelectionPlugin],
   //   });
   //
@@ -57,14 +58,15 @@ describe('onKeyDownSelection', () => {
   //   ) as any;
   //
   //   const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-  //     editor: input,
+  //     value: input.children,
+  // selection: input.selection,
   //     plugins: [BlockSelectionPlugin],
   //   });
   //
-  //   jest.spyOn(editor.api.blockSelection, 'selectedAll');
+  //   jest.spyOn(editor.api.blockSelection, 'selectAll');
   //
   //   await triggerKeyboardEvent('mod+a');
   //
-  //   expect(editor.api.blockSelection.selectedAll).toHaveBeenCalled();
+  //   expect(editor.api.blockSelection.selectAll).toHaveBeenCalled();
   // });
 });

@@ -73,7 +73,7 @@ export function ComponentPreview({
   );
 
   return (
-    <div className="mb-12 mt-4">
+    <div className="mt-4 mb-12">
       <BlockViewer
         block={false}
         dependencies={
@@ -99,7 +99,7 @@ export function ComponentPreview({
                   }
                 )}
               >
-                <div className="size-full grow">{Preview}</div>
+                <div className="size-full grow overflow-auto">{Preview}</div>
               </div>
             ) : (
               loadingPreview

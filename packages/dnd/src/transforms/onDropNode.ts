@@ -1,94 +1,133 @@
+import type { PlateEditor } from '@udecode/plate/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type TEditor, findNode, moveNodes } from '@udecode/plate-common';
-import { focusEditor } from '@udecode/plate-common/react';
-import { Path } from 'slate';
+import {
+  type NodeEntry,
+  type Path,
+  type TElement,
+  PathApi,
+} from '@udecode/plate';
 
 import type { UseDropNodeOptions } from '../hooks';
-import type { ElementDragItemNode } from '../types';
+import type { DragItemNode, ElementDragItemNode } from '../types';
 
 import { getHoverDirection } from '../utils';
 
-/** Callback called on drag an drop a node with id. */
+/** Callback called on drag and drop a node with id. */
 export const getDropPath = (
-  editor: TEditor,
+  editor: PlateEditor,
   {
-    id,
+    canDropNode,
     dragItem,
+    element,
     monitor,
     nodeRef,
+    orientation = 'vertical',
   }: {
-    dragItem: ElementDragItemNode;
+    dragItem: DragItemNode;
     monitor: DropTargetMonitor;
-  } & Pick<UseDropNodeOptions, 'id' | 'nodeRef'>
+  } & Pick<
+    UseDropNodeOptions,
+    'canDropNode' | 'element' | 'nodeRef' | 'orientation'
+  >
 ) => {
-  const direction = getHoverDirection({ id, dragItem, monitor, nodeRef });
+  const direction = getHoverDirection({
+    dragItem,
+    element,
+    monitor,
+    nodeRef,
+    orientation,
+  });
 
   if (!direction) return;
 
-  const dragEntry = findNode(editor, {
-    at: [],
-    match: { id: dragItem.id },
-  });
+  let dragEntry: NodeEntry<TElement> | undefined;
+  let dropEntry: NodeEntry<TElement> | undefined;
 
-  if (!dragEntry) return;
+  if ('element' in dragItem) {
+    const dragPath = editor.api.findPath(dragItem.element);
+    const hoveredPath = editor.api.findPath(element);
 
-  const [, dragPath] = dragEntry;
+    if (!dragPath || !hoveredPath) return;
 
-  focusEditor(editor);
+    dragEntry = [dragItem.element, dragPath];
+    dropEntry = [element, hoveredPath];
+  } else {
+    dropEntry = editor.api.node<TElement>({ id: element.id as string, at: [] });
+  }
+  if (!dropEntry) return;
+  if (
+    canDropNode &&
+    dragEntry &&
+    !canDropNode({ dragEntry, dragItem, dropEntry, editor })
+  ) {
+    return;
+  }
 
   let dropPath: Path | undefined;
 
-  if (direction === 'bottom') {
-    dropPath = findNode(editor, { at: [], match: { id } })?.[1];
+  // if drag from file system use [] as default path
+  const dragPath = dragEntry?.[1];
+  const hoveredPath = dropEntry[1];
 
-    if (!dropPath) return;
-    if (Path.equals(dragPath, Path.next(dropPath))) return;
+  // Treat 'right' like 'bottom' (after hovered)
+  // Treat 'left' like 'top' (before hovered)
+  if (dragPath && (direction === 'bottom' || direction === 'right')) {
+    // Insert after hovered node
+    dropPath = hoveredPath;
+
+    // If the dragged node is already right after hovered node, no change
+    if (PathApi.equals(dragPath, PathApi.next(dropPath))) return;
   }
-  if (direction === 'top') {
-    const nodePath = findNode(editor, { at: [], match: { id } })?.[1];
+  if (direction === 'top' || direction === 'left') {
+    // Insert before hovered node
+    dropPath = [...hoveredPath.slice(0, -1), hoveredPath.at(-1)! - 1];
 
-    if (!nodePath) return;
-
-    dropPath = [...nodePath.slice(0, -1), nodePath.at(-1)! - 1];
-
-    if (Path.equals(dragPath, dropPath)) return;
+    // If the dragged node is already right before hovered node, no change
+    if (dragPath && PathApi.equals(dragPath, dropPath)) return;
   }
-  if (direction) {
-    const _dropPath = dropPath as Path;
 
-    const before =
-      Path.isBefore(dragPath, _dropPath) && Path.isSibling(dragPath, _dropPath);
-    const to = before ? _dropPath : Path.next(_dropPath);
+  const _dropPath = dropPath as Path;
+  const before =
+    dragPath &&
+    PathApi.isBefore(dragPath, _dropPath) &&
+    PathApi.isSibling(dragPath, _dropPath);
+  const to = before ? _dropPath : PathApi.next(_dropPath);
 
-    return { dragPath, to };
-  }
+  return { direction, dragPath, to };
 };
 
 export const onDropNode = (
-  editor: TEditor,
+  editor: PlateEditor,
   {
-    id,
+    canDropNode,
     dragItem,
+    element,
     monitor,
     nodeRef,
+    orientation = 'vertical',
   }: {
     dragItem: ElementDragItemNode;
     monitor: DropTargetMonitor;
-  } & Pick<UseDropNodeOptions, 'id' | 'nodeRef'>
+  } & Pick<
+    UseDropNodeOptions,
+    'canDropNode' | 'element' | 'nodeRef' | 'orientation'
+  >
 ) => {
   const result = getDropPath(editor, {
-    id,
+    canDropNode,
     dragItem,
+    element,
     monitor,
     nodeRef,
+    orientation,
   });
 
   if (!result) return;
 
   const { dragPath, to } = result;
 
-  moveNodes(editor, {
+  editor.tf.moveNodes({
     at: dragPath,
     to,
   });

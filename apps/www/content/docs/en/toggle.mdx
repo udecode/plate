@@ -1,0 +1,204 @@
+---
+title: Toggle
+docs:
+  - route: /docs/components/toggle-element
+    title: Toggle Element
+  - route: /docs/components/toggle-toolbar-button
+    title: Toggle Button
+---
+
+<ComponentPreview name="toggle-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Add toggles to your document
+  - Toggles are closed by default, and can be opened to reveal the content inside
+- Refer to the [Indent documentation](/docs/indent) for more information
+
+## Plugin dependencies
+
+- [Indent](/docs/indent)
+- [Node Id](/docs/node-id)
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-indent @udecode/plate-node-id @udecode/plate-toggle
+```
+
+## Usage
+
+```tsx
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
+
+const plugins = [
+  // ...otherPlugins,
+  HeadingPlugin,
+  IndentPlugin.configure({
+    inject: {
+      targetPlugins: [TogglePlugin.key, ParagraphPlugin.key, HEADING_KEYS.h1],
+    },
+  }),
+  NodeIdPlugin,
+  TogglePlugin,
+];
+```
+
+## Plugins
+
+### `TogglePlugin`
+
+Plugin for managing toggle functionality.
+
+<API name="TogglePlugin">
+<APIOptions type="object">
+  <APIItem name="openIds" type="Set<string>" optional>
+    Set of open toggle IDs.
+    - **Default:** `new Set()`
+  </APIItem>
+  <APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
+    Function to check if toggle is open.
+    - **Default:** `(id) => openIds.has(id)`
+  </APIItem>
+  <APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
+    Function to check if any toggles are closed.
+    - **Default:** `(ids) => ids.some(id => !isOpen(id))`
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `editor.api.toggle.toggleIds`
+
+Toggles the open state of specified toggles.
+
+<API name="editor.api.toggle.toggleIds">
+Toggle open state of toggles.
+
+<APIParameters>
+  <APIItem name="ids" type="string[]">
+    Array of element IDs to toggle.
+  </APIItem>
+  <APIItem name="force" type="boolean | null" optional>
+    Force toggle state:
+    - `true`: expand all toggles
+    - `false`: collapse all toggles
+    - `null`: toggle current state
+  </APIItem>
+</APIParameters>
+</API>
+
+### `openNextToggles`
+
+Mark block at current selection as open toggle.
+
+## Hooks
+
+### `useToggleToolbarButtonState`
+
+Hook for getting toggle toolbar button state.
+
+<API name="useToggleToolbarButtonState">
+<APIReturns type="object">
+  <APIItem name="pressed" type="boolean">
+    Whether button is pressed.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useToggleToolbarButton`
+
+Hook for handling toggle toolbar button behavior.
+
+<API name="useToggleToolbarButton">
+<APIState>
+  <APIItem name="pressed" type="boolean">
+    Whether button is pressed.
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    Props for toggle button.
+    <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        Whether button is pressed.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        Toggle node type and focus editor.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onMouseDown" type="function">
+        Prevent focus loss on click.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useToggleButtonState`
+
+Hook for getting toggle button state.
+
+<API name="useToggleButtonState">
+Get toggle button state.
+
+<APIParameters>
+  <APIItem name="toggleId" type="string">
+    Toggle element ID.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="object">
+  <APIItem name="toggleId" type="string">
+    Toggle element ID.
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    Whether toggle is expanded.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useToggleButton`
+
+Hook for handling toggle button behavior.
+
+<API name="useToggleButton">
+Handle toggle button behavior.
+
+<APIParameters>
+  <APIItem name="toggleId" type="string">
+    Toggle element ID.
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    Whether toggle is expanded.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="object">
+  <APIItem name="toggleId" type="string">
+    Toggle element ID.
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    Whether toggle is expanded.
+  </APIItem>
+  <APIItem name="buttonProps" type="object">
+    Props for toggle button.
+    <APISubList>
+      <APISubListItem parent="buttonProps" name="onClick" type="function">
+        Toggle open state.
+      </APISubListItem>
+      <APISubListItem parent="buttonProps" name="onMouseDown" type="function">
+        Prevent focus loss on click.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>

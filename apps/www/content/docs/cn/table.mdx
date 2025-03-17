@@ -1,0 +1,1083 @@
+---
+title: 表格
+docs:
+  - route: /docs/components/table-cell-element
+    title: 表格单元格元素
+  - route: /docs/components/table-dropdown-menu
+    title: 表格下拉菜单
+  - route: /docs/components/table-element
+    title: 表格元素
+  - route: /docs/components/table-row-element
+    title: 表格行元素
+---
+
+<ComponentPreview name="table-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 支持创建和编辑具有高级行为的表格。
+- 箭头导航（上/下）。
+- 网格单元格选择。
+- 使用 `Shift+Arrow` 键扩展单元格选择。
+- 复制和粘贴单元格。
+- 行拖放重新排序
+- 通过拖动手柄选择行
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-table
+```
+
+## 使用
+
+```tsx
+// ...
+import { TablePlugin } from '@udecode/plate-table/react';
+
+const plugins = [
+  // ...其他插件,
+  TablePlugin.configure({
+    options: {
+      initialTableWidth: 600,
+    },
+  }),
+];
+```
+
+### 禁用合并
+
+<ComponentPreview name="table-nomerge-demo" />
+
+## 插件
+
+### TablePlugin
+
+<API name="TablePlugin">
+<APIOptions>
+  <APIItem name="disableMerge" type="boolean" optional>
+    禁用单元格的合并行为。
+  </APIItem>
+  <APIItem name="disableExpandOnInsert" type="boolean" optional>
+    在插入单元格时禁用表格的扩展。
+  </APIItem>
+  <APIItem name="disableMarginLeft" type="boolean" optional>
+    禁用表格中第一列的左侧调整大小器。
+  </APIItem>
+  <APIItem name="enableUnsetSingleColSize" type="boolean" optional>
+    当表格只有一列时，禁用取消第一列宽度的设置。如果你希望在只有一列时调整表格宽度，请将其设置为 `true`。如果你有一个全宽表格，请保持为 `false`。
+  </APIItem>
+  <APIItem name="initialTableWidth" type="number" optional>
+    如果定义了，规范化器会将每个未定义的表格 `colSizes` 设置为该值除以列数。注意，合并单元格尚不支持。
+  </APIItem>
+  <APIItem name="minColumnWidth" type="number" optional>
+    表格中列的最小宽度。
+    - **默认值:** `48`
+  </APIItem>
+</APIOptions>
+</API>
+
+### TableRowPlugin
+
+用于表格行的插件。
+
+### TableCellPlugin
+
+用于表格单元格的插件。
+
+### TableCellHeaderPlugin
+
+用于表格标题单元格的插件。
+
+## API
+
+### editor.api.create.table
+
+<API name="create.table">
+<APIParameters>
+<APIItem name="options" type="GetEmptyTableNodeOptions" optional>
+扩展 `GetEmptyRowNodeOptions`。
+</APIItem>
+</APIParameters>
+
+<APIOptions>
+<APIItem name="header" type="boolean" optional>
+如果表格有标题行，请指定为 `true`。
+</APIItem>
+<APIItem name="rowCount" type="number" optional>
+表格中的行数。
+
+- **默认值:** `0`
+
+</APIItem>
+<APIItem name="colCount" type="number | undefined" optional>
+表格中的列数。
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+<APIItem type="TElement">
+
+表格节点。
+
+</APIItem>
+</APIReturns>
+</API>
+
+### editor.api.create.tableCell
+
+为表格创建一个空的单元格节点。
+
+<API name="create.tableCell">
+<APIOptions>
+<APIItem name="header" type="boolean" optional>
+如果单元格是标题单元格，请指定为 `true`。
+</APIItem>
+<APIItem name="row" type="TTableRowElement" optional>
+行元素。如果未指定 `header`，它将根据行的子元素确定单元格是否为标题单元格。
+</APIItem>
+<APIItem name="children" type="Descendant[]" optional>
+新单元格节点的子元素。
+
+- **默认值:** `[editor.api.create.block()]`
+
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+<APIItem type="TElement">
+
+单元格节点。
+
+</APIItem>
+</APIReturns>
+</API>
+
+### editor.api.create.tableRow
+
+创建一个具有指定列数的空行节点。
+
+<API name="create.tableRow">
+<APIOptions>
+<APIItem name="header" type="boolean" optional>
+如果行是标题行，请指定为 `true`。
+</APIItem>
+<APIItem name="colCount" type="number" optional>
+行中的列数。
+
+- **默认值:** `1`
+
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+<APIItem type="TElement">
+
+行节点。
+
+</APIItem>
+</APIReturns>
+</API>
+
+### editor.api.table.getCellBorders
+
+获取表格单元格的边框样式，处理第一行和第一列单元格的特殊情况。
+
+<API name="getCellBorders">
+<APIOptions>
+<APIItem name="element" type="TTableCellElement">
+要获取边框样式的表格单元格元素。
+</APIItem>
+<APIItem name="defaultBorder" type="Required<BorderStyle>" optional>
+当单元格边框未定义时使用的默认边框样式。
+<APISubList>
+<APISubListItem parent="defaultBorder" name="color" type="string">
+  边框颜色。
+  - **默认值:** `'rgb(209 213 219)'`
+</APISubListItem>
+<APISubListItem parent="defaultBorder" name="size" type="number">
+  边框大小。
+  - **默认值:** `1`
+</APISubListItem>
+<APISubListItem parent="defaultBorder" name="style" type="string">
+  边框样式。
+  - **默认值:** `'solid'`
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+  <APIItem type="BorderStylesDefault">
+    包含以下内容的对象：
+    <APISubList>
+      <APISubListItem parent="return" name="bottom" type="Required<BorderStyle>">
+        底部边框样式。
+      </APISubListItem>
+      <APISubListItem parent="return" name="right" type="Required<BorderStyle>">
+        右侧边框样式。
+      </APISubListItem>
+      <APISubListItem parent="return" name="left" type="Required<BorderStyle>" optional>
+        左侧边框样式。仅在第一列的单元格中存在。
+      </APISubListItem>
+      <APISubListItem parent="return" name="top" type="Required<BorderStyle>" optional>
+        顶部边框样式。仅在第一行的单元格中存在。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### editor.api.table.getCellChildren
+
+获取表格单元格的子元素。
+
+<API name="getCellChildren">
+<APIParameters>
+<APIItem name="cell" type="TElement">
+表格单元格元素。
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="Descendant[]">
+
+表格单元格的子元素。
+
+</APIItem>
+</APIReturns>
+</API>
+
+### editor.api.table.getCellSize
+
+获取表格单元格的宽度和最小高度，考虑列跨度和列大小。
+
+<API name="getCellSize">
+<APIOptions>
+<APIItem name="element" type="TTableCellElement">
+要获取大小的表格单元格元素。
+</APIItem>
+<APIItem name="colSizes" type="number[]" optional>
+列大小的可选数组。如果未提供，将使用表格的覆盖列大小。
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+<APIItem name="width" type="number">
+单元格的总宽度，通过求和所有跨列的宽度计算得出。
+</APIItem>
+<APIItem name="minHeight" type="number | undefined">
+单元格的最小高度，从行的大小属性派生。
+</APIItem>
+</APIReturns>
+</API>
+
+### editor.api.table.getColSpan
+
+获取表格单元格的列跨度。
+
+<API name="getColSpan">
+<APIParameters>
+<APIItem name="element" type="TTableCellElement">
+要获取列跨度的表格单元格元素。
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="number">
+    此单元格跨越的列数。
+    - **默认值:** `1`
+  </APIItem>
+</APIReturns>
+</API>  
+
+### editor.api.table.getRowSpan
+
+获取表格单元格的行跨度。
+
+<API name="getRowSpan">
+<APIParameters>
+  <APIItem name="element" type="TTableCellElement">
+    要获取行跨度的表格单元格元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="number">
+    此单元格跨越的行数。
+    - **默认值:** `1`
+  </APIItem>
+</APIReturns>
+</API>
+
+### getCellType
+
+获取插件单元格类型。
+
+<API name="getCellType">
+<APIReturns>
+
+<APIItem type="string[]">
+  表格单元格（td 和 th）的元素类型数组。
+</APIItem>
+
+</APIReturns>
+</API>
+
+### getNextTableCell
+
+获取表格中的下一个单元格。
+  
+<API name="getNextTableCell">
+<APIParameters>
+  <APIItem name="currentCell" type="NodeEntry">
+    当前单元格的entry。
+  </APIItem>
+  <APIItem name="currentPath" type="Path">
+    当前单元格的路径。
+  </APIItem>
+  <APIItem name="currentRow" type="NodeEntry">
+    当前行的entry。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="NodeEntry | undefined">
+    下一行中的单元格的节点entry，如果当前行是最后一行，则为 `undefined`。
+  </APIItem>
+</APIReturns>
+</API>
+
+### getPreviousTableCell
+
+获取表格中的上一个单元格。
+
+<API name="getPreviousTableCell">
+<APIParameters>
+  <APIItem name="currentCell" type="NodeEntry">
+    当前单元格的entry。
+  </APIItem>
+  <APIItem name="currentPath" type="Path">
+    当前单元格的路径。
+  </APIItem>
+  <APIItem name="currentRow" type="NodeEntry">
+    当前行的entry。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="NodeEntry | undefined">
+    上一行中的单元格的节点entry，如果当前行是第一行，则为 `undefined`。
+  </APIItem>
+</APIReturns>
+</API>
+
+### getTableColumnCount
+
+获取表格中的列数。
+
+<API name="getTableColumnCount">
+<APIParameters>
+  <APIItem name="tableNode" type="TElement">
+    要获取列数的表格节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="number">
+
+表格中的列数。
+
+</APIItem>
+</APIReturns>
+</API>
+### getTableColumnIndex
+
+获取表格中单元格节点的列索引。
+
+<API name="getTableColumnIndex">
+<APIParameters>
+  <APIItem name="cellNode" type="TElement">
+    要获取列索引的单元格节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="number">
+
+单元格节点的列索引。
+
+</APIItem>
+</APIReturns>
+</API>
+
+### getTableEntries
+
+根据当前选择或指定位置获取表格、行和单元格的节点entries。
+
+<API name="getTableEntries">
+<APIOptions>
+<APIItem name="at" type="Location | null" optional>
+表格单元格所在的位置。
+
+- **默认值:** `editor.selection`
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+  <APIItem name="table" type="NodeEntry | undefined">
+    表格节点entry。
+  </APIItem>
+  <APIItem name="row" type="NodeEntry | undefined">
+    行节点entry。
+  </APIItem>
+  <APIItem name="cell" type="NodeEntry | undefined">
+    单元格节点entry。
+  </APIItem>
+</APIReturns>
+</API>
+
+
+### getTableGridAbove
+
+根据指定的格式（表格或单元格）获取锚点和焦点位置上方的子表格。
+
+<API name="getTableGridAbove">
+<APIOptions>
+<APIItem name="format" type="string" optional>
+要检索的子表格的格式。
+
+- **默认值:** `'table'`
+
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+  <APIItem type="ElementEntry[]">子表格entry。</APIItem>
+</APIReturns>
+</API>
+### getTableGridByRange
+
+获取指定范围内两个单元格路径之间的子表格。
+
+<API name="getTableGridByRange">
+<APIOptions>
+<APIItem name="at" type="TRange">
+指定开始和结束单元格路径的范围。
+</APIItem>
+<APIItem name="format" type="'table' | 'cell'" optional>
+输出的格式。
+
+- **默认值:** `'table'`
+
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+  <APIItem type="ElementEntry[]">子表格entry。</APIItem>
+</APIReturns>
+</API>
+
+### getTableRowIndex
+
+获取表格中单元格节点的行索引。
+
+<API name="getTableRowIndex">
+<APIParameters>
+  <APIItem name="cellNode" type="TElement">
+    要获取行索引的单元格节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="number">
+
+单元格节点的行索引。
+
+</APIItem>
+</APIReturns>
+</API>
+
+### getTopTableCell
+
+获取表格中当前单元格上方的单元格。
+
+<API name="getTopTableCell">
+<APIParameters>
+  <APIItem name="at" type="Path" optional>
+    当前单元格的路径。如果未提供，函数将在编辑器中搜索当前单元格。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="ElementEntry | undefined">
+
+单元格节点entry。
+
+</APIItem>
+</APIReturns>
+</API>
+### isTableBorderHidden
+
+根据指定的边框方向检查表格单元格或表格本身的边框是否隐藏。
+
+<API name="isTableBorderHidden">
+<APIParameters>
+  <APIItem name="border" type="'top' | 'left' | 'bottom' | 'right'">
+    要检查的边框方向。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="boolean">
+
+如果边框隐藏则为 `true`，否则为 `false`。
+
+</APIItem>
+</APIReturns>
+</API>
+
+## API 转换
+
+### editor.tf.insert.table
+
+如果编辑器中不存在现有表格，则在当前选择处插入表格。选择插入表格的起始位置。
+
+<API name="insert.table">
+<APIParameters>
+<APIItem name="getEmptyTableNodeOptions" type="GetEmptyTableNodeOptions" optional>
+扩展 `GetEmptyRowNodeOptions`。
+<APISubList>
+<APISubListItem parent="getEmptyTableNodeOptions" name="rowCount" type="number" optional>
+表格中的行数。
+
+- **默认值:** `2`
+
+</APISubListItem>
+<APISubListItem parent="getEmptyTableNodeOptions" name="colCount" type="number" optional>
+表格中的列数。
+
+- **默认值:** `2`
+
+</APISubListItem>
+<APISubListItem parent="getEmptyTableNodeOptions" name="header" type="boolean" optional>
+如果为 `true`，表格的第一行将被视为标题行。
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+
+<APIItem name="options" type="InsertNodesOptions" optional>
+插入表格节点的选项。
+</APIItem>
+</APIParameters>
+</API>
+
+### editor.tf.insert.tableColumn
+
+在当前选择或指定的单元格路径处插入一列到表格中。
+
+<API name="insert.tableColumn">
+<APIOptions>
+<APIItem name="at" type="Path" optional>
+插入列的单元格的精确路径。这将覆盖 `fromCell` 选项。
+</APIItem>
+<APIItem name="before" type="boolean" optional>
+如果为 true，则在当前列之前插入列，而不是之后。
+</APIItem>
+<APIItem name="fromCell" type="Path" optional>
+插入列的单元格路径。
+</APIItem>
+<APIItem name="header" type="boolean" optional>
+如果为 true，插入的列将被视为标题列。
+</APIItem>
+<APIItem name="select" type="boolean" optional>
+如果为 true，插入的列将在插入后被选中。
+</APIItem>
+</APIOptions>
+</API>
+
+### editor.tf.insert.tableRow
+
+在当前选择或指定的行路径处插入一行到表格中。
+
+<API name="insert.tableRow">
+<APIOptions>
+<APIItem name="at" type="Path" optional>
+插入列的行的精确路径。传递表格路径以在表格末尾插入。将覆盖 `fromRow`。
+</APIItem>
+<APIItem name="before" type="boolean" optional>
+如果为 true，则在当前行之前插入行，而不是之后。
+</APIItem>
+<APIItem name="fromRow" type="Path" optional>
+插入新行的行路径。
+</APIItem>
+<APIItem name="header" type="boolean" optional>
+如果为 true，插入的行将被视为标题行。
+</APIItem>
+<APIItem name="select" type="boolean" optional>
+如果为 true，插入的行将在插入后被选中。
+</APIItem>
+</APIOptions>
+</API>
+
+### editor.tf.remove.tableColumn
+
+删除包含所选单元格的表格列。
+
+### editor.tf.remove.tableRow
+
+删除包含所选单元格的表格行。
+
+### editor.tf.remove.table
+
+删除整个表格。
+
+### editor.tf.table.merge
+
+将多个选定的单元格合并为一个。
+
+合并后的单元格将：
+- 具有等于所选单元格跨越的列数的 colSpan
+- 具有等于所选单元格跨越的行数的 rowSpan
+- 包含所有合并单元格的内容（仅非空单元格）
+- 继承第一个选定单元格的标题状态
+
+### editor.tf.table.split
+
+将合并的单元格拆分为单独的单元格。
+
+拆分操作将：
+- 为每个跨越的列和行创建新的单元格
+- 从原始合并单元格复制标题状态
+- 将原始单元格的内容放在第一个单元格中
+- 为剩余空间创建空单元格
+
+### moveSelectionFromCell
+
+在表格内按单元格单位移动选择。
+
+<API name="moveSelectionFromCell">
+<APIOptions>
+<APIItem name="at" type="Location" optional>
+从哪个位置移动选择。
+</APIItem>
+<APIItem name="reverse" type="boolean" optional>
+设置为 `true` 将选择移动到上方单元格，设置为 `false` 将选择移动到下方单元格。
+</APIItem>
+<APIItem name="edge" type="'top' | 'left' | 'right' | 'bottom'" optional>
+要扩展单元格选择的边缘。
+</APIItem>
+<APIItem name="fromOneCell" type="boolean" optional>
+设置为 `true` 仅从一个选定的单元格移动选择。
+</APIItem>
+</APIOptions>
+</API>
+
+### setBorderSize
+
+设置表格单元格中指定边框的大小。
+
+<API name="setBorderSize">
+<APIParameters>
+<APIItem name="size" type="number">
+边框的大小。
+</APIItem>
+<APIItem name="options" type="object" optional>
+设置边框大小的选项。
+</APIItem>
+</APIParameters>
+
+<APIOptions>
+<APIItem name="at" type="Location" optional>
+要设置边框大小的单元格位置。
+</APIItem>
+<APIItem name="border" type="'all' | 'top' | 'left' | 'bottom' | 'right'" optional>
+要设置大小的边框方向。
+
+- **默认值：** `'all'`
+
+</APIItem>
+</APIOptions>
+</API>
+
+### setTableColSize
+
+设置表格中特定列的宽度。
+
+<API name="setTableColSize">
+<APIOptions>
+<APIItem name="colIndex" type="number" optional>
+要设置宽度的列索引。
+</APIItem>
+<APIItem name="width" type="number" optional>
+列的期望宽度。
+</APIItem>
+<APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
+查找表格节点的附加选项。
+</APIItem>
+</APIOptions>
+</API>
+
+### setTableMarginLeft
+
+设置表格的左边距。
+
+<API name="setTableMarginLeft">
+<APIOptions>
+<APIItem name="marginLeft" type="number">
+包含期望左边距值的对象。
+</APIItem>
+<APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
+查找表格节点的附加选项。
+</APIItem>
+</APIOptions>
+</API>
+
+### setTableRowSize
+
+设置表格行的大小（高度）。
+
+<API name="setTableRowSize">
+<APIOptions>
+<APIItem name="rowIndex" type="number">
+要设置大小的行索引。
+</APIItem>
+<APIItem name="height" type="number">
+行的期望高度。
+</APIItem>
+<APIItem name="getAboveNodeOptions" type="EditorAboveOptions" optional>
+查找表格节点的附加选项。
+</APIItem>
+</APIOptions>
+</API>
+
+## API 插件
+
+### onKeyDownTable
+
+处理表格的键盘事件。
+
+<API name="onKeyDownTable">
+<APIParameters>
+  <APIItem name="plugin" type="PlatePlugin">
+    Plate 插件。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="KeyboardHandlerReturnType">
+    键盘处理器返回类型。
+  </APIItem>
+</APIReturns>
+</API>
+
+### withDeleteTable
+
+防止删除表格中的单元格。
+
+
+### withGetFragmentTable
+
+如果选择在表格内，它会检索选择上方的子表格作为片段。这在复制和粘贴表格单元格时很有用。
+
+### withInsertFragmentTable
+
+如果插入表格：
+
+- 如果选择锚点上方的块是表格，则用插入的表格替换上方的每个单元格，直到超出边界。选择插入的单元格。
+- 如果锚点上方没有表格，检查选择是否在表格内。如果是，找到锚点位置的单元格并用插入的片段替换其子元素。
+
+### withInsertTextTable
+
+如果选择已展开：
+
+- 检查选择是否在表格内。如果是，将选择折叠到焦点边缘。
+
+### withNormalizeTable
+
+通过执行以下操作规范化表格结构：
+
+- 如果单元格子元素是文本，则将其包装在段落中。
+- 解包不是有效表格元素的节点。
+- 如果指定了初始列大小，则设置表格的初始列大小。
+
+### withSelectionTable
+
+通过执行以下操作处理表格选择：
+
+- 当锚点在表格内而焦点在表格前或后的块中时，调整选择的焦点。
+- 当焦点在表格内而锚点在表格前或后的块中时，调整选择的焦点。
+- 如果前一个和新的选择在不同的单元格中，则覆盖单元格的选择。
+
+### withSetFragmentDataTable
+
+通过执行以下操作处理复制或剪切表格数据时设置到剪贴板的数据：
+
+- 检查是否存在表格entry和选定的单元格entry。
+- 处理单个单元格的复制或剪切操作，复制单元格内容而不是表格结构。
+- 创建包含选定单元格内容的表格结构。
+- 将文本、HTML、CSV、TSV 和 Slate 片段数据设置到剪贴板。
+
+### withTable
+
+通过应用以下高阶函数增强编辑器实例的表格相关功能：
+
+- `withNormalizeTable`：规范化表格结构和内容。
+- `withDeleteTable`：防止在表格内删除单元格。
+- `withGetFragmentTable`：处理复制或剪切表格单元格时获取片段数据。
+- `withInsertFragmentTable`：处理插入表格片段。
+- `withInsertTextTable`：处理在表格内插入文本。
+- `withSelectionTable`：处理在表格内调整选择。
+- `withSetFragmentDataTable`：处理复制或剪切表格数据时设置片段数据。
+
+## API 钩子
+
+### useTableCellElementResizable
+
+提供表格单元格元素调整大小功能的钩子。
+
+<API name="useTableCellElementResizable">
+<APIOptions type="TableCellElementResizableOptions">
+<APIItem name="colIndex" type="number">
+列的索引。
+</APIItem>
+<APIItem name="colSpan" type="number">
+此单元格跨越的列数。
+</APIItem>
+<APIItem name="rowIndex" type="number">
+行的索引。
+</APIItem>
+<APIItem name="step" type="number" optional>
+按步长而不是按像素调整大小。
+</APIItem>
+<APIItem name="stepX" type="number" optional>
+水平调整大小的步长。
+</APIItem>
+<APIItem name="stepY" type="number" optional>
+垂直调整大小的步长。
+
+- **默认值：** `step`
+
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+  <APIItem name="bottomProps" type="ResizeHandleProps">
+    底部调整大小手柄的属性，包括调整方向和处理程序。
+  </APIItem>
+  <APIItem name="hiddenLeft" type="boolean">
+    左侧调整大小手柄是否应该隐藏。如果不是第一列或左边距被禁用，则为 true。
+  </APIItem>
+  <APIItem name="leftProps" type="ResizeHandleProps">
+    左侧调整大小手柄的属性，包括调整方向和处理程序。
+  </APIItem>
+  <APIItem name="rightProps" type="ResizeHandleProps">
+    右侧调整大小手柄的属性，包括调整方向、初始大小和处理程序。
+  </APIItem>
+</APIReturns>
+</API>
+  
+
+### useTableStore
+
+表格存储存储表格插件的状态。
+
+<API name="useTableStore">
+<APIAttributes>
+  <APIItem name="colSizeOverrides" type="TableStoreSizeOverrides">
+    列大小覆盖。
+  </APIItem>
+  <APIItem name="rowSizeOverrides" type="TableStoreSizeOverrides">
+    行大小覆盖。
+  </APIItem>
+  <APIItem name="marginLeftOverride" type="number | null">
+    左边距覆盖。
+  </APIItem>
+  <APIItem name="selectedCells" type="TElement[] | null">
+    选定的单元格。
+  </APIItem>
+  <APIItem name="selectedTables" type="TElement[] | null">
+    选定的表格。
+  </APIItem>
+</APIAttributes>
+</API>
+### useIsCellSelected
+
+检查表格单元格是否被选中的自定义钩子。
+
+<API name="useIsCellSelected">
+<APIParameters>
+  <APIItem name="element" type="TElement">
+    要检查的表格单元格元素。
+  </APIItem>
+</APIParameters>
+</API>
+
+### useSelectedCells
+
+管理表格中单元格选择的钩子。
+
+它跟踪当前选定的单元格，并根据编辑器选择的变化更新它们。
+
+### useTableBordersDropdownMenuContentState
+
+表格边框下拉菜单内容的状态钩子。
+
+<API name="useTableBordersDropdownMenuContentState">
+<APIReturns>
+一个具有以下属性的对象：
+<APIItem name="hasBottomBorder" type="boolean">
+表示选定的表格单元格是否有底部边框。
+</APIItem>
+<APIItem name="hasTopBorder" type="boolean">
+表示选定的表格单元格是否有顶部边框。
+</APIItem>
+<APIItem name="hasLeftBorder" type="boolean">
+表示选定的表格单元格是否有左侧边框。
+</APIItem>
+<APIItem name="hasRightBorder" type="boolean">
+表示选定的表格单元格是否有右侧边框。
+</APIItem>
+<APIItem name="hasNoBorders" type="boolean">
+表示选定的表格单元格是否没有边框。
+</APIItem>
+<APIItem name="hasOuterBorders" type="boolean">
+表示选定的表格单元格是否有外部边框（即所有边都有边框）。
+</APIItem>
+<APIItem
+  name="getOnSelectTableBorder"
+  type="function"
+>
+一个工厂函数，返回特定边框类型的 `onSelectTableBorder` 处理程序。
+
+- `onSelectTableBorder` 处理程序负责为选定的表格单元格设置边框样式。
+
+</APIItem>
+</APIReturns>
+</API>
+
+### useTableColSizes
+
+返回应用了覆盖的表格列大小的自定义钩子。如果表格的 `colCount` 更新为 1 且启用了 `enableUnsetSingleColSize` 选项，它会取消设置 `colSizes` 节点。
+
+<API name="useTableColSizes">
+<APIOptions>
+<APIItem name="disableOverrides" type="boolean" optional>
+如果为 `true`，禁用对列大小应用覆盖。
+- **默认值：** `false`
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+  <APIItem name="overriddenColSizes" type="number[]">
+    应用了覆盖的表格列大小。
+  </APIItem>
+</APIReturns>
+</API>
+
+### useTableElement
+
+处理单元格选择和左边距计算的表格元素钩子。
+
+<API name="useTableElement">
+<APIReturns>
+  <APIItem name="isSelectingCell" type="boolean">
+    当前是否正在选择单元格。
+  </APIItem>
+  <APIItem name="marginLeft" type="number">
+    表格的左边距，考虑覆盖和插件选项。
+  </APIItem>
+  <APIItem name="props" type="object">
+    表格元素的属性：
+    <APISubList>
+      <APISubListItem parent="props" name="onMouseDown" type="function">
+        在选择单元格时点击表格时折叠选择的处理程序。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+  
+### useTableCellElement
+
+为表格单元格元素提供状态和功能的钩子。
+
+<API name="useTableCellElement">
+<APIReturns>
+  <APIItem name="borders" type="BorderStylesDefault">
+    表格单元格的边框样式。
+  </APIItem>
+  <APIItem name="colIndex" type="number">
+    结束列索引（考虑 colSpan）。
+  </APIItem>
+  <APIItem name="colSpan" type="number">
+    此单元格跨越的列数。
+  </APIItem>
+  <APIItem name="isSelectingCell" type="boolean">
+    当前是否正在选择单元格。
+  </APIItem>
+  <APIItem name="minHeight" type="number | undefined">
+    单元格的最小高度。
+  </APIItem>
+  <APIItem name="rowIndex" type="number">
+    结束行索引（考虑 rowSpan）。
+  </APIItem>
+  <APIItem name="selected" type="boolean">
+    此单元格当前是否被选中。
+  </APIItem>
+  <APIItem name="width" type="number | string">
+    单元格的宽度。
+  </APIItem>
+</APIReturns>
+</API>
+
+### useTableCellBorders
+
+返回表格单元格边框样式的钩子。
+
+<API name="useTableCellBorders">
+<APIReturns>
+  <APIItem type="BorderStylesDefault">
+    包含单元格边框样式的对象：
+    <APISubList>
+      <APISubListItem parent="return" name="bottom" type="Required<BorderStyle>">
+        底部边框样式。
+      </APISubListItem>
+      <APISubListItem parent="return" name="right" type="Required<BorderStyle>">
+        右侧边框样式。
+      </APISubListItem>
+      <APISubListItem parent="return" name="left" type="Required<BorderStyle>" optional>
+        左侧边框样式。仅适用于第一列中的单元格。
+      </APISubListItem>
+      <APISubListItem parent="return" name="top" type="Required<BorderStyle>" optional>
+        顶部边框样式。仅适用于第一行中的单元格。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### useTableCellSize
+
+返回表格单元格大小（宽度和最小高度）的钩子。
+
+<API name="useTableCellSize">
+<APIReturns>
+  <APIItem type="object">
+    包含以下内容的对象：
+    <APISubList>
+      <APISubListItem parent="return" name="width" type="number">
+        单元格的总宽度，通过对其跨越的所有列的宽度求和计算。
+      </APISubListItem>
+      <APISubListItem parent="return" name="minHeight" type="number | undefined">
+        单元格的最小高度，源自行的大小属性。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>

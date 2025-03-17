@@ -14,4 +14,10 @@ export const getNewDirection = (
   if (dir === 'bottom' && previousDir !== 'bottom') {
     return 'bottom';
   }
+  if (dir === 'left' && previousDir !== 'left') {
+    return 'left';
+  }
+  if (dir === 'right' && previousDir !== 'right') {
+    return 'right';
+  }
 };

@@ -1,4 +1,4 @@
-import { createSlatePlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate';
 
 export const BaseFontFamilyPlugin = createSlatePlugin({
   key: 'fontFamily',
@@ -7,12 +7,10 @@ export const BaseFontFamilyPlugin = createSlatePlugin({
       nodeKey: 'fontFamily',
     },
   },
-}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         isLeaf: true,
-        parse: ({ element }) => ({ [type]: element.style.fontFamily }),
         rules: [
           {
             validStyle: {
@@ -20,7 +18,8 @@ export const BaseFontFamilyPlugin = createSlatePlugin({
             },
           },
         ],
+        parse: ({ element, type }) => ({ [type]: element.style.fontFamily }),
       },
     },
   },
-}));
+});

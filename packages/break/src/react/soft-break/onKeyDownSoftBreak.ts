@@ -1,6 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate-common/react';
+import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { getBlockAbove, isHotkey, queryNode } from '@udecode/plate-common';
+import { isHotkey, queryNode } from '@udecode/plate';
 
 import type { SoftBreakConfig } from '../../lib';
 
@@ -13,7 +13,7 @@ export const onKeyDownSoftBreak: KeyboardHandler<SoftBreakConfig> = ({
 
   if (event.defaultPrevented) return;
 
-  const entry = getBlockAbove(editor);
+  const entry = editor.api.block();
 
   if (!entry) return;
 
@@ -22,7 +22,7 @@ export const onKeyDownSoftBreak: KeyboardHandler<SoftBreakConfig> = ({
       event.preventDefault();
       event.stopPropagation();
 
-      editor.insertText('\n');
+      editor.tf.insertText('\n');
     }
   });
 };

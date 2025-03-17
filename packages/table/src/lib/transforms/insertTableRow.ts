@@ -1,14 +1,13 @@
 import {
+  type Path,
   type SlateEditor,
   type TElement,
-  findNode,
-  getBlockAbove,
   getEditorPlugin,
-  insertElements,
-  select,
-  withoutNormalizing,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+  NodeApi,
+  PathApi,
+} from '@udecode/plate';
+
+import type { TTableElement } from '../types';
 
 import {
   BaseTableCellHeaderPlugin,
@@ -21,37 +20,49 @@ import { getCellTypes } from '../utils/index';
 export const insertTableRow = (
   editor: SlateEditor,
   options: {
-    /** Exact path of the row to insert the column at. Will overrule `fromRow`. */
+    /**
+     * Exact path of the row to insert the column at. Pass the table path to
+     * insert at the end of the table. Will overrule `fromRow`.
+     */
     at?: Path;
-    disableSelect?: boolean;
+    /** Insert the row before the current row instead of after */
+    before?: boolean;
     fromRow?: Path;
     header?: boolean;
+    select?: boolean;
   } = {}
 ) => {
   const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
 
-  const { enableMerging } = getOptions();
+  const { disableMerge } = getOptions();
 
-  if (enableMerging) {
+  if (!disableMerge) {
     return insertTableMergeRow(editor, options);
   }
 
-  const { at, disableSelect, fromRow, header } = options;
+  const { before, header, select: shouldSelect } = options;
+  let { at, fromRow } = options;
 
-  const trEntry = fromRow
-    ? findNode(editor, {
-        at: fromRow,
-        match: { type: editor.getType(BaseTableRowPlugin) },
-      })
-    : getBlockAbove(editor, {
-        match: { type: editor.getType(BaseTableRowPlugin) },
-      });
+  if (at && !fromRow) {
+    const table = NodeApi.get<TTableElement>(editor, at);
+
+    if (table?.type === editor.getType(BaseTablePlugin)) {
+      fromRow = NodeApi.lastChild(editor, at)![1];
+      at = undefined;
+    }
+  }
+
+  const trEntry = editor.api.block({
+    at: fromRow,
+    match: { type: editor.getType(BaseTableRowPlugin) },
+  });
 
   if (!trEntry) return;
 
   const [trNode, trPath] = trEntry;
 
-  const tableEntry = getBlockAbove(editor, {
+  const tableEntry = editor.api.block({
+    above: true,
     at: trPath,
     match: { type },
   });
@@ -68,21 +79,21 @@ export const insertTableRow = (
             n.children[i].type === editor.getType(BaseTableCellHeaderPlugin)
         );
 
-      return api.create.cell!({
+      return api.create.tableCell({
         header: header ?? isHeaderColumn,
       });
     }),
     type: editor.getType(BaseTableRowPlugin),
   });
 
-  withoutNormalizing(editor, () => {
-    insertElements(editor, getEmptyRowNode(), {
-      at: Path.isPath(at) ? at : Path.next(trPath),
+  editor.tf.withoutNormalizing(() => {
+    editor.tf.insertNodes(getEmptyRowNode(), {
+      at: PathApi.isPath(at) ? at : before ? trPath : PathApi.next(trPath),
     });
   });
 
-  if (!disableSelect) {
-    const cellEntry = getBlockAbove(editor, {
+  if (shouldSelect) {
+    const cellEntry = editor.api.block({
       match: { type: getCellTypes(editor) },
     });
 
@@ -90,12 +101,14 @@ export const insertTableRow = (
 
     const [, nextCellPath] = cellEntry;
 
-    if (Path.isPath(at)) {
+    if (PathApi.isPath(at)) {
       nextCellPath[nextCellPath.length - 2] = at.at(-2)!;
     } else {
-      nextCellPath[nextCellPath.length - 2] += 1;
+      nextCellPath[nextCellPath.length - 2] = before
+        ? nextCellPath.at(-2)!
+        : nextCellPath.at(-2)! + 1;
     }
 
-    select(editor, nextCellPath);
+    editor.tf.select(nextCellPath);
   }
 };

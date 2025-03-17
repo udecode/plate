@@ -1,0 +1,76 @@
+---
+title: 软换行
+---
+
+<ComponentPreview name="soft-break-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 允许在文本块中插入换行符而不开始新的块
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-break
+```
+
+## 使用
+
+```tsx
+import { SoftBreakPlugin } from '@udecode/plate-break/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { TablePlugin } from '@udecode/plate-table/react';
+
+const plugins = [
+  // ...其他插件,
+  SoftBreakPlugin.configure({
+    options: {
+      rules: [
+        { hotkey: 'shift+enter' },
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [CodeBlockPlugin.key, BlockquotePlugin.key, TablePlugin.key],
+          },
+        },
+      ],
+    },
+  }),
+];
+```
+
+## 快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Shift + Enter">
+    在文本块中插入换行符而不开始新的块
+  </KeyTableItem>
+</KeyTable>
+
+## 插件
+
+### `SoftBreakPlugin`
+
+用于在文本块中插入换行符的插件。
+
+<API name="SoftBreakPlugin">
+<APIOptions>
+
+<APIItem name="rules" type="object[]" optional>
+一个规则对象数组，指定激活软换行的快捷键以及可选的过滤查询。
+<APISubList>
+<APISubListItem parent="rules" name="hotkey" type="string">
+激活软换行的键组合。
+</APISubListItem>
+<APISubListItem parent="rules" name="query" type="QueryNodeOptions" optional>
+确定规则适用的块类型的过滤选项。
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIOptions>
+</API>

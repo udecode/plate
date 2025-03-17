@@ -1,8 +1,8 @@
 'use client';
 
-// eslint-disable-next-line import/no-unresolved
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { useStoreValue } from '@udecode/plate/react';
 import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
 
 import { customizerList } from '@/config/customizer-items';
@@ -10,7 +10,8 @@ import { useDebounce } from '@/registry/default/hooks/use-debounce';
 import { Button } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
 
-import { categoryIds, settingsStore } from './context/settings-store';
+import { Label } from '../registry/default/plate-ui/label';
+import { categoryIds, SettingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { SettingCheckbox } from './setting-checkbox';
 import { TreeIcon } from './tree-icon';
@@ -20,11 +21,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from './ui/accordion';
-import { Label } from '../registry/default/plate-ui/label';
 
 export function SettingsEffect() {
-  const checkedPluginsNext = settingsStore.use.checkedPluginsNext();
-  const valueId = settingsStore.use.valueId();
+  const checkedPluginsNext = useStoreValue(SettingsStore, 'checkedPluginsNext');
+  const valueId = useStoreValue(SettingsStore, 'valueId');
 
   const [key, setKey] = useState(1);
   const debouncedKey = useDebounce(key, 1000);
@@ -37,7 +37,7 @@ export function SettingsEffect() {
 
   useEffect(() => {
     if (debouncedKey) {
-      settingsStore.set.syncChecked();
+      SettingsStore.set('syncChecked');
     }
   }, [debouncedKey]);
 
@@ -45,9 +45,9 @@ export function SettingsEffect() {
 }
 
 export function PluginsTabContentLazy() {
-  const checkedPlugins = settingsStore.use.checkedPlugins();
-  const checkedComponents = settingsStore.use.checkedComponents();
-  const showComponents = settingsStore.use.showComponents();
+  const checkedPlugins = useStoreValue(SettingsStore, 'checkedPlugins');
+  const checkedComponents = useStoreValue(SettingsStore, 'checkedComponents');
+  const showComponents = useStoreValue(SettingsStore, 'showComponents');
 
   const somePluginChecked = useMemo(
     () => Object.values(checkedPlugins).some(Boolean),
@@ -69,10 +69,10 @@ export function PluginsTabContentLazy() {
           checked={somePluginChecked}
           onCheckedChange={(_checked: boolean) => {
             if (somePluginChecked) {
-              settingsStore.set.checkedPlugins({} as any);
+              SettingsStore.set('checkedPlugins', {} as any);
               // settingsStore.set.checkedPluginsNext({} as any);
             } else {
-              settingsStore.set.resetPlugins();
+              SettingsStore.set('resetPlugins');
             }
           }}
         />
@@ -89,10 +89,10 @@ export function PluginsTabContentLazy() {
           checked={someComponentChecked}
           onCheckedChange={(_checked: boolean) => {
             if (someComponentChecked) {
-              settingsStore.set.checkedComponents({} as any);
+              SettingsStore.set('checkedComponents', {} as any);
             } else {
-              settingsStore.set.showComponents(true);
-              settingsStore.set.resetComponents();
+              SettingsStore.set('showComponents', true);
+              SettingsStore.set('resetComponents');
             }
           }}
         />
@@ -107,10 +107,10 @@ export function PluginsTabContentLazy() {
           className="px-2"
           onClick={() => {
             if (showComponents) {
-              settingsStore.set.checkedComponents({} as any);
+              SettingsStore.set('checkedComponents', {} as any);
             }
 
-            settingsStore.set.showComponents(!showComponents);
+            SettingsStore.set('showComponents', !showComponents);
           }}
         >
           {showComponents ? (
@@ -124,11 +124,11 @@ export function PluginsTabContentLazy() {
       <Accordion className="-mx-6" defaultValue={categoryIds} type="multiple">
         {customizerList.map((item) => (
           <AccordionItem key={item.id} value={item.id}>
-            <AccordionTrigger className="py-4 pl-6 pr-[34px]">
+            <AccordionTrigger className="py-4 pr-[34px] pl-6">
               {item.label}
             </AccordionTrigger>
             <AccordionContent className="px-6">
-              <div className="flex flex-col gap-2 ">
+              <div className="flex flex-col gap-2">
                 {item.children.map((child) => (
                   <SettingCheckbox key={child.id} {...child} />
                 ))}
@@ -142,15 +142,15 @@ export function PluginsTabContentLazy() {
 }
 
 export function PluginsTabContent() {
-  const loadingSettings = settingsStore.use.loadingSettings();
+  const loadingSettings = useStoreValue(SettingsStore, 'loadingSettings');
 
   return (
     <div>
       <div className="space-y-4">
         <div className="gap-2">
           <div className="flex items-center justify-between">
-            <div className="space-y-1 pb-4 pr-2 pt-2">
-              <div className="font-semibold leading-none tracking-tight">
+            <div className="space-y-1 pt-2 pr-2 pb-4">
+              <div className="leading-none font-semibold tracking-tight">
                 Customize
               </div>
               <div className="text-xs text-muted-foreground">
@@ -162,9 +162,9 @@ export function PluginsTabContent() {
               size="lg"
               onClick={() => {
                 // settingsStore.set.homeTab('installation');
-                settingsStore.set.showSettings(false);
-                settingsStore.set.state((draft) => {
-                  draft.version = draft.version + 1;
+                SettingsStore.set('showSettings', false);
+                SettingsStore.set('state', (draft) => {
+                  draft.version = draft.version! + 1;
                 });
               }}
             >

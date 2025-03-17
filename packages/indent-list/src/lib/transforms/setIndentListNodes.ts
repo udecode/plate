@@ -1,9 +1,5 @@
-import {
-  type TEditor,
-  type TNodeEntry,
-  unsetNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import type { Editor, NodeEntry } from '@udecode/plate';
+
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 import {
@@ -18,15 +14,15 @@ import { setIndentListNode, setIndentTodoNode } from './setIndentListNode';
  * defined.
  */
 export const setIndentListNodes = (
-  editor: TEditor,
-  entries: TNodeEntry[],
+  editor: Editor,
+  entries: NodeEntry[],
   {
     listStyleType = ListStyleType.Disc,
   }: {
     listStyleType?: string;
   }
 ) => {
-  withoutNormalizing(editor, () => {
+  editor.tf.withoutNormalizing(() => {
     entries.forEach((entry) => {
       const [node, path] = entry;
 
@@ -38,7 +34,7 @@ export const setIndentListNodes = (
           : indent + 1;
 
       if (listStyleType === 'todo') {
-        unsetNodes(editor as any, BaseIndentListPlugin.key, { at: path });
+        editor.tf.unsetNodes(BaseIndentListPlugin.key, { at: path });
         setIndentTodoNode(editor, {
           at: path,
           indent,
@@ -48,7 +44,7 @@ export const setIndentListNodes = (
         return;
       }
 
-      unsetNodes(editor as any, INDENT_LIST_KEYS.checked, { at: path });
+      editor.tf.unsetNodes(INDENT_LIST_KEYS.checked, { at: path });
       setIndentListNode(editor, {
         at: path,
         indent,

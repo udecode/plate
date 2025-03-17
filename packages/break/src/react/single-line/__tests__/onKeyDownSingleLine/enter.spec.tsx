@@ -1,19 +1,22 @@
 /** @jsx jsxt */
 
+import { createEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { onKeyDownSingleLine } from '../../onKeyDownSingleLine';
 
 jsxt;
 
-const input = (
-  <editor>
-    <hp>
-      test
-      <cursor />
-    </hp>
-  </editor>
-) as any;
+const input = createEditor(
+  (
+    <editor>
+      <hp>
+        test
+        <cursor />
+      </hp>
+    </editor>
+  ) as any
+);
 
 const event = new KeyboardEvent('keydown', { key: 'Enter' }) as any;
 

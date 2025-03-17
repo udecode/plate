@@ -1,0 +1,311 @@
+---
+title: Drag & Drop
+docs:
+  - route: /docs/components/draggable
+    title: Draggable
+  - route: /docs/dnd
+    title: Dnd Plugin
+---
+
+<ComponentPreview name="dnd-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Drag & drop of blocks for content movement and insertion within the editor.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-backend
+```
+
+## Usage
+
+```tsx
+import { DndPlugin } from '@udecode/plate-dnd';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+
+const plugins = [
+  // ...otherPlugins,
+  NodeIdPlugin,
+  DndPlugin,
+];
+```
+
+Then, wrap your plugin components with [Draggable](/docs/components/draggable).
+
+## Plugins
+
+### `DndPlugin`
+
+<API name="DndPlugin">
+<APIOptions>
+  <APIItem name="enableScroller" type="boolean" optional>
+    Enables the scroller feature.
+  </APIItem>
+  <APIItem name="scrollerProps" type="Partial<ScrollerProps>" optional>
+    Props for the `Scroller` component.
+  </APIItem>
+  <APIItem name="dropTarget" type="{ id: string | null; line: DropLineDirection }" optional>
+    The current drop target state containing both the target element id and drop line direction.
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `focusBlockStartById`
+
+Selects the start of a block by ID and focuses the editor.
+
+<API name="focusBlockStartById">
+<APIParameters>
+  <APIItem name="id" type="string">
+    The ID of the block to be focused.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `getBlocksWithId`
+
+Returns an array of blocks that have an ID.
+
+<API name="getBlocksWithId">
+<APIOptions type="EditorNodesOptions">
+  The options for getting node entries.
+</APIOptions>
+
+<APIReturns type="NodeEntry[]">
+  Array of blocks that have an ID.
+</APIReturns>
+</API>
+
+### `selectBlockById`
+
+<API name="selectBlockById">
+<APIParameters>
+  <APIItem name="id" type="string">
+    The ID of the block to select.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Components
+
+### `withDraggable`
+
+Enhances a component with draggable behavior.
+
+<API name="withDraggable">
+<APIParameters>
+  <APIItem name="Draggable" type="React.FC">
+    The draggable component to be rendered.
+  </APIItem>
+  <APIItem name="Component" type="React.FC">
+    The component to be enhanced with draggable behavior.
+  </APIItem>
+  <APIItem name="options" type="WithDraggableOptions" optional>
+    Options for draggable behavior.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="WithDraggableOptions">
+  <APIItem name="level" type="number | null" optional>
+    The level of the draggable component.
+  </APIItem>
+  <APIItem name="filter" type="(editor: PlateEditor, path: Path) => boolean" optional>
+    Function that returns whether the component should be draggable.
+  </APIItem>
+  <APIItem name="allowReadOnly" type="boolean" optional>
+    Whether the component should be draggable in read-only mode.
+  </APIItem>
+  <APIItem name="draggableProps" type="T" optional>
+    Props to be passed to the draggable component.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `DndScroller`
+
+A wrapper component for the `Scroller` component that is conditionally rendered based on the dragging state.
+
+<API name="DndScroller">
+<APIState>
+  <APIItem name="enabled" type="boolean">
+    A flag indicating whether the scroll area is enabled. If set to false, the scroll functionality is disabled.
+  </APIItem>
+  <APIItem name="height" type="number">
+    Height of the scrollable area in pixels.
+  </APIItem>
+  <APIItem name="zIndex" type="number">
+    The stack order of the scrollable area. An element with a higher z-index is drawn in front of an element with a lower one.
+  </APIItem>
+  <APIItem name="minStrength" type="number">
+    The minimum strength (speed) of the scrolling action. Higher values will make the scroll action more sensitive.
+  </APIItem>
+  <APIItem name="strengthMultiplier" type="number">
+    A multiplier that increases the scroll speed. Higher values will result in faster scrolling.
+  </APIItem>
+  <APIItem name="containerRef" type="RefObject<any>">
+    Reference to the scrollable container DOM element.
+  </APIItem>
+  <APIItem name="scrollAreaProps" type="HTMLAttributes<HTMLDivElement>">
+    Additional props for the scroll area div element.
+  </APIItem>
+</APIState>
+</API>
+
+## Hooks
+
+### `useDndNode`
+
+A custom hook that combines the `useDragNode` and `useDropNode` hooks to enable dragging and dropping of a node from the editor. It provides a default preview for the dragged node, which can be customized or disabled.
+
+<API name="useDndNode">
+<APIOptions type="UseDndNodeOptions">
+  <APIItem name="element" type="TElement">
+    The node to be dragged.
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    The type of drag item.
+    - **Default:** `'block'`
+  </APIItem>
+  <APIItem name="nodeRef" type="any">
+    The ref of the node to be dragged.
+  </APIItem>
+  <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
+    The orientation of drag and drop.
+    - **Default:** `'vertical'`
+  </APIItem>
+  <APIItem name="canDropNode" type="(args: { dragEntry: NodeEntry; dragItem: DragItemNode; dropEntry: NodeEntry; editor: PlateEditor }) => boolean" optional>
+    Callback to determine if a node can be dropped at the current location.
+  </APIItem>
+  <APIItem name="preview" type="previewOptions" optional>
+    The preview options for the dragged node.
+  </APIItem>
+  <APIItem name="drag" type="dragOptions" optional>
+    The drag options for the dragged node.
+  </APIItem>
+  <APIItem name="drop" type="dropOptions" optional>
+    The drop options for the dragged node.
+  </APIItem>
+  <APIItem name="onDropHandler" type="string" optional>
+    Handler called when the node is dropped.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="isDragging" type="boolean">
+    Whether the node is currently being dragged.
+  </APIItem>
+  <APIItem name="isOver" type="boolean">
+    Whether the dragged node is over a drop target.
+  </APIItem>
+  <APIItem name="dragRef" type="ConnectDragSource">
+    Drag reference for the draggable element.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useDragNode`
+
+A custom hook that enables dragging of a node from the editor using the `useDrag` hook from `react-dnd`.
+
+<API name="useDragNode">
+<APIOptions type="UseDragNodeOptions">
+  <APIItem name="element" type="TElement">
+    The node to be dragged.
+  </APIItem>
+  <APIItem name="item" type="DragObject | DragObjectFactory<DragObject>" optional>
+    Drag object or factory function that returns it.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `useDraggable`
+
+A custom hook that enables draggable behavior for a given element. It provides a preview for the element, which can be customized or disabled.
+
+<API name="useDraggable">
+<APIOptions type="object">
+  <APIItem name="element" type="TElement">
+    The element to make draggable.
+  </APIItem>
+  <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
+    Orientation of drag and drop.
+    - **Default:** `'vertical'`
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    Type of drag item.
+    - **Default:** `'block'`
+  </APIItem>
+  <APIItem name="onDropHandler" type="function" optional>
+    Handler called when element is dropped.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="handleRef" type="(element: Element | React.ReactElement | React.RefObject<any> | null) => void">
+    Drag source connector function.
+  </APIItem>
+  <APIItem name="isDragging" type="boolean">
+    Whether element is being dragged.
+  </APIItem>
+  <APIItem name="previewRef" type="React.RefObject<HTMLDivElement>">
+    Reference to draggable element.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useDropNode`
+
+A custom hook that enables dropping a node on the editor. It uses the `useDrop` hook from `react-dnd` to handle the drop behavior.
+
+<API name="useDropNode">
+<APIOptions type="UseDropNodeOptions">
+  <APIItem name="nodeRef" type="any">
+    Reference to the node being dragged.
+  </APIItem>
+  <APIItem name="element" type="TElement">
+    The node to which the drop line is attached.
+  </APIItem>
+  <APIItem name="dropLine" type="string">
+    Current value of the drop line.
+  </APIItem>
+  <APIItem name="onChangeDropLine" type="function">
+    Callback when drop line changes.
+  </APIItem>
+  <APIItem name="onDropHandler" type="object">
+    Callback that intercepts drop handling.
+    - Returns `true` to prevent default behavior
+    - Returns `false` to run default behavior after
+  </APIItem>
+</APIOptions>
+</API>
+
+### `useDropLine`
+
+Returns the current drop line state for an element.
+
+<API name="useDropLine">
+<APIOptions type="object">
+  <APIItem name="id" type="string" optional>
+    Element ID to show drop line for.
+    - **Default:** Current element ID
+  </APIItem>
+  <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
+    Filter drop lines by orientation.
+    - **Default:** `'vertical'`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="dropLine" type="'top' | 'bottom' | 'left' | 'right' | ''">
+    Current drop line direction.
+  </APIItem>
+</APIReturns>
+</API>

@@ -1,0 +1,74 @@
+---
+title: 对齐
+docs:
+  - route: /docs/components/align-dropdown-menu
+    title: 对齐下拉菜单
+---
+
+<ComponentPreview name="align-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 提供文本对齐选项：左对齐、右对齐、居中对齐或两端对齐。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-alignment
+```
+
+## 使用
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { AlignPlugin } from '@udecode/plate-alignment/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    HeadingPlugin,
+    AlignPlugin.configure({
+      inject: {
+        targetPlugins: [
+          ParagraphPlugin.key,
+          HeadingPlugin.key,
+        ],
+      },
+    }),
+  ],
+});
+```
+
+## 插件
+
+### `AlignPlugin`
+
+用于在块元素中对齐文本的插件。
+
+## API
+
+### `setAlign`
+
+为编辑器中的指定块元素设置对齐方式。
+
+<APIParameters>
+<APIItem name="editor" type="PlateEditor">
+编辑器实例。
+</APIItem>
+<APIItem name="options" type="object" optional>
+<APISubList>
+<APISubListItem parent="options" name="value" type="Alignment" optional>
+对齐值。
+</APISubListItem>
+<APISubListItem parent="options" name="setNodesOptions" type="SetNodesOptions" optional>
+`setNodes` 函数的选项。
+</APISubListItem>
+
+</APISubList>
+</APIItem>
+</APIParameters>

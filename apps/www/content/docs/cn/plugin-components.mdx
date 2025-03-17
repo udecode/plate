@@ -1,0 +1,99 @@
+---
+title: 插件组件
+description: 学习如何为 Plate 插件创建和样式化自定义组件。
+---
+
+默认情况下，Plate 插件是无头（headless）的，这意味着所有节点都将以纯文本形式渲染。本指南将向您展示如何为编辑器创建和样式化自定义组件。
+
+## Plate UI
+
+除非您更喜欢从头开始构建所有内容，否则我们建议使用 [Plate UI](/docs/components) 来入门。Plate UI 是一个组件集合，您可以将其复制到您的应用程序中并根据需要进行修改。
+
+在大多数情况下，无论您是使用 Plate UI 还是从头开始构建自己的组件，向编辑器添加组件的过程都是相同的。
+
+## 定义组件
+
+定义组件的最简单方法是使用 `PlateElement` 或 `PlateLeaf` 作为内容的包装器。这将确保 Slate 所需的正确属性应用于您的 HTML 元素。
+
+请注意，`children` 属性必须无条件渲染，以确保编辑器正常工作，包括对于 void 节点。
+
+### 元素
+
+```tsx
+import { PlateElement, PlateElementProps } from '@udecode/plate/react';
+
+export function BlockquoteElement({
+  className,
+  children,
+  ...props
+}: PlateElementProps) {
+  return (
+    <PlateElement asChild className={className} {...props}>
+      <blockquote>{children}</blockquote>
+    </PlateElement>
+  );
+}
+```
+
+### 叶子
+
+```tsx
+import { PlateLeaf, PlateLeafProps } from '@udecode/plate/react';
+
+export function CodeLeaf({ className, children, ...props }: PlateLeafProps) {
+  return (
+    <PlateLeaf asChild className={className} {...props}>
+      <code>{children}</code>
+    </PlateLeaf>
+  );
+}
+```
+
+### 使用 CSS 样式化
+
+我们推荐使用 Tailwind CSS 来样式化组件，这是 Plate UI 使用的模式。然而，也可以使用全局 CSS 文件来根据 Slate 生成的类名来样式化节点。
+
+对于每个节点，Slate 会生成一个类名，类名以 `slate-` 开头，后跟节点类型。例如，段落节点可以如下样式化：
+
+```css
+.slate-p {
+  margin-bottom: 1rem;
+}
+```
+
+## 注册组件
+
+要在 Plate 中使用您的组件，您需要将它们与相关插件注册。有两种方法可以做到这一点。
+
+### 插件选项
+
+要注册组件，请使用 `node.component` 选项：
+
+```tsx showLineNumbers {3-5,9}
+const ParagraphPlugin = createPlatePlugin({
+  // ... 
+  node: {
+    component: ParagraphElement,
+  },
+});
+
+// 或者
+const ParagraphPlugin = BaseParagraphPlugin.withComponent(ParagraphElement)
+```
+
+### 编辑器选项
+
+或者，您可以使用 `createPlateEditor` 的 `override.components` 选项为每个插件键指定组件：
+
+```tsx showLineNumbers {5-6}
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, LinkPlugin],
+  override: {
+    components: {
+      [ParagraphPlugin.key]: ParagraphElement,
+      [LinkPlugin.key]: LinkElement,
+      // ...其他组件
+    },
+  },
+});
+```

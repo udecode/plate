@@ -1,12 +1,15 @@
-import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
+import { useElement, usePluginOption } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const useBlockSelected = (_id?: string) => {
-  const { useOption } = useEditorPlugin(BlockSelectionPlugin);
   const { id } = useElement();
 
-  const isBlockSelected = useOption('isSelected', _id ?? (id as string));
+  const isBlockSelected = usePluginOption(
+    BlockSelectionPlugin,
+    'isSelected',
+    _id ?? (id as string)
+  );
 
   return isBlockSelected;
 };

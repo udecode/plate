@@ -42,7 +42,7 @@ body:
     attributes:
       label: "Slate React version"
       description: Please give the version of slate-react
-      placeholder: ex. 0.103.0
+      placeholder: ex. 0.112.0
     validations:
       required: true
   - type: textarea

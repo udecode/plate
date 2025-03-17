@@ -1,4 +1,4 @@
-import { type SlateEditor, getPluginTypes } from '@udecode/plate-common';
+import { type SlateEditor, getPluginTypes } from '@udecode/plate';
 
 import {
   BaseTableCellHeaderPlugin,

@@ -6,7 +6,7 @@ import type {
 } from './BasePlugin';
 import type { AnySlatePlugin, SlatePlugin } from './SlatePlugin';
 
-import { resolvePlugin } from '../utils';
+import { resolvePlugin } from '../../internal/plugin/resolvePlugin';
 import { createSlatePlugin } from './createSlatePlugin';
 
 /** Get editor plugin by key or plugin object. */

@@ -1,5 +1,58 @@
 # @udecode/plate-md-serializer
 
+## 46.0.8
+
+### Patch Changes
+
+- [#4153](https://github.com/udecode/plate/pull/4153) by [@martin-lysk](https://github.com/martin-lysk) – fixes empty value detection
+
+- [#4152](https://github.com/udecode/plate/pull/4152) by [@martin-lysk](https://github.com/martin-lysk) – fixes indentList for root level lists
+
+- [#4156](https://github.com/udecode/plate/pull/4156) by [@martin-lysk](https://github.com/martin-lysk) – Fixes nodes option in serialize function
+
+## 46.0.3
+
+### Patch Changes
+
+- [#4130](https://github.com/udecode/plate/pull/4130) by [@felixfeng33](https://github.com/felixfeng33) – Add `ignoreSuggestionType` to default retain the original document content, excluding the content after "suggestion."
+
+## 45.0.4
+
+### Patch Changes
+
+- [#3998](https://github.com/udecode/plate/pull/3998) by [@felixfeng33](https://github.com/felixfeng33) – Fix serialize code-block and indent-list. Add support for equation and inline-equation.
+
+## 44.0.0
+
+## 43.0.0
+
+## 42.0.3
+
+### Patch Changes
+
+- [#3952](https://github.com/udecode/plate/pull/3952) by [@zbeyens](https://github.com/zbeyens) –
+  - `editor.api.markdown.deserialize`:
+    - Improve support for indented lists: nested lists, mixed ordered and unordered lists
+    - Fix: markdown codeblock without language should not set `lang: undefined` to the node
+    - Add options:
+      - `memoize`: Enable block-level memoization with `_memo` property, so it is compatible with `PlateStatic` memoization.
+      - `parse`: Filter out specific markdown token types (e.g. 'space')
+      - `processor`: Customize the markdown processor
+  - Add `parseMarkdownBlocks`: Extract and filter markdown tokens using marked lexer
+  - Fix `editor.api.markdown.serialize` indenting should be 3 spaces instead of 2.
+
+## 42.0.0
+
+## 41.0.14
+
+### Patch Changes
+
+- [#3924](https://github.com/udecode/plate/pull/3924) by [@cwooldridge1](https://github.com/cwooldridge1) – fix: markdown parser ordered list numbering
+
+- [#3924](https://github.com/udecode/plate/pull/3924) by [@cwooldridge1](https://github.com/cwooldridge1) – fix: markdown parser ordered list numbering
+
+## 41.0.0
+
 ## 40.2.2
 
 ### Patch Changes

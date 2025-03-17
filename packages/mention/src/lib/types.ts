@@ -1,14 +1,14 @@
-import type { TElement } from '@udecode/plate-common';
+import type { TElement } from '@udecode/plate';
 
-export interface TMentionItemBase {
-  text: string;
-  key?: any;
+export interface TMentionElement extends TElement {
+  value: string;
 }
 
 export interface TMentionInputElement extends TElement {
   trigger: string;
 }
 
-export interface TMentionElement extends TElement {
-  value: string;
+export interface TMentionItemBase {
+  text: string;
+  key?: any;
 }

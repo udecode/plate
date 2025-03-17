@@ -13,17 +13,18 @@ jobs:
   update-registry:
     name: Update Registry
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.18.x]
+    
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22
 
       - name: 📥 Monorepo install
         uses: ./.github/actions/yarn-nm-install
@@ -37,7 +38,7 @@ jobs:
           key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
       - name: 🏗 Build Registry
-        run: yarn build:registry
+        run: yarn workspace shadcx build && yarn build:registry && yarn build:tw
 
       - name: ◻️ Create Pull Request
         uses: peter-evans/create-pull-request@v4
@@ -49,3 +50,5 @@ jobs:
           committer: GitHub <noreply@github.com>
           branch: registry
           delete-branch: true
+          add-paths: |
+            apps/www/**/*

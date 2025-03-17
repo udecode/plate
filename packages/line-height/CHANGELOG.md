@@ -1,5 +1,25 @@
 # @udecode/plate-line-height
 
+## 44.0.0
+
+## 43.0.0
+
+## 42.1.1
+
+### Patch Changes
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – Remove useless html parser.
+
+## 42.0.5
+
+### Patch Changes
+
+- [#3943](https://github.com/udecode/plate/pull/3943) by [@felixfeng33](https://github.com/felixfeng33) – Support deserialization from PlateStatic.
+
+## 42.0.0
+
+## 41.0.0
+
 ## 40.0.0
 
 ### Patch Changes

@@ -1,7 +1,7 @@
 {
   "name": "@udecode/react-utils",
-  "version": "40.2.8",
-  "description": "Udecode React utils",
+  "version": "44.0.1",
+  "description": "React utils",
   "keywords": [
     "utils"
   ],
@@ -41,13 +41,13 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@radix-ui/react-slot": "^1.1.0",
-    "@udecode/utils": "37.0.0",
+    "@radix-ui/react-slot": "^1.1.1",
+    "@udecode/utils": "42.0.0",
     "clsx": "^2.1.1"
   },
   "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

@@ -1,5 +1,7 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
+apps/www/src/app/api/ai
+
 **/tsconfig.tsbuildinfo
 
 .yarn/*
@@ -8,6 +10,7 @@
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+.repo_ignore
 
 **/traceDir
 

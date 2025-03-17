@@ -1,0 +1,212 @@
+---
+title: 多选
+docs:
+  - route: /docs/components/tag-element
+  - route: /docs/components/select-editor
+---
+
+<ComponentPreview name="select-editor-demo" />
+
+<PackageInfo>
+
+## 特性
+
+与传统的基于输入的多选不同，该组件基于 Plate 编辑器构建，提供以下功能：
+
+- 完整的历史记录支持（撤销/重做）
+- 在标签之间和标签内部的原生光标导航
+- 选择一个或多个标签
+- 复制/粘贴标签
+- 拖放重新排序标签
+- 只读模式
+- 防止重复标签
+- 创建新标签，不区分大小写
+- 搜索文本清理
+- 去除空白字符
+- 使用 [cmdk](https://github.com/pacocoursey/cmdk) 进行模糊搜索
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-tag
+```
+
+## 使用
+
+```tsx
+import { MultiSelectPlugin } from '@udecode/plate-tag/react';
+import { TagElement } from '@/components/plate-ui/tag-element';
+import {
+  SelectEditor,
+  SelectEditorContent,
+  SelectEditorInput,
+  SelectEditorCombobox,
+  type SelectItem,
+} from '@/components/plate-ui/select-editor';
+
+// 定义你的项目
+const ITEMS: SelectItem[] = [
+  { value: 'React' },
+  { value: 'TypeScript' },
+  { value: 'JavaScript' },
+];
+
+export default function MySelectEditor() {
+  const [value, setValue] = React.useState<SelectItem[]>([ITEMS[0]]);
+
+  return (
+    <SelectEditor
+      value={value}
+      onValueChange={setValue}
+      items={ITEMS}
+    >
+      <SelectEditorContent>
+        <SelectEditorInput placeholder="选择项目..." />
+        <SelectEditorCombobox />
+      </SelectEditorContent>
+    </SelectEditor>
+  );
+}
+```
+
+另请参阅：
+- [TagElement](/docs/components/tag-element)
+- [SelectEditor](/docs/components/select-editor)
+
+## 插件
+
+### `TagPlugin`
+
+内联 void 元素插件。
+
+### `MultiSelectPlugin`
+
+`TagPlugin` 的扩展，将编辑器限制为标签元素。
+
+## API
+
+### `editor.tf.insert.tag`
+
+在当前选择位置插入新的多选元素。
+
+<API name="editor.tf.insert.tag">
+<APIParameters>
+  <APIItem name="props" type="TagLike">
+    多选元素的属性。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="TagLike">
+  <APIItem name="value" type="string">
+    多选元素的唯一值。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 钩子
+
+### `useSelectedItems`
+
+用于获取编辑器中当前选中的标签项目的钩子。
+
+<API name="useSelectedItems">
+<APIReturns type="TagLike[]">
+  包含值和属性的选中标签项目数组。
+</APIReturns>
+</API>
+
+### `getSelectedItems`
+
+获取编辑器中的所有标签项目。
+
+<API name="getSelectedItems">
+<APIReturns type="TagLike[]">
+  编辑器中的标签项目数组。
+</APIReturns>
+</API>
+
+### `isEqualTags`
+
+用于比较两组标签是否相等的实用函数，忽略顺序。
+
+<API name="isEqualTags">
+<APIParameters>
+  <APIItem name="newTags" type="TagLike[]" optional>
+    要与当前编辑器标签进行比较的新标签。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  两组标签是否包含相同的值。
+</APIReturns>
+</API>
+
+### `useSelectableItems`
+
+用于获取可选择的可用项目的钩子，根据搜索过滤并排除已选中的项目。
+
+<API name="useSelectableItems">
+<APIOptions type="options">
+  <APIItem name="allowNew" type="boolean" optional>
+    是否允许创建新项目。
+    - **默认值:** `true`
+  </APIItem>
+  <APIItem name="filter" type="(value: string, search: string) => boolean" optional>
+    项目的自定义过滤函数。
+  </APIItem>
+  <APIItem name="items" type="T[]" optional>
+    可用项目数组。
+  </APIItem>
+  <APIItem name="newItemFilter" type="(search: string) => boolean" optional>
+    新项目的过滤函数。
+  </APIItem>
+  <APIItem name="newItemPosition" type="'end' | 'start'" optional>
+    新项目在列表中的位置。
+    - **默认值:** `'end'`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="T[]">
+  过滤后的可选择项目数组。
+</APIReturns>
+</API>
+
+### `useSelectEditorCombobox`
+
+用于处理编辑器中组合框行为的钩子，包括文本清理和项目选择。
+
+<API name="useSelectEditorCombobox">
+<APIOptions type="options">
+  <APIItem name="open" type="boolean">
+    组合框是否打开。
+  </APIItem>
+  <APIItem name="selectFirstItem" type="() => void">
+    选择第一个组合框项目的函数。
+  </APIItem>
+  <APIItem name="onValueChange" type="(items: TagLike[]) => void" optional>
+    选中项目发生变化时的回调。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 类型
+
+### `TTagElement`
+
+```ts
+type TTagElement = TElement & {
+  value: string;
+  [key: string]: unknown;
+};
+```
+
+### `TagLike`
+
+```ts
+type TagLike = {
+  value: string;
+  [key: string]: unknown;
+};
+```

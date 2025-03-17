@@ -9,7 +9,6 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { useEditorReadOnly } from '@udecode/plate-common/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
@@ -25,6 +24,7 @@ import {
   ImagePlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
+import { useEditorReadOnly } from '@udecode/plate/react';
 import {
   BaselineIcon,
   BoldIcon,

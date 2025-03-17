@@ -1,0 +1,84 @@
+---
+title: 提及
+docs:
+  - route: /docs/combobox
+    title: 组合框
+  - route: /docs/components/mention-element
+    title: 提及元素
+  - route: /docs/components/mention-input-element
+    title: 提及输入元素
+---
+
+<ComponentPreview name="mention-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 提供智能的自动补全功能，用于提及用户或应用标签。
+- 使用 `@` 或 `#` 调用组合框并选择建议。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-mention
+```
+
+## 使用
+
+```tsx
+import { MentionPlugin } from '@udecode/plate-mention/react';
+
+const plugins = [
+  // ...其他插件,
+  MentionPlugin,
+];
+```
+
+## 插件
+
+### `MentionPlugin`
+
+用于提及功能的插件。扩展了 [TriggerComboboxPlugin](/docs/combobox#options)。
+
+<API name="MentionPlugin">
+<APIOptions type="MentionPluginOptions">
+  <APIItem name="insertSpaceAfterMention" type="boolean" optional>
+    是否在提及后插入空格。
+    - **默认值:** `false`
+  </APIItem>
+  <APIItem name="trigger" type="string" optional>
+    触发提及组合框的字符。
+    - **默认值:** `'@'`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `MentionInputPlugin`
+
+用于提及输入功能的插件。
+
+## API
+
+### `editor.api.insert.mention`
+
+重写此 API 方法以自定义提及的插入方式。
+
+### `getMentionOnSelectItem`
+
+获取用于选择提及组合框项的处理程序。
+
+<API name="getMentionOnSelectItem">
+<APIOptions type="GetMentionOnSelectItemOptions">
+  <APIItem name="key" type="string" optional>
+    提及插件的插件键。
+    - **默认值:** `MentionPlugin.key`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="MentionOnSelectItem">
+  提及项选择的处理程序。
+</APIReturns>
+</API>

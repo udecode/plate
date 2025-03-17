@@ -2,22 +2,23 @@
 
 import React, { useEffect } from 'react';
 
-import {
-  type WithRequiredKey,
-  isSelectionExpanded,
-} from '@udecode/plate-common';
-import {
-  useEditorSelector,
-  useElement,
-  useRemoveNodeButton,
-} from '@udecode/plate-common/react';
+import type { WithRequiredKey } from '@udecode/plate';
+
 import {
   FloatingMedia as FloatingMediaPrimitive,
-  floatingMediaActions,
-  useFloatingMediaSelectors,
+  FloatingMediaStore,
+  useFloatingMediaValue,
+  useImagePreviewValue,
 } from '@udecode/plate-media/react';
+import {
+  useEditorRef,
+  useEditorSelector,
+  useElement,
+  useReadOnly,
+  useRemoveNodeButton,
+  useSelected,
+} from '@udecode/plate/react';
 import { Link, Trash2Icon } from 'lucide-react';
-import { useReadOnly, useSelected } from 'slate-react';
 
 import { Button, buttonVariants } from './button';
 import { CaptionButton } from './caption';
@@ -31,19 +32,22 @@ export interface MediaPopoverProps {
 }
 
 export function MediaPopover({ children, plugin }: MediaPopoverProps) {
+  const editor = useEditorRef();
   const readOnly = useReadOnly();
   const selected = useSelected();
 
   const selectionCollapsed = useEditorSelector(
-    (editor) => !isSelectionExpanded(editor),
+    (editor) => !editor.api.isExpanded(),
     []
   );
-  const isOpen = !readOnly && selected && selectionCollapsed;
-  const isEditing = useFloatingMediaSelectors().isEditing();
+  const isImagePreviewOpen = useImagePreviewValue('isOpen', editor.id);
+  const isOpen =
+    !readOnly && selected && selectionCollapsed && !isImagePreviewOpen;
+  const isEditing = useFloatingMediaValue('isEditing');
 
   useEffect(() => {
     if (!isOpen && isEditing) {
-      floatingMediaActions.isEditing(false);
+      FloatingMediaStore.set('isEditing', false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -64,7 +68,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
         {isEditing ? (
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">
-              <div className="flex items-center pl-2 pr-1 text-muted-foreground">
+              <div className="flex items-center pr-1 pl-2 text-muted-foreground">
                 <Link className="size-4" />
               </div>
 

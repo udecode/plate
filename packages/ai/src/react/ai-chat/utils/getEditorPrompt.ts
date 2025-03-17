@@ -1,11 +1,14 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { PlateEditor } from '@udecode/plate/react';
 
 import { isSelecting } from '@udecode/plate-selection';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 import { getMarkdown } from './getMarkdown';
 
-export type MarkdownType = 'block' | 'editor' | 'selection';
+export type EditorPrompt =
+  | ((params: EditorPromptParams) => string)
+  | PromptConfig
+  | string;
 
 export interface EditorPromptParams {
   editor: PlateEditor;
@@ -13,16 +16,13 @@ export interface EditorPromptParams {
   isSelecting: boolean;
 }
 
+export type MarkdownType = 'block' | 'editor' | 'selection';
+
 export interface PromptConfig {
   default: string;
   blockSelecting?: string;
   selecting?: string;
 }
-
-export type EditorPrompt =
-  | ((params: EditorPromptParams) => string)
-  | PromptConfig
-  | string;
 
 const replacePlaceholders = (
   editor: PlateEditor,

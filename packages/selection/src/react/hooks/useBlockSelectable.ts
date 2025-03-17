@@ -1,60 +1,64 @@
-import React from 'react';
+import type React from 'react';
 
-import { getAboveNode, isVoid } from '@udecode/plate-common';
-import {
-  findNodePath,
-  useEditorPlugin,
-  useElement,
-} from '@udecode/plate-common/react';
-import { Path } from 'slate';
+import { type TElement, PathApi } from '@udecode/plate';
+import { useEditorPlugin, useElement, usePath } from '@udecode/plate/react';
 
-import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
 
 export const useBlockSelectable = () => {
   const element = useElement();
-  const { api, editor, getOption, getOptions } =
-    useEditorPlugin(BlockSelectionPlugin);
-  const path = React.useMemo(
-    () => findNodePath(editor, element),
-    [editor, element]
-  );
+  const path = usePath();
+  const { api, editor, getOption, getOptions, setOption } =
+    useEditorPlugin<BlockSelectionConfig>({
+      key: 'blockSelection',
+    });
 
   const id = element?.id as string | undefined;
 
   return {
-    props: {
-      className: 'slate-selectable',
-      onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        if (!element || !path) return;
+    props: api.blockSelection.isSelectable(element, path)
+      ? {
+          className: 'slate-selectable',
+          onContextMenu: (
+            event: React.MouseEvent<HTMLDivElement, MouseEvent>
+          ) => {
+            if (!element) return;
 
-        const { enableContextMenu } = getOptions();
+            const { enableContextMenu } = getOptions();
 
-        if (!enableContextMenu) return;
-        if (editor.selection?.focus) {
-          const nodeEntry = getAboveNode(editor);
+            if (!enableContextMenu) return;
+            if (editor.selection?.focus) {
+              const nodeEntry = editor.api.above<TElement>();
 
-          if (nodeEntry && Path.isCommon(path, nodeEntry[1])) {
-            const id = nodeEntry[0].id as string | undefined;
-            const isSelected = getOption('isSelected', id);
-            const isOpenAlways =
-              (event.target as HTMLElement).dataset?.plateOpenContextMenu ===
-              'true';
+              if (nodeEntry && PathApi.isCommon(path, nodeEntry[1])) {
+                const id = nodeEntry[0].id as string | undefined;
+                const isSelected = getOption('isSelected', id);
+                const isOpenAlways =
+                  (event.target as HTMLElement).dataset
+                    ?.plateOpenContextMenu === 'true';
 
-            /**
-             * When "block selected or is void or has openContextMenu props",
-             * right click can always open the context menu.
-             */
-            if (!isSelected && !isVoid(editor, nodeEntry[0]) && !isOpenAlways) {
-              return event.stopPropagation();
+                /**
+                 * When "block selected or is void or has openContextMenu
+                 * props", right click can always open the context menu.
+                 */
+                if (
+                  !isSelected &&
+                  !editor.api.isVoid(nodeEntry[0]) &&
+                  !isOpenAlways
+                ) {
+                  return event.stopPropagation();
+                }
+              }
             }
-          }
+            if (id) {
+              if (event?.shiftKey) {
+                api.blockSelection.add(id);
+              } else {
+                setOption('selectedIds', new Set([id]));
+              }
+            }
+          },
         }
-        if (id) {
-          api.blockSelection.addSelectedRow(id, {
-            clear: !event?.shiftKey,
-          });
-        }
-      },
-    },
+      : {},
   };
 };

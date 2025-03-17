@@ -1,0 +1,388 @@
+---
+title: 列表
+docs:
+  - route: /docs/components/list-element
+    title: 列表元素
+  - route: /docs/components/list-toolbar-button
+    title: 列表工具栏按钮
+  - route: /docs/components/todo-list-element
+    title: 待办事项列表元素
+---
+
+<ComponentPreview name="list-demo" />
+
+<Callout>
+
+Plate 提供了两种实现列表的方式：
+
+1. **此列表插件** - 遵循 HTML 规范的列表，具有严格的嵌套规则：
+   - 遵循标准的 HTML 列表结构（`ul`/`ol` > `li`）
+   - 保持一致的列表层次结构
+   - 最适合可能导出为 HTML/markdown 的内容
+   - 复杂度最高
+
+2. [**缩进列表插件**](/docs/indent-list) - 灵活的基于缩进的列表：
+   - 更像 Word/Google Docs 的行为
+   - 任何块都可以缩进以创建类似列表的结构
+   - 在 [AI 编辑器](/editors#editor-ai) 中使用
+   - 更适合自由形式的内容组织
+
+根据您的需求选择：
+- 当您需要标准的 HTML 列表兼容性时，使用 **列表插件**
+- 当您想要更灵活的缩进行为时，使用 **缩进列表插件**
+
+</Callout>
+
+<PackageInfo>
+
+## 功能
+
+- **符合 HTML 规范的列表**：
+  - 标准的 `ul`/`ol` > `li` 结构
+  - 正确的嵌套和层次结构
+  - SEO 友好的标记
+  - 干净的 HTML/markdown 导出
+
+- **列表类型**：
+  - 无序（项目符号）列表
+  - 有序（编号）列表
+  - 带有复选框的待办事项列表
+  - 嵌套子列表
+
+- **拖放**：
+  - 目前仅支持根级列表项
+  - 兄弟和嵌套项的拖放尚不支持
+
+- **快捷键**：
+  - 结合自动格式化插件，使用 markdown 快捷键（**`-`**、**`*`**、**`1.`**）创建列表
+  - Tab/Shift+Tab 用于缩进控制
+
+- **限制（使用 [缩进列表](/docs/indent-list) 实现这些功能）**：
+  - 拖放仅支持根级列表
+  - 列表项无法对齐
+
+如需更灵活的、类似 Word 的方式，请参阅 [缩进列表插件](/docs/indent-list)。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-list
+```
+
+## 使用
+
+```tsx
+import { ListPlugin } from '@udecode/plate-list/react';
+
+const plugins = [
+  // ...其他插件
+  ListPlugin,
+];
+```
+
+## 快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Opt + 4">插入编号列表。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + 4">插入编号列表。</KeyTableItem>
+</KeyTable>
+
+## 插件
+
+### `ListPlugin`
+
+<API name="ListPlugin">
+包含以下元素插件：
+- `BulletedListPlugin`
+- `NumberedListPlugin`
+- `ListItemPlugin`
+- `ListItemContentPlugin`
+
+<APIOptions type="object">
+  <APIItem name="validLiChildrenTypes" type="string[]" optional>
+    列表项的有效子节点类型（除了 `p` 和 `ul`）。
+  </APIItem>
+  <APIItem name="enableResetOnShiftTab" type="boolean" optional>
+    是否在按下 Shift+Tab 时重置列表缩进级别。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `BulletedListPlugin`
+
+用于无序（项目符号）列表的插件。
+
+### `NumberedListPlugin`
+
+用于有序（编号）列表的插件。
+
+### `ListItemPlugin`
+
+用于列表项的插件。
+
+### `ListItemContentPlugin`
+
+用于列表项内容的插件。
+
+## API
+
+### `editor.tf.toggle.list`
+
+在编辑器中切换列表。
+
+<API name="toggle.list">
+<APIOptions type="object">
+  <APIItem name="type" type="string">
+    要切换的列表类型。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `getHighestEmptyList`
+
+查找可以删除的最高级结束列表。列表的路径应与 `diffListPath` 不同。如果最高级结束列表有 2 个或更多项，则返回 `liPath`。它会向上遍历父列表，直到：
+- 列表的项少于 2 个
+- 其路径不等于 `diffListPath`
+
+<API name="getHighestEmptyList">
+<APIOptions type="object">
+  <APIItem name="liPath" type="Path">
+    列表项的路径。
+  </APIItem>
+  <APIItem name="diffListPath" type="Path" optional>
+    不同列表的路径。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Path | undefined">
+  可删除的最高级结束列表的路径。
+</APIReturns>
+</API>
+
+### `getListItemEntry`
+
+返回给定路径（`默认 = 选择`）的最近 `li` 和 `ul`/`ol` 包裹节点entry。
+
+<API name="getListItemEntry">
+<APIOptions type="object">
+  <APIItem name="at" type="Location | null" optional>
+    从中获取entry的位置。
+    - **默认值：** `editor.selection`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="ElementEntry | undefined">
+  最近的 `li` 和 `ul`/`ol` 包裹节点entry。
+</APIReturns>
+</API>
+
+### `getListRoot`
+
+向上搜索根列表元素。
+
+<API name="getListRoot">
+<APIParameters>
+  <APIItem name="at" type="Path | TRange | Point | null" optional>
+    开始搜索的位置。
+    - **默认值：** `editor.selection`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="ElementEntry | undefined">
+  根列表元素entry。
+</APIReturns>
+</API>
+
+### `getListTypes`
+
+获取支持的列表类型数组。
+
+<API name="getListTypes">
+<APIReturns type="string[]">
+  支持的列表类型数组。
+</APIReturns>
+</API>
+
+### `moveListSiblingsAfterCursor`
+
+将光标后的列表兄弟项移动到指定路径。
+
+<API name="moveListSiblingsAfterCursor">
+<APIOptions type="options">
+  <APIItem name="at" type="Path">
+    光标位置路径。
+  </APIItem>
+  <APIItem name="to" type="Path">
+    目标路径。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="number">
+  移动的兄弟项数量。
+</APIReturns>
+</API>
+
+### `removeFirstListItem`
+
+如果不是嵌套项且不是第一个子项，则删除第一个列表项。
+
+<API name="removeFirstListItem">
+<APIOptions type="options">
+  <APIItem name="list" type="ElementEntry">
+    包含项的列表entry。
+  </APIItem>
+  <APIItem name="listItem" type="ElementEntry">
+    要删除的列表项。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  是否删除了项。
+</APIReturns>
+</API>
+
+### `removeListItem`
+
+删除列表项并将子列表移动到父列表（如果有）。
+
+<API name="removeListItem">
+<APIOptions type="RemoveListItemOptions">
+  <APIItem name="list" type="ElementEntry">
+    包含项的列表entry。
+  </APIItem>
+  <APIItem name="listItem" type="ElementEntry">
+    要删除的列表项。
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    是否反转子列表项。
+    - **默认值：** `true`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  是否删除了项。
+</APIReturns>
+</API>
+
+### `someList`
+
+检查选择是否在特定类型的列表中。
+
+<API name="someList">
+<APIParameters>
+  <APIItem name="type" type="string">
+    要检查的列表类型。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  选择是否在指定的列表类型中。
+</APIReturns>
+</API>
+
+### `unindentListItems`
+
+减少列表项的缩进级别。
+
+<API name="unindentListItems">
+<APIOptions type="UnindentListItemsOptions">
+    用于减少缩进的目标路径。
+</APIOptions>
+</API>
+
+### `unwrapList`
+
+从选定的项中移除列表格式。
+
+<API name="unwrapList">
+<APIOptions type="options">
+  <APIItem name="at" type="Path" optional>
+    用于移除格式的目标路径。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 钩子
+
+### `useListToolbarButton`
+
+用于列表工具栏按钮的行为钩子。
+
+<API name="useListToolbarButton">
+<APIState>
+  <APIItem name="pressed" type="boolean">
+    按钮的按下状态。
+  </APIItem>
+  <APIItem name="nodeType" type="string">
+    列表节点类型。
+    - **默认值：** `BulletedListPlugin.key`
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    工具栏按钮的属性。
+  </APIItem>
+  <APISubList>
+    <APISubListItem parent="props" name="pressed" type="boolean">
+      按钮的按下状态。
+    </APISubListItem>
+    <APISubListItem parent="props" name="onClick" type="function">
+      切换列表并聚焦编辑器的处理程序。
+    </APISubListItem>
+  </APISubList>
+</APIReturns>
+</API>
+
+## 待办事项列表 API
+
+### `getTodoListItemEntry`
+
+获取最近的待办事项列表和项entry。
+
+<API name="getTodoListItemEntry">
+<APIOptions type="options">
+  <APIItem name="at" type="Location | null" optional>
+    开始搜索的位置。
+    - **默认值：** `editor.selection`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="{ list: ElementEntry, listItem: ElementEntry } | undefined">
+  如果找到，返回待办事项列表和项entry。
+</APIReturns>
+</API>
+
+### `useTodoListElement`
+
+用于待办事项列表项元素的行为钩子。
+
+<API name="useTodoListElement">
+<APIState>
+  <APIItem name="checked" type="boolean">
+    待办事项项的选中状态。
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    项是否为只读。
+  </APIItem>
+  <APIItem name="element" type="TElement">
+    待办事项列表项元素。
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="checkboxProps" type="object">
+    复选框的属性。
+  </APIItem>
+  <APISubList>
+    <APISubListItem parent="checkboxProps" name="checked" type="boolean">
+      复选框的选中状态。
+    </APISubListItem>
+    <APISubListItem parent="checkboxProps" name="onCheckedChange" type="function">
+      复选框状态变化的处理程序。
+    </APISubListItem>
+  </APISubList>
+</APIReturns>
+</API>

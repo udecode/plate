@@ -1,16 +1,13 @@
-import {
-  type GetAboveNodeOptions,
-  type SlateEditor,
-  getBlockAbove,
-} from '@udecode/plate-common';
+import type { EditorAboveOptions, SlateEditor } from '@udecode/plate';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 
-export const getTableAbove = <E extends SlateEditor>(
-  editor: E,
-  options?: GetAboveNodeOptions<E>
+export const getTableAbove = (
+  editor: SlateEditor,
+  options?: EditorAboveOptions
 ) =>
-  getBlockAbove(editor, {
+  editor.api.block({
+    above: true,
     match: {
       type: editor.getType(BaseTablePlugin),
     },

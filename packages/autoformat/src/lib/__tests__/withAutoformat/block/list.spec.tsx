@@ -1,15 +1,15 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
 
-import type {
-  AutoformatBlockRule,
-  AutoformatPluginOptions,
-} from '../../../types';
+import type { AutoformatBlockRule } from '../../../types';
 
-import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
+import {
+  BaseAutoformatPlugin,
+  type AutoformatConfig,
+} from '../../../BaseAutoformatPlugin';
 
 jsxt;
 
@@ -40,7 +40,7 @@ describe('when -space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });
@@ -73,7 +73,7 @@ describe('when 1.space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });
@@ -102,7 +102,7 @@ describe('when [].space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });
@@ -131,7 +131,7 @@ describe('when [x].space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });
@@ -167,7 +167,7 @@ describe('when +space', () => {
         return rule;
       });
 
-    const autoformatPluginWitoutTogglePreformat: AutoformatPluginOptions = {
+    const autoformatPluginWitoutTogglePreformat: AutoformatConfig['options'] = {
       ...autoformatPlugin.options,
       rules: autoformatPluginRulesWitoutTogglePreformat as any,
     };
@@ -181,7 +181,7 @@ describe('when +space', () => {
       value: input,
     });
 
-    editor.insertText(' ');
+    editor.tf.insertText(' ');
 
     expect(input.children).toEqual(output.children);
   });

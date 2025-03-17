@@ -1,6 +1,5 @@
-import type { Path } from 'slate';
+import type { Editor, Path } from '@udecode/plate';
 
-import { type TEditor, setElements } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 import {
@@ -10,7 +9,7 @@ import {
 import { ListStyleType } from '../types';
 
 export const setIndentListNode = (
-  editor: TEditor,
+  editor: Editor,
   {
     at,
     indent = 0,
@@ -23,8 +22,7 @@ export const setIndentListNode = (
 ) => {
   const newIndent = indent || indent + 1;
 
-  setElements(
-    editor,
+  editor.tf.setNodes(
     {
       [BaseIndentListPlugin.key]: listStyleType,
       [BaseIndentPlugin.key]: newIndent,
@@ -34,7 +32,7 @@ export const setIndentListNode = (
 };
 
 export const setIndentTodoNode = (
-  editor: TEditor,
+  editor: Editor,
   {
     at,
     indent = 0,
@@ -47,8 +45,7 @@ export const setIndentTodoNode = (
 ) => {
   const newIndent = indent || indent + 1;
 
-  setElements(
-    editor,
+  editor.tf.setNodes(
     {
       [BaseIndentListPlugin.key]: listStyleType,
       [BaseIndentPlugin.key]: newIndent,

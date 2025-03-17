@@ -2,48 +2,51 @@
 
 import React from 'react';
 
-import type { TCommentText } from '@udecode/plate-comments';
-
 import { cn } from '@udecode/cn';
+import { type TCommentText, getCommentCount } from '@udecode/plate-comments';
 import {
-  useCommentLeaf,
-  useCommentLeafState,
-} from '@udecode/plate-comments/react';
-import { type PlateLeafProps, PlateLeaf } from '@udecode/plate-common/react';
+  type PlateLeafProps,
+  PlateLeaf,
+  useEditorPlugin,
+  usePluginOption,
+} from '@udecode/plate/react';
 
+import { commentsPlugin } from '@/components/editor/plugins/comments-plugin';
 export function CommentLeaf({
   className,
   ...props
 }: PlateLeafProps<TCommentText>) {
   const { children, leaf, nodeProps } = props;
 
-  const state = useCommentLeafState({ leaf });
-  const { props: rootProps } = useCommentLeaf(state);
+  const { api, setOption } = useEditorPlugin(commentsPlugin);
+  const hoverId = usePluginOption(commentsPlugin, 'hoverId');
+  const activeId = usePluginOption(commentsPlugin, 'activeId');
 
-  if (!state.commentCount) return <>{children}</>;
-
-  let aboveChildren = <>{children}</>;
-
-  if (!state.isActive) {
-    for (let i = 1; i < state.commentCount; i++) {
-      aboveChildren = <span className="bg-highlight/25">{aboveChildren}</span>;
-    }
-  }
+  const isOverlapping = getCommentCount(leaf) > 1;
+  const currentId = api.comment.nodeId(leaf);
+  const isActive = activeId === currentId;
+  const isHover = hoverId === currentId;
 
   return (
     <PlateLeaf
       {...props}
       className={cn(
-        'border-b-2 border-b-highlight/35 hover:bg-highlight/25',
-        state.isActive ? 'bg-highlight/25' : 'bg-highlight/15',
+        'border-b-2 border-b-highlight/[.36] bg-highlight/[.13] transition-colors duration-200',
+        (isHover || isActive) && 'border-b-highlight bg-highlight/25',
+        isOverlapping && 'border-b-2 border-b-highlight/[.7] bg-highlight/25',
+        (isHover || isActive) &&
+          isOverlapping &&
+          'border-b-highlight bg-highlight/45',
         className
       )}
+      onClick={() => setOption('activeId', currentId ?? null)}
+      onMouseEnter={() => setOption('hoverId', currentId ?? null)}
+      onMouseLeave={() => setOption('hoverId', null)}
       nodeProps={{
-        ...rootProps,
         ...nodeProps,
       }}
     >
-      {aboveChildren}
+      {children}
     </PlateLeaf>
   );
 }

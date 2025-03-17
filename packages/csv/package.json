@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-csv",
-  "version": "40.0.0",
+  "version": "45.0.0",
   "description": "CSV serializer plugin for Plate",
   "keywords": [
     "csv",
@@ -46,22 +46,17 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-table": "40.0.0",
-    "papaparse": "^5.4.1"
+    "@udecode/plate-table": "45.0.0",
+    "papaparse": "^5.5.2"
   },
   "devDependencies": {
-    "@types/papaparse": "^5.3.14",
-    "@udecode/plate-common": "workspace:^"
+    "@types/papaparse": "^5.3.15",
+    "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=40.2.8",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.103.0",
-    "slate-dom": ">=0.111.0",
-    "slate-history": ">=0.93.0",
-    "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.111.0"
+    "@udecode/plate": ">=46.0.4",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"

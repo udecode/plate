@@ -1,77 +1,48 @@
 import React from 'react';
 
-import type { TEditor, TElement } from '@udecode/plate-common';
-import type { DropTargetMonitor } from 'react-dnd';
+import { useEditorRef } from '@udecode/plate/react';
 
-import { createAtomStore } from '@udecode/plate-common/react';
-
-import { type DragItemNode, type DropLineDirection, useDndBlock } from '..';
-
-export const { DraggableProvider, useDraggableStore } = createAtomStore(
-  {
-    dropLine: '' as DropLineDirection,
-  },
-  { name: 'draggable' }
-);
+import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 
 export type DraggableState = {
-  dragRef: (
-    elementOrNode: Element | React.ReactElement | React.RefObject<any> | null
-  ) => void;
   isDragging: boolean;
-  nodeRef: React.RefObject<HTMLDivElement>;
+  /** The ref of the draggable element */
+  previewRef: React.RefObject<HTMLDivElement | null>;
+  /** The ref of the draggable handle */
+  handleRef: (
+    elementOrNode:
+      | Element
+      | React.ReactElement<any>
+      | React.RefObject<any>
+      | null
+  ) => void;
 };
 
-export const useDraggableState = (props: {
-  element: TElement;
-  onDropHandler?: (
-    editor: TEditor,
-    props: {
-      id: string;
-      dragItem: DragItemNode;
-      monitor: DropTargetMonitor<DragItemNode, unknown>;
-      nodeRef: any;
-    }
-  ) => boolean;
-}): DraggableState => {
-  const { element, onDropHandler } = props;
+export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
+  const {
+    orientation = 'vertical',
+    type = DRAG_ITEM_BLOCK,
+    onDropHandler,
+  } = props;
+
+  const editor = useEditorRef();
 
   const nodeRef = React.useRef<HTMLDivElement>(null);
-  const { dragRef, isDragging } = useDndBlock({
-    id: element.id as string,
+
+  if (!editor.plugins.dnd) return {} as any;
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { dragRef, isDragging } = useDndNode({
     nodeRef,
+    orientation,
+    type,
     onDropHandler,
+    ...props,
   });
 
   return {
-    dragRef,
     isDragging,
-    nodeRef,
-  };
-};
-
-export const useDraggable = (state: DraggableState) => {
-  return {
-    previewRef: state.nodeRef,
-    handleRef: state.dragRef,
-  };
-};
-
-export const useDraggableGutter = () => {
-  return {
-    props: {
-      contentEditable: false,
-    },
-  };
-};
-
-export const useDropLine = () => {
-  const dropLine = useDraggableStore().get.dropLine();
-
-  return {
-    dropLine,
-    props: {
-      contentEditable: false,
-    },
+    previewRef: nodeRef,
+    handleRef: dragRef,
   };
 };

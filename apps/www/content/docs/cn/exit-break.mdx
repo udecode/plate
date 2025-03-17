@@ -1,0 +1,164 @@
+---
+title: 退出段落
+---
+
+<ComponentPreview name="exit-break-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 通过单个快捷键退出大段文本。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-break
+```
+
+## 使用
+
+```tsx
+import { ExitBreakPlugin } from '@udecode/plate-break/react';
+import { HEADING_LEVELS } from '@udecode/plate-heading';
+
+const plugins = [
+  // ...其他插件
+  ExitBreakPlugin.configure({
+    options: {
+      rules: [
+        {
+          hotkey: 'mod+enter',
+        },
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: HEADING_LEVELS,
+          },
+          relative: true,
+          level: 1,
+        },
+      ],
+    },
+  }),
+];
+```
+
+## 快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Enter">
+    在选中的段落之后开始一个新段落。
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + Enter">
+    在选中的段落之前开始一个新段落。
+  </KeyTableItem>
+</KeyTable>
+
+## 插件
+
+### `ExitBreakPlugin`
+
+<API name="ExitBreakPlugin">
+<APIOptions>
+  <APIItem name="rules" type="ExitBreakRule[]" optional>
+    退出段落行为的规则数组。
+    <APISubList>
+      <APISubListItem parent="rules" name="hotkey" type="string">
+        触发退出段落的快捷键。
+      </APISubListItem>
+      <APISubListItem parent="rules" name="query" type="QueryNodeOptions & { start?: boolean; end?: boolean }" optional>
+        确定退出条件的对象。
+        
+        扩展自 QueryNodeOptions:
+        - `start`: 段落的开始
+        - `end`: 段落的结束
+      </APISubListItem>
+      <APISubListItem parent="rules" name="level" type="number" optional>
+        退出的路径层级。
+        - **默认值:** `1`
+      </APISubListItem>
+      <APISubListItem parent="rules" name="before" type="boolean" optional>
+        是否在选中的段落之前退出。
+      </APISubListItem>
+      <APISubListItem parent="rules" name="defaultType" type="string" optional>
+        退出时插入的默认节点类型。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `exitBreak`
+
+使用快捷键退出大段文本。
+
+<API name="exitBreak">
+<APIOptions type="ExitBreakOptions">
+  <APIItem name="level" type="number" optional>
+    退出的路径层级。
+    - **默认值:** `0`
+  </APIItem>
+  <APIItem name="relative" type="boolean" optional>
+    是否相对于选择退出。
+    - **默认值:** `false`
+  </APIItem>
+  <APIItem name="defaultType" type="function" optional>
+    退出时插入的默认节点类型。
+    - **默认值:** `editor.getType(ParagraphPlugin)`
+  </APIItem>
+  <APIItem name="query" type="object" optional>
+    退出段落的条件。
+  </APIItem>
+  <APIItem name="before" type="boolean" optional>
+    是否在选中的段落之前退出。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  退出段落是否成功。
+</APIReturns>
+</API>
+
+### `exitBreakAtEdges`
+
+检查选择是否在其父段落的边缘，并在指定时执行“退出段落”操作。
+
+<API name="exitBreakAtEdges">
+<APIParameters>
+  <APIItem name="options" type="object">
+    检查边缘的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="start" type="boolean" optional>
+    是否检查选择是否在段落的开始。
+  </APIItem>
+  <APIItem name="end" type="boolean" optional>
+    是否检查选择是否在段落的结束。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="queryEdge" type="boolean">
+    是否查询了边缘。
+  </APIItem>
+  <APIItem name="isEdge" type="boolean">
+    选择是否在段落的边缘。
+  </APIItem>
+  <APIItem name="isStart" type="boolean">
+    选择是否在段落的开始。
+  </APIItem>
+</APIReturns>
+</API>

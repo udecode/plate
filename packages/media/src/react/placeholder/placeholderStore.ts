@@ -1,23 +1,29 @@
-import { createAtomStore } from '@udecode/plate-common/react';
+import { createAtomStore } from '@udecode/plate/react';
 
-type Progresses = Record<string, number>;
 interface PlaceholderStore {
+  isUploading: boolean;
+  progresses: Progresses;
   size: {
     height: number;
     width: number;
   } | null;
-  isUploading: boolean;
-  progresses: Progresses;
   updatedFiles: File[];
 }
+type Progresses = Record<string, number>;
 
-export const { PlaceholderProvider, placeholderStore, usePlaceholderStore } =
-  createAtomStore(
-    {
-      isUploading: false,
-      progresses: {},
-      size: null,
-      updatedFiles: [],
-    } as PlaceholderStore,
-    { name: 'placeholder' }
-  );
+export const {
+  PlaceholderProvider,
+  placeholderStore,
+  usePlaceholderSet,
+  usePlaceholderState,
+  usePlaceholderStore,
+  usePlaceholderValue,
+} = createAtomStore(
+  {
+    isUploading: false,
+    progresses: {},
+    size: null,
+    updatedFiles: [],
+  } as PlaceholderStore,
+  { name: 'placeholder' }
+);

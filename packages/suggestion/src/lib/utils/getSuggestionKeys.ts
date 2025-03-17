@@ -1,8 +1,14 @@
-import { type TNode, isDefined } from '@udecode/plate-common';
+import {
+  type SlateEditor,
+  type TNode,
+  type TText,
+  isDefined,
+} from '@udecode/plate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { getInlineSuggestionData } from './getSuggestionId';
 
-export const getSuggestionKey = (id = '0') =>
+export const getSuggestionKey = (id = '0'): string =>
   `${BaseSuggestionPlugin.key}_${id}`;
 
 export const isSuggestionKey = (key: string) =>
@@ -29,4 +35,10 @@ export const getSuggestionUserIds = (node: TNode) => {
 
 export const getSuggestionUserId = (node: TNode) => {
   return getSuggestionUserIds(node)[0];
+};
+
+export const isCurrentUserSuggestion = (editor: SlateEditor, node: TText) => {
+  const { currentUserId } = editor.getOptions(BaseSuggestionPlugin);
+
+  return getInlineSuggestionData(node)?.userId === currentUserId;
 };

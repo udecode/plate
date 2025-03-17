@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { toggleCodeBlock } from './toggleCodeBlock';
@@ -35,13 +35,14 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleCodeBlock(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn a p with a selection to code block', () => {
@@ -68,13 +69,14 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleCodeBlock(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 
   it('should turn multiple p to a code block', () => {
@@ -107,12 +109,13 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [CodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     toggleCodeBlock(editor);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

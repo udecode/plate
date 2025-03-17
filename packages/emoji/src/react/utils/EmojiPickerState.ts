@@ -4,7 +4,10 @@ import type { Emoji } from '@emoji-mart/data';
 
 import { type EmojiCategoryList, EmojiCategory } from '../../lib';
 
-export type MapEmojiCategoryList = Map<EmojiCategoryList, boolean>;
+export type EmojiPickerStateDispatch = {
+  type: string;
+  payload?: Partial<EmojiPickerStateProps>;
+};
 
 export type EmojiPickerStateProps = {
   hasFound: boolean;
@@ -18,10 +21,7 @@ export type EmojiPickerStateProps = {
   frequentEmoji?: string;
 };
 
-export type EmojiPickerStateDispatch = {
-  type: string;
-  payload?: Partial<EmojiPickerStateProps>;
-};
+export type MapEmojiCategoryList = Map<EmojiCategoryList, boolean>;
 
 const initialState: EmojiPickerStateProps = {
   emoji: undefined,
@@ -39,68 +39,69 @@ export const EmojiPickerState = (): [
   EmojiPickerStateProps,
   React.Dispatch<EmojiPickerStateDispatch>,
 ] => {
-  const [cache, dispatch] = React.useReducer<
-    React.Reducer<EmojiPickerStateProps, EmojiPickerStateDispatch>
-  >((state, action) => {
-    const { payload, type } = action;
+  const [cache, dispatch] = React.useReducer(
+    (state: EmojiPickerStateProps, action: EmojiPickerStateDispatch) => {
+      const { payload, type } = action;
 
-    switch (type) {
-      case 'CLEAR_SEARCH': {
-        return {
-          ...state,
-          focusedCategory: EmojiCategory.Frequent,
-          hasFound: false,
-          isSearching: false,
-          searchValue: '',
-        };
+      switch (type) {
+        case 'CLEAR_SEARCH': {
+          return {
+            ...state,
+            focusedCategory: EmojiCategory.Frequent,
+            hasFound: false,
+            isSearching: false,
+            searchValue: '',
+          };
+        }
+        case 'SET_CLOSE': {
+          return {
+            ...state,
+            emoji: undefined,
+            isOpen: false,
+          };
+        }
+        case 'SET_EMOJI':
+        case 'SET_FOCUSED_AND_VISIBLE_CATEGORIES':
+        case 'SET_SEARCH': {
+          return { ...state, ...payload };
+        }
+        case 'SET_FOCUSED_CATEGORY': {
+          return {
+            ...state,
+            ...payload,
+            hasFound: false,
+            isSearching: false,
+            searchValue: '',
+          };
+        }
+        case 'SET_OPEN': {
+          return {
+            ...state,
+            isOpen: true,
+          };
+        }
+        case 'UPDATE_FREQUENT_EMOJIS': {
+          return {
+            ...state,
+            ...payload,
+            emoji: undefined,
+          };
+        }
+        case 'UPDATE_SEARCH_RESULT': {
+          return {
+            ...state,
+            ...payload,
+            focusedCategory: undefined,
+            isSearching: true,
+          };
+        }
+        default: {
+          throw new Error(`Unhandled action type: ${type}`);
+        }
       }
-      case 'SET_CLOSE': {
-        return {
-          ...state,
-          emoji: undefined,
-          isOpen: false,
-        };
-      }
-      case 'SET_EMOJI':
-      case 'SET_FOCUSED_AND_VISIBLE_CATEGORIES':
-      case 'SET_SEARCH': {
-        return { ...state, ...payload };
-      }
-      case 'SET_FOCUSED_CATEGORY': {
-        return {
-          ...state,
-          ...payload,
-          hasFound: false,
-          isSearching: false,
-          searchValue: '',
-        };
-      }
-      case 'SET_OPEN': {
-        return {
-          ...state,
-          isOpen: true,
-        };
-      }
-      case 'UPDATE_FREQUENT_EMOJIS': {
-        return {
-          ...state,
-          ...payload,
-          emoji: undefined,
-        };
-      }
-      case 'UPDATE_SEARCH_RESULT': {
-        return {
-          ...state,
-          ...payload,
-          focusedCategory: undefined,
-          isSearching: true,
-        };
-      }
-      default: {
-        throw new Error(`Unhandled action type: ${type}`);
-      }
-    }
-  }, initialState);
+    },
+    initialState
+  );
 
   return [cache, dispatch];
 };

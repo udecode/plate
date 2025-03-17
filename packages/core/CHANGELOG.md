@@ -1,5 +1,372 @@
 # @udecode/plate-core
 
+## 46.0.4
+
+### Patch Changes
+
+- [#4132](https://github.com/udecode/plate/pull/4132) by [@zbeyens](https://github.com/zbeyens) – Better error message for editor.api.debug.error
+
+## 46.0.2
+
+### Patch Changes
+
+- [`50338ca`](https://github.com/udecode/plate/commit/50338cabfa36726f95be46fa0b51f64a2f1665c3) by [@zbeyens](https://github.com/zbeyens) – Fix error throwing after a large amount of nodes/re-rendering
+
+## 45.0.9
+
+### Patch Changes
+
+- [#4115](https://github.com/udecode/plate/pull/4115) by [@12joan](https://github.com/12joan) – Fallback Plate store no longer needs to be memorized since `jotai-x@2.3.1` handles this automatically
+
+## 45.0.8
+
+### Patch Changes
+
+- [`7b988f1`](https://github.com/udecode/plate/commit/7b988f11c35a2fb8e0e966ca1c9af8710b092d5e) by [@zbeyens](https://github.com/zbeyens) – supress warning logs when using PlateController
+
+## 45.0.7
+
+### Patch Changes
+
+- [`91bc38e`](https://github.com/udecode/plate/commit/91bc38e5e4ff926d3c64f5561ab6f71c6f415884) by [@zbeyens](https://github.com/zbeyens) – Bump jotai-x
+
+## 45.0.6
+
+### Patch Changes
+
+- [#4107](https://github.com/udecode/plate/pull/4107) by [@12joan](https://github.com/12joan) –
+  - `editor.id` now defaults to `nanoid()` if no `id` was specified when creating the editor.
+  - Fix: Using Plate hooks such as `useEditorRef` inside PlateController causes React to throw an error about hook order.
+
+## 45.0.5
+
+### Patch Changes
+
+- [`7255a0a`](https://github.com/udecode/plate/commit/7255a0a4b371252f8444e73e8ae0836cb63a0b88) by [@zbeyens](https://github.com/zbeyens) – bump zustand-x
+
+## 45.0.2
+
+### Patch Changes
+
+- [#4090](https://github.com/udecode/plate/pull/4090) by [@zbeyens](https://github.com/zbeyens) – Add `belowRootNodes` render option to render content below root element but above children. Similar to `belowNodes` but renders directly in the element rather than wrapping. This is used in `PlateElement` to render the `BlockSelection` component below the root element.
+
+## 45.0.1
+
+### Patch Changes
+
+- [`8b06248`](https://github.com/udecode/plate/commit/8b06248ede9d006f1b421ec0bf820be8a536e79c) by [@felixfeng33](https://github.com/felixfeng33) – Add `isSlateEditor` to check if the HTML element is a plate editor
+
+## 44.0.7
+
+### Patch Changes
+
+- [#4084](https://github.com/udecode/plate/pull/4084) by [@regmsif](https://github.com/regmsif) – fix: return value of useEditorPlugin changes when rerender
+
+## 44.0.1
+
+## 44.0.0
+
+### Major Changes
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Support React 19
+  - Upgraded to `zustand-x@6`
+    - `eventEditorSelectors` -> `EventEditorStore.get`
+    - `eventEditorActions` -> `EventEditorStore.set`
+    - `useEventEditorSelectors` -> `useEventEditorValue(key)`
+  - Upgraded to `jotai-x@2`
+    - `usePlateEditorStore` -> `usePlateStore`
+    - `usePlateActions` -> `usePlateSet`
+    - Remove `editor.setPlateState`, use `usePlateSet` instead
+    - `usePlateSelectors` -> `usePlateValue`
+    - `usePlateStates` -> `usePlateState`
+  - Moving plugin options hooks into standalone hooks to be compatible with React Compiler
+    - `editor.useOption`, `ctx.useOption` -> `usePluginOption(plugin, key, ...args)`
+    - `editor.useOptions`, `ctx.useOptions` -> `usePluginOption(plugin, 'state')`
+    - New hook `usePluginOptions(plugin, selector)` to select plugin options (Zustand way).
+  - We were supporting adding selectors to plugins using `extendOptions`. Those were mixed up with the options state, leading to potential conflicts and confusion.
+    - The plugin method is renamed to `extendSelectors`
+    - Selectors are now internally stored in `plugin.selectors` instead of `plugin.options`, but this does not change how you access those: using `editor.getOption(plugin, 'selectorName')`, `ctx.getOption('selectorName')` or above hooks.
+    - Selector types are no longer in the 2nd generic type of `PluginConfig`, we're adding a 5th generic type for it.
+
+  ```ts
+  // Before:
+  export type BlockSelectionConfig = PluginConfig<
+    'blockSelection',
+    { selectedIds?: Set<string>; } & BlockSelectionSelectors,
+  >;
+
+  // After:
+  export type BlockSelectionConfig = PluginConfig<
+    'blockSelection',
+    { selectedIds?: Set<string>; },
+    {}, // API
+    {}, // Transforms
+    BlockSelectionSelectors, // Selectors
+  }>
+  ```
+
+## 43.0.5
+
+### Patch Changes
+
+- [#4038](https://github.com/udecode/plate/pull/4038) by [@yf-yang](https://github.com/yf-yang) – Update types and docs of `aboveNodes` and `belowNodes`
+
+## 43.0.4
+
+### Patch Changes
+
+- [#4035](https://github.com/udecode/plate/pull/4035) by [@yf-yang](https://github.com/yf-yang) – Fix type of `NodeWrapperComponentReturnType`
+
+## 43.0.2
+
+### Patch Changes
+
+- [#4025](https://github.com/udecode/plate/pull/4025) by [@e1himself](https://github.com/e1himself) – Fixed props injection match check for elements
+
+## 43.0.0
+
+### Minor Changes
+
+- [#4019](https://github.com/udecode/plate/pull/4019) by [@zbeyens](https://github.com/zbeyens) – Upgrade dependencies to latest
+
+## 42.2.5
+
+## 42.2.2
+
+### Patch Changes
+
+- [#4001](https://github.com/udecode/plate/pull/4001) by [@martin-keeper](https://github.com/martin-keeper) – Add new param to HTML deserializer for changing the default element
+
+- [#4002](https://github.com/udecode/plate/pull/4002) by [@zbeyens](https://github.com/zbeyens) – Pass plugin context to `plugin.node.props`
+
+## 42.1.2
+
+### Patch Changes
+
+- [#3986](https://github.com/udecode/plate/pull/3986) by [@felixfeng33](https://github.com/felixfeng33) – Fix lodash import
+
+## 42.1.1
+
+### Patch Changes
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – fix import html
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – Remove useless html parser.
+
+## 42.0.6
+
+### Patch Changes
+
+- [#3968](https://github.com/udecode/plate/pull/3968) by [@yf-yang](https://github.com/yf-yang) – Fix (bis)
+
+## 42.0.5
+
+### Patch Changes
+
+- [#3943](https://github.com/udecode/plate/pull/3943) by [@felixfeng33](https://github.com/felixfeng33) – `editor.api.html.deserialize`: Support deserialization from PlateStatic.
+
+  New: `getEditorDOMFromHtmlString` returns the editor element in html string (the one with `data-slate-editor="true"`).
+
+  New utilities for checking Slate nodes in HTML:
+
+  - `isSlateVoid`: Check if an HTML element is a Slate void node
+  - `isSlateElement`: Check if an HTML element is a Slate element node
+  - `isSlateString`: Check if an HTML element is a Slate string node
+  - `isSlateLeaf`: Check if an HTML element is a Slate leaf node
+  - `isSlateNode`: Check if an HTML element is any type of Slate node
+  - `isSlatePluginElement`: Check if an HTML element is a Slate element node with a specific plugin key
+  - `isSlatePluginNode`: Check if an HTML element has a specific plugin key class
+  - `getSlateElements`: Get all Slate element nodes in an HTML element
+
+## 42.0.4
+
+### Patch Changes
+
+- [#3963](https://github.com/udecode/plate/pull/3963) by [@zbeyens](https://github.com/zbeyens) – Fixes #3958
+
+## 42.0.3
+
+### Patch Changes
+
+- [#3952](https://github.com/udecode/plate/pull/3952) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix `tf.reset` missing `options` argument. Fixes editor reset on select all > backspace using `ResetNodePlugin`.
+  - `PlateStatic` element and leaf rendering is now memoized with `React.memo` so you can safely update `editor.children`. For elements, it compares the `element` reference or `element._memo` value. The latter can be used to memoize based on the markdown string instead of the `element` reference. For example, `deserializeMd` with `memoize: true` will set `element._memo` for that purpose.
+
+## 42.0.1
+
+### Patch Changes
+
+- [#3948](https://github.com/udecode/plate/pull/3948) by [@zbeyens](https://github.com/zbeyens) – Fix: deserialization should work with custom node types
+
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+
+  - **Plugin `normalizeInitialValue`** now returns `void` instead of `Value`. When mutating nodes, keep their references (e.g., use `Object.assign` instead of spread).
+  - **Editor methods have moved** to `editor.tf` and `editor.api`. They still exist at the top level for **slate backward compatibility**, but are no longer redundantly typed. If you truly need the top-level method types, extend your editor type with `LegacyEditorMethods` (e.g. `editor as Editor & LegacyEditorMethods`). Since these methods can be overridden by `extendEditor`, `with...`, or slate plugins, consider migrating to the following approaches:
+
+    ```tsx
+    // For overriding existing methods only:
+    overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
+      transforms: {
+        deleteForward(options) {
+          // ...conditional override
+          deleteForward(options);
+        },
+      },
+      api: {
+        isInline(element) {
+          // ...conditional override
+          return isInline(element);
+        },
+      },
+    }));
+    ```
+
+  This was previously done in `extendEditor` using top-level methods, which still works but now throws a type error due to the move to `editor.tf/editor.api`. A workaround is to extend your editor with `LegacyEditorMethods`.
+
+  **Why?** Having all methods at the top-level (next to `children`, `marks`, etc.) would clutter the editor interface. Slate splits transforms in three places (`editor`, `Editor`, and `Transforms`), which is also confusing. We've reorganized them into `tf` and `api` for better DX, but also to support transform-only middlewares in the future. This also lets us leverage `extendEditorTransforms`, `extendEditorApi`, and `overrideEditor` to modify those methods.
+
+  Migration example:
+
+  ```tsx
+  // From:
+  export const withInlineVoid: ExtendEditor = ({ editor }) => {
+    const { isInline, isSelectable, isVoid, markableVoid } = editor;
+
+    const voidTypes: string[] = [];
+    const inlineTypes: string[] = [];
+
+    editor.pluginList.forEach((plugin) => {
+      if (plugin.node.isInline) {
+        inlineTypes.push(plugin.node.type);
+      }
+      if (plugin.node.isVoid) {
+        voidTypes.push(plugin.node.type);
+      }
+    });
+
+    editor.isInline = (element) => {
+      return inlineTypes.includes(element.type as any)
+        ? true
+        : isInline(element);
+    };
+
+    editor.isVoid = (element) => {
+      return voidTypes.includes(element.type as any) ? true : isVoid(element);
+    };
+
+    return editor;
+  };
+
+  export const InlineVoidPlugin = createSlatePlugin({
+    key: 'inlineVoid',
+    extendEditor: withInlineVoid,
+  });
+
+  // After (using overrideEditor since we're only overriding existing methods):
+  export const withInlineVoid: OverrideEditor = ({
+    api: { isInline, isSelectable, isVoid, markableVoid },
+    editor,
+  }) => {
+    const voidTypes: string[] = [];
+    const inlineTypes: string[] = [];
+
+    editor.pluginList.forEach((plugin) => {
+      if (plugin.node.isInline) {
+        inlineTypes.push(plugin.node.type);
+      }
+      if (plugin.node.isVoid) {
+        voidTypes.push(plugin.node.type);
+      }
+    });
+
+    return {
+      api: {
+        isInline(element) {
+          return inlineTypes.includes(element.type as any)
+            ? true
+            : isInline(element);
+        },
+        isVoid(element) {
+          return voidTypes.includes(element.type as any)
+            ? true
+            : isVoid(element);
+        },
+      },
+    };
+  };
+
+  export const InlineVoidPlugin = createSlatePlugin({
+    key: 'inlineVoid',
+  }).overrideEditor(withInlineVoid);
+  ```
+
+  - Move `editor.redecorate` to `editor.api.redecorate`
+
+  Types:
+
+  - Rename `TRenderElementProps` to `RenderElementProps`
+  - Rename `TRenderLeafProps` to `RenderLeafProps`
+  - Rename `TEditableProps` to `EditableProps`
+
+### Minor Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Import the following from `@udecode/plate-core/react` (or `@udecode/plate/react`) instead of `slate-react`: `RenderPlaceholderProps`, `DefaultElement`, `DefaultPlaceholder`, `Editable`, `Slate`, `useComposing`, `useFocused`, `useReadOnly`, `useSelected`, `withReact`.
+  - `useNodePath` is now memoized: it will re-render only when the actual path changes (`PathApi.equals`). This includes `usePath` and `path` element prop.
+  - **New hook** `useElementSelector(([node, path]) => selector(node, path), deps, { equalityFn, key })`: re-render only when the selector result changes. **We highly recommend using this hook over useElement(key)** when subscribing to an ancestor element (e.g. table element from a cell element). For example, subscribe to the row size from a cell element without affecting the re-rendering of all row cells:
+
+  ```tsx
+  const rowSize = useElementSelector(([node]) => node.size, [], {
+    key: TableRowPlugin.key,
+  });
+  ```
+
+  - Added a new plugin attribute: `SlatePlugin.node.isSelectable`. If set to `false`, the node cannot be selected.
+  - The plugin context `tf` and `api` now include `Editor` methods.
+
+## 41.0.13
+
+### Patch Changes
+
+- [#3932](https://github.com/udecode/plate/pull/3932) by [@felixfeng33](https://github.com/felixfeng33) – Each `PlateElement` and `SlateElement` comes with a default `position: relative` style.
+  Remove `relative` className from all components
+
+## 41.0.2
+
+### Patch Changes
+
+- [#3878](https://github.com/udecode/plate/pull/3878) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `useNodePath(node: TNode)`: memoized `findPath` (`useMemo`)
+  - Add `usePath(pluginKey?: string)`: memoized `findPath` (context)
+  - `PlateElementProps` now includes `path` prop, also accessible using `usePath`
+
+## 41.0.0
+
+### Minor Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – ## @udecode/plate-core@40.1.0
+
+  ### Minor Changes
+
+  - [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
+    - Add `PlateStatic`, `SlateElement`, `SlateLeaf` components for static rendering and server-side HTML serialization
+    - Add `serializeHtml` function to serialize editor content to HTML. Deprecating `@udecode/plate-html` in favor of core serialization.
+    - Move from `PlatePlugin` (`/react`) to `BasePlugin` (`/`): `node.component`, `render.aboveEditable`, `render.aboveSlate`, `render.node`
+    - Add to `SlatePlugin`: `node.props`, `render.aboveNodes`, `render.belowNodes`, `render.afterEditable`, `render.beforeEditable`, `render.node`
+
+## 40.3.1
+
+### Patch Changes
+
+- [#3837](https://github.com/udecode/plate/pull/3837) by [@yf-yang](https://github.com/yf-yang) – feat: Change Decorate's return type to DecoratedRange/TDecoratedRange
+
 ## 40.2.8
 
 ### Patch Changes
@@ -63,8 +430,6 @@
 ### Patch Changes
 
 - [#3704](https://github.com/udecode/plate/pull/3704) by [@zbeyens](https://github.com/zbeyens) – Fix DefaultLeaf props
-
-## 39.2.20
 
 ## 39.2.15
 
@@ -144,10 +509,6 @@
   ```
 
   WARNING: Improper use of `dangerouslyAllowAttributes` WILL make your application vulnerable to cross-site scripting (XSS) or information exposure attacks. Ensure you carefully research the security implications of any attribute before adding it. For example, the `src` and `href` attributes will allow attackers to execute arbitrary code, and the `style` and `background` attributes will allow attackers to leak users' IP addresses.
-
-## 38.0.4
-
-## 38.0.3
 
 ## 38.0.2
 
@@ -698,15 +1059,11 @@
   - Remove `OverrideByKey`
   - Remove `PlateId`
 
-## 36.3.9
-
 ## 36.3.7
 
 ### Patch Changes
 
 - [#3418](https://github.com/udecode/plate/pull/3418) by [@beeant0512](https://github.com/beeant0512) – fix cannot copy a row/column format from table
-
-## 36.3.4
 
 ## 36.2.1
 
@@ -714,15 +1071,11 @@
 
 - [`b74fc734be04266af0e147b7f7e78cc39ccbc98e`](https://github.com/udecode/plate/commit/b74fc734be04266af0e147b7f7e78cc39ccbc98e) by [@zbeyens](https://github.com/zbeyens) – Fix rsc: remove useFocusEditorEvents from server bundle
 
-## 36.0.6
-
 ## 36.0.3
 
 ### Patch Changes
 
 - [#3346](https://github.com/udecode/plate/pull/3346) by [@yf-yang](https://github.com/yf-yang) – feat: expose onValueChange and onSelectionChange from Slate component, following https://github.com/ianstormtaylor/slate/pull/5526
-
-## 34.0.4
 
 ## 34.0.1
 
@@ -750,15 +1103,11 @@
   - Use `editor.reset` instead of `resetEditor` to focus the editor after reset so it's decoupled from `slate-react`.
   - Add a server bundle including `createPlateEditor`. It can be imported using `import { createPlateEditor } from '@udecode/plate-core/server'`.
 
-## 32.0.1
-
 ## 32.0.0
 
 ### Patch Changes
 
 - [#3155](https://github.com/udecode/plate/pull/3155) by [@felixfeng33](https://github.com/felixfeng33) – Export `KeyboardEventHandler` type
-
-## 31.3.2
 
 ## 31.0.0
 
@@ -807,10 +1156,6 @@
 ### Patch Changes
 
 - [#2854](https://github.com/udecode/plate/pull/2854) by [@MarcosPereira1](https://github.com/MarcosPereira1) – Ensure that beforeinput event is handled as a React.SyntheticEvent rather than a native DOM event
-
-## 29.0.1
-
-## 29.0.0
 
 ## 28.0.0
 
@@ -861,23 +1206,11 @@
 - [#2729](https://github.com/udecode/plate/pull/2729) by [@12joan](https://github.com/12joan) – **This is a breaking change meant to be part of v25, hence the patch.**
   On `deserializeHtml`, replace `stripWhitespace` with `collapseWhiteSpace`, defaulting to true. The `collapseWhiteSpace` option aims to parse white space in HTML according to the HTML specification, ensuring greater accuracy when pasting HTML from browsers.
 
-## 25.0.0
-
 ## 24.4.0
 
 ### Minor Changes
 
 - [#2675](https://github.com/udecode/plate/pull/2675) by [@zbeyens](https://github.com/zbeyens) – Support slate-react 0.99.0
-
-## 24.3.6
-
-## 24.3.5
-
-## 24.3.2
-
-## 24.3.1
-
-## 24.3.0
 
 ## 24.0.2
 
@@ -934,8 +1267,6 @@
   - Fix `editor.reset` should now reset the editor without mutating the ref so it does not remount `PlateContent`. Default is using `resetEditor`. If you need to replace the editor ref, use `useReplaceEditor`.
   - [Type] Remove generic from `TEditableProps`, `RenderElementFn`, `RenderAfterEditable`
 
-## 23.7.4
-
 ## 23.6.0
 
 ### Minor Changes
@@ -955,10 +1286,6 @@
 ### Minor Changes
 
 - [#2568](https://github.com/udecode/plate/pull/2568) by [@zbeyens](https://github.com/zbeyens) – New `PlatePlugin` attribute: `isMarkableVoid: boolean`.
-
-## 22.0.2
-
-## 22.0.1
 
 ## 22.0.0
 
@@ -993,23 +1320,17 @@
 
 - [#2454](https://github.com/udecode/plate/pull/2454) by [@dimaanj](https://github.com/dimaanj) – HTML deserializer: fix pasting tables with empty cells
 
-## 21.4.1
-
 ## 21.3.2
 
 ### Patch Changes
 
 - [#2415](https://github.com/udecode/plate/pull/2415) by [@santialbo](https://github.com/santialbo) – support new prop name initialValue on Slate after 0.94.1
 
-## 21.3.0
-
 ## 21.1.5
 
 ### Patch Changes
 
 - [#2400](https://github.com/udecode/plate/pull/2400) by [@joephela](https://github.com/joephela) – Fix/2399 deserialize validAttribute nullcheck
-
-## 21.0.0
 
 ## 20.7.2
 

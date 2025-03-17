@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import type { TableOfContents } from '@/lib/toc';
-import type { RegistryEntry } from '@/registry/schema';
+import type { RegistryItem } from 'shadcx/registry';
 
 import { cn } from '@udecode/cn';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
@@ -57,7 +57,7 @@ export function DocContent({
   category: 'api' | 'component' | 'example' | 'guide' | 'plugin';
   children: React.ReactNode;
   toc?: TableOfContents;
-} & Omit<Partial<RegistryEntry>, 'category'>) {
+} & Omit<Partial<RegistryItem>, 'category'>) {
   const title = doc?.title ?? getRegistryTitle(file);
   const hasToc = doc?.toc && toc;
 
@@ -147,9 +147,7 @@ export function DocContent({
             ))}
           </div>
         ) : null}
-
-        <div className="pb-12 pt-8">{children}</div>
-
+        <div className="pt-8 pb-12">{children}</div>
         {doc && <DocsPager doc={doc as any} />}
       </div>
 
@@ -162,7 +160,9 @@ export function DocContent({
               </div>
             </ScrollArea>
             <div className="mt-2 shrink-0">
-              <OpenInPlus />
+              <Suspense fallback={null}>
+                <OpenInPlus />
+              </Suspense>
             </div>
           </div>
         </div>

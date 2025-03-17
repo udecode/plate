@@ -1,0 +1,107 @@
+---
+title: 手动安装
+description: 手动将依赖项添加到您的项目中。
+---
+
+<Steps>
+
+### 添加 Tailwind CSS
+
+组件使用 Tailwind CSS 进行样式设计。您需要在项目中安装 Tailwind CSS。
+
+[按照 Tailwind CSS 安装说明](https://tailwindcss.com/docs/installation) 开始操作。
+
+### 添加依赖项
+
+将以下依赖项添加到您的项目中：
+
+```bash
+npm install @udecode/plate @udecode/cn class-variance-authority tailwindcss-animate tailwind-scrollbar-hide lucide-react
+```
+
+### 配置路径别名
+
+在您的 `tsconfig.json` 文件中配置路径别名。
+
+```json {3-6} title="tsconfig.json"
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+### 配置 tailwind.config.js
+
+<ComponentSource src="../../templates/plate-playground-template/tailwind.config.ts" />
+
+### 配置样式
+
+<ComponentSource src="../../templates/plate-playground-template/src/app/globals.css" />
+
+### 配置 components.json
+
+在项目的根目录下创建一个 [components.json](/docs/components/components-json)。
+
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "baseColor": "slate",
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "ui": "@/components/ui",
+    "utils": "@/lib/utils"
+  },
+  "iconLibrary": "lucide",
+  "registries": {
+    "plate": {
+      "aliases": {
+        "ui": "@/components/plate-ui"
+      },
+      "url": "https://platejs.org/r"
+    }
+  }
+}
+```
+
+根据需要调整这些值。
+
+### 完成
+
+您现在可以开始向项目中添加组件：
+
+```bash
+npx shadcx@latest add -r plate
+```
+
+### 添加编辑器（可选）
+
+选择您的编辑器以开始使用（[浏览可用的编辑器](/editors)）。
+
+[Minimal Editor](https://template.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-basic
+```
+
+[AI Editor](https://playground.platejs.org/editor)
+```bash
+npx shadcx@latest add plate/editor-ai
+```
+
+这将在 `app/editor` 中添加一个页面，并在 `components/plate-ui` 中添加所有必要的组件作为起点。
+
+</Steps>

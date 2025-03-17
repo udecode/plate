@@ -1,0 +1,390 @@
+---
+title: List
+docs:
+  - route: /docs/components/list-element
+    title: List Element
+  - route: /docs/components/list-toolbar-button
+    title: List Toolbar Button
+  - route: /docs/components/todo-list-element
+    title: Todo List Element
+---
+
+<ComponentPreview name="list-demo" />
+
+<Callout>
+
+Plate offers two approaches for implementing lists:
+
+1. **This List plugin** - Traditional HTML-spec lists with strict nesting rules:
+   - Follows standard HTML list structure (`ul`/`ol` > `li`)
+   - Maintains consistent list hierarchy
+   - Best for content that may be exported to HTML/markdown
+   - Highest complexity
+
+2. The [**Indent List plugin**](/docs/indent-list) - Flexible indentation-based lists:
+   - More like Word/Google Docs behavior
+   - Any block can be indented to create list-like structures
+   - Used in the [AI editor](/editors#editor-ai)
+   - Better for free-form content organization
+
+Choose based on your needs:
+- Use the **List plugin** when you need standard HTML list compatibility
+- Use the **Indent List plugin** when you want more flexible indentation behavior
+
+
+</Callout>
+
+<PackageInfo>
+
+
+## Features
+
+- **HTML-compliant lists**:
+  - Standard `ul`/`ol` > `li` structure
+  - Proper nesting and hierarchy
+  - SEO-friendly markup
+  - Clean HTML/markdown export
+
+- **List types**:
+  - Unordered (bulleted) lists
+  - Ordered (numbered) lists
+  - Todo lists with checkboxes
+  - Nested sublists
+
+- **Drag & drop**:
+  - Currently supports root-level list items only
+  - Sibling and nested items drag & drop not yet supported
+
+- **Shortcuts**:
+  - Combined with the autoformat plugin, use markdown shortcuts (**`-`**, **`*`**, **`1.`**) to create lists
+  - Tab/Shift+Tab for indentation control
+
+- **Limitations (use [Indent List](/docs/indent-list) for these features)**:
+  - Drag & drop only supports root-level lists
+  - List items cannot be aligned
+
+For a more flexible, Word-like approach, see the [Indent List plugin](/docs/indent-list).
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-list
+```
+
+## Usage
+
+```tsx
+import { ListPlugin } from '@udecode/plate-list/react';
+
+const plugins = [
+  // ...otherPlugins,
+  ListPlugin,
+];
+```
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Opt + 4">Insert a numbered list.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + 4">Insert a numbered list.</KeyTableItem>
+</KeyTable>
+
+## Plugins
+
+### `ListPlugin`
+
+<API name="ListPlugin">
+Contains the following element plugins:
+- `BulletedListPlugin`
+- `NumberedListPlugin`
+- `ListItemPlugin`
+- `ListItemContentPlugin`
+
+<APIOptions type="object">
+  <APIItem name="validLiChildrenTypes" type="string[]" optional>
+    Valid child node types for list items (besides `p` and `ul`).
+  </APIItem>
+  <APIItem name="enableResetOnShiftTab" type="boolean" optional>
+    Whether Shift+Tab should reset list indent level.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `BulletedListPlugin`
+
+Plugin for unordered (bulleted) lists.
+
+### `NumberedListPlugin`
+
+Plugin for ordered (numbered) lists.
+
+### `ListItemPlugin`
+
+Plugin for list items.
+
+### `ListItemContentPlugin`
+
+Plugin for list item content.
+
+## API
+
+### `editor.tf.toggle.list`
+
+Toggles a list in the editor.
+
+<API name="toggle.list">
+<APIOptions type="object">
+  <APIItem name="type" type="string">
+    Type of list to toggle.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `getHighestEmptyList`
+
+Finds the highest end list that can be deleted. The path of the list should be different from `diffListPath`. If the highest end list has 2 or more items, returns `liPath`. It traverses up the parent lists until:
+- The list has less than 2 items
+- Its path is not equal to `diffListPath`
+
+<API name="getHighestEmptyList">
+<APIOptions type="object">
+  <APIItem name="liPath" type="Path">
+    Path of list item.
+  </APIItem>
+  <APIItem name="diffListPath" type="Path" optional>
+    Path of different list.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Path | undefined">
+  Path of highest deletable end list.
+</APIReturns>
+</API>
+
+### `getListItemEntry`
+
+Returns the nearest `li` and `ul`/`ol` wrapping node entries for a given path (`default = selection`).
+
+<API name="getListItemEntry">
+<APIOptions type="object">
+  <APIItem name="at" type="Location | null" optional>
+    Location to get entries from.
+    - **Default:** `editor.selection`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="ElementEntry | undefined">
+  Nearest `li` and `ul`/`ol` wrapping node entries.
+</APIReturns>
+</API>
+
+### `getListRoot`
+
+Searches upward for root list element.
+
+<API name="getListRoot">
+<APIParameters>
+  <APIItem name="at" type="Path | TRange | Point | null" optional>
+    Location to start search from.
+    - **Default:** `editor.selection`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="ElementEntry | undefined">
+  Root list element entry.
+</APIReturns>
+</API>
+
+### `getListTypes`
+
+Gets array of supported list types.
+
+<API name="getListTypes">
+<APIReturns type="string[]">
+  Array of supported list types.
+</APIReturns>
+</API>
+
+### `moveListSiblingsAfterCursor`
+
+Moves list siblings after cursor to specified path.
+
+<API name="moveListSiblingsAfterCursor">
+<APIOptions type="options">
+  <APIItem name="at" type="Path">
+    Cursor position path.
+  </APIItem>
+  <APIItem name="to" type="Path">
+    Destination path.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="number">
+  Number of siblings moved.
+</APIReturns>
+</API>
+
+### `removeFirstListItem`
+
+Removes first list item if not nested and not first child.
+
+<API name="removeFirstListItem">
+<APIOptions type="options">
+  <APIItem name="list" type="ElementEntry">
+    List entry containing item.
+  </APIItem>
+  <APIItem name="listItem" type="ElementEntry">
+    List item to remove.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  Whether item was removed.
+</APIReturns>
+</API>
+
+### `removeListItem`
+
+Removes list item and moves sublist to parent if any.
+
+<API name="removeListItem">
+<APIOptions type="RemoveListItemOptions">
+  <APIItem name="list" type="ElementEntry">
+    List entry containing item.
+  </APIItem>
+  <APIItem name="listItem" type="ElementEntry">
+    List item to remove.
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    Whether to reverse sublist items.
+    - **Default:** `true`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  Whether item was removed.
+</APIReturns>
+</API>
+
+### `someList`
+
+Checks if selection is inside list of specific type.
+
+<API name="someList">
+<APIParameters>
+  <APIItem name="type" type="string">
+    List type to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  Whether selection is in specified list type.
+</APIReturns>
+</API>
+
+### `unindentListItems`
+
+Decreases indentation level of list items.
+
+<API name="unindentListItems">
+<APIOptions type="UnindentListItemsOptions">
+    Target path for unindenting.
+</APIOptions>
+</API>
+
+### `unwrapList`
+
+Removes list formatting from selected items.
+
+<API name="unwrapList">
+<APIOptions type="options">
+  <APIItem name="at" type="Path" optional>
+    Target path for unwrapping.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Hooks
+
+### `useListToolbarButton`
+
+A behavior hook for a list toolbar button.
+
+<API name="useListToolbarButton">
+<APIState>
+  <APIItem name="pressed" type="boolean">
+    Button pressed state.
+  </APIItem>
+  <APIItem name="nodeType" type="string">
+    List node type.
+    - **Default:** `BulletedListPlugin.key`
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    Props for toolbar button.
+  </APIItem>
+  <APISubList>
+    <APISubListItem parent="props" name="pressed" type="boolean">
+      Button pressed state.
+    </APISubListItem>
+    <APISubListItem parent="props" name="onClick" type="function">
+      Handler to toggle list and focus editor.
+    </APISubListItem>
+  </APISubList>
+</APIReturns>
+</API>
+
+## Todo List API
+
+### `getTodoListItemEntry`
+
+Gets nearest todo list and item entries.
+
+<API name="getTodoListItemEntry">
+<APIOptions type="options">
+  <APIItem name="at" type="Location | null" optional>
+    Location to search from.
+    - **Default:** `editor.selection`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="{ list: ElementEntry, listItem: ElementEntry } | undefined">
+  Todo list and item entries if found.
+</APIReturns>
+</API>
+
+### `useTodoListElement`
+
+A behavior hook a todo list item element.
+
+<API name="useTodoListElement">
+<APIState>
+  <APIItem name="checked" type="boolean">
+    Todo item checked state.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    Whether item is read-only.
+  </APIItem>
+  <APIItem name="element" type="TElement">
+    Todo list item element.
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="checkboxProps" type="object">
+    Props for checkbox.
+  </APIItem>
+  <APISubList>
+    <APISubListItem parent="checkboxProps" name="checked" type="boolean">
+      Checkbox checked state.
+    </APISubListItem>
+    <APISubListItem parent="checkboxProps" name="onCheckedChange" type="function">
+      Handler for checkbox state changes.
+    </APISubListItem>
+  </APISubList>
+</APIReturns>
+</API>

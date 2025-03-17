@@ -1,11 +1,6 @@
-import {
-  type SlateEditor,
-  getPoint,
-  getPointAfter,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+import { type SlateEditor, PathApi } from '@udecode/plate';
 
-import type { TabDestination, TabbableEntry } from './types';
+import type { TabbableEntry, TabDestination } from './types';
 
 export interface FindTabDestinationOptions {
   activeTabbableEntry: TabbableEntry | null;
@@ -46,7 +41,7 @@ export const findTabDestination = (
      */
     if (
       nextTabbableEntry &&
-      Path.equals(activeTabbableEntry.path, nextTabbableEntry.path)
+      PathApi.equals(activeTabbableEntry.path, nextTabbableEntry.path)
     ) {
       return {
         domNode: nextTabbableEntry.domNode,
@@ -60,7 +55,7 @@ export const findTabDestination = (
      * tabbable entry specify custom before and after points.
      */
     if (direction === 'forward') {
-      const pointAfter = getPointAfter(editor, activeTabbableEntry.path);
+      const pointAfter = editor.api.after(activeTabbableEntry.path);
 
       if (!pointAfter) return null;
 
@@ -71,7 +66,7 @@ export const findTabDestination = (
     }
 
     return {
-      path: getPoint(editor, activeTabbableEntry.path).path,
+      path: editor.api.point(activeTabbableEntry.path)!.path,
       type: 'path',
     };
   }
@@ -84,11 +79,11 @@ export const findTabDestination = (
   const nextTabbableEntry =
     direction === 'forward'
       ? tabbableEntries.find(
-          (entry) => !Path.isBefore(entry.path, selectionPath)
+          (entry) => !PathApi.isBefore(entry.path, selectionPath)
         )
       : [...tabbableEntries]
           .reverse()
-          .find((entry) => Path.isBefore(entry.path, selectionPath));
+          .find((entry) => PathApi.isBefore(entry.path, selectionPath));
 
   // If it exists, focus it
   if (nextTabbableEntry) {

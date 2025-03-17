@@ -1,0 +1,109 @@
+---
+title: 斜杠命令
+docs:
+  - route: /docs/combobox
+    title: 组合框
+  - route: components/slash-input-element
+    title: 斜杠输入元素
+  - route: https://pro.platejs.org/docs/components/slash-input-element
+    title: 斜杠输入元素
+---
+
+<ComponentPreview name="slash-command-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 快速访问各种编辑器命令
+- 键盘导航和过滤
+  {/* - AI 辅助集成 */}
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-slash-command
+```
+
+## 使用
+
+```tsx
+import { SlashPlugin, SlashInputPlugin } from '@udecode/plate-slash-command/react';
+```
+
+```tsx
+const plugins = [
+  // ...其他插件
+  SlashPlugin,
+];
+```
+
+```tsx
+const components = {
+  // ...其他组件
+  [SlashInputPlugin.key]: SlashInputElement,
+};
+```
+
+另请参阅：
+- [SlashInputElement](/components/slash-input-element)
+
+使用方法：
+
+1. 在文档中的任意位置输入 `/` 以打开斜杠菜单
+2. 开始输入以过滤选项或使用箭头键导航
+3. 按 Enter 或点击以选择选项
+4. 按 Escape 关闭菜单而不选择
+
+可用选项包括：
+- 标题
+- 列表
+
+<Callout>
+  💡 使用关键词快速查找选项。例如，输入 `/ul` 以选择项目符号列表。
+</Callout>
+
+## 示例
+
+### Plate UI
+
+请参考上面的预览。
+
+### Plate Plus
+
+<ComponentPreviewPro name="slash-menu-pro" />
+
+## 插件
+
+### `SlashPlugin`
+
+用于斜杠命令功能的插件。扩展了 [TriggerComboboxPlugin](/docs/combobox#options)。
+
+<API name="SlashPlugin">
+<APIOptions type="SlashPluginOptions">
+  <APIItem name="createComboboxInput" type="() => TSlashInputElement" optional>
+    用于创建组合框输入元素的函数。
+    - **默认值：** 
+    ```tsx
+    () => ({
+      children: [{ text: '' }],
+      type: SlashInputPlugin.key,
+    });
+    ```
+  </APIItem>
+  <APIItem name="trigger" type="string" optional>
+    触发斜杠命令组合框的字符。
+    - **默认值：** `'/'`
+  </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+    用于匹配触发字符前的字符的正则表达式。
+    - **默认值：** `/^\s?$/`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `SlashInputPlugin`
+
+用于斜杠输入功能的插件。

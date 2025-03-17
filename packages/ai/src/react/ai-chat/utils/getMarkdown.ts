@@ -1,10 +1,6 @@
-import type { PlateEditor } from '@udecode/plate-common/react';
+import type { TElement } from '@udecode/plate';
+import type { PlateEditor } from '@udecode/plate/react';
 
-import {
-  getNodeEntries,
-  getSelectionFragment,
-  isBlock,
-} from '@udecode/plate-common';
 import { serializeMd, serializeMdNodes } from '@udecode/plate-markdown';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
@@ -19,9 +15,9 @@ export const getMarkdown = (
   if (type === 'block') {
     const blocks = editor.getOption(BlockSelectionPlugin, 'isSelectingSome')
       ? editor.getApi(BlockSelectionPlugin).blockSelection.getNodes()
-      : getNodeEntries(editor, {
-          match: (n) => isBlock(editor, n),
+      : editor.api.nodes({
           mode: 'highest',
+          match: (n) => editor.api.isBlock(n),
         });
 
     const nodes = Array.from(blocks, (entry) => entry[0]);
@@ -29,14 +25,18 @@ export const getMarkdown = (
     return serializeMdNodes(nodes as any);
   }
   if (type === 'selection') {
-    const fragment = getSelectionFragment(editor);
+    const fragment = editor.api.fragment<TElement>();
 
     // Remove any block formatting
     if (fragment.length === 1) {
-      fragment[0] = {
-        children: fragment[0].children,
-        type: 'p',
-      };
+      const modifiedFragment = [
+        {
+          children: fragment[0].children,
+          type: 'p',
+        },
+      ];
+
+      return serializeMdNodes(modifiedFragment);
     }
 
     return serializeMdNodes(fragment);

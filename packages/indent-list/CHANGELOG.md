@@ -1,5 +1,65 @@
 # @udecode/plate-indent-list
 
+## 46.0.7
+
+### Patch Changes
+
+- [#4149](https://github.com/udecode/plate/pull/4149) by [@12joan](https://github.com/12joan) – Fix: List items can have incorrect numbers after certain operations
+
+## 44.0.5
+
+## 44.0.0
+
+## 43.0.5
+
+### Patch Changes
+
+- [#4038](https://github.com/udecode/plate/pull/4038) by [@yf-yang](https://github.com/yf-yang) – Update types and docs of `aboveNodes` and `belowNodes`
+
+## 43.0.0
+
+## 42.2.2
+
+## 42.1.1
+
+### Patch Changes
+
+- [#3974](https://github.com/udecode/plate/pull/3974) by [@felixfeng33](https://github.com/felixfeng33) – Remove useless html parser.
+
+## 42.0.5
+
+### Patch Changes
+
+- [#3943](https://github.com/udecode/plate/pull/3943) by [@felixfeng33](https://github.com/felixfeng33) – Support deserialization from PlateStatic.
+
+## 42.0.1
+
+### Patch Changes
+
+- [#3948](https://github.com/udecode/plate/pull/3948) by [@zbeyens](https://github.com/zbeyens) – Fix merging and renumbering of lists when deleting empty paragraphs between them (both backward and forward deletion)
+
+## 42.0.0
+
+## 41.0.10
+
+### Patch Changes
+
+- [#3918](https://github.com/udecode/plate/pull/3918) by [@felixfeng33](https://github.com/felixfeng33) – `someIndentList` support multiple type
+
+## 41.0.0
+
+### Major Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Move `render.belowNodes` from `IndentListPlugin` to `BaseIndentListPlugin`. Props type for `listStyleTypes.liComponent` and `listStyleTypes.markerComponent` options is now `SlateRenderElementProps` instead of `PlateRenderElementProps`
+  - Move `someIndentList`, `someIndentTodo` from `@udecode/plate-indent-list/react` to `@udecode/plate-indent-list`
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Replace `findNodePath` with `findPath`
+
+- [#3868](https://github.com/udecode/plate/pull/3868) by [@zbeyens](https://github.com/zbeyens) – Fix todo list: insert break should inherit format
+
 ## 40.0.0
 
 ## 39.1.10

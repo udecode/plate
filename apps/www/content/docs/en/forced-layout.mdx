@@ -1,0 +1,62 @@
+---
+title: Forced Layout
+---
+
+<PackageInfo>
+
+## Features
+
+- Automatically ensures the use of specified elements as required to maintain document structure (e.g., first block should be an H1 element).
+- To force a trailing block of a specific type, see [Trailing Block](/docs/trailing-block).
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-normalizers
+```
+
+## Usage
+
+```tsx
+import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { HEADING_KEYS } from '@udecode/plate-heading/react';
+
+const plugins = [
+  // ...otherPlugins
+  NormalizeTypesPlugin.configure({
+    options: {
+      rules: [{ path: [0], strictType: 'h1' }],
+    },
+  }),
+];
+```
+
+## Plugins
+
+### NormalizeTypesPlugin
+
+<API name="NormalizeTypesPlugin">
+<APIOptions>
+<APIItem name="rules" type="Rule[]" optional>
+An array of rule objects for normalizing types.
+
+- **Default:** `[]`
+</APIItem>
+</APIOptions>
+
+<APIOptions type="Rule">
+  <APIItem name="path" type="Path">
+    Path where the rule applies.
+  </APIItem>
+  <APIItem name="strictType" type="string" optional>
+    Force the type of the node at the given path.
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    Type of inserted node if `strictType` is not provided.
+  </APIItem>
+</APIOptions>
+</API>

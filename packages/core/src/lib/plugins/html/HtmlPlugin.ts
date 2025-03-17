@@ -5,7 +5,7 @@ import { deserializeHtml, parseHtmlDocument } from './utils';
 
 /**
  * Enables support for deserializing inserted content from HTML format to Slate
- * format.
+ * format and serializing Slate content to HTML format.
  */
 export const HtmlPlugin = createSlatePlugin({
   key: 'html',
@@ -15,6 +15,7 @@ export const HtmlPlugin = createSlatePlugin({
   }))
   .extend({
     parser: {
+      format: 'text/html',
       deserialize: ({ api, data }) => {
         const document = parseHtmlDocument(data);
 
@@ -22,6 +23,5 @@ export const HtmlPlugin = createSlatePlugin({
           element: document.body,
         });
       },
-      format: 'text/html',
     },
   });

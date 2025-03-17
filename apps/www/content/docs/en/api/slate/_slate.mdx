@@ -1,0 +1,1388 @@
+---
+title: Slate
+description: API reference for @udecode/slate.
+---
+
+v42 documentation is in progress.
+
+`@udecode/slate` extends Slate API with generic types.
+
+## Editor
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/transforms).
+
+### `addMark`
+
+### `createPathRef`
+
+### `createPointRef`
+
+### `createRangeRef`
+
+### `deleteBackward`
+
+### `deleteForward`
+
+### `deleteFragment`
+
+### `deleteMerge`
+
+### `getAboveNode`
+
+### `getEdgePoints`
+
+### `getEditorString`
+
+### `getEndPoint`
+
+### `getFirstNode`
+
+### `getFragment`
+
+### `getLastNode`
+
+### `getLeafNode`
+
+### `getLevels`
+
+### `getMarks`
+
+### `getNextNode`
+
+### `getNodeEntries`
+
+### `getNodeEntry`
+
+### `getParentNode`
+
+### `getPath`
+
+### `getPathRefs`
+
+### `getPoint`
+
+### `getPointAfter`
+
+### `getPointBefore`
+
+### `getPointRefs`
+
+### `getPositions`
+
+### `getPreviousNode`
+
+### `getRange`
+
+### `getRangeRefs`
+
+### `getStartPoint`
+
+### `getVoidNode`
+
+### `hasBlocks`
+
+### `hasInlines`
+
+### `hasTexts`
+
+### `index`
+
+### `insertBreak`
+
+### `insertNode`
+
+### `isBlock`
+
+### `isEdgePoint`
+
+### `isEditor`
+
+### `isEditorNormalizing`
+
+### `isElementEmpty`
+
+### `isEndPoint`
+
+### `isInline`
+
+### `isStartPoint`
+
+### `isVoid`
+
+### `normalizeEditor`
+
+### `removeEditorMark`
+
+### `Editor`
+
+### `unhangRange`
+
+### `withoutNormalizing`
+
+## DOM Editor
+
+Find the corresponding documentation in the [Slate React docs](https://docs.slatejs.org/libraries/slate-react/react-editor).
+
+### `blurEditor`
+
+### `deselectEditor`
+
+### `findEditorDocumentOrShadowRoot`
+
+### `findEventRange`
+
+### `findNodeKey`
+
+### `findPath`
+
+### `focusEditor`
+
+### `getEditorWindow`
+
+### `hasEditorDOMNode`
+
+### `hasEditorEditableTarget`
+
+### `hasEditorSelectableTarget`
+
+### `hasEditorTarget`
+
+### `insertData`
+
+### `isComposing`
+
+### `isEditorFocused`
+
+### `isEditorReadOnly`
+
+### `isTargetInsideNonReadonlyVoidEditor`
+
+### `setFragmentData`
+
+### `toDOMNode`
+
+### `toDOMPoint`
+
+### `toDOMRange`
+
+### `toSlateNode`
+
+### `toSlatePoint`
+
+### `toSlateRange`
+
+## Element
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/nodes/element).
+
+### `elementMatches`
+
+### `index`
+
+### `isElement`
+
+### `isElementList`
+
+### `TElement`
+
+## History
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/libraries/slate-history).
+
+### `isHistoryEditor`
+
+### `isHistoryMerging`
+
+### `isHistorySaving`
+
+### `withoutMergingHistory`
+
+### `withoutSavingHistory`
+
+## Node
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/nodes/node).
+
+### `Descendant`
+
+### `getNodeDescendants`
+
+### `getNodeLastNode`
+
+### `getNodeString`
+
+### `getNodeFirstNode`
+
+### `hasNode`
+
+### `isNode`
+
+### `getNodeFragment`
+
+### `getNodeLeaf`
+
+### `getNodeLevels`
+
+### `isNodeList`
+
+### `getNodeProps`
+
+### `Ancestor`
+
+### `getNode`
+
+### `getNodeTexts`
+
+### `getNodes`
+
+### `getNodeChildren`
+
+### `getNodeAncestor`
+
+### `NodeEntry`
+
+### `TNode`
+
+### `nodeMatches`
+
+### `getNodeChild`
+
+### `getNodeElements`
+
+### `getNodeAncestors`
+
+### `getNodeDescendant`
+
+### `getCommonNode`
+
+### `isAncestor`
+
+### `hasSingleChild`
+
+### `getNodeParent`
+
+## TRange
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/locations/range).
+
+### `isCollapsed`
+
+### `isExpanded`
+
+## Text
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/nodes/text).
+
+### `isText`
+
+### `isTextList`
+
+### `textEquals`
+
+### `textMatches`
+
+### `TText`
+
+## Editor Transforms
+
+Find the corresponding documentation in the [Slate docs](https://docs.slatejs.org/api/transforms).
+
+### `moveNodes`
+
+### `moveSelection`
+
+### `removeNodes`
+
+### `select`
+
+### `insertText`
+
+### `insertNodes`
+
+### `deleteText`
+
+### `setPoint`
+
+### `setNodes`
+
+### `unwrapNodes`
+
+### `deselect`
+
+### `mergeNodes`
+
+### `collapseSelection`
+
+### `unsetNodes`
+
+### `setSelection`
+
+### `splitNodes`
+
+### `insertFragment`
+
+### `wrapNodes`
+
+### `liftNodes`
+
+## Types
+
+### QueryNodeOptions
+
+An interface used to query node entries.
+
+<APIAttributes>
+<APIItem
+  name="filter"
+  type="(entry: NodeEntry) => boolean"
+  optional
+>
+
+A function to filter node entries.
+
+- The function should take a node entry as a parameter and return a boolean.
+
+</APIItem>
+<APIItem name="allow" type="string[] | string | null" optional>
+
+List of types that are valid.
+
+- If empty or undefined, all types are allowed.
+
+</APIItem>
+<APIItem name="exclude" type="string[] | string | null" optional>
+
+List of types that are invalid.
+
+</APIItem>
+<APIItem name="level" type="number[] | number | null" optional>
+
+Valid path levels.
+
+</APIItem>
+<APIItem name="maxLevel" type="number | null" optional>
+
+Paths above this level are invalid.
+
+</APIItem>
+</APIAttributes>
+
+## Queries
+
+### findDescendant
+
+Iterates through all nodes in the editor and returns the first match. If no match is found, returns undefined.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor to search for the descendant node.
+  </APIItem>
+  <APIItem name="options" type="FindNodeOptions">
+    The options to find the node. It can contain match condition, starting
+    location, whether to traverse in reverse, and whether to include voids.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the first node entry matching the condition or `undefined` if no match
+  is found.
+</APIReturns>
+
+### getBlockAbove
+
+Returns the block above a specified location
+
+- **Default:** Selection.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor to search for the block.
+  </APIItem>
+  <APIItem name="options" type="EditorAboveOptions">
+    The options to find the block above a location.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+Returns the block above the specified location.
+
+</APIReturns>
+
+### getBlocks
+
+Retrieves block-level node entries from the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor to search for block-level nodes.
+  </APIItem>
+  <APIItem name="options" type="EditorNodesOptions<V>" optional>
+    Options for getting node entries.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  An array of block-level node entries.
+</APIReturns>
+
+### getChildren
+
+Returns the children node entries of a node entry.
+
+<APIParameters>
+  <APIItem name="nodeEntry" type="NodeEntry">
+    The node entry to get its children.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+Returns an array of the children node entries.
+
+</APIReturns>
+
+### getEdgeBlocksAbove
+
+Returns the edge blocks above a specified location.
+
+- **Default:** Selection.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor to search for the edge blocks.
+  </APIItem>
+  <APIItem name="options" type="EditorAboveOptions">
+    The options to find the edge blocks above a location.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns an array containing the start block and end block above the specified
+  location, or `null` if not found.
+</APIReturns>
+
+### getFragmentProp
+
+Retrieves a consistent property value from a fragment of nodes.
+
+<APIParameters>
+  <APIItem name="fragment" type="TElement[]">
+    The fragment of nodes to search for the property.
+  </APIItem>
+  <APIItem name="options" type="GetFragmentPropOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="key" type="string" optional>
+        The key of the property to extract from each node.
+      </APISubListItem>
+      <APISubListItem parent="options" name="defaultValue" type="string" optional>
+        The default value to return if no valid prop is found.
+      </APISubListItem>
+      <APISubListItem parent="options" name="getProp" type="(node: TElement | TText) => any" optional>
+        Custom function to extract the prop value from a node.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="'all' | 'block' | 'text'" optional>
+        Determines how to traverse the fragment:
+        - 'all': Check both block and text nodes
+        - 'block': Only check block nodes
+        - 'text': Only check text nodes
+        Default is 'block'.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  The consistent property value found in the fragment, or undefined if no consistent value is found.
+</APIReturns>
+
+### getFirstNodeText
+
+Gets the first text node from a node.
+
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    The root node to search for text nodes.
+  </APIItem>
+  <APIItem name="options" type="NodeTextsOptions<N, R>" optional>
+    Options for getting node texts.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the first text node entry or `undefined` if no text nodes are found.
+</APIReturns>
+
+### getLastChild
+
+Returns the last child of a node or `null` if no children.
+
+<APIParameters>
+  <APIItem name="nodeEntry" type="NodeEntry">
+    The node entry to get its last child.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the last child of a node or `null` if no children.
+</APIReturns>
+
+### getLastNodeByLevel
+
+Retrieves the last node at a specified level in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor to search for the last node.
+  </APIItem>
+  <APIItem name="level" type="number">
+    The level at which to find the last node.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the last node entry at the specified level or `undefined` if no node
+  is found.
+</APIReturns>
+
+### getMark
+
+Retrieves the value of the selection mark by key in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor where the selection mark is located.
+  </APIItem>
+  <APIItem name="key" type="string">
+    The key of the selection mark to retrieve.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the value of the selection mark or `undefined` if the editor or the
+  mark is not found.
+</APIReturns>
+
+### getNextNodeStartPoint
+
+Retrieves the start point of the next node at a specified path in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor to search for the next node.
+  </APIItem>
+  <APIItem name="at" type="Path">
+    The path at which to find the next node.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the start point of the next node or `undefined` if the next node is
+  not found.
+</APIReturns>
+
+### getNextSiblingNodes
+
+Retrieves the sibling nodes following a specified path in the ancestor node.
+
+<APIParameters>
+  <APIItem name="ancestorEntry" type="AncestorEntryOf<V>">
+    The ancestor node of the sibling nodes.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path of the reference node.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns an array of sibling nodes after the path or an empty array if no
+  sibling nodes are found.
+</APIReturns>
+
+### getOperations
+
+Retrieves the operations of the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor to get its operations.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the operations of the editor as `Operation` array.
+</APIReturns>
+
+### getPointBeforeLocation
+
+Returns the point before a location, with additional options to customize the behavior. If no options are provided or neither **`match`** nor **`matchString`** are defined, it will default to using **`getPointBefore`**.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor where to find the point before a location.
+  </APIItem>
+  <APIItem name="at" type="Location">
+    The location where to start.
+  </APIItem>
+  <APIItem name="options" type="PointBeforeOptions">
+    The options to define how the search is performed.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the point before a location. If not found, returns `undefined`.
+</APIReturns>
+
+### getPointFromLocation
+
+Returns the point from a location (**Default:** selection). If the location is a range, it gets the anchor point. If the location is a path, it gets the point at this path with offset 0.
+
+<APIParameters>
+<APIItem name="editor" type="Editor">
+The editor where to find the point.
+</APIItem>
+<APIItem name="options" type="object">
+
+<APISubList>
+
+<APISubListItem parent="options" name="at" type="Location | null" optional>
+The location where to get the point.
+
+- **Default:** Selection.
+
+</APISubListItem>
+<APISubListItem parent="options" name="focus" type="boolean" optional>
+If true, returns the focus point. Otherwise, returns the anchor point.
+</APISubListItem>
+
+</APISubList>
+
+</APIItem>
+
+</APIParameters>
+<APIReturns>
+
+Returns the point from the location.
+
+</APIReturns>
+
+### getPointNextToVoid
+
+If the start point is inside an inline void, returns the point before or after it.
+
+<APIParameters>
+<APIItem name="editor" type="Editor">
+The editor where to find the point next to the void.
+</APIItem>
+<APIItem name="options" type="object">
+
+<APISubList>
+
+<APISubListItem parent="options" name="at" type="Point" optional>
+The point from where to start.
+
+</APISubListItem>
+<APISubListItem parent="options" name="after" type="boolean" optional>
+If true, gets the point after the void node. Otherwise, gets the point before.
+</APISubListItem>
+
+</APISubList>
+</APIItem>
+</APIParameters>
+<APIReturns>
+
+Returns the point next to the void.
+
+</APIReturns>
+
+### getPreviousBlockById
+
+Finds the block before a block by ID. If not found, it finds the first block by ID and returns **`[null, its previous path]`**.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor where to find the previous block.
+  </APIItem>
+  <APIItem name="id" type="string">
+    The ID of the block.
+  </APIItem>
+  <APIItem name="query" type="QueryNodeOptions">
+    The options for the node query.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the node entry of the previous block if found, otherwise undefined.
+</APIReturns>
+
+### getPreviousNodeEndPoint
+
+Gets the end point of the previous node.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor where to find the previous node's end point.
+  </APIItem>
+  <APIItem name="at" type="Path">
+    The path where to start the search.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  Returns the end point of the previous node if found, otherwise `undefined`.
+</APIReturns>
+
+### getPreviousPath
+
+Generates the previous path based on the given path.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The current path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  The previous path or `undefined` if there is no previous path.
+</APIReturns>
+
+### getPreviousSiblingNode
+
+Gets the previous sibling node from the given path.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The current path.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  An array containing the previous sibling node and its path, or `undefined` if
+  there is no previous sibling.
+</APIReturns>
+
+### getRangeBefore
+
+Gets the range from the point before a given location to the end point of the location.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="Location">
+    The location to consider.
+  </APIItem>
+  <APIItem name="options" type="RangeBeforeOptions" optional>
+    Options for getting the point before the location.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  The range from the point before the location to the end point of the location,
+  or `undefined` if no such point exists.
+</APIReturns>
+
+### getRangeFromBlockStart
+
+Gets the range from the start of the block above a location to the location.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="Omit<EditorAboveOptions, 'match'>" optional>
+    Options for getting the block above the location.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  The range from the start of the block above the location to the location, or
+  `undefined` if no such block exists.
+</APIReturns>
+
+### getSelectionFragment
+
+Retrieves the fragment of the current selection, optionally unwrapping structural nodes.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor to get the selection fragment from.
+  </APIItem>
+  <APIItem name="options" type="GetSelectionFragmentOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="structuralTypes" type="string[]" optional>
+        Array of structural types to unwrap from the fragment.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  An array of `TElement` representing the fragment of the current selection. Returns an empty array if the selection is not expanded or if no fragment is found.
+</APIReturns>
+
+### getSelectionText
+
+Gets the selected text from the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  The selected text, or an empty string if no text is selected.
+</APIReturns>
+
+### isAncestorEmpty
+
+Checks whether an ancestor node is empty (has empty text and no inline children).
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="node" type="Ancestor">
+    The ancestor node to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the ancestor node is empty, false otherwise.
+
+</APIReturns>
+
+### isBlockAboveEmpty
+
+Checks whether the block above the selection is empty.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the block above the selection is empty, false otherwise.
+
+</APIReturns>
+
+### isBlockTextEmptyAfterSelection
+
+Checks whether the text in the block after the selection is empty.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the text in the block after the selection is empty, false otherwise.
+
+</APIReturns>
+
+### isDocumentEnd
+
+Checks whether the selection is at the end of the document.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the selection is at the end of the document, false otherwise.
+
+</APIReturns>
+
+### isFirstChild
+
+Checks whether a node is the first child of its parent.
+
+<APIParameters>
+  <APIItem name="path" type="Path">
+    The path of the node to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the node is the first child of its parent, false otherwise.
+
+</APIReturns>
+
+### isMarkActive
+
+Checks whether a mark is active in the selection.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="type" type="string">
+    The mark key.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the mark is active in the selection.
+
+</APIReturns>
+
+### isPointAtWordEnd
+
+Checks whether a point is at the end of a word.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="Point">
+    The point to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the point is at the end of a word, false otherwise.
+</APIReturns>
+
+### isRangeAcrossBlocks
+
+Determines whether the range (**Default:** selection) is across blocks.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="TRange | null" optional>
+    The range to check. If not provided, the selection range is used.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the range is across blocks, false if it's within a single block, or
+  undefined if the block was not found.
+</APIReturns>
+
+### isRangeInSameBlock
+
+Determines whether the range is within the same block.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="TRange | null" optional>
+    The range to check. If not provided, the selection range is used.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the range is within the same block, false otherwise.
+</APIReturns>
+
+### isRangeInSingleText
+
+Checks whether a range is within a single text path.
+
+<APIParameters>
+  <APIItem name="at" type="TRange">
+    The range to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the range is within a single text path, false otherwise.
+</APIReturns>
+
+### isSelectionAtBlockEnd
+
+Checks whether the selection focus is at the end of its parent block.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="EditorAboveOptions" optional>
+    The options object.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the selection focus is at the end of its parent block, false
+  otherwise.
+</APIReturns>
+
+### isSelectionAtBlockStart
+
+Checks whether the selection anchor or focus is at the start of its parent block.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="EditorAboveOptions" optional>
+    The options object.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the selection anchor or focus is at the start of its parent block,
+  false otherwise.
+</APIReturns>
+
+### isSelectionExpanded
+
+Checks whether the selection is expanded.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the selection is expanded, false otherwise.
+
+</APIReturns>
+
+### isTextByPath
+
+Checks whether the node at a given path is a text node.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+True if the node is a text node, false otherwise.
+
+</APIReturns>
+
+### isWordAfterTrigger
+
+Checks whether the word at a given point is after a trigger (punctuation character).
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="at" type="Point">
+    The point to check.
+  </APIItem>
+  <APIItem name="trigger" type="string">
+    The trigger character to check for.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  An object containing the range from the point before the start of the previous
+  word to the given point, and a match if the text at the range starts with the
+  trigger and ends with word characters.
+</APIReturns>
+
+### queryEditor
+
+Queries the editor state.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="QueryEditorOptions" optional>
+    The options object, which can include a filter function,
+    selectionAtBlockStart, selectionAtBlockEnd, allow, exclude, and at
+    properties.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  True if the editor state matches the query, false otherwise.
+</APIReturns>
+
+## Transforms
+
+### duplicateBlocks
+
+Duplicates the given blocks and inserts them after the last block in the selection.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="blocks" type="NodeEntry[]">
+    An array of node entries representing the blocks to duplicate.
+  </APIItem>
+</APIParameters>
+
+### moveChildren
+
+Moves the children of a node to a path.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="MoveChildrenOptions">
+    The options object, which includes `at`, `to`, `match`, and `fromStartIndex`
+    properties.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+The number of children moved.
+
+</APIReturns>
+
+### removeEditorText
+
+Removes all non-empty text nodes from the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="RemoveNodesOptions<V>" optional>
+    Options for removing nodes. The `match` function in options will be combined with the text length check.
+  </APIItem>
+</APIParameters>
+
+### removeMark
+
+Removes a mark and triggers `onChange` if the selection is collapsed.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="RemoveMarkOptions">
+    The options object, which includes `key`, `at`, and `shouldChange`
+    properties.
+  </APIItem>
+</APIParameters>
+
+### removeNodeChildren
+
+Removes all children of a node.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    The path to the node to remove children from.
+  </APIItem>
+  <APIItem name="options" type="RemoveNodesOptions" optional>
+    The options object.
+  </APIItem>
+</APIParameters>
+
+### removeSelectionMark
+
+Removes all marks from the selection.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+
+### replaceNodeChildren
+
+Replaces the children of a node: removes then inserts them.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="ReplaceNodeChildrenOptions">
+    The options object, which includes `at`, `nodes`, `insertOptions`, and
+    `removeOptions` properties.
+  </APIItem>
+</APIParameters>
+
+### selectEndOfBlockAboveSelection
+
+Selects the end point of the block above the selection.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+
+### selectNodes
+
+Selects the range encompassing the given nodes.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="nodes" type="NodeEntry[]">
+    An array of node entries to select.
+  </APIItem>
+</APIParameters>
+
+### setBlockAboveNode
+
+Sets properties on the block above the current selection.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="props" type="Partial<NodeProps<N>>">
+    The properties to set on the block.
+  </APIItem>
+  <APIItem name="options" type="Omit<SetNodesOptions<V>, 'at'>" optional>
+    Options for setting nodes, excluding the 'at' property.
+  </APIItem>
+</APIParameters>
+
+### setBlockAboveTexts
+
+Sets properties on the lowest-level nodes within the block above the current selection.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="props" type="Partial<NodeProps<N>>">
+    The properties to set on the text nodes.
+  </APIItem>
+  <APIItem name="options" type="Omit<SetNodesOptions<V>, 'at'>" optional>
+    Options for setting nodes, excluding the 'at' property.
+  </APIItem>
+</APIParameters>
+
+### setBlockNodes
+
+Sets properties on all block nodes that match the given options.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="props" type="Partial<NodeProps<N>>">
+    The properties to set on the matching block nodes.
+  </APIItem>
+  <APIItem name="options" type="EditorNodesOptions<V>" optional>
+    Options for getting node entries to update.
+  </APIItem>
+</APIParameters>
+
+### setMarks
+
+Sets marks to selected text.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="marks" type="MarksOf<E>">
+    The marks to set.
+  </APIItem>
+  <APIItem name="clear" type="string | string[]" optional>
+    Marks to clear.
+  </APIItem>
+</APIParameters>
+
+### toggleMark
+
+Adds or removes marks in the selection.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="ToggleMarkOptions">
+    The options object, which includes `key` and `clear` properties.
+  </APIItem>
+</APIParameters>
+
+### toggleWrapNodes
+
+Unwraps a node if the node type is in selection, otherwise wraps it.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="type" type="string">
+    The type of the node.
+  </APIItem>
+</APIParameters>
+
+### wrapNodeChildren
+
+Wraps the children of a node into a single element.
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="element" type="N">
+    The new parent element.
+  </APIItem>
+  <APIItem name="options" type="WrapNodesOptions">
+    The options object, which includes `at` property.
+  </APIItem>
+</APIParameters>
+
+## Utils
+
+### createDocumentNode
+
+Creates a new document node.
+
+<APIParameters>
+<APIItem name="type" type="string" optional>
+The type of the node.
+
+- **Default:** `'p'`
+
+</APIItem>
+<APIItem name="text" type="string" optional>
+The text for the node.
+
+- **Default:** an empty string.
+
+</APIItem>
+<APIItem name="remaining" type="Descendant[]" optional>
+The remaining nodes.
+
+- **Default:** an empty array.
+
+</APIItem>
+</APIParameters>
+<APIReturns>
+An array of `Descendant` nodes, starting with the newly created node.
+</APIReturns>
+
+### createNode
+
+Creates a new node.
+
+<APIParameters>
+<APIItem name="type" type="string" optional>
+The type of the node.
+
+- **Default:** `'p'`
+
+</APIItem>
+<APIItem name="text" type="string" optional>
+The text for the node.
+
+- **Default:** an empty string.
+
+</APIItem>
+</APIParameters>
+<APIReturns>
+
+A new `TElement` node.
+
+</APIReturns>
+
+### focusEditorEdge
+
+Focuses the editor at a specified edge (start or end).
+
+<APIParameters>
+  <APIItem name="editor" type="Editor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="edge" type="'start' | 'end'" optional>
+        The edge to focus on. 
+        - 'start': Focus at the beginning of the editor.
+        - 'end': Focus at the end of the editor.
+        Default is 'start'.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>

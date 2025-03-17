@@ -1,5 +1,13 @@
 # @udecode/plate-cursor
 
+## 44.0.0
+
+## 43.0.0
+
+## 42.0.0
+
+## 41.0.0
+
 ## 40.0.0
 
 ### Patch Changes

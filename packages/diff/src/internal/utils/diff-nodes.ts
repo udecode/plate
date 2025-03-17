@@ -3,46 +3,45 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { type TDescendant, isElement, isText } from '@udecode/plate-common';
-import isEqual from 'lodash/isEqual.js';
+import { type Descendant, ElementApi, TextApi } from '@udecode/plate';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
-import { copyWithout } from './copy-without';
+import { isEqual } from './is-equal';
 
 export function diffNodes(
-  originNodes: TDescendant[],
-  targetNodes: TDescendant[],
-  { elementsAreRelated }: ComputeDiffOptions
+  originNodes: Descendant[],
+  targetNodes: Descendant[],
+  { elementsAreRelated, ignoreProps }: ComputeDiffOptions
 ) {
   const result: NodeRelatedItem[] = [];
-  let relatedNode: TDescendant | undefined;
-  const leftTargetNodes: TDescendant[] = [...targetNodes];
+  let relatedNode: Descendant | undefined;
+  const remainingTargetNodes: Descendant[] = [...targetNodes];
 
-  originNodes.forEach((originNode: TDescendant) => {
+  originNodes.forEach((originNode: Descendant) => {
     let childrenUpdated = false;
     let nodeUpdated = false;
-    relatedNode = leftTargetNodes.find((targetNode: TDescendant) => {
-      if (isElement(originNode) && isElement(targetNode)) {
+    relatedNode = remainingTargetNodes.find((targetNode: Descendant) => {
+      if (
+        ElementApi.isElement(originNode) &&
+        ElementApi.isElement(targetNode)
+      ) {
         const relatedResult =
           elementsAreRelated?.(originNode, targetNode) ?? null;
 
         if (relatedResult !== null) return relatedResult;
       }
-      if (isEqualNode(originNode, targetNode)) {
-        childrenUpdated = true;
-      }
-      if (isEqualNodeChildren(originNode, targetNode)) {
-        nodeUpdated = true;
-      }
+
+      childrenUpdated = isEqualNode(originNode, targetNode, ignoreProps);
+      nodeUpdated = isEqualNodeChildren(originNode, targetNode);
 
       return nodeUpdated || childrenUpdated;
     });
 
     if (relatedNode) {
-      const insertNodes = leftTargetNodes.splice(
+      const insertNodes = remainingTargetNodes.splice(
         0,
-        leftTargetNodes.indexOf(relatedNode)
+        remainingTargetNodes.indexOf(relatedNode)
       );
       insertNodes.forEach((insertNode) => {
         result.push({
@@ -50,7 +49,7 @@ export function diffNodes(
           originNode: insertNode,
         });
       });
-      leftTargetNodes.splice(0, 1);
+      remainingTargetNodes.splice(0, 1);
     }
 
     result.push({
@@ -61,7 +60,7 @@ export function diffNodes(
       relatedNode,
     });
   });
-  leftTargetNodes.forEach((insertNode) => {
+  remainingTargetNodes.forEach((insertNode) => {
     result.push({
       insert: true,
       originNode: insertNode,
@@ -72,32 +71,43 @@ export function diffNodes(
 }
 
 export type NodeRelatedItem = {
-  originNode: TDescendant;
+  originNode: Descendant;
   childrenUpdated?: boolean;
   delete?: boolean;
   insert?: boolean;
   nodeUpdated?: boolean;
-  relatedNode?: TDescendant;
+  relatedNode?: Descendant;
 };
 
-export function isEqualNode(value: TDescendant, other: TDescendant) {
+export function isEqualNode(
+  value: Descendant,
+  other: Descendant,
+  ignoreProps?: string[]
+) {
   return (
-    isElement(value) &&
-    isElement(other) &&
+    ElementApi.isElement(value) &&
+    ElementApi.isElement(other) &&
     value.children !== null &&
     other.children !== null &&
-    isEqual(copyWithout(value, ['children']), copyWithout(other, ['children']))
+    isEqual(value, other, {
+      ignoreDeep: ignoreProps,
+      ignoreShallow: ['children'],
+    })
   );
 }
 
-export function isEqualNodeChildren(value: TDescendant, other: TDescendant) {
+export function isEqualNodeChildren(value: Descendant, other: Descendant) {
   if (
-    isElement(value) &&
-    isElement(other) &&
+    ElementApi.isElement(value) &&
+    ElementApi.isElement(other) &&
     isEqual(value.children, other.children)
   ) {
     return true;
   }
 
-  return isText(value) && isText(other) && isEqual(value.text, other.text);
+  return (
+    TextApi.isText(value) &&
+    TextApi.isText(other) &&
+    isEqual(value.text, other.text)
+  );
 }

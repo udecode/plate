@@ -1,6 +1,6 @@
 'use client';
 
-import type { Value } from '@udecode/plate-common';
+import type { Value } from '@udecode/plate';
 
 import { withProps } from '@udecode/cn';
 import { AIPlugin } from '@udecode/plate-ai/react';
@@ -20,12 +20,6 @@ import {
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import {
-  type CreatePlateEditorOptions,
-  ParagraphPlugin,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate-common/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { EmojiInputPlugin } from '@udecode/plate-emoji/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
@@ -35,6 +29,10 @@ import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
+import {
+  EquationPlugin,
+  InlineEquationPlugin,
+} from '@udecode/plate-math/react';
 import {
   AudioPlugin,
   FilePlugin,
@@ -48,6 +46,7 @@ import {
   MentionPlugin,
 } from '@udecode/plate-mention/react';
 import { SlashInputPlugin } from '@udecode/plate-slash-command/react';
+import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import {
   TableCellHeaderPlugin,
   TableCellPlugin,
@@ -55,6 +54,12 @@ import {
   TableRowPlugin,
 } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
+import {
+  type CreatePlateEditorOptions,
+  ParagraphPlugin,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
 
 import { AILeaf } from '@/registry/default/plate-ui/ai-leaf';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
@@ -67,10 +72,12 @@ import { ColumnGroupElement } from '@/registry/default/plate-ui/column-group-ele
 import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
 import { DateElement } from '@/registry/default/plate-ui/date-element';
 import { EmojiInputElement } from '@/registry/default/plate-ui/emoji-input-element';
+import { EquationElement } from '@/registry/default/plate-ui/equation-element';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
 import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
 import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
+import { InlineEquationElement } from '@/registry/default/plate-ui/inline-equation-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { MediaAudioElement } from '@/registry/default/plate-ui/media-audio-element';
@@ -83,6 +90,7 @@ import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-e
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 import { withPlaceholders } from '@/registry/default/plate-ui/placeholder';
 import { SlashInputElement } from '@/registry/default/plate-ui/slash-input-element';
+import { SuggestionLeaf } from '@/registry/default/plate-ui/suggestion-leaf';
 import {
   TableCellElement,
   TableCellHeaderElement,
@@ -91,7 +99,6 @@ import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 import { TocElement } from '@/registry/default/plate-ui/toc-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
-import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 
 import { editorPlugins, viewPlugins } from './plugins/editor-plugins';
 
@@ -107,6 +114,7 @@ export const viewComponents = {
   [ColumnPlugin.key]: ColumnGroupElement,
   [CommentsPlugin.key]: CommentLeaf,
   [DatePlugin.key]: DateElement,
+  [EquationPlugin.key]: EquationElement,
   [FilePlugin.key]: MediaFileElement,
   [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
   [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
@@ -117,6 +125,7 @@ export const viewComponents = {
   [HighlightPlugin.key]: HighlightLeaf,
   [HorizontalRulePlugin.key]: HrElement,
   [ImagePlugin.key]: ImageElement,
+  [InlineEquationPlugin.key]: InlineEquationElement,
   [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
   [KbdPlugin.key]: KbdLeaf,
   [LinkPlugin.key]: LinkElement,
@@ -126,6 +135,7 @@ export const viewComponents = {
   [PlaceholderPlugin.key]: MediaPlaceholderElement,
   [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
   [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
+  [SuggestionPlugin.key]: SuggestionLeaf,
   [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: 'sup' }),
   [TableCellHeaderPlugin.key]: TableCellHeaderElement,
   [TableCellPlugin.key]: TableCellElement,
@@ -162,9 +172,7 @@ export const useCreateEditor = (
     {
       override: {
         components: {
-          ...(readOnly
-            ? viewComponents
-            : withPlaceholders(withDraggables(editorComponents))),
+          ...(readOnly ? viewComponents : withPlaceholders(editorComponents)),
           ...components,
         },
         ...override,

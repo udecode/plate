@@ -3,7 +3,7 @@ import {
   type TElement,
   bindFirst,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
 import {
   insertAudioPlaceholder,
@@ -11,14 +11,6 @@ import {
   insertImagePlaceholder,
   insertVideoPlaceholder,
 } from './transforms';
-
-export interface TPlaceholderElement extends TElement {
-  mediaType: string;
-}
-
-export interface PlaceholderRule {
-  mediaType: string;
-}
 
 export interface MediaPlaceholderOptions {
   rules?: PlaceholderRule[];
@@ -28,6 +20,14 @@ export type PlaceholderConfig = PluginConfig<
   'placeholder',
   MediaPlaceholderOptions
 >;
+
+export interface PlaceholderRule {
+  mediaType: string;
+}
+
+export interface TPlaceholderElement extends TElement {
+  mediaType: string;
+}
 
 export const BasePlaceholderPlugin = createTSlatePlugin<PlaceholderConfig>({
   key: 'placeholder',

@@ -1,54 +1,59 @@
 import {
   type SetNodesOptions,
   type SlateEditor,
-  type TNodeProps,
-  addRangeMarks,
-  getNodeEntries,
-  isInline,
+  ElementApi,
+  getAt,
   nanoid,
-  setNodes,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 
-import type { TSuggestionText } from '../types';
+import type { TInlineSuggestionData, TSuggestionText } from '../types';
 
-import { getSuggestionProps } from './getSuggestionProps';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { getSuggestionKey } from '../utils';
 
 export const setSuggestionNodes = (
   editor: SlateEditor,
   options?: {
+    createdAt?: number;
     suggestionDeletion?: boolean;
     suggestionId?: string;
   } & SetNodesOptions
 ) => {
-  const { at = editor.selection, suggestionId = nanoid() } = options ?? {};
+  const at = getAt(editor, options?.at) ?? editor.selection;
+
+  if (!at) return;
+
+  const { suggestionId = nanoid() } = options ?? {};
 
   // TODO: get all inline nodes to be set
-  const _nodeEntries = getNodeEntries(editor, {
-    match: (n) => isInline(editor, n),
+  const _nodeEntries = editor.api.nodes({
+    match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
     ...options,
   });
   const nodeEntries = [..._nodeEntries];
 
-  withoutNormalizing(editor, () => {
-    const props: TNodeProps<TSuggestionText> = getSuggestionProps(
-      editor,
-      suggestionId,
-      options
-    );
+  editor.tf.withoutNormalizing(() => {
+    const data: TInlineSuggestionData = {
+      id: suggestionId,
+      createdAt: options?.createdAt ?? Date.now(),
+      type: 'remove',
+      userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+    };
 
-    addRangeMarks(editor, props, {
+    const props = {
+      [BaseSuggestionPlugin.key]: true,
+      [getSuggestionKey(suggestionId)]: data,
+    };
+
+    editor.tf.setNodes(props, {
       at,
+      marks: true,
     });
 
     nodeEntries.forEach(([, path]) => {
-      setNodes<TSuggestionText>(editor, props, {
+      editor.tf.setNodes<TSuggestionText>(props, {
         at: path,
-        match: (n) => {
-          if (!isInline(editor, n)) return false;
-
-          return true;
-        },
+        match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
         ...options,
       });
     });

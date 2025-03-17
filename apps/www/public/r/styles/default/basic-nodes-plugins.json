@@ -4,16 +4,18 @@
     "@udecode/plate-block-quote",
     "@udecode/plate-code-block",
     "@udecode/plate-heading",
-    "prismjs"
+    "lowlight"
   ],
   "files": [
     {
-      "content": "'use client';\n\nimport { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';\nimport { BlockquotePlugin } from '@udecode/plate-block-quote/react';\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport { HeadingPlugin } from '@udecode/plate-heading/react';\nimport Prism from 'prismjs';\n\nexport const basicNodesPlugins = [\n  HeadingPlugin.configure({ options: { levels: 3 } }),\n  BlockquotePlugin,\n  CodeBlockPlugin.configure({ options: { prism: Prism } }),\n  BasicMarksPlugin,\n] as const;\n",
       "path": "components/editor/plugins/basic-nodes-plugins.tsx",
-      "target": "components/editor/plugins/basic-nodes-plugins.tsx",
-      "type": "registry:component"
+      "content": "'use client';\n\nimport { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';\nimport { BlockquotePlugin } from '@udecode/plate-block-quote/react';\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport { HeadingPlugin } from '@udecode/plate-heading/react';\nimport { all, createLowlight } from 'lowlight';\n\nconst lowlight = createLowlight(all);\n\nexport const basicNodesPlugins = [\n  HeadingPlugin.configure({ options: { levels: 3 } }),\n  BlockquotePlugin,\n  CodeBlockPlugin.configure({ options: { lowlight } }),\n  BasicMarksPlugin,\n] as const;\n",
+      "type": "registry:component",
+      "target": "components/editor/plugins/basic-nodes-plugins.tsx"
     }
   ],
   "name": "basic-nodes-plugins",
-  "type": "registry:component"
+  "type": "registry:component",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
 }

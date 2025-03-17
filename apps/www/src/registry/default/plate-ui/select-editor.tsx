@@ -3,25 +3,20 @@
 import React from 'react';
 
 import { useCommandActions } from '@udecode/cmdk';
+import { isHotkey } from '@udecode/plate';
+import { isEqualTags } from '@udecode/plate-tag';
 import {
-  getEditorString,
-  isHotkey,
-  removeEditorText,
-  replaceNodeChildren,
-} from '@udecode/plate-common';
+  MultiSelectPlugin,
+  TagPlugin,
+  useSelectableItems,
+  useSelectEditorCombobox,
+} from '@udecode/plate-tag/react';
 import {
   Plate,
   useEditorContainerRef,
   useEditorRef,
   usePlateEditor,
-} from '@udecode/plate-common/react';
-import { isEqualTags } from '@udecode/plate-tag';
-import {
-  MultiSelectPlugin,
-  TagPlugin,
-  useSelectEditorCombobox,
-  useSelectableItems,
-} from '@udecode/plate-tag/react';
+} from '@udecode/plate/react';
 import { Fzf } from 'fzf';
 import { PlusIcon } from 'lucide-react';
 
@@ -109,9 +104,9 @@ export function SelectEditorContent({
 
   React.useEffect(() => {
     if (!isEqualTags(editor, value)) {
-      replaceNodeChildren(editor, {
+      editor.tf.replaceNodes(createEditorValue(value), {
         at: [],
-        nodes: createEditorValue(value),
+        children: true,
       });
     }
   }, [editor, value]);
@@ -119,7 +114,7 @@ export function SelectEditorContent({
   return (
     <Plate
       onValueChange={({ editor }) => {
-        setSearch(getEditorString(editor, []));
+        setSearch(editor.api.string([]));
       }}
       editor={editor}
     >
@@ -149,7 +144,7 @@ export const SelectEditorInput = React.forwardRef<
         if (isHotkey('enter', e)) {
           e.preventDefault();
           selectCurrentItem();
-          removeEditorText(editor);
+          editor.tf.removeNodes({ at: [], empty: false, text: true });
         }
         if (isHotkey('escape', e) || isHotkey('mod+enter', e)) {
           e.preventDefault();
@@ -178,7 +173,7 @@ export function SelectEditorCombobox() {
 
   return (
     <Popover open={open}>
-      <PopoverAnchor virtualRef={containerRef} />
+      <PopoverAnchor virtualRef={containerRef as any} />
       <PopoverContent
         className="p-0"
         style={{

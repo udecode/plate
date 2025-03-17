@@ -1,31 +1,33 @@
-import type { PluginConfig } from '@udecode/plate-common';
+import type { PluginConfig } from '@udecode/plate';
 
-import { createTPlatePlugin } from '@udecode/plate-common/react';
+import { createTPlatePlugin } from '@udecode/plate/react';
 
 import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 
 export const BLOCK_CONTEXT_MENU_ID = 'context';
 
-type OpenId = (string & {}) | typeof BLOCK_CONTEXT_MENU_ID;
-
 export type BlockMenuConfig = PluginConfig<
   'blockMenu',
   {
+    openId: OpenId | null;
     position: {
       x: number;
       y: number;
     };
-    openId: OpenId | null;
   },
   {
-    blockMenu: BlockMenuApi;
+    blockMenu: {
+      hide: () => void;
+      show: (id: OpenId, position?: { x: number; y: number }) => void;
+      showContextMenu: (
+        blockId: string,
+        position: { x: number; y: number }
+      ) => void;
+    };
   }
 >;
 
-export type BlockMenuApi = {
-  hide: () => void;
-  show: (id: OpenId, position?: { x: number; y: number }) => void;
-};
+type OpenId = (string & {}) | typeof BLOCK_CONTEXT_MENU_ID;
 
 export const BlockMenuPlugin = createTPlatePlugin<BlockMenuConfig>({
   key: 'blockMenu',
@@ -37,35 +39,39 @@ export const BlockMenuPlugin = createTPlatePlugin<BlockMenuConfig>({
     },
   },
 })
-  .extendApi<Partial<BlockMenuApi>>(({ setOption, setOptions }) => ({
-    hide: () => {
-      setOptions({
-        openId: null,
-        position: {
-          x: -10_000,
-          y: -10_000,
-        },
-      });
-    },
-    show: (id, position) => {
-      if (position) {
+  .extendApi<Partial<BlockMenuConfig['api']['blockMenu']>>(
+    ({ setOption, setOptions }) => ({
+      hide: () => {
         setOptions({
-          openId: id,
-          position,
+          openId: null,
+          position: {
+            x: -10_000,
+            y: -10_000,
+          },
         });
-      } else {
-        setOption('openId', id);
-      }
-    },
-  }))
-  .extendApi(({ api, editor }) => ({
-    showContextMenu: (blockId: string, position: { x: number; y: number }) => {
-      editor
-        .getApi<BlockSelectionConfig>({ key: 'blockSelection' })
-        .blockSelection?.addSelectedRow(blockId);
-      api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, position);
-    },
-  }))
+      },
+      show: (id, position) => {
+        if (position) {
+          setOptions({
+            openId: id,
+            position,
+          });
+        } else {
+          setOption('openId', id);
+        }
+      },
+    })
+  )
+  .extendApi<Partial<BlockMenuConfig['api']['blockMenu']>>(
+    ({ api, editor }) => ({
+      showContextMenu: (blockId, position) => {
+        editor
+          .getApi<BlockSelectionConfig>({ key: 'blockSelection' })
+          .blockSelection?.set(blockId);
+        api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, position);
+      },
+    })
+  )
   .extend(({ api }) => ({
     handlers: {
       onMouseDown: ({ event, getOptions }) => {

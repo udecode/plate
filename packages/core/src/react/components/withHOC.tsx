@@ -4,7 +4,6 @@ type RefComponent<P, R> = React.FC<P> & {
   ref?: React.Ref<R>;
 };
 
-/* eslint-disable react/display-name */
 export const withHOC = <ComponentProps, HOCProps, ComponentRef, HOCRef>(
   HOC: RefComponent<HOCProps, HOCRef>,
   Component: RefComponent<ComponentProps, ComponentRef>,

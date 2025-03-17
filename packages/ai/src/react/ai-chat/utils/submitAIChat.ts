@@ -1,5 +1,7 @@
-import { type PlateEditor, getEditorPlugin } from '@udecode/plate-common/react';
+import type { ChatRequestOptions } from 'ai';
+
 import { isSelecting } from '@udecode/plate-selection';
+import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
@@ -10,10 +12,12 @@ export const submitAIChat = (
   editor: PlateEditor,
   {
     mode,
+    options,
     prompt,
     system,
   }: {
     mode?: 'chat' | 'insert';
+    options?: ChatRequestOptions;
     prompt?: EditorPrompt;
     system?: EditorPrompt;
   } = {}
@@ -60,6 +64,7 @@ export const submitAIChat = (
           promptTemplate: systemTemplate,
         }),
       },
+      ...options,
     }
   );
 };

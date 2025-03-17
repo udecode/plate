@@ -1,0 +1,104 @@
+---
+title: 重置节点
+---
+
+<ComponentPreview name="reset-node-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 允许在按键事件（例如 `Enter`）时快速将文本块格式重置为默认值。
+- 要测试，请在空块或块引用末尾按 Enter，或在块引用开头按 Backspace。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-reset-node
+```
+
+## 使用
+
+```tsx
+// ...
+import {
+  isBlockAboveEmpty,
+  isSelectionAtBlockStart,
+} from '@udecode/plate';
+import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
+
+const resetBlockTypesCommonRule = {
+  types: [BlockquotePlugin.key, TodoListPlugin.key],
+  defaultType: ParagraphPlugin.key,
+};
+
+const resetBlockTypesCodeBlockRule = {
+  types: [CodeBlockPlugin.key],
+  defaultType: ParagraphPlugin.key,
+  onReset: unwrapCodeBlock,
+};
+
+const plugins = [
+  // ...其他插件,
+  ResetNodePlugin.configure({
+    options: {
+      rules: [
+        {
+          ...resetBlockTypesCommonRule,
+          hotkey: 'Enter',
+          predicate: isBlockAboveEmpty,
+        },
+        {
+          ...resetBlockTypesCommonRule,
+          hotkey: 'Backspace',
+          predicate: isSelectionAtBlockStart,
+        },
+        {
+          ...resetBlockTypesCodeBlockRule,
+          hotkey: 'Enter',
+          predicate: isCodeBlockEmpty,
+        },
+        {
+          ...resetBlockTypesCodeBlockRule,
+          hotkey: 'Backspace',
+          predicate: isSelectionAtCodeBlockStart,
+        },
+      ],
+    },
+  }),
+];
+```
+
+## 插件
+
+### `ResetNodePlugin`
+
+用于根据规则重置节点类型的插件。
+
+<API name="ResetNodePlugin">
+<APIOptions type="rules">
+    <APIItem name="hotkey" type="string | string[]" optional>
+      触发规则的快捷键。
+    </APIItem>
+    <APIItem name="defaultType" type="string" optional>
+      重置节点时的默认类型。
+    </APIItem>
+    <APIItem name="types" type="string[]">
+      规则适用的节点类型。
+    </APIItem>
+    <APIItem name="predicate" type="(editor: PlateEditor) => boolean">
+      规则的附加条件。
+    </APIItem>
+    <APIItem name="onReset" type="(editor: PlateEditor) => void" optional>
+      重置时触发的回调。
+    </APIItem>
+    <APIItem name="disableFirstBlockReset" type="boolean" optional>
+      禁用编辑器第一个块的重置。
+    </APIItem>
+    <APIItem name="disableEditorReset" type="boolean" optional>
+      禁用整个编辑器的重置。
+  </APIItem>
+  </APIOptions>
+</API>

@@ -1,16 +1,21 @@
+import {
+  assignLegacyApi,
+  assignLegacyTransforms,
+  syncLegacyMethods,
+} from '@udecode/slate';
 import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 import { createZustandStore } from 'zustand-x';
 
 import type { SlateEditor } from '../editor';
 
-import { mergePlugins } from '../../internal/mergePlugins';
+import { resolvePlugin } from '../../internal/plugin/resolvePlugin';
+import { mergePlugins } from '../../internal/utils/mergePlugins';
 import {
   type SlatePlugin,
   type SlatePlugins,
   getEditorPlugin,
 } from '../plugin';
-import { resolvePlugin } from './resolvePlugin';
 
 /**
  * Initialize and configure the editor's plugin system. This function sets up
@@ -23,9 +28,6 @@ export const resolvePlugins = (
 ) => {
   editor.pluginList = [];
   editor.plugins = {};
-  editor.api = {} as any;
-  editor.transforms = {} as any;
-  editor.tf = editor.transforms;
   editor.shortcuts = {} as any;
 
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
@@ -36,14 +38,20 @@ export const resolvePlugins = (
 
   resolvePluginStores(editor);
 
-  resolvePluginApis(editor);
-
   // extendEditor
   editor.pluginList.forEach((plugin) => {
     if (plugin.extendEditor) {
       editor = plugin.extendEditor(getEditorPlugin(editor, plugin) as any);
+
+      // Sync any editor methods that were modified by extendEditor
+      syncLegacyMethods(editor);
     }
+
+    // Sync overridden plugin methods to legacy editor methods
+    resolvePluginMethods(editor, plugin);
   });
+
+  resolvePluginShortcuts(editor);
 
   return editor;
 };
@@ -51,18 +59,17 @@ export const resolvePlugins = (
 const resolvePluginStores = (editor: SlateEditor) => {
   // Create zustand stores for each plugin
   editor.pluginList.forEach((plugin) => {
-    let store = createZustandStore(plugin.key)(plugin.options, {
-      immer: {
-        enableMapSet: true,
-      },
+    let store = createZustandStore(plugin.options, {
+      mutative: true,
+      name: plugin.key,
     });
 
     // Apply option extensions
     if (
-      (plugin as any).__optionExtensions &&
-      (plugin as any).__optionExtensions.length > 0
+      (plugin as any).__selectorExtensions &&
+      (plugin as any).__selectorExtensions.length > 0
     ) {
-      (plugin as any).__optionExtensions.forEach((extension: any) => {
+      (plugin as any).__selectorExtensions.forEach((extension: any) => {
         const extendedOptions = extension(getEditorPlugin(editor, plugin));
 
         store = store.extendSelectors(() => extendedOptions);
@@ -73,65 +80,79 @@ const resolvePluginStores = (editor: SlateEditor) => {
   });
 };
 
-const resolvePluginApis = (editor: SlateEditor) => {
-  const shortcutsByPriority: any[] = [];
+const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
+  // Merge APIs
+  Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
+    (editor.api as any)[apiKey] = apiFunction;
+  });
 
-  editor.pluginList.forEach((plugin: any) => {
-    // Merge APIs
-    Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
-      (editor.api as any)[apiKey] = apiFunction;
-    });
+  // Apply API and transform extensions
+  if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
+    plugin.__apiExtensions.forEach(
+      ({ extension, isOverride, isPluginSpecific, isTransform }: any) => {
+        const newExtensions = extension(getEditorPlugin(editor, plugin) as any);
 
-    // Apply API and transform extensions
-    if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
-      plugin.__apiExtensions.forEach(
-        ({ extension, isPluginSpecific, isTransform }: any) => {
-          const newExtensions = extension(
-            getEditorPlugin(editor, plugin) as any
-          );
-
-          if (isTransform) {
-            // Handle transforms
-            if (isPluginSpecific) {
-              // Plugin-specific transform
-              if (!(editor.transforms as any)[plugin.key]) {
-                (editor.transforms as any)[plugin.key] = {};
-              }
-              if (!(plugin.transforms as any)[plugin.key]) {
-                (plugin.transforms as any)[plugin.key] = {};
-              }
-
-              merge((editor.transforms as any)[plugin.key], newExtensions);
-              merge((plugin.transforms as any)[plugin.key], newExtensions);
-            } else {
-              // Editor-wide transform
-              merge(editor.transforms, newExtensions);
-              merge(plugin.transforms, newExtensions);
+        if (isOverride) {
+          // Handle combined API and transforms override
+          if (newExtensions.api) {
+            merge(editor.api, newExtensions.api);
+            merge(plugin.api, newExtensions.api);
+            assignLegacyApi(editor, editor.api);
+          }
+          if (newExtensions.transforms) {
+            merge(editor.transforms, newExtensions.transforms);
+            merge(plugin.transforms, newExtensions.transforms);
+            assignLegacyTransforms(editor, newExtensions.transforms);
+          }
+        } else if (isTransform) {
+          // Handle transforms
+          if (isPluginSpecific) {
+            // Plugin-specific transform
+            if (!(editor.transforms as any)[plugin.key]) {
+              (editor.transforms as any)[plugin.key] = {};
             }
+            if (!(plugin.transforms as any)[plugin.key]) {
+              (plugin.transforms as any)[plugin.key] = {};
+            }
+
+            merge((editor.transforms as any)[plugin.key], newExtensions);
+            merge((plugin.transforms as any)[plugin.key], newExtensions);
           } else {
-            // Handle APIs
-            if (isPluginSpecific) {
-              // Plugin-specific API
-              if (!(editor.api as any)[plugin.key]) {
-                (editor.api as any)[plugin.key] = {};
-              }
-              if (!(plugin.api as any)[plugin.key]) {
-                (plugin.api as any)[plugin.key] = {};
-              }
-
-              merge((editor.api as any)[plugin.key], newExtensions);
-              merge((plugin.api as any)[plugin.key], newExtensions);
-            } else {
-              // Editor-wide API
-              merge(editor.api, newExtensions);
-              merge(plugin.api, newExtensions);
+            // Editor-wide transform
+            merge(editor.transforms, newExtensions);
+            merge(plugin.transforms, newExtensions);
+            assignLegacyTransforms(editor, newExtensions);
+          }
+        } else {
+          // Handle APIs
+          if (isPluginSpecific) {
+            // Plugin-specific API
+            if (!(editor.api as any)[plugin.key]) {
+              (editor.api as any)[plugin.key] = {};
             }
+            if (!(plugin.api as any)[plugin.key]) {
+              (plugin.api as any)[plugin.key] = {};
+            }
+
+            merge((editor.api as any)[plugin.key], newExtensions);
+            merge((plugin.api as any)[plugin.key], newExtensions);
+          } else {
+            // Editor-wide API
+            merge(editor.api, newExtensions);
+            merge(plugin.api, newExtensions);
+            assignLegacyApi(editor, editor.api);
           }
         }
-      );
-      delete plugin.__apiExtensions;
-    }
+      }
+    );
+    delete plugin.__apiExtensions;
+  }
+};
 
+const resolvePluginShortcuts = (editor: SlateEditor) => {
+  const shortcutsByPriority: any[] = [];
+
+  editor.pluginList.forEach((plugin) => {
     // Merge shortcuts
     Object.entries(plugin.shortcuts).forEach(([key, hotkey]) => {
       if (hotkey === null) {

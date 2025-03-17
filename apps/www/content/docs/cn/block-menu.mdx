@@ -1,0 +1,118 @@
+---
+title: 块菜单
+docs:
+  - route: /docs/components/block-context-menu
+    title: 块上下文菜单
+    
+  - route: https://pro.platejs.org/docs/components/block-menu
+    title: 块菜单
+
+  - route: https://pro.platejs.org/docs/components/block-context-menu
+    title: 块上下文菜单
+
+---
+
+<ComponentPreview name="block-menu-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 右键点击块以打开菜单。
+- 允许您对块执行操作，例如转换、复制或删除。
+- 可自定义菜单项和操作。
+- 键盘导航
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npm install @udecode/plate-selection @udecode/plate-node-id
+```
+
+## 使用
+
+```tsx
+import { BlockMenuPlugin } from '@udecode/plate-selection/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+```
+
+```tsx
+const plugins = [
+  // ...其他插件,
+  NodeIdPlugin,
+  BlockSelectionPlugin.configure({
+    options: {
+      enableContextMenu: true,
+    },
+  }),
+  BlockMenuPlugin.configure({
+    render: { aboveEditable: BlockContextMenu },
+  }),
+]
+```
+
+- [BlockContextMenu](/docs/components/block-context-menu)
+
+要控制特定元素的上下文菜单的打开，您可以使用 `data-plate-open-context-menu` 属性：
+
+```tsx
+<PlateElement data-plate-open-context-menu={false} {...props}>
+  {children}
+</PlateElement>
+```
+
+通常，我们只需要阻止在 `<Editor />` 的填充区域上右键点击。
+
+## 示例
+
+### Plate UI
+
+参考上面的预览。
+
+### Plate Plus
+
+<ComponentPreviewPro name="context-menu-pro" />
+
+## 插件
+
+### `BlockMenuPlugin`
+
+块菜单状态管理。
+
+## API
+
+### `editor.api.blockMenu.hide`
+
+隐藏块菜单。
+
+### `editor.api.blockMenu.show`
+
+显示特定块的块菜单。
+
+<API name="show">
+<APIParameters>
+  <APIItem name="id" type="'context' | string">
+    要显示菜单的块的ID。
+  </APIItem>
+  <APIItem name="position" type="{ x: number; y: number }" optional>
+    显示菜单的位置。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `editor.api.blockMenu.showContextMenu`
+
+显示特定块的上下文菜单。
+
+<API name="showContextMenu">
+<APIParameters>
+  <APIItem name="blockId" type="string">
+    要显示上下文菜单的块的ID。
+  </APIItem>
+  <APIItem name="position" type="{ x: number; y: number }">
+    显示上下文菜单的位置。
+  </APIItem>
+</APIParameters>
+</API>

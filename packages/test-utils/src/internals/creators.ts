@@ -1,20 +1,24 @@
 import {
   type Descendant,
   type Editor,
-  Element,
-  Node,
-  Range,
-  Text,
-} from 'slate';
+  type TElement,
+  type TNode,
+  type TRange,
+  type TText,
+  ElementApi,
+  NodeApi,
+  RangeApi,
+  TextApi,
+} from '@udecode/slate';
 
 import {
-  AnchorToken,
-  FocusToken,
-  Token,
   addAnchorToken,
   addFocusToken,
+  AnchorToken,
+  FocusToken,
   getAnchorOffset,
   getFocusOffset,
+  Token,
 } from './tokens';
 
 /**
@@ -22,12 +26,12 @@ import {
  * passed into a hyperscript creator function.
  */
 
-const STRINGS = new WeakSet<Text>();
+const STRINGS = new WeakSet<TText>();
 
 const resolveDescendants = (children: any[]): Descendant[] => {
-  const nodes: Node[] = [];
+  const nodes: Descendant[] = [];
 
-  const addChild = (child: Node | Token): void => {
+  const addChild = (child: TNode | Token): void => {
     if (child == null) {
       return;
     }
@@ -39,27 +43,27 @@ const resolveDescendants = (children: any[]): Descendant[] => {
       STRINGS.add(text);
       child = text;
     }
-    if (Text.isText(child)) {
+    if (TextApi.isText(child)) {
       const c = child; // HACK: fix typescript complaining
 
       if (
-        Text.isText(prev) &&
+        TextApi.isText(prev) &&
         STRINGS.has(prev) &&
         STRINGS.has(c) &&
-        Text.equals(prev, c, { loose: true })
+        TextApi.equals(prev, c, { loose: true })
       ) {
         prev.text += c.text;
       } else {
         nodes.push(c);
       }
-    } else if (Element.isElement(child)) {
+    } else if (ElementApi.isElement(child)) {
       nodes.push(child);
     } else if (child instanceof Token) {
       let n = nodes.at(-1);
 
-      if (!Text.isText(n)) {
+      if (!TextApi.isText(n)) {
         addChild('');
-        n = nodes.at(-1) as Text;
+        n = nodes.at(-1) as TText;
       }
       if (child instanceof AnchorToken) {
         addAnchorToken(n, child);
@@ -67,7 +71,9 @@ const resolveDescendants = (children: any[]): Descendant[] => {
         addFocusToken(n, child);
       }
     } else {
-      throw new TypeError(`Unexpected hyperscript child object: ${child}`);
+      throw new TypeError(
+        `Unexpected hyperscript child object: ${child as any}`
+      );
     }
   };
 
@@ -90,12 +96,15 @@ export const createCursor = (
   attributes: Record<string, any>
 ): Token[] => [new AnchorToken(attributes), new FocusToken(attributes)];
 
-/** Create an `Element` object. */
+/** Create an `TElement` object. */
 export const createElement = (
   tagName: string,
   attributes: Record<string, any>,
   children: any[]
-): Element => ({ ...attributes, children: resolveDescendants(children) });
+): TElement => ({
+  ...(attributes as any),
+  children: resolveDescendants(children),
+});
 
 /** Create a focus token. */
 export const createFocus = (
@@ -115,7 +124,7 @@ export const createSelection = (
   tagName: string,
   attributes: Record<string, any>,
   children: any[]
-): Range => {
+): TRange => {
   const anchor: AnchorToken = children.find((c) => c instanceof AnchorToken)!;
   const focus: FocusToken = children.find((c) => c instanceof FocusToken)!;
 
@@ -143,12 +152,12 @@ export const createSelection = (
   };
 };
 
-/** Create a `Text` object. */
+/** Create a `TText` object. */
 export const createText = (
   tagName: string,
   attributes: Record<string, any>,
   children: any[]
-): Text => {
+): TText => {
   const nodes = resolveDescendants(children);
 
   if (nodes.length > 1) {
@@ -162,7 +171,7 @@ export const createText = (
   if (node == null) {
     node = { text: '' };
   }
-  if (!Text.isText(node)) {
+  if (!TextApi.isText(node)) {
     throw new Error(`
     The <text> hyperscript tag can only contain text content as children.`);
   }
@@ -185,25 +194,25 @@ export const createEditor =
     children: any[]
   ): Editor => {
     const otherChildren: any[] = [];
-    let selectionChild: Range | undefined;
+    let selectionChild: TRange | undefined;
 
     for (const child of children) {
-      if (Range.isRange(child)) {
+      if (RangeApi.isRange(child)) {
         selectionChild = child;
       } else {
         otherChildren.push(child);
       }
     }
 
-    const descendants = resolveDescendants(otherChildren);
-    const selection: Partial<Range> = {};
+    const descendants = resolveDescendants(otherChildren) as TElement[];
+    const selection: Partial<TRange> = {};
     const editor = makeEditor();
     Object.assign(editor, attributes);
     editor.children = descendants;
 
     // Search the document's texts to see if any of them have tokens associated
     // that need incorporated into the selection.
-    for (const [node, path] of Node.texts(editor)) {
+    for (const [node, path] of NodeApi.texts(editor)) {
       const anchor = getAnchorOffset(node);
       const focus = getFocusOffset(node);
 
@@ -229,7 +238,7 @@ export const createEditor =
     }
     if (selectionChild != null) {
       editor.selection = selectionChild;
-    } else if (Range.isRange(selection)) {
+    } else if (RangeApi.isRange(selection)) {
       editor.selection = selection;
     }
 

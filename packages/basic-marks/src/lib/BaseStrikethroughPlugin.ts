@@ -1,4 +1,4 @@
-import { createSlatePlugin, someHtmlElement } from '@udecode/plate-common';
+import { createSlatePlugin, someHtmlElement } from '@udecode/plate';
 
 /** Enables support for strikethrough formatting. */
 export const BaseStrikethroughPlugin = createSlatePlugin({
@@ -7,15 +7,15 @@ export const BaseStrikethroughPlugin = createSlatePlugin({
   parsers: {
     html: {
       deserializer: {
+        rules: [
+          { validNodeName: ['S', 'DEL', 'STRIKE'] },
+          { validStyle: { textDecoration: 'line-through' } },
+        ],
         query: ({ element }) =>
           !someHtmlElement(
             element,
             (node) => node.style.textDecoration === 'none'
           ),
-        rules: [
-          { validNodeName: ['S', 'DEL', 'STRIKE'] },
-          { validStyle: { textDecoration: 'line-through' } },
-        ],
       },
     },
   },

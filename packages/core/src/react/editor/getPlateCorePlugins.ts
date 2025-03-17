@@ -1,12 +1,10 @@
 import { ParagraphPlugin, ReactPlugin } from '../plugins';
-import { PlateApiPlugin } from '../plugins/PlateApiPlugin';
-import { SlateReactNextPlugin } from '../plugins/SlateReactNextPlugin';
 import { EventEditorPlugin } from '../plugins/event-editor/EventEditorPlugin';
+import { SlateReactExtensionPlugin } from '../plugins/SlateReactExtensionPlugin';
 
 export const getPlateCorePlugins = () => [
-  SlateReactNextPlugin,
+  SlateReactExtensionPlugin,
   ReactPlugin,
   EventEditorPlugin,
-  PlateApiPlugin,
   ParagraphPlugin,
 ];

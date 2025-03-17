@@ -1,4 +1,4 @@
-import { type Value, createTEditor } from '@udecode/slate';
+import { type Value, createEditor } from '@udecode/slate';
 
 import type { InferPlugins } from '../../lib/editor/SlateEditor';
 
@@ -46,7 +46,7 @@ describe('TPlateEditor', () => {
 
   describe('Core Plugins', () => {
     it('should have DebugPlugin methods with default generics', () => {
-      const editor = withPlate(createTEditor());
+      const editor = withPlate(createEditor());
 
       expect(editor.api.debug).toBeDefined();
       expect(editor.api.debug.log).toBeInstanceOf(Function);
@@ -59,7 +59,7 @@ describe('TPlateEditor', () => {
     });
 
     it('should work with a mix of core and custom plugins', () => {
-      const editor = withPlate(createTEditor(), {
+      const editor = withPlate(createEditor(), {
         plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin],
       });
 
@@ -74,12 +74,12 @@ describe('TPlateEditor', () => {
 
   describe('Custom Plugins', () => {
     it('should infer single and multiple plugin types correctly', () => {
-      const singlePluginEditor = withPlate(createTEditor(), {
+      const singlePluginEditor = withPlate(createEditor(), {
         plugins: [MyCustomPlugin],
       });
       expect(singlePluginEditor.api.myCustomMethod).toBeInstanceOf(Function);
 
-      const multiPluginEditor = withPlate(createTEditor(), {
+      const multiPluginEditor = withPlate(createEditor(), {
         plugins: [TextFormattingPlugin, ListPlugin, TablePlugin],
       });
       expect(multiPluginEditor.api.bold).toBeInstanceOf(Function);
@@ -105,7 +105,7 @@ describe('TPlateEditor', () => {
 
     it('should allow extending editor with new plugins', () => {
       const plugins = [TextFormattingPlugin, ListPlugin];
-      const editor1 = withPlate(createTEditor(), {
+      const editor1 = withPlate(createEditor(), {
         plugins,
       });
 
@@ -133,7 +133,7 @@ describe('TPlateEditor', () => {
         },
       });
 
-      const editor = withPlate(createTEditor(), {
+      const editor = withPlate(createEditor(), {
         plugins: [TextFormattingPlugin, OverlappingPlugin, ImagePlugin],
       });
 
@@ -154,15 +154,15 @@ describe('TPlateEditor', () => {
       parsers: {
         html: {
           deserializer: {
+            rules: [
+              { validNodeName: ['STRONG', 'B'] },
+              { validStyle: { fontWeight: ['600', '700', 'bold'] } },
+            ],
             query: ({ element }) =>
               !someHtmlElement(
                 element,
                 (node) => node.style.fontWeight === 'normal'
               ),
-            rules: [
-              { validNodeName: ['STRONG', 'B'] },
-              { validStyle: { fontWeight: ['600', '700', 'bold'] } },
-            ],
           },
         },
       },

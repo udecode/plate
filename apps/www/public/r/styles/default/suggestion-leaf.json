@@ -1,0 +1,38 @@
+{
+  "dependencies": [
+    "@udecode/plate-suggestion"
+  ],
+  "doc": {
+    "description": "A text component for suggestion.",
+    "docs": [
+      {
+        "route": "/docs/suggestion"
+      }
+    ],
+    "examples": [
+      "comments-demo",
+      "comments-pro"
+    ]
+  },
+  "files": [
+    {
+      "path": "plate-ui/suggestion-leaf.tsx",
+      "content": "'use client';\nimport React from 'react';\n\nimport type { TSuggestionText } from '@udecode/plate-suggestion';\n\nimport { cn } from '@udecode/cn';\nimport {\n  type PlateLeafProps,\n  PlateLeaf,\n  useEditorPlugin,\n  usePluginOption,\n} from '@udecode/plate/react';\n\nimport { suggestionPlugin } from '@/components/editor/plugins/suggestion-plugin';\n\nexport function SuggestionLeaf(props: PlateLeafProps) {\n  const { children, className, leaf } = props;\n\n  const { api, setOption } = useEditorPlugin(suggestionPlugin);\n\n  const leafId: string = api.suggestion.nodeId(leaf as TSuggestionText) ?? '';\n  const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');\n  const hoverSuggestionId = usePluginOption(suggestionPlugin, 'hoverId');\n  const dataList = api.suggestion.dataList(leaf as TSuggestionText);\n\n  const hasRemove = dataList.some((data) => data.type === 'remove');\n  const hasActive = dataList.some((data) => data.id === activeSuggestionId);\n  const hasHover = dataList.some((data) => data.id === hoverSuggestionId);\n\n  const diffOperation = {\n    type: hasRemove ? 'delete' : 'insert',\n  } as const;\n\n  const Component = (\n    {\n      delete: 'del',\n      insert: 'ins',\n      update: 'span',\n    } as const\n  )[diffOperation.type];\n\n  return (\n    <PlateLeaf\n      {...props}\n      as={Component}\n      className={cn(\n        'border-b-2 border-b-brand/[.24] bg-brand/[.08] text-brand/80 no-underline transition-colors duration-200',\n        (hasActive || hasHover) && 'border-b-brand/[.60] bg-brand/[.13]',\n        hasRemove &&\n          'border-b-gray-300 bg-gray-300/25 text-gray-400 line-through',\n        (hasActive || hasHover) &&\n          hasRemove &&\n          'border-b-gray-500 bg-gray-400/25 text-gray-500 no-underline',\n        className\n      )}\n      onMouseEnter={() => setOption('hoverId', leafId)}\n      onMouseLeave={() => setOption('hoverId', null)}\n    >\n      {children}\n    </PlateLeaf>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/suggestion-leaf.tsx"
+    },
+    {
+      "path": "plate-ui/suggestion-leaf-static.tsx",
+      "content": "import React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport { type SlateLeafProps, SlateLeaf } from '@udecode/plate';\nimport {\n  type TSuggestionText,\n  BaseSuggestionPlugin,\n} from '@udecode/plate-suggestion';\nimport { useEditorPlugin } from '@udecode/plate/react';\n\nexport function SuggestionLeafStatic(props: SlateLeafProps) {\n  const { children, className, leaf } = props;\n\n  const { api } = useEditorPlugin(BaseSuggestionPlugin);\n\n  const dataList = api.suggestion.dataList(leaf as TSuggestionText);\n\n  const hasRemove = dataList.some((data) => data.type === 'remove');\n\n  const diffOperation = {\n    type: hasRemove ? 'delete' : 'insert',\n  } as const;\n\n  const Component = (\n    {\n      delete: 'del',\n      insert: 'ins',\n      update: 'span',\n    } as const\n  )[diffOperation.type];\n\n  return (\n    <SlateLeaf\n      {...props}\n      as={Component}\n      className={cn(\n        'border-b-2 border-b-brand/[.24] bg-brand/[.08] text-brand/80 no-underline transition-colors duration-200',\n        hasRemove &&\n          'border-b-gray-300 bg-gray-300/25 text-gray-400 line-through',\n        className\n      )}\n    >\n      {children}\n    </SlateLeaf>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/suggestion-leaf-static.tsx"
+    }
+  ],
+  "name": "suggestion-leaf",
+  "registryDependencies": [
+    "suggestion-plugin"
+  ],
+  "type": "registry:ui",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
+}

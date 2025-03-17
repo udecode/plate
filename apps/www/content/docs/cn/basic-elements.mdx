@@ -1,0 +1,216 @@
+---
+title: 基础元素
+docs:
+  - route: /docs/components/blockquote-element
+    title: 引用块元素
+  - route: /docs/components/code-block-element
+    title: 代码块元素
+  - route: /docs/components/code-line-element
+    title: 代码行元素
+  - route: /docs/components/code-syntax-leaf
+    title: 代码语法叶子节点
+  - route: /docs/components/heading-element
+    title: 标题元素
+---
+
+<ComponentPreview name="basic-elements-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 包含常用的块元素：引用块、代码块和标题。
+
+</PackageInfo>
+
+## 插件
+
+- `BlockquotePlugin` 用于 `blockquote` 元素
+- `CodeBlockPlugin` 用于 `code_block` 元素
+- `HeadingPlugin` 用于 `h1`, `h2`,... 元素
+
+## 安装
+
+```bash
+npm install @udecode/plate-basic-elements
+# 或者
+npm install @udecode/plate-block-quote @udecode/plate-code-block @udecode/plate-heading
+```
+
+## 使用
+
+### 基本设置
+
+```tsx
+import { BasicElementsPlugin, CodeBlockPlugin } from '@udecode/plate-basic-elements/react';
+import { all, createLowlight } from 'lowlight';
+
+// 创建一个包含所有语言的 lowlight 实例
+const lowlight = createLowlight(all);
+
+const plugins = [
+  // ...其他插件
+  BasicElementsPlugin.configurePlugin(CodeBlockPlugin, {
+    options: {
+      lowlight,
+    },
+  }),
+];
+```
+
+### 自定义语言设置
+
+为了优化包大小，你可以只注册特定的语言：
+
+```tsx
+import { createLowlight } from 'lowlight';
+import css from 'highlight.js/lib/languages/css';
+import js from 'highlight.js/lib/languages/javascript';
+import ts from 'highlight.js/lib/languages/typescript';
+import html from 'highlight.js/lib/languages/xml';
+
+// 创建一个 lowlight 实例
+const lowlight = createLowlight();
+
+// 只注册你需要的语言
+lowlight.register('html', html);
+lowlight.register('css', css);
+lowlight.register('js', js);
+lowlight.register('ts', ts);
+
+const plugins = [
+  BasicElementsPlugin.configurePlugin(CodeBlockPlugin, {
+    options: {
+      lowlight,
+      // 设置默认语言（可选）
+      defaultLanguage: 'js',
+    },
+  }),
+];
+```
+
+## 快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Opt + 1">切换为一级标题。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 2">切换为二级标题。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 3">切换为三级标题。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + .">
+    切换选中文本的引用块格式。
+  </KeyTableItem>
+</KeyTable>
+
+## 插件
+
+### `BasicElementsPlugin`
+
+包含所有基础元素插件的插件。
+
+### `BlockquotePlugin`
+
+用于引用块元素的插件。
+
+### `HeadingPlugin`
+
+<API name="HeadingPlugin">
+<APIOptions>
+  <APIItem name="levels" type="number" optional>
+    指定支持的标题级别，范围从 1 到指定级别。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `CodeBlockPlugin`
+
+<API name="CodeBlockPlugin">
+<APIOptions>
+  <APIItem name="defaultLanguage" type="string | null" optional>
+    当未指定语言时使用的默认语言。设置为 null 以默认禁用语法高亮。
+  </APIItem>
+  <APIItem name="lowlight" type="ReturnType<typeof createLowlight> | null" optional>
+    用于高亮的 lowlight 实例。如果未提供，将禁用语法高亮。
+  </APIItem>
+</APIOptions>
+</API>
+
+## API 代码块
+
+### `isCodeBlockEmpty`
+
+<API name="isCodeBlockEmpty">
+<APIReturns type="boolean">
+  判断选择是否在空的代码块中。
+</APIReturns>
+</API>
+
+### `isSelectionAtCodeBlockStart`
+
+<API name="isSelectionAtCodeBlockStart">
+<APIReturns type="boolean">
+  判断选择是否在代码块的第一个代码行的开头。
+</APIReturns>
+</API>
+
+### `indentCodeLine`
+
+如果选择已展开或光标左侧没有非空白字符，则缩进代码行。默认缩进为 2 个空格。
+
+<API name="indentCodeLine">
+<APIOptions type="IndentCodeLineOptions">
+  <APIItem name="codeLine" type="ElementEntry">
+    要缩进的代码行。
+  </APIItem>
+  <APIItem name="indentDepth" type="number">
+    代码行的缩进大小。
+    - **默认值:** `2`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertCodeBlock`
+
+通过将节点设置为代码行并将其包装为代码块来插入代码块。如果光标不在块的开头，则在代码块前插入一个换行符。
+
+<API name="insertCodeBlock">
+<APIParameters>
+  <APIItem name="insertNodesOptions" type="Omit<InsertNodesOptions, 'match'>" optional>
+    插入节点的选项。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `insertCodeLine`
+
+插入一个以指定缩进深度开头的代码行。
+
+<API name="insertCodeLine">
+<APIParameters>
+  <APIItem name="indentDepth" type="number" optional>
+    代码行的缩进深度。
+    - **默认值:** `0`
+  </APIItem>
+</APIParameters>
+</API>
+
+### `outdentCodeLine`
+
+取消缩进代码行，如果存在则删除两个空白字符。
+
+<API name="outdentCodeLine">
+<APIOptions type="OutdentCodeLineOptions">
+  <APIItem name="codeLine" type="ElementEntry">
+    要取消缩进的代码行。
+  </APIItem>
+  <APIItem name="codeBlock" type="ElementEntry">
+    包含要取消缩进的代码行的代码块。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `toggleCodeBlock`
+
+在编辑器中切换代码块。
+
+### `unwrapCodeBlock`
+
+在编辑器中取消代码块的包装。

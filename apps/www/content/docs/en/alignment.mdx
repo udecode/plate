@@ -1,0 +1,74 @@
+---
+title: Alignment
+docs:
+  - route: /docs/components/align-dropdown-menu
+    title: Align Dropdown Menu
+---
+
+<ComponentPreview name="align-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Provides text alignment options: left, right, center, or justify.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-alignment
+```
+
+## Usage
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { AlignPlugin } from '@udecode/plate-alignment/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    HeadingPlugin,
+    AlignPlugin.configure({
+      inject: {
+        targetPlugins: [
+          ParagraphPlugin.key,
+          HeadingPlugin.key,
+        ],
+      },
+    }),
+  ],
+});
+```
+
+## Plugins
+
+### `AlignPlugin`
+
+Plugin for aligning text within block elements.
+
+## API
+
+### `setAlign`
+
+Sets the alignment for the specified block elements in the editor.
+
+<APIParameters>
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="object" optional>
+<APISubList>
+<APISubListItem parent="options" name="value" type="Alignment" optional>
+The alignment value.
+</APISubListItem>
+<APISubListItem parent="options" name="setNodesOptions" type="SetNodesOptions" optional>
+Options for the `setNodes` function.
+</APISubListItem>
+
+</APISubList>
+</APIItem>
+</APIParameters>

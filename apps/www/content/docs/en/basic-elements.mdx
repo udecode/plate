@@ -1,0 +1,217 @@
+---
+title: Basic Elements
+docs:
+  - route: /docs/components/blockquote-element
+    title: Block Quote Element
+  - route: /docs/components/code-block-element
+    title: Code Block Element
+  - route: /docs/components/code-line-element
+    title: Code Line Element
+  - route: /docs/components/code-syntax-leaf
+    title: Code Syntax Leaf
+  - route: /docs/components/heading-element
+    title: Heading Element
+---
+
+<ComponentPreview name="basic-elements-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Includes commonly used block elements: blockquote, code block, and headings.
+
+</PackageInfo>
+
+## Plugins
+
+- `BlockquotePlugin` for `blockquote` element
+- `CodeBlockPlugin` for `code_block` element
+- `HeadingPlugin` for `h1`, `h2`,... elements
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-elements
+# or
+npm install @udecode/plate-block-quote @udecode/plate-code-block @udecode/plate-heading
+```
+
+## Usage
+
+### Basic Setup
+
+```tsx
+import { BasicElementsPlugin, CodeBlockPlugin } from '@udecode/plate-basic-elements/react';
+import { all, createLowlight } from 'lowlight';
+
+// Create a lowlight instance with all languages
+const lowlight = createLowlight(all);
+
+const plugins = [
+  // ...otherPlugins,
+  BasicElementsPlugin.configurePlugin(CodeBlockPlugin, {
+    options: {
+      lowlight,
+    },
+  }),
+];
+```
+
+### Custom Language Setup
+
+For optimized bundle size, you can register only specific languages:
+
+```tsx
+import { createLowlight } from 'lowlight';
+import css from 'highlight.js/lib/languages/css';
+import js from 'highlight.js/lib/languages/javascript';
+import ts from 'highlight.js/lib/languages/typescript';
+import html from 'highlight.js/lib/languages/xml';
+
+// Create a lowlight instance
+const lowlight = createLowlight();
+
+// Register only the languages you need
+lowlight.register('html', html);
+lowlight.register('css', css);
+lowlight.register('js', js);
+lowlight.register('ts', ts);
+
+const plugins = [
+  BasicElementsPlugin.configurePlugin(CodeBlockPlugin, {
+    options: {
+      lowlight,
+      // Set default language (optional)
+      defaultLanguage: 'js',
+    },
+  }),
+];
+```
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Opt + 1">Toggle heading 1 block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 2">Toggle heading 2 block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 3">Toggle heading 3 block.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + .">
+    Toggle the blockquote formatting for selected text.
+  </KeyTableItem>
+</KeyTable>
+
+## Plugins
+
+### `BasicElementsPlugin`
+
+Plugin that includes all basic element plugins.
+
+### `BlockquotePlugin`
+
+Plugin for blockquote elements.
+
+### `HeadingPlugin`
+
+<API name="HeadingPlugin">
+<APIOptions>
+  <APIItem name="levels" type="number" optional>
+    Specifies the heading levels supported, ranging from 1 to the specified levels.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `CodeBlockPlugin`
+
+<API name="CodeBlockPlugin">
+<APIOptions>
+  <APIItem name="defaultLanguage" type="string | null" optional>
+    Default language to use when no language is specified. Set to null to disable syntax highlighting by default.
+  </APIItem>
+  <APIItem name="lowlight" type="ReturnType<typeof createLowlight> | null" optional>
+    Lowlight instance to use for highlighting. If not provided, syntax highlighting will be disabled.
+  </APIItem>
+</APIOptions>
+</API>
+
+## API Code Block
+
+### `isCodeBlockEmpty`
+
+<API name="isCodeBlockEmpty">
+<APIReturns type="boolean">
+  Whether the selection is in an empty code block.
+</APIReturns>
+</API>
+
+### `isSelectionAtCodeBlockStart`
+
+<API name="isSelectionAtCodeBlockStart">
+<APIReturns type="boolean">
+  Whether the selection is at the start of the first code line in a code block.
+</APIReturns>
+</API>
+
+### `indentCodeLine`
+
+Indents the code line if the selection is expanded or there are no non-whitespace characters at left of the cursor. The indentation is 2 spaces by default.
+
+<API name="indentCodeLine">
+<APIOptions type="IndentCodeLineOptions">
+  <APIItem name="codeLine" type="ElementEntry">
+    The code line to be indented.
+  </APIItem>
+  <APIItem name="indentDepth" type="number">
+    The size of indentation for the code line.
+    - **Default:** `2`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertCodeBlock`
+
+Inserts a code block by setting the node to code line and wrapping it with a code block. If the cursor is not at the block start, it inserts a break before the code block.
+
+<API name="insertCodeBlock">
+<APIParameters>
+  <APIItem name="insertNodesOptions" type="Omit<InsertNodesOptions, 'match'>" optional>
+    Options for inserting nodes.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `insertCodeLine`
+
+Inserts a code line starting with the specified indentation depth.
+
+<API name="insertCodeLine">
+<APIParameters>
+  <APIItem name="indentDepth" type="number" optional>
+    The depth of indentation for the code line.
+    - **Default:** `0`
+  </APIItem>
+</APIParameters>
+</API>
+
+### `outdentCodeLine`
+
+Outdents a code line, removing two whitespace characters if present.
+
+<API name="outdentCodeLine">
+<APIOptions type="OutdentCodeLineOptions">
+  <APIItem name="codeLine" type="ElementEntry">
+    The code line to be outdented.
+  </APIItem>
+  <APIItem name="codeBlock" type="ElementEntry">
+    The code block containing the code line to be outdented.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `toggleCodeBlock`
+
+Toggles the code block in the editor.
+
+### `unwrapCodeBlock`
+
+Unwraps the code block in the editor.
+

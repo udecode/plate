@@ -1,0 +1,100 @@
+---
+title: Location
+description: API reference for locations in Slate.
+---
+
+A Location is either a Path, Point or Range. Methods will often accept a Location instead of requiring only a Path, Point or Range.
+
+```typescript
+type TLocation = Path | Point | TRange
+```
+
+- [Path](/docs/api/slate/path)
+- [PathRef](/docs/api/slate/location-ref#pathref)
+- [Point](/docs/api/slate/point)
+- [PointRef](/docs/api/slate/location-ref#pointref)
+- [Range](/docs/api/slate/range)
+- [RangeRef](/docs/api/slate/location-ref#rangeref)
+
+## `LocationApi`
+
+### `isAt`
+
+Check if a value implements the `At` interface.
+
+<API name="isAt">
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the value is either a location or a node.
+</APIReturns>
+</API>
+
+### `isLocation`
+
+Check if a value implements the `TLocation` interface.
+
+<API name="isLocation">
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the value is a `Path`, `Point`, or `TRange`.
+</APIReturns>
+</API>
+
+### `isSpan`
+
+Check if a value implements the `Span` interface.
+
+<API name="isSpan">
+<APIParameters>
+  <APIItem name="value" type="any">
+    The value to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  `true` if the value is a valid `Span`.
+</APIReturns>
+</API>
+
+## Types
+
+### `TLocation`
+
+`Location` is a type alias for `TLocation`.
+
+<API name="TLocation">
+<APIAttributes>
+  <APIItem name="Path" type="Path">
+    An array of numbers representing a node's position.
+  </APIItem>
+  <APIItem name="Point" type="Point">
+    An object with `path` and `offset`.
+  </APIItem>
+  <APIItem name="TRange" type="TRange">
+    An object with `anchor` and `focus`.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `Span`
+
+<API name="Span">
+<APIAttributes>
+  <APIItem name="[0]" type="Path">
+    The start path.
+  </APIItem>
+  <APIItem name="[1]" type="Path">
+    The end path.
+  </APIItem>
+</APIAttributes>
+</API>

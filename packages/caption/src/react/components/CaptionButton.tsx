@@ -1,8 +1,4 @@
-import {
-  findNodePath,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common/react';
+import { useEditorRef, useElement } from '@udecode/plate/react';
 
 import { BaseCaptionPlugin } from '../../lib';
 
@@ -20,7 +16,7 @@ export const useCaptionButton = ({
   return {
     props: {
       onClick: () => {
-        const path = findNodePath(editor, element);
+        const path = editor.api.findPath(element);
         editor.setOption(BaseCaptionPlugin, 'visibleId', element.id as string);
         setTimeout(() => {
           path && editor.setOption(BaseCaptionPlugin, 'focusEndPath', path);

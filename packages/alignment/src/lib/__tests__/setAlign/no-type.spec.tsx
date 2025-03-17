@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createSlateEditor } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { BaseAlignPlugin } from '../../BaseAlignPlugin';
@@ -28,12 +28,13 @@ describe('when type (h1) is not in types', () => {
 
   it('should not align', () => {
     const editor = createSlateEditor({
-      editor: input,
       plugins: [BaseAlignPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     setAlign(editor, { value: 'center' });
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.children).toEqual(output.children);
   });
 });

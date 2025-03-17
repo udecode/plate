@@ -3,4 +3,6 @@
  */
 
 export * from './useElement';
+export * from './useElementSelector';
 export * from './useElementStore';
+export * from './usePath';

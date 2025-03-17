@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { ListPlugin } from '../react';
 
@@ -35,11 +35,12 @@ describe('p (empty) + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -68,11 +69,12 @@ describe('p /w text + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -107,11 +109,12 @@ describe('p /w text + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -162,11 +165,12 @@ describe('p /w text + list when selection not in list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -218,11 +222,12 @@ describe('list + list when selection is at the end of the first list', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -266,11 +271,12 @@ describe('list where second item has multiple children', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -326,11 +332,12 @@ describe('list + sublist where second item has multiple children', () => {
     ) as any as SlateEditor;
 
     const editor = createPlateEditor({
-      editor: input,
       plugins: [ListPlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
-    editor.deleteForward('character');
+    editor.tf.deleteForward();
 
     expect(editor.children).toEqual(expected.children);
   });

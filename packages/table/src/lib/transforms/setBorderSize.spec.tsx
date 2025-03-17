@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate';
 
-import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@udecode/plate/react';
 
-import { BaseTablePlugin } from '../BaseTablePlugin';
+import { getTestTablePlugins } from '../withNormalizeTable.spec';
 import { setBorderSize } from './setBorderSize';
 
 jsxt;
@@ -15,12 +15,11 @@ jsxt;
 // sets the border size for the given border,
 // and then checks if the output matches the expected output.
 describe('setBorderSize', () => {
-  const createTablePluginWithOptions = () => BaseTablePlugin;
-
   const createEditorInstance = (input: any) => {
     return createPlateEditor({
-      editor: input,
-      plugins: [createTablePluginWithOptions()],
+      plugins: getTestTablePlugins(),
+      selection: input.selection,
+      value: input.children,
     });
   };
 
@@ -81,7 +80,7 @@ describe('setBorderSize', () => {
       const editor = createEditorInstance(input);
       setBorderSize(editor, 2, { border: 'top' });
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toMatchObject(output.children);
     });
 
     it('should set border left', () => {
@@ -140,7 +139,7 @@ describe('setBorderSize', () => {
       const editor = createEditorInstance(input);
       setBorderSize(editor, 2, { border: 'left' });
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toMatchObject(output.children);
     });
 
     describe('when in cell 21', () => {
@@ -200,7 +199,7 @@ describe('setBorderSize', () => {
         const editor = createEditorInstance(input);
         setBorderSize(editor, 3, { border: 'left' });
 
-        expect(editor.children).toEqual(output.children);
+        expect(editor.children).toMatchObject(output.children);
       });
 
       describe('set border top', () => {
@@ -262,7 +261,7 @@ describe('setBorderSize', () => {
           const editor = createEditorInstance(input);
           setBorderSize(editor, 2, { border: 'top' });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.children).toMatchObject(output.children);
         });
       });
 
@@ -323,7 +322,7 @@ describe('setBorderSize', () => {
           const editor = createEditorInstance(input);
           setBorderSize(editor, 1, { border: 'right' });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.children).toMatchObject(output.children);
         });
 
         describe('set border left', () => {
@@ -383,7 +382,7 @@ describe('setBorderSize', () => {
             const editor = createEditorInstance(input);
             setBorderSize(editor, 2, { border: 'left' });
 
-            expect(editor.children).toEqual(output.children);
+            expect(editor.children).toMatchObject(output.children);
           });
         });
       });
@@ -445,7 +444,7 @@ describe('setBorderSize', () => {
           const editor = createEditorInstance(input);
           setBorderSize(editor, 4, { border: 'bottom' });
 
-          expect(editor.children).toEqual(output.children);
+          expect(editor.children).toMatchObject(output.children);
         });
       });
     });

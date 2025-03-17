@@ -1,6 +1,6 @@
 'use client';
 
-import { createPlatePlugin } from '@udecode/plate-common/react';
+import { createPlatePlugin } from '@udecode/plate/react';
 
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FixedToolbarButtons } from '@/registry/default/plate-ui/fixed-toolbar-buttons';

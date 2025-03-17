@@ -6,15 +6,14 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import {
-  ParagraphPlugin,
-  focusEditor,
-  useEditorRef,
-  useSelectionFragmentProp,
-} from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
+import {
+  ParagraphPlugin,
+  useEditorRef,
+  useSelectionFragmentProp,
+} from '@udecode/plate/react';
 import {
   ChevronRightIcon,
   Columns3Icon,
@@ -32,6 +31,7 @@ import {
 import {
   getBlockType,
   setBlockType,
+  STRUCTURAL_TYPES,
 } from '@/components/editor/transforms';
 
 import {
@@ -118,6 +118,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
 
   const value = useSelectionFragmentProp({
     defaultValue: ParagraphPlugin.key,
+    structuralTypes: STRUCTURAL_TYPES,
     getProp: (node) => getBlockType(node as any),
   });
   const selectedItem = React.useMemo(
@@ -131,20 +132,28 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={openState.open} tooltip="Turn into" isDropdown>
+        <ToolbarButton
+          className="min-w-[125px]"
+          pressed={openState.open}
+          tooltip="Turn into"
+          isDropdown
+        >
           {selectedItem.label}
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         className="ignore-click-outside/toolbar min-w-0"
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+          editor.tf.focus();
+        }}
         align="start"
       >
         <DropdownMenuRadioGroup
           value={value}
           onValueChange={(type) => {
             setBlockType(editor, type);
-            focusEditor(editor);
           }}
           label="Turn into"
         >

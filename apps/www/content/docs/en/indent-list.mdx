@@ -1,0 +1,266 @@
+---
+title: Indent List
+docs:
+  - route: /docs/components/indent-list-toolbar-button
+    title: Indent List Toolbar Button
+---
+
+<ComponentPreview name="indent-list-demo" />
+
+<Callout>
+
+Plate offers two approaches for implementing lists:
+
+1. **This Indent List plugin** - Flexible indentation-based lists:
+   - More like Word/Google Docs behavior
+   - Any block can be indented to create list-like structures
+   - Used in the [AI editor](/editors#editor-ai)
+   - Better for free-form content organization
+
+2. The [**List plugin**](/docs/list) - Traditional HTML-spec lists with strict nesting rules:
+   - Follows standard HTML list structure (`ul`/`ol` > `li`)
+   - Maintains consistent list hierarchy
+   - Best for content that may be exported to HTML/markdown
+   - Highest complexity
+
+Choose based on your needs:
+- Use the **Indent List plugin** when you want more flexible indentation behavior
+- Use the **List plugin** when you need standard HTML list compatibility
+
+</Callout>
+
+<PackageInfo>
+
+## Features
+
+- **Flexible Block Indentation**:
+  - Set list indentation for any block type (paragraphs, headings, etc.)
+  - Transform any block into a list item through indentation
+  - More intuitive Word/Google Docs-like behavior
+
+- **Simplified Structure** - Differs from the [List plugin](/docs/list):
+  - Flat DOM structure where each indented block is independent
+  - Each indented list block consists of a single `ul` or `ol` with one item
+  - No strict parent-child relationships enforced
+  - Better for free-form content organization
+
+- **List Types**:
+  - Bulleted lists (unordered)
+  - Numbered lists (ordered)
+
+- **Shortcuts**:
+  - Combined with the autoformat plugin, use markdown shortcuts (`-`, `*`, `1.`) to create lists
+  - Tab/Shift+Tab for indentation control
+
+For more information about the underlying indentation system, see the [Indent doc](/docs/indent).
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-indent-list @udecode/plate-indent
+```
+
+## Usage
+
+```tsx
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
+
+const plugins = [
+  // ...otherPlugins,
+  HeadingPlugin,
+  IndentPlugin.configure({
+    inject: {
+      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+    }
+  }),
+  IndentListPlugin.configure({
+    inject: {
+      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+    }
+  }),
+];
+```
+
+## Plugins
+
+### `IndentListPlugin`
+
+<API name="IndentListPlugin">
+<APIOptions>
+  <APIItem name="getSiblingIndentListOptions" type="GetSiblingIndentListOptions<TElement>" optional>
+    Function to determine indent list options for sibling elements.
+  </APIItem>
+  <APIItem name="getListStyleType" type="(element: HTMLElement) => ListStyleType" optional>
+    Function mapping HTML elements to list style types.
+  </APIItem>
+  <APIItem name="renderIndentListBelowNodes" type="(editor: PlateEditor) => React.ReactNode" optional>
+    Function to render components below indent list nodes.
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `getNextIndentList`
+
+<API name="getNextIndentList">
+<APIParameters>
+  <APIItem name="entry" type="ElementEntryOf">
+    Entry of the current element.
+  </APIItem>
+  <APIItem name="options" type="Partial<GetSiblingIndentListOptions>" optional>
+    Options for getting next indent list.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry | undefined">
+  Entry of the next sibling with an indent list, or `undefined` if not found.
+</APIReturns>
+</API>
+
+### `getPreviousIndentList`
+
+Gets the previous sibling entry with an indent list.
+
+<API name="getPreviousIndentList">
+<APIParameters>
+  <APIItem name="entry" type="ElementEntryOf">
+    Entry of the current element.
+  </APIItem>
+  <APIItem name="options" type="Partial<GetSiblingIndentListOptions>" optional>
+    Options for getting previous indent list.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry | undefined">
+  Entry of the previous sibling with an indent list, or `undefined` if not found.
+</APIReturns>
+</API>
+
+### `indentList`
+
+Increases the indentation of the selected blocks.
+
+<API name="indentList">
+<APIOptions type="IndentListOptions">
+  <APIItem name="listStyleType" type="ListStyleType | string" optional>
+    List style type to use.
+    - **Default:** `ListStyleType.Disc`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `outdentList`
+
+Decreases the indentation of the selected blocks.
+
+<API name="outdentList">
+<APIOptions type="IndentListOptions">
+  <APIItem name="listStyleType" type="ListStyleType | string" optional>
+    List style type to use.
+    - **Default:** `ListStyleType.Disc`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `someIndentList`
+
+Checks if some of the selected blocks have a specific list style type.
+
+<API name="someIndentList">
+<APIParameters>
+  <APIItem name="type" type="string | string[]">
+    List style type to check.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `toggleIndentList`
+
+Toggles the indent list.
+
+<API name="toggleIndentList">
+<APIOptions type="IndentListOptions">
+  <APIItem name="listStyleType" type="ListStyleType | string" optional>
+    List style type to use.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Types
+
+### `GetSiblingIndentListOptions`
+
+Used to provide options for getting the sibling indent list in a block of text.
+
+<API name="GetSiblingIndentListOptions">
+<APIOptions>
+  <APIItem name="getPreviousEntry" type="function">
+    This function is used to get the previous sibling entry from a given entry.
+  </APIItem>
+  <APIItem name="getNextEntry" type="function">
+    This function is used to get the next sibling entry from a given entry.
+  </APIItem>
+  <APIItem name="query" type="function">
+    This function is used to validate a sibling node during the lookup process.
+    If it returns false, the next sibling is checked.
+  </APIItem>
+  <APIItem name="eqIndent" type="boolean">
+    Indicates whether to break the lookup when the sibling node has an indent
+    level equal to the current node. If true, the lookup stops when a sibling
+    node with the same indent level is found.
+  </APIItem>
+  <APIItem name="breakQuery" type="(node: TNode) => boolean | undefined">
+    A function that takes a `TNode` and returns a boolean value or undefined.
+    This function is used to specify a condition under which the lookup process
+    should be stopped.
+  </APIItem>
+  <APIItem name="breakOnLowerIndent" type="boolean">
+    Indicates whether to break the lookup when a sibling node with a lower
+    indent level is found. If true, the lookup stops when a sibling node with a
+    lower indent level is found.
+  </APIItem>
+  <APIItem name="breakOnEqIndentNeqListStyleType" type="boolean">
+    Indicates whether to break the lookup when a sibling node with the same
+    indent level but a different list style type is found. If true, the lookup
+    stops when such a sibling node is found.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Hooks
+
+### `useIndentListToolbarButton`
+
+A behavior hook for the indent list toolbar button.
+
+<API name="useIndentListToolbarButton">
+<APIState>
+  <APIItem name="nodeType" type="string">
+    The list style type.
+  </APIItem>
+  <APIItem name="pressed" type="boolean">
+    Whether the button is pressed.
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    Props for the toolbar button.
+     <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        Whether the button is pressed.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        Callback to handle the click event. Toggles the indent list of the specified node type and focuses the editor.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>

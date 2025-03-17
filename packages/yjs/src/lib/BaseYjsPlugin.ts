@@ -6,41 +6,31 @@ import type {
 import type { WithCursorsOptions } from '@slate-yjs/core';
 
 import { HocuspocusProvider } from '@hocuspocus/provider';
-import {
-  type PluginConfig,
-  type UnknownObject,
-  createTSlatePlugin,
-} from '@udecode/plate-common';
+import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
 
 import type { WithYjsOptions } from './withTYjs';
 
 import { withPlateYjs } from './withPlateYjs';
 
-export type YjsPluginOptions<
-  TCursorData extends UnknownObject = UnknownObject,
-> = {
-  isConnected: boolean;
-
-  isSynced: boolean;
-
-  /** WithCursors options */
-  cursorOptions?: WithCursorsOptions<TCursorData>;
-
-  disableCursors?: boolean;
-
-  /**
-   * HocuspocusProvider configuration
-   *
-   * @required
-   */
-  hocuspocusProviderOptions?: HocuspocusProviderConfiguration;
-  provider?: HocuspocusProvider;
-
-  /** WithYjs options */
-  yjsOptions?: WithYjsOptions;
-};
-
-export type YjsConfig = PluginConfig<'yjs', YjsPluginOptions>;
+export type YjsConfig = PluginConfig<
+  'yjs',
+  {
+    isConnected: boolean;
+    isSynced: boolean;
+    provider: HocuspocusProvider;
+    /** WithCursors options */
+    cursorOptions?: WithCursorsOptions;
+    disableCursors?: boolean;
+    /**
+     * HocuspocusProvider configuration
+     *
+     * @required
+     */
+    hocuspocusProviderOptions?: HocuspocusProviderConfiguration;
+    /** WithYjs options */
+    yjsOptions?: WithYjsOptions;
+  }
+>;
 
 export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
   key: 'yjs',
@@ -54,7 +44,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
 
   if (provider) {
     provider.setConfiguration({
-      onAwarenessChange() {},
+      onAwarenessChange() { },
       onConnect() {
         setOption('isConnected', true);
         provider.onConnect();
@@ -85,7 +75,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
    */
   const defaultProvider = new HocuspocusProvider({
     ...hocuspocusProviderOptions,
-    onAwarenessChange() {},
+    onAwarenessChange() { },
     onConnect() {
       setOption('isConnected', true);
       hocuspocusProviderOptions.onConnect?.();

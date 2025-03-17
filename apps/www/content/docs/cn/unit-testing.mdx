@@ -1,0 +1,290 @@
+---
+title: 单元测试 Plate
+description: 学习如何对 Plate 编辑器及其插件进行单元测试。
+---
+
+本指南概述了使用 `@udecode/plate-test-utils` 对 Plate 插件和组件进行单元测试的最佳实践。
+
+## 安装
+
+```bash
+npm install @udecode/plate-test-utils
+```
+
+## 设置测试
+
+在测试文件的顶部添加 JSX 编译指示：
+
+```typescript
+/** @jsx jsx */
+
+import { jsx } from '@udecode/plate-test-utils';
+
+jsx; // 这样 ESLint 不会报错
+```
+
+这允许你使用 JSX 语法来创建编辑器值。
+
+## 创建测试用例
+
+### 编辑器状态表示
+
+使用 JSX 来表示编辑器状态：
+
+```typescript
+const input = (
+  <editor>
+    <hp>
+      Hello<cursor /> world
+    </hp>
+  </editor>
+) as any as PlateEditor;
+```
+
+节点元素如 `<hp />`、`<hul />`、`<hli />` 表示不同类型的节点。
+
+特殊元素如 `<cursor />`、`<anchor />` 和 `<focus />` 表示选择状态。
+
+### 测试转换
+
+1. 创建一个输入状态
+2. 定义预期的输出状态
+3. 使用 `createPlateEditor` 设置编辑器
+4. 直接应用转换
+5. 断言编辑器的新状态
+
+示例测试加粗格式：
+
+```typescript
+it('应该应用加粗格式', () => {
+  const input = (
+    <editor>
+      <hp>
+        Hello <anchor />
+        world
+        <focus />
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        Hello <htext bold>world</htext>
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const editor = createPlateEditor({
+    plugins: [BoldPlugin],
+    value: input.children,
+    selection: input.selection,
+  });
+
+  // 直接应用转换
+  editor.tf.toggleMark('bold');
+
+  expect(editor.children).toEqual(output.children);
+});
+```
+
+### 测试选择
+
+测试操作如何影响编辑器的选择：
+
+```typescript
+it('应该在退格时折叠选择', () => {
+  const input = (
+    <editor>
+      <hp>
+        He<anchor />llo wor<focus />ld
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        He<cursor />ld
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const editor = createPlateEditor({
+    value: input.children,
+    selection: input.selection,
+  });
+
+  editor.tf.deleteBackward();
+
+  expect(editor.children).toEqual(output.children);
+  expect(editor.selection).toEqual(output.selection);
+});
+```
+
+## 测试键盘事件
+
+当你需要直接测试键盘处理程序时：
+
+```typescript
+it('应该调用 onKeyDown 处理程序', () => {
+  const input = (
+    <editor>
+      <hp>
+        Hello <anchor />world<focus />
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  // 创建一个模拟处理程序以验证其被调用
+  const onKeyDownMock = jest.fn();
+
+  const editor = createPlateEditor({
+    value: input.children,
+    selection: input.selection,
+    plugins: [
+      {
+        key: 'test',
+        handlers: {
+          onKeyDown: onKeyDownMock,
+        },
+      },
+    ],
+  });
+
+  // 创建键盘事件
+  const event = new KeyboardEvent('keydown', {
+    key: 'Enter',
+  }) as any;
+
+  // 直接调用处理程序
+  editor.plugins.test.handlers.onKeyDown({
+    ...getEditorPlugin(editor, { key: 'test' }),
+    event,
+  });
+
+  // 验证处理程序被调用
+  expect(onKeyDownMock).toHaveBeenCalled();
+});
+```
+
+## 测试复杂场景
+
+对于像表格这样的复杂插件，通过直接应用转换来测试各种场景：
+
+```typescript
+describe('表格插件', () => {
+  it('应该插入一个表格', () => {
+    const input = (
+      <editor>
+        <hp>
+          Test<cursor />
+        </hp>
+      </editor>
+    ) as any as PlateEditor;
+
+    const output = (
+      <editor>
+        <hp>Test</hp>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <cursor />
+              </hp>
+            </htd>
+            <htd>
+              <hp></hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp></hp>
+            </htd>
+            <htd>
+              <hp></hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as PlateEditor;
+
+    const editor = createPlateEditor({
+      value: input.children,
+      selection: input.selection,
+      plugins: [TablePlugin],
+    });
+
+    // 直接调用转换
+    editor.tf.insertTable({ rows: 2, columns: 2 });
+
+    expect(editor.children).toEqual(output.children);
+    expect(editor.selection).toEqual(output.selection);
+  });
+});
+```
+
+## 测试带选项的插件
+
+测试不同插件选项如何影响行为：
+
+```typescript
+describe('当启用撤销时', () => {
+  it('应该在删除时撤销文本格式', () => {
+    const input = (
+      <fragment>
+        <hp>
+          1/<cursor />
+        </hp>
+      </fragment>
+    ) as any;
+
+    const output = (
+      <fragment>
+        <hp>
+          1/4<cursor />
+        </hp>
+      </fragment>
+    ) as any;
+
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({
+          options: {
+            enableUndoOnDelete: true,
+            rules: [
+              {
+                format: '¼',
+                match: '1/4',
+                mode: 'text',
+              },
+            ],
+          },
+        }),
+      ],
+      value: input,
+    });
+
+    // 触发自动格式化
+    editor.tf.insertText('4');
+
+    // 模拟退格键
+    const event = new KeyboardEvent('keydown', {
+      key: 'backspace',
+    }) as any;
+
+    // 调用处理程序
+    editor.plugins[AutoformatPlugin.key].handlers.onKeyDown({
+      ...getEditorPlugin(editor, AutoformatPlugin),
+      event,
+    });
+
+    // 当 enableUndoOnDelete 为 true 时，按下退格键应恢复原始文本
+    expect(input.children).toEqual(output.children);
+  });
+});
+```
+
+## 模拟与真实转换
+
+虽然模拟对于隔离特定行为非常有用，但 Plate 测试通常会在转换后评估实际的编辑器子节点和选择。这种方法确保插件在整个编辑器状态下正常工作。

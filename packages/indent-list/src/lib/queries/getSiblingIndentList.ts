@@ -1,12 +1,12 @@
 import {
+  type Editor,
   type ElementEntryOf,
   type ElementOf,
   type ElementOrTextOf,
-  type TEditor,
+  type NodeEntry,
   type TNode,
-  type TNodeEntry,
   isDefined,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 import {
@@ -16,18 +16,18 @@ import {
 
 export interface GetSiblingIndentListOptions<
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 > {
-  getNextEntry?: (
-    entry: TNodeEntry<ElementOrTextOf<E>>
-  ) => TNodeEntry<N> | undefined;
-  getPreviousEntry?: (
-    entry: TNodeEntry<ElementOrTextOf<E>>
-  ) => TNodeEntry<N> | undefined;
   breakOnEqIndentNeqListStyleType?: boolean;
   breakOnListRestart?: boolean;
   breakOnLowerIndent?: boolean;
   breakQuery?: (siblingNode: TNode, currentNode: TNode) => boolean | undefined;
+  getNextEntry?: (
+    entry: NodeEntry<ElementOrTextOf<E>>
+  ) => NodeEntry<N> | undefined;
+  getPreviousEntry?: (
+    entry: NodeEntry<ElementOrTextOf<E>>
+  ) => NodeEntry<N> | undefined;
   /** Query to break lookup */
   eqIndent?: boolean;
   /** Query to validate lookup. If false, check the next sibling. */
@@ -40,7 +40,7 @@ export interface GetSiblingIndentListOptions<
  */
 export const getSiblingIndentList = <
   N extends ElementOf<E>,
-  E extends TEditor = TEditor,
+  E extends Editor = Editor,
 >(
   editor: E,
   [node, path]: ElementEntryOf<E>,
@@ -54,14 +54,13 @@ export const getSiblingIndentList = <
     getPreviousEntry,
     query,
   }: GetSiblingIndentListOptions<N, E>
-): TNodeEntry<N> | undefined => {
+): NodeEntry<N> | undefined => {
   if (!getPreviousEntry && !getNextEntry) return;
 
   const getSiblingEntry = getNextEntry ?? getPreviousEntry!;
 
   let nextEntry = getSiblingEntry([node, path]);
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     if (!nextEntry) return;
 

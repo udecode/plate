@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 
+import { cn } from '@udecode/cn';
 import { useTheme } from 'next-themes';
 
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { type Theme, THEME_LIST } from '@/lib/themes';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
-import { cn } from '@/registry/default/lib/utils';
 import {
   Tooltip,
   TooltipContent,
@@ -81,10 +81,8 @@ export function ThemesSwitcher({
               <TooltipTrigger asChild>
                 <ToggleGroupItem
                   className={cn(
-                    'group flex size-10 shrink-0 items-center justify-center rounded-lg border-2 border-transparent p-0 hover:bg-transparent focus-visible:bg-transparent aria-checked:border-[--color-1]',
-                    mounted && isDarkTheme && mode !== 'dark'
-                      ? 'invert-[1]'
-                      : ''
+                    'group flex size-10 shrink-0 items-center justify-center rounded-lg border-2 border-transparent p-0 hover:bg-transparent focus-visible:bg-transparent aria-checked:border-(--color-1)',
+                    mounted && isDarkTheme && mode !== 'dark' ? 'invert-1' : ''
                   )}
                   style={
                     {
@@ -104,10 +102,10 @@ export function ThemesSwitcher({
                         isActive ? 'rotate-45 group-hover:rotate-0' : 'rotate-0'
                       )}
                     >
-                      <span className="flex size-6 bg-[--color-1]" />
-                      <span className="flex size-6 bg-[--color-2]" />
-                      <span className="flex size-6 bg-[--color-3]" />
-                      <span className="flex size-6 bg-[--color-4]" />
+                      <span className="flex size-6 bg-(--color-1)" />
+                      <span className="flex size-6 bg-(--color-2)" />
+                      <span className="flex size-6 bg-(--color-3)" />
+                      <span className="flex size-6 bg-(--color-4)" />
                       <span className="sr-only">{theme.name}</span>
                     </div>
                   </div>

@@ -1,13 +1,31 @@
-import { withTriggerCombobox } from '@udecode/plate-combobox';
+import type { Emoji, EmojiMartData } from '@emoji-mart/data';
+
 import {
+  type Descendant,
   type PluginConfig,
   createSlatePlugin,
   createTSlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate';
+import {
+  type TriggerComboboxPluginOptions,
+  withTriggerCombobox,
+} from '@udecode/plate-combobox';
 
-import type { EmojiPluginOptions } from './types';
+import { DEFAULT_EMOJI_LIBRARY } from './constants';
 
-export type EmojiInputConfig = PluginConfig<'emoji', EmojiPluginOptions>;
+export type EmojiInputConfig = PluginConfig<
+  'emoji',
+  {
+    /**
+     * The emoji data.
+     *
+     * @example
+     *   import emojiMartData from '@emoji-mart/data';
+     */
+    data?: EmojiMartData;
+    createEmojiNode?: (emoji: Emoji) => Descendant;
+  } & TriggerComboboxPluginOptions
+>;
 
 export const BaseEmojiInputPlugin = createSlatePlugin({
   key: 'emoji_input',
@@ -16,15 +34,15 @@ export const BaseEmojiInputPlugin = createSlatePlugin({
 
 export const BaseEmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
   key: 'emoji',
-  extendEditor: withTriggerCombobox,
   options: {
+    data: DEFAULT_EMOJI_LIBRARY,
+    trigger: ':',
+    triggerPreviousCharPattern: /^\s?$/,
     createComboboxInput: () => ({
       children: [{ text: '' }],
       type: BaseEmojiInputPlugin.key,
     }),
     createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
-    trigger: ':',
-    triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [BaseEmojiInputPlugin],
-});
+}).overrideEditor(withTriggerCombobox);

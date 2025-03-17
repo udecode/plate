@@ -1,3 +1,4 @@
+import type { TElement } from '@udecode/plate';
 import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 
 import type {
@@ -7,15 +8,18 @@ import type {
 } from '../types';
 
 export interface GetHoverDirectionOptions {
-  /** Hovering node id. */
-  id: string;
-
   dragItem: DragItemNode;
+
+  /** Hovering node. */
+  element: TElement;
 
   monitor: DropTargetMonitor;
 
   /** The node ref of the node being dragged. */
   nodeRef: any;
+
+  /** The orientation of the drag operation. */
+  orientation?: 'horizontal' | 'vertical';
 }
 
 /**
@@ -23,44 +27,53 @@ export interface GetHoverDirectionOptions {
  * relative to node B.
  */
 export const getHoverDirection = ({
-  id,
   dragItem,
+  element,
   monitor,
   nodeRef,
+  orientation = 'vertical',
 }: GetHoverDirectionOptions): DropDirection => {
   if (!nodeRef.current) return;
-
-  const dragId = (dragItem as ElementDragItemNode).id;
-
   // Don't replace items with themselves
-  if (dragId === id) return;
+  if (element === (dragItem as ElementDragItemNode).element) return;
 
   // Determine rectangle on screen
   const hoverBoundingRect = nodeRef.current?.getBoundingClientRect();
 
-  // Get vertical middle
-  const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+  if (!hoverBoundingRect) {
+    return;
+  }
 
   // Determine mouse position
   const clientOffset = monitor.getClientOffset();
 
-  if (!clientOffset) return;
-
-  // Get pixels to the top
-  const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
-
-  // Only perform the move when the mouse has crossed half of the items height
-  // When dragging downwards, only move when the cursor is below 50%
-  // When dragging upwards, only move when the cursor is above 50%
-
-  // Dragging downwards
-  // if (dragId < hoverId && hoverClientY < hoverMiddleY) {
-  if (hoverClientY < hoverMiddleY) {
-    return 'top';
+  if (!clientOffset) {
+    return;
   }
-  // Dragging upwards
-  // if (dragId > hoverId && hoverClientY > hoverMiddleY) {
-  if (hoverClientY >= hoverMiddleY) {
-    return 'bottom';
+  if (orientation === 'vertical') {
+    // Get vertical middle
+    const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+
+    // Get pixels to the top
+    const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
+
+    // Only perform the move when the mouse has crossed half of the items height
+    // When dragging downwards, only move when the cursor is below 50%
+    // When dragging upwards, only move when the cursor is above 50%
+
+    // Dragging downwards
+    if (hoverClientY < hoverMiddleY) {
+      return 'top';
+    }
+    // Dragging upwards
+    if (hoverClientY >= hoverMiddleY) {
+      return 'bottom';
+    }
+  } else {
+    // Horizontal orientation for columns
+    const hoverMiddleX = (hoverBoundingRect.right - hoverBoundingRect.left) / 2;
+    const hoverClientX = (clientOffset as XYCoord).x - hoverBoundingRect.left;
+
+    return hoverClientX < hoverMiddleX ? 'left' : 'right';
   }
 };

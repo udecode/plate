@@ -1,18 +1,18 @@
 import React from 'react';
 
 import {
-  focusEditor,
-  useComposedRef,
-  useEditorPlugin,
-  useEditorReadOnly,
-  useHotkeys,
-  useOnClickOutside,
-} from '@udecode/plate-common/react';
-import {
   type UseVirtualFloatingOptions,
   getDOMSelectionBoundingClientRect,
 } from '@udecode/plate-floating';
-import { useFocused } from 'slate-react';
+import {
+  useComposedRef,
+  useEditorPlugin,
+  useEditorReadOnly,
+  useFocused,
+  useHotkeys,
+  useOnClickOutside,
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
@@ -26,13 +26,13 @@ export type LinkFloatingToolbarState = {
 export const useFloatingLinkInsertState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const { editor, getOptions, useOption } = useEditorPlugin(LinkPlugin);
+  const { editor, getOptions } = useEditorPlugin(LinkPlugin);
 
   const { triggerFloatingLinkHotkeys } = getOptions();
   const readOnly = useEditorReadOnly();
   const focused = useFocused();
-  const mode = useOption('mode');
-  const isOpen = useOption('isOpen', editor.id);
+  const mode = usePluginOption(LinkPlugin, 'mode');
+  const isOpen = usePluginOption(LinkPlugin, 'isOpen', editor.id);
 
   const floating = useVirtualFloatingLink({
     editorId: editor.id,
@@ -72,7 +72,7 @@ export const useFloatingLinkInsert = ({
     () => {
       if (getOptions().mode === 'insert') {
         api.floatingLink.hide();
-        focusEditor(editor, editor.selection!);
+        editor.tf.focus({ at: editor.selection! });
       }
     },
     {
@@ -118,7 +118,7 @@ export const useFloatingLinkInsert = ({
   );
 
   return {
-    hidden: readOnly,
+    hidden: readOnly || !isOpen,
     props: {
       style: {
         ...floating.style,

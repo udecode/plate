@@ -4,7 +4,7 @@ const { pathsToModuleNameMapper } = require('ts-jest');
 const packageJson = require(`${process.cwd()}/package.json`);
 const packageName = packageJson.name ?? 'plate';
 const { compilerOptions: baseTsConfig } = require(
-  `${appRoot}/config/tsconfig.test.json`
+  `${appRoot}/tooling/config/tsconfig.test.json`
 );
 
 // Take the paths from tsconfig automatically from base tsconfig.json
@@ -17,7 +17,7 @@ const getTsConfigBasePaths = () => {
     : {};
 };
 
-const aliases = require(`${appRoot}/config/aliases`);
+const aliases = require(`${appRoot}/tooling/config/aliases.cjs`);
 
 const modules = {};
 
@@ -46,12 +46,13 @@ module.exports = {
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
   moduleNameMapper: {
-    '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.cjs',
+    '\\.(css|less|sass|scss)$': '<rootDir>/tooling/config/styleMock.cjs',
     ...getTsConfigBasePaths(),
     ...modules,
   },
+  modulePathIgnorePatterns: ['<rootDir>/packages/common/dist/'],
   preset: 'ts-jest',
-  setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
+  setupFilesAfterEnv: ['<rootDir>/tooling/config/setupTests.ts'],
   testEnvironment: 'jsdom',
   testPathIgnorePatterns: ['/playwright/', '/packages/cli/'],
   testRegex: '(test|spec).tsx?$',
@@ -60,7 +61,7 @@ module.exports = {
   },
   transformIgnorePatterns: [
     '/node_modules/(?!(' +
-      'react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|react-tweet|unified' +
+      'cheerio|react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|react-tweet|unified' +
       '|remark-.*' +
       '|mdast-.*' +
       '|micromark.*' +

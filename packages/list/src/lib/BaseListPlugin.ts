@@ -1,12 +1,11 @@
 import {
   type OmitFirst,
   type PluginConfig,
-  HtmlPlugin,
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
-  someNode,
-} from '@udecode/plate-common';
+  HtmlPlugin,
+} from '@udecode/plate';
 
 import {
   toggleBulletedList,
@@ -14,15 +13,13 @@ import {
   toggleNumberedList,
 } from './transforms';
 
-export type ListPluginOptions = {
-  enableResetOnShiftTab?: boolean;
-  /** Valid children types for list items, in addition to p and ul types. */
-  validLiChildrenTypes?: string[];
-};
-
 export type ListConfig = PluginConfig<
   'list',
-  ListPluginOptions,
+  {
+    enableResetOnShiftTab?: boolean;
+    /** Valid children types for list items, in addition to p and ul types. */
+    validLiChildrenTypes?: string[];
+  },
   {},
   {
     toggle: {
@@ -57,21 +54,20 @@ export const BaseNumberedListPlugin = createSlatePlugin({
 
 export const BaseListItemPlugin = createSlatePlugin({
   key: 'li',
-  node: { isElement: true },
-  parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
-}).extend(({ editor, type }) => ({
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
         parser: {
-          preInsert: () => {
-            return someNode(editor, { match: { type } });
+          preInsert: ({ editor, type }) => {
+            return editor.api.some({ match: { type } });
           },
         },
       },
     },
   },
-}));
+  node: { isElement: true },
+  parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
+});
 
 export const BaseListItemContentPlugin = createSlatePlugin({
   key: 'lic',

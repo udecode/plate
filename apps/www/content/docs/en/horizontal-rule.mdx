@@ -1,0 +1,65 @@
+---
+title: Horizontal Rule
+docs:
+  - route: /docs/components/hr-element
+    title: Hr Element
+---
+
+<ComponentPreview name="horizontal-rule-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Insert horizontal lines to separate content or indicate topic shifts
+- Type three dashes (`---`) at a new line start to transform into a horizontal rule
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-horizontal-rule
+```
+
+## Usage
+
+```tsx
+import { insertNodes, setNodes } from '@udecode/plate';
+import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { SelectOnBackspacePlugin } from '@udecode/plate-select/react';
+
+const plugins = [
+  // ...otherPlugins,
+  HorizontalRulePlugin,
+  SelectOnBackspacePlugin.configure({
+    options: { query: { allow: [HorizontalRulePlugin.key] } },
+  }),
+  AutoformatPlugin.configure({
+    options: {
+      rules: [
+        {
+          mode: 'block',
+          type: HorizontalRulePlugin.key,
+          match: ['---', '—-', '___ '],
+          format: (editor) => {
+            setNodes(editor, { type: HorizontalRulePlugin.key });
+            insertNodes(editor, {
+              type: ParagraphPlugin.key,
+              children: [{ text: '' }],
+            });
+          },
+        },
+      ],
+    },
+  }),
+];
+```
+
+## Plugins
+
+### `HorizontalRulePlugin`
+
+Plugin for inserting horizontal rules to separate content.

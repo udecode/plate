@@ -6,7 +6,9 @@ import type { NpmCommands } from '@/types/unist';
 
 import { cn } from '@udecode/cn';
 
-import { CopyButton, CopyNpmCommandButton } from './copy-button';
+import { CodeBlockCommand } from '@/components/code-block-command';
+
+import { CopyButton } from './copy-button';
 import { StyleWrapper } from './style-wrapper';
 
 export const H1 = ({
@@ -15,7 +17,7 @@ export const H1 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h1
     className={cn(
-      'mt-2 scroll-m-20 font-heading text-4xl font-bold',
+      'group mt-2 scroll-m-20 font-heading text-4xl font-bold',
       className
     )}
     {...props}
@@ -28,7 +30,7 @@ export const H2 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h2
     className={cn(
-      'mt-12 scroll-m-20 border-b pb-2 font-heading text-2xl font-semibold tracking-tight first:mt-0',
+      'group mt-12 scroll-m-20 border-b pb-2 font-heading text-2xl font-semibold tracking-tight first:mt-0',
       className
     )}
     {...props}
@@ -38,15 +40,17 @@ export const H2 = ({
 export const H3 = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h3
-    className={cn(
-      'mt-8 scroll-m-20 font-heading text-xl font-semibold tracking-tight',
-      className
-    )}
-    {...props}
-  />
-);
+}: React.HTMLAttributes<HTMLHeadingElement>) => {
+  return (
+    <h3
+      className={cn(
+        'group mt-8 scroll-m-20 font-heading text-xl font-semibold tracking-tight',
+        className
+      )}
+      {...props}
+    />
+  );
+};
 
 export const H4 = ({
   className,
@@ -54,7 +58,7 @@ export const H4 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h4
     className={cn(
-      'mt-8 scroll-m-20 font-heading text-lg font-semibold tracking-tight',
+      'group mt-8 scroll-m-20 font-heading text-lg font-semibold tracking-tight',
       className
     )}
     {...props}
@@ -67,7 +71,7 @@ export const H5 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h5
     className={cn(
-      'mt-8 scroll-m-20 text-lg font-semibold tracking-tight',
+      'group mt-8 scroll-m-20 text-lg font-semibold tracking-tight',
       className
     )}
     {...props}
@@ -80,7 +84,7 @@ export const H6 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h6
     className={cn(
-      'mt-8 scroll-m-20 text-base font-semibold tracking-tight',
+      'group mt-8 scroll-m-20 text-base font-semibold tracking-tight',
       className
     )}
     {...props}
@@ -92,7 +96,7 @@ export const P = ({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) => (
   <p
-    className={cn('leading-7 [&:not(:first-child)]:mt-6', className)}
+    className={cn('leading-7 not-first:mt-6 [&_code]:text-sm', className)}
     {...props}
   />
 );
@@ -102,10 +106,7 @@ export const UL = ({
   ...props
 }: React.HTMLAttributes<HTMLUListElement>) => (
   <ul
-    className={cn(
-      'group my-4 ml-6 list-disc group-data-[list]:my-2',
-      className
-    )}
+    className={cn('group my-4 ml-6 list-disc group-data-list:my-2', className)}
     data-list
     {...props}
   />
@@ -117,7 +118,7 @@ export const OL = ({
 }: React.HTMLAttributes<HTMLOListElement>) => (
   <ol
     className={cn(
-      'group my-4 ml-6 list-decimal group-data-[list]:my-2',
+      'group my-4 ml-6 list-decimal group-data-list:my-2',
       className
     )}
     data-list
@@ -129,7 +130,7 @@ export const LI = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLElement>) => (
-  <li className={cn('mb-0 mt-2', className)} {...props} />
+  <li className={cn('mt-2 mb-0', className)} {...props} />
 );
 
 export const Blockquote = ({
@@ -147,7 +148,6 @@ export const Image = ({
   className,
   ...props
 }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-  // eslint-disable-next-line @next/next/no-img-element
   <img className={cn('rounded-md', className)} alt={alt} {...props} />
 );
 
@@ -223,37 +223,36 @@ export const Pre = ({
   __withMeta__?: boolean;
 } & NpmCommands &
   React.HTMLAttributes<HTMLPreElement>) => {
+  const isNpmCommand =
+    __npmCommand__ && __yarnCommand__ && __pnpmCommand__ && __bunCommand__;
+  if (isNpmCommand) {
+    return (
+      <CodeBlockCommand
+        __bunCommand__={__bunCommand__}
+        __npmCommand__={__npmCommand__}
+        __pnpmCommand__={__pnpmCommand__}
+        __yarnCommand__={__yarnCommand__}
+      />
+    );
+  }
+
   return (
     <StyleWrapper styleName={__style__}>
       <pre
         className={cn(
-          'mb-4 mt-6 max-h-[650px] overflow-x-auto rounded-lg border bg-zinc-950 py-4 dark:bg-zinc-900',
+          'mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 dark:bg-zinc-900',
           className
         )}
         {...props}
       />
-      {__rawString__ && !__npmCommand__ && (
+      {__rawString__ && (
         <CopyButton
-          className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
+          className={cn('absolute top-4 right-4', __withMeta__ && 'top-16')}
           value={__rawString__}
           event={__event__}
           src={__src__}
         />
       )}
-      {__npmCommand__ &&
-        __yarnCommand__ &&
-        __pnpmCommand__ &&
-        __bunCommand__ && (
-          <CopyNpmCommandButton
-            className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
-            commands={{
-              __bunCommand__,
-              __npmCommand__,
-              __pnpmCommand__,
-              __yarnCommand__,
-            }}
-          />
-        )}
     </StyleWrapper>
   );
 };

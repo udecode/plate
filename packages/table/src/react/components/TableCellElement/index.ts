@@ -3,9 +3,10 @@
  */
 
 export * from './getOnSelectTableBorderFactory';
-export * from './getTableCellBorders';
 export * from './roundCellSizeToStep';
 export * from './useIsCellSelected';
 export * from './useTableBordersDropdownMenuContentState';
+export * from './useTableCellBorders';
+export * from './useTableCellElement';
 export * from './useTableCellElementResizable';
-export * from './useTableCellElementState';
+export * from './useTableCellSize';

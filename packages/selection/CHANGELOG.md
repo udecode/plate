@@ -1,5 +1,89 @@
 # @udecode/plate-selection
 
+## 46.0.4
+
+### Patch Changes
+
+- [#4132](https://github.com/udecode/plate/pull/4132) by [@zbeyens](https://github.com/zbeyens) – Fix multi-block deletion, cmd+a while selecting, arrow up/down while selecting all
+
+## 45.1.0
+
+### Minor Changes
+
+- [#4118](https://github.com/udecode/plate/pull/4118) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix block selection when pasting blocks
+  - Block selection > Backspace now selects the previous block
+  - Block selection > Delete now selects the next block
+
+## 45.0.6
+
+### Patch Changes
+
+- [#4107](https://github.com/udecode/plate/pull/4107) by [@12joan](https://github.com/12joan) – Expect `NodeIn<Value>['id']` to have type `unknown` since the Node ID plugin may or may not be enabled.
+
+## 44.0.0
+
+## 43.0.0
+
+## 42.2.4
+
+### Patch Changes
+
+- [#4012](https://github.com/udecode/plate/pull/4012) by [@zbeyens](https://github.com/zbeyens) – Fix overrideEditor insertText missing options
+
+## 42.2.3
+
+### Patch Changes
+
+- [#4010](https://github.com/udecode/plate/pull/4010) by [@zbeyens](https://github.com/zbeyens) –
+  - Block selection area: prevent selecting selectable descendants
+  - `editor.api.blockSelection`:
+    - Add `add`, `clear`, `delete`, `deselect`, `has`, `set`
+    - Deprecate `addSelectedRow`, use `add` instead
+    - Deprecate `unselect`, use `deselect` instead
+    - Deprecate `resetSelectedIds`, use `clear` instead
+    - `selectedAll` -> `selectAll`
+  - Deprecate `data-plate-prevent-unselect`, use `data-plate-prevent-deselect` instead
+
+## 42.2.0
+
+### Minor Changes
+
+- [#3989](https://github.com/udecode/plate/pull/3989) by [@zbeyens](https://github.com/zbeyens) – Feat: api.blockSelection.selectBlocks
+
+## 42.0.3
+
+### Patch Changes
+
+- [#3952](https://github.com/udecode/plate/pull/3952) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix: after deleting all blocks using block selection, focus the empty editor.
+  - Feature: shift+up/down block selection to expand/shrink selection. Supports nested blocks.
+  - Feature: up/down support nested blocks
+
+## 42.0.0
+
+### Major Changes
+
+- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – Remove first parameter of editor.api.blockSelection.duplicate
+
+## 41.0.8
+
+### Patch Changes
+
+- [#3912](https://github.com/udecode/plate/pull/3912) by [@felixfeng33](https://github.com/felixfeng33) – Fix `selectedIds` has `undifinded`
+
+## 41.0.6
+
+### Patch Changes
+
+- [#3905](https://github.com/udecode/plate/pull/3905) by [@felixfeng33](https://github.com/felixfeng33) – Fix the BlockSelection.removeNodes issue that incorrectly removes all nodes.
+
+## 41.0.0
+
+### Patch Changes
+
+- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Replace `findNodePath` with `findPath`
+
 ## 40.2.9
 
 ### Patch Changes

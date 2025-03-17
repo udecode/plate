@@ -1,9 +1,8 @@
-import { type TText, addRangeMarks } from '@udecode/plate-common';
-import isEqual from 'lodash/isEqual.js';
-import uniqWith from 'lodash/uniqWith.js';
 import {
-  type BaseEditor,
+  type Editor,
+  type EditorTransforms,
   type InsertTextOperation,
+  type LegacyEditorMethods,
   type MergeNodeOperation,
   type Operation,
   type PointRef,
@@ -11,12 +10,14 @@ import {
   type RemoveTextOperation,
   type SetNodeOperation,
   type SplitNodeOperation,
-  Editor,
-  Node,
-  Path,
-  Point,
-  Range,
-} from 'slate';
+  type TText,
+  NodeApi,
+  PathApi,
+  PointApi,
+  RangeApi,
+} from '@udecode/plate';
+import isEqual from 'lodash/isEqual.js';
+import uniqWith from 'lodash/uniqWith.js';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
@@ -32,20 +33,20 @@ export interface ChangeTrackingEditor {
     rangeRef: RangeRef;
   }[];
 
+  recordingOperations: boolean;
+
   removedTexts: {
     node: TText;
     pointRef: PointRef;
   }[];
-
   commitChangesToDiffs: () => void;
-  recordingOperations: boolean;
 }
 
-export const withChangeTracking = <E extends BaseEditor>(
+export const withChangeTracking = <E extends Editor>(
   editor: E,
   options: ComputeDiffOptions
 ): ChangeTrackingEditor & E => {
-  const e = editor as ChangeTrackingEditor & E;
+  const e = editor as ChangeTrackingEditor & E & LegacyEditorMethods;
 
   e.propsChanges = [];
   e.insertedTexts = [];
@@ -54,15 +55,16 @@ export const withChangeTracking = <E extends BaseEditor>(
 
   const { apply } = e;
   e.apply = (op) => applyWithChangeTracking(e, apply, op);
+  e.tf.apply = e.apply;
 
   e.commitChangesToDiffs = () => commitChangesToDiffs(e, options);
 
   return e;
 };
 
-const applyWithChangeTracking = <E extends BaseEditor>(
+const applyWithChangeTracking = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: Operation
 ) => {
   if (!editor.recordingOperations) {
@@ -104,19 +106,19 @@ const applyWithChangeTracking = <E extends BaseEditor>(
   });
 };
 
-const applyInsertText = <E extends BaseEditor>(
+const applyInsertText = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: InsertTextOperation
 ) => {
-  const node = Node.get(editor, op.path) as TText;
+  const node = NodeApi.get(editor, op.path) as TText;
 
   apply(op);
 
   const startPoint = { offset: op.offset, path: op.path };
   const endPoint = { offset: op.offset + op.text.length, path: op.path };
   const range = { anchor: startPoint, focus: endPoint };
-  const rangeRef = Editor.rangeRef(editor, range);
+  const rangeRef = editor.api.rangeRef(range);
 
   editor.insertedTexts.push({
     node: {
@@ -127,17 +129,17 @@ const applyInsertText = <E extends BaseEditor>(
   });
 };
 
-const applyRemoveText = <E extends BaseEditor>(
+const applyRemoveText = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: RemoveTextOperation
 ) => {
-  const node = Node.get(editor, op.path) as TText;
+  const node = NodeApi.get(editor, op.path) as TText;
 
   apply(op);
 
   const point = { offset: op.offset, path: op.path };
-  const pointRef = Editor.pointRef(editor, point, {
+  const pointRef = editor.api.pointRef(point, {
     affinity: 'backward',
   });
 
@@ -150,24 +152,24 @@ const applyRemoveText = <E extends BaseEditor>(
   });
 };
 
-const applyMergeNode = <E extends BaseEditor>(
+const applyMergeNode = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: MergeNodeOperation
 ) => {
-  const oldNode = Node.get(editor, op.path) as TText;
-  const properties = Node.extractProps(oldNode);
+  const oldNode = NodeApi.get(editor, op.path) as TText;
+  const properties = NodeApi.extractProps(oldNode);
 
-  const prevNodePath = Path.previous(op.path);
-  const prevNode = Node.get(editor, prevNodePath) as TText;
-  const newProperties = Node.extractProps(prevNode);
+  const prevNodePath = PathApi.previous(op.path)!;
+  const prevNode = NodeApi.get(editor, prevNodePath) as TText;
+  const newProperties = NodeApi.extractProps(prevNode);
 
   apply(op);
 
   const startPoint = { offset: prevNode.text.length, path: prevNodePath };
-  const endPoint = Editor.end(editor, prevNodePath);
+  const endPoint = editor.api.end(prevNodePath)!;
   const range = { anchor: startPoint, focus: endPoint };
-  const rangeRef = Editor.rangeRef(editor, range);
+  const rangeRef = editor.api.rangeRef(range);
 
   editor.propsChanges.push({
     newProperties,
@@ -176,20 +178,20 @@ const applyMergeNode = <E extends BaseEditor>(
   });
 };
 
-const applySplitNode = <E extends BaseEditor>(
+const applySplitNode = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: SplitNodeOperation
 ) => {
-  const oldNode = Node.get(editor, op.path) as TText;
-  const properties = Node.extractProps(oldNode);
+  const oldNode = NodeApi.get(editor, op.path) as TText;
+  const properties = NodeApi.extractProps(oldNode);
   const newProperties = op.properties;
 
   apply(op);
 
-  const newNodePath = Path.next(op.path);
-  const newNodeRange = Editor.range(editor, newNodePath);
-  const rangeRef = Editor.rangeRef(editor, newNodeRange);
+  const newNodePath = PathApi.next(op.path);
+  const newNodeRange = editor.api.range(newNodePath)!;
+  const rangeRef = editor.api.rangeRef(newNodeRange);
 
   editor.propsChanges.push({
     newProperties,
@@ -198,15 +200,15 @@ const applySplitNode = <E extends BaseEditor>(
   });
 };
 
-const applySetNode = <E extends BaseEditor>(
+const applySetNode = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
-  apply: E['apply'],
+  apply: EditorTransforms['apply'],
   op: SetNodeOperation
 ) => {
   apply(op);
 
-  const range = Editor.range(editor, op.path);
-  const rangeRef = Editor.rangeRef(editor, range);
+  const range = editor.api.range(op.path)!;
+  const rangeRef = editor.api.rangeRef(range);
 
   editor.propsChanges.push({
     newProperties: op.newProperties,
@@ -215,7 +217,7 @@ const applySetNode = <E extends BaseEditor>(
   });
 };
 
-const commitChangesToDiffs = <E extends BaseEditor>(
+const commitChangesToDiffs = <E extends Editor>(
   editor: ChangeTrackingEditor & E,
   { getDeleteProps, getInsertProps, getUpdateProps }: ComputeDiffOptions
 ) => {
@@ -224,20 +226,19 @@ const commitChangesToDiffs = <E extends BaseEditor>(
     const flatUpdates = flattenPropsChanges(editor).reverse();
 
     flatUpdates.forEach(({ newProperties, properties, range }) => {
-      const node = Node.get(editor, range.anchor.path) as TText;
+      const node = NodeApi.get(editor, range.anchor.path) as TText;
 
-      addRangeMarks(
-        editor as any,
-        getUpdateProps(node, properties, newProperties),
-        { at: range }
-      );
+      editor.tf.setNodes(getUpdateProps(node, properties, newProperties), {
+        at: range,
+        marks: true,
+      });
     });
 
     editor.removedTexts.forEach(({ node, pointRef }) => {
       const point = pointRef.current;
 
       if (point) {
-        editor.insertNode(
+        editor.tf.insertNode(
           {
             ...node,
             ...getDeleteProps(node),
@@ -253,7 +254,10 @@ const commitChangesToDiffs = <E extends BaseEditor>(
       const range = rangeRef.current;
 
       if (range) {
-        addRangeMarks(editor as any, getInsertProps(node), { at: range });
+        editor.tf.setNodes(getInsertProps(node), {
+          at: range,
+          marks: true,
+        });
       }
 
       rangeRef.unref();
@@ -286,8 +290,8 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
   });
 
   const rangePoints = uniqWith(
-    unsortedRangePoints.sort(Point.compare),
-    Point.equals
+    unsortedRangePoints.sort(PointApi.compare),
+    PointApi.equals
   );
 
   if (rangePoints.length < 2) return [];
@@ -313,11 +317,11 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
 
         if (!range) return false;
 
-        const intersection = Range.intersection(range, flatRange);
+        const intersection = RangeApi.intersection(range, flatRange);
 
         if (!intersection) return false;
 
-        return Range.isExpanded(intersection);
+        return RangeApi.isExpanded(intersection);
       });
 
     // If the range is part of an insertion, return null
