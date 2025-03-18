@@ -376,6 +376,34 @@ describe('deserializeMd', () => {
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
+
+  it('should not trim the end of the first line', () => {
+    const input = 'There is a space at the end of this line. \n\nLine 2';
+
+    const output = (
+      <fragment>
+        <hp>There is a space at the end of this line. </hp>
+        <hp>Line 2</hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should preserve \n\n as a new paragraph.', () => {
+    const input = 'Line 1\n\n';
+
+    const output = (
+      <fragment>
+        <hp>Line 1</hp>
+        <hp>
+          <htext />
+        </hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
 });
 
 describe('deserializeMd table', () => {
