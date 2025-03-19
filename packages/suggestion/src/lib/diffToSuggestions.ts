@@ -57,7 +57,7 @@ export function diffToSuggestions<E extends SlateEditor>(
           // Get the previous node if it exists
           const previousNode = index > 0 ? nodes[index - 1] : null;
 
-          if (previousNode && previousNode[BaseSuggestionPlugin.key]) {
+          if (previousNode?.[BaseSuggestionPlugin.key]) {
             const previousData = api.suggestion.suggestionData(
               previousNode as any
             );

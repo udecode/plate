@@ -110,8 +110,6 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
         node.parent?.type === nodes.td.type ||
         node.parent?.type === nodes.th.type;
 
-      const breakTag = isInTableCell ? `<br />` : `\n`;
-
       if (listStyleType) {
         let pre = '';
 
@@ -130,12 +128,19 @@ export const defaultSerializeMdNodesOptions: SerializeMdOptions['nodes'] = {
         }
 
         // TODO: support all styles
-        return `${pre}${isOL ? listStart + '.' : '-'} ${children}${breakTag}`;
+        return `${pre}${isOL ? listStart + '.' : '-'} ${children}${'\n'}`;
       }
 
       const pre = isInTableCell ? '' : '\n';
 
-      return `${pre}${children}${breakTag}`;
+      let post;
+      if (isInTableCell) {
+        post = node.children.length - 1 === node.index ? '' : '<br />';
+      } else {
+        post = '\n';
+      }
+
+      return `${pre}${children}${post}`;
     },
   },
   strikethrough: { isLeaf: true, type: 'strikethrough' },
