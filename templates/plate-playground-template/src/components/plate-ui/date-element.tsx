@@ -1,7 +1,7 @@
 'use client';
 
 import { cn, withRef } from '@udecode/cn';
-import { PlateElement , useReadOnly } from '@udecode/plate/react';
+import { PlateElement, useReadOnly } from '@udecode/plate/react';
 
 import { Calendar } from './calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';

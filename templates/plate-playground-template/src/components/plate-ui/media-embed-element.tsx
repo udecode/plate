@@ -8,7 +8,7 @@ import { cn, withRef } from '@udecode/cn';
 import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';
 import { MediaEmbedPlugin, useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider, useResizableValue } from '@udecode/plate-resizable';
-import { PlateElement , withHOC } from '@udecode/plate/react';
+import { PlateElement, withHOC } from '@udecode/plate/react';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaPopover } from './media-popover';

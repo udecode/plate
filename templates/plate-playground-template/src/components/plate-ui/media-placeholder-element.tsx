@@ -15,7 +15,12 @@ import {
   updateUploadHistory,
   VideoPlugin,
 } from '@udecode/plate-media/react';
-import { PlateElement, useEditorPlugin, withHOC , withRef } from '@udecode/plate/react';
+import {
+  PlateElement,
+  useEditorPlugin,
+  withHOC,
+  withRef,
+} from '@udecode/plate/react';
 import { AudioLines, FileUp, Film, ImageIcon } from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
 
