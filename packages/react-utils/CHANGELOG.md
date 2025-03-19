@@ -1,5 +1,11 @@
 # @udecode/react-utils
 
+## 46.0.9
+
+### Patch Changes
+
+- [#4171](https://github.com/udecode/plate/pull/4171) by [@12joan](https://github.com/12joan) – Add `useStableFn` hook to produce a stable version of a function that can be used in dependency arrays safely
+
 ## 44.0.1
 
 ### Patch Changes

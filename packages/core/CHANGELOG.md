@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 46.0.9
+
+### Patch Changes
+
+- [#4171](https://github.com/udecode/plate/pull/4171) by [@12joan](https://github.com/12joan) – Fix: PlateController forgets the active editor on blur
+
 ## 46.0.4
 
 ### Patch Changes
