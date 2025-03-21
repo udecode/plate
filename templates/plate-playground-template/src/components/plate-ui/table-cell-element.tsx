@@ -20,7 +20,8 @@ import {
   useEditorPlugin,
   useElementSelector,
   usePluginOption,
- useReadOnly } from '@udecode/plate/react';
+  useReadOnly,
+} from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
 
 import { blockSelectionVariants } from './block-selection';

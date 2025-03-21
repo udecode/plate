@@ -1,6 +1,6 @@
 # Plate callout plugins
 
-This package implements th callout block plugins for Plate.
+This package implements the callout block plugins for Plate.
 
 ## License
 

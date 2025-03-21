@@ -10,7 +10,8 @@ import {
   useEditorRef,
   useElement,
   useReadOnly,
- useRemoveNodeButton } from '@udecode/plate/react';
+  useRemoveNodeButton,
+} from '@udecode/plate/react';
 import { type LucideProps, Trash2Icon } from 'lucide-react';
 
 import { Button } from './button';

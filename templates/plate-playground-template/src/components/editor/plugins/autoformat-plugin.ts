@@ -1,9 +1,7 @@
 'use client';
 
-import type { SlateEditor } from '@udecode/plate';
 import type { AutoformatRule } from '@udecode/plate-autoformat';
 
-import { ElementApi, isType } from '@udecode/plate';
 import {
   autoformatArrow,
   autoformatLegal,
@@ -24,10 +22,7 @@ import {
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
-import {
-  CodeBlockPlugin,
-  CodeLinePlugin,
-} from '@udecode/plate-code-block/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
@@ -39,25 +34,7 @@ import {
 import { openNextToggles, TogglePlugin } from '@udecode/plate-toggle/react';
 import { ParagraphPlugin } from '@udecode/plate/react';
 
-export const format = (editor: SlateEditor, customFormatting: any) => {
-  if (editor.selection) {
-    const parentEntry = editor.api.parent(editor.selection);
-
-    if (!parentEntry) return;
-
-    const [node] = parentEntry;
-
-    if (
-      ElementApi.isElement(node) &&
-      !isType(editor, node, CodeBlockPlugin.key) &&
-      !isType(editor, node, CodeLinePlugin.key)
-    ) {
-      customFormatting();
-    }
-  }
-};
-
-export const autoformatMarks: AutoformatRule[] = [
+const autoformatMarks: AutoformatRule[] = [
   {
     match: '***',
     mode: 'mark',
@@ -130,7 +107,7 @@ export const autoformatMarks: AutoformatRule[] = [
   },
 ];
 
-export const autoformatBlocks: AutoformatRule[] = [
+const autoformatBlocks: AutoformatRule[] = [
   {
     match: '# ',
     mode: 'block',
@@ -197,7 +174,7 @@ export const autoformatBlocks: AutoformatRule[] = [
   },
 ];
 
-export const autoformatIndentLists: AutoformatRule[] = [
+const autoformatIndentLists: AutoformatRule[] = [
   {
     match: ['* ', '- '],
     mode: 'block',
@@ -261,6 +238,14 @@ export const autoformatPlugin = AutoformatPlugin.configure({
       ...autoformatArrow,
       ...autoformatMath,
       ...autoformatIndentLists,
-    ],
+    ].map(
+      (rule): AutoformatRule => ({
+        ...rule,
+        query: (editor) =>
+          !editor.api.some({
+            match: { type: editor.getType(CodeBlockPlugin) },
+          }),
+      })
+    ),
   },
 });
