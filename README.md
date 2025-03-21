@@ -46,3 +46,9 @@ We'd love for you to join us! Whether it's through giving us a 🌟 star, making
 [![Star History Chart](https://api.star-history.com/svg?repos=udecode/plate&type=Date)](https://star-history.com/#udecode/plate&Date)
 
 Need more help? Join us on [Discord](https://discord.gg/mAZRuBzGM3). We're always here to guide you.
+
+## 中文文档
+
+您可以通过查看我们的[中文文档](tooling/cn/README.md)了解更多关于Plate的信息。如果您需要中文支持，欢迎加入我们的[Discord](https://discord.gg/mAZRuBzGM3)中文频道，我们的社区成员将很乐意用中文为您解答问题。
+
+对于贡献者，我们也提供了[中文贡献指南](tooling/cn/CONTRIBUTING.md)，帮助您参与到Plate的开发中。
