@@ -41,7 +41,7 @@ Plate
 
 ### 贡献者
 
-我们希望您能加入我们！无论是给我们一个🌟星标，提交一个📥拉取请求，还是**分享您的插件**，您的帮助总是受到赞赏的。
+我们希望您能加入我们！无论是给我们一个🌟星标，提交一个📥拉取请求，还是**分享您的插件**，您的帮助总是值得称赞的。
 
 [![Star历史图表](https://api.star-history.com/svg?repos=udecode/plate&type=Date)](https://star-history.com/#udecode/plate&Date)
 
