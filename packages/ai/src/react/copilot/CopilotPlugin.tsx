@@ -11,7 +11,7 @@ import {
   bindFirst,
   NodeApi,
 } from '@udecode/plate';
-import { serializeMdNodes } from '@udecode/plate-markdown';
+import { serializeMd } from '@udecode/plate-markdown';
 import {
   type PlateEditor,
   createTPlatePlugin,
@@ -150,7 +150,9 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
 
       if (!contextEntry) return '';
 
-      return serializeMdNodes([contextEntry[0] as TElement]) as any;
+      return serializeMd(editor, {
+        value: [contextEntry[0] as TElement],
+      }) as any;
     },
     triggerQuery: ({ editor }) => {
       if (editor.api.isExpanded()) return false;

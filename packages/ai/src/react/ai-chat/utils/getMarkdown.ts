@@ -1,7 +1,7 @@
 import type { TElement } from '@udecode/plate';
 import type { PlateEditor } from '@udecode/plate/react';
 
-import { serializeMd, serializeMdNodes } from '@udecode/plate-markdown';
+import { serializeMd } from '@udecode/plate-markdown';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 // Internal
@@ -22,7 +22,7 @@ export const getMarkdown = (
 
     const nodes = Array.from(blocks, (entry) => entry[0]);
 
-    return serializeMdNodes(nodes as any);
+    return serializeMd(editor, { value: nodes as any });
   }
   if (type === 'selection') {
     const fragment = editor.api.fragment<TElement>();
@@ -36,10 +36,10 @@ export const getMarkdown = (
         },
       ];
 
-      return serializeMdNodes(modifiedFragment);
+      return serializeMd(editor, { value: modifiedFragment as any });
     }
 
-    return serializeMdNodes(fragment);
+    return serializeMd(editor, { value: fragment as any });
   }
 
   return '';
