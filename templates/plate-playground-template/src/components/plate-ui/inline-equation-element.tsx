@@ -10,7 +10,8 @@ import {
   PlateElement,
   useEditorSelector,
   useElement,
- useSelected } from '@udecode/plate/react';
+  useSelected,
+} from '@udecode/plate/react';
 import { RadicalIcon } from 'lucide-react';
 
 import { EquationPopoverContent } from './equation-popover';

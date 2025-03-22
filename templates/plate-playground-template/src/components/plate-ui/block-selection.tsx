@@ -9,7 +9,7 @@ import { usePluginOption } from '@udecode/plate/react';
 import { type VariantProps, cva } from 'class-variance-authority';
 
 export const blockSelectionVariants = cva(
-  'bg-brand/[.13] pointer-events-none absolute inset-0 z-1 transition-opacity',
+  'pointer-events-none absolute inset-0 z-1 bg-brand/[.13] transition-opacity',
   {
     defaultVariants: {
       active: true,
@@ -41,6 +41,7 @@ export function BlockSelection({
         }),
         className
       )}
+      data-slot="block-selection"
       {...props}
     />
   );

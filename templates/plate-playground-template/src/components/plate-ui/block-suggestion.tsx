@@ -146,13 +146,8 @@ export const BlockSuggestionCard = ({
         <div className="relative flex items-center">
           {/* Replace to your own backend or refer to potion */}
           <Avatar className="size-6">
-            <AvatarImage
-              alt={userInfo?.name}
-              src={userInfo?.avatarUrl}
-            />
-            <AvatarFallback>
-              {userInfo?.name?.[0]}
-            </AvatarFallback>
+            <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
+            <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
           </Avatar>
           <h4 className="mx-2 text-sm leading-none font-semibold">
             {userInfo?.name}
@@ -207,7 +202,7 @@ export const BlockSuggestionCard = ({
                     <React.Fragment key={index}>
                       <div
                         key={index}
-                        className="flex items-center text-brand/80"
+                        className="flex items-start gap-2 text-brand/80"
                       >
                         <span className="text-sm">with:</span>
                         <span className="text-sm">{text || 'line breaks'}</span>
@@ -218,7 +213,7 @@ export const BlockSuggestionCard = ({
 
                 {suggestionText2Array(suggestion.text!).map((text, index) => (
                   <React.Fragment key={index}>
-                    <div key={index} className="flex items-center">
+                    <div key={index} className="flex items-start gap-2">
                       <span className="text-sm text-muted-foreground">
                         {index === 0 ? 'Replace:' : 'Delete:'}
                       </span>

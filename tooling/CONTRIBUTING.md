@@ -185,7 +185,7 @@ The best way to help us understand and fix your issue is to provide a minimal re
 
 ### Responding to questions
 
-The **[Q&A](https://github.com/udecode/plate/discussions/categories/q-a)** is a great place to help. If you can answer a question, it will benefit the asker and others who have a similar question. If an issue needs reproduction, you may be able to guide the reporter toward one, or even reproduce it yourself using **[this technique](https://github.com/udecode/plate/blob/main/CONTRIBUTING.md#reproductions)**.
+The **[Q&A](https://github.com/udecode/plate/discussions/categories/q-a)** is a great place to help. If you can answer a question, it will benefit the asker and others who have a similar question. If an issue needs reproduction, you may be able to guide the reporter toward one, or even reproduce it yourself using **[this technique](https://github.com/udecode/plate/blob/main/tooling/CONTRIBUTING.md#reproductions)**.
 
 ### Triaging issues
 
