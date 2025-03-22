@@ -1,42 +1,50 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { Descendant, SlateEditor } from '@udecode/plate';
 
-import merge from 'lodash/merge.js';
+import remarkGfm from 'remark-gfm';
+import math from 'remark-math';
+import remarkStringify from 'remark-stringify';
+import { unified } from 'unified';
 
-import type {
-  SerializeMdNodeOptions,
-  SerializeMdOptions,
-} from './serializeMdNode';
+import type { mdast } from './types';
 
-import { serializeMdNodes } from './serializeMdNodes';
+import { convertNodes } from './convertNodes';
 
 /** Serialize the editor value to Markdown. */
-export const serializeMd = (
-  editor: SlateEditor,
-  options?: { value?: Parameters<typeof serializeMdNodes>['0'] } & Parameters<
-    typeof serializeMdNodes
-  >['1']
-) => {
-  const plugins = editor.pluginList.filter(
-    (p) => p.node.isElement || p.node.isLeaf
-  );
+export const serializeMd = (editor: SlateEditor, options?: any) => {
+  const toRemarkProcessor = unified()
+    .use(remarkGfm)
+    .use(math)
+    .use(remarkStringify);
 
-  const pluginNodes = plugins.reduce(
-    (acc, plugin) => {
-      (acc as any)[plugin.key] = {
-        isLeaf: plugin.node.isLeaf,
-        isVoid: plugin.node.isVoid,
-        type: plugin.node.type,
-      } as SerializeMdNodeOptions;
+  // const plugins = editor.pluginList.filter(
+  //   (p) => p.node.isElement || p.node.isLeaf
+  // );
 
-      return acc;
-    },
-    {} as SerializeMdOptions['nodes']
-  );
+  // const pluginNodes = plugins.reduce(
+  //   (acc, plugin) => {
+  //     (acc as any)[plugin.key] = {
+  //       isLeaf: plugin.node.isLeaf,
+  //       isVoid: plugin.node.isVoid,
+  //       type: plugin.node.type,
+  //     } as SerializeMdNodeOptions;
+
+  //     return acc;
+  //   },
+  //   {} as SerializeMdOptions['nodes']
+  // );
 
   const nodesToSerialize = options?.value ?? editor.children;
 
-  return serializeMdNodes(nodesToSerialize, {
-    ...options,
-    nodes: merge(pluginNodes, options?.nodes),
-  });
+  return toRemarkProcessor.stringify(slateToMdast(nodesToSerialize));
+};
+
+const slateToMdast = (nodes: Descendant[], overrides?: any): mdast.Root => {
+  const r = {
+    children: convertNodes(
+      nodes as Descendant[],
+      overrides
+    ) as mdast.Root['children'],
+    type: 'root',
+  };
+  return r as mdast.Root;
 };

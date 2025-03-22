@@ -94,13 +94,16 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
           enabled: process.env.NODE_ENV !== 'production',
         }),
       ],
-      value: value,
+      value,
     },
     []
   );
 
   return (
-    <Plate editor={editor}>
+    <Plate
+      onValueChange={(options) => console.log(options.value, 'fj')}
+      editor={editor}
+    >
       <EditorContainer className={className}>
         <Editor variant="demo" className="pb-[20vh]" spellCheck={false} />
       </EditorContainer>
