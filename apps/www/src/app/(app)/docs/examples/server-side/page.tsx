@@ -1,5 +1,3 @@
-import type { TElement } from '@udecode/plate';
-import type { TCodeBlockElement } from '@udecode/plate-code-block';
 
 import type { Metadata } from 'next';
 
@@ -242,22 +240,24 @@ export default function RSCPage() {
     value: [...basicElementsValue, ...basicMarksValue],
   });
 
-  const md = editor.api.markdown.serialize({
-    nodes: {
-      code_block: {
-        serialize: (_, node) => {
-          const codeLines = node.children
-            .filter((child) => (child as any).type === 'code_line')
-            .map((child) =>
-              (child as any).children.map((c: TElement) => c.text).join('')
-            )
-            .join('\n');
+  const md = editor.api.markdown.serialize(
+    // {
+    // nodes: {
+    //   code_block: {
+    //     serialize: (_, node) => {
+    //       const codeLines = node.children
+    //         .filter((child) => (child as any).type === 'code_line')
+    //         .map((child) =>
+    //           (child as any).children.map((c: TElement) => c.text).join('')
+    //         )
+    //         .join('\n');
 
-          return `\`\`\`${(node as any as TCodeBlockElement).lang || ''}\n${codeLines}\n\`\`\``;
-        },
-      },
-    },
-  });
+    //       return `\`\`\`${(node as any as TCodeBlockElement).lang || ''}\n${codeLines}\n\`\`\``;
+    //     },
+    //   },
+    // },
+  // }
+);
 
   return (
     <DocContent category="example" doc={mockDoc} toc={{}}>

@@ -1,5 +1,68 @@
 export const testValue = [
   {
+    type: 'h1',
+    children: [
+      {
+        text: 'Playground',
+      },
+    ],
+  },
+  {
+    type: 'h2',
+    children: [
+      {
+        text: 'Comments and suggestions',
+      },
+    ],
+  },
+  {
+    children: [
+      {
+        text: 'Add ',
+      },
+      {
+        comment: true,
+        comment_discussion1: true,
+        text: 'comments to your content',
+      },
+      {
+        text: ' to provide additional conte1xt, ',
+      },
+      {
+        suggestion: true,
+        suggestion_suggestion1: {
+          id: 'suggestion1',
+          createdAt: 1742652370104,
+          type: 'remove',
+          userId: 'user3',
+        },
+        text: 'insights',
+      },
+      {
+        suggestion: true,
+        suggestion_suggestion1: {
+          id: 'suggestion1',
+          createdAt: 1742652370104,
+          type: 'insert',
+          userId: 'user3',
+        },
+        text: 'suggesions',
+      },
+      {
+        text: ', or ',
+      },
+      {
+        comment: true,
+        comment_discussion2: true,
+        text: 'collaborate',
+      },
+      {
+        text: ' with others',
+      },
+    ],
+    type: 'p',
+  },
+  {
     type: 'h3',
     children: [
       {
@@ -226,5 +289,216 @@ export const testValue = [
     ],
     texExpression: 'f(x)',
     type: 'equation',
+  },
+  {
+    type: 'toc',
+    children: [
+      {
+        text: '',
+      },
+    ],
+  },
+  {
+    type: 'p',
+    checked: true,
+    indent: 1,
+    listStyleType: 'todo',
+    children: [
+      {
+        text: 'Todo item',
+      },
+    ],
+  },
+  {
+    type: 'p',
+    indent: 1,
+    listStyleType: 'decimal',
+    children: [
+      {
+        text: 'Numbered list item',
+      },
+    ],
+  },
+  {
+    type: 'toggle',
+    children: [
+      {
+        text: 'Toggle item',
+      },
+    ],
+  },
+  {
+    type: 'p',
+    align: 'center',
+    children: [
+      {
+        text: 'Centered text',
+      },
+    ],
+  },
+  {
+    type: 'p',
+    lineHeight: 2,
+    children: [
+      {
+        text: 'Text with custom line height',
+      },
+    ],
+  },
+  {
+    children: [
+      {
+        text: '',
+      },
+    ],
+    type: 'file',
+    name: 'sample.pdf',
+    url: 'https://example.com/sample.pdf',
+  },
+  {
+    children: [
+      {
+        text: '',
+      },
+    ],
+    type: 'audio',
+    url: 'https://example.com/audio.mp3',
+  },
+  {
+    children: [
+      {
+        text: '',
+      },
+    ],
+    type: 'video',
+    url: 'https://example.com/video.mp4',
+  },
+  {
+    children: [
+      {
+        text: '',
+      },
+    ],
+    type: 'media_embed',
+    url: 'https://www.youtube.com/watch?v=example',
+  },
+  {
+    type: 'column_group',
+    layout: [50, 50],
+    children: [
+      {
+        type: 'column',
+        width: '50%',
+        children: [
+          {
+            type: 'p',
+            children: [
+              {
+                text: 'Left column',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'column',
+        width: '50%',
+        children: [
+          {
+            type: 'p',
+            children: [
+              {
+                text: 'Right column',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    type: 'p',
+    children: [
+      {
+        text: 'Mention: ',
+      },
+      {
+        children: [
+          {
+            text: '',
+          },
+        ],
+        type: 'mention',
+        value: 'User',
+      },
+    ],
+  },
+  {
+    type: 'p',
+    children: [
+      {
+        text: 'Date: ',
+      },
+      {
+        children: [
+          {
+            text: '',
+          },
+        ],
+        type: 'date',
+        date: '2024-01-01',
+      },
+    ],
+  },
+  {
+    type: 'p',
+    children: [
+      {
+        text: 'Text with ',
+      },
+      {
+        text: 'highlight',
+        highlight: true,
+      },
+      {
+        text: ' and ',
+      },
+      {
+        text: 'underline',
+        underline: true,
+      },
+      {
+        text: ' and ',
+      },
+      {
+        text: 'keyboard',
+        kbd: true,
+      },
+      {
+        text: ' formatting',
+      },
+    ],
+  },
+  {
+    type: 'p',
+    children: [
+      {
+        text: 'Text with ',
+      },
+      {
+        text: 'color',
+        color: 'rgb(252, 109, 38)',
+      },
+      {
+        text: ' and ',
+      },
+      {
+        text: 'background',
+        backgroundColor: 'rgb(252, 109, 38)',
+      },
+      {
+        text: ' color',
+      },
+    ],
   },
 ];
