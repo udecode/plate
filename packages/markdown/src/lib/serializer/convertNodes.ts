@@ -10,6 +10,7 @@ import type { mdast, mdastUtilMath, unistLib } from './types';
 
 import { convertTexts } from './convertTexts';
 import { indentListToMdastTree } from './indentListToMdastTree';
+import { unreachable } from './utils/unreachable';
 
 export const convertNodes = (
   nodes: Descendant[],
@@ -30,7 +31,6 @@ export const convertNodes = (
       textQueue = [];
       if (!n) continue;
 
-      // check
       if (n?.type === 'p' && 'listStyleType' in n) {
         listBlock.push(n);
 
@@ -38,7 +38,6 @@ export const convertNodes = (
         const isNextIndent =
           next && next.type === 'p' && 'listStyleType' in next;
 
-        // 如果下一个不是 indentList，立即处理 block
         if (!isNextIndent) {
           mdastNodes.push(indentListToMdastTree(listBlock as any, overrides));
           listBlock.length = 0;
@@ -57,13 +56,6 @@ export const convertNodes = (
 };
 
 export const buildMdastNode = (node: any, overrides: any) => {
-  // const customNode = overrides[node.type]?.(node as any, (children) =>
-  //   convertNodes(children, overrides)
-  // );
-  // if (customNode != null) {
-  //   return customNode as any;
-  // }
-
   switch (node.type) {
     case 'a': {
       return buildLink(node, overrides);
@@ -73,6 +65,9 @@ export const buildMdastNode = (node: any, overrides: any) => {
     }
     case 'code_block': {
       return buildCodeBlock(node);
+    }
+    case 'date': {
+      return buildDate(node);
     }
     case 'equation': {
       return buildEquation(node);
@@ -88,20 +83,19 @@ export const buildMdastNode = (node: any, overrides: any) => {
     case 'hr': {
       return buildThematicBreak(node);
     }
+
     case 'img': {
       return buildImage(node);
     }
-
     case 'inline_equation': {
       return buildInlineEquation(node);
+    }
+    case 'mention': {
+      return buildMention(node, overrides);
     }
     case 'p': {
       return buildParagraph(node, overrides);
     }
-    // case "list":
-    //   return buildList(node, overrides);
-    // case "listItem":
-    //   return buildListItem(node, overrides);
     case 'table': {
       return buildTable(node, overrides);
     }
@@ -113,9 +107,7 @@ export const buildMdastNode = (node: any, overrides: any) => {
       return buildTableRow(node, overrides);
     }
     default: {
-      // unreachable(node);
-      console.log(node, 'fj');
-      // throw new Error('unreachable');
+      unreachable(node);
     }
   }
 };
@@ -332,5 +324,32 @@ const buildInlineEquation = ({
   return {
     type: 'inlineMath',
     value: texExpression,
+  };
+};
+
+type TMention = {
+  id: string;
+  children: Descendant[];
+  type: 'mention';
+  value: string;
+};
+
+const buildMention = ({ value }: TMention, overrides: any): mdast.Text => {
+  return {
+    type: 'text',
+    value,
+  };
+};
+
+type TDate = {
+  children: Descendant[];
+  date: string;
+  type: 'date';
+};
+
+const buildDate = ({ date }: TDate): mdast.Text => {
+  return {
+    type: 'text',
+    value: date,
   };
 };

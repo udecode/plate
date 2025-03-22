@@ -354,7 +354,7 @@ describe('indentListToMdastTree', () => {
           { text: 'with ', type: 'text' },
           {
             children: [{ text: 'link', type: 'text' }],
-            type: 'link',
+            type: 'a',
             url: 'https://example.com',
           },
         ],

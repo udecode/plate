@@ -10,28 +10,14 @@ import type { mdast } from './types';
 import { convertNodes } from './convertNodes';
 
 /** Serialize the editor value to Markdown. */
-export const serializeMd = (editor: SlateEditor, options?: any) => {
+export const serializeMd = (
+  editor: SlateEditor,
+  options?: { value: Descendant[] }
+) => {
   const toRemarkProcessor = unified()
     .use(remarkGfm)
     .use(math)
     .use(remarkStringify);
-
-  // const plugins = editor.pluginList.filter(
-  //   (p) => p.node.isElement || p.node.isLeaf
-  // );
-
-  // const pluginNodes = plugins.reduce(
-  //   (acc, plugin) => {
-  //     (acc as any)[plugin.key] = {
-  //       isLeaf: plugin.node.isLeaf,
-  //       isVoid: plugin.node.isVoid,
-  //       type: plugin.node.type,
-  //     } as SerializeMdNodeOptions;
-
-  //     return acc;
-  //   },
-  //   {} as SerializeMdOptions['nodes']
-  // );
 
   const nodesToSerialize = options?.value ?? editor.children;
 
