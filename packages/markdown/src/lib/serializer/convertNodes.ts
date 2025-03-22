@@ -248,23 +248,6 @@ const buildTableCell = (node: TTableCell, overrides: any): mdast.TableCell => {
   };
 };
 
-// type TCode = {
-//   children: Descendant[];
-//   type: 'code_block';
-//   lang?: string;
-// };
-
-// const buildCode = (
-//   { children, lang, type }: TCode,
-//   overrides: any
-// ): mdast.Code => {
-//   return {
-//     children: convertNodes(children, overrides) as mdast.Code['children'],
-//     lang: lang,
-//     type: 'code',
-//   };
-// };
-
 type TSlateImage = {
   children: Descendant[];
   type: 'img';
@@ -331,7 +314,6 @@ type TEquation = {
 };
 
 const buildEquation = ({ texExpression }: TEquation): mdastUtilMath.Math => {
-  console.log('🚀 ~ texExpression:', texExpression);
   return {
     type: 'math',
     value: texExpression,
