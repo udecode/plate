@@ -360,9 +360,7 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
   };
 
   const exportToMarkdown = async () => {
-    const md = editor
-      .getApi(MarkdownPlugin)
-      .markdown.serialize({ value: [editor.children[0]] });
+    const md = editor.getApi(MarkdownPlugin).markdown.serialize();
     const url = `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
     await downloadFile(url, 'plate.md');
   };
