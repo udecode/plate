@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 
 import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
@@ -240,7 +239,8 @@ export default function RSCPage() {
     value: [...basicElementsValue, ...basicMarksValue],
   });
 
-  const md = editor.api.markdown.serialize(
+  const md = editor.api.markdown
+    .serialize
     // {
     // nodes: {
     //   code_block: {
@@ -256,8 +256,8 @@ export default function RSCPage() {
     //     },
     //   },
     // },
-  // }
-);
+    // }
+    ();
 
   return (
     <DocContent category="example" doc={mockDoc} toc={{}}>

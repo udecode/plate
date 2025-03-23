@@ -1,12 +1,10 @@
 import type { Descendant, SlateEditor } from '@udecode/plate';
 
-import remarkGfm from 'remark-gfm';
-import math from 'remark-math';
-import remarkStringify from 'remark-stringify';
-import { unified } from 'unified';
+import { type Plugin, unified } from 'unified';
 
 import type { mdast } from './types';
 
+import { type Components, MarkdownPlugin } from '../MarkdownPlugin';
 import { convertNodes } from './convertNodes';
 
 /** Serialize the editor value to Markdown. */
@@ -14,23 +12,27 @@ export const serializeMd = (
   editor: SlateEditor,
   options?: { value: Descendant[] }
 ) => {
-  const toRemarkProcessor = unified()
-    .use(remarkGfm)
-    .use(math)
-    .use(remarkStringify);
+  const serializePlugins: Plugin[] =
+    editor.getOptions(MarkdownPlugin).remarkPlugins.serialize;
+
+  const components = editor.getOptions(MarkdownPlugin).components;
+
+  const toRemarkProcessor = unified().use(serializePlugins);
 
   const nodesToSerialize = options?.value ?? editor.children;
 
   return toRemarkProcessor.stringify(slateToMdast(nodesToSerialize));
 };
 
-const slateToMdast = (nodes: Descendant[], overrides?: any): mdast.Root => {
-  const r = {
+const slateToMdast = (
+  nodes: Descendant[],
+  components?: Components
+): mdast.Root => {
+  return {
     children: convertNodes(
       nodes as Descendant[],
-      overrides
+      components
     ) as mdast.Root['children'],
     type: 'root',
-  };
-  return r as mdast.Root;
+  } as mdast.Root;
 };

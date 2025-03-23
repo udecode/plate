@@ -1,9 +1,8 @@
-import type { TText } from "@udecode/plate";
+import type { TText } from '@udecode/plate';
 
 import type { astMarks, slateMarks } from './types';
 
-import { unreachable } from "./utils/unreachable";
-
+import { unreachable } from './utils/unreachable';
 
 export const convertTexts = (slateTexts: readonly TText[]): astMarks[] => {
   const mdastTexts: astMarks[] = [];

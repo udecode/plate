@@ -1,3 +1,4 @@
+import type { Components } from '../MarkdownPlugin';
 import type { mdast } from './types';
 
 import { type TParagraph, convertNodes } from './convertNodes';
@@ -11,7 +12,7 @@ type TIndentList = TParagraph & {
 
 export function indentListToMdastTree(
   nodes: TIndentList[],
-  overrides?: any
+  components?: Components
 ): mdast.List {
   if (nodes.length === 0) {
     throw new Error('Cannot create a list from empty nodes');

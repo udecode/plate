@@ -1,4 +1,7 @@
+import type { Plugin } from 'unified';
+
 import {
+  type Descendant,
   type OmitFirst,
   type PluginConfig,
   bindFirst,
@@ -14,15 +17,26 @@ import {
   remarkDefaultTextRules,
 } from './remark-slate';
 import { serializeMd } from './serializer';
-
 // export type MarkdownDeserializer = {
 //   elementRules?: Partial<Record<MdastElementType, RemarkElementRule>>;
 //   textRules?: Partial<Record<MdastTextType, RemarkTextRule>>;
 // } & Deserializer;
 
+export type CommentItem = {
+  deserialize: (astNode: any, options: any) => Descendant[];
+  serialize: (node: any, options: any) => any;
+};
+
+export type Components = Record<string, CommentItem>;
+
 export type MarkdownConfig = PluginConfig<
   'markdown',
   {
+    remarkPlugins: {
+      deserialize: Plugin[];
+      serialize: Plugin[];
+    };
+    components?: Components;
     /** Override element rules. */
     elementRules?: RemarkElementRules;
     indentList?: boolean;
@@ -51,6 +65,10 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   options: {
     elementRules: remarkDefaultElementRules,
     indentList: false,
+    remarkPlugins: {
+      deserialize: [],
+      serialize: [],
+    },
     splitLineBreaks: false,
     textRules: remarkDefaultTextRules,
   },

@@ -6,6 +6,7 @@ import {
   TextApi,
 } from '@udecode/plate';
 
+import type { Components } from '../MarkdownPlugin';
 import type { mdast, mdastUtilMath, unistLib } from './types';
 
 import { convertTexts } from './convertTexts';
@@ -14,7 +15,7 @@ import { unreachable } from './utils/unreachable';
 
 export const convertNodes = (
   nodes: Descendant[],
-  overrides: any
+  components?: Components
 ): unistLib.Node[] => {
   const mdastNodes: unistLib.Node[] = [];
   let textQueue: TText[] = [];
@@ -39,11 +40,11 @@ export const convertNodes = (
           next && next.type === 'p' && 'listStyleType' in next;
 
         if (!isNextIndent) {
-          mdastNodes.push(indentListToMdastTree(listBlock as any, overrides));
+          mdastNodes.push(indentListToMdastTree(listBlock as any, components));
           listBlock.length = 0;
         }
       } else {
-        const node = buildMdastNode(n, overrides);
+        const node = buildMdastNode(n, components);
 
         if (node) {
           mdastNodes.push(node as unistLib.Node);
@@ -55,13 +56,19 @@ export const convertNodes = (
   return mdastNodes;
 };
 
-export const buildMdastNode = (node: any, overrides: any) => {
+export const buildMdastNode = (node: any, components?: Components) => {
+  const component = components?.[node.type];
+
+  if (component) {
+    return component.serialize(node, components);
+  }
+
   switch (node.type) {
     case 'a': {
-      return buildLink(node, overrides);
+      return buildLink(node, components);
     }
     case 'blockquote': {
-      return buildBlockquote(node, overrides);
+      return buildBlockquote(node, components);
     }
     case 'code_block': {
       return buildCodeBlock(node);
@@ -78,7 +85,7 @@ export const buildMdastNode = (node: any, overrides: any) => {
     case 'h4':
     case 'h5':
     case 'h6': {
-      return buildHeading(node, overrides);
+      return buildHeading(node);
     }
     case 'hr': {
       return buildThematicBreak(node);
@@ -91,20 +98,20 @@ export const buildMdastNode = (node: any, overrides: any) => {
       return buildInlineEquation(node);
     }
     case 'mention': {
-      return buildMention(node, overrides);
+      return buildMention(node);
     }
     case 'p': {
-      return buildParagraph(node, overrides);
+      return buildParagraph(node);
     }
     case 'table': {
-      return buildTable(node, overrides);
+      return buildTable(node);
     }
     case 'td': {
-      return buildTableCell(node, overrides);
+      return buildTableCell(node);
     }
     case 'th':
     case 'tr': {
-      return buildTableRow(node, overrides);
+      return buildTableRow(node);
     }
     default: {
       unreachable(node);
@@ -118,10 +125,10 @@ export type TParagraph = {
 };
 const buildParagraph = (
   { children, type }: TParagraph,
-  overrides: any
+  components?: Components
 ): mdast.Paragraph => {
   return {
-    children: convertNodes(children, overrides) as mdast.Paragraph['children'],
+    children: convertNodes(children, components) as mdast.Paragraph['children'],
     type: 'paragraph',
   };
 };
@@ -133,12 +140,12 @@ type THeading = {
 
 const buildHeading = (
   { children, type }: THeading,
-  overrides: any
+  components?: Components
 ): mdast.Heading => {
   const depth = (Number.parseInt(type.slice(1)) || 1) as 1 | 2 | 3 | 4 | 5 | 6;
 
   return {
-    children: convertNodes(children, overrides) as mdast.Heading['children'],
+    children: convertNodes(children, components) as mdast.Heading['children'],
     depth,
     type: 'heading',
   };
@@ -160,12 +167,12 @@ type TBlockquote = {
 
 const buildBlockquote = (
   node: TBlockquote,
-  overrides: any
+  components?: Components
 ): mdast.Blockquote => {
   return {
     children: convertNodes(
       node.children,
-      overrides
+      components
     ) as mdast.Blockquote['children'],
     type: 'blockquote',
   };
@@ -178,9 +185,12 @@ type TTable = {
   marginLeft?: number;
 };
 
-const buildTable = (node: TTable, overrides: any): mdast.Table => {
+const buildTable = (node: TTable, components?: Components): mdast.Table => {
   return {
-    children: convertNodes(node.children, overrides) as mdast.Table['children'],
+    children: convertNodes(
+      node.children,
+      components
+    ) as mdast.Table['children'],
     type: 'table',
   };
 };
@@ -191,11 +201,14 @@ type TTableRow = {
   size?: number;
 };
 
-const buildTableRow = (node: TTableRow, overrides: any): mdast.TableRow => {
+const buildTableRow = (
+  node: TTableRow,
+  components?: Components
+): mdast.TableRow => {
   return {
     children: convertNodes(
       node.children,
-      overrides
+      components
     ) as mdast.TableRow['children'],
     type: 'tableRow',
   };
@@ -230,7 +243,7 @@ type TTableCell = {
   size?: number;
 };
 
-const buildTableCell = (node: TTableCell, overrides: any): mdast.TableCell => {
+const buildTableCell = (node: TTableCell, overrides?: any): mdast.TableCell => {
   return {
     children: convertNodes(
       node.children,
@@ -270,9 +283,9 @@ type TLink = {
   target?: string;
 };
 
-const buildLink = (node: TLink, overrides: any): mdast.Link => {
+const buildLink = (node: TLink, components?: Components): mdast.Link => {
   return {
-    children: convertNodes(node.children, overrides) as mdast.Link['children'],
+    children: convertNodes(node.children, components) as mdast.Link['children'],
     type: 'link',
     url: node.url,
   };
@@ -334,7 +347,7 @@ type TMention = {
   value: string;
 };
 
-const buildMention = ({ value }: TMention, overrides: any): mdast.Text => {
+const buildMention = ({ value }: TMention, overrides?: any): mdast.Text => {
   return {
     type: 'text',
     value,
