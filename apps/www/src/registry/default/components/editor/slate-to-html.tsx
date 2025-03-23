@@ -35,10 +35,12 @@ function useThemedHtml(html: string, serverTheme?: string) {
 }
 
 export function ExportHtmlButton({
+  className,
   html,
   serverTheme,
 }: {
   html: string;
+  className?: string;
   serverTheme?: string;
 }) {
   const { getThemedHtml } = useThemedHtml(html, serverTheme);
@@ -57,12 +59,13 @@ export function ExportHtmlButton({
 
   return (
     <a
+      className={className}
       download="export-plate.html"
       href={url}
       rel="noopener noreferrer"
       role="button"
     >
-      <Button>Export HTML</Button>
+      <Button >Export HTML</Button>
     </a>
   );
 }

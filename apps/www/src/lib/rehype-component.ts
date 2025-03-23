@@ -10,7 +10,7 @@ import {
   createFileTreeForRegistryItemFiles,
   getRegistryItem,
 } from '../lib/registry';
-import { examples } from '../registry/registry-examples';
+import { examples, proExamples } from '../registry/registry-examples';
 import { styles } from '../registry/registry-styles';
 import { highlightFiles } from './highlight-code';
 import {
@@ -35,6 +35,19 @@ export function rehypeComponent() {
         const name = getNodeAttributeByName(node, 'name')?.value as string;
 
         if (name) {
+          if (node.name === 'ComponentPreviewPro') {
+            const registryItem = proExamples.find((item) => item.name === name);
+            if (registryItem?.doc?.description) {
+              node.attributes = [
+                ...(node.attributes || []),
+                {
+                  name: 'description',
+                  type: 'mdxJsxAttribute',
+                  value: registryItem.doc.description,
+                },
+              ];
+            }
+          }
           if (node.name === 'ComponentInstallation') {
             promises.push(
               (async () => {
