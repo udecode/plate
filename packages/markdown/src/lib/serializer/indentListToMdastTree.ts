@@ -1,9 +1,11 @@
-import type { Components } from '../MarkdownPlugin';
+import type { SlateEditor, TElement } from '@udecode/plate';
+
 import type { mdast } from './types';
 
-import { type TParagraph, convertNodes } from './convertNodes';
+import { convertNodes } from './convertNodes';
 
-type TIndentList = TParagraph & {
+type TIndentList = TElement & {
+  checked: boolean;
   indent: number;
   listStart: number;
   // TODO:
@@ -12,7 +14,7 @@ type TIndentList = TParagraph & {
 
 export function indentListToMdastTree(
   nodes: TIndentList[],
-  components?: Components
+  editor: SlateEditor
 ): mdast.List {
   if (nodes.length === 0) {
     throw new Error('Cannot create a list from empty nodes');
@@ -51,17 +53,23 @@ export function indentListToMdastTree(
 
     // Create the current list item
     const listItem: mdast.ListItem = {
+      checked: null,
       children: [
         {
           children: convertNodes(
             node.children,
-            overrides
+            editor
           ) as mdast.Paragraph['children'],
           type: 'paragraph',
         },
       ],
       type: 'listItem',
     };
+
+    // Add checked property for todo lists
+    if (node.listStyleType === 'todo' && node.checked !== undefined) {
+      listItem.checked = node.checked;
+    }
 
     // Add the list item to the appropriate parent list
     stackTop.list.children.push(listItem);

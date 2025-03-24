@@ -1,4 +1,7 @@
+import { createTestEditor } from './__test__/createTestEditor';
 import { indentListToMdastTree } from './indentListToMdastTree';
+
+const editor = createTestEditor();
 
 describe('indentListToMdastTree', () => {
   it('should convert a flat list correctly', () => {
@@ -19,11 +22,12 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any);
+    const result = indentListToMdastTree(nodes as any, editor);
 
     expect(result).toEqual({
       children: [
         {
+          checked: null,
           children: [
             {
               children: [{ type: 'text', value: 'list1' }],
@@ -33,6 +37,7 @@ describe('indentListToMdastTree', () => {
           type: 'listItem',
         },
         {
+          checked: null,
           children: [
             {
               children: [{ type: 'text', value: 'list2' }],
@@ -73,11 +78,12 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any);
+    const result = indentListToMdastTree(nodes as any, editor);
 
     expect(result).toEqual({
       children: [
         {
+          checked: null,
           children: [
             {
               children: [{ type: 'text', value: 'list1' }],
@@ -87,6 +93,7 @@ describe('indentListToMdastTree', () => {
           type: 'listItem',
         },
         {
+          checked: null,
           children: [
             {
               children: [{ type: 'text', value: 'list2' }],
@@ -95,6 +102,7 @@ describe('indentListToMdastTree', () => {
             {
               children: [
                 {
+                  checked: null,
                   children: [
                     {
                       children: [{ type: 'text', value: 'list3' }],
@@ -136,11 +144,12 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any);
+    const result = indentListToMdastTree(nodes as any, editor);
 
     expect(result).toEqual({
       children: [
         {
+          checked: null,
           children: [
             {
               children: [{ type: 'text', value: 'list1' }],
@@ -150,6 +159,7 @@ describe('indentListToMdastTree', () => {
           type: 'listItem',
         },
         {
+          checked: null,
           children: [
             {
               children: [{ type: 'text', value: 'list2' }],
@@ -204,7 +214,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any) as any;
+    const result = indentListToMdastTree(nodes as any, editor) as any;
 
     // The structure should correctly represent the indentation levels
     expect(result.children).toHaveLength(2); // Two top-level items
@@ -213,7 +223,7 @@ describe('indentListToMdastTree', () => {
   });
 
   it('should throw error for empty nodes', () => {
-    expect(() => indentListToMdastTree([])).toThrow(
+    expect(() => indentListToMdastTree([], editor)).toThrow(
       'Cannot create a list from empty nodes'
     );
   });
@@ -250,7 +260,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any) as any;
+    const result = indentListToMdastTree(nodes as any, editor) as any;
 
     expect(result.ordered).toBe(false);
     expect(result.children[0].children[1].ordered).toBe(true);
@@ -277,7 +287,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any) as any;
+    const result = indentListToMdastTree(nodes as any, editor) as any;
 
     expect(result.ordered).toBe(true);
     expect(result.start).toBe(3);
@@ -323,7 +333,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any) as any;
+    const result = indentListToMdastTree(nodes as any, editor) as any;
 
     expect(result.children).toHaveLength(2);
     expect(
@@ -365,7 +375,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any) as any;
+    const result = indentListToMdastTree(nodes as any, editor) as any;
 
     const firstItem = result.children[0].children[0].children;
 

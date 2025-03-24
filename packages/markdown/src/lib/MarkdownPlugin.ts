@@ -1,9 +1,9 @@
 import type { Plugin } from 'unified';
 
 import {
-  type Descendant,
   type OmitFirst,
   type PluginConfig,
+  type SlateEditor,
   bindFirst,
   createTSlatePlugin,
   isUrl,
@@ -23,8 +23,8 @@ import { serializeMd } from './serializer';
 // } & Deserializer;
 
 export type CommentItem = {
-  deserialize: (astNode: any, options: any) => Descendant[];
-  serialize: (node: any, options: any) => any;
+  deserialize?: (astNode: any, options: any) => any;
+  serialize?: (node: any, editor: SlateEditor) => any;
 };
 
 export type Components = Record<string, CommentItem>;
@@ -32,10 +32,7 @@ export type Components = Record<string, CommentItem>;
 export type MarkdownConfig = PluginConfig<
   'markdown',
   {
-    remarkPlugins: {
-      deserialize: Plugin[];
-      serialize: Plugin[];
-    };
+    remarkPlugins: Plugin[];
     components?: Components;
     /** Override element rules. */
     elementRules?: RemarkElementRules;
@@ -65,10 +62,7 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   options: {
     elementRules: remarkDefaultElementRules,
     indentList: false,
-    remarkPlugins: {
-      deserialize: [],
-      serialize: [],
-    },
+    remarkPlugins: [],
     splitLineBreaks: false,
     textRules: remarkDefaultTextRules,
   },
