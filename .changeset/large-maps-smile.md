@@ -1,5 +1,5 @@
 ---
-'@udecode/plate': major
+'@udecode/plate-core': minor
 ---
 
-New layout output: components rendered in the beforeEditor and afterEditor areas will now be rendered outside the aboveEditable area
+Fix: `PlatePlugin.render.beforeEditable` and `afterEditable` should be siblings to `aboveEditable` instead of children. `aboveSlate` should be used for that scenario.
