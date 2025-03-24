@@ -17,7 +17,6 @@ import {
 } from './remark-slate';
 import {
   type SerializeMdOptions,
-  type TComponents,
   serializeMd,
 } from './serializer';
 // export type MarkdownDeserializer = {
@@ -30,7 +29,9 @@ export type CommentItem = {
   serialize?: (node: any, options: SerializeMdOptions) => any;
 };
 
-export type Components = Partial<Record<TComponents['type'], CommentItem>> &
+export type Components = 
+
+// Partial<Record<TComponents['type'], CommentItem>> &
   Record<string, CommentItem>;
 
 export type MarkdownConfig = PluginConfig<

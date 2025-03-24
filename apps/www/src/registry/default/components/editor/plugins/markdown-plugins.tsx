@@ -10,24 +10,39 @@ import type {
   TTableElement,
   TTableRowElement,
 } from '@udecode/plate-table';
+import type * as mdastUtilMath from 'mdast-util-math';
 
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import {
   type mdast,
-  type mdastUtilMath,
   convertNodes,
   MarkdownPlugin,
 } from '@udecode/plate-markdown';
+import {
+  EquationPlugin,
+  InlineEquationPlugin,
+} from '@udecode/plate-math/react';
+import { ImagePlugin } from '@udecode/plate-media/react';
 import { MentionPlugin } from '@udecode/plate-mention/react';
-import { TableCellHeaderPlugin } from '@udecode/plate-table/react';
+import {
+  TableCellHeaderPlugin,
+  TableCellPlugin,
+  TablePlugin,
+  TableRowPlugin,
+} from '@udecode/plate-table/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
 import remarkMath from 'remark-math';
 
 export const markdownPlugins = MarkdownPlugin.configure({
   options: {
     components: {
-      blockquote: {
-        // deserialize: remarkDefaultElementRules.blockquote?.transform,
+      [BlockquotePlugin.key]: {
         serialize: (node: TElement, options): mdast.Blockquote => {
           return {
             children: convertNodes(
@@ -38,8 +53,7 @@ export const markdownPlugins = MarkdownPlugin.configure({
           };
         },
       },
-      code: {
-        // deserialize: remarkDefaultElementRules.code?.transform,
+      [CodeBlockPlugin.key]: {
         serialize: (node: TCodeBlockElement): mdast.Code => {
           return {
             lang: node.lang,
@@ -60,8 +74,15 @@ export const markdownPlugins = MarkdownPlugin.configure({
           };
         },
       },
-      heading: {
-        // deserialize: remarkDefaultElementRules.heading?.transform,
+      [EquationPlugin.key]: {
+        serialize: (node: TEquationElement): mdastUtilMath.Math => {
+          return {
+            type: 'math',
+            value: node.texExpression,
+          };
+        },
+      },
+      [HeadingPlugin.key]: {
         serialize: (node: TElement, options): mdast.Heading => {
           const depthMap = {
             [HEADING_KEYS.h1]: 1,
@@ -82,8 +103,12 @@ export const markdownPlugins = MarkdownPlugin.configure({
           };
         },
       },
-      image: {
-        // deserialize: remarkDefaultElementRules.image?.transform,
+      [HorizontalRulePlugin.key]: {
+        serialize: (): mdast.ThematicBreak => {
+          return { type: 'thematicBreak' };
+        },
+      },
+      [ImagePlugin.key]: {
         serialize: ({
           caption,
           url,
@@ -101,7 +126,7 @@ export const markdownPlugins = MarkdownPlugin.configure({
           return { children: [image], type: 'paragraph' };
         },
       },
-      inlineMath: {
+      [InlineEquationPlugin.key]: {
         serialize: (node: TEquationElement): mdastUtilMath.InlineMath => {
           return {
             type: 'inlineMath',
@@ -109,8 +134,7 @@ export const markdownPlugins = MarkdownPlugin.configure({
           };
         },
       },
-      link: {
-        // deserialize: remarkDefaultElementRules.link?.transform,
+      [LinkPlugin.key]: {
         serialize: (node: TLinkElement, options): mdast.Link => {
           return {
             children: convertNodes(
@@ -122,20 +146,6 @@ export const markdownPlugins = MarkdownPlugin.configure({
           };
         },
       },
-      list: {
-        // deserialize: remarkDefaultElementRules.list?.transform,
-      },
-      listItem: {
-        // deserialize: remarkDefaultElementRules.listItem?.transform,
-      },
-      math: {
-        serialize: (node: TEquationElement): mdastUtilMath.Math => {
-          return {
-            type: 'math',
-            value: node.texExpression,
-          };
-        },
-      },
       [MentionPlugin.key]: {
         serialize: ({ value }: TMentionElement): mdast.Text => {
           return {
@@ -144,8 +154,7 @@ export const markdownPlugins = MarkdownPlugin.configure({
           };
         },
       },
-      paragraph: {
-        // deserialize: remarkDefaultElementRules.paragraph?.transform,
+      [ParagraphPlugin.key]: {
         serialize: (node: TElement, options): mdast.Paragraph => {
           return {
             children: convertNodes(
@@ -153,29 +162,6 @@ export const markdownPlugins = MarkdownPlugin.configure({
               options
             ) as mdast.Paragraph['children'],
             type: 'paragraph',
-          };
-        },
-      },
-      table: {
-        // deserialize: remarkDefaultElementRules.table?.transform,
-        serialize: (node: TTableElement, options): mdast.Table => {
-          return {
-            children: convertNodes(
-              node.children,
-              options
-            ) as mdast.Table['children'],
-            type: 'table',
-          };
-        },
-      },
-      tableCell: {
-        serialize: (node: TTableCellElement, options): mdast.TableCell => {
-          return {
-            children: convertNodes(
-              node.children,
-              options
-            ) as mdast.TableCell['children'],
-            type: 'tableCell',
           };
         },
       },
@@ -190,7 +176,29 @@ export const markdownPlugins = MarkdownPlugin.configure({
           };
         },
       },
-      tableRow: {
+      [TableCellPlugin.key]: {
+        serialize: (node: TTableCellElement, options): mdast.TableCell => {
+          return {
+            children: convertNodes(
+              node.children,
+              options
+            ) as mdast.TableCell['children'],
+            type: 'tableCell',
+          };
+        },
+      },
+      [TablePlugin.key]: {
+        serialize: (node: TTableElement, options): mdast.Table => {
+          return {
+            children: convertNodes(
+              node.children,
+              options
+            ) as mdast.Table['children'],
+            type: 'table',
+          };
+        },
+      },
+      [TableRowPlugin.key]: {
         serialize: (node: TTableRowElement, options): mdast.TableRow => {
           return {
             children: convertNodes(
@@ -201,13 +209,8 @@ export const markdownPlugins = MarkdownPlugin.configure({
           };
         },
       },
-      thematicBreak: {
-        // deserialize: remarkDefaultElementRules.thematicBreak?.transform,
-        serialize: (): mdast.ThematicBreak => {
-          return { type: 'thematicBreak' };
-        },
-      },
     },
+    indentList: true,
     remarkPlugins: [remarkMath],
   },
 });
