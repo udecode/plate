@@ -59,6 +59,7 @@ export type MarkdownConfig = PluginConfig<
 export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   key: 'markdown',
   options: {
+    components: {},
     elementRules: remarkDefaultElementRules,
     indentList: false,
     remarkPlugins: [],

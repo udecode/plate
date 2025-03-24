@@ -16,6 +16,7 @@ import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import {
@@ -81,74 +82,23 @@ export const markdownPlugins = MarkdownPlugin.configure({
           };
         },
       },
-      [HEADING_KEYS.h1]: {
+      [HeadingPlugin.key]: {
         serialize: (node: TElement, options): mdast.Heading => {
-          return {
-            children: convertNodes(
-              node.children,
-              options
-            ) as mdast.Heading['children'],
-            depth: 1,
-            type: 'heading',
+          const depthMap = {
+            [HEADING_KEYS.h1]: 1,
+            [HEADING_KEYS.h2]: 2,
+            [HEADING_KEYS.h3]: 3,
+            [HEADING_KEYS.h4]: 4,
+            [HEADING_KEYS.h5]: 5,
+            [HEADING_KEYS.h6]: 6,
           };
-        },
-      },
-      [HEADING_KEYS.h2]: {
-        serialize: (node: TElement, options): mdast.Heading => {
+
           return {
             children: convertNodes(
               node.children,
               options
             ) as mdast.Heading['children'],
-            depth: 2,
-            type: 'heading',
-          };
-        },
-      },
-      [HEADING_KEYS.h3]: {
-        serialize: (node: TElement, options): mdast.Heading => {
-          return {
-            children: convertNodes(
-              node.children,
-              options
-            ) as mdast.Heading['children'],
-            depth: 3,
-            type: 'heading',
-          };
-        },
-      },
-      [HEADING_KEYS.h4]: {
-        serialize: (node: TElement, options): mdast.Heading => {
-          return {
-            children: convertNodes(
-              node.children,
-              options
-            ) as mdast.Heading['children'],
-            depth: 4,
-            type: 'heading',
-          };
-        },
-      },
-      [HEADING_KEYS.h5]: {
-        serialize: (node: TElement, options): mdast.Heading => {
-          return {
-            children: convertNodes(
-              node.children,
-              options
-            ) as mdast.Heading['children'],
-            depth: 5,
-            type: 'heading',
-          };
-        },
-      },
-      [HEADING_KEYS.h6]: {
-        serialize: (node: TElement, options): mdast.Heading => {
-          return {
-            children: convertNodes(
-              node.children,
-              options
-            ) as mdast.Heading['children'],
-            depth: 6,
+            depth: depthMap[node.type as keyof typeof depthMap] as any,
             type: 'heading',
           };
         },

@@ -57,8 +57,13 @@ export const convertNodes = (
 };
 
 export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
-  const component =
-    options.editor.getOptions(MarkdownPlugin).components?.[node.type];
+  let key = node.type;
+
+  if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.type)) {
+    key = 'heading';
+  }
+
+  const component = options.editor.getOptions(MarkdownPlugin).components?.[key];
 
   if (component?.serialize) {
     return component.serialize(node, options);
