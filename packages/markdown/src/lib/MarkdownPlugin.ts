@@ -15,7 +15,11 @@ import {
   remarkDefaultElementRules,
   remarkDefaultTextRules,
 } from './remark-slate';
-import { type SerializeMdOptions, serializeMd } from './serializer';
+import {
+  type SerializeMdOptions,
+  type TComponents,
+  serializeMd,
+} from './serializer';
 // export type MarkdownDeserializer = {
 //   elementRules?: Partial<Record<MdastElementType, RemarkElementRule>>;
 //   textRules?: Partial<Record<MdastTextType, RemarkTextRule>>;
@@ -26,7 +30,8 @@ export type CommentItem = {
   serialize?: (node: any, options: SerializeMdOptions) => any;
 };
 
-export type Components = Record<string, CommentItem>;
+export type Components = Partial<Record<TComponents['type'], CommentItem>> &
+  Record<string, CommentItem>;
 
 export type MarkdownConfig = PluginConfig<
   'markdown',
