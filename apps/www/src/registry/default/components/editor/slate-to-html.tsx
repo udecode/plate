@@ -65,7 +65,7 @@ export function ExportHtmlButton({
       rel="noopener noreferrer"
       role="button"
     >
-      <Button >Export HTML</Button>
+      <Button>Export HTML</Button>
     </a>
   );
 }
