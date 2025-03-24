@@ -2,8 +2,6 @@ import type * as mdast from 'mdast';
 
 export type * as mdast from 'mdast';
 
-export type * as mdastUtilMath from 'mdast-util-math';
-
 export type * as unistLib from 'unist';
 
 export type astMarks =

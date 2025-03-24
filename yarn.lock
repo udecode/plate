@@ -6841,9 +6841,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
     marked: "npm:^15.0.6"
-    mdast-util-math: "npm:^3.0.0"
     remark-gfm: "npm:4.0.0"
-    remark-math: "npm:^6.0.0"
     remark-parse: "npm:^11.0.0"
     unified: "npm:^11.0.5"
   peerDependencies:
@@ -14719,7 +14717,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdast-util-math@npm:^3.0.0":
+"mdast-util-math@npm:3.0.0, mdast-util-math@npm:^3.0.0":
   version: 3.0.0
   resolution: "mdast-util-math@npm:3.0.0"
   dependencies:
@@ -18408,7 +18406,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-math@npm:^6.0.0":
+"remark-math@npm:6.0.0":
   version: 6.0.0
   resolution: "remark-math@npm:6.0.0"
   dependencies:
@@ -22044,6 +22042,7 @@ __metadata:
     lodash: "npm:4.17.21"
     lowlight: "npm:3.3.0"
     lucide-react: "npm:0.474.0"
+    mdast-util-math: "npm:3.0.0"
     mdast-util-toc: "npm:7.1.0"
     next: "npm:15.1.6"
     next-contentlayer2: "npm:0.4.6"
@@ -22076,6 +22075,7 @@ __metadata:
     remark-code-import: "npm:1.2.0"
     remark-emoji: "npm:5.0.1"
     remark-gfm: "npm:4.0.0"
+    remark-math: "npm:6.0.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.83.4"
     shadcx: "workspace:^"

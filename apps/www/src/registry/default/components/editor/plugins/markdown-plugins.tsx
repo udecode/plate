@@ -10,6 +10,7 @@ import type {
   TTableElement,
   TTableRowElement,
 } from '@udecode/plate-table';
+import type * as mdastUtilMath from 'mdast-util-math';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
@@ -19,7 +20,6 @@ import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import {
   type mdast,
-  type mdastUtilMath,
   convertNodes,
   MarkdownPlugin,
 } from '@udecode/plate-markdown';
