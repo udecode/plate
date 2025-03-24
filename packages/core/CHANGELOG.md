@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 46.0.10
+
+### Patch Changes
+
+- [#4182](https://github.com/udecode/plate/pull/4182) by [@mattiaz9](https://github.com/mattiaz9) – Fix: `PlatePlugin.render.beforeEditable` and `afterEditable` should be siblings to `aboveEditable` instead of children. `aboveSlate` should be used for that scenario.
+
 ## 46.0.9
 
 ### Patch Changes
