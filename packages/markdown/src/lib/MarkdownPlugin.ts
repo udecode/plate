@@ -3,7 +3,6 @@ import type { Plugin } from 'unified';
 import {
   type OmitFirst,
   type PluginConfig,
-  type SlateEditor,
   bindFirst,
   createTSlatePlugin,
   isUrl,
@@ -16,7 +15,7 @@ import {
   remarkDefaultElementRules,
   remarkDefaultTextRules,
 } from './remark-slate';
-import { serializeMd } from './serializer';
+import { type SerializeMdOptions, serializeMd } from './serializer';
 // export type MarkdownDeserializer = {
 //   elementRules?: Partial<Record<MdastElementType, RemarkElementRule>>;
 //   textRules?: Partial<Record<MdastTextType, RemarkTextRule>>;
@@ -24,7 +23,7 @@ import { serializeMd } from './serializer';
 
 export type CommentItem = {
   deserialize?: (astNode: any, options: any) => any;
-  serialize?: (node: any, editor: SlateEditor) => any;
+  serialize?: (node: any, options: SerializeMdOptions) => any;
 };
 
 export type Components = Record<string, CommentItem>;

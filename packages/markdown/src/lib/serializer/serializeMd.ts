@@ -8,10 +8,20 @@ import type { mdast } from './types';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
 import { convertNodes } from './convertNodes';
+
+export type SerializeMdOptions = {
+  editor: SlateEditor;
+  ignoreSuggestionType?: SuggestionType | SuggestionType[];
+};
+
+type SuggestionType = 'insert' | 'remove' | 'update';
+
 /** Serialize the editor value to Markdown. */
 export const serializeMd = (
   editor: SlateEditor,
-  options?: { value: Descendant[] }
+  options?: SerializeMdOptions & {
+    value?: Descendant[];
+  }
 ) => {
   const remarkPlugins: Plugin[] =
     editor.getOptions(MarkdownPlugin).remarkPlugins;
@@ -24,19 +34,25 @@ export const serializeMd = (
   const nodesToSerialize = options?.value ?? editor.children;
 
   return toRemarkProcessor.stringify(
-    slateToMdast({ editor, nodes: nodesToSerialize })
+    slateToMdast({
+      nodes: nodesToSerialize,
+      options: {
+        editor,
+        ignoreSuggestionType: options?.ignoreSuggestionType ?? 'remove',
+      },
+    })
   );
 };
 
 const slateToMdast = ({
-  editor,
   nodes,
+  options,
 }: {
-  editor: SlateEditor;
   nodes: Descendant[];
+  options: SerializeMdOptions;
 }): mdast.Root => {
   return {
-    children: convertNodes(nodes, editor) as mdast.Root['children'],
+    children: convertNodes(nodes, options) as mdast.Root['children'],
     type: 'root',
   } as mdast.Root;
 };

@@ -1,5 +1,6 @@
-import type { SlateEditor, TElement } from '@udecode/plate';
+import type { TElement } from '@udecode/plate';
 
+import type { SerializeMdOptions } from './serializeMd';
 import type { mdast } from './types';
 
 import { convertNodes } from './convertNodes';
@@ -14,7 +15,7 @@ type TIndentList = TElement & {
 
 export function indentListToMdastTree(
   nodes: TIndentList[],
-  editor: SlateEditor
+  options: SerializeMdOptions
 ): mdast.List {
   if (nodes.length === 0) {
     throw new Error('Cannot create a list from empty nodes');
@@ -58,7 +59,7 @@ export function indentListToMdastTree(
         {
           children: convertNodes(
             node.children,
-            editor
+            options
           ) as mdast.Paragraph['children'],
           type: 'paragraph',
         },

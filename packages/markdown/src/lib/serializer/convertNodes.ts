@@ -1,11 +1,11 @@
 import {
   type Descendant,
-  type SlateEditor,
   type TElement,
   type TText,
   TextApi,
 } from '@udecode/plate';
 
+import type { SerializeMdOptions } from './serializeMd';
 import type { unistLib } from './types';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
@@ -15,7 +15,7 @@ import { unreachable } from './utils/unreachable';
 
 export const convertNodes = (
   nodes: Descendant[],
-  editor: SlateEditor
+  options: SerializeMdOptions
 ): unistLib.Node[] => {
   const mdastNodes: unistLib.Node[] = [];
   let textQueue: TText[] = [];
@@ -40,11 +40,11 @@ export const convertNodes = (
           next && next.type === 'p' && 'listStyleType' in next;
 
         if (!isNextIndent) {
-          mdastNodes.push(indentListToMdastTree(listBlock as any, editor));
+          mdastNodes.push(indentListToMdastTree(listBlock as any, options));
           listBlock.length = 0;
         }
       } else {
-        const node = buildMdastNode(n, editor);
+        const node = buildMdastNode(n, options);
 
         if (node) {
           mdastNodes.push(node as unistLib.Node);
@@ -56,11 +56,12 @@ export const convertNodes = (
   return mdastNodes;
 };
 
-export const buildMdastNode = (node: any, editor: SlateEditor) => {
-  const component = editor.getOptions(MarkdownPlugin).components?.[node.type];
+export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
+  const component =
+    options.editor.getOptions(MarkdownPlugin).components?.[node.type];
 
   if (component?.serialize) {
-    return component.serialize(node, editor);
+    return component.serialize(node, options);
   }
 
   unreachable(node);
