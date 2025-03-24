@@ -87,8 +87,6 @@ const PlateContent = React.forwardRef(
 
     let aboveEditable: React.ReactNode = (
       <>
-        {beforeEditable}
-
         {renderEditable ? renderEditable(editable) : editable}
 
         <EditorMethodsEffect id={id} />
@@ -96,8 +94,6 @@ const PlateContent = React.forwardRef(
         {/* <EditorStateEffect id={id} /> */}
         <EditorRefEffect id={id} />
         <PlateControllerEffect id={id} />
-
-        {afterEditable}
       </>
     );
 
@@ -121,7 +117,13 @@ const PlateContent = React.forwardRef(
       prevReadOnly.current = readOnly;
     }, [autoFocusOnEditable, editor, readOnly]);
 
-    return <PlateSlate id={id}>{aboveEditable}</PlateSlate>;
+    return (
+      <PlateSlate id={id}>
+        {beforeEditable}
+        {aboveEditable}
+        {afterEditable}
+      </PlateSlate>
+    );
   }
 );
 PlateContent.displayName = 'PlateContent';
