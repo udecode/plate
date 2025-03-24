@@ -340,12 +340,14 @@ export default async function SlateToHtmlBlock() {
         <EditorStatic components={components} editor={editor} />
       </div>
 
-      <div className="p-2">
-        <div className="flex items-end gap-2">
-          <H3>HTML Iframe</H3>
-          <ExportHtmlButton html={html} serverTheme={theme} />
-        </div>
-        <HtmlIframe className="size-full" html={html} serverTheme={theme} />
+      <div className="p-2 relative">
+        <H3>HTML Iframe</H3>
+        <ExportHtmlButton className='absolute top-10 right-0' html={html} serverTheme={theme} />
+        <HtmlIframe
+          className="h-[7500px] w-full"
+          html={html}
+          serverTheme={theme}
+        />
       </div>
     </div>
   );
