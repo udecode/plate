@@ -10,15 +10,14 @@ export const getCustomLeaf = (options?: SerializeMdOptions): string[] => {
 
   const customLeaf: string[] = [];
 
-  const nodeParser =
-    options.editor.getOption(MarkdownPlugin, 'nodeParser') ??
-    defaultSerializeRules;
+  const nodes =
+    options.editor.getOption(MarkdownPlugin, 'nodes') ?? defaultSerializeRules;
 
-  if (nodeParser) {
-    const keys = Object.keys(nodeParser);
+  if (nodes) {
+    const keys = Object.keys(nodes);
 
     for (const key of keys) {
-      const component = nodeParser[key as ElementTypes];
+      const component = nodes[key as ElementTypes];
 
       if (component?.isLeaf) {
         customLeaf.push(key);

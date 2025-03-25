@@ -91,7 +91,7 @@ export const convertTexts = (
         .reverse()
         .forEach((k) => {
           const nodeParser =
-            options?.editor?.getOption(MarkdownPlugin, 'nodeParser')?.[
+            options?.editor?.getOption(MarkdownPlugin, 'nodes')?.[
               k as ElementTypes
             ] ?? defaultSerializeRules[k as ElementTypes];
 

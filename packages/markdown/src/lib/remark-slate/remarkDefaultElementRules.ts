@@ -16,7 +16,7 @@ import { remarkTransformNode } from './remarkTransformNode';
 export const getRemarkDefaultElementRules = (
   editor: SlateEditor
 ): RemarkElementRules => {
-  const components = editor.getOptions(MarkdownPlugin).nodeParser;
+  const components = editor.getOptions(MarkdownPlugin).nodes;
 
   return {
     blockquote: {

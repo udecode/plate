@@ -17,8 +17,20 @@ import type { mdast } from './types';
 
 import { convertNodes } from './convertNodes';
 
-export type NodeParser = Partial<{
-  [K in keyof ElementTypeMap]: SerializeComponent<K>;
+export type NodeParser<K extends keyof ElementTypeMap> = {
+  isLeaf?: boolean;
+  deserialize?: (
+    node: ReturnTypeMap[K],
+    options: SerializeMdOptions
+  ) => ElementTypeMap[K];
+  serialize?: (
+    node: ElementTypeMap[K],
+    options: SerializeMdOptions
+  ) => ReturnTypeMap[K];
+};
+
+export type Nodes = Partial<{
+  [K in keyof ElementTypeMap]: NodeParser<K>;
 }> &
   Record<
     string,
@@ -65,28 +77,7 @@ type ReturnTypeMap = {
   tr: mdast.TableRow;
 };
 
-type SerializeComponent<K extends keyof ElementTypeMap> = {
-  isLeaf?: boolean;
-  deserialize?: (
-    node: ReturnTypeMap[K],
-    options: SerializeMdOptions
-  ) => ElementTypeMap[K];
-  serialize?: (
-    node: ElementTypeMap[K],
-    options: SerializeMdOptions
-  ) => ReturnTypeMap[K];
-};
-
-type SerializeRules = {
-  [K in keyof ElementTypeMap]?: {
-    serialize: (
-      node: ElementTypeMap[K],
-      options: SerializeMdOptions
-    ) => ReturnTypeMap[K];
-  };
-};
-
-export const defaultSerializeRules: NodeParser = {
+export const defaultSerializeRules: Nodes = {
   a: {
     serialize: (node, options) => {
       return {

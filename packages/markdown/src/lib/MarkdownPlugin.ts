@@ -9,12 +9,12 @@ import {
 } from '@udecode/plate';
 
 import { deserializeMd } from './deserializer/utils';
-import { type NodeParser, serializeMd } from './serializer';
+import { type Nodes, serializeMd } from './serializer';
 
 export type MarkdownConfig = PluginConfig<
   'markdown',
   {
-    nodeParser: NodeParser | null;
+    nodes: Nodes | null;
     remarkPlugins: Plugin[];
     /**
      * When the text contains \n, split the text into a separate paragraph.
@@ -37,7 +37,7 @@ export type MarkdownConfig = PluginConfig<
 export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   key: 'markdown',
   options: {
-    nodeParser: null,
+    nodes: null,
     remarkPlugins: [],
     splitLineBreaks: false,
   },

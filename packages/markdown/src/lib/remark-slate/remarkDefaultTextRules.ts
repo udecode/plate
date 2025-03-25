@@ -7,7 +7,7 @@ import { MarkdownPlugin } from '../MarkdownPlugin';
 export const getRemarkDefaultTextRules = (
   editor: SlateEditor
 ): RemarkTextRules => {
-  const components = editor.getOptions(MarkdownPlugin).nodeParser;
+  const components = editor.getOptions(MarkdownPlugin).nodes;
 
   return {
     delete: {
