@@ -12,11 +12,17 @@ import {
 /** Decrease the indentation of the selected blocks. */
 export const outdentList = (
   editor: SlateEditor,
-  options: IndentListOptions = {}
+  options: IndentListOptions = {},
 ) => {
   setIndent(editor, {
     offset: -1,
-    unsetNodesProps: [BaseIndentListPlugin.key, INDENT_LIST_KEYS.checked],
+    unsetNodesProps: [
+      BaseIndentListPlugin.key,
+      INDENT_LIST_KEYS.checked,
+      'hierListRestart',
+      'listParentIndex',
+      INDENT_LIST_KEYS.listRestart,
+    ],
     ...options,
   });
 };

@@ -26,10 +26,27 @@ export const toggleIndentListUnset = (
 
     return true;
   }
+
   if (listStyleType === node[BaseIndentListPlugin.key]) {
     editor.tf.unsetNodes([BaseIndentListPlugin.key], {
       at: path,
     });
+
+    // N.B. outdentList only unsets list node props (including our custom seal ones) when
+    // the indentation goes to zero. So we need to unset the other nodes manually here too.
+    if (listStyleType === ListStyleType.Decimal) {
+      editor.tf.unsetNodes(
+        [
+          "hierListRestart",
+          "listParentIndex",
+          INDENT_LIST_KEYS.listRestart,
+          INDENT_LIST_KEYS.listStart,
+        ],
+        {
+          at: path,
+        }
+      );
+    }
 
     outdentList(editor as any, { listStyleType });
 

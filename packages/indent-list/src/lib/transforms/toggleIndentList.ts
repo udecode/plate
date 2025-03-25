@@ -23,7 +23,7 @@ import { toggleIndentListUnset } from './toggleIndentListUnset';
 /** Toggle indent list. */
 export const toggleIndentList = <
   N extends ElementOf<E>,
-  E extends SlateEditor = SlateEditor,
+  E extends SlateEditor = SlateEditor
 >(
   editor: E,
   options: IndentListOptions,
@@ -59,6 +59,7 @@ export const toggleIndentList = <
     const _entries = editor.api.nodes<TElement>({ block: true });
     const entries = [..._entries];
 
+    // if they're all list nodes, and all the same type of list node, then unset them.
     const eqListStyleType = areEqListStyleType(editor, entries, {
       listStyleType,
     });
@@ -70,7 +71,17 @@ export const toggleIndentList = <
 
           const indent = node[BaseIndentPlugin.key] as number;
 
-          editor.tf.unsetNodes(BaseIndentListPlugin.key, { at: path });
+          editor.tf.unsetNodes(
+            [
+              BaseIndentListPlugin.key,
+              INDENT_LIST_KEYS.listStart,
+              INDENT_LIST_KEYS.listRestart,
+              INDENT_LIST_KEYS.checked, // not sure why this is only removed below when `indent < 1`
+              "hierListRestart",
+              "listParentIndex",
+            ],
+            { at: path }
+          );
 
           if (indent > 1) {
             editor.tf.setNodes(

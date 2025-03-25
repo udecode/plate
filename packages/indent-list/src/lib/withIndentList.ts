@@ -1,10 +1,10 @@
 import {
+  NodeApi,
   type OverrideEditor,
   type Path,
+  PathApi,
   type PathRef,
   type TElement,
-  NodeApi,
-  PathApi,
 } from '@udecode/plate';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
@@ -48,12 +48,12 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
         // If there is a previous indent list, the inserted indent list style type should be the same.
         // Only for lower-roman and upper-roman as it overlaps with lower-alpha and upper-alpha.
         if (operation.type === 'insert_node') {
-          const listStyleType = operation.node[BaseIndentListPlugin.key];
+          const listStyleType = operation.node[BaseIndentListPlugin.key]; // whatever was specified to be added
 
           if (
             listStyleType &&
             ['lower-roman', 'upper-roman'].includes(
-              listStyleType as ListStyleType
+              listStyleType as ListStyleType,
             )
           ) {
             const prevNodeEntry = getPreviousIndentList<TElement>(
@@ -63,7 +63,7 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
                 breakOnEqIndentNeqListStyleType: false,
                 eqIndent: false,
                 ...getSiblingIndentListOptions,
-              }
+              },
             );
 
             if (prevNodeEntry) {
@@ -110,12 +110,12 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
               const nextNodeEntryBefore = getNextIndentList<TElement>(
                 editor,
                 [node, path],
-                getSiblingIndentListOptions
+                getSiblingIndentListOptions,
               );
 
               if (nextNodeEntryBefore) {
                 nextIndentListPathRef = editor.api.pathRef(
-                  nextNodeEntryBefore[1]
+                  nextNodeEntryBefore[1],
                 );
               }
             }
@@ -142,14 +142,16 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
           (operation.properties as any)[BaseIndentListPlugin.key] &&
           (operation.properties as any)[INDENT_LIST_KEYS.listRestart]
         ) {
-          const listReStart = (operation.properties as any)[
-            INDENT_LIST_KEYS.listRestart
-          ];
+          // NB was testing for hierListRestart too, but don't think it's needed as it doesn't
+          // affect listStart.
+          const listReStart =
+            (operation.properties as any)[INDENT_LIST_KEYS.listRestart] ||
+            (operation.properties as any).hierListRestart;
 
           (operation.properties as any)[INDENT_LIST_KEYS.listStart] =
             listReStart + 1;
           (operation.properties as any)[INDENT_LIST_KEYS.listRestart] =
-            undefined;
+            undefined; // TODO gets set to undefined in the node, rather than unsetting. Our backend strips this out though.
 
           const node = NodeApi.get<TElement>(editor, path);
 
@@ -157,12 +159,12 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
             const nextNodeEntryBefore = getNextIndentList<TElement>(
               editor,
               [node, path],
-              getSiblingIndentListOptions
+              getSiblingIndentListOptions,
             );
 
             if (nextNodeEntryBefore) {
               nextIndentListPathRef = editor.api.pathRef(
-                nextNodeEntryBefore[1]
+                nextNodeEntryBefore[1],
               );
             }
           }
@@ -180,7 +182,7 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
               normalizeIndentListStart<TElement>(
                 editor,
                 [nextNode, nextPath],
-                getSiblingIndentListOptions
+                getSiblingIndentListOptions,
               );
             }
           }
@@ -197,7 +199,7 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
             normalizeIndentListStart<TElement>(
               editor,
               [targetNode, targetPath],
-              getSiblingIndentListOptions
+              getSiblingIndentListOptions,
             );
           }
         }
@@ -211,11 +213,12 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
               normalizeIndentListStart<TElement>(
                 editor,
                 [nextNode, nextPath],
-                getSiblingIndentListOptions
+                getSiblingIndentListOptions,
               );
             }
           }
         }
+
         if (nodeBefore && operation.type === 'set_node') {
           const prevListStyleType = (operation.properties as any)[
             BaseIndentListPlugin.key
@@ -233,7 +236,7 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
             const nextNodeEntry = getNextIndentList<TElement>(
               editor,
               [nodeBefore, path],
-              getSiblingIndentListOptions
+              getSiblingIndentListOptions,
             );
 
             if (!nextNodeEntry) return;
@@ -241,7 +244,7 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
             normalizeIndentListStart<TElement>(
               editor,
               nextNodeEntry,
-              getSiblingIndentListOptions
+              getSiblingIndentListOptions,
             );
           }
           // Update list style type
@@ -283,28 +286,28 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
             let nextNodeEntry = getNextIndentList<TElement>(
               editor,
               [nodeBefore, path],
-              getSiblingIndentListOptions
+              getSiblingIndentListOptions,
             );
 
             if (nextNodeEntry) {
               normalizeIndentListStart<TElement>(
                 editor,
                 nextNodeEntry,
-                getSiblingIndentListOptions
+                getSiblingIndentListOptions,
               );
             }
 
             nextNodeEntry = getNextIndentList<TElement>(
               editor,
               [node, path],
-              getSiblingIndentListOptions
+              getSiblingIndentListOptions,
             );
 
             if (nextNodeEntry) {
               normalizeIndentListStart<TElement>(
                 editor,
                 nextNodeEntry,
-                getSiblingIndentListOptions
+                getSiblingIndentListOptions,
               );
             }
           }
@@ -335,14 +338,14 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
                 breakOnLowerIndent: false,
                 eqIndent: false,
                 ...getSiblingIndentListOptions,
-              }
+              },
             );
 
             if (prevNodeEntry) {
               normalizeIndentListStart<TElement>(
                 editor,
                 prevNodeEntry,
-                getSiblingIndentListOptions
+                getSiblingIndentListOptions,
               );
             }
 
@@ -361,14 +364,14 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
                 breakOnLowerIndent: false,
                 eqIndent: false,
                 ...getSiblingIndentListOptions,
-              }
+              },
             );
 
             if (prevNodeEntry) {
               normalizeIndentListStart<TElement>(
                 editor,
                 prevNodeEntry,
-                getSiblingIndentListOptions
+                getSiblingIndentListOptions,
               );
             }
 
@@ -387,14 +390,14 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
                 breakOnLowerIndent: false,
                 eqIndent: false,
                 ...getSiblingIndentListOptions,
-              }
+              },
             );
 
             if (nextNodeEntry) {
               normalizeIndentListStart<TElement>(
                 editor,
                 nextNodeEntry,
-                getSiblingIndentListOptions
+                getSiblingIndentListOptions,
               );
             }
 
@@ -416,7 +419,7 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
               normalizeIndentListStart<TElement>(
                 editor,
                 nextNodeEntry,
-                getSiblingIndentListOptions
+                getSiblingIndentListOptions,
               );
             }
           }
