@@ -1,10 +1,13 @@
 import type { TEquationElement } from '@udecode/plate-math';
+import type { TSuggestionText } from '@udecode/plate-suggestion';
+import type * as mdastUtilMath from 'mdast-util-math';
 
-import { type mdastUtilMath, MarkdownPlugin } from '@udecode/plate-markdown';
+import { type mdast, MarkdownPlugin } from '@udecode/plate-markdown';
 import {
   EquationPlugin,
   InlineEquationPlugin,
 } from '@udecode/plate-math/react';
+import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
@@ -38,6 +41,27 @@ export const markdownPlugins = MarkdownPlugin.configure({
           return {
             type: 'inlineMath',
             value: node.texExpression,
+          };
+        },
+      },
+      [SuggestionPlugin.key]: {
+        isLeaf: true,
+        serialize: (node: TSuggestionText, options): mdast.Text => {
+          if (options.ignoreSuggestionType) {
+            const suggestionData = options.editor
+              .getApi(SuggestionPlugin)
+              .suggestion.suggestionData(node);
+
+            if (suggestionData?.type === options.ignoreSuggestionType)
+              return {
+                type: 'text',
+                value: '',
+              };
+          }
+
+          return {
+            type: 'text',
+            value: node.text,
           };
         },
       },

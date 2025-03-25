@@ -6841,8 +6841,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
     marked: "npm:^15.0.6"
-    remark-gfm: "npm:4.0.0"
     remark-parse: "npm:^11.0.0"
+    remark-stringify: "npm:^11.0.0"
     unified: "npm:^11.0.5"
   peerDependencies:
     "@udecode/plate": ">=46.0.9"

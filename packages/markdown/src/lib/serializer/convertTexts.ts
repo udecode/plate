@@ -1,14 +1,22 @@
 import type { TText } from '@udecode/plate';
 
+import type { SerializeMdOptions } from './serializeMd';
 import type { astMarks, slateMarks } from './types';
 
+import { MarkdownPlugin } from '../MarkdownPlugin';
+import { getCustomLeaf } from './utils/getCustomLeaf';
 import { unreachable } from './utils/unreachable';
 
-export const convertTexts = (slateTexts: readonly TText[]): astMarks[] => {
+export const convertTexts = (
+  slateTexts: readonly TText[],
+  options: SerializeMdOptions
+): astMarks[] => {
+  const customLeaf: string[] = getCustomLeaf(options);
+
   const mdastTexts: astMarks[] = [];
 
-  const starts: slateMarks[] = [];
-  let ends: slateMarks[] = [];
+  const starts: string[] = [];
+  let ends: string[] = [];
 
   let textTemp = '';
   for (let j = 0; j < slateTexts.length; j++) {
@@ -29,6 +37,7 @@ export const convertTexts = (slateTexts: readonly TText[]): astMarks[] => {
         // inlineCode should be last because of the spec in mdast
         // https://github.com/inokawa/remark-slate-transformer/issues/145
         'code',
+        ...customLeaf,
       ] as const
     ).forEach((k) => {
       if (cur[k]) {
@@ -44,7 +53,7 @@ export const convertTexts = (slateTexts: readonly TText[]): astMarks[] => {
     const endsToRemove = starts.reduce<{ key: slateMarks; index: number }[]>(
       (acc, k, kIndex) => {
         if (ends.includes(k)) {
-          acc.push({ key: k, index: kIndex });
+          acc.push({ key: k as slateMarks, index: kIndex });
         }
         return acc;
       },
@@ -79,6 +88,16 @@ export const convertTexts = (slateTexts: readonly TText[]): astMarks[] => {
         .slice()
         .reverse()
         .forEach((k) => {
+          const component = options?.editor?.getOption(
+            MarkdownPlugin,
+            'components'
+          )?.[k];
+
+          if (component?.serialize) {
+            res = component.serialize(cur, options);
+            return;
+          }
+
           switch (k) {
             case 'bold': {
               res = {
@@ -108,6 +127,7 @@ export const convertTexts = (slateTexts: readonly TText[]): astMarks[] => {
               };
               break;
             }
+
             default: {
               unreachable(k);
               break;

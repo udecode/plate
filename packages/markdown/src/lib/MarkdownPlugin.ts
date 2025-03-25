@@ -8,20 +8,21 @@ import {
   isUrl,
 } from '@udecode/plate';
 
-import type { ElementTypes } from './internal/types';
-
 import { deserializeMd } from './deserializer/utils';
-import { type RemarkTextRules, remarkDefaultTextRules } from './remark-slate';
+import {
+  type RemarkPluginOptions,
+  type RemarkTextRules,
+  remarkDefaultTextRules,
+} from './remark-slate';
 import { type SerializeMdOptions, serializeMd } from './serializer';
 
 export type CommentItem = {
-  deserialize?: (astNode: any, options: any) => any;
+  isLeaf?: boolean;
+  deserialize?: (astNode: any, options: RemarkPluginOptions) => any;
   serialize?: (node: any, options: SerializeMdOptions) => any;
 };
 
-export type Components = Partial<
-  Record<ElementTypes, CommentItem> | Record<string, CommentItem>
->;
+export type Components = Record<string, CommentItem>;
 
 export type MarkdownConfig = PluginConfig<
   'markdown',

@@ -5,7 +5,6 @@ import {
   TextApi,
 } from '@udecode/plate';
 
-import type { ElementTypes } from '../internal/types';
 import type { SerializeMdOptions } from './serializeMd';
 import type { unistLib } from './types';
 
@@ -30,7 +29,9 @@ export const convertNodes = (
     if (n && TextApi.isText(n)) {
       textQueue.push(n);
     } else {
-      mdastNodes.push(...(convertTexts(textQueue) as any as unistLib.Node[]));
+      mdastNodes.push(
+        ...(convertTexts(textQueue, options) as any as unistLib.Node[])
+      );
       textQueue = [];
       if (!n) continue;
 
@@ -59,7 +60,7 @@ export const convertNodes = (
 };
 
 export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
-  let key: ElementTypes = node.type;
+  let key = node.type;
 
   if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.type)) {
     key = 'heading';

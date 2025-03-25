@@ -18,7 +18,7 @@ type SuggestionType = 'insert' | 'remove' | 'update';
 /** Serialize the editor value to Markdown. */
 export const serializeMd = (
   editor: SlateEditor,
-  options?: SerializeMdOptions & {
+  options?: Omit<SerializeMdOptions, 'editor'> & {
     value?: Descendant[];
   }
 ) => {
