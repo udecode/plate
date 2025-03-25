@@ -598,3 +598,39 @@ describe('deserializeMd options', () => {
     });
   });
 });
+
+describe('deserializeMd equation', () => {
+  const editor = createTestEditor();
+
+  it('should deserialize block equation', () => {
+    const input = `$$
+\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}
+$$`;
+
+    const output = (
+      <fragment>
+        <hequation texExpression="\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}">
+          <htext />
+        </hequation>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize inline equation', () => {
+    const input = `$E=mc^2$ `;
+
+    const output = (
+      <fragment>
+        <hp>
+          <hinlineequation texExpression="E=mc^2">
+            <htext />
+          </hinlineequation>
+        </hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+});

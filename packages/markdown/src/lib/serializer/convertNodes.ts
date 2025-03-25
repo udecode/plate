@@ -5,6 +5,7 @@ import {
   TextApi,
 } from '@udecode/plate';
 
+import type { ElementTypes } from '../internal/types';
 import type { SerializeMdOptions } from './serializeMd';
 import type { unistLib } from './types';
 
@@ -58,7 +59,7 @@ export const convertNodes = (
 };
 
 export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
-  let key = node.type;
+  let key: ElementTypes = node.type;
 
   if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.type)) {
     key = 'heading';
