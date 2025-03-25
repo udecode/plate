@@ -47,8 +47,6 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@types/mdast": "^4.0.3",
-    "@types/unist": "^3.0.2",
     "lodash": "^4.17.21",
     "marked": "^15.0.6",
     "remark-parse": "^11.0.0",
@@ -56,6 +54,8 @@
     "unified": "^11.0.5"
   },
   "devDependencies": {
+    "@types/mdast": "^4.0.3",
+    "@types/unist": "^3.0.2",
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {

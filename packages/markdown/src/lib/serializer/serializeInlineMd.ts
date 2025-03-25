@@ -25,7 +25,6 @@ export const serializeInlineMd = (
   const serializedContent = toRemarkProcessor.stringify({
     children: convertTexts(options?.value as any, {
       editor,
-      ignoreSuggestionType: options?.ignoreSuggestionType,
     }),
     type: 'root',
   });

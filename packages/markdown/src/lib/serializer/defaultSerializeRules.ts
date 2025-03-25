@@ -17,12 +17,13 @@ import type { mdast } from './types';
 
 import { convertNodes } from './convertNodes';
 
-export type Components = Partial<{
+export type NodeParser = Partial<{
   [K in keyof ElementTypeMap]: SerializeComponent<K>;
 }> &
   Record<
     string,
     {
+      isLeaf?: boolean;
       deserialize?: (node: any, options: SerializeMdOptions) => any;
       serialize?: (node: any, options: SerializeMdOptions) => any;
     }
@@ -65,6 +66,7 @@ type ReturnTypeMap = {
 };
 
 type SerializeComponent<K extends keyof ElementTypeMap> = {
+  isLeaf?: boolean;
   deserialize?: (
     node: ReturnTypeMap[K],
     options: SerializeMdOptions
@@ -84,7 +86,7 @@ type SerializeRules = {
   };
 };
 
-export const defaultSerializeRules: SerializeRules = {
+export const defaultSerializeRules: NodeParser = {
   a: {
     serialize: (node, options) => {
       return {
@@ -198,6 +200,15 @@ export const defaultSerializeRules: SerializeRules = {
           options
         ) as mdast.Paragraph['children'],
         type: 'paragraph',
+      };
+    },
+  },
+  suggestion: {
+    isLeaf: true,
+    serialize: () => {
+      return {
+        type: 'text',
+        value: '',
       };
     },
   },

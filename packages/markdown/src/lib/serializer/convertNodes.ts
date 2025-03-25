@@ -67,7 +67,7 @@ export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
   }
 
   const component =
-    options.editor.getOptions(MarkdownPlugin).components?.[key] ??
+    options.editor.getOptions(MarkdownPlugin).nodeParser?.[key] ??
     defaultSerializeRules[key as keyof typeof defaultSerializeRules];
 
   if (component?.serialize) {

@@ -34,10 +34,6 @@ export const deserializeMd = (
   const elementRules: RemarkElementRules = getRemarkDefaultElementRules(editor);
   const textRules: RemarkTextRules = {};
 
-  const options = editor.getOptions(MarkdownPlugin);
-
-  Object.assign(textRules, options.textRules);
-
   const remarkPlugins: Plugin[] =
     editor.getOptions(MarkdownPlugin).remarkPlugins;
 

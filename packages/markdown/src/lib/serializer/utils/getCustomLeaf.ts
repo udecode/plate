@@ -1,7 +1,7 @@
 import type { ElementTypes } from '../../internal/types';
 import type { SerializeMdOptions } from '../serializeMd';
 
-import { type CommentItem, MarkdownPlugin } from '../..';
+import { defaultSerializeRules, MarkdownPlugin } from '../..';
 
 export const getCustomLeaf = (options?: SerializeMdOptions): string[] => {
   if (!options?.editor) {
@@ -10,15 +10,15 @@ export const getCustomLeaf = (options?: SerializeMdOptions): string[] => {
 
   const customLeaf: string[] = [];
 
-  const components = options.editor.getOption(MarkdownPlugin, 'components');
+  const nodeParser =
+    options.editor.getOption(MarkdownPlugin, 'nodeParser') ??
+    defaultSerializeRules;
 
-  if (components) {
-    const keys = Object.keys(components);
+  if (nodeParser) {
+    const keys = Object.keys(nodeParser);
 
     for (const key of keys) {
-      const component = components[key as ElementTypes] as
-        | CommentItem
-        | undefined;
+      const component = nodeParser[key as ElementTypes];
 
       if (component?.isLeaf) {
         customLeaf.push(key);

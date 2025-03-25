@@ -5,6 +5,7 @@ import type { SerializeMdOptions } from './serializeMd';
 import type { astMarks, slateMarks } from './types';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
+import { defaultSerializeRules } from './defaultSerializeRules';
 import { getCustomLeaf } from './utils/getCustomLeaf';
 import { unreachable } from './utils/unreachable';
 
@@ -89,13 +90,13 @@ export const convertTexts = (
         .slice()
         .reverse()
         .forEach((k) => {
-          const component = options?.editor?.getOption(
+          const nodeParser = options?.editor?.getOption(
             MarkdownPlugin,
-            'components'
-          )?.[k as ElementTypes];
+            'nodeParser'
+          )?.[k as ElementTypes] ?? defaultSerializeRules[k as ElementTypes];
 
-          if (component?.serialize) {
-            res = component.serialize(cur, options) as any;
+          if (nodeParser?.serialize) {
+            res = nodeParser.serialize(cur, options) as any;
             return;
           }
 

@@ -10,10 +10,7 @@ import { convertNodes } from './convertNodes';
 
 export type SerializeMdOptions = {
   editor: SlateEditor;
-  ignoreSuggestionType?: SuggestionType | SuggestionType[];
 };
-
-type SuggestionType = 'insert' | 'remove' | 'update';
 
 /** Serialize the editor value to Markdown. */
 export const serializeMd = (
@@ -34,7 +31,6 @@ export const serializeMd = (
       nodes: nodesToSerialize,
       options: {
         editor,
-        ignoreSuggestionType: options?.ignoreSuggestionType ?? 'remove',
       },
     })
   );

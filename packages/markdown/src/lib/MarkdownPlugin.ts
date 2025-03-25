@@ -8,28 +8,14 @@ import {
   isUrl,
 } from '@udecode/plate';
 
-import type { RemarkPluginOptions } from './remark-slate';
-
 import { deserializeMd } from './deserializer/utils';
-import {
-  type Components,
-  type SerializeMdOptions,
-  serializeMd,
-} from './serializer';
-
-export type CommentItem = {
-  isLeaf?: boolean;
-  deserialize?: (astNode: any, options: RemarkPluginOptions) => any;
-  serialize?: (node: any, options: SerializeMdOptions) => any;
-};
-
-// export type Components = Partial<Record<ElementTypes, CommentItem>>;
+import { type NodeParser, serializeMd } from './serializer';
 
 export type MarkdownConfig = PluginConfig<
   'markdown',
   {
+    nodeParser: NodeParser | null;
     remarkPlugins: Plugin[];
-    components?: Components;
     /**
      * When the text contains \n, split the text into a separate paragraph.
      *
@@ -51,7 +37,7 @@ export type MarkdownConfig = PluginConfig<
 export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   key: 'markdown',
   options: {
-    components: {},
+    nodeParser: null,
     remarkPlugins: [],
     splitLineBreaks: false,
   },

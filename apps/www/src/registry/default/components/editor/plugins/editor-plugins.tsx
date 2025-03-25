@@ -39,7 +39,7 @@ import { exitBreakPlugin } from './exit-break-plugin';
 import { indentListPlugins } from './indent-list-plugins';
 import { lineHeightPlugin } from './line-height-plugin';
 import { linkPlugin } from './link-plugin';
-import { markdownPlugins } from './markdown-plugins';
+import { markdownPlugin } from './markdown-plugin';
 import { mediaPlugins } from './media-plugins';
 import { mentionPlugin } from './mention-plugin';
 import { resetBlockTypePlugin } from './reset-block-type-plugin';
@@ -115,7 +115,7 @@ export const editorPlugins = [
 
   // Deserialization
   DocxPlugin,
-  markdownPlugins,
+  markdownPlugin,
   JuicePlugin,
 
   // UI
