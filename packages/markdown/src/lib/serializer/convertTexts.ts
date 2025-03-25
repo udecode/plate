@@ -90,10 +90,10 @@ export const convertTexts = (
         .slice()
         .reverse()
         .forEach((k) => {
-          const nodeParser = options?.editor?.getOption(
-            MarkdownPlugin,
-            'nodeParser'
-          )?.[k as ElementTypes] ?? defaultSerializeRules[k as ElementTypes];
+          const nodeParser =
+            options?.editor?.getOption(MarkdownPlugin, 'nodeParser')?.[
+              k as ElementTypes
+            ] ?? defaultSerializeRules[k as ElementTypes];
 
           if (nodeParser?.serialize) {
             res = nodeParser.serialize(cur, options) as any;
