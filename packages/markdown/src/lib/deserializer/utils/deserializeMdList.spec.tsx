@@ -7,7 +7,7 @@ import { deserializeMd } from './deserializeMd';
 jsxt;
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 
-import { createTestEditor } from '../../serializer/__test__/createTestEditor';
+import { createTestEditor } from '../../serializer/__tests__/createTestEditor';
 
 describe('deserializeMdIndentList - comprehensive coverage', () => {
   const editor = createTestEditor([BaseIndentListPlugin]);

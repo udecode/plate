@@ -9,5 +9,4 @@ export * from './indentListToMdastTree';
 export * from './serializeInlineMd';
 export * from './serializeMd';
 export * from './types';
-export * from './__test__/index';
 export * from './utils/index';

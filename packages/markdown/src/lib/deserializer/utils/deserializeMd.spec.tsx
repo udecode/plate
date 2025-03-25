@@ -6,7 +6,7 @@ import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
-import { createTestEditor } from '../../serializer/__test__/createTestEditor';
+import { createTestEditor } from '../../serializer/__tests__/createTestEditor';
 import { deserializeMd } from './deserializeMd';
 
 jsxt;

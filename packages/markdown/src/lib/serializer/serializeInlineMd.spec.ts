@@ -1,4 +1,4 @@
-import { createTestEditor } from './__test__/createTestEditor';
+import { createTestEditor } from './__tests__/createTestEditor';
 import { serializeInlineMd } from './serializeInlineMd';
 
 describe('serializeInlineMd', () => {

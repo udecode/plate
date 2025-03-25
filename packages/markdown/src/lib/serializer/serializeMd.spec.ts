@@ -1,5 +1,5 @@
-import { createTestEditor } from './__test__/createTestEditor';
-import { testValue } from './__test__/testValue';
+import { createTestEditor } from './__tests__/createTestEditor';
+import { testValue } from './__tests__/testValue';
 import { serializeMd } from './serializeMd';
 
 describe('serializeMd', () => {
