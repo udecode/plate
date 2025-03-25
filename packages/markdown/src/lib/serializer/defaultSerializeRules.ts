@@ -1,8 +1,10 @@
 import type { TElement } from '@udecode/plate';
+import type * as mdastUtilMath from 'mdast-util-math';
 
 import type {
   TCodeBlockElement,
   TDateElement,
+  TEquationElement,
   TImageElement,
   TLinkElement,
   TMentionElement,
@@ -10,18 +12,81 @@ import type {
   TTableElement,
   TTableRowElement,
 } from '../internal/types';
-import type { Components } from '../MarkdownPlugin';
 import type { SerializeMdOptions } from './serializeMd';
 import type { mdast } from './types';
 
 import { convertNodes } from './convertNodes';
 
-export const defaultSerializeRules: Components = {
-  a: {
+export type Components = Partial<{
+  [K in keyof ElementTypeMap]: SerializeComponent<K>;
+}> &
+  Record<
+    string,
+    {
+      deserialize?: (node: any, options: SerializeMdOptions) => any;
+      serialize?: (node: any, options: SerializeMdOptions) => any;
+    }
+  >;
+
+type ElementTypeMap = {
+  a: TLinkElement;
+  blockquote: TElement;
+  code_block: TCodeBlockElement;
+  date: TDateElement;
+  equation: TEquationElement;
+  heading: TElement;
+  hr: TElement;
+  img: TImageElement;
+  inline_equation: TEquationElement;
+  mention: TMentionElement;
+  p: TElement;
+  table: TTableElement;
+  td: TTableCellElement;
+  th: TElement;
+  tr: TTableRowElement;
+};
+
+type ReturnTypeMap = {
+  a: mdast.Link;
+  blockquote: mdast.Blockquote;
+  code_block: mdast.Code;
+  date: mdast.Text;
+  equation: mdastUtilMath.Math;
+  heading: mdast.Heading;
+  hr: mdast.ThematicBreak;
+  img: mdast.Paragraph;
+  inline_equation: mdastUtilMath.InlineMath;
+  mention: mdast.Text;
+  p: mdast.Paragraph;
+  table: mdast.Table;
+  td: mdast.TableCell;
+  th: mdast.TableCell;
+  tr: mdast.TableRow;
+};
+
+type SerializeComponent<K extends keyof ElementTypeMap> = {
+  deserialize?: (
+    node: ReturnTypeMap[K],
+    options: SerializeMdOptions
+  ) => ElementTypeMap[K];
+  serialize?: (
+    node: ElementTypeMap[K],
+    options: SerializeMdOptions
+  ) => ReturnTypeMap[K];
+};
+
+type SerializeRules = {
+  [K in keyof ElementTypeMap]?: {
     serialize: (
-      node: TLinkElement,
+      node: ElementTypeMap[K],
       options: SerializeMdOptions
-    ): mdast.Link => {
+    ) => ReturnTypeMap[K];
+  };
+};
+
+export const defaultSerializeRules: SerializeRules = {
+  a: {
+    serialize: (node, options) => {
       return {
         children: convertNodes(
           node.children,
@@ -33,10 +98,7 @@ export const defaultSerializeRules: Components = {
     },
   },
   blockquote: {
-    serialize: (
-      node: TElement,
-      options: SerializeMdOptions
-    ): mdast.Blockquote => {
+    serialize: (node, options) => {
       return {
         children: convertNodes(
           node.children,
@@ -47,7 +109,7 @@ export const defaultSerializeRules: Components = {
     },
   },
   code_block: {
-    serialize: (node: TCodeBlockElement): mdast.Code => {
+    serialize: (node) => {
       return {
         lang: node.lang,
         type: 'code',
@@ -58,15 +120,23 @@ export const defaultSerializeRules: Components = {
     },
   },
   date: {
-    serialize: ({ date }: TDateElement): mdast.Text => {
+    serialize: ({ date }) => {
       return {
         type: 'text',
         value: date ?? '',
       };
     },
   },
+  equation: {
+    serialize: (node) => {
+      return {
+        type: 'math',
+        value: node.texExpression,
+      };
+    },
+  },
   heading: {
-    serialize: (node: TElement, options: SerializeMdOptions): mdast.Heading => {
+    serialize: (node, options) => {
       const depthMap = {
         h1: 1,
         h2: 2,
@@ -87,12 +157,12 @@ export const defaultSerializeRules: Components = {
     },
   },
   hr: {
-    serialize: (): mdast.ThematicBreak => {
+    serialize: () => {
       return { type: 'thematicBreak' };
     },
   },
   img: {
-    serialize: ({ caption, url }: TImageElement): mdast.Paragraph => {
+    serialize: ({ caption, url }) => {
       const image: mdast.Image = {
         alt: caption ? caption.map((c) => (c as any).text).join('') : undefined,
         title: caption
@@ -104,8 +174,16 @@ export const defaultSerializeRules: Components = {
       return { children: [image], type: 'paragraph' };
     },
   },
+  inline_equation: {
+    serialize: (node) => {
+      return {
+        type: 'inlineMath',
+        value: node.texExpression,
+      };
+    },
+  },
   mention: {
-    serialize: ({ value }: TMentionElement): mdast.Text => {
+    serialize: ({ value }) => {
       return {
         type: 'text',
         value,
@@ -113,10 +191,7 @@ export const defaultSerializeRules: Components = {
     },
   },
   p: {
-    serialize: (
-      node: TElement,
-      options: SerializeMdOptions
-    ): mdast.Paragraph => {
+    serialize: (node, options) => {
       return {
         children: convertNodes(
           node.children,
@@ -127,10 +202,7 @@ export const defaultSerializeRules: Components = {
     },
   },
   table: {
-    serialize: (
-      node: TTableElement,
-      options: SerializeMdOptions
-    ): mdast.Table => {
+    serialize: (node, options) => {
       return {
         children: convertNodes(
           node.children,
@@ -141,10 +213,7 @@ export const defaultSerializeRules: Components = {
     },
   },
   td: {
-    serialize: (
-      node: TTableCellElement,
-      options: SerializeMdOptions
-    ): mdast.TableCell => {
+    serialize: (node, options) => {
       return {
         children: convertNodes(
           node.children,
@@ -155,10 +224,7 @@ export const defaultSerializeRules: Components = {
     },
   },
   th: {
-    serialize: (
-      node: TElement,
-      options: SerializeMdOptions
-    ): mdast.TableCell => {
+    serialize: (node, options) => {
       return {
         children: convertNodes(
           node.children,
@@ -169,10 +235,7 @@ export const defaultSerializeRules: Components = {
     },
   },
   tr: {
-    serialize: (
-      node: TTableRowElement,
-      options: SerializeMdOptions
-    ): mdast.TableRow => {
+    serialize: (node, options) => {
       return {
         children: convertNodes(
           node.children,

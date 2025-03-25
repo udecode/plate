@@ -22,7 +22,7 @@ export const getRemarkDefaultElementRules = (
     blockquote: {
       transform: (node, options) => {
         if (components?.blockquote?.deserialize) {
-          return components.blockquote.deserialize(node, options);
+          return components.blockquote.deserialize(node as any, options);
         }
 
         const children = node.children?.length
@@ -45,7 +45,7 @@ export const getRemarkDefaultElementRules = (
     code: {
       transform: (node, options) => {
         if (components?.code_block?.deserialize) {
-          return components.code_block.deserialize(node, options);
+          return components.code_block.deserialize(node as any, options);
         }
 
         const codeblock: TElement = {
@@ -66,7 +66,7 @@ export const getRemarkDefaultElementRules = (
     heading: {
       transform: (node, options) => {
         if (components?.heading?.deserialize) {
-          return components.heading.deserialize(node, options);
+          return components.heading.deserialize(node as any, options);
         }
 
         const headingType = {
@@ -87,7 +87,7 @@ export const getRemarkDefaultElementRules = (
     image: {
       transform: (node, options) => {
         if (components?.img?.deserialize) {
-          return components.img.deserialize(node, options);
+          return components.img.deserialize(node as any, options);
         }
 
         return {
@@ -101,14 +101,23 @@ export const getRemarkDefaultElementRules = (
     inlineMath: {
       transform: (node, options) => {
         if (components?.inline_equation?.deserialize) {
-          return components.inline_equation.deserialize(node, options);
+          return components.inline_equation.deserialize(
+            node as any,
+            options
+          ) as any;
         }
+
+        return {
+          children: [{ text: '' }],
+          texExpression: node.value,
+          type: options.editor.getType({ key: 'inline_equation' }),
+        };
       },
     },
     link: {
       transform: (node, options) => {
         if (components?.a?.deserialize) {
-          return components.a.deserialize(node, options);
+          return components.a.deserialize(node as any, options);
         }
 
         return {
@@ -121,7 +130,7 @@ export const getRemarkDefaultElementRules = (
     list: {
       transform: (node, options) => {
         if (components?.ul?.deserialize) {
-          return components.ul.deserialize(node, options);
+          return components.ul.deserialize(node as any, options);
         }
 
         if (!options.indentList) {
@@ -228,14 +237,20 @@ export const getRemarkDefaultElementRules = (
     math: {
       transform: (node, options) => {
         if (components?.equation?.deserialize) {
-          return components.equation.deserialize(node, options);
+          return components.equation.deserialize(node as any, options) as any;
         }
+
+        return {
+          children: [{ text: '' }],
+          texExpression: node.value,
+          type: options.editor.getType({ key: 'equation' }),
+        };
       },
     },
     paragraph: {
       transform: (node, options) => {
         if (components?.p?.deserialize) {
-          return components.p.deserialize(node, options);
+          return components.p.deserialize(node as any, options);
         }
 
         const isKeepLineBreak =
@@ -317,7 +332,7 @@ export const getRemarkDefaultElementRules = (
     table: {
       transform: (node, options) => {
         if (components?.table?.deserialize) {
-          return components.table.deserialize(node, options);
+          return components.table.deserialize(node as any, options);
         }
 
         const rows =
@@ -356,7 +371,7 @@ export const getRemarkDefaultElementRules = (
     thematicBreak: {
       transform: (node, options) => {
         if (components?.hr?.deserialize) {
-          return components.hr.deserialize(node, options);
+          return components.hr.deserialize(node as any, options);
         }
 
         return {

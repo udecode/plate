@@ -1,3 +1,4 @@
+import type { ElementTypes } from '../../internal/types';
 import type { SerializeMdOptions } from '../serializeMd';
 
 import { type CommentItem, MarkdownPlugin } from '../..';
@@ -15,7 +16,9 @@ export const getCustomLeaf = (options?: SerializeMdOptions): string[] => {
     const keys = Object.keys(components);
 
     for (const key of keys) {
-      const component = components[key] as CommentItem | undefined;
+      const component = components[key as ElementTypes] as
+        | CommentItem
+        | undefined;
 
       if (component?.isLeaf) {
         customLeaf.push(key);

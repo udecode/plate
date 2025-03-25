@@ -1,5 +1,6 @@
 import type { TText } from '@udecode/plate';
 
+import type { ElementTypes } from '../internal/types';
 import type { SerializeMdOptions } from './serializeMd';
 import type { astMarks, slateMarks } from './types';
 
@@ -91,10 +92,10 @@ export const convertTexts = (
           const component = options?.editor?.getOption(
             MarkdownPlugin,
             'components'
-          )?.[k];
+          )?.[k as ElementTypes];
 
           if (component?.serialize) {
-            res = component.serialize(cur, options);
+            res = component.serialize(cur, options) as any;
             return;
           }
 

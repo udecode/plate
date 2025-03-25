@@ -63,8 +63,13 @@ export type RemarkPluginOptions = {
 };
 
 export type RemarkTextRule = {
-  mark?: (options: RemarkPluginOptions) => string;
-  transform?: (text: string) => string;
+  transform: (
+    node: MdastNode,
+    options: RemarkPluginOptions
+  ) => {
+    [key: string]: boolean | string;
+    text: string;
+  };
 };
 
 export type RemarkTextRules = Partial<Record<MdastTextType, RemarkTextRule>>;

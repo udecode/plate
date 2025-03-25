@@ -8,13 +8,14 @@ import {
   isUrl,
 } from '@udecode/plate';
 
+import type { RemarkPluginOptions } from './remark-slate';
+
 import { deserializeMd } from './deserializer/utils';
 import {
-  type RemarkPluginOptions,
-  type RemarkTextRules,
-  remarkDefaultTextRules,
-} from './remark-slate';
-import { type SerializeMdOptions, serializeMd } from './serializer';
+  type Components,
+  type SerializeMdOptions,
+  serializeMd,
+} from './serializer';
 
 export type CommentItem = {
   isLeaf?: boolean;
@@ -22,7 +23,7 @@ export type CommentItem = {
   serialize?: (node: any, options: SerializeMdOptions) => any;
 };
 
-export type Components = Record<string, CommentItem>;
+// export type Components = Partial<Record<ElementTypes, CommentItem>>;
 
 export type MarkdownConfig = PluginConfig<
   'markdown',
@@ -38,8 +39,6 @@ export type MarkdownConfig = PluginConfig<
      * @default false
      */
     splitLineBreaks?: boolean;
-    /** Override text rules. */
-    textRules?: RemarkTextRules;
   },
   {
     markdown: {
@@ -55,7 +54,6 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
     components: {},
     remarkPlugins: [],
     splitLineBreaks: false,
-    textRules: remarkDefaultTextRules,
   },
 })
   .extendApi(({ editor }) => ({
