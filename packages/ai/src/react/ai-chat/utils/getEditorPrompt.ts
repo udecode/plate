@@ -43,7 +43,7 @@ const replacePlaceholders = (
 
   Object.entries(placeholders).forEach(([placeholder, type]) => {
     if (result.includes(placeholder)) {
-      result = result.replace(placeholder, getMarkdown(editor, type) as any);
+      result = result.replace(placeholder, getMarkdown(editor, type));
     }
   });
 

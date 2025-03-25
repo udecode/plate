@@ -1,10 +1,9 @@
-import type { Descendant } from '@udecode/plate';
-import type { PlateEditor } from '@udecode/plate/react';
+import type { Descendant, SlateEditor } from '@udecode/plate';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { stripMarkdownBlocks } from './stripMarkdown';
 
-export const deserializeInlineMd = (editor: PlateEditor, text: string) => {
+export const deserializeInlineMd = (editor: SlateEditor, text: string) => {
   const leadingSpaces = /^\s*/.exec(text)?.[0] || '';
   const trailingSpaces = /\s*$/.exec(text)?.[0] || '';
 

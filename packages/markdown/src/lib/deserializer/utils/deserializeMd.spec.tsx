@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { jsxt } from '@udecode/plate-test-utils';
 
@@ -272,7 +272,7 @@ describe('deserializeMd', () => {
     const output = (
       <fragment>
         <hp>Line 1</hp>
-        <element type={HorizontalRulePlugin.key}>
+        <element type={BaseHorizontalRulePlugin.key}>
           <htext />
         </element>
         <hp>Line 2</hp>

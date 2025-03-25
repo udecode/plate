@@ -22,7 +22,7 @@ export const getMarkdown = (
 
     const nodes = Array.from(blocks, (entry) => entry[0]);
 
-    return serializeMd(editor, { value: nodes as any });
+    return serializeMd(editor, { value: nodes });
   }
   if (type === 'selection') {
     const fragment = editor.api.fragment<TElement>();
@@ -36,10 +36,10 @@ export const getMarkdown = (
         },
       ];
 
-      return serializeMd(editor, { value: modifiedFragment as any });
+      return serializeMd(editor, { value: modifiedFragment });
     }
 
-    return serializeMd(editor, { value: fragment as any });
+    return serializeMd(editor, { value: fragment });
   }
 
   return '';

@@ -66,42 +66,6 @@ export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
     key = 'heading';
   }
 
-  // if (node.type === 'p') {
-  //   key = 'paragraph';
-  // }
-
-  // if (node.type === 'hr') {
-  //   key = 'thematicBreak';
-  // }
-
-  // if (node.type === 'a') {
-  //   key = 'link';
-  // }
-
-  // if (node.type === 'equation') {
-  //   key = 'math';
-  // }
-
-  // if (node.type === 'inline_equation') {
-  //   key = 'inlineMath';
-  // }
-
-  // if (node.type === 'img') {
-  //   key = 'image';
-  // }
-
-  // if (node.type === 'code_block') {
-  //   key = 'code';
-  // }
-
-  // if (node.type === 'tr') {
-  //   key = 'tableRow';
-  // }
-
-  // if (node.type === 'td') {
-  //   key = 'tableCell';
-  // }
-
   const component =
     options.editor.getOptions(MarkdownPlugin).components?.[key] ??
     defaultSerializeRules[key];

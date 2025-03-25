@@ -152,7 +152,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
 
       return serializeMd(editor, {
         value: [contextEntry[0] as TElement],
-      }) as any;
+      });
     },
     triggerQuery: ({ editor }) => {
       if (editor.api.isExpanded()) return false;

@@ -22,7 +22,7 @@ const getPatchString = (editor: SlateEditor, operations: Operation[]) => {
   for (const operation of operations) {
     if (operation.type === 'insert_node') {
       const node = operation.node;
-      const text = serializeInlineMd(editor, { value: [node as any] });
+      const text = serializeInlineMd(editor, { value: [node] });
       string += text;
     } else if (operation.type === 'insert_text') {
       string += operation.text;
