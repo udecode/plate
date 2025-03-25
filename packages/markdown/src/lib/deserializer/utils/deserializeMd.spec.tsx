@@ -2,17 +2,17 @@
 
 import { createSlateEditor } from '@udecode/plate';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
+import { createTestEditor } from '../../serializer/__test__/createTestEditor';
 import { deserializeMd } from './deserializeMd';
 
 jsxt;
 
 describe('deserializeMd', () => {
-  const editor = createSlateEditor({
-    plugins: [MarkdownPlugin],
-  });
+  const editor = createTestEditor();
 
   // TODO
   // it('should deserialize strikethrough', () => {
@@ -379,9 +379,7 @@ describe('deserializeMd', () => {
 });
 
 describe('deserializeMd table', () => {
-  const editor = createSlateEditor({
-    plugins: [MarkdownPlugin.configure({ options: { indentList: true } })],
-  });
+  const editor = createTestEditor([BaseIndentListPlugin]);
 
   it('should deserialize a table', () => {
     const input = `

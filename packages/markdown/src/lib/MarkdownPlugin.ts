@@ -8,40 +8,26 @@ import {
   isUrl,
 } from '@udecode/plate';
 
+import type { ElementTypes } from './internal/types';
+
 import { deserializeMd } from './deserializer/utils';
-import {
-  type RemarkElementRules,
-  type RemarkTextRules,
-  remarkDefaultElementRules,
-  remarkDefaultTextRules,
-} from './remark-slate';
-import {
-  type SerializeMdOptions,
-  serializeMd,
-} from './serializer';
-// export type MarkdownDeserializer = {
-//   elementRules?: Partial<Record<MdastElementType, RemarkElementRule>>;
-//   textRules?: Partial<Record<MdastTextType, RemarkTextRule>>;
-// } & Deserializer;
+import { type RemarkTextRules, remarkDefaultTextRules } from './remark-slate';
+import { type SerializeMdOptions, serializeMd } from './serializer';
 
 export type CommentItem = {
   deserialize?: (astNode: any, options: any) => any;
   serialize?: (node: any, options: SerializeMdOptions) => any;
 };
 
-export type Components = 
-
-// Partial<Record<TComponents['type'], CommentItem>> &
-  Record<string, CommentItem>;
+export type Components = Partial<
+  Record<ElementTypes, CommentItem> | Record<string, CommentItem>
+>;
 
 export type MarkdownConfig = PluginConfig<
   'markdown',
   {
     remarkPlugins: Plugin[];
     components?: Components;
-    /** Override element rules. */
-    elementRules?: RemarkElementRules;
-    indentList?: boolean;
     /**
      * When the text contains \n, split the text into a separate paragraph.
      *
@@ -66,8 +52,6 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   key: 'markdown',
   options: {
     components: {},
-    elementRules: remarkDefaultElementRules,
-    indentList: false,
     remarkPlugins: [],
     splitLineBreaks: false,
     textRules: remarkDefaultTextRules,

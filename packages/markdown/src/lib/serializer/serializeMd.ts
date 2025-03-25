@@ -1,6 +1,5 @@
 import type { Descendant, SlateEditor } from '@udecode/plate';
 
-import remarkGfm from 'remark-gfm';
 import remarkStringify from 'remark-stringify';
 import { type Plugin, unified } from 'unified';
 
@@ -26,10 +25,7 @@ export const serializeMd = (
   const remarkPlugins: Plugin[] =
     editor.getOptions(MarkdownPlugin).remarkPlugins;
 
-  const toRemarkProcessor = unified()
-    .use(remarkPlugins)
-    .use(remarkStringify)
-    .use(remarkGfm);
+  const toRemarkProcessor = unified().use(remarkPlugins).use(remarkStringify);
 
   const nodesToSerialize = options?.value ?? editor.children;
 

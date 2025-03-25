@@ -10,6 +10,7 @@ import type { unistLib } from './types';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
 import { convertTexts } from './convertTexts';
+import { defaultSerializeRules } from './defaultSerializeRules';
 import { indentListToMdastTree } from './indentListToMdastTree';
 import { unreachable } from './utils/unreachable';
 
@@ -99,7 +100,9 @@ export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
   //   key = 'tableCell';
   // }
 
-  const component = options.editor.getOptions(MarkdownPlugin).components?.[key];
+  const component =
+    options.editor.getOptions(MarkdownPlugin).components?.[key] ??
+    defaultSerializeRules[key];
 
   if (component?.serialize) {
     return component.serialize(node, options);

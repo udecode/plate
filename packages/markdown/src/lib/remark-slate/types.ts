@@ -5,9 +5,11 @@ export type MdastElementType =
   | 'code'
   | 'heading'
   | 'image'
+  | 'inlineMath'
   | 'link'
   | 'list'
   | 'listItem'
+  | 'math'
   | 'paragraph'
   | 'table'
   | 'thematicBreak';

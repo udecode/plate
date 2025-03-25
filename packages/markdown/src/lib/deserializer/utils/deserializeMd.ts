@@ -1,14 +1,14 @@
 import type { SlateEditor } from '@udecode/plate';
 
-import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import { type Processor, unified } from 'unified';
+import { type Plugin, type Processor, unified } from 'unified';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
 import {
   type RemarkElementRules,
   type RemarkPluginOptions,
   type RemarkTextRules,
+  getRemarkDefaultElementRules,
   remarkPlugin,
 } from '../../remark-slate';
 import {
@@ -31,24 +31,28 @@ export const deserializeMd = (
   data: string,
   { memoize, parser, processor }: DeserializeMdOptions = {}
 ) => {
-  const elementRules: RemarkElementRules = {};
+  const elementRules: RemarkElementRules = getRemarkDefaultElementRules(editor);
   const textRules: RemarkTextRules = {};
 
   const options = editor.getOptions(MarkdownPlugin);
 
-  Object.assign(elementRules, options.elementRules);
   Object.assign(textRules, options.textRules);
 
-  let tree: any = unified().use(remarkParse);
+  const remarkPlugins: Plugin[] =
+    editor.getOptions(MarkdownPlugin).remarkPlugins;
+
+  let tree: any = unified().use(remarkPlugins).use(remarkParse);
 
   if (processor) {
     tree = processor(tree);
   }
 
-  tree = tree.use(remarkGfm).use(remarkPlugin, {
+  tree = tree.use(remarkPlugin, {
     editor,
     elementRules,
-    indentList: options.indentList,
+    indentList: editor.pluginList.some(
+      (plugin) => plugin.key === 'listStyleType'
+    ),
     textRules,
   } as unknown as RemarkPluginOptions);
 
