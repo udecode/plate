@@ -36,6 +36,22 @@ export type MarkdownConfig = PluginConfig<
      */
     disallowedNodes: ((string & {}) | ElementTypes)[] | null;
     /**
+     * Array of remark plugins to extend Markdown parsing and serialization
+     * functionality. For example, you can add remark-gfm to support GFM syntax,
+     * remark-math to support mathematical formulas, etc. These plugins will be
+     * used during the parsing and generation of Markdown text.
+     *
+     * @default undefined
+     */
+    remarkPlugins: Plugin[];
+    /**
+     * Custom filter function for nodes during deserialization and
+     * serialization.
+     *
+     * @default null
+     */
+    allowNode?: AllowNodeConfig;
+    /**
      * Rules that define how to convert Markdown syntax elements to Slate editor
      * elements. Or rules that how to convert Slate editor elements to Markdown
      * syntax elements. Includes conversion rules for elements such as
@@ -44,17 +60,7 @@ export type MarkdownConfig = PluginConfig<
      *
      * @default null
      */
-    nodes: Nodes | null;
-    /**
-     * Array of remark plugins to extend Markdown parsing and serialization
-     * functionality. For example, you can add remark-gfm to support GFM syntax,
-     * remark-math to support mathematical formulas, etc. These plugins will be
-     * used during the parsing and generation of Markdown text.
-     *
-     * @default [ ]
-     */
-    remarkPlugins: Plugin[];
-    allowNode?: AllowNodeConfig;
+    nodes?: Nodes;
     /**
      * Custom filter functions for nodes. Called after
      * allowedNodes/disallowedNodes check. You can specify different functions
@@ -83,7 +89,8 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   options: {
     allowedNodes: null,
     disallowedNodes: null,
-    nodes: null,
+    // TODO:
+    nodes: undefined,
     remarkPlugins: [],
     splitLineBreaks: false,
   },
