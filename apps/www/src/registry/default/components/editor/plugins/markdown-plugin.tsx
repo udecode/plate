@@ -5,10 +5,7 @@ import remarkMath from 'remark-math';
 
 export const markdownPlugin = MarkdownPlugin.configure({
   options: {
-    disallowedNodes: {
-      deserialize: [],
-      serialize: [SuggestionPlugin.key],
-    },
+    disallowedNodes: [SuggestionPlugin.key],
     remarkPlugins: [remarkMath, remarkGfm],
   },
 });

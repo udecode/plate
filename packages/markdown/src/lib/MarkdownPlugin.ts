@@ -8,17 +8,10 @@ import {
   isUrl,
 } from '@udecode/plate';
 
-import type { Nodes } from './types';
+import type { ElementTypes, Nodes } from './types';
 
 import { deserializeMd } from './deserializer/utils';
 import { serializeMd } from './serializer';
-
-export type AllowedNodesConfig = {
-  /** List of node types to allow during deserialization */
-  deserialize?: string[];
-  /** List of node types to allow during serialization */
-  serialize?: string[];
-};
 
 export type AllowNodeConfig = {
   /** Custom filter function for nodes during deserialization */
@@ -27,30 +20,21 @@ export type AllowNodeConfig = {
   serialize?: (node: any) => boolean;
 };
 
-export type DisallowedNodesConfig = {
-  /** List of node types to disallow during deserialization */
-  deserialize?: string[];
-  /** List of node types to disallow during serialization */
-  serialize?: string[];
-};
-
 export type MarkdownConfig = PluginConfig<
   'markdown',
   {
     /**
      * Configuration for allowed node types. Cannot be combined with
-     * disallowedNodes. You can specify different lists for serialization and
-     * deserialization.
+     * disallowedNodes.
      */
-    allowedNodes: AllowedNodesConfig | null;
+    allowedNodes: ((string & {}) | ElementTypes)[] | null;
     /**
      * Configuration for disallowed node types. Cannot be combined with
-     * allowedNodes. You can specify different lists for serialization and
-     * deserialization.
+     * allowedNodes.
      *
      * @default null
      */
-    disallowedNodes: DisallowedNodesConfig | null;
+    disallowedNodes: ((string & {}) | ElementTypes)[] | null;
     /**
      * Rules that define how to convert Markdown syntax elements to Slate editor
      * elements. Or rules that how to convert Slate editor elements to Markdown
@@ -70,12 +54,12 @@ export type MarkdownConfig = PluginConfig<
      * @default [ ]
      */
     remarkPlugins: Plugin[];
+    allowNode?: AllowNodeConfig;
     /**
      * Custom filter functions for nodes. Called after
      * allowedNodes/disallowedNodes check. You can specify different functions
      * for serialization and deserialization.
      */
-    allowNode?: AllowNodeConfig;
     /**
      * When the text contains \n, split the text into a separate paragraph.
      *

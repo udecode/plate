@@ -10,21 +10,21 @@ const shouldIncludeNode = (node: any, editor: SlateEditor): boolean => {
 
   // First check allowedNodes/disallowedNodes
   if (
-    allowedNodes?.deserialize &&
-    disallowedNodes?.deserialize &&
-    allowedNodes.deserialize.length > 0 &&
-    disallowedNodes.deserialize.length > 0
+    allowedNodes &&
+    disallowedNodes &&
+    allowedNodes.length > 0 &&
+    disallowedNodes.length > 0
   ) {
     throw new Error('Cannot combine allowedNodes with disallowedNodes');
   }
 
-  if (allowedNodes?.deserialize) {
-    // If allowedNodes is specified, only include if the type is in allowedNodes.deserialize
-    if (!allowedNodes.deserialize.includes(node.type)) {
+  if (allowedNodes) {
+    // If allowedNodes is specified, only include if the type is in allowedNodes
+    if (!allowedNodes.includes(node.type)) {
       return false;
     }
-  } else if (disallowedNodes?.deserialize?.includes(node.type)) {
-    // If using disallowedNodes, exclude if the type is in disallowedNodes.deserialize
+  } else if (disallowedNodes?.includes(node.type)) {
+    // If using disallowedNodes, exclude if the type is in disallowedNodes
     return false;
   }
 

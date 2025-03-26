@@ -96,10 +96,10 @@ const shouldIncludeText = (
 
   // First check allowedNodes/disallowedNodes
   if (
-    allowedNodes?.serialize &&
-    disallowedNodes?.serialize &&
-    allowedNodes.serialize.length > 0 &&
-    disallowedNodes.serialize.length > 0
+    allowedNodes &&
+    disallowedNodes &&
+    allowedNodes.length > 0 &&
+    disallowedNodes.length > 0
   ) {
     throw new Error('Cannot combine allowedNodes with disallowedNodes');
   }
@@ -108,13 +108,13 @@ const shouldIncludeText = (
   for (const [key, value] of Object.entries(text)) {
     if (key === 'text') continue;
 
-    if (allowedNodes?.serialize) {
-      // If allowedNodes is specified, only include if the mark is in allowedNodes.serialize
-      if (!allowedNodes.serialize.includes(key) && value) {
+    if (allowedNodes) {
+      // If allowedNodes is specified, only include if the mark is in allowedNodes
+      if (!allowedNodes.includes(key) && value) {
         return false;
       }
-    } else if (disallowedNodes?.serialize?.includes(key) && value) {
-      // If using disallowedNodes, exclude if the mark is in disallowedNodes.serialize
+    } else if (disallowedNodes?.includes(key) && value) {
+      // If using disallowedNodes, exclude if the mark is in disallowedNodes
       return false;
     }
   }
@@ -138,21 +138,21 @@ const shouldIncludeNode = (
 
   // First check allowedNodes/disallowedNodes
   if (
-    allowedNodes?.serialize &&
-    disallowedNodes?.serialize &&
-    allowedNodes.serialize.length > 0 &&
-    disallowedNodes.serialize.length > 0
+    allowedNodes &&
+    disallowedNodes &&
+    allowedNodes.length > 0 &&
+    disallowedNodes.length > 0
   ) {
     throw new Error('Cannot combine allowedNodes with disallowedNodes');
   }
 
-  if (allowedNodes?.serialize) {
-    // If allowedNodes is specified, only include if the type is in allowedNodes.serialize
-    if (!allowedNodes.serialize.includes(node.type)) {
+  if (allowedNodes) {
+    // If allowedNodes is specified, only include if the type is in allowedNodes
+    if (!allowedNodes.includes(node.type)) {
       return false;
     }
-  } else if (disallowedNodes?.serialize?.includes(node.type)) {
-    // If using disallowedNodes, exclude if the type is in disallowedNodes.serialize
+  } else if (disallowedNodes?.includes(node.type)) {
+    // If using disallowedNodes, exclude if the type is in disallowedNodes
     return false;
   }
 
