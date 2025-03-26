@@ -62,13 +62,26 @@ const content = editor.api.markdown.serialize();
 
 <API name="MarkdownPlugin">
 <APIOptions>
-  <APIItem name="allowedNodes" type="string[] | null">
-    允许的节点类型列表。不能与 disallowedNodes 同时使用。
+  <APIItem name="allowedNodes" type="{ serialize?: string[]; deserialize?: string[] } | null">
+    配置允许的节点类型。不能与 disallowedNodes 同时使用。你可以为序列化和反序列化指定不同的节点类型列表：
+    - `serialize`: 在转换为 Markdown 时允许的节点类型列表
+    - `deserialize`: 在解析 Markdown 时允许的节点类型列表
+    如果指定了此选项，只有列表中的节点类型会被处理，其他类型会被过滤掉。
     默认值：`null`
   </APIItem>
-  <APIItem name="disallowedNodes" type="string[] | null">
-    不允许的节点类型列表。不能与 allowedNodes 同时使用。
-    默认值：`[]`
+  <APIItem name="disallowedNodes" type="{ serialize?: string[]; deserialize?: string[] } | null">
+    配置不允许的节点类型。不能与 allowedNodes 同时使用。你可以为序列化和反序列化指定不同的节点类型列表：
+    - `serialize`: 在转换为 Markdown 时要过滤掉的节点类型列表
+    - `deserialize`: 在解析 Markdown 时要过滤掉的节点类型列表
+    列表中的节点类型会被过滤掉，不会出现在最终结果中。
+    默认值：`null`
+  </APIItem>
+  <APIItem name="allowNode" type="{ serialize?: (node: any) => boolean; deserialize?: (node: any) => boolean }">
+    自定义节点过滤函数。在 allowedNodes/disallowedNodes 检查后调用。你可以为序列化和反序列化指定不同的过滤函数：
+    - `serialize`: 在转换为 Markdown 时的自定义过滤函数
+    - `deserialize`: 在解析 Markdown 时的自定义过滤函数
+    返回 `true` 表示保留该节点，返回 `false` 表示过滤掉该节点。
+    这对于需要复杂逻辑来决定是否包含某个节点的场景很有用。
   </APIItem>
   <APIItem name="nodes" type="Nodes | null">
     定义如何将 Markdown 语法元素转换为 Slate 编辑器元素的规则，或如何将 Slate 编辑器元素转换为 Markdown 语法元素的规则。包括段落、标题、列表、链接、图片等元素的转换规则。设置为 null 时将使用默认转换规则。
@@ -77,9 +90,6 @@ const content = editor.api.markdown.serialize();
   <APIItem name="remarkPlugins" type="Plugin[]">
     用于扩展 Markdown 解析和序列化功能的 remark 插件数组。例如，可以添加 remark-gfm 来支持 GFM 语法，remark-math 来支持数学公式等。这些插件将在解析和生成 Markdown 文本时使用。
     默认值：`[]`
-  </APIItem>
-  <APIItem name="allowNode" type="(node: any) => boolean" optional>
-    节点的自定义过滤函数。在 allowedNodes/disallowedNodes 检查后调用。
   </APIItem>
   <APIItem name="splitLineBreaks" type="boolean" optional>
     当文本包含 \n 时，将文本拆分为单独的段落。段落之间的换行符也将转换为单独的段落。
@@ -132,5 +142,34 @@ const content = editor.api.markdown.serialize();
 
 <APIReturns type="string">
   表示序列化 Slate 内容的 Markdown 字符串。
+</APIReturns>
+</API>
+
+### `parseMarkdownBlocks`
+
+使用 marked lexer 提取和过滤 Markdown 标记。
+
+<API name="parseMarkdownBlocks">
+<APIParameters>
+  <APIItem name="markdown" type="string">
+    要解析为标记的 Markdown 字符串。
+  </APIItem>
+  <APIItem name="options" type="ParseMarkdownBlocksOptions" optional>
+    解析 Markdown 字符串的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="ParseMarkdownBlocksOptions">
+  <APIItem name="exclude" type="string[]" optional>
+    要排除的标记类型数组（例如 ['space', 'hr']）。
+  </APIItem>
+  <APIItem name="trim" type="boolean" optional>
+    是否修剪内容的末尾。
+    - **默认值：** `true`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Token[]">
+  Markdown 标记的数组。
 </APIReturns>
 </API>

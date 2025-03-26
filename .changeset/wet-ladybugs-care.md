@@ -5,9 +5,7 @@
 ## NEW:
 
 - Deserialization supports the math type.
-  t
 - Better serialization: Previously, markdown sting was manually parsed into Slate nodes. Now, the markdown string is first converted into an MDAST using the more mature Remark.js, and then the MDAST is mapped to Slate nodes. This process is more secure and reliable.
-
 - New options allowedNodes, disallowedNodes, and allowNode help you filter out unwanted nodes.
 
 ## Breaking Change:
@@ -23,7 +21,7 @@ export const markdownPlugin = MarkdownPlugin.configure({
     nodes: {
       //For textRules
       [BoldPlugin.key]: {
-        deserialize: (node) => {
+        deserialize: (mdastNode) => {
           return {
             bold: true,
             text: node.value || '',
@@ -32,7 +30,7 @@ export const markdownPlugin = MarkdownPlugin.configure({
       },
       // For elementRules
       [EquationPlugin.key]: {
-        deserialize: (node, options) => {
+        deserialize: (mdastNode, options) => {
           return {
             children: [{ text: '' }],
             texExpression: node.value,
@@ -92,7 +90,7 @@ export const markdownPlugin = MarkdownPlugin.configure({
     nodes: {
       // ignore all `insert` type suggestionÏ
       [SuggestionPlugin.key]: {
-        serialize: (node: TSuggestionText, options): mdast.Text => {
+        serialize: (slateNode: TSuggestionText, options): mdast.Text => {
           const suggestionData = options.editor
             .getApi(SuggestionPlugin)
             .suggestion.suggestionData(node);
@@ -111,7 +109,7 @@ export const markdownPlugin = MarkdownPlugin.configure({
       },
       // For elementRules
       [EquationPlugin.key]: {
-        serialize: (node) => {
+        serialize: (slateNode) => {
           return {
             type: 'math',
             value: node.texExpression,

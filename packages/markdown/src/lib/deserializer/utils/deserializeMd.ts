@@ -11,6 +11,7 @@ import {
   getRemarkDefaultElementRules,
   remarkPlugin,
 } from '../../remark-slate';
+import { filterNodes } from './filterNodes';
 import {
   type ParseMarkdownBlocksOptions,
   parseMarkdownBlocks,
@@ -53,7 +54,7 @@ export const deserializeMd = (
   } as unknown as RemarkPluginOptions);
 
   if (memoize) {
-    return parseMarkdownBlocks(data, parser).flatMap((token) => {
+    const result = parseMarkdownBlocks(data, parser).flatMap((token) => {
       if (token.type === 'space') {
         return {
           ...editor.api.create.block(),
@@ -69,9 +70,11 @@ export const deserializeMd = (
         };
       });
     });
+    return filterNodes(result, editor);
   }
 
-  return tree.processSync(data).result;
+  const result = tree.processSync(data).result;
+  return filterNodes(result, editor);
 };
 
 // TODO: Collect rules from plugins

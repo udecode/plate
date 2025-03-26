@@ -32,8 +32,8 @@ export type ElementTypes =
   | 'inline_equation'
   | 'li'
   | 'lic'
+  | 'list'
   | 'mention'
-  | 'ol'
   | 'p'
   | 'suggestion'
   | 'table'
@@ -41,16 +41,15 @@ export type ElementTypes =
   | 'th'
   | 'toc'
   | 'toggle'
-  | 'tr'
-  | 'ul';
+  | 'tr';
 
 export type NodeParser<K extends keyof ElementTypeMap> = {
   deserialize?: (
-    node: ReturnTypeMap[K],
+    mdastNode: ReturnTypeMap[K],
     options: SerializeMdOptions
   ) => ElementTypeMap[K];
   serialize?: (
-    node: ElementTypeMap[K],
+    slateNode: ElementTypeMap[K],
     options: SerializeMdOptions
   ) => ReturnTypeMap[K];
 };
@@ -61,8 +60,8 @@ export type Nodes = Partial<{
   Record<
     string,
     {
-      deserialize?: (node: any, options: SerializeMdOptions) => any;
-      serialize?: (node: any, options: SerializeMdOptions) => any;
+      deserialize?: (mdastNode: any, options: SerializeMdOptions) => any;
+      serialize?: (slateNode: any, options: SerializeMdOptions) => any;
     }
   >;
 
@@ -87,9 +86,11 @@ type ElementTypeMap = {
 type InlineElementTypes =
   | 'bold'
   | 'code'
+  | 'comment'
   | 'html'
   | 'italic'
   | 'strikethrough'
+  | 'suggestion'
   | 'text';
 
 type ReturnTypeMap = {
