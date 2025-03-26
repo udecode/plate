@@ -1,6 +1,6 @@
 import type { TText } from '@udecode/plate';
 
-import type { ElementTypes } from '../internal/types';
+import type { ElementTypes } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
 import type { astMarks, slateMarks } from './types';
 

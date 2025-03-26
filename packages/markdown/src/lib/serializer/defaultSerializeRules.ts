@@ -1,81 +1,7 @@
-import type { TElement } from '@udecode/plate';
-import type * as mdastUtilMath from 'mdast-util-math';
-
-import type {
-  TCodeBlockElement,
-  TDateElement,
-  TEquationElement,
-  TImageElement,
-  TLinkElement,
-  TMentionElement,
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../internal/types';
-import type { SerializeMdOptions } from './serializeMd';
+import type { Nodes } from '../types';
 import type { mdast } from './types';
 
 import { convertNodes } from './convertNodes';
-
-export type NodeParser<K extends keyof ElementTypeMap> = {
-  isLeaf?: boolean;
-  deserialize?: (
-    node: ReturnTypeMap[K],
-    options: SerializeMdOptions
-  ) => ElementTypeMap[K];
-  serialize?: (
-    node: ElementTypeMap[K],
-    options: SerializeMdOptions
-  ) => ReturnTypeMap[K];
-};
-
-export type Nodes = Partial<{
-  [K in keyof ElementTypeMap]: NodeParser<K>;
-}> &
-  Record<
-    string,
-    {
-      isLeaf?: boolean;
-      deserialize?: (node: any, options: SerializeMdOptions) => any;
-      serialize?: (node: any, options: SerializeMdOptions) => any;
-    }
-  >;
-
-type ElementTypeMap = {
-  a: TLinkElement;
-  blockquote: TElement;
-  code_block: TCodeBlockElement;
-  date: TDateElement;
-  equation: TEquationElement;
-  heading: TElement;
-  hr: TElement;
-  img: TImageElement;
-  inline_equation: TEquationElement;
-  mention: TMentionElement;
-  p: TElement;
-  table: TTableElement;
-  td: TTableCellElement;
-  th: TElement;
-  tr: TTableRowElement;
-};
-
-type ReturnTypeMap = {
-  a: mdast.Link;
-  blockquote: mdast.Blockquote;
-  code_block: mdast.Code;
-  date: mdast.Text;
-  equation: mdastUtilMath.Math;
-  heading: mdast.Heading;
-  hr: mdast.ThematicBreak;
-  img: mdast.Paragraph;
-  inline_equation: mdastUtilMath.InlineMath;
-  mention: mdast.Text;
-  p: mdast.Paragraph;
-  table: mdast.Table;
-  td: mdast.TableCell;
-  th: mdast.TableCell;
-  tr: mdast.TableRow;
-};
 
 export const defaultSerializeRules: Nodes = {
   a: {
@@ -191,15 +117,6 @@ export const defaultSerializeRules: Nodes = {
           options
         ) as mdast.Paragraph['children'],
         type: 'paragraph',
-      };
-    },
-  },
-  suggestion: {
-    isLeaf: true,
-    serialize: () => {
-      return {
-        type: 'text',
-        value: '',
       };
     },
   },

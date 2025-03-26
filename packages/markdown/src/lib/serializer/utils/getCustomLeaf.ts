@@ -1,4 +1,3 @@
-import type { ElementTypes } from '../../internal/types';
 import type { SerializeMdOptions } from '../serializeMd';
 
 import { defaultSerializeRules, MarkdownPlugin } from '../..';
@@ -8,18 +7,20 @@ export const getCustomLeaf = (options?: SerializeMdOptions): string[] => {
     return [];
   }
 
+  const { editor } = options;
+
   const customLeaf: string[] = [];
 
   const nodes =
-    options.editor.getOption(MarkdownPlugin, 'nodes') ?? defaultSerializeRules;
+    editor.getOption(MarkdownPlugin, 'nodes') ?? defaultSerializeRules;
 
   if (nodes) {
     const keys = Object.keys(nodes);
 
     for (const key of keys) {
-      const component = nodes[key as ElementTypes];
+      const plugin = editor.plugins[key];
 
-      if (component?.isLeaf) {
+      if (plugin?.node?.isLeaf) {
         customLeaf.push(key);
       }
     }

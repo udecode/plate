@@ -62,34 +62,28 @@ const content = editor.api.markdown.serialize();
 
 <API name="MarkdownPlugin">
 <APIOptions>
-  <APIItem name="elementRules" type="RemarkElementRules">
-    对象，其中每个键是 Markdown 语法元素类型，值是一个转换函数。
-    <APISubList>
-      <APISubListItem parent="elementRules" name="[key in MdastElementType]" type="RemarkElementRule">
-        键对应于 Markdown 元素类型（`paragraph`、`heading`、`list`、`listItem`、`link`、`image`、`blockquote`、`code`、`thematicBreak`）。值是一个对象，指定如何将给定类型的 Markdown 元素转换为 Slate 元素。
-        <APISubList>
-          <APISubListItem parent="RemarkElementRule" name="transform" type="(node: MdastNode, options: RemarkPluginOptions<V>) => TElement | TElement[]">
-            一个函数，接受 `MdastNode` 和 `RemarkPluginOptions` 作为参数，并返回 `TElement` 或 `TElement` 数组。
-          </APISubListItem>
-        </APISubList>
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="allowedNodes" type="string[] | null">
+    允许的节点类型列表。不能与 disallowedNodes 同时使用。
+    默认值：`null`
   </APIItem>
-  <APIItem name="textRules" type="RemarkTextRules">
-    对象，其中每个键是 Markdown 语法文本类型，值是一个提供可选标记和转换函数的对象。
-    <APISubList>
-      <APISubListItem parent="textRules" name="[key in MdastTextType]" type="RemarkTextRule">
-        键对应于 Markdown 文本类型（`emphasis`、`strong`、`delete`、`inlineCode`、`html`、`text`）。值是一个对象，指定如何处理给定类型的 Markdown 文本。
-        <APISubList>
-          <APISubListItem parent="RemarkTextRule" name="mark" type="(options: RemarkPluginOptions<V>) => string" optional>
-            一个可选的函数，接受 `RemarkPluginOptions` 作为参数并返回一个字符串，表示给定 Markdown 文本的标记类型。
-          </APISubListItem>
-          <APISubListItem parent="RemarkTextRule" name="transform" type="(text: string) => string" optional>
-            一个可选的函数，接受一个字符串（Markdown 文本）作为参数并返回转换后的字符串。
-          </APISubListItem>
-        </APISubList>
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="disallowedNodes" type="string[] | null">
+    不允许的节点类型列表。不能与 allowedNodes 同时使用。
+    默认值：`[]`
+  </APIItem>
+  <APIItem name="nodes" type="Nodes | null">
+    定义如何将 Markdown 语法元素转换为 Slate 编辑器元素的规则，或如何将 Slate 编辑器元素转换为 Markdown 语法元素的规则。包括段落、标题、列表、链接、图片等元素的转换规则。设置为 null 时将使用默认转换规则。
+    默认值：`null`
+  </APIItem>
+  <APIItem name="remarkPlugins" type="Plugin[]">
+    用于扩展 Markdown 解析和序列化功能的 remark 插件数组。例如，可以添加 remark-gfm 来支持 GFM 语法，remark-math 来支持数学公式等。这些插件将在解析和生成 Markdown 文本时使用。
+    默认值：`[]`
+  </APIItem>
+  <APIItem name="allowNode" type="(node: any) => boolean" optional>
+    节点的自定义过滤函数。在 allowedNodes/disallowedNodes 检查后调用。
+  </APIItem>
+  <APIItem name="splitLineBreaks" type="boolean" optional>
+    当文本包含 \n 时，将文本拆分为单独的段落。段落之间的换行符也将转换为单独的段落。
+    默认值：`false`
   </APIItem>
 </APIOptions>
 </API>
@@ -131,41 +125,12 @@ const content = editor.api.markdown.serialize();
 
 <API name="serialize">
 <APIOptions type="SerializeMarkdownOptions">
-  <APIItem name="nodes" type="Descendant[]" optional>
+  <APIItem name="value" type="Descendant[]" optional>
     要序列化的 Slate 节点。如果未提供，将使用整个编辑器值。
   </APIItem>
 </APIOptions>
 
 <APIReturns type="string">
   表示序列化 Slate 内容的 Markdown 字符串。
-</APIReturns>
-</API>
-
-### `parseMarkdownBlocks`
-
-使用 marked 词法分析器提取和过滤 Markdown 标记。
-
-<API name="parseMarkdownBlocks">
-<APIParameters>
-  <APIItem name="markdown" type="string">
-    要解析为标记的 Markdown 字符串。
-  </APIItem>
-  <APIItem name="options" type="ParseMarkdownBlocksOptions" optional>
-    解析 Markdown 字符串的选项。
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="ParseMarkdownBlocksOptions">
-  <APIItem name="exclude" type="string[]" optional>
-    要排除的标记类型数组（例如 ['space', 'hr']）。
-  </APIItem>
-  <APIItem name="trim" type="boolean" optional>
-    是否修剪内容的末尾。
-    - **默认值:** `true`
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="Token[]">
-  Markdown 标记数组。
 </APIReturns>
 </API>

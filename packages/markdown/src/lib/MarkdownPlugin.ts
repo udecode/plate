@@ -8,14 +8,45 @@ import {
   isUrl,
 } from '@udecode/plate';
 
+import type { Nodes } from './types';
+
 import { deserializeMd } from './deserializer/utils';
-import { type Nodes, serializeMd } from './serializer';
+import { serializeMd } from './serializer';
+
+export type AllowNode = (node: any) => boolean;
 
 export type MarkdownConfig = PluginConfig<
   'markdown',
   {
+    /** List of node types to allow. Cannot be combined with disallowedNodes. */
+    allowedNodes: string[] | null;
+    /** @default [ ] */
+    /** List of node types to disallow. Cannot be combined with allowedNodes. */
+    disallowedNodes: string[] | null;
+    /**
+     * Rules that define how to convert Markdown syntax elements to Slate editor
+     * elements. Or rules that how to convert Slate editor elements to Markdown
+     * syntax elements. Includes conversion rules for elements such as
+     * paragraphs, headings, lists, links, images, etc. When set to null,
+     * default conversion rules will be used.
+     *
+     * @default null
+     */
     nodes: Nodes | null;
+    /**
+     * Array of remark plugins to extend Markdown parsing and serialization
+     * functionality. For example, you can add remark-gfm to support GFM syntax,
+     * remark-math to support mathematical formulas, etc. These plugins will be
+     * used during the parsing and generation of Markdown text.
+     *
+     * @default [ ]
+     */
     remarkPlugins: Plugin[];
+    /**
+     * Custom filter function for nodes. Called after
+     * allowedNodes/disallowedNodes check.
+     */
+    allowNode?: AllowNode;
     /**
      * When the text contains \n, split the text into a separate paragraph.
      *
@@ -37,6 +68,8 @@ export type MarkdownConfig = PluginConfig<
 export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   key: 'markdown',
   options: {
+    allowedNodes: null,
+    disallowedNodes: null,
     nodes: null,
     remarkPlugins: [],
     splitLineBreaks: false,

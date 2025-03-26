@@ -1,0 +1,125 @@
+---
+'@udecode/plate-markdown': major
+---
+
+## NEW:
+
+- Deserialization supports the math type.
+  t
+- Better serialization: Previously, markdown sting was manually parsed into Slate nodes. Now, the markdown string is first converted into an MDAST using the more mature Remark.js, and then the MDAST is mapped to Slate nodes. This process is more secure and reliable.
+
+- New options allowedNodes, disallowedNodes, and allowNode help you filter out unwanted nodes.
+
+## Breaking Change:
+
+Remove `options.elementRules` andd `textRules` use `nodes.key.deserialize` instead
+
+For example:
+
+```tsx
+export const markdownPlugin = MarkdownPlugin.configure({
+  options: {
+    disallowedNodes: [SuggestionPlugin.key],
+    nodes: {
+      //For textRules
+      [BoldPlugin.key]: {
+        deserialize: (node) => {
+          return {
+            bold: true,
+            text: node.value || '',
+          };
+        },
+      },
+      // For elementRules
+      [EquationPlugin.key]: {
+        deserialize: (node, options) => {
+          return {
+            children: [{ text: '' }],
+            texExpression: node.value,
+            type: EquationPlugin.key,
+          };
+        },
+      },
+    },
+    remarkPlugins: [remarkMath, remarkGfm],
+  },
+});
+```
+
+`SerializeMdOptions` has been removed because the serialization process has changed from `md => slate nodes` to `md => ast => slate nodes`, making many of the previous concepts obsolete. The following options are no longer available:
+Before:
+
+```tsx
+interface SerializeMdOptions {
+  /** @default Options for each node type. */
+  nodes: Record<keyof MdNodeTypes, SerializeMdNodeOptions>;
+  /**
+   * Tag to use for line breaks.
+   *
+   * @default '<br>'
+   */
+  breakTag?: string;
+  /** Custom nodes to serialize. */
+  customNodes?: Record<string, SerializeMdNodeOptions>;
+  ignoreParagraphNewline?: boolean;
+  listDepth?: number;
+  /**
+   * Format for underline.
+   *
+   * @example
+   *   {
+   *     "underline": ["<u>", "</u>"]
+   *   }
+   */
+  markFormats?: Partial<MarkFormats>;
+  /**
+   * List of unordered list style types (when using indent list).
+   *
+   * @default ['disc', 'circle', 'square']
+   */
+  ulListStyleTypes?: string[];
+  /** @default 'insert' */
+  ignoreSuggestionType?: 'insert' | 'remove' | 'update';
+}
+```
+
+- `SerializeMdOptions.customNodes` and `SerializeMdOptions.nodes` - These can be replaced with the `nodes.key.serialize` option in the plugin configuration. For example:
+
+```tsx
+export const markdownPlugin = MarkdownPlugin.configure({
+  options: {
+    disallowedNodes: [],
+    nodes: {
+      // ignore all `insert` type suggestionÏ
+      [SuggestionPlugin.key]: {
+        serialize: (node: TSuggestionText, options): mdast.Text => {
+          const suggestionData = options.editor
+            .getApi(SuggestionPlugin)
+            .suggestion.suggestionData(node);
+
+          if (suggestionData?.type === 'insert')
+            return {
+              type: 'text',
+              value: '',
+            };
+
+          return {
+            type: 'text',
+            value: node.text,
+          };
+        },
+      },
+      // For elementRules
+      [EquationPlugin.key]: {
+        serialize: (node) => {
+          return {
+            type: 'math',
+            value: node.texExpression,
+          };
+        },
+      },
+    },
+    remarkPlugins: [remarkMath, remarkGfm],
+  },
+});
+```

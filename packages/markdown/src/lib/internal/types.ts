@@ -1,34 +1,5 @@
 import type { Descendant, TElement } from '@udecode/plate';
 
-export type ElementTypes =
-  | InlineElementTypes
-  | 'a'
-  | 'blockquote'
-  | 'callout'
-  | 'code_block'
-  | 'code_line'
-  | 'column'
-  | 'column_group'
-  | 'date'
-  | 'equation'
-  | 'heading'
-  | 'hr'
-  | 'img'
-  | 'inline_equation'
-  | 'li'
-  | 'lic'
-  | 'mention'
-  | 'ol'
-  | 'p'
-  | 'suggestion'
-  | 'table'
-  | 'td'
-  | 'th'
-  | 'toc'
-  | 'toggle'
-  | 'tr'
-  | 'ul';
-
 export interface TCodeBlockElement extends TElement {
   lang?: string;
 }
@@ -92,11 +63,3 @@ interface BorderStyle {
   size?: number;
   style?: string;
 }
-
-type InlineElementTypes =
-  | 'bold'
-  | 'code'
-  | 'html'
-  | 'italic'
-  | 'strikethrough'
-  | 'text';
