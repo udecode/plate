@@ -1,4 +1,6 @@
-import { deserializeInlineMd } from '@udecode/plate-markdown';
+import type { Operation } from '@udecode/plate';
+
+import { deserializeMd } from '@udecode/plate-markdown';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
@@ -10,6 +12,10 @@ import { useChatChunk } from './hooks/useChatChunk';
 export const useAIChatHooks = () => {
   const { editor, tf } = useEditorPlugin<AIPluginConfig>({ key: 'ai' });
   const mode = usePluginOption({ key: 'aiChat' } as AIChatPluginConfig, 'mode');
+  const anchorUpdate = usePluginOption(
+    { key: 'aiChat' } as AIChatPluginConfig,
+    'anchorUpdate'
+  );
 
   useChatChunk({
     onChunk: ({ isFirst, nodes }) => {
@@ -33,7 +39,11 @@ export const useAIChatHooks = () => {
       editor.undo();
       editor.history.redos.pop();
 
-      const nodes = deserializeInlineMd(editor, content);
+      const deserialized = deserializeMd(editor, content);
+      const nodes =
+        deserialized.at(0)?.type === 'p'
+          ? [...deserialized[0].children, ...deserialized.slice(1)]
+          : deserialized;
 
       withAIBatch(
         editor,
@@ -42,6 +52,15 @@ export const useAIChatHooks = () => {
         },
         { split: true }
       );
+
+      const lastAINode = editor.history.undos
+        .at(-1)
+        ?.operations.findLast(
+          (op: Operation) => op.type === 'insert_node'
+        )?.node;
+      if (lastAINode && anchorUpdate) {
+        anchorUpdate(lastAINode);
+      }
     },
   });
 };
