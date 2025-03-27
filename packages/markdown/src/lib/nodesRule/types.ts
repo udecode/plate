@@ -27,6 +27,7 @@ import type {
   MdFootnoteReference,
   MdHeading,
   MdHtml,
+  MdImage,
   MdImageReference,
   MdInlineCode,
   MdInlineMath,
@@ -81,7 +82,7 @@ type MdastNodeTypeMap = {
   equation: MdMath;
   heading: MdHeading;
   hr: MdThematicBreak;
-  img: MdParagraph;
+  img: MdImage;
   inline_equation: MdInlineMath;
   p: MdParagraph;
   table: MdTable;

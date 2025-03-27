@@ -38,15 +38,14 @@ const buildSlateNode = (
   deco: Decoration,
   options: deserializeOptions
 ): Descendant[] => {
-  mdastNode.type === 'linkReference';
-
   const type = getPlateNodeType(mdastNode.type);
 
   const NodeParserDeserialize =
     options.nodes?.[type]?.deserialize ?? defaultNodes[type]?.deserialize;
 
   if (NodeParserDeserialize) {
-    return [NodeParserDeserialize(mdastNode, deco, options)];
+    const result = NodeParserDeserialize(mdastNode, deco, options);
+    return Array.isArray(result) ? result : [result];
   }
   return [];
 };

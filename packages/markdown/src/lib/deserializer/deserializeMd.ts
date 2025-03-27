@@ -3,6 +3,7 @@ import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
@@ -19,6 +20,7 @@ export const deserializeMd = (editor: SlateEditor, data: string) => {
     .use(remarkParse)
     .use(remarkMdx)
     .use(remarkGfm)
+    .use(remarkMath)
     .use(remarkToSlate, {
       nodes: nodes,
     });

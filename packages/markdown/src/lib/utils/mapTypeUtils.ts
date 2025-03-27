@@ -105,7 +105,7 @@ const mdastToPlateTypeMap: Record<
   table: 'table',
   tableRow: 'tr',
   tableCell: 'td',
-  code: 'code',
+  code: 'code_block',
   link: 'a',
   image: 'img',
   math: 'equation',
