@@ -3,10 +3,10 @@ import type { Descendant, SlateEditor } from '@udecode/plate';
 import remarkStringify from 'remark-stringify';
 import { type Plugin, unified } from 'unified';
 
-import type { mdast } from './types';
+import type * as mdast from '../mdast';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
-import { convertNodes } from './convertNodes';
+import { convertNodesSerialize } from './convertNodes';
 
 export type SerializeMdOptions = {
   editor: SlateEditor;
@@ -15,6 +15,8 @@ export type SerializeMdOptions = {
 /** Serialize the editor value to Markdown. */
 export const serializeMd = (
   editor: SlateEditor,
+
+  // TODO:
   options?: Omit<SerializeMdOptions, 'editor'> & {
     value?: Descendant[];
   }
@@ -44,7 +46,7 @@ const slateToMdast = ({
   options: SerializeMdOptions;
 }): mdast.Root => {
   return {
-    children: convertNodes(nodes, options) as mdast.Root['children'],
+    children: convertNodesSerialize(nodes, options) as mdast.Root['children'],
     type: 'root',
   } as mdast.Root;
 };

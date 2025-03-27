@@ -1,9 +1,9 @@
 import type { TElement } from '@udecode/plate';
 
+import type * as mdast from '../mdast';
 import type { SerializeMdOptions } from './serializeMd';
-import type { mdast } from './types';
 
-import { convertNodes } from './convertNodes';
+import { convertNodesSerialize } from './convertNodes';
 
 type TIndentList = TElement & {
   checked: boolean;
@@ -57,7 +57,7 @@ export function indentListToMdastTree(
       checked: null,
       children: [
         {
-          children: convertNodes(
+          children: convertNodesSerialize(
             node.children,
             options
           ) as mdast.Paragraph['children'],

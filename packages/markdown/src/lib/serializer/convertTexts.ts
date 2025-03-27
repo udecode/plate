@@ -1,13 +1,12 @@
 import type { TText } from '@udecode/plate';
 
-import type { ElementTypes } from '../types';
+import type { astMarks } from '../types';
+import type { plateTypes } from '../utils';
 import type { SerializeMdOptions } from './serializeMd';
-import type { astMarks, slateMarks } from './types';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
-import { defaultSerializeRules } from './defaultSerializeRules';
-import { getCustomLeaf } from './utils/getCustomLeaf';
-import { unreachable } from './utils/unreachable';
+import { defaultNodes } from '../nodesRule';
+import { getCustomLeaf, unreachable } from './utils';
 
 export const convertTexts = (
   slateTexts: readonly TText[],
@@ -52,10 +51,10 @@ export const convertTexts = (
       }
     });
 
-    const endsToRemove = starts.reduce<{ key: slateMarks; index: number }[]>(
+    const endsToRemove = starts.reduce<{ key: string; index: number }[]>(
       (acc, k, kIndex) => {
         if (ends.includes(k)) {
-          acc.push({ key: k as slateMarks, index: kIndex });
+          acc.push({ key: k, index: kIndex });
         }
         return acc;
       },
@@ -92,8 +91,8 @@ export const convertTexts = (
         .forEach((k) => {
           const nodeParser =
             options?.editor?.getOption(MarkdownPlugin, 'nodes')?.[
-              k as ElementTypes
-            ] ?? defaultSerializeRules[k as ElementTypes];
+              k as plateTypes
+            ] ?? defaultNodes[k as plateTypes];
 
           if (nodeParser?.serialize) {
             res = nodeParser.serialize(cur, options) as any;

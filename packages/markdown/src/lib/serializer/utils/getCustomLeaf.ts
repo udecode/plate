@@ -1,6 +1,7 @@
 import type { SerializeMdOptions } from '../serializeMd';
 
-import { defaultSerializeRules, MarkdownPlugin } from '../..';
+import { MarkdownPlugin } from '../..';
+import { defaultNodes } from '../../nodesRule';
 
 export const getCustomLeaf = (options?: SerializeMdOptions): string[] => {
   if (!options?.editor) {
@@ -11,8 +12,7 @@ export const getCustomLeaf = (options?: SerializeMdOptions): string[] => {
 
   const customLeaf: string[] = [];
 
-  const nodes =
-    editor.getOption(MarkdownPlugin, 'nodes') ?? defaultSerializeRules;
+  const nodes = editor.getOption(MarkdownPlugin, 'nodes') ?? defaultNodes;
 
   if (nodes) {
     const keys = Object.keys(nodes);

@@ -1,13 +1,15 @@
-import type { Nodes } from '../types';
-import type { mdast } from './types';
+import type * as mdast from '../mdast';
+import type { TNodes } from './types';
 
-import { convertNodes } from './convertNodes';
+import { convertNodesDeserialize } from '../deserializer';
+import { convertNodesSerialize } from '../serializer';
+import { getPlateNodeType } from '../utils/mapTypeUtils';
 
-export const defaultSerializeRules: Nodes = {
+export const defaultNodes: TNodes = {
   a: {
     serialize: (node, options) => {
       return {
-        children: convertNodes(
+        children: convertNodesSerialize(
           node.children,
           options
         ) as mdast.Link['children'],
@@ -19,7 +21,7 @@ export const defaultSerializeRules: Nodes = {
   blockquote: {
     serialize: (node, options) => {
       return {
-        children: convertNodes(
+        children: convertNodesSerialize(
           node.children,
           options
         ) as mdast.Blockquote['children'],
@@ -66,7 +68,7 @@ export const defaultSerializeRules: Nodes = {
       };
 
       return {
-        children: convertNodes(
+        children: convertNodesSerialize(
           node.children,
           options
         ) as mdast.Heading['children'],
@@ -110,9 +112,15 @@ export const defaultSerializeRules: Nodes = {
     },
   },
   p: {
+    deserialize: (node, deco, options) => {
+      return {
+        children: convertNodesDeserialize(node.children, deco, options),
+        type: getPlateNodeType(node.type),
+      };
+    },
     serialize: (node, options) => {
       return {
-        children: convertNodes(
+        children: convertNodesSerialize(
           node.children,
           options
         ) as mdast.Paragraph['children'],
@@ -123,7 +131,7 @@ export const defaultSerializeRules: Nodes = {
   table: {
     serialize: (node, options) => {
       return {
-        children: convertNodes(
+        children: convertNodesSerialize(
           node.children,
           options
         ) as mdast.Table['children'],
@@ -134,7 +142,7 @@ export const defaultSerializeRules: Nodes = {
   td: {
     serialize: (node, options) => {
       return {
-        children: convertNodes(
+        children: convertNodesSerialize(
           node.children,
           options
         ) as mdast.TableCell['children'],
@@ -145,7 +153,7 @@ export const defaultSerializeRules: Nodes = {
   th: {
     serialize: (node, options) => {
       return {
-        children: convertNodes(
+        children: convertNodesSerialize(
           node.children,
           options
         ) as mdast.TableCell['children'],
@@ -156,7 +164,7 @@ export const defaultSerializeRules: Nodes = {
   tr: {
     serialize: (node, options) => {
       return {
-        children: convertNodes(
+        children: convertNodesSerialize(
           node.children,
           options
         ) as mdast.TableRow['children'],

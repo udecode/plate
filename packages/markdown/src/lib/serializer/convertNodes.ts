@@ -5,16 +5,16 @@ import {
   TextApi,
 } from '@udecode/plate';
 
+import type { unistLib } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
-import type { unistLib } from './types';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
+import { defaultNodes } from '../nodesRule';
 import { convertTexts } from './convertTexts';
-import { defaultSerializeRules } from './defaultSerializeRules';
 import { indentListToMdastTree } from './indentListToMdastTree';
-import { unreachable } from './utils/unreachable';
+import { unreachable } from './utils';
 
-export const convertNodes = (
+export const convertNodesSerialize = (
   nodes: Descendant[],
   options: SerializeMdOptions
 ): unistLib.Node[] => {
@@ -76,12 +76,12 @@ export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
     key = 'heading';
   }
 
-  const component =
+  const nodes =
     options.editor.getOptions(MarkdownPlugin).nodes?.[key] ??
-    defaultSerializeRules[key as keyof typeof defaultSerializeRules];
+    defaultNodes[key as keyof typeof defaultNodes];
 
-  if (component?.serialize) {
-    return component.serialize(node, options);
+  if (nodes?.serialize) {
+    return nodes.serialize(node, options);
   }
 
   unreachable(node);
