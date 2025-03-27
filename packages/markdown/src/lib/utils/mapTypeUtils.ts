@@ -1,7 +1,7 @@
 /* eslint-disable perfectionist/sort-objects */
 /* eslint-disable perfectionist/sort-union-types */
 
-import type * as mdast from '../mdast';
+import type { MdRootContent } from '../mdast';
 export type plateTypes =
   // common elements
   | 'p'
@@ -89,10 +89,10 @@ export const getMdAstNodeType = (plateType: plateTypes) => {
   return plateToMdastTypeMap[plateType];
 };
 
-export type MdastTypes = mdast.RootContent['type'];
+export type MdastTypes = MdRootContent['type'];
 
 const mdastToPlateTypeMap: Record<
-  mdast.RootContent['type'],
+  MdRootContent['type'],
   plateTypes | (string & {})
 > = {
   // common elements

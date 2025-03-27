@@ -1,10 +1,7 @@
-import type * as mdast from '../mdast';
+import type { MdDelete, MdEmphasis, MdInlineCode , MdStrong } from '../mdast';
 
 export type Decoration = Readonly<
   Partial<
-    Record<
-      (mdast.Delete | mdast.Emphasis | mdast.InlineCode | mdast.Strong)['type'],
-      true
-    >
+    Record<(MdDelete | MdEmphasis | MdInlineCode | MdStrong)['type'], true>
   >
 >;

@@ -16,7 +16,32 @@ import type {
   TTableElement,
   TTableRowElement,
 } from '../internal/types';
-import type * as mdast from '../mdast';
+import type {
+  MdBlockquote,
+  MdBreak,
+  MdCode,
+  MdDefinition,
+  MdDelete,
+  MdEmphasis,
+  MdFootnoteDefinition,
+  MdFootnoteReference,
+  MdHeading,
+  MdHtml,
+  MdImageReference,
+  MdInlineCode,
+  MdInlineMath,
+  MdLink,
+  MdLinkReference,
+  MdMath,
+  MdParagraph,
+  MdStrong,
+  MdTable,
+  MdTableCell,
+  MdTableRow,
+  MdText,
+  MdThematicBreak,
+  MdYaml,
+} from '../mdast';
 import type { SerializeMdOptions } from '../serializer';
 
 /* eslint-disable perfectionist/sort-modules */
@@ -50,26 +75,26 @@ export type TNodeParser<K extends keyof PlateNodeTypeMap> = {
 
 type MdastNodeTypeMap = {
   /** Common Elements */
-  a: mdast.Link;
-  blockquote: mdast.Blockquote;
-  code_block: mdast.Code;
-  equation: mdast.Math;
-  heading: mdast.Heading;
-  hr: mdast.ThematicBreak;
-  img: mdast.Paragraph;
-  inline_equation: mdast.InlineMath;
-  p: mdast.Paragraph;
-  table: mdast.Table;
-  td: mdast.TableCell;
-  th: mdast.TableCell;
-  tr: mdast.TableRow;
+  a: MdLink;
+  blockquote: MdBlockquote;
+  code_block: MdCode;
+  equation: MdMath;
+  heading: MdHeading;
+  hr: MdThematicBreak;
+  img: MdParagraph;
+  inline_equation: MdInlineMath;
+  p: MdParagraph;
+  table: MdTable;
+  td: MdTableCell;
+  th: MdTableCell;
+  tr: MdTableRow;
 
   /** Common Marks */
-  bold: mdast.Strong;
-  italic: mdast.Emphasis;
-  code: mdast.InlineCode;
-  text: mdast.Text;
-  strikethrough: mdast.Delete;
+  bold: MdStrong;
+  italic: MdEmphasis;
+  code: MdInlineCode;
+  text: MdText;
+  strikethrough: MdDelete;
 
   /** Plate Only Elements */
   column_group: any;
@@ -88,14 +113,14 @@ type MdastNodeTypeMap = {
   suggestion: any;
 
   /** Markdown only */
-  footnoteReference: mdast.FootnoteReference;
-  definition: mdast.Definition;
-  footnoteDefinition: mdast.FootnoteDefinition;
-  break: mdast.Break;
-  yaml: mdast.Yaml;
-  imageReference: mdast.ImageReference;
-  linkReference: mdast.LinkReference;
-  html: mdast.Html;
+  footnoteReference: MdFootnoteReference;
+  definition: MdDefinition;
+  footnoteDefinition: MdFootnoteDefinition;
+  break: MdBreak;
+  yaml: MdYaml;
+  imageReference: MdImageReference;
+  linkReference: MdLinkReference;
+  html: MdHtml;
 
   /** PlateOnly */
 };

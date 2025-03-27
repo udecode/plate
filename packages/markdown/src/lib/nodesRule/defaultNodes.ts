@@ -1,4 +1,13 @@
-import type * as mdast from '../mdast';
+import type {
+  MdBlockquote,
+  MdHeading,
+  MdImage,
+  MdLink,
+  MdParagraph,
+  MdTable,
+  MdTableCell,
+  MdTableRow,
+} from '../mdast';
 import type { TNodes } from './types';
 
 import { convertNodesDeserialize } from '../deserializer';
@@ -12,7 +21,7 @@ export const defaultNodes: TNodes = {
         children: convertNodesSerialize(
           node.children,
           options
-        ) as mdast.Link['children'],
+        ) as MdLink['children'],
         type: 'link',
         url: node.url,
       };
@@ -24,7 +33,7 @@ export const defaultNodes: TNodes = {
         children: convertNodesSerialize(
           node.children,
           options
-        ) as mdast.Blockquote['children'],
+        ) as MdBlockquote['children'],
         type: 'blockquote',
       };
     },
@@ -71,7 +80,7 @@ export const defaultNodes: TNodes = {
         children: convertNodesSerialize(
           node.children,
           options
-        ) as mdast.Heading['children'],
+        ) as MdHeading['children'],
         depth: depthMap[node.type as keyof typeof depthMap] as any,
         type: 'heading',
       };
@@ -84,7 +93,7 @@ export const defaultNodes: TNodes = {
   },
   img: {
     serialize: ({ caption, url }) => {
-      const image: mdast.Image = {
+      const image: MdImage = {
         alt: caption ? caption.map((c) => (c as any).text).join('') : undefined,
         title: caption
           ? caption.map((c) => (c as any).text).join('')
@@ -123,7 +132,7 @@ export const defaultNodes: TNodes = {
         children: convertNodesSerialize(
           node.children,
           options
-        ) as mdast.Paragraph['children'],
+        ) as MdParagraph['children'],
         type: 'paragraph',
       };
     },
@@ -134,7 +143,7 @@ export const defaultNodes: TNodes = {
         children: convertNodesSerialize(
           node.children,
           options
-        ) as mdast.Table['children'],
+        ) as MdTable['children'],
         type: 'table',
       };
     },
@@ -145,7 +154,7 @@ export const defaultNodes: TNodes = {
         children: convertNodesSerialize(
           node.children,
           options
-        ) as mdast.TableCell['children'],
+        ) as MdTableCell['children'],
         type: 'tableCell',
       };
     },
@@ -156,7 +165,7 @@ export const defaultNodes: TNodes = {
         children: convertNodesSerialize(
           node.children,
           options
-        ) as mdast.TableCell['children'],
+        ) as MdTableCell['children'],
         type: 'tableCell',
       };
     },
@@ -167,7 +176,7 @@ export const defaultNodes: TNodes = {
         children: convertNodesSerialize(
           node.children,
           options
-        ) as mdast.TableRow['children'],
+        ) as MdTableRow['children'],
         type: 'tableRow',
       };
     },

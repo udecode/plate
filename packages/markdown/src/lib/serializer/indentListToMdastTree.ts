@@ -1,6 +1,6 @@
 import type { TElement } from '@udecode/plate';
 
-import type * as mdast from '../mdast';
+import type { MdList, MdListItem, MdParagraph } from '../mdast';
 import type { SerializeMdOptions } from './serializeMd';
 
 import { convertNodesSerialize } from './convertNodes';
@@ -9,19 +9,18 @@ type TIndentList = TElement & {
   checked: boolean;
   indent: number;
   listStart: number;
-  // TODO:
   listStyleType: string;
 };
 
 export function indentListToMdastTree(
   nodes: TIndentList[],
   options: SerializeMdOptions
-): mdast.List {
+): MdList {
   if (nodes.length === 0) {
     throw new Error('Cannot create a list from empty nodes');
   }
 
-  const root: mdast.List = {
+  const root: MdList = {
     children: [],
     ordered: nodes[0].listStyleType === 'decimal',
     start: nodes[0].listStart,
@@ -31,8 +30,8 @@ export function indentListToMdastTree(
   // Stack to track parent nodes at different indentation levels
   const indentStack: {
     indent: number;
-    list: mdast.List;
-    parent: mdast.ListItem | null;
+    list: MdList;
+    parent: MdListItem | null;
   }[] = [{ indent: nodes[0].indent, list: root, parent: null }];
 
   for (let i = 0; i < nodes.length; i++) {
@@ -53,14 +52,14 @@ export function indentListToMdastTree(
     }
 
     // Create the current list item
-    const listItem: mdast.ListItem = {
+    const listItem: MdListItem = {
       checked: null,
       children: [
         {
           children: convertNodesSerialize(
             node.children,
             options
-          ) as mdast.Paragraph['children'],
+          ) as MdParagraph['children'],
           type: 'paragraph',
         },
       ],
@@ -79,7 +78,7 @@ export function indentListToMdastTree(
     const nextNode = nodes[i + 1];
     if (nextNode && nextNode.indent > currentIndent) {
       // Create a new nested list for the next indentation level
-      const nestedList: mdast.List = {
+      const nestedList: MdList = {
         children: [],
         ordered: nextNode.listStyleType === 'decimal',
         start: nextNode.listStart,

@@ -3,7 +3,7 @@ import type { Descendant, SlateEditor } from '@udecode/plate';
 import remarkStringify from 'remark-stringify';
 import { type Plugin, unified } from 'unified';
 
-import type * as mdast from '../mdast';
+import type { MdRoot } from '../mdast';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
 import { convertNodesSerialize } from './convertNodes';
@@ -44,9 +44,9 @@ const slateToMdast = ({
 }: {
   nodes: Descendant[];
   options: SerializeMdOptions;
-}): mdast.Root => {
+}): MdRoot => {
   return {
-    children: convertNodesSerialize(nodes, options) as mdast.Root['children'],
+    children: convertNodesSerialize(nodes, options) as MdRoot['children'],
     type: 'root',
-  } as mdast.Root;
+  } as MdRoot;
 };
