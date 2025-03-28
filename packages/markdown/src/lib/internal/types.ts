@@ -46,6 +46,12 @@ export interface TImageElement extends TElement {
   placeholderId?: string;
 }
 
+export type TIndentListElement = TElement & {
+  indent: number;
+  listStyleType: string;
+  checked?: boolean;
+  listStart?: number;
+};
 export interface TLinkElement extends TElement {
   url: string;
   target?: string;
@@ -54,7 +60,6 @@ export interface TLinkElement extends TElement {
 export interface TMentionElement extends TElement {
   value: string;
 }
-
 export type TSuggestionText = TText & {
   [key: string]: TInlineSuggestionData | boolean | string;
   suggestion: true;
@@ -79,6 +84,7 @@ export interface TTableCellElement extends TElement {
   rowSpan?: number;
   size?: number;
 }
+
 export interface TTableElement extends TElement {
   colSizes?: number[];
   marginLeft?: number;

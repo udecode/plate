@@ -1,10 +1,12 @@
 import type { TText } from '@udecode/plate';
 
+import type { TIndentListElement } from '../internal/types';
 import type {
   MdBlockquote,
   MdHeading,
   MdImage,
   MdLink,
+  MdList,
   MdParagraph,
   MdTable,
   MdTableCell,
@@ -12,15 +14,19 @@ import type {
 } from '../mdast';
 import type { TNodes } from './types';
 
-import { convertNodesDeserialize } from '../deserializer';
+import {
+  buildSlateNode,
+  convertChildren,
+  convertTextsDeserialize,
+} from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
-import { getPlateNodeType } from '../utils/mapTypeUtils';
+import { getPlateNodeType } from '../utils';
 
 export const defaultNodes: TNodes = {
   a: {
     deserialize: (mdastNode, deco, options) => {
       return {
-        children: convertNodesDeserialize(mdastNode.children, deco, options),
+        children: convertChildren(mdastNode.children, deco, options),
         type: 'a',
         url: mdastNode.url,
       };
@@ -38,8 +44,27 @@ export const defaultNodes: TNodes = {
   },
   blockquote: {
     deserialize: (mdastNode, deco, options) => {
+      const children =
+        mdastNode.children.length > 0
+          ? mdastNode.children.flatMap((paragraph) => {
+              if (paragraph.type === 'paragraph') {
+                return convertChildren(paragraph.children, deco, options);
+              }
+
+              if ('children' in paragraph) {
+                return convertChildren(paragraph.children, deco, options);
+              }
+
+              return [{ text: '' }];
+            })
+          : [{ text: '' }];
+
+      const flattenedChildren = children.flatMap((child: any) =>
+        child.type ? child.children : [child]
+      );
+
       return {
-        children: convertNodesDeserialize(mdastNode.children, deco, options),
+        children: flattenedChildren,
         type: 'blockquote',
       };
     },
@@ -50,6 +75,20 @@ export const defaultNodes: TNodes = {
           options
         ) as MdBlockquote['children'],
         type: 'blockquote',
+      };
+    },
+  },
+  bold: {
+    deserialize: (mdastNode, deco, options) => {
+      return convertTextsDeserialize(mdastNode, deco, options);
+    },
+  },
+  code: {
+    deserialize: (mdastNode, deco, options) => {
+      return {
+        ...deco,
+        code: true,
+        text: mdastNode.value,
       };
     },
   },
@@ -109,7 +148,7 @@ export const defaultNodes: TNodes = {
       };
 
       return {
-        children: convertNodesDeserialize(mdastNode.children, deco, options),
+        children: convertChildren(mdastNode.children, deco, options),
         type: headingType[mdastNode.depth],
       };
     },
@@ -182,6 +221,91 @@ export const defaultNodes: TNodes = {
       };
     },
   },
+  italic: {
+    deserialize: (mdastNode, deco, options) => {
+      return convertTextsDeserialize(mdastNode, deco, options);
+    },
+  },
+  list: {
+    deserialize: (mdastNode: MdList, deco, options) => {
+      // TODO handler standard list
+
+      const parseListItems = (listNode: MdList, indent = 1, startIndex = 1) => {
+        const items: any[] = [];
+        const isOrdered = !!listNode.ordered;
+        const listStyleType = isOrdered ? 'decimal' : 'disc';
+
+        listNode.children?.forEach((listItem, index) => {
+          if (listItem.type !== 'listItem') return;
+
+          // Handle the main content of the list item
+          const [paragraph, ...subLists] = listItem.children || [];
+
+          // Create list item from paragraph content
+          const result = paragraph
+            ? buildSlateNode(paragraph, deco, options)
+            : { children: [{ text: '' }], type: 'p' };
+
+          // Convert result to array if it's not already
+          const itemNodes = Array.isArray(result) ? result : [result];
+
+          // Add list properties to each node
+          itemNodes.forEach((node: any) => {
+            const itemContent: TIndentListElement = {
+              ...node,
+              indent,
+              type: (node.type || 'p') as string,
+            };
+
+            // Only add listStyleType and listStart for appropriate cases
+            itemContent.listStyleType = listStyleType;
+            if (isOrdered) {
+              itemContent.listStart = startIndex + index;
+            }
+
+            items.push(itemContent);
+          });
+
+          // Process sub-lists and other content
+          subLists.forEach((subNode) => {
+            if (subNode.type === 'list') {
+              // Recursively process nested lists
+              const subListStart = (subNode as any).start || 1;
+              const nestedItems = parseListItems(
+                subNode,
+                indent + 1,
+                subListStart
+              );
+              items.push(...nestedItems);
+            } else {
+              // Transform any other node type using buildSlateNode
+              const result = buildSlateNode(subNode, deco, options);
+
+              // Handle both array and single node results
+              if (Array.isArray(result)) {
+                items.push(
+                  ...result.map((item) => ({
+                    ...item,
+                    indent: indent + 1,
+                  }))
+                );
+              } else {
+                items.push({
+                  ...(result as any),
+                  indent: indent + 1,
+                });
+              }
+            }
+          });
+        });
+
+        return items;
+      };
+
+      const startIndex = (mdastNode as any).start || 1;
+      return parseListItems(mdastNode, 1, startIndex);
+    },
+  },
   mention: {
     serialize: ({ value }) => {
       return {
@@ -192,10 +316,10 @@ export const defaultNodes: TNodes = {
   },
   p: {
     deserialize: (node, deco, options) => {
-      const children = convertNodesDeserialize(node.children, deco, options);
+      const children = convertChildren(node.children, deco, options);
       const paragraphType = getPlateNodeType('paragraph');
       const splitBlockTypes = new Set(['img']);
-      
+
       const elements: any[] = [];
       let inlineNodes: any[] = [];
 
@@ -234,7 +358,45 @@ export const defaultNodes: TNodes = {
       };
     },
   },
+  strikethrough: {
+    deserialize: (mdastNode, deco, options) => {
+      return convertTextsDeserialize(mdastNode, deco, options);
+    },
+  },
   table: {
+    deserialize: (node, deco, options) => {
+      const rows =
+        node.children?.map((row, rowIndex) => {
+          return {
+            children:
+              row.children?.map((cell) => {
+                const cellType = rowIndex === 0 ? 'th' : 'td';
+
+                return {
+                  children: convertChildren(cell.children, deco, options).map(
+                    (child) => {
+                      if (!child.type) {
+                        return {
+                          children: [child],
+                          type: 'p',
+                        };
+                      }
+
+                      return child;
+                    }
+                  ),
+                  type: cellType,
+                };
+              }) || [],
+            type: 'tr',
+          };
+        }) || [];
+
+      return {
+        children: rows,
+        type: 'table',
+      };
+    },
     serialize: (node, options) => {
       return {
         children: convertNodesSerialize(

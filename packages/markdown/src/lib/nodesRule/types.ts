@@ -9,6 +9,7 @@ import type {
   TDateElement,
   TEquationElement,
   TImageElement,
+  TIndentListElement,
   TLinkElement,
   TMentionElement,
   TSuggestionText,
@@ -33,6 +34,7 @@ import type {
   MdInlineMath,
   MdLink,
   MdLinkReference,
+  MdList,
   MdMath,
   MdParagraph,
   MdStrong,
@@ -89,6 +91,7 @@ type MdastNodeTypeMap = {
   td: MdTableCell;
   th: MdTableCell;
   tr: MdTableRow;
+  list: MdList;
 
   /** Common Marks */
   bold: MdStrong;
@@ -141,6 +144,8 @@ type PlateNodeTypeMap = {
   td: TTableCellElement;
   th: TElement;
   tr: TTableRowElement;
+  // TODO support standard list
+  list: TIndentListElement[];
 
   /** CommonMarks */
   bold: TText & { bold: true };
