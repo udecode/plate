@@ -1,20 +1,33 @@
-import { type Descendant, NodeApi } from '@udecode/plate';
+import type { Descendant, SlateEditor } from '@udecode/plate';
 
-import { serializeMdNodes } from './serializeMdNodes';
+import remarkStringify from 'remark-stringify';
+import { type Plugin, unified } from 'unified';
 
-// TODO: add keepLeadingSpaces option to serializeMdNodes
-export const serializeInlineMd = (nodes: Descendant[]) => {
-  if (nodes.length === 0) return '';
+import type { SerializeMdOptions } from './serializeMd';
 
-  let leadingSpaces = '';
+import { MarkdownPlugin } from '../MarkdownPlugin';
+import { convertTexts } from './convertTexts';
 
-  // Check for leading spaces in the first node
-  const firstNodeText = NodeApi.string(nodes[0]);
-  const leadingMatch = /^\s*/.exec(firstNodeText);
-  leadingSpaces = leadingMatch ? leadingMatch[0] : '';
+export const serializeInlineMd = (
+  editor: SlateEditor,
+  options?: Omit<SerializeMdOptions, 'editor'> & {
+    value?: Descendant[];
+  }
+) => {
+  const remarkPlugins: Plugin[] =
+    editor.getOptions(MarkdownPlugin).remarkPlugins;
+
+  const toRemarkProcessor = unified().use(remarkPlugins).use(remarkStringify);
+
+  if (options?.value?.length === 0) return '';
 
   // Serialize the content
-  const serializedContent = serializeMdNodes(nodes);
+  const serializedContent = toRemarkProcessor.stringify({
+    children: convertTexts(options?.value as any, {
+      editor,
+    }),
+    type: 'root',
+  });
 
-  return leadingSpaces + serializedContent;
+  return serializedContent;
 };

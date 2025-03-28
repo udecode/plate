@@ -157,13 +157,9 @@ Email example@example.com also converts automatically
 :smile: :heart:
 `;
 
-const markdownPlugin = MarkdownPlugin.configure({
-  options: { indentList: true },
-});
-
 export default function MarkdownDemo() {
   const markdownEditor = usePlateEditor({
-    plugins: [markdownPlugin],
+    plugins: [MarkdownPlugin],
     value: [{ children: [{ text: initialMarkdown }], type: 'p' }],
   });
 
@@ -212,7 +208,7 @@ export default function MarkdownDemo() {
         ImagePlugin,
         ...indentListPlugins,
         autoformatPlugin,
-        markdownPlugin,
+        MarkdownPlugin,
       ],
       value: (editor) =>
         deserializeMd(editor, initialMarkdown, {

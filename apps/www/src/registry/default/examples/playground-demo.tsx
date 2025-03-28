@@ -94,7 +94,7 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
           enabled: process.env.NODE_ENV !== 'production',
         }),
       ],
-      value: value,
+      value,
     },
     []
   );

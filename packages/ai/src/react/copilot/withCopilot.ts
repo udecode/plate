@@ -1,6 +1,11 @@
 import type { OverrideEditor, PlateEditor } from '@udecode/plate/react';
 
-import { type Operation, type TRange, RangeApi } from '@udecode/plate';
+import {
+  type Operation,
+  type SlateEditor,
+  type TRange,
+  RangeApi,
+} from '@udecode/plate';
 import { serializeInlineMd } from '@udecode/plate-markdown';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
@@ -11,13 +16,13 @@ type CopilotBatch = PlateEditor['history']['undos'][number] & {
   shouldAbort: boolean;
 };
 
-const getPatchString = (operations: Operation[]) => {
+const getPatchString = (editor: SlateEditor, operations: Operation[]) => {
   let string = '';
 
   for (const operation of operations) {
     if (operation.type === 'insert_node') {
       const node = operation.node;
-      const text = serializeInlineMd([node as any]);
+      const text = serializeInlineMd(editor, { value: [node] });
       string += text;
     } else if (operation.type === 'insert_text') {
       string += operation.text;
@@ -74,7 +79,7 @@ export const withCopilot: OverrideEditor<CopilotPluginConfig> = ({
 
         if (topRedo && topRedo.shouldAbort === false && prevSuggestion) {
           withoutAbort(editor, () => {
-            const shouldRemoveText = getPatchString(topRedo.operations);
+            const shouldRemoveText = getPatchString(editor, topRedo.operations);
 
             const newText = prevSuggestion.slice(shouldRemoveText.length);
             setOption('suggestionText', newText);
@@ -112,7 +117,10 @@ export const withCopilot: OverrideEditor<CopilotPluginConfig> = ({
 
         if (lastUndos && lastUndos.shouldAbort === false && oldText) {
           withoutAbort(editor, () => {
-            const shouldInsertText = getPatchString(lastUndos.operations);
+            const shouldInsertText = getPatchString(
+              editor,
+              lastUndos.operations
+            );
 
             const newText = shouldInsertText + oldText;
             setOption('suggestionText', newText);

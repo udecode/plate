@@ -1,17 +1,14 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { MarkdownPlugin } from '../../MarkdownPlugin';
+import { createTestEditor } from '../serializer/__tests__/createTestEditor';
 import { deserializeMd } from './deserializeMd';
 
 jsxt;
 
 describe('deserializeMdIndentList - comprehensive coverage', () => {
-  const editor = createSlateEditor({
-    plugins: [MarkdownPlugin.configure({ options: { indentList: true } })],
-  });
+  const editor = createTestEditor()
 
   it('should deserialize a single Markdown string containing all list edge cases', () => {
     /**

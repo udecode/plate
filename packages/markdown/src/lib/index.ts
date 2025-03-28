@@ -3,6 +3,10 @@
  */
 
 export * from './MarkdownPlugin';
+export * from './mdast';
+export * from './types';
+export * from './__deprecated_remark-slate/index';
 export * from './deserializer/index';
-export * from './remark-slate/index';
+export * from './nodesRule/index';
 export * from './serializer/index';
+export * from './utils/index';

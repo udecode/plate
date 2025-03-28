@@ -67,6 +67,15 @@ module.exports = {
       '|micromark.*' +
       '|unist-.*' +
       '|markdown-table' +
+      '|parse-entities' +
+      '|character-.*' +
+      '|estree-.*' +
+      '|is-decimal' +
+      '|is-hexadecimal' +
+      '|is-alphanumerical' +
+      '|is-alphabetical' +
+      '|is-alphanumeric' +
+      '|stringify-entities' +
       // '|markdown-.*' +
       '|mdast-util-to-markdown|zwitch|longest-streak|unist-util-visit|mdast-util-phrasing' +
       '|escape-string-regexp|micromark-util-decode-string|decode-named-character-reference' +

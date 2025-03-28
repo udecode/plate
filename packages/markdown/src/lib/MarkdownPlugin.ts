@@ -1,31 +1,71 @@
+import type { Plugin } from 'unified';
+
 import {
   type OmitFirst,
   type PluginConfig,
   bindFirst,
   createTSlatePlugin,
-  isUrl,
 } from '@udecode/plate';
 
-import { deserializeMd } from './deserializer/utils';
-import {
-  type RemarkElementRules,
-  type RemarkTextRules,
-  remarkDefaultElementRules,
-  remarkDefaultTextRules,
-} from './remark-slate';
+import type { TNodes } from './nodesRule';
+// import type { deserializeMd } from './deserializer/deserializeMd';
+import type { plateTypes } from './utils/mapTypeUtils';
+
 import { serializeMd } from './serializer';
 
-// export type MarkdownDeserializer = {
-//   elementRules?: Partial<Record<MdastElementType, RemarkElementRule>>;
-//   textRules?: Partial<Record<MdastTextType, RemarkTextRule>>;
-// } & Deserializer;
+export type AllowNodeConfig = {
+  /** Custom filter function for nodes during deserialization */
+  deserialize?: (node: any) => boolean;
+  /** Custom filter function for nodes during serialization */
+  serialize?: (node: any) => boolean;
+};
 
 export type MarkdownConfig = PluginConfig<
   'markdown',
   {
-    /** Override element rules. */
-    elementRules?: RemarkElementRules;
-    indentList?: boolean;
+    /**
+     * Configuration for allowed node types. Cannot be combined with
+     * disallowedNodes.
+     */
+    allowedNodes: ((string & {}) | plateTypes)[] | null;
+    /**
+     * Configuration for disallowed node types. Cannot be combined with
+     * allowedNodes.
+     *
+     * @default null
+     */
+    disallowedNodes: ((string & {}) | plateTypes)[] | null;
+    /**
+     * Array of remark plugins to extend Markdown parsing and serialization
+     * functionality. For example, you can add remark-gfm to support GFM syntax,
+     * remark-math to support mathematical formulas, etc. These plugins will be
+     * used during the parsing and generation of Markdown text.
+     *
+     * @default undefined
+     */
+    remarkPlugins: Plugin[];
+    /**
+     * Custom filter function for nodes during deserialization and
+     * serialization.
+     *
+     * @default null
+     */
+    allowNode?: AllowNodeConfig;
+    /**
+     * Rules that define how to convert Markdown syntax elements to Slate editor
+     * elements. Or rules that how to convert Slate editor elements to Markdown
+     * syntax elements. Includes conversion rules for elements such as
+     * paragraphs, headings, lists, links, images, etc. When set to null,
+     * default conversion rules will be used.
+     *
+     * @default undefined
+     */
+    nodes?: TNodes;
+    /**
+     * Custom filter functions for nodes. Called after
+     * allowedNodes/disallowedNodes check. You can specify different functions
+     * for serialization and deserialization.
+     */
     /**
      * When the text contains \n, split the text into a separate paragraph.
      *
@@ -35,12 +75,10 @@ export type MarkdownConfig = PluginConfig<
      * @default false
      */
     splitLineBreaks?: boolean;
-    /** Override text rules. */
-    textRules?: RemarkTextRules;
   },
   {
     markdown: {
-      deserialize: OmitFirst<typeof deserializeMd>;
+      // deserialize: OmitFirst<typeof deserializeMd>;
       serialize: OmitFirst<typeof serializeMd>;
     };
   }
@@ -49,35 +87,36 @@ export type MarkdownConfig = PluginConfig<
 export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   key: 'markdown',
   options: {
-    elementRules: remarkDefaultElementRules,
-    indentList: false,
+    allowedNodes: null,
+    disallowedNodes: null,
+    // TODO:
+    nodes: undefined,
+    remarkPlugins: [],
     splitLineBreaks: false,
-    textRules: remarkDefaultTextRules,
   },
-})
-  .extendApi(({ editor }) => ({
-    deserialize: bindFirst(deserializeMd, editor),
-    serialize: bindFirst(serializeMd, editor),
-  }))
-  .extend(({ api }) => ({
-    parser: {
-      format: 'text/plain',
-      deserialize: ({ data }) => api.markdown.deserialize(data),
-      query: ({ data, dataTransfer }) => {
-        const htmlData = dataTransfer.getData('text/html');
+}).extendApi(({ editor }) => ({
+  // deserialize: bindFirst(deserializeMd, editor),
+  serialize: bindFirst(serializeMd, editor),
+}));
+// .extend(({ api }) => ({
+//   parser: {
+//     format: 'text/plain',
+//     deserialize: ({ data }) => api.markdown.deserialize(data),
+//     query: ({ data, dataTransfer }) => {
+//       const htmlData = dataTransfer.getData('text/html');
 
-        if (htmlData) return false;
+//       if (htmlData) return false;
 
-        const { files } = dataTransfer;
+//       const { files } = dataTransfer;
 
-        if (
-          !files?.length && // if content is simply a URL pass through to not break LinkPlugin
-          isUrl(data)
-        ) {
-          return false;
-        }
+//       if (
+//         !files?.length && // if content is simply a URL pass through to not break LinkPlugin
+//         isUrl(data)
+//       ) {
+//         return false;
+//       }
 
-        return true;
-      },
-    },
-  }));
+//       return true;
+//     },
+//   },
+// }));

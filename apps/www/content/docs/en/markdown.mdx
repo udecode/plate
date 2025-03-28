@@ -62,34 +62,38 @@ const content = editor.api.markdown.serialize();
 
 <API name="MarkdownPlugin">
 <APIOptions>
-  <APIItem name="elementRules" type="RemarkElementRules">
-    Object where each key is a Markdown syntax element type and the value is a transformation function.
-    <APISubList>
-      <APISubListItem parent="elementRules" name="[key in MdastElementType]" type="RemarkElementRule">
-        The key corresponds to a Markdown element type (`paragraph`, `heading`, `list`, `listItem`, `link`, `image`, `blockquote`, `code`, `thematicBreak`). The value is an object specifying how to transform the given type of Markdown element into a Slate element.
-        <APISubList>
-          <APISubListItem parent="RemarkElementRule" name="transform" type="(node: MdastNode, options: RemarkPluginOptions<V>) => TElement | TElement[]">
-            A function that takes a `MdastNode` and `RemarkPluginOptions` as arguments and returns a `TElement` or an array of `TElement`.
-          </APISubListItem>
-        </APISubList>
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="allowedNodes" type="{ serialize?: string[]; deserialize?: string[] } | null">
+    Configure allowed node types. Cannot be used together with disallowedNodes. You can specify different node type lists for serialization and deserialization:
+    - `serialize`: List of node types allowed when converting to Markdown
+    - `deserialize`: List of node types allowed when parsing Markdown
+    If this option is specified, only node types in the list will be processed, others will be filtered out.
+    Default: `null`
   </APIItem>
-  <APIItem name="textRules" type="RemarkTextRules">
-    Object where each key is a Markdown syntax text type and the value is an object providing optional mark and transform functions.
-    <APISubList>
-      <APISubListItem parent="textRules" name="[key in MdastTextType]" type="RemarkTextRule">
-        The key corresponds to a Markdown text type (`emphasis`, `strong`, `delete`, `inlineCode`, `html`, `text`). The value is an object specifying how to process the given type of Markdown text.
-        <APISubList>
-          <APISubListItem parent="RemarkTextRule" name="mark" type="(options: RemarkPluginOptions<V>) => string" optional>
-            An optional function that takes `RemarkPluginOptions` as argument and returns a string, indicating the mark type for the given Markdown text.
-          </APISubListItem>
-          <APISubListItem parent="RemarkTextRule" name="transform" type="(text: string) => string" optional>
-            An optional function that takes a string (the Markdown text) as argument and returns a transformed string.
-          </APISubListItem>
-        </APISubList>
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="disallowedNodes" type="{ serialize?: string[]; deserialize?: string[] } | null">
+    Configure disallowed node types. Cannot be used together with allowedNodes. You can specify different node type lists for serialization and deserialization:
+    - `serialize`: List of node types to filter out when converting to Markdown
+    - `deserialize`: List of node types to filter out when parsing Markdown
+    Node types in the list will be filtered out and won't appear in the final result.
+    Default: `null`
+  </APIItem>
+  <APIItem name="allowNode" type="{ serialize?: (node: any) => boolean; deserialize?: (node: any) => boolean }">
+    Custom node filter function. Called after allowedNodes/disallowedNodes checks. You can specify different filter functions for serialization and deserialization:
+    - `serialize`: Custom filter function when converting to Markdown
+    - `deserialize`: Custom filter function when parsing Markdown
+    Return `true` to keep the node, `false` to filter it out.
+    This is useful for scenarios where complex logic is needed to decide whether to include a node.
+  </APIItem>
+  <APIItem name="nodes" type="Nodes | null">
+    Defines rules for converting Markdown syntax elements to Slate editor elements, or rules for converting Slate editor elements to Markdown syntax elements. Includes conversion rules for paragraphs, headings, lists, links, images, and other elements. When set to null, default conversion rules will be used.
+    Default: `null`
+  </APIItem>
+  <APIItem name="remarkPlugins" type="Plugin[]">
+    Array of remark plugins for extending Markdown parsing and serialization functionality. For example, you can add remark-gfm for GFM syntax support, remark-math for math formula support, etc. These plugins will be used when parsing and generating Markdown text.
+    Default: `[]`
+  </APIItem>
+  <APIItem name="splitLineBreaks" type="boolean" optional>
+    Split text into separate paragraphs when it contains \n. Line breaks between paragraphs will also be converted to separate paragraphs.
+    Default: `false`
   </APIItem>
 </APIOptions>
 </API>
