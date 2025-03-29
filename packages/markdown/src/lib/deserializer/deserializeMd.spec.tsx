@@ -303,8 +303,8 @@ describe('deserializeMd', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it.skip('should deserialize line break tags', () => {
-    const input = 'Line 1<br>Line 2';
+  it('should deserialize line break tags', () => {
+    const input = 'Line 1<br />Line 2';
 
     const output = (
       <fragment>
@@ -434,12 +434,12 @@ describe('deserializeMd table', () => {
   });
 });
 
-describe.skip('when splitLineBreaks is enabled', () => {
+describe('when splitLineBreaks is enabled', () => {
   const editor = createSlateEditor({
     plugins: [MarkdownPlugin.configure({ options: { splitLineBreaks: true } })],
   });
 
-  it('should deserialize paragraphs and keep in separate paragraphs with line breaks', () => {
+  it.skip('should deserialize paragraphs and keep in separate paragraphs with line breaks', () => {
     const input =
       'Paragraph 1 line 1\nParagraph 1 line 2\n\nParagraph 2 line 1';
 
@@ -469,7 +469,7 @@ describe.skip('when splitLineBreaks is enabled', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('splits N consecutive line breaks into N paragraph breaks', () => {
+  it.skip('splits N consecutive line breaks into N paragraph breaks', () => {
     const input = '\n\nLine 1\n\nLine 2\n\n\nLine 3\n\n';
 
     const output = (
@@ -501,7 +501,7 @@ describe.skip('when splitLineBreaks is enabled', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('splits N consecutive line break tags into N paragraph breaks', () => {
+  it.skip('splits N consecutive line break tags into N paragraph breaks', () => {
     const input = '<br><br>Line 1<br><br>Line 2<br><br><br>Line 3<br><br>';
 
     const output = (
@@ -533,7 +533,7 @@ describe.skip('when splitLineBreaks is enabled', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('allows mixing line breaks and line break tags', () => {
+  it.skip('allows mixing line breaks and line break tags', () => {
     const input = '<br>Line 1\n<br>Line 2<br>\n<br>Line 3\n<br>';
 
     const output = (

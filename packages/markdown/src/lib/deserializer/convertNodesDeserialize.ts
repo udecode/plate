@@ -23,13 +23,34 @@ export const buildSlateNode = (
   deco: Decoration,
   options: deserializeOptions
 ): Descendant[] => {
+  const optionNodes = options.nodes;
+
+  /** Handle custom mdx nodes */
+  if (mdastNode.type === 'mdxJsxTextElement') {
+    if (mdastNode.name === 'br') {
+      const parserKey = mdastNode.name;
+      const nodeParserDeserialize =
+        optionNodes?.[parserKey]?.deserialize ??
+        defaultNodes[parserKey]?.deserialize;
+
+      if (nodeParserDeserialize)
+        return nodeParserDeserialize(mdastNode, deco, options);
+
+      return [{ text: '\n' }];
+    }
+
+    if (mdastNode.name === 'TODO') {
+      console.log('TODO');
+    }
+  }
+
   const type = getPlateNodeType(mdastNode.type);
 
-  const NodeParserDeserialize =
+  const nodeParser =
     options.nodes?.[type]?.deserialize ?? defaultNodes[type]?.deserialize;
 
-  if (NodeParserDeserialize) {
-    const result = NodeParserDeserialize(mdastNode, deco, options);
+  if (nodeParser) {
+    const result = nodeParser(mdastNode, deco, options);
     return Array.isArray(result) ? result : [result];
   }
   return [];
