@@ -6,6 +6,7 @@ import type { Decoration } from './type';
 
 import { defaultNodes } from '../nodesRule';
 import { getPlateNodeType } from '../utils';
+import { convertChildren } from './covertChildren';
 
 export const convertNodesDeserialize = (
   nodes: MdRootContent[],
@@ -39,8 +40,16 @@ export const buildSlateNode = (
       return [{ text: '\n' }];
     }
 
-    if (mdastNode.name === 'TODO') {
-      console.log('TODO');
+    if (mdastNode.name === 'underline') {
+      const parserKey = mdastNode.name;
+      const nodeParserDeserialize =
+        optionNodes?.[parserKey]?.deserialize ??
+        defaultNodes[parserKey]?.deserialize;
+
+      if (nodeParserDeserialize)
+        return nodeParserDeserialize(mdastNode, deco, options) as any;
+
+      return convertChildren(mdastNode.children, { underline: true }, options);
     }
   }
 

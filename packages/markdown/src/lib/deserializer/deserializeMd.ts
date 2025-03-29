@@ -31,7 +31,7 @@ export const deserializeMd = (
   editor: SlateEditor,
   data: string,
   options?: DeserializeMdOptions
-) => {
+): any => {
   // if using remarkMdx, we need to replace <br> with <br /> since <br /> is not supported in mdx.
   data = data.replaceAll('<br>', '<br />');
 

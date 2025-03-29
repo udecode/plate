@@ -4,3 +4,5 @@
 
 export * from './parseMarkdownBlocks';
 export * from './remarkSplitLineBreaks';
+export * from './stripMarkdown';
+export * from './deserializeInlineMd';

@@ -8,6 +8,10 @@ import { MarkdownPlugin } from '../MarkdownPlugin';
 import { defaultNodes } from '../nodesRule';
 import { getCustomLeaf, unreachable } from './utils';
 
+// inlineCode should be last because of the spec in mdast
+// https://github.com/inokawa/remark-slate-transformer/issues/145
+export const basicMarkdownMarks = ['italic', 'bold', 'strikethrough', 'code'];
+
 export const convertTexts = (
   slateTexts: readonly TText[],
   options: SerializeMdOptions
@@ -32,13 +36,9 @@ export const convertTexts = (
     ends = [];
     (
       [
-        'italic',
-        'bold',
-        'strikethrough',
-        // inlineCode should be last because of the spec in mdast
-        // https://github.com/inokawa/remark-slate-transformer/issues/145
-        'code',
-        ...customLeaf,
+        ...basicMarkdownMarks,
+        // exclude repeated marks
+        ...customLeaf.filter((k) => !basicMarkdownMarks.includes(k)),
       ] as const
     ).forEach((k) => {
       if (cur[k]) {

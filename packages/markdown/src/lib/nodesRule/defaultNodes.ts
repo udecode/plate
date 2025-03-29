@@ -491,4 +491,14 @@ export const defaultNodes: TNodes = {
       };
     },
   },
+  underline: {
+    serialize(slateNode, options) {
+      return {
+        attributes: [],
+        children: [{ text: 'text', value: slateNode.text }],
+        name: 'u',
+        type: 'mdxJsxTextElement',
+      };
+    },
+  },
 };

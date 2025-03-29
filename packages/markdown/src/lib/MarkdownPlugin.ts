@@ -5,12 +5,14 @@ import {
   type PluginConfig,
   bindFirst,
   createTSlatePlugin,
+  isUrl,
 } from '@udecode/plate';
 
 import type { TNodes } from './nodesRule';
 // import type { deserializeMd } from './deserializer/deserializeMd';
 import type { plateTypes } from './utils/mapTypeUtils';
 
+import { deserializeMd } from './deserializer';
 import { serializeMd } from './serializer';
 
 export type AllowNodeConfig = {
@@ -78,7 +80,7 @@ export type MarkdownConfig = PluginConfig<
   },
   {
     markdown: {
-      // deserialize: OmitFirst<typeof deserializeMd>;
+      deserialize: OmitFirst<typeof deserializeMd>;
       serialize: OmitFirst<typeof serializeMd>;
     };
   }
@@ -94,29 +96,30 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
     remarkPlugins: [],
     splitLineBreaks: false,
   },
-}).extendApi(({ editor }) => ({
-  // deserialize: bindFirst(deserializeMd, editor),
-  serialize: bindFirst(serializeMd, editor),
-}));
-// .extend(({ api }) => ({
-//   parser: {
-//     format: 'text/plain',
-//     deserialize: ({ data }) => api.markdown.deserialize(data),
-//     query: ({ data, dataTransfer }) => {
-//       const htmlData = dataTransfer.getData('text/html');
+})
+  .extendApi(({ editor }) => ({
+    deserialize: bindFirst(deserializeMd, editor),
+    serialize: bindFirst(serializeMd, editor),
+  }))
+  .extend(({ api }) => ({
+    parser: {
+      format: 'text/plain',
+      deserialize: ({ data }) => api.markdown.deserialize(data),
+      query: ({ data, dataTransfer }) => {
+        const htmlData = dataTransfer.getData('text/html');
 
-//       if (htmlData) return false;
+        if (htmlData) return false;
 
-//       const { files } = dataTransfer;
+        const { files } = dataTransfer;
 
-//       if (
-//         !files?.length && // if content is simply a URL pass through to not break LinkPlugin
-//         isUrl(data)
-//       ) {
-//         return false;
-//       }
+        if (
+          !files?.length && // if content is simply a URL pass through to not break LinkPlugin
+          isUrl(data)
+        ) {
+          return false;
+        }
 
-//       return true;
-//     },
-//   },
-// }));
+        return true;
+      },
+    },
+  }));

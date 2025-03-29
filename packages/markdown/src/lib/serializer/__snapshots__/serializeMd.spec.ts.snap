@@ -1,5 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`serializeMd issue44 1`] = `
+"Make text **bold**, *italic*, <u>underlined</u>, or apply a ***<u>combination</u>*** of these styles for a visually striking effect.
+"
+`;
+
 exports[`serializeMd should serialize a simple paragraph 1`] = `
 "# Playground
 
@@ -52,7 +57,7 @@ Mention: User
 
 Date: 2024-01-01
 
-Text with highlight and underline and keyboard formatting
+Text with highlight and <u>underline</u> and keyboard formatting
 
 Text with color and background color
 "

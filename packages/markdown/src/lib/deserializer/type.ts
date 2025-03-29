@@ -1,7 +1,13 @@
-import type { MdDelete, MdEmphasis, MdInlineCode , MdStrong } from '../mdast';
+import type { MdDelete, MdEmphasis, MdInlineCode, MdStrong } from '../mdast';
 
 export type Decoration = Readonly<
   Partial<
-    Record<(MdDelete | MdEmphasis | MdInlineCode | MdStrong)['type'], true>
+    Record<
+      | (MdDelete | MdEmphasis | MdInlineCode | MdStrong)['type']
+      | plateOnlyMarks,
+      true
+    >
   >
 >;
+
+type plateOnlyMarks = 'underline';
