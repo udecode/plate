@@ -1,7 +1,8 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import type { deserializeOptions } from './deserializeMd';
+import type { deserializeOptions } from '../deserializeMd';
+
 
 export const remarkSplitLineBreaks: Plugin<[deserializeOptions?], Root, Root> =
   function ({ splitLineBreaks = false } = {}) {

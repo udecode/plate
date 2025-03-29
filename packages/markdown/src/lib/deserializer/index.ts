@@ -8,3 +8,4 @@ export * from './covertChildren';
 export * from './deserializeMd';
 export * from './mdastToSlate';
 export * from './type';
+export * from './utils/index';

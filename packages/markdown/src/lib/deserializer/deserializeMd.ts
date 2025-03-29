@@ -1,9 +1,7 @@
 import type { Descendant, SlateEditor } from '@udecode/plate';
-import type { Token } from 'marked';
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { marked } from 'marked';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkMdx from 'remark-mdx';
@@ -14,7 +12,11 @@ import type { TNodes } from '../nodesRule';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
 import { mdastToSlate } from './mdastToSlate';
-import { remarkSplitLineBreaks } from './remarkSplitLineBreaks';
+import {
+  type ParseMarkdownBlocksOptions,
+  parseMarkdownBlocks,
+  remarkSplitLineBreaks,
+} from './utils';
 
 // TODO: fixes tests
 
@@ -23,40 +25,6 @@ export type DeserializeMdOptions = {
   nodes?: TNodes;
   parser?: ParseMarkdownBlocksOptions;
   splitLineBreaks?: boolean;
-};
-
-export type ParseMarkdownBlocksOptions = {
-  /**
-   * Token types to exclude from the output.
-   *
-   * @default ['space']
-   */
-  exclude?: string[];
-  /**
-   * Whether to trim the content.
-   *
-   * @default true
-   */
-  trim?: boolean;
-};
-
-export const parseMarkdownBlocks = (
-  content: string,
-  { exclude = ['space'], trim = true }: ParseMarkdownBlocksOptions = {}
-): Token[] => {
-  let tokens = [...marked.lexer(content)];
-
-  if (exclude.length > 0) {
-    tokens = tokens.filter((token) => !exclude.includes(token.type));
-  }
-  if (trim) {
-    tokens = tokens.map((token) => ({
-      ...token,
-      raw: token.raw.trimEnd(),
-    }));
-  }
-
-  return tokens;
 };
 
 export const deserializeMd = (
@@ -89,12 +57,14 @@ export const deserializeMd = (
         };
       }
 
-      return toSlateProcessor.processSync(token.raw).result.map((result: any) => {
-        return {
-          _memo: token.raw,
-          ...result,
-        };
-      });
+      return toSlateProcessor
+        .processSync(token.raw)
+        .result.map((result: any) => {
+          return {
+            _memo: token.raw,
+            ...result,
+          };
+        });
     });
   }
 
