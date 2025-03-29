@@ -563,39 +563,39 @@ describe('when splitLineBreaks is enabled', () => {
   });
 });
 
-// describe('deserializeMd options', () => {
-//   const editor = createSlateEditor({
-//     plugins: [MarkdownPlugin],
-//   });
+describe('deserializeMd options', () => {
+  const editor = createSlateEditor({
+    plugins: [MarkdownPlugin],
+  });
 
-//   describe('when memoize is true', () => {
-//     it('should add _memo property to elements', () => {
-//       const input = '# Heading\n> Quote\n```\nCode\n```';
+  describe('when memoize is true', () => {
+    it('should add _memo property to elements', () => {
+      const input = '# Heading\n> Quote\n```\nCode\n```';
 
-//       const output = [
-//         {
-//           _memo: '# Heading',
-//           children: [{ text: 'Heading' }],
-//           type: 'h1',
-//         },
-//         {
-//           _memo: '> Quote',
-//           children: [{ text: 'Quote' }],
-//           type: 'blockquote',
-//         },
-//         {
-//           _memo: '```\nCode\n```',
-//           children: [
-//             {
-//               children: [{ text: 'Code' }],
-//               type: 'code_line',
-//             },
-//           ],
-//           type: 'code_block',
-//         },
-//       ];
+      const output = [
+        {
+          _memo: '# Heading',
+          children: [{ text: 'Heading' }],
+          type: 'h1',
+        },
+        {
+          _memo: '> Quote',
+          children: [{ text: 'Quote' }],
+          type: 'blockquote',
+        },
+        {
+          _memo: '```\nCode\n```',
+          children: [
+            {
+              children: [{ text: 'Code' }],
+              type: 'code_line',
+            },
+          ],
+          type: 'code_block',
+        },
+      ];
 
-//       expect(deserializeMd(editor, input, { memoize: true })).toEqual(output);
-//     });
-//   });
-// });
+      expect(deserializeMd(editor, input, { memoize: true })).toEqual(output);
+    });
+  });
+});
