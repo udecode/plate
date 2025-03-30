@@ -17,7 +17,7 @@ import { AIChatPlugin } from '../AIChatPlugin';
 export const useAIChatEditor = (
   editor: SlateEditor,
   content: string,
-  { parser, processor }: DeserializeMdOptions = {}
+  { parser }: DeserializeMdOptions = {}
 ) => {
   const { setOption } = useEditorPlugin(AIChatPlugin);
 
@@ -26,7 +26,7 @@ export const useAIChatEditor = (
       editor.getApi(MarkdownPlugin).markdown.deserialize(content, {
         memoize: true,
         parser,
-        processor,
+        // processor,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [content]

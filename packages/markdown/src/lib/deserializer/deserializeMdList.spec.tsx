@@ -2,7 +2,7 @@
 
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createTestEditor } from '../serializer/__tests__/createTestEditor';
+import { createTestEditor } from '../__tests__/createTestEditor';
 import { deserializeMd } from './deserializeMd';
 
 jsxt;

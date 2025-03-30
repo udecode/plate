@@ -4,8 +4,8 @@ import { createSlateEditor } from '@udecode/plate';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
+import { createTestEditor } from '../__tests__/createTestEditor';
 import { MarkdownPlugin } from '../MarkdownPlugin';
-import { createTestEditor } from '../serializer/__tests__/createTestEditor';
 import { deserializeMd } from './deserializeMd';
 
 jsxt;

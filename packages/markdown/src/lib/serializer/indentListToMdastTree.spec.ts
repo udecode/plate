@@ -1,4 +1,4 @@
-import { createTestEditor } from './__tests__/createTestEditor';
+import { createTestEditor } from '../__tests__/createTestEditor';
 import { indentListToMdastTree } from './indentListToMdastTree';
 
 const editor = createTestEditor();

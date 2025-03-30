@@ -492,6 +492,13 @@ export const defaultNodes: TNodes = {
     },
   },
   underline: {
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildren(
+        mdastNode.children,
+        { underline: true, ...deco },
+        options
+      ) as any;
+    },
     serialize(slateNode, options) {
       return {
         attributes: [],

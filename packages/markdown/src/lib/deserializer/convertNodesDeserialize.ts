@@ -40,8 +40,9 @@ export const buildSlateNode = (
       return [{ text: '\n' }];
     }
 
-    if (mdastNode.name === 'underline') {
-      const parserKey = mdastNode.name;
+    if (mdastNode.name === 'u') {
+      const parserKey = 'underline';
+
       const nodeParserDeserialize =
         optionNodes?.[parserKey]?.deserialize ??
         defaultNodes[parserKey]?.deserialize;

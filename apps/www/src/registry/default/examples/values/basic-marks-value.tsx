@@ -13,7 +13,7 @@ export const basicMarksValue: any = (
     </hp>
     <hp>
       Make text <htext bold>bold</htext>, <htext italic>italic</htext>,{' '}
-      <htext underline>underlined</htext>, or apply a{' '}
+      <htext underline>underlined </htext>, or apply a{' '}
       <htext bold italic underline>
         combination
       </htext>{' '}
