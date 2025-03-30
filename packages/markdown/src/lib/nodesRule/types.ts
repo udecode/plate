@@ -1,6 +1,6 @@
 import type { TElement, TText } from '@udecode/plate';
 
-import type { Decoration, deserializeOptions } from '../deserializer';
+import type { Decoration, DeserializeMdOptions } from '../deserializer';
 import type {
   TCalloutElement,
   TCodeBlockElement,
@@ -9,7 +9,6 @@ import type {
   TDateElement,
   TEquationElement,
   TImageElement,
-  TIndentListElement,
   TLinkElement,
   TMentionElement,
   TSuggestionText,
@@ -59,7 +58,7 @@ export type AnyNodeParser = {
   deserialize?: (
     mdastNode: any,
     deco: Decoration,
-    options: deserializeOptions
+    options: DeserializeMdOptions
   ) => any;
   serialize?: (slateNode: any, options: SerializeMdOptions) => any;
 };
@@ -68,7 +67,7 @@ export type TNodeParser<K extends keyof PlateNodeTypeMap> = {
   deserialize?: (
     mdastNode: MdastNodeTypeMap[K],
     deco: Decoration,
-    options: deserializeOptions
+    options: DeserializeMdOptions
   ) => PlateNodeTypeMap[K];
   serialize?: (
     slateNode: PlateNodeTypeMap[K],
@@ -145,7 +144,8 @@ type PlateNodeTypeMap = {
   th: TElement;
   tr: TTableRowElement;
   // TODO support standard list
-  list: TIndentListElement[];
+  // list: TIndentListElement[] | TStandardListElement;
+  list: any;
 
   /** CommonMarks */
   bold: TText & { bold: true };

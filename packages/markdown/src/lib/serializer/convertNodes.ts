@@ -75,6 +75,10 @@ export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
     key = 'heading';
   }
 
+  if (['ol', 'ul'].includes(node.type)) {
+    key = 'list';
+  }
+
   const nodes =
     options.nodes?.[key] ?? defaultNodes[key as keyof typeof defaultNodes];
 

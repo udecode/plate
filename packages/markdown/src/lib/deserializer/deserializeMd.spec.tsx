@@ -12,20 +12,19 @@ jsxt;
 const editor = createTestEditor();
 
 describe('deserializeMd', () => {
-  // TODO
-  // it('should deserialize strikethrough', () => {
-  //   const input = 'This is ~~strikethrough~~.';
+  it('should deserialize strikethrough', () => {
+    const input = 'This is ~~strikethrough~~.';
 
-  //   const output = (
-  //     <fragment>
-  //       <hp>
-  //         This is <htext strikethrough>strikethrough</htext>.
-  //       </hp>
-  //     </fragment>
-  //   );
+    const output = (
+      <fragment>
+        <hp>
+          This is <htext strikethrough>strikethrough</htext>.
+        </hp>
+      </fragment>
+    );
 
-  //   expect(deserializeMd(editor, input)).toEqual(output);
-  // });
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
 
   // Not sure if this is correct
   it('should deserialize >>> to blockquote', () => {
@@ -320,7 +319,7 @@ describe('deserializeMd', () => {
   });
 });
 
-describe.skip('deserializeMd list', () => {
+describe('deserializeMd list', () => {
   it('should deserialize unordered lists', () => {
     const input = '- List item 1\n- List item 2';
 

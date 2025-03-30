@@ -23,7 +23,7 @@ export type SerializeMdOptions = {
 /** Serialize the editor value to Markdown. */
 export const serializeMd = (
   editor: SlateEditor,
-  options?: SerializeMdOptions
+  options?: Omit<SerializeMdOptions, 'editor'>
 ) => {
   const mergedOptions = getMergedOptions(editor, options);
 

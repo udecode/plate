@@ -1,6 +1,9 @@
 import type { TText } from '@udecode/plate';
 
-import type { TIndentListElement } from '../internal/types';
+import type {
+  TIndentListElement,
+  TStandardListElement,
+} from '../internal/types';
 import type {
   MdBlockquote,
   MdHeading,
@@ -8,6 +11,7 @@ import type {
   MdLink,
   MdList,
   MdParagraph,
+  MdRootContent,
   MdTable,
   MdTableCell,
   MdTableRow,
@@ -234,8 +238,46 @@ export const defaultNodes: TNodes = {
     },
   },
   list: {
-    deserialize: (mdastNode: MdList, deco, options) => {
-      // TODO handler standard list
+    deserialize: (
+      mdastNode: MdList,
+      deco,
+      options
+    ): TIndentListElement[] | TStandardListElement => {
+      // Handle standard list
+      const isStandardList = !options.editor?.pluginList.some(
+        (p) => p.key === 'listStyleType'
+      );
+
+      if (isStandardList) {
+        // For standard lists, we need to ensure each list item is properly structured
+        const children = mdastNode.children.map((child) => {
+          if (child.type === 'listItem') {
+            // Process each list item
+            return {
+              children: child.children.map((itemChild) => {
+                if (itemChild.type === 'paragraph') {
+                  return {
+                    children: convertChildren(
+                      itemChild.children,
+                      deco,
+                      options
+                    ),
+                    type: 'lic',
+                  };
+                }
+                return convertChildren([itemChild], deco, options)[0];
+              }),
+              type: 'li',
+            };
+          }
+          return convertChildren([child], deco, options)[0];
+        });
+
+        return {
+          children,
+          type: mdastNode.ordered ? 'ol' : 'ul',
+        };
+      }
 
       const parseListItems = (listNode: MdList, indent = 1, startIndex = 1) => {
         const items: any[] = [];
@@ -311,6 +353,78 @@ export const defaultNodes: TNodes = {
 
       const startIndex = (mdastNode as any).start || 1;
       return parseListItems(mdastNode, 1, startIndex);
+    },
+    serialize: (node: TStandardListElement, options): MdList => {
+      const isOrdered = node.type === 'ol';
+
+      const serializeListItems = (children: any[]): any[] => {
+        const items = [];
+        let currentItem: any = null;
+
+        for (const child of children) {
+          if (child.type === 'li') {
+            if (currentItem) {
+              items.push(currentItem);
+            }
+            currentItem = {
+              children: [],
+              type: 'listItem',
+            };
+
+            for (const liChild of child.children) {
+              if (liChild.type === 'lic') {
+                currentItem.children.push({
+                  children: convertNodesSerialize(liChild.children, options),
+                  type: 'paragraph',
+                });
+              } else if (liChild.type === 'ol' || liChild.type === 'ul') {
+                currentItem.children.push({
+                  children: serializeListItems(liChild.children),
+                  ordered: liChild.type === 'ol',
+                  type: 'list',
+                });
+              }
+            }
+          }
+        }
+
+        if (currentItem) {
+          items.push(currentItem);
+        }
+
+        return items;
+      };
+
+      return {
+        children: serializeListItems(node.children),
+        ordered: isOrdered,
+        type: 'list',
+      };
+    },
+  },
+  listItem: {
+    deserialize: (mdastNode, deco, options) => {
+      // Transform each paragraph in the list item into a 'lic' type
+      const children = mdastNode.children.map((child: MdRootContent) => {
+        if (child.type === 'paragraph') {
+          return {
+            children: convertChildren(child.children, deco, options),
+            type: 'lic',
+          };
+        }
+        return convertChildren([child], deco, options)[0];
+      });
+
+      return {
+        children,
+        type: 'li',
+      };
+    },
+    serialize: (node, options) => {
+      return {
+        children: convertNodesSerialize(node.children, options),
+        type: 'listItem',
+      };
     },
   },
   mention: {

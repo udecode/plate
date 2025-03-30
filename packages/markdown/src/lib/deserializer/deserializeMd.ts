@@ -18,6 +18,7 @@ import {
 // TODO: fixes tests
 
 export type DeserializeMdOptions = {
+  editor?: SlateEditor;
   memoize?: boolean;
   nodes?: TNodes;
   parser?: ParseMarkdownBlocksOptions;
@@ -28,7 +29,7 @@ export type DeserializeMdOptions = {
 export const deserializeMd = (
   editor: SlateEditor,
   data: string,
-  options?: DeserializeMdOptions
+  options?: Omit<DeserializeMdOptions, 'editor'>
 ): any => {
   // if using remarkMdx, we need to replace <br> with <br /> since <br /> is not supported in mdx.
   data = data.replaceAll('<br>', '<br />');
@@ -49,6 +50,9 @@ export const deserializeMd = (
     .use(remarkPlugins)
     .use(remarkSplitLineBreaks, { splitLineBreaks })
     .use(remarkToSlate, {
+      // TODO:
+      ...options,
+      editor,
       nodes,
       splitLineBreaks,
     });
@@ -76,20 +80,16 @@ export const deserializeMd = (
   return toSlateProcessor.processSync(data).result;
 };
 
-export type deserializeOptions = {
-  nodes?: TNodes;
-  splitLineBreaks?: boolean;
-};
-
 declare module 'unified' {
   interface CompileResultMap {
     remarkToSlateNode: Descendant[];
   }
 }
 
-const remarkToSlate: Plugin<[deserializeOptions?], Root, Descendant[]> =
-  function ({ nodes, splitLineBreaks = false } = {}) {
+const remarkToSlate: Plugin<[DeserializeMdOptions?], Root, Descendant[]> =
+  // TODO: options
+  function ({ editor, nodes, splitLineBreaks = false } = {}) {
     this.compiler = function (node) {
-      return mdastToSlate(node as Root, { nodes, splitLineBreaks });
+      return mdastToSlate(node as Root, { editor, nodes, splitLineBreaks });
     };
   };

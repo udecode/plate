@@ -52,6 +52,7 @@ export type TIndentListElement = TElement & {
   checked?: boolean;
   listStart?: number;
 };
+
 export interface TLinkElement extends TElement {
   url: string;
   target?: string;
@@ -59,6 +60,10 @@ export interface TLinkElement extends TElement {
 
 export interface TMentionElement extends TElement {
   value: string;
+}
+
+export interface TStandardListElement extends TElement {
+  type: 'ol' | 'ul';
 }
 export type TSuggestionText = TText & {
   [key: string]: TInlineSuggestionData | boolean | string;
