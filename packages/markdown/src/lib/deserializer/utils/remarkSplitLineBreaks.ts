@@ -3,7 +3,6 @@ import type { Plugin } from 'unified';
 
 import type { deserializeOptions } from '../deserializeMd';
 
-
 export const remarkSplitLineBreaks: Plugin<[deserializeOptions?], Root, Root> =
   function ({ splitLineBreaks = false } = {}) {
     if (!splitLineBreaks) return;

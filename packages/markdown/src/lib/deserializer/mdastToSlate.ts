@@ -19,4 +19,3 @@ const buildSlateRoot = (
 ): Descendant[] => {
   return convertNodesDeserialize(root.children, {}, options);
 };
-

@@ -8,7 +8,7 @@ import { deserializeMd } from './deserializeMd';
 jsxt;
 
 describe('deserializeMdIndentList - comprehensive coverage', () => {
-  const editor = createTestEditor()
+  const editor = createTestEditor();
 
   it('should deserialize a single Markdown string containing all list edge cases', () => {
     /**

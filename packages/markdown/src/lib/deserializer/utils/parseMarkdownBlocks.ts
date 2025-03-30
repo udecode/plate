@@ -1,4 +1,4 @@
-import { type Token , marked } from "marked";
+import { type Token, marked } from 'marked';
 
 export type ParseMarkdownBlocksOptions = {
   /**
