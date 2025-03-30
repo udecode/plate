@@ -2,20 +2,20 @@ import type { Descendant } from '@udecode/plate';
 import type { Root } from 'mdast';
 
 import type { MdRoot } from '../mdast';
-import type { deserializeOptions } from './deserializeMd';
+import type { DeserializeMdOptions } from './deserializeMd';
 
 import { convertNodesDeserialize } from './convertNodesDeserialize';
 
 export const mdastToSlate = (
   node: Root,
-  options: deserializeOptions
+  options: DeserializeMdOptions
 ): Descendant[] => {
   return buildSlateRoot(node, options);
 };
 
 const buildSlateRoot = (
   root: MdRoot,
-  options: deserializeOptions
+  options: DeserializeMdOptions
 ): Descendant[] => {
   return convertNodesDeserialize(root.children, {}, options);
 };

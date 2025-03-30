@@ -1,7 +1,7 @@
 import type { Descendant } from '@udecode/plate';
 
 import type { MdRootContent } from '../mdast';
-import type { deserializeOptions } from './deserializeMd';
+import type { DeserializeMdOptions } from './deserializeMd';
 import type { Decoration } from './type';
 
 import { defaultNodes } from '../nodesRule';
@@ -11,7 +11,7 @@ import { convertChildren } from './covertChildren';
 export const convertNodesDeserialize = (
   nodes: MdRootContent[],
   deco: Decoration,
-  options: deserializeOptions
+  options: DeserializeMdOptions
 ): Descendant[] => {
   return nodes.reduce<Descendant[]>((acc, node) => {
     acc.push(...buildSlateNode(node, deco, options));
@@ -22,7 +22,7 @@ export const convertNodesDeserialize = (
 export const buildSlateNode = (
   mdastNode: MdRootContent,
   deco: Decoration,
-  options: deserializeOptions
+  options: DeserializeMdOptions
 ): Descendant[] => {
   const optionNodes = options.nodes;
 
@@ -60,7 +60,7 @@ export const buildSlateNode = (
     options.nodes?.[type]?.deserialize ?? defaultNodes[type]?.deserialize;
 
   if (nodeParser) {
-    const result = nodeParser(mdastNode, deco, options);
+    const result = nodeParser(mdastNode as any, deco, options);
     return Array.isArray(result) ? result : [result];
   }
   return [];
