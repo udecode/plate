@@ -6841,10 +6841,8 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
     marked: "npm:^15.0.6"
-    remark-frontmatter: "npm:^5.0.0"
-    remark-gfm: "npm:^4.0.0"
-    remark-math: "npm:^6.0.0"
-    remark-mdx: "npm:^3.1.0"
+    mdast-util-math: "npm:3.0.0"
+    mdast-util-mdx: "npm:3.0.0"
     remark-parse: "npm:^11.0.0"
     remark-stringify: "npm:^11.0.0"
     unified: "npm:^11.0.5"
@@ -14770,7 +14768,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdast-util-mdx@npm:^3.0.0":
+"mdast-util-mdx@npm:3.0.0, mdast-util-mdx@npm:^3.0.0":
   version: 3.0.0
   resolution: "mdast-util-mdx@npm:3.0.0"
   dependencies:
@@ -18396,20 +18394,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-gfm@npm:4.0.0":
-  version: 4.0.0
-  resolution: "remark-gfm@npm:4.0.0"
-  dependencies:
-    "@types/mdast": "npm:^4.0.0"
-    mdast-util-gfm: "npm:^3.0.0"
-    micromark-extension-gfm: "npm:^3.0.0"
-    remark-parse: "npm:^11.0.0"
-    remark-stringify: "npm:^11.0.0"
-    unified: "npm:^11.0.0"
-  checksum: 10c0/db0aa85ab718d475c2596e27c95be9255d3b0fc730a4eda9af076b919f7dd812f7be3ac020611a8dbe5253fd29671d7b12750b56e529fdc32dfebad6dbf77403
-  languageName: node
-  linkType: hard
-
 "remark-gfm@npm:^4.0.0":
   version: 4.0.1
   resolution: "remark-gfm@npm:4.0.1"
@@ -18424,7 +18408,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-math@npm:6.0.0, remark-math@npm:^6.0.0":
+"remark-math@npm:^6.0.0":
   version: 6.0.0
   resolution: "remark-math@npm:6.0.0"
   dependencies:
@@ -22060,7 +22044,6 @@ __metadata:
     lodash: "npm:4.17.21"
     lowlight: "npm:3.3.0"
     lucide-react: "npm:0.474.0"
-    mdast-util-math: "npm:3.0.0"
     mdast-util-toc: "npm:7.1.0"
     next: "npm:15.1.6"
     next-contentlayer2: "npm:0.4.6"
@@ -22092,8 +22075,9 @@ __metadata:
     remark: "npm:14.0.3"
     remark-code-import: "npm:1.2.0"
     remark-emoji: "npm:5.0.1"
-    remark-gfm: "npm:4.0.0"
-    remark-math: "npm:6.0.0"
+    remark-gfm: "npm:^4.0.0"
+    remark-math: "npm:^6.0.0"
+    remark-mdx: "npm:^3.1.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.83.4"
     shadcx: "workspace:^"

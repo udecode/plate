@@ -3,4 +3,5 @@
  */
 
 export * from './getCustomLeaf';
+export * from './getMergedOptions';
 export * from './unreachable';

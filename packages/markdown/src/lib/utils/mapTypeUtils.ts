@@ -1,7 +1,9 @@
 /* eslint-disable perfectionist/sort-objects */
 /* eslint-disable perfectionist/sort-union-types */
-
 import type { MdRootContent } from '../mdast';
+
+import 'mdast-util-mdx';
+
 export type plateTypes =
   // common elements
   | 'p'

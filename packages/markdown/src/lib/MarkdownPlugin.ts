@@ -29,14 +29,14 @@ export type MarkdownConfig = PluginConfig<
      * Configuration for allowed node types. Cannot be combined with
      * disallowedNodes.
      */
-    allowedNodes: ((string & {}) | plateTypes)[] | null;
+    allowedNodes: NodesConfig;
     /**
      * Configuration for disallowed node types. Cannot be combined with
      * allowedNodes.
      *
      * @default null
      */
-    disallowedNodes: ((string & {}) | plateTypes)[] | null;
+    disallowedNodes: NodesConfig;
     /**
      * Array of remark plugins to extend Markdown parsing and serialization
      * functionality. For example, you can add remark-gfm to support GFM syntax,
@@ -85,6 +85,8 @@ export type MarkdownConfig = PluginConfig<
     };
   }
 >;
+
+export type NodesConfig = ((string & {}) | plateTypes)[] | null;
 
 export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   key: 'markdown',

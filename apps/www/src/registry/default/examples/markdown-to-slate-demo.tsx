@@ -212,9 +212,7 @@ export default function MarkdownDemo() {
       ],
       value: (editor) =>
         deserializeMd(editor, initialMarkdown, {
-          processor(processor) {
-            return processor.use(remarkEmoji) as any;
-          },
+          remarkPlugins: [remarkEmoji as any],
         }),
     },
     []

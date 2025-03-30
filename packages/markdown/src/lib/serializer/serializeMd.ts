@@ -1,33 +1,36 @@
 import type { Descendant, SlateEditor } from '@udecode/plate';
 
-import remarkMdx from 'remark-mdx';
 import remarkStringify from 'remark-stringify';
 import { type Plugin, unified } from 'unified';
 
+import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
 import type { MdRoot } from '../mdast';
+import type { TNodes } from '../nodesRule';
 
-import { MarkdownPlugin } from '../MarkdownPlugin';
 import { convertNodesSerialize } from './convertNodes';
+import { getMergedOptions } from './utils/getMergedOptions';
 
 export type SerializeMdOptions = {
-  editor: SlateEditor;
+  allowedNodes?: NodesConfig;
+  allowNode?: AllowNodeConfig;
+  disallowedNodes?: NodesConfig;
+  editor?: SlateEditor;
+  nodes?: TNodes;
+  remarkPlugins?: Plugin[];
+  value?: Descendant[];
 };
 
 /** Serialize the editor value to Markdown. */
 export const serializeMd = (
   editor: SlateEditor,
-
-  // TODO:
-  options?: Omit<SerializeMdOptions, 'editor'> & {
-    value?: Descendant[];
-  }
+  options?: SerializeMdOptions
 ) => {
-  const remarkPlugins: Plugin[] =
-    editor.getOptions(MarkdownPlugin).remarkPlugins;
+  const mergedOptions = getMergedOptions(editor, options);
+
+  const { remarkPlugins, value } = mergedOptions;
 
   const toRemarkProcessor = unified()
     .use(remarkPlugins)
-    .use(remarkMdx)
     .use(remarkStringify, {
       // Configure remark-stringify to handle MDX JSX elements
       handlers: {
@@ -48,29 +51,23 @@ export const serializeMd = (
       },
     });
 
-  const nodesToSerialize = options?.value ?? editor.children;
-
-  const v = toRemarkProcessor.stringify(
+  return toRemarkProcessor.stringify(
     slateToMdast({
-      nodes: nodesToSerialize,
-      options: {
-        editor,
-      },
+      children: value,
+      options: mergedOptions,
     })
   );
-
-  return v;
 };
 
 const slateToMdast = ({
-  nodes,
+  children,
   options,
 }: {
-  nodes: Descendant[];
+  children: Descendant[];
   options: SerializeMdOptions;
 }): MdRoot => {
   const ast = {
-    children: convertNodesSerialize(nodes, options) as MdRoot['children'],
+    children: convertNodesSerialize(children, options) as MdRoot['children'],
     type: 'root',
   } as MdRoot;
   return ast;

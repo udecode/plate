@@ -1,31 +1,28 @@
-import type { Descendant, SlateEditor } from '@udecode/plate';
+import type { SlateEditor } from '@udecode/plate';
 
 import remarkStringify from 'remark-stringify';
-import { type Plugin, unified } from 'unified';
+import { unified } from 'unified';
 
 import type { SerializeMdOptions } from './serializeMd';
 
-import { MarkdownPlugin } from '../MarkdownPlugin';
 import { convertTexts } from './convertTexts';
+import { getMergedOptions } from './utils/getMergedOptions';
 
 export const serializeInlineMd = (
   editor: SlateEditor,
-  options?: Omit<SerializeMdOptions, 'editor'> & {
-    value?: Descendant[];
-  }
+  options?: SerializeMdOptions
 ) => {
-  const remarkPlugins: Plugin[] =
-    editor.getOptions(MarkdownPlugin).remarkPlugins;
+  const mergedOptions = getMergedOptions(editor, options);
 
-  const toRemarkProcessor = unified().use(remarkPlugins).use(remarkStringify);
+  const toRemarkProcessor = unified()
+    .use(mergedOptions.remarkPlugins)
+    .use(remarkStringify);
 
   if (options?.value?.length === 0) return '';
 
   // Serialize the content
   const serializedContent = toRemarkProcessor.stringify({
-    children: convertTexts(options?.value as any, {
-      editor,
-    }),
+    children: convertTexts(mergedOptions.value as any, {}),
     type: 'root',
   });
 

@@ -8,7 +8,6 @@ import {
 import type { unistLib } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
 
-import { MarkdownPlugin } from '../MarkdownPlugin';
 import { defaultNodes } from '../nodesRule';
 import { convertTexts } from './convertTexts';
 import { indentListToMdastTree } from './indentListToMdastTree';
@@ -77,8 +76,7 @@ export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
   }
 
   const nodes =
-    options.editor.getOptions(MarkdownPlugin).nodes?.[key] ??
-    defaultNodes[key as keyof typeof defaultNodes];
+    options.nodes?.[key] ?? defaultNodes[key as keyof typeof defaultNodes];
 
   if (nodes?.serialize) {
     return nodes.serialize(node, options);
@@ -91,8 +89,7 @@ const shouldIncludeText = (
   text: TText,
   options: SerializeMdOptions
 ): boolean => {
-  const { allowedNodes, allowNode, disallowedNodes } =
-    options.editor.getOptions(MarkdownPlugin);
+  const { allowedNodes, allowNode, disallowedNodes } = options;
 
   // First check allowedNodes/disallowedNodes
   if (
@@ -131,8 +128,7 @@ const shouldIncludeNode = (
   node: TElement,
   options: SerializeMdOptions
 ): boolean => {
-  const { allowedNodes, allowNode, disallowedNodes } =
-    options.editor.getOptions(MarkdownPlugin);
+  const { allowedNodes, allowNode, disallowedNodes } = options;
 
   if (!node.type) return true;
 

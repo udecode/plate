@@ -4,7 +4,6 @@ import type { astMarks } from '../types';
 import type { plateTypes } from '../utils';
 import type { SerializeMdOptions } from './serializeMd';
 
-import { MarkdownPlugin } from '../MarkdownPlugin';
 import { defaultNodes } from '../nodesRule';
 import { getCustomLeaf, unreachable } from './utils';
 
@@ -90,9 +89,7 @@ export const convertTexts = (
         .reverse()
         .forEach((k) => {
           const nodeParser =
-            options?.editor?.getOption(MarkdownPlugin, 'nodes')?.[
-              k as plateTypes
-            ] ?? defaultNodes[k as plateTypes];
+            options?.nodes?.[k as plateTypes] ?? defaultNodes[k as plateTypes];
 
           if (nodeParser?.serialize) {
             res = nodeParser.serialize(cur, options) as any;

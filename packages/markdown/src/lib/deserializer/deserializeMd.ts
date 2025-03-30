@@ -2,9 +2,6 @@ import type { Descendant, SlateEditor } from '@udecode/plate';
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
@@ -24,6 +21,7 @@ export type DeserializeMdOptions = {
   memoize?: boolean;
   nodes?: TNodes;
   parser?: ParseMarkdownBlocksOptions;
+  remarkPlugins?: Plugin[];
   splitLineBreaks?: boolean;
 };
 
@@ -35,13 +33,20 @@ export const deserializeMd = (
   // if using remarkMdx, we need to replace <br> with <br /> since <br /> is not supported in mdx.
   data = data.replaceAll('<br>', '<br />');
 
-  const { nodes, splitLineBreaks } = editor.getOptions(MarkdownPlugin);
+  const {
+    nodes,
+    remarkPlugins: PluginOptionsRemarkPlugins,
+    splitLineBreaks: PluginOptionsSplitLineBreaks,
+  } = editor.getOptions(MarkdownPlugin);
+
+  const remarkPlugins = options?.remarkPlugins ?? PluginOptionsRemarkPlugins;
+
+  const splitLineBreaks =
+    options?.splitLineBreaks ?? PluginOptionsSplitLineBreaks;
 
   const toSlateProcessor = unified()
     .use(remarkParse)
-    .use(remarkMdx)
-    .use(remarkGfm)
-    .use(remarkMath)
+    .use(remarkPlugins)
     .use(remarkSplitLineBreaks, { splitLineBreaks })
     .use(remarkToSlate, {
       nodes,
