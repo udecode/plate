@@ -218,4 +218,16 @@ describe('deserializeMdIndentList - comprehensive coverage', () => {
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
+
+  it('should deserialize a empty list', () => {
+    const input = `
+    - list
+      - list
+    - list
+    - list
+    - 
+      `;
+
+    expect(deserializeMd(editor, input)).toMatchSnapshot();
+  });
 });
