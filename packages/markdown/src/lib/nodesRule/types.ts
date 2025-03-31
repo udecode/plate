@@ -1,4 +1,4 @@
-import type { TElement, TText } from '@udecode/plate';
+import type { Nullable, TElement, TText } from '@udecode/plate';
 
 import type { Decoration, DeserializeMdOptions } from '../deserializer';
 import type {
@@ -50,9 +50,9 @@ import type { SerializeMdOptions } from '../serializer';
 
 /* eslint-disable perfectionist/sort-object-types */
 export type TNodes = Partial<{
-  [K in keyof PlateNodeTypeMap]: TNodeParser<K>;
+  [K in keyof PlateNodeTypeMap]: Nullable<TNodeParser<K>>;
 }> &
-  Record<string, AnyNodeParser>;
+  Record<string, Nullable<AnyNodeParser>>;
 
 export type AnyNodeParser = {
   deserialize?: (

@@ -25,12 +25,27 @@ export const getMergedOptionsSerialize = (
     remarkPlugins: PluginRemarkPlugins,
   } = editor.getOptions(MarkdownPlugin);
 
+  let nodes = undefined;
+
+  if (PluginNodes === null) {
+    nodes = null;
+  }
+
+  if (options?.nodes === null) {
+    nodes = null;
+  }
+
+  if (nodes === undefined) {
+    const mergedNodes = Object.assign({}, defaultNodes, PluginNodes);
+    nodes = mergedNodes;
+  }
+
   return {
     allowedNodes: options?.allowedNodes ?? PluginAllowedNodes,
     allowNode: options?.allowNode ?? PluginAllowNode,
     disallowedNodes: options?.disallowedNodes ?? PluginDisallowedNodes,
     editor,
-    nodes: options?.nodes ?? PluginNodes ?? defaultNodes,
+    nodes,
     remarkPlugins: options?.remarkPlugins ?? PluginRemarkPlugins ?? [],
     value: options?.value ?? editor.children,
   };

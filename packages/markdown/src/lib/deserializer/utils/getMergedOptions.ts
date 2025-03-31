@@ -29,19 +29,16 @@ export const getMergedOptionsDeserialize = (
   let nodes = undefined;
 
   if (PluginNodes === null) {
-    nodes === null;
-  } else {
-    nodes = PluginNodes;
+    nodes = null;
   }
 
   if (options?.nodes === null) {
     nodes = null;
-  } else {
-    nodes = options?.nodes;
   }
 
   if (nodes === undefined) {
-    nodes = defaultNodes;
+    const mergedNodes = Object.assign({}, defaultNodes, PluginNodes);
+    nodes = mergedNodes;
   }
 
   return {
