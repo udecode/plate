@@ -4,9 +4,9 @@ import type { MdRootContent } from '../mdast';
 import type { DeserializeMdOptions } from './deserializeMd';
 import type { Decoration } from './type';
 
-import { defaultNodes } from '../nodesRule';
 import { getPlateNodeType } from '../utils';
-import { convertChildren } from './covertChildren';
+import { customMdxDeserialize } from './utils';
+import { getDeserializerByKey } from './utils/getDeserializerByKey';
 
 export const convertNodesDeserialize = (
   nodes: MdRootContent[],
@@ -27,40 +27,17 @@ export const buildSlateNode = (
   deco: Decoration,
   options: DeserializeMdOptions
 ): Descendant[] => {
-  const optionNodes = options.nodes;
-
   /** Handle custom mdx nodes */
-  if (mdastNode.type === 'mdxJsxTextElement') {
-    if (mdastNode.name === 'br') {
-      const parserKey = mdastNode.name;
-      const nodeParserDeserialize =
-        optionNodes?.[parserKey]?.deserialize ??
-        defaultNodes[parserKey]?.deserialize;
-
-      if (nodeParserDeserialize)
-        return nodeParserDeserialize(mdastNode, deco, options);
-
-      return [{ text: '\n' }];
-    }
-
-    if (mdastNode.name === 'u') {
-      const parserKey = 'underline';
-
-      const nodeParserDeserialize =
-        optionNodes?.[parserKey]?.deserialize ??
-        defaultNodes[parserKey]?.deserialize;
-
-      if (nodeParserDeserialize)
-        return nodeParserDeserialize(mdastNode, deco, options) as any;
-
-      return convertChildren(mdastNode.children, { underline: true }, options);
-    }
+  if (
+    mdastNode.type === 'mdxJsxTextElement' ||
+    mdastNode.type === 'mdxJsxFlowElement'
+  ) {
+    return customMdxDeserialize(mdastNode, deco, options);
   }
 
   const type = getPlateNodeType(mdastNode.type);
 
-  const nodeParser =
-    options.nodes?.[type]?.deserialize ?? defaultNodes[type]?.deserialize;
+  const nodeParser = getDeserializerByKey(type, options);
 
   if (nodeParser) {
     const result = nodeParser(mdastNode as any, deco, options);

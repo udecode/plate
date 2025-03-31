@@ -60,9 +60,11 @@ export type MarkdownConfig = PluginConfig<
      * paragraphs, headings, lists, links, images, etc. When set to null,
      * default conversion rules will be used.
      *
+     * You can pass null disable all default nodes
+     *
      * @default undefined
      */
-    nodes?: TNodes;
+    nodes?: TNodes | null;
     /**
      * Custom filter functions for nodes. Called after
      * allowedNodes/disallowedNodes check. You can specify different functions
@@ -93,7 +95,6 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   options: {
     allowedNodes: null,
     disallowedNodes: null,
-    // TODO:
     nodes: undefined,
     remarkPlugins: [],
     splitLineBreaks: false,

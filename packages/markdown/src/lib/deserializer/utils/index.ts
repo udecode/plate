@@ -3,6 +3,8 @@
  */
 
 export * from './deserializeInlineMd';
+export * from './getMergedOptions';
 export * from './parseMarkdownBlocks';
 export * from './remarkSplitLineBreaks';
 export * from './stripMarkdown';
+export * from './customMdxDeserialize';

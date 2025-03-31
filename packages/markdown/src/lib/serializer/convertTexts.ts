@@ -1,11 +1,10 @@
 import type { TText } from '@udecode/plate';
 
 import type { astMarks } from '../types';
-import type { plateTypes } from '../utils';
 import type { SerializeMdOptions } from './serializeMd';
 
-import { defaultNodes } from '../nodesRule';
 import { getCustomLeaf, unreachable } from './utils';
+import { getSerializerByKey } from './utils/getSerializerByKey';
 
 // inlineCode should be last because of the spec in mdast
 // https://github.com/inokawa/remark-slate-transformer/issues/145
@@ -88,11 +87,10 @@ export const convertTexts = (
         .slice()
         .reverse()
         .forEach((k) => {
-          const nodeParser =
-            options?.nodes?.[k as plateTypes] ?? defaultNodes[k as plateTypes];
+          const nodeParser = getSerializerByKey(k, options);
 
-          if (nodeParser?.serialize) {
-            res = nodeParser.serialize(cur, options) as any;
+          if (nodeParser) {
+            res = nodeParser(cur, options) as any;
             return;
           }
 

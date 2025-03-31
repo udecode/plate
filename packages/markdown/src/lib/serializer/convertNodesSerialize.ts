@@ -8,10 +8,10 @@ import {
 import type { unistLib } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
 
-import { defaultNodes } from '../nodesRule';
 import { convertTexts } from './convertTexts';
 import { indentListToMdastTree } from './indentListToMdastTree';
 import { unreachable } from './utils';
+import { getSerializerByKey } from './utils/getSerializerByKey';
 
 export const convertNodesSerialize = (
   nodes: Descendant[],
@@ -79,11 +79,10 @@ export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
     key = 'list';
   }
 
-  const nodes =
-    options.nodes?.[key] ?? defaultNodes[key as keyof typeof defaultNodes];
+  const nodeParser = getSerializerByKey(key, options);
 
-  if (nodes?.serialize) {
-    return nodes.serialize(node, options);
+  if (nodeParser) {
+    return nodeParser(node, options);
   }
 
   unreachable(node);

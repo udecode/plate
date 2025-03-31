@@ -6,16 +6,16 @@ import { unified } from 'unified';
 import type { SerializeMdOptions } from './serializeMd';
 
 import { convertTexts } from './convertTexts';
-import { getMergedOptions } from './utils/getMergedOptions';
+import { getMergedOptionsSerialize } from './utils/getMergedOptions';
 
 export const serializeInlineMd = (
   editor: SlateEditor,
   options?: SerializeMdOptions
 ) => {
-  const mergedOptions = getMergedOptions(editor, options);
+  const mergedOptions = getMergedOptionsSerialize(editor, options);
 
   const toRemarkProcessor = unified()
-    .use(mergedOptions.remarkPlugins)
+    .use(mergedOptions.remarkPlugins ?? [])
     .use(remarkStringify);
 
   if (options?.value?.length === 0) return '';

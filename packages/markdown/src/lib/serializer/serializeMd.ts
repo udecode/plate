@@ -8,7 +8,7 @@ import type { MdRoot } from '../mdast';
 import type { TNodes } from '../nodesRule';
 
 import { convertNodesSerialize } from './convertNodesSerialize';
-import { getMergedOptions } from './utils/getMergedOptions';
+import { getMergedOptionsSerialize } from './utils/getMergedOptions';
 
 export type SerializeMdOptions = {
   allowedNodes?: NodesConfig;
@@ -25,12 +25,12 @@ export const serializeMd = (
   editor: SlateEditor,
   options?: Omit<SerializeMdOptions, 'editor'>
 ) => {
-  const mergedOptions = getMergedOptions(editor, options);
+  const mergedOptions = getMergedOptionsSerialize(editor, options);
 
   const { remarkPlugins, value } = mergedOptions;
 
   const toRemarkProcessor = unified()
-    .use(remarkPlugins)
+    .use(remarkPlugins ?? [])
     .use(remarkStringify, {
       // Configure remark-stringify to handle MDX JSX elements
       handlers: {
@@ -53,7 +53,7 @@ export const serializeMd = (
 
   return toRemarkProcessor.stringify(
     slateToMdast({
-      children: value,
+      children: value!,
       options: mergedOptions,
     })
   );

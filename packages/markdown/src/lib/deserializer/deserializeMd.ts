@@ -5,19 +5,16 @@ import type { Plugin } from 'unified';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
+import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
 import type { TNodes } from '../nodesRule';
 
-import {
-  type AllowNodeConfig,
-  type NodesConfig,
-  MarkdownPlugin,
-} from '../MarkdownPlugin';
 import { mdastToSlate } from './mdastToSlate';
 import {
   type ParseMarkdownBlocksOptions,
   parseMarkdownBlocks,
   remarkSplitLineBreaks,
 } from './utils';
+import { getMergedOptionsDeserialize } from './utils/getMergedOptions';
 
 // TODO: fixes tests
 
@@ -27,7 +24,7 @@ export type DeserializeMdOptions = {
   disallowedNodes?: NodesConfig;
   editor?: SlateEditor;
   memoize?: boolean;
-  nodes?: TNodes;
+  nodes?: TNodes | null;
   parser?: ParseMarkdownBlocksOptions;
   remarkPlugins?: Plugin[];
   splitLineBreaks?: boolean;
@@ -41,28 +38,15 @@ export const deserializeMd = (
   // if using remarkMdx, we need to replace <br> with <br /> since <br /> is not supported in mdx.
   data = data.replaceAll('<br>', '<br />');
 
-  const {
-    nodes,
-    remarkPlugins: PluginOptionsRemarkPlugins,
-    splitLineBreaks: PluginOptionsSplitLineBreaks,
-  } = editor.getOptions(MarkdownPlugin);
-
-  const remarkPlugins = options?.remarkPlugins ?? PluginOptionsRemarkPlugins;
-
-  const splitLineBreaks =
-    options?.splitLineBreaks ?? PluginOptionsSplitLineBreaks;
+  const mergedOptions = getMergedOptionsDeserialize(editor, options);
 
   const toSlateProcessor = unified()
     .use(remarkParse)
-    .use(remarkPlugins)
-    .use(remarkSplitLineBreaks, { splitLineBreaks })
-    .use(remarkToSlate, {
-      // TODO:
-      ...options,
-      editor,
-      nodes,
-      splitLineBreaks,
-    });
+    .use(mergedOptions.remarkPlugins ?? [])
+    .use(remarkSplitLineBreaks, {
+      splitLineBreaks: mergedOptions.splitLineBreaks,
+    })
+    .use(remarkToSlate, mergedOptions);
 
   if (options?.memoize) {
     return parseMarkdownBlocks(data, options.parser).flatMap((token) => {
@@ -95,8 +79,8 @@ declare module 'unified' {
 
 const remarkToSlate: Plugin<[DeserializeMdOptions?], Root, Descendant[]> =
   // TODO: options
-  function ({ editor, nodes, splitLineBreaks = false } = {}) {
+  function (options = {}) {
     this.compiler = function (node) {
-      return mdastToSlate(node as Root, { editor, nodes, splitLineBreaks });
+      return mdastToSlate(node as Root, options);
     };
   };

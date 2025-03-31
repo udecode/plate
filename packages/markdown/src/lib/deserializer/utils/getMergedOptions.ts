@@ -1,6 +1,6 @@
 import type { SlateEditor } from '@udecode/plate';
 
-import type { SerializeMdOptions } from '../serializeMd';
+import type { DeserializeMdOptions } from '../deserializeMd';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { defaultNodes } from '../../nodesRule';
@@ -13,25 +13,46 @@ import { defaultNodes } from '../../nodesRule';
  * @param options User-provided options (higher priority)
  * @returns The final merged configuration
  */
-export const getMergedOptionsSerialize = (
+export const getMergedOptionsDeserialize = (
   editor: SlateEditor,
-  options?: SerializeMdOptions
-): SerializeMdOptions => {
+  options?: DeserializeMdOptions
+): DeserializeMdOptions => {
   const {
     allowedNodes: PluginAllowedNodes,
     allowNode: PluginAllowNode,
     disallowedNodes: PluginDisallowedNodes,
     nodes: PluginNodes,
     remarkPlugins: PluginRemarkPlugins,
+    splitLineBreaks: PluginSplitLineBreaks,
   } = editor.getOptions(MarkdownPlugin);
+
+  let nodes = undefined;
+
+  if (PluginNodes === null) {
+    nodes === null;
+  } else {
+    nodes = PluginNodes;
+  }
+
+  if (options?.nodes === null) {
+    nodes = null;
+  } else {
+    nodes = options?.nodes;
+  }
+
+  if (nodes === undefined) {
+    nodes = defaultNodes;
+  }
 
   return {
     allowedNodes: options?.allowedNodes ?? PluginAllowedNodes,
     allowNode: options?.allowNode ?? PluginAllowNode,
     disallowedNodes: options?.disallowedNodes ?? PluginDisallowedNodes,
     editor,
-    nodes: options?.nodes ?? PluginNodes ?? defaultNodes,
+    memoize: options?.memoize,
+    nodes,
+    parser: options?.parser,
     remarkPlugins: options?.remarkPlugins ?? PluginRemarkPlugins ?? [],
-    value: options?.value ?? editor.children,
+    splitLineBreaks: options?.splitLineBreaks ?? PluginSplitLineBreaks,
   };
 };
