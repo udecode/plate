@@ -7,7 +7,11 @@ import { unified } from 'unified';
 
 import type { TNodes } from '../nodesRule';
 
-import { MarkdownPlugin } from '../MarkdownPlugin';
+import {
+  type AllowNodeConfig,
+  type NodesConfig,
+  MarkdownPlugin,
+} from '../MarkdownPlugin';
 import { mdastToSlate } from './mdastToSlate';
 import {
   type ParseMarkdownBlocksOptions,
@@ -18,6 +22,9 @@ import {
 // TODO: fixes tests
 
 export type DeserializeMdOptions = {
+  allowedNodes?: NodesConfig;
+  allowNode?: AllowNodeConfig;
+  disallowedNodes?: NodesConfig;
   editor?: SlateEditor;
   memoize?: boolean;
   nodes?: TNodes;

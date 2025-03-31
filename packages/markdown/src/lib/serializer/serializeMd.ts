@@ -7,7 +7,7 @@ import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
 import type { MdRoot } from '../mdast';
 import type { TNodes } from '../nodesRule';
 
-import { convertNodesSerialize } from './convertNodes';
+import { convertNodesSerialize } from './convertNodesSerialize';
 import { getMergedOptions } from './utils/getMergedOptions';
 
 export type SerializeMdOptions = {
