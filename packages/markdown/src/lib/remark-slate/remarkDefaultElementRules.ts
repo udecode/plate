@@ -23,7 +23,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
 
       // Flatten nested blockquotes (e.g. >>>)
       const flattenedChildren = children.flatMap((child: any) =>
-        child.type ? child.children : [child]
+        child.type === "blockquote" ? child.children : [child]
       );
 
       return {
