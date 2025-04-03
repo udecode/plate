@@ -1,5 +1,7 @@
 # @udecode/plate-toggle
 
+## 46.0.11
+
 ## 45.0.6
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @udecode/plate-node-id
 
+## 46.0.11
+
+### Patch Changes
+
+- [#4190](https://github.com/udecode/plate/pull/4190) by [@poudels14](https://github.com/poudels14) – fix conditional to remove duplicate id
+
 ## 44.0.0
 
 ## 43.0.3
