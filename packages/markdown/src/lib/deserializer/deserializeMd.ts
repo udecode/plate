@@ -12,7 +12,6 @@ import { mdastToSlate } from './mdastToSlate';
 import {
   type ParseMarkdownBlocksOptions,
   parseMarkdownBlocks,
-  remarkSplitLineBreaks,
 } from './utils';
 import { getMergedOptionsDeserialize } from './utils/getMergedOptions';
 
@@ -43,9 +42,6 @@ export const deserializeMd = (
   const toSlateProcessor = unified()
     .use(remarkParse)
     .use(mergedOptions.remarkPlugins ?? [])
-    .use(remarkSplitLineBreaks, {
-      splitLineBreaks: mergedOptions.splitLineBreaks,
-    })
     .use(remarkToSlate, mergedOptions);
 
   if (options?.memoize) {
