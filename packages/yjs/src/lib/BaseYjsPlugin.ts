@@ -13,7 +13,7 @@ export type YjsConfig = PluginConfig<
   {
     isConnected: boolean;
     isSynced: boolean;
-    provider: HocuspocusProvider;
+    provider?: HocuspocusProvider;
     /** WithCursors options */
     cursorOptions?: WithCursorsOptions;
     disableCursors?: boolean;
@@ -34,11 +34,26 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
   options: {
     isConnected: false,
     isSynced: false,
-    provider: {} as any,
   },
 }).extend(({ getOptions, setOption }) => {
-  const { hocuspocusProviderOptions } = getOptions();
+  const { hocuspocusProviderOptions, provider } = getOptions();
 
+  if (provider) {
+    provider.on('connect', () => {
+      setOption('isConnected', true);
+    });
+    provider.on('disconnect', () => {
+      setOption('isConnected', false);
+      setOption('isSynced', false);
+    });
+    provider.on('synced', () => {
+      setOption('isSynced', true);
+    });
+
+    return {
+      options: { provider },
+    };
+  }
   if (!hocuspocusProviderOptions) {
     throw new Error('HocuspocusProvider configuration is required');
   }
@@ -48,9 +63,9 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
    * connected ydoc, is not destroyed, the changes will be synced to other
    * clients via the connected server.
    */
-  const provider = new HocuspocusProvider({
+  const defaultProvider = new HocuspocusProvider({
     ...hocuspocusProviderOptions,
-    onAwarenessChange() {},
+    onAwarenessChange() { },
     onConnect() {
       setOption('isConnected', true);
       hocuspocusProviderOptions.onConnect?.();
@@ -67,6 +82,6 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
   });
 
   return {
-    options: { provider },
+    options: { provider: defaultProvider },
   };
 });
