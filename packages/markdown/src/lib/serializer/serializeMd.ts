@@ -35,17 +35,14 @@ export const serializeMd = (
       // Configure remark-stringify to handle MDX JSX elements
       handlers: {
         mdxJsxTextElement: (node, _, state, info) => {
-          if (node.name === 'u') {
-            // Handle underline elements specifically
-            const content = node.children[0]?.value || '';
-            return `<${node.name}>${content}</${node.name}>`;
-          }
-          // Default handling for other MDX JSX elements
+          
           const attrs = node.attributes
             .map((attr: any) => `${attr.name}="${attr.value}"`)
             .join(' ');
           const attrStr = attrs ? ` ${attrs}` : '';
-          const content = (state as any).all(node).join('');
+
+          // Handle underline elements specifically
+          const content = node.children[0]?.value || '';
           return `<${node.name}${attrStr}>${content}</${node.name}>`;
         },
       },

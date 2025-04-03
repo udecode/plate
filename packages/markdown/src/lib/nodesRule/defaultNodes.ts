@@ -10,6 +10,7 @@ import type {
   MdImage,
   MdLink,
   MdList,
+  MdMdxJsxTextElement,
   MdParagraph,
   MdRootContent,
   MdTable,
@@ -613,10 +614,10 @@ export const defaultNodes: TNodes = {
         options
       ) as any;
     },
-    serialize(slateNode, options) {
+    serialize(slateNode, options): MdMdxJsxTextElement {
       return {
         attributes: [],
-        children: [{ text: 'text', value: slateNode.text }],
+        children: [{ type: 'text', value: slateNode.text }],
         name: 'u',
         type: 'mdxJsxTextElement',
       };

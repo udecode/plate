@@ -32,7 +32,8 @@ export const buildSlateNode = (
     mdastNode.type === 'mdxJsxTextElement' ||
     mdastNode.type === 'mdxJsxFlowElement'
   ) {
-    return customMdxDeserialize(mdastNode, deco, options);
+    const result = customMdxDeserialize(mdastNode, deco, options);
+    return Array.isArray(result) ? result : [result];
   }
 
   const type = getPlateNodeType(mdastNode.type);

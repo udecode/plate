@@ -39,3 +39,8 @@ export type {
   InlineMath as MdInlineMath,
   Math as MdMath,
 } from 'mdast-util-math';
+
+export type {
+  MdxJsxFlowElement as MdMdxJsxFlowElement,
+  MdxJsxTextElement as MdMdxJsxTextElement,
+} from 'mdast-util-mdx';
