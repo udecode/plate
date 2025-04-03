@@ -57,7 +57,7 @@ Remove processor in `editor.api.markdown.deserialize` use `remarkPlugins` instea
 
 ### serialize:
 
-`SerializeMdOptions` has been removed because the serialization process has changed from `md => slate nodes` to `md => ast => slate nodes`, making many of the previous concepts obsolete. The following options are no longer available:
+`SerializeMdOptions` has been removed because the serialization process has changed from `slate nodes => md` to `slate nodes => md-ast => md`, making many of the previous concepts obsolete. The following options are no longer available:
 Before:
 
 ```tsx
