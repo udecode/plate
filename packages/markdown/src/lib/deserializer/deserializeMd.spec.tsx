@@ -38,8 +38,6 @@ describe('deserializeMd', () => {
       </fragment>
     );
 
-    // console.log(JSON.stringify(deserializeMd(editor, input)), 'fj');
-
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
@@ -97,6 +95,20 @@ describe('deserializeMd', () => {
           Blockquote 1 line 2
         </hblockquote>
         <hblockquote>Blockquote 2 line 1</hblockquote>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize blockquote with links', () => {
+    const input = '> [Example link](https://example.com)';
+
+    const output = (
+      <fragment>
+        <hblockquote>
+          <ha url="https://example.com">Example link</ha>
+        </hblockquote>
       </fragment>
     );
 
