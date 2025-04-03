@@ -1,0 +1,78 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`serializeMd fixures Combination of bold and italic at the start of a block losing formatting 1`] = `
+"***Italic*** **in a bold paragraph**
+
+**This is an *Italic*** **in a bold paragraph**
+"
+`;
+
+exports[`serializeMd fixures should serialize a value with inline code 1`] = `
+"***\`Inline code\`***
+
+*\`Inline code\`*
+"
+`;
+
+exports[`serializeMd fixures should serialize marks with trailing whitespace 1`] = `
+"Make text **bold**, *italic*, <u>underlined</u>, or apply a ***<u>combination</u>*** of these styles for a visually striking effect.
+"
+`;
+
+exports[`serializeMd should serialize a simple paragraph 1`] = `
+"# Playground
+
+## Comments and suggestions
+
+Add comments to your content to provide additional conte1xt, , or collaborate with others
+
+### Heading
+
+* 1
+
+  * 2
+
+    * 3
+
+      * 4
+
+| 1-1 | 1-2 |
+| --- | --- |
+| 2-1 | 2-2 |
+
+> blockQuote
+
+***
+
+normal **bold***italic*~~strikethrough~~\`code\`***combine***[link](https://example.com)$E=mc^2$
+
+![test](https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80\\&w=2070\\&auto=format\\&fit=crop\\&ixlib=rb-4.0.3\\&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D "test")
+
+\`\`\`javascript
+// Use code blocks to showcase code snippets
+function greet() {
+  console.info('Hello World!');
+}
+\`\`\`
+
+$$
+f(x)
+$$
+
+* [x] Todo item
+
+* Numbered list item
+
+Centered text
+
+Text with custom line height
+
+Mention: User
+
+Date: 2024-01-01
+
+Text with highlight and <u>underline</u> and keyboard formatting
+
+Text with color and background color
+"
+`;

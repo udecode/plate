@@ -9,8 +9,10 @@ toc: false
 
 ## Features
 
-- Convert Markdown string to Slate JSON.
-- Convert Slate JSON to Markdown string.
+- Convert Markdown strings to Slate JSON.
+- Convert Slate JSON to Markdown strings.
+- Support for custom MDX nodes
+- Support for round-trip serialization
 
 </PackageInfo>
 
@@ -29,8 +31,12 @@ import { MarkdownPlugin } from '@udecode/plate-markdown';
 
 const editor = createPlateEditor({ 
   plugins: [
-    // ...otherPlugins,
-    MarkdownPlugin,
+    // ...other plugins,
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+      },
+    }),
   ],
 });
 
@@ -41,20 +47,86 @@ const value = editor.api.markdown.deserialize('**Hello world!**');
 
 ### Slate to Markdown
 
-Currently supported plugins: paragraph, link, list, heading, italic, bold and code.
-List indentation uses 3 spaces instead of 2.
 
 ```tsx
 const editor = createPlateEditor({ 
   value,
   plugins: [
-    // ...otherPlugins,
-    MarkdownPlugin,
+    // ...other plugins,
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+      },
+    }),
+,
   ],
 });
 
 const content = editor.api.markdown.serialize();
 ```
+
+### Round-trip Serialization
+
+When implementing round-trip serialization, the key is to handle custom nodes that exist in the Plate editor but don't exist in standard Markdown syntax. These nodes (such as `date`, `mention`, etc.) need to be converted to MDX syntax (similar to JSX) to maintain data integrity.
+
+Let's illustrate how to implement round-trip serialization with a date picker node example:
+
+Assume we have the following Slate node structure:
+```tsx
+{
+  type: 'p',
+  children: [{ type: 'text', text: 'today is' }, { type: 'date', date: '2025-03-31',children:[{type:'text',text:'2025-03-31'}] }],
+}
+```
+
+To implement complete round-trip serialization, you need to configure conversion rules for both directions:
+
+1. **Serialization** (Slate → Markdown): Convert Slate nodes to MDX tags
+2. **Deserialization** (Markdown → Slate): Parse MDX tags back to Slate nodes
+
+Here's a complete configuration example:
+```tsx
+MarkdownPlugin.configure({
+  options: {
+    remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+     nodes: {
+      date: {
+        deserialize(mdastNode: MdMdxJsxTextElement, deco, options) {
+          if (mdastNode.children?.[0] && 'value' in mdastNode.children[0]) {
+            return {
+              children: [{ text: '', type: 'text' }],
+              date: mdastNode.children[0].value,
+              type: 'date',
+            };
+          }
+
+          // Fallback
+          return {
+            children: [{ text: '', type: 'text' }],
+            date: '',
+            type: 'date',
+          };
+        },
+        serialize: (slateNode): MdMdxJsxTextElement => {
+          return {
+            attributes: [],
+            children: [{ type: 'text', value: slateNode.date || '1999-01-01' }],
+            name: 'date',
+            type: 'mdxJsxTextElement',
+          };
+        },
+      },
+    },
+    remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+  },
+});
+```
+
+After using the above configuration, content will be converted as follows:
+
+- Slate node → Markdown: `Convert date slate node to <date>2025-03-31</date>`
+- Markdown → Slate: Parse `<date>2025-03-31</date>` back to the original Slate node structure
+
 
 ## API
 
@@ -62,63 +134,79 @@ const content = editor.api.markdown.serialize();
 
 <API name="MarkdownPlugin">
 <APIOptions>
-  <APIItem name="elementRules" type="RemarkElementRules">
-    Object where each key is a Markdown syntax element type and the value is a transformation function.
-    <APISubList>
-      <APISubListItem parent="elementRules" name="[key in MdastElementType]" type="RemarkElementRule">
-        The key corresponds to a Markdown element type (`paragraph`, `heading`, `list`, `listItem`, `link`, `image`, `blockquote`, `code`, `thematicBreak`). The value is an object specifying how to transform the given type of Markdown element into a Slate element.
-        <APISubList>
-          <APISubListItem parent="RemarkElementRule" name="transform" type="(node: MdastNode, options: RemarkPluginOptions<V>) => TElement | TElement[]">
-            A function that takes a `MdastNode` and `RemarkPluginOptions` as arguments and returns a `TElement` or an array of `TElement`.
-          </APISubListItem>
-        </APISubList>
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="allowedNodes" type="NodesConfig | null">
+    Configure allowed node types. Cannot be used with disallowedNodes simultaneously.
+    If specified, only node types in the list will be processed, others will be filtered out.
+    Default: `null`
   </APIItem>
-  <APIItem name="textRules" type="RemarkTextRules">
-    Object where each key is a Markdown syntax text type and the value is an object providing optional mark and transform functions.
-    <APISubList>
-      <APISubListItem parent="textRules" name="[key in MdastTextType]" type="RemarkTextRule">
-        The key corresponds to a Markdown text type (`emphasis`, `strong`, `delete`, `inlineCode`, `html`, `text`). The value is an object specifying how to process the given type of Markdown text.
-        <APISubList>
-          <APISubListItem parent="RemarkTextRule" name="mark" type="(options: RemarkPluginOptions<V>) => string" optional>
-            An optional function that takes `RemarkPluginOptions` as argument and returns a string, indicating the mark type for the given Markdown text.
-          </APISubListItem>
-          <APISubListItem parent="RemarkTextRule" name="transform" type="(text: string) => string" optional>
-            An optional function that takes a string (the Markdown text) as argument and returns a transformed string.
-          </APISubListItem>
-        </APISubList>
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="disallowedNodes" type="NodesConfig | null">
+    Configure disallowed node types. Cannot be used with allowedNodes simultaneously.
+    Node types in the list will be filtered out and won't appear in the final result.
+    Default: `null`
+  </APIItem>
+  <APIItem name="allowNode" type="AllowNodeConfig">
+    Custom node filtering function. Called after allowedNodes/disallowedNodes checks.
+    - `deserialize`: Custom filtering function when parsing Markdown
+    - `serialize`: Custom filtering function when converting to Markdown
+    Return `true` to keep the node, return `false` to filter it out.
+    This is useful for scenarios requiring complex logic to decide whether to include a node.
+    Default: `null`
+  </APIItem>
+  <APIItem name="nodes" type="TNodes | null">
+    Defines rules for converting Markdown syntax elements to Slate editor elements, or rules for converting Slate editor elements to Markdown syntax elements. Includes conversion rules for paragraphs, headings, lists, links, images, and other elements. When set to null, default conversion rules will be used.
+    Default: `undefined`
+  </APIItem>
+  <APIItem name="remarkPlugins" type="Plugin[]">
+    An array of remark plugins for extending Markdown parsing and serialization functionality. For example, you can add remark-gfm to support GFM syntax, remark-math to support mathematical formulas, etc. These plugins will be used when parsing and generating Markdown text.
+    Default: `[]`
+  </APIItem>
+  <APIItem name="splitLineBreaks" type="boolean">
+    When text contains \n, split the text into separate paragraphs. Line breaks between paragraphs will also be converted to separate paragraphs.
+    Default: `false`
   </APIItem>
 </APIOptions>
 </API>
 
 ### `editor.api.markdown.deserialize`
 
-Converts a Markdown string to a Slate value.
+Convert a Markdown string to Slate value.
 
 <API name="deserialize">
 <APIParameters>
   <APIItem name="markdown" type="string">
-    The Markdown string to be deserialized.
+    The Markdown string to deserialize.
   </APIItem>
   <APIItem name="options" type="DeserializeMdOptions" optional>
     Options for the deserialization process.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="object">
-      <APIItem name="memoize" type="boolean" optional>
-        Enable block-level memoization with `_memo` property, making it compatible with `PlateStatic` memoization.
-      </APIItem>
-      <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
-        Options for the token parser. Can filter out specific markdown token types (e.g. 'space').
-      </APIItem>
-      <APIItem name="processor" type="(processor: Processor) => Processor" optional>
-        A function that allows you to customize the markdown processor.
-      </APIItem>
-    </APIOptions>
+<APIOptions type="DeserializeMdOptions">
+  <APIItem name="allowedNodes" type="NodesConfig" optional>
+    Configure allowed node types. Cannot be used with disallowedNodes simultaneously.
+  </APIItem>
+  <APIItem name="disallowedNodes" type="NodesConfig" optional>
+    Configure disallowed node types. Cannot be used with allowedNodes simultaneously.
+  </APIItem>
+  <APIItem name="allowNode" type="AllowNodeConfig" optional>
+    Custom node filtering function. Called after allowedNodes/disallowedNodes checks.
+  </APIItem>
+  <APIItem name="memoize" type="boolean" optional>
+    Enable block-level memoization with `_memo` property, making it compatible with `PlateStatic` memoization.
+  </APIItem>
+  <APIItem name="nodes" type="TNodes | null" optional>
+    Defines rules for converting Markdown syntax elements to Slate editor elements.
+  </APIItem>
+  <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
+    Options for the token parser. Can filter out specific Markdown token types (e.g., 'space').
+  </APIItem>
+  <APIItem name="remarkPlugins" type="Plugin[]" optional>
+    An array of remark plugins for extending Markdown parsing functionality.
+  </APIItem>
+  <APIItem name="splitLineBreaks" type="boolean" optional>
+    When text contains \n, split the text into separate paragraphs.
+  </APIItem>
+</APIOptions>
     
 <APIReturns type="Descendant[]">
     An array of Slate nodes representing the deserialized Markdown content.
@@ -127,10 +215,31 @@ Converts a Markdown string to a Slate value.
 
 ### `editor.api.markdown.serialize`
 
-Converts the current Slate value to a Markdown string.
+Convert the current Slate value to a Markdown string.
 
 <API name="serialize">
-<APIOptions type="SerializeMarkdownOptions">
+<APIParameters>
+  <APIItem name="options" type="SerializeMdOptions" optional>
+    Options for the serialization process.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="SerializeMdOptions">
+  <APIItem name="allowedNodes" type="NodesConfig" optional>
+    Configure allowed node types. Cannot be used with disallowedNodes simultaneously.
+  </APIItem>
+  <APIItem name="disallowedNodes" type="NodesConfig" optional>
+    Configure disallowed node types. Cannot be used with allowedNodes simultaneously.
+  </APIItem>
+  <APIItem name="allowNode" type="AllowNodeConfig" optional>
+    Custom node filtering function. Called after allowedNodes/disallowedNodes checks.
+  </APIItem>
+  <APIItem name="nodes" type="TNodes | null" optional>
+    Defines rules for converting Slate editor elements to Markdown syntax elements.
+  </APIItem>
+  <APIItem name="remarkPlugins" type="Plugin[]" optional>
+    An array of remark plugins for extending Markdown serialization functionality.
+  </APIItem>
   <APIItem name="value" type="Descendant[]" optional>
     The Slate nodes to serialize. If not provided, the entire editor value will be used.
   </APIItem>
@@ -143,7 +252,7 @@ Converts the current Slate value to a Markdown string.
 
 ### `parseMarkdownBlocks`
 
-Extracts and filters markdown tokens using marked lexer.
+Extract and filter Markdown tokens using the marked lexer.
 
 <API name="parseMarkdownBlocks">
 <APIParameters>
@@ -157,15 +266,15 @@ Extracts and filters markdown tokens using marked lexer.
 
 <APIOptions type="ParseMarkdownBlocksOptions">
   <APIItem name="exclude" type="string[]" optional>
-    Array of token types to exclude (e.g. ['space', 'hr']).
+    Array of token types to exclude (e.g., ['space', 'hr']).
   </APIItem>
   <APIItem name="trim" type="boolean" optional>
-    Whether to trim end of the content.
+    Whether to trim the end of the content.
     - **Default:** `true`
   </APIItem>
 </APIOptions>
 
 <APIReturns type="Token[]">
-  An array of markdown tokens.
+  An array of Markdown tokens.
 </APIReturns>
 </API>

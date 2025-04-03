@@ -5873,7 +5873,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/katex@npm:0.16.7":
+"@types/katex@npm:0.16.7, @types/katex@npm:^0.16.0":
   version: 0.16.7
   resolution: "@types/katex@npm:0.16.7"
   checksum: 10c0/68dcb9f68a90513ec78ca0196a142e15c2a2c270b1520d752bafd47a99207115085a64087b50140359017d7e9c870b3c68e7e4d36668c9e348a9ef0c48919b5a
@@ -5896,7 +5896,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mdast@npm:^4.0.0, @types/mdast@npm:^4.0.4":
+"@types/mdast@npm:^4.0.0, @types/mdast@npm:^4.0.3, @types/mdast@npm:^4.0.4":
   version: 4.0.4
   resolution: "@types/mdast@npm:4.0.4"
   dependencies:
@@ -6095,7 +6095,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/unist@npm:*, @types/unist@npm:^3.0.0":
+"@types/unist@npm:*, @types/unist@npm:^3.0.0, @types/unist@npm:^3.0.2":
   version: 3.0.3
   resolution: "@types/unist@npm:3.0.3"
   checksum: 10c0/2b1e4adcab78388e088fcc3c0ae8700f76619dbcb4741d7d201f87e2cb346bfc29a89003cfea2d76c996e1061452e14fcd737e8b25aacf949c1f2d6b2bc3dd60
@@ -6836,11 +6836,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-markdown@workspace:packages/markdown"
   dependencies:
+    "@types/mdast": "npm:^4.0.3"
+    "@types/unist": "npm:^3.0.2"
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
     marked: "npm:^15.0.6"
-    remark-gfm: "npm:4.0.0"
+    mdast-util-math: "npm:3.0.0"
+    mdast-util-mdx: "npm:3.0.0"
     remark-parse: "npm:^11.0.0"
+    remark-stringify: "npm:^11.0.0"
     unified: "npm:^11.0.5"
   peerDependencies:
     "@udecode/plate": ">=46.0.10"
@@ -13999,7 +14003,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"katex@npm:0.16.21":
+"katex@npm:0.16.21, katex@npm:^0.16.0":
   version: 0.16.21
   resolution: "katex@npm:0.16.21"
   dependencies:
@@ -14715,6 +14719,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mdast-util-math@npm:3.0.0, mdast-util-math@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "mdast-util-math@npm:3.0.0"
+  dependencies:
+    "@types/hast": "npm:^3.0.0"
+    "@types/mdast": "npm:^4.0.0"
+    devlop: "npm:^1.0.0"
+    longest-streak: "npm:^3.0.0"
+    mdast-util-from-markdown: "npm:^2.0.0"
+    mdast-util-to-markdown: "npm:^2.1.0"
+    unist-util-remove-position: "npm:^5.0.0"
+  checksum: 10c0/d4e839e38719f26872ed78aac18339805a892f1b56585a9cb8668f34e221b4f0660b9dfe49ec96dbbe79fd1b63b648608a64046d8286bcd2f9d576e80b48a0a1
+  languageName: node
+  linkType: hard
+
 "mdast-util-mdx-expression@npm:^2.0.0":
   version: 2.0.1
   resolution: "mdast-util-mdx-expression@npm:2.0.1"
@@ -14749,7 +14768,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdast-util-mdx@npm:^3.0.0":
+"mdast-util-mdx@npm:3.0.0, mdast-util-mdx@npm:^3.0.0":
   version: 3.0.0
   resolution: "mdast-util-mdx@npm:3.0.0"
   dependencies:
@@ -14829,7 +14848,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdast-util-to-markdown@npm:^2.0.0":
+"mdast-util-to-markdown@npm:^2.0.0, mdast-util-to-markdown@npm:^2.1.0":
   version: 2.1.2
   resolution: "mdast-util-to-markdown@npm:2.1.2"
   dependencies:
@@ -15088,6 +15107,21 @@ __metadata:
     micromark-util-combine-extensions: "npm:^2.0.0"
     micromark-util-types: "npm:^2.0.0"
   checksum: 10c0/970e28df6ebdd7c7249f52a0dda56e0566fbfa9ae56c8eeeb2445d77b6b89d44096880cd57a1c01e7821b1f4e31009109fbaca4e89731bff7b83b8519690e5d9
+  languageName: node
+  linkType: hard
+
+"micromark-extension-math@npm:^3.0.0":
+  version: 3.1.0
+  resolution: "micromark-extension-math@npm:3.1.0"
+  dependencies:
+    "@types/katex": "npm:^0.16.0"
+    devlop: "npm:^1.0.0"
+    katex: "npm:^0.16.0"
+    micromark-factory-space: "npm:^2.0.0"
+    micromark-util-character: "npm:^2.0.0"
+    micromark-util-symbol: "npm:^2.0.0"
+    micromark-util-types: "npm:^2.0.0"
+  checksum: 10c0/56e6f2185a4613f9d47e7e98cf8605851c990957d9229c942b005e286c8087b61dc9149448d38b2f8be6d42cc6a64aad7e1f2778ddd86fbbb1a2f48a3ca1872f
   languageName: node
   linkType: hard
 
@@ -18360,9 +18394,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-gfm@npm:4.0.0":
-  version: 4.0.0
-  resolution: "remark-gfm@npm:4.0.0"
+"remark-gfm@npm:^4.0.0":
+  version: 4.0.1
+  resolution: "remark-gfm@npm:4.0.1"
   dependencies:
     "@types/mdast": "npm:^4.0.0"
     mdast-util-gfm: "npm:^3.0.0"
@@ -18370,7 +18404,19 @@ __metadata:
     remark-parse: "npm:^11.0.0"
     remark-stringify: "npm:^11.0.0"
     unified: "npm:^11.0.0"
-  checksum: 10c0/db0aa85ab718d475c2596e27c95be9255d3b0fc730a4eda9af076b919f7dd812f7be3ac020611a8dbe5253fd29671d7b12750b56e529fdc32dfebad6dbf77403
+  checksum: 10c0/427ecc6af3e76222662061a5f670a3e4e33ec5fffe2cabf04034da6a3f9a1bda1fc023e838a636385ba314e66e2bebbf017ca61ebea357eb0f5200fe0625a4b7
+  languageName: node
+  linkType: hard
+
+"remark-math@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "remark-math@npm:6.0.0"
+  dependencies:
+    "@types/mdast": "npm:^4.0.0"
+    mdast-util-math: "npm:^3.0.0"
+    micromark-extension-math: "npm:^3.0.0"
+    unified: "npm:^11.0.0"
+  checksum: 10c0/859613c4db194bb6b3c9c063661dc52b8ceda9c5cf3256b42f73d93eb8f38a6d634eb5f976fe094425f6f1035aaf329eb49ada314feb3b2b1073326b6d3aaa02
   languageName: node
   linkType: hard
 
@@ -18388,7 +18434,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-mdx@npm:^3.0.0":
+"remark-mdx@npm:^3.0.0, remark-mdx@npm:^3.1.0":
   version: 3.1.0
   resolution: "remark-mdx@npm:3.1.0"
   dependencies:
@@ -21117,6 +21163,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unist-util-remove-position@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "unist-util-remove-position@npm:5.0.0"
+  dependencies:
+    "@types/unist": "npm:^3.0.0"
+    unist-util-visit: "npm:^5.0.0"
+  checksum: 10c0/e8c76da4399446b3da2d1c84a97c607b37d03d1d92561e14838cbe4fdcb485bfc06c06cfadbb808ccb72105a80643976d0660d1fe222ca372203075be9d71105
+  languageName: node
+  linkType: hard
+
 "unist-util-stringify-position@npm:^2.0.0":
   version: 2.0.3
   resolution: "unist-util-stringify-position@npm:2.0.3"
@@ -22019,7 +22075,9 @@ __metadata:
     remark: "npm:14.0.3"
     remark-code-import: "npm:1.2.0"
     remark-emoji: "npm:5.0.1"
-    remark-gfm: "npm:4.0.0"
+    remark-gfm: "npm:^4.0.0"
+    remark-math: "npm:^6.0.0"
+    remark-mdx: "npm:^3.1.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.83.4"
     shadcx: "workspace:^"

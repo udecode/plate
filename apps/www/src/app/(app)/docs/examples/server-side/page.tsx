@@ -1,6 +1,3 @@
-import type { TElement } from '@udecode/plate';
-import type { TCodeBlockElement } from '@udecode/plate-code-block';
-
 import type { Metadata } from 'next';
 
 import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
@@ -55,6 +52,8 @@ import { BaseTabbablePlugin } from '@udecode/plate-tabbable';
 import { BaseTablePlugin } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { Code } from '@/components/code';
@@ -236,28 +235,17 @@ export default function RSCPage() {
 
       // Deserialization
       DocxPlugin,
-      MarkdownPlugin,
+      MarkdownPlugin.configure({
+        options: {
+          remarkPlugins: [remarkMath, remarkGfm],
+        },
+      }),
       JuicePlugin,
     ],
     value: [...basicElementsValue, ...basicMarksValue],
   });
 
-  const md = editor.api.markdown.serialize({
-    nodes: {
-      code_block: {
-        serialize: (_, node) => {
-          const codeLines = node.children
-            .filter((child) => (child as any).type === 'code_line')
-            .map((child) =>
-              (child as any).children.map((c: TElement) => c.text).join('')
-            )
-            .join('\n');
-
-          return `\`\`\`${(node as any as TCodeBlockElement).lang || ''}\n${codeLines}\n\`\`\``;
-        },
-      },
-    },
-  });
+  const md = editor.api.markdown.serialize();
 
   return (
     <DocContent category="example" doc={mockDoc} toc={{}}>

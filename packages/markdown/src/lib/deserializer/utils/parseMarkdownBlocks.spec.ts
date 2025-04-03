@@ -4,36 +4,6 @@ describe('parseMarkdownBlocks', () => {
   it('should parse markdown content into tokens', () => {
     const input = '# Heading\n \nParagraph';
 
-    const output = [
-      {
-        depth: 1,
-        raw: '# Heading',
-        text: 'Heading',
-        tokens: [
-          {
-            escaped: false,
-            raw: 'Heading',
-            text: 'Heading',
-            type: 'text',
-          },
-        ],
-        type: 'heading',
-      },
-      {
-        raw: 'Paragraph',
-        text: 'Paragraph',
-        tokens: [
-          {
-            escaped: false,
-            raw: 'Paragraph',
-            text: 'Paragraph',
-            type: 'text',
-          },
-        ],
-        type: 'paragraph',
-      },
-    ];
-
     const tokens = parseMarkdownBlocks(input);
 
     expect(tokens).toEqual(
