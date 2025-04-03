@@ -88,7 +88,7 @@ const plateToMdastTypeMap: Record<plateTypes, MdastTypes | (string & {})> = {
  * return the plateType itself.
  */
 export const getMdAstNodeType = (plateType: plateTypes) => {
-  return plateToMdastTypeMap[plateType];
+  return plateToMdastTypeMap[plateType] ?? plateType;
 };
 
 export type MdastTypes = MdRootContent['type'];
@@ -140,5 +140,5 @@ const mdastToPlateTypeMap: Record<
  * the mdast type itself.
  */
 export const getPlateNodeType = (mdastType: MdastTypes) => {
-  return mdastToPlateTypeMap[mdastType];
+  return mdastToPlateTypeMap[mdastType] ?? mdastType;
 };
