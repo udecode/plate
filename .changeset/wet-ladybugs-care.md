@@ -6,7 +6,7 @@
 
 - Deserialization supports the math type.
 - Serialization now support the mark `underline` by default it will convert as `<u>underline</u>`.
-- Better serialization: Previously, markdown sting was manually parsed into Slate nodes. Now, the markdown string is first converted into an MDAST using the more mature Remark.js, and then the MDAST is mapped to Slate nodes. This process is more secure and reliable.
+- Better serialization: Previously, Slate nodes were directly parsed into an markdown string.Now, Slate nodes are first parsed into MDAST nodes and then converted into an markdown string, making the process more reliable and robust.
 - New options `allowedNodes`, `disallowedNodes`, and `allowNode` help you filter out unwanted nodes.
 - New option `nodes` used for customizing serialization , deserialization and **custom mdx** rules.
 - New option `remarkPlugins` list of [remark plugins](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins) to use
