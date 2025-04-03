@@ -6,7 +6,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
-import type { TNodes } from '../nodesRule';
+import type { TNodes } from '../node-rules';
 
 import { mdastToSlate } from './mdastToSlate';
 import {

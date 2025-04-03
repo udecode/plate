@@ -6,7 +6,7 @@ import type { Decoration } from './type';
 
 import { convertNodesDeserialize } from './convertNodesDeserialize';
 
-export const convertChildren = (
+export const convertChildrenDeserialize = (
   children: MdRootContent[],
   deco: Decoration,
   options: DeserializeMdOptions

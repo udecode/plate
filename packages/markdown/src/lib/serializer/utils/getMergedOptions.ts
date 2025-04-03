@@ -3,7 +3,7 @@ import type { SlateEditor } from '@udecode/plate';
 import type { SerializeMdOptions } from '../serializeMd';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
-import { defaultNodes } from '../../nodesRule';
+import { defaultNodes } from '../../node-rules';
 
 /**
  * Merges Markdown configurations, following the principle that options take

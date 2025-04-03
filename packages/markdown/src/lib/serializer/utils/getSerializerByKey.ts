@@ -1,6 +1,6 @@
 import type { SerializeMdOptions } from '../serializeMd';
 
-import { defaultNodes } from '../../nodesRule';
+import { defaultNodes } from '../../node-rules';
 
 export const getSerializerByKey = (
   key: string,

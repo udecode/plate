@@ -26,7 +26,6 @@ export const useAIChatEditor = (
       editor.getApi(MarkdownPlugin).markdown.deserialize(content, {
         memoize: true,
         parser,
-        // processor,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [content]

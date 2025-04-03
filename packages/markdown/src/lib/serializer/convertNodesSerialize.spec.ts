@@ -2,7 +2,7 @@ import type { Descendant } from '@udecode/plate';
 
 import type { SerializeMdOptions } from './serializeMd';
 
-import { defaultNodes } from '../nodesRule';
+import { defaultNodes } from '../node-rules';
 import { convertNodesSerialize } from './convertNodesSerialize';
 
 describe('convertNodesSerialize', () => {

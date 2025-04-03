@@ -1,6 +1,6 @@
 import type { DeserializeMdOptions } from '../deserializeMd';
 
-import { defaultNodes } from '../../nodesRule';
+import { defaultNodes } from '../../node-rules';
 
 export const getDeserializerByKey = (
   key: string,

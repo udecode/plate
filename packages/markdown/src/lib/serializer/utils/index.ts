@@ -4,4 +4,5 @@
 
 export * from './getCustomLeaf';
 export * from './getMergedOptions';
+export * from './getSerializerByKey';
 export * from './unreachable';

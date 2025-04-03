@@ -19,11 +19,7 @@ import type {
 } from '../mdast';
 import type { TNodes } from './types';
 
-import {
-  buildSlateNode,
-  convertChildren,
-  convertTextsDeserialize,
-} from '../deserializer';
+import { buildSlateNode, convertChildrenDeserialize , convertTextsDeserialize } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
 
@@ -31,7 +27,7 @@ export const defaultNodes: TNodes = {
   a: {
     deserialize: (mdastNode, deco, options) => {
       return {
-        children: convertChildren(mdastNode.children, deco, options),
+        children: convertChildrenDeserialize(mdastNode.children, deco, options),
         type: 'a',
         url: mdastNode.url,
       };
@@ -53,11 +49,19 @@ export const defaultNodes: TNodes = {
         mdastNode.children.length > 0
           ? mdastNode.children.flatMap((paragraph) => {
               if (paragraph.type === 'paragraph') {
-                return convertChildren(paragraph.children, deco, options);
+                return convertChildrenDeserialize(
+                  paragraph.children,
+                  deco,
+                  options
+                );
               }
 
               if ('children' in paragraph) {
-                return convertChildren(paragraph.children, deco, options);
+                return convertChildrenDeserialize(
+                  paragraph.children,
+                  deco,
+                  options
+                );
               }
 
               return [{ text: '' }];
@@ -153,7 +157,7 @@ export const defaultNodes: TNodes = {
       };
 
       return {
-        children: convertChildren(mdastNode.children, deco, options),
+        children: convertChildrenDeserialize(mdastNode.children, deco, options),
         type: headingType[mdastNode.depth],
       };
     },
@@ -258,7 +262,7 @@ export const defaultNodes: TNodes = {
               children: child.children.map((itemChild) => {
                 if (itemChild.type === 'paragraph') {
                   return {
-                    children: convertChildren(
+                    children: convertChildrenDeserialize(
                       itemChild.children,
                       deco,
                       options
@@ -266,12 +270,16 @@ export const defaultNodes: TNodes = {
                     type: 'lic',
                   };
                 }
-                return convertChildren([itemChild], deco, options)[0];
+                return convertChildrenDeserialize(
+                  [itemChild],
+                  deco,
+                  options
+                )[0];
               }),
               type: 'li',
             };
           }
-          return convertChildren([child], deco, options)[0];
+          return convertChildrenDeserialize([child], deco, options)[0];
         });
 
         return {
@@ -409,11 +417,11 @@ export const defaultNodes: TNodes = {
       const children = mdastNode.children.map((child: MdRootContent) => {
         if (child.type === 'paragraph') {
           return {
-            children: convertChildren(child.children, deco, options),
+            children: convertChildrenDeserialize(child.children, deco, options),
             type: 'lic',
           };
         }
-        return convertChildren([child], deco, options)[0];
+        return convertChildrenDeserialize([child], deco, options)[0];
       });
 
       return {
@@ -439,7 +447,7 @@ export const defaultNodes: TNodes = {
   p: {
     deserialize: (node, deco, options) => {
       const isKeepLineBreak = options.splitLineBreaks;
-      const children = convertChildren(node.children, deco, options);
+      const children = convertChildrenDeserialize(node.children, deco, options);
       const paragraphType = getPlateNodeType('paragraph');
       const splitBlockTypes = new Set(['img']);
 
@@ -531,18 +539,20 @@ export const defaultNodes: TNodes = {
                 const cellType = rowIndex === 0 ? 'th' : 'td';
 
                 return {
-                  children: convertChildren(cell.children, deco, options).map(
-                    (child) => {
-                      if (!child.type) {
-                        return {
-                          children: [child],
-                          type: 'p',
-                        };
-                      }
-
-                      return child;
+                  children: convertChildrenDeserialize(
+                    cell.children,
+                    deco,
+                    options
+                  ).map((child) => {
+                    if (!child.type) {
+                      return {
+                        children: [child],
+                        type: 'p',
+                      };
                     }
-                  ),
+
+                    return child;
+                  }),
                   type: cellType,
                 };
               }) || [],
@@ -608,7 +618,7 @@ export const defaultNodes: TNodes = {
   },
   underline: {
     deserialize: (mdastNode, deco, options) => {
-      return convertChildren(
+      return convertChildrenDeserialize(
         mdastNode.children,
         { underline: true, ...deco },
         options

@@ -1,7 +1,7 @@
 import type { MdHeading, MdRootContent } from '../mdast';
 import type { DeserializeMdOptions } from './deserializeMd';
 
-import { defaultNodes } from '../nodesRule';
+import { defaultNodes } from '../node-rules';
 import { convertNodesDeserialize } from './convertNodesDeserialize';
 
 describe('convertNodesDeserialize', () => {

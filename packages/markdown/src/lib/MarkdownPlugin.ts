@@ -8,7 +8,7 @@ import {
   isUrl,
 } from '@udecode/plate';
 
-import type { TNodes } from './nodesRule';
+import type { TNodes } from './node-rules';
 // import type { deserializeMd } from './deserializer/deserializeMd';
 import type { plateTypes } from './utils/mapTypeUtils';
 

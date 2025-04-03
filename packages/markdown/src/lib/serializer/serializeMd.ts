@@ -5,7 +5,7 @@ import { type Plugin, unified } from 'unified';
 
 import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
 import type { MdRoot } from '../mdast';
-import type { TNodes } from '../nodesRule';
+import type { TNodes } from '../node-rules';
 
 import { convertNodesSerialize } from './convertNodesSerialize';
 import { getMergedOptionsSerialize } from './utils/getMergedOptions';
