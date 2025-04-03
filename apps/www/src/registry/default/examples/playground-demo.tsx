@@ -72,7 +72,6 @@ import { editorPlugins } from '@/registry/default/components/editor/plugins/edit
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
-import { basicMarksValue } from './values/basic-marks-value';
 
 export default function PlaygroundDemo({ className }: { className?: string }) {
   const value = usePlaygroundValue();
@@ -96,7 +95,7 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
           enabled: process.env.NODE_ENV !== 'production',
         }),
       ],
-      value: basicMarksValue,
+      value,
     },
     []
   );

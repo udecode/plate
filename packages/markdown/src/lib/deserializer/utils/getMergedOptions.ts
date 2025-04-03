@@ -26,20 +26,7 @@ export const getMergedOptionsDeserialize = (
     splitLineBreaks: PluginSplitLineBreaks,
   } = editor.getOptions(MarkdownPlugin);
 
-  let nodes = undefined;
-
-  if (PluginNodes === null) {
-    nodes = null;
-  }
-
-  if (options?.nodes === null) {
-    nodes = null;
-  }
-
-  if (nodes === undefined) {
-    const mergedNodes = Object.assign({}, defaultNodes, PluginNodes);
-    nodes = mergedNodes;
-  }
+  const mergedNodes = Object.assign({}, defaultNodes, PluginNodes);
 
   return {
     allowedNodes: options?.allowedNodes ?? PluginAllowedNodes,
@@ -47,7 +34,7 @@ export const getMergedOptionsDeserialize = (
     disallowedNodes: options?.disallowedNodes ?? PluginDisallowedNodes,
     editor,
     memoize: options?.memoize,
-    nodes,
+    nodes: mergedNodes,
     parser: options?.parser,
     remarkPlugins: options?.remarkPlugins ?? PluginRemarkPlugins ?? [],
     splitLineBreaks: options?.splitLineBreaks ?? PluginSplitLineBreaks,

@@ -38,6 +38,18 @@ export type MarkdownConfig = PluginConfig<
      */
     disallowedNodes: NodesConfig;
     /**
+     * Rules that define how to convert Markdown syntax elements to Slate editor
+     * elements. Or rules that how to convert Slate editor elements to Markdown
+     * syntax elements. Includes conversion rules for elements such as
+     * paragraphs, headings, lists, links, images, etc. When set to null,
+     * default conversion rules will be used.
+     *
+     * You can pass null disable default node parser.
+     *
+     * @default null
+     */
+    nodes: TNodes | null;
+    /**
      * Array of remark plugins to extend Markdown parsing and serialization
      * functionality. For example, you can add remark-gfm to support GFM syntax,
      * remark-math to support mathematical formulas, etc. These plugins will be
@@ -46,25 +58,6 @@ export type MarkdownConfig = PluginConfig<
      * @default undefined
      */
     remarkPlugins: Plugin[];
-    /**
-     * Custom filter function for nodes during deserialization and
-     * serialization.
-     *
-     * @default null
-     */
-    allowNode?: AllowNodeConfig;
-    /**
-     * Rules that define how to convert Markdown syntax elements to Slate editor
-     * elements. Or rules that how to convert Slate editor elements to Markdown
-     * syntax elements. Includes conversion rules for elements such as
-     * paragraphs, headings, lists, links, images, etc. When set to null,
-     * default conversion rules will be used.
-     *
-     * You can pass null disable all default nodes
-     *
-     * @default undefined
-     */
-    nodes?: TNodes | null;
     /**
      * Custom filter functions for nodes. Called after
      * allowedNodes/disallowedNodes check. You can specify different functions
@@ -78,7 +71,14 @@ export type MarkdownConfig = PluginConfig<
      *
      * @default false
      */
-    splitLineBreaks?: boolean;
+    splitLineBreaks: boolean;
+    /**
+     * Custom filter function for nodes during deserialization and
+     * serialization.
+     *
+     * @default null
+     */
+    allowNode?: AllowNodeConfig;
   },
   {
     markdown: {
@@ -95,7 +95,7 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   options: {
     allowedNodes: null,
     disallowedNodes: null,
-    nodes: undefined,
+    nodes: null,
     remarkPlugins: [],
     splitLineBreaks: false,
   },
