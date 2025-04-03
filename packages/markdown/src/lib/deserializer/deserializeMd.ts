@@ -9,10 +9,7 @@ import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
 import type { TNodes } from '../node-rules';
 
 import { mdastToSlate } from './mdastToSlate';
-import {
-  type ParseMarkdownBlocksOptions,
-  parseMarkdownBlocks,
-} from './utils';
+import { type ParseMarkdownBlocksOptions, parseMarkdownBlocks } from './utils';
 import { getMergedOptionsDeserialize } from './utils/getMergedOptions';
 
 // TODO: fixes tests

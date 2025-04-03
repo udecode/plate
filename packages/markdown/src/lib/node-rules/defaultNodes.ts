@@ -19,7 +19,11 @@ import type {
 } from '../mdast';
 import type { TNodes } from './types';
 
-import { buildSlateNode, convertChildrenDeserialize , convertTextsDeserialize } from '../deserializer';
+import {
+  buildSlateNode,
+  convertChildrenDeserialize,
+  convertTextsDeserialize,
+} from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
 

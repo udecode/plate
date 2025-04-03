@@ -35,7 +35,6 @@ export const serializeMd = (
       // Configure remark-stringify to handle MDX JSX elements
       handlers: {
         mdxJsxTextElement: (node, _, state, info) => {
-          
           const attrs = node.attributes
             .map((attr: any) => `${attr.name}="${attr.value}"`)
             .join(' ');
