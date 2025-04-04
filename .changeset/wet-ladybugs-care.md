@@ -1,11 +1,6 @@
 ---
 '@udecode/plate-markdown': major
 ---
-
-# @udecode/plate-markdown@42.0.0
-
-### Major Changes
-
 #### New Features
 
 - Added support for math type deserialization
