@@ -11,8 +11,6 @@ Plate
   <a target="_blank" href="https://github.com/udecode/plate/blob/main/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
 </div>
 
-![hero](apps/www/public/og.png)
-
 [//]: # '  <a target="_blank" href="https://platejs.org/docs/playground" alt="Live Demo"><img src="https://img.shields.io/badge/Live%20Demo-blue" /></a>'
 [//]: # 'Welcome to Plate, a rich-text editor framework designed for simplicity and efficiency. Plate consists of four main parts:'
 [//]: #
