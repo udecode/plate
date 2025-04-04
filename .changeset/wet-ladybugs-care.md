@@ -2,48 +2,54 @@
 '@udecode/plate-markdown': major
 ---
 
-## NEW:
+# @udecode/plate-markdown@42.0.0
 
-- Deserialization supports the math type.
-- Serialization now support the mark `underline` by default it will convert as `<u>underline</u>`.
-- Better serialization: Previously, Slate nodes were directly parsed into an markdown string.Now, Slate nodes are first parsed into MDAST nodes and then converted into an markdown string, making the process more reliable and robust.
-- New options `allowedNodes`, `disallowedNodes`, and `allowNode` help you filter out unwanted nodes.
-- New option `nodes` used for customizing serialization , deserialization and **custom mdx** rules.
-- New option `remarkPlugins` list of [remark plugins](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins) to use
+### Major Changes
 
-## Breaking Change:
+#### New Features
 
-#### deserialize:
+- Added support for math type deserialization
+- Added default underline mark serialization as `<u>underline</u>`
+- Improved serialization process:
+  - Now uses a two-step process: `slate nodes => MDAST nodes => markdown string`
+  - Previously: direct conversion from Slate nodes to markdown string
+  - Results in more reliable and robust serialization
+- New node filtering options:
+  - `allowedNodes`: Whitelist specific nodes
+  - `disallowedNodes`: Blacklist specific nodes
+  - `allowNode`: Custom function to filter nodes
+- New `nodes` option for customizing serialization and deserialization rules, including **custom mdx** support
+- New `remarkPlugins` option to use [remark plugins](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins)
 
-Remove `elementRules` and `textRules` options use `nodes.key.deserialize` instead
+#### Breaking Changes
 
-See more about [nodes](https://platejs.org/docs/markdown) option
+##### Deserialization
 
-For example:
+- Removed `elementRules` and `textRules` options
+  - Use `nodes.key.deserialize` instead
+  - See [nodes documentation](https://platejs.org/docs/markdown)
+
+Example migration:
 
 ```tsx
 export const markdownPlugin = MarkdownPlugin.configure({
   options: {
     disallowedNodes: [SuggestionPlugin.key],
     nodes: {
-      //For textRules
+      // For textRules
       [BoldPlugin.key]: {
-        deserialize: (mdastNode) => {
-          return {
-            bold: true,
-            text: node.value || '',
-          };
-        },
+        deserialize: (mdastNode) => ({
+          bold: true,
+          text: node.value || '',
+        }),
       },
       // For elementRules
       [EquationPlugin.key]: {
-        deserialize: (mdastNode, options) => {
-          return {
-            children: [{ text: '' }],
-            texExpression: node.value,
-            type: EquationPlugin.key,
-          };
-        },
+        deserialize: (mdastNode, options) => ({
+          children: [{ text: '' }],
+          texExpression: node.value,
+          type: EquationPlugin.key,
+        }),
       },
     },
     remarkPlugins: [remarkMath, remarkGfm],
@@ -51,85 +57,51 @@ export const markdownPlugin = MarkdownPlugin.configure({
 });
 ```
 
-Remove processor in `editor.api.markdown.deserialize` use `remarkPlugins` instead
+- Removed processor in `editor.api.markdown.deserialize`
+  - Use `remarkPlugins` instead
 
----
+##### Serialization
 
-### serialize:
+- Removed `serializeMdNodes`
+  - Use `editor.markdown.serialize({ value: nodes })` instead
+- Removed `SerializeMdOptions` due to new serialization process
+  - Previous process: `slate nodes => md`
+  - New process: `slate nodes => md-ast => md`
+- Removed options:
+  - `nodes`
+  - `breakTag`
+  - `customNodes`
+  - `ignoreParagraphNewline`
+  - `listDepth`
+  - `markFormats`
+  - `ulListStyleTypes`
+  - `ignoreSuggestionType`
 
-Remove `serializeMdNodes` use `editor.markdown.serializeMd({ value: nodes })` instead
-
-`SerializeMdOptions` has been removed because the serialization process has changed from `slate nodes => md` to `slate nodes => md-ast => md`, making many of the previous concepts obsolete. The following options are no longer available:
-Before:
-
-```tsx
-interface SerializeMdOptions {
-  /** @default Options for each node type. */
-  nodes: Record<keyof MdNodeTypes, SerializeMdNodeOptions>;
-  /**
-   * Tag to use for line breaks.
-   *
-   * @default '<br>'
-   */
-  breakTag?: string;
-  /** Custom nodes to serialize. */
-  customNodes?: Record<string, SerializeMdNodeOptions>;
-  ignoreParagraphNewline?: boolean;
-  listDepth?: number;
-  /**
-   * Format for underline.
-   *
-   * @example
-   *   {
-   *     "underline": ["<u>", "</u>"]
-   *   }
-   */
-  markFormats?: Partial<MarkFormats>;
-  /**
-   * List of unordered list style types (when using indent list).
-   *
-   * @default ['disc', 'circle', 'square']
-   */
-  ulListStyleTypes?: string[];
-  /** @default 'insert' */
-  ignoreSuggestionType?: 'insert' | 'remove' | 'update';
-}
-```
-
-- `SerializeMdOptions.customNodes` and `SerializeMdOptions.nodes` - These can be replaced with the `nodes.key.serialize` option in the plugin configuration. For example:
+Migration example for `SerializeMdOptions.customNodes` and `SerializeMdOptions.nodes`:
 
 ```tsx
 export const markdownPlugin = MarkdownPlugin.configure({
   options: {
     disallowedNodes: [],
     nodes: {
-      // ignore all `insert` type suggestionÏ
+      // Ignore all `insert` type suggestions
       [SuggestionPlugin.key]: {
         serialize: (slateNode: TSuggestionText, options): mdast.Text => {
           const suggestionData = options.editor
             .getApi(SuggestionPlugin)
             .suggestion.suggestionData(node);
 
-          if (suggestionData?.type === 'insert')
-            return {
-              type: 'text',
-              value: '',
-            };
-
-          return {
-            type: 'text',
-            value: node.text,
-          };
+          return suggestionData?.type === 'insert'
+            ? { type: 'text', value: '' }
+            : { type: 'text', value: node.text };
         },
       },
       // For elementRules
       [EquationPlugin.key]: {
-        serialize: (slateNode) => {
-          return {
-            type: 'math',
-            value: node.texExpression,
-          };
-        },
+        serialize: (slateNode) => ({
+          type: 'math',
+          value: node.texExpression,
+        }),
       },
     },
     remarkPlugins: [remarkMath, remarkGfm],
