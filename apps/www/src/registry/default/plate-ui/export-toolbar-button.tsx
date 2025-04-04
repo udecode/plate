@@ -130,15 +130,25 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
   const openState = useOpenState();
 
   const getCanvas = async () => {
-    const { default: html2canvas } = await import('html2canvas');
+    const { default: html2canvas } = await import('html2canvas-pro');
 
     const style = document.createElement('style');
     document.head.append(style);
-    style.sheet?.insertRule(
-      'body > div:last-child img { display: inline-block !important; }'
-    );
 
-    const canvas = await html2canvas(editor.api.toDOMNode(editor)!);
+    const canvas = await html2canvas(editor.api.toDOMNode(editor)!, {
+      onclone: (document: Document) => {
+        const editorElement = document.querySelector('[contenteditable="true"]');
+        if (editorElement) {
+          Array.from(editorElement.querySelectorAll('*')).forEach((element) => {
+            const existingStyle = element.getAttribute('style') || '';
+            element.setAttribute(
+              'style',
+              `${existingStyle}; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important`
+            );
+          });
+        }
+      },
+    });
     style.remove();
 
     return canvas;

@@ -12315,13 +12315,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html2canvas@npm:1.4.1":
-  version: 1.4.1
-  resolution: "html2canvas@npm:1.4.1"
+"html2canvas-pro@npm:1.5.8":
+  version: 1.5.8
+  resolution: "html2canvas-pro@npm:1.5.8"
   dependencies:
     css-line-break: "npm:^2.1.0"
     text-segmentation: "npm:^1.0.3"
-  checksum: 10c0/6de86f75762b00948edf2ea559f16da0a1ec3facc4a8a7d3f35fcec59bb0c5970463478988ae3d9082152e0173690d46ebf4082e7ac803dd4817bae1d355c0db
+  checksum: 10c0/aab3cfd1799ba2999e6e6cf668f91ad9ee83131e8f8512fdee966b07ef6ac57aae641b471399ce18e823630f7aba534653e6c495c39a4649de87fea6aa83301c
   languageName: node
   linkType: hard
 
@@ -22039,7 +22039,7 @@ __metadata:
     framer-motion: "npm:12.0.11"
     fzf: "npm:0.5.2"
     glob: "npm:11.0.1"
-    html2canvas: "npm:1.4.1"
+    html2canvas-pro: "npm:1.5.8"
     jotai: "npm:2.8.4"
     lodash: "npm:4.17.21"
     lowlight: "npm:3.3.0"
