@@ -1,4 +1,4 @@
-# @udecode/plate-md-serializer
+# @udecode/plate-markdown
 
 ## 47.0.0
 
@@ -20,6 +20,15 @@
   - New `remarkPlugins` option to use [remark plugins](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins)
 
   #### Breaking Changes
+
+  **Plugin Options**
+
+  Removed options:
+
+  - `elementRules` use `rules` instead
+  - `textRules` use `rules` instead
+  - `indentList` now automatically detects if the IndentList plugin is used
+  - `splitLineBreaks` deserialize only
 
   ##### Deserialization
 
