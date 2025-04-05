@@ -8,7 +8,7 @@ import {
 import type { unistLib } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
 
-import { convertTexts } from './convertTexts';
+import { convertTextsSerialize } from './convertTextsSerialize';
 import { indentListToMdastTree } from './indentListToMdastTree';
 import { unreachable } from './utils';
 import { getSerializerByKey } from './utils/getSerializerByKey';
@@ -33,7 +33,10 @@ export const convertNodesSerialize = (
     } else {
       if (textQueue.length > 0) {
         mdastNodes.push(
-          ...(convertTexts(textQueue, options) as any as unistLib.Node[])
+          ...(convertTextsSerialize(
+            textQueue,
+            options
+          ) as any as unistLib.Node[])
         );
       }
       textQueue = [];

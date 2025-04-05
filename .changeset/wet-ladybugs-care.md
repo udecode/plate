@@ -13,7 +13,7 @@
   - `allowedNodes`: Whitelist specific nodes
   - `disallowedNodes`: Blacklist specific nodes
   - `allowNode`: Custom function to filter nodes
-- New `nodes` option for customizing serialization and deserialization rules, including **custom mdx** support
+- New `rules` option for customizing serialization and deserialization rules, including **custom mdx** support
 - New `remarkPlugins` option to use [remark plugins](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins)
 
 #### Breaking Changes
@@ -21,7 +21,7 @@
 ##### Deserialization
 
 - Removed `elementRules` and `textRules` options
-  - Use `nodes.key.deserialize` instead
+  - Use `rules.key.deserialize` instead
   - See [nodes documentation](https://platejs.org/docs/markdown)
 
 Example migration:
@@ -30,9 +30,10 @@ Example migration:
 export const markdownPlugin = MarkdownPlugin.configure({
   options: {
     disallowedNodes: [SuggestionPlugin.key],
-    nodes: {
+    rules: {
       // For textRules
       [BoldPlugin.key]: {
+        mark:true,
         deserialize: (mdastNode) => ({
           bold: true,
           text: node.value || '',
@@ -77,10 +78,10 @@ Migration example for `SerializeMdOptions.customNodes` and `SerializeMdOptions.n
 ```tsx
 export const markdownPlugin = MarkdownPlugin.configure({
   options: {
-    disallowedNodes: [],
-    nodes: {
+    rules: {
       // Ignore all `insert` type suggestions
       [SuggestionPlugin.key]: {
+        mark:true,
         serialize: (slateNode: TSuggestionText, options): mdast.Text => {
           const suggestionData = options.editor
             .getApi(SuggestionPlugin)

@@ -5,8 +5,8 @@ import { unified } from 'unified';
 
 import type { SerializeMdOptions } from './serializeMd';
 
-import { convertTexts } from './convertTexts';
-import { getMergedOptionsSerialize } from './utils/getMergedOptions';
+import { convertTextsSerialize } from './convertTextsSerialize';
+import { getMergedOptionsSerialize } from './utils';
 
 export const serializeInlineMd = (
   editor: SlateEditor,
@@ -22,7 +22,7 @@ export const serializeInlineMd = (
 
   // Serialize the content
   const serializedContent = toRemarkProcessor.stringify({
-    children: convertTexts(mergedOptions.value as any, {}),
+    children: convertTextsSerialize(mergedOptions.value as any, {}),
     type: 'root',
   });
 

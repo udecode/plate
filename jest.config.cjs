@@ -76,6 +76,7 @@ module.exports = {
       '|is-alphabetical' +
       '|is-alphanumeric' +
       '|stringify-entities' +
+      '|zeed-dom' +
       // '|markdown-.*' +
       '|mdast-util-to-markdown|zwitch|longest-streak|unist-util-visit|mdast-util-phrasing' +
       '|escape-string-regexp|micromark-util-decode-string|decode-named-character-reference' +

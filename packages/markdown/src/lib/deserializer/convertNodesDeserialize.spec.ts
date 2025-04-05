@@ -1,7 +1,7 @@
 import type { MdHeading, MdRootContent } from '../mdast';
 import type { DeserializeMdOptions } from './deserializeMd';
 
-import { defaultNodes } from '../node-rules';
+import { defaultRules } from '../rules';
 import { convertNodesDeserialize } from './convertNodesDeserialize';
 
 describe('convertNodesDeserialize', () => {
@@ -36,7 +36,7 @@ describe('convertNodesDeserialize', () => {
   ];
 
   const baseOptions: DeserializeMdOptions = {
-    nodes: defaultNodes,
+    rules: defaultRules,
   };
 
   const mockParagraphNodeSlate = {

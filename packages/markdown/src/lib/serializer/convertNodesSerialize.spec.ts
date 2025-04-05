@@ -2,7 +2,7 @@ import type { Descendant } from '@udecode/plate';
 
 import type { SerializeMdOptions } from './serializeMd';
 
-import { defaultNodes } from '../node-rules';
+import { defaultRules } from '../rules';
 import { convertNodesSerialize } from './convertNodesSerialize';
 
 describe('convertNodesSerialize', () => {
@@ -64,7 +64,7 @@ describe('convertNodesSerialize', () => {
   ];
 
   const baseOptions: SerializeMdOptions = {
-    nodes: defaultNodes,
+    rules: defaultRules,
   };
 
   describe('allowedNodes option', () => {

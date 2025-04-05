@@ -10,6 +10,7 @@ import type {
   MdImage,
   MdLink,
   MdList,
+  MdMdxJsxFlowElement,
   MdMdxJsxTextElement,
   MdParagraph,
   MdRootContent,
@@ -17,7 +18,7 @@ import type {
   MdTableCell,
   MdTableRow,
 } from '../mdast';
-import type { TNodes } from './types';
+import type { TRules } from './types';
 
 import {
   buildSlateNode,
@@ -27,7 +28,7 @@ import {
 import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
 
-export const defaultNodes: TNodes = {
+export const defaultRules: TRules = {
   a: {
     deserialize: (mdastNode, deco, options) => {
       return {
@@ -92,11 +93,13 @@ export const defaultNodes: TNodes = {
     },
   },
   bold: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
     },
   },
   code: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return {
         ...deco,
@@ -182,6 +185,30 @@ export const defaultNodes: TNodes = {
         ) as MdHeading['children'],
         depth: depthMap[node.type as keyof typeof depthMap] as any,
         type: 'heading',
+      };
+    },
+  },
+  highlight: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        { highlight: true, ...deco },
+        options
+      ) as any;
+    },
+    serialize(slateNode, options): MdMdxJsxTextElement {
+      return {
+        attributes: [
+          {
+            name: 'style',
+            type: 'mdxJsxAttribute',
+            value: 'background-color: yellow;',
+          },
+        ],
+        children: [{ type: 'text', value: slateNode.text }],
+        name: 'highlight',
+        type: 'mdxJsxTextElement',
       };
     },
   },
@@ -529,6 +556,7 @@ export const defaultNodes: TNodes = {
     },
   },
   strikethrough: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
     },
@@ -609,6 +637,22 @@ export const defaultNodes: TNodes = {
       };
     },
   },
+  toc: {
+    deserialize: (mdastNode, deco, options) => {
+      return {
+        children: convertChildrenDeserialize(mdastNode.children, deco, options),
+        type: 'toc',
+      };
+    },
+    serialize: (node, options): MdMdxJsxFlowElement => {
+      return {
+        attributes: [],
+        children: convertNodesSerialize(node.children, options) as any,
+        name: 'toc',
+        type: 'mdxJsxFlowElement',
+      };
+    },
+  },
   tr: {
     serialize: (node, options) => {
       return {
@@ -621,6 +665,7 @@ export const defaultNodes: TNodes = {
     },
   },
   underline: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertChildrenDeserialize(
         mdastNode.children,

@@ -3,7 +3,7 @@
  */
 
 export * from './convertNodesSerialize';
-export * from './convertTexts';
+export * from './convertTextsSerialize';
 export * from './indentListToMdastTree';
 export * from './serializeInlineMd';
 export * from './serializeMd';

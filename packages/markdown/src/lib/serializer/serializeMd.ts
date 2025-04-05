@@ -2,22 +2,50 @@ import type { Descendant, SlateEditor } from '@udecode/plate';
 
 import remarkStringify from 'remark-stringify';
 import { type Plugin, unified } from 'unified';
+import { xml } from 'zeed-dom';
 
 import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
 import type { MdRoot } from '../mdast';
-import type { TNodes } from '../node-rules';
+import type { TRules } from '../rules';
 
 import { convertNodesSerialize } from './convertNodesSerialize';
-import { getMergedOptionsSerialize } from './utils/getMergedOptions';
+import { getMergedOptionsSerialize } from './utils/getMergedOptionsSerialize';
 
 export type SerializeMdOptions = {
   allowedNodes?: NodesConfig;
   allowNode?: AllowNodeConfig;
   disallowedNodes?: NodesConfig;
   editor?: SlateEditor;
-  nodes?: TNodes | null;
   remarkPlugins?: Plugin[];
+  rules?: TRules;
   value?: Descendant[];
+};
+
+const serializeMdxJsxElement = (node: any): string => {
+  // Handle text nodes
+  if (node.type === 'text') {
+    return node.value || '';
+  }
+
+  // Handle MDX JSX elements
+  if (node.type === 'mdxJsxTextElement' || node.type === 'mdxJsxFlowElement') {
+    const attributes = node.attributes.reduce(
+      (acc: Record<string, string>, attr: any) => {
+        acc[attr.name] = attr.value;
+        return acc;
+      },
+      {}
+    );
+
+    // Process all children and join their results
+    const content = node.children
+      .map((child: any) => serializeMdxJsxElement(child))
+      .join('');
+
+    return xml(node.name, attributes, content);
+  }
+
+  return '';
 };
 
 /** Serialize the editor value to Markdown. */
@@ -34,15 +62,11 @@ export const serializeMd = (
     .use(remarkStringify, {
       // Configure remark-stringify to handle MDX JSX elements
       handlers: {
-        mdxJsxTextElement: (node, _, state, info) => {
-          const attrs = node.attributes
-            .map((attr: any) => `${attr.name}="${attr.value}"`)
-            .join(' ');
-          const attrStr = attrs ? ` ${attrs}` : '';
-
-          // Handle underline elements specifically
-          const content = node.children[0]?.value || '';
-          return `<${node.name}${attrStr}>${content}</${node.name}>`;
+        mdxJsxFlowElement: (node) => {
+          return serializeMdxJsxElement(node);
+        },
+        mdxJsxTextElement: (node) => {
+          return serializeMdxJsxElement(node);
         },
       },
     });
