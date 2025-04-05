@@ -5,7 +5,7 @@ import { unified } from 'unified';
 
 import type { SerializeMdOptions } from './serializeMd';
 
-import { convertTexts } from './convertTexts';
+import { convertTextsSerialize } from './convertTextsSerialize';
 import { getMergedOptionsSerialize } from './utils/getMergedOptions';
 
 export const serializeInlineMd = (
@@ -22,7 +22,7 @@ export const serializeInlineMd = (
 
   // Serialize the content
   const serializedContent = toRemarkProcessor.stringify({
-    children: convertTexts(mergedOptions.value as any, {}),
+    children: convertTextsSerialize(mergedOptions.value as any, {}),
     type: 'root',
   });
 

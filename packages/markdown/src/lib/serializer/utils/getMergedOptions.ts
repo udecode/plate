@@ -3,7 +3,7 @@ import type { SlateEditor } from '@udecode/plate';
 import type { SerializeMdOptions } from '../serializeMd';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
-import { defaultNodes } from '../../node-rules';
+import { defaultRules } from '../../rules';
 
 /**
  * Merges Markdown configurations, following the principle that options take
@@ -21,11 +21,11 @@ export const getMergedOptionsSerialize = (
     allowedNodes: PluginAllowedNodes,
     allowNode: PluginAllowNode,
     disallowedNodes: PluginDisallowedNodes,
-    nodes: PluginNodes,
     remarkPlugins: PluginRemarkPlugins,
+    rules: PluginNodes,
   } = editor.getOptions(MarkdownPlugin);
 
-  const mergedNodes = Object.assign({}, defaultNodes, PluginNodes);
+  const mergedNodes = Object.assign({}, defaultRules, PluginNodes);
 
   return {
     allowedNodes: options?.allowedNodes ?? PluginAllowedNodes,

@@ -3,18 +3,18 @@ import type { TText } from '@udecode/plate';
 import type { astMarks } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
 
-import { getCustomLeaf, unreachable } from './utils';
+import { getCustomMark, unreachable } from './utils';
 import { getSerializerByKey } from './utils/getSerializerByKey';
 
 // inlineCode should be last because of the spec in mdast
 // https://github.com/inokawa/remark-slate-transformer/issues/145
 export const basicMarkdownMarks = ['italic', 'bold', 'strikethrough', 'code'];
 
-export const convertTexts = (
+export const convertTextsSerialize = (
   slateTexts: readonly TText[],
   options: SerializeMdOptions
 ): astMarks[] => {
-  const customLeaf: string[] = getCustomLeaf(options);
+  const customLeaf: string[] = getCustomMark(options);
 
   const mdastTexts: astMarks[] = [];
 

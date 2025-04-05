@@ -6,7 +6,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
-import type { TNodes } from '../node-rules';
+import type { TRules } from '../rules';
 
 import { mdastToSlate } from './mdastToSlate';
 import { type ParseMarkdownBlocksOptions, parseMarkdownBlocks } from './utils';
@@ -20,7 +20,7 @@ export type DeserializeMdOptions = {
   disallowedNodes?: NodesConfig;
   editor?: SlateEditor;
   memoize?: boolean;
-  nodes?: TNodes | null;
+  nodes?: TRules | null;
   parser?: ParseMarkdownBlocksOptions;
   remarkPlugins?: Plugin[];
   splitLineBreaks?: boolean;

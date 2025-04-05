@@ -1,6 +1,6 @@
 import type { DeserializeMdOptions } from '../deserializeMd';
 
-import { defaultNodes } from '../../node-rules';
+import { defaultRules } from '../../rules';
 
 export const getDeserializerByKey = (
   key: string,
@@ -9,6 +9,6 @@ export const getDeserializerByKey = (
   const nodes = options.nodes;
 
   return nodes?.[key]?.deserialize === undefined
-    ? defaultNodes[key]?.deserialize
+    ? defaultRules[key]?.deserialize
     : nodes?.[key]?.deserialize;
 };

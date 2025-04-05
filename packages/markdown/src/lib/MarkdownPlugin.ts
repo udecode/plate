@@ -8,7 +8,7 @@ import {
   isUrl,
 } from '@udecode/plate';
 
-import type { TNodes } from './node-rules';
+import type { TRules } from './rules';
 // import type { deserializeMd } from './deserializer/deserializeMd';
 import type { plateTypes } from './utils/mapTypeUtils';
 
@@ -38,6 +38,15 @@ export type MarkdownConfig = PluginConfig<
      */
     disallowedNodes: NodesConfig;
     /**
+     * Array of remark plugins to extend Markdown parsing and serialization
+     * functionality. For example, you can add remark-gfm to support GFM syntax,
+     * remark-math to support mathematical formulas, etc. These plugins will be
+     * used during the parsing and generation of Markdown text.
+     *
+     * @default undefined
+     */
+    remarkPlugins: Plugin[];
+    /**
      * Rules that define how to convert Markdown syntax elements to Slate editor
      * elements. Or rules that how to convert Slate editor elements to Markdown
      * syntax elements. Includes conversion rules for elements such as
@@ -48,30 +57,7 @@ export type MarkdownConfig = PluginConfig<
      *
      * @default null
      */
-    nodes: TNodes | null;
-    /**
-     * Array of remark plugins to extend Markdown parsing and serialization
-     * functionality. For example, you can add remark-gfm to support GFM syntax,
-     * remark-math to support mathematical formulas, etc. These plugins will be
-     * used during the parsing and generation of Markdown text.
-     *
-     * @default undefined
-     */
-    remarkPlugins: Plugin[];
-    /**
-     * Custom filter functions for nodes. Called after
-     * allowedNodes/disallowedNodes check. You can specify different functions
-     * for serialization and deserialization.
-     */
-    /**
-     * When the text contains \n, split the text into a separate paragraph.
-     *
-     * Line breaks between paragraphs will also be converted into separate
-     * paragraphs.
-     *
-     * @default false
-     */
-    splitLineBreaks: boolean;
+    rules: TRules | null;
     /**
      * Custom filter function for nodes during deserialization and
      * serialization.
@@ -95,9 +81,8 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   options: {
     allowedNodes: null,
     disallowedNodes: null,
-    nodes: null,
     remarkPlugins: [],
-    splitLineBreaks: false,
+    rules: null,
   },
 })
   .extendApi(({ editor }) => ({

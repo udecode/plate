@@ -17,7 +17,7 @@ import type {
   MdTableCell,
   MdTableRow,
 } from '../mdast';
-import type { TNodes } from './types';
+import type { TRules } from './types';
 
 import {
   buildSlateNode,
@@ -27,7 +27,7 @@ import {
 import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
 
-export const defaultNodes: TNodes = {
+export const defaultRules: TRules = {
   a: {
     deserialize: (mdastNode, deco, options) => {
       return {
@@ -92,11 +92,13 @@ export const defaultNodes: TNodes = {
     },
   },
   bold: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
     },
   },
   code: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return {
         ...deco,
@@ -529,6 +531,7 @@ export const defaultNodes: TNodes = {
     },
   },
   strikethrough: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
     },
@@ -621,6 +624,7 @@ export const defaultNodes: TNodes = {
     },
   },
   underline: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertChildrenDeserialize(
         mdastNode.children,

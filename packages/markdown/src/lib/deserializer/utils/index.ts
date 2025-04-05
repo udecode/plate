@@ -7,5 +7,4 @@ export * from './deserializeInlineMd';
 export * from './getDeserializerByKey';
 export * from './getMergedOptions';
 export * from './parseMarkdownBlocks';
-export * from './remarkSplitLineBreaks';
 export * from './stripMarkdown';

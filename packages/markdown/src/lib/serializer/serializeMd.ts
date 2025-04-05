@@ -5,7 +5,7 @@ import { type Plugin, unified } from 'unified';
 
 import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
 import type { MdRoot } from '../mdast';
-import type { TNodes } from '../node-rules';
+import type { TRules } from '../rules';
 
 import { convertNodesSerialize } from './convertNodesSerialize';
 import { getMergedOptionsSerialize } from './utils/getMergedOptions';
@@ -15,7 +15,7 @@ export type SerializeMdOptions = {
   allowNode?: AllowNodeConfig;
   disallowedNodes?: NodesConfig;
   editor?: SlateEditor;
-  nodes?: TNodes | null;
+  nodes?: TRules;
   remarkPlugins?: Plugin[];
   value?: Descendant[];
 };

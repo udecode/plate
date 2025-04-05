@@ -49,12 +49,13 @@ import type { SerializeMdOptions } from '../serializer';
 /* eslint-disable perfectionist/sort-modules */
 
 /* eslint-disable perfectionist/sort-object-types */
-export type TNodes = Partial<{
+export type TRules = Partial<{
   [K in keyof PlateNodeTypeMap]: Nullable<TNodeParser<K>>;
 }> &
   Record<string, Nullable<AnyNodeParser>>;
 
 export type AnyNodeParser = {
+  mark?: boolean;
   deserialize?: (
     mdastNode: any,
     deco: Decoration,
@@ -64,6 +65,7 @@ export type AnyNodeParser = {
 };
 
 export type TNodeParser<K extends keyof PlateNodeTypeMap> = {
+  mark?: boolean;
   deserialize?: (
     mdastNode: MdastNodeTypeMap[K],
     deco: Decoration,
