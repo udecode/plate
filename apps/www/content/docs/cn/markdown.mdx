@@ -159,10 +159,6 @@ MarkdownPlugin.configure({
     用于扩展 Markdown 解析和序列化功能的 remark 插件数组。例如，可以添加 remark-gfm 来支持 GFM 语法，remark-math 来支持数学公式等。这些插件将在解析和生成 Markdown 文本时使用。
     默认值：`[]`
   </APIItem>
-  <APIItem name="splitLineBreaks" type="boolean">
-    当文本包含 \n 时，将文本拆分为单独的段落。段落之间的换行符也将转换为单独的段落。
-    默认值：`false`
-  </APIItem>
 </APIOptions>
 </API>
 
@@ -192,6 +188,7 @@ MarkdownPlugin.configure({
   </APIItem>
   <APIItem name="memoize" type="boolean" optional>
     启用带有 `_memo` 属性的块级记忆化，使其与 `PlateStatic` 记忆化兼容。
+    当启用时，会为每个解析的块添加原始 Markdown 内容作为 _memo 属性。
   </APIItem>
   <APIItem name="rules" type="TRules" optional>
     定义如何将 Markdown 语法元素转换为 Slate 编辑器元素的规则。
@@ -238,6 +235,7 @@ MarkdownPlugin.configure({
   </APIItem>
   <APIItem name="remarkPlugins" type="Plugin[]" optional>
     用于扩展 Markdown 序列化功能的 remark 插件数组。
+    这些插件会被传递给 unified 处理器，并与 remark-stringify 一起使用。
   </APIItem>
   <APIItem name="value" type="Descendant[]" optional>
     要序列化的 Slate 节点。如果未提供，将使用整个编辑器值。
@@ -246,6 +244,7 @@ MarkdownPlugin.configure({
 
 <APIReturns type="string">
   表示序列化 Slate 内容的 Markdown 字符串。
+  注意：序列化过程会自动将 `<br>` 标签转换为 `<br />` 以确保 MDX 兼容性。
 </APIReturns>
 </API>
 

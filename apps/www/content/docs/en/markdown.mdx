@@ -88,7 +88,6 @@ Here's a complete configuration example:
 ```tsx
 MarkdownPlugin.configure({
   options: {
-    remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
      rules: {
       date: {
         deserialize(mdastNode: MdMdxJsxTextElement, deco, options) {
@@ -159,10 +158,6 @@ After using the above configuration, content will be converted as follows:
   <APIItem name="remarkPlugins" type="Plugin[]">
     An array of remark plugins for extending Markdown parsing and serialization functionality. For example, you can add remark-gfm to support GFM syntax, remark-math to support mathematical formulas, etc. These plugins will be used when parsing and generating Markdown text.
     Default: `[]`
-  </APIItem>
-  <APIItem name="splitLineBreaks" type="boolean">
-    When text contains \n, split the text into separate paragraphs. Line breaks between paragraphs will also be converted to separate paragraphs.
-    Default: `false`
   </APIItem>
 </APIOptions>
 </API>
