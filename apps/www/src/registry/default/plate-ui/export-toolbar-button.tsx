@@ -137,7 +137,9 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
 
     const canvas = await html2canvas(editor.api.toDOMNode(editor)!, {
       onclone: (document: Document) => {
-        const editorElement = document.querySelector('[contenteditable="true"]');
+        const editorElement = document.querySelector(
+          '[contenteditable="true"]'
+        );
         if (editorElement) {
           Array.from(editorElement.querySelectorAll('*')).forEach((element) => {
             const existingStyle = element.getAttribute('style') || '';

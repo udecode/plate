@@ -33,7 +33,10 @@ export const convertNodesSerialize = (
     } else {
       if (textQueue.length > 0) {
         mdastNodes.push(
-          ...(convertTextsSerialize(textQueue, options) as any as unistLib.Node[])
+          ...(convertTextsSerialize(
+            textQueue,
+            options
+          ) as any as unistLib.Node[])
         );
       }
       textQueue = [];

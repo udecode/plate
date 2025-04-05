@@ -25,7 +25,11 @@ export const getMergedOptionsDeserialize = (
     rules: PluginRules,
   } = editor.getOptions(MarkdownPlugin);
 
-  const mergedRules = Object.assign({}, defaultRules, options?.rules ?? PluginRules);
+  const mergedRules = Object.assign(
+    {},
+    defaultRules,
+    options?.rules ?? PluginRules
+  );
 
   return {
     allowedNodes: options?.allowedNodes ?? PluginAllowedNodes,
