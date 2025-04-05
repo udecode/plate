@@ -1948,7 +1948,7 @@
   },
   {
     "dependencies": [
-      "html2canvas",
+      "html2canvas-pro",
       "pdf-lib"
     ],
     "doc": {
