@@ -232,6 +232,7 @@ MarkdownPlugin.configure({
   </APIItem>
   <APIItem name="rules" type="TRules" optional>
     定义如何将 Slate 编辑器元素转换为 Markdown 语法元素的规则。
+    **注意：** 当自定义内联节点时，不要忘记传递 `mark:true`。
   </APIItem>
   <APIItem name="remarkPlugins" type="Plugin[]" optional>
     用于扩展 Markdown 序列化功能的 remark 插件数组。

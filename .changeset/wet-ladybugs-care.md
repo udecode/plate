@@ -33,6 +33,7 @@ export const markdownPlugin = MarkdownPlugin.configure({
     rules: {
       // For textRules
       [BoldPlugin.key]: {
+        mark:true,
         deserialize: (mdastNode) => ({
           bold: true,
           text: node.value || '',
@@ -80,6 +81,7 @@ export const markdownPlugin = MarkdownPlugin.configure({
     rules: {
       // Ignore all `insert` type suggestions
       [SuggestionPlugin.key]: {
+        mark:true,
         serialize: (slateNode: TSuggestionText, options): mdast.Text => {
           const suggestionData = options.editor
             .getApi(SuggestionPlugin)

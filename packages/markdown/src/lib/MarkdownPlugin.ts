@@ -50,10 +50,11 @@ export type MarkdownConfig = PluginConfig<
      * Rules that define how to convert Markdown syntax elements to Slate editor
      * elements. Or rules that how to convert Slate editor elements to Markdown
      * syntax elements. Includes conversion rules for elements such as
-     * paragraphs, headings, lists, links, images, etc. When set to null,
-     * default conversion rules will be used.
+     * paragraphs, headings, lists, links, images, etc.
      *
      * You can pass null disable default node parser.
+     *
+     * NOTE: don't forget pass `mark:true` when you custom inline nodes.
      *
      * @default null
      */

@@ -153,6 +153,7 @@ After using the above configuration, content will be converted as follows:
   </APIItem>
   <APIItem name="rules" type="TRules | null">
     Defines rules for converting Markdown syntax elements to Slate editor elements, or rules for converting Slate editor elements to Markdown syntax elements. Includes conversion rules for paragraphs, headings, lists, links, images, and other elements. When set to null, default conversion rules will be used.
+    **NOTE:** don't forget pass `mark:true` when you custom inline nodes.
     Default: `null`
   </APIItem>
   <APIItem name="remarkPlugins" type="Plugin[]">
