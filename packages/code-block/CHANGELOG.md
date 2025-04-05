@@ -1,5 +1,11 @@
 # @udecode/plate-code-block
 
+## 47.0.0
+
+### Patch Changes
+
+- [#4174](https://github.com/udecode/plate/pull/4174) by [@felixfeng33](https://github.com/felixfeng33) – fixes missing export
+
 ## 46.0.4
 
 ### Patch Changes

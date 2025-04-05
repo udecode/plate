@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-basic-elements",
-  "version": "46.0.4",
+  "version": "47.0.0",
   "description": "Basic elements plugin for Plate",
   "keywords": [
     "plate",
@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@udecode/plate-block-quote": "44.0.0",
-    "@udecode/plate-code-block": "46.0.4",
+    "@udecode/plate-code-block": "47.0.0",
     "@udecode/plate-heading": "44.0.0"
   },
   "devDependencies": {
