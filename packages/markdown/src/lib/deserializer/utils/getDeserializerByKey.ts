@@ -6,9 +6,9 @@ export const getDeserializerByKey = (
   key: string,
   options: DeserializeMdOptions
 ) => {
-  const nodes = options.nodes;
+  const rules = options.rules;
 
-  return nodes?.[key]?.deserialize === undefined
+  return rules?.[key]?.deserialize === undefined
     ? defaultRules[key]?.deserialize
-    : nodes?.[key]?.deserialize;
+    : rules?.[key]?.deserialize;
 };

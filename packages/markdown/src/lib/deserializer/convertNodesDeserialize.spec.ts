@@ -36,7 +36,7 @@ describe('convertNodesDeserialize', () => {
   ];
 
   const baseOptions: DeserializeMdOptions = {
-    nodes: defaultRules,
+    rules: defaultRules,
   };
 
   const mockParagraphNodeSlate = {

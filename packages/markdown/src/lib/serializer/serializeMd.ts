@@ -8,15 +8,15 @@ import type { MdRoot } from '../mdast';
 import type { TRules } from '../rules';
 
 import { convertNodesSerialize } from './convertNodesSerialize';
-import { getMergedOptionsSerialize } from './utils/getMergedOptions';
+import { getMergedOptionsSerialize } from './utils/getMergedOptionsSerialize';
 
 export type SerializeMdOptions = {
   allowedNodes?: NodesConfig;
   allowNode?: AllowNodeConfig;
   disallowedNodes?: NodesConfig;
   editor?: SlateEditor;
-  nodes?: TRules;
   remarkPlugins?: Plugin[];
+  rules?: TRules;
   value?: Descendant[];
 };
 

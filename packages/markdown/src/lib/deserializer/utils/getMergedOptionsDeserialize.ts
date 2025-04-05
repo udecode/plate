@@ -22,10 +22,10 @@ export const getMergedOptionsDeserialize = (
     allowNode: PluginAllowNode,
     disallowedNodes: PluginDisallowedNodes,
     remarkPlugins: PluginRemarkPlugins,
-    rules: PluginNodes,
+    rules: PluginRules,
   } = editor.getOptions(MarkdownPlugin);
 
-  const mergedNodes = Object.assign({}, defaultRules, PluginNodes);
+  const mergedRules = Object.assign({}, defaultRules, options?.rules ?? PluginRules);
 
   return {
     allowedNodes: options?.allowedNodes ?? PluginAllowedNodes,
@@ -33,9 +33,9 @@ export const getMergedOptionsDeserialize = (
     disallowedNodes: options?.disallowedNodes ?? PluginDisallowedNodes,
     editor,
     memoize: options?.memoize,
-    nodes: mergedNodes,
     parser: options?.parser,
     remarkPlugins: options?.remarkPlugins ?? PluginRemarkPlugins ?? [],
+    rules: mergedRules,
     splitLineBreaks: options?.splitLineBreaks,
   };
 };

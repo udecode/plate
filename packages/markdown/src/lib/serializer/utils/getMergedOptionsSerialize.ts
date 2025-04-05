@@ -22,18 +22,22 @@ export const getMergedOptionsSerialize = (
     allowNode: PluginAllowNode,
     disallowedNodes: PluginDisallowedNodes,
     remarkPlugins: PluginRemarkPlugins,
-    rules: PluginNodes,
+    rules: PluginRules,
   } = editor.getOptions(MarkdownPlugin);
 
-  const mergedNodes = Object.assign({}, defaultRules, PluginNodes);
+  const mergedRules = Object.assign(
+    {},
+    defaultRules,
+    options?.rules ?? PluginRules
+  );
 
   return {
     allowedNodes: options?.allowedNodes ?? PluginAllowedNodes,
     allowNode: options?.allowNode ?? PluginAllowNode,
     disallowedNodes: options?.disallowedNodes ?? PluginDisallowedNodes,
     editor,
-    nodes: mergedNodes,
     remarkPlugins: options?.remarkPlugins ?? PluginRemarkPlugins ?? [],
+    rules: mergedRules,
     value: options?.value ?? editor.children,
   };
 };

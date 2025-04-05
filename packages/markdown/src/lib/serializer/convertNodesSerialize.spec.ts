@@ -64,7 +64,7 @@ describe('convertNodesSerialize', () => {
   ];
 
   const baseOptions: SerializeMdOptions = {
-    nodes: defaultRules,
+    rules: defaultRules,
   };
 
   describe('allowedNodes option', () => {

@@ -5,6 +5,6 @@
 export * from './customMdxDeserialize';
 export * from './deserializeInlineMd';
 export * from './getDeserializerByKey';
-export * from './getMergedOptions';
+export * from './getMergedOptionsDeserialize';
 export * from './parseMarkdownBlocks';
 export * from './stripMarkdown';

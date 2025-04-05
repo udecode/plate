@@ -3,6 +3,6 @@
  */
 
 export * from './getCustomMark';
-export * from './getMergedOptions';
+export * from './getMergedOptionsSerialize';
 export * from './getSerializerByKey';
 export * from './unreachable';

@@ -89,7 +89,7 @@ Here's a complete configuration example:
 MarkdownPlugin.configure({
   options: {
     remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
-     nodes: {
+     rules: {
       date: {
         deserialize(mdastNode: MdMdxJsxTextElement, deco, options) {
           if (mdastNode.children?.[0] && 'value' in mdastNode.children[0]) {
@@ -152,9 +152,9 @@ After using the above configuration, content will be converted as follows:
     This is useful for scenarios requiring complex logic to decide whether to include a node.
     Default: `null`
   </APIItem>
-  <APIItem name="nodes" type="TNodes | null">
+  <APIItem name="rules" type="TRules | null">
     Defines rules for converting Markdown syntax elements to Slate editor elements, or rules for converting Slate editor elements to Markdown syntax elements. Includes conversion rules for paragraphs, headings, lists, links, images, and other elements. When set to null, default conversion rules will be used.
-    Default: `undefined`
+    Default: `null`
   </APIItem>
   <APIItem name="remarkPlugins" type="Plugin[]">
     An array of remark plugins for extending Markdown parsing and serialization functionality. For example, you can add remark-gfm to support GFM syntax, remark-math to support mathematical formulas, etc. These plugins will be used when parsing and generating Markdown text.
@@ -194,7 +194,7 @@ Convert a Markdown string to Slate value.
   <APIItem name="memoize" type="boolean" optional>
     Enable block-level memoization with `_memo` property, making it compatible with `PlateStatic` memoization.
   </APIItem>
-  <APIItem name="nodes" type="TNodes | null" optional>
+  <APIItem name="rules" type="TRules | null" optional>
     Defines rules for converting Markdown syntax elements to Slate editor elements.
   </APIItem>
   <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
@@ -234,7 +234,7 @@ Convert the current Slate value to a Markdown string.
   <APIItem name="allowNode" type="AllowNodeConfig" optional>
     Custom node filtering function. Called after allowedNodes/disallowedNodes checks.
   </APIItem>
-  <APIItem name="nodes" type="TNodes | null" optional>
+  <APIItem name="rules" type="TRules | null" optional>
     Defines rules for converting Slate editor elements to Markdown syntax elements.
   </APIItem>
   <APIItem name="remarkPlugins" type="Plugin[]" optional>

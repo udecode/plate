@@ -1,11 +1,11 @@
 import type { SerializeMdOptions } from '../serializeMd';
 
 export const getCustomMark = (options?: SerializeMdOptions): string[] => {
-  if (!options?.nodes) {
+  if (!options?.rules) {
     return [];
   }
 
-  return Object.entries(options.nodes)
+  return Object.entries(options.rules)
     .filter(([_, parser]) => parser?.mark)
     .map(([key]) => key);
 };

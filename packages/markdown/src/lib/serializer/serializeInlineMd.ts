@@ -6,7 +6,7 @@ import { unified } from 'unified';
 import type { SerializeMdOptions } from './serializeMd';
 
 import { convertTextsSerialize } from './convertTextsSerialize';
-import { getMergedOptionsSerialize } from './utils/getMergedOptions';
+import { getMergedOptionsSerialize } from './utils';
 
 export const serializeInlineMd = (
   editor: SlateEditor,
