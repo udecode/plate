@@ -10,4 +10,4 @@ export type Decoration = Readonly<
   >
 >;
 
-type plateOnlyMarks = 'underline';
+type plateOnlyMarks = (string & {}) | 'underline';

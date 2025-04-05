@@ -12,7 +12,8 @@ export const basicMarkdownMarks = ['italic', 'bold', 'strikethrough', 'code'];
 
 export const convertTextsSerialize = (
   slateTexts: readonly TText[],
-  options: SerializeMdOptions
+  options: SerializeMdOptions,
+  key?: string
 ): astMarks[] => {
   const customLeaf: string[] = getCustomMark(options);
 
@@ -90,8 +91,11 @@ export const convertTextsSerialize = (
           const nodeParser = getSerializerByKey(k, options);
 
           if (nodeParser) {
-            res = nodeParser(cur, options) as any;
-            return;
+            const node = nodeParser(cur, options) as any;
+            res = {
+              ...node,
+              children: [res],
+            };
           }
 
           switch (k) {
@@ -154,6 +158,7 @@ export const convertTextsSerialize = (
     mdastTexts.push({ type: 'text', value: textTemp });
     textTemp = '';
   }
+
   return mergeTexts(mdastTexts);
 };
 

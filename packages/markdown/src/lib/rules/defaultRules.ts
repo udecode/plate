@@ -1,3 +1,4 @@
+/* eslint-disable perfectionist/sort-objects */
 import type { TText } from '@udecode/plate';
 
 import type {
@@ -10,6 +11,7 @@ import type {
   MdImage,
   MdLink,
   MdList,
+  MdMdxJsxFlowElement,
   MdMdxJsxTextElement,
   MdParagraph,
   MdRootContent,
@@ -638,6 +640,46 @@ export const defaultRules: TRules = {
         children: [{ type: 'text', value: slateNode.text }],
         name: 'u',
         type: 'mdxJsxTextElement',
+      };
+    },
+  },
+  highlight: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        { highlight: true, ...deco },
+        options
+      ) as any;
+    },
+    serialize(slateNode, options): MdMdxJsxTextElement {
+      return {
+        attributes: [
+          {
+            type: 'mdxJsxAttribute',
+            name: 'style',
+            value: 'background-color: yellow;',
+          },
+        ],
+        children: [{ type: 'text', value: slateNode.text }],
+        name: 'highlight',
+        type: 'mdxJsxTextElement',
+      };
+    },
+  },
+  toc: {
+    deserialize: (mdastNode, deco, options) => {
+      return {
+        children: convertChildrenDeserialize(mdastNode.children, deco, options),
+        type: 'toc',
+      };
+    },
+    serialize: (node, options): MdMdxJsxFlowElement => {
+      return {
+        attributes: [],
+        children: convertNodesSerialize(node.children, options) as any,
+        name: 'toc',
+        type: 'mdxJsxFlowElement',
       };
     },
   },

@@ -59,6 +59,8 @@ $$
 f(x)
 $$
 
+<toc />
+
 * [x] Todo item
 
 * Numbered list item
@@ -71,7 +73,7 @@ Mention: User
 
 Date: 2024-01-01
 
-Text with highlight and <u>underline</u> and keyboard formatting
+Text with <highlight style="background-color: yellow;">highlight</highlight> and <u>underline</u> and keyboard formatting
 
 Text with color and background color
 "

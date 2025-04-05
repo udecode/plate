@@ -6846,6 +6846,7 @@ __metadata:
     remark-parse: "npm:^11.0.0"
     remark-stringify: "npm:^11.0.0"
     unified: "npm:^11.0.5"
+    zeed-dom: "npm:0.15.1"
   peerDependencies:
     "@udecode/plate": ">=46.0.10"
     react: ">=18.0.0"
@@ -9753,6 +9754,13 @@ __metadata:
   version: 4.5.0
   resolution: "entities@npm:4.5.0"
   checksum: 10c0/5b039739f7621f5d1ad996715e53d964035f75ad3b9a4d38c6b3804bb226e282ffeae2443624d8fdd9c47d8e926ae9ac009c54671243f0c3294c26af7cc85250
+  languageName: node
+  linkType: hard
+
+"entities@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "entities@npm:5.0.0"
+  checksum: 10c0/f8c23e240e46047dd258546ced25487dffee79be91210f3c68bd03a9e4d61bcdf654036e204f01aebe1321ff461b9027a0486efd76ff1c6a2a654192e973f07c
   languageName: node
   linkType: hard
 
@@ -22235,6 +22243,16 @@ __metadata:
   version: 0.1.0
   resolution: "yocto-queue@npm:0.1.0"
   checksum: 10c0/dceb44c28578b31641e13695d200d34ec4ab3966a5729814d5445b194933c096b7ced71494ce53a0e8820685d1d010df8b2422e5bf2cdea7e469d97ffbea306f
+  languageName: node
+  linkType: hard
+
+"zeed-dom@npm:0.15.1":
+  version: 0.15.1
+  resolution: "zeed-dom@npm:0.15.1"
+  dependencies:
+    css-what: "npm:^6.1.0"
+    entities: "npm:^5.0.0"
+  checksum: 10c0/b650fce77eb43cf519fea9cb86f0f67bb9e12f5b5172439698e72b6571d9c764a95c3d63b9f370ac838620cb500444e04f03be6e6ea4ee1c15f63cc450605ff0
   languageName: node
   linkType: hard
 
