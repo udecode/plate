@@ -8,7 +8,10 @@ import { serializeMd, stripMarkdown } from '@udecode/plate-markdown';
 
 import { GhostText } from '@/registry/default/plate-ui/ghost-text';
 
+import { markdownPlugin } from './markdown-plugin';
+
 export const copilotPlugins = [
+  markdownPlugin,
   CopilotPlugin.configure(({ api }) => ({
     options: {
       completeOptions: {
