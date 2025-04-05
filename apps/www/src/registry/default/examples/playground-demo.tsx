@@ -122,67 +122,67 @@ const usePlaygroundValue = (): Value => {
     // New Features
     if (enabled.comment) value.push(...values.comments);
 
-    // TOC
-    if (enabled.toc) value.push(...values.toc);
+    // // TOC
+    // if (enabled.toc) value.push(...values.toc);
 
-    // AI
-    value.push({ children: [{ text: 'AI' }], type: 'h1' });
+    // // AI
+    // value.push({ children: [{ text: 'AI' }], type: 'h1' });
 
-    if (enabled.ai) value.push(...values.ai);
-    if (enabled.copilot) value.push(...values.copilot);
+    // if (enabled.ai) value.push(...values.ai);
+    // if (enabled.copilot) value.push(...values.copilot);
 
-    // Standard Markdown nodes
-    value.push(
-      { children: [{ text: 'Nodes' }], type: 'h1' },
-      ...values.basicElements,
-      ...values.basicMarks
-    );
+    // // Standard Markdown nodes
+    // value.push(
+    //   { children: [{ text: 'Nodes' }], type: 'h1' },
+    //   ...values.basicElements,
+    //   ...values.basicMarks
+    // );
 
-    if (enabled.list) value.push(...values.list);
-    if (enabled.action_item) value.push(...values.todoList);
-    if (enabled.a) value.push(...values.link);
-    if (enabled.hr) value.push(...values.horizontalRule);
-    if (enabled.table) value.push(...values.table);
-    if (enabled.img || enabled.media_embed || enabled.media_placeholder)
-      value.push(...values.media);
-    if (enabled.column) value.push(...values.column);
-    if (enabled.mention) value.push(...values.mention);
-    if (enabled.date) value.push(...values.date);
-    if (enabled.equation) value.push(...values.equation);
-    if (enabled.emoji) value.push(...values.emoji);
-    if (enabled.color || enabled.backgroundColor) value.push(...values.font);
-    if (enabled.highlight) value.push(...values.highlight);
-    if (enabled.kbd) value.push(...values.kbd);
-    // if (enabled.comment) value.push(...values.comments);
+    // if (enabled.list) value.push(...values.list);
+    // if (enabled.action_item) value.push(...values.todoList);
+    // if (enabled.a) value.push(...values.link);
+    // if (enabled.hr) value.push(...values.horizontalRule);
+    // if (enabled.table) value.push(...values.table);
+    // if (enabled.img || enabled.media_embed || enabled.media_placeholder)
+    //   value.push(...values.media);
+    // if (enabled.column) value.push(...values.column);
+    // if (enabled.mention) value.push(...values.mention);
+    // if (enabled.date) value.push(...values.date);
+    // if (enabled.equation) value.push(...values.equation);
+    // if (enabled.emoji) value.push(...values.emoji);
+    // if (enabled.color || enabled.backgroundColor) value.push(...values.font);
+    // if (enabled.highlight) value.push(...values.highlight);
+    // if (enabled.kbd) value.push(...values.kbd);
+    // // if (enabled.comment) value.push(...values.comments);
 
-    // Layout and structure
-    value.push({ children: [{ text: 'Layout' }], type: 'h1' });
+    // // Layout and structure
+    // value.push({ children: [{ text: 'Layout' }], type: 'h1' });
 
-    if (enabled.align) value.push(...values.align);
-    if (enabled.lineHeight) value.push(...values.lineHeight);
-    if (enabled.indent) value.push(...values.indent);
-    if (enabled.listStyleType) value.push(...values.indentList);
-    if (enabled.toggle) value.push(...values.toggle);
+    // if (enabled.align) value.push(...values.align);
+    // if (enabled.lineHeight) value.push(...values.lineHeight);
+    // if (enabled.indent) value.push(...values.indent);
+    // if (enabled.listStyleType) value.push(...values.indentList);
+    // if (enabled.toggle) value.push(...values.toggle);
 
-    // Functionality
-    value.push({ children: [{ text: 'Functionality' }], type: 'h1' });
+    // // Functionality
+    // value.push({ children: [{ text: 'Functionality' }], type: 'h1' });
 
-    if (enabled.slash_command) value.push(...values.slashCommand);
-    if (enabled.blockSelection) value.push(...values.blockSelection);
-    if (enabled.blockMenu) value.push(...values.blockMenu);
-    if (enabled.autoformat) value.push(...values.autoformat);
-    if (enabled.softBreak) value.push(...values.softBreak);
-    if (enabled.exitBreak) value.push(...values.exitBreak);
-    if (enabled.cursorOverlay) value.push(...values.cursorOverlay);
-    if (enabled.trailingBlock) value.push(...values.trailingBlock);
+    // if (enabled.slash_command) value.push(...values.slashCommand);
+    // if (enabled.blockSelection) value.push(...values.blockSelection);
+    // if (enabled.blockMenu) value.push(...values.blockMenu);
+    // if (enabled.autoformat) value.push(...values.autoformat);
+    // if (enabled.softBreak) value.push(...values.softBreak);
+    // if (enabled.exitBreak) value.push(...values.exitBreak);
+    // if (enabled.cursorOverlay) value.push(...values.cursorOverlay);
+    // if (enabled.trailingBlock) value.push(...values.trailingBlock);
 
-    // Deserialization
-    value.push({ children: [{ text: 'Deserialization' }], type: 'h1' });
+    // // Deserialization
+    // value.push({ children: [{ text: 'Deserialization' }], type: 'h1' });
 
-    if (enabled.html) value.push(...values.deserializeHtml);
-    if (enabled.markdown) value.push(...values.deserializeMd);
-    if (enabled.docx) value.push(...values.deserializeDocx);
-    if (enabled.csv) value.push(...values.deserializeCsv);
+    // if (enabled.html) value.push(...values.deserializeHtml);
+    // if (enabled.markdown) value.push(...values.deserializeMd);
+    // if (enabled.docx) value.push(...values.deserializeDocx);
+    // if (enabled.csv) value.push(...values.deserializeCsv);
 
     return value;
   }, [values]);
