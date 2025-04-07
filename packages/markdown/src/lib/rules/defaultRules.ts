@@ -83,11 +83,35 @@ export const defaultRules: TRules = {
       };
     },
     serialize: (node, options) => {
-      return {
-        children: convertNodesSerialize(
-          node.children,
+      // create a paragraph for each \n node
+      const paragraphs = [
+        {
+          children: [] as any[],
+          type: 'paragraph',
+        },
+      ];
+
+      for (const child of node.children) {
+        if (child.text === '\n') {
+          paragraphs.push({
+            children: [],
+            type: 'paragraph',
+          });
+        } else {
+          paragraphs.at(-1)!.children.push(child);
+        }
+      }
+
+      // convert each node of each paragraph
+      for (const paragraph of paragraphs) {
+        paragraph.children = convertNodesSerialize(
+          paragraph.children,
           options
-        ) as MdBlockquote['children'],
+        ) as MdBlockquote['children'];
+      }
+
+      return {
+        children: paragraphs,
         type: 'blockquote',
       };
     },
@@ -96,6 +120,13 @@ export const defaultRules: TRules = {
     mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
+    },
+  },
+  break: {
+    deserialize: (mdastNode, deco) => {
+      return {
+        text: '\n',
+      };
     },
   },
   code: {
