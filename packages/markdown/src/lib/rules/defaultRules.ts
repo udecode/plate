@@ -140,6 +140,7 @@ export const defaultRules: TRules = {
     },
   },
   del: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertChildrenDeserialize(
         mdastNode.children,
@@ -147,7 +148,7 @@ export const defaultRules: TRules = {
         options
       ) as any;
     },
-    // no serialize because it's mdx <del /> only 
+    // no serialize because it's mdx <del /> only
   },
   equation: {
     deserialize: (mdastNode, deco, options) => {
