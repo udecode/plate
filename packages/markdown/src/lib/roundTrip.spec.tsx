@@ -24,6 +24,7 @@ describe('roundTrip', () => {
             combination
           </htext>{' '}
           of these styles for a visually striking effect.
+          <htext strikethrough>del</htext>
         </hp>
       </fragment>
     );

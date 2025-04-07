@@ -71,7 +71,6 @@ import {
 } from '@/registry/default/plate-ui/table-cell-element';
 import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
-
 const initialMarkdown = `# Markdown syntax guide
 
 ## Headers
