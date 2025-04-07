@@ -230,4 +230,12 @@ describe('deserializeMdIndentList - comprehensive coverage', () => {
 
     expect(deserializeMd(editor, input)).toMatchSnapshot();
   });
+
+  it('should deserialize a todo list', () => {
+    const input = `
+    - [ ] todo list
+    - [x] todo list
+    `;
+    expect(deserializeMd(editor, input)).toMatchSnapshot();
+  });
 });

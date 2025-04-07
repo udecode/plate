@@ -1,5 +1,7 @@
 import type { TText } from '@udecode/plate';
 
+import isBoolean from 'lodash/fp/isBoolean.js';
+
 import type {
   TIndentListElement,
   TStandardListElement,
@@ -134,6 +136,23 @@ export const defaultRules: TRules = {
       return {
         type: 'text',
         value: date ?? '',
+      };
+    },
+  },
+  del: {
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        { strikethrough: true, ...deco },
+        options
+      ) as any;
+    },
+    serialize(slateNode, options): MdMdxJsxTextElement {
+      return {
+        attributes: [],
+        children: [{ type: 'text', value: slateNode.text }],
+        name: 'del',
+        type: 'mdxJsxTextElement',
       };
     },
   },
@@ -322,10 +341,14 @@ export const defaultRules: TRules = {
       const parseListItems = (listNode: MdList, indent = 1, startIndex = 1) => {
         const items: any[] = [];
         const isOrdered = !!listNode.ordered;
-        const listStyleType = isOrdered ? 'decimal' : 'disc';
+        let listStyleType = isOrdered ? 'decimal' : 'disc';
 
         listNode.children?.forEach((listItem, index) => {
           if (listItem.type !== 'listItem') return;
+
+          const isTodoList = isBoolean(listItem.checked);
+
+          if (isTodoList) listStyleType = 'todo';
 
           // Handle the main content of the list item
           const [paragraph, ...subLists] = listItem.children || [];
@@ -348,6 +371,9 @@ export const defaultRules: TRules = {
 
             // Only add listStyleType and listStart for appropriate cases
             itemContent.listStyleType = listStyleType;
+            if (isTodoList) {
+              itemContent.checked = listItem.checked!;
+            }
             if (isOrdered) {
               itemContent.listStart = startIndex + index;
             }
