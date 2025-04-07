@@ -98,7 +98,7 @@ export function APIItem({
                 </div>
               </a>
             )}
-            <span className="font-mono leading-none font-semibold group-hover:underline">
+            <span className="font-mono text-sm leading-none font-semibold group-hover:underline">
               {name}
             </span>
             {required && (

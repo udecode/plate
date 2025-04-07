@@ -24,9 +24,10 @@ import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { deserializeMd, MarkdownPlugin } from '@udecode/plate-markdown';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { InlineEquationPlugin } from '@udecode/plate-math/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import {
   TableCellHeaderPlugin,
   TableCellPlugin,
@@ -42,6 +43,9 @@ import {
 } from '@udecode/plate/react';
 import { cloneDeep } from 'lodash';
 import remarkEmoji from 'remark-emoji';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import remarkMdx from 'remark-mdx';
 
 import { autoformatPlugin } from '@/registry/default/components/editor/plugins/autoformat-plugin';
 import { basicNodesPlugins } from '@/registry/default/components/editor/plugins/basic-nodes-plugins';
@@ -198,6 +202,7 @@ export default function MarkdownDemo() {
       },
       plugins: [
         ...basicNodesPlugins,
+        NodeIdPlugin,
         HorizontalRulePlugin,
         linkPlugin,
         tablePlugin,
@@ -208,11 +213,15 @@ export default function MarkdownDemo() {
         ImagePlugin,
         ...indentListPlugins,
         autoformatPlugin,
-        MarkdownPlugin,
+        MarkdownPlugin.configure({
+          options: {
+            remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+          },
+        }),
       ],
       value: (editor) =>
-        deserializeMd(editor, initialMarkdown, {
-          remarkPlugins: [remarkEmoji as any],
+        editor.getApi(MarkdownPlugin).markdown.deserialize(initialMarkdown, {
+          remarkPlugins: [remarkMath, remarkGfm, remarkEmoji as any],
         }),
     },
     []
@@ -221,7 +230,7 @@ export default function MarkdownDemo() {
   useResetEditorOnChange({ editor, value: value }, [value]);
 
   return (
-    <div className="grid grid-cols-2 overflow-y-auto">
+    <div className="grid h-full grid-cols-2 overflow-y-auto">
       <Plate
         onValueChange={() => {
           setValue(
@@ -233,13 +242,16 @@ export default function MarkdownDemo() {
         editor={markdownEditor}
       >
         <EditorContainer>
-          <Editor variant="none" className="p-2 font-mono text-sm" />
+          <Editor
+            variant="none"
+            className="bg-muted/50 p-2 font-mono text-sm"
+          />
         </EditorContainer>
       </Plate>
 
       <Plate editor={editor}>
-        <EditorContainer className="bg-muted/50">
-          <Editor variant="none" className="p-2" />
+        <EditorContainer>
+          <Editor variant="none" className="px-4 py-2" />
         </EditorContainer>
       </Plate>
     </div>
@@ -252,14 +264,8 @@ function useResetEditorOnChange(
 ) {
   React.useEffect(() => {
     if (value.length > 0) {
-      editor.tf.replaceNodes(cloneDeep(value), {
-        at: [],
-        children: true,
-      });
-
-      editor.history.undos = [];
-      editor.history.redos = [];
-      editor.operations = [];
+      editor.tf.reset();
+      editor.tf.setValue(cloneDeep(value));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps]);
