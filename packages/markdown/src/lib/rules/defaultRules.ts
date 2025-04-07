@@ -147,14 +147,7 @@ export const defaultRules: TRules = {
         options
       ) as any;
     },
-    serialize(slateNode, options): MdMdxJsxTextElement {
-      return {
-        attributes: [],
-        children: [{ type: 'text', value: slateNode.text }],
-        name: 'del',
-        type: 'mdxJsxTextElement',
-      };
-    },
+    // no serialize because it's mdx <del /> only 
   },
   equation: {
     deserialize: (mdastNode, deco, options) => {
