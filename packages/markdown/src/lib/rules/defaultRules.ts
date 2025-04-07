@@ -1,5 +1,7 @@
 import type { TText } from '@udecode/plate';
 
+import isBoolean from 'lodash/fp/isBoolean.js';
+
 import type {
   TIndentListElement,
   TStandardListElement,
@@ -136,6 +138,17 @@ export const defaultRules: TRules = {
         value: date ?? '',
       };
     },
+  },
+  del: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        { strikethrough: true, ...deco },
+        options
+      ) as any;
+    },
+    // no serialize because it's mdx <del /> only
   },
   equation: {
     deserialize: (mdastNode, deco, options) => {
@@ -322,10 +335,14 @@ export const defaultRules: TRules = {
       const parseListItems = (listNode: MdList, indent = 1, startIndex = 1) => {
         const items: any[] = [];
         const isOrdered = !!listNode.ordered;
-        const listStyleType = isOrdered ? 'decimal' : 'disc';
+        let listStyleType = isOrdered ? 'decimal' : 'disc';
 
         listNode.children?.forEach((listItem, index) => {
           if (listItem.type !== 'listItem') return;
+
+          const isTodoList = isBoolean(listItem.checked);
+
+          if (isTodoList) listStyleType = 'todo';
 
           // Handle the main content of the list item
           const [paragraph, ...subLists] = listItem.children || [];
@@ -348,6 +365,9 @@ export const defaultRules: TRules = {
 
             // Only add listStyleType and listStart for appropriate cases
             itemContent.listStyleType = listStyleType;
+            if (isTodoList) {
+              itemContent.checked = listItem.checked!;
+            }
             if (isOrdered) {
               itemContent.listStart = startIndex + index;
             }

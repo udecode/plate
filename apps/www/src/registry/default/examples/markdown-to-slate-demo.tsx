@@ -42,6 +42,9 @@ import {
 } from '@udecode/plate/react';
 import { cloneDeep } from 'lodash';
 import remarkEmoji from 'remark-emoji';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import remarkMdx from 'remark-mdx';
 
 import { autoformatPlugin } from '@/registry/default/components/editor/plugins/autoformat-plugin';
 import { basicNodesPlugins } from '@/registry/default/components/editor/plugins/basic-nodes-plugins';
@@ -67,7 +70,6 @@ import {
 } from '@/registry/default/plate-ui/table-cell-element';
 import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
-
 const initialMarkdown = `# Markdown syntax guide
 
 ## Headers
@@ -212,7 +214,7 @@ export default function MarkdownDemo() {
       ],
       value: (editor) =>
         deserializeMd(editor, initialMarkdown, {
-          remarkPlugins: [remarkEmoji as any],
+          remarkPlugins: [remarkEmoji as any, remarkGfm, remarkMdx, remarkMath],
         }),
     },
     []
