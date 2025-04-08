@@ -5,7 +5,6 @@ import type {
   TStandardListElement,
 } from '../internal/types';
 import type {
-  MdBlockquote,
   MdHeading,
   MdImage,
   MdLink,
@@ -52,8 +51,18 @@ export const defaultRules: TRules = {
     deserialize: (mdastNode, deco, options) => {
       const children =
         mdastNode.children.length > 0
-          ? mdastNode.children.flatMap((paragraph) => {
+          ? mdastNode.children.flatMap((paragraph, index, children) => {
               if (paragraph.type === 'paragraph') {
+                if (children.length > 1 && children.length - 1 !== index) {
+                  // add a line break between the paragraphs
+                  const paragraphChildren = convertChildrenDeserialize(
+                    paragraph.children,
+                    deco,
+                    options
+                  );
+                  paragraphChildren.push({ text: '\n' }, { text: '\n' });
+                  return paragraphChildren;
+                }
                 return convertChildrenDeserialize(
                   paragraph.children,
                   deco,
@@ -84,44 +93,32 @@ export const defaultRules: TRules = {
     },
     serialize: (node, options) => {
       // create a paragraph for each \n node
-			const paragraphs = [
-				{
-					children: [] as any,
-					type: "paragraph",
-				},
-			];
-    
+      const nodes = [] as any;
+
       for (const child of node.children) {
-				if (child.text === "\n") {
-					paragraphs.push({
-            children: [],
-						type: "paragraph",
-					});
-				} else {
-					paragraphs.at(-1)!.children.push(child);
-				}
-			}
+        if (child.text === '\n') {
+          nodes.push({
+            type: 'break',
+          });
+        } else {
+          nodes.push(child);
+        }
+      }
 
-      const mdastParagrahs: {
-        children: MdParagraph["children"],
-        type: "paragraph",
-      }[] = []
-
-			// convert each node of each paragraph
-			for (const paragraph of paragraphs) {
-        mdastParagrahs.push({
-          children: convertNodesSerialize(
-            paragraph.children,
-            options
-          ) as MdParagraph["children"],
-          type: 'paragraph'
-        })
-			}
+      const paragraphChildren = convertNodesSerialize(
+        nodes,
+        options
+      ) as MdParagraph['children'];
 
       return {
-				children: mdastParagrahs,
-				type: "blockquote",
-			};
+        children: [
+          {
+            children: paragraphChildren,
+            type: 'paragraph',
+          },
+        ],
+        type: 'blockquote',
+      };
     },
   },
   bold: {
@@ -133,7 +130,12 @@ export const defaultRules: TRules = {
   break: {
     deserialize: (mdastNode, deco) => {
       return {
-        text: "\n",
+        text: '\n',
+      };
+    },
+    serialize: () => {
+      return {
+        type: 'break',
       };
     },
   },

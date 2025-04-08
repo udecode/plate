@@ -116,5 +116,42 @@ describe('serializeMd', () => {
         serializeMd(editor as any, { value: slateNodes })
       ).toMatchSnapshot();
     });
+
+    it('should serialize a value within a block qoute as a single line', () => {
+      const slateNodes = [
+        {
+          children: [
+            { text: 'Block quote' },
+            { text: ' with a new line ' },
+            { bold: true, code: true, italic: true, text: ' Inline code' },
+          ],
+          type: 'blockquote',
+        },
+      ];
+
+      expect(
+        serializeMd(editor as any, { value: slateNodes })
+      ).toMatchSnapshot();
+    });
+
+    it(
+      String.raw`should serialize a \n within a block qoute as new paragraph`,
+      () => {
+        const slateNodes = [
+          {
+            children: [
+              { text: 'Block quote' },
+              { text: '\n' },
+              { text: 'with a new line' },
+            ],
+            type: 'blockquote',
+          },
+        ];
+
+        expect(
+          serializeMd(editor as any, { value: slateNodes })
+        ).toMatchSnapshot();
+      }
+    );
   });
 });
