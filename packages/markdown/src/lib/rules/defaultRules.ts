@@ -29,6 +29,7 @@ import {
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
+import { MENTION_RULE } from './mention';
 
 export const defaultRules: TRules = {
   a: {
@@ -487,14 +488,7 @@ export const defaultRules: TRules = {
       };
     },
   },
-  mention: {
-    serialize: ({ value }) => {
-      return {
-        type: 'text',
-        value,
-      };
-    },
-  },
+  mention: MENTION_RULE!,
   p: {
     deserialize: (node, deco, options) => {
       const isKeepLineBreak = options.splitLineBreaks;
