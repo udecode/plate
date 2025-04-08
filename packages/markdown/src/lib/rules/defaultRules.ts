@@ -688,7 +688,7 @@ export const defaultRules: TRules = {
     deserialize: (mdastNode, deco) => {
       return {
         ...deco,
-        text: mdastNode.value,
+        text: mdastNode.value.replace(/^\n/, ""),
       };
     },
   },
