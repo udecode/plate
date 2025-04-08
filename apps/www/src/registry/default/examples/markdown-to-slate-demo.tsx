@@ -25,6 +25,7 @@ import { LinkPlugin } from '@udecode/plate-link/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { InlineEquationPlugin } from '@udecode/plate-math/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
+import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import {
   TableCellHeaderPlugin,
@@ -68,6 +69,8 @@ import {
 } from '@/registry/default/plate-ui/table-cell-element';
 import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
+
+import { MentionElement } from '../plate-ui/mention-element';
 
 const initialMarkdown = `# Markdown syntax guide
 
@@ -139,7 +142,7 @@ This website is using \`plate\`.
 
 - [x] Completed task
 - [ ] Incomplete task
-- [ ] @mentions, [links](https://platejs.org), **formatting**, and <del>tags</del> supported
+- [ ] @mentions , [links](https://platejs.org), **formatting**, and <del>tags</del> supported
 - [ ] list syntax required (any unordered or ordered list supported)
 
 ### Strikethrough
@@ -186,6 +189,7 @@ export default function MarkdownDemo() {
           [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
           [KbdPlugin.key]: KbdLeaf,
           [LinkPlugin.key]: LinkElement,
+          [MentionPlugin.key]: MentionElement,
           [ParagraphPlugin.key]: ParagraphElement,
           [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
           [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
@@ -214,6 +218,9 @@ export default function MarkdownDemo() {
           options: {
             remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
           },
+        }),
+        MentionPlugin.configure({
+          options: { triggerPreviousCharPattern: /^$|^[\s"']$/ },
         }),
       ],
       value: (editor) =>
