@@ -1,5 +1,11 @@
 # @udecode/plate-markdown
 
+## 47.0.4
+
+### Patch Changes
+
+- [#4208](https://github.com/udecode/plate/pull/4208) by [@felixfeng33](https://github.com/felixfeng33) – Add missing options to `deserializeInlineMd`
+
 ## 47.0.3
 
 ### Patch Changes
