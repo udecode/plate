@@ -4,6 +4,7 @@ import isBoolean from 'lodash/fp/isBoolean.js';
 
 import type {
   TIndentListElement,
+  TMentionElement,
   TStandardListElement,
 } from '../internal/types';
 import type {
@@ -20,6 +21,7 @@ import type {
   MdTableCell,
   MdTableRow,
 } from '../mdast';
+import type { MentionNode } from '../plugins/remarkMention';
 import type { TRules } from './types';
 
 import {
@@ -488,12 +490,15 @@ export const defaultRules: TRules = {
     },
   },
   mention: {
-    serialize: ({ value }) => {
-      return {
-        type: 'text',
-        value,
-      };
-    },
+    deserialize: (node: MentionNode): TMentionElement => ({
+      children: [{ text: '' }],
+      type: 'mention',
+      value: node.username,
+    }),
+    serialize: (node: TMentionElement) => ({
+      type: 'text',
+      value: `@${node.value.replaceAll(' ', '_')}`,
+    }),
   },
   p: {
     deserialize: (node, deco, options) => {

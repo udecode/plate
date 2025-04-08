@@ -8,6 +8,7 @@ import { unified } from 'unified';
 import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
 import type { TRules } from '../rules';
 
+import { remarkMention } from '../plugins/remarkMention';
 import { mdastToSlate } from './mdastToSlate';
 import { type ParseMarkdownBlocksOptions, parseMarkdownBlocks } from './utils';
 import { getMergedOptionsDeserialize } from './utils/getMergedOptionsDeserialize';
@@ -39,6 +40,7 @@ export const deserializeMd = (
   const toSlateProcessor = unified()
     .use(remarkParse)
     .use(mergedOptions.remarkPlugins ?? [])
+    .use(remarkMention)
     .use(remarkToSlate, mergedOptions);
 
   if (options?.memoize) {
