@@ -54,3 +54,30 @@ exports[`deserializeMdIndentList - comprehensive coverage should deserialize a e
   },
 ]
 `;
+
+exports[`deserializeMdIndentList - comprehensive coverage should deserialize a todo list 1`] = `
+[
+  {
+    "checked": false,
+    "children": [
+      {
+        "text": "todo list",
+      },
+    ],
+    "indent": 1,
+    "listStyleType": "todo",
+    "type": "p",
+  },
+  {
+    "checked": true,
+    "children": [
+      {
+        "text": "todo list",
+      },
+    ],
+    "indent": 1,
+    "listStyleType": "todo",
+    "type": "p",
+  },
+]
+`;

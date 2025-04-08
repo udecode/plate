@@ -32,7 +32,14 @@ export const getTableCellBorders = (
   }
 ): BorderStylesDefault => {
   const cellPath = editor.api.findPath(element)!;
-  const [rowNode, rowPath] = editor.api.parent<TTableRowElement>(cellPath)!;
+  const [rowNode, rowPath] =
+    editor.api.parent<TTableRowElement>(cellPath) ?? [];
+  if (!rowNode || !rowPath) {
+    return {
+      bottom: defaultBorder,
+      right: defaultBorder,
+    };
+  }
   const [tableNode] = editor.api.parent<TTableElement>(rowPath)!;
 
   const { col } = cellIndices ?? getCellIndices(editor, element);

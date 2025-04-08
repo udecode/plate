@@ -1,5 +1,17 @@
 # @udecode/plate-markdown
 
+## 47.0.3
+
+### Patch Changes
+
+- [#4204](https://github.com/udecode/plate/pull/4204) by [@felixfeng33](https://github.com/felixfeng33) – Add support for deserializing @username strings into Plate mention nodes.
+
+## 47.0.1
+
+### Patch Changes
+
+- [#4201](https://github.com/udecode/plate/pull/4201) by [@felixfeng33](https://github.com/felixfeng33) – Support for GitHub Flavored Markdown del, fix task list during deserialization
+
 ## 47.0.0
 
 ### Major Changes
