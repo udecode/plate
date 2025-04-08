@@ -240,7 +240,7 @@ export const Pre = ({
     <StyleWrapper styleName={__style__}>
       <pre
         className={cn(
-          'mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 dark:bg-zinc-900 *:[code]:bg-inherit',
+          'mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 text-white dark:bg-zinc-900 *:[code]:bg-inherit',
           className
         )}
         {...props}

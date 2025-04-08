@@ -9,7 +9,7 @@ export function Code({
   return (
     <code
       className={cn(
-        'relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-[calc(inherit-2px)]',
+        'relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-[max(87.5%,.875rem)]',
         className
       )}
       {...props}

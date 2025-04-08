@@ -1,7 +1,10 @@
 ---
 title: Markdown
+description: Markdown ↔ Plate
 toc: true
 ---
+
+<ComponentPreview name="markdown-to-slate-demo" />
 
 <ComponentPreview name="markdown-demo" />
 
@@ -77,24 +80,31 @@ const editorWithoutPaste = createPlateEditor({
 
 If you don't use the `MarkdownPlugin`, you can still use `deserializeMd` and `serializeMd` without built-in default rules and Markdown paste handling.
 
-### Markdown to Slate (Deserialization)
+### Markdown to Plate (Deserialization)
 
-Use `editor.api.markdown.deserialize` to convert a Markdown string into a Slate value (an array of nodes).
+Use `editor.api.markdown.deserialize` to convert a Markdown string into a Slate value (an array of nodes). This is often used to set the initial content of the editor.
 
 ```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+
 const markdownString = '# Hello, *Plate*!';
 
-// Deserialize the Markdown string
-// Uses rules from MarkdownPlugin config.
-const slateValue = editor.api.markdown.deserialize(markdownString);
-
-// You can now use this value, e.g., to set the editor content:
-// editor.tf.setValue(slateValue);
+const editor = createPlateEditor({
+  plugins: [
+    // ... other plugins needed to render the content
+    MarkdownPlugin,
+  ],
+  // Use deserialize in the value factory for initial content
+  value: (editor) => editor.getApi(MarkdownPlugin).markdown.deserialize(markdownString),
+});
 ```
 
-<ComponentPreview name="markdown-to-slate-demo" />
+<Callout>
+  **Initial Value**: You can directly use `editor.getApi(MarkdownPlugin).markdown.deserialize` when defining the initial `value` for `createPlateEditor` / `usePlateEditor`. Ensure all necessary Plate plugins to render the resulting Slate nodes are included in the `plugins` array.
+</Callout>
 
-### Slate to Markdown (Serialization)
+### Plate to Markdown (Serialization)
 
 Use `editor.api.markdown.serialize` to convert the current editor's Slate value (or a specific array of nodes) into a Markdown string.
 
@@ -104,7 +114,7 @@ Use `editor.api.markdown.serialize` to convert the current editor's Slate value 
 // Assuming `editor` has content
 
 // Serialize the current editor content to a Markdown string
-// Uses remarkPlugins/rules from MarkdownPlugin config if present, else defaults.
+// Uses rules from MarkdownPlugin config.
 const markdownOutput = editor.api.markdown.serialize();
 
 console.log(markdownOutput);
@@ -407,7 +417,7 @@ This example shows two approaches: customizing the *conversion* using `rules` (a
 
 *   `@udecode/plate-markdown` converts Markdown fenced code blocks (\`\`\`js ... \`\`\`) into Slate `code_block` elements containing `code_line` children.
 *   The Plate `CodeBlockElement` component (often from `@udecode/plate-code-block/react`) is responsible for rendering this structure.
-*   Syntax highlighting is typically applied within `CodeBlockElement` using a library like `lowlight` (via `CodeBlockPlugin`), often decorating the text within `code_line` nodes with `code_syntax` leaves.
+*   Syntax highlighting is typically applied within `CodeBlockElement` using a library like `lowlight` (via `CodeBlockPlugin`). See the [Basic Elements > Code Block](/docs/basic-elements#codeblockplugin) documentation for details on configuring syntax highlighting with `lowlight` and customizing the code block components.
 
 **Approach 1: Customizing Rendering Component (Recommended for UI changes)**
 
@@ -438,6 +448,8 @@ const editor = createPlateEditor({
 // using react-syntax-highlighter or another library, consuming the props
 // provided by PlateElement (like element.lang and element.children).
 ```
+
+See the [Basic Elements > Code Block](/docs/basic-elements#codeblockplugin) documentation for complete examples of code block components and syntax highlighting configuration.
 
 **Approach 2: Customizing Conversion Rule (Advanced - Changing Slate Structure)**
 
@@ -520,7 +532,7 @@ Inline math: $E=mc^2$
 
 Block math:
 $$
-\int_a^b f(x) dx = F(b) - F(a)
+\\int_a^b f(x) dx = F(b) - F(a)
 $$
 `;
 
@@ -562,41 +574,50 @@ Enable additional syntax support (like GFM) by adding the corresponding remark p
 
 ## Architecture
 
-`@udecode/plate-markdown` acts as a bridge between Markdown strings and the Slate editor's internal value format (`Descendant[]`). It uses the unified/remark ecosystem for robust Markdown processing.
+`@udecode/plate-markdown` acts as a bridge between Markdown strings and Plate's editor value format, using the unified/remark ecosystem for robust Markdown processing.
 
-**Deserialization (Markdown String → Slate Value):**
-
-```mermaid
-graph LR
-    A[Markdown String] --> B(remark-parse);
-    B --> C{mdast};
-    C --> D[remark Plugins];
-    D --> E{mdast};
-    E --> F[Plate mdast-to-slate converter];
-    F --> G[Apply `rules.deserialize`];
-    G --> H(Slate Value / Descendant[]);
+```
+                                             @udecode/plate-markdown
+          +--------------------------------------------------------------------------------------------+
+          |                                                                                            |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |  |           |        |                |        |               |      |           |       |
+ markdown-+->+ remark    +-mdast->+ remark plugins +-mdast->+ mdast-to-slate+----->+   nodes   +-plate-+->react elements 
+          |  |           |        |                |        |               |      |           |       |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |       ^                                                                      |             |
+          |       |                                                                      v             |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |  |           |        |                |        |               |      |           |       |
+          |  | stringify |<-mdast-+ remark plugins |<-mdast-+ slate-to-mdast+<-----+ serialize |       |
+          |  |           |        |                |        |               |      |           |       |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |                                                                                            |
+          +--------------------------------------------------------------------------------------------+
 ```
 
-1.  **Parse:** The input Markdown string is parsed into a Markdown Abstract Syntax Tree ([mdast][github-mdast]) using `remark-parse`.
-2.  **Transform (Remark):** Registered `remarkPlugins` transform the mdast.
-3.  **Convert:** The (potentially transformed) mdast is converted into a Slate-compatible `Descendant[]` structure using internal logic and the configured `rules` (specifically the `deserialize` functions within the rules).
+The processor goes through these steps:
 
-**Serialization (Slate Value → Markdown String):**
+1. **Parse (Deserialization):**
+   - Markdown string is parsed into mdast (Markdown Abstract Syntax Tree) using `remark-parse`
+   - Registered `remarkPlugins` transform the mdast (e.g., `remark-gfm` for tables)
+   - `mdast-to-slate` converts the mdast into Plate's node structure using configured `rules`
+   - Plate renders the nodes using its component system
 
-```mermaid
-graph LR
-    A[Slate Value / Descendant[]] --> B[Plate slate-to-mdast converter];
-    B --> C[Apply `rules.serialize`];
-    C --> D{mdast};
-    D --> E[remark Plugins];
-    E --> F{mdast};
-    F --> G(remark-stringify);
-    G --> H[Markdown String];
-```
+2. **Stringify (Serialization):**
+   - Plate nodes are converted to mdast using `slate-to-mdast` and configured `rules`
+   - `remarkPlugins` transform the mdast (e.g., formatting)
+   - `remark-stringify` converts the mdast back to a Markdown string
 
-1.  **Convert:** The input Slate `Descendant[]` is converted into an [mdast][github-mdast] using internal logic and the configured `rules` (specifically the `serialize` functions within the rules). Custom elements are typically converted to `mdxJsxTextElement` or `mdxJsxFlowElement` nodes if `remark-mdx` is used.
-2.  **Transform (Remark):** Registered `remarkPlugins` transform the mdast.
-3.  **Stringify:** The final mdast is converted back into a Markdown string using [`remark-stringify`][github-remark-stringify] and processors from the `remarkPlugins`.
+Key differences from [`react-markdown`](https://github.com/remarkjs/react-markdown/blob/main/readme.md#architecture):
+- **Direct Node Rendering**: While `react-markdown` uses rehype to convert markdown to HTML then to React, Plate directly renders its nodes using its component system.
+- **Bidirectional**: Plate's markdown processor is bidirectional, supporting both deserialization (markdown → nodes) and serialization (nodes → markdown).
+- **Rich Text Integration**: The nodes are fully integrated with Plate's rich text editing capabilities, not just for display.
+- **Plugin System**: Components are registered through Plate's plugin system rather than passed directly to the markdown processor.
+
+<Callout>
+  **Note**: Unlike `react-markdown`, Plate doesn't use rehype or need HTML as an intermediate step. Plate components directly render the editor's nodes, which are converted to/from markdown using remark.
+</Callout>
 
 ## Migrating from `react-markdown`
 
@@ -620,11 +641,11 @@ Migrating from `react-markdown` to Plate with `@udecode/plate-markdown` involves
 
 | `react-markdown` Prop         | `@udecode/plate-markdown` Equivalent / Concept                         | Notes                                                                                                                                                 |
 | :---------------------------- | :----------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `children` (string)           | Pass string to `editor.api.markdown.deserialize(string)`                 | Input for deserialization.                                                                                                                            |
+| `children` (string)           | Pass string to `editor.api.markdown.deserialize(string)`                 | Input for deserialization. Often used in `createPlateEditor`'s `value` option.                                                                        |
 | `remarkPlugins`               | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] }})`         | Direct mapping. Operates on mdast.                                                                                                                    |
-| `rehypePlugins`               | Usually **not needed**. Use `remarkPlugins` for syntax.                  | Rendering is handled by Plate components. For raw HTML, use `rehype-raw` within `remarkPlugins`.                                                    |
-| `components={{ h1: MyH1 }}` | `createPlateEditor({ override: { components: { h1: MyH1 } } })`          | Overrides the Plate rendering component. See Appendix C.                                                                                              |
-| `components={{ code: ... }}`  | For *rendering*: `override: { components: { code_block: ... } }`. For *conversion*: `rules: { code: { ... } }` | Customize rendering via `override.components`. Customize the Slate structure via `rules`. See Syntax Highlighting example.                             |
+| `rehypePlugins`               | Usually **not needed**. Use `remarkPlugins` for syntax.                  | Rendering is handled by Plate components. For raw HTML, use `rehype-raw` via `remarkPlugins`.                                                    |
+| `components={{ h1: MyH1 }}`   | `createPlateEditor({ override: { components: { h1: MyH1 } } })`          | Overrides Plate rendering component. See Appendix C.                                                                                                  |
+| `components={{ code: MyCode }}` | 1. **Conversion**: `MarkdownPlugin > rules > code`. 2. **Rendering**: `override: { components: { code_block: MyCode } }` | `rules` handles Markdown AST (`code`) to Slate (`code_block`). `override.components` handles Slate (`code_block`) rendering. See Syntax Highlighting example. |
 | `allowedElements`             | `MarkdownPlugin.configure({ options: { allowedNodes: [...] }})`         | Filters nodes during conversion (based on mdast/Slate types).                                                                                           |
 | `disallowedElements`          | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] }})`       | Filters nodes during conversion.                                                                                                                      |
 | `unwrapDisallowed`            | No direct equivalent. Filtering removes nodes.                           | Custom `rules` could potentially implement unwrapping logic during conversion.                                                                      |
@@ -632,9 +653,6 @@ Migrating from `react-markdown` to Plate with `@udecode/plate-markdown` involves
 | `urlTransform`                | Customize via `rules` for `link` (deserialize) or `a` (serialize).       | Handle URL transformations within the conversion rules.                                                                                               |
 | `allowElement`                | `MarkdownPlugin.configure({ options: { allowNode: { ... } } })`          | Provides function-based filtering during conversion.                                                                                                  |
 
-**Conceptual `<PlateMarkdown>` Component:**
-
-A direct drop-in component isn't practical due to the need for Plate's editor context and component rendering system. Instead of creating a complex wrapper, focus on integrating `@udecode/plate-markdown` within your existing Plate setup. Use `deserialize` to load Markdown content and `serialize` to export it.
 
 ## Appendix A: HTML in Markdown
 
@@ -739,57 +757,9 @@ MarkdownPlugin.configure({
 })
 ```
 
-**Inline Elements vs. Marks (Leaves):**
-
-When defining rules:
-*   For **inline elements** (like `inline_equation` which corresponds to mdast `inlineMath`), do **not** use `mark: true`.
-*   For **marks/leaves** (like `bold`, `italic`, `code`, which modify text nodes), use `mark: true` in the rule object.
-
-```tsx
-rules: {
-  // Rule for mdast 'strong' type (bold - Mark/Leaf)
-  strong: {
-    mark: true, // This rule applies formatting to text nodes (leaves)
-    deserialize: (mdastNode, deco, options) => {
-      // Apply bold styling to deserialized children
-      return convertChildrenDeserialize(mdastNode.children, { ...deco, bold: true }, options);
-    },
-  },
-  // Rule for mdast 'inlineMath' type (Inline Element)
-  inlineMath: {
-    // No mark: true here
-    deserialize: (mdastNode, deco, options) => {
-      return {
-        type: 'inline_equation', // Slate element type
-        texExpression: mdastNode.value,
-        children: [{ text: '' }],
-      };
-    },
-  },
-  // Rule for Slate 'bold' mark (Serialization)
-  bold: {
-    mark: true, // This rule handles serialization of a text mark
-    serialize: (textNode, options) => {
-       // Wrap text in mdast 'strong' node
-       return { type: 'strong', children: [{ type: 'text', value: textNode.text }] };
-    }
-  },
-  // Rule for Slate 'inline_equation' element (Serialization)
-  inline_equation: {
-    // No mark: true here
-    serialize: (slateNode, options) => {
-      return {
-        type: 'inlineMath',
-        value: slateNode.texExpression,
-      };
-    }
-  }
-}
-```
-
 **Default Rules Summary:**
 
-Here's a summary of some key default conversions. See `defaultRules.ts` for the complete list and implementation details.
+Here's a summary of some key default conversions. See [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages/markdown/src/lib/rules/defaultRules.ts) for the complete list and implementation details.
 
 | Markdown (mdast)  | Plate Type     | Notes                                                        |
 | :---------------- | :------------- | :----------------------------------------------------------- |
@@ -826,7 +796,7 @@ This is similar in concept to `react-markdown`'s `components` prop, but it opera
 
 Keys in `override.components` typically correspond to the `key` of the Plate plugin responsible for that node type (e.g., `ParagraphPlugin.key`, `HeadingPlugin.keys.h1`, `CodeBlockPlugin.key`) or the default Slate type (`p`, `h1`, `code_block`).
 
-**Example (Similar to `markdown-to-slate-demo.tsx`):**
+**Example:**
 
 ```tsx
 import { createPlateEditor, PlateElement, PlateLeaf, withProps } from '@udecode/plate/react';
@@ -858,14 +828,8 @@ const editor = createPlateEditor({
       [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
 
       // Map Slate mark 'code' to CodeLeaf component
-      // Note: CodeLeaf often applies syntax highlighting styles
+      // Note: CodeLeaf applies syntax highlighting styles
       [CodeBlockPlugin.keys.syntax]: CodeLeaf, // Assuming CodeBlockPlugin defines keys.syntax for the leaf
-
-      // You can also use default types if plugins aren't imported directly
-      // 'p': ParagraphElement,
-      // 'code_block': CodeBlockElement,
-      // 'bold': withProps(PlateLeaf, { as: 'strong' }),
-      // 'code': CodeLeaf,
     },
   },
 });
@@ -876,6 +840,119 @@ const editor = createPlateEditor({
 
 Refer to the [Plugin Components](/docs/plugin-components) documentation for more details on creating and registering components.
 
+## Appendix D: PlateMarkdown Component
+
+While Plate's architecture differs from `react-markdown`, you can create a component that provides a similar API for rendering Markdown content using a self-contained Plate instance:
+
+```tsx
+import React, { useEffect } from 'react';
+import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+// Import necessary Plate plugins for rendering common Markdown features
+import { ParagraphPlugin } from '@udecode/plate-paragraph/react';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { ListPlugin } from '@udecode/plate-list/react';
+import { TablePlugin } from '@udecode/plate-table/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { ImagePlugin } from '@udecode/plate-media/react';
+import {
+  BoldPlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+} from '@udecode/plate-basic-marks/react';
+
+export interface PlateMarkdownProps {
+  /**
+   * Markdown content to render
+   */
+  children: string;
+  
+  /**
+   * Array of remark plugins to transform the markdown
+   */
+  remarkPlugins?: any[];
+  
+  /**
+   * Override components for specific node types
+   * Keys should match Plate plugin keys or default types
+   */
+  components?: Record<string, React.ComponentType<any>>;
+  
+  /**
+   * Additional className for the editor container
+   */
+  className?: string;
+}
+
+export function PlateMarkdown({
+  children,
+  remarkPlugins = [],
+  components = {},
+  className,
+}: PlateMarkdownProps) {
+  const editor = usePlateEditor({
+    // Include plugins for all markdown features you want to support
+    plugins: [
+      ParagraphPlugin,
+      HeadingPlugin,
+      BlockquotePlugin,
+      CodeBlockPlugin,
+      ListPlugin,
+      TablePlugin,
+      LinkPlugin,
+      ImagePlugin,
+      BoldPlugin,
+      ItalicPlugin,
+      StrikethroughPlugin,
+      MarkdownPlugin.configure({
+        options: { remarkPlugins },
+      }),
+    ],
+    // Apply component overrides
+    override: { components },
+  });
+
+  // Update content when markdown changes
+  useEffect(() => {
+    editor.tf.reset();
+    editor.tf.setValue(
+      editor.getApi(MarkdownPlugin).markdown.deserialize(children)
+    );
+  }, [children, editor]);
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent
+        readOnly
+        className={className}
+      />
+    </Plate>
+  );
+}
+
+// Usage Example:
+// const markdown = `# Hello
+//   This is *Markdown* rendered by Plate.
+// `
+//
+// <PlateMarkdown
+//   remarkPlugins={[remarkGfm]}
+//   components={{
+//     h1: MyStyledH1,
+//     code_block: MyCodeBlock,
+//   }}
+//   className="prose dark:prose-invert"
+// >
+//   {markdown}
+// </PlateMarkdown>
+```
+
+<Callout>
+  **Note**: This component provides a read-only view of Markdown content. For editing capabilities, see [Getting Started](/docs/getting-started).
+</Callout>
+
 ## Security
 
 `@udecode/plate-markdown` aims to be safe by default by converting Markdown to a structured Slate format rather than directly rendering HTML. However, security depends on configuration and usage:
@@ -883,18 +960,17 @@ Refer to the [Plugin Components](/docs/plugin-components) documentation for more
 *   **Custom `rules`:** Malformed `deserialize` rules could potentially introduce unsafe data into the Slate state if not handled carefully, although rendering is typically controlled by Plate components.
 *   **`remarkPlugins`:** Plugins added via `remarkPlugins` could modify the content in insecure ways. Vet any third-party plugins.
 *   **Raw HTML:** Explicitly enabling raw HTML processing (e.g., using `rehype-raw`) is inherently risky if the Markdown source is not trusted. Always use sanitization (like [`rehype-sanitize`][github-rehype-sanitize]) in such cases.
-*   **Plugin Responsibility:** Some security aspects depend on the Plate plugins themselves, such as URL validation logic within `LinkPlugin` ([`isUrl`](/docs/link#linkplugin)) or `MediaEmbedPlugin` ([`parseMediaUrl`](/docs/media-embed#parsemediaurl)). Ensure these plugins are configured securely.
+*   **Plugin Responsibility:** Some security aspects depend on the Plate plugins themselves, such as URL validation logic within `LinkPlugin` ([`isUrl`](/docs/link#linkplugin)) or `MediaEmbedPlugin` ([`parseMediaUrl`](/docs/media#parsemediaurl)). Ensure these plugins are configured securely.
 
 **Recommendation:** Treat any Markdown input from untrusted sources with caution. If allowing complex features or raw HTML, implement robust sanitization.
 
 ## Related
 
-*   **[@udecode/plate](https://platejs.org):** The core Plate library.
 *   **[remark][github-remark]:** Markdown processor.
 *   **[unified][github-unified]:** Core processing engine used by remark.
 *   **[MDX][github-mdx]:** Allows using JSX within Markdown (relevant for custom element serialization).
 *   **[react-markdown][github-react-markdown]:** A popular React component for rendering Markdown (different architecture).
-*   **[remark-slate-transformer][github-remark-slate-transformer]:** A key inspiration for this package's approach to converting between remark (mdast) and Slate structures.
+*   **[remark-slate-transformer][github-remark-slate-transformer]:** Credits to [inokawa](https://github.com/inokawa) for the initial work on converting between remark (mdast) and Slate structures.
 
 [commonmark-help]: https://commonmark.org/help/
 [commonmark-spec]: https://spec.commonmark.org/

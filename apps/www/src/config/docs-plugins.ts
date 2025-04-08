@@ -229,7 +229,8 @@ export const pluginsNavItems: SidebarNavItem[] = [
   {
     description: 'From Markdown to Plate – From Plate to Markdown.',
     href: '/docs/markdown',
-    title: 'Markdown',
+    label: 'New',
+    title: 'Serializing Markdown',
   },
   {
     description: 'Restrict the editor to a single block.',
