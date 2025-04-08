@@ -445,6 +445,41 @@ describe('deserializeMd table', () => {
   });
 });
 
+describe('deserializeMd mentions', () => {
+  it('should deserialize mentions within a paragraph', () => {
+    const input = '1 @User';
+
+    const output = (
+      <fragment>
+        <hp>
+          <htext>1 </htext>
+          <hmention value="User">
+            <htext />
+          </hmention>
+        </hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize mentions without other text', () => {
+    const input = '@User';
+
+    const output = (
+      <fragment>
+        <hp>
+          <hmention value="User">
+            <htext />
+          </hmention>
+        </hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+});
+
 describe('deserializeMd options', () => {
   const editor = createSlateEditor({
     plugins: [MarkdownPlugin],

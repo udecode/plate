@@ -4,6 +4,7 @@ import isBoolean from 'lodash/fp/isBoolean.js';
 
 import type {
   TIndentListElement,
+  TMentionElement,
   TStandardListElement,
 } from '../internal/types';
 import type {
@@ -20,6 +21,7 @@ import type {
   MdTableCell,
   MdTableRow,
 } from '../mdast';
+import type { MentionNode } from '../plugins/remarkMention';
 import type { TRules } from './types';
 
 import {
@@ -29,7 +31,6 @@ import {
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
-import { MENTION_RULE } from './mention';
 
 export const defaultRules: TRules = {
   a: {
@@ -488,7 +489,17 @@ export const defaultRules: TRules = {
       };
     },
   },
-  mention: MENTION_RULE!,
+  mention: {
+    deserialize: (node: MentionNode): TMentionElement => ({
+      children: [{ text: '' }],
+      type: 'mention',
+      value: node.username,
+    }),
+    serialize: (node: TMentionElement) => ({
+      type: 'text',
+      value: `@${node.value.replaceAll(' ', '_')}`,
+    }),
+  },
   p: {
     deserialize: (node, deco, options) => {
       const isKeepLineBreak = options.splitLineBreaks;

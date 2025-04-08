@@ -29,32 +29,34 @@ export const remarkMention: Plugin = function () {
       (node: Text, index: number, parent: Parent | undefined) => {
         if (!parent || typeof index !== 'number') return;
 
-        const mentionPattern = /@([^\s]+)/g;
+        const mentionPattern = /(?:^|\s)@([^\s]+)/g;
         const parts: (MentionNode | Text)[] = [];
         let lastIndex = 0;
         let match;
 
         const text = node.value;
         while ((match = mentionPattern.exec(text)) !== null) {
-          // Add text before the mention
-          if (match.index > lastIndex) {
+          const mentionStart = match[0].startsWith(' ')
+            ? match.index + 1
+            : match.index;
+
+          if (mentionStart > lastIndex) {
             parts.push({
               type: 'text',
-              value: text.slice(lastIndex, match.index),
+              value: text.slice(lastIndex, mentionStart),
             });
           }
 
-          // Add the mention node
           parts.push({
-            children: [{ type: 'text', value: match[0] }],
+            children: [{ type: 'text', value: `@${match[1]}` }],
             type: 'mention',
             username: match[1],
           });
 
-          lastIndex = match.index + match[0].length;
+          lastIndex =
+            mentionStart + match[0].length - (match[0].startsWith(' ') ? 1 : 0);
         }
 
-        // Add remaining text after last mention
         if (lastIndex < text.length) {
           parts.push({
             type: 'text',
@@ -62,8 +64,7 @@ export const remarkMention: Plugin = function () {
           });
         }
 
-        // Replace the original node only if we found mentions
-        if (parts.length > 1) {
+        if (parts.length > 0) {
           parent.children.splice(index, 1, ...(parts as RootContent[]));
         }
       }
