@@ -9,7 +9,7 @@ import { stripMarkdownBlocks } from './stripMarkdown';
 export const deserializeInlineMd = (
   editor: PlateEditor,
   text: string,
-  options: DeserializeMdOptions
+  options?: DeserializeMdOptions
 ) => {
   const leadingSpaces = /^\s*/.exec(text)?.[0] || '';
   const trailingSpaces = /\s*$/.exec(text)?.[0] || '';
