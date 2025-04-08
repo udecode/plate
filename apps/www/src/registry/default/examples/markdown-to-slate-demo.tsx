@@ -1,8 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-
-import type { Value } from '@udecode/plate';
+import React from 'react';
 
 import { withProps } from '@udecode/cn';
 import {
@@ -24,9 +22,10 @@ import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { deserializeMd, MarkdownPlugin } from '@udecode/plate-markdown';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { InlineEquationPlugin } from '@udecode/plate-math/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 import {
   TableCellHeaderPlugin,
   TableCellPlugin,
@@ -34,13 +33,11 @@ import {
   TableRowPlugin,
 } from '@udecode/plate-table/react';
 import {
-  type PlateEditor,
   ParagraphPlugin,
   Plate,
   PlateLeaf,
   usePlateEditor,
 } from '@udecode/plate/react';
-import { cloneDeep } from 'lodash';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -52,6 +49,7 @@ import { indentListPlugins } from '@/registry/default/components/editor/plugins/
 import { linkPlugin } from '@/registry/default/components/editor/plugins/link-plugin';
 import { mediaPlugins } from '@/registry/default/components/editor/plugins/media-plugins';
 import { tablePlugin } from '@/registry/default/components/editor/plugins/table-plugin';
+import { useDebounce } from '@/registry/default/hooks/use-debounce';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
 import { CodeLeaf } from '@/registry/default/plate-ui/code-leaf';
@@ -70,6 +68,7 @@ import {
 } from '@/registry/default/plate-ui/table-cell-element';
 import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
+
 const initialMarkdown = `# Markdown syntax guide
 
 ## Headers
@@ -80,11 +79,9 @@ const initialMarkdown = `# Markdown syntax guide
 
 ## Emphasis
 
-*This text will be italic*  
-_This will also be italic_
+*This text will be italic*. _This will also be italic_
 
-**This text will be bold**  
-__This will also be bold__
+**This text will be bold**. __This will also be bold__
 
 _You **can** combine them_
 
@@ -134,7 +131,7 @@ alert(message);
 
 ## Inline code
 
-This web site is using \`plate\`.
+This website is using \`plate\`.
 
 ## GitHub Flavored Markdown
 
@@ -142,7 +139,7 @@ This web site is using \`plate\`.
 
 - [x] Completed task
 - [ ] Incomplete task
-- [x] @mentions, #refs, [links](), **formatting**, and <del>tags</del> supported
+- [ ] @mentions, [links](https://platejs.org), **formatting**, and <del>tags</del> supported
 - [ ] list syntax required (any unordered or ordered list supported)
 
 ### Strikethrough
@@ -160,12 +157,14 @@ Email example@example.com also converts automatically
 `;
 
 export default function MarkdownDemo() {
+  const [markdownValue, setMarkdownValue] = React.useState(initialMarkdown);
+  const debouncedMarkdownValue = useDebounce(markdownValue, 300);
+
   const markdownEditor = usePlateEditor({
-    plugins: [MarkdownPlugin],
-    value: [{ children: [{ text: initialMarkdown }], type: 'p' }],
+    plugins: [],
+    value: [{ children: [{ text: markdownValue }], type: 'p' }],
   });
 
-  const [value, setValue] = useState<Value>([]);
   const editor = usePlateEditor(
     {
       override: {
@@ -200,6 +199,7 @@ export default function MarkdownDemo() {
       },
       plugins: [
         ...basicNodesPlugins,
+        NodeIdPlugin,
         HorizontalRulePlugin,
         linkPlugin,
         tablePlugin,
@@ -210,59 +210,52 @@ export default function MarkdownDemo() {
         ImagePlugin,
         ...indentListPlugins,
         autoformatPlugin,
-        MarkdownPlugin,
+        MarkdownPlugin.configure({
+          options: {
+            remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+          },
+        }),
       ],
       value: (editor) =>
-        deserializeMd(editor, initialMarkdown, {
-          remarkPlugins: [remarkEmoji as any, remarkGfm, remarkMdx, remarkMath],
+        editor.getApi(MarkdownPlugin).markdown.deserialize(initialMarkdown, {
+          remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkEmoji as any],
         }),
     },
     []
   );
 
-  useResetEditorOnChange({ editor, value: value }, [value]);
+  React.useEffect(() => {
+    if (debouncedMarkdownValue !== initialMarkdown) {
+      editor.tf.reset();
+      editor.tf.setValue(
+        editor.api.markdown.deserialize(debouncedMarkdownValue, {
+          remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkEmoji as any],
+        })
+      );
+    }
+  }, [debouncedMarkdownValue, editor]);
 
   return (
-    <div className="grid grid-cols-2 overflow-y-auto">
+    <div className="grid h-full grid-cols-2 overflow-y-auto">
       <Plate
         onValueChange={() => {
-          setValue(
-            editor.api.markdown.deserialize(
-              markdownEditor.api.markdown.serialize()
-            )
-          );
+          setMarkdownValue(markdownEditor.api.string([]));
         }}
         editor={markdownEditor}
       >
         <EditorContainer>
-          <Editor variant="none" className="p-2 font-mono text-sm" />
+          <Editor
+            variant="none"
+            className="bg-muted/50 p-2 font-mono text-sm"
+          />
         </EditorContainer>
       </Plate>
 
       <Plate editor={editor}>
-        <EditorContainer className="bg-muted/50">
-          <Editor variant="none" className="p-2" />
+        <EditorContainer>
+          <Editor variant="none" className="px-4 py-2" />
         </EditorContainer>
       </Plate>
     </div>
   );
-}
-
-function useResetEditorOnChange(
-  { editor, value }: { editor: PlateEditor; value: Value },
-  deps: any[]
-) {
-  React.useEffect(() => {
-    if (value.length > 0) {
-      editor.tf.replaceNodes(cloneDeep(value), {
-        at: [],
-        children: true,
-      });
-
-      editor.history.undos = [];
-      editor.history.redos = [];
-      editor.operations = [];
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps]);
 }

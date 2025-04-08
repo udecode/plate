@@ -1635,7 +1635,7 @@ export const examples: Registry['items'] = [
       { path: 'examples/markdown-to-slate-demo.tsx', type: 'registry:example' },
     ],
     name: 'markdown-to-slate-demo',
-    registryDependencies: [],
+    registryDependencies: ['use-debounce'],
     type: 'registry:example',
   },
   // {

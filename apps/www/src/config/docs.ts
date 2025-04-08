@@ -98,14 +98,18 @@ export const guidesNavItems: SidebarNavItem[] = [
   },
   {
     href: '/docs/plate-static',
-    label: 'New',
     title: 'Plate Static',
   },
   {
-    description: 'HTML <-> Slate',
+    description: 'HTML ↔ Plate',
     href: '/docs/html',
+    title: 'HTML',
+  },
+  {
+    description: 'Markdown ↔ Plate',
+    href: '/docs/markdown',
     label: 'New',
-    title: 'Serializing HTML',
+    title: 'Markdown',
   },
   {
     href: '/docs/typescript',
@@ -125,7 +129,6 @@ export const guidesNavItems: SidebarNavItem[] = [
   },
   {
     href: '/docs/troubleshooting',
-    label: 'New',
     title: 'Troubleshooting',
   },
 ];
