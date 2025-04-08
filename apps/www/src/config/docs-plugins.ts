@@ -227,8 +227,9 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Serializing DOCX',
   },
   {
-    description: 'Markdown <-> Slate',
+    description: 'From Markdown to Plate – From Plate to Markdown.',
     href: '/docs/markdown',
+    label: 'New',
     title: 'Serializing Markdown',
   },
   {

@@ -1,5 +1,11 @@
 # @udecode/plate-markdown
 
+## 47.0.1
+
+### Patch Changes
+
+- [#4201](https://github.com/udecode/plate/pull/4201) by [@felixfeng33](https://github.com/felixfeng33) – Support for GitHub Flavored Markdown del, fix task list during deserialization
+
 ## 47.0.0
 
 ### Major Changes

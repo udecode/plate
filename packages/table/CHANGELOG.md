@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 47.0.2
+
+### Patch Changes
+
+- [#4205](https://github.com/udecode/plate/pull/4205) by [@zbeyens](https://github.com/zbeyens) – Fix unmount
+
 ## 47.0.0
 
 ### Patch Changes

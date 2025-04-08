@@ -94,7 +94,7 @@ export const createAIEditor = () => {
           },
         },
       }),
-      MarkdownPlugin.configure({ options: { indentList: true } }),
+      MarkdownPlugin,
     ],
   });
 
@@ -185,7 +185,7 @@ export const PROMPT_TEMPLATES = {
 
 const plugins = [
   // ...otherPlugins,
-  MarkdownPlugin.configure({ options: { indentList: true } }),
+  MarkdownPlugin,
   AIPlugin,
   AIChatPlugin.configure({
     options: {
