@@ -471,6 +471,7 @@ export const defaultRules: TRules = {
             }
             currentItem = {
               children: [],
+              spread: false,
               type: 'listItem',
             };
 
@@ -484,6 +485,7 @@ export const defaultRules: TRules = {
                 currentItem.children.push({
                   children: serializeListItems(liChild.children),
                   ordered: liChild.type === 'ol',
+                  spread: false,
                   type: 'list',
                 });
               }
@@ -501,6 +503,7 @@ export const defaultRules: TRules = {
       return {
         children: serializeListItems(node.children),
         ordered: isOrdered,
+        spread: false,
         type: 'list',
       };
     },

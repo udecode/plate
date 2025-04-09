@@ -23,7 +23,7 @@ describe('serializeMd list', () => {
       </fragment>
     );
 
-    const expected = '* List item 1\n\n* List item 2\n';
+    const expected = '* List item 1\n* List item 2\n';
 
     expect(serializeMd(editor, { value: input })).toBe(expected);
   });
@@ -42,7 +42,7 @@ describe('serializeMd list', () => {
       </fragment>
     );
 
-    const expected = '1. List item 1\n\n2. List item 2\n';
+    const expected = '1. List item 1\n2. List item 2\n';
 
     expect(serializeMd(editor, { value: input })).toBe(expected);
   });
@@ -63,7 +63,7 @@ describe('serializeMd list', () => {
       </fragment>
     );
 
-    const expected = '* List item 1\n\n  1. List item 1.1\n';
+    const expected = '* List item 1\n  1. List item 1.1\n';
 
     expect(serializeMd(editor, { value: input })).toBe(expected);
   });
@@ -87,7 +87,7 @@ describe('serializeMd list', () => {
     );
 
     const expected =
-      '* Normal text and **bold text**\n\n* *Italic text* and normal text\n';
+      '* Normal text and **bold text**\n* *Italic text* and normal text\n';
 
     expect(serializeMd(editor, { value: input })).toBe(expected);
   });
