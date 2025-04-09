@@ -1,5 +1,13 @@
 # @udecode/plate-markdown
 
+## 47.0.5
+
+### Patch Changes
+
+- [#4200](https://github.com/udecode/plate/pull/4200) by [@martin-lysk](https://github.com/martin-lysk) – fixes blockquote serialization/deserialization, adds break deserialization
+
+- [#4211](https://github.com/udecode/plate/pull/4211) by [@martin-lysk](https://github.com/martin-lysk) – adds explicit spread false to lists to have a less noisy serialization
+
 ## 47.0.4
 
 ### Patch Changes
