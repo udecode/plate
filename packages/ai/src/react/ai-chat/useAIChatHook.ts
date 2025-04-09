@@ -1,4 +1,4 @@
-import { deserializeInlineMd } from '@udecode/plate-markdown';
+import { resetStreamingStore, steamInsertChunk } from '@udecode/plate-markdown';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
@@ -12,36 +12,61 @@ export const useAIChatHooks = () => {
   const mode = usePluginOption({ key: 'aiChat' } as AIChatPluginConfig, 'mode');
 
   useChatChunk({
-    onChunk: ({ isFirst, nodes }) => {
+    onChunk: ({ chunk, isFirst, nodes, text }) => {
+      // if (isFirst) {
+      //   editor.tf.insertNodes(
+      //     [
+      //       {
+      //         children: [{ text: 'anchor' }],
+      //         type: 'p',
+      //       },
+      //       {
+      //         children: [{ text: 'anchor' }],
+      //         type: 'p',
+      //       },
+      //     ],
+      //     {
+      //       at: [0],
+      //       nextBlock: true,
+      //     }
+      //   );
+      // }
+
       if (mode === 'insert' && nodes.length > 0) {
         withAIBatch(
           editor,
           () => {
-            tf.ai.insertNodes(nodes);
+            steamInsertChunk(editor, chunk, {
+              textProps: {
+                ai: true,
+              },
+            });
           },
           { split: isFirst }
         );
       }
     },
     onFinish: ({ content }) => {
-      if (mode !== 'insert') return;
+      // if (mode !== 'insert') return;
 
-      const blockAbove = editor.api.block();
+      // const blockAbove = editor.api.block();
 
-      if (!blockAbove) return;
+      // if (!blockAbove) return;
 
-      editor.undo();
-      editor.history.redos.pop();
+      resetStreamingStore();
 
-      const nodes = deserializeInlineMd(editor, content);
+      // editor.undo();
+      // editor.history.redos.pop();
 
-      withAIBatch(
-        editor,
-        () => {
-          tf.ai.insertNodes(nodes);
-        },
-        { split: true }
-      );
+      // const nodes = deserializeInlineMd(editor, content);
+
+      // withAIBatch(
+      //   editor,
+      //   () => {
+      //     tf.ai.insertNodes(nodes);
+      //   },
+      //   { split: true }
+      // );
     },
   });
 };

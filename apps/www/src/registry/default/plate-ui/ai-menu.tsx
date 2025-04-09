@@ -132,7 +132,7 @@ export function AIMenu() {
               variant="ghost"
               className="rounded-none border-b border-solid border-border [&_svg]:hidden"
               value={input}
-              onKeyDown={(e) => {
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                 if (isHotkey('backspace')(e) && input.length === 0) {
                   e.preventDefault();
                   api.aiChat.hide();

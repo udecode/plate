@@ -9,4 +9,5 @@ export * from './deserializer/index';
 export * from './plugins/index';
 export * from './rules/index';
 export * from './serializer/index';
+export * from './steaming/index';
 export * from './utils/index';
