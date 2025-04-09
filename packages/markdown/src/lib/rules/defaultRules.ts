@@ -8,7 +8,6 @@ import type {
   TStandardListElement,
 } from '../internal/types';
 import type {
-  MdBlockquote,
   MdHeading,
   MdImage,
   MdLink,
@@ -56,8 +55,18 @@ export const defaultRules: TRules = {
     deserialize: (mdastNode, deco, options) => {
       const children =
         mdastNode.children.length > 0
-          ? mdastNode.children.flatMap((paragraph) => {
+          ? mdastNode.children.flatMap((paragraph, index, children) => {
               if (paragraph.type === 'paragraph') {
+                if (children.length > 1 && children.length - 1 !== index) {
+                  // add a line break between the paragraphs
+                  const paragraphChildren = convertChildrenDeserialize(
+                    paragraph.children,
+                    deco,
+                    options
+                  );
+                  paragraphChildren.push({ text: '\n' }, { text: '\n' });
+                  return paragraphChildren;
+                }
                 return convertChildrenDeserialize(
                   paragraph.children,
                   deco,
@@ -87,11 +96,31 @@ export const defaultRules: TRules = {
       };
     },
     serialize: (node, options) => {
+      // create a paragraph for each \n node
+      const nodes = [] as any;
+
+      for (const child of node.children) {
+        if (child.text === '\n') {
+          nodes.push({
+            type: 'break',
+          });
+        } else {
+          nodes.push(child);
+        }
+      }
+
+      const paragraphChildren = convertNodesSerialize(
+        nodes,
+        options
+      ) as MdParagraph['children'];
+
       return {
-        children: convertNodesSerialize(
-          node.children,
-          options
-        ) as MdBlockquote['children'],
+        children: [
+          {
+            children: paragraphChildren,
+            type: 'paragraph',
+          },
+        ],
         type: 'blockquote',
       };
     },
@@ -100,6 +129,18 @@ export const defaultRules: TRules = {
     mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
+    },
+  },
+  break: {
+    deserialize: (mdastNode, deco) => {
+      return {
+        text: '\n',
+      };
+    },
+    serialize: () => {
+      return {
+        type: 'break',
+      };
     },
   },
   code: {
@@ -647,7 +688,7 @@ export const defaultRules: TRules = {
     deserialize: (mdastNode, deco) => {
       return {
         ...deco,
-        text: mdastNode.value,
+        text: mdastNode.value.replace(/^\n/, ''),
       };
     },
   },

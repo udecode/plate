@@ -7,10 +7,21 @@ exports[`serializeMd fixures Combination of bold and italic at the start of a bl
 "
 `;
 
+exports[`serializeMd fixures should serialize a \\n within a block qoute as new paragraph 1`] = `
+"> Block quote\\
+> with a new line
+"
+`;
+
 exports[`serializeMd fixures should serialize a value with inline code 1`] = `
 "***\`Inline code\`***
 
 *\`Inline code\`*
+"
+`;
+
+exports[`serializeMd fixures should serialize a value within a block qoute as a single line 1`] = `
+"> Block quote with a new line ***\` Inline code\`***
 "
 `;
 
