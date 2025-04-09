@@ -444,7 +444,7 @@ export const defaultRules: TRules = {
                 currentItem.children.push({
                   children: serializeListItems(liChild.children),
                   ordered: liChild.type === 'ol',
-                  spread: false, 
+                  spread: false,
                   type: 'list',
                 });
               }
