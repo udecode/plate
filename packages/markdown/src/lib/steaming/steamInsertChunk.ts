@@ -113,63 +113,53 @@ export function steamInsertChunk(
   const blockPath = streamingStore.get('blockPath');
   const blockChunks = streamingStore.get('blockChunks');
 
-  // console.log('🚀 ~ Streaming ~ chunk:', chunk);
-  // console.log('🚀 ~ Streaming ~ blockPath:', blockPath);
-  // console.log('🚀 ~ Streaming ~ blockChunks:', blockChunks);
-
   if (blockPath === null) {
     streamingStore.set('blockChunks', chunk);
     const blocks = deserializeMd(editor, chunk);
 
+    const insertPath = getNextBlockPath(editor);
+    const existingNode = editor.api.node(insertPath);
+
+    // If the insertion point is an empty paragraph, remove it
     if (
-      PathApi.equals(getNextBlockPath(editor), [0]) &&
-      NodeApi.string(editor.api.node([0])![0]).length === 0
+      existingNode && 
+      NodeApi.string(existingNode[0]).length === 0
     ) {
-      editor.tf.removeNodes({ at: getNextBlockPath(editor) });
+      editor.tf.removeNodes({ at: insertPath });
     }
+
     if (blocks.length > 0) {
-      editor.tf.insertNodes(nodesWithProps([blocks[0]], options), {
-        at: getNextBlockPath(editor),
-        nextBlock: true,
+      // Insert all blocks at once to maintain order
+      editor.tf.insertNodes(nodesWithProps(blocks, options), {
+        at: insertPath,
       });
-      streamingStore.set('blockPath', getNextBlockPath(editor));
 
-      if (blocks.length > 1) {
-        const nextBlocks = blocks.slice(1);
+      // Set the block path to the last inserted block
+      const lastBlockPath = [insertPath[0] + blocks.length - 1];
+      const lastBlock = editor.api.node(lastBlockPath)![0];
+      
+      streamingStore.set('blockPath', lastBlockPath);
 
-        editor.tf.insertNodes(nodesWithProps(nextBlocks, options), {
-          at: getNextBlockPath(editor),
-          nextBlock: true,
-        });
+      const serializedBlock = serializeMd(editor, {
+        value: [lastBlock],
+      });
 
-        const blockNode = editor.api.node(getNextBlockPath(editor))!;
+      const blockText = trimEndUtils(serializedBlock, lastBlock.type as string)
+        .replaceAll(/\\([\\`*_{}[\]()#+\-.!~<>])/g, '$1');
 
-        const _blockText = serializeMd(editor, {
-          value: [blockNode[0]],
-        });
+      const nextBlockChunks =
+        lastBlock.type === 'code_block'
+          ? blockText.slice(0, -3)
+          : blockText;
 
-        const blockText = trimEndUtils(_blockText, blockNode[0].type as string) // tests `should correctly handle incomplete marks with newlines`
-          .replaceAll(/\\([\\`*_{}[\]()#+\-.!~<>])/g, '$1');
-
-        const nextBlockChunks =
-          blockNode[0].type === 'code_block'
-            ? blockText.slice(0, -3)
-            : blockText;
-
-        streamingStore.set('blockPath', blockNode[1]);
-
-        streamingStore.set(
-          'blockChunks',
-          nextBlockChunks + getChunkTrimmed(chunk, blockNode[0].type as string)
-        );
-      }
+      streamingStore.set(
+        'blockChunks',
+        nextBlockChunks + getChunkTrimmed(chunk, lastBlock.type as string)
+      );
     }
   } else {
     const tempBlockChunks = blockChunks + chunk;
     const tempBlocks = deserializeMd(editor, tempBlockChunks);
-
-    // console.log('🚀 ~ Streaming ~ tempBlocks:', JSON.stringify(tempBlocks));
-    // console.log('🚀 ~ Streaming ~ tempBlockChunks:', tempBlockChunks);
 
     if (tempBlocks.length === 1) {
       const currentBlock = editor.api.node(blockPath)![0];
@@ -189,6 +179,15 @@ export function steamInsertChunk(
               ? remarkPluginsWithoutMdx
               : undefined,
         });
+
+        // Check if the block still exists at the expected path
+        const blockExists = editor.api.node(blockPath);
+        if (!blockExists) {
+          // If block doesn't exist, treat this as a new insertion
+          streamingStore.set('blockPath', null);
+          streamingStore.set('blockChunks', '');
+          return steamInsertChunk(editor, chunk, options);
+        }
 
         // Deserialize the chunk and add it to the end of the current block
         editor.tf.insertNodes(nodesWithProps(chunkNodes, options), {
@@ -243,6 +242,15 @@ export function steamInsertChunk(
         streamingStore.set('blockChunks', chunk);
       }
     } else {
+      // Check if the block still exists at the expected path
+      const blockExists = editor.api.node(blockPath);
+      if (!blockExists) {
+        // If block doesn't exist, treat this as a new insertion
+        streamingStore.set('blockPath', null);
+        streamingStore.set('blockChunks', '');
+        return steamInsertChunk(editor, chunk, options);
+      }
+
       editor.tf.replaceNodes(nodesWithProps([tempBlocks[0]], options), {
         at: blockPath,
       });
@@ -295,6 +303,17 @@ export const useStreamingPath = () => {
 };
 
 export const getNextBlockPath = (editor: SlateEditor) => {
-  // return PathApi.next(editor.selection?.focus.path.slice(0, 1) ?? [0]);
-  return [Math.max(editor.children.length - 1, 0)];
+  // If there's a selection, use the cursor position
+  if (editor.selection) {
+    return editor.selection.focus.path.slice(0, 1);
+  }
+  // Find the first empty paragraph or the end of the document
+  for (let i = 0; i < editor.children.length; i++) {
+    const node = editor.children[i];
+    if (ElementApi.isElement(node) && node.type === 'p' && NodeApi.string(node).length === 0) {
+      return [i];
+    }
+  }
+  // If no empty paragraph found, append to the end
+  return [editor.children.length];
 };

@@ -573,6 +573,7 @@ describe('steamInsertChunk', () => {
       const input = (
         <editor>
           <hp>
+            <htext />
             <cursor />
           </hp>
           <hp>
@@ -584,7 +585,10 @@ describe('steamInsertChunk', () => {
       const output = (
         <fragment>
           <hp>
-            <htext>chunk1 chunk2</htext>
+            <htext>chunk1chunk2</htext>
+          </hp>
+          <hp>
+            <htext>chunk3</htext>
           </hp>
           <hp>
             <htext>existing paragraph</htext>
@@ -609,7 +613,7 @@ describe('steamInsertChunk', () => {
         value: input.children,
       }) as any;
 
-      const streamChunks = ['chunk1 ', 'chunk2'];
+      const streamChunks = ['chunk1', 'chunk2\n\n', 'chunk3'];
 
       for (const text of streamChunks) {
         steamInsertChunk(editor, text);
