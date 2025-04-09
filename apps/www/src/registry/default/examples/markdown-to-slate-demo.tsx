@@ -246,7 +246,10 @@ export default function MarkdownDemo() {
     <div className="grid h-full grid-cols-2 overflow-y-auto">
       <Plate
         onValueChange={() => {
-          setMarkdownValue(markdownEditor.api.string([]));
+          const value = markdownEditor.children
+            .map((node: any) => markdownEditor.api.string(node))
+            .join('\n');
+          setMarkdownValue(value);
         }}
         editor={markdownEditor}
       >
