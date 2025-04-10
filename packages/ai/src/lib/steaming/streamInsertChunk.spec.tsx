@@ -481,8 +481,6 @@ describe('steamInsertChunk', () => {
 
   describe('list items', () => {
     it('should handle multiple list items with markdown formatting correctly', () => {
-      /** Upstream bug need to fixes deserializeMd */
-
       const streamChunks = ['chunk1\n*   ', '**chunk2**\n\n', 'chunk3'];
 
       const { editor } = createTestEditor();

@@ -25,7 +25,8 @@ export const useAIChatHooks = () => {
         editor.tf.insertNodes(
           {
             anchor: true,
-            children: [{ text: ' ' }],
+            // don't set text to empty string
+            children: [{ text: '\u00A0' }],
             type: 'p',
           },
           {
@@ -51,27 +52,8 @@ export const useAIChatHooks = () => {
       }
     },
     onFinish: ({ content }) => {
-      // if (mode !== 'insert') return;
-
-      // const blockAbove = editor.api.block();
-
-      // if (!blockAbove) return;
-
       editor.setOption(AIChatPlugin, 'streaming', false);
       resetStreamingStore();
-
-      // editor.undo();
-      // editor.history.redos.pop();
-
-      // const nodes = deserializeInlineMd(editor, content);
-
-      // withAIBatch(
-      //   editor,
-      //   () => {
-      //     tf.ai.insertNodes(nodes);
-      //   },
-      //   { split: true }
-      // );
     },
   });
 };

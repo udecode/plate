@@ -27,8 +27,6 @@ export const streamingStore = createZustandStore(
 );
 
 export const resetStreamingStore = () => {
-  console.log('rest');
-
   streamingStore.set('blockChunks', '');
   streamingStore.set('blockPath', null);
 };
@@ -79,6 +77,7 @@ const trimEndUtils = (string: string, blockType: string) => {
   return string.trimEnd();
 };
 
+/** Add custom text props to the nodes */
 const nodesWithProps = (
   nodes: Descendant[],
   options: StreamInsertChunkOptions
@@ -89,7 +88,7 @@ const nodesWithProps = (
     if (ElementApi.isElement(node)) {
       return {
         ...node,
-        ...options.textProps,
+        ...options.elementProps,
         children: nodesWithProps(node.children, options),
       };
     } else {
@@ -103,6 +102,7 @@ const nodesWithProps = (
 };
 
 interface StreamInsertChunkOptions {
+  elementProps?: any;
   textProps?: any;
 }
 

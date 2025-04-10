@@ -42,7 +42,7 @@ export type AIChatPluginConfig = PluginConfig<
      */
     mode: 'chat' | 'insert';
     open: boolean;
-    /** Whether to stream the AI response. */
+    /** Whether the AI response is currently streaming. Cursor mode only. */
     streaming: boolean;
     /**
      * Template function for generating the user prompt. Supports the following
@@ -111,6 +111,8 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       reset: bindFirst(resetAIChat, editor),
       submit: bindFirst(submitAIChat, editor),
       node: (options = {}) => {
+        console.log(JSON.stringify(editor.children),'fj')
+
         const { anchor = false, ...rest } = options;
 
         if (anchor) {
@@ -160,6 +162,8 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       if (lastBatch?.ai) {
         delete lastBatch.ai;
       }
+
+      editor.tf.removeNodes({ at: [], match: (n) => n.anchor });
     },
     show: () => {
       api.aiChat.reset();
