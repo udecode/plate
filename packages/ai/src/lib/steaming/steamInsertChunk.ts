@@ -9,10 +9,12 @@ import {
   NodeApi,
   PathApi,
 } from '@udecode/plate';
-
-import { deserializeInlineMd, deserializeMd } from '../deserializer';
-import { MarkdownPlugin } from '../MarkdownPlugin';
-import { serializeMd } from '../serializer';
+import {
+  deserializeInlineMd,
+  deserializeMd,
+  MarkdownPlugin,
+  serializeMd,
+} from '@udecode/plate-markdown';
 
 export const streamingStore = createZustandStore(
   {

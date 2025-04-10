@@ -1,7 +1,4 @@
-import {
-  resetStreamingStore,
-  steamInsertChunk,
-} from '@udecode/plate-markdown';
+import { PathApi } from '@udecode/plate';
 import {
   type PlateEditor,
   useEditorPlugin,
@@ -10,7 +7,7 @@ import {
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
 
-import { withAIBatch } from '../../lib';
+import { resetStreamingStore, steamInsertChunk, withAIBatch } from '../../lib';
 import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
 import { useChatChunk } from './hooks/useChatChunk';
 
@@ -32,8 +29,7 @@ export const useAIChatHooks = () => {
             type: 'p',
           },
           {
-            at: editor.selection!.focus.path.slice(0, 1),
-            nextBlock: true,
+            at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
           }
         );
 
