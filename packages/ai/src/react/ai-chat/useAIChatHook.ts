@@ -7,7 +7,7 @@ import {
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
 
-import { resetStreamingStore, steamInsertChunk, withAIBatch } from '../../lib';
+import { resetStreamingStore, streamInsertChunk, withAIBatch } from '../../lib';
 import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
 import { useChatChunk } from './hooks/useChatChunk';
 
@@ -40,7 +40,7 @@ export const useAIChatHooks = () => {
         withAIBatch(
           editor,
           () => {
-            steamInsertChunk(editor, chunk, {
+            streamInsertChunk(editor, chunk, {
               textProps: {
                 ai: true,
               },

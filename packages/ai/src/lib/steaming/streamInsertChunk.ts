@@ -81,7 +81,7 @@ const trimEndUtils = (string: string, blockType: string) => {
 
 const nodesWithProps = (
   nodes: Descendant[],
-  options: SteamInsertChunkOptions
+  options: StreamInsertChunkOptions
 ): Descendant[] => {
   if (!options.textProps) return nodes;
 
@@ -102,15 +102,15 @@ const nodesWithProps = (
   });
 };
 
-interface SteamInsertChunkOptions {
+interface StreamInsertChunkOptions {
   textProps?: any;
 }
 
 /** @experimental */
-export function steamInsertChunk(
+export function streamInsertChunk(
   editor: PlateEditor,
   chunk: string,
-  options: SteamInsertChunkOptions = {}
+  options: StreamInsertChunkOptions = {}
 ) {
   const blockPath = streamingStore.get('blockPath');
   const blockChunks = streamingStore.get('blockChunks');
@@ -185,7 +185,7 @@ export function steamInsertChunk(
           // If block doesn't exist, treat this as a new insertion
           streamingStore.set('blockPath', null);
           streamingStore.set('blockChunks', '');
-          return steamInsertChunk(editor, chunk, options);
+          return streamInsertChunk(editor, chunk, options);
         }
 
         // Deserialize the chunk and add it to the end of the current block
@@ -247,7 +247,7 @@ export function steamInsertChunk(
         // If block doesn't exist, treat this as a new insertion
         streamingStore.set('blockPath', null);
         streamingStore.set('blockChunks', '');
-        return steamInsertChunk(editor, chunk, options);
+        return streamInsertChunk(editor, chunk, options);
       }
 
       editor.tf.replaceNodes(nodesWithProps([tempBlocks[0]], options), {

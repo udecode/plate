@@ -16,9 +16,9 @@ import { markdownPlugin } from '../../../../../apps/www/src/registry/default/com
 import {
   getChunkTrimmed,
   getNextBlockPath,
-  steamInsertChunk,
   streamingStore,
-} from './steamInsertChunk';
+  streamInsertChunk,
+} from './streamInsertChunk';
 
 jsxt;
 
@@ -65,7 +65,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       const output = (
@@ -88,7 +88,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (let i = 0; i < streamChunks.length; i++) {
-        steamInsertChunk(editor, streamChunks[i]);
+        streamInsertChunk(editor, streamChunks[i]);
 
         if (i === 0) {
           editor.tf.insertNodes(
@@ -142,7 +142,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       const output = (
@@ -176,7 +176,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       const output = (
@@ -202,7 +202,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       const output = (
@@ -233,7 +233,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       const output = (
@@ -257,7 +257,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       const output = (
@@ -287,7 +287,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       const output = (
@@ -322,7 +322,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       const output = [
@@ -451,7 +451,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       const output = [
@@ -488,7 +488,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       const output = (
@@ -521,7 +521,7 @@ describe('steamInsertChunk', () => {
       const { editor } = createTestEditor();
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       const output = (
@@ -606,7 +606,7 @@ describe('steamInsertChunk', () => {
       const streamChunks = ['chunk1', 'chunk2\n\n', 'chunk3'];
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       expect(editor.children).toEqual(output);
@@ -645,7 +645,7 @@ describe('steamInsertChunk', () => {
       const streamChunks = ['chunk1', 'chunk2\n\n', 'chunk3'];
 
       for (const text of streamChunks) {
-        steamInsertChunk(editor, text);
+        streamInsertChunk(editor, text);
       }
 
       expect(editor.children).toEqual(output);
