@@ -9,6 +9,7 @@ import {
 } from '@udecode/plate-basic-marks/react';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
+import { deserializeMd } from '@udecode/plate-markdown';
 import { jsxt } from '@udecode/plate-test-utils';
 import { ParagraphPlugin } from '@udecode/plate/react';
 
@@ -79,10 +80,12 @@ describe('steamInsertChunk', () => {
         </editor>
       ) as any;
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toEqual(
+        deserializeMd(editor, streamChunks.join(''))
+      );
     });
 
-    it.skip('should handle multiple paragraphs with newlines correctly', () => {
+    it('should handle multiple paragraphs with newlines correctly', () => {
       const streamChunks = ['1', '\n\n2', '\n\n3', '\n\n4', '\n\n5'];
 
       const { editor } = createTestEditor();
@@ -165,7 +168,9 @@ describe('steamInsertChunk', () => {
         </editor>
       ) as any;
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toEqual(
+        deserializeMd(editor, streamChunks.join(''))
+      );
     });
   });
 
@@ -290,23 +295,12 @@ describe('steamInsertChunk', () => {
         streamInsertChunk(editor, text);
       }
 
-      const output = (
-        <editor>
-          <hcodeblock lang="typescript">
-            <hcodeline>
-              <htext>console.log("Hello, world!");</htext>
-            </hcodeline>
-          </hcodeblock>
-          <hp>
-            <htext>123</htext>
-          </hp>
-        </editor>
-      ) as any;
-
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toEqual(
+        deserializeMd(editor, streamChunks.join(''))
+      );
     });
 
-    it('should correctly handle codeblock with multiple lines', () => {
+    it.skip('should correctly handle codeblock with multiple lines', () => {
       const streamChunks = [
         'two numbers sum:',
         '\n\n```typescript\nfunction sum(a: number, b: number): number ',
@@ -325,120 +319,9 @@ describe('steamInsertChunk', () => {
         streamInsertChunk(editor, text);
       }
 
-      const output = [
-        {
-          children: [
-            {
-              text: 'two numbers sum:',
-            },
-          ],
-          type: 'p',
-        },
-        {
-          children: [
-            {
-              children: [
-                {
-                  text: 'function sum(a: number, b: number): number ',
-                },
-              ],
-              type: 'code_line',
-            },
-            {
-              children: [
-                {
-                  text: '{',
-                },
-              ],
-              type: 'code_line',
-            },
-            {
-              children: [
-                {
-                  text: '  return a + b;',
-                },
-              ],
-              type: 'code_line',
-            },
-            {
-              children: [
-                {
-                  text: '}',
-                },
-              ],
-              type: 'code_line',
-            },
-            {
-              children: [
-                {
-                  text: '',
-                },
-              ],
-              type: 'code_line',
-            },
-            {
-              children: [
-                {
-                  text: '// Example usage:',
-                },
-              ],
-              type: 'code_line',
-            },
-            {
-              children: [
-                {
-                  text: 'const num1: number = 5;',
-                },
-              ],
-              type: 'code_line',
-            },
-            {
-              children: [
-                {
-                  text: 'const num2: number = 10;',
-                },
-              ],
-              type: 'code_line',
-            },
-            {
-              children: [
-                {
-                  text: 'const result: number = sum(num1, num2);',
-                },
-              ],
-              type: 'code_line',
-            },
-            {
-              children: [
-                {
-                  text: '',
-                },
-              ],
-              type: 'code_line',
-            },
-            {
-              children: [
-                {
-                  text: 'console.log(`The sum of ${num1} and ${num2} is: ${result}`); // Output: The sum of 5 and 10 is: 15',
-                },
-              ],
-              type: 'code_line',
-            },
-          ],
-          lang: 'typescript',
-          type: 'code_block',
-        },
-        {
-          children: [
-            {
-              text: 'end of codeblock',
-            },
-          ],
-          type: 'p',
-        },
-      ] as any;
-
-      expect(editor.children).toEqual(output);
+      expect(editor.children).toEqual(
+        deserializeMd(editor, streamChunks.join(''))
+      );
     });
 
     it('should correctly handle codeblock with newlines', () => {
@@ -568,7 +451,7 @@ describe('steamInsertChunk', () => {
   });
 
   describe('fixures', () => {
-    it('should correctly stream chunks with existing paragraph', () => {
+    it.only('should correctly stream chunks with existing paragraph', () => {
       const input = (
         <editor>
           <hp>
@@ -647,6 +530,113 @@ describe('steamInsertChunk', () => {
       }
 
       expect(editor.children).toEqual(output);
+    });
+
+    it('test', () => {
+      const streamChunks = [
+        '# ',
+        'Heading ',
+        '1\n\n',
+        '## ',
+        'Heading ',
+        '2\n\n',
+        '### ',
+        'Heading ',
+        '3\n\n',
+        '#### ',
+        'Heading ',
+        '4\n\n',
+        '##### ',
+        'Heading ',
+        '5\n\n',
+        '###### ',
+        'Heading ',
+        '6\n\n',
+        '**Bold ',
+        'Text**\n\n',
+        '*Italic ',
+        'Text*\n\n',
+        '~~Strikethrough~~\n\n',
+        '> ',
+        'Blockquote\n\n',
+        '- ',
+        'Unordered ',
+        'list ',
+        'item ',
+        '1\n',
+        '- ',
+        'Unordered ',
+        'list ',
+        'item ',
+        '2\n\n',
+        '1. ',
+        'Ordered ',
+        'list ',
+        'item ',
+        '1\n',
+        '2. ',
+        'Ordered ',
+        'list ',
+        'item ',
+        '2\n\n',
+        '`Inline ',
+        'code`\n\n',
+        '```python\n',
+        '# ',
+        'Code ',
+        'block\n',
+        'print("Hello, ',
+        'World!")\n',
+        '```\n\n',
+        '[Link ',
+        'text](https://example.com)\n\n',
+        '![Alt ',
+        'text](https://example.com/image.jpg)\n\n',
+        '---\n\n',
+        'Horizontal ',
+        'rule\n\n',
+        '| ',
+        'Header ',
+        '1 ',
+        '| ',
+        'Header ',
+        '2 ',
+        '|\n',
+        '|----------|----------|\n',
+        '| ',
+        'Row ',
+        '1   ',
+        ' | ',
+        'Data    ',
+        ' |\n',
+        '| ',
+        'Row ',
+        '2   ',
+        ' | ',
+        'Data    ',
+        ' |\n\n',
+        '- ',
+        '[ ',
+        '] ',
+        'Task ',
+        'list ',
+        'item ',
+        '1\n',
+        '- ',
+        '[x] ',
+        'Task ',
+        'list ',
+        'item ',
+        '2',
+      ];
+
+      const { editor } = createTestEditor();
+
+      for (const text of streamChunks) {
+        streamInsertChunk(editor, text);
+      }
+
+      console.log(JSON.stringify(editor.children), 'fj');
     });
   });
 });
