@@ -1,6 +1,5 @@
 'use client';
 
-import { faker } from '@faker-js/faker';
 import { useChat as useBaseChat } from 'ai/react';
 
 import { useSettings } from '@/registry/default/components/editor/settings';
@@ -40,7 +39,7 @@ export const useChat = () => {
 
 // Used for testing. Remove it after implementing useChat api.
 const fakeStreamText = ({
-  chunkCount = 10,
+  chunkCount = 3,
   streamProtocol = 'data',
 }: {
   chunkCount?: number;
@@ -48,20 +47,24 @@ const fakeStreamText = ({
 } = {}) => {
   // Create 3 blocks with different lengths
   const blocks = [
-    Array.from({ length: chunkCount }, () => ({
-      delay: faker.number.int({ max: 100, min: 30 }),
-      texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
-    })),
-    Array.from({ length: chunkCount + 2 }, () => ({
-      delay: faker.number.int({ max: 100, min: 30 }),
-      texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
-    })),
-    Array.from({ length: chunkCount + 4 }, () => ({
-      delay: faker.number.int({ max: 100, min: 30 }),
-      texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
-    })),
+    [
+      { delay: 100, texts: 'two numbers sum:' },
+      {
+        delay: 100,
+        texts: '\n\n```typescript\nfunction sum(a: number, b: number): number ',
+      },
+      { delay: 100, texts: '{\n  return a + b;\n}\n\n// ' },
+      { delay: 100, texts: 'Example usage:\nconst num1: number = 5;\nconst ' },
+      { delay: 100, texts: 'num2: number = 10;\nconst result: number ' },
+      {
+        delay: 100,
+        texts: '= sum(num1, num2);\n\nconsole.log(`The sum of ${num1} ',
+      },
+      { delay: 100, texts: 'and ${num2} is: ${result}`); // Output: The ' },
+      { delay: 100, texts: 'sum of 5 and 10 is: 15\n```\n\n' },
+      { delay: 100, texts: 'end of codeblock' },
+    ],
   ];
-
   const encoder = new TextEncoder();
 
   return new ReadableStream({

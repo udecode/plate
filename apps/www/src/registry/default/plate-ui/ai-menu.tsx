@@ -30,6 +30,7 @@ export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
   const open = usePluginOption(AIChatPlugin, 'open');
   const mode = usePluginOption(AIChatPlugin, 'mode');
+  const streaming = usePluginOption(AIChatPlugin, 'streaming');
   const isSelecting = useIsSelecting();
 
   const [value, setValue] = React.useState('');
@@ -42,6 +43,17 @@ export function AIMenu() {
   );
 
   const content = useLastAssistantMessage()?.content;
+
+  React.useEffect(() => {
+    if (streaming) {
+      const anchor = api.aiChat.node({ anchor: true });
+      setTimeout(() => {
+        const anchorDom = editor.api.toDOMNode(anchor![0])!;
+        setAnchorElement(anchorDom);
+      }, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [streaming]);
 
   const setOpen = (open: boolean) => {
     if (open) {
@@ -132,7 +144,7 @@ export function AIMenu() {
               variant="ghost"
               className="rounded-none border-b border-solid border-border [&_svg]:hidden"
               value={input}
-              onKeyDown={(e) => {
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                 if (isHotkey('backspace')(e) && input.length === 0) {
                   e.preventDefault();
                   api.aiChat.hide();

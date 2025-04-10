@@ -12,7 +12,12 @@ export const useChatChunk = ({
   onChunk,
   onFinish,
 }: {
-  onChunk: (chunk: { isFirst: boolean; nodes: TText[]; text: string }) => void;
+  onChunk: (chunk: {
+    chunk: string;
+    isFirst: boolean;
+    nodes: TText[];
+    text: string;
+  }) => void;
   onFinish?: ({ content }: { content: string }) => void;
 }) => {
   const { isLoading } = usePluginOption(
@@ -49,6 +54,7 @@ export const useChatChunk = ({
 
       nodes.push({ text: chunk });
       onChunk({
+        chunk,
         isFirst,
         nodes,
         text: content,

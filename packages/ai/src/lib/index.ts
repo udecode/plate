@@ -3,4 +3,5 @@
  */
 
 export * from './BaseAIPlugin';
+export * from './steaming/index';
 export * from './transforms/index';

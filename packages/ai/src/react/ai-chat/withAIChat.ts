@@ -72,6 +72,12 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
           return;
         }
 
+        if (node.anchor && !getOptions().open) {
+          tf.removeNodes({ at: path, match: (n) => n.anchor });
+
+          return;
+        }
+
         return normalizeNode(entry);
       },
     },
