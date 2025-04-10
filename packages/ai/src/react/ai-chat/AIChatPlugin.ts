@@ -2,6 +2,8 @@ import type { TriggerComboboxPluginOptions } from '@udecode/plate-combobox';
 import type { UseChatHelpers } from 'ai/react';
 
 import {
+  type EditorNodesOptions,
+  type NodeEntry,
   type OmitFirst,
   type PluginConfig,
   type SlateEditor,
@@ -40,6 +42,8 @@ export type AIChatPluginConfig = PluginConfig<
      */
     mode: 'chat' | 'insert';
     open: boolean;
+    /** Whether to stream the AI response. */
+    streaming: boolean;
     /**
      * Template function for generating the user prompt. Supports the following
      * placeholders:
@@ -61,6 +65,9 @@ export type AIChatPluginConfig = PluginConfig<
       reset: OmitFirst<typeof resetAIChat>;
       submit: OmitFirst<typeof submitAIChat>;
       hide: () => void;
+      node: (
+        options?: EditorNodesOptions & { anchor?: boolean }
+      ) => NodeEntry | undefined;
       reload: () => void;
       show: () => void;
       stop: () => void;
@@ -83,6 +90,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     chat: { messages: [] } as any,
     mode: 'chat',
     open: false,
+    streaming: false,
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,
     promptTemplate: () => '{prompt}',
@@ -94,11 +102,26 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     useHooks: useAIChatHooks,
   }))
   .extendApi<
-    Pick<AIChatPluginConfig['api']['aiChat'], 'reset' | 'stop' | 'submit'>
+    Pick<
+      AIChatPluginConfig['api']['aiChat'],
+      'node' | 'reset' | 'stop' | 'submit'
+    >
   >(({ editor, getOptions }) => {
     return {
       reset: bindFirst(resetAIChat, editor),
       submit: bindFirst(submitAIChat, editor),
+      node: (options = {}) => {
+        const { anchor = false, ...rest } = options;
+
+        if (anchor) {
+          return editor.api.node({ at: [], match: (n) => n.anchor, ...rest });
+        }
+
+        return editor.api.node({
+          match: (n) => n.ai,
+          ...rest,
+        });
+      },
       reload: () => {
         const { chat, mode } = getOptions();
 

@@ -121,10 +121,7 @@ export function steamInsertChunk(
     const existingNode = editor.api.node(insertPath);
 
     // If the insertion point is an empty paragraph, remove it
-    if (
-      existingNode && 
-      NodeApi.string(existingNode[0]).length === 0
-    ) {
+    if (existingNode && NodeApi.string(existingNode[0]).length === 0) {
       editor.tf.removeNodes({ at: insertPath });
     }
 
@@ -137,20 +134,20 @@ export function steamInsertChunk(
       // Set the block path to the last inserted block
       const lastBlockPath = [insertPath[0] + blocks.length - 1];
       const lastBlock = editor.api.node(lastBlockPath)![0];
-      
+
       streamingStore.set('blockPath', lastBlockPath);
 
       const serializedBlock = serializeMd(editor, {
         value: [lastBlock],
       });
 
-      const blockText = trimEndUtils(serializedBlock, lastBlock.type as string)
-        .replaceAll(/\\([\\`*_{}[\]()#+\-.!~<>])/g, '$1');
+      const blockText = trimEndUtils(
+        serializedBlock,
+        lastBlock.type as string
+      ).replaceAll(/\\([\\`*_{}[\]()#+\-.!~<>])/g, '$1');
 
       const nextBlockChunks =
-        lastBlock.type === 'code_block'
-          ? blockText.slice(0, -3)
-          : blockText;
+        lastBlock.type === 'code_block' ? blockText.slice(0, -3) : blockText;
 
       streamingStore.set(
         'blockChunks',
@@ -303,17 +300,13 @@ export const useStreamingPath = () => {
 };
 
 export const getNextBlockPath = (editor: SlateEditor) => {
-  // If there's a selection, use the cursor position
-  if (editor.selection) {
-    return editor.selection.focus.path.slice(0, 1);
+  const cursorBlock = editor.selection!.focus.path.slice(0, 1);
+
+  const nodeAbove = editor.api.above();
+
+  if (nodeAbove && editor.api.string(nodeAbove[0]).length > 0) {
+    return PathApi.next(cursorBlock);
   }
-  // Find the first empty paragraph or the end of the document
-  for (let i = 0; i < editor.children.length; i++) {
-    const node = editor.children[i];
-    if (ElementApi.isElement(node) && node.type === 'p' && NodeApi.string(node).length === 0) {
-      return [i];
-    }
-  }
-  // If no empty paragraph found, append to the end
-  return [editor.children.length];
+
+  return cursorBlock;
 };

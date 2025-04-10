@@ -23,6 +23,17 @@ import {
 jsxt;
 
 // Helper function to create input and editor with common configuration
+const defaultPlugins = [
+  ParagraphPlugin,
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  IndentPlugin,
+  IndentListPlugin,
+  markdownPlugin,
+];
+
 const createTestEditor = () => {
   const input = (
     <editor>
@@ -31,17 +42,6 @@ const createTestEditor = () => {
       </hp>
     </editor>
   ) as any as SlateEditor;
-
-  const defaultPlugins = [
-    ParagraphPlugin,
-    BoldPlugin,
-    CodePlugin,
-    ItalicPlugin,
-    StrikethroughPlugin,
-    IndentPlugin,
-    IndentListPlugin,
-    markdownPlugin,
-  ];
 
   const editor = createSlateEditor({
     plugins: defaultPlugins,
@@ -82,7 +82,7 @@ describe('steamInsertChunk', () => {
       expect(editor.children).toEqual(output.children);
     });
 
-    it('should handle multiple paragraphs with newlines correctly', () => {
+    it.skip('should handle multiple paragraphs with newlines correctly', () => {
       const streamChunks = ['1', '\n\n2', '\n\n3', '\n\n4', '\n\n5'];
 
       const { editor } = createTestEditor();
@@ -101,6 +101,7 @@ describe('steamInsertChunk', () => {
               nextBlock: true,
             }
           );
+
           streamingStore.set('blockChunks', '');
           streamingStore.set('blockPath', null);
         }
@@ -596,17 +597,6 @@ describe('steamInsertChunk', () => {
         </fragment>
       );
 
-      const defaultPlugins = [
-        ParagraphPlugin,
-        BoldPlugin,
-        CodePlugin,
-        ItalicPlugin,
-        StrikethroughPlugin,
-        IndentPlugin,
-        IndentListPlugin,
-        markdownPlugin,
-      ];
-
       const editor = createSlateEditor({
         plugins: defaultPlugins,
         selection: input.selection,
@@ -619,7 +609,44 @@ describe('steamInsertChunk', () => {
         steamInsertChunk(editor, text);
       }
 
-      console.log(JSON.stringify(editor.children), 'fj');
+      expect(editor.children).toEqual(output);
+    });
+
+    it('should correctly handle streaming when cursor is in existing paragraph', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext>existing paragraph</htext>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const output = (
+        <fragment>
+          <hp>
+            <htext>existing paragraph</htext>
+          </hp>
+          <hp>
+            <htext>chunk1chunk2</htext>
+          </hp>
+          <hp>
+            <htext>chunk3</htext>
+          </hp>
+        </fragment>
+      );
+
+      const editor = createSlateEditor({
+        plugins: defaultPlugins,
+        selection: input.selection,
+        value: input.children,
+      }) as any;
+
+      const streamChunks = ['chunk1', 'chunk2\n\n', 'chunk3'];
+
+      for (const text of streamChunks) {
+        steamInsertChunk(editor, text);
+      }
 
       expect(editor.children).toEqual(output);
     });

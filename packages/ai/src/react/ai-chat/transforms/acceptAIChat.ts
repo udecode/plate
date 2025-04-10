@@ -10,6 +10,7 @@ export const acceptAIChat = (editor: PlateEditor) => {
 
   withAIBatch(editor, () => {
     tf.ai.removeMarks();
+    tf.removeNodes({ at: [], match: (n) => n.anchor });
   });
 
   editor.getApi<AIChatPluginConfig>({ key: 'ai' }).aiChat.hide();

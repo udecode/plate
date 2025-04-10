@@ -1,11 +1,22 @@
-import { resetStreamingStore, steamInsertChunk } from '@udecode/plate-markdown';
-import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
+import {
+  resetStreamingStore,
+  steamInsertChunk,
+} from '@udecode/plate-markdown';
+import {
+  type PlateEditor,
+  useEditorPlugin,
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
-import type { AIChatPluginConfig } from './AIChatPlugin';
 
 import { withAIBatch } from '../../lib';
+import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
 import { useChatChunk } from './hooks/useChatChunk';
+
+export const getAnchorNode = (editor: PlateEditor) => {
+  return editor.api.node({ at: [], match: (n) => n.anchor });
+};
 
 export const useAIChatHooks = () => {
   const { editor, tf } = useEditorPlugin<AIPluginConfig>({ key: 'ai' });
@@ -13,24 +24,21 @@ export const useAIChatHooks = () => {
 
   useChatChunk({
     onChunk: ({ chunk, isFirst, nodes, text }) => {
-      // if (isFirst) {
-      //   editor.tf.insertNodes(
-      //     [
-      //       {
-      //         children: [{ text: 'anchor' }],
-      //         type: 'p',
-      //       },
-      //       {
-      //         children: [{ text: 'anchor' }],
-      //         type: 'p',
-      //       },
-      //     ],
-      //     {
-      //       at: [0],
-      //       nextBlock: true,
-      //     }
-      //   );
-      // }
+      if (isFirst) {
+        editor.tf.insertNodes(
+          {
+            anchor: true,
+            children: [{ text: ' ' }],
+            type: 'p',
+          },
+          {
+            at: editor.selection!.focus.path.slice(0, 1),
+            nextBlock: true,
+          }
+        );
+
+        editor.setOption(AIChatPlugin, 'streaming', true);
+      }
 
       if (mode === 'insert' && nodes.length > 0) {
         withAIBatch(
@@ -53,6 +61,7 @@ export const useAIChatHooks = () => {
 
       // if (!blockAbove) return;
 
+      editor.setOption(AIChatPlugin, 'streaming', false);
       resetStreamingStore();
 
       // editor.undo();
