@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-markdown': minor
+'@udecode/plate-markdown': patch
 ---
 
 Make remarkMention plugin optional.
