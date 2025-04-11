@@ -1,7 +1,5 @@
 import type { TText } from '@udecode/plate';
 
-import isBoolean from 'lodash/fp/isBoolean.js';
-
 import type {
   TIndentListElement,
   TMentionElement,
@@ -30,6 +28,16 @@ import {
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
+
+function isBoolean(value: any) {
+  return (
+    value === true ||
+    value === false ||
+    (!!value &&
+      typeof value == 'object' &&
+      Object.prototype.toString.call(value) == '[object Boolean]')
+  );
+}
 
 export const defaultRules: TRules = {
   a: {
