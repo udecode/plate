@@ -572,7 +572,7 @@ export const defaultRules: TRules = {
         }
       };
 
-      children.forEach((child) => {
+      children.forEach((child, index, children) => {
         const { type } = child as { type?: string };
 
         if (type && splitBlockTypes.has(type)) {
@@ -614,7 +614,16 @@ export const defaultRules: TRules = {
             }
           });
         } else {
-          inlineNodes.push(child);
+          if (
+            child.text === '\n' &&
+            children.length > 1 &&
+            index === children.length - 1
+          ) {
+            // remove the last br of the paragraph if the previos element is not a br
+            // no op
+          } else {
+            inlineNodes.push(child);
+          }
         }
       });
 
@@ -623,9 +632,25 @@ export const defaultRules: TRules = {
       return elements.length === 1 ? elements[0] : elements;
     },
     serialize: (node, options) => {
+      let enrichedChildren = node.children;
+
+      if (node.children.length > 0 && enrichedChildren.at(-1)!.text === '\n') {
+        // if the last child of the paragraph is a line breake add an additional one
+        enrichedChildren.push({ text: '\n' });
+      }
+
+      enrichedChildren = enrichedChildren.map((child) => {
+        if (child.text === '\n') {
+          return {
+            type: 'break',
+          } as any;
+        }
+        return child;
+      });
+
       return {
         children: convertNodesSerialize(
-          node.children,
+          enrichedChildren,
           options
         ) as MdParagraph['children'],
         type: 'paragraph',
