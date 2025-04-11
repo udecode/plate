@@ -22,7 +22,7 @@ import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { MarkdownPlugin, remarkMention } from '@udecode/plate-markdown';
 import { InlineEquationPlugin } from '@udecode/plate-math/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { MentionPlugin } from '@udecode/plate-mention/react';
@@ -216,7 +216,7 @@ export default function MarkdownDemo() {
         autoformatPlugin,
         MarkdownPlugin.configure({
           options: {
-            remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+            remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
           },
         }),
         MentionPlugin.configure({
