@@ -30,8 +30,13 @@ import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
 
 function isBoolean(value: any) {
-  return value === true || value === false ||
-    (!!value && typeof value == 'object' && Object.prototype.toString.call(value) == '[object Boolean]');
+  return (
+    value === true ||
+    value === false ||
+    (!!value &&
+      typeof value == 'object' &&
+      Object.prototype.toString.call(value) == '[object Boolean]')
+  );
 }
 
 export const defaultRules: TRules = {
