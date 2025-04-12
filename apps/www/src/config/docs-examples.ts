@@ -48,6 +48,11 @@ export const docsExamples: SidebarNavItem[] = [
     href: '/docs/examples/preview-markdown',
     title: 'Preview Markdown',
   },
+  {
+    description: 'Collaborative editing.',
+    href: '/docs/examples/collaborative-editing',
+    title: 'Collaborative Editing Demo',
+  },
   ...registryToNav(
     docExamples.filter(
       (item) => !['basic-elements-demo', 'basic-marks-demo'].includes(item.name)

@@ -6360,7 +6360,7 @@ __metadata:
   resolution: "@udecode/plate-ai@workspace:packages/ai"
   dependencies:
     "@udecode/plate-combobox": "npm:44.0.0"
-    "@udecode/plate-markdown": "npm:47.0.5"
+    "@udecode/plate-markdown": "npm:47.0.6"
     "@udecode/plate-selection": "npm:46.0.4"
     ai: "npm:^3.4.33"
     lodash: "npm:^4.17.21"
@@ -6832,14 +6832,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-markdown@npm:47.0.5, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
+"@udecode/plate-markdown@npm:47.0.6, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-markdown@workspace:packages/markdown"
   dependencies:
     "@types/mdast": "npm:^4.0.3"
     "@types/unist": "npm:^3.0.2"
     "@udecode/plate": "workspace:^"
-    lodash: "npm:^4.17.21"
     marked: "npm:^15.0.6"
     mdast-util-math: "npm:3.0.0"
     mdast-util-mdx: "npm:3.0.0"
@@ -7114,6 +7113,16 @@ __metadata:
     "@udecode/plate": ">=46.0.10"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
+  dependenciesMeta:
+    "@hocuspocus/provider":
+      optional: true
+    y-webrtc:
+      optional: true
+  peerDependenciesMeta:
+    "@hocuspocus/provider":
+      optional: true
+    y-webrtc:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -14109,7 +14118,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lib0@npm:^0.2.42, lib0@npm:^0.2.85, lib0@npm:^0.2.87, lib0@npm:^0.2.99":
+"lib0@npm:^0.2.42, lib0@npm:^0.2.87":
+  version: 0.2.101
+  resolution: "lib0@npm:0.2.101"
+  dependencies:
+    isomorphic.js: "npm:^0.2.4"
+  bin:
+    0ecdsa-generate-keypair: bin/0ecdsa-generate-keypair.js
+    0gentesthtml: bin/gentesthtml.js
+    0serve: bin/0serve.js
+  checksum: 10c0/190ae19c444f18a68f1707b75584aa1f4fbe1f886207568d15108bdf66c90be09b11836455488130e7f3d0dc74fcc9d56032fe86b634d9322acf71953083c94f
+  languageName: node
+  linkType: hard
+
+"lib0@npm:^0.2.85, lib0@npm:^0.2.99":
   version: 0.2.99
   resolution: "lib0@npm:0.2.99"
   dependencies:
@@ -21940,7 +21962,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.11.0, ws@npm:^8.17.1, ws@npm:^8.18.0":
+"ws@npm:^8.11.0, ws@npm:^8.18.0":
   version: 8.18.0
   resolution: "ws@npm:8.18.0"
   peerDependencies:
@@ -21955,7 +21977,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.14.2":
+"ws@npm:^8.14.2, ws@npm:^8.17.1":
   version: 8.18.1
   resolution: "ws@npm:8.18.1"
   peerDependencies:
@@ -21993,6 +22015,7 @@ __metadata:
     "@ariakit/react": "npm:0.4.15"
     "@emoji-mart/data": "npm:1.2.1"
     "@faker-js/faker": "npm:9.4.0"
+    "@hocuspocus/provider": "npm:^2.15.2"
     "@hookform/resolvers": "npm:3.10.0"
     "@next/third-parties": "npm:15.1.6"
     "@radix-ui/react-accordion": "npm:1.2.2"
@@ -22149,6 +22172,7 @@ __metadata:
     uploadthing: "npm:7.2.0"
     use-file-picker: "npm:2.1.2"
     vaul: "npm:1.1.2"
+    y-webrtc: "npm:10.3.0"
     zod: "npm:^3.20.2"
   languageName: unknown
   linkType: soft
