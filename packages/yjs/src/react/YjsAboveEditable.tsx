@@ -3,30 +3,76 @@ import React from 'react';
 import { YjsEditor } from '@slate-yjs/core';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
-import { type YjsConfig, BaseYjsPlugin } from '../lib/BaseYjsPlugin';
+import type { UnifiedProvider, YjsConfig } from '../lib/providers/types';
 
-export const YjsAboveEditable: React.FC<{
+import { BaseYjsPlugin } from '../lib/BaseYjsPlugin';
+
+export interface YjsAboveEditableProps {
   children: React.ReactNode;
-}> = ({ children }) => {
+}
+
+export function YjsAboveEditable({ children }: YjsAboveEditableProps) {
   const { editor } = useEditorPlugin<YjsConfig>(BaseYjsPlugin);
+  const providersFromPlugin = usePluginOption(BaseYjsPlugin, 'providers');
+  const ydoc = usePluginOption(BaseYjsPlugin, 'ydoc');
+  const syncedProviderCount = usePluginOption(BaseYjsPlugin, 'syncedProviderCount');
+  const totalProviderCount = usePluginOption(BaseYjsPlugin, 'totalProviderCount');
+  const waitForAllProviders = usePluginOption(BaseYjsPlugin, 'waitForAllProviders');
 
-  const provider = usePluginOption(BaseYjsPlugin, 'provider');
-  const isSynced = usePluginOption(BaseYjsPlugin, 'isSynced');
+  const providers = React.useMemo(() => {
+    return providersFromPlugin || [];
+  }, [providersFromPlugin]) as UnifiedProvider[];
 
+  // Connect all providers when component mounts
   React.useEffect(() => {
-    void provider.connect();
+    // Connect all providers synchronously
+    for (const provider of providers) {
+      try {
+        if (!provider.isConnected) {
+          provider.connect();
+        }
+      } catch (error) {
+        console.warn(`[yjs] Error connecting provider (${provider.type}):`, error);
+      }
+    }
 
-    return () => provider.disconnect();
-  }, [provider]);
+    // For WebRTC providers, we should NOT disconnect on cleanup
+    // as it will clear the awareness state. Instead, we'll let the
+    // providers handle their own cleanup via their internal mechanisms.
+    return () => {
+      for (const provider of [...providers].reverse()) {
+        try {
+          if (provider.isConnected && provider.type !== 'webrtc') {
+            provider.disconnect();
+          }
+        } catch (error) {
+          console.warn(
+            `[yjs] Error disconnecting provider (${provider.type}):`,
+            error
+          );
+        }
+      }
+    };
+  }, [providers]);
 
+  // Connect editor to Y.Doc only once when providers are ready
   React.useEffect(() => {
+    if (!editor) return;
     YjsEditor.connect(editor as any);
 
-    return () => YjsEditor.disconnect(editor as any);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [provider.awareness, provider.document]);
+    return () => {
+      YjsEditor.disconnect(editor as any);
+    };
+  }, [editor, ydoc]);
 
-  if (!isSynced) return null;
+  // Determine if we should render content
+  const shouldRender = waitForAllProviders 
+    ? syncedProviderCount >= totalProviderCount && totalProviderCount > 0
+    : syncedProviderCount > 0; // At least one provider is synced
+
+  if (!shouldRender) {
+    return null;
+  }
 
   return <>{children}</>;
-};
+}

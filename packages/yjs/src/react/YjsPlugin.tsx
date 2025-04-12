@@ -1,5 +1,6 @@
 import { toPlatePlugin } from '@udecode/plate/react';
 
+// Explicitly import the types from providers
 import { BaseYjsPlugin } from '../lib/BaseYjsPlugin';
 import { YjsAboveEditable } from './YjsAboveEditable';
 

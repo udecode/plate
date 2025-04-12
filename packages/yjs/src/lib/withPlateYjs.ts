@@ -2,7 +2,7 @@ import type { ExtendEditor, SlateEditor } from '@udecode/plate';
 
 import * as Y from 'yjs';
 
-import type { YjsConfig } from './BaseYjsPlugin';
+import type { YjsConfig } from './providers/types';
 
 import { type PlateYjsEditorProps, withTCursors } from './withTCursors';
 import { withTYHistory } from './withTYHistory';
@@ -14,13 +14,27 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
 }) => {
   const editor = e as unknown as PlateYjsEditorProps & SlateEditor;
 
-  // not reactive
-  const { cursorOptions, disableCursors, provider, yjsOptions } = getOptions();
+  // Get all relevant options
+  const { 
+    cursorOptions, 
+    disableCursors, 
+    sharedAwareness,
+    ydoc,
+    yjsOptions
+  } = getOptions();
 
-  const sharedType = provider
-    .document
-    .get('content', Y.XmlText) as Y.XmlText;
+  // Make sure we have a document and a provider
+  if (!ydoc) {
+    console.warn('Yjs plugin: No Y.Doc available');
+    return editor;
+  }
 
+  // Get the shared document type from the Y.Doc
+  const sharedType = ydoc.get('content', Y.XmlText) as Y.XmlText;
+  console.log('disableCursors', disableCursors);
+  console.log('sharedAwareness', sharedAwareness);
+
+  // Apply YJS transformations to the editor
   if (disableCursors) {
     return withTYHistory(
       withTYjs(editor, sharedType, {
@@ -29,15 +43,19 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
       })
     );
   }
-
-  
+ 
+  // Apply YJS with cursor support
+  // Use the shared awareness instance for cursors instead of relying on a primary provider
+  if (!sharedAwareness) {
+    throw new Error('Yjs plugin: No shared awareness instance provided');
+  }
   return withTYHistory(
     withTCursors(
       withTYjs(editor, sharedType, {
         autoConnect: false,
         ...yjsOptions,
       }),
-      provider.awareness,
+      sharedAwareness,
       cursorOptions
     )
   );
