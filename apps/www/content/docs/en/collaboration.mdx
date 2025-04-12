@@ -4,7 +4,7 @@ title: Collaboration
 
 <Callout className="my-4">
 
-**Backend Development in Progress** - Demo Unavailable.
+Check out our [Collaborative Editing Demo](/docs/examples/collaborative-editing) to see real-time collaboration in action.
 
 </Callout>
 
@@ -12,9 +12,10 @@ title: Collaboration
 
 ## Features
 
-- The yjs plugin enables support for collaboration using [slate-yjs](https://docs.slate-yjs.dev/) and [Hocuspocus](https://docs.slate-yjs.dev/walkthroughs/collaboration-hocuspocus).
+- The yjs plugin enables support for collaboration using [slate-yjs](https://docs.slate-yjs.dev/) and multiple synchronization providers.
+- Supports both Hocuspocus and WebRTC providers out of the box, with ability to add custom providers.
 - By default remote cursors are not rendered unless you install the remote cursor overlay and include it in the config.
-- Cursors are rendered slightly faded and become solid on hover. Use the `data` field in `cursorOptions` to customise the display name and color.
+- Cursors are rendered slightly faded and become solid on hover. Use the `data` field in `cursorOptions` to customize the display name and color.
 
 </PackageInfo>
 
@@ -24,6 +25,12 @@ title: Collaboration
 
 ```bash
 npm install @udecode/plate-yjs
+
+# For Hocuspocus server-based collaboration
+npm install @hocuspocus/provider
+
+# For WebRTC peer-to-peer collaboration
+npm install y-webrtc
 ```
 
 ### Usage
@@ -45,10 +52,28 @@ const editor = createPlateEditor({
           data: { name: 'A plate user', color: '#5AC990' },
         },
         disableCursors: false,
-        hocuspocusProviderOptions: {
-          url: 'https://hocuspocus.test/hocuspocus',
-          name: 'test',
-        },
+        // Define your provider configurations
+        providerConfigs: [
+          // Hocuspocus provider for server-based collaboration
+          {
+            providerType: 'hocuspocus',
+            options: {
+              url: 'https://hocuspocus.test/hocuspocus',
+              name: 'test',
+            },
+          },
+          // Optional: WebRTC provider for peer-to-peer collaboration
+          {
+            providerType: 'webrtc',
+            options: {
+              roomName: 'test',
+              // Optional: custom signaling servers
+              // signaling: ['wss://signaling.example.com'],
+            },
+          },
+        ],
+        // Optional: wait for all providers to be synced before rendering content
+        waitForAllProviders: false, // Default is false
       },
     }),
   ],
@@ -74,7 +99,78 @@ This component is available in [Editor](/docs/components/editor).
 
 ## Backend
 
+### Hocuspocus Server
+
 Follow the backend instructions in [Hocuspocus docs](https://tiptap.dev/hocuspocus/getting-started).
+
+### WebRTC Configuration
+
+WebRTC enables peer-to-peer collaboration without a central server for document synchronization. However, it requires two supporting components:
+
+#### Signaling Server
+
+WebRTC peers need a signaling server to find each other initially. By default, y-webrtc uses public signaling servers, but you can run your own:
+
+```bash
+# Install y-webrtc if not already installed
+npm install y-webrtc
+
+# Run the signaling server (defaults to port 4444)
+PORT=4444 node ./node_modules/y-webrtc/bin/server.js
+```
+
+For more information about the signaling server implementation, check the [y-webrtc repository](https://github.com/yjs/y-webrtc) and the [signaling server code](https://github.com/yjs/y-webrtc/blob/master/bin/server.js).
+
+Then configure your WebRTC provider to use your custom signaling server:
+
+```tsx
+{
+  providerType: 'webrtc',
+  options: {
+    roomName: 'document-1',
+    signaling: ['ws://localhost:4444'],
+  },
+}
+```
+
+#### TURN Servers for Production
+
+<Callout className="my-4" type="warning">
+  WebRTC alone cannot be relied on in production environments due to various network restrictions.
+  Some firewalls and NAT configurations prevent direct peer-to-peer connections.
+</Callout>
+
+For production use, you should configure TURN servers as a fallback when direct peer-to-peer connections fail. TURN (Traversal Using Relays around NAT) servers relay traffic between peers when direct connections aren't possible.
+
+Several services offer TURN servers:
+- [Twilio STUN/TURN](https://www.twilio.com/en-us/stun-turn)
+- [Coturn](https://github.com/coturn/coturn) (self-hosted)
+- Various WebRTC PaaS providers
+
+To configure TURN servers with y-webrtc, use the `peerOpts` field:
+
+```tsx
+{
+  providerType: 'webrtc',
+  options: {
+    roomName: 'document-1',
+    signaling: ['ws://localhost:4444'],
+    // Configure ICE servers (STUN/TURN)
+    peerOpts: {
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.example.com:19302' },
+          {
+            urls: 'turn:turn.example.com:3478',
+            username: 'username',
+            credential: 'password'
+          }
+        ]
+      }
+    }
+  }
+}
+```
 
 ## Plugins
 
@@ -87,17 +183,26 @@ Follow the backend instructions in [Hocuspocus docs](https://tiptap.dev/hocuspoc
 
     See [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors).
   </APIItem>
-  <APIItem name="hocuspocusProviderOptions" type="HocuspocusProviderConfiguration" required>
-    Configuration for the Hocuspocus provider.
+  <APIItem name="providerConfigs" type="YjsProviderConfig[]" required>
+    Array of provider configurations. Each configuration specifies a provider type and its options.
 
-    See [HocuspocusProviderConfiguration API](https://tiptap.dev/hocuspocus/provider/configuration).
+    **Built-in provider types:**
+    - `'hocuspocus'` - For server-based collaboration using Hocuspocus
+    - `'webrtc'` - For peer-to-peer collaboration using WebRTC
+  </APIItem>
+  <APIItem name="ydoc" type="Y.Doc" optional>
+    A shared Y.Doc instance. If not provided, a new one will be created.
+  </APIItem>
+  <APIItem name="waitForAllProviders" type="boolean" optional default="false">
+    Whether to wait for all providers to be synced before rendering content.
+    If false (default), content will render as soon as at least one provider is synced.
   </APIItem>
   <APIItem name="yjsOptions" type="WithYjsOptions" optional>
     Optional configuration for the Yjs integration. These options are passed to the withYjs function.
 
     See [WithYjsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/yjs-plugin#withyjs).
   </APIItem>
-  <APIItem name="disableCursors" type="boolean" optional>
+  <APIItem name="disableCursors" type="boolean" optional default="false">
     A flag indicating whether to disable the cursor feature in the editor.
   </APIItem>
 </APIOptions>
@@ -110,10 +215,13 @@ Follow the backend instructions in [Hocuspocus docs](https://tiptap.dev/hocuspoc
 <API name="useYjsStore">
 <APIState>
   <APIItem name="isConnected" type="boolean">
-    Whether the editor is connected to the Hocuspocus server.
+    Whether any provider is connected.
   </APIItem>
-  <APIItem name="isSynced" type="boolean">
-    Whether the editor is synced with the Hocuspocus server.
+  <APIItem name="syncedProviderCount" type="number">
+    Number of providers that are currently synced.
+  </APIItem>
+  <APIItem name="totalProviderCount" type="number">
+    Total number of active providers.
   </APIItem>
 </APIState>
 </API>
@@ -135,9 +243,9 @@ Extends `YjsEditorProps` and [CursorEditor](https://docs.slate-yjs.dev/api/slate
 
 <APISubList>
 
-<APISubListItem parent="yjs" name="provider" type="HocuspocusProvider">
+<APISubListItem parent="yjs" name="providers" type="UnifiedProvider[]">
 
-The Hocuspocus provider instance.
+Array of all active providers.
 
 </APISubListItem>
 
