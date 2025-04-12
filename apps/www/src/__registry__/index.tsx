@@ -4087,7 +4087,7 @@ export const Index: Record<string, any> = {
       name: "markdown-to-slate-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: [],
+      registryDependencies: ["use-debounce"],
       files: [{
         path: "src/registry/default/examples/markdown-to-slate-demo.tsx",
         type: "registry:example",

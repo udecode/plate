@@ -117,7 +117,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['html2canvas', 'pdf-lib'],
+    dependencies: ['html2canvas-pro', 'pdf-lib'],
     doc: {
       description: 'A toolbar button to export editor content as PDF.',
       docs: [{ route: '/docs/export', title: 'Export' }],

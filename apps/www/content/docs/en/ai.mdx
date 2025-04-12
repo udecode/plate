@@ -94,7 +94,11 @@ export const createAIEditor = () => {
           },
         },
       }),
-      MarkdownPlugin.configure({ options: { indentList: true } }),
+      MarkdownPlugin.configure({
+        options: {
+          remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+        },
+      }),
     ],
   });
 
@@ -185,7 +189,11 @@ export const PROMPT_TEMPLATES = {
 
 const plugins = [
   // ...otherPlugins,
-  MarkdownPlugin.configure({ options: { indentList: true } }),
+  MarkdownPlugin.configure({
+    options: {
+      remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+    },
+  }),
   AIPlugin,
   AIChatPlugin.configure({
     options: {

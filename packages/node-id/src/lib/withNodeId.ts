@@ -36,7 +36,7 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
     const { idKey = '', reuseId } = getOptions();
 
     if (
-      !reuseId ||
+      !reuseId &&
       editor.api.some({ at: [], match: { [idKey]: node[idKey] } })
     ) {
       delete node[idKey];

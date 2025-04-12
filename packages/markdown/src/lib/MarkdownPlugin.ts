@@ -1,3 +1,5 @@
+import type { Plugin } from 'unified';
+
 import {
   type OmitFirst,
   type PluginConfig,
@@ -6,37 +8,64 @@ import {
   isUrl,
 } from '@udecode/plate';
 
-import { deserializeMd } from './deserializer/utils';
-import {
-  type RemarkElementRules,
-  type RemarkTextRules,
-  remarkDefaultElementRules,
-  remarkDefaultTextRules,
-} from './remark-slate';
+import type { TRules } from './rules';
+// import type { deserializeMd } from './deserializer/deserializeMd';
+import type { plateTypes } from './utils/mapTypeUtils';
+
+import { deserializeMd } from './deserializer';
 import { serializeMd } from './serializer';
 
-// export type MarkdownDeserializer = {
-//   elementRules?: Partial<Record<MdastElementType, RemarkElementRule>>;
-//   textRules?: Partial<Record<MdastTextType, RemarkTextRule>>;
-// } & Deserializer;
+export type AllowNodeConfig = {
+  /** Custom filter function for nodes during deserialization */
+  deserialize?: (node: any) => boolean;
+  /** Custom filter function for nodes during serialization */
+  serialize?: (node: any) => boolean;
+};
 
 export type MarkdownConfig = PluginConfig<
   'markdown',
   {
-    /** Override element rules. */
-    elementRules?: RemarkElementRules;
-    indentList?: boolean;
     /**
-     * When the text contains \n, split the text into a separate paragraph.
-     *
-     * Line breaks between paragraphs will also be converted into separate
-     * paragraphs.
-     *
-     * @default false
+     * Configuration for allowed node types. Cannot be combined with
+     * disallowedNodes.
      */
-    splitLineBreaks?: boolean;
-    /** Override text rules. */
-    textRules?: RemarkTextRules;
+    allowedNodes: NodesConfig;
+    /**
+     * Configuration for disallowed node types. Cannot be combined with
+     * allowedNodes.
+     *
+     * @default null
+     */
+    disallowedNodes: NodesConfig;
+    /**
+     * Array of remark plugins to extend Markdown parsing and serialization
+     * functionality. For example, you can add remark-gfm to support GFM syntax,
+     * remark-math to support mathematical formulas, etc. These plugins will be
+     * used during the parsing and generation of Markdown text.
+     *
+     * @default undefined
+     */
+    remarkPlugins: Plugin[];
+    /**
+     * Rules that define how to convert Markdown syntax elements to Slate editor
+     * elements. Or rules that how to convert Slate editor elements to Markdown
+     * syntax elements. Includes conversion rules for elements such as
+     * paragraphs, headings, lists, links, images, etc.
+     *
+     * You can pass null disable default node parser.
+     *
+     * NOTE: don't forget pass `mark:true` when you custom inline nodes.
+     *
+     * @default null
+     */
+    rules: TRules | null;
+    /**
+     * Custom filter function for nodes during deserialization and
+     * serialization.
+     *
+     * @default null
+     */
+    allowNode?: AllowNodeConfig;
   },
   {
     markdown: {
@@ -46,13 +75,15 @@ export type MarkdownConfig = PluginConfig<
   }
 >;
 
+export type NodesConfig = ((string & {}) | plateTypes)[] | null;
+
 export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   key: 'markdown',
   options: {
-    elementRules: remarkDefaultElementRules,
-    indentList: false,
-    splitLineBreaks: false,
-    textRules: remarkDefaultTextRules,
+    allowedNodes: null,
+    disallowedNodes: null,
+    remarkPlugins: [],
+    rules: null,
   },
 })
   .extendApi(({ editor }) => ({

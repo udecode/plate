@@ -3,12 +3,11 @@
 import React from 'react';
 
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
 
+import { markdownPlugin } from '@/registry/default/components/editor/plugins/markdown-plugin';
 import { AIMenu } from '@/registry/default/plate-ui/ai-menu';
 
 import { cursorOverlayPlugin } from './cursor-overlay-plugin';
-
 const systemCommon = `\
 You are an advanced AI-powered note-taking assistant, designed to enhance productivity and creativity in note management.
 Respond directly to user prompts with clear, concise, and relevant content. Maintain a neutral, helpful tone.
@@ -92,7 +91,7 @@ export const PROMPT_TEMPLATES = {
 
 export const aiPlugins = [
   cursorOverlayPlugin,
-  MarkdownPlugin.configure({ options: { indentList: true } }),
+  markdownPlugin,
   AIPlugin,
   AIChatPlugin.configure({
     options: {

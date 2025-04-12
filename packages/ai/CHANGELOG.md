@@ -1,5 +1,21 @@
 # @udecode/plate-ai
 
+## 47.0.6
+
+## 47.0.5
+
+## 47.0.4
+
+## 47.0.3
+
+## 47.0.1
+
+## 47.0.0
+
+### Patch Changes
+
+- [#4174](https://github.com/udecode/plate/pull/4174) by [@felixfeng33](https://github.com/felixfeng33) – Replace `serializeMdNodes` with `serializeMd(editor, { value: nodes })`
+
 ## 46.0.8
 
 ## 46.0.4

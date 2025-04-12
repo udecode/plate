@@ -1,10 +1,16 @@
 import type { Descendant } from '@udecode/plate';
 import type { PlateEditor } from '@udecode/plate/react';
 
+import type { DeserializeMdOptions } from '../deserializeMd';
+
 import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { stripMarkdownBlocks } from './stripMarkdown';
 
-export const deserializeInlineMd = (editor: PlateEditor, text: string) => {
+export const deserializeInlineMd = (
+  editor: PlateEditor,
+  text: string,
+  options?: DeserializeMdOptions
+) => {
   const leadingSpaces = /^\s*/.exec(text)?.[0] || '';
   const trailingSpaces = /\s*$/.exec(text)?.[0] || '';
 
@@ -17,8 +23,9 @@ export const deserializeInlineMd = (editor: PlateEditor, text: string) => {
   }
   if (strippedText) {
     fragment.push(
-      ...editor.getApi(MarkdownPlugin).markdown.deserialize(strippedText)[0]
-        .children
+      ...editor
+        .getApi(MarkdownPlugin)
+        .markdown.deserialize(strippedText, options)[0].children
     );
   }
   if (trailingSpaces) {

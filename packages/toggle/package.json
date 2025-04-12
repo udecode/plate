@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-toggle",
-  "version": "45.0.6",
+  "version": "46.0.11",
   "description": "Toggle plugin for Plate",
   "keywords": [
     "plate",
@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@udecode/plate-indent": "44.0.0",
-    "@udecode/plate-node-id": "44.0.0",
+    "@udecode/plate-node-id": "46.0.11",
     "lodash": "^4.17.21"
   },
   "devDependencies": {

@@ -23,9 +23,9 @@ import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseLinkPlugin } from '@udecode/plate-link';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { usePlateEditor } from '@udecode/plate/react';
 
+import { markdownPlugin } from '@/registry/default/components/editor/plugins/markdown-plugin';
 import {
   TodoLiStatic,
   TodoMarkerStatic,
@@ -93,7 +93,7 @@ const plugins = [
       },
     },
   }),
-  MarkdownPlugin.configure({ options: { indentList: true } }),
+  markdownPlugin,
 ];
 
 export const AIChatEditor = memo(({ content }: { content: string }) => {

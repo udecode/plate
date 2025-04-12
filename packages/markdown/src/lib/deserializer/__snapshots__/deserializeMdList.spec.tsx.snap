@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`deserializeMdIndentList - comprehensive coverage should deserialize a empty list 1`] = `
+[
+  {
+    "children": [
+      {
+        "text": "list",
+      },
+    ],
+    "indent": 1,
+    "listStyleType": "disc",
+    "type": "p",
+  },
+  {
+    "children": [
+      {
+        "text": "list",
+      },
+    ],
+    "indent": 2,
+    "listStyleType": "disc",
+    "type": "p",
+  },
+  {
+    "children": [
+      {
+        "text": "list",
+      },
+    ],
+    "indent": 1,
+    "listStyleType": "disc",
+    "type": "p",
+  },
+  {
+    "children": [
+      {
+        "text": "list",
+      },
+    ],
+    "indent": 1,
+    "listStyleType": "disc",
+    "type": "p",
+  },
+  {
+    "children": [
+      {
+        "text": "",
+      },
+    ],
+    "indent": 1,
+    "listStyleType": "disc",
+    "type": "p",
+  },
+]
+`;
+
+exports[`deserializeMdIndentList - comprehensive coverage should deserialize a todo list 1`] = `
+[
+  {
+    "checked": false,
+    "children": [
+      {
+        "text": "todo list",
+      },
+    ],
+    "indent": 1,
+    "listStyleType": "todo",
+    "type": "p",
+  },
+  {
+    "checked": true,
+    "children": [
+      {
+        "text": "todo list",
+      },
+    ],
+    "indent": 1,
+    "listStyleType": "todo",
+    "type": "p",
+  },
+]
+`;

@@ -4,11 +4,14 @@ import type { TElement } from '@udecode/plate';
 
 import { faker } from '@faker-js/faker';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
-import { serializeMdNodes, stripMarkdown } from '@udecode/plate-markdown';
+import { serializeMd, stripMarkdown } from '@udecode/plate-markdown';
 
 import { GhostText } from '@/registry/default/plate-ui/ghost-text';
 
+import { markdownPlugin } from './markdown-plugin';
+
 export const copilotPlugins = [
+  markdownPlugin,
   CopilotPlugin.configure(({ api }) => ({
     options: {
       completeOptions: {
@@ -47,7 +50,9 @@ export const copilotPlugins = [
 
         if (!contextEntry) return '';
 
-        const prompt = serializeMdNodes([contextEntry[0] as TElement]);
+        const prompt = serializeMd(editor, {
+          value: [contextEntry[0] as TElement],
+        });
 
         return `Continue the text up to the next punctuation mark:
   """

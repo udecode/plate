@@ -1,4 +1,155 @@
-# @udecode/plate-md-serializer
+# @udecode/plate-markdown
+
+## 47.0.6
+
+### Patch Changes
+
+- [#4215](https://github.com/udecode/plate/pull/4215) by [@martin-lysk](https://github.com/martin-lysk) – removes lodash dependency
+
+- [#4214](https://github.com/udecode/plate/pull/4214) by [@felixfeng33](https://github.com/felixfeng33) – Make remarkMention plugin optional.
+
+## 47.0.5
+
+### Patch Changes
+
+- [#4200](https://github.com/udecode/plate/pull/4200) by [@martin-lysk](https://github.com/martin-lysk) – fixes blockquote serialization/deserialization, adds break deserialization
+
+- [#4211](https://github.com/udecode/plate/pull/4211) by [@martin-lysk](https://github.com/martin-lysk) – adds explicit spread false to lists to have a less noisy serialization
+
+## 47.0.4
+
+### Patch Changes
+
+- [#4208](https://github.com/udecode/plate/pull/4208) by [@felixfeng33](https://github.com/felixfeng33) – Add missing options to `deserializeInlineMd`
+
+## 47.0.3
+
+### Patch Changes
+
+- [#4204](https://github.com/udecode/plate/pull/4204) by [@felixfeng33](https://github.com/felixfeng33) – Add support for deserializing @username strings into Plate mention nodes.
+
+## 47.0.1
+
+### Patch Changes
+
+- [#4201](https://github.com/udecode/plate/pull/4201) by [@felixfeng33](https://github.com/felixfeng33) – Support for GitHub Flavored Markdown del, fix task list during deserialization
+
+## 47.0.0
+
+### Major Changes
+
+- [#4174](https://github.com/udecode/plate/pull/4174) by [@felixfeng33](https://github.com/felixfeng33) – #### New Features
+
+  - Added support for math type deserialization
+  - Added default underline mark serialization as `<u>underline</u>`
+  - Improved serialization process:
+    - Now uses a two-step process: `slate nodes => MDAST nodes => markdown string`
+    - Previously: direct conversion from Slate nodes to markdown string
+    - Results in more reliable and robust serialization
+  - New node filtering options:
+    - `allowedNodes`: Whitelist specific nodes
+    - `disallowedNodes`: Blacklist specific nodes
+    - `allowNode`: Custom function to filter nodes
+  - New `rules` option for customizing serialization and deserialization rules, including **custom mdx** support
+  - New `remarkPlugins` option to use [remark plugins](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins)
+
+  #### Breaking Changes
+
+  **Plugin Options**
+
+  Removed options:
+
+  - `elementRules` use `rules` instead
+  - `textRules` use `rules` instead
+  - `indentList` now automatically detects if the IndentList plugin is used
+  - `splitLineBreaks` deserialize only
+
+  ##### Deserialization
+
+  - Removed `elementRules` and `textRules` options
+    - Use `rules.key.deserialize` instead
+    - See [nodes documentation](https://platejs.org/docs/markdown)
+
+  Example migration:
+
+  ```tsx
+  export const markdownPlugin = MarkdownPlugin.configure({
+    options: {
+      disallowedNodes: [SuggestionPlugin.key],
+      rules: {
+        // For textRules
+        [BoldPlugin.key]: {
+          mark: true,
+          deserialize: (mdastNode) => ({
+            bold: true,
+            text: node.value || '',
+          }),
+        },
+        // For elementRules
+        [EquationPlugin.key]: {
+          deserialize: (mdastNode, options) => ({
+            children: [{ text: '' }],
+            texExpression: node.value,
+            type: EquationPlugin.key,
+          }),
+        },
+      },
+      remarkPlugins: [remarkMath, remarkGfm],
+    },
+  });
+  ```
+
+  - Removed processor in `editor.api.markdown.deserialize`
+    - Use `remarkPlugins` instead
+
+  ##### Serialization
+
+  - Removed `serializeMdNodes`
+    - Use `editor.markdown.serialize({ value: nodes })` instead
+  - Removed `SerializeMdOptions` due to new serialization process
+    - Previous process: `slate nodes => md`
+    - New process: `slate nodes => md-ast => md`
+  - Removed options:
+    - `nodes`
+    - `breakTag`
+    - `customNodes`
+    - `ignoreParagraphNewline`
+    - `listDepth`
+    - `markFormats`
+    - `ulListStyleTypes`
+    - `ignoreSuggestionType`
+
+  Migration example for `SerializeMdOptions.customNodes` and `SerializeMdOptions.nodes`:
+
+  ```tsx
+  export const markdownPlugin = MarkdownPlugin.configure({
+    options: {
+      rules: {
+        // Ignore all `insert` type suggestions
+        [SuggestionPlugin.key]: {
+          mark: true,
+          serialize: (slateNode: TSuggestionText, options): mdast.Text => {
+            const suggestionData = options.editor
+              .getApi(SuggestionPlugin)
+              .suggestion.suggestionData(node);
+
+            return suggestionData?.type === 'insert'
+              ? { type: 'text', value: '' }
+              : { type: 'text', value: node.text };
+          },
+        },
+        // For elementRules
+        [EquationPlugin.key]: {
+          serialize: (slateNode) => ({
+            type: 'math',
+            value: node.texExpression,
+          }),
+        },
+      },
+      remarkPlugins: [remarkMath, remarkGfm],
+    },
+  });
+  ```
 
 ## 46.0.8
 

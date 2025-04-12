@@ -42,7 +42,11 @@ import {
 ```tsx
 const plugins = [
   // ...otherPlugins,
-  MarkdownPlugin.configure({ options: { indentList: true } }),
+  MarkdownPlugin.configure({
+    options: {
+      remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+    },
+  }), 
   CopilotPlugin.configure(({ api }) => ({
     options: {
     completeOptions: {
