@@ -2,11 +2,13 @@
 
 import { createSlateEditor } from '@udecode/plate';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { MarkdownPlugin } from '../MarkdownPlugin';
 import { deserializeMd } from './deserializeMd';
+import { deserializeInlineMd } from './utils';
 
 jsxt;
 const editor = createTestEditor();
@@ -524,4 +526,21 @@ describe('fixures', () => {
 
     expect(deserializeMd(editor, input)).toMatchSnapshot();
   });
+
+  console.log(
+    JSON.stringify(
+      deserializeInlineMd(
+        createTestEditor([BaseIndentListPlugin]) as any,
+        [
+          '[^1]: ',
+          'This ',
+          'is ',
+          'the ',
+          'footnote ',
+          'text.',
+        ].join('')
+      )
+    ),
+    'ddd'
+  );
 });

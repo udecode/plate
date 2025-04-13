@@ -117,4 +117,27 @@ describe('serializeMd', () => {
       ).toMatchSnapshot();
     });
   });
+
+  // console.log(
+  //   JSON.stringify(
+  //     serializeMd(editor as any, {
+  //       value: [
+  //         // {
+  //         //   children: [{ text: 'tRPC\n\n' }],
+  //         //   indent: 1,
+  //         //   listStyleType: 'disc',
+  //         //   type: 'p',
+  //         // },
+
+  //         // {
+  //         //   children: [{ text: 'Heading 1\n\n' }],
+  //         //   type: 'h1',
+  //         // },
+  //         // { children: [{ text: 'Heading 1' }], type: 'h1' },
+  //         { children: [{ text: '' }], type: 'p' },
+  //       ],
+  //     })
+  //   ),
+  //   'fj'
+  // );
 });

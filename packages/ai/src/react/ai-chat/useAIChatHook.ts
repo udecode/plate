@@ -15,12 +15,14 @@ export const getAnchorNode = (editor: PlateEditor) => {
   return editor.api.node({ at: [], match: (n) => n.anchor });
 };
 
+const chunks: string[] = [];
 export const useAIChatHooks = () => {
   const { editor, tf } = useEditorPlugin<AIPluginConfig>({ key: 'ai' });
   const mode = usePluginOption({ key: 'aiChat' } as AIChatPluginConfig, 'mode');
 
   useChatChunk({
     onChunk: ({ chunk, isFirst, nodes, text }) => {
+      chunks.push(chunk);
       if (isFirst) {
         editor.tf.insertNodes(
           {
@@ -54,6 +56,8 @@ export const useAIChatHooks = () => {
     onFinish: ({ content }) => {
       editor.setOption(AIChatPlugin, 'streaming', false);
       resetStreamingStore();
+
+      console.log(chunks, 'chunks');
     },
   });
 };
