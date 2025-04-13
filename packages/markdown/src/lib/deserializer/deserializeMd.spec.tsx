@@ -531,14 +531,7 @@ describe('fixures', () => {
     JSON.stringify(
       deserializeInlineMd(
         createTestEditor([BaseIndentListPlugin]) as any,
-        [
-          '[^1]: ',
-          'This ',
-          'is ',
-          'the ',
-          'footnote ',
-          'text.',
-        ].join('')
+        ['[^1]: ', 'This ', 'is ', 'the ', 'footnote ', 'text.'].join('')
       )
     ),
     'ddd'

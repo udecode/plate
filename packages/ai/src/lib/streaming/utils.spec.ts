@@ -18,7 +18,9 @@ describe('getChunkTrimed', () => {
     expect(getChunkTrimmed('hello world\n')).toBe('\n');
     expect(getChunkTrimmed('hello world\n', { direction: 'left' })).toBe('');
     expect(getChunkTrimmed('\nhello world')).toBe('');
-    expect(getChunkTrimmed(' \nhello world', { direction: 'left' })).toBe(' \n');
+    expect(getChunkTrimmed(' \nhello world', { direction: 'left' })).toBe(
+      ' \n'
+    );
   });
 
   it('should handle empty strings', () => {

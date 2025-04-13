@@ -111,7 +111,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       reset: bindFirst(resetAIChat, editor),
       submit: bindFirst(submitAIChat, editor),
       node: (options = {}) => {
-        console.log(JSON.stringify(editor.children),'fj')
+        console.log(JSON.stringify(editor.children), 'fj');
 
         const { anchor = false, ...rest } = options;
 

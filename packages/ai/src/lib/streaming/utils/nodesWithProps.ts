@@ -2,7 +2,6 @@ import { type Descendant, ElementApi } from '@udecode/plate';
 
 import type { SteamInsertChunkOptions } from '../streamInsertChunk';
 
-
 export const nodesWithProps = (
   nodes: Descendant[],
   options: SteamInsertChunkOptions
