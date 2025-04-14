@@ -18,6 +18,15 @@ const buildSlateRoot = (
   options: DeserializeMdOptions
 ): Descendant[] => {
   if (!options.splitLineBreaks) {
+    root.children = root.children.map((child) => {
+      if (child.type === 'html' && child.value === '<br />') {
+        return {
+          children: [{ type: 'text', value: '\n' }],
+          type: 'paragraph',
+        };
+      }
+      return child
+    })
     return convertNodesDeserialize(root.children, {}, options);
   }
 
