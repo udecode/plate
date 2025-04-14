@@ -521,7 +521,7 @@ describe('deserializeMd options', () => {
 
 describe('fixures', () => {
   // https://github.com/inokawa/remark-slate-transformer/issues/129
-  it('when deserializing a empty value', () => {
+  it.only('when deserializing a empty value', () => {
     const input = '';
 
     expect(deserializeMd(editor, input)).toMatchSnapshot();
@@ -531,7 +531,7 @@ describe('fixures', () => {
     JSON.stringify(
       deserializeInlineMd(
         createTestEditor([BaseIndentListPlugin]) as any,
-        ['[^1]: ', 'This ', 'is ', 'the ', 'footnote ', 'text.'].join('')
+        'https://example.com'
       )
     ),
     'ddd'

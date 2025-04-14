@@ -748,6 +748,7 @@ describe('steamInsertChunk', () => {
       );
     });
 
+    // TODO: support incomplete inline math
     it('should correctly handle incomplete math block', () => {
       const chunks = [
         'Here is an example of Markdown with math:\n',
@@ -776,7 +777,66 @@ describe('steamInsertChunk', () => {
       );
     });
 
-    // error prompt
-    // 使用markdown例子输出 # Pluto  **Pluto** (minor-planet designation: *134340 Pluto*) is a [dwarf planet](https://en.wikipedia.org/wiki/Dwarf_planet) in the [Kuiper belt](https://en.wikipedia.org/wiki/Kuiper_belt).  ## History  In the 1840s, [Urbain Le Verrier](https://wikipedia.org/wiki/Urbain_Le_Verrier) used Newtonian mechanics to predict the position of the then-undiscovered planet [Neptune](https://wikipedia.org/wiki/Neptune) after analyzing perturbations in the orbit of [Uranus](https://wikipedia.org/wiki/Uranus).  ***  Just a link: www.nasa.gov.  * Lists * [ ] todo * [x] done  A table:  | a | b | | - | - |  <details><summary>Show example</summary>  ```js console.log('Hi pluto!') ```  </details>
+    // FIXME:Need to find a way to disable automatic conversion (https://example.com) to links it's should be text (remark-gfm).
+    it.skip('should correctly handle incomplete link', () => {
+      const chunks = ['[Link ', 'text](', 'https://example.com', ')'];
+
+      const { editor } = createTestEditor();
+
+      for (const text of chunks) {
+        streamInsertChunk(editor, text);
+      }
+
+      expect(editor.children).toEqual(
+        appendHeadParagraph(deserializeMd(editor, chunks.join('')))
+      );
+    });
+
+    it.skip('should correctly handle incomplete todo list and table', () => {
+      const chunks = [
+        '*',
+        ' Lists',
+        '  \n',
+        ' ',
+        ' *',
+        ' [',
+        ' ]',
+        ' todo',
+        '  \n',
+        ' ',
+        ' *',
+        ' [',
+        'x',
+        ']',
+        ' done',
+        '  \n\n',
+        'A',
+        ' table',
+        ':',
+        '  \n\n',
+        '|',
+        ' a',
+        ' |',
+        ' b',
+        ' |',
+        '  \n',
+        '|',
+        ' -',
+        ' |',
+        ' -',
+        ' |',
+        '  \n\n',
+      ];
+
+      const { editor } = createTestEditor();
+
+      for (const text of chunks) {
+        streamInsertChunk(editor, text);
+      }
+
+      expect(editor.children).toEqual(
+        appendHeadParagraph(deserializeMd(editor, chunks.join('')))
+      );
+    });
   });
 });
