@@ -5,6 +5,7 @@ import {
   type EditorNodesOptions,
   type NodeEntry,
   type OmitFirst,
+  type Path,
   type PluginConfig,
   type SlateEditor,
   bindFirst,
@@ -30,6 +31,9 @@ import { withAIChat } from './withAIChat';
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
   {
+    /** @private Using For streamInsertChunk */
+    _blockChunks: string;
+    _blockPath: Path | null;
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
     chat: Partial<UseChatHelpers>;
@@ -86,6 +90,8 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   key: 'aiChat',
   dependencies: ['ai'],
   options: {
+    _blockChunks: '',
+    _blockPath: null,
     aiEditor: null,
     chat: { messages: [] } as any,
     mode: 'chat',

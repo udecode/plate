@@ -1,6 +1,5 @@
-import type { PlateEditor } from '@udecode/plate/react';
 
-import { type Descendant, ElementApi } from '@udecode/plate';
+import { type Descendant, type SlateEditor, ElementApi } from '@udecode/plate';
 
 import type { DeserializeMdOptions } from '../deserializeMd';
 
@@ -8,7 +7,7 @@ import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { stripMarkdownBlocks } from './stripMarkdown';
 
 export const deserializeInlineMd = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   text: string,
   options?: DeserializeMdOptions
 ) => {

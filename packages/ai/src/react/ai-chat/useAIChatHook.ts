@@ -7,7 +7,7 @@ import {
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
 
-import { resetStreamingStore, streamInsertChunk, withAIBatch } from '../../lib';
+import { streamInsertChunk, withAIBatch } from '../../lib';
 import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
 import { useChatChunk } from './hooks/useChatChunk';
 
@@ -55,7 +55,8 @@ export const useAIChatHooks = () => {
     },
     onFinish: ({ content }) => {
       editor.setOption(AIChatPlugin, 'streaming', false);
-      resetStreamingStore();
+      editor.setOption(AIChatPlugin, '_blockChunks', '');
+      editor.setOption(AIChatPlugin, '_blockPath', null);
 
       console.log(chunks, 'chunks');
     },

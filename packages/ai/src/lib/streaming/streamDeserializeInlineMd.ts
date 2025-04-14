@@ -2,7 +2,7 @@ import type { PlateEditor } from '@udecode/plate/react';
 
 import {
   type DeserializeMdOptions,
-  deserializeInlineMd as BaseDeserializeInlineMd,
+  MarkdownPlugin,
 } from '@udecode/plate-markdown';
 
 import { getRemarkPluginsWithoutMdx } from './utils/getRemarkPlugin';
@@ -12,7 +12,7 @@ export const streamDeserializeInlineMd = (
   text: string,
   options?: DeserializeMdOptions
 ) => {
-  const blocks = BaseDeserializeInlineMd(editor, text, {
+  const blocks = editor.getApi(MarkdownPlugin).markdown.deserializeInline(text, {
     remarkPlugins: getRemarkPluginsWithoutMdx(editor),
     ...options,
   });

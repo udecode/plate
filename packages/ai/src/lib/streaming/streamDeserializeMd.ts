@@ -3,7 +3,7 @@ import type { PlateEditor } from '@udecode/plate/react';
 import { type TElement, TextApi } from '@udecode/plate';
 import {
   type DeserializeMdOptions,
-  deserializeMd as BaseDeserializeMd,
+  MarkdownPlugin,
 } from '@udecode/plate-markdown';
 
 import { getChunkTrimmed } from './utils';
@@ -14,7 +14,7 @@ export const streamDeserializeMd = (
   data: string,
   options?: DeserializeMdOptions
 ) => {
-  const blocks = BaseDeserializeMd(editor, data, {
+  const blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(data, {
     remarkPlugins: getRemarkPluginsWithoutMdx(editor),
     ...options,
   });

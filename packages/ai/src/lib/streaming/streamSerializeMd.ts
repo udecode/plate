@@ -3,7 +3,7 @@ import type { PlateEditor } from '@udecode/plate/react';
 import { type Descendant, ElementApi, TextApi } from '@udecode/plate';
 import {
   type SerializeMdOptions,
-  serializeMd as BaseSerializeMd,
+  MarkdownPlugin,
 } from '@udecode/plate-markdown';
 
 import { getChunkTrimmed, isCompleteCodeBlock, isCompleteMath } from './utils';
@@ -56,7 +56,7 @@ export const streamSerializeMd = (
   const { value: optionsValue, ...restOptions } = options;
   const { value } = trimEndHeading(optionsValue ?? editor.children);
 
-  let result = BaseSerializeMd(editor, {
+  let result = editor.getApi(MarkdownPlugin).markdown.serialize({
     remarkPlugins: getRemarkPluginsWithoutMdx(editor),
     value: value,
     ...restOptions,

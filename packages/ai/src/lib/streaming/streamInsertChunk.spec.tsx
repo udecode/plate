@@ -29,11 +29,6 @@ const appendHeadParagraph = (children: Descendant[]) => {
 };
 
 describe('steamInsertChunk', () => {
-  beforeEach(() => {
-    streamingStore.set('blockChunks', '');
-    streamingStore.set('blockPath', null);
-  });
-
   describe('line breaks', () => {
     it('should correctly process text chunks without newlines', () => {
       const streamChunks = ['chunk1\n\n', 'chunk2', 'chunk3'];
