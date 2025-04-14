@@ -47,7 +47,7 @@ Configuring `MarkdownPlugin` is recommended to enable paste handling (converting
 
 ```tsx
 import { createPlateEditor } from '@udecode/plate/react';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { MarkdownPlugin, remarkMention } from '@udecode/plate-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkMdx from 'remark-mdx';
@@ -58,7 +58,7 @@ const editor = createPlateEditor({
     MarkdownPlugin.configure({
       options: {
         // Add remark plugins for syntax extensions (GFM, Math, MDX)
-        remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+        remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
         // Define custom rules for serialization/deserialization if needed
         rules: {
           // Example: custom rule for a 'date' element
@@ -161,7 +161,11 @@ import type { MdMdxJsxTextElement } from '@udecode/plate-markdown'; // Import ty
 MarkdownPlugin.configure({
   options: {
     rules: {
-      date: { // Key matches the plugin 'key' or 'type' of the Slate element
+      // Key matches:
+      // 1. the plugin 'key' or 'type' of the Slate element.
+      // 2. the mdast(https://github.com/syntax-tree/mdast) node type.
+      // 3. the mdx tag name.
+      date: { 
         // Rule for Markdown -> Slate
         deserialize(mdastNode: MdMdxJsxTextElement, deco, options) {
           // Extract data from the MDX node attributes or children
