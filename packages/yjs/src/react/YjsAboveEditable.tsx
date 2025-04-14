@@ -15,9 +15,18 @@ export function YjsAboveEditable({ children }: YjsAboveEditableProps) {
   const { editor } = useEditorPlugin<YjsConfig>(BaseYjsPlugin);
   const providersFromPlugin = usePluginOption(BaseYjsPlugin, 'providers');
   const ydoc = usePluginOption(BaseYjsPlugin, 'ydoc');
-  const syncedProviderCount = usePluginOption(BaseYjsPlugin, 'syncedProviderCount');
-  const totalProviderCount = usePluginOption(BaseYjsPlugin, 'totalProviderCount');
-  const waitForAllProviders = usePluginOption(BaseYjsPlugin, 'waitForAllProviders');
+  const syncedProviderCount = usePluginOption(
+    BaseYjsPlugin,
+    'syncedProviderCount'
+  );
+  const totalProviderCount = usePluginOption(
+    BaseYjsPlugin,
+    'totalProviderCount'
+  );
+  const waitForAllProviders = usePluginOption(
+    BaseYjsPlugin,
+    'waitForAllProviders'
+  );
 
   const providers = React.useMemo(() => {
     return providersFromPlugin || [];
@@ -32,7 +41,10 @@ export function YjsAboveEditable({ children }: YjsAboveEditableProps) {
           provider.connect();
         }
       } catch (error) {
-        console.warn(`[yjs] Error connecting provider (${provider.type}):`, error);
+        console.warn(
+          `[yjs] Error connecting provider (${provider.type}):`,
+          error
+        );
       }
     }
 
@@ -66,7 +78,7 @@ export function YjsAboveEditable({ children }: YjsAboveEditableProps) {
   }, [editor, ydoc]);
 
   // Determine if we should render content
-  const shouldRender = waitForAllProviders 
+  const shouldRender = waitForAllProviders
     ? syncedProviderCount >= totalProviderCount && totalProviderCount > 0
     : syncedProviderCount > 0; // At least one provider is synced
 

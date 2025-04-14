@@ -1,30 +1,38 @@
-import type { HocuspocusProviderConfiguration, onDisconnectParameters, onSyncedParameters } from '@hocuspocus/provider';
+import type {
+  HocuspocusProviderConfiguration,
+  onDisconnectParameters,
+  onSyncedParameters,
+} from '@hocuspocus/provider';
 import type { Awareness } from 'y-protocols/awareness';
 import type * as Y from 'yjs';
 
 import { HocuspocusProvider } from '@hocuspocus/provider';
 
-import type { ProviderEventHandlers, UnifiedProvider, YjsProviderType } from './types';
+import type {
+  ProviderEventHandlers,
+  UnifiedProvider,
+  YjsProviderType,
+} from './types';
 
 export class HocuspocusProviderWrapper implements UnifiedProvider {
   // Track connection and sync state
   private _isConnected = false;
   private _isSynced = false;
   private handlers?: ProviderEventHandlers;
-  
+
   private provider: HocuspocusProvider;
-  
+
   destroy = () => {
     if (this._isConnected) {
       this.provider.disconnect();
     }
   };
-  
+
   disconnect = () => {
     if (this._isConnected) {
       this.provider.disconnect();
       this._isConnected = false;
-      
+
       // If we were synced, notify about sync state change
       if (this._isSynced) {
         this._isSynced = false;
@@ -34,10 +42,15 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
   };
 
   type: YjsProviderType = 'hocuspocus';
-  
-  constructor(options: HocuspocusProviderConfiguration, handlers?: ProviderEventHandlers, existingDoc?: Y.Doc, sharedAwareness?: Awareness) {
+
+  constructor(
+    options: HocuspocusProviderConfiguration,
+    handlers?: ProviderEventHandlers,
+    existingDoc?: Y.Doc,
+    sharedAwareness?: Awareness
+  ) {
     this.handlers = handlers;
-    
+
     // If an existing Y.Doc is provided, ensure it's passed to the HocuspocusProvider
     const providerOptions: HocuspocusProviderConfiguration = {
       ...options,
@@ -53,29 +66,29 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
       },
       onDisconnect: (data: onDisconnectParameters) => {
         this._isConnected = false;
-        
+
         // If we were synced, notify about sync state change
         if (this._isSynced) {
           this._isSynced = false;
           handlers?.onSyncChange?.(false);
         }
-        
+
         handlers?.onDisconnect?.();
         options.onDisconnect?.(data);
       },
       onSynced: (data: onSyncedParameters) => {
         const wasSynced = this._isSynced;
         this._isSynced = true;
-        
+
         // Call onSyncChange only when sync state changes
         if (!wasSynced) {
           handlers?.onSyncChange?.(true);
         }
-        
+
         options.onSynced?.(data);
       },
     };
-    
+
     try {
       this.provider = new HocuspocusProvider(providerOptions);
     } catch (error) {
@@ -85,10 +98,12 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
         ...providerOptions,
         connect: false,
       });
-      handlers?.onError?.(error instanceof Error ? error : new Error(String(error)));
+      handlers?.onError?.(
+        error instanceof Error ? error : new Error(String(error))
+      );
     }
   }
-  
+
   connect() {
     try {
       void this.provider.connect();
@@ -97,20 +112,20 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
       this._isConnected = false;
     }
   }
-  
+
   get awareness() {
     return this.provider.awareness!;
   }
-  
+
   get document() {
     return this.provider.document;
   }
-  
+
   get isConnected() {
     return this._isConnected;
   }
-  
+
   get isSynced() {
     return this._isSynced;
   }
-} 
+}

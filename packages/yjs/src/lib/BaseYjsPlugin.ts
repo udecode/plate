@@ -2,14 +2,13 @@ import { createTSlatePlugin } from '@udecode/plate';
 import { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
 
-import { 
-  type ProviderEventHandlers, 
-  type UnifiedProvider, 
+import {
+  type ProviderEventHandlers,
+  type UnifiedProvider,
   type YjsConfig,
-  createProvider
+  createProvider,
 } from './providers';
 import { withPlateYjs } from './withPlateYjs';
-
 
 export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
   key: 'yjs',
@@ -25,11 +24,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     ydoc: undefined,
   },
 }).extend(({ getOptions, setOption }) => {
-  const { 
-    customProviders = [], 
-    providerConfigs = [],
-    ydoc 
-  } = getOptions();
+  const { customProviders = [], providerConfigs = [], ydoc } = getOptions();
 
   // Validate configuration
   if (providerConfigs.length === 0 && customProviders.length === 0) {
@@ -48,7 +43,9 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     onDisconnect: () => {
       // Check for any connected providers
       const { providers } = getOptions();
-      const hasConnectedProvider = providers.some(provider => provider.isConnected);
+      const hasConnectedProvider = providers.some(
+        (provider) => provider.isConnected
+      );
       if (!hasConnectedProvider) {
         setOption('isConnected', false);
         console.log('onDisconnect', 'isConnected = false');
@@ -60,21 +57,21 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     onSyncChange: (isSynced) => {
       // Update the synced provider count based on the state change
       const { syncedProviderCount } = getOptions();
-      const newCount = isSynced 
-        ? syncedProviderCount + 1 
+      const newCount = isSynced
+        ? syncedProviderCount + 1
         : Math.max(0, syncedProviderCount - 1);
-      
+
       setOption('syncedProviderCount', newCount);
       console.log('onSyncChange', 'syncedProviderCount =', newCount);
-    }
+    },
   });
 
   // Final providers array that will contain both configured and custom providers
   const providers: UnifiedProvider[] = [];
-  
+
   // Create a single shared Y.Doc if none was provided
   const sharedYDoc = ydoc || new Y.Doc();
-  
+
   // Create a single shared Awareness instance for all providers
   const sharedAwareness = new Awareness(sharedYDoc);
 
@@ -84,21 +81,22 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     if (customProvider.document !== sharedYDoc) {
       console.warn(
         `[yjs] Custom provider (${customProvider.type}) has a different Y.Doc. ` +
-        'This may cause synchronization issues.'
+          'This may cause synchronization issues.'
       );
     }
-    
+
     // Add the custom provider to our providers array
     providers.push(customProvider);
-    
+
     // Initial sync state tracking
     if (customProvider.isSynced) {
-      setOption('syncedProviderCount', 
+      setOption(
+        'syncedProviderCount',
         (getOptions().syncedProviderCount || 0) + 1
       );
     }
   }
-  
+
   // Then create providers from configurations
   for (const config of providerConfigs) {
     const { options, providerType } = config;
@@ -113,7 +111,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     try {
       // Create provider with shared handlers, Y.Doc, and Awareness
       const handlers = createProviderHandlers();
-      
+
       // Use the factory function to create providers
       const provider = createProvider(
         providerType,
@@ -122,7 +120,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
         sharedYDoc,
         sharedAwareness
       );
-      
+
       providers.push(provider);
     } catch (error) {
       console.warn(
@@ -142,7 +140,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       providers,
       sharedAwareness,
       totalProviderCount: providers.length,
-      ydoc: sharedYDoc
+      ydoc: sharedYDoc,
     },
   };
 });

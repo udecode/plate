@@ -17,9 +17,9 @@ export type HocuspocusProviderConfig = {
 
 // Provider constructor type
 export type ProviderConstructor<T = any> = new (
-  options: T, 
-  handlers: ProviderEventHandlers, 
-  existingDoc?: Y.Doc, 
+  options: T,
+  handlers: ProviderEventHandlers,
+  existingDoc?: Y.Doc,
   sharedAwareness?: Awareness
 ) => UnifiedProvider;
 
@@ -29,16 +29,14 @@ export interface ProviderEventHandlers {
   onError?: (error: Error) => void;
   /**
    * Called when provider sync state changes
+   *
    * @param isSynced Whether the provider is now synced
    */
   onSyncChange?: (isSynced: boolean) => void;
 }
 
 // Provider registry type
-export type ProviderRegistry = Record<
-  string, 
-  ProviderConstructor
->;
+export type ProviderRegistry = Record<string, ProviderConstructor>;
 
 // Unified interface for all provider types
 export interface UnifiedProvider {
@@ -49,13 +47,13 @@ export interface UnifiedProvider {
   destroy: () => void;
   disconnect: () => void;
   /**
-   * Whether this provider is currently connected
-   * Used for provider-specific connection status
+   * Whether this provider is currently connected Used for provider-specific
+   * connection status
    */
   isConnected: boolean;
   /**
-   * Whether this provider is synced with its persistence layer
-   * Used for provider-specific sync status
+   * Whether this provider is synced with its persistence layer Used for
+   * provider-specific sync status
    */
   isSynced: boolean;
 }
@@ -76,8 +74,11 @@ export type WebRTCProviderOptions = {
   maxConns?: number;
   /** Optional password for the room */
   password?: string;
-  /** Additional peer options for simple-peer. See [simple-peer](https://github.com/feross/simple-peer#api) for more details. */
-  peerOpts?: Record<string, unknown>; 
+  /**
+   * Additional peer options for simple-peer. See
+   * [simple-peer](https://github.com/feross/simple-peer#api) for more details.
+   */
+  peerOpts?: Record<string, unknown>;
   /** Optional signaling servers. Defaults to public servers if not specified */
   signaling?: string[];
 };
@@ -91,9 +92,9 @@ export type YjsConfig = PluginConfig<
     providerConfigs: YjsProviderConfig[];
     /** All active providers */
     providers: UnifiedProvider[];
-    /** 
-     * Number of providers that are currently synced 
-     * This is used for sync state tracking
+    /**
+     * Number of providers that are currently synced This is used for sync state
+     * tracking
      */
     syncedProviderCount: number;
     /** Total number of active providers */
@@ -102,18 +103,20 @@ export type YjsConfig = PluginConfig<
     ydoc: Y.Doc | undefined;
     /** WithCursors options */
     cursorOptions?: WithCursorsOptions;
-    /** 
-     * Pre-instantiated custom providers that implement the UnifiedProvider interface
-     * These will be used alongside providers created from providerConfigs
+    /**
+     * Pre-instantiated custom providers that implement the UnifiedProvider
+     * interface These will be used alongside providers created from
+     * providerConfigs
      */
     customProviders?: UnifiedProvider[];
     /** Whether to disable cursor support */
     disableCursors?: boolean;
     /** Shared Awareness instance used by all providers */
     sharedAwareness?: Awareness;
-    /** 
+    /**
      * Whether to wait for all providers to be synced before rendering content
-     * If false (default), content will render as soon as at least one provider is synced
+     * If false (default), content will render as soon as at least one provider
+     * is synced
      */
     waitForAllProviders?: boolean;
     /** WithYjs options */
@@ -124,4 +127,4 @@ export type YjsConfig = PluginConfig<
 export type YjsProviderConfig = HocuspocusProviderConfig | WebRTCProviderConfig;
 
 // Extensible provider type that can include custom types
-export type YjsProviderType = DefaultYjsProviderType | string; 
+export type YjsProviderType = DefaultYjsProviderType | string;

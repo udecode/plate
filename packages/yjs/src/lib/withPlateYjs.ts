@@ -14,14 +14,9 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
 }) => {
   const editor = e as unknown as PlateYjsEditorProps & SlateEditor;
 
-  // Get all relevant options
-  const { 
-    cursorOptions, 
-    disableCursors, 
-    sharedAwareness,
-    ydoc,
-    yjsOptions
-  } = getOptions();
+  // not reactive
+  const { cursorOptions, disableCursors, sharedAwareness, ydoc, yjsOptions } =
+    getOptions();
 
   // Make sure we have a document and a provider
   if (!ydoc) {
@@ -31,8 +26,8 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
 
   // Get the shared document type from the Y.Doc
   const sharedType = ydoc.get('content', Y.XmlText) as Y.XmlText;
-  console.log('disableCursors', disableCursors);
-  console.log('sharedAwareness', sharedAwareness);
+  // console.log('disableCursors', disableCursors);
+  // console.log('sharedAwareness', sharedAwareness);
 
   // Apply YJS transformations to the editor
   if (disableCursors) {
@@ -43,7 +38,7 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
       })
     );
   }
- 
+
   // Apply YJS with cursor support
   // Use the shared awareness instance for cursors instead of relying on a primary provider
   if (!sharedAwareness) {
