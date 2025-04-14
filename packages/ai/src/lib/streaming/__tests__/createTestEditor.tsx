@@ -7,9 +7,12 @@ import {
 } from '@udecode/plate-basic-marks/react';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
-import { deserializeMd } from '@udecode/plate-markdown';
 import { jsxt } from '@udecode/plate-test-utils';
 import { ParagraphPlugin } from '@udecode/plate/react';
+import {
+  EquationPlugin,
+  InlineEquationPlugin,
+} from '@udecode/plate-math/react';
 jsxt;
 
 import { markdownPlugin } from '../../../../../../apps/www/src/registry/default/components/editor/plugins/markdown-plugin';
@@ -24,6 +27,8 @@ export const defaultPlugins = [
   IndentPlugin,
   IndentListPlugin,
   markdownPlugin,
+  EquationPlugin,
+  InlineEquationPlugin,
 ];
 
 export const createTestEditor = () => {

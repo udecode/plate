@@ -23,3 +23,12 @@ export function isCompleteCodeBlock(str: string) {
 
   return startsWithCodeBlock && endsWithCodeBlock;
 }
+
+export function isCompleteMath(str: string) {
+  const trimmed = str.trim();
+
+  const startsWithMath = trimmed.startsWith('$$');
+  const endsWithMath = trimmed.endsWith('$$');
+
+  return startsWithMath && endsWithMath;
+}

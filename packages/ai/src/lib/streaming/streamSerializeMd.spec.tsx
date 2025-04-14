@@ -50,4 +50,44 @@ describe('streamSerializeMd', () => {
 
     expect(output).toBe('## Heading 1\n');
   });
+
+  describe('should handle complete/incomplete stable blocks', () => {
+    it('should correctly handle complete code block', async () => {
+      const chunk = '```ts\nconst a = 123\n```';
+
+      const result = streamDeserializeMd(editor, chunk);
+
+      const output = streamSerializeMd(editor, { value: result }, chunk);
+
+      expect(output).toBe(chunk);
+    });
+
+    it('should correctly handle incomplete code block', async () => {
+      const chunk = '```ts\nconst a = 123';
+
+      const result = streamDeserializeMd(editor, chunk);
+
+      const output = streamSerializeMd(editor, { value: result }, chunk);
+
+      expect(output).toBe(chunk);
+    });
+
+    it('should correctly handle complete math block', async () => {
+      const chunk = '$$\nE = mc^2\n$$';
+
+      const result = streamDeserializeMd(editor, chunk);
+
+      const output = streamSerializeMd(editor, { value: result }, chunk);
+
+      expect(output).toBe(chunk);
+    });
+
+    it('should correctly handle incomplete math block', async () => {
+      const chunk = '$$E = mc^2';
+
+      const result = streamDeserializeMd(editor, chunk);
+
+      const output = streamSerializeMd(editor, { value: result }, chunk);
+    });
+  });
 });

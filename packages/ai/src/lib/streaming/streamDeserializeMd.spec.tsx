@@ -29,7 +29,7 @@ describe('streamSerializeMd', () => {
     expect(streamSerializeMd(editor, { value: result }, chunk)).toEqual(chunk);
   });
 
-  it('should correctly handle /\n/\n in code block', async () => {
+  it('should correctly handle line breaks in code block', async () => {
     const chunk = '```typescript\nconst a = 1\n\n';
 
     const result = streamDeserializeMd(editor, chunk);

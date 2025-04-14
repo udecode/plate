@@ -6,7 +6,7 @@ import {
   serializeMd as BaseSerializeMd,
 } from '@udecode/plate-markdown';
 
-import { getChunkTrimmed, isCompleteCodeBlock } from './utils';
+import { getChunkTrimmed, isCompleteCodeBlock, isCompleteMath } from './utils';
 import { getRemarkPluginsWithoutMdx } from './utils/getRemarkPlugin';
 
 // fixes test: should serialize heading with tailing line break
@@ -64,23 +64,27 @@ export const streamSerializeMd = (
 
   const trimmedChunk = getChunkTrimmed(chunk);
 
-  if (isCompleteCodeBlock(result)) {
+  if (isCompleteCodeBlock(result) && !chunk.endsWith('```')) {
     result = result.trimEnd().slice(0, -3) + trimmedChunk;
   }
 
-  // 清理 HTML 空格和零宽字符
+  if (isCompleteMath(result) && !chunk.endsWith('$$')) {
+    result = result.trimEnd().slice(0, -3) + trimmedChunk;
+  }
+
+  // clean HTML spaces and zero-width characters
   result = result.replace(/&#x20;/g, ' ');
   result = result.replace(/&#x200B;/g, ' ');
 
   // remove extra \n but not include \n itself
-  // FIXME 两个以上的\n可能会失败
+  // FIXME maybe failed when chunk is more than two'\n'
   if (trimmedChunk !== '\n\n') {
     result = result.trimEnd() + trimmedChunk;
   }
 
   // replace &#x20; to real space
 
-  // 去掉 Markdown 转义符号（包括 chunk 中可能新加入的）
+  // remove Markdown escape characters (including those potentially added in the chunk)
   result = result.replace(/\\([\\`*_{}\\[\]()#+\-\\.!~<>|])/g, '$1');
 
   return result;

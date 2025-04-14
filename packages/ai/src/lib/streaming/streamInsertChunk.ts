@@ -90,17 +90,17 @@ export function streamInsertChunk(
     const tempBlockChunks = blockChunks + chunk;
     const tempBlocks = streamDeserializeMd(editor, tempBlockChunks);
 
-    console.log(
-      JSON.stringify(chunk),
-      'chunk',
-      '-------------------------------------------------------------------------------------------'
-    );
-    console.log(
-      '🚀 ~ Streaming ~ tempBlockChunks:',
-      JSON.stringify(tempBlockChunks)
-    );
+    // console.log(
+    //   JSON.stringify(chunk),
+    //   'chunk',
+    //   '-------------------------------------------------------------------------------------------'
+    // );
+    // console.log(
+    //   '🚀 ~ Streaming ~ tempBlockChunks:',
+    //   JSON.stringify(tempBlockChunks)
+    // );
 
-    console.log('🚀 ~ Streaming ~ tempBlocks:', JSON.stringify(tempBlocks));
+    // console.log('🚀 ~ Streaming ~ tempBlocks:', JSON.stringify(tempBlocks));
 
     if (tempBlocks.length === 0) {
       return console.warn(
@@ -150,13 +150,12 @@ export function streamInsertChunk(
             tempBlockChunks
           );
 
-          console.log('🚀 ~ serializedBlock:', JSON.stringify(serializedBlock));
-
           streamingStore.set(
             'blockChunks',
             // one block includes multiple children
             tempBlocks[0].type === 'code_block' ||
-              tempBlocks[0].type === 'table'
+              tempBlocks[0].type === 'table' ||
+              tempBlocks[0].type === 'equation'
               ? tempBlockChunks
               : serializedBlock
           );
@@ -169,10 +168,6 @@ export function streamInsertChunk(
           },
           tempBlockChunks
         );
-
-        console.log('🚀 ~ tempBlocks:', tempBlocks[0]);
-
-        console.log('🚀 ~ serializedBlock:', JSON.stringify(serializedBlock));
 
         editor.tf.replaceNodes(nodesWithProps([tempBlocks[0]], options), {
           at: blockPath,
