@@ -1,6 +1,6 @@
-import type { TElement } from '@udecode/plate';
 import type { PlateEditor } from '@udecode/plate/react';
 
+import { type TElement, TextApi } from '@udecode/plate';
 import {
   type DeserializeMdOptions,
   deserializeMd as BaseDeserializeMd,
@@ -49,7 +49,26 @@ export const streamDeserializeMd = (
       },
     ];
 
-    lastBlock.children.push(...textNode);
+    const lastChild = lastBlock.children.at(-1);
+
+    /** It’s like normalizing and merging the text nodes. */
+    if (
+      lastChild &&
+      TextApi.isText(lastChild) &&
+      Object.keys(lastChild).length === 1
+    ) {
+      lastBlock.children.pop();
+
+      const textNode = [
+        {
+          text: lastChild.text + trimmedData,
+        },
+      ];
+
+      lastBlock.children.push(...textNode);
+    } else {
+      lastBlock.children.push(...textNode);
+    }
 
     result = [...blocks.slice(0, -1), lastBlock];
   }

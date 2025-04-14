@@ -37,8 +37,17 @@ describe('streamSerializeMd', () => {
 
     const lastBlock = streamDeserializeMd(editor, chunk).at(-1);
 
-    const output = streamSerializeMd(editor, { value: lastBlock }, chunk);
+    const output = streamSerializeMd(editor, { value: [lastBlock] }, chunk);
 
     expect(output).toBe('');
+  });
+
+  it('should serialize heading with tailing line break', () => {
+    const chunk = '## Heading 1\n';
+    const input = streamDeserializeMd(editor, chunk);
+
+    const output = streamSerializeMd(editor, { value: input }, chunk);
+
+    expect(output).toBe('## Heading 1\n');
   });
 });

@@ -90,17 +90,17 @@ export function streamInsertChunk(
     const tempBlockChunks = blockChunks + chunk;
     const tempBlocks = streamDeserializeMd(editor, tempBlockChunks);
 
-    // console.log(
-    //   JSON.stringify(chunk),
-    //   'chunk',
-    //   '-------------------------------------------------------------------------------------------'
-    // );
-    // console.log(
-    //   '🚀 ~ Streaming ~ tempBlockChunks:',
-    //   JSON.stringify(tempBlockChunks)
-    // );
+    console.log(
+      JSON.stringify(chunk),
+      'chunk',
+      '-------------------------------------------------------------------------------------------'
+    );
+    console.log(
+      '🚀 ~ Streaming ~ tempBlockChunks:',
+      JSON.stringify(tempBlockChunks)
+    );
 
-    // console.log('🚀 ~ Streaming ~ tempBlocks:', JSON.stringify(tempBlocks));
+    console.log('🚀 ~ Streaming ~ tempBlocks:', JSON.stringify(tempBlocks));
 
     if (tempBlocks.length === 0) {
       return console.warn(
@@ -126,7 +126,7 @@ export function streamInsertChunk(
           {
             value: [updatedBlock[0]],
           },
-          chunk
+          tempBlockChunks
         );
 
         const blockText = NodeApi.string(tempBlocks[0]);
@@ -147,8 +147,10 @@ export function streamInsertChunk(
             {
               value: [tempBlocks[0]],
             },
-            chunk
+            tempBlockChunks
           );
+
+          console.log('🚀 ~ serializedBlock:', JSON.stringify(serializedBlock));
 
           streamingStore.set(
             'blockChunks',
@@ -165,8 +167,12 @@ export function streamInsertChunk(
           {
             value: [tempBlocks[0]],
           },
-          chunk
+          tempBlockChunks
         );
+
+        console.log('🚀 ~ tempBlocks:', tempBlocks[0]);
+
+        console.log('🚀 ~ serializedBlock:', JSON.stringify(serializedBlock));
 
         editor.tf.replaceNodes(nodesWithProps([tempBlocks[0]], options), {
           at: blockPath,
@@ -195,7 +201,7 @@ export function streamInsertChunk(
           {
             value: [endBlock],
           },
-          chunk
+          tempBlockChunks
         );
 
         streamingStore.set('blockChunks', serializedBlock);

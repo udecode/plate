@@ -725,5 +725,43 @@ describe('steamInsertChunk', () => {
         appendHeadParagraph([...basicValue, ...tableValue, ...taskListValue])
       );
     });
+
+    // error prompt
+    // 使用markdown例子输出 # Pluto  **Pluto** (minor-planet designation: *134340 Pluto*) is a [dwarf planet](https://en.wikipedia.org/wiki/Dwarf_planet) in the [Kuiper belt](https://en.wikipedia.org/wiki/Kuiper_belt).  ## History  In the 1840s, [Urbain Le Verrier](https://wikipedia.org/wiki/Urbain_Le_Verrier) used Newtonian mechanics to predict the position of the then-undiscovered planet [Neptune](https://wikipedia.org/wiki/Neptune) after analyzing perturbations in the orbit of [Uranus](https://wikipedia.org/wiki/Uranus).  ***  Just a link: www.nasa.gov.  * Lists * [ ] todo * [x] done  A table:  | a | b | | - | - |  <details><summary>Show example</summary>  ```js console.log('Hi pluto!') ```  </details>
+    //   [
+    //     "Here is an example of Markdown with math:\n",
+    //     "\n",
+    //     "To display an inline equation, you can use single dollar signs: $E = mc^2$.\n",
+    //     "\n",
+    //     "For a block equation, use double dollar signs:\n",
+    //     "\n",
+    //     "$$\n",
+    //     "a^2 + b^2 = c^2\n",
+    //     "$$\n",
+    //     "\n",
+    //     "These examples show how to include mathematical expressions in Markdown."
+    // ]
+
+    it('incomplete line breaks', () => {
+      const chunks = [
+        'Here is an example that includes various Markdown blocks and decorations:\n',
+        '\n',
+        '# Heading 1\n',
+        '\n',
+        '## Heading 2\n',
+        '\n',
+        '### Heading 3',
+      ];
+
+      const { editor } = createTestEditor();
+
+      for (const text of chunks) {
+        streamInsertChunk(editor, text);
+      }
+
+      expect(editor.children).toEqual(
+        appendHeadParagraph(deserializeMd(editor, chunks.join('')))
+      );
+    });
   });
 });
