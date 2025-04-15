@@ -1,5 +1,11 @@
 # @udecode/plate-markdown
 
+## 47.0.7
+
+### Patch Changes
+
+- [#4216](https://github.com/udecode/plate/pull/4216) by [@martin-lysk](https://github.com/martin-lysk) – linebreaks (soft linebreaks and paragraphs) are serialized and deserialized differently now
+
 ## 47.0.6
 
 ### Patch Changes
