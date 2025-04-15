@@ -109,6 +109,8 @@ export const aiPlugins = [
             : PROMPT_TEMPLATES.systemDefault;
       },
     },
-    render: { afterEditable: () => <AIMenu /> },
+    render: {
+      afterEditable: () => <AIMenu />,
+    },
   }),
 ] as const;

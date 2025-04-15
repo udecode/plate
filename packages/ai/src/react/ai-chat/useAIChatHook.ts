@@ -1,19 +1,11 @@
 import { PathApi } from '@udecode/plate';
-import {
-  type PlateEditor,
-  useEditorPlugin,
-  usePluginOption,
-} from '@udecode/plate/react';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import type { AIPluginConfig } from '../ai/AIPlugin';
 
 import { streamInsertChunk, withAIBatch } from '../../lib';
 import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
 import { useChatChunk } from './hooks/useChatChunk';
-
-export const getAnchorNode = (editor: PlateEditor) => {
-  return editor.api.node({ at: [], match: (n) => n.anchor });
-};
 
 const chunks: string[] = [];
 export const useAIChatHooks = () => {
@@ -26,10 +18,9 @@ export const useAIChatHooks = () => {
       if (isFirst) {
         editor.tf.insertNodes(
           {
-            anchor: true,
             // don't set text to empty string
             children: [{ text: '\u00A0' }],
-            type: 'p',
+            type: AIChatPlugin.key,
           },
           {
             at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),

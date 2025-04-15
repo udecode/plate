@@ -9,6 +9,7 @@ import {
   type PluginConfig,
   type SlateEditor,
   bindFirst,
+  ElementApi,
 } from '@udecode/plate';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { createTPlatePlugin } from '@udecode/plate/react';
@@ -89,6 +90,9 @@ export type AIChatPluginConfig = PluginConfig<
 export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   key: 'aiChat',
   dependencies: ['ai'],
+  node: {
+    isElement: true,
+  },
   options: {
     _blockChunks: '',
     _blockPath: null,
@@ -112,17 +116,19 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       AIChatPluginConfig['api']['aiChat'],
       'node' | 'reset' | 'stop' | 'submit'
     >
-  >(({ editor, getOptions }) => {
+  >(({ editor, getOptions, type }) => {
     return {
       reset: bindFirst(resetAIChat, editor),
       submit: bindFirst(submitAIChat, editor),
       node: (options = {}) => {
-        console.log(JSON.stringify(editor.children), 'fj');
-
         const { anchor = false, ...rest } = options;
 
         if (anchor) {
-          return editor.api.node({ at: [], match: (n) => n.anchor, ...rest });
+          return editor.api.node({
+            at: [],
+            match: (n) => ElementApi.isElement(n) && n.type === type,
+            ...rest,
+          });
         }
 
         return editor.api.node({
@@ -150,7 +156,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       },
     };
   })
-  .extendApi(({ api, editor, getOptions, setOption }) => ({
+  .extendApi(({ api, editor, getOptions, setOption, type }) => ({
     hide: () => {
       api.aiChat.reset();
 
@@ -169,7 +175,10 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         delete lastBatch.ai;
       }
 
-      editor.tf.removeNodes({ at: [], match: (n) => n.anchor });
+      editor.tf.removeNodes({
+        at: [],
+        match: (n) => ElementApi.isElement(n) && n.type === type,
+      });
     },
     show: () => {
       api.aiChat.reset();
