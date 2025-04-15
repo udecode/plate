@@ -71,12 +71,12 @@ export const serializeMd = (
       },
     });
 
-  return toRemarkProcessor.stringify(
-    slateToMdast({
-      children: value!,
-      options: mergedOptions,
-    })
-  );
+  const mdast = slateToMdast({
+    children: value!,
+    options: mergedOptions,
+  });
+
+  return toRemarkProcessor.stringify(mdast);
 };
 
 const slateToMdast = ({
