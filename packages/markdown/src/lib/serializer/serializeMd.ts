@@ -70,15 +70,13 @@ export const serializeMd = (
         },
       },
     });
-  
-    const mdast = slateToMdast({
-      children: value!,
-      options: mergedOptions,
-    })
 
-  return toRemarkProcessor.stringify(
-    mdast
-  );
+  const mdast = slateToMdast({
+    children: value!,
+    options: mergedOptions,
+  });
+
+  return toRemarkProcessor.stringify(mdast);
 };
 
 const slateToMdast = ({

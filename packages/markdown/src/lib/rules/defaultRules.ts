@@ -103,7 +103,7 @@ export const defaultRules: TRules = {
         type: 'blockquote',
       };
     },
-    serialize: (node, options) => {    
+    serialize: (node, options) => {
       const nodes = [] as any;
 
       for (const child of node.children) {
@@ -121,14 +121,16 @@ export const defaultRules: TRules = {
         options
       ) as MdParagraph['children'];
 
-      if (paragraphChildren.length > 0 && paragraphChildren.at(-1)!.type === 'break') {
+      if (
+        paragraphChildren.length > 0 &&
+        paragraphChildren.at(-1)!.type === 'break'
+      ) {
         // if the last child of the paragraph is a line break add an additional one
-        
+
         paragraphChildren.at(-1)!.type = 'html';
         // @ts-expect-error -- value is ok
         paragraphChildren.at(-1)!.value = '\n<br />';
       }
-
 
       return {
         children: [
@@ -654,10 +656,12 @@ export const defaultRules: TRules = {
       const convertedNodes = convertNodesSerialize(
         enrichedChildren,
         options
-      ) as MdParagraph['children']
+      ) as MdParagraph['children'];
 
-
-      if (convertedNodes.length > 0 && enrichedChildren.at(-1)!.type === 'break') {
+      if (
+        convertedNodes.length > 0 &&
+        enrichedChildren.at(-1)!.type === 'break'
+      ) {
         // if the last child of the paragraph is a line break add an additional one
         convertedNodes.at(-1)!.type = 'html';
         // @ts-expect-error -- value is the right property here

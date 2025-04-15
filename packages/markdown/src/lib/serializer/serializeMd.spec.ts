@@ -180,11 +180,7 @@ describe('serializeMd', () => {
       () => {
         const slateNodes = [
           {
-            children: [
-              { text: 'Block quote' },
-              { text: '\n' },
-              { text: '\n' },
-            ],
+            children: [{ text: 'Block quote' }, { text: '\n' }, { text: '\n' }],
             type: 'blockquote',
           },
         ];
@@ -222,10 +218,7 @@ describe('serializeMd', () => {
     () => {
       const slateNodes = [
         {
-          children: [
-            { text: 'Paragaph with a new Line' },
-            { text: '\n' },
-          ],
+          children: [{ text: 'Paragaph with a new Line' }, { text: '\n' }],
           type: 'p',
         },
       ];
@@ -241,14 +234,11 @@ describe('serializeMd', () => {
     () => {
       const slateNodes = [
         {
-          children: [
-            { text: '\n' },
-          ],
+          children: [{ text: '\n' }],
           type: 'p',
-        },{
-          children: [
-            { text: '\n' },
-          ],
+        },
+        {
+          children: [{ text: '\n' }],
           type: 'p',
         },
       ];
@@ -258,7 +248,4 @@ describe('serializeMd', () => {
       ).toMatchSnapshot();
     }
   );
-
-  
-  
 });

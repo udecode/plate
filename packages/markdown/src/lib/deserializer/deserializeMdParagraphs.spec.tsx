@@ -13,8 +13,6 @@ import { deserializeMd } from './deserializeMd';
 
 jsxt;
 
-
-
 const markdownPlugin = MarkdownPlugin.configure({
   options: {
     disallowedNodes: [SuggestionPlugin.key],
@@ -35,11 +33,8 @@ const createTestEditor = (plugins: any[] = []) =>
 const editor = createTestEditor();
 
 describe('deserializeMd - paragraph', () => {
-  
-
   it('should deserialize paragraph with one linebreak', () => {
-    const input =
-      `
+    const input = `
 Paragaph with two new Lines\\
 <br />`;
 
@@ -54,11 +49,9 @@ Paragaph with two new Lines\\
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
-
 
   it('should deserialize paragraph with two leading linebreaks', () => {
-    const input =
-      `
+    const input = `
 Paragaph with two new Lines\\
 \\
 <br />`;
@@ -77,8 +70,7 @@ Paragaph with two new Lines\\
   });
 
   it('should deserialize paragraph with leading linebreaks in the middle', () => {
-    const input =
-      `
+    const input = `
 Paragaph with two new Lines\\
 \\
 followed by text`;
@@ -97,10 +89,8 @@ followed by text`;
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  
   it('should deserialize paragraph with leading linebreaks in the middle', () => {
-    const input =
-      `
+    const input = `
 Paragaph with two new Lines\\
 \\
 followed by text`;
@@ -118,11 +108,9 @@ followed by text`;
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
-
 
   it('should deserialize leading empty paragraphts as <br />', () => {
-    const input =
-      `
+    const input = `
 Paragaph followed by two empty paragraphts
 
 <br />
@@ -131,8 +119,7 @@ Paragaph followed by two empty paragraphts
 
     const output = (
       <fragment>
-        <hp>Paragaph followed by two empty paragraphts
-        </hp>
+        <hp>Paragaph followed by two empty paragraphts</hp>
         <hp>
           <htext></htext>
         </hp>
@@ -144,26 +131,21 @@ Paragaph followed by two empty paragraphts
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
-  
 
-  it(
-    String.raw`should collapse leading linebreak - collapsing break`,
-    () => {
-      const input = `
+  it(String.raw`should collapse leading linebreak - collapsing break`, () => {
+    const input = `
 > Blockquote followed by emtpy lines
 >
 >`;
 
-      const output = (
-        <fragment>
-          <hblockquote>
-            <htext>Blockquote followed by emtpy lines</htext>
-          </hblockquote>
-        </fragment>
-      );
+    const output = (
+      <fragment>
+        <hblockquote>
+          <htext>Blockquote followed by emtpy lines</htext>
+        </hblockquote>
+      </fragment>
+    );
 
-      expect(deserializeMd(editor, input)).toEqual(output);
-    }
-  );
-
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
 });

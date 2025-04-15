@@ -25,8 +25,8 @@ const buildSlateRoot = (
           type: 'paragraph',
         };
       }
-      return child
-    })
+      return child;
+    });
     return convertNodesDeserialize(root.children, {}, options);
   }
 

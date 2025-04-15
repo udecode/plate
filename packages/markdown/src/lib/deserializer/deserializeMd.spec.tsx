@@ -151,10 +151,8 @@ describe('deserializeMd', () => {
     }
   );
 
-
   it('should deserialize paragraphs', () => {
-    const input =
-      `
+    const input = `
 Paragraph 1 line 1
 Paragraph 1 line 2
 
@@ -173,10 +171,8 @@ Paragraph 2 line 1`;
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-
   it('should deserialize blockquotes', () => {
-    const input =
-`
+    const input = `
 > Blockquote 1 line 1
 > Blockquote 1 line 2
  

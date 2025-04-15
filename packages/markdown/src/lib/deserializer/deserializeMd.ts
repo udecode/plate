@@ -33,7 +33,7 @@ export const deserializeMd = (
 ): any => {
   // if using remarkMdx, we need to replace <br> with <br /> since <br /> is not supported in mdx.
   data = data.replaceAll('<br>', '<br />');
-  
+
   const mergedOptions = getMergedOptionsDeserialize(editor, options);
 
   const toSlateProcessor = unified()
