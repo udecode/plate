@@ -75,10 +75,13 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
           return;
         }
 
-        if (ElementApi.isElement(node) && !getOptions().open) {
+        if (
+          ElementApi.isElement(node) &&
+          node.type === type &&
+          !getOptions().open
+        ) {
           tf.removeNodes({
             at: path,
-            match: (n) => ElementApi.isElement(n) && n.type === type,
           });
 
           return;

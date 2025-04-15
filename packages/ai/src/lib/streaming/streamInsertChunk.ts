@@ -39,20 +39,19 @@ export function streamInsertChunk(
   if (_blockPath === null) {
     editor.setOption(AIChatPlugin, '_blockChunks', chunk);
     const blocks = streamDeserializeMd(editor, chunk);
+    const path = getCurrentBlockPath(editor);
+    const startInEmptyParagraph =
+      NodeApi.string(editor.api.node(path)![0]).length === 0;
 
-    // TOOD
-    // if (
-    // PathApi.equals(getNextBlockPath(editor), [0]) &&
-    // NodeApi.string(editor.api.node([0])![0]).length === 0
-    // ) {
-    // editor.tf.removeNodes({ at: path });
-    // }
+    // if start in empty paragraph, remove it
+    if (startInEmptyParagraph) {
+      editor.tf.removeNodes({ at: path });
+    }
+
     if (blocks.length > 0) {
-      const path = getCurrentBlockPath(editor);
-
       editor.tf.insertNodes(nodesWithProps([blocks[0]], options), {
         at: path,
-        nextBlock: true,
+        nextBlock: !startInEmptyParagraph,
         select: true,
       });
 

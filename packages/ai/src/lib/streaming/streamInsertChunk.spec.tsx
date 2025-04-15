@@ -1,10 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type Descendant,
-  type SlateEditor,
-  createSlateEditor,
-} from '@udecode/plate';
+import { type SlateEditor, createSlateEditor } from '@udecode/plate';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { deserializeMd } from '@udecode/plate-markdown';
 import { jsxt } from '@udecode/plate-test-utils';
@@ -17,16 +13,6 @@ import {
 } from './streamInsertChunk';
 
 jsxt;
-
-const appendHeadParagraph = (children: Descendant[]) => {
-  return [
-    {
-      children: [{ text: '' }],
-      type: 'p',
-    },
-    ...children,
-  ];
-};
 
 describe('steamInsertChunk', () => {
   describe('line breaks', () => {
@@ -50,7 +36,7 @@ describe('steamInsertChunk', () => {
         </editor>
       ) as any;
 
-      expect(editor.children).toEqual(appendHeadParagraph(output.children));
+      expect(editor.children).toEqual(output.children);
     });
 
     it.skip('should handle multiple paragraphs with newlines correctly', () => {
@@ -101,7 +87,7 @@ describe('steamInsertChunk', () => {
         </editor>
       ) as any;
 
-      expect(editor.children).toEqual(appendHeadParagraph(output.children));
+      expect(editor.children).toEqual(output.children);
     });
 
     it('should correctly fist chunk with multiple nodes', () => {
@@ -136,7 +122,7 @@ describe('steamInsertChunk', () => {
         </editor>
       ) as any;
 
-      expect(editor.children).toEqual(appendHeadParagraph(output.children));
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -164,7 +150,7 @@ describe('steamInsertChunk', () => {
         </editor>
       ) as any;
 
-      expect(editor.children).toEqual(appendHeadParagraph(output.children));
+      expect(editor.children).toEqual(output.children);
     });
 
     it('should correctly handle markdown formatting at the end of a line', () => {
@@ -191,7 +177,7 @@ describe('steamInsertChunk', () => {
         </editor>
       ) as any;
 
-      expect(editor.children).toEqual(appendHeadParagraph(output.children));
+      expect(editor.children).toEqual(output.children);
     });
 
     it('should correctly handle incomplete marks', () => {
@@ -219,7 +205,7 @@ describe('steamInsertChunk', () => {
         </editor>
       ) as any;
 
-      expect(editor.children).toEqual(appendHeadParagraph(output.children));
+      expect(editor.children).toEqual(output.children);
     });
 
     it('should correctly handle incomplete marks with newlines', () => {
@@ -242,7 +228,7 @@ describe('steamInsertChunk', () => {
         </editor>
       ) as any;
 
-      expect(editor.children).toEqual(appendHeadParagraph(output.children));
+      expect(editor.children).toEqual(output.children);
     });
   });
 
@@ -262,7 +248,7 @@ describe('steamInsertChunk', () => {
       }
 
       expect(editor.children).toEqual(
-        appendHeadParagraph(deserializeMd(editor, streamChunks.join('')))
+        deserializeMd(editor, streamChunks.join(''))
       );
     });
 
@@ -284,7 +270,7 @@ describe('steamInsertChunk', () => {
       }
 
       expect(editor.children).toEqual(
-        appendHeadParagraph(deserializeMd(editor, streamChunks.join('')))
+        deserializeMd(editor, streamChunks.join(''))
       );
     });
 
@@ -302,7 +288,7 @@ describe('steamInsertChunk', () => {
       }
 
       expect(editor.children).toEqual(
-        appendHeadParagraph(deserializeMd(editor, streamChunks.join('')))
+        deserializeMd(editor, streamChunks.join(''))
       );
     });
   });
@@ -331,7 +317,7 @@ describe('steamInsertChunk', () => {
         </editor>
       ) as any;
 
-      expect(editor.children).toEqual(appendHeadParagraph(output.children));
+      expect(editor.children).toEqual(output.children);
     });
 
     it('should correctly process complex content with skills list and weather information', () => {
@@ -399,12 +385,12 @@ describe('steamInsertChunk', () => {
       //   'fj'
       // );
 
-      expect(editor.children).toEqual(appendHeadParagraph(output.children));
+      expect(editor.children).toEqual(output.children);
     });
   });
 
   describe('fixures', () => {
-    it.skip('should correctly stream chunks with existing paragraph', () => {
+    it('should correctly stream chunks with existing paragraph', () => {
       const input = (
         <editor>
           <hp>
@@ -446,7 +432,7 @@ describe('steamInsertChunk', () => {
       expect(editor.children).toEqual(output);
     });
 
-    it.skip('should correctly handle streaming when cursor is in existing paragraph', () => {
+    it('should correctly handle streaming when cursor is in existing paragraph', () => {
       const input = (
         <editor>
           <hp>
@@ -482,7 +468,7 @@ describe('steamInsertChunk', () => {
         streamInsertChunk(editor, text);
       }
 
-      expect(editor.children).toEqual(appendHeadParagraph(output.children));
+      expect(editor.children).toEqual(output);
     });
 
     it('all markdown nodes should be streamed correctly', () => {
@@ -716,9 +702,11 @@ describe('steamInsertChunk', () => {
         </fragment>
       );
 
-      expect(editor.children).toEqual(
-        appendHeadParagraph([...basicValue, ...tableValue, ...taskListValue])
-      );
+      expect(editor.children).toEqual([
+        ...basicValue,
+        ...tableValue,
+        ...taskListValue,
+      ]);
     });
 
     it('incomplete line breaks', () => {
@@ -738,9 +726,7 @@ describe('steamInsertChunk', () => {
         streamInsertChunk(editor, text);
       }
 
-      expect(editor.children).toEqual(
-        appendHeadParagraph(deserializeMd(editor, chunks.join('')))
-      );
+      expect(editor.children).toEqual(deserializeMd(editor, chunks.join('')));
     });
 
     // TODO: support incomplete inline math
@@ -767,9 +753,7 @@ describe('steamInsertChunk', () => {
 
       const result = editor.children;
 
-      expect(result).toEqual(
-        appendHeadParagraph(deserializeMd(editor, chunks.join('')))
-      );
+      expect(result).toEqual(deserializeMd(editor, chunks.join('')));
     });
 
     // FIXME:Need to find a way to disable automatic conversion (https://example.com) to links it's should be text (remark-gfm).
@@ -782,9 +766,7 @@ describe('steamInsertChunk', () => {
         streamInsertChunk(editor, text);
       }
 
-      expect(editor.children).toEqual(
-        appendHeadParagraph(deserializeMd(editor, chunks.join('')))
-      );
+      expect(editor.children).toEqual(deserializeMd(editor, chunks.join('')));
     });
 
     it.skip('should correctly handle incomplete todo list and table', () => {
@@ -829,9 +811,7 @@ describe('steamInsertChunk', () => {
         streamInsertChunk(editor, text);
       }
 
-      expect(editor.children).toEqual(
-        appendHeadParagraph(deserializeMd(editor, chunks.join('')))
-      );
+      expect(editor.children).toEqual(deserializeMd(editor, chunks.join('')));
     });
   });
 });
