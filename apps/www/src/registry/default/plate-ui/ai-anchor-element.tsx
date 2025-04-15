@@ -8,7 +8,7 @@ export const AIAnchorElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
     return (
       <PlateElement ref={ref} className={cn(className)} {...props}>
-        <span />
+        <div className='h-[0.1px]' />
       </PlateElement>
     );
   }
