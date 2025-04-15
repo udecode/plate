@@ -34,7 +34,7 @@ const createTestEditor = (plugins: any[] = []) =>
 
 const editor = createTestEditor();
 
-describe('deserializeMd', () => {
+describe('deserializeMd - paragraph', () => {
   
 
   it('should deserialize paragraph with one linebreak', () => {
@@ -145,5 +145,25 @@ Paragaph followed by two empty paragraphts
     expect(deserializeMd(editor, input)).toEqual(output);
   });
   
+
+  it(
+    String.raw`should collapse leading linebreak - collapsing break`,
+    () => {
+      const input = `
+> Blockquote followed by emtpy lines
+>
+>`;
+
+      const output = (
+        <fragment>
+          <hblockquote>
+            <htext>Blockquote followed by emtpy lines</htext>
+          </hblockquote>
+        </fragment>
+      );
+
+      expect(deserializeMd(editor, input)).toEqual(output);
+    }
+  );
 
 });
