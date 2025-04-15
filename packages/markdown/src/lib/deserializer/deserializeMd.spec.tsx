@@ -2,13 +2,11 @@
 
 import { createSlateEditor } from '@udecode/plate';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { MarkdownPlugin } from '../MarkdownPlugin';
 import { deserializeMd } from './deserializeMd';
-import { deserializeInlineMd } from './utils';
 
 jsxt;
 const editor = createTestEditor();
@@ -521,19 +519,9 @@ describe('deserializeMd options', () => {
 
 describe('fixures', () => {
   // https://github.com/inokawa/remark-slate-transformer/issues/129
-  it.only('when deserializing a empty value', () => {
+  it('when deserializing a empty value', () => {
     const input = '';
 
     expect(deserializeMd(editor, input)).toMatchSnapshot();
   });
-
-  console.log(
-    JSON.stringify(
-      deserializeInlineMd(
-        createTestEditor([BaseIndentListPlugin]) as any,
-        'https://example.com'
-      )
-    ),
-    'ddd'
-  );
 });

@@ -12,10 +12,12 @@ export const streamDeserializeInlineMd = (
   text: string,
   options?: DeserializeMdOptions
 ) => {
-  const blocks = editor.getApi(MarkdownPlugin).markdown.deserializeInline(text, {
-    remarkPlugins: getRemarkPluginsWithoutMdx(editor),
-    ...options,
-  });
+  const blocks = editor
+    .getApi(MarkdownPlugin)
+    .markdown.deserializeInline(text, {
+      remarkPlugins: getRemarkPluginsWithoutMdx(editor),
+      ...options,
+    });
 
   return blocks;
 };
