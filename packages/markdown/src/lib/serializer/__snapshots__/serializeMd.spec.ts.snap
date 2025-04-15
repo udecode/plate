@@ -7,7 +7,7 @@ exports[`serializeMd fixures Combination of bold and italic at the start of a bl
 "
 `;
 
-exports[`serializeMd fixures should serialize a \\n within a block qoute as new paragraph 1`] = `
+exports[`serializeMd fixures should serialize a \\n within a block qoute as new line 1`] = `
 "> Block quote\\
 > with a new line
 "
@@ -27,6 +27,26 @@ exports[`serializeMd fixures should serialize a value within a block qoute as a 
 
 exports[`serializeMd fixures should serialize marks with trailing whitespace 1`] = `
 "Make text **bold**, *italic*, <u>underlined</u>, or apply a ***<u>combination</u>*** of these styles for a visually striking effect.
+"
+`;
+
+exports[`serializeMd fixures should serialize three leading \\n at the end of a paragraph qoute as a new line 1`] = `
+"Paragaph with two new Lines\\
+\\ 
+<br />
+"
+`;
+
+exports[`serializeMd fixures should serialize two \\n within a block qoute as two new lines 1`] = `
+"> Block quote\\
+> \\
+> with a new line
+"
+`;
+
+exports[`serializeMd fixures should serialize two leading \\n at the end of a block qoute as a new line 1`] = `
+"> Block quote\\ 
+> <br />
 "
 `;
 
@@ -87,5 +107,29 @@ Date: 2024-01-01
 Text with <highlight style="background-color: yellow;">highlight</highlight> and <u>underline</u> and keyboard formatting
 
 Text with color and background color
+"
+`;
+
+exports[`serializeMd should serialize paragraph with only a new line to a <br /> 1`] = `
+"
+<br />
+
+
+<br />
+"
+`;
+
+exports[`serializeMd should serialize paragraphs with only a new line to a <br /> 1`] = `
+"
+<br />
+
+
+<br />
+"
+`;
+
+exports[`serializeMd should serialize the leading break at the end of a block qoute as a <br /> 1`] = `
+"Paragaph with a new Line
+<br />
 "
 `;

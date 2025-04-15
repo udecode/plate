@@ -6839,7 +6839,6 @@ __metadata:
     "@types/mdast": "npm:^4.0.3"
     "@types/unist": "npm:^3.0.2"
     "@udecode/plate": "workspace:^"
-    lodash: "npm:^4.17.21"
     marked: "npm:^15.0.6"
     mdast-util-math: "npm:3.0.0"
     mdast-util-mdx: "npm:3.0.0"

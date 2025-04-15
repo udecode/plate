@@ -103,8 +103,7 @@ export const defaultRules: TRules = {
         type: 'blockquote',
       };
     },
-    serialize: (node, options) => {
-      // create a paragraph for each \n node
+    serialize: (node, options) => {    
       const nodes = [] as any;
 
       for (const child of node.children) {
@@ -121,6 +120,15 @@ export const defaultRules: TRules = {
         nodes,
         options
       ) as MdParagraph['children'];
+
+      if (paragraphChildren.length > 0 && paragraphChildren.at(-1)!.type === 'break') {
+        // if the last child of the paragraph is a line break add an additional one
+        
+        paragraphChildren.at(-1)!.type = 'html';
+        // @ts-expect-error -- value is ok
+        paragraphChildren.at(-1)!.value = '\n<br />';
+      }
+
 
       return {
         children: [
@@ -634,11 +642,6 @@ export const defaultRules: TRules = {
     serialize: (node, options) => {
       let enrichedChildren = node.children;
 
-      if (node.children.length > 0 && enrichedChildren.at(-1)!.text === '\n') {
-        // if the last child of the paragraph is a line breake add an additional one
-        enrichedChildren.push({ text: '\n' });
-      }
-
       enrichedChildren = enrichedChildren.map((child) => {
         if (child.text === '\n') {
           return {
@@ -648,11 +651,21 @@ export const defaultRules: TRules = {
         return child;
       });
 
+      const convertedNodes = convertNodesSerialize(
+        enrichedChildren,
+        options
+      ) as MdParagraph['children']
+
+
+      if (convertedNodes.length > 0 && enrichedChildren.at(-1)!.type === 'break') {
+        // if the last child of the paragraph is a line break add an additional one
+        convertedNodes.at(-1)!.type = 'html';
+        // @ts-expect-error -- value is the right property here
+        convertedNodes.at(-1)!.value = '\n<br />';
+      }
+
       return {
-        children: convertNodesSerialize(
-          enrichedChildren,
-          options
-        ) as MdParagraph['children'],
+        children: convertedNodes,
         type: 'paragraph',
       };
     },

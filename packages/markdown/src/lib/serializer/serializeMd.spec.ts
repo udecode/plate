@@ -135,7 +135,7 @@ describe('serializeMd', () => {
     });
 
     it(
-      String.raw`should serialize a \n within a block qoute as new paragraph`,
+      String.raw`should serialize a \n within a block qoute as new line`,
       () => {
         const slateNodes = [
           {
@@ -153,5 +153,112 @@ describe('serializeMd', () => {
         ).toMatchSnapshot();
       }
     );
+
+    it(
+      String.raw`should serialize two \n within a block qoute as two new lines`,
+      () => {
+        const slateNodes = [
+          {
+            children: [
+              { text: 'Block quote' },
+              { text: '\n' },
+              { text: '\n' },
+              { text: 'with a new line' },
+            ],
+            type: 'blockquote',
+          },
+        ];
+
+        expect(
+          serializeMd(editor as any, { value: slateNodes })
+        ).toMatchSnapshot();
+      }
+    );
+
+    it(
+      String.raw`should serialize two leading \n at the end of a block qoute as a new line`,
+      () => {
+        const slateNodes = [
+          {
+            children: [
+              { text: 'Block quote' },
+              { text: '\n' },
+              { text: '\n' },
+            ],
+            type: 'blockquote',
+          },
+        ];
+
+        expect(
+          serializeMd(editor as any, { value: slateNodes })
+        ).toMatchSnapshot();
+      }
+    );
+
+    it(
+      String.raw`should serialize three leading \n at the end of a paragraph qoute as a new line`,
+      () => {
+        const slateNodes = [
+          {
+            children: [
+              { text: 'Paragaph with two new Lines' },
+              { text: '\n' },
+              { text: '\n' },
+              { text: '\n' },
+            ],
+            type: 'p',
+          },
+        ];
+
+        expect(
+          serializeMd(editor as any, { value: slateNodes })
+        ).toMatchSnapshot();
+      }
+    );
   });
+
+  it(
+    String.raw`should serialize the leading break at the end of a block qoute as a <br />`,
+    () => {
+      const slateNodes = [
+        {
+          children: [
+            { text: 'Paragaph with a new Line' },
+            { text: '\n' },
+          ],
+          type: 'p',
+        },
+      ];
+
+      expect(
+        serializeMd(editor as any, { value: slateNodes })
+      ).toMatchSnapshot();
+    }
+  );
+
+  it(
+    String.raw`should serialize paragraphs with only a new line to a <br />`,
+    () => {
+      const slateNodes = [
+        {
+          children: [
+            { text: '\n' },
+          ],
+          type: 'p',
+        },{
+          children: [
+            { text: '\n' },
+          ],
+          type: 'p',
+        },
+      ];
+
+      expect(
+        serializeMd(editor as any, { value: slateNodes })
+      ).toMatchSnapshot();
+    }
+  );
+
+  
+  
 });
