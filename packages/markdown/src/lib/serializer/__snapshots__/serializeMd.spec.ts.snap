@@ -110,15 +110,6 @@ Text with color and background color
 "
 `;
 
-exports[`serializeMd should serialize paragraph with only a new line to a <br /> 1`] = `
-"
-<br />
-
-
-<br />
-"
-`;
-
 exports[`serializeMd should serialize paragraphs with only a new line to a <br /> 1`] = `
 "
 <br />
