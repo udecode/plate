@@ -299,6 +299,13 @@ export const defaultRules: TRules = {
   },
   html: {
     deserialize: (mdastNode, deco, options) => {
+      if (mdastNode.value === '<p><br /></p>') {
+        const paragraphType = getPlateNodeType('paragraph');
+        return {
+          children: [{ text: '\n' } as TText],
+          type: paragraphType,
+        }
+      }
       return {
         text: (mdastNode.value || '').replaceAll('<br />', '\n'),
       };
@@ -624,16 +631,9 @@ export const defaultRules: TRules = {
             }
           });
         } else {
-          if (
-            child.text === '\n' &&
-            children.length > 1 &&
-            index === children.length - 1
-          ) {
-            // remove the last br of the paragraph if the previos element is not a br
-            // no op
-          } else {
-            inlineNodes.push(child);
-          }
+          
+          inlineNodes.push(child);
+          
         }
       });
 
@@ -644,7 +644,7 @@ export const defaultRules: TRules = {
     serialize: (node, options) => {
       let enrichedChildren = node.children;
 
-      enrichedChildren = enrichedChildren.map((child) => {
+      enrichedChildren = enrichedChildren.map((child, index, childNodes) => {
         if (child.text === '\n') {
           return {
             type: 'break',
@@ -659,15 +659,25 @@ export const defaultRules: TRules = {
       ) as MdParagraph['children'];
 
       if (
-        convertedNodes.length > 0 &&
-        enrichedChildren.at(-1)!.type === 'break'
+        convertedNodes.length === 0 
       ) {
+        return {
+          type: 'html',
+          value: '<br />',
+        } as any;
+      } else if (convertedNodes.length === 1 && enrichedChildren.at(-1)!.type === 'break') {
+        return {
+          type: 'html',
+          value: '<p><br /></p>',
+        } as any;
+      } else if (enrichedChildren.at(-1)!.type === 'break') {
         // if the last child of the paragraph is a line break add an additional one
         convertedNodes.at(-1)!.type = 'html';
         // @ts-expect-error -- value is the right property here
         convertedNodes.at(-1)!.value = '\n<br />';
       }
 
+      
       return {
         children: convertedNodes,
         type: 'paragraph',

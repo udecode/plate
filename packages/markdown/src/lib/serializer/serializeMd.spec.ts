@@ -229,16 +229,50 @@ describe('serializeMd', () => {
     }
   );
 
+  
+
   it(
-    String.raw`should serialize paragraphs with only a new line to a <br />`,
+    String.raw`should serialize an empty paragraph to a <br />`,
+    () => {
+      const slateNodes = [
+        {
+          children: [{ text: '' }],
+          type: 'p',
+        },
+        {
+          children: [{ text: '' }],
+          type: 'p',
+        },
+      ];
+
+      expect(
+        serializeMd(editor as any, { value: slateNodes })
+      ).toMatchSnapshot();
+    }
+  );
+
+  it(
+    String.raw`should serialize paragraphs with only a new line to a <p><br /></p>`,
     () => {
       const slateNodes = [
         {
           children: [{ text: '\n' }],
           type: 'p',
-        },
+        }
+      ];
+
+      expect(
+        serializeMd(editor as any, { value: slateNodes })
+      ).toMatchSnapshot();
+    }
+  );
+
+  it(
+    String.raw`should serialize paragraphs with two a new line to a \\n<br />`,
+    () => {
+      const slateNodes = [
         {
-          children: [{ text: '\n' }],
+          children: [{ text: '\n' }, { text: '\n' }],
           type: 'p',
         },
       ];

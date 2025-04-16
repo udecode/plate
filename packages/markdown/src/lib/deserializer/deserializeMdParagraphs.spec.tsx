@@ -33,7 +33,38 @@ const createTestEditor = (plugins: any[] = []) =>
 const editor = createTestEditor();
 
 describe('deserializeMd - paragraph', () => {
-  it('should deserialize paragraph with one linebreak', () => {
+  it('should deserialize empty paragraph with one soft linebreak', () => {
+    const input = `
+<p><br /></p>`;
+
+    const output = (
+      <fragment>
+        <hp>
+          <htext>{'\n'}</htext>
+        </hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+  
+  it('should deserialize paragraph with one soft linebreak', () => {
+    const input = `
+Paragaph with one new Line<br />`;
+
+    const output = (
+      <fragment>
+        <hp>
+          <htext>Paragaph with one new Line</htext>
+          <htext>{'\n'}</htext>
+        </hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize paragraph with two soft linebreak', () => {
     const input = `
 Paragaph with two new Lines\\
 <br />`;
@@ -43,6 +74,7 @@ Paragaph with two new Lines\\
         <hp>
           <htext>Paragaph with two new Lines</htext>
           <htext>{'\n'}</htext>
+          <htext>{'\n'}</htext>
         </hp>
       </fragment>
     );
@@ -50,7 +82,7 @@ Paragaph with two new Lines\\
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('should deserialize paragraph with two leading linebreaks', () => {
+  it('should deserialize paragraph with three soft linebreaks', () => {
     const input = `
 Paragaph with two new Lines\\
 \\
@@ -62,6 +94,7 @@ Paragaph with two new Lines\\
           <htext>Paragaph with two new Lines</htext>
           <htext>{'\n'}</htext>
           <htext>{'\n'}</htext>
+          <htext>{'\n'}</htext>
         </hp>
       </fragment>
     );
@@ -69,7 +102,7 @@ Paragaph with two new Lines\\
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('should deserialize paragraph with leading linebreaks in the middle', () => {
+  it('should deserialize paragraph with two soft linebreaks in the middle', () => {
     const input = `
 Paragaph with two new Lines\\
 \\
@@ -89,7 +122,7 @@ followed by text`;
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('should deserialize paragraph with leading linebreaks in the middle', () => {
+  it('should deserialize paragraph with soft linebreaks in the middle', () => {
     const input = `
 Paragaph with two new Lines\\
 \\
