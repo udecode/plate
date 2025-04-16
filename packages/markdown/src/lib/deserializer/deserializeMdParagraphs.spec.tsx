@@ -47,7 +47,7 @@ describe('deserializeMd - paragraph', () => {
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
-  
+
   it('should deserialize paragraph with one soft linebreak', () => {
     const input = `
 Paragaph with one new Line<br />`;

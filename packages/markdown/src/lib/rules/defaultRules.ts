@@ -304,7 +304,7 @@ export const defaultRules: TRules = {
         return {
           children: [{ text: '\n' } as TText],
           type: paragraphType,
-        }
+        };
       }
       return {
         text: (mdastNode.value || '').replaceAll('<br />', '\n'),
@@ -631,9 +631,7 @@ export const defaultRules: TRules = {
             }
           });
         } else {
-          
           inlineNodes.push(child);
-          
         }
       });
 
@@ -658,14 +656,15 @@ export const defaultRules: TRules = {
         options
       ) as MdParagraph['children'];
 
-      if (
-        convertedNodes.length === 0 
-      ) {
+      if (convertedNodes.length === 0) {
         return {
           type: 'html',
           value: '<br />',
         } as any;
-      } else if (convertedNodes.length === 1 && enrichedChildren.at(-1)!.type === 'break') {
+      } else if (
+        convertedNodes.length === 1 &&
+        enrichedChildren.at(-1)!.type === 'break'
+      ) {
         return {
           type: 'html',
           value: '<p><br /></p>',
@@ -677,7 +676,6 @@ export const defaultRules: TRules = {
         convertedNodes.at(-1)!.value = '\n<br />';
       }
 
-      
       return {
         children: convertedNodes,
         type: 'paragraph',
