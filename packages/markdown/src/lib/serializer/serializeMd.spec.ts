@@ -214,6 +214,24 @@ describe('serializeMd', () => {
   });
 
   it(
+    String.raw`should serialize three leading \n at the end of a paragraph (inline) qoute as a new line`,
+    () => {
+      const slateNodes = [
+        {
+          children: [
+            { text: 'Paragaph with two new Lines' + '\n' + '\n' + '\n' },
+          ],
+          type: 'p',
+        },
+      ];
+
+      expect(
+        serializeMd(editor as any, { value: slateNodes })
+      ).toMatchSnapshot();
+    }
+  );
+
+  it(
     String.raw`should serialize the leading break at the end of a block qoute as a <br />`,
     () => {
       const slateNodes = [

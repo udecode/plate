@@ -133,3 +133,10 @@ exports[`serializeMd should serialize the leading break at the end of a block qo
 <br />
 "
 `;
+
+exports[`serializeMd should serialize three leading \\n at the end of a paragraph (inline) qoute as a new line 1`] = `
+"Paragaph with two new Lines\\
+\\
+<br />
+"
+`;
