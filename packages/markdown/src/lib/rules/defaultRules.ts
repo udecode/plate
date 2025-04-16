@@ -647,7 +647,11 @@ export const defaultRules: TRules = {
           return {
             type: 'break',
           } as any;
+        } else if (typeof child.text === 'string') {
+          // mask soft breaks breaks
+          child.text = child.text.replaceAll('\n', `\\n`);
         }
+
         return child;
       });
 
@@ -657,6 +661,7 @@ export const defaultRules: TRules = {
       ) as MdParagraph['children'];
 
       if (convertedNodes.length === 0) {
+        // empty spaces paragraphs get represented as <br />
         return {
           type: 'html',
           value: '<br />',
@@ -665,19 +670,57 @@ export const defaultRules: TRules = {
         convertedNodes.length === 1 &&
         enrichedChildren.at(-1)!.type === 'break'
       ) {
+        // paragraphs only containing one softbreak get represented as <p><br /></p>
         return {
           type: 'html',
           value: '<p><br /></p>',
         } as any;
       } else if (enrichedChildren.at(-1)!.type === 'break') {
-        // if the last child of the paragraph is a line break add an additional one
+        // if the last child of the paragraph is a line break replace it with a br tag
         convertedNodes.at(-1)!.type = 'html';
         // @ts-expect-error -- value is the right property here
         convertedNodes.at(-1)!.value = '\n<br />';
+      } else if (
+        convertedNodes.at(-1)!.type === 'text' &&
+        (convertedNodes.at(-1)!.value as string).endsWith(`\\n`)
+      ) {
+        // if the last child of the paragraph is a text node that ends with a line break replace it with a br tag
+
+        (convertedNodes.at(-1) as any)!.value = (
+          convertedNodes.at(-1)!.value as string
+        ).slice(0, -2);
+
+        convertedNodes.push({
+          type: 'html',
+          value: '<br />',
+        });
       }
 
+      const lineBreaksExtracted = [];
+
+      convertedNodes.forEach((child, index) => {
+        if (child.type === 'text') {
+          const textValue = (child as any).value as string;
+          textValue.split(`\\n`).forEach((part, partIndex, array) => {
+            lineBreaksExtracted.push({
+              ...child,
+              value: part,
+            });
+            if (partIndex !== array.length - 1) {
+              lineBreaksExtracted.push({
+                type: 'break',
+              });
+            }
+          });
+        } else {
+          lineBreaksExtracted.push(child);
+        }
+      });
+
+      // if the last child of the paragraph is a text node that ends with a line break replace it with a br tag
+
       return {
-        children: convertedNodes,
+        children: lineBreaksExtracted,
         type: 'paragraph',
       };
     },
