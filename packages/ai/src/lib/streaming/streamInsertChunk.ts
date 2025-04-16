@@ -202,5 +202,5 @@ export function streamInsertChunk(
 }
 
 export const getCurrentBlockPath = (editor: SlateEditor) => {
-  return editor.selection!.focus.path.slice(0, 1);
+  return editor.selection?.focus.path.slice(0, 1) ?? [0];
 };
