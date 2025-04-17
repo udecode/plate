@@ -15,48 +15,49 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
   const editor = e as unknown as PlateYjsEditorProps & SlateEditor;
 
   // Get all relevant options
-  const { 
-    cursorOptions, 
-    disableCursors, 
-    sharedAwareness,
-    ydoc,
-    yjsOptions
-  } = getOptions();
+  const { _awareness, cursorOptions, ydoc, yjsOptions } = getOptions();
 
   // Make sure we have a document and a provider
   if (!ydoc) {
-    console.warn('Yjs plugin: No Y.Doc available');
+    // This shouldn't happen if BaseYjsPlugin ran correctly
+    editor.api.debug.error('Yjs plugin: Y.Doc (ydoc) is missing.');
     return editor;
   }
 
   // Get the shared document type from the Y.Doc
   const sharedType = ydoc.get('content', Y.XmlText) as Y.XmlText;
-  console.log('disableCursors', disableCursors);
-  console.log('sharedAwareness', sharedAwareness);
+
+  // Apply core Yjs binding first
+  let intermediateEditor = withTYjs(editor, sharedType, {
+    autoConnect: false, // Providers are connected manually by BaseYjsPlugin logic
+    ...yjsOptions,
+  });
 
   // Apply YJS transformations to the editor
-  if (disableCursors) {
-    return withTYHistory(
-      withTYjs(editor, sharedType, {
-        autoConnect: false,
-        ...yjsOptions,
-      })
-    );
+  // Conditionally apply cursor support based on cursorOptions
+  if (cursorOptions) {
+    // Use the shared awareness instance for cursors
+    if (_awareness) {
+      let autoSend = true;
+
+      if (cursorOptions.autoSend === false) {
+        autoSend = false;
+      }
+
+      intermediateEditor = withTCursors(intermediateEditor, _awareness, {
+        ...cursorOptions,
+        autoSend,
+      });
+    } else {
+      // This also shouldn't happen if BaseYjsPlugin ran correctly
+      editor.api.debug.error(
+        'Yjs plugin: Internal shared awareness (_awareness) is missing but cursors are enabled.'
+      );
+    }
   }
- 
-  // Apply YJS with cursor support
-  // Use the shared awareness instance for cursors instead of relying on a primary provider
-  if (!sharedAwareness) {
-    throw new Error('Yjs plugin: No shared awareness instance provided');
-  }
-  return withTYHistory(
-    withTCursors(
-      withTYjs(editor, sharedType, {
-        autoConnect: false,
-        ...yjsOptions,
-      }),
-      sharedAwareness,
-      cursorOptions
-    )
-  );
+
+  // Apply history last
+  const finalEditor = withTYHistory(intermediateEditor);
+
+  return finalEditor;
 };

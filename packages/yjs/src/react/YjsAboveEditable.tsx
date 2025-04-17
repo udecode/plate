@@ -1,9 +1,8 @@
 import React from 'react';
 
-import { YjsEditor } from '@slate-yjs/core';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
-import type { UnifiedProvider, YjsConfig } from '../lib/providers/types';
+import type { YjsConfig } from '../lib/providers/types';
 
 import { BaseYjsPlugin } from '../lib/BaseYjsPlugin';
 
@@ -13,66 +12,59 @@ export interface YjsAboveEditableProps {
 
 export function YjsAboveEditable({ children }: YjsAboveEditableProps) {
   const { editor } = useEditorPlugin<YjsConfig>(BaseYjsPlugin);
-  const providersFromPlugin = usePluginOption(BaseYjsPlugin, 'providers');
+  const providers = usePluginOption(BaseYjsPlugin, '_providers');
   const ydoc = usePluginOption(BaseYjsPlugin, 'ydoc');
-  const syncedProviderCount = usePluginOption(BaseYjsPlugin, 'syncedProviderCount');
-  const totalProviderCount = usePluginOption(BaseYjsPlugin, 'totalProviderCount');
-  const waitForAllProviders = usePluginOption(BaseYjsPlugin, 'waitForAllProviders');
-
-  const providers = React.useMemo(() => {
-    return providersFromPlugin || [];
-  }, [providersFromPlugin]) as UnifiedProvider[];
+  const syncedProviderCount =
+    usePluginOption(BaseYjsPlugin, '_syncedProviderCount') ?? 0;
+  const totalProviderCount =
+    usePluginOption(BaseYjsPlugin, '_totalProviderCount') ?? 0;
+  const waitForAllProviders = usePluginOption(
+    BaseYjsPlugin,
+    'waitForAllProviders'
+  );
 
   // Connect all providers when component mounts
   React.useEffect(() => {
-    // Connect all providers synchronously
-    for (const provider of providers) {
-      try {
-        if (!provider.isConnected) {
-          provider.connect();
-        }
-      } catch (error) {
-        console.warn(`[yjs] Error connecting provider (${provider.type}):`, error);
-      }
-    }
-
-    // For WebRTC providers, we should NOT disconnect on cleanup
-    // as it will clear the awareness state. Instead, we'll let the
-    // providers handle their own cleanup via their internal mechanisms.
-    return () => {
-      for (const provider of [...providers].reverse()) {
-        try {
-          if (provider.isConnected && provider.type !== 'webrtc') {
-            provider.disconnect();
-          }
-        } catch (error) {
-          console.warn(
-            `[yjs] Error disconnecting provider (${provider.type}):`,
-            error
-          );
-        }
-      }
-    };
+    // // Connect all providers synchronously
+    // for (const provider of providers) {
+    //   try {
+    //     if (!provider.isConnected) {
+    //       provider.connect();
+    //     }
+    //   } catch (error) {
+    //     console.warn(
+    //       `[yjs] Error connecting provider (${provider.type}):`,
+    //       error
+    //     );
+    //   }
+    // }
   }, [providers]);
 
   // Connect editor to Y.Doc only once when providers are ready
-  React.useEffect(() => {
-    if (!editor) return;
-    YjsEditor.connect(editor as any);
+  // React.useEffect(() => {
+  //   if (!editor) return;
+  //   YjsEditor.connect(editor as any);
 
-    return () => {
-      YjsEditor.disconnect(editor as any);
-    };
-  }, [editor, ydoc]);
+  //   return () => {
+  //     YjsEditor.disconnect(editor as any);
+  //   };
+  // }, [editor, ydoc]);
 
-  // Determine if we should render content
-  const shouldRender = waitForAllProviders 
-    ? syncedProviderCount >= totalProviderCount && totalProviderCount > 0
-    : syncedProviderCount > 0; // At least one provider is synced
+  // // Ensure counts are numbers for comparison
+  // const numSynced =
+  //   typeof syncedProviderCount === 'number' ? syncedProviderCount : 0;
+  // const numTotal =
+  //   typeof totalProviderCount === 'number' ? totalProviderCount : 0;
 
-  if (!shouldRender) {
-    return null;
-  }
+  // // Determine if we should render content
+  // const shouldRender =
+  //   waitForAllProviders && numTotal > 0
+  //     ? numSynced >= numTotal // Wait for all if configured and providers exist
+  //     : numSynced > 0; // Otherwise, render if at least one is synced
 
-  return <>{children}</>;
+  // if (!shouldRender) {
+  //   return null;
+  // }
+
+  // return <>{children}</>;
 }

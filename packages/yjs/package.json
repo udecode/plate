@@ -58,10 +58,10 @@
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
+    "@hocuspocus/provider": "^2.15.2",
     "@udecode/plate": ">=46.0.10",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
-    "@hocuspocus/provider": "^2.15.2",
     "y-webrtc": "10.3.0"
   },
   "publishConfig": {

@@ -25,11 +25,17 @@ Check out our [Collaborative Editing Demo](/docs/examples/collaborative-editing)
 
 ```bash
 npm install @udecode/plate-yjs
+```
 
-# For Hocuspocus server-based collaboration
+For Hocuspocus server-based collaboration:
+
+```bash
 npm install @hocuspocus/provider
+```
 
-# For WebRTC peer-to-peer collaboration
+For WebRTC peer-to-peer collaboration:
+
+```bash
 npm install y-webrtc
 ```
 
@@ -56,7 +62,7 @@ const editor = createPlateEditor({
         providerConfigs: [
           // Hocuspocus provider for server-based collaboration
           {
-            providerType: 'hocuspocus',
+            type: 'hocuspocus',
             options: {
               url: 'https://hocuspocus.test/hocuspocus',
               name: 'test',
@@ -64,7 +70,7 @@ const editor = createPlateEditor({
           },
           // Optional: WebRTC provider for peer-to-peer collaboration
           {
-            providerType: 'webrtc',
+            type: 'webrtc',
             options: {
               roomName: 'test',
               // Optional: custom signaling servers
@@ -125,7 +131,7 @@ Then configure your WebRTC provider to use your custom signaling server:
 
 ```tsx
 {
-  providerType: 'webrtc',
+  type: 'webrtc',
   options: {
     roomName: 'document-1',
     signaling: ['ws://localhost:4444'],
@@ -151,7 +157,7 @@ To configure TURN servers with y-webrtc, use the `peerOpts` field:
 
 ```tsx
 {
-  providerType: 'webrtc',
+  type: 'webrtc',
   options: {
     roomName: 'document-1',
     signaling: ['ws://localhost:4444'],

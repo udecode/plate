@@ -7104,25 +7104,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-yjs@workspace:packages/yjs"
   dependencies:
-    "@hocuspocus/provider": "npm:^2.15.2"
     "@slate-yjs/core": "npm:^1.0.2"
     "@udecode/plate": "workspace:^"
-    y-webrtc: "npm:10.3.0"
     yjs: "npm:^13.6.23"
   peerDependencies:
+    "@hocuspocus/provider": ^2.15.2
     "@udecode/plate": ">=46.0.10"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
-  dependenciesMeta:
-    "@hocuspocus/provider":
-      optional: true
-    y-webrtc:
-      optional: true
-  peerDependenciesMeta:
-    "@hocuspocus/provider":
-      optional: true
-    y-webrtc:
-      optional: true
+    y-webrtc: 10.3.0
   languageName: unknown
   linkType: soft
 

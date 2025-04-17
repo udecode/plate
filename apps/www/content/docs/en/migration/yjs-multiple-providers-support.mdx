@@ -66,7 +66,7 @@ YjsPlugin.configure({
     disableCursors: false,
     providerConfigs: [
       {
-        providerType: 'hocuspocus',
+        type: 'hocuspocus',
         options: {
           url: 'wss://hocuspocus.example.com',
           name: 'document-1',
@@ -75,7 +75,7 @@ YjsPlugin.configure({
       },
       // Optional additional providers:
       // {
-      //   providerType: 'webrtc',
+      //   type: 'webrtc',
       //   options: {
       //     roomName: 'document-1',
       //   },
@@ -167,7 +167,7 @@ YjsPlugin.configure({
     providerConfigs: [
       // Keep your existing Hocuspocus provider
       {
-        providerType: 'hocuspocus',
+        type: 'hocuspocus',
         options: {
           url: 'wss://hocuspocus.example.com',
           name: 'document-1',
@@ -175,7 +175,7 @@ YjsPlugin.configure({
       },
       // Add WebRTC provider for peer-to-peer
       {
-        providerType: 'webrtc',
+        type: 'webrtc',
         options: {
           roomName: 'document-1', // Should match the document name
           // Optional: custom signaling servers
@@ -204,7 +204,7 @@ Make sure your provider configuration is correct:
 ```tsx
 // For Hocuspocus
 {
-  providerType: 'hocuspocus',
+  type: 'hocuspocus',
   options: {
     url: 'ws://localhost:1234', // Check this URL
     name: 'document-name', 
@@ -213,7 +213,7 @@ Make sure your provider configuration is correct:
 
 // For WebRTC
 {
-  providerType: 'webrtc',
+  type: 'webrtc',
   options: {
     roomName: 'document-name', // Must match between peers
     // For custom signaling servers:
@@ -236,14 +236,14 @@ YjsPlugin.configure({
     ydoc,
     providerConfigs: [
       {
-        providerType: 'hocuspocus',
+        type: 'hocuspocus',
         options: {
           name: documentId, // Unique document ID
           url: 'ws://localhost:1234',
         },
       },
       {
-        providerType: 'webrtc',
+        type: 'webrtc',
         options: {
           roomName: documentId, // Same unique document ID
         },

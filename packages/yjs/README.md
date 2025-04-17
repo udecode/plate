@@ -29,6 +29,7 @@ npm install y-indexeddb
 The plugin supports two types of providers out of the box, with full type safety:
 
 1. **Hocuspocus Provider**
+
    - Server-based collaboration using WebSocket
    - Suitable for large-scale applications
    - Requires a Hocuspocus server
@@ -54,7 +55,7 @@ const plugins = [
     providerConfigs: [
       // Hocuspocus provider with type-checked options
       {
-        providerType: 'hocuspocus',
+        type: 'hocuspocus',
         options: {
           url: 'ws://localhost:1234',
           name: 'document-name',
@@ -62,7 +63,7 @@ const plugins = [
       },
       // WebRTC provider with type-checked options
       {
-        providerType: 'webrtc',
+        type: 'webrtc',
         options: {
           roomName: 'document-1',
           signaling: ['ws://127.0.0.1:4444'],
@@ -107,26 +108,26 @@ const indexedDBProvider = {
   awareness: new Awareness(ydoc),
   isConnected: true,
   isSynced: false,
-  
+
   // Store the actual provider instance
   _provider: indexedDBInstance,
-  
+
   // Required methods
-  connect: function() {
+  connect: function () {
     // IndexedDB is always "connected" locally
     this.isConnected = true;
     // Mark as synced once connected
     this.isSynced = true;
   },
-  disconnect: function() {
+  disconnect: function () {
     this.isConnected = false;
     this.isSynced = false;
   },
-  destroy: function() {
+  destroy: function () {
     // Clean up the actual provider
     this._provider.destroy();
     this.disconnect();
-  }
+  },
 };
 
 // Use your custom provider with the plugin
@@ -134,11 +135,11 @@ const plugins = [
   YjsPlugin({
     ydoc,
     // Pass your pre-instantiated providers
-    customProviders: [indexedDBProvider], 
+    customProviders: [indexedDBProvider],
     // You can still use built-in providers alongside custom ones
     providerConfigs: [
       {
-        providerType: 'webrtc',
+        type: 'webrtc',
         options: {
           roomName: 'document-1',
         },
@@ -167,13 +168,13 @@ const plugins = [
     ydoc,
     providerConfigs: [
       {
-        providerType: 'webrtc',
+        type: 'webrtc',
         options: {
           roomName: 'document-1',
         },
       },
       {
-        providerType: 'hocuspocus',
+        type: 'hocuspocus',
         options: {
           url: 'ws://localhost:1234',
           name: 'document-1',
@@ -181,7 +182,7 @@ const plugins = [
       },
     ],
     // Wait for all providers to sync before showing content
-    waitForAllProviders: true, 
+    waitForAllProviders: true,
   }),
 ];
 ```
@@ -197,6 +198,7 @@ When you configure multiple providers:
 5. The plugin keeps track of how many providers are synced using a counter system
 
 This lets you create robust setups like:
+
 - WebRTC for fast peer-to-peer editing with Hocuspocus for server persistence
 - Multiple Hocuspocus providers for fallback server connections
 - Custom IndexedDB provider for offline persistence
@@ -241,51 +243,51 @@ class CustomProviderWrapper {
   private _isConnected = false;
   private _isSynced = false;
   private handlers?: ProviderEventHandlers;
-  
-  constructor(options, handlers, ydoc, sharedAwareness) {
+
+  constructor(options, handlers, ydoc, awareness) {
     this.handlers = handlers;
     this._document = ydoc || new Y.Doc();
-    this._awareness = sharedAwareness || new Awareness(this._document);
+    this._awareness = awareness || new Awareness(this._document);
     // Setup your provider using the options...
   }
-  
+
   // Required methods from UnifiedProvider interface
-  connect() { 
+  connect() {
     // Implementation that connects to your service
     this._isConnected = true;
     // When you connect and become synced:
     this._isSynced = true;
     this.handlers?.onSyncChange?.(true);
   }
-  
-  disconnect() { 
+
+  disconnect() {
     // Implementation to disconnect
     this._isConnected = false;
-    
+
     // If we were synced, report sync state change
     if (this._isSynced) {
       this._isSynced = false;
       this.handlers?.onSyncChange?.(false);
     }
   }
-  
-  destroy() { 
+
+  destroy() {
     // Clean up resources
     this.disconnect();
   }
-  
+
   get awareness() {
     return this._awareness;
   }
-  
+
   get document() {
     return this._document;
   }
-  
+
   get isConnected() {
     return this._isConnected;
   }
-  
+
   get isSynced() {
     return this._isSynced;
   }
@@ -299,16 +301,17 @@ YjsPlugin({
   ydoc,
   providerConfigs: [
     {
-      providerType: 'custom', // Use your registered type
+      type: 'custom', // Use your registered type
       options: {
         // Custom options for your provider
-      }
-    }
-  ]
-})
+      },
+    },
+  ],
+});
 ```
 
 > **Note:** There are two ways to use custom providers:
+>
 > 1. Use `customProviders` to pass pre-instantiated provider objects (simpler for one-off usage)
 > 2. Use `registerProviderType` to register a provider class that can be created via `providerConfigs` (better for reusable providers)
 
