@@ -63,6 +63,55 @@ describe('serializeInlineMd', () => {
     expect(result).toBe('Hello ***bold and italic*** text\n');
   });
 
+  it('should serialize overlapping formatting correctly', () => {
+    const nodes = [
+      { text: 'Regular ' },
+      { bold: true, text: 'Bold' },
+      { bold: true, italic: true, text: ' Bold&Italic ' },
+      { italic: true, text: 'Italic' },
+      { text: ' Regular' },
+    ];
+    const result = serializeInlineMd(editor, { value: nodes });
+    expect(result).toBe('Regular *Italic* ***Bold&Italic*** **Bold** Regular\n');
+  });
+
+  it('should serialize overlapping formatting correctly without spaces', () => {
+    const nodes = [
+      { text: 'Regular' },
+      { bold: true, text: 'Bold' },
+      { bold: true, italic: true, text: 'Bold&Italic' },
+      { italic: true, text: 'Italic' },
+      { text: 'Regular' },
+    ];
+    const result = serializeInlineMd(editor, { value: nodes });
+    expect(result).toBe('Regular*Italic****Bold&Italic*****Bold**Regular\n');
+  });
+
+  it('should serialize overlapping formatting correctly without spaces', () => {
+    const nodes = [
+      { text: 'Regular' },
+      { italic: true, text: 'Italic' },
+      { bold: true, italic: true, text: 'Bold&Italic' },
+      { bold: true, text: 'Bold' },
+      { text: 'Regular' },
+    ];
+    const result = serializeInlineMd(editor, { value: nodes });
+    expect(result).toBe('Regular**Bold*****Bold&Italic****Italic*Regular\n');
+  });
+
+  
+  it('should serialize overlapping formatting correctly without spaces', () => {
+    const nodes = [
+      { text: 'Regular' },
+      { bold: true, italic: true, text: 'Bold&Italic' },
+      { bold: true, text: 'Bold' },
+      { text: 'Regular' },
+    ];
+    const result = serializeInlineMd(editor, { value: nodes });
+    expect(result).toBe('Regular***Bold&Italic****Italic*Regular\n');
+  });
+
+
   it('should handle empty nodes array', () => {
     const nodes: any[] = [];
     const result = serializeInlineMd(editor, { value: nodes });
