@@ -37,6 +37,7 @@
     "@ariakit/react": "0.4.15",
     "@emoji-mart/data": "1.2.1",
     "@faker-js/faker": "9.4.0",
+    "@hocuspocus/provider": "^2.15.2",
     "@hookform/resolvers": "3.10.0",
     "@next/third-parties": "15.1.6",
     "@radix-ui/react-accordion": "1.2.2",
@@ -168,6 +169,7 @@
     "uploadthing": "7.2.0",
     "use-file-picker": "2.1.2",
     "vaul": "1.1.2",
+    "y-webrtc": "10.3.0",
     "zod": "^3.20.2"
   },
   "devDependencies": {

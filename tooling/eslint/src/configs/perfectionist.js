@@ -165,7 +165,7 @@ export default defineConfig(
         },
       ],
       'perfectionist/sort-modules': [
-        'warn',
+        'off',
         {
           groups: [
             'declare-enum',

@@ -1638,6 +1638,17 @@ export const examples: Registry['items'] = [
     registryDependencies: ['use-debounce'],
     type: 'registry:example',
   },
+  {
+    files: [
+      {
+        path: 'examples/collaborative-editing-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'collaborative-editing-demo',
+    registryDependencies: [],
+    type: 'registry:example',
+  },
   // {
   //   external: true,
   // {type: 'registry:example',path:  //   files: ['lib/plate-types.ts'],}

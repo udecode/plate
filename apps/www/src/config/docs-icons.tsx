@@ -132,6 +132,7 @@ export const DocIcons = {
   'code-line-element': FileCodeIcon,
   'code-syntax-leaf': FileCodeIcon,
   collaboration: UsersIcon,
+  'collaborative-editing': SparklesIcon,
   'color-dropdown-menu': PaintRollerIcon,
   column: Columns3Icon,
   'column-element': ColumnsIcon,

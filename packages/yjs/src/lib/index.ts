@@ -7,3 +7,6 @@ export * from './withPlateYjs';
 export * from './withTCursors';
 export * from './withTYHistory';
 export * from './withTYjs';
+export * from './providers/types';
+export * from './providers';
+

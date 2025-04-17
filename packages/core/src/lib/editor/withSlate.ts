@@ -180,6 +180,17 @@ export const withSlate = <
 
   resolvePlugins(editor, [rootPluginInstance]);
 
+  /** Ignore normalizeNode overrides if shouldNormalizeNode returns false */
+  const normalizeNode = editor.tf.normalizeNode;
+  editor.tf.normalizeNode = (...args) => {
+    if (!editor.api.shouldNormalizeNode(args[0])) {
+      return;
+    }
+
+    return normalizeNode(...args);
+  };
+  editor.normalizeNode = editor.tf.normalizeNode;
+
   if (typeof value === 'string') {
     editor.children = editor.api.html.deserialize({ element: value }) as Value;
   } else if (typeof value === 'function') {
