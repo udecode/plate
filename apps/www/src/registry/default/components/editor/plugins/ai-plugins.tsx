@@ -58,8 +58,7 @@ ${systemCommon}
 `;
 
 const userDefault = `<Reminder>
-CRITICAL: DO NOT use block formatting. You can only use inline formatting.
-NEVER write <Block>.
+CRITICAL: NEVER write <Block>.
 </Reminder>
 {prompt}`;
 
