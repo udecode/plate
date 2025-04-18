@@ -6,7 +6,7 @@ import {
   MarkdownPlugin,
 } from '@udecode/plate-markdown';
 
-import { getChunkTrimmed } from './utils';
+import { getChunkTrimmed, isCompleteMath } from './utils';
 import { getRemarkPluginsWithoutMdx } from './utils/getRemarkPlugin';
 
 export const streamDeserializeMd = (
@@ -14,7 +14,13 @@ export const streamDeserializeMd = (
   data: string,
   options?: DeserializeMdOptions
 ) => {
-  const blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(data, {
+  const input =
+    // test case: should correctly handle inline math
+    data.startsWith('$$') && !data.startsWith('$$\n') && !isCompleteMath(data)
+      ? data.replace('$$', String.raw`\$\$`)
+      : data;
+
+  const blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, {
     remarkPlugins: getRemarkPluginsWithoutMdx(editor),
     ...options,
   });
@@ -30,12 +36,12 @@ export const streamDeserializeMd = (
   const isCodeBlockOrTable =
     lastBlock?.type === 'code_block' || lastBlock?.type === 'table';
 
+  let result = blocks;
+
   /**
    * Deserialize the sting like `123\n\n` will be `123` base on markdown spec
    * but we want to keep the `\n\n`
    */
-
-  let result = blocks;
 
   if (
     lastBlock &&

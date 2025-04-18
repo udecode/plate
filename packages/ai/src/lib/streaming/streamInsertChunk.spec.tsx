@@ -725,7 +725,6 @@ describe('steamInsertChunk', () => {
       expect(editor.children).toEqual(deserializeMd(editor, chunks.join('')));
     });
 
-    // TODO: support incomplete inline math
     it('should correctly handle incomplete math block', () => {
       const chunks = [
         'Here is an example of Markdown with math:\n',
@@ -752,6 +751,25 @@ describe('steamInsertChunk', () => {
       expect(result).toEqual(deserializeMd(editor, chunks.join('')));
     });
 
+    it('should correctly handle incomplete inline math', () => {
+      const chunks = [
+        'inline math:\n\n',
+        '$$a^2 ',
+        '+ ',
+        'b^2 ',
+        '= ',
+        'c^2$$',
+      ];
+
+      const { editor } = createTestEditor();
+
+      for (const text of chunks) {
+        streamInsertChunk(editor, text);
+      }
+
+      expect(editor.children).toMatchSnapshot();
+    });
+
     // FIXME:Need to find a way to disable automatic conversion (https://example.com) to links it's should be text (remark-gfm).
     it.skip('should correctly handle incomplete link', () => {
       const chunks = ['[Link ', 'text](', 'https://example.com', ')'];
@@ -765,6 +783,7 @@ describe('steamInsertChunk', () => {
       expect(editor.children).toEqual(deserializeMd(editor, chunks.join('')));
     });
 
+    // missing space and \n
     it.skip('should correctly handle incomplete todo list and table', () => {
       const chunks = [
         '*',
@@ -782,23 +801,6 @@ describe('steamInsertChunk', () => {
         'x',
         ']',
         ' done',
-        '  \n\n',
-        'A',
-        ' table',
-        ':',
-        '  \n\n',
-        '|',
-        ' a',
-        ' |',
-        ' b',
-        ' |',
-        '  \n',
-        '|',
-        ' -',
-        ' |',
-        ' -',
-        ' |',
-        '  \n\n',
       ];
 
       const { editor } = createTestEditor();

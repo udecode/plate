@@ -47,4 +47,14 @@ describe('streamSerializeMd', () => {
 
     expect(result).toEqual(output);
   });
+
+  it('should correctly handle inline math', async () => {
+    const chunk = '$$a^2 ';
+
+    const result = streamDeserializeMd(editor, chunk);
+
+    const serialized = streamSerializeMd(editor, { value: result }, chunk);
+
+    expect(serialized).toEqual(chunk);
+  });
 });

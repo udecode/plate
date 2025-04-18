@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`steamInsertChunk fixures should correctly handle incomplete inline math 1`] = `
+[
+  {
+    "children": [
+      {
+        "text": "inline math:",
+      },
+    ],
+    "type": "p",
+  },
+  {
+    "children": [
+      {
+        "text": "",
+      },
+      {
+        "children": [
+          {
+            "text": "",
+          },
+        ],
+        "texExpression": "a^2 + b^2 = c^2",
+        "type": "inline_equation",
+      },
+      {
+        "text": "",
+      },
+    ],
+    "type": "p",
+  },
+]
+`;

@@ -85,7 +85,8 @@ export const streamSerializeMd = (
   // replace &#x20; to real space
 
   // remove Markdown escape characters (including those potentially added in the chunk)
-  result = result.replace(/\\([\\`*_{}\\[\]()#+\-\\.!~<>|])/g, '$1');
+  result = result.replace(/\\([\\`*_{}\\[\]()#+\-\\.!~<>|$])/g, '$1');
+  
 
   return result;
 };
