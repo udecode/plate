@@ -6,13 +6,13 @@ export const nodesWithProps = (
   nodes: Descendant[],
   options: SteamInsertChunkOptions
 ): Descendant[] => {
-  if (!options.textProps) return nodes;
+  if (!options.textProps && !options.elementProps) return nodes;
 
   return nodes.map((node): Descendant => {
     if (ElementApi.isElement(node)) {
       return {
         ...node,
-        ...options.textProps,
+        ...options.elementProps,
         children: nodesWithProps(node.children, options),
       };
     } else {

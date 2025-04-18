@@ -2,9 +2,8 @@ import type { OverrideEditor } from '@udecode/plate/react';
 
 import { ElementApi } from '@udecode/plate';
 
-import type { AIChatPluginConfig } from './AIChatPlugin';
-
 import { AIPlugin } from '../ai/AIPlugin';
+import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
 
 export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
   api,
@@ -80,9 +79,7 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
           node.type === type &&
           !getOptions().open
         ) {
-          tf.removeNodes({
-            at: path,
-          });
+          editor.getTransforms(AIChatPlugin).aiChat.removeAnchor({ at: path });
 
           return;
         }

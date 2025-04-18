@@ -1,12 +1,6 @@
 import type { PlateEditor } from '@udecode/plate/react';
 
-import {
-  type Path,
-  type SlateEditor,
-  createZustandStore,
-  NodeApi,
-  PathApi,
-} from '@udecode/plate';
+import { type SlateEditor, NodeApi, PathApi } from '@udecode/plate';
 
 import { AIChatPlugin } from '../../react';
 import { streamDeserializeInlineMd } from './streamDeserializeInlineMd';
@@ -14,17 +8,8 @@ import { streamDeserializeMd } from './streamDeserializeMd';
 import { streamSerializeMd } from './streamSerializeMd';
 import { nodesWithProps } from './utils/nodesWithProps';
 
-export const streamingStore = createZustandStore(
-  {
-    blockChunks: '' as string,
-    blockPath: null as Path | null,
-  },
-  {
-    name: 'streaming',
-  }
-);
-
 export interface SteamInsertChunkOptions {
+  elementProps?: any;
   textProps?: any;
 }
 
@@ -37,7 +22,6 @@ export function streamInsertChunk(
   const { _blockChunks, _blockPath } = editor.getOptions(AIChatPlugin);
 
   if (_blockPath === null) {
-    editor.setOption(AIChatPlugin, '_blockChunks', chunk);
     const blocks = streamDeserializeMd(editor, chunk);
     const path = getCurrentBlockPath(editor);
     const startInEmptyParagraph =
@@ -52,7 +36,6 @@ export function streamInsertChunk(
       editor.tf.insertNodes(nodesWithProps([blocks[0]], options), {
         at: path,
         nextBlock: !startInEmptyParagraph,
-        select: true,
       });
 
       editor.setOption(AIChatPlugin, '_blockPath', getCurrentBlockPath(editor));
@@ -61,12 +44,16 @@ export function streamInsertChunk(
       if (blocks.length > 1) {
         const nextBlocks = blocks.slice(1);
 
+        const nextPath = getCurrentBlockPath(editor);
+
         editor.tf.insertNodes(nodesWithProps(nextBlocks, options), {
-          at: PathApi.next(path),
+          at: nextPath,
           nextBlock: true,
         });
 
-        const lastBlock = editor.api.node(nextBlocks.at(-1))!;
+        const lastBlock =
+          editor.api.node(nextBlocks.at(-1)) ??
+          editor.api.node([nextPath[0] + nextBlocks.length])!;
 
         editor.setOption(AIChatPlugin, '_blockPath', lastBlock[1]);
 
@@ -202,5 +189,11 @@ export function streamInsertChunk(
 }
 
 export const getCurrentBlockPath = (editor: SlateEditor) => {
+  const anchorNode = editor.getApi(AIChatPlugin).aiChat.node({ anchor: true });
+
+  if (anchorNode) {
+    return PathApi.previous(anchorNode[1])!;
+  }
+
   return editor.selection?.focus.path.slice(0, 1) ?? [0];
 };

@@ -16,6 +16,21 @@ export const useAIChatHooks = () => {
     onChunk: ({ chunk, isFirst, nodes, text }) => {
       chunks.push(chunk);
 
+      if (isFirst) {
+        editor.tf.withoutSaving(() => {
+          editor.tf.insertNodes(
+            {
+              children: [{ text: '' }],
+              type: AIChatPlugin.key,
+            },
+            {
+              at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+            }
+          );
+        });
+        editor.setOption(AIChatPlugin, 'streaming', true);
+      }
+
       if (mode === 'insert' && nodes.length > 0) {
         withAIBatch(
           editor,
@@ -28,19 +43,6 @@ export const useAIChatHooks = () => {
           },
           { split: isFirst }
         );
-      }
-
-      if (isFirst) {
-        editor.tf.insertNodes(
-          {
-            children: [{ text: '' }],
-            type: AIChatPlugin.key,
-          },
-          {
-            at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
-          }
-        );
-        editor.setOption(AIChatPlugin, 'streaming', true);
       }
     },
     onFinish: ({ content }) => {

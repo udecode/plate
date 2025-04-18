@@ -1,4 +1,3 @@
-import { ElementApi } from '@udecode/plate';
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import { withAIBatch } from '../../../lib';
@@ -10,10 +9,7 @@ export const acceptAIChat = (editor: PlateEditor) => {
 
   withAIBatch(editor, () => {
     tf.ai.removeMarks();
-    tf.removeNodes({
-      at: [],
-      match: (n) => ElementApi.isElement(n) && n.type === AIChatPlugin.key,
-    });
+    editor.getTransforms(AIChatPlugin).aiChat.removeAnchor();
   });
 
   editor.getApi<AIChatPluginConfig>({ key: 'ai' }).aiChat.hide();

@@ -17,6 +17,7 @@ import { createTPlatePlugin } from '@udecode/plate/react';
 import type { AIBatch } from '../../lib';
 
 import { AIPlugin } from '../ai/AIPlugin';
+import { removeAnchorAIChat } from './transforms';
 import { acceptAIChat } from './transforms/acceptAIChat';
 import { insertBelowAIChat } from './transforms/insertBelowAIChat';
 import { replaceSelectionAIChat } from './transforms/replaceSelectionAIChat';
@@ -83,6 +84,7 @@ export type AIChatPluginConfig = PluginConfig<
       accept: OmitFirst<typeof acceptAIChat>;
       insertBelow: OmitFirst<typeof insertBelowAIChat>;
       replaceSelection: OmitFirst<typeof replaceSelectionAIChat>;
+      removeAnchor: (options?: EditorNodesOptions) => void;
     };
   }
 >;
@@ -156,7 +158,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       },
     };
   })
-  .extendApi(({ api, editor, getOptions, setOption, type }) => ({
+  .extendApi(({ api, editor, getOptions, setOption, tf, type }) => ({
     hide: () => {
       api.aiChat.reset();
 
@@ -175,10 +177,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         delete lastBatch.ai;
       }
 
-      editor.tf.removeNodes({
-        at: [],
-        match: (n) => ElementApi.isElement(n) && n.type === type,
-      });
+      tf.aiChat.removeAnchor();
     },
     show: () => {
       api.aiChat.reset();
@@ -191,5 +190,6 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   .extendTransforms(({ editor }) => ({
     accept: bindFirst(acceptAIChat, editor),
     insertBelow: bindFirst(insertBelowAIChat, editor),
+    removeAnchor: bindFirst(removeAnchorAIChat, editor),
     replaceSelection: bindFirst(replaceSelectionAIChat, editor),
   }));
