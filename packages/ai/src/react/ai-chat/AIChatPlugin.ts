@@ -118,7 +118,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       AIChatPluginConfig['api']['aiChat'],
       'node' | 'reset' | 'stop' | 'submit'
     >
-  >(({ editor, getOptions, type }) => {
+  >(({ editor, getOptions, setOption, type }) => {
     return {
       reset: bindFirst(resetAIChat, editor),
       submit: bindFirst(submitAIChat, editor),
@@ -154,6 +154,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         });
       },
       stop: () => {
+        setOption('streaming', false);
         getOptions().chat.stop?.();
       },
     };

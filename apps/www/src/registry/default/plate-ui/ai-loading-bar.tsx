@@ -1,4 +1,3 @@
-
 import { cn } from '@udecode/cn';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import {
@@ -15,12 +14,18 @@ import { Button } from './button';
 export const AILoadingBar = () => {
   const chat = useChat();
   const mode = usePluginOption(AIChatPlugin, 'mode');
+
+  // demo only for mock streaming remove this line when you implement the route /api/ai/command
+  const mockStreaming = usePluginOption(AIChatPlugin, 'streaming');
+
   const { status } = chat;
 
   const { api } = useEditorPlugin(AIChatPlugin);
 
-  const isLoading = status === 'streaming' || status === 'submitted';
-  const visible = isLoading && mode === 'insert';
+  const isLoading =
+    (status === 'streaming' && mockStreaming) || status === 'submitted';
+
+  const visible = (isLoading && mode === 'insert') || mockStreaming;
 
   useHotkeys('esc', () => {
     api.aiChat.stop();

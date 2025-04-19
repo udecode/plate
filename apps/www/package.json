@@ -120,7 +120,7 @@
     "@udecode/plate-toggle": "workspace:^",
     "@udecode/plate-trailing-block": "workspace:^",
     "@uploadthing/react": "7.1.0",
-    "ai": "4.1.47",
+    "ai": "4.3.9",
     "class-variance-authority": "0.7.1",
     "cmdk": "1.0.4",
     "contentlayer2": "0.4.6",

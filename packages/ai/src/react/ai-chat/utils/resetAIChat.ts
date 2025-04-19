@@ -14,7 +14,6 @@ export const resetAIChat = (editor: PlateEditor) => {
 
   api.aiChat.stop();
 
-  setOption('streaming', false);
   const chat = getOptions().chat;
 
   if (chat.messages && chat.messages.length > 0) {
