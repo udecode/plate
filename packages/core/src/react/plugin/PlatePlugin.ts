@@ -395,10 +395,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * in the wrapper function. It is not equivalent to a React component.
          */
         aboveNodes?: RenderNodeWrapper<WithAnyKey<C>>;
-        /**
-         * Renders a component after the `Container` component. This is the last
-         * render position within the editor structure.
-         */
+        /** Renders a component after the `Container` component. */
         afterContainer?: EditableSiblingComponent;
         /**
          * Renders a component after the `Editable` component. This is the last

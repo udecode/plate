@@ -12,7 +12,7 @@ export const useAIChatHooks = () => {
 
   useChatChunk({
     onChunk: ({ chunk, isFirst, nodes, text }) => {
-      if (isFirst) {
+      if (isFirst && mode == 'insert') {
         editor.tf.withoutSaving(() => {
           editor.tf.insertNodes(
             {
