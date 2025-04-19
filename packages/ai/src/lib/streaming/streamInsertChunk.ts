@@ -36,7 +36,6 @@ export function streamInsertChunk(
       editor.tf.insertNodes(nodesWithProps([blocks[0]], options), {
         at: path,
         nextBlock: !startInEmptyParagraph,
-        select: true,
       });
 
       editor.setOption(AIChatPlugin, '_blockPath', getCurrentBlockPath(editor));
@@ -50,7 +49,6 @@ export function streamInsertChunk(
         editor.tf.insertNodes(nodesWithProps(nextBlocks, options), {
           at: nextPath,
           nextBlock: true,
-          select: true,
         });
 
         const lastBlock =
@@ -102,7 +100,6 @@ export function streamInsertChunk(
         // Deserialize the chunk and add it to the end of the current block
         editor.tf.insertNodes(nodesWithProps(chunkNodes, options), {
           at: editor.api.end(_blockPath),
-          select: true,
         });
 
         const updatedBlock = editor.api.node(_blockPath)!;
@@ -125,7 +122,6 @@ export function streamInsertChunk(
         } else {
           editor.tf.replaceNodes(nodesWithProps([tempBlocks[0]], options), {
             at: _blockPath,
-            select: true,
           });
 
           const serializedBlock = streamSerializeMd(
@@ -158,7 +154,6 @@ export function streamInsertChunk(
 
         editor.tf.replaceNodes(nodesWithProps([tempBlocks[0]], options), {
           at: _blockPath,
-          select: true,
         });
 
         editor.setOption(AIChatPlugin, '_blockChunks', serializedBlock);
@@ -166,7 +161,6 @@ export function streamInsertChunk(
     } else {
       editor.tf.replaceNodes(nodesWithProps([tempBlocks[0]], options), {
         at: _blockPath,
-        select: true,
       });
 
       if (tempBlocks.length > 1) {
@@ -174,7 +168,6 @@ export function streamInsertChunk(
 
         editor.tf.insertNodes(nodesWithProps(tempBlocks.slice(1), options), {
           at: PathApi.next(_blockPath),
-          select: true,
         });
 
         editor.setOption(AIChatPlugin, '_blockPath', newEndBlockPath);

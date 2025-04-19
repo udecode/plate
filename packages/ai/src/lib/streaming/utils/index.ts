@@ -4,3 +4,4 @@
 
 export * from './getRemarkPlugin';
 export * from './nodesWithProps';
+export * from './utils';

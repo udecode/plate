@@ -56,11 +56,20 @@ export const streamSerializeMd = (
   const { value: optionsValue, ...restOptions } = options;
   const { value } = trimEndHeading(optionsValue ?? editor.children);
 
-  let result = editor.getApi(MarkdownPlugin).markdown.serialize({
-    remarkPlugins: getRemarkPluginsWithoutMdx(editor),
-    value: value,
-    ...restOptions,
-  });
+  let result = '';
+
+  try {
+    result = editor.getApi(MarkdownPlugin).markdown.serialize({
+      value: value,
+      ...restOptions,
+    });
+  } catch (error) {
+    result = editor.getApi(MarkdownPlugin).markdown.serialize({
+      remarkPlugins: getRemarkPluginsWithoutMdx(editor),
+      value: value,
+      ...restOptions,
+    });
+  }
 
   const trimmedChunk = getChunkTrimmed(chunk);
 
@@ -86,7 +95,6 @@ export const streamSerializeMd = (
 
   // remove Markdown escape characters (including those potentially added in the chunk)
   result = result.replace(/\\([\\`*_{}\\[\]()#+\-\\.!~<>|$])/g, '$1');
-  
 
   return result;
 };

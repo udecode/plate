@@ -5,6 +5,7 @@ import React from 'react';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 
 import { markdownPlugin } from '@/registry/default/components/editor/plugins/markdown-plugin';
+import { AILoadingBar } from '@/registry/default/plate-ui/ai-loading-bar';
 import { AIMenu } from '@/registry/default/plate-ui/ai-menu';
 
 import { cursorOverlayPlugin } from './cursor-overlay-plugin';
@@ -109,6 +110,7 @@ export const aiPlugins = [
       },
     },
     render: {
+      afterContainer: () => <AILoadingBar />,
       afterEditable: () => <AIMenu />,
     },
   }),

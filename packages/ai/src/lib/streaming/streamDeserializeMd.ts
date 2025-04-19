@@ -20,10 +20,16 @@ export const streamDeserializeMd = (
       ? data.replace('$$', String.raw`\$\$`)
       : data;
 
-  const blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, {
-    remarkPlugins: getRemarkPluginsWithoutMdx(editor),
-    ...options,
-  });
+  let blocks = [];
+
+  try {
+    blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, options);
+  } catch (error) {
+    blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, {
+      remarkPlugins: getRemarkPluginsWithoutMdx(editor),
+      ...options,
+    });
+  }
 
   const trimmedData = getChunkTrimmed(data);
 

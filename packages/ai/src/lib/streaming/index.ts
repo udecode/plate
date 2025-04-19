@@ -6,5 +6,4 @@ export * from './streamDeserializeInlineMd';
 export * from './streamDeserializeMd';
 export * from './streamInsertChunk';
 export * from './streamSerializeMd';
-export * from './utils';
 export * from './utils/index';

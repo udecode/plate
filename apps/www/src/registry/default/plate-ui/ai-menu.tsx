@@ -37,7 +37,7 @@ export function AIMenu() {
 
   const chat = useChat();
 
-  const { input, isLoading, messages, setInput } = chat;
+  const { input, messages, setInput, status } = chat;
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
     null
   );
@@ -103,6 +103,12 @@ export function AIMenu() {
     { enableOnContentEditable: true, enableOnFormTags: true }
   );
 
+  const isLoading = status === 'streaming' || status === 'submitted';
+
+  if (isLoading && mode === 'insert') {
+    return null;
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
       <PopoverAnchor virtualRef={{ current: anchorElement! }} />
@@ -115,14 +121,9 @@ export function AIMenu() {
         onEscapeKeyDown={(e) => {
           e.preventDefault();
 
-          if (isLoading) {
-            api.aiChat.stop();
-          } else {
-            api.aiChat.hide();
-          }
+          api.aiChat.hide();
         }}
         align="center"
-        // avoidCollisions={false}
         side="bottom"
       >
         <Command

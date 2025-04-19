@@ -396,10 +396,17 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          */
         aboveNodes?: RenderNodeWrapper<WithAnyKey<C>>;
         /**
+         * Renders a component after the `Container` component. This is the last
+         * render position within the editor structure.
+         */
+        afterContainer?: EditableSiblingComponent;
+        /**
          * Renders a component after the `Editable` component. This is the last
          * render position within the editor structure.
          */
         afterEditable?: EditableSiblingComponent;
+        /** Renders a component before the `Container` component. */
+        beforeContainer?: EditableSiblingComponent;
         /** Renders a component before the `Editable` component. */
         beforeEditable?: EditableSiblingComponent;
         /**
