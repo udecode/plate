@@ -10,7 +10,7 @@ export const useChat = () => {
 
   return useBaseChat({
     id: 'editor',
-    api: '/api/ai/command1',
+    api: '/api/ai/command',
     body: {
       // !!! DEMO ONLY: don't use API keys client-side
       apiKey: keys.openai,
