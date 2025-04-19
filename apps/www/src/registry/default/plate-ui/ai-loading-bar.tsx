@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 
 import { cn } from '@udecode/cn';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
@@ -17,28 +16,17 @@ export const AILoadingBar = () => {
   const chat = useChat();
   const mode = usePluginOption(AIChatPlugin, 'mode');
   const { status } = chat;
-  const [isVisible, setIsVisible] = useState(false);
 
   const { api } = useEditorPlugin(AIChatPlugin);
 
   const isLoading = status === 'streaming' || status === 'submitted';
-
-  useEffect(() => {
-    if (isLoading && mode === 'insert') {
-      setIsVisible(true);
-    } else {
-      // delay the visibility of the loading bar to avoid flickering
-      setTimeout(() => {
-        setIsVisible(false);
-      }, 1000);
-    }
-  }, [isLoading, mode]);
+  const visible = isLoading && mode === 'insert';
 
   useHotkeys('esc', () => {
     api.aiChat.stop();
   });
 
-  if (!isVisible) return null;
+  if (!visible) return null;
 
   return (
     <div
