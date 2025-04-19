@@ -14,8 +14,8 @@ export const streamDeserializeMd = (
   data: string,
   options?: DeserializeMdOptions
 ) => {
+  // test case: should correctly handle inline math
   const input =
-    // test case: should correctly handle inline math
     data.startsWith('$$') && !data.startsWith('$$\n') && !isCompleteMath(data)
       ? data.replace('$$', String.raw`\$\$`)
       : data;

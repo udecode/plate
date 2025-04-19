@@ -57,4 +57,14 @@ describe('streamSerializeMd', () => {
 
     expect(serialized).toEqual(chunk);
   });
+
+  it.skip('should not deserialize link with markdown syntax', async () => {
+    const chunk = 'https://example.com';
+
+    const result = streamDeserializeMd(editor, chunk);
+
+    const serialized = streamSerializeMd(editor, { value: result }, chunk);
+
+    expect(serialized).toEqual(chunk);
+  });
 });
