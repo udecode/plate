@@ -1,3 +1,4 @@
+'use client';
 import { cn } from '@udecode/cn';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import {
