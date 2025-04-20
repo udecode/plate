@@ -54,7 +54,12 @@ export const useBlockSelectable = () => {
               if (event?.shiftKey) {
                 api.blockSelection.add(id);
               } else {
-                setOption('selectedIds', new Set([id]));
+                const selectedIds = getOption('selectedIds');
+                const clickAlreadySelected = selectedIds?.has(id);
+
+                if (!clickAlreadySelected) {
+                  setOption('selectedIds', new Set([id]));
+                }
               }
             }
           },
