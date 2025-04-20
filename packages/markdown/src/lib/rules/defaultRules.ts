@@ -1,14 +1,11 @@
 import type { TText } from '@udecode/plate';
 
-import isBoolean from 'lodash/fp/isBoolean.js';
-
 import type {
   TIndentListElement,
   TMentionElement,
   TStandardListElement,
 } from '../internal/types';
 import type {
-  MdBlockquote,
   MdHeading,
   MdImage,
   MdLink,
@@ -31,6 +28,16 @@ import {
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
+
+function isBoolean(value: any) {
+  return (
+    value === true ||
+    value === false ||
+    (!!value &&
+      typeof value == 'object' &&
+      Object.prototype.toString.call(value) == '[object Boolean]')
+  );
+}
 
 export const defaultRules: TRules = {
   a: {
@@ -56,8 +63,18 @@ export const defaultRules: TRules = {
     deserialize: (mdastNode, deco, options) => {
       const children =
         mdastNode.children.length > 0
-          ? mdastNode.children.flatMap((paragraph) => {
+          ? mdastNode.children.flatMap((paragraph, index, children) => {
               if (paragraph.type === 'paragraph') {
+                if (children.length > 1 && children.length - 1 !== index) {
+                  // add a line break between the paragraphs
+                  const paragraphChildren = convertChildrenDeserialize(
+                    paragraph.children,
+                    deco,
+                    options
+                  );
+                  paragraphChildren.push({ text: '\n' }, { text: '\n' });
+                  return paragraphChildren;
+                }
                 return convertChildrenDeserialize(
                   paragraph.children,
                   deco,
@@ -87,11 +104,41 @@ export const defaultRules: TRules = {
       };
     },
     serialize: (node, options) => {
+      const nodes = [] as any;
+
+      for (const child of node.children) {
+        if (child.text === '\n') {
+          nodes.push({
+            type: 'break',
+          });
+        } else {
+          nodes.push(child);
+        }
+      }
+
+      const paragraphChildren = convertNodesSerialize(
+        nodes,
+        options
+      ) as MdParagraph['children'];
+
+      if (
+        paragraphChildren.length > 0 &&
+        paragraphChildren.at(-1)!.type === 'break'
+      ) {
+        // if the last child of the paragraph is a line break add an additional one
+
+        paragraphChildren.at(-1)!.type = 'html';
+        // @ts-expect-error -- value is ok
+        paragraphChildren.at(-1)!.value = '\n<br />';
+      }
+
       return {
-        children: convertNodesSerialize(
-          node.children,
-          options
-        ) as MdBlockquote['children'],
+        children: [
+          {
+            children: paragraphChildren,
+            type: 'paragraph',
+          },
+        ],
         type: 'blockquote',
       };
     },
@@ -100,6 +147,18 @@ export const defaultRules: TRules = {
     mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
+    },
+  },
+  break: {
+    deserialize: (mdastNode, deco) => {
+      return {
+        text: '\n',
+      };
+    },
+    serialize: () => {
+      return {
+        type: 'break',
+      };
     },
   },
   code: {
@@ -452,6 +511,7 @@ export const defaultRules: TRules = {
             }
             currentItem = {
               children: [],
+              spread: false,
               type: 'listItem',
             };
 
@@ -465,6 +525,7 @@ export const defaultRules: TRules = {
                 currentItem.children.push({
                   children: serializeListItems(liChild.children),
                   ordered: liChild.type === 'ol',
+                  spread: false,
                   type: 'list',
                 });
               }
@@ -482,6 +543,7 @@ export const defaultRules: TRules = {
       return {
         children: serializeListItems(node.children),
         ordered: isOrdered,
+        spread: false,
         type: 'list',
       };
     },
@@ -542,7 +604,7 @@ export const defaultRules: TRules = {
         }
       };
 
-      children.forEach((child) => {
+      children.forEach((child, index, children) => {
         const { type } = child as { type?: string };
 
         if (type && splitBlockTypes.has(type)) {
@@ -584,7 +646,16 @@ export const defaultRules: TRules = {
             }
           });
         } else {
-          inlineNodes.push(child);
+          if (
+            child.text === '\n' &&
+            children.length > 1 &&
+            index === children.length - 1
+          ) {
+            // remove the last br of the paragraph if the previos element is not a br
+            // no op
+          } else {
+            inlineNodes.push(child);
+          }
         }
       });
 
@@ -593,11 +664,34 @@ export const defaultRules: TRules = {
       return elements.length === 1 ? elements[0] : elements;
     },
     serialize: (node, options) => {
+      let enrichedChildren = node.children;
+
+      enrichedChildren = enrichedChildren.map((child) => {
+        if (child.text === '\n') {
+          return {
+            type: 'break',
+          } as any;
+        }
+        return child;
+      });
+
+      const convertedNodes = convertNodesSerialize(
+        enrichedChildren,
+        options
+      ) as MdParagraph['children'];
+
+      if (
+        convertedNodes.length > 0 &&
+        enrichedChildren.at(-1)!.type === 'break'
+      ) {
+        // if the last child of the paragraph is a line break add an additional one
+        convertedNodes.at(-1)!.type = 'html';
+        // @ts-expect-error -- value is the right property here
+        convertedNodes.at(-1)!.value = '\n<br />';
+      }
+
       return {
-        children: convertNodesSerialize(
-          node.children,
-          options
-        ) as MdParagraph['children'],
+        children: convertedNodes,
         type: 'paragraph',
       };
     },
@@ -669,7 +763,7 @@ export const defaultRules: TRules = {
     deserialize: (mdastNode, deco) => {
       return {
         ...deco,
-        text: mdastNode.value,
+        text: mdastNode.value.replace(/^\n/, ''),
       };
     },
   },

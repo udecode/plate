@@ -1,5 +1,27 @@
 # @udecode/plate-markdown
 
+## 47.0.7
+
+### Patch Changes
+
+- [#4216](https://github.com/udecode/plate/pull/4216) by [@martin-lysk](https://github.com/martin-lysk) – linebreaks (soft linebreaks and paragraphs) are serialized and deserialized differently now
+
+## 47.0.6
+
+### Patch Changes
+
+- [#4215](https://github.com/udecode/plate/pull/4215) by [@martin-lysk](https://github.com/martin-lysk) – removes lodash dependency
+
+- [#4214](https://github.com/udecode/plate/pull/4214) by [@felixfeng33](https://github.com/felixfeng33) – Make remarkMention plugin optional.
+
+## 47.0.5
+
+### Patch Changes
+
+- [#4200](https://github.com/udecode/plate/pull/4200) by [@martin-lysk](https://github.com/martin-lysk) – fixes blockquote serialization/deserialization, adds break deserialization
+
+- [#4211](https://github.com/udecode/plate/pull/4211) by [@martin-lysk](https://github.com/martin-lysk) – adds explicit spread false to lists to have a less noisy serialization
+
 ## 47.0.4
 
 ### Patch Changes
