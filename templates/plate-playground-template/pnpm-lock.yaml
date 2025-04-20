@@ -218,9 +218,6 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
-      html2canvas:
-        specifier: ^1.4.1
-        version: 1.4.1
       html2canvas-pro:
         specifier: ^1.5.8
         version: 1.5.8
@@ -2704,10 +2701,6 @@ packages:
   html2canvas-pro@1.5.8:
     resolution: {integrity: sha512-bVGAU7IvhBwBlRAmX6QhekX8lsaxmYoF6zIwf/HNlHscjx+KN8jw/U4PQRYqeEVm9+m13hcS1l5ChJB9/e29Lw==}
     engines: {node: '>=16.0.0'}
-
-  html2canvas@1.4.1:
-    resolution: {integrity: sha512-fPU6BHNpsyIhr8yyMpTLLxAbkaK8ArIBcmZIRiBLiDhjeqvXolaEmDGmELFuX9I4xDcaKKcJl+TKZLqruBbmWA==}
-    engines: {node: '>=8.0.0'}
 
   htmlparser2@5.0.1:
     resolution: {integrity: sha512-vKZZra6CSe9qsJzh0BjBGXo8dvzNsq/oGvsjfRdOrrryfeD9UOBEEQdeoqCRmKZchF5h2zOBMQ6YuQ0uRUmdbQ==}
@@ -6660,11 +6653,6 @@ snapshots:
   html-entities@2.5.2: {}
 
   html2canvas-pro@1.5.8:
-    dependencies:
-      css-line-break: 2.1.0
-      text-segmentation: 1.0.3
-
-  html2canvas@1.4.1:
     dependencies:
       css-line-break: 2.1.0
       text-segmentation: 1.0.3
