@@ -16,6 +16,7 @@ export const useChat = () => {
       apiKey: keys.openai,
       model: model.value,
     },
+    // Mock the API response. Remove it when you implement the route /api/ai/command
     fetch: async (input, init) => {
       const res = await fetch(input, init);
 
@@ -30,7 +31,6 @@ export const useChat = () => {
           isMarkdown = false;
         }
 
-        // Mock the API response. Remove it when you implement the route /api/ai/command
         await new Promise((resolve) => setTimeout(resolve, 400));
 
         const stream = fakeStreamText({ isMarkdown });
