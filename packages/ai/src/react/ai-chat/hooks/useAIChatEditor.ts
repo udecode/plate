@@ -8,6 +8,7 @@ import {
 } from '@udecode/plate-markdown';
 import { useEditorPlugin } from '@udecode/plate/react';
 
+import { getRemarkPluginsWithoutMdx } from '../../../lib';
 import { AIChatPlugin } from '../AIChatPlugin';
 
 /**
@@ -22,11 +23,20 @@ export const useAIChatEditor = (
   const { setOption } = useEditorPlugin(AIChatPlugin);
 
   editor.children = useMemo(
-    () =>
-      editor.getApi(MarkdownPlugin).markdown.deserialize(content, {
-        memoize: true,
-        parser,
-      }),
+    () => {
+      try {
+        return editor.getApi(MarkdownPlugin).markdown.deserialize(content, {
+          memoize: true,
+          parser,
+        });
+      } catch (error) {
+        return editor.getApi(MarkdownPlugin).markdown.deserialize(content, {
+          memoize: true,
+          parser,
+          remarkPlugins: getRemarkPluginsWithoutMdx(editor as any),
+        });
+      }
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [content]
   );

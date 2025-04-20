@@ -3,4 +3,5 @@
  */
 
 export * from './BaseAIPlugin';
+export * from './streaming/index';
 export * from './transforms/index';

@@ -12,7 +12,7 @@ import type { TRules } from './rules';
 // import type { deserializeMd } from './deserializer/deserializeMd';
 import type { plateTypes } from './utils/mapTypeUtils';
 
-import { deserializeMd } from './deserializer';
+import { deserializeInlineMd, deserializeMd } from './deserializer';
 import { serializeMd } from './serializer';
 
 export type AllowNodeConfig = {
@@ -70,6 +70,7 @@ export type MarkdownConfig = PluginConfig<
   {
     markdown: {
       deserialize: OmitFirst<typeof deserializeMd>;
+      deserializeInline: OmitFirst<typeof deserializeInlineMd>;
       serialize: OmitFirst<typeof serializeMd>;
     };
   }
@@ -88,6 +89,7 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
 })
   .extendApi(({ editor }) => ({
     deserialize: bindFirst(deserializeMd, editor),
+    deserializeInline: bindFirst(deserializeInlineMd, editor),
     serialize: bindFirst(serializeMd, editor),
   }))
   .extend(({ api }) => ({

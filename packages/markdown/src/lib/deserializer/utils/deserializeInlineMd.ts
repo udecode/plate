@@ -1,5 +1,4 @@
-import type { Descendant } from '@udecode/plate';
-import type { PlateEditor } from '@udecode/plate/react';
+import { type Descendant, type SlateEditor, ElementApi } from '@udecode/plate';
 
 import type { DeserializeMdOptions } from '../deserializeMd';
 
@@ -7,7 +6,7 @@ import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { stripMarkdownBlocks } from './stripMarkdown';
 
 export const deserializeInlineMd = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   text: string,
   options?: DeserializeMdOptions
 ) => {
@@ -21,12 +20,16 @@ export const deserializeInlineMd = (
   if (leadingSpaces) {
     fragment.push({ text: leadingSpaces });
   }
+
   if (strippedText) {
-    fragment.push(
-      ...editor
-        .getApi(MarkdownPlugin)
-        .markdown.deserialize(strippedText, options)[0].children
-    );
+    const result = editor
+      .getApi(MarkdownPlugin)
+      .markdown.deserialize(strippedText, options)[0];
+
+    if (result) {
+      const nodes = ElementApi.isElement(result) ? result.children : [result];
+      fragment.push(...nodes);
+    }
   }
   if (trailingSpaces) {
     fragment.push({ text: trailingSpaces });

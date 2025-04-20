@@ -3,7 +3,7 @@
 import type { Value } from '@udecode/plate';
 
 import { withProps } from '@udecode/cn';
-import { AIPlugin } from '@udecode/plate-ai/react';
+import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -61,6 +61,7 @@ import {
   usePlateEditor,
 } from '@udecode/plate/react';
 
+import { AIAnchorElement } from '@/registry/default/plate-ui/ai-anchor-element';
 import { AILeaf } from '@/registry/default/plate-ui/ai-leaf';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
@@ -103,6 +104,7 @@ import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 import { editorPlugins, viewPlugins } from './plugins/editor-plugins';
 
 export const viewComponents = {
+  [AIChatPlugin.key]: AIAnchorElement,
   [AudioPlugin.key]: MediaAudioElement,
   [BlockquotePlugin.key]: BlockquoteElement,
   [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),

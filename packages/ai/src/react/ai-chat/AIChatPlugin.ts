@@ -2,10 +2,14 @@ import type { TriggerComboboxPluginOptions } from '@udecode/plate-combobox';
 import type { UseChatHelpers } from 'ai/react';
 
 import {
+  type EditorNodesOptions,
+  type NodeEntry,
   type OmitFirst,
+  type Path,
   type PluginConfig,
   type SlateEditor,
   bindFirst,
+  ElementApi,
 } from '@udecode/plate';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { createTPlatePlugin } from '@udecode/plate/react';
@@ -13,6 +17,7 @@ import { createTPlatePlugin } from '@udecode/plate/react';
 import type { AIBatch } from '../../lib';
 
 import { AIPlugin } from '../ai/AIPlugin';
+import { removeAnchorAIChat } from './transforms';
 import { acceptAIChat } from './transforms/acceptAIChat';
 import { insertBelowAIChat } from './transforms/insertBelowAIChat';
 import { replaceSelectionAIChat } from './transforms/replaceSelectionAIChat';
@@ -28,6 +33,9 @@ import { withAIChat } from './withAIChat';
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
   {
+    /** @private Using For streamInsertChunk */
+    _blockChunks: string;
+    _blockPath: Path | null;
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
     chat: Partial<UseChatHelpers>;
@@ -40,6 +48,8 @@ export type AIChatPluginConfig = PluginConfig<
      */
     mode: 'chat' | 'insert';
     open: boolean;
+    /** Whether the AI response is currently streaming. Cursor mode only. */
+    streaming: boolean;
     /**
      * Template function for generating the user prompt. Supports the following
      * placeholders:
@@ -61,6 +71,9 @@ export type AIChatPluginConfig = PluginConfig<
       reset: OmitFirst<typeof resetAIChat>;
       submit: OmitFirst<typeof submitAIChat>;
       hide: () => void;
+      node: (
+        options?: EditorNodesOptions & { anchor?: boolean }
+      ) => NodeEntry | undefined;
       reload: () => void;
       show: () => void;
       stop: () => void;
@@ -71,6 +84,7 @@ export type AIChatPluginConfig = PluginConfig<
       accept: OmitFirst<typeof acceptAIChat>;
       insertBelow: OmitFirst<typeof insertBelowAIChat>;
       replaceSelection: OmitFirst<typeof replaceSelectionAIChat>;
+      removeAnchor: (options?: EditorNodesOptions) => void;
     };
   }
 >;
@@ -78,11 +92,17 @@ export type AIChatPluginConfig = PluginConfig<
 export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   key: 'aiChat',
   dependencies: ['ai'],
+  node: {
+    isElement: true,
+  },
   options: {
+    _blockChunks: '',
+    _blockPath: null,
     aiEditor: null,
     chat: { messages: [] } as any,
     mode: 'chat',
     open: false,
+    streaming: false,
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,
     promptTemplate: () => '{prompt}',
@@ -94,11 +114,30 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     useHooks: useAIChatHooks,
   }))
   .extendApi<
-    Pick<AIChatPluginConfig['api']['aiChat'], 'reset' | 'stop' | 'submit'>
-  >(({ editor, getOptions }) => {
+    Pick<
+      AIChatPluginConfig['api']['aiChat'],
+      'node' | 'reset' | 'stop' | 'submit'
+    >
+  >(({ editor, getOptions, setOption, type }) => {
     return {
       reset: bindFirst(resetAIChat, editor),
       submit: bindFirst(submitAIChat, editor),
+      node: (options = {}) => {
+        const { anchor = false, ...rest } = options;
+
+        if (anchor) {
+          return editor.api.node({
+            at: [],
+            match: (n) => ElementApi.isElement(n) && n.type === type,
+            ...rest,
+          });
+        }
+
+        return editor.api.node({
+          match: (n) => n.ai,
+          ...rest,
+        });
+      },
       reload: () => {
         const { chat, mode } = getOptions();
 
@@ -115,11 +154,12 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         });
       },
       stop: () => {
+        setOption('streaming', false);
         getOptions().chat.stop?.();
       },
     };
   })
-  .extendApi(({ api, editor, getOptions, setOption }) => ({
+  .extendApi(({ api, editor, getOptions, setOption, tf, type }) => ({
     hide: () => {
       api.aiChat.reset();
 
@@ -137,6 +177,8 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       if (lastBatch?.ai) {
         delete lastBatch.ai;
       }
+
+      tf.aiChat.removeAnchor();
     },
     show: () => {
       api.aiChat.reset();
@@ -149,5 +191,6 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   .extendTransforms(({ editor }) => ({
     accept: bindFirst(acceptAIChat, editor),
     insertBelow: bindFirst(insertBelowAIChat, editor),
+    removeAnchor: bindFirst(removeAnchorAIChat, editor),
     replaceSelection: bindFirst(replaceSelectionAIChat, editor),
   }));

@@ -13,6 +13,7 @@ import {
 import {
   Album,
   BadgeHelp,
+  BookOpenCheck,
   Check,
   CornerUpLeft,
   FeatherIcon,
@@ -105,6 +106,16 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit({
         prompt: 'Fix spelling and grammar',
+      });
+    },
+  },
+  generateMarkdownSample: {
+    icon: <BookOpenCheck />,
+    label: 'Generate Markdown sample',
+    value: 'generateMarkdownSample',
+    onSelect: ({ editor }) => {
+      void editor.getApi(AIChatPlugin).aiChat.submit({
+        prompt: 'Generate a markdown sample',
       });
     },
   },
@@ -216,6 +227,7 @@ const menuStateItems: Record<
   cursorCommand: [
     {
       items: [
+        aiChatItems.generateMarkdownSample,
         aiChatItems.continueWrite,
         aiChatItems.summarize,
         aiChatItems.explain,

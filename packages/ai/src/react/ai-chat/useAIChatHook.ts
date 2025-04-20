@@ -1,47 +1,51 @@
-import { deserializeInlineMd } from '@udecode/plate-markdown';
+import { PathApi } from '@udecode/plate';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
-import type { AIPluginConfig } from '../ai/AIPlugin';
-import type { AIChatPluginConfig } from './AIChatPlugin';
-
-import { withAIBatch } from '../../lib';
+import { streamInsertChunk, withAIBatch } from '../../lib';
+import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
 import { useChatChunk } from './hooks/useChatChunk';
 
 export const useAIChatHooks = () => {
-  const { editor, tf } = useEditorPlugin<AIPluginConfig>({ key: 'ai' });
+  const { editor, getOption } = useEditorPlugin(AIChatPlugin);
+
   const mode = usePluginOption({ key: 'aiChat' } as AIChatPluginConfig, 'mode');
 
   useChatChunk({
-    onChunk: ({ isFirst, nodes }) => {
+    onChunk: ({ chunk, isFirst, nodes, text }) => {
+      if (isFirst && mode == 'insert') {
+        editor.tf.withoutSaving(() => {
+          editor.tf.insertNodes(
+            {
+              children: [{ text: '' }],
+              type: AIChatPlugin.key,
+            },
+            {
+              at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+            }
+          );
+        });
+        editor.setOption(AIChatPlugin, 'streaming', true);
+      }
+
       if (mode === 'insert' && nodes.length > 0) {
         withAIBatch(
           editor,
           () => {
-            tf.ai.insertNodes(nodes);
+            if (!getOption('streaming')) return;
+            streamInsertChunk(editor, chunk, {
+              textProps: {
+                ai: true,
+              },
+            });
           },
           { split: isFirst }
         );
       }
     },
     onFinish: ({ content }) => {
-      if (mode !== 'insert') return;
-
-      const blockAbove = editor.api.block();
-
-      if (!blockAbove) return;
-
-      editor.undo();
-      editor.history.redos.pop();
-
-      const nodes = deserializeInlineMd(editor, content);
-
-      withAIBatch(
-        editor,
-        () => {
-          tf.ai.insertNodes(nodes);
-        },
-        { split: true }
-      );
+      editor.setOption(AIChatPlugin, 'streaming', false);
+      editor.setOption(AIChatPlugin, '_blockChunks', '');
+      editor.setOption(AIChatPlugin, '_blockPath', null);
     },
   });
 };
