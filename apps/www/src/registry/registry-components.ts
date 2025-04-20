@@ -29,6 +29,7 @@ const plugins: Registry['items'] = [
     name: 'editor-plugins',
     registryDependencies: [
       'ai-plugins',
+      'markdown-plugin',
       'basic-nodes-plugins',
       'align-plugin',
       'autoformat-plugin',
@@ -257,6 +258,23 @@ const plugins: Registry['items'] = [
     ],
     name: 'cursor-overlay-plugin',
     registryDependencies: ['cursor-overlay'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: [
+      '@udecode/plate-markdown',
+      'remark-gfm',
+      'remark-math',
+      'remark-mdx',
+    ],
+    files: [
+      {
+        path: 'components/editor/plugins/markdown-plugin.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'markdown-plugin',
+    registryDependencies: [],
     type: 'registry:component',
   },
   {

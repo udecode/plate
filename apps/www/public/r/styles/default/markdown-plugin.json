@@ -1,0 +1,21 @@
+{
+  "dependencies": [
+    "@udecode/plate-markdown",
+    "remark-gfm",
+    "remark-math",
+    "remark-mdx"
+  ],
+  "files": [
+    {
+      "path": "components/editor/plugins/markdown-plugin.tsx",
+      "content": "import { MarkdownPlugin, remarkMention } from '@udecode/plate-markdown';\nimport { SuggestionPlugin } from '@udecode/plate-suggestion/react';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\nimport remarkMdx from 'remark-mdx';\nexport const markdownPlugin = MarkdownPlugin.configure({\n  options: {\n    disallowedNodes: [SuggestionPlugin.key],\n    remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],\n  },\n});\n",
+      "type": "registry:component",
+      "target": "components/editor/plugins/markdown-plugin.tsx"
+    }
+  ],
+  "name": "markdown-plugin",
+  "registryDependencies": [],
+  "type": "registry:component",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "author": "udecode (https://platejs.org)"
+}

@@ -28,6 +28,7 @@
   "name": "editor-plugins",
   "registryDependencies": [
     "ai-plugins",
+    "markdown-plugin",
     "basic-nodes-plugins",
     "align-plugin",
     "autoformat-plugin",

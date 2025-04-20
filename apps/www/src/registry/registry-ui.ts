@@ -26,6 +26,8 @@ export const uiComponents: Registry['items'] = [
     },
     files: [
       { path: 'plate-ui/ai-menu.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/ai-loading-bar.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/ai-anchor-element.tsx', type: 'registry:ui' },
       { path: 'plate-ui/ai-menu-items.tsx', type: 'registry:ui' },
       { path: 'plate-ui/ai-chat-editor.tsx', type: 'registry:ui' },
     ],
