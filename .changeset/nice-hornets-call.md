@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-core': minor
+'@udecode/plate-core': patch
 ---
 
 - New component `PlateContainer`
