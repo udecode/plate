@@ -103,11 +103,8 @@ export function AIMenu() {
     { enableOnContentEditable: true, enableOnFormTags: true }
   );
 
-  // demo only for mock streaming remove this line when you implement the route /api/ai/command
-  const mockStreaming = streaming;
-
   const isLoading =
-    (status === 'streaming' && mockStreaming) || status === 'submitted';
+    (status === 'streaming' && streaming) || status === 'submitted';
 
   if (isLoading && mode === 'insert') {
     return null;

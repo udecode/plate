@@ -15,17 +15,16 @@ export const AILoadingBar = () => {
   const chat = useChat();
   const mode = usePluginOption(AIChatPlugin, 'mode');
 
-  // demo only for mock streaming remove this line when you implement the route /api/ai/command
-  const mockStreaming = usePluginOption(AIChatPlugin, 'streaming');
+  const streaming = usePluginOption(AIChatPlugin, 'streaming');
 
   const { status } = chat;
 
   const { api } = useEditorPlugin(AIChatPlugin);
 
   const isLoading =
-    (status === 'streaming' && mockStreaming) || status === 'submitted';
+    (status === 'streaming' && streaming) || status === 'submitted';
 
-  const visible = (isLoading && mode === 'insert') || mockStreaming;
+  const visible = (isLoading && mode === 'insert') || streaming;
 
   useHotkeys('esc', () => {
     api.aiChat.stop();
