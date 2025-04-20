@@ -1,5 +1,7 @@
 # @udecode/plate-ai
 
+## 47.1.1
+
 ## 47.1.0
 
 ### Minor Changes
