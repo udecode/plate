@@ -1,5 +1,14 @@
 # @udecode/plate-ai
 
+## 47.1.0
+
+### Minor Changes
+
+- [#4213](https://github.com/udecode/plate/pull/4213) by [@felixfeng33](https://github.com/felixfeng33) –
+
+  - New `streamInsertChunk` to solve [#4040](https://github.com/udecode/plate/issues/4040) issue where streaming multiple paragraphs was not possible
+  - New `aiChat.rf.removeAnchorAIChat` to remove the AI anchor element after streaming is complete without redo/undo issues
+
 ## 47.0.8
 
 ## 47.0.7
