@@ -1,5 +1,7 @@
 # @udecode/plate-node-id
 
+## 48.0.0
+
 ## 46.0.11
 
 ### Patch Changes

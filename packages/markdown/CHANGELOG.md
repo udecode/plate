@@ -1,5 +1,13 @@
 # @udecode/plate-markdown
 
+## 48.0.0
+
+### Patch Changes
+
+- [#4213](https://github.com/udecode/plate/pull/4213) by [@felixfeng33](https://github.com/felixfeng33) – Add `deserializeInlineMd` to `editor.api.markdown.deserializeInlineMd`.
+
+  Add `footnoteDefinition` to `defaultRules`
+
 ## 47.0.7
 
 ### Patch Changes

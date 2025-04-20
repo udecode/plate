@@ -1,5 +1,14 @@
 # @udecode/plate-core
 
+## 48.0.0
+
+### Patch Changes
+
+- [#4213](https://github.com/udecode/plate/pull/4213) by [@felixfeng33](https://github.com/felixfeng33) –
+
+  - New component `PlateContainer`
+  - Add `afterContainer` and `beforeContainer` in plugin render configuration
+
 ## 46.0.10
 
 ### Patch Changes

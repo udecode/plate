@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-basic-elements",
-  "version": "47.0.0",
+  "version": "48.0.0",
   "description": "Basic elements plugin for Plate",
   "keywords": [
     "plate",
@@ -50,15 +50,15 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-block-quote": "44.0.0",
-    "@udecode/plate-code-block": "47.0.0",
-    "@udecode/plate-heading": "44.0.0"
+    "@udecode/plate-block-quote": "48.0.0",
+    "@udecode/plate-code-block": "48.0.0",
+    "@udecode/plate-heading": "48.0.0"
   },
   "devDependencies": {
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=46.0.10",
+    "@udecode/plate": ">=48.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

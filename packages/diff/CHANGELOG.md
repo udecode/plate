@@ -1,5 +1,7 @@
 # @udecode/plate-diff
 
+## 48.0.0
+
 ## 44.0.2
 
 ### Patch Changes

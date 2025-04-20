@@ -1,5 +1,7 @@
 # @udecode/plate-suggestion
 
+## 48.0.0
+
 ## 46.0.1
 
 ### Patch Changes

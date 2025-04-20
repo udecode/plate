@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-dnd",
-  "version": "46.0.6",
+  "version": "48.0.0",
   "description": "React drag and drop feature for Plate",
   "keywords": [
     "plate",
@@ -51,7 +51,7 @@
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=46.0.10",
+    "@udecode/plate": ">=48.0.0",
     "react": ">=18.0.0",
     "react-dnd": ">=14.0.0",
     "react-dnd-html5-backend": ">=14.0.0",

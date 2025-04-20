@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-trailing-block",
-  "version": "44.0.0",
+  "version": "48.0.0",
   "description": "Trailing-block plugin for Plate",
   "keywords": [
     "plate",
@@ -47,7 +47,7 @@
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=46.0.10",
+    "@udecode/plate": ">=48.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
