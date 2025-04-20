@@ -228,6 +228,78 @@ This plugin is depending on the [ai](https://npmjs.com/package/ai) package:
 - Wire up [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) in your [AI menu](/docs/components/ai-menu) component.
 
 
+### Convert the chunk into a plate nodes.
+By default, AI responses are streamed to the Plate editor in a chunk-by-chunk manner.
+
+However, this chunking approach can cause issues when handling complex nodes like tables and code blocks. If chunks are split too frequently, it can lead to performance problems as these heavy nodes are repeatedly replaced.
+
+To solve this issue, it's recommended to use the `experimental_transform` parameter with the `smoothStream` function in the `streamText` function to optimize the chunk transmission.
+
+The chunking function below implements the following default behavior: it uses line-based chunking for tables, math, links, and code blocks, while using word-based chunking for all other content.
+
+```ts
+    const result = streamText({
+      experimental_transform: smoothStream({
+        chunking: (buffer) => {
+          // Check for code block markers
+          if (buffer.includes('```')) {
+            isInCodeBlock = !isInCodeBlock;
+          }
+
+          // test case: should not deserialize link with markdown syntax
+          if (buffer.includes('http')) {
+            isInLink = true;
+          } else if (buffer.includes('https')) {
+            isInLink = true;
+          } else if (buffer.includes('\n') && isInLink) {
+            isInLink = false;
+          }
+
+          if (buffer.includes('*') || buffer.includes('-')) {
+            isInList = true;
+          } else if (buffer.includes('\n') && isInList) {
+            isInList = false;
+          }
+
+          // Simple table detection: enter on |, exit on double newline
+          if (!isInTable && buffer.includes('|')) {
+            isInTable = true;
+          } else if (isInTable && buffer.includes('\n\n')) {
+            isInTable = false;
+          }
+
+          // Use line chunking for code blocks and tables, word chunking otherwise
+          // Choose the appropriate chunking strategy based on content type
+          let match;
+
+          if (isInCodeBlock || isInTable || isInLink) {
+            // Use line chunking for code blocks and tables
+            match = CHUNKING_REGEXPS.line.exec(buffer);
+          } else if (isInList) {
+            // Use list chunking for lists
+            match = CHUNKING_REGEXPS.list.exec(buffer);
+          } else {
+            // Use word chunking for regular text
+            match = CHUNKING_REGEXPS.word.exec(buffer);
+          }
+
+          if (!match) {
+            return null;
+          }
+
+          return buffer.slice(0, match.index) + match?.[0];
+        },
+      }),
+      // your other options
+      
+      // maxTokens: 2048,
+      // messages: convertToCoreMessages(messages),
+      // model: openai('gpt-4o'),
+      // system: system,
+    });
+
+```
+
 ## Keyboard Shortcuts
 
 <KeyTable>
@@ -264,12 +336,11 @@ Enables chat operations and streaming text generation in the editor.
 
 <API name="AIChatPlugin">
 <APIOptions>
-  <APIItem name="chat" type="UseChatHelpers">
-    Chat helpers returned by [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat).
+  <APIItem name="aiEditor" type="SlateEditor | null">
+    The Editor used to generate the AI response.
   </APIItem>
-  <APIItem name="createAIEditor" type="() => PlateEditor" optional>
-    Function to create editor instance for preview mode.
-    - **Default:** Creates a basic editor with id 'ai'
+  <APIItem name="chat" type="Partial<UseChatHelpers>">
+    Chat helpers returned by [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat).
   </APIItem>
   <APIItem name="mode" type="'chat' | 'insert'" optional>
     Specifies how assistant messages are handled:
@@ -279,6 +350,10 @@ Enables chat operations and streaming text generation in the editor.
   </APIItem>
   <APIItem name="open" type="boolean" optional>
     Whether the AI chat is open.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="streaming" type="boolean" optional>
+    Whether the AI response is currently streaming. Cursor mode only.
     - **Default:** `false`
   </APIItem>
   <APIItem name="promptTemplate" type="(props: EditorPromptParams) => string" optional>
@@ -291,6 +366,12 @@ Enables chat operations and streaming text generation in the editor.
   </APIItem>
   <APIItem name="systemTemplate" type="(props: EditorPromptParams) => string | void" optional>
     Template for system messages. Supports same placeholders as `promptTemplate`.
+  </APIItem>
+    <APIItem name="_blockChunks" type="string">
+    Used internally for streamInsertChunk.
+  </APIItem>
+  <APIItem name="_blockPath" type="Path | null">
+    Used internally for tracking block path.
   </APIItem>
 </APIOptions>
 </API>
@@ -372,6 +453,50 @@ Resets the chat state:
 - Clears chat messages
 - Removes all AI nodes from the editor
 
+### `api.aiChat.node`
+
+Gets the AI chat node entry.
+
+<API name="node">
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions & { anchor?: boolean }" optional>
+    Options for finding the node.
+    - `anchor`: When true, finds nodes with type matching the plugin type
+    - When false (default), finds nodes with the `ai` property
+  </APIItem>
+</APIParameters>
+<APIReturns type="NodeEntry | undefined">
+  The found node entry or undefined if not found.
+</APIReturns>
+</API>
+
+### `api.aiChat.reload`
+
+Reloads the current AI chat:
+- In insert mode: Undoes previous AI changes
+- Reloads the chat with the current system prompt
+
+### `api.aiChat.show`
+
+Shows the AI chat interface:
+- Resets the chat state
+- Clears messages
+- Sets the open state to true
+
+### `api.aiChat.hide`
+
+Hides the AI chat interface:
+- Resets the chat state
+- Sets the open state to false
+- Focuses the editor
+- Removes the AI anchor
+
+### `api.aiChat.stop`
+
+Stops the current AI generation:
+- Sets streaming state to false
+- Calls the chat stop function
+
 ### `api.aiChat.submit`
 
 Submits a prompt to generate AI content.
@@ -393,6 +518,18 @@ Submits a prompt to generate AI content.
 </API>
 
 ## Transforms
+
+### `tf.aiChat.removeAnchor`
+
+Removes the AI chat anchor node.
+
+<API name="removeAnchor">
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions" optional>
+    Options for finding nodes to remove.
+  </APIItem>
+</APIParameters>
+</API>
 
 ### `tf.ai.insertNodes`
 

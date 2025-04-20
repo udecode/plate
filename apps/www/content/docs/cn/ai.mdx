@@ -219,6 +219,75 @@ This plugin is depending on the [ai](https://npmjs.com/package/ai) package:
 - Setup a [route handler](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler) using [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext).
 - Wire up [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) in your [AI menu](/docs/components/ai-menu) component.
 
+### Convert the chunk into a plate nodes.
+默认情况下，AI 响应会以 chunk-by-chunk（分块）的方式流式传输到 Plate 编辑器中。
+
+然而，这种分块方式在处理表格和代码块等复杂节点时会遇到问题。如果 chunk 分割过于频繁，会导致这些重型节点被反复替换，从而引发性能问题。
+
+为解决此问题，建议在 `streamText` 函数中使用 `experimental_transform` 参数配合 `smoothStream` 函数来优化 chunk 的传输方式。
+
+下面的chunking函数默认做了以下处理，但遇到table math link code block 时采用行进行分块，其余情况使用单词进行分块
+
+```ts
+    const result = streamText({
+      experimental_transform: smoothStream({
+        chunking: (buffer) => {
+          // Check for code block markers
+          if (buffer.includes('```')) {
+            isInCodeBlock = !isInCodeBlock;
+          }
+
+          // test case: should not deserialize link with markdown syntax
+          if (buffer.includes('http')) {
+            isInLink = true;
+          } else if (buffer.includes('https')) {
+            isInLink = true;
+          } else if (buffer.includes('\n') && isInLink) {
+            isInLink = false;
+          }
+
+          if (buffer.includes('*') || buffer.includes('-')) {
+            isInList = true;
+          } else if (buffer.includes('\n') && isInList) {
+            isInList = false;
+          }
+
+          // Simple table detection: enter on |, exit on double newline
+          if (!isInTable && buffer.includes('|')) {
+            isInTable = true;
+          } else if (isInTable && buffer.includes('\n\n')) {
+            isInTable = false;
+          }
+
+          // Use line chunking for code blocks and tables, word chunking otherwise
+          // Choose the appropriate chunking strategy based on content type
+          let match;
+
+          if (isInCodeBlock || isInTable || isInLink) {
+            // Use line chunking for code blocks and tables
+            match = CHUNKING_REGEXPS.line.exec(buffer);
+          } else if (isInList) {
+            // Use list chunking for lists
+            match = CHUNKING_REGEXPS.list.exec(buffer);
+          } else {
+            // Use word chunking for regular text
+            match = CHUNKING_REGEXPS.word.exec(buffer);
+          }
+
+          if (!match) {
+            return null;
+          }
+
+          return buffer.slice(0, match.index) + match?.[0];
+        },
+      }),
+      maxTokens: 2048,
+      messages: convertToCoreMessages(messages),
+      model: openai('gpt-4o'),
+      system: system,
+    });
+
+```
 
 ## Keyboard Shortcuts
 
