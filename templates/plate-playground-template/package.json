@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.1.9",
+    "@ai-sdk/react": "^1.2.9",
     "@ariakit/react": "^0.4.13",
     "@emoji-mart/data": "1.2.1",
     "@faker-js/faker": "^9.4.0",

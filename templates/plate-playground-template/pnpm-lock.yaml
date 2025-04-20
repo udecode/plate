@@ -11,6 +11,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^1.1.9
         version: 1.1.9(zod@3.24.1)
+      '@ai-sdk/react':
+        specifier: ^1.2.9
+        version: 1.2.9(react@19.0.0)(zod@3.24.1)
       '@ariakit/react':
         specifier: ^0.4.13
         version: 0.4.13(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
