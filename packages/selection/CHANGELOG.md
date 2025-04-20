@@ -1,5 +1,13 @@
 # @udecode/plate-selection
 
+## 47.0.8
+
+### Patch Changes
+
+- [#4226](https://github.com/udecode/plate/pull/4226) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Fix open block menu shouldn't lose block selection when selecting multiple blocks
+  - Fix `duplicateBlockSelectionNodes` sometime can not insert nodes.
+
 ## 46.0.4
 
 ### Patch Changes
