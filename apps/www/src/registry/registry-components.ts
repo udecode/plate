@@ -261,11 +261,7 @@ const plugins: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@udecode/plate-markdown',
-      'remark-gfm',
-      'remark-math',
-    ],
+    dependencies: ['@udecode/plate-markdown', 'remark-gfm', 'remark-math'],
     files: [
       {
         path: 'components/editor/plugins/markdown-plugin.tsx',
