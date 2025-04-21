@@ -5,7 +5,6 @@ import {
   MarkdownPlugin,
 } from '@udecode/plate-markdown';
 
-
 export const streamDeserializeInlineMd = (
   editor: PlateEditor,
   text: string,

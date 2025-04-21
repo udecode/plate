@@ -1,4 +1,4 @@
-import type { Plugin } from "unified";
+import type { Plugin } from 'unified';
 
 export const REMARK_MDX_TAG = 'remarkMdx';
 
@@ -9,7 +9,6 @@ export const tagRemarkPlugin = (pluginFn: any, tag: string) => {
   wrapped.__pluginTag = tag;
   return wrapped;
 };
-
 
 export const getRemarkPluginsWithoutMdx = (plugins: Plugin[]) => {
   return plugins.filter((plugin) => {
