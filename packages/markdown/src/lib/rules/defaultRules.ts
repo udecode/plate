@@ -597,7 +597,6 @@ export const defaultRules: TRules = {
   },
   p: {
     deserialize: (node, deco, options) => {
-      console.log('🚀 ~ node:', node);
       const isKeepLineBreak = options.splitLineBreaks;
       const children = convertChildrenDeserialize(node.children, deco, options);
       const paragraphType = getPlateNodeType('paragraph');
@@ -617,7 +616,6 @@ export const defaultRules: TRules = {
       };
 
       children.forEach((child, index, children) => {
-        console.log('🚀 ~ children.forEach ~ child:', child);
         const { type } = child as { type?: string };
 
         if (type && splitBlockTypes.has(type)) {
