@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 47.2.0
+
+### Patch Changes
+
+- [#4236](https://github.com/udecode/plate/pull/4236) by [@felixfeng33](https://github.com/felixfeng33) – use `withoutMdx` option for filtering out.
+
 ## 47.1.2
 
 ## 47.1.1
