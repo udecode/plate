@@ -47,6 +47,7 @@ export default function CollaborativeEditingDemo(): React.ReactNode {
           cursorOptions: {
             data: { color: cursorColor, name: username },
           },
+          initialValue: INITIAL_VALUE,
           // Configure collaboration providers
           providers: [
             {
@@ -64,30 +65,6 @@ export default function CollaborativeEditingDemo(): React.ReactNode {
               type: 'webrtc',
             },
           ],
-          onSyncChange({ isSynced, type }) {
-            // In P2P environments (WebRTC), there's no central source of truth
-            // We manually handle sync state here since y-webrtc doesn't emit sync events
-            // This approach uses a coordination strategy where we check if content exists
-            // before initializing to avoid overwriting with potentially stale content
-            if (isSynced && type === 'webrtc') {
-              // Delay slightly to allow potential initial content application from peers
-              // This is a heuristic and might need further refinement
-              // You may want to use a single source of truth (e.g. Hocuspocus) for initial content
-              setTimeout(() => {
-                const ydoc = editor.getOption(YjsPlugin, 'ydoc')!;
-                const meta = ydoc.getMap('meta');
-                const content = ydoc.get('content', Y.XmlText);
-
-                if (!meta.get('loaded')) {
-                  ydoc.transact(() => {
-                    const delta = slateNodesToInsertDelta(INITIAL_VALUE);
-                    content.applyDelta(delta);
-                    meta.set('loaded', true);
-                  }, 'load');
-                }
-              }, 500);
-            }
-          },
         },
         render: {
           afterEditable: RemoteCursorOverlay,
@@ -202,4 +179,11 @@ function CollaborativeEditor({
   );
 }
 
-const getRandomColor = () => {};
+const getRandomColor = (): string => {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};

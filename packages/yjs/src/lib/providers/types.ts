@@ -1,6 +1,6 @@
 import type { HocuspocusProviderConfiguration } from '@hocuspocus/provider';
 import type { WithCursorsOptions } from '@slate-yjs/core';
-import type { PluginConfig } from '@udecode/plate';
+import type { PluginConfig, Value } from '@udecode/plate';
 import type { Awareness } from 'y-protocols/awareness';
 import type * as Y from 'yjs';
 
@@ -115,6 +115,11 @@ export type YjsConfig = PluginConfig<
      * specified. Passed to `withTCursors`.
      */
     cursorOptions?: WithCursorsOptions | null;
+    /**
+     * Initial value for the Y.Doc. If provided, the plugin will apply this
+     * value to the Y.Doc when the plugin is connected to a provider.
+     */
+    initialValue?: Value;
     /**
      * Whether to wait for all providers to be synced before rendering content.
      * If false (default), content will render as soon as at least one provider

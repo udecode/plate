@@ -3,6 +3,7 @@ import { createTSlatePlugin } from '@udecode/plate';
 import { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
 
+import { slateToDeterministicYjsState } from '../utils/slateToDeterministicYjsState';
 import {
   type UnifiedProvider,
   type YjsConfig,
@@ -34,6 +35,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     _syncedProviderCount: 0,
     _totalProviderCount: 0,
     cursorOptions: {},
+    initialValue: undefined,
     providers: [],
     waitForAllProviders: false,
     ydoc: null!,
@@ -173,6 +175,16 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       if (!ydoc) {
         ydoc = new Y.Doc();
         setOption('ydoc', ydoc);
+      }
+
+      if (options.initialValue) {
+        const initialDelta = slateToDeterministicYjsState(
+          'doc-id', // A unique identifier for the document would be ideal.
+          options.initialValue
+        );
+        ydoc.transact(() => {
+          Y.applyUpdate(ydoc, initialDelta);
+        });
       }
 
       // Final providers array that will contain both configured and custom providers
