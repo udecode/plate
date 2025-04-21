@@ -157,7 +157,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     },
 
     /** Initialize the Yjs providers. This should be called only once. */
-    init: ({ autoConnect = true }: { autoConnect?: boolean } = {}) => {
+    init: async ({ autoConnect = true }: { autoConnect?: boolean } = {}) => {
       const { editor, getOptions, setOption } = ctx;
 
       const options = getOptions();
@@ -178,7 +178,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       }
 
       if (options.initialValue) {
-        const initialDelta = slateToDeterministicYjsState(
+        const initialDelta = await slateToDeterministicYjsState(
           'doc-id', // A unique identifier for the document would be ideal.
           options.initialValue
         );
