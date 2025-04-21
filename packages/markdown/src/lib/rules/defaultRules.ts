@@ -365,8 +365,19 @@ export const defaultRules: TRules = {
     },
   },
   italic: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
+    },
+  },
+  kbd: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        { kbd: true, ...deco },
+        options
+      ) as any;
     },
   },
   list: {
