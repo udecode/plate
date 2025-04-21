@@ -26,9 +26,6 @@ export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
   const editor = useEditorRef();
   const openState = useOpenState();
 
-  const [type, setType] = React.useState<ImportType>('html');
-  const accept = type === 'html' ? ['text/html'] : ['.md'];
-
   const getFileNodes = (text: string, type: ImportType) => {
     if (type === 'html') {
       const editorNode = getEditorDOMFromHtmlString(text);
@@ -39,13 +36,23 @@ export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
       return nodes;
     }
 
-    const nodes = editor.getApi(MarkdownPlugin).markdown.deserialize(text);
+    if (type === 'markdown') {
+      try {
+        const nodes = editor.getApi(MarkdownPlugin).markdown.deserialize(text);
+        return nodes;
+      } catch (error) {
+        const nodes = editor.getApi(MarkdownPlugin).markdown.deserialize(text, {
+          withoutMdx: true,
+        });
+        return nodes;
+      }
+    }
 
-    return nodes;
+    return [];
   };
 
   const { openFilePicker: openMdFilePicker } = useFilePicker({
-    accept: ['.md'],
+    accept: ['.md', '.mdx'],
     multiple: false,
     onFilesSelected: async ({ plainFiles }) => {
       const text = await plainFiles[0].text();
@@ -80,7 +87,6 @@ export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
         <DropdownMenuGroup>
           <DropdownMenuItem
             onSelect={() => {
-              setType('html');
               openHtmlFilePicker();
             }}
           >
@@ -89,7 +95,6 @@ export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
 
           <DropdownMenuItem
             onSelect={() => {
-              setType('markdown');
               openMdFilePicker();
             }}
           >

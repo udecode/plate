@@ -7,7 +7,6 @@ import {
 } from '@udecode/plate-markdown';
 
 import { getChunkTrimmed, isCompleteMath } from './utils';
-import { getRemarkPluginsWithoutMdx } from './utils/getRemarkPlugin';
 
 export const streamDeserializeMd = (
   editor: PlateEditor,
@@ -26,7 +25,7 @@ export const streamDeserializeMd = (
     blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, options);
   } catch (error) {
     blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, {
-      remarkPlugins: getRemarkPluginsWithoutMdx(editor),
+      // withoutMdx: true,
       ...options,
     });
   }

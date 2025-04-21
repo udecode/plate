@@ -8,7 +8,6 @@ import {
 } from '@udecode/plate-markdown';
 import { useEditorPlugin } from '@udecode/plate/react';
 
-import { getRemarkPluginsWithoutMdx } from '../../../lib';
 import { AIChatPlugin } from '../AIChatPlugin';
 
 /**
@@ -33,7 +32,7 @@ export const useAIChatEditor = (
         return editor.getApi(MarkdownPlugin).markdown.deserialize(content, {
           memoize: true,
           parser,
-          remarkPlugins: getRemarkPluginsWithoutMdx(editor as any),
+          withoutMdx: true,
         });
       }
     },

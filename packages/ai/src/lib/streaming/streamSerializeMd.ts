@@ -7,7 +7,6 @@ import {
 } from '@udecode/plate-markdown';
 
 import { getChunkTrimmed, isCompleteCodeBlock, isCompleteMath } from './utils';
-import { getRemarkPluginsWithoutMdx } from './utils/getRemarkPlugin';
 
 // fixes test: should serialize heading with tailing line break
 // fixes test: incomplete line breaks
@@ -58,18 +57,10 @@ export const streamSerializeMd = (
 
   let result = '';
 
-  try {
-    result = editor.getApi(MarkdownPlugin).markdown.serialize({
-      value: value,
-      ...restOptions,
-    });
-  } catch (error) {
-    result = editor.getApi(MarkdownPlugin).markdown.serialize({
-      remarkPlugins: getRemarkPluginsWithoutMdx(editor),
-      value: value,
-      ...restOptions,
-    });
-  }
+  result = editor.getApi(MarkdownPlugin).markdown.serialize({
+    value: value,
+    ...restOptions,
+  });
 
   const trimmedChunk = getChunkTrimmed(chunk);
 

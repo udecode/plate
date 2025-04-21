@@ -5,7 +5,6 @@ import {
   MarkdownPlugin,
 } from '@udecode/plate-markdown';
 
-import { getRemarkPluginsWithoutMdx } from './utils/getRemarkPlugin';
 
 export const streamDeserializeInlineMd = (
   editor: PlateEditor,
@@ -22,7 +21,7 @@ export const streamDeserializeInlineMd = (
     const blocks = editor
       .getApi(MarkdownPlugin)
       .markdown.deserializeInline(text, {
-        remarkPlugins: getRemarkPluginsWithoutMdx(editor),
+        withoutMdx: true,
         ...options,
       });
 

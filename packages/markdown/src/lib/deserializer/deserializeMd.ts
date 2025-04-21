@@ -24,6 +24,7 @@ export type DeserializeMdOptions = {
   remarkPlugins?: Plugin[];
   rules?: TRules | null;
   splitLineBreaks?: boolean;
+  withoutMdx?: boolean;
 };
 
 export const deserializeMd = (
