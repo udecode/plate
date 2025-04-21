@@ -265,7 +265,6 @@ const plugins: Registry['items'] = [
       '@udecode/plate-markdown',
       'remark-gfm',
       'remark-math',
-      'remark-mdx',
     ],
     files: [
       {
