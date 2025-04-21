@@ -25,15 +25,18 @@ export type DeserializeMdOptions = {
   rules?: TRules | null;
   splitLineBreaks?: boolean;
   withoutMdx?: boolean;
+  onError?: (error: Error) => void;
 };
 
-export const deserializeMd = (
+export const markdownToSlateNodes = (
   editor: SlateEditor,
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
-): any => {
+) => {
   // if using remarkMdx, we need to replace <br> with <br /> since <br /> is not supported in mdx.
-  data = data.replaceAll('<br>', '<br />');
+  if (!options?.withoutMdx) {
+    data = data.replaceAll('<br>', '<br />');
+  }
 
   const mergedOptions = getMergedOptionsDeserialize(editor, options);
 
@@ -63,6 +66,25 @@ export const deserializeMd = (
   }
 
   return toSlateProcessor.processSync(data).result;
+};
+
+export const deserializeMd = (
+  editor: SlateEditor,
+  data: string,
+  options?: Omit<DeserializeMdOptions, 'editor'>
+): any => {
+  try {
+    return markdownToSlateNodes(editor, data, options);
+  } catch (error) {
+    options?.onError?.(error as Error);
+
+    if (!options?.withoutMdx) {
+      return markdownToSlateNodes(editor, data, {
+        ...options,
+        withoutMdx: true,
+      });
+    }
+  }
 };
 
 declare module 'unified' {

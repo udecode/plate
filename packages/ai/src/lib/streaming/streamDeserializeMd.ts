@@ -21,14 +21,7 @@ export const streamDeserializeMd = (
 
   let blocks = [];
 
-  try {
-    blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, options);
-  } catch (error) {
-    blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, {
-      withoutMdx: true,
-      ...options,
-    });
-  }
+  blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, options);
 
   const trimmedData = getChunkTrimmed(data);
 
