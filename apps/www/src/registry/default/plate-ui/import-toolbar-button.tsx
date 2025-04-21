@@ -37,15 +37,7 @@ export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
     }
 
     if (type === 'markdown') {
-      try {
-        const nodes = editor.getApi(MarkdownPlugin).markdown.deserialize(text);
-        return nodes;
-      } catch (error) {
-        const nodes = editor.getApi(MarkdownPlugin).markdown.deserialize(text, {
-          withoutMdx: true,
-        });
-        return nodes;
-      }
+      return editor.getApi(MarkdownPlugin).markdown.deserialize(text);
     }
 
     return [];
