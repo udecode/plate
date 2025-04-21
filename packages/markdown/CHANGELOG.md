@@ -1,5 +1,11 @@
 # @udecode/plate-markdown
 
+## 47.1.2
+
+### Patch Changes
+
+- [#4234](https://github.com/udecode/plate/pull/4234) by [@felixfeng33](https://github.com/felixfeng33) – Add deserialize rule for `<kbd />` tag
+
 ## 47.1.1
 
 ### Patch Changes
