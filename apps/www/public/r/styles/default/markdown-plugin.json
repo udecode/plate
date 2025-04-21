@@ -2,13 +2,12 @@
   "dependencies": [
     "@udecode/plate-markdown",
     "remark-gfm",
-    "remark-math",
-    "remark-mdx"
+    "remark-math"
   ],
   "files": [
     {
       "path": "components/editor/plugins/markdown-plugin.tsx",
-      "content": "'use client';\n\nimport { MarkdownPlugin, remarkMention } from '@udecode/plate-markdown';\nimport { SuggestionPlugin } from '@udecode/plate-suggestion/react';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\nimport remarkMdx from 'remark-mdx';\nexport const markdownPlugin = MarkdownPlugin.configure({\n  options: {\n    disallowedNodes: [SuggestionPlugin.key],\n    remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],\n  },\n});\n",
+      "content": "'use client';\n\nimport {\n  MarkdownPlugin,\n  remarkMdx,\n  remarkMention,\n} from '@udecode/plate-markdown';\nimport { SuggestionPlugin } from '@udecode/plate-suggestion/react';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\n\nexport const markdownPlugin = MarkdownPlugin.configure({\n  options: {\n    disallowedNodes: [SuggestionPlugin.key],\n    remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],\n  },\n});\n",
       "type": "registry:component",
       "target": "components/editor/plugins/markdown-plugin.tsx"
     }
