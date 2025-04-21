@@ -4,6 +4,7 @@ import type { DeserializeMdOptions } from '../deserializeMd';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { defaultRules } from '../../rules';
+import { getRemarkPluginsWithoutMdx } from '../../utils/getRemarkPluginsWithoutMdx';
 
 /**
  * Merges Markdown configurations, following the principle that options take
@@ -31,6 +32,8 @@ export const getMergedOptionsDeserialize = (
     options?.rules ?? PluginRules
   );
 
+  const remarkPlugins = options?.remarkPlugins ?? PluginRemarkPlugins ?? [];
+
   return {
     allowedNodes: options?.allowedNodes ?? PluginAllowedNodes,
     allowNode: options?.allowNode ?? PluginAllowNode,
@@ -38,7 +41,9 @@ export const getMergedOptionsDeserialize = (
     editor,
     memoize: options?.memoize,
     parser: options?.parser,
-    remarkPlugins: options?.remarkPlugins ?? PluginRemarkPlugins ?? [],
+    remarkPlugins: options?.withoutMdx
+      ? getRemarkPluginsWithoutMdx(remarkPlugins)
+      : remarkPlugins,
     rules: mergedRules,
     splitLineBreaks: options?.splitLineBreaks,
   };
