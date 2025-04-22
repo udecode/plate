@@ -27,7 +27,7 @@ YjsPlugin.configure({
 ```tsx
 YjsPlugin.configure({
   options: {
-    cursorOptions: {
+    cursors: {
       /* ... */
     },
     providers: [
@@ -49,7 +49,7 @@ YjsPlugin.configure({
 ```tsx
 YjsPlugin.configure({
   options: {
-    cursorOptions: {
+    cursors: {
       /* ... */
     },
     providers: [
@@ -68,13 +68,10 @@ YjsPlugin.configure({
         },
       },
     ],
-    // waitForAllProviders: true, // Optional
   },
 });
 ```
 
-- Improved sync state tracking with `syncedProviderCount`, better handling provider disconnections.
-- Adds `waitForAllProviders` option to control rendering behavior when using multiple providers.
 - Introduces `UnifiedProvider` interface that enables custom provider implementations (e.g., IndexedDB for offline persistence).
 - Renamed `cursorOptions` to `cursors`.
 - Merged `yjsOptions` into `options`.

@@ -99,10 +99,6 @@ export type YjsConfig = PluginConfig<
     _isSynced: boolean;
     /** Array of all active, instantiated providers. */
     _providers: UnifiedProvider[];
-    /** Number of providers currently synced. */
-    _syncedProviderCount: number;
-    /** Total number of active providers. */
-    _totalProviderCount: number;
     /** The shared Awareness instance used by the plugin. */
     awareness: Awareness;
     /**
@@ -118,12 +114,6 @@ export type YjsConfig = PluginConfig<
      * specified. Passed to `withTCursors`.
      */
     cursors?: WithCursorsOptions | null;
-    /**
-     * Whether to wait for all providers to be synced before rendering content.
-     * If false (default), content will render as soon as at least one provider
-     * is synced.
-     */
-    waitForAllProviders?: boolean;
     /**
      * Shared Y.Doc instance. If not provided by the user in the initial config,
      * a new one will be created and assigned here by the plugin.

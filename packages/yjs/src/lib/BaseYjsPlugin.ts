@@ -36,14 +36,11 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     _isConnected: false,
     _isSynced: false,
     _providers: [],
-    _syncedProviderCount: 0,
-    _totalProviderCount: 0,
     awareness: null!,
     cursors: {},
     localOrigin: null,
     positionStorageOrigin: null,
     providers: [],
-    waitForAllProviders: false,
     ydoc: null!,
     onConnect: () => {},
     onDisconnect: () => {},
@@ -233,7 +230,6 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
 
       // Final providers array that will contain both configured and custom providers
       const finalProviders: UnifiedProvider[] = [];
-      let initialSyncedCount = 0;
 
       // Connect the YjsEditor first to set up slate-yjs bindings.
       YjsEditor.connect(editor as any);
@@ -289,21 +285,9 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
               onSyncChange: (isSynced) => {
                 getOptions().onSyncChange?.({ isSynced, type });
                 setOption('_isSynced', isSynced);
-                // Update the synced provider count based on the state change
-                const { _syncedProviderCount } = getOptions();
-                const newCount = isSynced
-                  ? _syncedProviderCount + 1
-                  : Math.max(0, _syncedProviderCount - 1);
-
-                setOption('_syncedProviderCount', newCount);
               },
             });
             finalProviders.push(provider);
-
-            // Track initial sync state for created providers
-            if (provider.isSynced) {
-              initialSyncedCount++;
-            }
           } catch (error) {
             console.warn(
               `[yjs] Error creating provider of type ${type}:`,
@@ -331,11 +315,6 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
 
           // Add the custom provider to our providers array
           finalProviders.push(customProvider);
-
-          // Track initial sync state for custom providers
-          if (customProvider.isSynced) {
-            initialSyncedCount++;
-          }
         }
       }
 
@@ -347,8 +326,6 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
 
       // Update provider counts after creation
       setOption('_providers', finalProviders);
-      setOption('_syncedProviderCount', initialSyncedCount);
-      setOption('_totalProviderCount', finalProviders.length);
 
       // Finally, connect providers if autoConnect is true
       if (autoConnect) {

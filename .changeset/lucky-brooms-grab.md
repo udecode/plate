@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-core': patch
+'@udecode/plate-core': minor
 ---
 
 - `createPlateEditor`/`usePlateEditor`

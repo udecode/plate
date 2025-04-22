@@ -50,8 +50,9 @@ export const docsExamples: SidebarNavItem[] = [
   },
   {
     description: 'Collaborative editing.',
-    href: '/docs/examples/collaborative-editing',
-    title: 'Collaborative Editing Demo',
+    href: '/docs/examples/collaboration',
+    label: 'New',
+    title: 'Collaboration Demo',
   },
   ...registryToNav(
     docExamples.filter(

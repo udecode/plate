@@ -1641,11 +1641,11 @@ export const examples: Registry['items'] = [
   {
     files: [
       {
-        path: 'examples/collaborative-editing-demo.tsx',
+        path: 'examples/collaboration-demo.tsx',
         type: 'registry:example',
       },
     ],
-    name: 'collaborative-editing-demo',
+    name: 'collaboration-demo',
     registryDependencies: [],
     type: 'registry:example',
   },

@@ -10,7 +10,7 @@
     "build:contentlayer": "contentlayer2 build",
     "build:registry": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "build:tw": "yarn tailwindcss -i ./src/styles/globals.css -o ./public/tailwind.css --minify",
-    "dev": "concurrently \"contentlayer2 dev\" \"next dev --turbo\"",
+    "dev": "concurrently \"contentlayer2 dev\" \"next dev --turbo\" \"PORT=4444 node ../../node_modules/y-webrtc/bin/server.js\"",
     "lint": "yarn p:lint",
     "lint:debug": "TIMING=1 DEBUG=eslint:cli-engine yarn lint:fix",
     "lint:fix": "yarn p:lint:fix",

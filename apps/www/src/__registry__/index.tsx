@@ -4121,18 +4121,18 @@ export const Index: Record<string, any> = {
       source: "",
       meta: undefined,
     },
-    "collaborative-editing-demo": {
-      name: "collaborative-editing-demo",
+    "collaboration-demo": {
+      name: "collaboration-demo",
       description: "",
       type: "registry:example",
       registryDependencies: [],
       files: [{
-        path: "src/registry/default/examples/collaborative-editing-demo.tsx",
+        path: "src/registry/default/examples/collaboration-demo.tsx",
         type: "registry:example",
         target: ""
       }],
       categories: undefined,
-      component: React.lazy(() => import("@/registry/default/examples/collaborative-editing-demo.tsx")),
+      component: React.lazy(() => import("@/registry/default/examples/collaboration-demo.tsx")),
       source: "",
       meta: undefined,
     },
