@@ -86,7 +86,6 @@ React.useEffect(() => {
   editor.getApi(YjsPlugin).yjs.init({
     id: roomName, // Or your document identifier
     value: INITIAL_VALUE, // Your initial editor content
-    autoSelect: 'end', // Optional: Auto-select end after init
   });
 
   // Destroy connection on component unmount

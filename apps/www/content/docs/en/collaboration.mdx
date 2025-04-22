@@ -276,12 +276,6 @@ Initializes the Yjs connection, binds it to the editor, sets up providers based 
 
 Disconnects all providers, cleans up Yjs bindings (detaches editor from Y.Doc), and destroys the awareness instance. **Must be called when the editor component unmounts** to prevent memory leaks and stale connections.
 
-<API name="editor.api.yjs.destroy">
-<APIReturns type="void"/>
-</API>
-
----
-
 ### `editor.api.yjs.connect`
 
 Manually connects to providers. Useful if `autoConnect: false` was used during `init`.
@@ -292,10 +286,7 @@ Manually connects to providers. Useful if `autoConnect: false` was used during `
    If provided, only connects to providers of the specified type(s). If omitted, connects to all configured providers that are not already connected.
  </APIItem>
 </APIParameters>
-<APIReturns type="void"/>
 </API>
-
----
 
 ### `editor.api.yjs.disconnect`
 
@@ -307,7 +298,6 @@ Manually disconnects from providers.
    If provided, only disconnects from providers of the specified type(s). If omitted, disconnects from all currently connected providers.
  </APIItem>
 </APIParameters>
-<APIReturns type="void"/>
 </API>
 
 ## Provider Types
