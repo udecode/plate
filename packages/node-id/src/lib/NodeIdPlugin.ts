@@ -119,19 +119,24 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
           },
         })
       ) {
+        // Verify node exists at path before attempting to modify
+        const existingNode = editor.api.node(path);
+        if (!existingNode) {
+          return;
+        }
+
         editor.tf.setNodes(
           { [idKey!]: getOptions().idCreator!() },
           { at: path }
         );
       }
-      // Process children in place if they exist
-      if ((node.children as any)?.length > 0) {
-        (node.children as any).forEach((child: any, index: number) => {
+
+      // Only traverse children if this is an Element node
+      if (ElementApi.isElement(node)) {
+        node.children.forEach((child: any, index: number) => {
           addNodeId([child, [...path, index]]);
         });
       }
-
-      return node;
     };
 
     // Process top-level nodes in place
