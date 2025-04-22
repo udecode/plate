@@ -251,7 +251,7 @@ function useCollaborationRoom() {
 // Hook for managing user/cursor state
 function useCollaborationUser() {
   const [username] = React.useState(
-    () => `user-${Math.floor(Math.random() * 1000)}`
+    () => `user-${crypto.getRandomValues(new Uint32Array(1))[0] % 1000}`
   );
   const [cursorColor] = React.useState(() => getRandomColor());
 
