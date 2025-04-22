@@ -104,7 +104,6 @@ export const defaultRules: TRules = {
       };
     },
     serialize: (node, options) => {
-      // create a paragraph for each \n node
       const nodes = [] as any;
 
       for (const child of node.children) {
@@ -121,6 +120,17 @@ export const defaultRules: TRules = {
         nodes,
         options
       ) as MdParagraph['children'];
+
+      if (
+        paragraphChildren.length > 0 &&
+        paragraphChildren.at(-1)!.type === 'break'
+      ) {
+        // if the last child of the paragraph is a line break add an additional one
+
+        paragraphChildren.at(-1)!.type = 'html';
+        // @ts-expect-error -- value is ok
+        paragraphChildren.at(-1)!.value = '\n<br />';
+      }
 
       return {
         children: [
@@ -216,6 +226,28 @@ export const defaultRules: TRules = {
       };
     },
   },
+  // plate doesn't support footnoteDefinition and footnoteReference
+  // so we need to convert them to p for now
+  footnoteDefinition: {
+    deserialize: (mdastNode, deco, options) => {
+      const children = convertChildrenDeserialize(
+        mdastNode.children,
+        deco,
+        options
+      );
+
+      // Flatten nested paragraphs similar to blockquote implementation
+      const flattenedChildren = children.flatMap((child: any) =>
+        child.type === 'p' ? child.children : [child]
+      );
+
+      return {
+        children: flattenedChildren,
+        type: 'p',
+      };
+    },
+  },
+  footnoteReference: {},
   heading: {
     deserialize: (mdastNode, deco, options) => {
       const headingType = {
@@ -333,8 +365,19 @@ export const defaultRules: TRules = {
     },
   },
   italic: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
+    },
+  },
+  kbd: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        { kbd: true, ...deco },
+        options
+      ) as any;
     },
   },
   list: {
@@ -572,7 +615,7 @@ export const defaultRules: TRules = {
         }
       };
 
-      children.forEach((child) => {
+      children.forEach((child, index, children) => {
         const { type } = child as { type?: string };
 
         if (type && splitBlockTypes.has(type)) {
@@ -614,7 +657,16 @@ export const defaultRules: TRules = {
             }
           });
         } else {
-          inlineNodes.push(child);
+          if (
+            child.text === '\n' &&
+            children.length > 1 &&
+            index === children.length - 1
+          ) {
+            // remove the last br of the paragraph if the previos element is not a br
+            // no op
+          } else {
+            inlineNodes.push(child);
+          }
         }
       });
 
@@ -623,11 +675,34 @@ export const defaultRules: TRules = {
       return elements.length === 1 ? elements[0] : elements;
     },
     serialize: (node, options) => {
+      let enrichedChildren = node.children;
+
+      enrichedChildren = enrichedChildren.map((child) => {
+        if (child.text === '\n') {
+          return {
+            type: 'break',
+          } as any;
+        }
+        return child;
+      });
+
+      const convertedNodes = convertNodesSerialize(
+        enrichedChildren,
+        options
+      ) as MdParagraph['children'];
+
+      if (
+        convertedNodes.length > 0 &&
+        enrichedChildren.at(-1)!.type === 'break'
+      ) {
+        // if the last child of the paragraph is a line break add an additional one
+        convertedNodes.at(-1)!.type = 'html';
+        // @ts-expect-error -- value is the right property here
+        convertedNodes.at(-1)!.value = '\n<br />';
+      }
+
       return {
-        children: convertNodesSerialize(
-          node.children,
-          options
-        ) as MdParagraph['children'],
+        children: convertedNodes,
         type: 'paragraph',
       };
     },

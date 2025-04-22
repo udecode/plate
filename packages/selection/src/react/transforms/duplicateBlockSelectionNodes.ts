@@ -11,7 +11,11 @@ export const duplicateBlockSelectionNodes = (editor: PlateEditor) => {
 
   if (!lastBlock) return;
 
-  editor.tf.duplicateNodes({ nodes: blocks });
+  editor.tf.duplicateNodes({
+    at: lastBlock[1],
+    nextBlock: true,
+    nodes: blocks,
+  });
 
   const path = PathApi.next(lastBlock[1]);
 

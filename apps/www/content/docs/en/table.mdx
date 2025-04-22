@@ -30,14 +30,17 @@ docs:
 ## Installation
 
 ```bash
-npm install @udecode/plate-table
+npm install @udecode/plate-table @udecode/plate-node-id
 ```
+
+See [Node ID](/docs/node-id) for more information.
 
 ## Usage
 
 ```tsx
 // ...
 import { TablePlugin } from '@udecode/plate-table/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 
 const plugins = [
   // ...otherPlugins,
@@ -46,6 +49,7 @@ const plugins = [
       initialTableWidth: 600,
     },
   }),
+  NodeIdPlugin,
 ];
 ```
 

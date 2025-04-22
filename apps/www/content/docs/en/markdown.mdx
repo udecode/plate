@@ -47,10 +47,9 @@ Configuring `MarkdownPlugin` is recommended to enable paste handling (converting
 
 ```tsx
 import { createPlateEditor } from '@udecode/plate/react';
-import { MarkdownPlugin, remarkMention } from '@udecode/plate-markdown';
+import { MarkdownPlugin, remarkMention, remarkMdx } from '@udecode/plate-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
-import remarkMdx from 'remark-mdx';
 
 const editor = createPlateEditor({
   plugins: [
@@ -58,6 +57,7 @@ const editor = createPlateEditor({
     MarkdownPlugin.configure({
       options: {
         // Add remark plugins for syntax extensions (GFM, Math, MDX)
+        // import remarkMdx from `@udecode/plate-markdown` instead of `remark-mdx`
         remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
         // Define custom rules for serialization/deserialization if needed
         rules: {

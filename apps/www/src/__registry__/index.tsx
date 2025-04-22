@@ -1043,6 +1043,14 @@ export const Index: Record<string, any> = {
         type: "registry:ui",
         target: ""
       },{
+        path: "src/registry/default/plate-ui/ai-loading-bar.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/ai-anchor-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
         path: "src/registry/default/plate-ui/ai-menu-items.tsx",
         type: "registry:ui",
         target: ""
@@ -1841,7 +1849,7 @@ export const Index: Record<string, any> = {
       name: "editor-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["ai-plugins","basic-nodes-plugins","align-plugin","autoformat-plugin","block-menu-plugins","equation-plugins","cursor-overlay-plugin","comments-plugin","delete-plugins","dnd-plugins","exit-break-plugin","indent-list-plugins","line-height-plugin","link-plugin","media-plugins","mention-plugin","reset-block-type-plugin","skip-mark-plugin","suggestion-plugin","soft-break-plugin","table-plugin","toc-plugin"],
+      registryDependencies: ["ai-plugins","markdown-plugin","basic-nodes-plugins","align-plugin","autoformat-plugin","block-menu-plugins","equation-plugins","cursor-overlay-plugin","comments-plugin","delete-plugins","dnd-plugins","exit-break-plugin","indent-list-plugins","line-height-plugin","link-plugin","media-plugins","mention-plugin","reset-block-type-plugin","skip-mark-plugin","suggestion-plugin","soft-break-plugin","table-plugin","toc-plugin"],
       files: [{
         path: "src/registry/default/components/editor/plugins/editor-plugins.tsx",
         type: "registry:component",
@@ -2037,6 +2045,21 @@ export const Index: Record<string, any> = {
       }],
       categories: undefined,
       component: React.lazy(() => import("@/registry/default/components/editor/plugins/cursor-overlay-plugin.tsx")),
+      source: "",
+      meta: undefined,
+    },
+    "markdown-plugin": {
+      name: "markdown-plugin",
+      description: "",
+      type: "registry:component",
+      registryDependencies: [],
+      files: [{
+        path: "src/registry/default/components/editor/plugins/markdown-plugin.tsx",
+        type: "registry:component",
+        target: ""
+      }],
+      categories: undefined,
+      component: React.lazy(() => import("@/registry/default/components/editor/plugins/markdown-plugin.tsx")),
       source: "",
       meta: undefined,
     },

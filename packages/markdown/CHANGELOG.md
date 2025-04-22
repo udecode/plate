@@ -1,5 +1,35 @@
 # @udecode/plate-markdown
 
+## 47.2.0
+
+### Minor Changes
+
+- [#4236](https://github.com/udecode/plate/pull/4236) by [@felixfeng33](https://github.com/felixfeng33) –
+
+  - Added fallback handling for unsupported MDX tags to gracefully preserve content
+  - Now remarkMdx is exported directly from the `@udecode/plate-markdown` package instead of importing from `remark-mdx`
+  - New `onError` option in `DeserializeMdOptions` to handle and catch MDX parsing errors
+
+## 47.1.2
+
+### Patch Changes
+
+- [#4234](https://github.com/udecode/plate/pull/4234) by [@felixfeng33](https://github.com/felixfeng33) – Add deserialize rule for `<kbd />` tag
+
+## 47.1.1
+
+### Patch Changes
+
+- [`222408d`](https://github.com/udecode/plate/commit/222408dd6aeeb10debc22566f27fd2fb1ac28975) by [@felixfeng33](https://github.com/felixfeng33) – Add `deserializeInlineMd` to `editor.api.markdown.deserializeInlineMd`.
+
+  Add `footnoteDefinition` to `defaultRules`
+
+## 47.0.7
+
+### Patch Changes
+
+- [#4216](https://github.com/udecode/plate/pull/4216) by [@martin-lysk](https://github.com/martin-lysk) – linebreaks (soft linebreaks and paragraphs) are serialized and deserialized differently now
+
 ## 47.0.6
 
 ### Patch Changes
