@@ -10,7 +10,6 @@ import type { AnyPluginConfig } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
-import { pipeNormalizeInitialValue } from '../../internal/plugin/pipeNormalizeInitialValue';
 import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
 import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
@@ -40,6 +39,13 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * @default false
    */
   shouldNormalizeEditor?: boolean;
+  /**
+   * When `true`, skip the initial value, selection, and normalization logic.
+   * Useful when the editor state is managed externally (e.g., Yjs).
+   *
+   * @default false
+   */
+  skipInitialization?: boolean;
 };
 
 export type WithSlateOptions<
@@ -57,7 +63,7 @@ export type WithSlateOptions<
     | 'override'
     | 'transforms'
   > & {
-    value?: ((editor: SlateEditor) => V) | V | string;
+    value?: ((editor: SlateEditor) => Promise<V> | V) | V | string | null;
     /** Function to configure the root plugin */
     rootPlugin?: (plugin: AnySlatePlugin) => AnySlatePlugin;
   };
@@ -86,6 +92,7 @@ export const withSlate = <
     rootPlugin,
     selection,
     shouldNormalizeEditor,
+    skipInitialization,
     value,
     ...pluginConfig
   }: WithSlateOptions<V, P> = {}
@@ -191,28 +198,13 @@ export const withSlate = <
   };
   editor.normalizeNode = editor.tf.normalizeNode;
 
-  if (typeof value === 'string') {
-    editor.children = editor.api.html.deserialize({ element: value }) as Value;
-  } else if (typeof value === 'function') {
-    editor.children = value(editor);
-  } else if (value) {
-    editor.children = value;
-  }
-  if (!editor.children || editor.children?.length === 0) {
-    editor.children = editor.api.create.value();
-  }
-  if (selection) {
-    editor.selection = selection;
-  } else if (autoSelect) {
-    const edge = autoSelect === 'start' ? 'start' : 'end';
-    const target = edge === 'start' ? editor.api.start([]) : editor.api.end([]);
-    editor.tf.select(target!);
-  }
-  if (editor.children.length > 0) {
-    pipeNormalizeInitialValue(editor);
-  }
-  if (shouldNormalizeEditor) {
-    editor.tf.normalize({ force: true });
+  if (!skipInitialization) {
+    void editor.tf.init({
+      autoSelect,
+      selection,
+      shouldNormalizeEditor,
+      value,
+    });
   }
 
   return editor as any;

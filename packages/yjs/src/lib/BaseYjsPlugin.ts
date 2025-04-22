@@ -1,5 +1,9 @@
 import { YjsEditor } from '@slate-yjs/core';
-import { createTSlatePlugin } from '@udecode/plate';
+import {
+  type InitOptions,
+  type Value,
+  createTSlatePlugin,
+} from '@udecode/plate';
 import { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
 
@@ -27,38 +31,47 @@ const isProviderConfig = (
 
 export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
   key: 'yjs',
+  extendEditor: withPlateYjs,
   options: {
-    _awareness: null!,
     _isConnected: false,
     _isSynced: false,
     _providers: [],
     _syncedProviderCount: 0,
     _totalProviderCount: 0,
-    cursorOptions: {},
-    initialValue: undefined,
+    awareness: null!,
+    cursors: {},
+    localOrigin: null,
+    positionStorageOrigin: null,
     providers: [],
     waitForAllProviders: false,
     ydoc: null!,
-    yjsOptions: {},
     onConnect: () => {},
     onDisconnect: () => {},
     onError: () => {},
     onSyncChange: () => {},
   },
 })
-  .overrideEditor(({ api: { shouldNormalizeNode }, getOptions }) => ({
-    api: {
-      shouldNormalizeNode(entry) {
-        const { _isSynced } = getOptions();
+  .extend(({ getOptions }) => {
+    const { localOrigin, positionStorageOrigin, ...options } = getOptions();
+    let { awareness, ydoc } = options;
 
-        if (!_isSynced) {
-          return false;
-        }
+    if (!ydoc) {
+      ydoc = new Y.Doc();
+    }
 
-        return shouldNormalizeNode(entry);
+    if (!awareness) {
+      awareness = new Awareness(ydoc);
+    }
+
+    return {
+      options: {
+        awareness,
+        localOrigin: localOrigin ?? undefined,
+        positionStorageOrigin: positionStorageOrigin ?? undefined,
+        ydoc,
       },
-    },
-  }))
+    };
+  })
   .extendApi((ctx) => ({
     /**
      * Connect to all providers or specific provider types.
@@ -156,14 +169,36 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       }
     },
 
-    /** Initialize the Yjs providers. This should be called only once. */
-    init: async ({ autoConnect = true }: { autoConnect?: boolean } = {}) => {
+    /** Initialize yjs, providers connection and editor state. */
+    init: async ({
+      id,
+      autoConnect = true,
+      autoSelect,
+      selection,
+      value,
+    }: {
+      /**
+       * Id of the document.
+       *
+       * @default editor.id
+       */
+      id?: string;
+      /**
+       * Whether to automatically connect to providers.
+       *
+       * @default true
+       */
+      autoConnect?: boolean;
+    } & Omit<InitOptions, 'shouldNormalizeEditor'> = {}) => {
       const { editor, getOptions, setOption } = ctx;
 
       const options = getOptions();
-      const { _providers, providers: providerConfigsOrInstances = [] } =
-        options;
-      let ydoc = options.ydoc;
+      const {
+        _providers,
+        awareness,
+        providers: providerConfigsOrInstances = [],
+        ydoc,
+      } = options;
 
       // Validate configuration
       if (providerConfigsOrInstances.length === 0) {
@@ -172,15 +207,24 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
         );
       }
 
-      if (!ydoc) {
-        ydoc = new Y.Doc();
-        setOption('ydoc', ydoc);
-      }
+      if (value !== null) {
+        let initialNodes = value as Value;
+        if (typeof value === 'string') {
+          initialNodes = editor.api.html.deserialize({
+            element: value,
+          }) as Value;
+        } else if (typeof value === 'function') {
+          initialNodes = await value(editor);
+        } else if (value) {
+          initialNodes = value;
+        }
+        if (!initialNodes || initialNodes?.length === 0) {
+          initialNodes = editor.api.create.value();
+        }
 
-      if (options.initialValue) {
         const initialDelta = await slateToDeterministicYjsState(
-          'doc-id', // A unique identifier for the document would be ideal.
-          options.initialValue
+          id ?? editor.id,
+          initialNodes
         );
         ydoc.transact(() => {
           Y.applyUpdate(ydoc, initialDelta);
@@ -191,14 +235,16 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       const finalProviders: UnifiedProvider[] = [];
       let initialSyncedCount = 0;
 
-      // Create a single shared Awareness instance for all providers
-      const awareness = new Awareness(ydoc);
-      setOption('_awareness', awareness);
-
-      withPlateYjs(ctx);
-
-      // Connect the YjsEditor first to set up slate-yjs bindings
+      // Connect the YjsEditor first to set up slate-yjs bindings.
       YjsEditor.connect(editor as any);
+
+      editor.tf.init({
+        autoSelect,
+        selection,
+        // Skipped since YjsEditor.connect already normalizes the editor
+        shouldNormalizeEditor: false,
+        value: null,
+      });
 
       // Then process and create providers
       for (const item of providerConfigsOrInstances) {

@@ -294,11 +294,9 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       NodeIdPlugin,
       DndPlugin.configure({ options: { enableScroller: true } }),
     ],
-    override: {
-      components: {
-        // ...components
-      },
-    }
+    components: {
+      // ...components
+    },
   });
 
   return (

@@ -6,58 +6,52 @@ import type { YjsConfig } from './providers/types';
 
 import { type PlateYjsEditorProps, withTCursors } from './withTCursors';
 import { withTYHistory } from './withTYHistory';
-import { withTYjs } from './withTYjs';
+import { type YjsEditorProps, withTYjs } from './withTYjs';
 
 export const withPlateYjs: ExtendEditor<YjsConfig> = ({
   editor: e,
   getOptions,
 }) => {
-  const editor = e as unknown as PlateYjsEditorProps & SlateEditor;
+  let editor = e as unknown as PlateYjsEditorProps &
+    SlateEditor &
+    YjsEditorProps;
 
-  // Get all relevant options
-  const { _awareness, cursorOptions, ydoc, yjsOptions } = getOptions();
-
-  // Make sure we have a document and a provider
-  if (!ydoc) {
-    // This shouldn't happen if BaseYjsPlugin ran correctly
-    editor.api.debug.error('Yjs plugin: Y.Doc (ydoc) is missing.');
-    return editor;
-  }
+  const { awareness, cursors, localOrigin, positionStorageOrigin, ydoc } =
+    getOptions();
 
   // Get the shared document type from the Y.Doc
-  const sharedType = ydoc.get('content', Y.XmlText) as Y.XmlText;
+  const sharedType = ydoc!.get('content', Y.XmlText) as Y.XmlText;
 
   // Apply core Yjs binding first
-  let intermediateEditor = withTYjs(editor, sharedType, {
-    autoConnect: false, // Providers are connected manually by BaseYjsPlugin logic
-    ...yjsOptions,
-  });
+  editor = withTYjs(editor, sharedType, {
+    autoConnect: false,
+    localOrigin,
+    positionStorageOrigin,
+  }) as any;
 
   // Apply YJS transformations to the editor
-  // Conditionally apply cursor support based on cursorOptions
-  if (cursorOptions) {
+  // Conditionally apply cursor support based on cursors
+  if (cursors) {
     // Use the shared awareness instance for cursors
-    if (_awareness) {
+    if (awareness) {
       let autoSend = true;
 
-      if (cursorOptions.autoSend === false) {
+      if (cursors.autoSend === false) {
         autoSend = false;
       }
 
-      intermediateEditor = withTCursors(intermediateEditor, _awareness, {
-        ...cursorOptions,
+      editor = withTCursors(editor, awareness, {
+        ...cursors,
         autoSend,
       });
     } else {
       // This also shouldn't happen if BaseYjsPlugin ran correctly
       editor.api.debug.error(
-        'Yjs plugin: Internal shared awareness (_awareness) is missing but cursors are enabled.'
+        'Yjs plugin: Internal shared awareness (awareness) is missing but cursors are enabled.'
       );
     }
   }
 
   // Apply history last
-  const finalEditor = withTYHistory(intermediateEditor);
-
-  return finalEditor;
+  return withTYHistory(editor);
 };

@@ -4,8 +4,4 @@ import { toPlatePlugin } from '@udecode/plate/react';
 import { BaseYjsPlugin } from '../lib/BaseYjsPlugin';
 
 /** Enables support for real-time collaboration using Yjs. */
-export const YjsPlugin = toPlatePlugin(BaseYjsPlugin, {
-  render: {
-    // aboveEditable: YjsAboveEditable,
-  },
-});
+export const YjsPlugin = toPlatePlugin(BaseYjsPlugin);

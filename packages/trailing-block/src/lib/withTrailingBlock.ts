@@ -23,6 +23,7 @@ export const withTrailingBlock: OverrideEditor<TrailingBlockConfig> = ({
           !lastChildNode ||
           (lastChildNode.type !== type && queryNode(lastChild, query))
         ) {
+          console.log('inserting trailing block');
           const at = lastChild ? PathApi.next(lastChild[1]) : [0];
 
           editor.tf.insertNodes(editor.api.create.block({ type }, at), { at });

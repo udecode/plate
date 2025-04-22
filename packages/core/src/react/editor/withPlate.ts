@@ -138,10 +138,8 @@ export type CreatePlateEditorOptions<
  * @example
  *   const editor = createPlateEditor({
  *     plugins: [ParagraphPlugin, BoldPlugin],
- *     override: {
- *       components: {
- *         [ParagraphPlugin.key]: CustomParagraphComponent,
- *       },
+ *     components: {
+ *       [ParagraphPlugin.key]: CustomParagraphComponent,
  *     },
  *   });
  *

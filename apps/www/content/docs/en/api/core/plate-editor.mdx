@@ -50,6 +50,9 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
   <APIItem name="getType" type="(plugin: PlatePlugin) => string">
     Get the node type associated with a plugin.
   </APIItem>
+  <APIItem name="init" type="(options: InitOptions) => Promise<void>">
+    Initialize the editor value, selection, and normalization. Accepts options for auto-select, selection, normalization, and value.
+  </APIItem>
 </APIMethods>
 </API>
 
@@ -130,4 +133,6 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
     Replace the editor value. See [Controlled Value](/docs/controlled) for more information.
   </APIItem>
 </APITransforms>
+
+
 </API>

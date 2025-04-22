@@ -225,10 +225,6 @@ export const docsConfig: DocsConfig = {
           href: '/docs/migration/slate-to-plate',
           title: 'From Slate to Plate',
         },
-        {
-          href: '/docs/migration/yjs-multiple-providers-support',
-          title: 'Yjs Multiple Providers Support',
-        },
       ],
       title: 'Migration',
     },

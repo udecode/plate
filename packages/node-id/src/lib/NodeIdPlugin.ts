@@ -119,7 +119,10 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
           },
         })
       ) {
-        node[idKey!] = getOptions().idCreator!();
+        editor.tf.setNodes(
+          { [idKey!]: getOptions().idCreator!() },
+          { at: path }
+        );
       }
       // Process children in place if they exist
       if ((node.children as any)?.length > 0) {

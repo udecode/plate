@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { slateNodesToInsertDelta } from '@slate-yjs/core';
 import { YjsPlugin } from '@udecode/plate-yjs/react';
 import {
   Plate,
@@ -10,7 +9,6 @@ import {
   usePlateEditor,
   usePluginOption,
 } from '@udecode/plate/react';
-import * as Y from 'yjs';
 
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { editorComponents } from '@/registry/default/components/editor/use-create-editor';
@@ -39,15 +37,13 @@ export default function CollaborativeEditingDemo(): React.ReactNode {
 
   const editor = usePlateEditor({
     components: withPlaceholders(editorComponents),
-    // DO NOT set 'value' here, it comes from the Y.Doc
     plugins: [
       ...editorPlugins,
       YjsPlugin.configure(({ editor }) => ({
         options: {
-          cursorOptions: {
+          cursors: {
             data: { color: cursorColor, name: username },
           },
-          initialValue: INITIAL_VALUE,
           // Configure collaboration providers
           providers: [
             {
@@ -71,12 +67,17 @@ export default function CollaborativeEditingDemo(): React.ReactNode {
         },
       })),
     ],
+    skipInitialization: true,
   });
 
   React.useEffect(() => {
     if (!mounted) return;
 
-    editor.getApi(YjsPlugin).yjs.init();
+    editor.getApi(YjsPlugin).yjs.init({
+      id: roomName,
+      autoSelect: 'end',
+      value: INITIAL_VALUE,
+    });
 
     return () => {
       editor.getApi(YjsPlugin).yjs.destroy();
@@ -173,7 +174,7 @@ function CollaborativeEditor({
       </div>
 
       <EditorContainer variant="demo">
-        <Editor />
+        <Editor autoFocus />
       </EditorContainer>
     </>
   );

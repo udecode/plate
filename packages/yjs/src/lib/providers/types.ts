@@ -1,10 +1,35 @@
 import type { HocuspocusProviderConfiguration } from '@hocuspocus/provider';
 import type { WithCursorsOptions } from '@slate-yjs/core';
-import type { PluginConfig, Value } from '@udecode/plate';
+import type { PluginConfig } from '@udecode/plate';
 import type { Awareness } from 'y-protocols/awareness';
 import type * as Y from 'yjs';
 
 import type { WithYjsOptions } from '../withTYjs';
+
+// Base config structure for provider configurations
+export interface BaseYjsProviderConfig extends ProviderEventHandlers {
+  options: Record<string, any>;
+  type: string;
+}
+
+// Built-in provider types
+export type DefaultYjsProviderType = 'hocuspocus' | 'webrtc';
+
+export type HocuspocusProviderConfig = BaseYjsProviderConfig & {
+  options: HocuspocusProviderConfiguration;
+  type: 'hocuspocus';
+};
+
+// Provider constructor type
+export type ProviderConstructor<T = any> = new (
+  props: ProviderConstructorProps<T>
+) => UnifiedProvider;
+
+export type ProviderConstructorProps<T = any> = {
+  options: T;
+  awareness?: Awareness;
+  doc?: Y.Doc;
+} & ProviderEventHandlers;
 
 export interface ProviderEventHandlers {
   onConnect?: () => void;
@@ -17,28 +42,6 @@ export interface ProviderEventHandlers {
    */
   onSyncChange?: (isSynced: boolean) => void;
 }
-
-// Base config structure for provider configurations
-export interface BaseYjsProviderConfig extends ProviderEventHandlers {
-  options: Record<string, any>;
-  type: string;
-}
-
-export type HocuspocusProviderConfig = BaseYjsProviderConfig & {
-  options: HocuspocusProviderConfiguration;
-  type: 'hocuspocus';
-};
-
-export type ProviderConstructorProps<T = any> = {
-  options: T;
-  awareness?: Awareness;
-  doc?: Y.Doc;
-} & ProviderEventHandlers;
-
-// Provider constructor type
-export type ProviderConstructor<T = any> = new (
-  props: ProviderConstructorProps<T>
-) => UnifiedProvider;
 
 // Provider registry type
 export type ProviderRegistry = Record<string, ProviderConstructor>;
@@ -90,8 +93,6 @@ export type WebRTCProviderOptions = {
 export type YjsConfig = PluginConfig<
   'yjs',
   {
-    /** The shared Awareness instance used by the plugin. */
-    _awareness: Awareness;
     /** Whether any provider is currently connected. */
     _isConnected: boolean;
     /** Whether the plugin is currently synced. */
@@ -102,6 +103,8 @@ export type YjsConfig = PluginConfig<
     _syncedProviderCount: number;
     /** Total number of active providers. */
     _totalProviderCount: number;
+    /** The shared Awareness instance used by the plugin. */
+    awareness: Awareness;
     /**
      * Array of provider configurations or pre-instantiated provider instances.
      * The plugin will create instances from configurations and use existing
@@ -114,12 +117,7 @@ export type YjsConfig = PluginConfig<
      * cursors. If omitted, cursors are enabled by default if providers are
      * specified. Passed to `withTCursors`.
      */
-    cursorOptions?: WithCursorsOptions | null;
-    /**
-     * Initial value for the Y.Doc. If provided, the plugin will apply this
-     * value to the Y.Doc when the plugin is connected to a provider.
-     */
-    initialValue?: Value;
+    cursors?: WithCursorsOptions | null;
     /**
      * Whether to wait for all providers to be synced before rendering content.
      * If false (default), content will render as soon as at least one provider
@@ -131,8 +129,6 @@ export type YjsConfig = PluginConfig<
      * a new one will be created and assigned here by the plugin.
      */
     ydoc?: Y.Doc;
-    /** Optional configuration for the core Yjs binding (`withTYjs`). */
-    yjsOptions?: WithYjsOptions;
     /** Called when the plugin is connected to a provider. */
     onConnect?: (props: { type: YjsProviderType }) => void;
     /** Called when the plugin is disconnected from a provider. */
@@ -144,14 +140,11 @@ export type YjsConfig = PluginConfig<
       isSynced: boolean;
       type: YjsProviderType;
     }) => void;
-  }
+  } & Omit<WithYjsOptions, 'autoConnect'>
 >;
 
 // Union type for all known provider configurations
 export type YjsProviderConfig = HocuspocusProviderConfig | WebRTCProviderConfig; // Add custom config types here if needed
-
-// Built-in provider types
-export type DefaultYjsProviderType = 'hocuspocus' | 'webrtc';
 
 // Extensible provider type that can include custom types
 export type YjsProviderType = DefaultYjsProviderType | string;
