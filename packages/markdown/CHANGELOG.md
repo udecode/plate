@@ -1,5 +1,15 @@
 # @udecode/plate-markdown
 
+## 47.2.0
+
+### Minor Changes
+
+- [#4236](https://github.com/udecode/plate/pull/4236) by [@felixfeng33](https://github.com/felixfeng33) –
+
+  - Added fallback handling for unsupported MDX tags to gracefully preserve content
+  - Now remarkMdx is exported directly from the `@udecode/plate-markdown` package instead of importing from `remark-mdx`
+  - New `onError` option in `DeserializeMdOptions` to handle and catch MDX parsing errors
+
 ## 47.1.2
 
 ### Patch Changes
