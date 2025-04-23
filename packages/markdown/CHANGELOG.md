@@ -1,5 +1,13 @@
 # @udecode/plate-markdown
 
+## 47.2.1
+
+### Patch Changes
+
+- [#4224](https://github.com/udecode/plate/pull/4224) by [@martin-lysk](https://github.com/martin-lysk) – Fix overlapping inline formatting
+
+- [#4243](https://github.com/udecode/plate/pull/4243) by [@martin-lysk](https://github.com/martin-lysk) – Fix formatted empty paragraph
+
 ## 47.2.0
 
 ### Minor Changes
