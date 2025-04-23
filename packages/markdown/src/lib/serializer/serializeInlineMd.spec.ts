@@ -26,7 +26,7 @@ describe('serializeInlineMd', () => {
   it('should serialize italic text correctly', () => {
     const nodes = [{ italic: true, text: 'Hello' }];
     const result = serializeInlineMd(editor, { value: nodes });
-    expect(result).toBe('*Hello*\n');
+    expect(result).toBe('_Hello_\n');
   });
 
   it('should serialize strikethrough text correctly', () => {
@@ -50,7 +50,7 @@ describe('serializeInlineMd', () => {
       { text: ' text' },
     ];
     const result = serializeInlineMd(editor, { value: nodes });
-    expect(result).toBe('Hello **bold** and *italic* text\n');
+    expect(result).toBe('Hello **bold** and _italic_ text\n');
   });
 
   it('should serialize nested formatting correctly', () => {
@@ -60,7 +60,60 @@ describe('serializeInlineMd', () => {
       { text: ' text' },
     ];
     const result = serializeInlineMd(editor, { value: nodes });
-    expect(result).toBe('Hello ***bold and italic*** text\n');
+    expect(result).toBe('Hello _**bold and italic**_ text\n');
+  });
+
+  it('should serialize overlapping formatting correctly', () => {
+    const nodes = [
+      { text: 'Regular ' },
+      { bold: true, text: 'Bold' },
+      { bold: true, italic: true, text: ' Bold&Italic ' },
+      { italic: true, text: 'Italic' },
+      { text: ' Regular' },
+    ];
+    const result = serializeInlineMd(editor, { value: nodes });
+    expect(result).toBe(
+      'Regular **Bol&#x64;_&#x20;Bold&Italic&#x20;_**_Italic_ Regular\n'
+    );
+  });
+
+  it('should serialize overlapping formatting correctly without spaces', () => {
+    const nodes = [
+      { text: 'Regular' },
+      { bold: true, text: 'Bold' },
+      { bold: true, italic: true, text: 'Bold&Italic' },
+      { italic: true, text: 'Italic' },
+      { text: 'Regular' },
+    ];
+    const result = serializeInlineMd(editor, { value: nodes });
+    expect(result).toBe(
+      'Regular**Bol&#x64;_&#x42;old&Italic_**_Itali&#x63;_&#x52;egular\n'
+    );
+  });
+
+  it('should serialize overlapping formatting correctly without spaces', () => {
+    const nodes = [
+      { text: 'Regular' },
+      { italic: true, text: 'Italic' },
+      { bold: true, italic: true, text: 'Bold&Italic' },
+      { bold: true, text: 'Bold' },
+      { text: 'Regular' },
+    ];
+    const result = serializeInlineMd(editor, { value: nodes });
+    expect(result).toBe(
+      'Regula&#x72;_&#x49;talic**Bold&Italic**_**Bold**Regular\n'
+    );
+  });
+
+  it('should serialize overlapping formatting correctly without spaces', () => {
+    const nodes = [
+      { text: 'Regular' },
+      { bold: true, italic: true, text: 'Bold&Italic' },
+      { bold: true, text: 'Bold' },
+      { text: 'Regular' },
+    ];
+    const result = serializeInlineMd(editor, { value: nodes });
+    expect(result).toBe('Regula&#x72;_**Bold&Italic**_**Bold**Regular\n');
   });
 
   it('should handle empty nodes array', () => {

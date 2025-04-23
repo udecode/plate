@@ -60,6 +60,7 @@ export const serializeMd = (
   const toRemarkProcessor = unified()
     .use(remarkPlugins ?? [])
     .use(remarkStringify, {
+      emphasis: '_',
       // Configure remark-stringify to handle MDX JSX elements
       handlers: {
         mdxJsxFlowElement: (node) => {

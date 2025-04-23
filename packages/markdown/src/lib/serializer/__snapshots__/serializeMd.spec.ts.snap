@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`serializeMd fixures Combination of bold and italic at the start of a block losing formatting 1`] = `
-"***Italic*** **in a bold paragraph**
+"_**Italic**_ **in a bold paragraph**
 
-**This is an *Italic*** **in a bold paragraph**
+**This is an _Italic_** **in a bold paragraph**
 "
 `;
 
@@ -14,19 +14,19 @@ exports[`serializeMd fixures should serialize a \\n within a block qoute as new 
 `;
 
 exports[`serializeMd fixures should serialize a value with inline code 1`] = `
-"***\`Inline code\`***
+"_**\`Inline code\`**_
 
-*\`Inline code\`*
+_\`Inline code\`_
 "
 `;
 
 exports[`serializeMd fixures should serialize a value within a block qoute as a single line 1`] = `
-"> Block quote with a new line ***\` Inline code\`***
+"> Block quote with a new line _**\` Inline code\`**_
 "
 `;
 
 exports[`serializeMd fixures should serialize marks with trailing whitespace 1`] = `
-"Make text **bold**, *italic*, <u>underlined</u>, or apply a ***<u>combination</u>*** of these styles for a visually striking effect.
+"Make text **bold**, _italic_, <u>underlined</u>, or apply a _**<u>combination</u>**_ of these styles for a visually striking effect.
 "
 `;
 
@@ -75,7 +75,7 @@ Add comments to your content to provide additional conte1xt, , or collaborate wi
 
 ***
 
-normal **bold***italic*~~strikethrough~~\`code\`***combine***[link](https://example.com)$E=mc^2$
+normal **bold**_italic_~~strikethrough~~\`code\`_**combine**_[link](https://example.com)$E=mc^2$
 
 ![test](https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80\\&w=2070\\&auto=format\\&fit=crop\\&ixlib=rb-4.0.3\\&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D "test")
 
