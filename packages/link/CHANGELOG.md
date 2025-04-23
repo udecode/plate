@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 47.2.1
+
+### Patch Changes
+
+- [#4241](https://github.com/udecode/plate/pull/4241) by [@iamdustan](https://github.com/iamdustan) – Fixes #3156: LinkPlugin having a `target` attribute.
+
 ## 44.0.4
 
 ### Patch Changes
