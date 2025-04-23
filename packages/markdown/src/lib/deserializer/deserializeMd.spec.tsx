@@ -614,4 +614,20 @@ describe('fixures', () => {
 
     expect(deserializeMd(editor, input)).toMatchSnapshot();
   });
+
+  it('should deserialize kdb html tags', () => {
+    const input = '<kbd>Ctrl</kbd> + <kbd>K</kbd>';
+
+    const output = (
+      <fragment>
+        <hp>
+          <htext kbd>Ctrl</htext>
+          <htext> + </htext>
+          <htext kbd>K</htext>
+        </hp>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
 });

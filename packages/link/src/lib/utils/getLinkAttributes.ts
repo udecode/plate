@@ -17,7 +17,7 @@ export const getLinkAttributes = (editor: SlateEditor, link: TLinkElement) => {
   if (href !== undefined) {
     attributes.href = href;
   }
-  if ('target' in link) {
+  if ('target' in link && link.target !== undefined) {
     attributes.target = link.target;
   }
 

@@ -226,6 +226,28 @@ export const defaultRules: TRules = {
       };
     },
   },
+  // plate doesn't support footnoteDefinition and footnoteReference
+  // so we need to convert them to p for now
+  footnoteDefinition: {
+    deserialize: (mdastNode, deco, options) => {
+      const children = convertChildrenDeserialize(
+        mdastNode.children,
+        deco,
+        options
+      );
+
+      // Flatten nested paragraphs similar to blockquote implementation
+      const flattenedChildren = children.flatMap((child: any) =>
+        child.type === 'p' ? child.children : [child]
+      );
+
+      return {
+        children: flattenedChildren,
+        type: 'p',
+      };
+    },
+  },
+  footnoteReference: {},
   heading: {
     deserialize: (mdastNode, deco, options) => {
       const headingType = {
@@ -343,8 +365,19 @@ export const defaultRules: TRules = {
     },
   },
   italic: {
+    mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
+    },
+  },
+  kbd: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        { kbd: true, ...deco },
+        options
+      ) as any;
     },
   },
   list: {

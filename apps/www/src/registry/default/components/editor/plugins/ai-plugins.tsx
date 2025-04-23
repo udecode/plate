@@ -5,6 +5,7 @@ import React from 'react';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 
 import { markdownPlugin } from '@/registry/default/components/editor/plugins/markdown-plugin';
+import { AILoadingBar } from '@/registry/default/plate-ui/ai-loading-bar';
 import { AIMenu } from '@/registry/default/plate-ui/ai-menu';
 
 import { cursorOverlayPlugin } from './cursor-overlay-plugin';
@@ -26,7 +27,7 @@ const systemDefault = `\
 ${systemCommon}
 - <Block> is the current block of text the user is working on.
 - Ensure your output can seamlessly fit into the existing <Block> structure.
-- CRITICAL: Provide only a single block of text. DO NOT create multiple paragraphs or separate blocks.
+
 <Block>
 {block}
 </Block>
@@ -58,9 +59,7 @@ ${systemCommon}
 `;
 
 const userDefault = `<Reminder>
-CRITICAL: DO NOT use block formatting. You can only use inline formatting.
-CRITICAL: DO NOT start new lines or paragraphs.
-NEVER write <Block>.
+CRITICAL: NEVER write <Block>.
 </Reminder>
 {prompt}`;
 
@@ -110,6 +109,9 @@ export const aiPlugins = [
             : PROMPT_TEMPLATES.systemDefault;
       },
     },
-    render: { afterEditable: () => <AIMenu /> },
+    render: {
+      afterContainer: () => <AILoadingBar />,
+      afterEditable: () => <AIMenu />,
+    },
   }),
 ] as const;
