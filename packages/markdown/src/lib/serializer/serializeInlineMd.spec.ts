@@ -135,9 +135,7 @@ describe('serializeInlineMd', () => {
   });
 
   it('should serialize bold empty paragraph as empty paragraph', () => {
-    const nodes = [
-      { bold: true, text: '' },
-    ];
+    const nodes = [{ bold: true, text: '' }];
     const result = serializeInlineMd(editor, { value: nodes });
     expect(result).toBe('');
   });
