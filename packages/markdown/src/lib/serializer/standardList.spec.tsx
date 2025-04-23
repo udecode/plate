@@ -87,7 +87,7 @@ describe('serializeMd list', () => {
     );
 
     const expected =
-      '* Normal text and **bold text**\n* *Italic text* and normal text\n';
+      '* Normal text and **bold text**\n* _Italic text_ and normal text\n';
 
     expect(serializeMd(editor, { value: input })).toBe(expected);
   });

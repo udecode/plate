@@ -69,6 +69,7 @@ export const serializeMd = (
           return serializeMdxJsxElement(node);
         },
       },
+      emphasis: '_',
     });
 
   const mdast = slateToMdast({
