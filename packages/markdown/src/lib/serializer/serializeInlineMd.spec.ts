@@ -133,4 +133,10 @@ describe('serializeInlineMd', () => {
     // Code formatting should take precedence
     expect(result).toBe('This is **`code and bold`** text\n');
   });
+
+  it('should serialize bold empty paragraph as empty paragraph', () => {
+    const nodes = [{ bold: true, text: '' }];
+    const result = serializeInlineMd(editor, { value: nodes });
+    expect(result).toBe('');
+  });
 });
