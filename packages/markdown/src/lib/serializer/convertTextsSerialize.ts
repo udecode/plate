@@ -159,10 +159,51 @@ export const convertTextsSerialize = (
     textTemp = '';
   }
 
-  return mergeTexts(mdastTexts);
+  const mergedTexts = mergeTexts(mdastTexts);
+  
+  const flattenedEmptyNodes = mergedTexts.map((node) => {
+    if (!hasContent(node)) {
+      return { type: 'text', value: '' } as astMarks;
+    }
+    return node
+  })
+  
+  return flattenedEmptyNodes;
 };
 
+const hasContent = (node: astMarks): boolean => {
+  if (node.type === 'inlineCode') {
+    // inline has no children - no deeper search needed
+    return node.value !== ''
+  }
+
+  if (node.type === 'text') {
+    // inline has no children - no deeper search needed
+    return node.value !== '';
+  }
+  
+  if (node.children?.length > 0) {
+    for (const child of node.children) {
+      // all types other then emphasis are represented with some characters that can also be formatted
+      if (child.type !== 'emphasis' 
+        && child.type !== 'strong' 
+        && child.type !== 'inlineCode' 
+        && child.type !== 'delete'
+        && child.type !== 'text') {
+        return true
+      }
+      if (hasContent(child)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+  
+
 const mergeTexts = (nodes: astMarks[]): astMarks[] => {
+
+
   const res: astMarks[] = [];
   for (const cur of nodes) {
     const last = res.at(-1);
