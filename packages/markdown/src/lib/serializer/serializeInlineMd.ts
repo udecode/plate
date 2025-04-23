@@ -1,14 +1,12 @@
 import type { SlateEditor } from '@udecode/plate';
 
-
+import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 
 import type { SerializeMdOptions } from './serializeMd';
 
 import { convertTextsSerialize } from './convertTextsSerialize';
 import { getMergedOptionsSerialize } from './utils';
-import remarkStringify from 'remark-stringify';
-
 
 export const serializeInlineMd = (
   editor: SlateEditor,
@@ -19,12 +17,12 @@ export const serializeInlineMd = (
   const toRemarkProcessor = unified()
     .use(mergedOptions.remarkPlugins ?? [])
     .use(remarkStringify, {
-      emphasis: '_'
+      emphasis: '_',
     });
 
   if (options?.value?.length === 0) return '';
 
-  const convertedTexts = convertTextsSerialize(mergedOptions.value as any, {})
+  const convertedTexts = convertTextsSerialize(mergedOptions.value as any, {});
 
   // Serialize the content
   const serializedContent = toRemarkProcessor.stringify({

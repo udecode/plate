@@ -72,7 +72,9 @@ describe('serializeInlineMd', () => {
       { text: ' Regular' },
     ];
     const result = serializeInlineMd(editor, { value: nodes });
-    expect(result).toBe('Regular **Bol&#x64;_&#x20;Bold&Italic&#x20;_**_Italic_ Regular\n');
+    expect(result).toBe(
+      'Regular **Bol&#x64;_&#x20;Bold&Italic&#x20;_**_Italic_ Regular\n'
+    );
   });
 
   it('should serialize overlapping formatting correctly without spaces', () => {
@@ -84,7 +86,9 @@ describe('serializeInlineMd', () => {
       { text: 'Regular' },
     ];
     const result = serializeInlineMd(editor, { value: nodes });
-    expect(result).toBe('Regular**Bol&#x64;_&#x42;old&Italic_**_Itali&#x63;_&#x52;egular\n');
+    expect(result).toBe(
+      'Regular**Bol&#x64;_&#x42;old&Italic_**_Itali&#x63;_&#x52;egular\n'
+    );
   });
 
   it('should serialize overlapping formatting correctly without spaces', () => {
@@ -96,10 +100,11 @@ describe('serializeInlineMd', () => {
       { text: 'Regular' },
     ];
     const result = serializeInlineMd(editor, { value: nodes });
-    expect(result).toBe('Regula&#x72;_&#x49;talic**Bold&Italic**_**Bold**Regular\n');
+    expect(result).toBe(
+      'Regula&#x72;_&#x49;talic**Bold&Italic**_**Bold**Regular\n'
+    );
   });
 
-  
   it('should serialize overlapping formatting correctly without spaces', () => {
     const nodes = [
       { text: 'Regular' },
@@ -110,7 +115,6 @@ describe('serializeInlineMd', () => {
     const result = serializeInlineMd(editor, { value: nodes });
     expect(result).toBe('Regula&#x72;_**Bold&Italic**_**Bold**Regular\n');
   });
-
 
   it('should handle empty nodes array', () => {
     const nodes: any[] = [];
