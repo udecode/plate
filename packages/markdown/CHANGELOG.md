@@ -1,5 +1,11 @@
 # @udecode/plate-markdown
 
+## 47.2.2
+
+### Patch Changes
+
+- [#4245](https://github.com/udecode/plate/pull/4245) by [@martin-lysk](https://github.com/martin-lysk) – fixes serialization of code_blocks created in plate editor
+
 ## 47.2.1
 
 ### Patch Changes
