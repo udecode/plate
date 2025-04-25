@@ -19,11 +19,14 @@ export type Mode = 'first' | 'last';
 export type ScrollConfig = PluginConfig<
   'scroll',
   {
-    /** 选择匹配的第一个或最后一个操作作为滚动目标 */
+    /** Choose the first or last matching operation as the scroll target */
     mode?: Mode;
-    /** 操作映射；false 表示禁用该操作，true 或 undefined 表示启用 */
+    /**
+     * Operations map; false to disable an operation, true or undefined to
+     * enable
+     */
     operations?: AutoScrollOperationsMap;
-    /** 传递给 scrollIntoView 的选项 */
+    /** Options passed to scrollIntoView */
     scrollOptions?: ScrollIntoViewOptions;
   },
   {
@@ -87,8 +90,6 @@ export const ScrollPlugin = createTSlatePlugin<ScrollConfig>({
           if (!path) return;
 
           const scrollOptions = getOption('scrollOptions')!;
-
-          console.log('🚀 ~ apply ~ scrollOptions:', scrollOptions);
 
           const scrollTarget = {
             offset: offset ?? 0,

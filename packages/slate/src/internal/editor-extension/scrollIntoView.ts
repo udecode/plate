@@ -4,12 +4,15 @@ import type { Editor } from '../../interfaces/editor';
 import type { Point } from '../../interfaces/point';
 import type { ScrollIntoViewOptions } from '../../interfaces/scroll';
 
-// the options for scrollIntoViewIfNeeded
+const defaultOptions: ScrollIntoViewOptions = {
+  scrollMode: 'if-needed',
+};
 
+// TODO: move to slate
 export function scrollIntoView(
   editor: Editor,
   target: Point,
-  options?: ScrollIntoViewOptions
+  options: ScrollIntoViewOptions = defaultOptions
 ): void {
   requestAnimationFrame(() => {
     const { offset = 0, path } = target;
