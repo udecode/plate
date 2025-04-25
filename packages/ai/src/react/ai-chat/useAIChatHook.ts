@@ -32,10 +32,12 @@ export const useAIChatHooks = () => {
           editor,
           () => {
             if (!getOption('streaming')) return;
-            streamInsertChunk(editor, chunk, {
-              textProps: {
-                ai: true,
-              },
+            editor.api.scroll.withScroll(() => {
+              streamInsertChunk(editor, chunk, {
+                textProps: {
+                  ai: true,
+                },
+              });
             });
           },
           { split: isFirst }

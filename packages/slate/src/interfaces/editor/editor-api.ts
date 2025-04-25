@@ -19,6 +19,7 @@ import type { toSlateRange } from '../../internal/dom-editor/toSlateRange';
 import type { hasMark } from '../../internal/editor-extension/hasMark';
 import type { isAt } from '../../internal/editor-extension/isAt';
 import type { isText } from '../../internal/editor-extension/isText';
+import type { scrollIntoView } from '../../internal/editor-extension/scrollIntoView';
 import type { some } from '../../internal/editor-extension/some';
 import type { createPathRef } from '../../internal/editor/createPathRef';
 import type { createPointRef } from '../../internal/editor/createPointRef';
@@ -412,6 +413,7 @@ export type EditorApi<V extends Value = Value> = {
   isAt: OmitFirst<typeof isAt>;
   /** Check if a node at a location is a Text node */
   isText: OmitFirst<typeof isText>;
+  scrollIntoView: OmitFirst<typeof scrollIntoView>;
   /**
    * Check if any node at a location (default: selection) matches the given
    * criteria
