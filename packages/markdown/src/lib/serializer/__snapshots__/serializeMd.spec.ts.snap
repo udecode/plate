@@ -13,6 +13,16 @@ exports[`serializeMd fixures should serialize a \\n within a block qoute as new 
 "
 `;
 
+exports[`serializeMd fixures should serialize a codeblock 1`] = `
+"\`\`\`
+Code block 1 line 1
+Code block 1 line 2
+Code block 1 line 3
+Code block 1 line 4
+\`\`\`
+"
+`;
+
 exports[`serializeMd fixures should serialize a value with inline code 1`] = `
 "_**\`Inline code\`**_
 
