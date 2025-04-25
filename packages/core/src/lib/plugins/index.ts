@@ -12,4 +12,5 @@ export * from './debug/index';
 export * from './html/index';
 export * from './length/index';
 export * from './paragraph/index';
+export * from './scroll/index';
 export * from './slate-extension/index';

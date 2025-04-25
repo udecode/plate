@@ -11,7 +11,7 @@ import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';
 import { BaseParagraphPlugin } from './paragraph';
-import { ScrollPlugin } from './scroll/ScrollPlugin';
+import { ScrollPlugin } from './scroll';
 import { SlateExtensionPlugin } from './slate-extension';
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];

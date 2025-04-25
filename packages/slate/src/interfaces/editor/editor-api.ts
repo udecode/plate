@@ -413,6 +413,12 @@ export type EditorApi<V extends Value = Value> = {
   isAt: OmitFirst<typeof isAt>;
   /** Check if a node at a location is a Text node */
   isText: OmitFirst<typeof isText>;
+  /**
+   * Scroll the editor to bring a target point into view.
+   *
+   * @param target - The point to scroll into view
+   * @param options - Scroll options
+   */
   scrollIntoView: OmitFirst<typeof scrollIntoView>;
   /**
    * Check if any node at a location (default: selection) matches the given
