@@ -187,7 +187,11 @@ export const defaultRules: TRules = {
         lang: node.lang,
         type: 'code',
         value: node.children
-          .map((child: any) => child.children.map((c: any) => c.text).join(''))
+          .map((child: any) =>
+            child?.children === undefined
+              ? child.text
+              : child.children.map((c: any) => c.text).join('')
+          )
           .join('\n'),
       };
     },

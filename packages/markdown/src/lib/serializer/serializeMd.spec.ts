@@ -134,6 +134,24 @@ describe('serializeMd', () => {
       ).toMatchSnapshot();
     });
 
+    it('should serialize a codeblock', () => {
+      const slateNodes = [
+        {
+          children: [
+            { text: 'Code block 1 line 1' },
+            { text: 'Code block 1 line 2' },
+            { children: [{ text: 'Code block 1 line 3' }], type: 'code_line' },
+            { text: 'Code block 1 line 4', type: 'code_line' },
+          ],
+          type: 'code_block',
+        },
+      ];
+
+      expect(
+        serializeMd(editor as any, { value: slateNodes })
+      ).toMatchSnapshot();
+    });
+
     it(
       String.raw`should serialize a \n within a block qoute as new line`,
       () => {
