@@ -3,14 +3,13 @@
  */
 
 export * from './AstPlugin';
-export * from './DOMPlugin';
 export * from './HistoryPlugin';
 export * from './InlineVoidPlugin';
 export * from './ParserPlugin';
 export * from './getCorePlugins';
 export * from './debug/index';
+export * from './dom/index';
 export * from './html/index';
 export * from './length/index';
 export * from './paragraph/index';
-export * from './scroll/index';
 export * from './slate-extension/index';

@@ -32,7 +32,7 @@ export const useAIChatHooks = () => {
           editor,
           () => {
             if (!getOption('streaming')) return;
-            editor.api.scroll.withScroll(() => {
+            editor.tf.withScrolling(() => {
               streamInsertChunk(editor, chunk, {
                 textProps: {
                   ai: true,

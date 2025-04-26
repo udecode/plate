@@ -2,10 +2,10 @@ import type { Operation, ScrollIntoViewOptions } from '@udecode/slate';
 
 import { bindFirst } from '@udecode/utils';
 
-import type { SlateEditor } from '../../editor';
+import type { SlateEditor } from '../../';
 
 import { type PluginConfig, createTSlatePlugin } from '../../plugin';
-import { type WithAutoScrollOptions, withScroll } from './withScroll';
+import { withScrolling } from './withScrolling';
 
 export const AUTO_SCROLL = new WeakMap<SlateEditor, boolean>();
 
@@ -13,11 +13,8 @@ export type AutoScrollOperationsMap = Partial<
   Record<Operation['type'], boolean>
 >;
 
-/** Mode for picking target op when multiple enabled */
-export type Mode = 'first' | 'last';
-
-export type ScrollConfig = PluginConfig<
-  'scroll',
+export type DomConfig = PluginConfig<
+  'dom',
   {
     /** Choose the first or last matching operation as the scroll target */
     mode?: Mode;
@@ -28,19 +25,20 @@ export type ScrollConfig = PluginConfig<
     operations?: AutoScrollOperationsMap;
     /** Options passed to scrollIntoView */
     scrollOptions?: ScrollIntoViewOptions;
-  },
-  {
-    scroll: {
-      isScrolling: () => boolean;
-      withScroll: (fn: () => void, options?: WithAutoScrollOptions) => void;
-    };
   }
 >;
 
-export const ScrollPlugin = createTSlatePlugin<ScrollConfig>({
-  key: 'scroll',
+/** Mode for picking target op when multiple enabled */
+export type Mode = 'first' | 'last';
+
+/**
+ * Placeholder plugin for DOM interaction, that could be replaced with
+ * ReactPlugin.
+ */
+export const DOMPlugin = createTSlatePlugin<DomConfig>({
+  key: 'dom',
   options: {
-    mode: 'first',
+    mode: 'last',
     operations: {
       insert_node: true,
       insert_text: true,
@@ -50,18 +48,18 @@ export const ScrollPlugin = createTSlatePlugin<ScrollConfig>({
     },
   },
 })
-  .extendApi(({ editor }) => ({
+  .extendEditorApi(({ editor }) => ({
     isScrolling: () => {
       return AUTO_SCROLL.get(editor) ?? false;
     },
   }))
-  .extendApi<Partial<ScrollConfig['api']['scroll']>>(({ api, editor }) => ({
-    withScroll: bindFirst(withScroll, editor),
+  .extendEditorTransforms(({ editor }) => ({
+    withScrolling: bindFirst(withScrolling, editor),
   }))
   .overrideEditor(({ api, editor, getOption, tf: { apply } }) => ({
     transforms: {
       apply(operation) {
-        if (api.scroll.isScrolling()) {
+        if (api.isScrolling()) {
           apply(operation);
 
           // Check if this op type is enabled (default true)
