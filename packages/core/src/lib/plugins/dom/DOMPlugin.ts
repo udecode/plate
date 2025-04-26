@@ -17,19 +17,19 @@ export type DomConfig = PluginConfig<
   'dom',
   {
     /** Choose the first or last matching operation as the scroll target */
-    mode?: Mode;
+    scrollMode?: ScrollMode;
     /**
      * Operations map; false to disable an operation, true or undefined to
      * enable
      */
-    operations?: AutoScrollOperationsMap;
+    scrollOperations?: AutoScrollOperationsMap;
     /** Options passed to scrollIntoView */
     scrollOptions?: ScrollIntoViewOptions;
   }
 >;
 
 /** Mode for picking target op when multiple enabled */
-export type Mode = 'first' | 'last';
+export type ScrollMode = 'first' | 'last';
 
 /**
  * Placeholder plugin for DOM interaction, that could be replaced with
@@ -38,8 +38,8 @@ export type Mode = 'first' | 'last';
 export const DOMPlugin = createTSlatePlugin<DomConfig>({
   key: 'dom',
   options: {
-    mode: 'last',
-    operations: {
+    scrollMode: 'last',
+    scrollOperations: {
       insert_node: true,
       insert_text: true,
     },
@@ -63,18 +63,18 @@ export const DOMPlugin = createTSlatePlugin<DomConfig>({
           apply(operation);
 
           // Check if this op type is enabled (default true)
-          const operations = getOption('operations')!;
+          const scrollOperations = getOption('scrollOperations')!;
 
-          if (operations[operation.type] === false) return;
+          if (scrollOperations[operation.type] === false) return;
 
           // Gather enabled ops in this batch
           const matched = editor.operations.filter(
-            (op) => operations[op.type] !== false
+            (op) => scrollOperations[op.type] !== false
           );
 
           if (matched.length === 0) return;
 
-          const mode = getOption('mode')!;
+          const mode = getOption('scrollMode')!;
 
           // Pick target
           const targetOp = mode === 'first' ? matched[0] : matched.at(-1);
