@@ -1,5 +1,5 @@
 ---
-'@udecode/slate': minor
+'@udecode/slate': patch
 ---
 
 - New `editor.api.scrollIntoView` - Scrolls the editor to a specified position.
