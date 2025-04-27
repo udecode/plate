@@ -5,6 +5,7 @@ import { streamInsertChunk, withAIBatch } from '../../lib';
 import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
 import { useChatChunk } from './hooks/useChatChunk';
 
+/** @deprecated Already moved to registry ai-plugins.tsx */
 export const useAIChatHooks = () => {
   const { editor, getOption } = useEditorPlugin(AIChatPlugin);
 

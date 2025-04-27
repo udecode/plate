@@ -2,13 +2,19 @@
 
 import React from 'react';
 
-import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
+import type { AIChatPluginConfig } from '@udecode/plate-ai/react';
+
+import { PathApi } from '@udecode/plate';
+import { streamInsertChunk, withAIBatch } from '@udecode/plate-ai';
+import { AIChatPlugin, AIPlugin, useChatChunk } from '@udecode/plate-ai/react';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import { markdownPlugin } from '@/registry/default/components/editor/plugins/markdown-plugin';
 import { AILoadingBar } from '@/registry/default/plate-ui/ai-loading-bar';
 import { AIMenu } from '@/registry/default/plate-ui/ai-menu';
 
 import { cursorOverlayPlugin } from './cursor-overlay-plugin';
+
 const systemCommon = `\
 You are an advanced AI-powered note-taking assistant, designed to enhance productivity and creativity in note management.
 Respond directly to user prompts with clear, concise, and relevant content. Maintain a neutral, helpful tone.
@@ -112,6 +118,56 @@ export const aiPlugins = [
     render: {
       afterContainer: () => <AILoadingBar />,
       afterEditable: () => <AIMenu />,
+    },
+  }).extend({
+    useHooks: () => {
+      const { editor, getOption } = useEditorPlugin(AIChatPlugin);
+
+      const mode = usePluginOption(
+        { key: 'aiChat' } as AIChatPluginConfig,
+        'mode'
+      );
+
+      useChatChunk({
+        onChunk: ({ chunk, isFirst, nodes, text }) => {
+          if (isFirst && mode == 'insert') {
+            editor.tf.withoutSaving(() => {
+              editor.tf.insertNodes(
+                {
+                  children: [{ text: '' }],
+                  type: AIChatPlugin.key,
+                },
+                {
+                  at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+                }
+              );
+            });
+            editor.setOption(AIChatPlugin, 'streaming', true);
+          }
+
+          if (mode === 'insert' && nodes.length > 0) {
+            withAIBatch(
+              editor,
+              () => {
+                if (!getOption('streaming')) return;
+                editor.tf.withScrolling(() => {
+                  streamInsertChunk(editor, chunk, {
+                    textProps: {
+                      ai: true,
+                    },
+                  });
+                });
+              },
+              { split: isFirst }
+            );
+          }
+        },
+        onFinish: ({ content }) => {
+          editor.setOption(AIChatPlugin, 'streaming', false);
+          editor.setOption(AIChatPlugin, '_blockChunks', '');
+          editor.setOption(AIChatPlugin, '_blockPath', null);
+        },
+      });
     },
   }),
 ] as const;
