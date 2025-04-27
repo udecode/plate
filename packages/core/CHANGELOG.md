@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 47.2.3
+
+### Patch Changes
+
+- [`f4996e3`](https://github.com/udecode/plate/commit/f4996e3c3e606cb1dc0f6f66dc54364330a1655a) by [@felixfeng33](https://github.com/felixfeng33) – Extend `DomPlugin` to support `editor.tf.withScrolling`.
+
 ## 47.1.1
 
 ### Patch Changes

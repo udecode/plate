@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 47.2.3
+
+### Patch Changes
+
+- [`f4996e3`](https://github.com/udecode/plate/commit/f4996e3c3e606cb1dc0f6f66dc54364330a1655a) by [@felixfeng33](https://github.com/felixfeng33) – Use `withScrolling` when streaming.
+
 ## 47.2.2
 
 ## 47.2.1
