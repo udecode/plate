@@ -1,10 +1,11 @@
-import { createSlatePlugin } from '../../../lib';
+import { DOMPlugin } from '../../../lib';
+import { toPlatePlugin } from '../../plugin/toPlatePlugin';
 import { withPlateReact } from './withPlateReact';
 
 /** @see {@link withReact} */
-export const ReactPlugin = createSlatePlugin({
+export const ReactPlugin = toPlatePlugin(DOMPlugin, {
   key: 'dom',
-  extendEditor: withPlateReact,
+  extendEditor: withPlateReact as any,
 }).extendEditorTransforms(({ editor }) => {
   const { reset } = editor.tf;
 

@@ -11,5 +11,6 @@ export * from './operation';
 export * from './path';
 export * from './point';
 export * from './range';
+export * from './scroll';
 export * from './text';
 export * from './editor/index';

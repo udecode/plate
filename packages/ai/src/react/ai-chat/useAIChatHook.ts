@@ -5,6 +5,7 @@ import { streamInsertChunk, withAIBatch } from '../../lib';
 import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
 import { useChatChunk } from './hooks/useChatChunk';
 
+/** @deprecated Already moved to registry ai-plugins.tsx */
 export const useAIChatHooks = () => {
   const { editor, getOption } = useEditorPlugin(AIChatPlugin);
 
@@ -32,10 +33,12 @@ export const useAIChatHooks = () => {
           editor,
           () => {
             if (!getOption('streaming')) return;
-            streamInsertChunk(editor, chunk, {
-              textProps: {
-                ai: true,
-              },
+            editor.tf.withScrolling(() => {
+              streamInsertChunk(editor, chunk, {
+                textProps: {
+                  ai: true,
+                },
+              });
             });
           },
           { split: isFirst }

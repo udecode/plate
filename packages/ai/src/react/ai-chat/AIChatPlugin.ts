@@ -108,11 +108,9 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     promptTemplate: () => '{prompt}',
     systemTemplate: () => {},
   },
+  useHooks: useAIChatHooks,
 })
   .overrideEditor(withAIChat)
-  .extend(() => ({
-    useHooks: useAIChatHooks,
-  }))
   .extendApi<
     Pick<
       AIChatPluginConfig['api']['aiChat'],
