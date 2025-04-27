@@ -65,11 +65,11 @@ export const DOMPlugin = createTSlatePlugin<DomConfig>({
           // Check if this op type is enabled (default true)
           const scrollOperations = getOption('scrollOperations')!;
 
-          if (scrollOperations[operation.type] === false) return;
+          if (!scrollOperations[operation.type]) return;
 
           // Gather enabled ops in this batch
           const matched = editor.operations.filter(
-            (op) => scrollOperations[op.type] !== false
+            (op) => !!scrollOperations[op.type]
           );
 
           if (matched.length === 0) return;
