@@ -1,8 +1,10 @@
 import scrollIntoViewIfNeeded from 'scroll-into-view-if-needed';
 
 import type { Editor } from '../../interfaces/editor';
-import type { Point } from '../../interfaces/point';
 import type { ScrollIntoViewOptions } from '../../interfaces/scroll';
+import type { DOMRange } from '../../slate-dom';
+
+import { type Point, PointApi } from '../../interfaces/point';
 
 const defaultOptions: ScrollIntoViewOptions = {
   scrollMode: 'if-needed',
@@ -11,16 +13,22 @@ const defaultOptions: ScrollIntoViewOptions = {
 // TODO: move to slate
 export function scrollIntoView(
   editor: Editor,
-  target: Point,
+  target: DOMRange | Point,
   options: ScrollIntoViewOptions = defaultOptions
 ): void {
   requestAnimationFrame(() => {
-    const { offset = 0, path } = target;
+    let domRange: DOMRange | undefined;
 
-    const domRange = editor.api.toDOMRange({
-      anchor: { offset, path },
-      focus: { offset, path },
-    })!;
+    if (PointApi.isPoint(target)) {
+      const { offset = 0, path } = target;
+
+      domRange = editor.api.toDOMRange({
+        anchor: { offset, path },
+        focus: { offset, path },
+      });
+    } else {
+      domRange = target;
+    }
 
     if (!domRange) return;
 
