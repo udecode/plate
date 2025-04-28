@@ -1,5 +1,14 @@
 # @udecode/slate
 
+## 47.2.3
+
+### Patch Changes
+
+- [#4246](https://github.com/udecode/plate/pull/4246) by [@felixfeng33](https://github.com/felixfeng33) –
+  - New `editor.api.scrollIntoView` - Scrolls the editor to a specified position.
+  - New `editor.tf.withScrolling` - Wraps a function and automatically scrolls the editor after `insertNode` and `insertText` operations (configurable).
+  - New `editor.api.isScrolling` - Boolean flag indicating whether the editor is currently in a scrolling operation initiated by `withScrolling`.
+
 ## 45.0.6
 
 ### Patch Changes

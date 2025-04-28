@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-test-utils",
-  "version": "45.0.6",
+  "version": "47.2.3",
   "description": "Testing utilities for Plate",
   "keywords": [
     "plate",
@@ -45,7 +45,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/slate": "45.0.6",
+    "@udecode/slate": "47.2.3",
     "slate-hyperscript": "0.100.0"
   },
   "publishConfig": {
