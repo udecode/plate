@@ -107,10 +107,15 @@ export const convertTextsSerialize = (
               break;
             }
             case 'code': {
-              res = {
-                type: 'inlineCode',
-                value: (res as any).value,
-              };
+              let currentRes = res;
+              while (
+                currentRes.type !== 'text' &&
+                currentRes.type !== 'inlineCode'
+              ) {
+                currentRes = currentRes.children[0] as astMarks;
+              }
+              currentRes.type = 'inlineCode';
+
               break;
             }
             case 'italic': {
