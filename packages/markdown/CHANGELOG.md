@@ -1,5 +1,14 @@
 # @udecode/plate-markdown
 
+## 47.2.4
+
+### Patch Changes
+
+- [#4250](https://github.com/udecode/plate/pull/4250) by [@martin-lysk](https://github.com/martin-lysk) – Fixes serialization of nested formatting of inlineCode blocks like
+  ```
+  `code`**`boldCode`**`code`
+  ```
+
 ## 47.2.2
 
 ### Patch Changes
