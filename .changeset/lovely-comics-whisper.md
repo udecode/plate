@@ -2,4 +2,7 @@
 '@udecode/plate-markdown': patch
 ---
 
-Fixes nested formatting
+Fixes serialization of nested formatting of inlineCode blocks like 
+```
+`code`**`boldCode`**`code`
+```
