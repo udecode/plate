@@ -41,6 +41,16 @@ describe('serializeInlineMd', () => {
     expect(result).toBe('`Hello`\n');
   });
 
+  it('should serialize nested formatting for inlineCode blocks correctly', () => {
+    const nodes = [
+      { code: true, text: 'Code ' },
+      { bold: true, code: true, text: 'bold Code' },
+      { code: true, text: ' Code' },
+    ];
+    const result = serializeInlineMd(editor, { value: nodes });
+    expect(result).toBe('`Code `**`bold Code`**` Code`\n');
+  });
+
   it('should serialize mixed formatting correctly', () => {
     const nodes = [
       { text: 'Hello ' },
