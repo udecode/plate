@@ -7,7 +7,7 @@ import type { AIChatPluginConfig } from '@udecode/plate-ai/react';
 import { PathApi } from '@udecode/plate';
 import { streamInsertChunk, withAIBatch } from '@udecode/plate-ai';
 import { AIChatPlugin, AIPlugin, useChatChunk } from '@udecode/plate-ai/react';
-import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
+import { usePluginOption } from '@udecode/plate/react';
 
 import { markdownPlugin } from '@/registry/default/components/editor/plugins/markdown-plugin';
 import { AILoadingBar } from '@/registry/default/plate-ui/ai-loading-bar';
@@ -120,9 +120,7 @@ export const aiPlugins = [
       afterEditable: () => <AIMenu />,
     },
   }).extend({
-    useHooks: () => {
-      const { editor, getOption } = useEditorPlugin(AIChatPlugin);
-
+    useHooks: ({ editor, getOption, setOption }) => {
       const mode = usePluginOption(
         { key: 'aiChat' } as AIChatPluginConfig,
         'mode'

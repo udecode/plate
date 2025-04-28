@@ -23,6 +23,8 @@ export function Cursor({
   const { style, selectionStyle = style } = data ?? ({} as CursorData);
   const isCursor = RangeApi.isCollapsed(selection);
 
+  if (streaming) return null;
+
   return (
     <>
       {selectionRects.map((position, i) => {
@@ -32,13 +34,11 @@ export function Cursor({
             className={cn(
               'pointer-events-none absolute z-10',
               id === 'selection' && 'bg-brand/25',
-              id === 'selection' && isCursor && 'bg-primary',
-              streaming && 'scale-[0.6] animate-pulse rounded-full'
+              id === 'selection' && isCursor && 'bg-primary'
             )}
             style={{
               ...selectionStyle,
               ...position,
-              ...(streaming && { width: position.height }),
             }}
           />
         );
