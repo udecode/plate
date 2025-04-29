@@ -106,6 +106,60 @@ describe('normalizeIndentListStart', () => {
       expect(editor.children).toEqual(output);
     });
 
+    it('removes listStart from the first items', () => {
+      const input = [
+        createItem('one', { listStart: 1 }),
+        createItem('two'),
+        createItem('three > one', { indent: 2, listStart: 1 }),
+        createItem('four > two', { indent: 2 }),
+        <hp>-</hp>,
+        createItem('one 2', { listStart: 1 }),
+      ];
+
+      const output = [
+        createItem('one'),
+        createItem('two', { listStart: 2 }),
+        createItem('three > one', { indent: 2 }),
+        createItem('four > two', { indent: 2, listStart: 2 }),
+        <hp>-</hp>,
+        createItem('one 2'),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
+    it('restarts listStart when encountering listRestart', () => {
+      const input = [
+        createItem('three', { listRestart: 3 }),
+        createItem('four'),
+        createItem('four > one', { indent: 2 }),
+        createItem('four > three', { indent: 2, listRestart: 3 }),
+        createItem('four > one', { indent: 2, listRestart: 1 }),
+        createItem('five'),
+      ];
+
+      const output = [
+        createItem('three', { listRestart: 3, listStart: 3 }),
+        createItem('four', { listStart: 4 }),
+        createItem('four > one', { indent: 2 }),
+        createItem('four > three', { indent: 2, listRestart: 3, listStart: 3 }),
+        createItem('four > one', { indent: 2, listRestart: 1 }),
+        createItem('five', { listStart: 5 }),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
     describe('when configured to continue lists across multiple pages', () => {
       it('does so', () => {
         const input = [
@@ -155,9 +209,7 @@ describe('normalizeIndentListStart', () => {
             {createItem('1')}
             {createItem('2', { listStart: 2 })}
           </element>,
-          <element type="page">
-            {createItem('1', { listRestart: 1, listStart: 1 })}
-          </element>,
+          <element type="page">{createItem('1', { listRestart: 1 })}</element>,
         ];
 
         const editor = createEditor({
