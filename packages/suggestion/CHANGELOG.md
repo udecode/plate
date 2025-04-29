@@ -1,5 +1,14 @@
 # @udecode/plate-suggestion
 
+## 47.3.0
+
+### Minor Changes
+
+- [`a44f7be`](https://github.com/udecode/plate/commit/a44f7bebd4b298336e33eb918c6852ee6fd05d2a) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove unused `users`, `suggestions` options.
+  - Remove unused `addSuggestion`, `removeSuggestion`, `updateSuggestion` APIs.
+  - Remove unused `suggestion`, `user` and `currentUser` selectors.
+
 ## 46.0.1
 
 ### Patch Changes
