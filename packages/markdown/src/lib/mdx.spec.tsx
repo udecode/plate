@@ -34,7 +34,7 @@ describe('roundTrip', () => {
     expect(slate).toEqual(input);
   });
 
-  it('should round trip callout', () => {
+  it('should serialize callout correctly', () => {
     const input = (
       <fragment>
         <hcallout>
