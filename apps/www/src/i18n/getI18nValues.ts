@@ -99,7 +99,6 @@ import { previewMdValue as previewMdValueEn } from '@/registry/default/examples/
 import { singleLineValue as singleLineValueEn } from '@/registry/default/examples/values/single-line-value';
 import { slashCommandValue as slashCommandValueEn } from '@/registry/default/examples/values/slash-command-value';
 import { softBreakValue as softBreakValueEn } from '@/registry/default/examples/values/soft-break-value';
-import { suggestionValue as suggestionValueEn } from '@/registry/default/examples/values/suggestion-value';
 import { tabbableValue as tabbableValueEn } from '@/registry/default/examples/values/tabbable-value';
 import { tableValue as tableValueEn } from '@/registry/default/examples/values/table-value';
 import { tocValue as tocValueEn } from '@/registry/default/examples/values/toc-value';
@@ -199,7 +198,6 @@ const i18n = {
     singleLine: singleLineValueEn,
     slashCommand: slashCommandValueEn,
     softBreak: softBreakValueEn,
-    suggestion: suggestionValueEn,
     tabbable: tabbableValueEn,
     table: tableValueEn,
     toc: tocValueEn,
