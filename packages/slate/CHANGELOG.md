@@ -1,5 +1,7 @@
 # @udecode/slate
 
+## 47.2.7
+
 ## 47.2.3
 
 ### Patch Changes
