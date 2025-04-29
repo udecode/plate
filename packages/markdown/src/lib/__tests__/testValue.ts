@@ -46,7 +46,7 @@ export const testValue = [
           type: 'insert',
           userId: 'user3',
         },
-        text: 'suggesions',
+        text: 'suggestions',
       },
       {
         text: ', or ',
