@@ -9,27 +9,58 @@ import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
 jsxt;
 
-const input = createEditor(
-  (
+it('should be', async () => {
+  const input = createEditor(
+    (
+      <editor>
+        <hp>1</hp>
+        <hp indent={1} listStart={1} listStyleType="disc">
+          2
+        </hp>
+      </editor>
+    ) as any
+  );
+
+  const output = (
     <editor>
       <hp>1</hp>
-      <hp indent={1} listStart={1} listStyleType="disc">
+      <hp indent={1} listStyleType="disc">
         2
       </hp>
     </editor>
-  ) as any
-);
+  ) as any;
 
-const output = (
-  <editor>
-    <hp>1</hp>
-    <hp indent={1} listStyleType="disc">
-      2
-    </hp>
-  </editor>
-) as any;
+  const editor = createPlateEditor({
+    plugins: [BaseParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
+    selection: input.selection,
+    shouldNormalizeEditor: true,
+    value: input.children,
+  });
 
-it('should be', async () => {
+  expect(editor.children).toEqual(output.children);
+});
+
+it('should start from 2', async () => {
+  const input = createEditor(
+    (
+      <editor>
+        <hp>1</hp>
+        <hp indent={1} listStart={2} listStyleType="decimal">
+          2
+        </hp>
+      </editor>
+    ) as any
+  );
+
+  const output = (
+    <editor>
+      <hp>1</hp>
+      <hp indent={1} listStart={2} listStyleType="decimal">
+        2
+      </hp>
+    </editor>
+  ) as any;
+
   const editor = createPlateEditor({
     plugins: [BaseParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
     selection: input.selection,

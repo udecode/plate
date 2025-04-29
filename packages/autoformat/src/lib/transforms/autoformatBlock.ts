@@ -39,6 +39,7 @@ export const autoformatBlock = (
     if (!triggers.includes(text)) continue;
 
     let matchRange: TRange | undefined;
+    let textFromBlockStart = '';
 
     if (triggerAtBlockStart) {
       matchRange = editor.api.range('start', editor.selection);
@@ -51,7 +52,7 @@ export const autoformatBlock = (
 
       if (hasVoidNode) continue;
 
-      const textFromBlockStart = editor.api.string(matchRange);
+      textFromBlockStart = editor.api.string(matchRange);
 
       const isMatched = matchByRegex
         ? !!textFromBlockStart.match(end)
@@ -67,6 +68,8 @@ export const autoformatBlock = (
       });
 
       if (!matchRange) continue;
+
+      textFromBlockStart = editor.api.string(matchRange);
     }
     if (!allowSameTypeAbove) {
       // Don't autoformat if already in a block of the same type.
@@ -84,7 +87,7 @@ export const autoformatBlock = (
       preFormat(editor);
     }
     if (format) {
-      format(editor);
+      format(editor, textFromBlockStart);
     } else {
       editor.tf.setNodes(
         { type },

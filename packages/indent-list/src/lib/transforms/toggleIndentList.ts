@@ -29,7 +29,7 @@ export const toggleIndentList = <
   options: IndentListOptions,
   getSiblingIndentListOptions?: GetSiblingIndentListOptions<N, E>
 ) => {
-  const { listStyleType } = options;
+  const { listStart, listStyleType } = options;
 
   const { getSiblingIndentListOptions: _getSiblingIndentListOptions } =
     editor.getOptions(BaseIndentListPlugin);
@@ -38,7 +38,7 @@ export const toggleIndentList = <
     const entry = editor.api.block<TElement>();
 
     if (!entry) return;
-    if (toggleIndentListSet(editor, entry, { listStyleType })) {
+    if (toggleIndentListSet(editor, entry, { listStart, listStyleType })) {
       return;
     }
     if (toggleIndentListUnset(editor, entry, { listStyleType })) {
