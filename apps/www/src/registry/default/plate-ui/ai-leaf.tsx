@@ -11,7 +11,7 @@ export function AILeaf({
   className,
   ...props
 }: React.ComponentProps<typeof PlateLeaf>) {
-  const lastTextId = usePluginOption(AIChatPlugin, 'lastTextId') as any;
+  const lastTextId = usePluginOption(AIChatPlugin, 'experimental_lastTextId') as any;
   const leaf = props.leaf;
 
   let isLast = false;

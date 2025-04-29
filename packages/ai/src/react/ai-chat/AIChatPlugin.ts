@@ -39,7 +39,8 @@ export type AIChatPluginConfig = PluginConfig<
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
     chat: Partial<UseChatHelpers>;
-    lastTextId: string | null;
+    /** @experimental maybe remove without notice */
+    experimental_lastTextId: string | null;
     /**
      * Specifies how the assistant message is handled:
      *
@@ -101,7 +102,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     _blockPath: null,
     aiEditor: null,
     chat: { messages: [] } as any,
-    lastTextId: null,
+    experimental_lastTextId: null,
     mode: 'chat',
     open: false,
     streaming: false,

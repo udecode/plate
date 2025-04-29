@@ -23,7 +23,7 @@ export const nodesWithProps = (
     } else {
       const id = nanoid();
 
-      editor.setOption(AIChatPlugin, 'lastTextId', id);
+      editor.setOption(AIChatPlugin, 'experimental_lastTextId', id);
 
       return {
         id,
