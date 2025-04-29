@@ -33,10 +33,11 @@ export async function POST(req: NextRequest) {
       experimental_transform: smoothStream({
         chunking: (buffer) => {
           // Check for code block markers
-          if (buffer.includes('```')) {
-            isInCodeBlock = !isInCodeBlock;
+          if (/```[^\s]+/.test(buffer)) {
+            isInCodeBlock = true;
+          } else if (isInCodeBlock && buffer.includes('```')) {
+            isInCodeBlock = false;
           }
-
           // test case: should not deserialize link with markdown syntax
           if (buffer.includes('http')) {
             isInLink = true;
@@ -45,13 +46,11 @@ export async function POST(req: NextRequest) {
           } else if (buffer.includes('\n') && isInLink) {
             isInLink = false;
           }
-
           if (buffer.includes('*') || buffer.includes('-')) {
             isInList = true;
           } else if (buffer.includes('\n') && isInList) {
             isInList = false;
           }
-
           // Simple table detection: enter on |, exit on double newline
           if (!isInTable && buffer.includes('|')) {
             isInTable = true;
@@ -73,7 +72,6 @@ export async function POST(req: NextRequest) {
             // Use word chunking for regular text
             match = CHUNKING_REGEXPS.word.exec(buffer);
           }
-
           if (!match) {
             return null;
           }
