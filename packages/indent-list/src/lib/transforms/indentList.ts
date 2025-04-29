@@ -30,10 +30,9 @@ export const indentList = (
         [BaseIndentListPlugin.key]: listStyleType,
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-      if (listStyleType === ListStyleType.Decimal) {
+      if (listStart) {
         return {
-          [INDENT_LIST_KEYS.listStart]: Number(listStart),
+          [INDENT_LIST_KEYS.listStart]: listStart,
           ...props,
         };
       }

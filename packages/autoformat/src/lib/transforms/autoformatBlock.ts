@@ -87,7 +87,7 @@ export const autoformatBlock = (
       preFormat(editor);
     }
     if (format) {
-      format(editor, textFromBlockStart);
+      format(editor, { matchString: textFromBlockStart });
     } else {
       editor.tf.setNodes(
         { type },

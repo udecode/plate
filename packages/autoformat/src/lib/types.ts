@@ -26,10 +26,10 @@ export interface AutoformatBlockRule extends AutoformatCommonRule {
    * Custom formatting function.
    *
    * @default editor.tf.setNodes({ type }, { match: (n) => editor.api.isBlock(n) })
-   * 
-   * @param matchedString - The string that was matched
+   *
+   * @param matchString - The string that was matched
    */
-  format?: (editor: SlateEditor, matchedString: string) => void;
+  format?: (editor: SlateEditor, ctx: { matchString: string }) => void;
 
   /**
    * If true, `match` will be interpreted as regex expression(s). Otherwise, it
