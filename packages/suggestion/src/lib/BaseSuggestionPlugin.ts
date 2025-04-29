@@ -12,7 +12,6 @@ import {
 } from '@udecode/plate';
 
 import type {
-  SuggestionUser,
   TInlineSuggestionData,
   TSuggestion,
   TSuggestionElement,
@@ -33,7 +32,6 @@ export type BaseSuggestionConfig = PluginConfig<
     currentUserId: string | null;
     isSuggesting: boolean;
     suggestions: Record<string, TSuggestion>;
-    users: Record<string, SuggestionUser>;
   },
   {
     suggestion: {
@@ -60,9 +58,7 @@ export type BaseSuggestionConfig = PluginConfig<
   },
   {},
   {
-    currentUser: () => SuggestionUser | null;
     suggestion: (id: string | null) => TSuggestion | null;
-    user: (id: string | null) => SuggestionUser | null;
   }
 >;
 
@@ -73,27 +69,14 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
     currentUserId: null,
     isSuggesting: false,
     suggestions: {},
-    users: {},
   },
 })
   .overrideEditor(withSuggestion)
   .extendSelectors<BaseSuggestionConfig['selectors']>(({ getOptions }) => ({
-    currentUser: (): SuggestionUser | null => {
-      const { currentUserId, users } = getOptions();
-
-      if (!currentUserId) return null;
-
-      return users[currentUserId];
-    },
     suggestion: (id: string | null): TSuggestion | null => {
       if (!id) return null;
 
       return getOptions().suggestions[id];
-    },
-    user: (id: string | null): SuggestionUser | null => {
-      if (!id) return null;
-
-      return getOptions().users[id];
     },
   }))
   .extendApi<BaseSuggestionConfig['api']['suggestion']>(
