@@ -93,7 +93,6 @@ export const PROMPT_TEMPLATES = {
   userDefault,
   userSelecting,
 };
-const chunks: any = [];
 
 export const aiPlugins = [
   cursorOverlayPlugin,
@@ -129,7 +128,6 @@ export const aiPlugins = [
 
       useChatChunk({
         onChunk: ({ chunk, isFirst, nodes, text }) => {
-          chunks.push(chunk);
           if (isFirst && mode == 'insert') {
             editor.tf.withoutSaving(() => {
               editor.tf.insertNodes(
@@ -163,7 +161,6 @@ export const aiPlugins = [
           }
         },
         onFinish: ({ content }) => {
-          console.log(chunks, 'fj');
           editor.setOption(AIChatPlugin, 'streaming', false);
           editor.setOption(AIChatPlugin, '_blockChunks', '');
           editor.setOption(AIChatPlugin, '_blockPath', null);

@@ -72,8 +72,6 @@ import { editorPlugins } from '@/registry/default/components/editor/plugins/edit
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
-import { markdownPlugin } from '../components/editor/plugins/markdown-plugin';
-
 export default function PlaygroundDemo({ className }: { className?: string }) {
   const value = usePlaygroundValue();
   const enabled = usePlaygroundEnabled();
@@ -96,122 +94,13 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
           enabled: process.env.NODE_ENV !== 'production',
         }),
       ],
-      value: (editor) => {
-        return editor
-          .getApi(markdownPlugin)
-          .markdown.deserialize(
-            [
-              'To ',
-              'create ',
-              'a ',
-              'basic ',
-              'editor ',
-              'using ',
-              'Slate.js, ',
-              'you ',
-              'can ',
-              'follow ',
-              'these ',
-              'steps:\n\n',
-              '1. **Ins',
-              'tall Sla',
-              'te.js**:',
-              ' First, ',
-              'ensure y',
-              'ou have ',
-              'Slate.js',
-              ' install',
-              'ed in yo',
-              'ur proje',
-              'ct. You ',
-              'can do t',
-              'his usin',
-              'g npm or',
-              ' yarn:\n',
-              '   ```bash\n',
-              '   npm install slate slate-react\n',
-              '   ```\n\n',
-              '2. **Set',
-              ' Up the ',
-              'Editor**',
-              ': Create',
-              ' a basic',
-              ' editor ',
-              'componen',
-              't using ',
-              'Slate.js',
-              ". Here's",
-              ' a simpl',
-              'e exampl',
-              'e:\n\n',
-              '   ```jsx\n',
-              "   import React, { useMemo, useState } from 'react';\n",
-              "   import { Slate, Editable, withReact } from 'slate-react';\n",
-              "   import { createEditor } from 'slate';\n\n",
-              '   const BasicEditor = () => {\n',
-              '     const editor = useMemo(() => withReact(createEditor()), []);\n',
-              '     const [value, setValue] = useState([\n',
-              '       {\n',
-              "         type: 'paragraph',\n",
-              "         children: [{ text: 'A line of text in a paragraph.' }],\n",
-              '       },\n',
-              '     ]);\n\n',
-              '     return (\n',
-              '       <Slate editor={editor} value={value} onChange={newValue => setValue(newValue)}>\n',
-              '         <Editable />\n',
-              '       </Slate>\n',
-              '     );\n',
-              '   };\n\n',
-              '   export default BasicEditor;\n',
-              '   ```\n\n',
-              '3. **Ren',
-              'der the ',
-              'Editor**',
-              ': Use th',
-              'e `Basic',
-              'Editor` ',
-              'componen',
-              't in you',
-              'r applic',
-              'ation to',
-              ' render ',
-              'the edit',
-              'or.\n\n',
-              'This ',
-              'setup ',
-              'provides ',
-              'a ',
-              'basic ',
-              'text ',
-              'editor ',
-              'where ',
-              'users ',
-              'can ',
-              'type ',
-              'and ',
-              'edit ',
-              'text. ',
-              'You ',
-              'can ',
-              'further ',
-              'customize ',
-              'it ',
-              'by ',
-              'adding ',
-              'plugins, ',
-              'custom ',
-              'elements, ',
-              'and ',
-              'more.',
-            ].join('')
-          );
-      },
+      value,
     },
     []
   );
 
   return (
-    <Plate onValueChange={(v) => console.log(v.value)} editor={editor}>
+    <Plate editor={editor}>
       <EditorContainer className={className}>
         <Editor variant="demo" className="pb-[20vh]" spellCheck={false} />
       </EditorContainer>

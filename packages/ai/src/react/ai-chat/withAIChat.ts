@@ -9,7 +9,7 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
   api,
   editor,
   getOptions,
-  tf: { apply, insertText, normalizeNode, setSelection },
+  tf: { insertText, normalizeNode, setSelection },
   type,
 }) => {
   const tf = editor.getTransforms(AIPlugin);
@@ -29,10 +29,6 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
 
   return {
     transforms: {
-      apply: (operation) => {
-        console.log('🚀 ~ operation:', operation);
-        return apply(operation);
-      },
       insertText(text, options) {
         const { triggerPreviousCharPattern, triggerQuery } = getOptions();
 
