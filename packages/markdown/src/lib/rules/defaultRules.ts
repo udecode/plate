@@ -161,6 +161,16 @@ export const defaultRules: TRules = {
       };
     },
   },
+  callout: {
+    serialize(slateNode, options): MdMdxJsxTextElement {
+      return {
+        attributes: [],
+        children: convertNodesSerialize(slateNode.children, options) as any,
+        name: 'callout',
+        type: 'mdxJsxTextElement',
+      };
+    },
+  },
   code: {
     mark: true,
     deserialize: (mdastNode, deco, options) => {
