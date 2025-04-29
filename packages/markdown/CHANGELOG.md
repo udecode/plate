@@ -1,5 +1,11 @@
 # @udecode/plate-markdown
 
+## 47.2.6
+
+### Patch Changes
+
+- [#4258](https://github.com/udecode/plate/pull/4258) by [@felixfeng33](https://github.com/felixfeng33) – Fix #4256
+
 ## 47.2.4
 
 ### Patch Changes
