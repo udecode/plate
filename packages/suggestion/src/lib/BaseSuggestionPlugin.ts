@@ -3,18 +3,14 @@ import {
   type NodeEntry,
   type PluginConfig,
   type TElement,
-  type WithPartial,
   createTSlatePlugin,
   ElementApi,
   getAt,
-  nanoid,
   TextApi,
 } from '@udecode/plate';
 
 import type {
-  SuggestionUser,
   TInlineSuggestionData,
-  TSuggestion,
   TSuggestionElement,
   TSuggestionText,
 } from './types';
@@ -22,22 +18,17 @@ import type {
 import { getSuggestionKey, getSuggestionKeyId } from './utils';
 import { withSuggestion } from './withSuggestion';
 
-export const SUGGESTION_KEYS = {
-  id: 'suggestionId',
-  createdAt: 'suggestionCreateAt',
-} as const;
-
 export type BaseSuggestionConfig = PluginConfig<
   'suggestion',
   {
     currentUserId: string | null;
     isSuggesting: boolean;
-    suggestions: Record<string, TSuggestion>;
-    users: Record<string, SuggestionUser>;
+    // onAdd?: (value: WithPartial<TSuggestion, 'id' | 'userId'>) => void;
+    // onRemove?: (id: string) => void;
+    // onUpdate?: (id: string, value: Partial<TSuggestion>) => void;
   },
   {
     suggestion: {
-      addSuggestion: (value: WithPartial<TSuggestion, 'id' | 'userId'>) => void;
       dataList: (node: TSuggestionText) => TInlineSuggestionData[];
       isBlockSuggestion: (node: TElement) => node is TSuggestionElement;
       node: (
@@ -47,22 +38,11 @@ export type BaseSuggestionConfig = PluginConfig<
       nodes: (
         options?: EditorNodesOptions
       ) => NodeEntry<TElement | TSuggestionText>[];
-      removeSuggestion: (id: string | null) => void;
       suggestionData: (
         node: TElement | TSuggestionText
       ) => TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined;
-      updateSuggestion: (
-        id: string | null,
-        value: Partial<TSuggestion>
-      ) => void;
       withoutSuggestions: (fn: () => void) => void;
     };
-  },
-  {},
-  {
-    currentUser: () => SuggestionUser | null;
-    suggestion: (id: string | null) => TSuggestion | null;
-    user: (id: string | null) => SuggestionUser | null;
   }
 >;
 
@@ -70,50 +50,13 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
   key: 'suggestion',
   node: { isLeaf: true },
   options: {
-    currentUserId: null,
+    currentUserId: 'alice',
     isSuggesting: false,
-    suggestions: {},
-    users: {},
   },
 })
   .overrideEditor(withSuggestion)
-  .extendSelectors<BaseSuggestionConfig['selectors']>(({ getOptions }) => ({
-    currentUser: (): SuggestionUser | null => {
-      const { currentUserId, users } = getOptions();
-
-      if (!currentUserId) return null;
-
-      return users[currentUserId];
-    },
-    suggestion: (id: string | null): TSuggestion | null => {
-      if (!id) return null;
-
-      return getOptions().suggestions[id];
-    },
-    user: (id: string | null): SuggestionUser | null => {
-      if (!id) return null;
-
-      return getOptions().users[id];
-    },
-  }))
   .extendApi<BaseSuggestionConfig['api']['suggestion']>(
-    ({ api, editor, getOption, getOptions, setOption, setOptions, type }) => ({
-      addSuggestion: (value) => {
-        const { currentUserId } = getOptions();
-
-        if (!currentUserId) return;
-
-        const id = value.id ?? nanoid();
-        const newSuggestion: TSuggestion = {
-          id,
-          userId: currentUserId,
-          ...value,
-        };
-
-        setOptions((draft) => {
-          draft.suggestions![id] = newSuggestion;
-        });
-      },
+    ({ api, editor, getOption, setOption, type }) => ({
       dataList: (node: TSuggestionText): TInlineSuggestionData[] => {
         return Object.keys(node)
           .filter((key) => {
@@ -173,13 +116,6 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
           }),
         ];
       },
-      removeSuggestion: (id) => {
-        if (!id) return;
-
-        setOptions((draft) => {
-          delete draft.suggestions![id];
-        });
-      },
       suggestionData: (node) => {
         if (TextApi.isText(node)) {
           const keyId = getSuggestionKeyId(node);
@@ -192,13 +128,6 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
         if (api.suggestion.isBlockSuggestion(node)) {
           return node.suggestion;
         }
-      },
-      updateSuggestion: (id, value) => {
-        if (!id) return;
-
-        setOptions((draft) => {
-          draft.suggestions![id] = { ...draft.suggestions![id], ...value };
-        });
       },
       withoutSuggestions: (fn) => {
         const prev = getOption('isSuggesting');

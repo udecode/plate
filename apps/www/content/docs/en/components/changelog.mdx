@@ -15,6 +15,13 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 - `cursor-overlay`: hide when ai is streaming.
 - `api/ai/command`: fix chunking issue.
 
+Add `discussion-plugin`:
+- add `discussionPlugin` to `editor-plugins`, remove `configure` from `suggestionPlugin`
+- refactor `block-suggestion`, `comment` to use `discussionPlugin`
+- fix `comment-create-form` to create discussion when none exists
+- style changes in `suggestion-leaf`
+- fix `link-floating-toolbar` to support internal links, and placement top when suggestion or comment is active
+
 ### April 19 #21.1
 
 - `ai-anchor-element`: add `ai-anchor-element` component that is inserted before streaming, removed after streaming, and used for positioning the ai-menu

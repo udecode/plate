@@ -1,3 +1,5 @@
+import { playgroundValue } from '@/registry/default/examples/values/playground-value';
+
 import { aiValue } from './ai-value';
 import { alignValue } from './align-value';
 import { autoformatValue } from './autoformat-value';
@@ -40,7 +42,6 @@ import { previewMdValue } from './preview-md-value';
 import { singleLineValue } from './single-line-value';
 import { slashCommandValue } from './slash-command-value';
 import { softBreakValue } from './soft-break-value';
-import { suggestionValue } from './suggestion-value';
 import { tabbableValue } from './tabbable-value';
 import { tableValue } from './table-value';
 import { tocValue } from './toc-value';
@@ -91,12 +92,12 @@ const values = {
   mention: mentionValue,
   // 'multi-editors': multiEditorsValue,
   placeholder: placeholderValue,
+  playground: playgroundValue,
   'preview-markdown': previewMdValue,
   'reset-node': basicElementsValue,
   'single-line': singleLineValue,
   'slash-command': slashCommandValue,
   'soft-break': softBreakValue,
-  suggestion: suggestionValue,
   tabbable: tabbableValue,
   table: tableValue,
   toc: tocValue,

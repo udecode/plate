@@ -9,6 +9,11 @@ export const sanitizeUrl = (
 ): string | null => {
   if (!url) return null;
 
+  // Allow internal links starting with / or #
+  if (url.startsWith('/') || url.startsWith('#')) {
+    return url;
+  }
+
   let parsedUrl: URL | null = null;
 
   try {

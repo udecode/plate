@@ -11,6 +11,7 @@ import type { TLinkElement } from '../../../lib';
 import { getLinkAttributes } from '../../../lib/utils/getLinkAttributes';
 import { LinkPlugin } from '../../LinkPlugin';
 
+// @deprecated
 export const useLinkOpenButtonState = () => {
   const editor = useEditorRef();
   const selection = useEditorSelection();
@@ -35,6 +36,7 @@ export const useLinkOpenButtonState = () => {
   };
 };
 
+// @deprecated
 export const useLinkOpenButton = ({ element }: { element?: TLinkElement }) => {
   const editor = useEditorRef();
 

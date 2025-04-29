@@ -22,10 +22,14 @@ import {
   MentionInputPlugin,
   MentionPlugin,
 } from '@udecode/plate-mention/react';
-import { Plate, useEditorRef, useStoreSelect } from '@udecode/plate/react';
+import { Plate, useEditorRef, usePluginOption } from '@udecode/plate/react';
 import { type CreatePlateEditorOptions, PlateLeaf } from '@udecode/plate/react';
 import { ArrowUpIcon } from 'lucide-react';
 
+import {
+  type TDiscussion,
+  discussionPlugin,
+} from '@/registry/default/components/editor/plugins/discussion-plugin';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
 import {
   Avatar,
@@ -33,15 +37,9 @@ import {
   AvatarImage,
 } from '@/registry/default/plate-ui/avatar';
 
-import type { TDiscussion } from './block-discussion';
 import type { TComment } from './comment';
 
 import { AILeaf } from './ai-leaf';
-import {
-  discussionStore,
-  useFakeCurrentUserId,
-  useFakeUserInfo,
-} from './block-discussion';
 import { Button } from './button';
 import { DateElement } from './date-element';
 import { Editor, EditorContainer } from './editor';
@@ -89,25 +87,19 @@ export function CommentCreateForm({
   className,
   discussionId: discussionIdProp,
   focusOnMount = false,
-  isSuggesting,
 }: {
   autoFocus?: boolean;
   className?: string;
   discussionId?: string;
   focusOnMount?: boolean;
-  isSuggesting?: boolean;
 }) {
-  const discussions = useStoreSelect(
-    discussionStore,
-    (state) => state.discussions
-  );
+  const discussions = usePluginOption(discussionPlugin, 'discussions');
 
   const editor = useEditorRef();
-  const discussionId = useCommentId() ?? discussionIdProp;
-  const [resetKey, setResetKey] = React.useState(0);
+  const commentId = useCommentId();
+  const discussionId = discussionIdProp ?? commentId;
 
-  const currentUserId = useFakeCurrentUserId();
-  const userInfo = useFakeUserInfo(currentUserId);
+  const userInfo = usePluginOption(discussionPlugin, 'currentUser');
   const [commentValue, setCommentValue] = React.useState<Value | undefined>();
   const commentContent = useMemo(
     () =>
@@ -116,7 +108,7 @@ export function CommentCreateForm({
         : '',
     [commentValue]
   );
-  const commentEditor = useCommentEditor({}, [resetKey]);
+  const commentEditor = useCommentEditor({}, []);
 
   useEffect(() => {
     if (commentEditor && focusOnMount) {
@@ -125,13 +117,38 @@ export function CommentCreateForm({
   }, [commentEditor, focusOnMount]);
 
   const onAddComment = React.useCallback(async () => {
-    setResetKey((prev) => prev + 1);
+    if (!commentValue) return;
+
+    commentEditor.tf.reset();
 
     if (discussionId) {
       // Get existing discussion
       const discussion = discussions.find((d: any) => d.id === discussionId);
+      if (!discussion) {
+        // Mock creating suggestion
+        const newDiscussion: TDiscussion = {
+          id: discussionId,
+          comments: [
+            {
+              id: nanoid(),
+              contentRich: commentValue,
+              createdAt: new Date(),
+              discussionId,
+              isEdited: false,
+              userId: editor.getOption(discussionPlugin, 'currentUserId'),
+            },
+          ],
+          createdAt: new Date(),
+          isResolved: false,
+          userId: editor.getOption(discussionPlugin, 'currentUserId'),
+        };
 
-      if (!discussion || !commentValue) return;
+        editor.setOption(discussionPlugin, 'discussions', [
+          ...discussions,
+          newDiscussion,
+        ]);
+        return;
+      }
 
       // Create reply comment
       const comment: TComment = {
@@ -140,8 +157,7 @@ export function CommentCreateForm({
         createdAt: new Date(),
         discussionId,
         isEdited: false,
-        // mock user id
-        userId: currentUserId,
+        userId: editor.getOption(discussionPlugin, 'currentUserId'),
       };
 
       // Add reply to discussion comments
@@ -155,7 +171,7 @@ export function CommentCreateForm({
         .filter((d: any) => d.id !== discussionId)
         .concat(updatedDiscussion);
 
-      discussionStore.set('discussions', updatedDiscussions);
+      editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
 
       return;
     }
@@ -177,21 +193,23 @@ export function CommentCreateForm({
       comments: [
         {
           id: nanoid(),
-          contentRich: commentValue!,
+          contentRich: commentValue,
           createdAt: new Date(),
           discussionId: _discussionId,
           isEdited: false,
-          userId: currentUserId,
+          userId: editor.getOption(discussionPlugin, 'currentUserId'),
         },
       ],
       createdAt: new Date(),
       documentContent,
       isResolved: false,
-      userId: currentUserId,
+      userId: editor.getOption(discussionPlugin, 'currentUserId'),
     };
 
-    // Update discussions store
-    discussionStore.set('discussions', [...discussions, newDiscussion]);
+    editor.setOption(discussionPlugin, 'discussions', [
+      ...discussions,
+      newDiscussion,
+    ]);
 
     const id = newDiscussion.id;
 
@@ -204,40 +222,13 @@ export function CommentCreateForm({
       );
       editor.tf.unsetNodes([getDraftCommentKey()], { at: path });
     });
-  }, [discussionId, editor, commentValue, currentUserId, discussions]);
-
-  const onAddSuggestion = React.useCallback(async () => {
-    if (!discussionId) return;
-
-    if (!commentValue) return;
-
-    // Mock creating suggestion
-    const suggestion: TDiscussion = {
-      id: discussionId,
-      comments: [
-        {
-          id: nanoid(),
-          contentRich: commentValue!,
-          createdAt: new Date(),
-          discussionId,
-          isEdited: false,
-          userId: 'user1',
-        },
-      ],
-      createdAt: new Date(),
-      isResolved: false,
-      userId: 'user1',
-    };
-
-    // Update discussions store
-    discussionStore.set('discussions', [...discussions, suggestion]);
-  }, [discussionId, commentValue, discussions]);
+  }, [commentValue, commentEditor.tf, discussionId, editor, discussions]);
 
   return (
     <div className={cn('flex w-full', className)}>
       <div className="mt-1 mr-1 shrink-0">
         {/* Replace to your own backend or refer to potion */}
-        <Avatar className="size-6">
+        <Avatar className="size-5">
           <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
           <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
         </Avatar>
@@ -254,6 +245,12 @@ export function CommentCreateForm({
             <Editor
               variant="comment"
               className="min-h-[25px] grow pt-0.5 pr-8"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  onAddComment();
+                }
+              }}
               placeholder="Reply..."
               autoComplete="off"
               autoFocus={autoFocus}
@@ -266,12 +263,7 @@ export function CommentCreateForm({
               disabled={commentContent.trim().length === 0}
               onClick={(e) => {
                 e.stopPropagation();
-
-                if (isSuggesting) {
-                  void onAddSuggestion();
-                } else {
-                  void onAddComment();
-                }
+                onAddComment();
               }}
             >
               <div className="flex size-6 items-center justify-center rounded-full">
