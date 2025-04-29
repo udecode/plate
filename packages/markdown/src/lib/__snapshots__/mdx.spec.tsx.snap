@@ -1,0 +1,6 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`roundTrip should round trip callout 1`] = `
+"<callout>Callout</callout>
+"
+`;
