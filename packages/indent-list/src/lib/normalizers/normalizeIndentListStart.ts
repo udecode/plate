@@ -23,9 +23,15 @@ export const getIndentListExpectedListStart = (
   const [prevNode] = prevEntry ?? [null];
 
   const restart = (node[INDENT_LIST_KEYS.listRestart] as number | null) ?? null;
+  const restartPolite =
+    (node[INDENT_LIST_KEYS.listRestartPolite] as number | null) ?? null;
 
   if (restart) {
     return restart;
+  }
+
+  if (restartPolite && !prevNode) {
+    return restartPolite;
   }
 
   if (prevNode) {

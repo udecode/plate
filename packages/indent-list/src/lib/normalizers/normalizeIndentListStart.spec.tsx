@@ -38,11 +38,13 @@ const createItem = (
   {
     indent = 1,
     listRestart,
+    listRestartPolite,
     listStart,
     listStyleType = 'decimal',
   }: {
     indent?: number;
     listRestart?: number;
+    listRestartPolite?: number;
     listStart?: number;
     listStyleType?: string;
   } = {}
@@ -50,6 +52,7 @@ const createItem = (
   <hp
     indent={indent}
     listRestart={listRestart}
+    listRestartPolite={listRestartPolite}
     listStart={listStart}
     listStyleType={listStyleType}
   >
@@ -149,6 +152,41 @@ describe('normalizeIndentListStart', () => {
         createItem('four > one', { indent: 2 }),
         createItem('four > three', { indent: 2, listRestart: 3, listStart: 3 }),
         createItem('four > one', { indent: 2, listRestart: 1 }),
+        createItem('five', { listStart: 5 }),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
+    it('restarts listStart when encountering listRestartPolite at the start of a list', () => {
+      const input = [
+        createItem('three', { listRestartPolite: 3 }),
+        createItem('four', { listRestartPolite: 1000 }),
+        createItem('four > five', { indent: 2, listRestartPolite: 5 }),
+        createItem('four > six', { indent: 2 }),
+        createItem('four > seven', { indent: 2, listRestartPolite: 1 }),
+        createItem('five'),
+      ];
+
+      const output = [
+        createItem('three', { listRestartPolite: 3, listStart: 3 }),
+        createItem('four', { listRestartPolite: 1000, listStart: 4 }),
+        createItem('four > five', {
+          indent: 2,
+          listRestartPolite: 5,
+          listStart: 5,
+        }),
+        createItem('four > six', { indent: 2, listStart: 6 }),
+        createItem('four > seven', {
+          indent: 2,
+          listRestartPolite: 1,
+          listStart: 7,
+        }),
         createItem('five', { listStart: 5 }),
       ];
 

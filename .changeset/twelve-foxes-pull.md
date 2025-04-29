@@ -1,6 +1,6 @@
 ---
-"@udecode/plate-autoformat": patch
-"@udecode/plate-indent-list": patch
+"@udecode/plate-indent-list": minor
 ---
 
-Support starting numbered lists with `listStart > 1`
+- Fix: `listRestart` did not take effect for the first item in a list
+- Add `listRestartPolite`, which acts like `listRestart` but only takes effect when applied to the first item in a list
