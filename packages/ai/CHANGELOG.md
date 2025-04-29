@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 47.2.5
+
+### Patch Changes
+
+- [#4252](https://github.com/udecode/plate/pull/4252) by [@felixfeng33](https://github.com/felixfeng33) – Add `experimental_lastTextId` to support ai indicator.
+
 ## 47.2.4
 
 ## 47.2.3
