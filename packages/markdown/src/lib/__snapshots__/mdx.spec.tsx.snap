@@ -1,0 +1,6 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`roundTrip should serialize callout correctly 1`] = `
+"<callout>Callout</callout>
+"
+`;

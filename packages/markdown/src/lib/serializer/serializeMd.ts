@@ -21,7 +21,11 @@ export type SerializeMdOptions = {
   value?: Descendant[];
 };
 
-const serializeMdxJsxElement = (node: any): string => {
+const serializeMdxJsxElement = (
+  editor: SlateEditor,
+  node: any,
+  options: SerializeMdOptions
+): string => {
   // Handle text nodes
   if (node.type === 'text') {
     return node.value || '';
@@ -39,13 +43,17 @@ const serializeMdxJsxElement = (node: any): string => {
 
     // Process all children and join their results
     const content = node.children
-      .map((child: any) => serializeMdxJsxElement(child))
+      .map((child: any) => serializeMdxJsxElement(editor, child, options))
       .join('');
 
     return xml(node.name, attributes, content);
   }
 
-  return '';
+  const toRemarkProcessor = unified()
+    .use(options.remarkPlugins ?? [])
+    .use(remarkStringify);
+
+  return toRemarkProcessor.stringify(node).trimEnd();
 };
 
 /** Serialize the editor value to Markdown. */
@@ -64,10 +72,10 @@ export const serializeMd = (
       // Configure remark-stringify to handle MDX JSX elements
       handlers: {
         mdxJsxFlowElement: (node) => {
-          return serializeMdxJsxElement(node);
+          return serializeMdxJsxElement(editor, node, mergedOptions);
         },
         mdxJsxTextElement: (node) => {
-          return serializeMdxJsxElement(node);
+          return serializeMdxJsxElement(editor, node, mergedOptions);
         },
       },
     });
