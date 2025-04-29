@@ -47,6 +47,5 @@ describe('roundTrip', () => {
 
     const md = serializeMd(editor, { value: input });
     expect(md).toMatchSnapshot();
-    console.log("🚀 ~ it ~ md:", md)
   });
 });
