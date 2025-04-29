@@ -22,7 +22,7 @@ export function AILeaf({
   const leaf = props.leaf;
 
   let isLast = false;
-  if (leaf.code_syntax) {
+  if (leaf.code_syntax && lastTextId === leaf.id) {
     const node = props.editor.api.node({ mode: 'lowest' });
     if (node) {
       const string = NodeApi.string(node[0]);
