@@ -37,6 +37,7 @@ export default defineConfig(
           },
         ],
         '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-floating-promises': 'off',
         '@typescript-eslint/no-misused-promises': [
           2,
           { checksVoidReturn: false },

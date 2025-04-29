@@ -1,5 +1,4 @@
 /* eslint-disable unicorn/prefer-top-level-await */
-/* eslint-disable @typescript-eslint/no-floating-promises */
 // sync plate packages
 import { exec, execSync } from 'node:child_process';
 import fs from 'node:fs/promises';

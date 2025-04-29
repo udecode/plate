@@ -12,6 +12,7 @@ import {
 } from '@udecode/plate/react';
 
 import { commentsPlugin } from '@/registry/default/components/editor/plugins/comments-plugin';
+
 export function CommentLeaf({
   className,
   ...props

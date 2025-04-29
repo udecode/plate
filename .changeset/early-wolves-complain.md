@@ -2,4 +2,6 @@
 '@udecode/plate-suggestion': minor
 ---
 
-Remove unused `users` option, and `user` and `currentUser` selectors.
+- Remove unused `users`, `suggestions` options.
+- Remove unused `addSuggestion`, `removeSuggestion`, `updateSuggestion` APIs.
+- Remove unused `suggestion`, `user` and `currentUser` selectors.

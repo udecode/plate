@@ -21,7 +21,7 @@ docs:
 
 - Add suggestions as text marks
 - Add block suggestions
-- Track suggestion state and users
+- Track suggestion state
 - Undo/redo suggestion changes
 - Note: This is an experimental feature and the API is subject to change.
 
@@ -35,17 +35,25 @@ npm install @udecode/plate-suggestion
 ## Usage
 
 ```tsx
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
+import { discussionPlugin } from '@/components/editor/plugins/discussion-plugin';
+import { suggestionPlugin } from '@/components/editor/plugins/suggestion-plugin';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-  suggestionPlugin.configure({
-    render: { belowNodes: SuggestionBelowNodes as any },
-  }),
+    discussionPlugin,
+    suggestionPlugin.configure({
+      render: { belowNodes: SuggestionBelowNodes as any },
+      options: {
+        currentUserId: 'alice',
+      }
+    }),
   ],
 });
 ```
+
+The suggestion plugin works in conjunction with the discussion plugin to provide a complete suggestion and discussion system. The discussion plugin provides the UI layer for managing discussions and users. Source code of both plugins is available in the example.
+
 ## Keyboard Shortcuts
 
 <KeyTable>
@@ -69,18 +77,6 @@ Refer to the preview above.
 ### `SuggestionPlugin`
 
 ## API
-
-### `editor.api.suggestion.addSuggestion`
-
-Adds a new suggestion.
-
-<API name="addSuggestion">
-<APIParameters>
-  <APIItem name="value" type="WithPartial<TSuggestion, 'id' | 'userId'>">
-    The suggestion value to add.
-  </APIItem>
-</APIParameters>
-</API>
 
 ### `editor.api.suggestion.dataList`
 
@@ -153,18 +149,6 @@ Gets all suggestion node entries matching the options.
 </APIReturns>
 </API>
 
-### `editor.api.suggestion.removeSuggestion`
-
-Removes a suggestion by ID.
-
-<API name="removeSuggestion">
-<APIParameters>
-  <APIItem name="id" type="string | null">
-    The ID of the suggestion to remove.
-  </APIItem>
-</APIParameters>
-</API>
-
 ### `editor.api.suggestion.suggestionData`
 
 Gets suggestion data from a node.
@@ -178,21 +162,6 @@ Gets suggestion data from a node.
 <APIReturns type="TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined">
   The suggestion data if found.
 </APIReturns>
-</API>
-
-### `editor.api.suggestion.updateSuggestion`
-
-Updates a suggestion by ID.
-
-<API name="updateSuggestion">
-<APIParameters>
-  <APIItem name="id" type="string | null">
-    The ID of the suggestion to update.
-  </APIItem>
-  <APIItem name="value" type="Partial<TSuggestion>">
-    The updated suggestion values.
-  </APIItem>
-</APIParameters>
 </API>
 
 ### `editor.api.suggestion.withoutSuggestions`
