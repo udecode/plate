@@ -7,13 +7,17 @@ import type {
 
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
-import type { GetSiblingIndentListOptions } from '../queries';
 import type { IndentListOptions } from './indentList';
 
 import {
   BaseIndentListPlugin,
   INDENT_LIST_KEYS,
 } from '../BaseIndentListPlugin';
+import {
+  type GetSiblingIndentListOptions,
+  getIndentListAbove,
+  getPreviousIndentList,
+} from '../queries';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
 import { setIndentListNodes } from './setIndentListNodes';
 import { setIndentListSiblingNodes } from './setIndentListSiblingNodes';
@@ -29,73 +33,113 @@ export const toggleIndentList = <
   options: IndentListOptions,
   getSiblingIndentListOptions?: GetSiblingIndentListOptions<N, E>
 ) => {
-  const { listStart, listStyleType } = options;
+  const { listRestart, listRestartPolite, listStyleType } = options;
 
-  const { getSiblingIndentListOptions: _getSiblingIndentListOptions } =
-    editor.getOptions(BaseIndentListPlugin);
+  /**
+   * True - One or more blocks were converted to lists or changed such that they
+   * remain lists.
+   *
+   * False - One or more list blocks were unset.
+   *
+   * Null - No action was taken.
+   */
+  const setIndentList = ((): boolean | null => {
+    const { getSiblingIndentListOptions: _getSiblingIndentListOptions } =
+      editor.getOptions(BaseIndentListPlugin);
 
-  if (editor.api.isCollapsed()) {
-    const entry = editor.api.block<TElement>();
+    if (editor.api.isCollapsed()) {
+      const entry = editor.api.block<TElement>();
 
-    if (!entry) return;
-    if (toggleIndentListSet(editor, entry, { listStart, listStyleType })) {
-      return;
-    }
-    if (toggleIndentListUnset(editor, entry, { listStyleType })) {
-      return;
-    }
+      if (!entry) return null;
+      if (toggleIndentListSet(editor, entry, options)) {
+        return true;
+      }
+      if (toggleIndentListUnset(editor, entry, { listStyleType })) {
+        return false;
+      }
 
-    setIndentListSiblingNodes(editor, entry as ElementEntryOf<E>, {
-      getSiblingIndentListOptions: {
-        ..._getSiblingIndentListOptions,
-        ...getSiblingIndentListOptions,
-      } as GetSiblingIndentListOptions<ElementOf<E>, E>,
-      listStyleType,
-    });
-
-    return;
-  }
-  if (editor.api.isExpanded()) {
-    const _entries = editor.api.nodes<TElement>({ block: true });
-    const entries = [..._entries];
-
-    const eqListStyleType = areEqListStyleType(editor, entries, {
-      listStyleType,
-    });
-
-    if (eqListStyleType) {
-      editor.tf.withoutNormalizing(() => {
-        entries.forEach((entry) => {
-          const [node, path] = entry;
-
-          const indent = node[BaseIndentPlugin.key] as number;
-
-          editor.tf.unsetNodes(BaseIndentListPlugin.key, { at: path });
-
-          if (indent > 1) {
-            editor.tf.setNodes(
-              { [BaseIndentPlugin.key]: indent - 1 },
-              { at: path }
-            );
-          } else {
-            editor.tf.unsetNodes(
-              [BaseIndentPlugin.key, INDENT_LIST_KEYS.checked],
-              {
-                at: path,
-              }
-            );
-          }
-          // setIndentListNode(editor, {
-          //   listStyleType,
-          //   indent: node[BaseIndentPlugin.key],
-          //   at: path,
-          // });
-        });
+      setIndentListSiblingNodes(editor, entry as ElementEntryOf<E>, {
+        getSiblingIndentListOptions: {
+          ..._getSiblingIndentListOptions,
+          ...getSiblingIndentListOptions,
+        } as GetSiblingIndentListOptions<ElementOf<E>, E>,
+        listStyleType,
       });
 
-      return;
+      return true;
+    }
+    if (editor.api.isExpanded()) {
+      const _entries = editor.api.nodes<TElement>({ block: true });
+      const entries = [..._entries];
+
+      const eqListStyleType = areEqListStyleType(editor, entries, {
+        listStyleType,
+      });
+
+      if (eqListStyleType) {
+        editor.tf.withoutNormalizing(() => {
+          entries.forEach((entry) => {
+            const [node, path] = entry;
+
+            const indent = node[BaseIndentPlugin.key] as number;
+
+            editor.tf.unsetNodes(BaseIndentListPlugin.key, { at: path });
+
+            if (indent > 1) {
+              editor.tf.setNodes(
+                { [BaseIndentPlugin.key]: indent - 1 },
+                { at: path }
+              );
+            } else {
+              editor.tf.unsetNodes(
+                [BaseIndentPlugin.key, INDENT_LIST_KEYS.checked],
+                {
+                  at: path,
+                }
+              );
+            }
+            // setIndentListNode(editor, {
+            //   listStyleType,
+            //   indent: node[BaseIndentPlugin.key],
+            //   at: path,
+            // });
+          });
+        });
+
+        return false;
+      }
+
+      setIndentListNodes(editor, entries, { listStyleType });
+      return true;
     }
 
-    setIndentListNodes(editor, entries, { listStyleType });
+    return null;
+  })();
+
+  // Apply listRestart or listRestartPolite if applicable
+  const restartValue = listRestart || listRestartPolite;
+  const isRestart = !!listRestart;
+
+  if (setIndentList && restartValue) {
+    const atStart = editor.api.start(editor.selection!);
+    const entry = getIndentListAbove(editor, { at: atStart });
+    if (!entry) return;
+
+    const isFirst = !getPreviousIndentList(editor, entry);
+
+    /**
+     * Only apply listRestartPolite if this is the first item and restartValue >
+     * 1.
+     */
+    if (!isRestart && (!isFirst || restartValue <= 0)) return;
+
+    // If restartValue is 1, only apply listRestart if this is not the first
+    if (isRestart && restartValue === 1 && isFirst) return;
+
+    const prop = isRestart
+      ? INDENT_LIST_KEYS.listRestart
+      : INDENT_LIST_KEYS.listRestartPolite;
+
+    editor.tf.setNodes({ [prop]: restartValue }, { at: entry[1] });
   }
 };

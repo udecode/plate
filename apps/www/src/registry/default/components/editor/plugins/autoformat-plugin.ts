@@ -191,9 +191,8 @@ const autoformatIndentLists: AutoformatRule[] = [
     mode: 'block',
     type: 'list',
     format: (editor, { matchString }) => {
-      const listStart = Number(/\d+/.exec(matchString)?.[0]);
       toggleIndentList(editor, {
-        listStart,
+        listRestartPolite: Number(matchString) || 1,
         listStyleType: ListStyleType.Decimal,
       });
     },
