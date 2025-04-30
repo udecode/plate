@@ -20,15 +20,25 @@ export type SlateLeafProps<
   TextStaticProps;
 
 export function SlateLeaf(props: SlateLeafProps) {
-  const { as, attributes, leaf, leafToAttributes, nodeProps, text, ...rest } =
-    omitPluginContext(props);
+  const {
+    as,
+    attributes,
+    leaf,
+    leafPosition,
+    leafToAttributes,
+    nodeProps,
+    text,
+    ...rest
+  } = omitPluginContext(props);
+
+  const className = clsx(props.className, nodeProps?.className);
 
   const rootProps = {
     ...attributes,
     ...rest,
     ...nodeProps,
     ...leafToAttributes?.(leaf),
-    className: clsx(props.className, nodeProps?.className),
+    className: className || undefined,
   };
 
   const Leaf = (as ?? 'span') as any;

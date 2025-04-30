@@ -20,7 +20,7 @@ export const pipeRenderLeaf = (
     }
   });
 
-  return function render(props) {
+  return function render({ attributes, ...props }) {
     renderLeafs.forEach((renderLeaf) => {
       const newChildren = renderLeaf(props as any);
 
@@ -30,13 +30,13 @@ export const pipeRenderLeaf = (
     });
 
     if (renderLeafProp) {
-      return renderLeafProp(props);
+      return renderLeafProp({ ...attributes, ...props } as any);
     }
 
     const ctxProps = getRenderNodeProps({
-      attributes: props.attributes as any,
+      attributes: attributes as any,
       editor,
-      props: props as any,
+      props: { ...attributes, ...props } as any,
     }) as any;
 
     return <DefaultLeaf {...(ctxProps as any)} />;

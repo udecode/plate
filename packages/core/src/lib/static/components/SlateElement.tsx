@@ -24,18 +24,16 @@ export const SlateElement = (props: SlateElementProps) => {
 
   const block = !!element.id && props.editor.api.isBlock(element);
 
+  const className = clsx(props.className, nodeProps?.className);
+
   const rootProps = {
     ...attributes,
     ...rest,
     ...nodeProps,
     ...elementToAttributes?.(element),
-    className: clsx(props.className, nodeProps?.className),
+    className: className || undefined,
     'data-block-id': block ? element.id : undefined,
-    style: {
-      position: 'relative',
-      ...props.style,
-      ...nodeProps?.style,
-    },
+    style: { position: 'relative', ...props.style, ...nodeProps?.style },
   };
 
   const Element = (as ?? 'div') as any;

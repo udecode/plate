@@ -38,9 +38,7 @@ function BaseElementStatic({
   element: TElement;
   style?: React.CSSProperties;
 }) {
-  const renderElement = pipeRenderElementStatic(editor, {
-    components,
-  });
+  const renderElement = pipeRenderElementStatic(editor, { components });
 
   const attributes: SlateRenderElementProps['attributes'] = {
     'data-slate-node': 'element',
@@ -87,11 +85,7 @@ function BaseElementStatic({
 
   return (
     <React.Fragment>
-      {renderElement?.({
-        attributes,
-        children,
-        element,
-      })}
+      {renderElement?.({ attributes, children, element })}
     </React.Fragment>
   );
 }
@@ -116,24 +110,23 @@ function BaseLeafStatic({
   editor: SlateEditor;
   leaf: TText;
 }) {
-  const renderLeaf = pipeRenderLeafStatic(editor, {
-    components,
-  });
+  const renderLeaf = pipeRenderLeafStatic(editor, { components });
 
-  const leaves = TextApi.decorations(leaf, decorations);
+  const decoratedLeaves = TextApi.decorations(leaf, decorations);
 
   return (
     <span data-slate-node="text">
-      {leaves.map((l, index) => {
+      {decoratedLeaves.map(({ leaf, position }, index) => {
         const leafElement = renderLeaf!({
           attributes: { 'data-slate-leaf': true },
           children: (
             <span data-slate-string={true}>
-              {l.text === '' ? '\uFEFF' : l.text}
+              {leaf.text === '' ? '\uFEFF' : leaf.text}
             </span>
           ),
-          leaf: l as TText,
-          text: l as TText,
+          leaf: leaf as TText,
+          leafPosition: position,
+          text: leaf as TText,
         });
 
         return <React.Fragment key={index}>{leafElement}</React.Fragment>;

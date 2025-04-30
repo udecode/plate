@@ -29,10 +29,7 @@ export const pluginRenderLeafStatic = (
       const dataAttributes = getPluginDataAttributes(editor, plugin, leaf);
 
       const ctxProps = getRenderNodeStaticProps({
-        attributes: {
-          ...(leaf.attributes as any),
-          ...dataAttributes,
-        },
+        attributes: { ...(leaf.attributes as any), ...dataAttributes },
         editor,
         node: leaf,
         plugin,
@@ -51,10 +48,7 @@ export const pipeRenderLeafStatic = (
   {
     components,
     renderLeaf: renderLeafProp,
-  }: {
-    components: NodeComponents;
-    renderLeaf?: SlateRenderLeaf;
-  }
+  }: { components: NodeComponents; renderLeaf?: SlateRenderLeaf }
 ): SlateRenderLeaf => {
   const renderLeafs: SlateRenderLeaf[] = [];
 
