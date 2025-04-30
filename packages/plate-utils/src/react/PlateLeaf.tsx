@@ -7,7 +7,7 @@ import {
   type PlateRenderLeafProps,
   omitPluginContext,
 } from '@udecode/plate-core/react';
-import { type TextProps, Text, useComposedRef } from '@udecode/react-utils';
+import { type TextProps, Text } from '@udecode/react-utils';
 import { clsx } from 'clsx';
 
 export type PlateLeafProps<
@@ -20,18 +20,19 @@ export type PlateLeafProps<
   TextProps;
 
 export const usePlateLeaf = (props: PlateLeafProps) => {
-  const { attributes, leaf, leafToAttributes, nodeProps, text, ...rootProps } =
+  const { leaf, leafToAttributes, nodeProps, text, ...rootProps } =
     omitPluginContext(props);
+
+  const className = clsx(props.className, nodeProps?.className);
 
   return {
     props: {
-      ...attributes,
       ...rootProps,
       ...nodeProps,
       ...leafToAttributes?.(leaf),
-      className: clsx(props.className, nodeProps?.className),
+      className: className || undefined,
     },
-    ref: useComposedRef(props.ref, (attributes as any).ref),
+    ref: props.ref,
   };
 };
 

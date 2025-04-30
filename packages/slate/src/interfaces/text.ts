@@ -18,9 +18,14 @@ import type { NodeProps, TNode } from './node';
  * Slate document along with any formatting properties. They are always leaf
  * nodes in the document tree as they cannot contain any children.
  */
-export type TText = {
-  text: string;
-} & UnknownObject;
+export type TText = { text: string } & UnknownObject;
+
+export type LeafPosition = {
+  end: number;
+  start: number;
+  isFirst?: true;
+  isLast?: true;
+};
 
 /** Text retrieval and check methods. */
 export const TextApi: {
@@ -28,7 +33,7 @@ export const TextApi: {
   decorations: <N extends TText>(
     node: TText,
     decorations: DecoratedRange[]
-  ) => N[];
+  ) => { leaf: N; position: LeafPosition }[];
   /** Check if two text nodes are equal. */
   equals: (text: TText, another: TText, options?: TextEqualsOptions) => boolean;
   /** Check if a value implements the `Text` interface. */
