@@ -12,7 +12,6 @@ import {
   BaseIndentListPlugin,
   INDENT_LIST_KEYS,
 } from '../BaseIndentListPlugin';
-import { getNextIndentList } from '../queries/getNextIndentList';
 import { getPreviousIndentList } from '../queries/getPreviousIndentList';
 
 export const getIndentListExpectedListStart = (
@@ -57,34 +56,24 @@ export const normalizeIndentListStart = <
 
     if (!listStyleType) return;
 
-    let normalized: boolean | undefined = false;
-
     const prevEntry = getPreviousIndentList(editor, entry, options);
     const expectedListStart = getIndentListExpectedListStart(entry, prevEntry);
 
     if (isDefined(listStart) && expectedListStart === 1) {
       editor.tf.unsetNodes(INDENT_LIST_KEYS.listStart, { at: path });
 
-      normalized = true;
-    } else if (listStart !== expectedListStart && expectedListStart > 1) {
+      return true;
+    }
+
+    if (listStart !== expectedListStart && expectedListStart > 1) {
       editor.tf.setNodes(
         { [INDENT_LIST_KEYS.listStart]: expectedListStart },
         { at: path }
       );
 
-      normalized = true;
+      return true;
     }
 
-    const nextEntry = getNextIndentList(editor, entry, options);
-
-    /**
-     * If the current entry was normalized, mark the next as dirty so it will be
-     * normalized too.
-     */
-    if (normalized && nextEntry) {
-      // editor.tf.makeNodesDirty({ at: nextEntry[1] });
-    }
-
-    return normalized;
+    return false;
   });
 };

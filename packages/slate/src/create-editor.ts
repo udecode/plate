@@ -106,7 +106,6 @@ import { unhangRange } from './internal/editor/unhangRange';
 import { withoutNormalizing } from './internal/editor/withoutNormalizing';
 import { addMarks } from './internal/transforms-extension/addMarks';
 import { duplicateNodes } from './internal/transforms-extension/duplicateNodes';
-import { makeNodesDirty } from './internal/transforms-extension/makeNodesDirty';
 import { removeMarks } from './internal/transforms-extension/removeMarks';
 import { replaceNodes } from './internal/transforms-extension/replaceNodes';
 import { reset } from './internal/transforms-extension/reset';
@@ -329,7 +328,6 @@ export const createEditor = <V extends Value>({
     deselectDOM: bindFirst(deselectDOM, editor),
     duplicateNodes: bindFirst(duplicateNodes, editor),
     focus: bindFirst(focus, editor),
-    makeNodesDirty: bindFirst(makeNodesDirty, editor),
     removeMarks: bindFirst(removeMarks, editor as any),
     replaceNodes: bindFirst(replaceNodes, editor) as any,
     reset: bindFirst(reset, editor),

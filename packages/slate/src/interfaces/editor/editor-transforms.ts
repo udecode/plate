@@ -195,8 +195,6 @@ export type EditorTransforms<V extends Value = Value> = {
    * selection.
    */
   liftNodes: (options?: LiftNodesOptions<V>) => void;
-  /** Add nodes to the list of dirty paths so that they will be normalized. */
-  makeNodesDirty: (options?: MakeNodesDirtyOptions) => void;
   /**
    * Merge a node at the specified location with the previous node at the same
    * depth. If no location is specified, use the selection. Resulting empty
@@ -437,8 +435,6 @@ export type InsertTextOptions = {
 export type LiftNodesOptions<V extends Value = Value> = QueryOptions<V> &
   QueryMode &
   QueryVoids;
-
-export type MakeNodesDirtyOptions = QueryAt;
 
 export type MergeNodesOptions<V extends Value, E extends Editor = Editor> = {
   hanging?: boolean;
