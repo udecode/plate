@@ -1,35 +1,33 @@
 import React from 'react';
 
-import type { DecoratedRange, TText } from '@udecode/slate';
+import type { TText } from '@udecode/slate';
 
 import clsx from 'clsx';
 
 import type { AnySlatePlugin } from '../../plugin';
-import type { SlateRenderLeafProps } from '../types';
+import type { SlateRenderTextProps } from '../types';
 
 import { omitPluginContext } from '../../utils';
 
-export type SlateLeafProps<
+export type SlateTextProps<
   T extends TText = TText,
   P extends AnySlatePlugin = AnySlatePlugin,
 > = {
-  decorations?: DecoratedRange[];
-  /** Get HTML attributes from Slate leaf. Alternative to `PlatePlugin.props`. */
-  leafToAttributes?: (leaf: T) => any;
-} & SlateRenderLeafProps<T, P> &
+  /** Get HTML attributes from Slate text. */
+  textToAttributes?: (text: T) => any;
+} & SlateRenderTextProps<T, P> &
   React.ComponentProps<'span'> & {
     as?: React.ElementType;
   };
 
-export function SlateLeaf(props: SlateLeafProps) {
+export function SlateText(props: SlateTextProps) {
   const {
     as,
     attributes,
-    leaf,
-    leafPosition,
-    leafToAttributes,
+    children,
     nodeProps,
     text,
+    textToAttributes,
     ...rest
   } = omitPluginContext(props);
 
@@ -39,11 +37,11 @@ export function SlateLeaf(props: SlateLeafProps) {
     ...attributes,
     ...rest,
     ...nodeProps,
-    ...leafToAttributes?.(leaf),
+    ...textToAttributes?.(text),
     className: className || undefined,
   };
 
-  const Leaf = (as ?? 'span') as any;
+  const Text = (as ?? 'span') as any;
 
-  return <Leaf {...rootProps} />;
+  return <Text {...rootProps}>{children}</Text>;
 }

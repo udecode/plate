@@ -1,7 +1,10 @@
 import React from 'react';
 
+import clsx from 'clsx';
+
 import type { EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
+import type { AnyEditorPlatePlugin } from '../plugin';
 
 import { DefaultLeaf } from '../components';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -13,10 +16,18 @@ export const pipeRenderLeaf = (
   renderLeafProp?: EditableProps['renderLeaf']
 ): EditableProps['renderLeaf'] => {
   const renderLeafs: RenderLeaf[] = [];
+  const leafPropsPlugins: AnyEditorPlatePlugin[] = [];
 
   editor.pluginList.forEach((plugin) => {
-    if (plugin.node.isLeaf && plugin.key) {
+    if (
+      plugin.node.isLeaf &&
+      (plugin.node.isDecoration === true || plugin.render.leaf)
+    ) {
       renderLeafs.push(pluginRenderLeaf(editor, plugin));
+    }
+
+    if (plugin.node.leafProps) {
+      leafPropsPlugins.push(plugin);
     }
   });
 
@@ -26,6 +37,27 @@ export const pipeRenderLeaf = (
 
       if (newChildren !== undefined) {
         props.children = newChildren;
+      }
+    });
+
+    leafPropsPlugins.forEach((plugin) => {
+      if (props.leaf[plugin.node.type ?? plugin.key]) {
+        const pluginLeafProps =
+          typeof plugin.node.leafProps === 'function'
+            ? plugin.node.leafProps(props as any)
+            : (plugin.node.leafProps ?? {});
+
+        if (pluginLeafProps.className) {
+          pluginLeafProps.className = clsx(
+            (props as any).className,
+            pluginLeafProps.className
+          );
+        }
+
+        props = {
+          ...props,
+          ...pluginLeafProps,
+        };
       }
     });
 

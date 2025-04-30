@@ -8,6 +8,7 @@ export * from './PlatePlugin';
 export * from './PlateRenderElementProps';
 export * from './PlateRenderLeafProps';
 export * from './PlateRenderNodeProps';
+export * from './PlateRenderTextProps';
 export * from './createPlatePlugin';
 export * from './getEditorPlugin';
 export * from './getPlugin';

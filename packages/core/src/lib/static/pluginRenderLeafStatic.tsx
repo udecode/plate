@@ -1,14 +1,13 @@
 import React from 'react';
 
+import clsx from 'clsx';
+
 import type { SlateEditor } from '../editor';
 import type { NodeComponents, SlatePlugin } from '../plugin';
 import type { RenderLeafProps } from '../types/RenderLeafProps';
 
 import { SlateLeaf } from './components/SlateLeaf';
-import {
-  getLeafDataAttributes,
-  getPluginDataAttributes,
-} from './utils/getNodeDataAttributes';
+import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type SlateRenderLeaf = (
@@ -24,12 +23,10 @@ export const pluginRenderLeafStatic = (
     const { children, leaf } = nodeProps;
 
     if (leaf[plugin.node.type ?? plugin.key]) {
-      const Leaf = components?.[plugin.key] ?? SlateLeaf;
-
-      const dataAttributes = getPluginDataAttributes(editor, plugin, leaf);
+      const Leaf = plugin.render.leaf ?? components?.[plugin.key] ?? SlateLeaf;
 
       const ctxProps = getRenderNodeStaticProps({
-        attributes: { ...(leaf.attributes as any), ...dataAttributes },
+        attributes: { ...(leaf.attributes as any) },
         editor,
         node: leaf,
         plugin,
@@ -51,35 +48,65 @@ export const pipeRenderLeafStatic = (
   }: { components: NodeComponents; renderLeaf?: SlateRenderLeaf }
 ): SlateRenderLeaf => {
   const renderLeafs: SlateRenderLeaf[] = [];
+  const leafPropsPlugins: SlatePlugin[] = [];
 
   editor.pluginList.forEach((plugin) => {
-    if (plugin.node.isLeaf && plugin.key) {
+    if (
+      plugin.node.isLeaf &&
+      (plugin.node.isDecoration === true || plugin.render.leaf)
+    ) {
       renderLeafs.push(pluginRenderLeafStatic(editor, plugin, components));
+    }
+
+    if (plugin.node.leafProps) {
+      leafPropsPlugins.push(plugin);
     }
   });
 
-  return function render(props) {
-    renderLeafs.forEach((renderLeaf) => {
-      const newChildren = renderLeaf(props as any);
+  return function render({ attributes, ...props }) {
+    renderLeafs.forEach((render) => {
+      const newChildren = render(props as any);
 
       if (newChildren !== undefined) {
         props.children = newChildren;
       }
     });
 
+    leafPropsPlugins.forEach((plugin) => {
+      if (props.leaf[plugin.node.type ?? plugin.key]) {
+        const pluginLeafProps =
+          typeof plugin.node.leafProps === 'function'
+            ? plugin.node.leafProps(props as any)
+            : (plugin.node.leafProps ?? {});
+
+        if (pluginLeafProps.className) {
+          pluginLeafProps.className = clsx(
+            (props as any).className,
+            pluginLeafProps.className
+          );
+        }
+
+        props = {
+          ...props,
+          ...pluginLeafProps,
+        };
+      }
+    });
+
     if (renderLeafProp) {
-      return renderLeafProp(props);
+      return renderLeafProp({ attributes, ...props });
     }
 
     const ctxProps = getRenderNodeStaticProps({
-      attributes: props.attributes as any,
+      attributes: attributes as any,
       editor,
-      props: props as any,
+      props: { ...attributes, ...props } as any,
     }) as any;
 
     const leaf = ctxProps.leaf;
-
-    const dataAttributes = getLeafDataAttributes(leaf);
+    const dataAttributes = getNodeDataAttributes(editor, leaf, {
+      isLeaf: true,
+    });
 
     return <SlateLeaf {...ctxProps} {...dataAttributes} />;
   };

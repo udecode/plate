@@ -25,6 +25,7 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
   readOnly: boolean;
   renderElement: NonNullable<EditableProps['renderElement']>;
   renderLeaf: NonNullable<EditableProps['renderLeaf']>;
+  renderText: NonNullable<EditableProps['renderText']>;
   /**
    * Version incremented when calling `redecorate`. This is a dependency of the
    * `decorate` function.

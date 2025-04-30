@@ -47,9 +47,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
           !isSlateEditor(leaf.parentElement)
         ) {
           if (leaf.classList.contains(`slate-${type}`)) {
-            const suggestionEntry = api.suggestion!.node({
-              isText: true,
-            });
+            const suggestionEntry = api.suggestion!.node({ isText: true });
 
             if (!suggestionEntry) {
               unsetActiveSuggestion();
