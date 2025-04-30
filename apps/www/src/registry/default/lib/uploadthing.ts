@@ -14,7 +14,7 @@ export interface UploadedFile<T = unknown> extends ClientUploadedFileData<T> {}
 
 interface UseUploadFileProps
   extends Pick<
-    UploadFilesOptions<OurFileRouter, keyof OurFileRouter>,
+    UploadFilesOptions<OurFileRouter['editorUploader']>,
     'headers' | 'onUploadBegin' | 'onUploadProgress' | 'skipPolling'
   > {
   onUploadComplete?: (file: UploadedFile) => void;
