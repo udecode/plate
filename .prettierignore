@@ -8,3 +8,4 @@
 **/.contentlayer
 **/__registry__
 **/og
+apps/www/src/styles/globals.css

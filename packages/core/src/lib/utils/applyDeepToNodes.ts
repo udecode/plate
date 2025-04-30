@@ -34,7 +34,7 @@ export const applyDeepToNodes = <N extends TNode>({
   const entry: NodeEntry<N> = [node, path];
 
   if (queryNode<N>(entry, query)) {
-    if (source instanceof Function) {
+    if (typeof source === 'function') {
       apply(node, source());
     } else {
       apply(node, source);
