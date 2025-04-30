@@ -3,3 +3,4 @@
 ---
 
 - Remove `className` if empty
+- Add `PlateText` component
