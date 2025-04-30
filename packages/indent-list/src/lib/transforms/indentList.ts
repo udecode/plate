@@ -12,35 +12,19 @@ export interface IndentListOptions {
   at?: TLocation;
   listRestart?: number;
   listRestartPolite?: number;
-  listStart?: number;
   listStyleType?: ListStyleType | string;
 }
 
 /** Increase the indentation of the selected blocks. */
 export const indentList = (
   editor: SlateEditor,
-  {
-    listStart,
-    listStyleType = ListStyleType.Disc,
-    ...options
-  }: IndentListOptions = {}
+  { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions = {}
 ) => {
   setIndent(editor, {
     offset: 1,
-    setNodesProps: () => {
-      const props = {
-        [BaseIndentListPlugin.key]: listStyleType,
-      };
-
-      if (listStart) {
-        return {
-          [INDENT_LIST_KEYS.listStart]: listStart,
-          ...props,
-        };
-      }
-
-      return props;
-    },
+    setNodesProps: () => ({
+      [BaseIndentListPlugin.key]: listStyleType,
+    }),
     ...options,
   });
 };
