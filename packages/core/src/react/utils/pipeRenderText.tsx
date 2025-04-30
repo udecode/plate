@@ -38,8 +38,6 @@ export const pipeRenderText = (
     });
 
     textPropsPlugins.forEach((plugin) => {
-      console.log(plugin.node.type, plugin.key);
-
       if (props.text[plugin.node.type ?? plugin.key]) {
         const pluginTextProps =
           typeof plugin.node.textProps === 'function'
