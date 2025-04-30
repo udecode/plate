@@ -41,7 +41,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@radix-ui/react-slot": "^1.1.1",
+    "@radix-ui/react-slot": "^1.2.0",
     "@udecode/utils": "47.2.7",
     "clsx": "^2.1.1"
   },
