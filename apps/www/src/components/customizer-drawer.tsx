@@ -7,14 +7,10 @@ import * as SheetPrimitive from '@radix-ui/react-dialog';
 import { useStoreValue } from '@udecode/plate/react';
 import { ChevronsRight } from 'lucide-react';
 
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useViewport } from '@/hooks/use-viewport';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { Button } from '@/registry/default/plate-ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/registry/default/plate-ui/dialog';
 
 import { SettingsStore } from './context/settings-store';
 import { CustomizerTabs } from './customizer-tabs';

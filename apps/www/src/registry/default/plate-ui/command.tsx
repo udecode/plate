@@ -20,7 +20,8 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from './dialog';
+} from '@/components/ui/dialog';
+
 import { inputVariants } from './input';
 
 const commandVariants = cva(

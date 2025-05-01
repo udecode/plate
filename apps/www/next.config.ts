@@ -31,10 +31,11 @@ const nextConfig = async (phase: string) => {
       '/docs/*': ['./src/registry/**/*'],
       '/docs/examples/slate-to-html': ['./public/tailwind.css'],
     },
-
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
+
+    staticPageGenerationTimeout: 1200,
 
     // typescript: {
     //   ignoreBuildErrors: true,
@@ -43,7 +44,15 @@ const nextConfig = async (phase: string) => {
     //   ignoreDuringBuilds: true,
     // },
 
-    staticPageGenerationTimeout: 1200,
+    async redirects() {
+      return [
+        {
+          destination: '/r/:path.json',
+          permanent: true,
+          source: '/r/:path([^.]*)',
+        },
+      ];
+    },
 
     rewrites: async () => {
       return [
