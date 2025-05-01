@@ -39,7 +39,7 @@ export type AIChatPluginConfig = PluginConfig<
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
     chat: Partial<UseChatHelpers>;
-    /** @experimental maybe remove without notice */
+    /** @deprecated Use api.aiChat.node({streaming:true}) instead */
     experimental_lastTextId: string | null;
     /**
      * Specifies how the assistant message is handled:
@@ -137,8 +137,11 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         if (streaming) {
           if (!getOption('streaming')) return;
 
+          const path = getOption('_blockPath');
+          if (!path) return;
+
           return editor.api.node({
-            at: [],
+            at: path,
             mode: 'lowest',
             reverse: true,
             match: (t) => !!t.ai,
