@@ -12,10 +12,5 @@ export const escapeInput = (data: string) => {
     res = data.replace('$$', String.raw`\$\$`);
   }
 
-  // test case: should not deserialize incomplete html
-  if (data.startsWith('<!')) {
-    res = data.replace('<!', String.raw`\<!`);
-  }
-
   return res;
 };
