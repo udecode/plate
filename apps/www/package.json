@@ -9,7 +9,7 @@
     "build": "yarn prebuild && yarn build:registry && next build",
     "build:contentlayer": "contentlayer2 build",
     "build:registry": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
-    "build:tw": "yarn tailwindcss -i ./src/styles/globals.css -o ./public/tailwind.css --minify",
+    "build:tw": "yarn tailwindcss -i ./src/app/globals.css -o ./public/tailwind.css --minify",
     "dev": "concurrently \"contentlayer2 dev\" \"next dev --turbo\"",
     "lint": "yarn p:lint",
     "lint:debug": "TIMING=1 DEBUG=eslint:cli-engine yarn lint:fix",

@@ -12,7 +12,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { META_THEME_COLORS, siteConfig } from '@/config/site';
 import { fontMono, fontSans } from '@/lib/fonts';
 
-import '@/styles/globals.css';
+import '@/app/globals.css';
 
 export const metadata: Metadata = {
   authors: [
@@ -96,7 +96,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body
         className={cn(
-          'min-h-svh bg-background font-sans antialiased',
+          'bg-background min-h-svh font-sans antialiased',
           fontSans.variable,
           fontMono.variable
         )}
@@ -105,7 +105,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <NuqsAdapter>
           <Providers>
             <div vaul-drawer-wrapper="">
-              <div className="relative flex min-h-svh flex-col bg-background">
+              <div className="bg-background relative flex min-h-svh flex-col">
                 {children}
               </div>
             </div>
