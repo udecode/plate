@@ -1,5 +1,13 @@
 # @udecode/plate-indent-list
 
+## 47.4.0
+
+### Minor Changes
+
+- [#4255](https://github.com/udecode/plate/pull/4255) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Fix: `listRestart` did not take effect for the first item in a list
+  - Add `listRestartPolite`, which acts like `listRestart` but only takes effect when applied to the first item in a list
+
 ## 46.0.7
 
 ### Patch Changes
