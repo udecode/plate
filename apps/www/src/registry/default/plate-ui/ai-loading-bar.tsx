@@ -1,11 +1,8 @@
 'use client';
+
 import { cn } from '@udecode/cn';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
-import {
-  useEditorPlugin,
-  useHotkeys,
-  usePluginOption,
-} from '@udecode/plate/react';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 import { Pause } from 'lucide-react';
 
 import { useChat } from '@/registry/default/components/editor/use-chat';
@@ -16,20 +13,13 @@ export const AILoadingBar = () => {
   const chat = useChat();
   const mode = usePluginOption(AIChatPlugin, 'mode');
 
-  const streaming = usePluginOption(AIChatPlugin, 'streaming');
-
   const { status } = chat;
 
   const { api } = useEditorPlugin(AIChatPlugin);
 
-  const isLoading =
-    (status === 'streaming' && streaming) || status === 'submitted';
+  const isLoading = status === 'streaming' || status === 'submitted';
 
-  const visible = (isLoading && mode === 'insert') || streaming;
-
-  useHotkeys('esc', () => {
-    api.aiChat.stop();
-  });
+  const visible = isLoading && mode === 'insert';
 
   if (!visible) return null;
 
