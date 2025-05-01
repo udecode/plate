@@ -1,5 +1,11 @@
 # @udecode/react-utils
 
+## 47.3.1
+
+### Patch Changes
+
+- [#4267](https://github.com/udecode/plate/pull/4267) by [@zbeyens](https://github.com/zbeyens) – Update deps
+
 ## 47.2.7
 
 ## 46.0.9

@@ -1,5 +1,11 @@
 # @udecode/plate-docx-serializer
 
+## 47.3.1
+
+### Patch Changes
+
+- [#4267](https://github.com/udecode/plate/pull/4267) by [@zbeyens](https://github.com/zbeyens) – Update deps
+
 ## 47.0.2
 
 ## 47.0.0

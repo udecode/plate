@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 47.3.1
+
+### Patch Changes
+
+- [#4267](https://github.com/udecode/plate/pull/4267) by [@zbeyens](https://github.com/zbeyens) – Update `slate` to `0.114.0` and `slate-react` to `0.114.1`
+
 ## 47.2.7
 
 ## 47.2.3
