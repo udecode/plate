@@ -4,6 +4,7 @@ import type { DOMRange, Editor, NodeEntry, TRange } from '@udecode/slate';
 
 import type { RenderElementFn } from './RenderElementProps';
 import type { RenderLeafFn } from './RenderLeafProps';
+import type { RenderTextFn } from './RenderTextProps';
 
 /** `EditableProps` are passed to the <Editable> component. */
 export type EditableProps = {
@@ -13,6 +14,7 @@ export type EditableProps = {
   readOnly?: boolean;
   renderElement?: RenderElementFn;
   renderLeaf?: RenderLeafFn;
+  renderText?: RenderTextFn;
   role?: string;
   style?: React.CSSProperties;
   decorate?: (entry: NodeEntry) => TRange[];

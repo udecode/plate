@@ -5,3 +5,4 @@
 export * from './PlateStatic';
 export * from './SlateElement';
 export * from './SlateLeaf';
+export * from './SlateText';

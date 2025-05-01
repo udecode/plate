@@ -4,30 +4,31 @@ import type { TText } from '@udecode/slate';
 
 import {
   type AnyPlatePlugin,
-  type PlateRenderLeafProps,
+  type PlateRenderTextProps,
   omitPluginContext,
 } from '@udecode/plate-core/react';
 import { type TextProps, Text } from '@udecode/react-utils';
 import { clsx } from 'clsx';
 
-export type PlateLeafProps<
+export type PlateTextProps<
   T extends TText = TText,
   P extends AnyPlatePlugin = AnyPlatePlugin,
 > = {
-  /** Get HTML attributes from Slate leaf. Alternative to `PlatePlugin.props`. */
-  leafToAttributes?: (leaf: T) => any;
-} & PlateRenderLeafProps<T, P> &
+  /** Get HTML attributes from Slate text. Alternative to `PlatePlugin.props`. */
+  textToAttributes?: (text: T) => any;
+} & PlateRenderTextProps<T, P> &
   TextProps;
 
-export const usePlateLeaf = (props: PlateLeafProps) => {
+export const usePlateText = (props: PlateTextProps) => {
   const {
     leaf,
     leafPosition,
     leafToAttributes,
     nodeProps,
     text,
+    textToAttributes,
     ...rootProps
-  } = omitPluginContext(props);
+  } = omitPluginContext(props) as any;
 
   const className = clsx(props.className, nodeProps?.className);
 
@@ -35,27 +36,27 @@ export const usePlateLeaf = (props: PlateLeafProps) => {
     props: {
       ...rootProps,
       ...nodeProps,
-      ...leafToAttributes?.(leaf),
+      ...textToAttributes?.(text),
       className: className || undefined,
     },
     ref: props.ref,
   };
 };
 
-/** Headless leaf component. */
-const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
-  (props: PlateLeafProps, ref) => {
-    const { props: rootProps, ref: rootRef } = usePlateLeaf({ ...props, ref });
+/** Headless text component. */
+const PlateText = React.forwardRef<HTMLSpanElement, PlateTextProps>(
+  (props: PlateTextProps, ref) => {
+    const { props: rootProps, ref: rootRef } = usePlateText({ ...props, ref });
 
     return <Text {...rootProps} ref={rootRef} />;
   }
 ) as (<N extends TText = TText, P extends AnyPlatePlugin = AnyPlatePlugin>({
   className,
   ...props
-}: PlateLeafProps<N, P> &
+}: PlateTextProps<N, P> &
   React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>) & {
   displayName?: string;
 };
-PlateLeaf.displayName = 'PlateLeaf';
+PlateText.displayName = 'PlateText';
 
-export { PlateLeaf };
+export { PlateText };

@@ -35,9 +35,7 @@ describe('Plate', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => useEditorRef(), {
-          wrapper,
-        });
+        const { result } = renderHook(() => useEditorRef(), { wrapper });
 
         expect(result.current).toBe(editor);
       });
@@ -54,9 +52,7 @@ describe('Plate', () => {
           </Plate>
         );
 
-        const { result } = renderHook(() => useEditorRef(), {
-          wrapper,
-        });
+        const { result } = renderHook(() => useEditorRef(), { wrapper });
 
         expect(result.current.id).toBe('test2');
       });
@@ -97,9 +93,7 @@ describe('Plate', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => useEditorValue(), {
-          wrapper,
-        });
+        const { result } = renderHook(() => useEditorValue(), { wrapper });
 
         expect(result.current).toBe(initialValue);
       });
@@ -113,9 +107,7 @@ describe('Plate', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => useEditorValue(), {
-          wrapper,
-        });
+        const { result } = renderHook(() => useEditorValue(), { wrapper });
 
         expect(result.current).toBe(editor.children);
       });
@@ -128,9 +120,7 @@ describe('Plate', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => useEditorValue(), {
-          wrapper,
-        });
+        const { result } = renderHook(() => useEditorValue(), { wrapper });
 
         expect(result.current).toEqual(editor.api.create.value());
       });
@@ -149,21 +139,14 @@ describe('Plate', () => {
         );
         const { rerender, result } = renderHook(
           () => useEditorRef().pluginList,
-          {
-            initialProps: {
-              editor,
-            },
-            wrapper,
-          }
+          { initialProps: { editor }, wrapper }
         );
 
         expect(result.current.at(-1)!.key).toBe('test');
 
         editor.pluginList = [createPlatePlugin({ key: 'test2' }) as any];
 
-        rerender({
-          editor,
-        });
+        rerender({ editor });
 
         expect(result.current.at(-1)!.key).toBe('test2');
       });
@@ -197,10 +180,7 @@ describe('Plate', () => {
       );
       const { rerender, result } = renderHook(
         ({ editor }) => useEditorRef(editor.id).pluginList,
-        {
-          initialProps: { editor: editor1 },
-          wrapper,
-        }
+        { initialProps: { editor: editor1 }, wrapper }
       );
 
       expect(result.current.at(-1)!.key).toBe('test1');
@@ -219,9 +199,7 @@ describe('Plate', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => useEditorRef().id, {
-          wrapper,
-        });
+        const { result } = renderHook(() => useEditorRef().id, { wrapper });
 
         expect(result.current).toBe('test');
       });
@@ -234,9 +212,7 @@ describe('Plate', () => {
             <Plate editor={createPlateEditor({ id: 'test' })}>{children}</Plate>
           </Plate>
         );
-        const { result } = renderHook(() => useEditorRef().id, {
-          wrapper,
-        });
+        const { result } = renderHook(() => useEditorRef().id, { wrapper });
 
         expect(result.current).toBe('test');
       });
@@ -264,9 +240,7 @@ describe('Plate', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => useEditorRef().id, {
-          wrapper,
-        });
+        const { result } = renderHook(() => useEditorRef().id, { wrapper });
 
         expect(result.current).toBe('test');
       });
@@ -322,9 +296,7 @@ describe('Plate', () => {
             const wrapper = ({ children }: any) => (
               <PlateController
                 activeId="test"
-                editorStores={{
-                  test: EXPECTED_STORE,
-                }}
+                editorStores={{ test: EXPECTED_STORE }}
               >
                 {children}
               </PlateController>
@@ -337,12 +309,7 @@ describe('Plate', () => {
         describe('when PlateController returns null', () => {
           it('returns the fallback store', () => {
             const wrapper = ({ children }: any) => (
-              <PlateController
-                activeId="test"
-                editorStores={{
-                  test: null,
-                }}
-              >
+              <PlateController activeId="test" editorStores={{ test: null }}>
                 {children}
               </PlateController>
             );
@@ -372,14 +339,14 @@ describe('Plate', () => {
 
       const plugins: SlatePlugins = memoize(
         (): SlatePlugins => [
-          createSlatePlugin({
-            key: 'a',
-          }).extendEditorTransforms(({ editor, tf: { normalizeNode } }) => ({
-            normalizeNode(node) {
-              fn(editor, node);
-              normalizeNode(node);
-            },
-          })),
+          createSlatePlugin({ key: 'a' }).extendEditorTransforms(
+            ({ editor, tf: { normalizeNode } }) => ({
+              normalizeNode(node) {
+                fn(editor, node);
+                normalizeNode(node);
+              },
+            })
+          ),
         ]
       )();
 
@@ -415,10 +382,7 @@ describe('Plate', () => {
         }),
       ];
 
-      const editor = createPlateEditor({
-        plugins,
-        value: [{} as any],
-      });
+      const editor = createPlateEditor({ plugins, value: [{} as any] });
 
       expect(() =>
         render(
@@ -563,7 +527,7 @@ describe('Plate', () => {
       expect(Object.keys(paragraphEl.dataset)).toEqual(['slateNode', 'testid']);
 
       const boldEl = getByTestId('bold');
-      expect(Object.keys(boldEl.dataset)).toEqual(['slateLeaf', 'testid']);
+      expect(Object.keys(boldEl.dataset)).toEqual(['testid']);
     });
 
     it('renders allowed user-defined attributes', () => {
@@ -580,7 +544,6 @@ describe('Plate', () => {
 
       const boldEl = getByTestId('bold');
       expect(Object.keys(boldEl.dataset)).toEqual([
-        'slateLeaf',
         'myBoldAttribute',
         'testid',
       ]);

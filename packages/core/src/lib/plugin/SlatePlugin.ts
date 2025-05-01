@@ -11,7 +11,11 @@ import type {
 import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type { SlateEditor } from '../editor';
-import type { SlateRenderElementProps, SlateRenderLeafProps } from '../static';
+import type {
+  SlateRenderElementProps,
+  SlateRenderLeafProps,
+  SlateRenderTextProps,
+} from '../static';
 import type {
   AnyPluginConfig,
   BaseDeserializer,
@@ -114,10 +118,7 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
      */
     disableDefaultNodeProps?: boolean;
     parse?: (
-      options: SlatePluginContext<C> & {
-        element: HTMLElement;
-        node: AnyObject;
-      }
+      options: SlatePluginContext<C> & { element: HTMLElement; node: AnyObject }
     ) => Partial<Descendant> | undefined | void;
     query?: (
       options: SlatePluginContext<C> & { element: HTMLElement }
@@ -139,21 +140,19 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
   BaseInjectProps & {
     query?: (
       options: NonNullable<NonNullable<InjectNodeProps>> &
-        SlatePluginContext<C> & {
-          nodeProps: GetInjectNodePropsOptions;
-        }
+        SlatePluginContext<C> & { nodeProps: GetInjectNodePropsOptions }
     ) => boolean;
     transformClassName?: (options: TransformOptions<C>) => any;
     transformNodeValue?: (options: TransformOptions<C>) => any;
     transformProps?: (
-      options: TransformOptions<C> & {
-        props: GetInjectNodePropsReturnType;
-      }
+      options: TransformOptions<C> & { props: GetInjectNodePropsReturnType }
     ) => AnyObject | undefined;
     transformStyle?: (options: TransformOptions<C>) => CSSStyleDeclaration;
   };
 
-// -----------------------------------------------------------------------------
+export type LeafStaticProps<C extends AnyPluginConfig = PluginConfig> =
+  | ((props: SlateRenderLeafProps<TText, C>) => AnyObject | undefined)
+  | AnyObject;
 
 export type NodeStaticProps<C extends AnyPluginConfig = PluginConfig> =
   | ((
@@ -234,7 +233,10 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   ) => Descendant[];
 };
 
-// -----------------------------------------------------------------------------
+export type PartialEditorPlugin<C extends AnyPluginConfig = PluginConfig> =
+  Omit<Partial<EditorPlugin<C>>, 'node'> & {
+    node?: Partial<EditorPlugin<C>['node']>;
+  };
 
 export type RenderStaticNodeWrapper<C extends AnyPluginConfig = PluginConfig> =
   (props: RenderStaticNodeWrapperProps<C>) => RenderStaticNodeWrapperFunction;
@@ -271,16 +273,21 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       handlers: Nullable<{}>;
       inject: Nullable<{
         nodeProps?: InjectNodeProps<WithAnyKey<C>>;
-        plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
+        plugins?: Record<string, PartialEditorPlugin<AnyPluginConfig>>;
         targetPluginToInject?: (
           ctx: SlatePluginContext<C> & { targetPlugin: string }
         ) => Partial<SlatePlugin<AnyPluginConfig>>;
       }>;
       node: {
+        /** Override `data-slate-leaf` element attributes */
+        leafProps?: LeafStaticProps<WithAnyKey<C>>;
+        /** Override node attributes */
         props?: NodeStaticProps<WithAnyKey<C>>;
+        /** Override `data-slate-node="text"` element attributes */
+        textProps?: TextStaticProps<WithAnyKey<C>>;
       };
       override: {
-        plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
+        plugins?: Record<string, PartialEditorPlugin<AnyPluginConfig>>;
       };
       parser: Nullable<Parser<WithAnyKey<C>>>;
       parsers:
@@ -319,7 +326,6 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * in the wrapper function. It is not equivalent to a React component.
          */
         belowNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
-        node?: React.FC;
         /**
          * Renders a component after the `Editable` component. This is the last
          * render position within the editor structure.
@@ -355,10 +361,7 @@ export type SlatePluginConfig<
 >;
 
 export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> =
-  BasePluginContext<C> & {
-    editor: SlateEditor;
-    plugin: EditorPlugin<C>;
-  };
+  BasePluginContext<C> & { editor: SlateEditor; plugin: EditorPlugin<C> };
 
 export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __apiExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
@@ -469,9 +472,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           ...args: any[]
         ) => any
           ? (EA & InferApi<C>)[K]
-          : {
-              [N in keyof (EA & InferApi<C>)[K]]: (EA & InferApi<C>)[K][N];
-            };
+          : { [N in keyof (EA & InferApi<C>)[K]]: (EA & InferApi<C>)[K][N] };
       },
       InferTransforms<C>,
       InferSelectors<C>
@@ -560,6 +561,10 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
 };
 
 export type SlatePlugins = AnySlatePlugin[];
+
+export type TextStaticProps<C extends AnyPluginConfig = PluginConfig> =
+  | ((props: SlateRenderTextProps<TText, C>) => AnyObject | undefined)
+  | AnyObject;
 
 export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =
   BaseTransformOptions & SlatePluginContext<C>;

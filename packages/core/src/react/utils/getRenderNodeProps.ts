@@ -34,13 +34,19 @@ export const getRenderNodeProps = ({
 
   const { className } = props;
 
+  const pluginNodeProps = getPluginNodeProps({
+    attributes,
+    plugin: plugin as any,
+    props: nodeProps as any,
+  });
+
   nodeProps = {
-    ...getPluginNodeProps({
-      attributes,
-      plugin: plugin as any,
-      props: nodeProps as any,
-    }),
-    className: clsx(getSlateClass(plugin?.node.type), className),
+    ...pluginNodeProps,
+    className: clsx(
+      getSlateClass(plugin?.node.type),
+      pluginNodeProps.className,
+      className
+    ),
   };
 
   nodeProps = pipeInjectNodeProps(

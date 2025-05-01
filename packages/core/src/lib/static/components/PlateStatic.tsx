@@ -22,6 +22,7 @@ import type { SlateRenderElementProps } from '../types';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
+import { pipeRenderTextStatic } from '../pluginRenderTextStatic';
 import { pipeDecorate } from '../utils/pipeDecorate';
 
 function BaseElementStatic({
@@ -38,9 +39,7 @@ function BaseElementStatic({
   element: TElement;
   style?: React.CSSProperties;
 }) {
-  const renderElement = pipeRenderElementStatic(editor, {
-    components,
-  });
+  const renderElement = pipeRenderElementStatic(editor, { components });
 
   const attributes: SlateRenderElementProps['attributes'] = {
     'data-slate-node': 'element',
@@ -87,11 +86,7 @@ function BaseElementStatic({
 
   return (
     <React.Fragment>
-      {renderElement?.({
-        attributes,
-        children,
-        element,
-      })}
+      {renderElement?.({ attributes, children, element })}
     </React.Fragment>
   );
 }
@@ -109,43 +104,45 @@ function BaseLeafStatic({
   components,
   decorations,
   editor,
-  leaf = { text: '' },
+  text: text = { text: '' },
 }: {
   components: NodeComponents;
   decorations: DecoratedRange[];
   editor: SlateEditor;
-  leaf: TText;
+  text: TText;
 }) {
-  const renderLeaf = pipeRenderLeafStatic(editor, {
-    components,
+  const renderLeaf = pipeRenderLeafStatic(editor, { components });
+  const renderText = pipeRenderTextStatic(editor, { components });
+
+  const decoratedLeaves = TextApi.decorations(text, decorations);
+
+  const leafElements = decoratedLeaves.map(({ leaf, position }, index) => {
+    const leafElement = renderLeaf({
+      attributes: { 'data-slate-leaf': true },
+      children: (
+        <span data-slate-string={true}>
+          {leaf.text === '' ? '\uFEFF' : leaf.text}
+        </span>
+      ),
+      leaf: leaf as TText,
+      leafPosition: position,
+      text: leaf as TText,
+    });
+
+    return <React.Fragment key={index}>{leafElement}</React.Fragment>;
   });
 
-  const leaves = TextApi.decorations(leaf, decorations);
-
-  return (
-    <span data-slate-node="text">
-      {leaves.map((l, index) => {
-        const leafElement = renderLeaf!({
-          attributes: { 'data-slate-leaf': true },
-          children: (
-            <span data-slate-string={true}>
-              {l.text === '' ? '\uFEFF' : l.text}
-            </span>
-          ),
-          leaf: l as TText,
-          text: l as TText,
-        });
-
-        return <React.Fragment key={index}>{leafElement}</React.Fragment>;
-      })}
-    </span>
-  );
+  return renderText({
+    attributes: { 'data-slate-node': 'text' as const, ref: null },
+    children: leafElements,
+    text: text as TText,
+  });
 }
 
 export const LeafStatic = React.memo(BaseLeafStatic, (prev, next) => {
   return (
-    // prev.leaf === next.leaf &&
-    TextApi.equals(next.leaf, prev.leaf) &&
+    // prev.text === next.text &&
+    TextApi.equals(next.text, prev.text) &&
     isTextDecorationsEqual(next.decorations, prev.decorations)
   );
 });
@@ -200,7 +197,7 @@ function Children({
             components={components}
             decorations={ds}
             editor={editor}
-            leaf={child}
+            text={child}
           />
         );
       })}

@@ -14,6 +14,7 @@ import { DOM_HANDLERS } from '../utils/dom-attributes';
 import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
 import { pipeRenderLeaf } from '../utils/pipeRenderLeaf';
+import { pipeRenderText } from '../utils/pipeRenderText';
 
 export const useEditableProps = ({
   disabled,
@@ -30,6 +31,7 @@ export const useEditableProps = ({
   const storeDecorate = useAtomStoreValue(store, 'decorate');
   const storeRenderLeaf = useAtomStoreValue(store, 'renderLeaf');
   const storeRenderElement = useAtomStoreValue(store, 'renderElement');
+  const storeRenderText = useAtomStoreValue(store, 'renderText');
 
   const decorateMemo = React.useMemo(() => {
     return pipeDecorate(
@@ -55,18 +57,20 @@ export const useEditableProps = ({
     return pipeRenderLeaf(editor, storeRenderLeaf ?? editableProps?.renderLeaf);
   }, [editableProps?.renderLeaf, editor, storeRenderLeaf]);
 
+  const renderText = React.useMemo(() => {
+    return pipeRenderText(editor, storeRenderText ?? editableProps?.renderText);
+  }, [editableProps?.renderText, editor, storeRenderText]);
+
   const props: EditableProps = useDeepCompareMemo(() => {
     const _props: EditableProps = {
       decorate,
       renderElement,
       renderLeaf,
+      renderText,
     };
 
     DOM_HANDLERS.forEach((handlerKey) => {
-      const handler = pipeHandler(editor, {
-        editableProps,
-        handlerKey,
-      }) as any;
+      const handler = pipeHandler(editor, { editableProps, handlerKey }) as any;
 
       if (handler) {
         _props[handlerKey] = handler;
@@ -74,7 +78,7 @@ export const useEditableProps = ({
     });
 
     return _props;
-  }, [decorate, editableProps, renderElement, renderLeaf]);
+  }, [decorate, editableProps, renderElement, renderLeaf, renderText]);
 
   const readOnly = storeReadOnly || readOnlyProp || disabled;
 
@@ -84,6 +88,7 @@ export const useEditableProps = ({
         ...DOM_HANDLERS,
         'renderElement',
         'renderLeaf',
+        'renderText',
         'decorate',
       ]),
       ...props,

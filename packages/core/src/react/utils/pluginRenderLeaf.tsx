@@ -22,12 +22,12 @@ export const pluginRenderLeaf = (
 ): RenderLeaf =>
   function render(nodeProps) {
     const {
-      render: { node },
+      render: { leaf: leafComponent, node },
     } = plugin;
     const { children, leaf } = nodeProps;
 
     if (leaf[plugin.node.type ?? plugin.key]) {
-      const Leaf = node ?? DefaultLeaf;
+      const Leaf = leafComponent ?? node ?? DefaultLeaf;
 
       const ctxProps = getRenderNodeProps({
         attributes: leaf.attributes as any,

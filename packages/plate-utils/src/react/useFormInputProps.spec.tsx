@@ -16,7 +16,7 @@ describe('useFormInputProps', () => {
     expect(output.props).toBeDefined();
     expect(Object.keys(output.props)).toHaveLength(1);
     expect(output.props.onKeyDownCapture).toBeDefined();
-    expect(output.props.onKeyDownCapture instanceof Function).toBe(true);
+    expect(typeof output.props.onKeyDownCapture === 'function').toBe(true);
   });
 
   it('will call event.preventDefault if the key is enter, and only if the key is enter', () => {

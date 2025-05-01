@@ -12,8 +12,17 @@ type DefaultLeafProps = {
   React.HTMLAttributes<HTMLSpanElement>;
 
 const useDefaultLeaf = (props: DefaultLeafProps) => {
-  const { attributes, leaf, leafToAttributes, nodeProps, text, ...rootProps } =
-    omitPluginContext(props as any);
+  const {
+    attributes,
+    leaf,
+    leafPosition,
+    leafToAttributes,
+    nodeProps,
+    text,
+    ...rootProps
+  } = omitPluginContext(props as any);
+
+  const className = clsx(props.className, nodeProps?.className);
 
   return {
     props: {
@@ -21,7 +30,7 @@ const useDefaultLeaf = (props: DefaultLeafProps) => {
       ...rootProps,
       ...nodeProps,
       ...leafToAttributes?.(leaf),
-      className: clsx(props.className, nodeProps?.className),
+      className: className || undefined,
     },
   };
 };

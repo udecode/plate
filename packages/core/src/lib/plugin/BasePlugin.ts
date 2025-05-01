@@ -158,7 +158,19 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
      * render position in the editor structure.
      */
     aboveSlate?: React.FC<{ children: React.ReactNode }>;
-    /** @see {@link NodeComponent} */
+    /**
+     * Renders a component below leaf nodes when `isLeaf: true` and
+     * `isDecoration: false`. Use `render.node` instead when `isDecoration:
+     * true`.
+     */
+    leaf?: NodeComponent;
+    /**
+     * Renders a component for:
+     *
+     * - Elements nodes if `isElement: true`
+     * - Below text nodes if `isLeaf: true` and `isDecoration: false`
+     * - Below leaf if `isLeaf: true` and `isDecoration: true`
+     */
     node?: NodeComponent;
   }>;
   /** Selectors for the plugin. */
@@ -252,6 +264,13 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * @default [ ]
    */
   dangerouslyAllowAttributes?: string[];
+  /**
+   * Indicates if this plugin's nodes can be rendered as decorated leaf. Set to
+   * false to render node component only once per text node.
+   *
+   * @default true
+   */
+  isDecoration?: boolean;
   /**
    * Indicates if this plugin's nodes should be rendered as elements. Used by
    * Plate for {@link NodeComponent} rendering as elements.
@@ -355,10 +374,7 @@ export type NodeComponent<T = any> = React.FC<T>;
 
 export type NodeComponents = Record<string, NodeComponent>;
 
-export type ParserOptions = {
-  data: string;
-  dataTransfer: DataTransfer;
-};
+export type ParserOptions = { data: string; dataTransfer: DataTransfer };
 
 export type PluginConfig<
   K extends string = any,
@@ -366,13 +382,7 @@ export type PluginConfig<
   A = {},
   T = {},
   S = {},
-> = {
-  key: K;
-  api: A;
-  options: O;
-  selectors: S;
-  transforms: T;
-};
+> = { key: K; api: A; options: O; selectors: S; transforms: T };
 
 export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> = PluginConfig<
   any,

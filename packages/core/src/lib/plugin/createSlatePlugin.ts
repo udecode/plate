@@ -1,4 +1,4 @@
-import type { Modify } from '@udecode/utils';
+import { type Modify, isDefined } from '@udecode/utils';
 
 import type { SlateEditor } from '../editor/SlateEditor';
 import type { AnyPluginConfig, PluginConfig } from './BasePlugin';
@@ -21,9 +21,7 @@ type SlatePluginConfig<
   Partial<
     Modify<
       SlatePlugin<PluginConfig<K, O, A, T, S>>,
-      {
-        node?: Partial<SlatePlugin<PluginConfig<K, O, A, T, S>>['node']>;
-      }
+      { node?: Partial<SlatePlugin<PluginConfig<K, O, A, T, S>>['node']> }
     >
   >,
   keyof SlatePluginMethods | 'optionsStore'
@@ -70,9 +68,7 @@ type TSlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
  *
  *   const pluginWithNestedExtension = extendedPlugin.extendPlugin(
  *     nestedPlugin,
- *     {
- *       options: { nestedOption: true },
- *     }
+ *     { options: { nestedOption: true } }
  *   );
  *
  * @template K - The literal type of the plugin key.
@@ -141,6 +137,10 @@ export function createSlatePlugin<
     config
   ) as unknown as SlatePlugin<PluginConfig<K, O, A, T, S>>;
 
+  if (plugin.node.isLeaf && !isDefined(plugin.node.isDecoration)) {
+    plugin.node.isDecoration = true;
+  }
+
   plugin.configure = (config) => {
     const newPlugin = { ...plugin };
     newPlugin.__configuration = (ctx) =>
@@ -173,10 +173,7 @@ export function createSlatePlugin<
           if (result.found) {
             found = true;
 
-            return {
-              ...nestedPlugin,
-              plugins: result.plugins,
-            };
+            return { ...nestedPlugin, plugins: result.plugins };
           }
         }
 
@@ -302,10 +299,7 @@ export function createSlatePlugin<
           if (result.found) {
             found = true;
 
-            return {
-              ...nestedPlugin,
-              plugins: result.plugins,
-            };
+            return { ...nestedPlugin, plugins: result.plugins };
           }
         }
 

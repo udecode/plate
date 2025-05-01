@@ -103,6 +103,40 @@ Generic component for rendering a leaf.
 </APIProps>
 </API>
 
+### `<PlateText>`
+
+Generic component for rendering text.
+
+<API name="PlateText">
+<APIProps>
+  <APIItem name="className" type="string" optional>
+    The CSS class to apply to the component.
+  </APIItem>
+  <APIItem name="nodeProps" type="AnyObject" optional>
+    Additional props to pass to the component.
+  </APIItem>
+  <APIItem name="text" type="TText">
+    The text node.
+  </APIItem>
+  <APIItem name="attributes" type="object" optional>
+    Attributes of the text to be spread on the top-level element.
+  </APIItem>
+  <APIItem name="children" type="any">
+    Necessary for rendering the node children.
+  </APIItem>
+  <APIItem name="textToAttributes" type="(text: T) => any" optional>
+    Get HTML attributes from Slate text. An alternative to `PlatePlugin.props`.
+  </APIItem>
+  <APIItem name="as" type="React.ElementType" optional>
+    The component type to render as.
+    - **Default:** `'span'`
+  </APIItem>
+  <APIItem name="asChild" type="boolean" optional>
+    If true, merges its props onto its immediate child.
+  </APIItem>
+</APIProps>
+</API>
+
 ## Hooks
 
 ### `useEditorString`
