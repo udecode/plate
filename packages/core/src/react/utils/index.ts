@@ -9,5 +9,7 @@ export * from './pipeHandler';
 export * from './pipeOnChange';
 export * from './pipeRenderElement';
 export * from './pipeRenderLeaf';
+export * from './pipeRenderText';
 export * from './pluginRenderElement';
 export * from './pluginRenderLeaf';
+export * from './pluginRenderText';

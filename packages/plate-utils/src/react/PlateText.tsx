@@ -20,8 +20,15 @@ export type PlateTextProps<
   TextProps;
 
 export const usePlateText = (props: PlateTextProps) => {
-  const { nodeProps, text, textToAttributes, ...rootProps } =
-    omitPluginContext(props);
+  const {
+    leaf,
+    leafPosition,
+    leafToAttributes,
+    nodeProps,
+    text,
+    textToAttributes,
+    ...rootProps
+  } = omitPluginContext(props) as any;
 
   const className = clsx(props.className, nodeProps?.className);
 

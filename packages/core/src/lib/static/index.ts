@@ -5,6 +5,7 @@
 export * from './pipeRenderElementStatic';
 export * from './pluginRenderElementStatic';
 export * from './pluginRenderLeafStatic';
+export * from './pluginRenderTextStatic';
 export * from './serializeHtml';
 export * from './types';
 export * from './components/index';

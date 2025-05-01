@@ -24,7 +24,7 @@ export type BaseAIPluginConfig = PluginConfig<
 
 export const BaseAIPlugin = createTSlatePlugin({
   key: 'ai',
-  node: { isLeaf: true },
+  node: { isDecoration: false, isLeaf: true },
 }).extendTransforms(({ editor }) => ({
   insertNodes: bindFirst(insertAINodes, editor),
   removeMarks: bindFirst(removeAIMarks, editor),

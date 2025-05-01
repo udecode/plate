@@ -4,6 +4,7 @@
 
 export * from './PlateElement';
 export * from './PlateLeaf';
+export * from './PlateText';
 export * from './createNodeHOC';
 export * from './createNodesHOC';
 export * from './useEditorString';

@@ -27,6 +27,7 @@ Rules:
 - For INSTRUCTIONS: Follow the <Reminder> exactly. Provide ONLY the content to be inserted or replaced. No explanations or comments.
 - For QUESTIONS: Provide a helpful and concise answer. You may include brief explanations if necessary.
 - CRITICAL: Distinguish between INSTRUCTIONS and QUESTIONS. Instructions typically ask you to modify or add content. Questions ask for information or clarification.
+- CRITICAL: when asked to write in markdown, do not start with \`\`\`markdown.
 `;
 
 const systemDefault = `\
