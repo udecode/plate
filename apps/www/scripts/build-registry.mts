@@ -376,7 +376,7 @@ async function buildStylesIndex() {
       name: style.name,
       type: 'registry:style',
       dependencies: [
-        // 'tailwindcss-animate',
+        'tw-animate-css',
         'tailwind-scrollbar-hide',
         'class-variance-authority',
         'lucide-react',
@@ -387,7 +387,7 @@ async function buildStylesIndex() {
       tailwind: {
         config: {
           plugins: [
-            // `require("tailwindcss-animate")`,
+            `require("tw-animate-css")`,
             `require("tailwind-scrollbar-hide")`,
           ],
           theme: {
