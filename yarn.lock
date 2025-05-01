@@ -6515,7 +6515,7 @@ __metadata:
     nanoid: "npm:^5.1.5"
     optics-ts: "npm:2.4.1"
     slate-hyperscript: "npm:0.100.0"
-    slate-react: "npm:0.114.0"
+    slate-react: "npm:0.114.2-20250430194640"
     use-deep-compare: "npm:^1.3.0"
     zustand: "npm:^5.0.3"
     zustand-x: "npm:6.1.0"
@@ -19379,9 +19379,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate-react@npm:0.114.0":
-  version: 0.114.0
-  resolution: "slate-react@npm:0.114.0"
+"slate-react@npm:0.114.2-20250430194640":
+  version: 0.114.2-20250430194640
+  resolution: "slate-react@npm:0.114.2-20250430194640"
   dependencies:
     "@juggle/resize-observer": "npm:^3.4.0"
     direction: "npm:^1.0.4"
@@ -19393,9 +19393,9 @@ __metadata:
   peerDependencies:
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
-    slate: ">=0.99.0"
+    slate: ">=0.114.0"
     slate-dom: ">=0.110.2"
-  checksum: 10c0/6b80abd09b64349afd65b4ea51f5ea783e10f82c1f7a041a46eea4592f7922dd752a9e4e913f51966cc7e9c305ca2ffbdce11ef7b3b56ff61d2878eb3f8f9277
+  checksum: 10c0/271b02b287b36c713343b17d42070fdf3b17a96c53ce264fa6547f9de7a827255501175c30afc6c70fc563f393a9b5e39134ffbf0474bed97609882f7a419914
   languageName: node
   linkType: hard
 
