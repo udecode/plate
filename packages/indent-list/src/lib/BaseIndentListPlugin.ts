@@ -16,9 +16,23 @@ import type { ListStyleType } from './types';
 import { renderIndentListBelowNodes } from './renderIndentListBelowNodes';
 import { withIndentList } from './withIndentList';
 
+/**
+ * All list items are normalized to have a listStart prop indicating their
+ * position in the list (unless listStart would be 1, in which case it is
+ * omitted).
+ *
+ * ListRestart causes listStart to restart from the given number, regardless of
+ * any previous listStart.
+ *
+ * ListRestartPolite acts like listRestart, except it only takes effect for list
+ * items at the start of a list. When not at the start of a list, this prop is
+ * ignored, although it is not removed and may take effect in the future.
+ */
+
 export const INDENT_LIST_KEYS = {
   checked: 'checked',
   listRestart: 'listRestart',
+  listRestartPolite: 'listRestartPolite',
   listStart: 'listStart',
   todo: 'todo',
 } as const;

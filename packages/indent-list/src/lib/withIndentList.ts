@@ -83,21 +83,16 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
         }
 
         /**
-         * When inserting a line break, normalize listStart if the node has a
-         * listRestart property.
+         * When inserting a line break, remove listRestart and listRestartPolite
+         * from the new list item.
          */
         if (
           operation.type === 'split_node' &&
-          (operation.properties as any)[BaseIndentListPlugin.key] &&
-          (operation.properties as any)[INDENT_LIST_KEYS.listRestart]
+          (operation.properties as any)[BaseIndentListPlugin.key]
         ) {
-          const listReStart = (operation.properties as any)[
-            INDENT_LIST_KEYS.listRestart
-          ];
-
-          (operation.properties as any)[INDENT_LIST_KEYS.listStart] =
-            listReStart + 1;
           (operation.properties as any)[INDENT_LIST_KEYS.listRestart] =
+            undefined;
+          (operation.properties as any)[INDENT_LIST_KEYS.listRestartPolite] =
             undefined;
         }
 
