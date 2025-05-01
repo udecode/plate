@@ -18,9 +18,9 @@
   ],
   "name": "select-editor-demo",
   "registryDependencies": [
-    "form",
-    "button",
-    "select-editor"
+    "https://platejs.org/r/styles/default/form.json",
+    "https://platejs.org/r/styles/default/button.json",
+    "https://platejs.org/r/styles/default/select-editor.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

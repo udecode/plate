@@ -42,9 +42,9 @@
   ],
   "name": "list-demo",
   "registryDependencies": [
-    "autoformat-list-plugin",
-    "list-element",
-    "todo-list-element"
+    "https://platejs.org/r/styles/default/autoformat-list-plugin.json",
+    "https://platejs.org/r/styles/default/list-element.json",
+    "https://platejs.org/r/styles/default/todo-list-element.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

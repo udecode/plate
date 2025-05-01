@@ -22,7 +22,7 @@
   ],
   "name": "form",
   "registryDependencies": [
-    "label"
+    "https://platejs.org/r/styles/default/label.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

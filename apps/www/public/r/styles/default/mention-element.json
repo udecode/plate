@@ -32,7 +32,7 @@
   ],
   "name": "mention-element",
   "registryDependencies": [
-    "use-mounted"
+    "https://platejs.org/r/styles/default/use-mounted.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

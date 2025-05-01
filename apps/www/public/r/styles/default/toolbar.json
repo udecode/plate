@@ -15,8 +15,8 @@
   ],
   "name": "toolbar",
   "registryDependencies": [
-    "tooltip",
-    "separator"
+    "https://platejs.org/r/styles/default/tooltip.json",
+    "https://platejs.org/r/styles/default/separator.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

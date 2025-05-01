@@ -37,7 +37,7 @@
   ],
   "name": "dnd-demo",
   "registryDependencies": [
-    "dnd-plugins"
+    "https://platejs.org/r/styles/default/dnd-plugins.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

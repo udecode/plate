@@ -31,7 +31,7 @@
   ],
   "name": "soft-break-demo",
   "registryDependencies": [
-    "soft-break-plugin"
+    "https://platejs.org/r/styles/default/soft-break-plugin.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

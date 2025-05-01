@@ -13,8 +13,8 @@
   ],
   "name": "media-plugins",
   "registryDependencies": [
-    "image-preview",
-    "media-upload-toast"
+    "https://platejs.org/r/styles/default/image-preview.json",
+    "https://platejs.org/r/styles/default/media-upload-toast.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

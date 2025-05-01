@@ -10,8 +10,8 @@
   ],
   "name": "floating-toolbar-plugin",
   "registryDependencies": [
-    "floating-toolbar",
-    "floating-toolbar-buttons"
+    "https://platejs.org/r/styles/default/floating-toolbar.json",
+    "https://platejs.org/r/styles/default/floating-toolbar-buttons.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

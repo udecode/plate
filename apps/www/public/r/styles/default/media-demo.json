@@ -30,7 +30,7 @@
   ],
   "name": "media-demo",
   "registryDependencies": [
-    "media-plugins"
+    "https://platejs.org/r/styles/default/media-plugins.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

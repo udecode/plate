@@ -9,7 +9,7 @@
   ],
   "name": "markdown-to-slate-demo",
   "registryDependencies": [
-    "use-debounce"
+    "https://platejs.org/r/styles/default/use-debounce.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

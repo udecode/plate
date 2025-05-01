@@ -37,7 +37,7 @@
   ],
   "name": "equation-element",
   "registryDependencies": [
-    "popover"
+    "https://platejs.org/r/styles/default/popover.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

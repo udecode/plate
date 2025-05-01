@@ -33,7 +33,7 @@
   ],
   "name": "column-element",
   "registryDependencies": [
-    "resizable"
+    "https://platejs.org/r/styles/default/resizable.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

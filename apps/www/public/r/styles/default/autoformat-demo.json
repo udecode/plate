@@ -31,7 +31,7 @@
   ],
   "name": "autoformat-demo",
   "registryDependencies": [
-    "autoformat-plugin"
+    "https://platejs.org/r/styles/default/autoformat-plugin.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

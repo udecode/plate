@@ -24,7 +24,7 @@
   ],
   "name": "suggestion-line-break",
   "registryDependencies": [
-    "suggestion-plugin"
+    "https://platejs.org/r/styles/default/suggestion-plugin.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

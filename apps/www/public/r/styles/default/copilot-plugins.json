@@ -14,7 +14,7 @@
   ],
   "name": "copilot-plugins",
   "registryDependencies": [
-    "ghost-text"
+    "https://platejs.org/r/styles/default/ghost-text.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

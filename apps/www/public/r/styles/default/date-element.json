@@ -33,7 +33,7 @@
   ],
   "name": "date-element",
   "registryDependencies": [
-    "calendar"
+    "https://platejs.org/r/styles/default/calendar.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

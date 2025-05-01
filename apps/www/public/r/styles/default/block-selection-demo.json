@@ -30,7 +30,7 @@
   ],
   "name": "block-selection-demo",
   "registryDependencies": [
-    "block-selection-plugins"
+    "https://platejs.org/r/styles/default/block-selection-plugins.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

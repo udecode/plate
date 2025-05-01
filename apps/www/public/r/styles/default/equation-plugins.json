@@ -12,8 +12,8 @@
   ],
   "name": "equation-plugins",
   "registryDependencies": [
-    "equation-element",
-    "inline-equation-toolbar-button"
+    "https://platejs.org/r/styles/default/equation-element.json",
+    "https://platejs.org/r/styles/default/inline-equation-toolbar-button.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

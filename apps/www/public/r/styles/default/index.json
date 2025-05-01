@@ -2,6 +2,7 @@
   "name": "default",
   "type": "registry:style",
   "dependencies": [
+    "tw-animate-css",
     "tailwind-scrollbar-hide",
     "class-variance-authority",
     "lucide-react",
@@ -12,6 +13,7 @@
   "tailwind": {
     "config": {
       "plugins": [
+        "require(\"tw-animate-css\")",
         "require(\"tailwind-scrollbar-hide\")"
       ],
       "theme": {

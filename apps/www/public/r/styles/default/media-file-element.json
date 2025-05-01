@@ -34,7 +34,7 @@
   ],
   "name": "media-file-element",
   "registryDependencies": [
-    "caption"
+    "https://platejs.org/r/styles/default/caption.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

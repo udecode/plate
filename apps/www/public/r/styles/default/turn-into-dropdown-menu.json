@@ -31,7 +31,7 @@
   "registryDependencies": [
     "dropdown-menu",
     "toolbar",
-    "transforms"
+    "https://platejs.org/r/transforms"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

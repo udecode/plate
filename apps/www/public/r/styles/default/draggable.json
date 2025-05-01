@@ -43,7 +43,7 @@
   "name": "draggable",
   "registryDependencies": [
     "tooltip",
-    "use-mounted"
+    "https://platejs.org/r/use-mounted"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

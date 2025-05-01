@@ -37,7 +37,7 @@
   ],
   "name": "toc-demo",
   "registryDependencies": [
-    "toc-plugin"
+    "https://platejs.org/r/styles/default/toc-plugin.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

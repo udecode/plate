@@ -36,7 +36,7 @@
   ],
   "name": "basic-elements-demo",
   "registryDependencies": [
-    "basic-nodes-plugins"
+    "https://platejs.org/r/styles/default/basic-nodes-plugins.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

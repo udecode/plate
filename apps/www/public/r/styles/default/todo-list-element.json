@@ -23,7 +23,7 @@
   ],
   "name": "todo-list-element",
   "registryDependencies": [
-    "checkbox"
+    "https://platejs.org/r/styles/default/checkbox.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

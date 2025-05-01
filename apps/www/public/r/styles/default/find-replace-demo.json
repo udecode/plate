@@ -30,9 +30,9 @@
   ],
   "name": "find-replace-demo",
   "registryDependencies": [
-    "fixed-toolbar",
-    "input",
-    "search-highlight-leaf"
+    "https://platejs.org/r/styles/default/fixed-toolbar.json",
+    "https://platejs.org/r/styles/default/input.json",
+    "https://platejs.org/r/styles/default/search-highlight-leaf.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

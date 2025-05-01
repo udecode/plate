@@ -18,7 +18,7 @@
   ],
   "name": "alert-dialog",
   "registryDependencies": [
-    "button"
+    "https://platejs.org/r/styles/default/button.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

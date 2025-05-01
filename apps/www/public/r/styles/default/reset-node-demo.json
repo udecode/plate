@@ -27,7 +27,7 @@
   ],
   "name": "reset-node-demo",
   "registryDependencies": [
-    "reset-block-type-plugin"
+    "https://platejs.org/r/styles/default/reset-block-type-plugin.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

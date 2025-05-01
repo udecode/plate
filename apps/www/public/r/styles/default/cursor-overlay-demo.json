@@ -31,7 +31,7 @@
   ],
   "name": "cursor-overlay-demo",
   "registryDependencies": [
-    "cursor-overlay-plugin"
+    "https://platejs.org/r/styles/default/cursor-overlay-plugin.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

@@ -40,7 +40,7 @@
   ],
   "name": "indent-list-demo",
   "registryDependencies": [
-    "indent-list-plugins"
+    "https://platejs.org/r/styles/default/indent-list-plugins.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

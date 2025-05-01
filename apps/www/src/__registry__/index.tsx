@@ -43,7 +43,7 @@ export const Index: Record<string, any> = {
       name: "code-block-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["command"],
+      registryDependencies: ["https://platejs.org/r/styles/default/command.json"],
       files: [{
         path: "src/registry/default/plate-ui/code-block-element.tsx",
         type: "registry:ui",
@@ -123,7 +123,7 @@ export const Index: Record<string, any> = {
       name: "column-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["resizable"],
+      registryDependencies: ["https://platejs.org/r/styles/default/resizable.json"],
       files: [{
         path: "src/registry/default/plate-ui/column-element.tsx",
         type: "registry:ui",
@@ -142,7 +142,7 @@ export const Index: Record<string, any> = {
       name: "column-group-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["command","resizable"],
+      registryDependencies: ["https://platejs.org/r/styles/default/command.json","https://platejs.org/r/styles/default/resizable.json"],
       files: [{
         path: "src/registry/default/plate-ui/column-group-element.tsx",
         type: "registry:ui",
@@ -180,7 +180,7 @@ export const Index: Record<string, any> = {
       name: "suggestion-leaf",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["suggestion-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/suggestion-plugin.json"],
       files: [{
         path: "src/registry/default/plate-ui/suggestion-leaf.tsx",
         type: "registry:ui",
@@ -199,7 +199,7 @@ export const Index: Record<string, any> = {
       name: "suggestion-line-break",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["suggestion-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/suggestion-plugin.json"],
       files: [{
         path: "src/registry/default/plate-ui/suggestion-line-break.tsx",
         type: "registry:ui",
@@ -214,7 +214,7 @@ export const Index: Record<string, any> = {
       name: "date-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["calendar"],
+      registryDependencies: ["https://platejs.org/r/styles/default/calendar.json"],
       files: [{
         path: "src/registry/default/plate-ui/date-element.tsx",
         type: "registry:ui",
@@ -233,7 +233,7 @@ export const Index: Record<string, any> = {
       name: "equation-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["popover"],
+      registryDependencies: ["https://platejs.org/r/styles/default/popover.json"],
       files: [{
         path: "src/registry/default/plate-ui/equation-element.tsx",
         type: "registry:ui",
@@ -256,7 +256,7 @@ export const Index: Record<string, any> = {
       name: "inline-equation-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["popover"],
+      registryDependencies: ["https://platejs.org/r/styles/default/popover.json"],
       files: [{
         path: "src/registry/default/plate-ui/inline-equation-element.tsx",
         type: "registry:ui",
@@ -275,7 +275,7 @@ export const Index: Record<string, any> = {
       name: "inline-equation-toolbar-button",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["toolbar"],
+      registryDependencies: ["https://platejs.org/r/styles/default/toolbar.json"],
       files: [{
         path: "src/registry/default/plate-ui/inline-equation-toolbar-button.tsx",
         type: "registry:ui",
@@ -290,7 +290,7 @@ export const Index: Record<string, any> = {
       name: "emoji-input-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["inline-combobox","use-debounce"],
+      registryDependencies: ["https://platejs.org/r/styles/default/inline-combobox.json","https://platejs.org/r/styles/default/use-debounce.json"],
       files: [{
         path: "src/registry/default/plate-ui/emoji-input-element.tsx",
         type: "registry:ui",
@@ -320,7 +320,7 @@ export const Index: Record<string, any> = {
       name: "font-size-toolbar-button",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["popover","toolbar"],
+      registryDependencies: ["https://platejs.org/r/styles/default/popover.json","https://platejs.org/r/styles/default/toolbar.json"],
       files: [{
         path: "src/registry/default/plate-ui/font-size-toolbar-button.tsx",
         type: "registry:ui",
@@ -392,7 +392,7 @@ export const Index: Record<string, any> = {
       name: "image-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["media-popover","caption","resizable"],
+      registryDependencies: ["https://platejs.org/r/styles/default/media-popover.json","https://platejs.org/r/styles/default/caption.json","https://platejs.org/r/styles/default/resizable.json"],
       files: [{
         path: "src/registry/default/plate-ui/image-element.tsx",
         type: "registry:ui",
@@ -479,7 +479,7 @@ export const Index: Record<string, any> = {
       name: "media-audio-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["caption"],
+      registryDependencies: ["https://platejs.org/r/styles/default/caption.json"],
       files: [{
         path: "src/registry/default/plate-ui/media-audio-element.tsx",
         type: "registry:ui",
@@ -498,7 +498,7 @@ export const Index: Record<string, any> = {
       name: "media-embed-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["media-popover","caption","resizable"],
+      registryDependencies: ["https://platejs.org/r/styles/default/media-popover.json","https://platejs.org/r/styles/default/caption.json","https://platejs.org/r/styles/default/resizable.json"],
       files: [{
         path: "src/registry/default/plate-ui/media-embed-element.tsx",
         type: "registry:ui",
@@ -513,7 +513,7 @@ export const Index: Record<string, any> = {
       name: "media-file-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["caption"],
+      registryDependencies: ["https://platejs.org/r/styles/default/caption.json"],
       files: [{
         path: "src/registry/default/plate-ui/media-file-element.tsx",
         type: "registry:ui",
@@ -532,7 +532,7 @@ export const Index: Record<string, any> = {
       name: "media-placeholder-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["spinner","uploadthing"],
+      registryDependencies: ["https://platejs.org/r/styles/default/spinner.json","https://platejs.org/r/styles/default/uploadthing.json"],
       files: [{
         path: "src/registry/default/plate-ui/media-placeholder-element.tsx",
         type: "registry:ui",
@@ -547,7 +547,7 @@ export const Index: Record<string, any> = {
       name: "media-video-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["media-popover","caption","resizable"],
+      registryDependencies: ["https://platejs.org/r/styles/default/media-popover.json","https://platejs.org/r/styles/default/caption.json","https://platejs.org/r/styles/default/resizable.json"],
       files: [{
         path: "src/registry/default/plate-ui/media-video-element.tsx",
         type: "registry:ui",
@@ -566,7 +566,7 @@ export const Index: Record<string, any> = {
       name: "mention-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["use-mounted"],
+      registryDependencies: ["https://platejs.org/r/styles/default/use-mounted.json"],
       files: [{
         path: "src/registry/default/plate-ui/mention-element.tsx",
         type: "registry:ui",
@@ -585,7 +585,7 @@ export const Index: Record<string, any> = {
       name: "mention-input-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["inline-combobox"],
+      registryDependencies: ["https://platejs.org/r/styles/default/inline-combobox.json"],
       files: [{
         path: "src/registry/default/plate-ui/mention-input-element.tsx",
         type: "registry:ui",
@@ -634,7 +634,7 @@ export const Index: Record<string, any> = {
       name: "slash-input-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["inline-combobox","transforms"],
+      registryDependencies: ["https://platejs.org/r/styles/default/inline-combobox.json","https://platejs.org/r/styles/default/transforms.json"],
       files: [{
         path: "src/registry/default/plate-ui/slash-input-element.tsx",
         type: "registry:ui",
@@ -649,7 +649,7 @@ export const Index: Record<string, any> = {
       name: "table-cell-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["resizable"],
+      registryDependencies: ["https://platejs.org/r/styles/default/resizable.json"],
       files: [{
         path: "src/registry/default/plate-ui/table-cell-element.tsx",
         type: "registry:ui",
@@ -668,7 +668,7 @@ export const Index: Record<string, any> = {
       name: "table-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["dropdown-menu"],
+      registryDependencies: ["https://platejs.org/r/styles/default/dropdown-menu.json"],
       files: [{
         path: "src/registry/default/plate-ui/table-element.tsx",
         type: "registry:ui",
@@ -744,7 +744,7 @@ export const Index: Record<string, any> = {
       name: "todo-list-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["checkbox"],
+      registryDependencies: ["https://platejs.org/r/styles/default/checkbox.json"],
       files: [{
         path: "src/registry/default/plate-ui/todo-list-element.tsx",
         type: "registry:ui",
@@ -759,7 +759,7 @@ export const Index: Record<string, any> = {
       name: "toggle-element",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["button"],
+      registryDependencies: ["https://platejs.org/r/styles/default/button.json"],
       files: [{
         path: "src/registry/default/plate-ui/toggle-element.tsx",
         type: "registry:ui",
@@ -778,7 +778,7 @@ export const Index: Record<string, any> = {
       name: "alert-dialog",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["button"],
+      registryDependencies: ["https://platejs.org/r/styles/default/button.json"],
       files: [{
         path: "src/registry/default/plate-ui/alert-dialog.tsx",
         type: "registry:ui",
@@ -823,7 +823,7 @@ export const Index: Record<string, any> = {
       name: "calendar",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["button"],
+      registryDependencies: ["https://platejs.org/r/styles/default/button.json"],
       files: [{
         path: "src/registry/default/plate-ui/calendar.tsx",
         type: "registry:ui",
@@ -857,7 +857,7 @@ export const Index: Record<string, any> = {
       name: "command",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["dialog","input"],
+      registryDependencies: ["dialog","https://platejs.org/r/styles/default/input.json"],
       files: [{
         path: "src/registry/default/plate-ui/command.tsx",
         type: "registry:ui",
@@ -883,21 +883,6 @@ export const Index: Record<string, any> = {
       source: "",
       meta: undefined,
     },
-    "dialog": {
-      name: "dialog",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/plate-ui/dialog.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/dialog.tsx")),
-      source: "",
-      meta: undefined,
-    },
     "dropdown-menu": {
       name: "dropdown-menu",
       description: "",
@@ -917,7 +902,7 @@ export const Index: Record<string, any> = {
       name: "form",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["label"],
+      registryDependencies: ["https://platejs.org/r/styles/default/label.json"],
       files: [{
         path: "src/registry/default/plate-ui/form.tsx",
         type: "registry:ui",
@@ -992,7 +977,7 @@ export const Index: Record<string, any> = {
       name: "toolbar",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["tooltip","separator"],
+      registryDependencies: ["https://platejs.org/r/styles/default/tooltip.json","https://platejs.org/r/styles/default/separator.json"],
       files: [{
         path: "src/registry/default/plate-ui/toolbar.tsx",
         type: "registry:ui",
@@ -1007,7 +992,7 @@ export const Index: Record<string, any> = {
       name: "tooltip",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["button"],
+      registryDependencies: ["https://platejs.org/r/styles/default/button.json"],
       files: [{
         path: "src/registry/default/plate-ui/tooltip.tsx",
         type: "registry:ui",
@@ -1033,823 +1018,11 @@ export const Index: Record<string, any> = {
       source: "",
       meta: undefined,
     },
-    "ai-menu": {
-      name: "ai-menu",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["use-chat","command","popover","editor"],
-      files: [{
-        path: "src/registry/default/plate-ui/ai-menu.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/ai-loading-bar.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/ai-anchor-element.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/ai-menu-items.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/ai-chat-editor.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/ai-menu.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "ai-toolbar-button": {
-      name: "ai-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/ai-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/ai-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "align-dropdown-menu": {
-      name: "align-dropdown-menu",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["dropdown-menu","toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/align-dropdown-menu.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/align-dropdown-menu.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "block-context-menu": {
-      name: "block-context-menu",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["calendar","context-menu","use-is-touch-device"],
-      files: [{
-        path: "src/registry/default/plate-ui/block-context-menu.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/block-context-menu.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "block-selection": {
-      name: "block-selection",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/plate-ui/block-selection.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/block-selection.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "import-toolbar-button": {
-      name: "import-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["dropdown-menu","toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/import-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/import-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "export-toolbar-button": {
-      name: "export-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/export-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/export-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "caption": {
-      name: "caption",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["button"],
-      files: [{
-        path: "src/registry/default/plate-ui/caption.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/caption.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "color-dropdown-menu": {
-      name: "color-dropdown-menu",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["dropdown-menu","toolbar","separator","button","tooltip"],
-      files: [{
-        path: "src/registry/default/plate-ui/color-constants.ts",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/color-dropdown-menu-items.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/color-dropdown-menu.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/color-input.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/color-picker.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/colors-custom.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/color-constants.ts")),
-      source: "",
-      meta: undefined,
-    },
-    "comment-toolbar-button": {
-      name: "comment-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["comments-plugin"],
-      files: [{
-        path: "src/registry/default/plate-ui/comment-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/comment-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "block-discussion": {
-      name: "block-discussion",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["suggestion-plugin","button","popover","avatar","dropdown-menu","editor","ai-leaf","avatar","date-element","emoji-input-element","inline-equation-element","link-element","mention-element","mention-input-element"],
-      files: [{
-        path: "src/registry/default/plate-ui/block-discussion.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/block-suggestion.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/comment.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/comment-create-form.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/block-discussion.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "cursor-overlay": {
-      name: "cursor-overlay",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/plate-ui/cursor-overlay.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/cursor-overlay.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "draggable": {
-      name: "draggable",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["tooltip","use-mounted"],
-      files: [{
-        path: "src/registry/default/plate-ui/draggable.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/draggable.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "editor": {
-      name: "editor",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/plate-ui/editor.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/editor-static.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/editor.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "select-editor": {
-      name: "select-editor",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["editor","command","popover","tag-element"],
-      files: [{
-        path: "src/registry/default/plate-ui/select-editor.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/select-editor.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "emoji-dropdown-menu": {
-      name: "emoji-dropdown-menu",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/emoji-dropdown-menu.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/emoji-icons.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/emoji-picker-content.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/emoji-picker-navigation.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/emoji-picker-preview.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/emoji-picker-search-and-clear.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/emoji-picker-search-bar.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/emoji-picker.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/emoji-toolbar-dropdown.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/emoji-dropdown-menu.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "fixed-toolbar-buttons": {
-      name: "fixed-toolbar-buttons",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar","ai-toolbar-button","align-dropdown-menu","color-dropdown-menu","comment-toolbar-button","emoji-dropdown-menu","font-size-toolbar-button","history-toolbar-button","indent-list-toolbar-button","indent-todo-toolbar-button","indent-toolbar-button","import-toolbar-button","insert-dropdown-menu","line-height-dropdown-menu","link-toolbar-button","mark-toolbar-button","media-toolbar-button","mode-dropdown-menu","more-dropdown-menu","outdent-toolbar-button","table-dropdown-menu","toggle-toolbar-button","turn-into-dropdown-menu","export-toolbar-button"],
-      files: [{
-        path: "src/registry/default/plate-ui/fixed-toolbar-buttons.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/fixed-toolbar-buttons.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "fixed-toolbar-list-buttons": {
-      name: "fixed-toolbar-list-buttons",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar","ai-toolbar-button","align-dropdown-menu","color-dropdown-menu","comment-toolbar-button","emoji-dropdown-menu","insert-dropdown-menu","line-height-dropdown-menu","list-indent-toolbar-button","link-toolbar-button","mark-toolbar-button","media-toolbar-button","mode-dropdown-menu","more-dropdown-menu","table-dropdown-menu","toggle-toolbar-button","turn-into-dropdown-menu"],
-      files: [{
-        path: "src/registry/default/plate-ui/fixed-toolbar-list-buttons.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/fixed-toolbar-list-buttons.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "fixed-toolbar": {
-      name: "fixed-toolbar",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/fixed-toolbar.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/fixed-toolbar.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "floating-toolbar-buttons": {
-      name: "floating-toolbar-buttons",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar","ai-toolbar-button","comment-toolbar-button","link-toolbar-button","mark-toolbar-button","more-dropdown-menu","turn-into-dropdown-menu"],
-      files: [{
-        path: "src/registry/default/plate-ui/floating-toolbar-buttons.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/floating-toolbar-buttons.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "floating-toolbar": {
-      name: "floating-toolbar",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/floating-toolbar.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/floating-toolbar.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "ghost-text": {
-      name: "ghost-text",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/plate-ui/ghost-text.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/ghost-text.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "indent-fire-marker": {
-      name: "indent-fire-marker",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: undefined,
-      files: [{
-        path: "src/registry/default/plate-ui/indent-fire-marker.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/indent-fire-marker.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "history-toolbar-button": {
-      name: "history-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/history-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/history-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "indent-list-toolbar-button": {
-      name: "indent-list-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/indent-list-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/indent-list-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "indent-todo-marker": {
-      name: "indent-todo-marker",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["checkbox"],
-      files: [{
-        path: "src/registry/default/plate-ui/indent-todo-marker.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/indent-todo-marker-static.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/indent-todo-marker.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "indent-todo-toolbar-button": {
-      name: "indent-todo-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/indent-todo-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/indent-todo-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "indent-toolbar-button": {
-      name: "indent-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/indent-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/indent-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "inline-combobox": {
-      name: "inline-combobox",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/plate-ui/inline-combobox.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/inline-combobox.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "insert-dropdown-menu": {
-      name: "insert-dropdown-menu",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["dropdown-menu","toolbar","transforms"],
-      files: [{
-        path: "src/registry/default/plate-ui/insert-dropdown-menu.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/insert-dropdown-menu.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "line-height-dropdown-menu": {
-      name: "line-height-dropdown-menu",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar","dropdown-menu"],
-      files: [{
-        path: "src/registry/default/plate-ui/line-height-dropdown-menu.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/line-height-dropdown-menu.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "link-floating-toolbar": {
-      name: "link-floating-toolbar",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["button","input","popover","separator"],
-      files: [{
-        path: "src/registry/default/plate-ui/link-floating-toolbar.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/link-floating-toolbar.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "link-toolbar-button": {
-      name: "link-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/link-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/link-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "list-indent-toolbar-button": {
-      name: "list-indent-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/list-indent-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/list-indent-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "list-toolbar-button": {
-      name: "list-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/list-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/list-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "mark-toolbar-button": {
-      name: "mark-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/mark-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/mark-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "media-popover": {
-      name: "media-popover",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["button","input","popover","separator"],
-      files: [{
-        path: "src/registry/default/plate-ui/media-popover.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/media-popover.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "media-toolbar-button": {
-      name: "media-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar","input","dropdown-menu","alert-dialog"],
-      files: [{
-        path: "src/registry/default/plate-ui/media-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/media-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "media-upload-toast": {
-      name: "media-upload-toast",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/plate-ui/media-upload-toast.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/media-upload-toast.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "mode-dropdown-menu": {
-      name: "mode-dropdown-menu",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["dropdown-menu","toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/mode-dropdown-menu.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/mode-dropdown-menu.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "more-dropdown-menu": {
-      name: "more-dropdown-menu",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["dropdown-menu","toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/more-dropdown-menu.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/more-dropdown-menu.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "outdent-toolbar-button": {
-      name: "outdent-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/outdent-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/outdent-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "placeholder": {
-      name: "placeholder",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/plate-ui/placeholder.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/placeholder.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "resizable": {
-      name: "resizable",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/plate-ui/resizable.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/resizable.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "table-dropdown-menu": {
-      name: "table-dropdown-menu",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["dropdown-menu","toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/table-dropdown-menu.tsx",
-        type: "registry:ui",
-        target: ""
-      },{
-        path: "src/registry/default/plate-ui/table-icons.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/table-dropdown-menu.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "toggle-toolbar-button": {
-      name: "toggle-toolbar-button",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["toolbar"],
-      files: [{
-        path: "src/registry/default/plate-ui/toggle-toolbar-button.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/toggle-toolbar-button.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "turn-into-dropdown-menu": {
-      name: "turn-into-dropdown-menu",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: ["dropdown-menu","toolbar","transforms"],
-      files: [{
-        path: "src/registry/default/plate-ui/turn-into-dropdown-menu.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/turn-into-dropdown-menu.tsx")),
-      source: "",
-      meta: undefined,
-    },
-    "remote-cursor-overlay": {
-      name: "remote-cursor-overlay",
-      description: "",
-      type: "registry:ui",
-      registryDependencies: [],
-      files: [{
-        path: "src/registry/default/plate-ui/remote-cursor-overlay.tsx",
-        type: "registry:ui",
-        target: ""
-      }],
-      categories: undefined,
-      component: React.lazy(() => import("@/registry/default/plate-ui/remote-cursor-overlay.tsx")),
-      source: "",
-      meta: undefined,
-    },
     "editor-plugins": {
       name: "editor-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["ai-plugins","markdown-plugin","basic-nodes-plugins","align-plugin","autoformat-plugin","block-menu-plugins","equation-plugins","cursor-overlay-plugin","comments-plugin","delete-plugins","dnd-plugins","exit-break-plugin","indent-list-plugins","line-height-plugin","link-plugin","media-plugins","mention-plugin","reset-block-type-plugin","skip-mark-plugin","suggestion-plugin","soft-break-plugin","table-plugin","toc-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/ai-plugins.json","https://platejs.org/r/styles/default/markdown-plugin.json","https://platejs.org/r/styles/default/basic-nodes-plugins.json","https://platejs.org/r/styles/default/align-plugin.json","https://platejs.org/r/styles/default/autoformat-plugin.json","https://platejs.org/r/styles/default/block-menu-plugins.json","https://platejs.org/r/styles/default/equation-plugins.json","https://platejs.org/r/styles/default/cursor-overlay-plugin.json","https://platejs.org/r/styles/default/comments-plugin.json","https://platejs.org/r/styles/default/delete-plugins.json","https://platejs.org/r/styles/default/dnd-plugins.json","https://platejs.org/r/styles/default/exit-break-plugin.json","https://platejs.org/r/styles/default/indent-list-plugins.json","https://platejs.org/r/styles/default/line-height-plugin.json","https://platejs.org/r/styles/default/link-plugin.json","https://platejs.org/r/styles/default/media-plugins.json","https://platejs.org/r/styles/default/mention-plugin.json","https://platejs.org/r/styles/default/reset-block-type-plugin.json","https://platejs.org/r/styles/default/skip-mark-plugin.json","https://platejs.org/r/styles/default/suggestion-plugin.json","https://platejs.org/r/styles/default/soft-break-plugin.json","https://platejs.org/r/styles/default/table-plugin.json","https://platejs.org/r/styles/default/toc-plugin.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/editor-plugins.tsx",
         type: "registry:component",
@@ -1864,7 +1037,7 @@ export const Index: Record<string, any> = {
       name: "ai-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["basic-nodes-plugins","block-selection-plugins","cursor-overlay-plugin","indent-list-plugins","link-plugin","ai-menu","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","cursor-overlay","heading-element","hr-element","link-element","paragraph-element"],
+      registryDependencies: ["https://platejs.org/r/styles/default/basic-nodes-plugins.json","https://platejs.org/r/styles/default/block-selection-plugins.json","https://platejs.org/r/styles/default/cursor-overlay-plugin.json","https://platejs.org/r/styles/default/indent-list-plugins.json","https://platejs.org/r/styles/default/link-plugin.json","https://platejs.org/r/styles/default/ai-menu.json","https://platejs.org/r/styles/default/blockquote-element.json","https://platejs.org/r/styles/default/code-block-element.json","https://platejs.org/r/styles/default/code-leaf.json","https://platejs.org/r/styles/default/code-line-element.json","https://platejs.org/r/styles/default/code-syntax-leaf.json","https://platejs.org/r/styles/default/cursor-overlay.json","https://platejs.org/r/styles/default/heading-element.json","https://platejs.org/r/styles/default/hr-element.json","https://platejs.org/r/styles/default/link-element.json","https://platejs.org/r/styles/default/paragraph-element.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/ai-plugins.tsx",
         type: "registry:component",
@@ -1879,7 +1052,7 @@ export const Index: Record<string, any> = {
       name: "equation-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["equation-element","inline-equation-toolbar-button"],
+      registryDependencies: ["https://platejs.org/r/styles/default/equation-element.json","https://platejs.org/r/styles/default/inline-equation-toolbar-button.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/equation-plugins.ts",
         type: "registry:component",
@@ -1954,7 +1127,7 @@ export const Index: Record<string, any> = {
       name: "block-selection-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["block-selection"],
+      registryDependencies: ["https://platejs.org/r/styles/default/block-selection.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/block-selection-plugins.tsx",
         type: "registry:component",
@@ -1969,7 +1142,7 @@ export const Index: Record<string, any> = {
       name: "block-menu-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["block-context-menu","block-selection-plugins"],
+      registryDependencies: ["https://platejs.org/r/styles/default/block-context-menu.json","https://platejs.org/r/styles/default/block-selection-plugins.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/block-menu-plugins.ts",
         type: "registry:component",
@@ -1984,7 +1157,7 @@ export const Index: Record<string, any> = {
       name: "comments-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: ["discussion-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/discussion-plugin.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/comments-plugin.tsx",
         type: "registry:component",
@@ -2014,7 +1187,7 @@ export const Index: Record<string, any> = {
       name: "suggestion-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: ["discussion-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/discussion-plugin.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/suggestion-plugin.tsx",
         type: "registry:component",
@@ -2037,7 +1210,7 @@ export const Index: Record<string, any> = {
       name: "cursor-overlay-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: ["cursor-overlay"],
+      registryDependencies: ["https://platejs.org/r/styles/default/cursor-overlay.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/cursor-overlay-plugin.tsx",
         type: "registry:component",
@@ -2067,7 +1240,7 @@ export const Index: Record<string, any> = {
       name: "copilot-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["ghost-text"],
+      registryDependencies: ["https://platejs.org/r/styles/default/ghost-text.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/copilot-plugins.tsx",
         type: "registry:component",
@@ -2097,7 +1270,7 @@ export const Index: Record<string, any> = {
       name: "dnd-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["draggable"],
+      registryDependencies: ["https://platejs.org/r/styles/default/draggable.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/dnd-plugins.tsx",
         type: "registry:component",
@@ -2127,7 +1300,7 @@ export const Index: Record<string, any> = {
       name: "fixed-toolbar-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: ["fixed-toolbar","fixed-toolbar-buttons"],
+      registryDependencies: ["https://platejs.org/r/styles/default/fixed-toolbar.json","https://platejs.org/r/styles/default/fixed-toolbar-buttons.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/fixed-toolbar-plugin.tsx",
         type: "registry:component",
@@ -2142,7 +1315,7 @@ export const Index: Record<string, any> = {
       name: "fixed-toolbar-list-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: ["fixed-toolbar","fixed-toolbar-buttons"],
+      registryDependencies: ["https://platejs.org/r/styles/default/fixed-toolbar.json","https://platejs.org/r/styles/default/fixed-toolbar-buttons.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/fixed-toolbar-list-plugin.tsx",
         type: "registry:component",
@@ -2157,7 +1330,7 @@ export const Index: Record<string, any> = {
       name: "floating-toolbar-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: ["floating-toolbar","floating-toolbar-buttons"],
+      registryDependencies: ["https://platejs.org/r/styles/default/floating-toolbar.json","https://platejs.org/r/styles/default/floating-toolbar-buttons.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/floating-toolbar-plugin.tsx",
         type: "registry:component",
@@ -2172,7 +1345,7 @@ export const Index: Record<string, any> = {
       name: "indent-list-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["indent-fire-marker","indent-todo-marker"],
+      registryDependencies: ["https://platejs.org/r/styles/default/indent-fire-marker.json","https://platejs.org/r/styles/default/indent-todo-marker.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/indent-list-plugins.ts",
         type: "registry:component",
@@ -2202,7 +1375,7 @@ export const Index: Record<string, any> = {
       name: "link-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: ["link-floating-toolbar"],
+      registryDependencies: ["https://platejs.org/r/styles/default/link-floating-toolbar.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/link-plugin.tsx",
         type: "registry:component",
@@ -2217,7 +1390,7 @@ export const Index: Record<string, any> = {
       name: "media-plugins",
       description: "",
       type: "registry:component",
-      registryDependencies: ["image-preview","media-upload-toast"],
+      registryDependencies: ["https://platejs.org/r/styles/default/image-preview.json","https://platejs.org/r/styles/default/media-upload-toast.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/media-plugins.tsx",
         type: "registry:component",
@@ -2322,7 +1495,7 @@ export const Index: Record<string, any> = {
       name: "discussion-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: ["block-discussion"],
+      registryDependencies: ["https://platejs.org/r/styles/default/block-discussion.json"],
       files: [{
         path: "src/registry/default/components/editor/plugins/discussion-plugin.tsx",
         type: "registry:component",
@@ -2431,7 +1604,7 @@ export const Index: Record<string, any> = {
       name: "editor-ai",
       description: "An AI editor",
       type: "registry:block",
-      registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","block-discussion","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","suggestion-leaf","date-element","draggable","equation-element","inline-equation-element","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
+      registryDependencies: ["https://platejs.org/r/styles/default/api-ai.json","https://platejs.org/r/styles/default/api-uploadthing.json","https://platejs.org/r/styles/default/plate-types.json","https://platejs.org/r/styles/default/editor-plugins.json","https://platejs.org/r/styles/default/copilot-plugins.json","https://platejs.org/r/styles/default/floating-toolbar-plugin.json","https://platejs.org/r/styles/default/fixed-toolbar-plugin.json","https://platejs.org/r/styles/default/ai-menu.json","https://platejs.org/r/styles/default/ghost-text.json","https://platejs.org/r/styles/default/block-discussion.json","https://platejs.org/r/styles/default/cursor-overlay.json","https://platejs.org/r/styles/default/editor.json","https://platejs.org/r/styles/default/block-context-menu.json","https://platejs.org/r/styles/default/ai-leaf.json","https://platejs.org/r/styles/default/blockquote-element.json","https://platejs.org/r/styles/default/code-block-element.json","https://platejs.org/r/styles/default/code-leaf.json","https://platejs.org/r/styles/default/code-line-element.json","https://platejs.org/r/styles/default/code-syntax-leaf.json","https://platejs.org/r/styles/default/column-element.json","https://platejs.org/r/styles/default/column-group-element.json","https://platejs.org/r/styles/default/comment-leaf.json","https://platejs.org/r/styles/default/suggestion-leaf.json","https://platejs.org/r/styles/default/date-element.json","https://platejs.org/r/styles/default/draggable.json","https://platejs.org/r/styles/default/equation-element.json","https://platejs.org/r/styles/default/inline-equation-element.json","https://platejs.org/r/styles/default/emoji-input-element.json","https://platejs.org/r/styles/default/excalidraw-element.json","https://platejs.org/r/styles/default/heading-element.json","https://platejs.org/r/styles/default/highlight-leaf.json","https://platejs.org/r/styles/default/hr-element.json","https://platejs.org/r/styles/default/image-element.json","https://platejs.org/r/styles/default/kbd-leaf.json","https://platejs.org/r/styles/default/link-element.json","https://platejs.org/r/styles/default/media-audio-element.json","https://platejs.org/r/styles/default/media-embed-element.json","https://platejs.org/r/styles/default/media-file-element.json","https://platejs.org/r/styles/default/media-placeholder-element.json","https://platejs.org/r/styles/default/media-video-element.json","https://platejs.org/r/styles/default/mention-element.json","https://platejs.org/r/styles/default/mention-input-element.json","https://platejs.org/r/styles/default/paragraph-element.json","https://platejs.org/r/styles/default/placeholder.json","https://platejs.org/r/styles/default/slash-input-element.json","https://platejs.org/r/styles/default/table-cell-element.json","https://platejs.org/r/styles/default/table-element.json","https://platejs.org/r/styles/default/table-row-element.json","https://platejs.org/r/styles/default/toc-element.json","https://platejs.org/r/styles/default/toggle-element.json"],
       files: [{
         path: "src/registry/default/blocks/editor-ai/page.tsx",
         type: "registry:page",
@@ -2458,7 +1631,7 @@ export const Index: Record<string, any> = {
       name: "editor-select",
       description: "A multi-select editor",
       type: "registry:block",
-      registryDependencies: ["select-editor-demo"],
+      registryDependencies: ["https://platejs.org/r/styles/default/select-editor-demo.json"],
       files: [{
         path: "src/registry/default/blocks/editor-select/page.tsx",
         type: "registry:page",
@@ -2473,7 +1646,7 @@ export const Index: Record<string, any> = {
       name: "editor-basic",
       description: "A basic editor",
       type: "registry:block",
-      registryDependencies: ["editor"],
+      registryDependencies: ["https://platejs.org/r/styles/default/editor.json"],
       files: [{
         path: "src/registry/default/blocks/editor-basic/page.tsx",
         type: "registry:page",
@@ -2575,7 +1748,7 @@ export const Index: Record<string, any> = {
       name: "ai-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["basic-nodes-plugins","block-selection-plugins","indent-list-plugins","link-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/basic-nodes-plugins.json","https://platejs.org/r/styles/default/block-selection-plugins.json","https://platejs.org/r/styles/default/indent-list-plugins.json","https://platejs.org/r/styles/default/link-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -2606,7 +1779,7 @@ export const Index: Record<string, any> = {
       name: "align-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["align-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/align-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -2633,7 +1806,7 @@ export const Index: Record<string, any> = {
       name: "autoformat-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["autoformat-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/autoformat-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -2660,7 +1833,7 @@ export const Index: Record<string, any> = {
       name: "basic-elements-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["basic-nodes-plugins"],
+      registryDependencies: ["https://platejs.org/r/styles/default/basic-nodes-plugins.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -2687,7 +1860,7 @@ export const Index: Record<string, any> = {
       name: "basic-marks-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["basic-nodes-plugins"],
+      registryDependencies: ["https://platejs.org/r/styles/default/basic-nodes-plugins.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -2714,7 +1887,7 @@ export const Index: Record<string, any> = {
       name: "basic-nodes-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["basic-nodes-plugins"],
+      registryDependencies: ["https://platejs.org/r/styles/default/basic-nodes-plugins.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -2749,7 +1922,7 @@ export const Index: Record<string, any> = {
       name: "block-menu-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["block-menu-plugins"],
+      registryDependencies: ["https://platejs.org/r/styles/default/block-menu-plugins.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -2776,7 +1949,7 @@ export const Index: Record<string, any> = {
       name: "block-selection-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["block-selection-plugins"],
+      registryDependencies: ["https://platejs.org/r/styles/default/block-selection-plugins.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -2830,7 +2003,7 @@ export const Index: Record<string, any> = {
       name: "comments-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["comments-plugin","discussion-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/comments-plugin.json","https://platejs.org/r/styles/default/discussion-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -2857,7 +2030,7 @@ export const Index: Record<string, any> = {
       name: "copilot-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["copilot-plugins"],
+      registryDependencies: ["https://platejs.org/r/styles/default/copilot-plugins.json"],
       files: [{
         path: "src/registry/default/examples/copilot-demo.tsx",
         type: "registry:example",
@@ -2884,7 +2057,7 @@ export const Index: Record<string, any> = {
       name: "cursor-overlay-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["cursor-overlay-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/cursor-overlay-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -2938,7 +2111,7 @@ export const Index: Record<string, any> = {
       name: "dnd-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["dnd-plugins"],
+      registryDependencies: ["https://platejs.org/r/styles/default/dnd-plugins.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -3019,7 +2192,7 @@ export const Index: Record<string, any> = {
       name: "exit-break-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["exit-break-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/exit-break-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -3073,7 +2246,7 @@ export const Index: Record<string, any> = {
       name: "find-replace-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["fixed-toolbar","input","search-highlight-leaf"],
+      registryDependencies: ["https://platejs.org/r/styles/default/fixed-toolbar.json","https://platejs.org/r/styles/default/input.json","https://platejs.org/r/styles/default/search-highlight-leaf.json"],
       files: [{
         path: "src/registry/default/examples/find-replace-demo.tsx",
         type: "registry:example",
@@ -3208,7 +2381,7 @@ export const Index: Record<string, any> = {
       name: "indent-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["indent-list-plugins"],
+      registryDependencies: ["https://platejs.org/r/styles/default/indent-list-plugins.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -3235,7 +2408,7 @@ export const Index: Record<string, any> = {
       name: "indent-list-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["indent-list-plugins"],
+      registryDependencies: ["https://platejs.org/r/styles/default/indent-list-plugins.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -3289,7 +2462,7 @@ export const Index: Record<string, any> = {
       name: "line-height-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["line-height-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/line-height-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -3316,7 +2489,7 @@ export const Index: Record<string, any> = {
       name: "link-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["link-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/link-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -3343,7 +2516,7 @@ export const Index: Record<string, any> = {
       name: "list-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["autoformat-list-plugin","list-element","todo-list-element"],
+      registryDependencies: ["https://platejs.org/r/styles/default/autoformat-list-plugin.json","https://platejs.org/r/styles/default/list-element.json","https://platejs.org/r/styles/default/todo-list-element.json"],
       files: [{
         path: "src/registry/default/examples/list-demo.tsx",
         type: "registry:example",
@@ -3378,7 +2551,7 @@ export const Index: Record<string, any> = {
       name: "media-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["media-plugins"],
+      registryDependencies: ["https://platejs.org/r/styles/default/media-plugins.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -3405,7 +2578,7 @@ export const Index: Record<string, any> = {
       name: "mention-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["mention-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/mention-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -3432,7 +2605,7 @@ export const Index: Record<string, any> = {
       name: "reset-node-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["reset-block-type-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/reset-block-type-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -3567,7 +2740,7 @@ export const Index: Record<string, any> = {
       name: "select-editor-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["form","button","select-editor"],
+      registryDependencies: ["https://platejs.org/r/styles/default/form.json","https://platejs.org/r/styles/default/button.json","https://platejs.org/r/styles/default/select-editor.json"],
       files: [{
         path: "src/registry/default/examples/select-editor-demo.tsx",
         type: "registry:example",
@@ -3636,7 +2809,7 @@ export const Index: Record<string, any> = {
       name: "soft-break-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["soft-break-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/soft-break-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -3690,7 +2863,7 @@ export const Index: Record<string, any> = {
       name: "table-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["table-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/table-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -3744,7 +2917,7 @@ export const Index: Record<string, any> = {
       name: "toc-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["toc-plugin"],
+      registryDependencies: ["https://platejs.org/r/styles/default/toc-plugin.json"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",
@@ -4125,7 +3298,7 @@ export const Index: Record<string, any> = {
       name: "markdown-to-slate-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["use-debounce"],
+      registryDependencies: ["https://platejs.org/r/styles/default/use-debounce.json"],
       files: [{
         path: "src/registry/default/examples/markdown-to-slate-demo.tsx",
         type: "registry:example",

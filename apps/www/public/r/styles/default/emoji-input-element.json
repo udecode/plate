@@ -27,8 +27,8 @@
   ],
   "name": "emoji-input-element",
   "registryDependencies": [
-    "inline-combobox",
-    "use-debounce"
+    "https://platejs.org/r/styles/default/inline-combobox.json",
+    "https://platejs.org/r/styles/default/use-debounce.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

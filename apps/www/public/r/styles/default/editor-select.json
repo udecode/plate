@@ -13,7 +13,7 @@
   ],
   "name": "editor-select",
   "registryDependencies": [
-    "select-editor-demo"
+    "https://platejs.org/r/styles/default/select-editor-demo.json"
   ],
   "type": "registry:block",
   "$schema": "https://platejs.org/schema/registry-item.json",

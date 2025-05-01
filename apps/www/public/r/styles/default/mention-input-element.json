@@ -26,7 +26,7 @@
   ],
   "name": "mention-input-element",
   "registryDependencies": [
-    "inline-combobox"
+    "https://platejs.org/r/styles/default/inline-combobox.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

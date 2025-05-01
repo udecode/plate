@@ -12,7 +12,7 @@
   ],
   "name": "link-plugin",
   "registryDependencies": [
-    "link-floating-toolbar"
+    "https://platejs.org/r/styles/default/link-floating-toolbar.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

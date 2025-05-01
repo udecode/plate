@@ -17,8 +17,8 @@
   ],
   "name": "indent-list-plugins",
   "registryDependencies": [
-    "indent-fire-marker",
-    "indent-todo-marker"
+    "https://platejs.org/r/styles/default/indent-fire-marker.json",
+    "https://platejs.org/r/styles/default/indent-todo-marker.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

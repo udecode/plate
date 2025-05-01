@@ -14,7 +14,7 @@
   ],
   "name": "dnd-plugins",
   "registryDependencies": [
-    "draggable"
+    "https://platejs.org/r/styles/default/draggable.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

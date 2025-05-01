@@ -36,7 +36,7 @@
   ],
   "name": "table-demo",
   "registryDependencies": [
-    "table-plugin"
+    "https://platejs.org/r/styles/default/table-plugin.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

@@ -30,7 +30,7 @@
   ],
   "name": "align-demo",
   "registryDependencies": [
-    "align-plugin"
+    "https://platejs.org/r/styles/default/align-plugin.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

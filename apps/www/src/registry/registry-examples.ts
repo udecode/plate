@@ -271,10 +271,10 @@ export const docExamples: Registry['items'] = [
     ],
     name: 'ai-demo',
     registryDependencies: [
-      'basic-nodes-plugins',
-      'block-selection-plugins',
-      'indent-list-plugins',
-      'link-plugin',
+      'https://platejs.org/r/styles/default/basic-nodes-plugins.json',
+      'https://platejs.org/r/styles/default/block-selection-plugins.json',
+      'https://platejs.org/r/styles/default/indent-list-plugins.json',
+      'https://platejs.org/r/styles/default/link-plugin.json',
     ],
     type: 'registry:example',
   },
@@ -295,7 +295,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'align-demo',
-    registryDependencies: ['align-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/align-plugin.json',
+    ],
     type: 'registry:example',
   },
 
@@ -320,7 +322,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'autoformat-demo',
-    registryDependencies: ['autoformat-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/autoformat-plugin.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -350,7 +354,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'basic-elements-demo',
-    registryDependencies: ['basic-nodes-plugins'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/basic-nodes-plugins.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -380,7 +386,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'basic-marks-demo',
-    registryDependencies: ['basic-nodes-plugins'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/basic-nodes-plugins.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -418,7 +426,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'basic-nodes-demo',
-    registryDependencies: ['basic-nodes-plugins'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/basic-nodes-plugins.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -447,7 +457,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'block-menu-demo',
-    registryDependencies: ['block-menu-plugins'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/block-menu-plugins.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -470,7 +482,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'block-selection-demo',
-    registryDependencies: ['block-selection-plugins'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/block-selection-plugins.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -525,7 +539,10 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'comments-demo',
-    registryDependencies: ['comments-plugin', 'discussion-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/comments-plugin.json',
+      'https://platejs.org/r/styles/default/discussion-plugin.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -552,7 +569,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'copilot-demo',
-    registryDependencies: ['copilot-plugins'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/copilot-plugins.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -576,7 +595,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'cursor-overlay-demo',
-    registryDependencies: ['cursor-overlay-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/cursor-overlay-plugin.json',
+    ],
     type: 'registry:example',
   },
   // {
@@ -648,7 +669,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'dnd-demo',
-    registryDependencies: ['dnd-plugins'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/dnd-plugins.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -724,7 +747,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'exit-break-demo',
-    registryDependencies: ['exit-break-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/exit-break-plugin.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -790,7 +815,11 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'find-replace-demo',
-    registryDependencies: ['fixed-toolbar', 'input', 'search-highlight-leaf'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/fixed-toolbar.json',
+      'https://platejs.org/r/styles/default/input.json',
+      'https://platejs.org/r/styles/default/search-highlight-leaf.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -918,7 +947,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'indent-demo',
-    registryDependencies: ['indent-list-plugins'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/indent-list-plugins.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -951,7 +982,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'indent-list-demo',
-    registryDependencies: ['indent-list-plugins'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/indent-list-plugins.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -991,7 +1024,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'line-height-demo',
-    registryDependencies: ['line-height-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/line-height-plugin.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -1017,7 +1052,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'link-demo',
-    registryDependencies: ['link-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/link-plugin.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -1046,9 +1083,9 @@ export const docExamples: Registry['items'] = [
     ],
     name: 'list-demo',
     registryDependencies: [
-      'autoformat-list-plugin',
-      'list-element',
-      'todo-list-element',
+      'https://platejs.org/r/styles/default/autoformat-list-plugin.json',
+      'https://platejs.org/r/styles/default/list-element.json',
+      'https://platejs.org/r/styles/default/todo-list-element.json',
     ],
     type: 'registry:example',
   },
@@ -1069,7 +1106,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'media-demo',
-    registryDependencies: ['media-plugins'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/media-plugins.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -1095,7 +1134,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'mention-demo',
-    registryDependencies: ['mention-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/mention-plugin.json',
+    ],
     type: 'registry:example',
   },
   // {
@@ -1128,7 +1169,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'reset-node-demo',
-    registryDependencies: ['reset-block-type-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/reset-block-type-plugin.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -1237,7 +1280,11 @@ export const docExamples: Registry['items'] = [
       { path: 'examples/select-editor-demo.tsx', type: 'registry:example' },
     ],
     name: 'select-editor-demo',
-    registryDependencies: ['form', 'button', 'select-editor'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/form.json',
+      'https://platejs.org/r/styles/default/button.json',
+      'https://platejs.org/r/styles/default/select-editor.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -1315,7 +1362,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'soft-break-demo',
-    registryDependencies: ['soft-break-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/soft-break-plugin.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -1361,7 +1410,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'table-demo',
-    registryDependencies: ['table-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/table-plugin.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -1404,7 +1455,9 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'toc-demo',
-    registryDependencies: ['toc-plugin'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/toc-plugin.json',
+    ],
     type: 'registry:example',
   },
   {
@@ -1635,7 +1688,9 @@ export const examples: Registry['items'] = [
       { path: 'examples/markdown-to-slate-demo.tsx', type: 'registry:example' },
     ],
     name: 'markdown-to-slate-demo',
-    registryDependencies: ['use-debounce'],
+    registryDependencies: [
+      'https://platejs.org/r/styles/default/use-debounce.json',
+    ],
     type: 'registry:example',
   },
   // {

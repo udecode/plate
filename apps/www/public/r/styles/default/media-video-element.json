@@ -39,9 +39,9 @@
   ],
   "name": "media-video-element",
   "registryDependencies": [
-    "media-popover",
-    "caption",
-    "resizable"
+    "https://platejs.org/r/styles/default/media-popover.json",
+    "https://platejs.org/r/styles/default/caption.json",
+    "https://platejs.org/r/styles/default/resizable.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

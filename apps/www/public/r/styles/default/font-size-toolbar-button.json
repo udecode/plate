@@ -23,8 +23,8 @@
   ],
   "name": "font-size-toolbar-button",
   "registryDependencies": [
-    "popover",
-    "toolbar"
+    "https://platejs.org/r/styles/default/popover.json",
+    "https://platejs.org/r/styles/default/toolbar.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

@@ -59,10 +59,10 @@
   ],
   "name": "ai-menu",
   "registryDependencies": [
-    "use-chat",
+    "https://platejs.org/r/use-chat",
     "command",
     "popover",
-    "editor"
+    "https://platejs.org/r/editor"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

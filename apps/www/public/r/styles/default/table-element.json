@@ -40,7 +40,7 @@
   ],
   "name": "table-element",
   "registryDependencies": [
-    "dropdown-menu"
+    "https://platejs.org/r/styles/default/dropdown-menu.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

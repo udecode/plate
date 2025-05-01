@@ -12,7 +12,7 @@
   ],
   "name": "comments-plugin",
   "registryDependencies": [
-    "discussion-plugin"
+    "https://platejs.org/r/styles/default/discussion-plugin.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

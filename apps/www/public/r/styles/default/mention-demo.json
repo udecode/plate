@@ -36,7 +36,7 @@
   ],
   "name": "mention-demo",
   "registryDependencies": [
-    "mention-plugin"
+    "https://platejs.org/r/styles/default/mention-plugin.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

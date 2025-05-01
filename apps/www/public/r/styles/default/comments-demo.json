@@ -35,7 +35,10 @@
     }
   ],
   "name": "comments-demo",
-  "registryDependencies": ["comments-plugin", "discussion-plugin"],
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/comments-plugin.json",
+    "https://platejs.org/r/styles/default/discussion-plugin.json"
+  ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",
   "author": "udecode (https://platejs.org)"

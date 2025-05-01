@@ -39,7 +39,7 @@
   ],
   "name": "code-block-element",
   "registryDependencies": [
-    "command"
+    "https://platejs.org/r/styles/default/command.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

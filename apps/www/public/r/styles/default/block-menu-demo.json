@@ -36,7 +36,7 @@
   ],
   "name": "block-menu-demo",
   "registryDependencies": [
-    "block-menu-plugins"
+    "https://platejs.org/r/styles/default/block-menu-plugins.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

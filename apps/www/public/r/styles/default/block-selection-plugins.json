@@ -12,7 +12,7 @@
   ],
   "name": "block-selection-plugins",
   "registryDependencies": [
-    "block-selection"
+    "https://platejs.org/r/styles/default/block-selection.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

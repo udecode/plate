@@ -12,7 +12,7 @@
   ],
   "name": "cursor-overlay-plugin",
   "registryDependencies": [
-    "cursor-overlay"
+    "https://platejs.org/r/styles/default/cursor-overlay.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

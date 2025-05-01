@@ -28,8 +28,8 @@
   ],
   "name": "media-placeholder-element",
   "registryDependencies": [
-    "spinner",
-    "uploadthing"
+    "https://platejs.org/r/styles/default/spinner.json",
+    "https://platejs.org/r/styles/default/uploadthing.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

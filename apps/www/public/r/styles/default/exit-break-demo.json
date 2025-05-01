@@ -31,7 +31,7 @@
   ],
   "name": "exit-break-demo",
   "registryDependencies": [
-    "exit-break-plugin"
+    "https://platejs.org/r/styles/default/exit-break-plugin.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

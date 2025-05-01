@@ -30,7 +30,7 @@
   ],
   "name": "line-height-demo",
   "registryDependencies": [
-    "line-height-plugin"
+    "https://platejs.org/r/styles/default/line-height-plugin.json"
   ],
   "type": "registry:example",
   "$schema": "https://platejs.org/schema/registry-item.json",

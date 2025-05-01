@@ -26,10 +26,10 @@
   ],
   "name": "select-editor",
   "registryDependencies": [
-    "editor",
+    "https://platejs.org/r/editor",
     "command",
     "popover",
-    "tag-element"
+    "https://platejs.org/r/tag-element"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",

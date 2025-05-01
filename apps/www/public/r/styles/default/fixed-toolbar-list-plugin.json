@@ -10,8 +10,8 @@
   ],
   "name": "fixed-toolbar-list-plugin",
   "registryDependencies": [
-    "fixed-toolbar",
-    "fixed-toolbar-buttons"
+    "https://platejs.org/r/styles/default/fixed-toolbar.json",
+    "https://platejs.org/r/styles/default/fixed-toolbar-buttons.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

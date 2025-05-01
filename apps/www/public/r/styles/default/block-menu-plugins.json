@@ -12,8 +12,8 @@
   ],
   "name": "block-menu-plugins",
   "registryDependencies": [
-    "block-context-menu",
-    "block-selection-plugins"
+    "https://platejs.org/r/styles/default/block-context-menu.json",
+    "https://platejs.org/r/styles/default/block-selection-plugins.json"
   ],
   "type": "registry:component",
   "$schema": "https://platejs.org/schema/registry-item.json",

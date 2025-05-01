@@ -36,8 +36,8 @@
   ],
   "name": "slash-input-element",
   "registryDependencies": [
-    "inline-combobox",
-    "transforms"
+    "https://platejs.org/r/styles/default/inline-combobox.json",
+    "https://platejs.org/r/styles/default/transforms.json"
   ],
   "type": "registry:ui",
   "$schema": "https://platejs.org/schema/registry-item.json",
