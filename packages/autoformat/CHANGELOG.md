@@ -1,5 +1,11 @@
 # @udecode/plate-autoformat
 
+## 47.4.0
+
+### Minor Changes
+
+- [#4255](https://github.com/udecode/plate/pull/4255) by [@felixfeng33](https://github.com/felixfeng33) – Include `matchString` on `format` callback
+
 ## 44.0.0
 
 ## 43.0.0
