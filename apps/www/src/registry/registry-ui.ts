@@ -1,4 +1,4 @@
-import type { Registry } from 'shadcx/registry';
+import type { Registry } from 'shadcn/registry';
 
 import { siteConfig } from '../config/site';
 
@@ -11,8 +11,15 @@ export const uiComponents: Registry['items'] = [
       'ai',
       '@faker-js/faker',
     ],
-    doc: {
-      description: 'A menu for AI-powered content generation and insertion.',
+    description: 'A menu for AI-powered content generation and insertion.',
+    files: [
+      { path: 'plate-ui/ai-menu.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/ai-loading-bar.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/ai-anchor-element.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/ai-menu-items.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/ai-chat-editor.tsx', type: 'registry:ui' },
+    ],
+    meta: {
       docs: [
         { route: '/docs/ai', title: 'AI' },
         {
@@ -22,15 +29,7 @@ export const uiComponents: Registry['items'] = [
       ],
       examples: ['ai-demo', 'ai-pro'],
       label: 'New',
-      title: 'AI Menu',
     },
-    files: [
-      { path: 'plate-ui/ai-menu.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/ai-loading-bar.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/ai-anchor-element.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/ai-menu-items.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/ai-chat-editor.tsx', type: 'registry:ui' },
-    ],
     name: 'ai-menu',
     registryDependencies: [
       'https://platejs.org/r/styles/default/use-chat.json',
@@ -38,38 +37,40 @@ export const uiComponents: Registry['items'] = [
       'https://platejs.org/r/styles/default/popover.json',
       'https://platejs.org/r/styles/default/editor.json',
     ],
+    title: 'AI Menu',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-ai'],
-    doc: {
-      description: 'A toolbar button for accessing AI features.',
+    description: 'A toolbar button for accessing AI features.',
+    files: [{ path: 'plate-ui/ai-toolbar-button.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: '/docs/ai', title: 'AI' },
         { route: siteConfig.links.plateProComponent('ai-toolbar-button') },
       ],
       examples: ['ai-demo', 'floating-toolbar-demo', 'ai-pro'],
       label: 'New',
-      title: 'AI Toolbar Button',
     },
-    files: [{ path: 'plate-ui/ai-toolbar-button.tsx', type: 'registry:ui' }],
     name: 'ai-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'AI Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-alignment', '@radix-ui/react-dropdown-menu'],
-    doc: {
-      description: 'A dropdown menu for text alignment controls.',
+    description: 'A dropdown menu for text alignment controls.',
+    files: [{ path: 'plate-ui/align-dropdown-menu.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [{ route: '/docs/alignment' }],
       examples: ['align-demo'],
     },
-    files: [{ path: 'plate-ui/align-dropdown-menu.tsx', type: 'registry:ui' }],
     name: 'align-dropdown-menu',
     registryDependencies: [
       'https://platejs.org/r/styles/default/dropdown-menu.json',
       'https://platejs.org/r/styles/default/toolbar.json',
     ],
+    title: 'Align Dropdown Menu',
     type: 'registry:ui',
   },
   {
@@ -80,8 +81,9 @@ export const uiComponents: Registry['items'] = [
       '@udecode/plate-indent-list',
       '@udecode/plate-selection',
     ],
-    doc: {
-      description: 'A context menu for block-level operations.',
+    description: 'A context menu for block-level operations.',
+    files: [{ path: 'plate-ui/block-context-menu.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: '/docs/block-menu' },
         { route: siteConfig.links.plateProComponent('block-context-menu') },
@@ -89,19 +91,20 @@ export const uiComponents: Registry['items'] = [
       examples: ['block-menu-demo', 'block-menu-pro'],
       label: 'New',
     },
-    files: [{ path: 'plate-ui/block-context-menu.tsx', type: 'registry:ui' }],
     name: 'block-context-menu',
     registryDependencies: [
       'https://platejs.org/r/styles/default/calendar.json',
       'https://platejs.org/r/styles/default/context-menu.json',
       'https://platejs.org/r/styles/default/use-is-touch-device.json',
     ],
+    title: 'Block Context Menu',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-selection'],
-    doc: {
-      description: 'A visual overlay for selected blocks.',
+    description: 'A visual overlay for selected blocks.',
+    files: [{ path: 'plate-ui/block-selection.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: '/docs/block-selection' },
         { route: siteConfig.links.plateProComponent('block-selection') },
@@ -109,51 +112,52 @@ export const uiComponents: Registry['items'] = [
       examples: ['block-selection-demo', 'block-selection-pro'],
       label: 'New',
     },
-    files: [{ path: 'plate-ui/block-selection.tsx', type: 'registry:ui' }],
     name: 'block-selection',
     registryDependencies: [],
+    title: 'Block Selection',
     type: 'registry:ui',
   },
   {
     dependencies: ['use-file-picker'],
-    doc: {
-      description: 'A toolbar button to import editor content from a file.',
-      docs: [{ route: '/docs/import', title: 'Import' }],
-      examples: ['basic-nodes-demo'],
-      label: 'New',
-      title: 'Import Toolbar Button',
-    },
+    description: 'A toolbar button to import editor content from a file.',
     files: [
       { path: 'plate-ui/import-toolbar-button.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: '/docs/import', title: 'Import' }],
+      examples: ['basic-nodes-demo'],
+      label: 'New',
+    },
     name: 'import-toolbar-button',
     registryDependencies: [
       'https://platejs.org/r/styles/default/dropdown-menu.json',
       'https://platejs.org/r/styles/default/toolbar.json',
     ],
+    title: 'Import Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['html2canvas-pro', 'pdf-lib'],
-    doc: {
-      description: 'A toolbar button to export editor content as PDF.',
-      docs: [{ route: '/docs/export', title: 'Export' }],
-      examples: ['basic-nodes-demo'],
-      label: 'New',
-      title: 'Export Toolbar Button',
-    },
+    description: 'A toolbar button to export editor content as PDF.',
     files: [
       { path: 'plate-ui/export-toolbar-button.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: '/docs/export', title: 'Export' }],
+      examples: ['basic-nodes-demo'],
+      label: 'New',
+    },
     name: 'export-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'Export Toolbar Button',
     type: 'registry:ui',
   },
 
   {
     dependencies: ['@udecode/plate-caption'],
-    doc: {
-      description: 'A text field for adding captions to media elements.',
+    description: 'A text field for adding captions to media elements.',
+    files: [{ path: 'plate-ui/caption.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: '/docs/caption' },
         { route: siteConfig.links.plateProComponent('caption') },
@@ -163,23 +167,14 @@ export const uiComponents: Registry['items'] = [
         // 'upload-demo'
       ],
     },
-    files: [{ path: 'plate-ui/caption.tsx', type: 'registry:ui' }],
     name: 'caption',
     registryDependencies: ['https://platejs.org/r/styles/default/button.json'],
+    title: 'Caption',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-font', '@radix-ui/react-dropdown-menu'],
-    doc: {
-      description: 'A color picker with text and background color controls.',
-      docs: [
-        { route: '/docs/font' },
-        { route: siteConfig.links.plateProComponent('color-dropdown-menu') },
-      ],
-      examples: ['font-demo'],
-      //       1. Text color can be modified using the floating toolbar or block menu, providing more flexibility in formatting.
-      // 2. An improved color picker interface with custom color options and a color input field for precise color selection.
-    },
+    description: 'A color picker with text and background color controls.',
     files: [
       { path: 'plate-ui/color-constants.ts', type: 'registry:ui' },
       { path: 'plate-ui/color-dropdown-menu-items.tsx', type: 'registry:ui' },
@@ -188,6 +183,15 @@ export const uiComponents: Registry['items'] = [
       { path: 'plate-ui/color-picker.tsx', type: 'registry:ui' },
       { path: 'plate-ui/colors-custom.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [
+        { route: '/docs/font' },
+        { route: siteConfig.links.plateProComponent('color-dropdown-menu') },
+      ],
+      examples: ['font-demo'],
+      //       1. Text color can be modified using the floating toolbar or block menu, providing more flexibility in formatting.
+      // 2. An improved color picker interface with custom color options and a color input field for precise color selection.
+    },
     name: 'color-dropdown-menu',
     registryDependencies: [
       'https://platejs.org/r/styles/default/dropdown-menu.json',
@@ -196,38 +200,33 @@ export const uiComponents: Registry['items'] = [
       'https://platejs.org/r/styles/default/button.json',
       'https://platejs.org/r/styles/default/tooltip.json',
     ],
+    title: 'Color Dropdown Menu',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-comments'],
-    doc: {
-      description: 'A toolbar button for adding inline comments.',
+    description: 'A toolbar button for adding inline comments.',
+    files: [
+      { path: 'plate-ui/comment-toolbar-button.tsx', type: 'registry:ui' },
+    ],
+    meta: {
       docs: [
         { route: '/docs/comments' },
         { route: siteConfig.links.plateProComponent('comment-toolbar-button') },
       ],
       examples: ['comments-demo', 'floating-toolbar-demo', 'comments-pro'],
     },
-    files: [
-      { path: 'plate-ui/comment-toolbar-button.tsx', type: 'registry:ui' },
-    ],
     name: 'comment-toolbar-button',
     registryDependencies: [
       'https://platejs.org/r/styles/default/comments-plugin.json',
     ],
+    title: 'Comment Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-comments', 'date-fns'],
-    doc: {
-      description:
-        'A popover interface for managing discussions: comments, replies, suggestions.',
-      docs: [
-        { route: '/docs/comments' },
-        { route: siteConfig.links.plateProComponent('block-discussion') },
-      ],
-      examples: ['comments-demo', 'comments-pro'],
-    },
+    description:
+      'A popover interface for managing discussions: comments, replies, suggestions.',
     files: [
       {
         path: 'plate-ui/block-discussion.tsx',
@@ -246,6 +245,13 @@ export const uiComponents: Registry['items'] = [
         type: 'registry:ui',
       },
     ],
+    meta: {
+      docs: [
+        { route: '/docs/comments' },
+        { route: siteConfig.links.plateProComponent('block-discussion') },
+      ],
+      examples: ['comments-demo', 'comments-pro'],
+    },
     name: 'block-discussion',
     registryDependencies: [
       'https://platejs.org/r/styles/default/suggestion-plugin.json',
@@ -263,21 +269,23 @@ export const uiComponents: Registry['items'] = [
       'https://platejs.org/r/styles/default/mention-element.json',
       'https://platejs.org/r/styles/default/mention-input-element.json',
     ],
+    title: 'Block Discussion',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-selection'],
-    doc: {
-      description: 'A visual overlay for cursors and selections.',
+    description: 'A visual overlay for cursors and selections.',
+    files: [{ path: 'plate-ui/cursor-overlay.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: '/docs/cursor-overlay' },
         { route: siteConfig.links.plateProComponent('cursor-overlay') },
       ],
       examples: ['ai-demo'],
     },
-    files: [{ path: 'plate-ui/cursor-overlay.tsx', type: 'registry:ui' }],
     name: 'cursor-overlay',
     registryDependencies: [],
+    title: 'Cursor Overlay',
     type: 'registry:ui',
   },
   {
@@ -294,8 +302,9 @@ export const uiComponents: Registry['items'] = [
       'react-dnd',
       'react-dnd-html5-backend',
     ],
-    doc: {
-      description: 'A drag handle for moving editor blocks.',
+    description: 'A drag handle for moving editor blocks.',
+    files: [{ path: 'plate-ui/draggable.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: '/docs/dnd', title: 'Drag & Drop' },
         { route: siteConfig.links.plateProComponent('draggable') },
@@ -331,38 +340,39 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       ],
       // Click the plus button next to the drag button to insert blocks
     },
-    files: [{ path: 'plate-ui/draggable.tsx', type: 'registry:ui' }],
     name: 'draggable',
     registryDependencies: [
       'https://platejs.org/r/styles/default/tooltip.json',
       'https://platejs.org/r/styles/default/use-mounted.json',
     ],
+    title: 'Draggable',
     type: 'registry:ui',
   },
   {
     dependencies: [],
-    doc: {
-      description: 'A container for the editor content and styling.',
-      docs: [{ route: siteConfig.links.plateProComponent('editor') }],
-      examples: ['editor-default', 'editor-disabled', 'editor-full-width'],
-    },
+    description: 'A container for the editor content and styling.',
     files: [
       { path: 'plate-ui/editor.tsx', type: 'registry:ui' },
       { path: 'plate-ui/editor-static.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: siteConfig.links.plateProComponent('editor') }],
+      examples: ['editor-default', 'editor-disabled', 'editor-full-width'],
+    },
     name: 'editor',
     registryDependencies: [],
+    title: 'Editor',
     type: 'registry:ui',
   },
   {
     dependencies: ['fzf@0.5.2', '@udecode/plate-tag', '@udecode/cmdk'],
-    doc: {
-      description: 'An editor to select tags.',
+    description: 'An editor to select tags.',
+    files: [{ path: 'plate-ui/select-editor.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [{ route: '/docs/multi-select' }],
       examples: ['select-editor-demo'],
       label: 'New',
     },
-    files: [{ path: 'plate-ui/select-editor.tsx', type: 'registry:ui' }],
     name: 'select-editor',
     registryDependencies: [
       'https://platejs.org/r/editor',
@@ -370,6 +380,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       'popover',
       'https://platejs.org/r/tag-element',
     ],
+    title: 'Select Editor',
     type: 'registry:ui',
   },
   {
@@ -378,14 +389,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       '@emoji-mart/data@1.2.1',
       '@radix-ui/react-popover',
     ],
-    doc: {
-      description: 'A dropdown menu for emoji selection and insertion.',
-      docs: [
-        { route: '/docs/emoji' },
-        { route: siteConfig.links.plateProComponent('emoji-picker') },
-      ],
-      examples: ['emoji-demo', 'emoji-pro'],
-    },
+    description: 'A dropdown menu for emoji selection and insertion.',
     files: [
       { path: 'plate-ui/emoji-dropdown-menu.tsx', type: 'registry:ui' },
       { path: 'plate-ui/emoji-icons.tsx', type: 'registry:ui' },
@@ -400,8 +404,16 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       { path: 'plate-ui/emoji-picker.tsx', type: 'registry:ui' },
       { path: 'plate-ui/emoji-toolbar-dropdown.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [
+        { route: '/docs/emoji' },
+        { route: siteConfig.links.plateProComponent('emoji-picker') },
+      ],
+      examples: ['emoji-demo', 'emoji-pro'],
+    },
     name: 'emoji-dropdown-menu',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'Emoji Dropdown Menu',
     type: 'registry:ui',
   },
   {
@@ -412,13 +424,13 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       '@udecode/plate-media',
       '@udecode/plate-highlight',
     ],
-    doc: {
-      description: 'A set of commonly used formatting buttons.',
-      examples: ['basic-nodes-demo'],
-    },
+    description: 'A set of commonly used formatting buttons.',
     files: [
       { path: 'plate-ui/fixed-toolbar-buttons.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      examples: ['basic-nodes-demo'],
+    },
     name: 'fixed-toolbar-buttons',
     registryDependencies: [
       'toolbar',
@@ -446,6 +458,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       'https://platejs.org/r/turn-into-dropdown-menu',
       'https://platejs.org/r/export-toolbar-button',
     ],
+    title: 'Fixed Toolbar Buttons',
     type: 'registry:ui',
   },
   {
@@ -455,13 +468,13 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       '@udecode/plate-list',
       '@udecode/plate-media',
     ],
-    // doc: {
-    //   description: 'A set of commonly used formatting buttons.',
-    //   examples: ['toolbar-demo'],
-    // },
     files: [
       { path: 'plate-ui/fixed-toolbar-list-buttons.tsx', type: 'registry:ui' },
     ],
+    // description: 'A set of commonly used formatting buttons.',
+    meta: {
+      // examples: ['toolbar-demo'],
+    },
     name: 'fixed-toolbar-list-buttons',
     registryDependencies: [
       'toolbar',
@@ -482,23 +495,28 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       'https://platejs.org/r/toggle-toolbar-button',
       'https://platejs.org/r/turn-into-dropdown-menu',
     ],
+    title: 'Fixed Toolbar List Buttons',
     type: 'registry:ui',
   },
   {
     dependencies: [],
-    doc: {
-      description: 'A fixed toolbar that stays at the top of the editor.',
+    description: 'A fixed toolbar that stays at the top of the editor.',
+    files: [{ path: 'plate-ui/fixed-toolbar.tsx', type: 'registry:ui' }],
+    meta: {
       examples: ['basic-nodes-demo'],
     },
-    files: [{ path: 'plate-ui/fixed-toolbar.tsx', type: 'registry:ui' }],
     name: 'fixed-toolbar',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'Fixed Toolbar',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-basic-marks'],
-    doc: {
-      description: 'A set of formatting buttons for the floating toolbar.',
+    description: 'A set of formatting buttons for the floating toolbar.',
+    files: [
+      { path: 'plate-ui/floating-toolbar-buttons.tsx', type: 'registry:ui' },
+    ],
+    meta: {
       docs: [
         { route: '/docs/api/floating' },
         {
@@ -507,9 +525,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       ],
       examples: ['floating-toolbar-demo', 'floating-toolbar-pro'],
     },
-    files: [
-      { path: 'plate-ui/floating-toolbar-buttons.tsx', type: 'registry:ui' },
-    ],
     name: 'floating-toolbar-buttons',
     registryDependencies: [
       'toolbar',
@@ -520,28 +535,31 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       'https://platejs.org/r/more-dropdown-menu',
       'https://platejs.org/r/turn-into-dropdown-menu',
     ],
+    title: 'Floating Toolbar Buttons',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-floating'],
-    doc: {
-      description: 'A contextual toolbar that appears over selected text.',
+    description: 'A contextual toolbar that appears over selected text.',
+    files: [{ path: 'plate-ui/floating-toolbar.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: '/docs/api/floating' },
         { route: siteConfig.links.plateProComponent('floating-toolbar') },
       ],
       examples: ['floating-toolbar-demo', 'floating-toolbar-pro'],
     },
-    files: [{ path: 'plate-ui/floating-toolbar.tsx', type: 'registry:ui' }],
     name: 'floating-toolbar',
     registryDependencies: ['toolbar'],
+    title: 'Floating Toolbar',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-ai'],
-    doc: {
-      description:
-        'A text suggestion system that displays AI-generated content after the cursor.',
+    description:
+      'A text suggestion system that displays AI-generated content after the cursor.',
+    files: [{ path: 'plate-ui/ghost-text.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         {
           route: '/docs/copilot',
@@ -554,21 +572,25 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       // 2. Marks: support for marks like bold, italic, underline, etc.This means you can see bold text and **links** in the ghost text
       // 3. Backend: complete backend setup.
     },
-    files: [{ path: 'plate-ui/ghost-text.tsx', type: 'registry:ui' }],
     name: 'ghost-text',
     registryDependencies: [],
+    title: 'Ghost Text',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-indent'],
     files: [{ path: 'plate-ui/indent-fire-marker.tsx', type: 'registry:ui' }],
     name: 'indent-fire-marker',
+    title: 'Indent Fire Marker',
     type: 'registry:ui',
   },
   {
     dependencies: [],
-    doc: {
-      description: 'Toolbar buttons for undo and redo operations.',
+    description: 'Toolbar buttons for undo and redo operations.',
+    files: [
+      { path: 'plate-ui/history-toolbar-button.tsx', type: 'registry:ui' },
+    ],
+    meta: {
       docs: [
         {
           route: 'https://docs.slatejs.org/libraries/slate-history',
@@ -577,88 +599,91 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       ],
       examples: ['basic-nodes-demo'],
     },
-    files: [
-      { path: 'plate-ui/history-toolbar-button.tsx', type: 'registry:ui' },
-    ],
     name: 'history-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'History Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-indent-list'],
-    doc: {
-      description: 'A toolbar control for adjusting list indentation.',
-      docs: [{ route: '/docs/indent-list' }],
-      examples: ['list-demo'],
-    },
+    description: 'A toolbar control for adjusting list indentation.',
     files: [
       { path: 'plate-ui/indent-list-toolbar-button.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: '/docs/indent-list' }],
+      examples: ['list-demo'],
+    },
     name: 'indent-list-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'Indent List Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-indent-list'],
-    doc: {
-      description: 'A checkbox marker for interactive todo lists.',
+    description: 'A checkbox marker for interactive todo lists.',
+    files: [
+      { path: 'plate-ui/indent-todo-marker.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/indent-todo-marker-static.tsx', type: 'registry:ui' },
+    ],
+    meta: {
       docs: [
         { route: '/docs/indent-list' },
         { route: siteConfig.links.plateProComponent('indent-todo-marker') },
       ],
       examples: ['list-demo'],
     },
-    files: [
-      { path: 'plate-ui/indent-todo-marker.tsx', type: 'registry:ui' },
-      { path: 'plate-ui/indent-todo-marker-static.tsx', type: 'registry:ui' },
-    ],
     name: 'indent-todo-marker',
     registryDependencies: [
       'https://platejs.org/r/styles/default/checkbox.json',
     ],
+    title: 'Indent Todo Marker',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-indent-list'],
-    doc: {
-      description: 'A toolbar control for creating todo list items.',
-      docs: [{ route: '/docs/indent-list' }],
-      examples: ['list-demo'],
-    },
+    description: 'A toolbar control for creating todo list items.',
     files: [
       { path: 'plate-ui/indent-todo-toolbar-button.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: '/docs/indent-list' }],
+      examples: ['list-demo'],
+    },
     name: 'indent-todo-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'Indent Todo Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-indent'],
-    doc: {
-      description: 'A toolbar control for block indentation.',
-      docs: [{ route: '/docs/indent' }],
-      examples: ['indent-demo'],
-    },
+    description: 'A toolbar control for block indentation.',
     files: [
       { path: 'plate-ui/indent-toolbar-button.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: '/docs/indent' }],
+      examples: ['indent-demo'],
+    },
     name: 'indent-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'Indent Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-combobox', '@ariakit/react'],
-    doc: {
-      description: 'A combobox for inline suggestions.',
+    description: 'A combobox for inline suggestions.',
+    files: [{ path: 'plate-ui/inline-combobox.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: '/docs/combobox' },
         { route: siteConfig.links.plateProComponent('inline-combobox') },
       ],
       examples: ['mention-demo', 'slash-command-demo', 'emoji-demo'],
     },
-    files: [{ path: 'plate-ui/inline-combobox.tsx', type: 'registry:ui' }],
     name: 'inline-combobox',
     registryDependencies: [],
+    title: 'Inline Combobox',
     type: 'registry:ui',
   },
   {
@@ -676,17 +701,18 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       '@udecode/plate-table',
       '@udecode/plate-toggle',
     ],
-    doc: {
-      description: 'A menu for inserting different types of blocks.',
+    description: 'A menu for inserting different types of blocks.',
+    files: [{ path: 'plate-ui/insert-dropdown-menu.tsx', type: 'registry:ui' }],
+    meta: {
       examples: ['basic-nodes-demo'],
     },
-    files: [{ path: 'plate-ui/insert-dropdown-menu.tsx', type: 'registry:ui' }],
     name: 'insert-dropdown-menu',
     registryDependencies: [
       'dropdown-menu',
       'toolbar',
       'https://platejs.org/r/styles/default/transforms.json',
     ],
+    title: 'Insert Dropdown Menu',
     type: 'registry:ui',
   },
   {
@@ -694,25 +720,29 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       '@udecode/plate-line-height',
       '@radix-ui/react-dropdown-menu',
     ],
-    doc: {
-      description: 'A menu for controlling text line spacing.',
-      docs: [{ route: '/docs/line-height' }],
-      examples: ['line-height-demo'],
-    },
+    description: 'A menu for controlling text line spacing.',
     files: [
       { path: 'plate-ui/line-height-dropdown-menu.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: '/docs/line-height' }],
+      examples: ['line-height-demo'],
+    },
     name: 'line-height-dropdown-menu',
     registryDependencies: [
       'https://platejs.org/r/styles/default/toolbar.json',
       'https://platejs.org/r/styles/default/dropdown-menu.json',
     ],
+    title: 'Line Height Dropdown Menu',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-link', '@udecode/plate-floating'],
-    doc: {
-      description: 'A floating interface for link editing.',
+    description: 'A floating interface for link editing.',
+    files: [
+      { path: 'plate-ui/link-floating-toolbar.tsx', type: 'registry:ui' },
+    ],
+    meta: {
       docs: [
         { route: '/docs/link' },
         { route: '/docs/api/floating' },
@@ -720,9 +750,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       ],
       examples: ['link-demo', 'link-pro'],
     },
-    files: [
-      { path: 'plate-ui/link-floating-toolbar.tsx', type: 'registry:ui' },
-    ],
     name: 'link-floating-toolbar',
     registryDependencies: [
       'https://platejs.org/r/styles/default/button.json',
@@ -730,69 +757,74 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       'https://platejs.org/r/styles/default/popover.json',
       'https://platejs.org/r/styles/default/separator.json',
     ],
+    title: 'Link Floating Toolbar',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-link'],
-    doc: {
-      description: 'A toolbar control for link management.',
+    description: 'A toolbar control for link management.',
+    files: [{ path: 'plate-ui/link-toolbar-button.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: '/docs/link' },
         { route: siteConfig.links.plateProComponent('link-toolbar-button') },
       ],
       examples: ['link-demo', 'link-pro'],
     },
-    files: [{ path: 'plate-ui/link-toolbar-button.tsx', type: 'registry:ui' }],
     name: 'link-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'Link Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-list'],
-    doc: {
-      description: 'A toolbar control for indenting lists.',
-      docs: [{ route: '/docs/list' }],
-      examples: ['list-demo'],
-    },
+    description: 'A toolbar control for indenting lists.',
     files: [
       { path: 'plate-ui/list-indent-toolbar-button.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: '/docs/list' }],
+      examples: ['list-demo'],
+    },
     name: 'list-indent-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'List Indent Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-list'],
-    doc: {
-      description: 'A toolbar control for list creation and management.',
+    description: 'A toolbar control for list creation and management.',
+    files: [{ path: 'plate-ui/list-toolbar-button.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [{ route: '/docs/list' }],
       examples: ['list-demo'],
     },
-    files: [{ path: 'plate-ui/list-toolbar-button.tsx', type: 'registry:ui' }],
     name: 'list-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'List Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-basic-marks'],
-    doc: {
-      description: 'A toolbar control for basic text formatting.',
+    description: 'A toolbar control for basic text formatting.',
+    files: [{ path: 'plate-ui/mark-toolbar-button.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [{ route: '/docs/basic-marks' }],
       examples: ['basic-marks-demo', 'basic-nodes-pro'],
     },
-    files: [{ path: 'plate-ui/mark-toolbar-button.tsx', type: 'registry:ui' }],
     name: 'mark-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'Mark Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-media'],
-    doc: {
-      description: 'A popover interface for media settings.',
+    description: 'A popover interface for media settings.',
+    files: [{ path: 'plate-ui/media-popover.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [{ route: '/docs/media' }],
       examples: ['media-demo', 'media-toolbar-pro'],
     },
-    files: [{ path: 'plate-ui/media-popover.tsx', type: 'registry:ui' }],
     name: 'media-popover',
     registryDependencies: [
       'https://platejs.org/r/styles/default/button.json',
@@ -800,16 +832,17 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       'https://platejs.org/r/styles/default/popover.json',
       'https://platejs.org/r/styles/default/separator.json',
     ],
+    title: 'Media Popover',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-media', 'use-file-picker', 'sonner'],
-    doc: {
-      description: 'Toolbar button for inserting and managing media.',
+    description: 'Toolbar button for inserting and managing media.',
+    files: [{ path: 'plate-ui/media-toolbar-button.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [{ route: '/docs/media' }],
       examples: ['media-demo', 'upload-pro'],
     },
-    files: [{ path: 'plate-ui/media-toolbar-button.tsx', type: 'registry:ui' }],
     name: 'media-toolbar-button',
     registryDependencies: [
       'https://platejs.org/r/styles/default/toolbar.json',
@@ -817,32 +850,35 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       'https://platejs.org/r/styles/default/dropdown-menu.json',
       'https://platejs.org/r/styles/default/alert-dialog.json',
     ],
+    title: 'Media Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-media', 'sonner'],
-    doc: {
-      description: 'Show toast notifications for media uploads.',
+    description: 'Show toast notifications for media uploads.',
+    files: [{ path: 'plate-ui/media-upload-toast.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [{ route: '/docs/media' }],
       examples: ['media-demo', 'upload-pro'],
     },
-    files: [{ path: 'plate-ui/media-upload-toast.tsx', type: 'registry:ui' }],
     name: 'media-upload-toast',
     registryDependencies: [],
+    title: 'Media Upload Toast',
     type: 'registry:ui',
   },
   {
     dependencies: ['@radix-ui/react-dropdown-menu'],
-    doc: {
-      description: 'A menu for switching between editor modes.',
+    description: 'A menu for switching between editor modes.',
+    files: [{ path: 'plate-ui/mode-dropdown-menu.tsx', type: 'registry:ui' }],
+    meta: {
       examples: ['basic-nodes-demo'],
     },
-    files: [{ path: 'plate-ui/mode-dropdown-menu.tsx', type: 'registry:ui' }],
     name: 'mode-dropdown-menu',
     registryDependencies: [
       'https://platejs.org/r/styles/default/dropdown-menu.json',
       'https://platejs.org/r/styles/default/toolbar.json',
     ],
+    title: 'Mode Dropdown Menu',
     type: 'registry:ui',
   },
   {
@@ -851,95 +887,101 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       '@udecode/plate-basic-marks',
       '@udecode/plate-kbd',
     ],
-    doc: {
-      description: 'A menu for additional text formatting options.',
+    description: 'A menu for additional text formatting options.',
+    files: [{ path: 'plate-ui/more-dropdown-menu.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: siteConfig.links.plateProComponent('more-dropdown-menu') },
       ],
       examples: ['basic-marks-demo', 'basic-nodes-pro'],
     },
-    files: [{ path: 'plate-ui/more-dropdown-menu.tsx', type: 'registry:ui' }],
     name: 'more-dropdown-menu',
     registryDependencies: [
       'https://platejs.org/r/styles/default/dropdown-menu.json',
       'https://platejs.org/r/styles/default/toolbar.json',
     ],
+    title: 'More Dropdown Menu',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-indent'],
-    doc: {
-      description: 'A toolbar button for decreasing block indentation.',
-      docs: [{ route: '/docs/indent' }],
-      examples: ['indent-demo'],
-    },
+    description: 'A toolbar button for decreasing block indentation.',
     files: [
       { path: 'plate-ui/outdent-toolbar-button.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: '/docs/indent' }],
+      examples: ['indent-demo'],
+    },
     name: 'outdent-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'Outdent Toolbar Button',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-heading'],
-    doc: {
-      description: 'A text placeholder for empty editor blocks.',
+    description: 'A text placeholder for empty editor blocks.',
+    files: [{ path: 'plate-ui/placeholder.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: '/docs/basic-elements' },
         { route: siteConfig.links.plateProComponent('placeholder') },
       ],
       examples: ['basic-elements-demo', 'placeholder-pro'],
     },
-    files: [{ path: 'plate-ui/placeholder.tsx', type: 'registry:ui' }],
     name: 'placeholder',
     registryDependencies: [],
+    title: 'Placeholder',
     type: 'registry:ui',
   },
   {
     dependencies: ['react-resizable-panels'],
-    doc: {
-      description: 'A resizable wrapper with resize handles.',
+    description: 'A resizable wrapper with resize handles.',
+    files: [{ path: 'plate-ui/resizable.tsx', type: 'registry:ui' }],
+    meta: {
       docs: [
         { route: '/docs/api/resizable' },
         { route: siteConfig.links.plateProComponent('resizable') },
       ],
       examples: ['media-demo', 'media-toolbar-pro'],
     },
-    files: [{ path: 'plate-ui/resizable.tsx', type: 'registry:ui' }],
     name: 'resizable',
     registryDependencies: [],
+    title: 'Resizable',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-table', '@radix-ui/react-dropdown-menu'],
-    doc: {
-      description: 'A menu for table manipulation and formatting.',
-      docs: [{ route: '/docs/table' }],
-      examples: ['table-demo'],
-    },
+    description: 'A menu for table manipulation and formatting.',
     files: [
       { path: 'plate-ui/table-dropdown-menu.tsx', type: 'registry:ui' },
       { path: 'plate-ui/table-icons.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: '/docs/table' }],
+      examples: ['table-demo'],
+    },
     name: 'table-dropdown-menu',
     registryDependencies: [
       'https://platejs.org/r/styles/default/dropdown-menu.json',
       'https://platejs.org/r/styles/default/toolbar.json',
     ],
+    title: 'Table Dropdown Menu',
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-toggle'],
-    doc: {
-      description: 'A toolbar button for expanding and collapsing blocks.',
-      docs: [{ route: '/docs/toggle' }],
-      examples: ['toggle-demo'],
-    },
+    description: 'A toolbar button for expanding and collapsing blocks.',
     files: [
       { path: 'plate-ui/toggle-toolbar-button.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: '/docs/toggle' }],
+      examples: ['toggle-demo'],
+    },
     name: 'toggle-toolbar-button',
     registryDependencies: ['https://platejs.org/r/styles/default/toolbar.json'],
+    title: 'Toggle Toolbar Button',
     type: 'registry:ui',
   },
   {
@@ -951,8 +993,11 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       '@udecode/plate-indent-list',
       '@udecode/plate-toggle',
     ],
-    doc: {
-      description: 'A menu for converting between different block types.',
+    description: 'A menu for converting between different block types.',
+    files: [
+      { path: 'plate-ui/turn-into-dropdown-menu.tsx', type: 'registry:ui' },
+    ],
+    meta: {
       docs: [
         {
           route: siteConfig.links.plateProComponent('turn-into-dropdown-menu'),
@@ -960,30 +1005,29 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       ],
       examples: ['basic-nodes-demo', 'basic-nodes-pro'],
     },
-    files: [
-      { path: 'plate-ui/turn-into-dropdown-menu.tsx', type: 'registry:ui' },
-    ],
     name: 'turn-into-dropdown-menu',
     registryDependencies: [
       'https://platejs.org/r/styles/default/dropdown-menu.json',
       'https://platejs.org/r/styles/default/toolbar.json',
       'https://platejs.org/r/styles/default/transforms.json',
     ],
+    title: 'Turn Into Dropdown Menu',
     type: 'registry:ui',
   },
   {
     dependencies: ['@slate-yjs/react'],
-    doc: {
-      description:
-        'A cursor overlay to display multiplayer cursors in the yjs plugin.',
-      docs: [{ route: '/docs/collaboration' }],
-      examples: [],
-    },
+    description:
+      'A cursor overlay to display multiplayer cursors in the yjs plugin.',
     files: [
       { path: 'plate-ui/remote-cursor-overlay.tsx', type: 'registry:ui' },
     ],
+    meta: {
+      docs: [{ route: '/docs/collaboration' }],
+      examples: [],
+    },
     name: 'remote-cursor-overlay',
     registryDependencies: [],
+    title: 'Remote Cursor Overlay',
     type: 'registry:ui',
   },
 ];
@@ -2047,4 +2091,4 @@ export const uiPrimitives: Registry['items'] = [
   },
 ];
 
-export const ui: Registry['items'] = [...uiNodes, ...uiPrimitives];
+// export const ui: Registry['items'] = [...uiNodes, ...uiPrimitives];
