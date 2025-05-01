@@ -74,7 +74,7 @@ export type AIChatPluginConfig = PluginConfig<
       submit: OmitFirst<typeof submitAIChat>;
       hide: () => void;
       node: (
-        options?: EditorNodesOptions & { anchor?: boolean }
+        options?: EditorNodesOptions & { anchor?: boolean; streaming?: boolean }
       ) => NodeEntry | undefined;
       reload: () => void;
       show: () => void;
@@ -119,17 +119,29 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       AIChatPluginConfig['api']['aiChat'],
       'node' | 'reset' | 'stop' | 'submit'
     >
-  >(({ editor, getOptions, setOption, type }) => {
+  >(({ editor, getOption, getOptions, setOption, type }) => {
     return {
       reset: bindFirst(resetAIChat, editor),
       submit: bindFirst(submitAIChat, editor),
       node: (options = {}) => {
-        const { anchor = false, ...rest } = options;
+        const { anchor = false, streaming = false, ...rest } = options;
 
         if (anchor) {
           return editor.api.node({
             at: [],
             match: (n) => ElementApi.isElement(n) && n.type === type,
+            ...rest,
+          });
+        }
+
+        if (streaming) {
+          if (!getOption('streaming')) return;
+
+          return editor.api.node({
+            at: [],
+            mode: 'lowest',
+            reverse: true,
+            match: (t) => !!t.ai,
             ...rest,
           });
         }

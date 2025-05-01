@@ -4,7 +4,7 @@ import React from 'react';
 
 import { cn } from '@udecode/cn';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
-import { PlateText, usePluginOption } from '@udecode/plate/react';
+import { PlateText } from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
 
 const aiIndicatorVariants = cva(
@@ -15,11 +15,11 @@ export function AILeaf({
   className,
   ...props
 }: React.ComponentProps<typeof PlateText>) {
-  const lastTextId = usePluginOption(
-    AIChatPlugin,
-    'experimental_lastTextId'
-  ) as any;
-  const isLast = lastTextId === props.text.id;
+  const streamingLeaf = props.editor
+    .getApi(AIChatPlugin)
+    .aiChat.node({ streaming: true });
+
+  const isLast = streamingLeaf?.[0] === props.text;
 
   return (
     <PlateText
