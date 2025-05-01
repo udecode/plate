@@ -13,18 +13,6 @@ const editor = createTestEditor();
 
 describe('deserializeMd', () => {
   it('should deserialize strikethrough', () => {
-    const input = '<!DOCTYPE ';
-
-    const output = (
-      <fragment>
-        <hp>{'<!DOCTYPE '}</hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize strikethrough', () => {
     const input = 'This is ~~strikethrough~~.';
 
     const output = (

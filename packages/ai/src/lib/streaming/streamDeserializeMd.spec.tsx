@@ -67,4 +67,14 @@ describe('streamSerializeMd', () => {
 
     expect(serialized).toEqual(chunk);
   });
+
+  it('should not deserialize incomplete html', async () => {
+    const chunk = '<!DOCTYPE ';
+
+    const result = streamDeserializeMd(editor, chunk);
+
+    const serialized = streamSerializeMd(editor, { value: result }, chunk);
+
+    expect(serialized).toEqual(chunk);
+  });
 });

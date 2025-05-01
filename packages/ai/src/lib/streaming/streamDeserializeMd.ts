@@ -6,18 +6,15 @@ import {
   MarkdownPlugin,
 } from '@udecode/plate-markdown';
 
-import { getChunkTrimmed, isCompleteMath } from './utils';
+import { getChunkTrimmed } from './utils';
+import { escapeInput } from './utils/escapeInput';
 
 export const streamDeserializeMd = (
   editor: PlateEditor,
   data: string,
   options?: DeserializeMdOptions
 ) => {
-  // test case: should correctly handle inline math
-  const input =
-    data.startsWith('$$') && !data.startsWith('$$\n') && !isCompleteMath(data)
-      ? data.replace('$$', String.raw`\$\$`)
-      : data;
+  const input = escapeInput(data);
 
   let blocks = [];
 
