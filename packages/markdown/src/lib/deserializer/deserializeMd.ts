@@ -1,7 +1,7 @@
-import type { Descendant, SlateEditor } from '@udecode/plate';
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
+import { type Descendant, type SlateEditor, TextApi } from '@udecode/plate';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
@@ -73,18 +73,25 @@ export const deserializeMd = (
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
 ): any => {
+  let output = null;
+
   try {
-    return markdownToSlateNodes(editor, data, options);
+    output = markdownToSlateNodes(editor, data, options);
   } catch (error) {
     options?.onError?.(error as Error);
 
     if (!options?.withoutMdx) {
-      return markdownToSlateNodes(editor, data, {
+      output = markdownToSlateNodes(editor, data, {
         ...options,
         withoutMdx: true,
       });
     }
   }
+
+  // when output is inline text, we need to wrap the text in a paragraph
+  return output?.map((item) =>
+    TextApi.isText(item) ? { children: [{ text: item.text }], type: 'p' } : item
+  );
 };
 
 declare module 'unified' {

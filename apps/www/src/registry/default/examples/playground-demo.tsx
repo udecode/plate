@@ -63,14 +63,18 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { ParagraphPlugin, Plate, useStoreValue } from '@udecode/plate/react';
 
 import { SettingsStore } from '@/components/context/settings-store';
+import { useLocale } from '@/hooks/useLocale';
+import { getI18nValues } from '@/i18n/getI18nValues';
 import { copilotPlugins } from '@/registry/default/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/default/components/editor/use-create-editor';
-import { DEMO_VALUES } from '@/registry/default/examples/values/demo-values';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
 
 export default function PlaygroundDemo({ className }: { className?: string }) {
   const enabled = usePlaygroundEnabled();
+
+  const locale = useLocale();
+  const value = getI18nValues(locale).playground;
 
   const editor = useCreateEditor(
     {
@@ -90,7 +94,7 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
           enabled: process.env.NODE_ENV !== 'production',
         }),
       ],
-      value: DEMO_VALUES.playground,
+      value,
     },
     []
   );

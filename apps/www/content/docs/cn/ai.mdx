@@ -286,7 +286,6 @@ This plugin is depending on the [ai](https://npmjs.com/package/ai) package:
     });
 
 ```
-
 ## Keyboard Shortcuts
 
 <KeyTable>
@@ -392,6 +391,38 @@ Handles both block selection and normal selection modes:
 </APIOptions>
 </API>
 
+### `api.aiChat.node`
+
+Finds AI nodes in the editor based on specified criteria.
+
+<API name="node">
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    Options for finding nodes.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="anchor" type="boolean" optional>
+    When true, finds the AI chat anchor element.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="streaming" type="boolean" optional>
+    When true, finds the currently streaming AI node.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="...rest" type="EditorNodesOptions" optional>
+    Additional node finding options from Plate's API.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `api.aiChat.reload`
+
+Reloads the current AI chat:
+- In insert mode: Undoes previous AI changes
+- Reloads the chat with the current system prompt
+
 ### `api.aiChat.replaceSelection`
 
 Replaces the current selection with AI content.
@@ -430,6 +461,12 @@ Resets the chat state:
 - Stops any ongoing generation
 - Clears chat messages
 - Removes all AI nodes from the editor
+
+### `api.aiChat.stop`
+
+Stops the current AI generation:
+- Sets streaming flag to false
+- Calls the chat stop function
 
 ### `api.aiChat.submit`
 

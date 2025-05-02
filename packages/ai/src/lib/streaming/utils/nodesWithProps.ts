@@ -1,10 +1,8 @@
 import type { PlateEditor } from '@udecode/plate/react';
 
-import { type Descendant, ElementApi, nanoid } from '@udecode/plate';
+import { type Descendant, ElementApi } from '@udecode/plate';
 
 import type { SteamInsertChunkOptions } from '../streamInsertChunk';
-
-import { AIChatPlugin } from '../../../react';
 
 export const nodesWithProps = (
   editor: PlateEditor,
@@ -21,12 +19,7 @@ export const nodesWithProps = (
         children: nodesWithProps(editor, node.children, options),
       };
     } else {
-      const id = nanoid();
-
-      editor.setOption(AIChatPlugin, 'experimental_lastTextId', id);
-
       return {
-        id,
         ...options.textProps,
         ...node,
         text: node.text,

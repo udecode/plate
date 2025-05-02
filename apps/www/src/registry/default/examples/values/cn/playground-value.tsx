@@ -3,35 +3,35 @@ import type { Value } from '@udecode/plate';
 export const playgroundValue: Value = [
   // Intro
   {
-    children: [{ text: 'Welcome to the Plate Playground!' }],
+    children: [{ text: '欢迎来到 Plate 演示平台！' }],
     type: 'h1',
   },
   {
     children: [
-      { text: 'Experience a modern rich-text editor built with ' },
+      { text: '体验使用 ' },
       { children: [{ text: 'Slate' }], type: 'a', url: 'https://slatejs.org' },
-      { text: ' and ' },
+      { text: ' 和 ' },
       { children: [{ text: 'React' }], type: 'a', url: 'https://reactjs.org' },
       {
-        text: ". This playground showcases just a part of Plate's capabilities. ",
+        text: " 构建的现代富文本编辑器。这个演示平台仅展示了 Plate 功能的一部分。",
       },
       {
-        children: [{ text: 'Explore the documentation' }],
+        children: [{ text: '浏览文档' }],
         type: 'a',
         url: '/docs',
       },
-      { text: ' to discover more.' },
+      { text: ' 以了解更多。' },
     ],
     type: 'p',
   },
   // Suggestions & Comments Section
   {
-    children: [{ text: 'Collaborative Editing' }],
+    children: [{ text: '协作编辑' }],
     type: 'h2',
   },
   {
     children: [
-      { text: 'Review and refine content seamlessly. Use ' },
+      { text: '无缝审阅和优化内容。使用 ' },
       {
         children: [
           {
@@ -42,7 +42,7 @@ export const playgroundValue: Value = [
               type: 'insert',
               userId: 'alice',
             },
-            text: 'suggestions',
+            text: '建议',
           },
         ],
         type: 'a',
@@ -66,9 +66,9 @@ export const playgroundValue: Value = [
           type: 'insert',
           userId: 'alice',
         },
-        text: 'like this added text',
+        text: '像这样添加文本',
       },
-      { text: ' or to ' },
+      { text: ' 或者 ' },
       {
         suggestion: true,
         suggestion_playground2: {
@@ -77,12 +77,12 @@ export const playgroundValue: Value = [
           type: 'remove',
           userId: 'bob',
         },
-        text: 'mark text for removal',
+        text: '标记要删除的文本',
       },
-      { text: '. Discuss changes using ' },
+      { text: '。使用 ' },
       {
         children: [
-          { comment: true, comment_discussion4: true, text: 'comments' },
+          { comment: true, comment_discussion4: true, text: '评论' },
         ],
         type: 'a',
         url: '/docs/comments',
@@ -90,9 +90,9 @@ export const playgroundValue: Value = [
       {
         comment: true,
         comment_discussion4: true,
-        text: ' on many text segments',
+        text: ' 讨论多个文本段落的变更',
       },
-      { text: '. You can even have ' },
+      { text: '。你甚至可以有 ' },
       {
         comment: true,
         comment_discussion6: true,
@@ -103,9 +103,9 @@ export const playgroundValue: Value = [
           type: 'insert',
           userId: 'charlie',
         },
-        text: 'overlapping',
+        text: '重叠的',
       },
-      { text: ' annotations!' },
+      { text: ' 评论！' },
     ],
     type: 'p',
   },
@@ -124,28 +124,28 @@ export const playgroundValue: Value = [
   // },
   // AI Section
   {
-    children: [{ text: 'AI-Powered Editing' }],
+    children: [{ text: 'AI 辅助编辑' }],
     type: 'h2',
   },
   {
     children: [
-      { text: 'Boost your productivity with integrated ' },
+      { text: '通过集成的 ' },
       {
         children: [{ text: 'AI SDK' }],
         type: 'a',
         url: '/docs/ai',
       },
-      { text: '. Press ' },
+      { text: ' 提高您的生产力。按下 ' },
       { kbd: true, text: '⌘+J' },
-      { text: ' or ' },
-      { kbd: true, text: 'Space' },
-      { text: ' in an empty line to:' },
+      { text: ' 或在空行中按 ' },
+      { kbd: true, text: '空格键' },
+      { text: ' 可以：' },
     ],
     type: 'p',
   },
   {
     children: [
-      { text: 'Generate content (continue writing, summarize, explain)' },
+      { text: '生成内容（继续写作、总结、解释）' },
     ],
     indent: 1,
     listStyleType: 'disc',
@@ -153,7 +153,7 @@ export const playgroundValue: Value = [
   },
   {
     children: [
-      { text: 'Edit existing text (improve, fix grammar, change tone)' },
+      { text: '编辑现有文本（改进、修正语法、改变语气）' },
     ],
     indent: 1,
     listStyleType: 'disc',
@@ -161,62 +161,62 @@ export const playgroundValue: Value = [
   },
   // Core Features Section (Combined)
   {
-    children: [{ text: 'Rich Content Editing' }],
+    children: [{ text: '丰富的内容编辑' }],
     type: 'h2',
   },
   {
     children: [
-      { text: 'Structure your content with ' },
+      { text: '使用 ' },
       {
-        children: [{ text: 'headings' }],
+        children: [{ text: '标题' }],
         type: 'a',
         url: '/docs/basic-elements',
       },
-      { text: ', ' },
+      { text: '、' },
       {
-        children: [{ text: 'lists' }],
+        children: [{ text: '列表' }],
         type: 'a',
         url: '/docs/indent-list',
       },
-      { text: ', and ' },
+      { text: ' 和 ' },
       {
-        children: [{ text: 'quotes' }],
+        children: [{ text: '引用' }],
         type: 'a',
         url: '/docs/basic-elements',
       },
-      { text: '. Apply ' },
+      { text: ' 来组织您的内容。应用 ' },
       {
-        children: [{ text: 'marks' }],
+        children: [{ text: '标记' }],
         type: 'a',
         url: '/docs/basic-marks',
       },
-      { text: ' like ' },
-      { bold: true, text: 'bold' },
-      { text: ', ' },
-      { italic: true, text: 'italic' },
-      { text: ', ' },
-      { text: 'underline', underline: true },
-      { text: ', ' },
-      { strikethrough: true, text: 'strikethrough' },
-      { text: ', and ' },
-      { code: true, text: 'code' },
-      { text: '. Use ' },
+      { text: ' 如 ' },
+      { bold: true, text: '粗体' },
+      { text: '、' },
+      { italic: true, text: '斜体' },
+      { text: '、' },
+      { text: '下划线', underline: true },
+      { text: '、' },
+      { strikethrough: true, text: '删除线' },
+      { text: ' 和 ' },
+      { code: true, text: '代码' },
+      { text: '。使用 ' },
       {
-        children: [{ text: 'autoformatting' }],
+        children: [{ text: '自动格式化' }],
         type: 'a',
         url: '/docs/autoformat',
       },
-      { text: ' for ' },
+      { text: ' 实现类似 ' },
       {
         children: [{ text: 'Markdown' }],
         type: 'a',
         url: '/docs/markdown',
       },
-      { text: '-like shortcuts (e.g., ' },
+      { text: ' 的快捷方式（例如，' },
       { kbd: true, text: '* ' },
-      { text: ' for lists, ' },
+      { text: ' 创建列表，' },
       { kbd: true, text: '# ' },
-      { text: ' for H1).' },
+      { text: ' 创建一级标题）。' },
     ],
     type: 'p',
   },
@@ -225,7 +225,7 @@ export const playgroundValue: Value = [
       {
         children: [
           {
-            text: 'Blockquotes are great for highlighting important information.',
+            text: '引用块非常适合突出显示重要信息。',
           },
         ],
         type: 'p',
@@ -237,7 +237,7 @@ export const playgroundValue: Value = [
     children: [
       { children: [{ text: 'function hello() {' }], type: 'code_line' },
       {
-        children: [{ text: "  console.info('Code blocks are supported!');" }],
+        children: [{ text: "  console.info('支持代码块！');" }],
         type: 'code_line',
       },
       { children: [{ text: '}' }], type: 'code_line' },
@@ -247,45 +247,45 @@ export const playgroundValue: Value = [
   },
   {
     children: [
-      { text: 'Create ' },
+      { text: '创建 ' },
       {
-        children: [{ text: 'links' }],
+        children: [{ text: '链接' }],
         type: 'a',
         url: '/docs/link',
       },
-      { text: ', ' },
+      { text: '、' },
       {
-        children: [{ text: '@mention' }],
+        children: [{ text: '@提及' }],
         type: 'a',
         url: '/docs/mention',
       },
-      { text: ' users like ' },
+      { text: ' 用户，如 ' },
       { children: [{ text: '' }], type: 'mention', value: 'Alice' },
-      { text: ', or insert ' },
+      { text: '，或插入 ' },
       {
-        children: [{ text: 'emojis' }],
+        children: [{ text: '表情符号' }],
         type: 'a',
         url: '/docs/emoji',
       },
-      { text: ' ✨. Use the ' },
+      { text: ' ✨。使用 ' },
       {
-        children: [{ text: 'slash command' }],
+        children: [{ text: '斜杠命令' }],
         type: 'a',
         url: '/docs/slash-command',
       },
-      { text: ' (/) for quick access to elements.' },
+      { text: ' (/) 快速访问元素。' },
     ],
     type: 'p',
   },
   // Table Section
   {
-    children: [{ text: 'How Plate Compares' }],
+    children: [{ text: 'Plate 的比较优势' }],
     type: 'h3',
   },
   {
     children: [
       {
-        text: 'Plate offers many features out-of-the-box as free, open-source plugins.',
+        text: 'Plate 提供许多开箱即用的免费、开源插件。',
       },
     ],
     type: 'p',
@@ -296,14 +296,14 @@ export const playgroundValue: Value = [
         children: [
           {
             children: [
-              { children: [{ bold: true, text: 'Feature' }], type: 'p' },
+              { children: [{ bold: true, text: '功能' }], type: 'p' },
             ],
             type: 'th',
           },
           {
             children: [
               {
-                children: [{ bold: true, text: 'Plate (Free & OSS)' }],
+                children: [{ bold: true, text: 'Plate（免费和开源）' }],
                 type: 'p',
               },
             ],
@@ -335,7 +335,7 @@ export const playgroundValue: Value = [
             type: 'td',
           },
           {
-            children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
+            children: [{ children: [{ text: '付费扩展' }], type: 'p' }],
             type: 'td',
           },
         ],
@@ -344,7 +344,7 @@ export const playgroundValue: Value = [
       {
         children: [
           {
-            children: [{ children: [{ text: 'Comments' }], type: 'p' }],
+            children: [{ children: [{ text: '评论' }], type: 'p' }],
             type: 'td',
           },
           {
@@ -358,7 +358,7 @@ export const playgroundValue: Value = [
             type: 'td',
           },
           {
-            children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
+            children: [{ children: [{ text: '付费扩展' }], type: 'p' }],
             type: 'td',
           },
         ],
@@ -367,105 +367,7 @@ export const playgroundValue: Value = [
       {
         children: [
           {
-            children: [{ children: [{ text: 'Suggestions' }], type: 'p' }],
-            type: 'td',
-          },
-          {
-            children: [
-              {
-                attributes: { align: 'center' },
-                children: [{ text: '✅' }],
-                type: 'p',
-              },
-            ],
-            type: 'td',
-          },
-          {
-            children: [
-              { children: [{ text: 'Paid (Comments Pro)' }], type: 'p' },
-            ],
-            type: 'td',
-          },
-        ],
-        type: 'tr',
-      },
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Emoji Picker' }], type: 'p' }],
-            type: 'td',
-          },
-          {
-            children: [
-              {
-                attributes: { align: 'center' },
-                children: [{ text: '✅' }],
-                type: 'p',
-              },
-            ],
-            type: 'td',
-          },
-          {
-            children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-            type: 'td',
-          },
-        ],
-        type: 'tr',
-      },
-      {
-        children: [
-          {
-            children: [
-              { children: [{ text: 'Table of Contents' }], type: 'p' },
-            ],
-            type: 'td',
-          },
-          {
-            children: [
-              {
-                attributes: { align: 'center' },
-                children: [{ text: '✅' }],
-                type: 'p',
-              },
-            ],
-            type: 'td',
-          },
-          {
-            children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-            type: 'td',
-          },
-        ],
-        type: 'tr',
-      },
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Drag Handle' }], type: 'p' }],
-            type: 'td',
-          },
-          {
-            children: [
-              {
-                attributes: { align: 'center' },
-                children: [{ text: '✅' }],
-                type: 'p',
-              },
-            ],
-            type: 'td',
-          },
-          {
-            children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-            type: 'td',
-          },
-        ],
-        type: 'tr',
-      },
-      {
-        children: [
-          {
-            children: [
-              { children: [{ text: 'Collaboration (Yjs)' }], type: 'p' },
-            ],
+            children: [{ children: [{ text: '建议' }], type: 'p' }],
             type: 'td',
           },
           {
@@ -480,7 +382,105 @@ export const playgroundValue: Value = [
           },
           {
             children: [
-              { children: [{ text: 'Hocuspocus (OSS/Paid)' }], type: 'p' },
+              { children: [{ text: '付费（评论专业版）' }], type: 'p' },
+            ],
+            type: 'td',
+          },
+        ],
+        type: 'tr',
+      },
+      {
+        children: [
+          {
+            children: [{ children: [{ text: '表情选择器' }], type: 'p' }],
+            type: 'td',
+          },
+          {
+            children: [
+              {
+                attributes: { align: 'center' },
+                children: [{ text: '✅' }],
+                type: 'p',
+              },
+            ],
+            type: 'td',
+          },
+          {
+            children: [{ children: [{ text: '付费扩展' }], type: 'p' }],
+            type: 'td',
+          },
+        ],
+        type: 'tr',
+      },
+      {
+        children: [
+          {
+            children: [
+              { children: [{ text: '目录' }], type: 'p' },
+            ],
+            type: 'td',
+          },
+          {
+            children: [
+              {
+                attributes: { align: 'center' },
+                children: [{ text: '✅' }],
+                type: 'p',
+              },
+            ],
+            type: 'td',
+          },
+          {
+            children: [{ children: [{ text: '付费扩展' }], type: 'p' }],
+            type: 'td',
+          },
+        ],
+        type: 'tr',
+      },
+      {
+        children: [
+          {
+            children: [{ children: [{ text: '拖拽手柄' }], type: 'p' }],
+            type: 'td',
+          },
+          {
+            children: [
+              {
+                attributes: { align: 'center' },
+                children: [{ text: '✅' }],
+                type: 'p',
+              },
+            ],
+            type: 'td',
+          },
+          {
+            children: [{ children: [{ text: '付费扩展' }], type: 'p' }],
+            type: 'td',
+          },
+        ],
+        type: 'tr',
+      },
+      {
+        children: [
+          {
+            children: [
+              { children: [{ text: '协作（Yjs）' }], type: 'p' },
+            ],
+            type: 'td',
+          },
+          {
+            children: [
+              {
+                attributes: { align: 'center' },
+                children: [{ text: '✅' }],
+                type: 'p',
+              },
+            ],
+            type: 'td',
+          },
+          {
+            children: [
+              { children: [{ text: 'Hocuspocus（开源/付费）' }], type: 'p' },
             ],
             type: 'td',
           },
@@ -492,29 +492,29 @@ export const playgroundValue: Value = [
   },
   // Media Section
   {
-    children: [{ text: 'Images and Media' }],
+    children: [{ text: '图片和媒体' }],
     type: 'h3',
   },
   {
     children: [
       {
-        text: 'Embed rich media like images directly in your content. Supports ',
+        text: '在内容中直接嵌入丰富的媒体，如图片。支持',
       },
       {
-        children: [{ text: 'Media uploads' }],
+        children: [{ text: '媒体上传' }],
         type: 'a',
         url: '/docs/media',
       },
       {
-        text: ' and ',
+        text: '和',
       },
       {
-        children: [{ text: 'drag & drop' }],
+        children: [{ text: '拖放' }],
         type: 'a',
         url: '/docs/dnd',
       },
       {
-        text: ' for a smooth experience.',
+        text: '，提供流畅的体验。',
       },
     ],
     type: 'p',
@@ -523,7 +523,7 @@ export const playgroundValue: Value = [
     attributes: { align: 'center' },
     caption: [
       {
-        children: [{ text: 'Images with captions provide context.' }],
+        children: [{ text: '带有说明的图片提供上下文。' }],
         type: 'p',
       },
     ],
@@ -545,7 +545,7 @@ export const playgroundValue: Value = [
     url: 'https://samplelib.com/lib/preview/mp3/sample-3s.mp3',
   },
   {
-    children: [{ text: 'Table of Contents' }],
+    children: [{ text: '目录' }],
     type: 'h3',
   },
   {
