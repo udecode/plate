@@ -305,7 +305,7 @@ function BlockViewerToolbar({
                 'transition-all duration-1000 ease-out'
               )}
             />
-            Get the code -&gt;
+            Get the code
           </Link>
         )}
 

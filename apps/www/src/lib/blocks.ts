@@ -1,9 +1,8 @@
 'use server';
 
+import registry from 'registry';
 import { registryItemSchema } from 'shadcn/registry';
 import { z } from 'zod';
-
-import { Index } from '@/__registry__';
 
 // SYNC
 
@@ -17,9 +16,10 @@ export async function getAllBlockIds() {
 }
 
 function _getAllBlocks() {
-  const index = z.record(registryItemSchema).parse(Index.default);
+  // Parse and validate the registry items
+  const items = z.array(registryItemSchema).parse(registry.items);
 
-  return Object.values(index).filter(
+  return items.filter(
     (block) => {
       return (
         REGISTRY_BLOCK_TYPES.has(block.type) &&

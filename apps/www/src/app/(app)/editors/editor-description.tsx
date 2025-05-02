@@ -12,13 +12,12 @@ import { Button } from '@/registry/ui/button';
 const i18n = {
   cn: {
     browseEditors: '浏览编辑器',
-    description: '精美设计。复制到你的应用中。开源。',
+    description: '精美设计。复制到你的应用中。',
     title: '为Web构建编辑器',
   },
   en: {
     browseEditors: 'Browse Editors',
-    description:
-      'Beautifully designed. Copy and paste into your apps. Open Source.',
+    description: 'Beautifully designed. Copy and paste into your apps.',
     title: 'Building Editors for the Web',
   },
 };

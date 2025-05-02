@@ -10,7 +10,8 @@ import {
   createFileTreeForRegistryItemFiles,
   getRegistryItem,
 } from '../lib/registry';
-import { examples, proExamples } from '../registry/registry-examples';
+import { examples } from '../registry/registry-examples';
+import { proExamples } from '../registry/registry-pro';
 import { styles } from '../registry/registry-styles';
 import { highlightFiles } from './highlight-code';
 import {

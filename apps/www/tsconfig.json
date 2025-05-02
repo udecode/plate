@@ -6,7 +6,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "contentlayer/generated": [".contentlayer/generated"]
+      "contentlayer/generated": [".contentlayer/generated"],
+      "registry": ["./registry.json"]
     },
     "plugins": [
       {
@@ -32,7 +33,8 @@
     "**/*.mjsx",
     ".next/types/**/*.ts",
     ".contentlayer/generated",
-    "./scripts/**/*.ts"
+    "./scripts/**/*.ts",
+    "./registry.json"
   ],
   "exclude": ["node_modules", "__registry__"]
 }
