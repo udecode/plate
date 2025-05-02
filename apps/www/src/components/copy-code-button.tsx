@@ -7,7 +7,7 @@ import { ClipboardIcon } from 'lucide-react';
 import { useConfig } from '@/hooks/use-config';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { type Theme, themeColorsToCssVariables } from '@/lib/themes';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 
 import { copyToClipboardWithMeta } from './copy-button';
 

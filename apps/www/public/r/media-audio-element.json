@@ -1,0 +1,40 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-audio-element",
+  "type": "registry:ui",
+  "title": "Media Audio Element",
+  "description": "An audio player component with caption support.",
+  "dependencies": [
+    "@udecode/plate-media",
+    "@udecode/plate-resizable"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/caption"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/media-audio-element.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { useMediaState } from '@udecode/plate-media/react';\nimport { ResizableProvider } from '@udecode/plate-resizable';\nimport { PlateElement, withHOC } from '@udecode/plate/react';\n\nimport { Caption, CaptionTextarea } from './caption';\n\nexport const MediaAudioElement = withHOC(\n  ResizableProvider,\n  withRef<typeof PlateElement>(\n    ({ children, className, nodeProps, ...props }, ref) => {\n      const { align = 'center', readOnly, unsafeUrl } = useMediaState();\n\n      return (\n        <PlateElement ref={ref} className={cn(className, 'mb-1')} {...props}>\n          <figure\n            className=\"group relative cursor-default\"\n            contentEditable={false}\n          >\n            <div className=\"h-16\">\n              <audio className=\"size-full\" src={unsafeUrl} controls />\n            </div>\n\n            <Caption style={{ width: '100%' }} align={align}>\n              <CaptionTextarea\n                className=\"h-20\"\n                readOnly={readOnly}\n                placeholder=\"Write a caption...\"\n              />\n            </Caption>\n          </figure>\n          {children}\n        </PlateElement>\n      );\n    }\n  )\n);\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/media-audio-element-static.tsx",
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate';\nimport type { TAudioElement } from '@udecode/plate-media';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate';\n\nexport function MediaAudioElementStatic({\n  children,\n  className,\n  ...props\n}: SlateElementProps) {\n  const { url } = props.element as TAudioElement;\n\n  return (\n    <SlateElement className={cn(className, 'mb-1')} {...props}>\n      <figure className=\"group relative cursor-default\">\n        <div className=\"h-16\">\n          <audio className=\"size-full\" src={url} controls />\n        </div>\n      </figure>\n      {children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/media"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/media-audio-element"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "upload-pro"
+    ]
+  }
+}

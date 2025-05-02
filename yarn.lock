@@ -19687,9 +19687,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"shadcn@npm:2.6.0-canary.2":
-  version: 2.6.0-canary.2
-  resolution: "shadcn@npm:2.6.0-canary.2"
+"shadcn@npm:2.6.0-canary.1":
+  version: 2.6.0-canary.1
+  resolution: "shadcn@npm:2.6.0-canary.1"
   dependencies:
     "@antfu/ni": "npm:^23.2.0"
     "@babel/core": "npm:^7.22.1"
@@ -19718,7 +19718,7 @@ __metadata:
     zod-to-json-schema: "npm:^3.24.5"
   bin:
     shadcn: dist/index.js
-  checksum: 10c0/9243f6dc530668a281ff19a821041c1552e5f6918bb1e6609721c3adf23ad1a530e2427d1b853adb229d508cb3ef1b09a0625a2b2fa632421b8bfe30b17be2dd
+  checksum: 10c0/81bce3cbd790d31f68e734e3f3a107c989369a78872ce54be3e7eb8fd3a08cecc9ac36debafe0cb024f86a6236a4b76354b4eb1a0afc36b52d5aa37fc1b50246
   languageName: node
   linkType: hard
 
@@ -22830,7 +22830,7 @@ __metadata:
     remark-math: "npm:6.0.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.87.0"
-    shadcn: "npm:2.6.0-canary.2"
+    shadcn: "npm:2.6.0-canary.1"
     shadcx: "workspace:^"
     shiki: "npm:1.10.1"
     sonner: "npm:2.0.3"

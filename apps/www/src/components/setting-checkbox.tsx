@@ -5,15 +5,11 @@ import { useStoreValue } from '@udecode/plate/react';
 import Link from 'next/link';
 
 import { type SettingPlugin, customizerItems } from '@/config/customizer-items';
-import { buttonVariants } from '@/registry/default/plate-ui/button';
-import { Checkbox } from '@/registry/default/plate-ui/checkbox';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/registry/default/plate-ui/popover';
+import { buttonVariants } from '@/registry/ui/button';
+import { Checkbox } from '@/registry/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/registry/ui/popover';
 
-import { Label } from '../registry/default/plate-ui/label';
+import { Label } from '../registry/ui/label';
 import { Code } from './code';
 import { SettingsStore } from './context/settings-store';
 import { Icons } from './icons';
@@ -80,7 +76,7 @@ export function SettingCheckbox({
                       className="cursor-pointer leading-none"
                     >
                       {dependencies.length}
-                      <Icons.dependency className="ml-1 size-2.5 text-muted-foreground" />
+                      <Icons.dependency className="text-muted-foreground ml-1 size-2.5" />
                     </Badge>
                   </PopoverTrigger>
 
@@ -111,7 +107,7 @@ export function SettingCheckbox({
                       className="cursor-pointer leading-none"
                     >
                       {conflicts.length}
-                      <Icons.conflict className="ml-1 size-2.5 text-muted-foreground" />
+                      <Icons.conflict className="text-muted-foreground ml-1 size-2.5" />
                     </Badge>
                   </PopoverTrigger>
 
@@ -146,7 +142,7 @@ export function SettingCheckbox({
               href={route}
               target="_blank"
             >
-              <Icons.arrowRight className="size-4 text-muted-foreground" />
+              <Icons.arrowRight className="text-muted-foreground size-4" />
             </Link>
           </div>
         )}
@@ -195,7 +191,7 @@ export function SettingCheckbox({
                       href={componentRoute}
                       target="_blank"
                     >
-                      <Icons.arrowRight className="size-4 text-muted-foreground" />
+                      <Icons.arrowRight className="text-muted-foreground size-4" />
                     </Link>
                   </div>
                 )}

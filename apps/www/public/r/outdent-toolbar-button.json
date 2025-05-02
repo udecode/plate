@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "outdent-toolbar-button",
+  "type": "registry:ui",
+  "title": "Outdent Toolbar Button",
+  "description": "A toolbar button for decreasing block indentation.",
+  "dependencies": [
+    "@udecode/plate-indent"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/outdent-toolbar-button.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { useOutdentButton } from '@udecode/plate-indent/react';\nimport { Outdent } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const OutdentToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const { props } = useOutdentButton();\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Outdent\" {...props} {...rest}>\n        <Outdent />\n      </ToolbarButton>\n    );\n  }\n);\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/indent"
+      }
+    ],
+    "examples": [
+      "indent-demo"
+    ]
+  }
+}

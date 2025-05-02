@@ -5,7 +5,7 @@ import * as React from 'react';
 import { ArrowRightIcon } from 'lucide-react';
 
 import { useLocale } from '@/hooks/useLocale';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 const i18n = {
   cn: {
     description: 'AI, Copilot, 上传, 数学, 以及更多',

@@ -9,7 +9,7 @@ import { ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { getDocIcon } from '@/config/docs-icons';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -17,12 +17,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/registry/default/plate-ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/registry/default/plate-ui/popover';
+} from '@/registry/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/registry/ui/popover';
 
 export function DocBreadcrumb({
   buttonClassName,
@@ -115,7 +111,7 @@ export function DocBreadcrumb({
                           {item.title}
                         </div>
                         {category && item.description && (
-                          <div className="line-clamp-1 text-xs text-muted-foreground">
+                          <div className="text-muted-foreground line-clamp-1 text-xs">
                             {item.description}
                           </div>
                         )}

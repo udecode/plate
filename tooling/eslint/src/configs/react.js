@@ -60,7 +60,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['**/registry/default/**/*'],
+    files: ['**/registry/**/*'],
     rules: {
       'jsx-a11y/alt-text': 'off',
       'jsx-a11y/iframe-has-title': 'off',

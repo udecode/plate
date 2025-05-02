@@ -1,0 +1,28 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "checkbox",
+  "type": "registry:ui",
+  "title": "Checkbox",
+  "description": "A control that allows the user to toggle between checked and not checked.",
+  "dependencies": [
+    "@radix-ui/react-checkbox"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/checkbox.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport * as CheckboxPrimitive from '@radix-ui/react-checkbox';\nimport { cn, withRef } from '@udecode/cn';\nimport { Check } from 'lucide-react';\n\nexport const Checkbox = withRef<typeof CheckboxPrimitive.Root>(\n  ({ className, ...props }, ref) => (\n    <CheckboxPrimitive.Root\n      ref={ref}\n      className={cn(\n        'peer size-4 shrink-0 rounded-sm border border-primary bg-background ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',\n        className\n      )}\n      {...props}\n    >\n      <CheckboxPrimitive.Indicator\n        className={cn('flex items-center justify-center text-current')}\n      >\n        <Check className=\"size-4\" />\n      </CheckboxPrimitive.Indicator>\n    </CheckboxPrimitive.Root>\n  )\n);\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/checkbox-static.tsx",
+      "content": "import * as React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport { Check } from 'lucide-react';\n\nexport function CheckboxStatic({\n  className,\n  ...props\n}: {\n  checked: boolean;\n  className?: string;\n  style?: React.CSSProperties;\n}) {\n  return (\n    <button\n      className={cn(\n        'peer size-4 shrink-0 rounded-sm border border-primary bg-background ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',\n        className\n      )}\n      data-state={props.checked ? 'checked' : 'unchecked'}\n      type=\"button\"\n      {...props}\n    >\n      <div className={cn('flex items-center justify-center text-current')}>\n        {props.checked && <Check className=\"size-4\" />}\n      </div>\n    </button>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/checkbox"
+    }
+  }
+}

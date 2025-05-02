@@ -12,7 +12,7 @@ import { SettingsStore } from '@/components/context/settings-store';
 import { PlaygroundPreview } from '@/components/playground-preview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocale } from '@/hooks/useLocale';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 
 const i18n = {
   cn: {
@@ -73,7 +73,7 @@ export default function HomeTabs() {
           variant="outline"
           className={cn(
             'ml-2 translate-y-[3px]',
-            active && 'border-2 border-primary'
+            active && 'border-primary border-2'
           )}
           onClick={() => {
             if (active) {

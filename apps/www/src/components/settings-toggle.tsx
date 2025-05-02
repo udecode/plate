@@ -9,7 +9,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/registry/default/plate-ui/tooltip';
+} from '@/registry/ui/tooltip';
 
 import { SettingsStore } from './context/settings-store';
 import { Icons } from './icons';

@@ -2,7 +2,7 @@
 
 import { useConfig } from '@/hooks/use-config';
 import { useThemesConfig } from '@/hooks/use-themes-config';
-import { useMounted } from '@/registry/default/hooks/use-mounted';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 export function ThemesStyle() {
   const [config] = useConfig();

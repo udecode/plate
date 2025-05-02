@@ -7,7 +7,7 @@ import { cn } from '@udecode/cn';
 import { Index } from '@/__registry__';
 import { BlockViewer } from '@/components/block-viewer';
 import { useConfig } from '@/hooks/use-config';
-import { useMounted } from '@/registry/default/hooks/use-mounted';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { Icons } from './icons';
 
@@ -49,9 +49,9 @@ export function ComponentPreview({
 
     if (!Component) {
       return (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Component{' '}
-          <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
+          <code className="bg-muted relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm">
             {name}
           </code>{' '}
           not found in registry.
@@ -66,14 +66,14 @@ export function ComponentPreview({
   const mounted = useMounted();
 
   const loadingPreview = (
-    <div className="preview flex size-full min-h-[350px] items-center justify-center p-0 text-sm text-muted-foreground">
+    <div className="preview text-muted-foreground flex size-full min-h-[350px] items-center justify-center p-0 text-sm">
       <Icons.spinner className="mr-2 size-4 animate-spin" />
       Loading...
     </div>
   );
 
   return (
-    <div className="mt-4 mb-12">
+    <div className="mb-12 mt-4">
       <BlockViewer
         block={false}
         dependencies={

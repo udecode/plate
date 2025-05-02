@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { ModeSwitcher } from '@/components/mode-switcher';
 import { siteConfig } from '@/config/site';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 
 import { CommandMenu } from './command-menu';
 import { Icons } from './icons';
@@ -33,7 +33,7 @@ export function SiteHeader() {
   // const count = 0;
 
   return (
-    <header className="sticky top-0 z-51 w-full border-b border-border/40 bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 dark:border-border">
+    <header className="z-51 border-border/40 bg-background/95 supports-backdrop-filter:bg-background/60 dark:border-border sticky top-0 w-full border-b backdrop-blur-sm">
       <div className="container flex h-14 items-center justify-between px-4">
         <Suspense fallback={null}>
           <MainNav />

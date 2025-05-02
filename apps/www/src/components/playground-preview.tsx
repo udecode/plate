@@ -9,7 +9,7 @@ import { cn } from '@udecode/cn';
 
 import { useLiftMode } from '@/hooks/use-lift-mode';
 import { useLocale } from '@/hooks/useLocale';
-import PlaygroundDemo from '@/registry/default/examples/playground-demo';
+import PlaygroundDemo from '@/registry/examples/playground-demo';
 
 import { PlaygroundPreviewToolbar } from './playground-preview-toolbar';
 import { ThemeWrapper } from './theme-wrapper';
@@ -77,13 +77,13 @@ export function PlaygroundPreview({
         <ResizablePanel
           ref={ref}
           className={cn(
-            'relative rounded-lg border bg-background max-sm:w-full max-sm:flex-auto!',
+            'bg-background max-sm:flex-auto! relative rounded-lg border max-sm:w-full',
             isLiftMode && 'border-border/50'
           )}
           defaultSize={100}
           minSize={30}
         >
-          <div className="chunk-mode relative z-20 w-full bg-background">
+          <div className="chunk-mode bg-background relative z-20 w-full">
             <ThemeWrapper>
               <React.Suspense fallback={null}>
                 <PlaygroundDemo className="h-[650px]" />
@@ -109,7 +109,7 @@ export function PlaygroundPreview({
 
         <ResizableHandle
           className={cn(
-            'relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:-translate-x-px after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block',
+            'after:bg-border relative hidden w-3 bg-transparent p-0 after:absolute after:right-0 after:top-1/2 after:h-8 after:w-[6px] after:-translate-x-px after:-translate-y-1/2 after:rounded-full after:transition-all hover:after:h-10 sm:block',
             isLiftMode && 'invisible'
           )}
         />

@@ -5,7 +5,7 @@ import { StarIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { siteConfig } from '@/config/site';
-import { buttonVariants } from '@/registry/default/plate-ui/button';
+import { buttonVariants } from '@/registry/ui/button';
 
 import { CountingNumbers } from './counting-numbers';
 import { Icons } from './icons';
@@ -16,9 +16,9 @@ export function StarOnGithub({ count }: { count: number }) {
       <Link
         className={cn(
           buttonVariants(),
-          'group relative flex w-full justify-start gap-2 overflow-hidden rounded-sm whitespace-pre',
+          'group relative flex w-full justify-start gap-2 overflow-hidden whitespace-pre rounded-sm',
           'dark:bg-muted dark:text-foreground',
-          'hover:ring-2 hover:ring-primary hover:ring-offset-2',
+          'hover:ring-primary hover:ring-2 hover:ring-offset-2',
           'transition-all duration-300 ease-out'
         )}
         href={siteConfig.links.github}
@@ -38,12 +38,12 @@ export function StarOnGithub({ count }: { count: number }) {
         />
         <Icons.gitHub className="size-4" />
         Star on GitHub
-        <div className="hidden items-center gap-1 text-sm text-muted-foreground md:flex">
+        <div className="text-muted-foreground hidden items-center gap-1 text-sm md:flex">
           <StarIcon className="size-4 transition-all duration-300 group-hover:text-[#e3b341]" />
 
           {count > 0 && (
             <CountingNumbers
-              className="font-medium text-background dark:text-foreground"
+              className="text-background dark:text-foreground font-medium"
               value={count}
               noAnimation
             />

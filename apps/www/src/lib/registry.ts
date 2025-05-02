@@ -21,9 +21,7 @@ const memoizedIndex: typeof Index = Object.fromEntries(
 
 export function getRegistryComponent(name: string) {
   if (name === 'slate-to-html') {
-    return React.lazy(
-      () => import('@/registry/default/blocks/slate-to-html/page')
-    );
+    return React.lazy(() => import('@/registry/blocks/slate-to-html/page'));
   }
 
   return memoizedIndex.default[name]?.component;
@@ -165,7 +163,7 @@ function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
     const fileName = file.path.split('/').pop();
 
     if (file.type === 'registry:component') {
-      target = file.path.replace('src/registry/default/', '');
+      target = file.path.replace('src/registry/', '');
     }
     if (file.type === 'registry:block' || file.type === 'registry:example') {
       target = `components/${fileName}`;

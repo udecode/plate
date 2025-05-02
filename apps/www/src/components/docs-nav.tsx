@@ -3,7 +3,7 @@
 import React, { Suspense, useState } from 'react';
 
 import type { DocsConfig } from '@/config/docs';
-import type { SidebarNavItem } from 'types/nav';
+import type { SidebarNavItem } from '@/types/nav';
 
 import { cn } from '@udecode/cn';
 import { castArray } from 'lodash';
@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/accordion';
 import { useLocale } from '@/hooks/useLocale';
 import { hrefWithLocale } from '@/lib/withLocale';
-import { Input } from '@/registry/default/plate-ui/input';
+import { Input } from '@/registry/ui/input';
 
 export function DocsNav({ config }: { config: DocsConfig }) {
   const pathname = usePathname();
@@ -57,11 +57,11 @@ export function DocsNav({ config }: { config: DocsConfig }) {
 
   return sidebarNav.length > 0 ? (
     <div className="relative w-[calc(100%-1rem)]">
-      <div className="sticky top-0 z-10 flex w-full items-center bg-background/95 px-2 pb-3 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
+      <div className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-10 flex w-full items-center px-2 pb-3 backdrop-blur-sm">
         <div className="relative mt-3 flex w-full items-center">
           <Input
             className={cn(
-              'h-8 w-full rounded-lg bg-muted/50 px-3 py-1 text-sm text-muted-foreground shadow-none focus-visible:ring-transparent'
+              'bg-muted/50 text-muted-foreground h-8 w-full rounded-lg px-3 py-1 text-sm shadow-none focus-visible:ring-transparent'
             )}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
@@ -69,7 +69,7 @@ export function DocsNav({ config }: { config: DocsConfig }) {
           />
           {filter && (
             <button
-              className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground absolute right-2 top-1/2 -translate-y-1/2"
               onClick={() => setFilter('')}
               type="button"
             >
@@ -103,11 +103,11 @@ export function DocsNav({ config }: { config: DocsConfig }) {
                           <span
                             key={labelIndex}
                             className={cn(
-                              'ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
+                              'bg-secondary text-foreground ml-2 rounded-md px-1.5 py-0.5 text-xs font-medium leading-none',
                               label === 'Plus' &&
                                 'bg-primary text-background dark:text-background',
                               label === 'New' &&
-                                'bg-[#adfa1d] dark:text-background'
+                                'dark:text-background bg-[#adfa1d]'
                             )}
                           >
                             {label}
@@ -138,10 +138,10 @@ export function DocsNav({ config }: { config: DocsConfig }) {
                       <span
                         key={labelIndex}
                         className={cn(
-                          'rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
+                          'bg-secondary text-foreground rounded-md px-1.5 py-0.5 text-xs font-medium leading-none',
                           label === 'Plus' &&
                             'bg-primary text-background dark:text-background',
-                          label === 'New' && 'bg-[#adfa1d] dark:text-background'
+                          label === 'New' && 'dark:text-background bg-[#adfa1d]'
                         )}
                       >
                         {label}
@@ -186,11 +186,11 @@ function DocsNavItems({
           <React.Fragment key={index}>
             <Link
               className={cn(
-                'group relative flex h-8 w-full items-center rounded-lg px-2 after:absolute after:inset-x-0 after:inset-y-[-2px] after:rounded-lg hover:bg-accent hover:text-accent-foreground',
+                'hover:bg-accent hover:text-accent-foreground group relative flex h-8 w-full items-center rounded-lg px-2 after:absolute after:inset-x-0 after:inset-y-[-2px] after:rounded-lg',
                 item.disabled && 'cursor-not-allowed opacity-60',
                 pathname === item.href
-                  ? 'bg-accent font-medium text-accent-foreground'
-                  : 'font-normal text-foreground'
+                  ? 'bg-accent text-accent-foreground font-medium'
+                  : 'text-foreground font-normal'
               )}
               href={hrefWithLocale(item.href, locale)}
               rel={item.external ? 'noreferrer' : ''}
@@ -203,10 +203,10 @@ function DocsNavItems({
                     <span
                       key={labelIndex}
                       className={cn(
-                        'rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
+                        'bg-secondary text-foreground rounded-md px-1.5 py-0.5 text-xs font-medium leading-none',
                         label === 'Plus' &&
                           'bg-primary text-background dark:text-background',
-                        label === 'New' && 'bg-[#adfa1d] dark:text-background'
+                        label === 'New' && 'dark:text-background bg-[#adfa1d]'
                       )}
                     >
                       {label}
@@ -215,17 +215,17 @@ function DocsNavItems({
                 </div>
               )}
               {item.title?.toLowerCase().includes('leaf') && (
-                <Leaf className="ml-auto size-4 text-foreground/80" />
+                <Leaf className="text-foreground/80 ml-auto size-4" />
               )}
             </Link>
             {item.items?.map((subItem, subIndex) => (
               <Link
                 key={subIndex}
                 className={cn(
-                  'group flex h-8 w-full items-center rounded-lg px-6 font-normal text-foreground underline-offset-2 hover:bg-accent hover:text-accent-foreground',
+                  'text-foreground hover:bg-accent hover:text-accent-foreground group flex h-8 w-full items-center rounded-lg px-6 font-normal underline-offset-2',
                   subItem.disabled && 'cursor-not-allowed opacity-60',
                   pathname === subItem.href &&
-                    'bg-accent font-medium text-accent-foreground'
+                    'bg-accent text-accent-foreground font-medium'
                 )}
                 href={hrefWithLocale(subItem.href!, locale)}
                 rel={subItem.external ? 'noreferrer' : ''}
@@ -238,10 +238,10 @@ function DocsNavItems({
                       <span
                         key={labelIndex}
                         className={cn(
-                          'rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
+                          'bg-secondary text-foreground rounded-md px-1.5 py-0.5 text-xs font-medium leading-none',
                           label === 'Plus' &&
                             'bg-primary text-background dark:text-background',
-                          label === 'New' && 'bg-[#adfa1d] dark:text-background'
+                          label === 'New' && 'dark:text-background bg-[#adfa1d]'
                         )}
                       >
                         {label}
@@ -256,13 +256,13 @@ function DocsNavItems({
           <span
             key={index}
             className={cn(
-              'flex w-full cursor-not-allowed items-center rounded-md p-2 text-muted-foreground hover:underline',
+              'text-muted-foreground flex w-full cursor-not-allowed items-center rounded-md p-2 hover:underline',
               item.disabled && 'cursor-not-allowed opacity-60'
             )}
           >
             {item.title}
             {item.label && (
-              <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground no-underline group-hover:no-underline">
+              <span className="bg-muted text-muted-foreground ml-2 rounded-md px-1.5 py-0.5 text-xs leading-none no-underline group-hover:no-underline">
                 {item.label}
               </span>
             )}

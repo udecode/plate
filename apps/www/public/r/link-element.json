@@ -1,0 +1,36 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "link-element",
+  "type": "registry:ui",
+  "title": "Link Element",
+  "description": "A component for rendering hyperlinks with hover states.",
+  "dependencies": [
+    "@udecode/plate-link"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/link-element.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { TLinkElement } from '@udecode/plate-link';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { useLink } from '@udecode/plate-link/react';\nimport { PlateElement } from '@udecode/plate/react';\n\nexport const LinkElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const element = props.element as TLinkElement;\n    const { props: linkProps } = useLink({ element });\n\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"a\"\n        className={cn(\n          className,\n          'font-medium text-primary underline decoration-primary underline-offset-4'\n        )}\n        {...(linkProps as any)}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/link-element-static.tsx",
+      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate';\n\nexport const LinkElementStatic = ({\n  children,\n  className,\n  ...props\n}: SlateElementProps) => {\n  return (\n    <SlateElement\n      as=\"a\"\n      className={cn(\n        className,\n        'font-medium text-primary underline decoration-primary underline-offset-4'\n      )}\n      {...props}\n    >\n      {children}\n    </SlateElement>\n  );\n};\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/link"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/link-element"
+      }
+    ],
+    "examples": [
+      "link-demo"
+    ]
+  }
+}

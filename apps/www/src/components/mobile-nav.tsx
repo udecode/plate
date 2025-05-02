@@ -8,7 +8,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { docsConfig } from '@/config/docs';
 import { useMetaColor } from '@/hooks/use-meta-color';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 
 import { Drawer, DrawerContent, DrawerTrigger } from './ui/drawer';
 
@@ -33,7 +33,7 @@ export function MobileNav() {
         <Button
           size="lg"
           variant="ghost"
-          className="mr-2 -ml-2 size-8 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+          className="-ml-2 mr-2 size-8 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
         >
           <svg
             className="size-6!"

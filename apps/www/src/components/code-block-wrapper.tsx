@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import { cn } from '@udecode/cn';
 
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 
 import {
   Collapsible,
@@ -44,7 +44,7 @@ export function CodeBlockWrapper({
         </CollapsibleContent>
         <div
           className={cn(
-            'absolute flex items-center justify-center bg-linear-to-b from-background/10 to-background to-90% px-2 py-1',
+            'bg-linear-to-b from-background/10 to-background absolute flex items-center justify-center to-90% px-2 py-1',
             isOpened ? 'inset-x-0 bottom-0 h-12 from-gray-900/30' : 'inset-0'
           )}
         >

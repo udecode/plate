@@ -19,7 +19,7 @@ import { badgeVariants } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 
 // import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 
@@ -77,7 +77,7 @@ export function DocContent({
       )}
     >
       <div className="w-full min-w-0">
-        <div className="mb-4 flex items-center space-x-1 text-sm text-muted-foreground">
+        <div className="text-muted-foreground mb-4 flex items-center space-x-1 text-sm">
           {category === 'guide' ? (
             <DocBreadcrumb
               value={category}
@@ -103,7 +103,7 @@ export function DocContent({
             {title}
           </h1>
           {doc?.description && (
-            <p className="text-lg text-muted-foreground">
+            <p className="text-muted-foreground text-lg">
               <Balancer>{doc?.description}</Balancer>
             </p>
           )}
@@ -149,7 +149,7 @@ export function DocContent({
             ))}
           </div>
         ) : null}
-        <div className="pt-8 pb-12">{children}</div>
+        <div className="pb-12 pt-8">{children}</div>
         {doc && <DocsPager doc={doc as any} />}
       </div>
 

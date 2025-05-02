@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "tooltip",
+  "type": "registry:ui",
+  "title": "Tooltip",
+  "description": "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
+  "dependencies": [
+    "@radix-ui/react-tooltip"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/tooltip.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport * as TooltipPrimitive from '@radix-ui/react-tooltip';\nimport { withCn, withProps } from '@udecode/cn';\n\nimport { Button } from './button';\n\nexport const TooltipProvider = withProps(TooltipPrimitive.Provider, {\n  delayDuration: 0,\n  disableHoverableContent: true,\n  skipDelayDuration: 0,\n});\n\nexport const Tooltip = TooltipPrimitive.Root;\n\nexport const TooltipTrigger = TooltipPrimitive.Trigger;\n\nexport const TooltipPortal = TooltipPrimitive.Portal;\n\nexport const TooltipContent = withCn(\n  withProps(TooltipPrimitive.Content, {\n    sideOffset: 4,\n  }),\n  'z-50 overflow-hidden rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white shadow-md'\n);\n\ntype TooltipProps<T extends React.ElementType> = {\n  delayDuration?: number;\n  disableHoverableContent?: boolean;\n  skipDelayDuration?: number;\n  tooltip?: React.ReactNode;\n  tooltipContentProps?: Omit<\n    React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>,\n    'children'\n  >;\n  tooltipProps?: Omit<\n    React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root>,\n    'children'\n  >;\n  tooltipTriggerProps?: React.ComponentPropsWithoutRef<\n    typeof TooltipPrimitive.Trigger\n  >;\n} & React.ComponentProps<T>;\n\nexport function withTooltip<T extends React.ElementType>(Component: T) {\n  return function ExtendComponent({\n    delayDuration = 0,\n    disableHoverableContent = true,\n    skipDelayDuration = 0,\n    tooltip,\n    tooltipContentProps,\n    tooltipProps,\n    tooltipTriggerProps,\n    ...props\n  }: TooltipProps<T>) {\n    const [mounted, setMounted] = React.useState(false);\n\n    React.useEffect(() => {\n      setMounted(true);\n    }, []);\n\n    const component = <Component {...(props as React.ComponentProps<T>)} />;\n\n    if (tooltip && mounted) {\n      return (\n        <TooltipProvider\n          delayDuration={delayDuration}\n          disableHoverableContent={disableHoverableContent}\n          skipDelayDuration={skipDelayDuration}\n        >\n          <Tooltip {...tooltipProps}>\n            <TooltipTrigger asChild {...tooltipTriggerProps}>\n              {component}\n            </TooltipTrigger>\n\n            <TooltipPortal>\n              <TooltipContent {...tooltipContentProps}>\n                {tooltip}\n              </TooltipContent>\n            </TooltipPortal>\n          </Tooltip>\n        </TooltipProvider>\n      );\n    }\n\n    return component;\n  };\n}\n\nexport const TooltipButton = withTooltip(Button);\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/tooltip"
+    }
+  }
+}

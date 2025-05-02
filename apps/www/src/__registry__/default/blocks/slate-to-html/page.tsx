@@ -73,67 +73,67 @@ import {
   EditorClient,
   ExportHtmlButton,
   HtmlIframe,
-} from '@/registry/default/components/editor/slate-to-html';
-import { alignValue } from '@/registry/default/examples/values/align-value';
-import { basicElementsValue } from '@/registry/default/examples/values/basic-elements-value';
-import { basicMarksValue } from '@/registry/default/examples/values/basic-marks-value';
-import { columnValue } from '@/registry/default/examples/values/column-value';
-import { commentsValue } from '@/registry/default/examples/values/comments-value';
-import { dateValue } from '@/registry/default/examples/values/date-value';
-import { equationValue } from '@/registry/default/examples/values/equation-value';
-import { fontValue } from '@/registry/default/examples/values/font-value';
-import { highlightValue } from '@/registry/default/examples/values/highlight-value';
-import { horizontalRuleValue } from '@/registry/default/examples/values/horizontal-rule-value';
-import { indentListValue } from '@/registry/default/examples/values/indent-list-value';
-import { indentValue } from '@/registry/default/examples/values/indent-value';
-import { kbdValue } from '@/registry/default/examples/values/kbd-value';
-import { lineHeightValue } from '@/registry/default/examples/values/line-height-value';
-import { linkValue } from '@/registry/default/examples/values/link-value';
-import { todoListValue } from '@/registry/default/examples/values/list-value';
-import { mediaValue } from '@/registry/default/examples/values/media-value';
-import { mentionValue } from '@/registry/default/examples/values/mention-value';
-import { tableValue } from '@/registry/default/examples/values/table-value';
-import { tocPlaygroundValue } from '@/registry/default/examples/values/toc-value';
-import { createHtmlDocument } from '@/registry/default/lib/create-html-document';
-import { BlockquoteElementStatic } from '@/registry/default/plate-ui/blockquote-element-static';
-import { CodeBlockElementStatic } from '@/registry/default/plate-ui/code-block-element-static';
-import { CodeLeafStatic } from '@/registry/default/plate-ui/code-leaf-static';
-import { CodeLineElementStatic } from '@/registry/default/plate-ui/code-line-element-static';
-import { CodeSyntaxLeafStatic } from '@/registry/default/plate-ui/code-syntax-leaf-static';
-import { ColumnElementStatic } from '@/registry/default/plate-ui/column-element-static';
-import { ColumnGroupElementStatic } from '@/registry/default/plate-ui/column-group-element-static';
-import { CommentLeafStatic } from '@/registry/default/plate-ui/comment-leaf-static';
-import { DateElementStatic } from '@/registry/default/plate-ui/date-element-static';
-import { EditorStatic } from '@/registry/default/plate-ui/editor-static';
-import { EquationElementStatic } from '@/registry/default/plate-ui/equation-element-static';
-import { HeadingElementStatic } from '@/registry/default/plate-ui/heading-element-static';
-import { HighlightLeafStatic } from '@/registry/default/plate-ui/highlight-leaf-static';
-import { HrElementStatic } from '@/registry/default/plate-ui/hr-element-static';
-import { ImageElementStatic } from '@/registry/default/plate-ui/image-element-static';
+} from '@/registry/components/editor/slate-to-html';
+import { alignValue } from '@/registry/examples/values/align-value';
+import { basicElementsValue } from '@/registry/examples/values/basic-elements-value';
+import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
+import { columnValue } from '@/registry/examples/values/column-value';
+import { commentsValue } from '@/registry/examples/values/comments-value';
+import { dateValue } from '@/registry/examples/values/date-value';
+import { equationValue } from '@/registry/examples/values/equation-value';
+import { fontValue } from '@/registry/examples/values/font-value';
+import { highlightValue } from '@/registry/examples/values/highlight-value';
+import { horizontalRuleValue } from '@/registry/examples/values/horizontal-rule-value';
+import { indentListValue } from '@/registry/examples/values/indent-list-value';
+import { indentValue } from '@/registry/examples/values/indent-value';
+import { kbdValue } from '@/registry/examples/values/kbd-value';
+import { lineHeightValue } from '@/registry/examples/values/line-height-value';
+import { linkValue } from '@/registry/examples/values/link-value';
+import { todoListValue } from '@/registry/examples/values/list-value';
+import { mediaValue } from '@/registry/examples/values/media-value';
+import { mentionValue } from '@/registry/examples/values/mention-value';
+import { tableValue } from '@/registry/examples/values/table-value';
+import { tocPlaygroundValue } from '@/registry/examples/values/toc-value';
+import { createHtmlDocument } from '@/registry/lib/create-html-document';
+import { BlockquoteElementStatic } from '@/registry/ui/blockquote-element-static';
+import { CodeBlockElementStatic } from '@/registry/ui/code-block-element-static';
+import { CodeLeafStatic } from '@/registry/ui/code-leaf-static';
+import { CodeLineElementStatic } from '@/registry/ui/code-line-element-static';
+import { CodeSyntaxLeafStatic } from '@/registry/ui/code-syntax-leaf-static';
+import { ColumnElementStatic } from '@/registry/ui/column-element-static';
+import { ColumnGroupElementStatic } from '@/registry/ui/column-group-element-static';
+import { CommentLeafStatic } from '@/registry/ui/comment-leaf-static';
+import { DateElementStatic } from '@/registry/ui/date-element-static';
+import { EditorStatic } from '@/registry/ui/editor-static';
+import { EquationElementStatic } from '@/registry/ui/equation-element-static';
+import { HeadingElementStatic } from '@/registry/ui/heading-element-static';
+import { HighlightLeafStatic } from '@/registry/ui/highlight-leaf-static';
+import { HrElementStatic } from '@/registry/ui/hr-element-static';
+import { ImageElementStatic } from '@/registry/ui/image-element-static';
 import {
   FireLiComponent,
   FireMarker,
-} from '@/registry/default/plate-ui/indent-fire-marker';
+} from '@/registry/ui/indent-fire-marker';
 import {
   TodoLiStatic,
   TodoMarkerStatic,
-} from '@/registry/default/plate-ui/indent-todo-marker-static';
-import { InlineEquationElementStatic } from '@/registry/default/plate-ui/inline-equation-element-static';
-import { KbdLeafStatic } from '@/registry/default/plate-ui/kbd-leaf-static';
-import { LinkElementStatic } from '@/registry/default/plate-ui/link-element-static';
-import { MediaAudioElementStatic } from '@/registry/default/plate-ui/media-audio-element-static';
-import { MediaFileElementStatic } from '@/registry/default/plate-ui/media-file-element-static';
-import { MediaVideoElementStatic } from '@/registry/default/plate-ui/media-video-element-static';
-import { MentionElementStatic } from '@/registry/default/plate-ui/mention-element-static';
-import { ParagraphElementStatic } from '@/registry/default/plate-ui/paragraph-element-static';
+} from '@/registry/ui/indent-todo-marker-static';
+import { InlineEquationElementStatic } from '@/registry/ui/inline-equation-element-static';
+import { KbdLeafStatic } from '@/registry/ui/kbd-leaf-static';
+import { LinkElementStatic } from '@/registry/ui/link-element-static';
+import { MediaAudioElementStatic } from '@/registry/ui/media-audio-element-static';
+import { MediaFileElementStatic } from '@/registry/ui/media-file-element-static';
+import { MediaVideoElementStatic } from '@/registry/ui/media-video-element-static';
+import { MentionElementStatic } from '@/registry/ui/mention-element-static';
+import { ParagraphElementStatic } from '@/registry/ui/paragraph-element-static';
 import {
   TableCellElementStatic,
   TableCellHeaderStaticElement,
-} from '@/registry/default/plate-ui/table-cell-element-static';
-import { TableElementStatic } from '@/registry/default/plate-ui/table-element-static';
-import { TableRowElementStatic } from '@/registry/default/plate-ui/table-row-element-static';
-import { TocElementStatic } from '@/registry/default/plate-ui/toc-element-static';
-import { ToggleElementStatic } from '@/registry/default/plate-ui/toggle-element-static';
+} from '@/registry/ui/table-cell-element-static';
+import { TableElementStatic } from '@/registry/ui/table-element-static';
+import { TableRowElementStatic } from '@/registry/ui/table-row-element-static';
+import { TocElementStatic } from '@/registry/ui/toc-element-static';
+import { ToggleElementStatic } from '@/registry/ui/toggle-element-static';
 
 export const description = 'Slate to HTML';
 

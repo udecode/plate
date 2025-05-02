@@ -7,7 +7,7 @@ import {
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
 import { jsxt } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
+import { autoformatPlugin } from 'www/src/registry/components/editor/plugins/autoformat-plugin';
 
 jsxt;
 

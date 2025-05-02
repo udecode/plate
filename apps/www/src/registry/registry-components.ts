@@ -276,11 +276,11 @@ const plugins: Registry['items'] = [
         type: 'registry:component',
       },
       {
-        path: 'registry/plate-ui/suggestion-line-break.tsx',
+        path: 'registry/ui/suggestion-line-break.tsx',
         type: 'registry:ui',
       },
       {
-        path: 'registry/plate-ui/suggestion-toolbar-button.tsx',
+        path: 'registry/ui/suggestion-toolbar-button.tsx',
         type: 'registry:ui',
       },
     ],

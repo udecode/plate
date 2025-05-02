@@ -62,8 +62,8 @@ import { Code } from '@/components/code';
 import { Link } from '@/components/link';
 import { Markdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
-import { basicElementsValue } from '@/registry/default/examples/values/basic-elements-value';
-import { basicMarksValue } from '@/registry/default/examples/values/basic-marks-value';
+import { basicElementsValue } from '@/registry/examples/values/basic-elements-value';
+import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 
 const title = 'Server-Side Example';
 const description = 'Server-side rendering example for Plate.';

@@ -14,12 +14,12 @@ import {
 import { SiteFooter } from '@/components/site-footer';
 import { ThemesButton } from '@/components/themes-button';
 import { siteConfig } from '@/config/site';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 
 import { AnnouncementButton } from './_components/announcement-button';
 import { PotionLazyBlock } from './_components/potion-lazy-block';
 
-import '../../../public/r/themes.css';
+// import '../../../public/r/themes.css';
 
 const CustomizerDrawer = dynamic(
   () => import('@/components/customizer-drawer')

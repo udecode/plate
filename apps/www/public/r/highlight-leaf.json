@@ -1,0 +1,31 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "highlight-leaf",
+  "type": "registry:ui",
+  "title": "Highlight Leaf",
+  "description": "A text highlighter with customizable colors.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/highlight-leaf.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate/react';\n\nexport const HighlightLeaf = withRef<typeof PlateLeaf>(\n  ({ children, className, ...props }, ref) => (\n    <PlateLeaf\n      ref={ref}\n      as=\"mark\"\n      className={cn(className, 'bg-highlight/30 text-inherit')}\n      {...props}\n    >\n      {children}\n    </PlateLeaf>\n  )\n);\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/highlight-leaf-static.tsx",
+      "content": "import React from 'react';\n\nimport type { SlateLeafProps } from '@udecode/plate';\n\nimport { cn } from '@udecode/cn';\nimport { SlateLeaf } from '@udecode/plate';\n\nexport function HighlightLeafStatic({\n  children,\n  className,\n  ...props\n}: SlateLeafProps) {\n  return (\n    <SlateLeaf\n      as=\"mark\"\n      className={cn(className, 'bg-highlight/30 text-inherit')}\n      {...props}\n    >\n      {children}\n    </SlateLeaf>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/highlight"
+      }
+    ],
+    "examples": [
+      "highlight-demo"
+    ]
+  }
+}

@@ -7,13 +7,13 @@ import { CheckIcon, ClipboardIcon } from '@radix-ui/react-icons';
 import { cn } from '@udecode/cn';
 
 import { type Event, trackEvent } from '@/lib/events';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/registry/default/plate-ui/tooltip';
+} from '@/registry/ui/tooltip';
 
 export function BlockCopyButton({
   className,

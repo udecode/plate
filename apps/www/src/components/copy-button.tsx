@@ -10,14 +10,14 @@ import { CheckIcon, ClipboardIcon } from '@radix-ui/react-icons';
 import { cn } from '@udecode/cn';
 
 import { type Event, trackEvent } from '@/lib/events';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/registry/default/plate-ui/dropdown-menu';
+} from '@/registry/ui/dropdown-menu';
 
 import { Icons } from './icons';
 

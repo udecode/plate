@@ -4,12 +4,8 @@ import { cn } from '@udecode/cn';
 import { Check, PlusCircle } from 'lucide-react';
 
 import { useProject } from '@/hooks/use-project';
-import { Button } from '@/registry/default/plate-ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/registry/default/plate-ui/tooltip';
+import { Button } from '@/registry/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/registry/ui/tooltip';
 
 export function ProjectAddButton({
   className,

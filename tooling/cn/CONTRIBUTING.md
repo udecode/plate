@@ -31,13 +31,14 @@ packages
 └── core
 ```
 
-| 路径                      | 描述                                    |
-| ------------------------- | --------------------------------------- |
-| `apps/www/content`        | 网站的内容。                            |
-| `apps/www/src/app`        | 网站的 Next.js 应用程序。               |
-| `apps/www/src/components` | 网站的 React 组件。                     |
-| `apps/www/src/registry`   | 组件的注册表。                          |
-| `packages/core`           | `@udecode/plate-core` 包。              |
+| 路径                      | 描述                       |
+| ------------------------- | -------------------------- |
+| `apps/www/content`        | 网站的内容。               |
+| `apps/www/src/app`        | 网站的 Next.js 应用程序。  |
+| `apps/www/src/components` | 网站的 React 组件。        |
+| `apps/www/src/registry`   | 组件的注册表。             |
+| `packages/core`           | `@udecode/plate-core` 包。 |
+
 ## 开发
 
 ### 首先克隆仓库：
@@ -92,6 +93,7 @@ yarn dev
 turbo --filter=[PACKAGE] build
 yarn dev
 ```
+
 ## 组件
 
 我们使用注册表系统来开发组件。您可以在 `apps/www/src/registry` 下找到组件的源代码。这些组件按样式进行组织。
@@ -132,6 +134,7 @@ yarn lint:fix
 ```bash
 yarn test
 ```
+
 运行测试有多种模式可用，包括 **`--watch`**、**`--coverage`** 和 **`--runInBand`**。这些可以从命令行界面选择或作为特定参数传递给 **`yarn test`**。
 
 请确保在提交拉取请求时测试通过。如果您添加新功能，请包含测试。
@@ -151,6 +154,7 @@ To run all tests:
 ```bash
 yarn e2e
 ```
+
 ## 发布指南
 
 对于想要发布的人，请按照以下步骤操作：
@@ -218,7 +222,7 @@ yarn e2e
 
 ### 如何：创建组件
 
-- 在`apps/www/src/registry/default/plate-ui`中创建您的组件
+- 在`apps/www/src/registry/ui`中创建您的组件
 - 将您的组件添加到`apps/www/src/registry/registry.ts`
 - 运行`yarn build:registry`
 
@@ -238,7 +242,7 @@ yarn e2e
 创建新插件？
 
 - 将您的插件添加到**`/apps/www/src/config/setting-plugins.ts`**
-- 将您的插件添加到**`/apps/www/src/registry/default/example/playground-demo.tsx`**
+- 将您的插件添加到**`/apps/www/src/registry/example/playground-demo.tsx`**
 
 创建新文档？
 
@@ -272,6 +276,7 @@ yarn build
 export * from './shared/index';
 export * from './server/index'; // If needed
 ```
+
 - （可选）如果需要，在`/src/server/`中创建服务器端版本。例如，`/src/server/withReact`中的`withReact`是`/src/client/withReact`的服务器端版本
 - 运行`yarn brl`来同步导出
 - 更新`package.json > exports`

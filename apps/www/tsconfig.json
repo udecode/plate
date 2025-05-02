@@ -3,11 +3,10 @@
   "compilerOptions": {
     "jsx": "preserve",
     "incremental": true,
-    "baseUrl": "src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@/plate/*": ["./lib/plate/*"],
-      "contentlayer/generated": ["../.contentlayer/generated"]
+      "@/*": ["./src/*"],
+      "contentlayer/generated": [".contentlayer/generated"]
     },
     "plugins": [
       {

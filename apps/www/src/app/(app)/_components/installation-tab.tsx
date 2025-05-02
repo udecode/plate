@@ -27,8 +27,8 @@ import {
   orderedPluginKeys,
 } from '@/config/customizer-items';
 import { useLocale } from '@/hooks/useLocale';
-import { useMounted } from '@/registry/default/hooks/use-mounted';
-import { Label } from '@/registry/default/plate-ui/label';
+import { useMounted } from '@/registry/hooks/use-mounted';
+import { Label } from '@/registry/ui/label';
 
 import { InstallationCode } from './installation-code';
 

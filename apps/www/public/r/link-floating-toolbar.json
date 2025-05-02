@@ -1,0 +1,41 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "link-floating-toolbar",
+  "type": "registry:ui",
+  "title": "Link Floating Toolbar",
+  "description": "A floating interface for link editing.",
+  "dependencies": [
+    "@udecode/plate-link",
+    "@udecode/plate-floating"
+  ],
+  "registryDependencies": [
+    "http://localhost:3000/r/button",
+    "http://localhost:3000/r/input",
+    "http://localhost:3000/r/popover",
+    "http://localhost:3000/r/separator"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/link-floating-toolbar.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn } from '@udecode/cn';\nimport {\n  type UseVirtualFloatingOptions,\n  flip,\n  offset,\n} from '@udecode/plate-floating';\nimport { type TLinkElement, getLinkAttributes } from '@udecode/plate-link';\nimport {\n  type LinkFloatingToolbarState,\n  FloatingLinkUrlInput,\n  LinkPlugin,\n  useFloatingLinkEdit,\n  useFloatingLinkEditState,\n  useFloatingLinkInsert,\n  useFloatingLinkInsertState,\n} from '@udecode/plate-link/react';\nimport {\n  useEditorRef,\n  useEditorSelection,\n  useFormInputProps,\n  usePluginOption,\n} from '@udecode/plate/react';\nimport { ExternalLink, Link, Text, Unlink } from 'lucide-react';\n\nimport { buttonVariants } from './button';\nimport { inputVariants } from './input';\nimport { popoverVariants } from './popover';\nimport { Separator } from './separator';\n\nexport interface LinkFloatingToolbarProps {\n  state?: LinkFloatingToolbarState;\n}\n\nexport function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {\n  const activeCommentId = usePluginOption({ key: 'comment' }, 'activeId');\n  const activeSuggestionId = usePluginOption({ key: 'suggestion' }, 'activeId');\n\n  const floatingOptions: UseVirtualFloatingOptions = React.useMemo(() => {\n    return {\n      middleware: [\n        offset(8),\n        flip({\n          fallbackPlacements: ['bottom-end', 'top-start', 'top-end'],\n          padding: 12,\n        }),\n      ],\n      placement:\n        activeSuggestionId || activeCommentId ? 'top-start' : 'bottom-start',\n    };\n  }, [activeCommentId, activeSuggestionId]);\n\n  const insertState = useFloatingLinkInsertState({\n    ...state,\n    floatingOptions: {\n      ...floatingOptions,\n      ...state?.floatingOptions,\n    },\n  });\n  const {\n    hidden,\n    props: insertProps,\n    ref: insertRef,\n    textInputProps,\n  } = useFloatingLinkInsert(insertState);\n\n  const editState = useFloatingLinkEditState({\n    ...state,\n    floatingOptions: {\n      ...floatingOptions,\n      ...state?.floatingOptions,\n    },\n  });\n  const {\n    editButtonProps,\n    props: editProps,\n    ref: editRef,\n    unlinkButtonProps,\n  } = useFloatingLinkEdit(editState);\n  const inputProps = useFormInputProps({\n    preventDefaultOnEnterKeydown: true,\n  });\n\n  if (hidden) return null;\n\n  const input = (\n    <div className=\"flex w-[330px] flex-col\" {...inputProps}>\n      <div className=\"flex items-center\">\n        <div className=\"flex items-center pr-1 pl-2 text-muted-foreground\">\n          <Link className=\"size-4\" />\n        </div>\n\n        <FloatingLinkUrlInput\n          className={inputVariants({ h: 'sm', variant: 'ghost' })}\n          placeholder=\"Paste link\"\n          data-plate-focus\n        />\n      </div>\n      <Separator className=\"my-1\" />\n      <div className=\"flex items-center\">\n        <div className=\"flex items-center pr-1 pl-2 text-muted-foreground\">\n          <Text className=\"size-4\" />\n        </div>\n        <input\n          className={inputVariants({ h: 'sm', variant: 'ghost' })}\n          placeholder=\"Text to display\"\n          data-plate-focus\n          {...textInputProps}\n        />\n      </div>\n    </div>\n  );\n\n  const editContent = editState.isEditing ? (\n    input\n  ) : (\n    <div className=\"box-content flex items-center\">\n      <button\n        className={buttonVariants({ size: 'sm', variant: 'ghost' })}\n        type=\"button\"\n        {...editButtonProps}\n      >\n        Edit link\n      </button>\n\n      <Separator orientation=\"vertical\" />\n\n      <LinkOpenButton />\n\n      <Separator orientation=\"vertical\" />\n\n      <button\n        className={buttonVariants({\n          size: 'icon',\n          variant: 'ghost',\n        })}\n        type=\"button\"\n        {...unlinkButtonProps}\n      >\n        <Unlink width={18} />\n      </button>\n    </div>\n  );\n\n  return (\n    <>\n      <div\n        ref={insertRef}\n        className={cn(popoverVariants(), 'w-auto p-1')}\n        {...insertProps}\n      >\n        {input}\n      </div>\n\n      <div\n        ref={editRef}\n        className={cn(popoverVariants(), 'w-auto p-1')}\n        {...editProps}\n      >\n        {editContent}\n      </div>\n    </>\n  );\n}\n\nfunction LinkOpenButton() {\n  const editor = useEditorRef();\n  const selection = useEditorSelection();\n\n  const attributes = React.useMemo(\n    () => {\n      const entry = editor.api.node<TLinkElement>({\n        match: { type: editor.getType(LinkPlugin) },\n      });\n      if (!entry) {\n        return {};\n      }\n      const [element] = entry;\n      return getLinkAttributes(editor, element);\n    },\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n    [editor, selection]\n  );\n\n  return (\n    <a\n      {...attributes}\n      className={buttonVariants({\n        size: 'icon',\n        variant: 'ghost',\n      })}\n      onMouseOver={(e) => {\n        e.stopPropagation();\n      }}\n      aria-label=\"Open link in a new tab\"\n      target=\"_blank\"\n    >\n      <ExternalLink width={18} />\n    </a>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/link"
+      },
+      {
+        "route": "/docs/api/floating"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/link-floating-toolbar"
+      }
+    ],
+    "examples": [
+      "link-demo",
+      "link-pro"
+    ]
+  }
+}

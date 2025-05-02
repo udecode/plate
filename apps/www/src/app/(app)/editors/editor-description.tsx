@@ -7,7 +7,7 @@ import {
   PageHeaderHeading,
 } from '@/components/page-header';
 import { useLocale } from '@/hooks/useLocale';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/ui/button';
 
 const i18n = {
   cn: {

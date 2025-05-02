@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 
 import { cn } from '@udecode/cn';
 
-import PlaygroundDemo from '@/registry/default/examples/playground-demo';
+import PlaygroundDemo from '@/registry/examples/playground-demo';
 
 const title = 'Playground';
 const description = 'npx shadcx@latest add plate/editor-ai';

@@ -10,11 +10,11 @@ import { useTheme } from 'next-themes';
 import { useConfig } from '@/hooks/use-config';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { THEMES } from '@/lib/themes';
-import { useMounted } from '@/registry/default/hooks/use-mounted';
-import { Button } from '@/registry/default/plate-ui/button';
-import { Separator } from '@/registry/default/plate-ui/separator';
+import { useMounted } from '@/registry/hooks/use-mounted';
+import { Button } from '@/registry/ui/button';
+import { Separator } from '@/registry/ui/separator';
 
-import { Label } from '../registry/default/plate-ui/label';
+import { Label } from '../registry/ui/label';
 import { CopyCodeButton, getThemeCode } from './copy-code-button';
 import { ThemesSwitcher } from './themes-selector-mini';
 import { Skeleton } from './ui/skeleton';
@@ -34,10 +34,10 @@ export function ThemeCustomizer() {
     <div className="flex h-full flex-col space-y-4 md:space-y-6">
       <div className="flex items-start justify-between px-6">
         <div className="space-y-1 pr-2">
-          <div className="leading-none font-semibold tracking-tight">
+          <div className="font-semibold leading-none tracking-tight">
             Customize
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-muted-foreground text-xs">
             Customize your components colors.
           </div>
         </div>
@@ -78,7 +78,7 @@ export function ThemeCustomizer() {
                   variant="outline"
                   className={cn(
                     config.radius === Number.parseFloat(value) &&
-                      'border-2 border-primary'
+                      'border-primary border-2'
                   )}
                   onClick={() => {
                     setConfig({
@@ -101,7 +101,7 @@ export function ThemeCustomizer() {
                 <Button
                   size="md"
                   variant="outline"
-                  className={cn(mode === 'light' && 'border-2 border-primary')}
+                  className={cn(mode === 'light' && 'border-primary border-2')}
                   onClick={() => setMode('light')}
                 >
                   <SunIcon />
@@ -110,7 +110,7 @@ export function ThemeCustomizer() {
                 <Button
                   size="md"
                   variant="outline"
-                  className={cn(mode === 'dark' && 'border-2 border-primary')}
+                  className={cn(mode === 'dark' && 'border-primary border-2')}
                   onClick={() => setMode('dark')}
                 >
                   <MoonIcon />
@@ -146,7 +146,7 @@ export function ThemeCustomizer() {
               </pre>
             </div>
           </div>
-          <CopyCodeButton className="absolute top-4 right-4" compact />
+          <CopyCodeButton className="absolute right-4 top-4" compact />
         </div>
       </div>
     </div>

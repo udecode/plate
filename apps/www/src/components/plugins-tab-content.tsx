@@ -6,11 +6,11 @@ import { useStoreValue } from '@udecode/plate/react';
 import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
 
 import { customizerList } from '@/config/customizer-items';
-import { useDebounce } from '@/registry/default/hooks/use-debounce';
-import { Button } from '@/registry/default/plate-ui/button';
-import { Checkbox } from '@/registry/default/plate-ui/checkbox';
+import { useDebounce } from '@/registry/hooks/use-debounce';
+import { Button } from '@/registry/ui/button';
+import { Checkbox } from '@/registry/ui/checkbox';
 
-import { Label } from '../registry/default/plate-ui/label';
+import { Label } from '../registry/ui/label';
 import { categoryIds, SettingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { SettingCheckbox } from './setting-checkbox';
@@ -124,7 +124,7 @@ export function PluginsTabContentLazy() {
       <Accordion className="-mx-6" defaultValue={categoryIds} type="multiple">
         {customizerList.map((item) => (
           <AccordionItem key={item.id} value={item.id}>
-            <AccordionTrigger className="py-4 pr-[34px] pl-6">
+            <AccordionTrigger className="py-4 pl-6 pr-[34px]">
               {item.label}
             </AccordionTrigger>
             <AccordionContent className="px-6">
@@ -149,11 +149,11 @@ export function PluginsTabContent() {
       <div className="space-y-4">
         <div className="gap-2">
           <div className="flex items-center justify-between">
-            <div className="space-y-1 pt-2 pr-2 pb-4">
-              <div className="leading-none font-semibold tracking-tight">
+            <div className="space-y-1 pb-4 pr-2 pt-2">
+              <div className="font-semibold leading-none tracking-tight">
                 Customize
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-muted-foreground text-xs">
                 Pick the plugins and components for your editor.
               </div>
             </div>

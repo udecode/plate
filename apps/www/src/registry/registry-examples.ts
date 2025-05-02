@@ -1096,7 +1096,7 @@ export const docExamples: Registry['items'] = [
         type: 'registry:example',
       },
       {
-        path: 'registry/plate-ui/fixed-toolbar-list-buttons.tsx',
+        path: 'registry/ui/fixed-toolbar-list-buttons.tsx',
         type: 'registry:example',
       },
       {

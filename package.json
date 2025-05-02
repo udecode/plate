@@ -66,7 +66,7 @@
     "p:test": "cd $INIT_CWD && jest --config=${PROJECT_CWD}/jest.config.cjs --maxWorkers=1 --passWithNoTests $INIT_CWD ",
     "p:tsup": "cd $INIT_CWD && tsup --config=${PROJECT_CWD}/tooling/config/tsup.config.ts",
     "p:typecheck": "cd $INIT_CWD && tsc -p $INIT_CWD/tsconfig.json",
-    "registry:build": "npx shadcn@canary registry:build",
+    "registry:build": "cd apps/www && npx shadcn@canary registry:build",
     "release": "yarn build && yarn changeset publish",
     "sync:plate": "node templates/plate-playground-template/scripts/sync-plate.cjs",
     "sync:templates": "./tooling/scripts/sync-templates.sh \"templates/*\"",
