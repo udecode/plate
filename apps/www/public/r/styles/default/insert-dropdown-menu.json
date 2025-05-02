@@ -1,4 +1,10 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "insert-dropdown-menu",
+  "type": "registry:ui",
+  "title": "Insert Dropdown Menu",
+  "author": "udecode (https://platejs.org)",
+  "description": "A menu for inserting different types of blocks.",
   "dependencies": [
     "@radix-ui/react-dropdown-menu",
     "@udecode/plate-block-quote",
@@ -13,12 +19,11 @@
     "@udecode/plate-table",
     "@udecode/plate-toggle"
   ],
-  "doc": {
-    "description": "A menu for inserting different types of blocks.",
-    "examples": [
-      "basic-nodes-demo"
-    ]
-  },
+  "registryDependencies": [
+    "dropdown-menu",
+    "toolbar",
+    "https://platejs.org/r/styles/default/transforms.json"
+  ],
   "files": [
     {
       "path": "plate-ui/insert-dropdown-menu.tsx",
@@ -27,13 +32,9 @@
       "target": "components/plate-ui/insert-dropdown-menu.tsx"
     }
   ],
-  "name": "insert-dropdown-menu",
-  "registryDependencies": [
-    "dropdown-menu",
-    "toolbar",
-    "https://platejs.org/r/transforms"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "examples": [
+      "basic-nodes-demo"
+    ]
+  }
 }

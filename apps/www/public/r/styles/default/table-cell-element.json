@@ -1,21 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "table-cell-element",
+  "type": "registry:ui",
+  "title": "Table Cell Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A table cell with resizable borders and selection.",
   "dependencies": [
     "@udecode/plate-table"
   ],
-  "doc": {
-    "description": "A table cell with resizable borders and selection.",
-    "docs": [
-      {
-        "route": "/docs/table"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/table-cell-element"
-      }
-    ],
-    "examples": [
-      "table-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/resizable.json"
+  ],
   "files": [
     {
       "path": "plate-ui/table-cell-element.tsx",
@@ -30,11 +25,17 @@
       "target": "components/plate-ui/table-cell-element-static.tsx"
     }
   ],
-  "name": "table-cell-element",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/resizable.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/table"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/table-cell-element"
+      }
+    ],
+    "examples": [
+      "table-demo"
+    ]
+  }
 }

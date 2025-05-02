@@ -1,18 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "list-toolbar-button",
+  "type": "registry:ui",
+  "title": "List Toolbar Button",
+  "author": "udecode (https://platejs.org)",
+  "description": "A toolbar control for list creation and management.",
   "dependencies": [
     "@udecode/plate-list"
   ],
-  "doc": {
-    "description": "A toolbar control for list creation and management.",
-    "docs": [
-      {
-        "route": "/docs/list"
-      }
-    ],
-    "examples": [
-      "list-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/toolbar.json"
+  ],
   "files": [
     {
       "path": "plate-ui/list-toolbar-button.tsx",
@@ -21,11 +19,14 @@
       "target": "components/plate-ui/list-toolbar-button.tsx"
     }
   ],
-  "name": "list-toolbar-button",
-  "registryDependencies": [
-    "toolbar"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/list"
+      }
+    ],
+    "examples": [
+      "list-demo"
+    ]
+  }
 }

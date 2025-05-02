@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "exit-break-plugin",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-break",
     "@udecode/plate-heading"
@@ -10,9 +14,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/exit-break-plugin.ts"
     }
-  ],
-  "name": "exit-break-plugin",
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

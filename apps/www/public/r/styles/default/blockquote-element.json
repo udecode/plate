@@ -1,20 +1,12 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "blockquote-element",
+  "type": "registry:ui",
+  "title": "Blockquote Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A quote component for block quotes.",
   "dependencies": [],
-  "doc": {
-    "description": "A quote component for block quotes.",
-    "docs": [
-      {
-        "route": "/docs/basic-elements"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/blockquote-element"
-      }
-    ],
-    "examples": [
-      "basic-elements-demo",
-      "basic-nodes-pro"
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/blockquote-element.tsx",
@@ -29,9 +21,18 @@
       "target": "components/plate-ui/blockquote-element-static.tsx"
     }
   ],
-  "name": "blockquote-element",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/blockquote-element"
+      }
+    ],
+    "examples": [
+      "basic-elements-demo",
+      "basic-nodes-pro"
+    ]
+  }
 }

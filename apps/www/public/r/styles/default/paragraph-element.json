@@ -1,20 +1,12 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "paragraph-element",
+  "type": "registry:ui",
+  "title": "Paragraph Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A paragraph block with background color support.",
   "dependencies": [],
-  "doc": {
-    "description": "A paragraph block with background color support.",
-    "docs": [
-      {
-        "route": "/docs/basic-elements"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/paragraph-element"
-      }
-    ],
-    "examples": [
-      "basic-elements-demo",
-      "basic-nodes-pro"
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/paragraph-element.tsx",
@@ -29,9 +21,18 @@
       "target": "components/plate-ui/paragraph-element-static.tsx"
     }
   ],
-  "name": "paragraph-element",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/paragraph-element"
+      }
+    ],
+    "examples": [
+      "basic-elements-demo",
+      "basic-nodes-pro"
+    ]
+  }
 }

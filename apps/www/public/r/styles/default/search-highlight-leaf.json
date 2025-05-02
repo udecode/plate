@@ -1,13 +1,12 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "search-highlight-leaf",
+  "type": "registry:ui",
+  "title": "Search Highlight Leaf",
+  "author": "udecode (https://platejs.org)",
+  "description": "A component that highlights search results in text.",
   "dependencies": [],
-  "doc": {
-    "description": "A component that highlights search results in text.",
-    "docs": [
-      {
-        "route": "/docs/highlight"
-      }
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/search-highlight-leaf.tsx",
@@ -16,9 +15,11 @@
       "target": "components/plate-ui/search-highlight-leaf.tsx"
     }
   ],
-  "name": "search-highlight-leaf",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/highlight"
+      }
+    ]
+  }
 }

@@ -1,13 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "context-menu",
+  "type": "registry:ui",
+  "title": "Context Menu",
+  "author": "udecode (https://platejs.org)",
+  "description": "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
   "dependencies": [
     "@radix-ui/react-context-menu"
   ],
-  "doc": {
-    "description": "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/context-menu"
-    }
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/context-menu.tsx",
@@ -16,9 +17,9 @@
       "target": "components/plate-ui/context-menu.tsx"
     }
   ],
-  "name": "context-menu",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/context-menu"
+    }
+  }
 }

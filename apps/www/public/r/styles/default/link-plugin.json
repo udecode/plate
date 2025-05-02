@@ -1,6 +1,13 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "link-plugin",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-link"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/link-floating-toolbar.json"
   ],
   "files": [
     {
@@ -9,12 +16,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/link-plugin.tsx"
     }
-  ],
-  "name": "link-plugin",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/link-floating-toolbar.json"
-  ],
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "delete-plugins",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-select",
     "@udecode/plate-horizontal-rule",
@@ -11,9 +15,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/delete-plugins.ts"
     }
-  ],
-  "name": "delete-plugins",
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

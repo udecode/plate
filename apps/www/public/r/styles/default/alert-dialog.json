@@ -1,13 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "alert-dialog",
+  "type": "registry:ui",
+  "title": "Alert Dialog",
+  "author": "udecode (https://platejs.org)",
+  "description": "A modal dialog that interrupts the user with important content and expects a response.",
   "dependencies": [
     "@radix-ui/react-alert-dialog"
   ],
-  "doc": {
-    "description": "A modal dialog that interrupts the user with important content and expects a response.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/alert-dialog"
-    }
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/button.json"
+  ],
   "files": [
     {
       "path": "plate-ui/alert-dialog.tsx",
@@ -16,11 +19,9 @@
       "target": "components/plate-ui/alert-dialog.tsx"
     }
   ],
-  "name": "alert-dialog",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/button.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/alert-dialog"
+    }
+  }
 }

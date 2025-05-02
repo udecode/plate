@@ -1,7 +1,10 @@
 {
-  "doc": {
-    "title": "Default"
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "editor-default",
+  "type": "registry:example",
+  "title": "Default",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/editor-default.tsx",
@@ -10,9 +13,5 @@
       "target": "components/editor-default.tsx"
     }
   ],
-  "name": "editor-default",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

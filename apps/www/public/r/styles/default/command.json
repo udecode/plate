@@ -1,14 +1,18 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "command",
+  "type": "registry:ui",
+  "title": "Command",
+  "author": "udecode (https://platejs.org)",
+  "description": "Fast, composable, unstyled command menu for React.",
   "dependencies": [
     "@radix-ui/react-dialog",
     "@udecode/cmdk"
   ],
-  "doc": {
-    "description": "Fast, composable, unstyled command menu for React.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/command"
-    }
-  },
+  "registryDependencies": [
+    "dialog",
+    "https://platejs.org/r/styles/default/input.json"
+  ],
   "files": [
     {
       "path": "plate-ui/command.tsx",
@@ -17,12 +21,9 @@
       "target": "components/plate-ui/command.tsx"
     }
   ],
-  "name": "command",
-  "registryDependencies": [
-    "dialog",
-    "https://platejs.org/r/styles/default/input.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/command"
+    }
+  }
 }

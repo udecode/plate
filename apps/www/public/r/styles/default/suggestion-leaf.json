@@ -1,19 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "suggestion-leaf",
+  "type": "registry:ui",
+  "title": "Suggestion Leaf",
+  "author": "udecode (https://platejs.org)",
+  "description": "A text component for suggestion.",
   "dependencies": [
     "@udecode/plate-suggestion"
   ],
-  "doc": {
-    "description": "A text component for suggestion.",
-    "docs": [
-      {
-        "route": "/docs/suggestion"
-      }
-    ],
-    "examples": [
-      "comments-demo",
-      "comments-pro"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/suggestion-plugin.json"
+  ],
   "files": [
     {
       "path": "plate-ui/suggestion-leaf.tsx",
@@ -28,11 +25,15 @@
       "target": "components/plate-ui/suggestion-leaf-static.tsx"
     }
   ],
-  "name": "suggestion-leaf",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/suggestion-plugin.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/suggestion"
+      }
+    ],
+    "examples": [
+      "comments-demo",
+      "comments-pro"
+    ]
+  }
 }

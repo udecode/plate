@@ -1,8 +1,10 @@
 {
-  "doc": {
-    "description": "Copy paste from HTML to Slate.",
-    "title": "Serializing HTML"
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "html-demo",
+  "type": "registry:example",
+  "title": "Serializing HTML",
+  "author": "udecode (https://platejs.org)",
+  "description": "Copy paste from HTML to Slate.",
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -29,8 +31,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "html-demo",
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

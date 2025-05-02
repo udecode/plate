@@ -1,13 +1,12 @@
 {
-  "doc": {
-    "description": "Customizable tables with resizable columns and row merging options.",
-    "docs": [
-      {
-        "route": "/docs/table",
-        "title": "Table"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "table-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Customizable tables with resizable columns and row merging options.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/table-plugin.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -34,11 +33,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "table-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/table-plugin.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/table",
+        "title": "Table"
+      }
+    ]
+  }
 }

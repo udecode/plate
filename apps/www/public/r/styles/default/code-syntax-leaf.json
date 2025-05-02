@@ -1,22 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "code-syntax-leaf",
+  "type": "registry:ui",
+  "title": "Code Syntax Leaf",
+  "author": "udecode (https://platejs.org)",
+  "description": "A syntax highlighting component for code blocks.",
   "dependencies": [
     "@udecode/plate-code-block"
   ],
-  "doc": {
-    "description": "A syntax highlighting component for code blocks.",
-    "docs": [
-      {
-        "route": "/docs/basic-elements"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/code-syntax-leaf"
-      }
-    ],
-    "examples": [
-      "basic-elements-demo",
-      "basic-nodes-pro"
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/code-syntax-leaf.tsx",
@@ -31,9 +23,18 @@
       "target": "components/plate-ui/code-syntax-leaf-static.tsx"
     }
   ],
-  "name": "code-syntax-leaf",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/code-syntax-leaf"
+      }
+    ],
+    "examples": [
+      "basic-elements-demo",
+      "basic-nodes-pro"
+    ]
+  }
 }

@@ -1,19 +1,18 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "align-dropdown-menu",
+  "type": "registry:ui",
+  "title": "Align Dropdown Menu",
+  "author": "udecode (https://platejs.org)",
+  "description": "A dropdown menu for text alignment controls.",
   "dependencies": [
     "@udecode/plate-alignment",
     "@radix-ui/react-dropdown-menu"
   ],
-  "doc": {
-    "description": "A dropdown menu for text alignment controls.",
-    "docs": [
-      {
-        "route": "/docs/alignment"
-      }
-    ],
-    "examples": [
-      "align-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/dropdown-menu.json",
+    "https://platejs.org/r/styles/default/toolbar.json"
+  ],
   "files": [
     {
       "path": "plate-ui/align-dropdown-menu.tsx",
@@ -22,12 +21,14 @@
       "target": "components/plate-ui/align-dropdown-menu.tsx"
     }
   ],
-  "name": "align-dropdown-menu",
-  "registryDependencies": [
-    "dropdown-menu",
-    "toolbar"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/alignment"
+      }
+    ],
+    "examples": [
+      "align-demo"
+    ]
+  }
 }

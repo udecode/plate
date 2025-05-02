@@ -1,23 +1,18 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "table-element",
+  "type": "registry:ui",
+  "title": "Table Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A table component with floating toolbar and border customization.",
   "dependencies": [
     "@udecode/plate-table",
     "@radix-ui/react-dropdown-menu",
     "@radix-ui/react-popover"
   ],
-  "doc": {
-    "description": "A table component with floating toolbar and border customization.",
-    "docs": [
-      {
-        "route": "/docs/table"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/table-element"
-      }
-    ],
-    "examples": [
-      "table-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/dropdown-menu.json"
+  ],
   "files": [
     {
       "path": "plate-ui/table-element.tsx",
@@ -38,11 +33,17 @@
       "target": "components/plate-ui/table-element-static.tsx"
     }
   ],
-  "name": "table-element",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/dropdown-menu.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/table"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/table-element"
+      }
+    ],
+    "examples": [
+      "table-demo"
+    ]
+  }
 }

@@ -1,8 +1,13 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "api-ai",
+  "type": "registry:lib",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@ai-sdk/openai",
     "ai"
   ],
+  "registryDependencies": [],
   "files": [
     {
       "path": "app/api/ai/command/route.ts",
@@ -16,10 +21,5 @@
       "type": "registry:lib",
       "target": "app/api/ai/copilot/route.ts"
     }
-  ],
-  "name": "api-ai",
-  "registryDependencies": [],
-  "type": "registry:lib",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

@@ -1,7 +1,11 @@
 {
-  "doc": {
-    "description": "A loading spinner component with size variants."
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "spinner",
+  "type": "registry:ui",
+  "title": "Spinner",
+  "author": "udecode (https://platejs.org)",
+  "description": "A loading spinner component with size variants.",
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/spinner.tsx",
@@ -10,9 +14,5 @@
       "target": "components/plate-ui/spinner.tsx"
     }
   ],
-  "name": "spinner",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

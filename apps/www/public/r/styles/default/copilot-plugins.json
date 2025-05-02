@@ -1,8 +1,15 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "copilot-plugins",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-ai",
     "@udecode/plate-markdown",
     "@faker-js/faker"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/ghost-text.json"
   ],
   "files": [
     {
@@ -11,12 +18,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/copilot-plugins.tsx"
     }
-  ],
-  "name": "copilot-plugins",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/ghost-text.json"
-  ],
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

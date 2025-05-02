@@ -1,22 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "comment-leaf",
+  "type": "registry:ui",
+  "title": "Comment Leaf",
+  "author": "udecode (https://platejs.org)",
+  "description": "A text component for displaying comments with visual indicators.",
   "dependencies": [
     "@udecode/plate-comments"
   ],
-  "doc": {
-    "description": "A text component for displaying comments with visual indicators.",
-    "docs": [
-      {
-        "route": "/docs/comments"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/comment-leaf"
-      }
-    ],
-    "examples": [
-      "comments-demo",
-      "comments-pro"
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/comment-leaf.tsx",
@@ -31,9 +23,18 @@
       "target": "components/plate-ui/comment-leaf-static.tsx"
     }
   ],
-  "name": "comment-leaf",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/comments"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/comment-leaf"
+      }
+    ],
+    "examples": [
+      "comments-demo",
+      "comments-pro"
+    ]
+  }
 }

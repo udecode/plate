@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "line-height-plugin",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-heading",
     "@udecode/plate-line-height"
@@ -10,9 +14,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/line-height-plugin.ts"
     }
-  ],
-  "name": "line-height-plugin",
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

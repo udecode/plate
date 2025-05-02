@@ -1,22 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "date-element",
+  "type": "registry:ui",
+  "title": "Date Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A date field component with calendar picker.",
   "dependencies": [
     "@udecode/plate-date"
   ],
-  "doc": {
-    "description": "A date field component with calendar picker.",
-    "docs": [
-      {
-        "route": "/docs/date"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/date-element"
-      }
-    ],
-    "examples": [
-      "date-demo"
-    ],
-    "label": "New"
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/calendar.json"
+  ],
   "files": [
     {
       "path": "plate-ui/date-element.tsx",
@@ -31,11 +25,18 @@
       "target": "components/plate-ui/date-element-static.tsx"
     }
   ],
-  "name": "date-element",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/calendar.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/date"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/date-element"
+      }
+    ],
+    "examples": [
+      "date-demo"
+    ],
+    "label": "New"
+  }
 }

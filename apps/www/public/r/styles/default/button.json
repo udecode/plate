@@ -1,13 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "button",
+  "type": "registry:ui",
+  "title": "Button",
+  "author": "udecode (https://platejs.org)",
+  "description": "Displays a button or a component that looks like a button.",
   "dependencies": [
     "@radix-ui/react-slot"
   ],
-  "doc": {
-    "description": "Displays a button or a component that looks like a button.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/button"
-    }
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/button.tsx",
@@ -16,9 +17,9 @@
       "target": "components/plate-ui/button.tsx"
     }
   ],
-  "name": "button",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/button"
+    }
+  }
 }

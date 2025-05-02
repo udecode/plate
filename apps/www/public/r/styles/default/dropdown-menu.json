@@ -1,13 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "dropdown-menu",
+  "type": "registry:ui",
+  "title": "Dropdown Menu",
+  "author": "udecode (https://platejs.org)",
+  "description": "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
   "dependencies": [
     "@radix-ui/react-dropdown-menu"
   ],
-  "doc": {
-    "description": "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/dropdown-menu"
-    }
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/dropdown-menu.tsx",
@@ -16,9 +17,9 @@
       "target": "components/plate-ui/dropdown-menu.tsx"
     }
   ],
-  "name": "dropdown-menu",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/dropdown-menu"
+    }
+  }
 }

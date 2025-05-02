@@ -1,14 +1,13 @@
 {
-  "doc": {
-    "description": "Implements draggable functionality for editor blocks, including drag handles and drop indicators.",
-    "docs": [
-      {
-        "route": "/docs/dnd",
-        "title": "Drag & Drop"
-      }
-    ],
-    "title": "Drag & Drop"
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "dnd-demo",
+  "type": "registry:example",
+  "title": "Drag & Drop",
+  "author": "udecode (https://platejs.org)",
+  "description": "Implements draggable functionality for editor blocks, including drag handles and drop indicators.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/dnd-plugins.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -35,11 +34,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "dnd-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/dnd-plugins.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/dnd",
+        "title": "Drag & Drop"
+      }
+    ]
+  }
 }

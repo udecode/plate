@@ -1,7 +1,10 @@
 {
-  "doc": {
-    "description": "Collapsible content blocks."
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "toggle-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Collapsible content blocks.",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -22,9 +25,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "toggle-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "uploadthing",
+  "type": "registry:lib",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "uploadthing@7.2.0",
     "@uploadthing/react@7.1.0",
@@ -12,9 +16,5 @@
       "type": "registry:lib",
       "target": "lib/uploadthing.ts"
     }
-  ],
-  "name": "uploadthing",
-  "type": "registry:lib",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

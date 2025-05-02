@@ -1,21 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "indent-todo-marker",
+  "type": "registry:ui",
+  "title": "Indent Todo Marker",
+  "author": "udecode (https://platejs.org)",
+  "description": "A checkbox marker for interactive todo lists.",
   "dependencies": [
     "@udecode/plate-indent-list"
   ],
-  "doc": {
-    "description": "A checkbox marker for interactive todo lists.",
-    "docs": [
-      {
-        "route": "/docs/indent-list"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/indent-todo-marker"
-      }
-    ],
-    "examples": [
-      "list-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/checkbox.json"
+  ],
   "files": [
     {
       "path": "plate-ui/indent-todo-marker.tsx",
@@ -30,11 +25,17 @@
       "target": "components/plate-ui/indent-todo-marker-static.tsx"
     }
   ],
-  "name": "indent-todo-marker",
-  "registryDependencies": [
-    "checkbox"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/indent-list"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/indent-todo-marker"
+      }
+    ],
+    "examples": [
+      "list-demo"
+    ]
+  }
 }

@@ -1,8 +1,10 @@
 {
-  "doc": {
-    "description": "Restrict the editor to a single block.",
-    "title": "Single Line"
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "single-line-demo",
+  "type": "registry:example",
+  "title": "Single Line",
+  "author": "udecode (https://platejs.org)",
+  "description": "Restrict the editor to a single block.",
   "files": [
     {
       "path": "examples/single-line-demo.tsx",
@@ -29,8 +31,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "single-line-demo",
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "use-mounted",
+  "type": "registry:hook",
+  "author": "udecode (https://platejs.org)",
   "files": [
     {
       "path": "hooks/use-mounted.ts",
@@ -6,9 +10,5 @@
       "type": "registry:hook",
       "target": "hooks/use-mounted.ts"
     }
-  ],
-  "name": "use-mounted",
-  "type": "registry:hook",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

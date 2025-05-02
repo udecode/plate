@@ -1,8 +1,13 @@
 {
-  "doc": {
-    "description": "Apply formatting automatically using shortcodes.",
-    "title": "Autoformat"
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "autoformat-demo",
+  "type": "registry:example",
+  "title": "Autoformat",
+  "author": "udecode (https://platejs.org)",
+  "description": "Apply formatting automatically using shortcodes.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/autoformat-plugin.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -29,11 +34,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "autoformat-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/autoformat-plugin.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

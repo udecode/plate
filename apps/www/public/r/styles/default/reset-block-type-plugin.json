@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "reset-block-type-plugin",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-block-quote",
     "@udecode/plate-callout",
@@ -14,9 +18,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/reset-block-type-plugin.ts"
     }
-  ],
-  "name": "reset-block-type-plugin",
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

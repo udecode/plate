@@ -1,18 +1,17 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "font-size-toolbar-button",
+  "type": "registry:ui",
+  "title": "Font Size Toolbar Button",
+  "author": "udecode (https://platejs.org)",
+  "description": "A toolbar control for adjusting font size.",
   "dependencies": [
     "@udecode/plate-font"
   ],
-  "doc": {
-    "description": "A toolbar control for adjusting font size.",
-    "docs": [
-      {
-        "route": "/docs/font"
-      }
-    ],
-    "examples": [
-      "list-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/popover.json",
+    "https://platejs.org/r/styles/default/toolbar.json"
+  ],
   "files": [
     {
       "path": "plate-ui/font-size-toolbar-button.tsx",
@@ -21,12 +20,14 @@
       "target": "components/plate-ui/font-size-toolbar-button.tsx"
     }
   ],
-  "name": "font-size-toolbar-button",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/popover.json",
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/font"
+      }
+    ],
+    "examples": [
+      "list-demo"
+    ]
+  }
 }

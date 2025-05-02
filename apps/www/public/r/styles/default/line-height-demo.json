@@ -1,7 +1,12 @@
 {
-  "doc": {
-    "description": "Line height adjustment controls."
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "line-height-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Line height adjustment controls.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/line-height-plugin.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -28,11 +33,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "line-height-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/line-height-plugin.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

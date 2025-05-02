@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "indent-list-plugins",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-block-quote",
     "@udecode/plate-code-block",
@@ -7,6 +11,10 @@
     "@udecode/plate-indent-list",
     "@udecode/plate-toggle"
   ],
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/indent-fire-marker.json",
+    "https://platejs.org/r/styles/default/indent-todo-marker.json"
+  ],
   "files": [
     {
       "path": "components/editor/plugins/indent-list-plugins.ts",
@@ -14,13 +22,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/indent-list-plugins.ts"
     }
-  ],
-  "name": "indent-list-plugins",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/indent-fire-marker.json",
-    "https://platejs.org/r/styles/default/indent-todo-marker.json"
-  ],
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

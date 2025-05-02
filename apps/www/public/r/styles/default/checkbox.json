@@ -1,13 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "checkbox",
+  "type": "registry:ui",
+  "title": "Checkbox",
+  "author": "udecode (https://platejs.org)",
+  "description": "A control that allows the user to toggle between checked and not checked.",
   "dependencies": [
     "@radix-ui/react-checkbox"
   ],
-  "doc": {
-    "description": "A control that allows the user to toggle between checked and not checked.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/checkbox"
-    }
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/checkbox.tsx",
@@ -22,9 +23,9 @@
       "target": "components/plate-ui/checkbox-static.tsx"
     }
   ],
-  "name": "checkbox",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/checkbox"
+    }
+  }
 }

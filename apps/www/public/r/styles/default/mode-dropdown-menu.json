@@ -1,13 +1,17 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "mode-dropdown-menu",
+  "type": "registry:ui",
+  "title": "Mode Dropdown Menu",
+  "author": "udecode (https://platejs.org)",
+  "description": "A menu for switching between editor modes.",
   "dependencies": [
     "@radix-ui/react-dropdown-menu"
   ],
-  "doc": {
-    "description": "A menu for switching between editor modes.",
-    "examples": [
-      "basic-nodes-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/dropdown-menu.json",
+    "https://platejs.org/r/styles/default/toolbar.json"
+  ],
   "files": [
     {
       "path": "plate-ui/mode-dropdown-menu.tsx",
@@ -16,12 +20,9 @@
       "target": "components/plate-ui/mode-dropdown-menu.tsx"
     }
   ],
-  "name": "mode-dropdown-menu",
-  "registryDependencies": [
-    "dropdown-menu",
-    "toolbar"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "examples": [
+      "basic-nodes-demo"
+    ]
+  }
 }

@@ -4,7 +4,8 @@ import React, { Suspense } from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import type { TableOfContents } from '@/lib/toc';
-import type { RegistryItem } from 'shadcx/registry';
+import type { Doc } from 'contentlayer/generated';
+import type { RegistryItem } from 'shadcn/registry';
 
 import { cn } from '@udecode/cn';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
@@ -56,8 +57,9 @@ export function DocContent({
 }: {
   category: 'api' | 'component' | 'example' | 'guide' | 'plugin';
   children: React.ReactNode;
+  doc: Partial<Doc>;
   toc?: TableOfContents;
-} & Omit<Partial<RegistryItem>, 'category'>) {
+} & Partial<RegistryItem>) {
   const title = doc?.title ?? getRegistryTitle(file);
   const hasToc = doc?.toc && toc;
 
@@ -130,7 +132,7 @@ export function DocContent({
                 <ExternalLinkIcon className="size-3" />
               </Link>
             )}
-            {doc?.docs?.map((item) => (
+            {doc?.docs?.map((item: any) => (
               <Link
                 key={item.route}
                 className={cn(

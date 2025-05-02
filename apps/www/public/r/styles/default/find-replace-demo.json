@@ -1,7 +1,14 @@
 {
-  "doc": {
-    "description": "Find and replace functionality in text."
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "find-replace-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Find and replace functionality in text.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/fixed-toolbar.json",
+    "https://platejs.org/r/styles/default/input.json",
+    "https://platejs.org/r/styles/default/search-highlight-leaf.json"
+  ],
   "files": [
     {
       "path": "examples/find-replace-demo.tsx",
@@ -28,13 +35,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "find-replace-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/fixed-toolbar.json",
-    "https://platejs.org/r/styles/default/input.json",
-    "https://platejs.org/r/styles/default/search-highlight-leaf.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

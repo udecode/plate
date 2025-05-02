@@ -1,16 +1,12 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "highlight-leaf",
+  "type": "registry:ui",
+  "title": "Highlight Leaf",
+  "author": "udecode (https://platejs.org)",
+  "description": "A text highlighter with customizable colors.",
   "dependencies": [],
-  "doc": {
-    "description": "A text highlighter with customizable colors.",
-    "docs": [
-      {
-        "route": "/docs/highlight"
-      }
-    ],
-    "examples": [
-      "highlight-demo"
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/highlight-leaf.tsx",
@@ -25,9 +21,14 @@
       "target": "components/plate-ui/highlight-leaf-static.tsx"
     }
   ],
-  "name": "highlight-leaf",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/highlight"
+      }
+    ],
+    "examples": [
+      "highlight-demo"
+    ]
+  }
 }

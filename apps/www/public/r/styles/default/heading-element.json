@@ -1,20 +1,12 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "heading-element",
+  "type": "registry:ui",
+  "title": "Heading Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A heading with multiple level support.",
   "dependencies": [],
-  "doc": {
-    "description": "A heading with multiple level support.",
-    "docs": [
-      {
-        "route": "/docs/basic-elements"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/heading-element"
-      }
-    ],
-    "examples": [
-      "basic-elements-demo",
-      "basic-nodes-pro"
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/heading-element.tsx",
@@ -29,9 +21,18 @@
       "target": "components/plate-ui/heading-element-static.tsx"
     }
   ],
-  "name": "heading-element",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/heading-element"
+      }
+    ],
+    "examples": [
+      "basic-elements-demo",
+      "basic-nodes-pro"
+    ]
+  }
 }

@@ -1,8 +1,13 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "use-chat",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "ai",
     "@faker-js/faker"
   ],
+  "registryDependencies": [],
   "files": [
     {
       "path": "components/editor/use-chat.ts",
@@ -10,10 +15,5 @@
       "type": "registry:component",
       "target": "components/editor/use-chat.ts"
     }
-  ],
-  "name": "use-chat",
-  "registryDependencies": [],
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

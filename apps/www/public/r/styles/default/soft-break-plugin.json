@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "soft-break-plugin",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-break",
     "@udecode/plate-block-quote",
@@ -13,9 +17,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/soft-break-plugin.ts"
     }
-  ],
-  "name": "soft-break-plugin",
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

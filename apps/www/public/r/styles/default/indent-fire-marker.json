@@ -1,4 +1,9 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "indent-fire-marker",
+  "type": "registry:ui",
+  "title": "Indent Fire Marker",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-indent"
   ],
@@ -9,9 +14,5 @@
       "type": "registry:ui",
       "target": "components/plate-ui/indent-fire-marker.tsx"
     }
-  ],
-  "name": "indent-fire-marker",
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

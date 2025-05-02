@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "theme-daylight",
+  "type": "registry:theme",
+  "author": "udecode (https://platejs.org)",
   "cssVars": {
     "light": {
       "accent": "36 64% 57%",
@@ -56,9 +60,5 @@
       "secondary": "40 35% 77%",
       "secondary-foreground": "36 45% 25%"
     }
-  },
-  "name": "theme-daylight",
-  "type": "registry:theme",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  }
 }

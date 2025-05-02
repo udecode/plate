@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "plate-types",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-block-quote",
     "@udecode/plate-code-block",
@@ -19,9 +23,5 @@
       "type": "registry:component",
       "target": "components/editor/plate-types.ts"
     }
-  ],
-  "name": "plate-types",
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

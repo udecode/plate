@@ -1,4 +1,10 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "form",
+  "type": "registry:ui",
+  "title": "Form",
+  "author": "udecode (https://platejs.org)",
+  "description": "Building forms with React Hook Form and Zod.",
   "dependencies": [
     "react-hook-form",
     "zod",
@@ -6,12 +12,9 @@
     "@radix-ui/react-label",
     "@radix-ui/react-slot"
   ],
-  "doc": {
-    "description": "Building forms with React Hook Form and Zod.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/form"
-    }
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/label.json"
+  ],
   "files": [
     {
       "path": "plate-ui/form.tsx",
@@ -20,11 +23,9 @@
       "target": "components/plate-ui/form.tsx"
     }
   ],
-  "name": "form",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/label.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/form"
+    }
+  }
 }

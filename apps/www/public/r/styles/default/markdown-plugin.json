@@ -1,9 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "markdown-plugin",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-markdown",
     "remark-gfm",
     "remark-math"
   ],
+  "registryDependencies": [],
   "files": [
     {
       "path": "components/editor/plugins/markdown-plugin.tsx",
@@ -11,10 +16,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/markdown-plugin.tsx"
     }
-  ],
-  "name": "markdown-plugin",
-  "registryDependencies": [],
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

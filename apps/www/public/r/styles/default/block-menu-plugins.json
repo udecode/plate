@@ -1,6 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "block-menu-plugins",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-selection"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/block-context-menu.json",
+    "https://platejs.org/r/styles/default/block-selection-plugins.json"
   ],
   "files": [
     {
@@ -9,13 +17,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/block-menu-plugins.ts"
     }
-  ],
-  "name": "block-menu-plugins",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/block-context-menu.json",
-    "https://platejs.org/r/styles/default/block-selection-plugins.json"
-  ],
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

@@ -1,14 +1,16 @@
 {
-  "doc": {
-    "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
-    "docs": [
-      {
-        "route": "/docs/ai",
-        "title": "AI"
-      }
-    ],
-    "title": "AI"
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "ai-demo",
+  "type": "registry:example",
+  "title": "AI",
+  "author": "udecode (https://platejs.org)",
+  "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/basic-nodes-plugins.json",
+    "https://platejs.org/r/styles/default/block-selection-plugins.json",
+    "https://platejs.org/r/styles/default/indent-list-plugins.json",
+    "https://platejs.org/r/styles/default/link-plugin.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -41,14 +43,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "ai-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/basic-nodes-plugins.json",
-    "https://platejs.org/r/styles/default/block-selection-plugins.json",
-    "https://platejs.org/r/styles/default/indent-list-plugins.json",
-    "https://platejs.org/r/styles/default/link-plugin.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/ai",
+        "title": "AI"
+      }
+    ]
+  }
 }

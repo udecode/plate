@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "theme-emerald",
+  "type": "registry:theme",
+  "author": "udecode (https://platejs.org)",
   "cssVars": {
     "light": {
       "accent": "240 4.8% 95.9%",
@@ -56,9 +60,5 @@
       "secondary": "240 4.8% 95.9%",
       "secondary-foreground": "240 5.9% 10%"
     }
-  },
-  "name": "theme-emerald",
-  "type": "registry:theme",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  }
 }

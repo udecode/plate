@@ -1,13 +1,10 @@
 {
-  "doc": {
-    "description": "Slash command menu for quick insertion of various content types.",
-    "docs": [
-      {
-        "route": "/docs/slash-command",
-        "title": "Slash Command"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "slash-command-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Slash command menu for quick insertion of various content types.",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -34,9 +31,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "slash-command-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/slash-command",
+        "title": "Slash Command"
+      }
+    ]
+  }
 }

@@ -1,18 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "toggle-element",
+  "type": "registry:ui",
+  "title": "Toggle Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A collapsible component for toggling content visibility.",
   "dependencies": [
     "@udecode/plate-toggle"
   ],
-  "doc": {
-    "description": "A collapsible component for toggling content visibility.",
-    "docs": [
-      {
-        "route": "/docs/toggle"
-      }
-    ],
-    "examples": [
-      "toggle-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/button.json"
+  ],
   "files": [
     {
       "path": "plate-ui/toggle-element.tsx",
@@ -27,11 +25,14 @@
       "target": "components/plate-ui/toggle-element-static.tsx"
     }
   ],
-  "name": "toggle-element",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/button.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/toggle"
+      }
+    ],
+    "examples": [
+      "toggle-demo"
+    ]
+  }
 }

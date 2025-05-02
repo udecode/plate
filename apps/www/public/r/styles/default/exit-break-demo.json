@@ -1,8 +1,13 @@
 {
-  "doc": {
-    "description": "Exit a large block using a shortcut.",
-    "title": "Exit Break"
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "exit-break-demo",
+  "type": "registry:example",
+  "title": "Exit Break",
+  "author": "udecode (https://platejs.org)",
+  "description": "Exit a large block using a shortcut.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/exit-break-plugin.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -29,11 +34,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "exit-break-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/exit-break-plugin.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

@@ -1,13 +1,12 @@
 {
-  "doc": {
-    "description": "Basic block elements like headings, quotes, and code blocks.",
-    "docs": [
-      {
-        "route": "/docs/basic-elements",
-        "title": "Basic Elements"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "basic-elements-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Basic block elements like headings, quotes, and code blocks.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/basic-nodes-plugins.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -34,11 +33,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "basic-elements-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/basic-nodes-plugins.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-elements",
+        "title": "Basic Elements"
+      }
+    ]
+  }
 }

@@ -1,7 +1,10 @@
 {
-  "doc": {
-    "description": "Color picker for text and background colors."
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "font-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Color picker for text and background colors.",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -28,9 +31,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "font-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

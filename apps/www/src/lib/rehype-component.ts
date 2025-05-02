@@ -37,13 +37,13 @@ export function rehypeComponent() {
         if (name) {
           if (node.name === 'ComponentPreviewPro') {
             const registryItem = proExamples.find((item) => item.name === name);
-            if (registryItem?.doc?.description) {
+            if (registryItem?.description) {
               node.attributes = [
                 ...(node.attributes || []),
                 {
                   name: 'description',
                   type: 'mdxJsxAttribute',
-                  value: registryItem.doc.description,
+                  value: registryItem.description,
                 },
               ];
             }
@@ -99,7 +99,7 @@ export function rehypeComponent() {
 
                   const component = Index[styles[0].name][name];
 
-                  if (component.doc?.preview) {
+                  if (component.meta?.preview) {
                     const example = examples.find((ex) => ex.name === name);
 
                     if (example) {

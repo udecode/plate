@@ -1,9 +1,25 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "inline-equation-toolbar-button",
+  "type": "registry:ui",
+  "title": "Inline Equation Toolbar Button",
+  "author": "udecode (https://platejs.org)",
+  "description": "A toolbar button for inserting and editing inline equations.",
   "dependencies": [
     "@udecode/plate-math"
   ],
-  "doc": {
-    "description": "A toolbar button for inserting and editing inline equations.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/toolbar.json"
+  ],
+  "files": [
+    {
+      "path": "plate-ui/inline-equation-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { insertInlineEquation } from '@udecode/plate-math';\nimport { useEditorRef, withRef } from '@udecode/plate/react';\nimport { RadicalIcon } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const InlineEquationToolbarButton = withRef<typeof ToolbarButton>(\n  (props, ref) => {\n    const editor = useEditorRef();\n\n    return (\n      <ToolbarButton\n        ref={ref}\n        tooltip=\"Mark as equation\"\n        {...props}\n        onClick={() => {\n          insertInlineEquation(editor);\n        }}\n      >\n        <RadicalIcon />\n      </ToolbarButton>\n    );\n  }\n);\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/inline-equation-toolbar-button.tsx"
+    }
+  ],
+  "meta": {
     "docs": [
       {
         "route": "https://platejs.org/docs/equation",
@@ -14,20 +30,5 @@
       "equation-demo",
       "floating-toolbar-demo"
     ]
-  },
-  "files": [
-    {
-      "path": "plate-ui/inline-equation-toolbar-button.tsx",
-      "content": "'use client';\n\nimport { insertInlineEquation } from '@udecode/plate-math';\nimport { useEditorRef, withRef } from '@udecode/plate/react';\nimport { RadicalIcon } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const InlineEquationToolbarButton = withRef<typeof ToolbarButton>(\n  (props, ref) => {\n    const editor = useEditorRef();\n\n    return (\n      <ToolbarButton\n        ref={ref}\n        tooltip=\"Mark as equation\"\n        {...props}\n        onClick={() => {\n          insertInlineEquation(editor);\n        }}\n      >\n        <RadicalIcon />\n      </ToolbarButton>\n    );\n  }\n);\n",
-      "type": "registry:ui",
-      "target": "components/plate-ui/inline-equation-toolbar-button.tsx"
-    }
-  ],
-  "name": "inline-equation-toolbar-button",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  }
 }

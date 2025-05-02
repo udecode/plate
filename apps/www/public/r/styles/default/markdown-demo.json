@@ -1,8 +1,10 @@
 {
-  "doc": {
-    "description": "Copy paste from Markdown to Slate.",
-    "title": "Serializing Markdown"
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "markdown-demo",
+  "type": "registry:example",
+  "title": "Serializing Markdown",
+  "author": "udecode (https://platejs.org)",
+  "description": "Copy paste from Markdown to Slate.",
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -29,8 +31,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "markdown-demo",
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

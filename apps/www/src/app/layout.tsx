@@ -96,7 +96,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body
         className={cn(
-          'bg-background min-h-svh font-sans antialiased',
+          'min-h-svh bg-background font-sans antialiased',
           fontSans.variable,
           fontMono.variable
         )}
@@ -105,7 +105,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <NuqsAdapter>
           <Providers>
             <div vaul-drawer-wrapper="">
-              <div className="bg-background relative flex min-h-svh flex-col">
+              <div className="relative flex min-h-svh flex-col bg-background">
                 {children}
               </div>
             </div>

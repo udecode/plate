@@ -1,4 +1,9 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "playground-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -18,10 +23,5 @@
       "type": "registry:example",
       "target": "components/editor-plugins.tsx"
     }
-  ],
-  "name": "playground-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

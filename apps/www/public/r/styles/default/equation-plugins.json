@@ -1,6 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "equation-plugins",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-math"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/equation-element.json",
+    "https://platejs.org/r/styles/default/inline-equation-toolbar-button.json"
   ],
   "files": [
     {
@@ -9,13 +17,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/equation-plugins.ts"
     }
-  ],
-  "name": "equation-plugins",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/equation-element.json",
-    "https://platejs.org/r/styles/default/inline-equation-toolbar-button.json"
-  ],
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

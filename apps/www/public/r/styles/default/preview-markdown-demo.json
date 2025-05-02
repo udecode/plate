@@ -1,4 +1,9 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "preview-markdown-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/preview-markdown-demo.tsx",
@@ -7,9 +12,5 @@
       "target": "components/preview-markdown-demo.tsx"
     }
   ],
-  "name": "preview-markdown-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

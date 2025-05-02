@@ -1,7 +1,10 @@
 {
-  "doc": {
-    "title": "Disabled"
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "editor-disabled",
+  "type": "registry:example",
+  "title": "Disabled",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/editor-disabled.tsx",
@@ -10,9 +13,5 @@
       "target": "components/editor-disabled.tsx"
     }
   ],
-  "name": "editor-disabled",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

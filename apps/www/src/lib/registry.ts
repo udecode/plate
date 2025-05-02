@@ -6,10 +6,11 @@ import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
+  type RegistryItem,
   type registryItemFileSchema,
   registryItemSchema,
-} from 'shadcx/registry';
-import { type SourceFile, Project, ScriptKind, SyntaxKind } from 'ts-morph';
+} from 'shadcn/registry';
+import { type SourceFile, Project, ScriptKind } from 'ts-morph';
 
 import { Index } from '../__registry__';
 import { fixImport } from './rehype-utils';
@@ -28,7 +29,10 @@ export function getRegistryComponent(name: string) {
   return memoizedIndex.default[name]?.component;
 }
 
-export async function getRegistryItem(name: string, prefetch = false) {
+export async function getRegistryItem(
+  name: string,
+  prefetch = false
+): Promise<RegistryItem | null> {
   const item = memoizedIndex.default[name];
 
   if (!item) {
@@ -154,31 +158,6 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
   return code;
 }
 
-async function getFileMeta(filePath: string) {
-  const raw = await fs.readFile(filePath, 'utf8');
-
-  const project = new Project({
-    compilerOptions: {},
-  });
-
-  const tempFile = await createTempSourceFile(filePath);
-  const sourceFile = project.createSourceFile(tempFile, raw, {
-    scriptKind: ScriptKind.TSX,
-  });
-
-  const iframeHeight = extractVariable(sourceFile, 'iframeHeight');
-  const containerClassName = extractVariable(sourceFile, 'containerClassName');
-  const description = extractVariable(sourceFile, 'description');
-  const descriptionSrc = extractVariable(sourceFile, 'descriptionSrc');
-
-  return {
-    containerClassName,
-    description,
-    descriptionSrc,
-    iframeHeight,
-  };
-}
-
 function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
   let target = file.target;
 
@@ -213,22 +192,6 @@ async function createTempSourceFile(filename: string) {
 
 function removeVariable(sourceFile: SourceFile, name: string) {
   sourceFile.getVariableDeclaration(name)?.remove();
-}
-
-function extractVariable(sourceFile: SourceFile, name: string) {
-  const variable = sourceFile.getVariableDeclaration(name);
-
-  if (!variable) {
-    return null;
-  }
-
-  const value = variable
-    .getInitializerIfKindOrThrow(SyntaxKind.StringLiteral)
-    .getLiteralValue();
-
-  variable.remove();
-
-  return value;
 }
 
 function fixFilePaths(files: z.infer<typeof registryItemSchema>['files']) {

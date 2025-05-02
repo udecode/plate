@@ -1,18 +1,12 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "editor",
+  "type": "registry:ui",
+  "title": "Editor",
+  "author": "udecode (https://platejs.org)",
+  "description": "A container for the editor content and styling.",
   "dependencies": [],
-  "doc": {
-    "description": "A container for the editor content and styling.",
-    "docs": [
-      {
-        "route": "https://pro.platejs.org/docs/components/editor"
-      }
-    ],
-    "examples": [
-      "editor-default",
-      "editor-disabled",
-      "editor-full-width"
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/editor.tsx",
@@ -27,9 +21,16 @@
       "target": "components/plate-ui/editor-static.tsx"
     }
   ],
-  "name": "editor",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "https://pro.platejs.org/docs/components/editor"
+      }
+    ],
+    "examples": [
+      "editor-default",
+      "editor-disabled",
+      "editor-full-width"
+    ]
+  }
 }

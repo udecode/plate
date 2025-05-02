@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "theme-midnight",
+  "type": "registry:theme",
+  "author": "udecode (https://platejs.org)",
   "cssVars": {
     "light": {
       "accent": "240 0% 13%",
@@ -56,9 +60,5 @@
       "secondary": "240 4% 15%",
       "secondary-foreground": "60 5% 85%"
     }
-  },
-  "name": "theme-midnight",
-  "type": "registry:theme",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  }
 }

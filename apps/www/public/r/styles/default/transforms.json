@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "transforms",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-callout",
     "@udecode/plate-code-block",
@@ -18,9 +22,5 @@
       "type": "registry:component",
       "target": "components/editor/transforms.ts"
     }
-  ],
-  "name": "transforms",
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

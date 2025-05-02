@@ -1,7 +1,10 @@
 {
-  "doc": {
-    "title": "Full Width"
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "editor-full-width",
+  "type": "registry:example",
+  "title": "Full Width",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/editor-full-width.tsx",
@@ -10,9 +13,5 @@
       "target": "components/editor-full-width.tsx"
     }
   ],
-  "name": "editor-full-width",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

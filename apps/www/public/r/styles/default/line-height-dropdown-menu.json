@@ -1,19 +1,18 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "line-height-dropdown-menu",
+  "type": "registry:ui",
+  "title": "Line Height Dropdown Menu",
+  "author": "udecode (https://platejs.org)",
+  "description": "A menu for controlling text line spacing.",
   "dependencies": [
     "@udecode/plate-line-height",
     "@radix-ui/react-dropdown-menu"
   ],
-  "doc": {
-    "description": "A menu for controlling text line spacing.",
-    "docs": [
-      {
-        "route": "/docs/line-height"
-      }
-    ],
-    "examples": [
-      "line-height-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/toolbar.json",
+    "https://platejs.org/r/styles/default/dropdown-menu.json"
+  ],
   "files": [
     {
       "path": "plate-ui/line-height-dropdown-menu.tsx",
@@ -22,12 +21,14 @@
       "target": "components/plate-ui/line-height-dropdown-menu.tsx"
     }
   ],
-  "name": "line-height-dropdown-menu",
-  "registryDependencies": [
-    "toolbar",
-    "dropdown-menu"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/line-height"
+      }
+    ],
+    "examples": [
+      "line-height-demo"
+    ]
+  }
 }

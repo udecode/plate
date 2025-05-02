@@ -1,4 +1,9 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "multiple-editors-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/multiple-editors-demo.tsx",
@@ -6,10 +11,5 @@
       "type": "registry:example",
       "target": "components/multiple-editors-demo.tsx"
     }
-  ],
-  "name": "multiple-editors-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

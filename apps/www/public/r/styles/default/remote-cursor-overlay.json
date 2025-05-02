@@ -1,16 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "remote-cursor-overlay",
+  "type": "registry:ui",
+  "title": "Remote Cursor Overlay",
+  "author": "udecode (https://platejs.org)",
+  "description": "A cursor overlay to display multiplayer cursors in the yjs plugin.",
   "dependencies": [
     "@slate-yjs/react"
   ],
-  "doc": {
-    "description": "A cursor overlay to display multiplayer cursors in the yjs plugin.",
-    "docs": [
-      {
-        "route": "/docs/collaboration"
-      }
-    ],
-    "examples": []
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/remote-cursor-overlay.tsx",
@@ -19,9 +17,12 @@
       "target": "components/plate-ui/remote-cursor-overlay.tsx"
     }
   ],
-  "name": "remote-cursor-overlay",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/collaboration"
+      }
+    ],
+    "examples": []
+  }
 }

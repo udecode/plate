@@ -1,4 +1,9 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "controlled-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/controlled-demo.tsx",
@@ -6,10 +11,5 @@
       "type": "registry:example",
       "target": "components/controlled-demo.tsx"
     }
-  ],
-  "name": "controlled-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

@@ -1,7 +1,12 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "api-uploadthing",
+  "type": "registry:lib",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "uploadthing@7.2.0"
   ],
+  "registryDependencies": [],
   "files": [
     {
       "path": "app/api/uploadthing/route.ts",
@@ -9,10 +14,5 @@
       "type": "registry:lib",
       "target": "app/api/uploadthing/route.ts"
     }
-  ],
-  "name": "api-uploadthing",
-  "registryDependencies": [],
-  "type": "registry:lib",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

@@ -1,9 +1,23 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "ghost-text",
+  "type": "registry:ui",
+  "title": "Ghost Text",
+  "author": "udecode (https://platejs.org)",
+  "description": "A text suggestion system that displays AI-generated content after the cursor.",
   "dependencies": [
     "@udecode/plate-ai"
   ],
-  "doc": {
-    "description": "A text suggestion system that displays AI-generated content after the cursor.",
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "plate-ui/ghost-text.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { CopilotPlugin } from '@udecode/plate-ai/react';\nimport { useElement, usePluginOption } from '@udecode/plate/react';\n\nexport const GhostText = () => {\n  const element = useElement();\n\n  const isSuggested = usePluginOption(\n    CopilotPlugin,\n    'isSuggested',\n    element.id as string\n  );\n\n  if (!isSuggested) return null;\n\n  return <GhostTextContent />;\n};\n\nexport function GhostTextContent() {\n  const suggestionText = usePluginOption(CopilotPlugin, 'suggestionText');\n\n  return (\n    <span\n      className=\"pointer-events-none text-muted-foreground/70 max-sm:hidden\"\n      contentEditable={false}\n    >\n      {suggestionText && suggestionText}\n    </span>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/ghost-text.tsx"
+    }
+  ],
+  "meta": {
     "docs": [
       {
         "route": "/docs/copilot"
@@ -17,18 +31,5 @@
       "copilot-pro"
     ],
     "label": "New"
-  },
-  "files": [
-    {
-      "path": "plate-ui/ghost-text.tsx",
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { CopilotPlugin } from '@udecode/plate-ai/react';\nimport { useElement, usePluginOption } from '@udecode/plate/react';\n\nexport const GhostText = () => {\n  const element = useElement();\n\n  const isSuggested = usePluginOption(\n    CopilotPlugin,\n    'isSuggested',\n    element.id as string\n  );\n\n  if (!isSuggested) return null;\n\n  return <GhostTextContent />;\n};\n\nexport function GhostTextContent() {\n  const suggestionText = usePluginOption(CopilotPlugin, 'suggestionText');\n\n  return (\n    <span\n      className=\"pointer-events-none text-muted-foreground/70 max-sm:hidden\"\n      contentEditable={false}\n    >\n      {suggestionText && suggestionText}\n    </span>\n  );\n}\n",
-      "type": "registry:ui",
-      "target": "components/plate-ui/ghost-text.tsx"
-    }
-  ],
-  "name": "ghost-text",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  }
 }

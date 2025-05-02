@@ -1,4 +1,11 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "indent-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/indent-list-plugins.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -24,12 +31,5 @@
       "type": "registry:example",
       "target": "components/editor-plugins.tsx"
     }
-  ],
-  "name": "indent-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/indent-list-plugins.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

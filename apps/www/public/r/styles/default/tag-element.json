@@ -1,16 +1,12 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "tag-element",
+  "type": "registry:ui",
+  "title": "Tag Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A tag element component with selection states and styling.",
   "dependencies": [],
-  "doc": {
-    "description": "A tag element component with selection states and styling.",
-    "docs": [
-      {
-        "route": "/docs/multi-select"
-      }
-    ],
-    "examples": [
-      "select-editor-demo"
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/tag-element.tsx",
@@ -19,9 +15,14 @@
       "target": "components/plate-ui/tag-element.tsx"
     }
   ],
-  "name": "tag-element",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/multi-select"
+      }
+    ],
+    "examples": [
+      "select-editor-demo"
+    ]
+  }
 }

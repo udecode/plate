@@ -1,7 +1,12 @@
 {
-  "doc": {
-    "description": "Media embedding and management."
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "media-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Media embedding and management.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/media-plugins.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -28,11 +33,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "media-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/media-plugins.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

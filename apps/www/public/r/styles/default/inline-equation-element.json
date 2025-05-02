@@ -1,19 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "inline-equation-element",
+  "type": "registry:ui",
+  "title": "Inline Equation Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "An inline LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
   "dependencies": [
     "@udecode/plate-math"
   ],
-  "doc": {
-    "description": "An inline LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
-    "docs": [
-      {
-        "route": "https://platejs.org/docs/equation",
-        "title": "Equation"
-      }
-    ],
-    "examples": [
-      "equation-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/popover.json"
+  ],
   "files": [
     {
       "path": "plate-ui/inline-equation-element.tsx",
@@ -28,11 +25,15 @@
       "target": "components/plate-ui/inline-equation-element-static.tsx"
     }
   ],
-  "name": "inline-equation-element",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/popover.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "https://platejs.org/docs/equation",
+        "title": "Equation"
+      }
+    ],
+    "examples": [
+      "equation-demo"
+    ]
+  }
 }

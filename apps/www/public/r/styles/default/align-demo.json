@@ -1,7 +1,12 @@
 {
-  "doc": {
-    "description": "Text alignment controls for blocks."
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "align-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Text alignment controls for blocks.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/align-plugin.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -28,11 +33,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "align-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/align-plugin.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

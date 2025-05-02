@@ -1,13 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "avatar",
+  "type": "registry:ui",
+  "title": "Avatar",
+  "author": "udecode (https://platejs.org)",
+  "description": "An image element with a fallback for representing the user.",
   "dependencies": [
     "@radix-ui/react-avatar"
   ],
-  "doc": {
-    "description": "An image element with a fallback for representing the user.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/avatar"
-    }
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/avatar.tsx",
@@ -16,9 +17,9 @@
       "target": "components/plate-ui/avatar.tsx"
     }
   ],
-  "name": "avatar",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/avatar"
+    }
+  }
 }

@@ -1,13 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "separator",
+  "type": "registry:ui",
+  "title": "Separator",
+  "author": "udecode (https://platejs.org)",
+  "description": "Visually or semantically separates content.",
   "dependencies": [
     "@radix-ui/react-separator"
   ],
-  "doc": {
-    "description": "Visually or semantically separates content.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/separator"
-    }
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/separator.tsx",
@@ -16,9 +17,9 @@
       "target": "components/plate-ui/separator.tsx"
     }
   ],
-  "name": "separator",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/separator"
+    }
+  }
 }

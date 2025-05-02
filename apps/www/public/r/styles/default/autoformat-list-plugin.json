@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "autoformat-list-plugin",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-autoformat",
     "@udecode/plate-basic-marks",
@@ -17,9 +21,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/autoformat-list-plugin.ts"
     }
-  ],
-  "name": "autoformat-list-plugin",
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

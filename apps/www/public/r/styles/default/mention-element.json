@@ -1,21 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "mention-element",
+  "type": "registry:ui",
+  "title": "Mention Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A mention element with customizable prefix and label.",
   "dependencies": [
     "@udecode/plate-mention"
   ],
-  "doc": {
-    "description": "A mention element with customizable prefix and label.",
-    "docs": [
-      {
-        "route": "/docs/mention"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/mention-element"
-      }
-    ],
-    "examples": [
-      "mention-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/use-mounted.json"
+  ],
   "files": [
     {
       "path": "plate-ui/mention-element.tsx",
@@ -30,11 +25,17 @@
       "target": "components/plate-ui/mention-element-static.tsx"
     }
   ],
-  "name": "mention-element",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/use-mounted.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/mention"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/mention-element"
+      }
+    ],
+    "examples": [
+      "mention-demo"
+    ]
+  }
 }

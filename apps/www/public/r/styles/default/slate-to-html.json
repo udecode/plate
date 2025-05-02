@@ -1,5 +1,9 @@
 {
-  "category": "Serializers",
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "slate-to-html",
+  "type": "registry:block",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [],
   "files": [
     {
       "path": "blocks/slate-to-html/page.tsx",
@@ -14,10 +18,10 @@
       "target": "components/editor/slate-to-html.tsx"
     }
   ],
-  "name": "slate-to-html",
-  "registryDependencies": [],
-  "rsc": true,
-  "type": "registry:block",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "rsc": true
+  },
+  "categories": [
+    "Serializers"
+  ]
 }

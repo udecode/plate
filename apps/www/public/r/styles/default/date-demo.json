@@ -1,13 +1,10 @@
 {
-  "doc": {
-    "description": "Inline date elements with calendar selection interface.",
-    "docs": [
-      {
-        "route": "/docs/date",
-        "title": "Date"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "date-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Inline date elements with calendar selection interface.",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -34,9 +31,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "date-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/date",
+        "title": "Date"
+      }
+    ]
+  }
 }

@@ -1,22 +1,21 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "color-dropdown-menu",
+  "type": "registry:ui",
+  "title": "Color Dropdown Menu",
+  "author": "udecode (https://platejs.org)",
+  "description": "A color picker with text and background color controls.",
   "dependencies": [
     "@udecode/plate-font",
     "@radix-ui/react-dropdown-menu"
   ],
-  "doc": {
-    "description": "A color picker with text and background color controls.",
-    "docs": [
-      {
-        "route": "/docs/font"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/color-dropdown-menu"
-      }
-    ],
-    "examples": [
-      "font-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/dropdown-menu.json",
+    "https://platejs.org/r/styles/default/toolbar.json",
+    "https://platejs.org/r/styles/default/separator.json",
+    "https://platejs.org/r/styles/default/button.json",
+    "https://platejs.org/r/styles/default/tooltip.json"
+  ],
   "files": [
     {
       "path": "plate-ui/color-constants.ts",
@@ -55,15 +54,17 @@
       "target": "components/plate-ui/colors-custom.tsx"
     }
   ],
-  "name": "color-dropdown-menu",
-  "registryDependencies": [
-    "dropdown-menu",
-    "toolbar",
-    "separator",
-    "button",
-    "tooltip"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/font"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/color-dropdown-menu"
+      }
+    ],
+    "examples": [
+      "font-demo"
+    ]
+  }
 }

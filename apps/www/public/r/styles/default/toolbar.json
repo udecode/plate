@@ -1,10 +1,17 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "toolbar",
+  "type": "registry:ui",
+  "title": "Toolbar",
+  "author": "udecode (https://platejs.org)",
+  "description": "A customizable toolbar component with various button styles and group",
   "dependencies": [
     "@radix-ui/react-toolbar"
   ],
-  "doc": {
-    "description": "A customizable toolbar component with various button styles and group"
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/tooltip.json",
+    "https://platejs.org/r/styles/default/separator.json"
+  ],
   "files": [
     {
       "path": "plate-ui/toolbar.tsx",
@@ -13,12 +20,5 @@
       "target": "components/plate-ui/toolbar.tsx"
     }
   ],
-  "name": "toolbar",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/tooltip.json",
-    "https://platejs.org/r/styles/default/separator.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

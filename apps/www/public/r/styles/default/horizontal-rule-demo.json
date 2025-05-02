@@ -1,13 +1,10 @@
 {
-  "doc": {
-    "description": "Horizontal lines for visually separating content sections.",
-    "docs": [
-      {
-        "route": "/docs/horizontal-rule",
-        "title": "Horizontal Rule"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "horizontal-rule-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Horizontal lines for visually separating content sections.",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -34,9 +31,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "horizontal-rule-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/horizontal-rule",
+        "title": "Horizontal Rule"
+      }
+    ]
+  }
 }

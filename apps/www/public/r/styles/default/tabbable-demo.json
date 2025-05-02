@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "tabbable-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
   "files": [
     {
       "path": "examples/tabbable-demo.tsx",
@@ -24,9 +28,5 @@
       "type": "registry:example",
       "target": "components/editor-plugins.tsx"
     }
-  ],
-  "name": "tabbable-demo",
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

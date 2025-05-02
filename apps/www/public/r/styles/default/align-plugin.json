@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "align-plugin",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-alignment",
     "@udecode/plate-heading",
@@ -11,9 +15,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/align-plugin.ts"
     }
-  ],
-  "name": "align-plugin",
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

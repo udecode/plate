@@ -1,13 +1,12 @@
 {
-  "doc": {
-    "description": "Hyperlinks with toolbar insertion and URL pasting support.",
-    "docs": [
-      {
-        "route": "/docs/link",
-        "title": "Link"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "link-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Hyperlinks with toolbar insertion and URL pasting support.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/link-plugin.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -34,11 +33,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "link-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/link-plugin.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/link",
+        "title": "Link"
+      }
+    ]
+  }
 }

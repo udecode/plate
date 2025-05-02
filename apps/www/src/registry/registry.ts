@@ -1,4 +1,4 @@
-import type { Registry } from 'shadcx/registry';
+import type { Registry } from 'shadcn/registry';
 
 import { registryApp } from './registry-app';
 import { blocks } from './registry-blocks';

@@ -1,13 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "calendar",
+  "type": "registry:ui",
+  "title": "Calendar",
+  "author": "udecode (https://platejs.org)",
+  "description": "A date field component that allows users to enter and edit date.",
   "dependencies": [
     "react-day-picker@8.10.1"
   ],
-  "doc": {
-    "description": "A date field component that allows users to enter and edit date.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/calendar"
-    }
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/button.json"
+  ],
   "files": [
     {
       "path": "plate-ui/calendar.tsx",
@@ -16,11 +19,9 @@
       "target": "components/plate-ui/calendar.tsx"
     }
   ],
-  "name": "calendar",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/button.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/calendar"
+    }
+  }
 }

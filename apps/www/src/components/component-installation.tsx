@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { RegistryItem } from 'shadcx/registry';
+import type { RegistryItem } from 'shadcn/registry';
 
 import { BlockCode } from '@/components/block-viewer';
 import { ComponentPreviewPro } from '@/components/component-preview-pro';
@@ -134,7 +134,7 @@ export function ComponentInstallation({
 
                     <ComponentPreviewPro
                       id={example.name.replace('-pro', '')}
-                      description={example.doc?.description}
+                      description={example.description}
                     />
                   </React.Fragment>
                 );

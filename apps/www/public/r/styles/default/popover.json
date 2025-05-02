@@ -1,13 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "popover",
+  "type": "registry:ui",
+  "title": "Popover",
+  "author": "udecode (https://platejs.org)",
+  "description": "Displays rich content in a portal, triggered by a button.",
   "dependencies": [
     "@radix-ui/react-popover"
   ],
-  "doc": {
-    "description": "Displays rich content in a portal, triggered by a button.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/popover"
-    }
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/popover.tsx",
@@ -16,9 +17,9 @@
       "target": "components/plate-ui/popover.tsx"
     }
   ],
-  "name": "popover",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/popover"
+    }
+  }
 }

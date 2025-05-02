@@ -1,13 +1,13 @@
 {
-  "doc": {
-    "description": "Adding and displaying comments within content.",
-    "docs": [
-      {
-        "route": "/docs/comments",
-        "title": "Comments"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "comments-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Adding and displaying comments within content.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/comments-plugin.json",
+    "https://platejs.org/r/styles/default/discussion-plugin.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -34,12 +34,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "comments-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/comments-plugin.json",
-    "https://platejs.org/r/styles/default/discussion-plugin.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/comments",
+        "title": "Comments"
+      }
+    ]
+  }
 }

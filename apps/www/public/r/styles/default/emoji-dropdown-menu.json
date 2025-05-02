@@ -1,24 +1,18 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "emoji-dropdown-menu",
+  "type": "registry:ui",
+  "title": "Emoji Dropdown Menu",
+  "author": "udecode (https://platejs.org)",
+  "description": "A dropdown menu for emoji selection and insertion.",
   "dependencies": [
     "@udecode/plate-emoji",
     "@emoji-mart/data@1.2.1",
     "@radix-ui/react-popover"
   ],
-  "doc": {
-    "description": "A dropdown menu for emoji selection and insertion.",
-    "docs": [
-      {
-        "route": "/docs/emoji"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/emoji-picker"
-      }
-    ],
-    "examples": [
-      "emoji-demo",
-      "emoji-pro"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/toolbar.json"
+  ],
   "files": [
     {
       "path": "plate-ui/emoji-dropdown-menu.tsx",
@@ -75,11 +69,18 @@
       "target": "components/plate-ui/emoji-toolbar-dropdown.tsx"
     }
   ],
-  "name": "emoji-dropdown-menu",
-  "registryDependencies": [
-    "toolbar"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/emoji"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/emoji-picker"
+      }
+    ],
+    "examples": [
+      "emoji-demo",
+      "emoji-pro"
+    ]
+  }
 }

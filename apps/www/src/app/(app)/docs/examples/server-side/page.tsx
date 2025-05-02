@@ -1,3 +1,5 @@
+import type { Doc } from 'contentlayer/generated';
+
 import type { Metadata } from 'next';
 
 import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
@@ -87,9 +89,10 @@ export const metadata: Metadata = {
 };
 
 export default function RSCPage() {
-  const mockDoc = {
+  const mockDoc: Partial<Doc> = {
     description: 'Server-side rendering.',
     title: 'Server-Side',
+    // name: 'server-side',
     // ... other necessary properties
   };
 

@@ -1,7 +1,14 @@
 {
-  "doc": {
-    "description": "List creation and formatting."
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "list-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "List creation and formatting.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/autoformat-list-plugin.json",
+    "https://platejs.org/r/styles/default/list-element.json",
+    "https://platejs.org/r/styles/default/todo-list-element.json"
+  ],
   "files": [
     {
       "path": "examples/list-demo.tsx",
@@ -40,13 +47,5 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "list-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/autoformat-list-plugin.json",
-    "https://platejs.org/r/styles/default/list-element.json",
-    "https://platejs.org/r/styles/default/todo-list-element.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

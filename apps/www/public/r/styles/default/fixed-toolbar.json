@@ -1,11 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "fixed-toolbar",
+  "type": "registry:ui",
+  "title": "Fixed Toolbar",
+  "author": "udecode (https://platejs.org)",
+  "description": "A fixed toolbar that stays at the top of the editor.",
   "dependencies": [],
-  "doc": {
-    "description": "A fixed toolbar that stays at the top of the editor.",
-    "examples": [
-      "basic-nodes-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/toolbar.json"
+  ],
   "files": [
     {
       "path": "plate-ui/fixed-toolbar.tsx",
@@ -14,11 +17,9 @@
       "target": "components/plate-ui/fixed-toolbar.tsx"
     }
   ],
-  "name": "fixed-toolbar",
-  "registryDependencies": [
-    "toolbar"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "examples": [
+      "basic-nodes-demo"
+    ]
+  }
 }

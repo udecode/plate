@@ -1,13 +1,12 @@
 {
-  "doc": {
-    "description": "Mention functionality for referencing users or entities.",
-    "docs": [
-      {
-        "route": "/docs/mention",
-        "title": "Mention"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "mention-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Mention functionality for referencing users or entities.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/mention-plugin.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -34,11 +33,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "mention-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/mention-plugin.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/mention",
+        "title": "Mention"
+      }
+    ]
+  }
 }

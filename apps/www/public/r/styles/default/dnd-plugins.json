@@ -1,8 +1,15 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "dnd-plugins",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-dnd",
     "@udecode/plate-media",
     "@udecode/plate-node-id"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/draggable.json"
   ],
   "files": [
     {
@@ -11,12 +18,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/dnd-plugins.tsx"
     }
-  ],
-  "name": "dnd-plugins",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/draggable.json"
-  ],
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

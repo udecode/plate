@@ -1,22 +1,17 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "code-block-element",
+  "type": "registry:ui",
+  "title": "Code Block Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A code block with syntax highlighting and language selection.",
   "dependencies": [
     "@udecode/plate-code-block",
     "lowlight"
   ],
-  "doc": {
-    "description": "A code block with syntax highlighting and language selection.",
-    "docs": [
-      {
-        "route": "/docs/basic-elements"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/code-block-element"
-      }
-    ],
-    "examples": [
-      "basic-elements-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/command.json"
+  ],
   "files": [
     {
       "path": "plate-ui/code-block-element.tsx",
@@ -37,11 +32,17 @@
       "target": "components/plate-ui/code-block-combobox.tsx"
     }
   ],
-  "name": "code-block-element",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/command.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/code-block-element"
+      }
+    ],
+    "examples": [
+      "basic-elements-demo"
+    ]
+  }
 }

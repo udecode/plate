@@ -1,8 +1,12 @@
 {
-  "categories": [
-    "Editors"
-  ],
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "editor-select",
+  "type": "registry:block",
+  "author": "udecode (https://platejs.org)",
   "description": "A multi-select editor",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/select-editor-demo.json"
+  ],
   "files": [
     {
       "path": "blocks/editor-select/page.tsx",
@@ -11,11 +15,7 @@
       "target": "app/editor/page.tsx"
     }
   ],
-  "name": "editor-select",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/select-editor-demo.json"
-  ],
-  "type": "registry:block",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "categories": [
+    "Editors"
+  ]
 }

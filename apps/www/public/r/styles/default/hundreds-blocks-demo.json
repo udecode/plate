@@ -1,4 +1,9 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "hundreds-blocks-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/hundreds-blocks-demo.tsx",
@@ -6,10 +11,5 @@
       "type": "registry:example",
       "target": "components/hundreds-blocks-demo.tsx"
     }
-  ],
-  "name": "hundreds-blocks-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

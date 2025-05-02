@@ -1,15 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "excalidraw-element",
+  "type": "registry:ui",
+  "title": "Excalidraw Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A drawing component powered by Excalidraw.",
   "dependencies": [
     "@udecode/plate-excalidraw"
   ],
-  "doc": {
-    "description": "A drawing component powered by Excalidraw.",
-    "docs": [
-      {
-        "route": "/docs/excalidraw"
-      }
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/excalidraw-element.tsx",
@@ -18,9 +17,11 @@
       "target": "components/plate-ui/excalidraw-element.tsx"
     }
   ],
-  "name": "excalidraw-element",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/excalidraw"
+      }
+    ]
+  }
 }

@@ -1,24 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "toc-element",
+  "type": "registry:ui",
+  "title": "TOC Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A table of contents component with links to document headings.",
   "dependencies": [
     "@udecode/plate-heading"
   ],
-  "doc": {
-    "description": "A table of contents component with links to document headings.",
-    "docs": [
-      {
-        "route": "/docs/basic-elements"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/toc-element"
-      }
-    ],
-    "examples": [
-      "toc-demo",
-      "toc-pro"
-    ],
-    "label": "New",
-    "title": "TOC Element"
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/toc-element.tsx",
@@ -33,9 +23,19 @@
       "target": "components/plate-ui/toc-element-static.tsx"
     }
   ],
-  "name": "toc-element",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/toc-element"
+      }
+    ],
+    "examples": [
+      "toc-demo",
+      "toc-pro"
+    ],
+    "label": "New"
+  }
 }

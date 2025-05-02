@@ -1,11 +1,12 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "input",
+  "type": "registry:ui",
+  "title": "Input",
+  "author": "udecode (https://platejs.org)",
+  "description": "Displays a form input field or a component that looks like an input field.",
   "dependencies": [],
-  "doc": {
-    "description": "Displays a form input field or a component that looks like an input field.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/input"
-    }
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/input.tsx",
@@ -14,9 +15,9 @@
       "target": "components/plate-ui/input.tsx"
     }
   ],
-  "name": "input",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/input"
+    }
+  }
 }

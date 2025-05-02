@@ -1,4 +1,11 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "markdown-to-slate-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/use-debounce.json"
+  ],
   "files": [
     {
       "path": "examples/markdown-to-slate-demo.tsx",
@@ -7,11 +14,5 @@
       "target": "components/markdown-to-slate-demo.tsx"
     }
   ],
-  "name": "markdown-to-slate-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/use-debounce.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {}
 }

@@ -1,13 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "tooltip",
+  "type": "registry:ui",
+  "title": "Tooltip",
+  "author": "udecode (https://platejs.org)",
+  "description": "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
   "dependencies": [
     "@radix-ui/react-tooltip"
   ],
-  "doc": {
-    "description": "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/tooltip"
-    }
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/button.json"
+  ],
   "files": [
     {
       "path": "plate-ui/tooltip.tsx",
@@ -16,11 +19,9 @@
       "target": "components/plate-ui/tooltip.tsx"
     }
   ],
-  "name": "tooltip",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/button.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/tooltip"
+    }
+  }
 }

@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -18,9 +22,5 @@
       "type": "registry:example",
       "target": "components/editor-plugins.tsx"
     }
-  ],
-  "name": "demo",
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

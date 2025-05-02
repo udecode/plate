@@ -1,4 +1,9 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "basic-editor-styling-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/basic-editor-styling-demo.tsx",
@@ -6,10 +11,5 @@
       "type": "registry:example",
       "target": "components/basic-editor-styling-demo.tsx"
     }
-  ],
-  "name": "basic-editor-styling-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

@@ -10,7 +10,7 @@ import type { ImperativePanelHandle } from 'react-resizable-panels';
 import type {
   registryItemFileSchema,
   registryItemSchema,
-} from 'shadcx/registry';
+} from 'shadcn/registry';
 import type { z } from 'zod';
 
 import { cn } from '@udecode/cn';
@@ -210,7 +210,7 @@ function BlockViewerToolbar({
   const { item, resizablePanelRef, setView } = useBlockViewer();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
-  const descriptionSrc =
+  const description =
     item.meta?.descriptionSrc ??
     item.src?.replace('?iframe=true', '') ??
     `/blocks/${item.name}`;
@@ -241,17 +241,20 @@ function BlockViewerToolbar({
         </TabsList>
       </Tabs>
 
-      {item.description && (
+      {block && (
         <Separator orientation="vertical" className="mx-2 hidden h-4 sm:flex" />
       )}
 
-      <Link
-        className="text-sm font-medium underline-offset-2 hover:underline"
-        href={descriptionSrc}
-        target={descriptionSrc.startsWith('/') ? '_self' : '_blank'}
-      >
-        {item.description}
-      </Link>
+      {block && (
+        <Link
+          className="text-sm font-medium underline-offset-2 hover:underline"
+          href={description}
+          target={description.startsWith('/') ? '_self' : '_blank'}
+        >
+          {item.description}
+        </Link>
+      )}
+
       <div className="ml-auto flex items-center gap-2">
         {!item.src && !isPro && (
           <>
@@ -292,7 +295,7 @@ function BlockViewerToolbar({
               'transition-all duration-300 ease-out',
               'h-[26px] px-2 text-xs'
             )}
-            href={item.descriptionSrc ?? siteConfig.links.potionIframe}
+            href={item.meta?.descriptionSrc ?? siteConfig.links.potionIframe}
             target="_blank"
           >
             <span

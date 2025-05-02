@@ -1,17 +1,12 @@
 {
-  "doc": {
-    "description": "Basic block elements and text marks.",
-    "docs": [
-      {
-        "route": "/docs/basic-elements",
-        "title": "Basic Elements"
-      }
-    ],
-    "keywords": [
-      "element",
-      "leaf"
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "basic-nodes-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Basic block elements and text marks.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/basic-nodes-plugins.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -50,11 +45,16 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "basic-nodes-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/basic-nodes-plugins.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-elements",
+        "title": "Basic Elements"
+      }
+    ],
+    "keywords": [
+      "element",
+      "leaf"
+    ]
+  }
 }

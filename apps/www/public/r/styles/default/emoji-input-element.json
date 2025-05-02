@@ -1,10 +1,27 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "emoji-input-element",
+  "type": "registry:ui",
+  "title": "Emoji Input Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "An input component for emoji search and insertion.",
   "dependencies": [
     "@udecode/plate-emoji",
     "@emoji-mart/data@1.2.1"
   ],
-  "doc": {
-    "description": "An input component for emoji search and insertion.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/inline-combobox.json",
+    "https://platejs.org/r/styles/default/use-debounce.json"
+  ],
+  "files": [
+    {
+      "path": "plate-ui/emoji-input-element.tsx",
+      "content": "'use client';\n\nimport React, { useMemo, useState } from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { EmojiInlineIndexSearch, insertEmoji } from '@udecode/plate-emoji';\nimport { EmojiPlugin } from '@udecode/plate-emoji/react';\nimport { PlateElement, usePluginOption } from '@udecode/plate/react';\n\nimport { useDebounce } from '@/hooks/use-debounce';\n\nimport {\n  InlineCombobox,\n  InlineComboboxContent,\n  InlineComboboxEmpty,\n  InlineComboboxGroup,\n  InlineComboboxInput,\n  InlineComboboxItem,\n} from './inline-combobox';\n\nexport const EmojiInputElement = withRef<typeof PlateElement>(\n  ({ className, ...props }, ref) => {\n    const { children, editor, element } = props;\n    const data = usePluginOption(EmojiPlugin, 'data')!;\n    const [value, setValue] = useState('');\n    const debouncedValue = useDebounce(value, 100);\n    const isPending = value !== debouncedValue;\n\n    const filteredEmojis = useMemo(() => {\n      if (debouncedValue.trim().length === 0) return [];\n\n      return EmojiInlineIndexSearch.getInstance(data)\n        .search(debouncedValue.replace(/:$/, ''))\n        .get();\n    }, [data, debouncedValue]);\n\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"span\"\n        className={className}\n        data-slate-value={element.value}\n        {...props}\n      >\n        <InlineCombobox\n          value={value}\n          element={element}\n          filter={false}\n          setValue={setValue}\n          trigger=\":\"\n          hideWhenNoValue\n        >\n          <InlineComboboxInput />\n\n          <InlineComboboxContent>\n            {!isPending && (\n              <InlineComboboxEmpty>No results</InlineComboboxEmpty>\n            )}\n\n            <InlineComboboxGroup>\n              {filteredEmojis.map((emoji) => (\n                <InlineComboboxItem\n                  key={emoji.id}\n                  value={emoji.name}\n                  onClick={() => insertEmoji(editor, emoji)}\n                >\n                  {emoji.skins[0].native} {emoji.name}\n                </InlineComboboxItem>\n              ))}\n            </InlineComboboxGroup>\n          </InlineComboboxContent>\n        </InlineCombobox>\n\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "type": "registry:ui",
+      "target": "components/plate-ui/emoji-input-element.tsx"
+    }
+  ],
+  "meta": {
     "docs": [
       {
         "route": "/docs/emoji"
@@ -16,21 +33,5 @@
     "examples": [
       "emoji-demo"
     ]
-  },
-  "files": [
-    {
-      "path": "plate-ui/emoji-input-element.tsx",
-      "content": "'use client';\n\nimport React, { useMemo, useState } from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { EmojiInlineIndexSearch, insertEmoji } from '@udecode/plate-emoji';\nimport { EmojiPlugin } from '@udecode/plate-emoji/react';\nimport { PlateElement, usePluginOption } from '@udecode/plate/react';\n\nimport { useDebounce } from '@/hooks/use-debounce';\n\nimport {\n  InlineCombobox,\n  InlineComboboxContent,\n  InlineComboboxEmpty,\n  InlineComboboxGroup,\n  InlineComboboxInput,\n  InlineComboboxItem,\n} from './inline-combobox';\n\nexport const EmojiInputElement = withRef<typeof PlateElement>(\n  ({ className, ...props }, ref) => {\n    const { children, editor, element } = props;\n    const data = usePluginOption(EmojiPlugin, 'data')!;\n    const [value, setValue] = useState('');\n    const debouncedValue = useDebounce(value, 100);\n    const isPending = value !== debouncedValue;\n\n    const filteredEmojis = useMemo(() => {\n      if (debouncedValue.trim().length === 0) return [];\n\n      return EmojiInlineIndexSearch.getInstance(data)\n        .search(debouncedValue.replace(/:$/, ''))\n        .get();\n    }, [data, debouncedValue]);\n\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"span\"\n        className={className}\n        data-slate-value={element.value}\n        {...props}\n      >\n        <InlineCombobox\n          value={value}\n          element={element}\n          filter={false}\n          setValue={setValue}\n          trigger=\":\"\n          hideWhenNoValue\n        >\n          <InlineComboboxInput />\n\n          <InlineComboboxContent>\n            {!isPending && (\n              <InlineComboboxEmpty>No results</InlineComboboxEmpty>\n            )}\n\n            <InlineComboboxGroup>\n              {filteredEmojis.map((emoji) => (\n                <InlineComboboxItem\n                  key={emoji.id}\n                  value={emoji.name}\n                  onClick={() => insertEmoji(editor, emoji)}\n                >\n                  {emoji.skins[0].native} {emoji.name}\n                </InlineComboboxItem>\n              ))}\n            </InlineComboboxGroup>\n          </InlineComboboxContent>\n        </InlineCombobox>\n\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
-      "type": "registry:ui",
-      "target": "components/plate-ui/emoji-input-element.tsx"
-    }
-  ],
-  "name": "emoji-input-element",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/inline-combobox.json",
-    "https://platejs.org/r/styles/default/use-debounce.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  }
 }

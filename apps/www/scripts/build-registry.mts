@@ -8,7 +8,7 @@ import {
   registryItemSchema,
   registryItemTypeSchema,
   registrySchema,
-} from 'shadcx/registry';
+} from 'shadcn/registry';
 import { Project, ScriptKind } from 'ts-morph';
 import { z } from 'zod';
 
@@ -19,6 +19,7 @@ import { colorMapping, colors } from '../src/registry/registry-colors';
 import { iconLibraries, icons } from '../src/registry/registry-icons';
 import { styles } from '../src/registry/registry-styles';
 import { fixImport } from './fix-import.mts';
+import { getRegistryTitle } from '../src/lib/registry-utils';
 
 const REGISTRY_PATH = path.join(process.cwd(), 'public/r');
 
@@ -165,13 +166,14 @@ export const Index: Record<string, any> = {
         }
       }
 
-      let componentImport = !item.rsc
+      let componentImport = !item.meta?.rsc
         ? `React.lazy(() => import("${componentPath}"))`
         : undefined;
 
       index += `
     "${item.name}": {
       name: "${item.name}",
+      title: "${getRegistryTitle(item)}",
       description: "${item.description ?? ''}",
       type: "${item.type}",
       registryDependencies: ${JSON.stringify(item.registryDependencies)},

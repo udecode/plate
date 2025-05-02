@@ -1,13 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "label",
+  "type": "registry:ui",
+  "title": "Label",
+  "author": "udecode (https://platejs.org)",
+  "description": "Renders an accessible label associated with controls.",
   "dependencies": [
     "@radix-ui/react-label"
   ],
-  "doc": {
-    "description": "Renders an accessible label associated with controls.",
-    "links": {
-      "doc": "https://ui.shadcn.com/docs/components/label"
-    }
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/label.tsx",
@@ -16,9 +17,9 @@
       "target": "components/plate-ui/label.tsx"
     }
   ],
-  "name": "label",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "links": {
+      "doc": "https://ui.shadcn.com/docs/components/label"
+    }
+  }
 }

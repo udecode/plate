@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "basic-nodes-plugins",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-basic-marks",
     "@udecode/plate-block-quote",
@@ -13,9 +17,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/basic-nodes-plugins.tsx"
     }
-  ],
-  "name": "basic-nodes-plugins",
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

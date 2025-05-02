@@ -1,21 +1,14 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "link-element",
+  "type": "registry:ui",
+  "title": "Link Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A component for rendering hyperlinks with hover states.",
   "dependencies": [
     "@udecode/plate-link"
   ],
-  "doc": {
-    "description": "A component for rendering hyperlinks with hover states.",
-    "docs": [
-      {
-        "route": "/docs/link"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/link-element"
-      }
-    ],
-    "examples": [
-      "link-demo"
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/link-element.tsx",
@@ -30,9 +23,17 @@
       "target": "components/plate-ui/link-element-static.tsx"
     }
   ],
-  "name": "link-element",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/link"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/link-element"
+      }
+    ],
+    "examples": [
+      "link-demo"
+    ]
+  }
 }

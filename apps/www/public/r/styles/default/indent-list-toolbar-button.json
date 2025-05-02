@@ -1,18 +1,16 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "indent-list-toolbar-button",
+  "type": "registry:ui",
+  "title": "Indent List Toolbar Button",
+  "author": "udecode (https://platejs.org)",
+  "description": "A toolbar control for adjusting list indentation.",
   "dependencies": [
     "@udecode/plate-indent-list"
   ],
-  "doc": {
-    "description": "A toolbar control for adjusting list indentation.",
-    "docs": [
-      {
-        "route": "/docs/indent-list"
-      }
-    ],
-    "examples": [
-      "list-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/toolbar.json"
+  ],
   "files": [
     {
       "path": "plate-ui/indent-list-toolbar-button.tsx",
@@ -21,11 +19,14 @@
       "target": "components/plate-ui/indent-list-toolbar-button.tsx"
     }
   ],
-  "name": "indent-list-toolbar-button",
-  "registryDependencies": [
-    "toolbar"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/indent-list"
+      }
+    ],
+    "examples": [
+      "list-demo"
+    ]
+  }
 }

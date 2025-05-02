@@ -1,19 +1,12 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "code-leaf",
+  "type": "registry:ui",
+  "title": "Code Leaf",
+  "author": "udecode (https://platejs.org)",
+  "description": "An inline component for code snippets.",
   "dependencies": [],
-  "doc": {
-    "description": "An inline component for code snippets.",
-    "docs": [
-      {
-        "route": "/docs/basic-marks"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/code-leaf"
-      }
-    ],
-    "examples": [
-      "basic-marks-demo"
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/code-leaf.tsx",
@@ -28,9 +21,17 @@
       "target": "components/plate-ui/code-leaf-static.tsx"
     }
   ],
-  "name": "code-leaf",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-marks"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/code-leaf"
+      }
+    ],
+    "examples": [
+      "basic-marks-demo"
+    ]
+  }
 }

@@ -1,13 +1,10 @@
 {
-  "doc": {
-    "description": "LaTeX equations with inline and block formats.",
-    "docs": [
-      {
-        "route": "/docs/equation",
-        "title": "Equation"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "equation-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "LaTeX equations with inline and block formats.",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -34,9 +31,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "equation-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/equation",
+        "title": "Equation"
+      }
+    ]
+  }
 }

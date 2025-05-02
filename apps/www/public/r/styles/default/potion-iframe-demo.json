@@ -1,4 +1,8 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "potion-iframe-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
   "files": [
     {
       "path": "examples/potion-iframe-demo.tsx",
@@ -6,9 +10,5 @@
       "type": "registry:example",
       "target": "components/potion-iframe-demo.tsx"
     }
-  ],
-  "name": "potion-iframe-demo",
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

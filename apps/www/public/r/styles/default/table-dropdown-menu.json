@@ -1,19 +1,18 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "table-dropdown-menu",
+  "type": "registry:ui",
+  "title": "Table Dropdown Menu",
+  "author": "udecode (https://platejs.org)",
+  "description": "A menu for table manipulation and formatting.",
   "dependencies": [
     "@udecode/plate-table",
     "@radix-ui/react-dropdown-menu"
   ],
-  "doc": {
-    "description": "A menu for table manipulation and formatting.",
-    "docs": [
-      {
-        "route": "/docs/table"
-      }
-    ],
-    "examples": [
-      "table-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/dropdown-menu.json",
+    "https://platejs.org/r/styles/default/toolbar.json"
+  ],
   "files": [
     {
       "path": "plate-ui/table-dropdown-menu.tsx",
@@ -28,12 +27,14 @@
       "target": "components/plate-ui/table-icons.tsx"
     }
   ],
-  "name": "table-dropdown-menu",
-  "registryDependencies": [
-    "dropdown-menu",
-    "toolbar"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/table"
+      }
+    ],
+    "examples": [
+      "table-demo"
+    ]
+  }
 }

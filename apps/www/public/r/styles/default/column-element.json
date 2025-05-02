@@ -1,22 +1,17 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "column-element",
+  "type": "registry:ui",
+  "title": "Column Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A resizable column component for layout.",
   "dependencies": [
     "@udecode/plate-layout",
     "@udecode/plate-resizable"
   ],
-  "doc": {
-    "description": "A resizable column component for layout.",
-    "docs": [
-      {
-        "route": "/docs/column"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/column-element"
-      }
-    ],
-    "examples": [
-      "column-demo"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/resizable.json"
+  ],
   "files": [
     {
       "path": "plate-ui/column-element.tsx",
@@ -31,11 +26,17 @@
       "target": "components/plate-ui/column-element-static.tsx"
     }
   ],
-  "name": "column-element",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/resizable.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/column"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/column-element"
+      }
+    ],
+    "examples": [
+      "column-demo"
+    ]
+  }
 }

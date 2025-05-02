@@ -1,14 +1,13 @@
 {
-  "doc": {
-    "description": "Dynamic TOC with in-document element for easy navigation.",
-    "docs": [
-      {
-        "route": "/docs/toc",
-        "title": "TOC"
-      }
-    ],
-    "title": "Table of Contents"
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "toc-demo",
+  "type": "registry:example",
+  "title": "Table of Contents",
+  "author": "udecode (https://platejs.org)",
+  "description": "Dynamic TOC with in-document element for easy navigation.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/toc-plugin.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -35,11 +34,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "toc-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toc-plugin.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/toc",
+        "title": "TOC"
+      }
+    ]
+  }
 }

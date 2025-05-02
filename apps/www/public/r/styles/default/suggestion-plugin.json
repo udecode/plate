@@ -1,6 +1,13 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "suggestion-plugin",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [
     "@udecode/plate-suggestion"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/discussion-plugin.json"
   ],
   "files": [
     {
@@ -21,12 +28,5 @@
       "type": "registry:ui",
       "target": "components/plate-ui/suggestion-toolbar-button.tsx"
     }
-  ],
-  "name": "suggestion-plugin",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/discussion-plugin.json"
-  ],
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

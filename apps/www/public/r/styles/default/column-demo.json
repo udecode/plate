@@ -1,13 +1,10 @@
 {
-  "doc": {
-    "description": "Column layout.",
-    "docs": [
-      {
-        "route": "/docs/column",
-        "title": "Column"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "column-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Column layout.",
+  "registryDependencies": [],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -34,9 +31,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "column-demo",
-  "registryDependencies": [],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/column",
+        "title": "Column"
+      }
+    ]
+  }
 }

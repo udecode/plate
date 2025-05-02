@@ -1,23 +1,17 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "media-file-element",
+  "type": "registry:ui",
+  "title": "Media File Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A file attachment component with download capability and caption.",
   "dependencies": [
     "@udecode/plate-media",
     "@udecode/plate-resizable"
   ],
-  "doc": {
-    "description": "A file attachment component with download capability and caption.",
-    "docs": [
-      {
-        "route": "/docs/media"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/media-file-element"
-      }
-    ],
-    "examples": [
-      "media-demo",
-      "upload-pro"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/caption.json"
+  ],
   "files": [
     {
       "path": "plate-ui/media-file-element.tsx",
@@ -32,11 +26,18 @@
       "target": "components/plate-ui/media-file-element-static.tsx"
     }
   ],
-  "name": "media-file-element",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/caption.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/media"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/media-file-element"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "upload-pro"
+    ]
+  }
 }

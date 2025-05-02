@@ -127,9 +127,11 @@ export function getAllDependencies(
 
   const deps = [
     ...(component.dependencies ?? []),
-    ...(component.registryDependencies ?? []).flatMap((dep) =>
-      getAllDependencies(dep, seen)
-    ),
+    ...(
+      component.registryDependencies?.filter(
+        (dep) => !dep.startsWith('http')
+      ) ?? []
+    ).flatMap((dep) => getAllDependencies(dep, seen)),
   ];
 
   return Array.from(new Set(deps));

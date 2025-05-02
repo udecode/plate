@@ -1,13 +1,12 @@
 {
-  "doc": {
-    "description": "Block-level context menu with formatting options.",
-    "docs": [
-      {
-        "route": "/docs/block-menu",
-        "title": "Block Menu"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "block-menu-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Block-level context menu with formatting options.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/block-menu-plugins.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -34,11 +33,12 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "block-menu-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/block-menu-plugins.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/block-menu",
+        "title": "Block Menu"
+      }
+    ]
+  }
 }

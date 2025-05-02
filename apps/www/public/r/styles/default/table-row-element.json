@@ -1,19 +1,12 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "table-row-element",
+  "type": "registry:ui",
+  "title": "Table Row Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "A table row component with optional border hiding.",
   "dependencies": [],
-  "doc": {
-    "description": "A table row component with optional border hiding.",
-    "docs": [
-      {
-        "route": "/docs/table"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/table-row-element"
-      }
-    ],
-    "examples": [
-      "table-demo"
-    ]
-  },
+  "registryDependencies": [],
   "files": [
     {
       "path": "plate-ui/table-row-element.tsx",
@@ -28,9 +21,17 @@
       "target": "components/plate-ui/table-row-element-static.tsx"
     }
   ],
-  "name": "table-row-element",
-  "registryDependencies": [],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/table"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/table-row-element"
+      }
+    ],
+    "examples": [
+      "table-demo"
+    ]
+  }
 }

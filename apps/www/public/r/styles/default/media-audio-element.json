@@ -1,23 +1,17 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "media-audio-element",
+  "type": "registry:ui",
+  "title": "Media Audio Element",
+  "author": "udecode (https://platejs.org)",
+  "description": "An audio player component with caption support.",
   "dependencies": [
     "@udecode/plate-media",
     "@udecode/plate-resizable"
   ],
-  "doc": {
-    "description": "An audio player component with caption support.",
-    "docs": [
-      {
-        "route": "/docs/media"
-      },
-      {
-        "route": "https://pro.platejs.org/docs/components/media-audio-element"
-      }
-    ],
-    "examples": [
-      "media-demo",
-      "upload-pro"
-    ]
-  },
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/caption.json"
+  ],
   "files": [
     {
       "path": "plate-ui/media-audio-element.tsx",
@@ -32,11 +26,18 @@
       "target": "components/plate-ui/media-audio-element-static.tsx"
     }
   ],
-  "name": "media-audio-element",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/caption.json"
-  ],
-  "type": "registry:ui",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/media"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/media-audio-element"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "upload-pro"
+    ]
+  }
 }

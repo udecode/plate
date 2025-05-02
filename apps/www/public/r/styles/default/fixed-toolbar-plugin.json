@@ -1,5 +1,13 @@
 {
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "fixed-toolbar-plugin",
+  "type": "registry:component",
+  "author": "udecode (https://platejs.org)",
   "dependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/fixed-toolbar.json",
+    "https://platejs.org/r/styles/default/fixed-toolbar-buttons.json"
+  ],
   "files": [
     {
       "path": "components/editor/plugins/fixed-toolbar-plugin.tsx",
@@ -7,13 +15,5 @@
       "type": "registry:component",
       "target": "components/editor/plugins/fixed-toolbar-plugin.tsx"
     }
-  ],
-  "name": "fixed-toolbar-plugin",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/fixed-toolbar.json",
-    "https://platejs.org/r/styles/default/fixed-toolbar-buttons.json"
-  ],
-  "type": "registry:component",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  ]
 }

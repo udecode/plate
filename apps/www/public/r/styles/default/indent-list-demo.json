@@ -1,17 +1,12 @@
 {
-  "doc": {
-    "description": "Turn any block into a list item.",
-    "docs": [
-      {
-        "route": "/docs/indent",
-        "title": "Indent"
-      },
-      {
-        "route": "/docs/indent-list",
-        "title": "Indent List"
-      }
-    ]
-  },
+  "$schema": "https://platejs.org/schema/registry-item.json",
+  "name": "indent-list-demo",
+  "type": "registry:example",
+  "author": "udecode (https://platejs.org)",
+  "description": "Turn any block into a list item.",
+  "registryDependencies": [
+    "https://platejs.org/r/styles/default/indent-list-plugins.json"
+  ],
   "files": [
     {
       "path": "examples/demo.tsx",
@@ -38,11 +33,16 @@
       "target": "components/editor-plugins.tsx"
     }
   ],
-  "name": "indent-list-demo",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/indent-list-plugins.json"
-  ],
-  "type": "registry:example",
-  "$schema": "https://platejs.org/schema/registry-item.json",
-  "author": "udecode (https://platejs.org)"
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/indent",
+        "title": "Indent"
+      },
+      {
+        "route": "/docs/indent-list",
+        "title": "Indent List"
+      }
+    ]
+  }
 }

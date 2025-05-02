@@ -1,4 +1,4 @@
-import type { Registry } from 'shadcx/registry';
+import type { Registry } from 'shadcn/registry';
 
 export const blocks: Registry['items'] = [
   {
@@ -155,7 +155,7 @@ export const blocks: Registry['items'] = [
     type: 'registry:block',
   },
   {
-    category: 'Serializers',
+    categories: ['Serializers'],
     files: [
       {
         path: 'blocks/slate-to-html/page.tsx',
@@ -168,9 +168,11 @@ export const blocks: Registry['items'] = [
         type: 'registry:component',
       },
     ],
+    meta: {
+      rsc: true,
+    },
     name: 'slate-to-html',
     registryDependencies: [],
-    rsc: true,
     type: 'registry:block',
   },
 ];
