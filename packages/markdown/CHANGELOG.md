@@ -1,5 +1,11 @@
 # @udecode/plate-markdown
 
+## 47.4.1
+
+### Patch Changes
+
+- [#4269](https://github.com/udecode/plate/pull/4269) by [@felixfeng33](https://github.com/felixfeng33) – If `deserializeMd` returns an inline element, wrap it with a paragraph
+
 ## 47.3.1
 
 ### Patch Changes
