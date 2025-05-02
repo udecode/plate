@@ -1,7 +1,12 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type Descendant, type SlateEditor, TextApi } from '@udecode/plate';
+import {
+  type Descendant,
+  type SlateEditor,
+  BaseParagraphPlugin,
+  TextApi,
+} from '@udecode/plate';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
@@ -90,7 +95,12 @@ export const deserializeMd = (
 
   // when output is inline text, we need to wrap the text in a paragraph
   return output?.map((item) =>
-    TextApi.isText(item) ? { children: [{ text: item.text }], type: 'p' } : item
+    TextApi.isText(item)
+      ? {
+          children: [item],
+          type: editor.getType(BaseParagraphPlugin),
+        }
+      : item
   );
 };
 
