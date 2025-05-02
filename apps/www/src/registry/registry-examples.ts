@@ -238,18 +238,21 @@ export const docExamples: Registry['items'] = [
     description:
       'AI menu with commands, streaming responses in a preview or directly into the editor.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/plugins/ai-plugins.tsx',
-        type: 'registry:example',
-      },
-      { path: 'examples/values/ai-value.tsx', type: 'registry:example' },
-      {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/plugins/ai-plugins.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/examples/values/ai-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -274,14 +277,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Text alignment controls for blocks.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/align-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/align-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -296,17 +302,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Apply formatting automatically using shortcodes.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/autoformat-value.tsx',
+        path: 'registry/examples/values/autoformat-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -321,17 +327,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Basic block elements like headings, quotes, and code blocks.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/basic-elements-value.tsx',
+        path: 'registry/examples/values/basic-elements-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -353,17 +359,17 @@ export const docExamples: Registry['items'] = [
     description:
       'Basic text formatting marks like bold, italic, and underline.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/basic-marks-value.tsx',
+        path: 'registry/examples/values/basic-marks-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -384,25 +390,25 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Basic block elements and text marks.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/basic-nodes-value.tsx',
+        path: 'registry/examples/values/basic-nodes-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'examples/values/basic-elements-value.tsx',
+        path: 'registry/examples/values/basic-elements-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'examples/values/basic-marks-value.tsx',
+        path: 'registry/examples/values/basic-marks-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -424,17 +430,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Block-level context menu with formatting options.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/block-menu-value.tsx',
+        path: 'registry/examples/values/block-menu-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -455,17 +461,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Visual block selection with keyboard support.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/block-selection-value.tsx',
+        path: 'registry/examples/values/block-selection-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -479,14 +485,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Column layout.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/column-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/column-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -505,17 +514,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Adding and displaying comments within content.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/comments-value.tsx',
+        path: 'registry/examples/values/comments-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -538,14 +547,17 @@ export const docExamples: Registry['items'] = [
     dependencies: ['@udecode/plate-ai', '@udecode/plate-markdown'],
     description: 'Renders AI ghost text suggestions at the cursor position.',
     files: [
-      { path: 'examples/copilot-demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/copilot-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/copilot-demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/copilot-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -566,17 +578,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Visual indicator for cursor position within the editor.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/cursor-overlay-value.tsx',
+        path: 'registry/examples/values/cursor-overlay-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -609,14 +621,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Inline date elements with calendar selection interface.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/date-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/date-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -636,14 +651,17 @@ export const docExamples: Registry['items'] = [
     description:
       'Implements draggable functionality for editor blocks, including drag handles and drop indicators.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/dnd-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/dnd-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -665,14 +683,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Emoji insertion via toolbar or colon-triggered combobox.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/emoji-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/emoji-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -691,14 +712,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'LaTeX equations with inline and block formats.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/emoji-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/emoji-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -717,17 +741,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Exit a large block using a shortcut.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/exit-break-value.tsx',
+        path: 'registry/examples/values/exit-break-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -745,17 +769,20 @@ export const docExamples: Registry['items'] = [
     //   title: 'Excalidraw',
     // },
     files: [
-      { path: 'examples/excalidraw-demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/excalidraw-value.tsx',
+        path: 'registry/examples/excalidraw-demo.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/excalidraw-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -785,17 +812,20 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Find and replace functionality in text.',
     files: [
-      { path: 'examples/find-replace-demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/find-replace-value.tsx',
+        path: 'registry/examples/find-replace-demo.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/find-replace-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -812,17 +842,17 @@ export const docExamples: Registry['items'] = [
     description:
       'Floating toolbar with text formatting and AI assistance options.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/floating-toolbar-value.tsx',
+        path: 'registry/examples/values/floating-toolbar-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -841,14 +871,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Color picker for text and background colors.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/font-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/font-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -862,17 +895,17 @@ export const docExamples: Registry['items'] = [
     //   description: 'Text highlighting with customizable colors.',
     // },
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/highlight-value.tsx',
+        path: 'registry/examples/values/highlight-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -883,17 +916,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Horizontal lines for visually separating content sections.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/horizontal-rule-value.tsx',
+        path: 'registry/examples/values/horizontal-rule-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -920,14 +953,17 @@ export const docExamples: Registry['items'] = [
     //   ],
     // },
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/indent-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/indent-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -940,17 +976,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Turn any block into a list item.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/indent-list-value.tsx',
+        path: 'registry/examples/values/indent-list-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -974,14 +1010,17 @@ export const docExamples: Registry['items'] = [
   },
   {
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/kbd-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/kbd-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -992,17 +1031,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Line height adjustment controls.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/line-height-value.tsx',
+        path: 'registry/examples/values/line-height-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1016,14 +1055,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Hyperlinks with toolbar insertion and URL pasting support.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/link-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/link-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1044,22 +1086,25 @@ export const docExamples: Registry['items'] = [
   {
     description: 'List creation and formatting.',
     files: [
-      { path: 'examples/list-demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/list-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/list-demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/plugins/fixed-toolbar-list-plugin.tsx',
+        path: 'registry/examples/values/list-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'plate-ui/fixed-toolbar-list-buttons.tsx',
+        path: 'registry/components/editor/plugins/fixed-toolbar-list-plugin.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor-list.ts',
+        path: 'registry/plate-ui/fixed-toolbar-list-buttons.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor-list.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1075,14 +1120,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Media embedding and management.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/media-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/media-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1096,14 +1144,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Mention functionality for referencing users or entities.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/mention-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/mention-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1136,17 +1187,17 @@ export const docExamples: Registry['items'] = [
   // },
   {
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/basic-elements-value.tsx',
+        path: 'registry/examples/values/basic-elements-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1159,17 +1210,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Copy paste from CSV to Slate.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/deserialize-csv-value.tsx',
+        path: 'registry/examples/values/deserialize-csv-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1181,17 +1232,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Copy paste from DOCX to Slate.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/deserialize-docx-value.tsx',
+        path: 'registry/examples/values/deserialize-docx-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1203,17 +1254,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Copy paste from HTML to Slate.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/deserialize-html-value.tsx',
+        path: 'registry/examples/values/deserialize-html-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1225,17 +1276,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Copy paste from Markdown to Slate.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/deserialize-md-value.tsx',
+        path: 'registry/examples/values/deserialize-md-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1247,7 +1298,10 @@ export const docExamples: Registry['items'] = [
   {
     description: 'A form with a select editor component for managing labels.',
     files: [
-      { path: 'examples/select-editor-demo.tsx', type: 'registry:example' },
+      {
+        path: 'registry/examples/select-editor-demo.tsx',
+        type: 'registry:example',
+      },
     ],
     meta: {
       docs: [
@@ -1268,17 +1322,20 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Restrict the editor to a single block.',
     files: [
-      { path: 'examples/single-line-demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/single-line-value.tsx',
+        path: 'registry/examples/single-line-demo.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/single-line-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1291,17 +1348,17 @@ export const docExamples: Registry['items'] = [
     description:
       'Slash command menu for quick insertion of various content types.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/slash-command-value.tsx',
+        path: 'registry/examples/values/slash-command-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1321,17 +1378,17 @@ export const docExamples: Registry['items'] = [
     description:
       'Insert line breaks within a block of text without starting a new block.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/soft-break-value.tsx',
+        path: 'registry/examples/values/soft-break-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1345,17 +1402,17 @@ export const docExamples: Registry['items'] = [
   },
   {
     files: [
-      { path: 'examples/tabbable-demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/tabbable-demo.tsx', type: 'registry:example' },
       {
-        path: 'examples/values/tabbable-value.tsx',
+        path: 'registry/examples/values/tabbable-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1366,14 +1423,17 @@ export const docExamples: Registry['items'] = [
     description:
       'Customizable tables with resizable columns and row merging options.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/table-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/table-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1393,14 +1453,20 @@ export const docExamples: Registry['items'] = [
   },
   {
     files: [
-      { path: 'examples/table-nomerge-demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/table-value.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/table-nomerge-demo.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/examples/values/table-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1410,14 +1476,17 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Dynamic TOC with in-document element for easy navigation.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      { path: 'examples/values/toc-value.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/examples/values/toc-value.tsx',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
+      {
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1439,13 +1508,13 @@ export const docExamples: Registry['items'] = [
   {
     description: 'Collapsible content blocks.',
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1461,13 +1530,13 @@ export const examples: Registry['items'] = [
 
   {
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1476,20 +1545,33 @@ export const examples: Registry['items'] = [
   },
   // Others
   {
-    files: [{ path: 'examples/pro-iframe-demo.tsx', type: 'registry:example' }],
+    files: [
+      {
+        path: 'registry/examples/pro-iframe-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'pro-iframe-demo',
     type: 'registry:example',
   },
   {
     files: [
-      { path: 'examples/potion-iframe-demo.tsx', type: 'registry:example' },
+      {
+        path: 'registry/examples/potion-iframe-demo.tsx',
+        type: 'registry:example',
+      },
     ],
     name: 'potion-iframe-demo',
     type: 'registry:example',
   },
   // Editor
   {
-    files: [{ path: 'examples/editor-default.tsx', type: 'registry:example' }],
+    files: [
+      {
+        path: 'registry/examples/editor-default.tsx',
+        type: 'registry:example',
+      },
+    ],
     meta: {},
     name: 'editor-default',
     registryDependencies: [],
@@ -1497,7 +1579,12 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    files: [{ path: 'examples/editor-disabled.tsx', type: 'registry:example' }],
+    files: [
+      {
+        path: 'registry/examples/editor-disabled.tsx',
+        type: 'registry:example',
+      },
+    ],
     meta: {},
     name: 'editor-disabled',
     registryDependencies: [],
@@ -1506,7 +1593,10 @@ export const examples: Registry['items'] = [
   },
   {
     files: [
-      { path: 'examples/editor-full-width.tsx', type: 'registry:example' },
+      {
+        path: 'registry/examples/editor-full-width.tsx',
+        type: 'registry:example',
+      },
     ],
     meta: {},
     name: 'editor-full-width',
@@ -1517,7 +1607,7 @@ export const examples: Registry['items'] = [
   {
     files: [
       {
-        path: 'examples/basic-editor-default-demo.tsx',
+        path: 'registry/examples/basic-editor-default-demo.tsx',
         type: 'registry:example',
       },
     ],
@@ -1526,7 +1616,12 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    files: [{ path: 'examples/controlled-demo.tsx', type: 'registry:example' }],
+    files: [
+      {
+        path: 'registry/examples/controlled-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
     name: 'controlled-demo',
     registryDependencies: [],
     type: 'registry:example',
@@ -1534,7 +1629,7 @@ export const examples: Registry['items'] = [
   {
     files: [
       {
-        path: 'examples/basic-editor-styling-demo.tsx',
+        path: 'registry/examples/basic-editor-styling-demo.tsx',
         type: 'registry:example',
       },
     ],
@@ -1545,7 +1640,7 @@ export const examples: Registry['items'] = [
   {
     files: [
       {
-        path: 'examples/basic-editor-handler-demo.tsx',
+        path: 'registry/examples/basic-editor-handler-demo.tsx',
         type: 'registry:example',
       },
     ],
@@ -1556,7 +1651,7 @@ export const examples: Registry['items'] = [
   {
     files: [
       {
-        path: 'examples/basic-editor-value-demo.tsx',
+        path: 'registry/examples/basic-editor-value-demo.tsx',
         type: 'registry:example',
       },
     ],
@@ -1567,7 +1662,7 @@ export const examples: Registry['items'] = [
   {
     files: [
       {
-        path: 'examples/basic-plugins-components-demo.tsx',
+        path: 'registry/examples/basic-plugins-components-demo.tsx',
         type: 'registry:example',
       },
     ],
@@ -1578,7 +1673,7 @@ export const examples: Registry['items'] = [
   {
     files: [
       {
-        path: 'examples/basic-plugins-default-demo.tsx',
+        path: 'registry/examples/basic-plugins-default-demo.tsx',
         type: 'registry:example',
       },
     ],
@@ -1588,7 +1683,10 @@ export const examples: Registry['items'] = [
   },
   {
     files: [
-      { path: 'examples/editable-voids-demo.tsx', type: 'registry:example' },
+      {
+        path: 'registry/examples/editable-voids-demo.tsx',
+        type: 'registry:example',
+      },
     ],
     name: 'editable-voids-demo',
     registryDependencies: [],
@@ -1596,7 +1694,10 @@ export const examples: Registry['items'] = [
   },
   {
     files: [
-      { path: 'examples/hundreds-blocks-demo.tsx', type: 'registry:example' },
+      {
+        path: 'registry/examples/hundreds-blocks-demo.tsx',
+        type: 'registry:example',
+      },
     ],
     name: 'hundreds-blocks-demo',
     registryDependencies: [],
@@ -1604,20 +1705,28 @@ export const examples: Registry['items'] = [
   },
   {
     files: [
-      { path: 'examples/hundreds-editors-demo.tsx', type: 'registry:example' },
+      {
+        path: 'registry/examples/hundreds-editors-demo.tsx',
+        type: 'registry:example',
+      },
     ],
     name: 'hundreds-editors-demo',
     registryDependencies: [],
     type: 'registry:example',
   },
   {
-    files: [{ path: 'examples/mode-toggle.tsx', type: 'registry:example' }],
+    files: [
+      { path: 'registry/examples/mode-toggle.tsx', type: 'registry:example' },
+    ],
     name: 'mode-toggle',
     type: 'registry:example',
   },
   {
     files: [
-      { path: 'examples/multiple-editors-demo.tsx', type: 'registry:example' },
+      {
+        path: 'registry/examples/multiple-editors-demo.tsx',
+        type: 'registry:example',
+      },
     ],
     name: 'multiple-editors-demo',
     registryDependencies: [],
@@ -1625,7 +1734,10 @@ export const examples: Registry['items'] = [
   },
   {
     files: [
-      { path: 'examples/version-history-demo.tsx', type: 'registry:example' },
+      {
+        path: 'registry/examples/version-history-demo.tsx',
+        type: 'registry:example',
+      },
     ],
     name: 'version-history-demo',
     registryDependencies: [],
@@ -1633,13 +1745,13 @@ export const examples: Registry['items'] = [
   },
   {
     files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
+      { path: 'registry/examples/demo.tsx', type: 'registry:example' },
       {
-        path: 'components/editor/use-create-editor.ts',
+        path: 'registry/components/editor/use-create-editor.ts',
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:example',
       },
     ],
@@ -1649,7 +1761,10 @@ export const examples: Registry['items'] = [
   },
   {
     files: [
-      { path: 'examples/preview-markdown-demo.tsx', type: 'registry:example' },
+      {
+        path: 'registry/examples/preview-markdown-demo.tsx',
+        type: 'registry:example',
+      },
     ],
     meta: {},
     name: 'preview-markdown-demo',
@@ -1658,7 +1773,10 @@ export const examples: Registry['items'] = [
   },
   {
     files: [
-      { path: 'examples/markdown-to-slate-demo.tsx', type: 'registry:example' },
+      {
+        path: 'registry/examples/markdown-to-slate-demo.tsx',
+        type: 'registry:example',
+      },
     ],
     meta: {},
     name: 'markdown-to-slate-demo',

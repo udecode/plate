@@ -32,23 +32,20 @@ export const blocks: Registry['items'] = [
     description: 'An AI editor',
     files: [
       {
-        path: 'blocks/editor-ai/page.tsx',
+        path: 'registry/blocks/editor-ai/page.tsx',
         target: 'app/editor/page.tsx',
         type: 'registry:page',
       },
       {
-        path: 'blocks/editor-ai/components/editor/plate-editor.tsx',
-        target: 'components/editor/plate-editor.tsx',
+        path: 'registry/blocks/editor-ai/components/editor/plate-editor.tsx',
         type: 'registry:component',
       },
       {
-        path: 'blocks/editor-ai/components/editor/use-create-editor.ts',
-        target: 'components/editor/use-create-editor.ts',
+        path: 'registry/blocks/editor-ai/components/editor/use-create-editor.ts',
         type: 'registry:component',
       },
       {
-        path: 'components/editor/settings.tsx',
-        target: 'components/editor/settings.tsx',
+        path: 'registry/components/editor/settings.tsx',
         type: 'registry:component',
       },
     ],
@@ -115,7 +112,7 @@ export const blocks: Registry['items'] = [
     description: 'A multi-select editor',
     files: [
       {
-        path: 'blocks/editor-select/page.tsx',
+        path: 'registry/blocks/editor-select/page.tsx',
         target: 'app/editor/page.tsx',
         type: 'registry:page',
       },
@@ -135,18 +132,16 @@ export const blocks: Registry['items'] = [
     description: 'A basic editor',
     files: [
       {
-        path: 'blocks/editor-basic/page.tsx',
+        path: 'registry/blocks/editor-basic/page.tsx',
         target: 'app/editor/page.tsx',
         type: 'registry:page',
       },
       {
-        path: 'blocks/editor-basic/components/editor/plate-editor.tsx',
-        target: 'components/editor/plate-editor.tsx',
+        path: 'registry/blocks/editor-basic/components/editor/plate-editor.tsx',
         type: 'registry:component',
       },
       {
-        path: 'blocks/editor-basic/components/editor/use-create-editor.ts',
-        target: 'components/editor/use-create-editor.ts',
+        path: 'registry/blocks/editor-basic/components/editor/use-create-editor.ts',
         type: 'registry:component',
       },
     ],
@@ -158,13 +153,12 @@ export const blocks: Registry['items'] = [
     categories: ['Serializers'],
     files: [
       {
-        path: 'blocks/slate-to-html/page.tsx',
+        path: 'registry/blocks/slate-to-html/page.tsx',
         target: 'app/html/page.tsx',
         type: 'registry:page',
       },
       {
-        path: 'components/editor/slate-to-html.tsx',
-        target: 'components/editor/slate-to-html.tsx',
+        path: 'registry/components/editor/slate-to-html.tsx',
         type: 'registry:component',
       },
     ],

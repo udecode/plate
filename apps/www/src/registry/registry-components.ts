@@ -1,6 +1,39 @@
 import type { Registry } from 'shadcn/registry';
 
 const plugins: Registry['items'] = [
+  // Files
+  {
+    dependencies: ['@ai-sdk/openai', 'ai'],
+    files: [
+      {
+        path: 'registry/app/api/ai/command/route.ts',
+        target: 'app/api/ai/command/route.ts',
+        type: 'registry:file',
+      },
+      {
+        path: 'registry/app/api/ai/copilot/route.ts',
+        target: 'app/api/ai/copilot/route.ts',
+        type: 'registry:file',
+      },
+    ],
+    name: 'api-ai',
+    registryDependencies: [],
+    type: 'registry:file',
+  },
+  {
+    dependencies: ['uploadthing@7.2.0'],
+    files: [
+      {
+        path: 'registry/app/api/uploadthing/route.ts',
+        target: 'app/api/uploadthing/route.ts',
+        type: 'registry:file',
+      },
+    ],
+    name: 'api-uploadthing',
+    registryDependencies: [],
+    type: 'registry:file',
+  },
+  // Components
   {
     dependencies: [
       '@udecode/plate-callout',
@@ -22,7 +55,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'registry/components/editor/plugins/editor-plugins.tsx',
         type: 'registry:component',
       },
     ],
@@ -67,7 +100,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/ai-plugins.tsx',
+        path: 'registry/components/editor/plugins/ai-plugins.tsx',
         type: 'registry:component',
       },
     ],
@@ -96,7 +129,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-math'],
     files: [
       {
-        path: 'components/editor/plugins/equation-plugins.ts',
+        path: 'registry/components/editor/plugins/equation-plugins.ts',
         type: 'registry:component',
       },
     ],
@@ -115,7 +148,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/align-plugin.ts',
+        path: 'registry/components/editor/plugins/align-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -136,7 +169,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/autoformat-plugin.ts',
+        path: 'registry/components/editor/plugins/autoformat-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -157,7 +190,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/autoformat-list-plugin.ts',
+        path: 'registry/components/editor/plugins/autoformat-list-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -174,7 +207,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/basic-nodes-plugins.tsx',
+        path: 'registry/components/editor/plugins/basic-nodes-plugins.tsx',
         type: 'registry:component',
       },
     ],
@@ -185,7 +218,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-selection'],
     files: [
       {
-        path: 'components/editor/plugins/block-selection-plugins.tsx',
+        path: 'registry/components/editor/plugins/block-selection-plugins.tsx',
         type: 'registry:component',
       },
     ],
@@ -199,7 +232,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-selection'],
     files: [
       {
-        path: 'components/editor/plugins/block-menu-plugins.ts',
+        path: 'registry/components/editor/plugins/block-menu-plugins.ts',
         type: 'registry:component',
       },
     ],
@@ -214,7 +247,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-comments'],
     files: [
       {
-        path: 'components/editor/plugins/comments-plugin.tsx',
+        path: 'registry/components/editor/plugins/comments-plugin.tsx',
         type: 'registry:component',
       },
     ],
@@ -228,7 +261,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-basic-marks'],
     files: [
       {
-        path: 'components/editor/plugins/skip-mark-plugin.ts',
+        path: 'registry/components/editor/plugins/skip-mark-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -239,15 +272,15 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-suggestion'],
     files: [
       {
-        path: 'components/editor/plugins/suggestion-plugin.tsx',
+        path: 'registry/components/editor/plugins/suggestion-plugin.tsx',
         type: 'registry:component',
       },
       {
-        path: 'plate-ui/suggestion-line-break.tsx',
+        path: 'registry/plate-ui/suggestion-line-break.tsx',
         type: 'registry:ui',
       },
       {
-        path: 'plate-ui/suggestion-toolbar-button.tsx',
+        path: 'registry/plate-ui/suggestion-toolbar-button.tsx',
         type: 'registry:ui',
       },
     ],
@@ -261,7 +294,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-selection'],
     files: [
       {
-        path: 'components/editor/plugins/cursor-overlay-plugin.tsx',
+        path: 'registry/components/editor/plugins/cursor-overlay-plugin.tsx',
         type: 'registry:component',
       },
     ],
@@ -275,7 +308,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-markdown', 'remark-gfm', 'remark-math'],
     files: [
       {
-        path: 'components/editor/plugins/markdown-plugin.tsx',
+        path: 'registry/components/editor/plugins/markdown-plugin.tsx',
         type: 'registry:component',
       },
     ],
@@ -291,7 +324,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/copilot-plugins.tsx',
+        path: 'registry/components/editor/plugins/copilot-plugins.tsx',
         type: 'registry:component',
       },
     ],
@@ -309,7 +342,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/delete-plugins.ts',
+        path: 'registry/components/editor/plugins/delete-plugins.ts',
         type: 'registry:component',
       },
     ],
@@ -324,7 +357,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/dnd-plugins.tsx',
+        path: 'registry/components/editor/plugins/dnd-plugins.tsx',
         type: 'registry:component',
       },
     ],
@@ -338,7 +371,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-break', '@udecode/plate-heading'],
     files: [
       {
-        path: 'components/editor/plugins/exit-break-plugin.ts',
+        path: 'registry/components/editor/plugins/exit-break-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -349,7 +382,7 @@ const plugins: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'components/editor/plugins/fixed-toolbar-plugin.tsx',
+        path: 'registry/components/editor/plugins/fixed-toolbar-plugin.tsx',
         type: 'registry:component',
       },
     ],
@@ -364,7 +397,7 @@ const plugins: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'components/editor/plugins/fixed-toolbar-list-plugin.tsx',
+        path: 'registry/components/editor/plugins/fixed-toolbar-list-plugin.tsx',
         type: 'registry:component',
       },
     ],
@@ -379,7 +412,7 @@ const plugins: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'components/editor/plugins/floating-toolbar-plugin.tsx',
+        path: 'registry/components/editor/plugins/floating-toolbar-plugin.tsx',
         type: 'registry:component',
       },
     ],
@@ -401,7 +434,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/indent-list-plugins.ts',
+        path: 'registry/components/editor/plugins/indent-list-plugins.ts',
         type: 'registry:component',
       },
     ],
@@ -416,7 +449,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-heading', '@udecode/plate-line-height'],
     files: [
       {
-        path: 'components/editor/plugins/line-height-plugin.ts',
+        path: 'registry/components/editor/plugins/line-height-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -427,7 +460,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-link'],
     files: [
       {
-        path: 'components/editor/plugins/link-plugin.tsx',
+        path: 'registry/components/editor/plugins/link-plugin.tsx',
         type: 'registry:component',
       },
     ],
@@ -441,7 +474,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-caption', '@udecode/plate-media'],
     files: [
       {
-        path: 'components/editor/plugins/media-plugins.tsx',
+        path: 'registry/components/editor/plugins/media-plugins.tsx',
         type: 'registry:component',
       },
     ],
@@ -456,7 +489,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-mention'],
     files: [
       {
-        path: 'components/editor/plugins/mention-plugin.ts',
+        path: 'registry/components/editor/plugins/mention-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -474,7 +507,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/reset-block-type-plugin.ts',
+        path: 'registry/components/editor/plugins/reset-block-type-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -491,7 +524,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/soft-break-plugin.ts',
+        path: 'registry/components/editor/plugins/soft-break-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -506,7 +539,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plugins/tabbable-plugin.ts',
+        path: 'registry/components/editor/plugins/tabbable-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -517,7 +550,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-table'],
     files: [
       {
-        path: 'components/editor/plugins/table-plugin.ts',
+        path: 'registry/components/editor/plugins/table-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -528,7 +561,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-heading'],
     files: [
       {
-        path: 'components/editor/plugins/toc-plugin.ts',
+        path: 'registry/components/editor/plugins/toc-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -539,7 +572,7 @@ const plugins: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'components/editor/plugins/discussion-plugin.tsx',
+        path: 'registry/components/editor/plugins/discussion-plugin.tsx',
         type: 'registry:component',
       },
     ],
@@ -557,7 +590,7 @@ export const components: Registry['items'] = [
     dependencies: ['ai', '@faker-js/faker'],
     files: [
       {
-        path: 'components/editor/use-chat.ts',
+        path: 'registry/components/editor/use-chat.ts',
         type: 'registry:component',
       },
     ],
@@ -579,7 +612,10 @@ export const components: Registry['items'] = [
       '@udecode/plate-table',
     ],
     files: [
-      { path: 'components/editor/transforms.ts', type: 'registry:component' },
+      {
+        path: 'registry/components/editor/transforms.ts',
+        type: 'registry:component',
+      },
     ],
     name: 'transforms',
     type: 'registry:component',
@@ -599,7 +635,10 @@ export const components: Registry['items'] = [
       '@udecode/plate-toggle',
     ],
     files: [
-      { path: 'components/editor/plate-types.ts', type: 'registry:component' },
+      {
+        path: 'registry/components/editor/plate-types.ts',
+        type: 'registry:component',
+      },
     ],
     name: 'plate-types',
     type: 'registry:component',
@@ -621,7 +660,7 @@ export const components: Registry['items'] = [
     ],
     files: [
       {
-        path: 'components/editor/plate-list-types.ts',
+        path: 'registry/components/editor/plate-list-types.ts',
         type: 'registry:component',
       },
     ],

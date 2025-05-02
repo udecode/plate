@@ -1,6 +1,5 @@
 import type { Registry } from 'shadcn/registry';
 
-import { registryApp } from './registry-app';
 import { blocks } from './registry-blocks';
 import { components } from './registry-components';
 import { examples } from './registry-examples';
@@ -14,7 +13,6 @@ export const registry = {
   items: [
     ...ui,
     ...components,
-    ...registryApp,
     ...blocks,
     ...lib,
     ...hooks,
