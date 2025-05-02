@@ -1,0 +1,13 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "basic-editor-styling-demo",
+  "type": "registry:example",
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/examples/basic-editor-styling-demo.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { Plate, usePlateEditor } from '@udecode/plate/react';\n\nimport { Editor, EditorContainer } from '@/registry/ui/editor';\n\nexport default function BasicEditorStylingDemo() {\n  const editor = usePlateEditor();\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer>\n        <Editor placeholder=\"Type...\" />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "type": "registry:example"
+    }
+  ]
+}

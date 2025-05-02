@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "floating-toolbar-plugin",
+  "type": "registry:component",
+  "registryDependencies": [
+    "http://localhost:3000/r/floating-toolbar",
+    "http://localhost:3000/r/floating-toolbar-buttons"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/floating-toolbar-plugin.tsx",
+      "content": "'use client';\n\nimport { createPlatePlugin } from '@udecode/plate/react';\n\nimport { FloatingToolbar } from '@/registry/ui/floating-toolbar';\nimport { FloatingToolbarButtons } from '@/registry/ui/floating-toolbar-buttons';\n\nexport const FloatingToolbarPlugin = createPlatePlugin({\n  key: 'floating-toolbar',\n  render: {\n    afterEditable: () => (\n      <FloatingToolbar>\n        <FloatingToolbarButtons />\n      </FloatingToolbar>\n    ),\n  },\n});\n",
+      "type": "registry:component"
+    }
+  ]
+}

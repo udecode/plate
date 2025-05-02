@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "editor-select",
+  "type": "registry:block",
+  "description": "A multi-select editor",
+  "registryDependencies": [
+    "http://localhost:3000/r/select-editor-demo"
+  ],
+  "files": [
+    {
+      "path": "src/registry/blocks/editor-select/page.tsx",
+      "content": "import EditorSelectForm from '@/registry/examples/select-editor-demo';\n\nexport const description = 'A select editor';\n\nexport const descriptionSrc = '/docs/multi-select';\n\nexport const iframeHeight = '650px';\n\nexport const containerClassName = 'w-full h-full';\n\nexport default function Page() {\n  return (\n    <div className=\"flex h-screen w-full justify-center\" data-registry=\"plate\">\n      <EditorSelectForm />\n    </div>\n  );\n}\n",
+      "type": "registry:page",
+      "target": "app/editor/page.tsx"
+    }
+  ],
+  "categories": [
+    "Editors"
+  ]
+}

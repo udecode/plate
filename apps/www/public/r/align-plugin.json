@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "align-plugin",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-alignment",
+    "@udecode/plate-heading",
+    "@udecode/plate-media"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/align-plugin.ts",
+      "content": "'use client';\n\nimport { AlignPlugin } from '@udecode/plate-alignment/react';\nimport { HEADING_LEVELS } from '@udecode/plate-heading';\nimport { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';\nimport { ParagraphPlugin } from '@udecode/plate/react';\n\nexport const alignPlugin = AlignPlugin.extend({\n  inject: {\n    targetPlugins: [\n      ParagraphPlugin.key,\n      ...HEADING_LEVELS,\n      MediaEmbedPlugin.key,\n      ImagePlugin.key,\n    ],\n  },\n});\n",
+      "type": "registry:component"
+    }
+  ]
+}
