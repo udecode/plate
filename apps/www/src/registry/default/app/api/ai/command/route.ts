@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   try {
     const result = streamText({
       experimental_transform: smoothStream({
-        delayInMs: 30,
+        delayInMs: 100,
         chunking: (buffer) => {
           // Check for code block markers
           if (/```[^\s]+/.test(buffer)) {
