@@ -10,8 +10,6 @@ export const siteConfig = {
     potionTemplate: 'https://pro.platejs.org/docs/templates/potion',
     profile: 'https://github.com/zbeyens',
     twitter: 'https://twitter.com/zbeyens',
-    plateProComponent: (id: string) =>
-      `https://pro.platejs.org/docs/components/${id}`,
     plateProExample: (id: string) =>
       `https://pro.platejs.org/docs/examples/${id}`,
   },
