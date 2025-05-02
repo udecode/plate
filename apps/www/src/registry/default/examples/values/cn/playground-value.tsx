@@ -105,7 +105,7 @@ export const playgroundValue: Value = [
         },
         text: '重叠的',
       },
-      { text: ' 注释！' },
+      { text: ' 评论！' },
     ],
     type: 'p',
   },

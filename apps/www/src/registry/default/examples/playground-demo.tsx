@@ -74,7 +74,6 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
   const enabled = usePlaygroundEnabled();
 
   const locale = useLocale();
-  console.log("🚀 ~ PlaygroundDemo ~ locale:", locale)
   const value = getI18nValues(locale).playground;
 
   const editor = useCreateEditor(
