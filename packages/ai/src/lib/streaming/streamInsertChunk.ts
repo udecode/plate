@@ -97,7 +97,6 @@ export function streamInsertChunk(
       const currentBlock = editor.api.node(_blockPath)![0];
 
       // If the types are the same
-      // if (currentBlock.type === tempBlocks[0].type) {
       if (isSameNode(editor, currentBlock, tempBlocks[0])) {
         const chunkNodes = streamDeserializeInlineMd(editor as any, chunk);
 
