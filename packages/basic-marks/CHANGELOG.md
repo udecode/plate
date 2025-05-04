@@ -1,5 +1,7 @@
 # @udecode/plate-basic-marks
 
+## 48.0.0
+
 ## 46.0.5
 
 ### Patch Changes

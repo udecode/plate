@@ -1,5 +1,7 @@
 # @udecode/plate-docx-serializer
 
+## 48.0.0
+
 ## 47.4.0
 
 ## 47.3.1

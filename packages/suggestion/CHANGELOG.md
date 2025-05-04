@@ -1,5 +1,7 @@
 # @udecode/plate-suggestion
 
+## 48.0.0
+
 ## 47.3.0
 
 ### Minor Changes
