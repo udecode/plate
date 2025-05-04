@@ -612,7 +612,12 @@ describe('steamInsertChunk', () => {
           <hp indent={1} listStyleType="decimal">
             <htext>Ordered list item 1</htext>
           </hp>
-          <hp indent={1} listStart={2} listStyleType="decimal">
+          <hp
+            indent={1}
+            listRestartPolite={2}
+            listStart={2}
+            listStyleType="decimal"
+          >
             <htext>Ordered list item 2</htext>
           </hp>
           <hp>
@@ -810,6 +815,40 @@ describe('steamInsertChunk', () => {
       }
 
       expect(editor.children).toEqual(deserializeMd(editor, chunks.join('')));
+    });
+
+    it('stream insert lists', () => {
+      const chunks = ['1. 1', '\n\n', 'xxx\n\n', '2. 2'];
+
+      const { editor } = createTestEditor();
+
+      for (const text of chunks) {
+        streamInsertChunk(editor, text);
+      }
+
+      const output = (
+        <fragment>
+          <hp indent={1} listStyleType="decimal">
+            <htext>1</htext>
+          </hp>
+          <hp>
+            <htext>xxx</htext>
+          </hp>
+          <hp
+            indent={1}
+            listRestartPolite={2}
+            listStart={2}
+            listStyleType="decimal"
+          >
+            <htext>2</htext>
+          </hp>
+        </fragment>
+      ) as any;
+
+      console.log(JSON.stringify(editor.children), 'before');
+      console.log(JSON.stringify(output), 'after');
+
+      expect(editor.children).toEqual(output);
     });
   });
 });

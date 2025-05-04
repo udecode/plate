@@ -6,6 +6,7 @@ import { AIChatPlugin } from '../../react';
 import { streamDeserializeInlineMd } from './streamDeserializeInlineMd';
 import { streamDeserializeMd } from './streamDeserializeMd';
 import { streamSerializeMd } from './streamSerializeMd';
+import { isSameNode } from './utils/isSameNode';
 import { nodesWithProps } from './utils/nodesWithProps';
 
 export interface SteamInsertChunkOptions {
@@ -96,7 +97,7 @@ export function streamInsertChunk(
       const currentBlock = editor.api.node(_blockPath)![0];
 
       // If the types are the same
-      if (currentBlock.type === tempBlocks[0].type) {
+      if (isSameNode(editor, currentBlock, tempBlocks[0])) {
         const chunkNodes = streamDeserializeInlineMd(editor as any, chunk);
 
         // Deserialize the chunk and add it to the end of the current block
