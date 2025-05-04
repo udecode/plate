@@ -1,0 +1,206 @@
+---
+title: Element
+description: Slate 中元素的 API 参考。
+---
+
+`TElement` 对象是 Slate 文档中 `Node` 类型的一种，它们包含其他 `TElement` 节点或 `Text` 节点。
+
+```typescript
+interface TElement {
+  children: Descendant[]
+  type: string
+  [key: string]: unknown
+}
+```
+
+## 元素行为
+
+元素的行为可以根据编辑器的配置而不同：
+
+### 块级与内联
+
+元素可以是“块级”或“内联”，由插件 `node.isInline` 定义：
+
+- 块级元素只能与其他块级元素作为兄弟节点
+- 内联元素可以与文本节点或其他内联元素作为兄弟节点
+
+### 空元素与非空元素
+
+元素可以是“空元素”或“非空元素”，由插件 `node.isVoid` 定义：
+
+- 非空元素：Slate 负责渲染其子节点（例如，包含文本和内联子节点的段落）
+- 空元素：子节点由元素的渲染代码处理
+
+### 可标记的空元素
+
+某些空元素可以通过插件 `node.markableVoid` 支持标记。例如，提及元素可能需要支持加粗或斜体格式。
+
+## `ElementAPI`
+
+### `isElementType`
+
+检查一个值是否实现了 `TElement` 接口，并且其 `elementKey` 匹配指定的值。默认检查 `'type'` 键。
+
+<API name="isElementType">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+  <APIItem name="elementVal" type="string">
+    要匹配的值。
+  </APIItem>
+  <APIItem name="elementKey" type="string" optional>
+    要检查的键。默认为 `'type'`。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果该值是具有指定键且匹配 `elementVal` 的元素，则返回 `true`。
+</APIReturns>
+</API>
+
+### `isAncestor`
+
+检查一个值是否实现了 `Ancestor` 接口。
+
+<API name="isAncestor">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果该值是祖先节点，则返回 `true`。
+</APIReturns>
+</API>
+
+### `isElement`
+
+检查一个值是否实现了 `TElement` 接口。
+
+<API name="isElement">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果该值是 Slate 元素，则返回 `true`。
+</APIReturns>
+</API>
+
+### `isElementList`
+
+检查一个值是否为 `TElement` 对象数组。
+
+<API name="isElementList">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果该值是元素数组，则返回 `true`。
+</APIReturns>
+</API>
+
+### `isElementProps`
+
+检查一组 props 是否为 `TElement` 的部分属性。
+
+<API name="isElementProps">
+<APIParameters>
+  <APIItem name="props" type="any">
+    要检查的 props。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果 props 匹配元素属性，则返回 `true`。
+</APIReturns>
+</API>
+
+### `matches`
+
+检查一个元素是否匹配一组属性。
+
+<API name="matches">
+<APIParameters>
+  <APIItem name="element" type="TElement">
+    要检查的元素。
+  </APIItem>
+  <APIItem name="props" type="Partial<TElement>">
+    要匹配的属性。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果元素匹配所有提供的属性，则返回 `true`。
+</APIReturns>
+</API>
+
+## 类型
+
+### `TElement`
+
+`TElement` 对象是 Slate 文档中包含其他元素节点或文本节点的节点类型。它们可以根据编辑器配置为“块级”或“内联”。
+
+`Element` 是 `TElement` 的类型别名。
+
+<API name="TElement">
+<APIAttributes>
+  <APIItem name="children" type="Descendant[]">
+    可以是元素或文本节点的子节点数组。
+  </APIItem>
+  <APIItem name="type" type="string">
+    定义元素类型的字符串标识符（如 'paragraph'、'heading' 等）。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `ElementEntry`
+
+元素条目表示一个元素节点及其路径。
+
+<API name="ElementEntry">
+<APIAttributes>
+  <APIItem name="0" type="Element">
+    元素节点。
+  </APIItem>
+  <APIItem name="1" type="Path">
+    元素的路径。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `ElementOrTextOf`
+
+```ts
+type ElementOrTextOf<E extends Editor> = ElementOf<E> | TextOf<E>;
+```
+
+`ElementOrTextOf` 类型表示来自特定编辑器类型的元素或文本节点。
+
+### `ElementOrTextIn`
+
+```ts
+type ElementOrTextIn<V extends Value> = ElementIn<V> | TextIn<V>;
+```
+
+`ElementOrTextIn` 类型表示来自特定值类型的元素或文本节点。
+
+### `ElementOf`
+
+`ElementOf` 是一个工具类型，用于从给定的根节点类型获取所有元素节点类型。
+
+### `ElementIn`
+
+```ts
+type ElementIn<V extends Value> = ElementOf<V[number]>;
+```
+
+`ElementIn` 是一个工具类型，用于从 Slate 的 `Value` 类型获取元素类型。
+```
