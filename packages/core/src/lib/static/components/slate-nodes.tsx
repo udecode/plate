@@ -4,73 +4,62 @@ import React from 'react';
 import type { Path, TElement, TText } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 
-import { useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
 
 import type {
   AnyPluginConfig,
+  AnySlatePlugin,
   PluginConfig,
+  SlatePluginContext,
+} from '../../plugin';
+import type {
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
-} from '../../lib';
-import type { AnyPlatePlugin, PlatePluginContext } from '../plugin';
-
-import { useEditorMounted } from '../stores';
+} from '../../types';
 
 export const useNodeAttributes = (props: any, ref?: any) => {
   return {
     ...props.attributes,
     className:
       clsx((props.attributes as any).className, props.className) || undefined,
-    ref: useComposedRef(ref, props.attributes.ref),
+    ref,
     style: { ...(props.attributes as any).style, ...props.style },
   };
 };
 
-export type PlateElementProps<
+export type SlateElementProps<
   N extends TElement = TElement,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'div',
-> = PlateNodeProps<C> &
+> = SlateNodeProps<C> &
   RenderElementProps<N, T> & {
     path: Path;
     as?: T;
   };
 
-export type PlateNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  PlatePluginContext<C> & {
+export type SlateNodeProps<C extends AnyPluginConfig = PluginConfig> =
+  SlatePluginContext<C> & {
     attributes?: AnyObject;
     className?: string;
     style?: React.CSSProperties;
   };
 
-export const PlateElement = React.forwardRef(function PlateElement<
+export const SlateElement = React.forwardRef(function SlateElement<
   N extends TElement = TElement,
-  P extends AnyPlatePlugin = AnyPlatePlugin,
+  P extends AnySlatePlugin = AnySlatePlugin,
   T extends keyof HTMLElementTagNameMap = 'div',
 >(
-  { as: Tag = 'div' as T, children, ...props }: PlateElementProps<N, P, T>,
+  { as: Tag = 'div' as T, children, ...props }: SlateElementProps<N, P, T>,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
   const attributes = useNodeAttributes(props, ref);
 
-  const mounted = useEditorMounted();
-  const block = React.useMemo(
-    () =>
-      mounted &&
-      !!props.element.id &&
-      !!props.editor.api.isBlock(props.element),
-    [props.element, props.editor, mounted]
-  );
+  const block = !!props.element.id && !!props.editor.api.isBlock(props.element);
 
-  const belowRootComponents = React.useMemo(
-    () =>
-      props.editor?.pluginList
-        .map((plugin) => plugin.render.belowRootNodes!)
-        .filter(Boolean),
-    [props.editor?.pluginList]
-  );
+  const belowRootComponents = props.editor?.pluginList
+    .map((plugin) => plugin.render.belowRootNodes!)
+    .filter(Boolean);
 
   return (
     <Tag
@@ -87,23 +76,23 @@ export const PlateElement = React.forwardRef(function PlateElement<
     >
       {children}
 
-      {belowRootComponents?.map((Component, index) => (
+      {belowRootComponents?.map((Component: any, index: number) => (
         <Component key={index} {...(props as any)} />
       ))}
     </Tag>
   );
 }) as <T extends keyof HTMLElementTagNameMap = 'div'>(
-  props: PlateElementProps<TElement, AnyPlatePlugin, T> &
+  props: SlateElementProps<TElement, AnySlatePlugin, T> &
     React.RefAttributes<HTMLDivElement>
 ) => React.ReactElement<any>;
 
-export type PlateTextProps<
+export type SlateTextProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
-> = PlateNodeProps<C> & RenderTextProps<N, T> & { as?: T };
+> = SlateNodeProps<C> & RenderTextProps<N, T> & { as?: T };
 
-export const PlateText = React.forwardRef<HTMLSpanElement, PlateTextProps>(
+export const SlateText = React.forwardRef<HTMLSpanElement, SlateTextProps>(
   ({ as: Tag = 'span', children, ...props }, ref) => {
     const attributes = useNodeAttributes(props, ref);
 
@@ -111,21 +100,21 @@ export const PlateText = React.forwardRef<HTMLSpanElement, PlateTextProps>(
   }
 ) as <
   N extends TText = TText,
-  P extends AnyPlatePlugin = AnyPlatePlugin,
+  P extends AnySlatePlugin = AnySlatePlugin,
   T extends keyof HTMLElementTagNameMap = 'span',
 >({
   className,
   ...props
-}: PlateTextProps<N, P, T> &
+}: SlateTextProps<N, P, T> &
   React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>;
 
-export type PlateLeafProps<
+export type SlateLeafProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
-> = PlateNodeProps<C> & RenderLeafProps<N, T> & { as?: T };
+> = SlateNodeProps<C> & RenderLeafProps<N, T> & { as?: T };
 
-export const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
+export const SlateLeaf = React.forwardRef<HTMLSpanElement, SlateLeafProps>(
   ({ as: Tag = 'span', children, ...props }, ref) => {
     const attributes = useNodeAttributes(props, ref);
 
@@ -133,10 +122,10 @@ export const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
   }
 ) as <
   N extends TText = TText,
-  P extends AnyPlatePlugin = AnyPlatePlugin,
+  P extends AnySlatePlugin = AnySlatePlugin,
   T extends keyof HTMLElementTagNameMap = 'span',
 >({
   className,
   ...props
-}: PlateLeafProps<N, P, T> &
+}: SlateLeafProps<N, P, T> &
   React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>;

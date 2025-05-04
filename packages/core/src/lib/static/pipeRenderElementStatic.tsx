@@ -3,11 +3,12 @@ import React from 'react';
 import type { SlateEditor } from '../editor';
 import type { NodeComponents } from '../plugin';
 
-import { SlateElement } from './components/SlateElement';
+import { SlateElement } from './components/slate-nodes';
 import {
   type SlateRenderElement,
   pluginRenderElementStatic,
 } from './pluginRenderElementStatic';
+import { getRenderNodeStaticProps } from './utils';
 
 export const pipeRenderElementStatic = (
   editor: SlateEditor,
@@ -43,10 +44,11 @@ export const pipeRenderElementStatic = (
       return renderElementProp(props);
     }
 
-    return (
-      <SlateElement element={props.element} {...(props.attributes as any)}>
-        {props.children}
-      </SlateElement>
-    );
+    const ctxProps = getRenderNodeStaticProps({
+      editor,
+      props: { ...props } as any,
+    }) as any;
+
+    return <SlateElement {...ctxProps}>{props.children}</SlateElement>;
   };
 };

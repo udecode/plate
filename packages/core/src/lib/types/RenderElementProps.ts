@@ -14,7 +14,7 @@ export interface RenderElementProps<
     'data-slate-inline'?: true;
     'data-slate-void'?: true;
     dir?: 'rtl';
-  } & React.HTMLAttributes<T>;
+  } & React.HTMLAttributes<HTMLElement>;
   children: any;
   element: N;
 }

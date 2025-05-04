@@ -45,15 +45,9 @@ Generic component for rendering an element.
   <APIItem name="children" type="any">
     Necessary for rendering the node children.
   </APIItem>
-  <APIItem name="elementToAttributes" type="(element: N) => any" optional>
-    Get HTML attributes from Slate element. An alternative to `PlatePlugin.props`.
-  </APIItem>
   <APIItem name="as" type="React.ElementType" optional>
     The component type to render as.
     - **Default:** `'div'`
-  </APIItem>
-  <APIItem name="asChild" type="boolean" optional>
-    If true, merges its props onto its immediate child.
   </APIItem>
 </APIProps>
 </API>
@@ -90,15 +84,9 @@ Generic component for rendering a leaf.
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="leafToAttributes" type="(leaf: N) => any" optional>
-    Get HTML attributes from Slate leaf. An alternative to `PlatePlugin.props`.
-  </APIItem>
   <APIItem name="as" type="React.ElementType" optional>
     The component type to render as.
     - **Default:** `'span'`
-  </APIItem>
-  <APIItem name="asChild" type="boolean" optional>
-    If true, merges its props onto its immediate child.
   </APIItem>
 </APIProps>
 </API>
@@ -124,15 +112,9 @@ Generic component for rendering text.
   <APIItem name="children" type="any">
     Necessary for rendering the node children.
   </APIItem>
-  <APIItem name="textToAttributes" type="(text: T) => any" optional>
-    Get HTML attributes from Slate text. An alternative to `PlatePlugin.props`.
-  </APIItem>
   <APIItem name="as" type="React.ElementType" optional>
     The component type to render as.
     - **Default:** `'span'`
-  </APIItem>
-  <APIItem name="asChild" type="boolean" optional>
-    If true, merges its props onto its immediate child.
   </APIItem>
 </APIProps>
 </API>
