@@ -5,12 +5,8 @@
   "title": "Indent Todo Marker",
   "author": "udecode (https://platejs.org)",
   "description": "A checkbox marker for interactive todo lists.",
-  "dependencies": [
-    "@udecode/plate-indent-list"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/checkbox.json"
-  ],
+  "dependencies": ["@udecode/plate-indent-list"],
+  "registryDependencies": ["https://platejs.org/r/checkbox.json"],
   "files": [
     {
       "path": "plate-ui/indent-todo-marker.tsx",
@@ -34,8 +30,6 @@
         "route": "https://pro.platejs.org/docs/components/indent-todo-marker"
       }
     ],
-    "examples": [
-      "list-demo"
-    ]
+    "examples": ["list-demo"]
   }
 }

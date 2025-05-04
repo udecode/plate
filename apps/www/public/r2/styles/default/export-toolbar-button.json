@@ -5,13 +5,8 @@
   "title": "Export Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "A toolbar button to export editor content as PDF.",
-  "dependencies": [
-    "html2canvas-pro",
-    "pdf-lib"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
+  "dependencies": ["html2canvas-pro", "pdf-lib"],
+  "registryDependencies": ["https://platejs.org/r/toolbar.json"],
   "files": [
     {
       "path": "plate-ui/export-toolbar-button.tsx",
@@ -27,9 +22,7 @@
         "title": "Export"
       }
     ],
-    "examples": [
-      "basic-nodes-demo"
-    ],
+    "examples": ["basic-nodes-demo"],
     "label": "New"
   }
 }

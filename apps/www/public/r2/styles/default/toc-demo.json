@@ -5,9 +5,7 @@
   "title": "Table of Contents",
   "author": "udecode (https://platejs.org)",
   "description": "Dynamic TOC with in-document element for easy navigation.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toc-plugin.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/toc-plugin.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

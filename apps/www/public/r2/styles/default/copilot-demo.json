@@ -5,9 +5,7 @@
   "author": "udecode (https://platejs.org)",
   "description": "Renders AI ghost text suggestions at the cursor position.",
   "dependencies": ["@udecode/plate-ai", "@udecode/plate-markdown"],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/copilot-plugins.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/copilot-plugins.json"],
   "files": [
     {
       "path": "examples/copilot-demo.tsx",

@@ -13,9 +13,9 @@
     "@udecode/plate-selection"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/calendar.json",
-    "https://platejs.org/r/styles/default/context-menu.json",
-    "https://platejs.org/r/styles/default/use-is-touch-device.json"
+    "https://platejs.org/r/calendar.json",
+    "https://platejs.org/r/context-menu.json",
+    "https://platejs.org/r/use-is-touch-device.json"
   ],
   "files": [
     {
@@ -34,10 +34,7 @@
         "route": "https://pro.platejs.org/docs/components/block-context-menu"
       }
     ],
-    "examples": [
-      "block-menu-demo",
-      "block-menu-pro"
-    ],
+    "examples": ["block-menu-demo", "block-menu-pro"],
     "label": "New"
   }
 }

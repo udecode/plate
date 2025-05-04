@@ -6,9 +6,9 @@
   "author": "udecode (https://platejs.org)",
   "description": "A form with a select editor component for managing labels.",
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/form.json",
-    "https://platejs.org/r/styles/default/button.json",
-    "https://platejs.org/r/styles/default/select-editor.json"
+    "https://platejs.org/r/form.json",
+    "https://platejs.org/r/button.json",
+    "https://platejs.org/r/select-editor.json"
   ],
   "files": [
     {

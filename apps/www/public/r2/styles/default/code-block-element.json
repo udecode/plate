@@ -5,13 +5,8 @@
   "title": "Code Block Element",
   "author": "udecode (https://platejs.org)",
   "description": "A code block with syntax highlighting and language selection.",
-  "dependencies": [
-    "@udecode/plate-code-block",
-    "lowlight"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/command.json"
-  ],
+  "dependencies": ["@udecode/plate-code-block", "lowlight"],
+  "registryDependencies": ["https://platejs.org/r/command.json"],
   "files": [
     {
       "path": "plate-ui/code-block-element.tsx",
@@ -41,8 +36,6 @@
         "route": "https://pro.platejs.org/docs/components/code-block-element"
       }
     ],
-    "examples": [
-      "basic-elements-demo"
-    ]
+    "examples": ["basic-elements-demo"]
   }
 }

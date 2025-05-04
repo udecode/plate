@@ -12,8 +12,8 @@
     "@udecode/plate-toggle"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/indent-fire-marker.json",
-    "https://platejs.org/r/styles/default/indent-todo-marker.json"
+    "https://platejs.org/r/indent-fire-marker.json",
+    "https://platejs.org/r/indent-todo-marker.json"
   ],
   "files": [
     {

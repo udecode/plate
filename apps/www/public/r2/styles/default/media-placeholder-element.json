@@ -5,13 +5,10 @@
   "title": "Media Placeholder Element",
   "author": "udecode (https://platejs.org)",
   "description": "A placeholder for media upload progress indication.",
-  "dependencies": [
-    "@udecode/plate-media",
-    "use-file-picker"
-  ],
+  "dependencies": ["@udecode/plate-media", "use-file-picker"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/spinner.json",
-    "https://platejs.org/r/styles/default/uploadthing.json"
+    "https://platejs.org/r/spinner.json",
+    "https://platejs.org/r/uploadthing.json"
   ],
   "files": [
     {
@@ -30,9 +27,6 @@
         "route": "https://pro.platejs.org/docs/components/media-placeholder-element"
       }
     ],
-    "examples": [
-      "media-demo",
-      "upload-pro"
-    ]
+    "examples": ["media-demo", "upload-pro"]
   }
 }

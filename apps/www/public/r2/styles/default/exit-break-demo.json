@@ -5,9 +5,7 @@
   "title": "Exit Break",
   "author": "udecode (https://platejs.org)",
   "description": "Exit a large block using a shortcut.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/exit-break-plugin.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/exit-break-plugin.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

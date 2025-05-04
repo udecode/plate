@@ -5,12 +5,8 @@
   "title": "Alert Dialog",
   "author": "udecode (https://platejs.org)",
   "description": "A modal dialog that interrupts the user with important content and expects a response.",
-  "dependencies": [
-    "@radix-ui/react-alert-dialog"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/button.json"
-  ],
+  "dependencies": ["@radix-ui/react-alert-dialog"],
+  "registryDependencies": ["https://platejs.org/r/button.json"],
   "files": [
     {
       "path": "plate-ui/alert-dialog.tsx",

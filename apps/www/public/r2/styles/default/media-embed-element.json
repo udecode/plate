@@ -12,9 +12,9 @@
     "react-lite-youtube-embed"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/media-popover.json",
-    "https://platejs.org/r/styles/default/caption.json",
-    "https://platejs.org/r/styles/default/resizable.json"
+    "https://platejs.org/r/media-popover.json",
+    "https://platejs.org/r/caption.json",
+    "https://platejs.org/r/resizable.json"
   ],
   "files": [
     {
@@ -36,9 +36,6 @@
         "route": "https://pro.platejs.org/docs/components/media-embed-element"
       }
     ],
-    "examples": [
-      "media-demo",
-      "upload-pro"
-    ]
+    "examples": ["media-demo", "upload-pro"]
   }
 }

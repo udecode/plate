@@ -4,9 +4,7 @@
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
   "description": "Hyperlinks with toolbar insertion and URL pasting support.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/link-plugin.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/link-plugin.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

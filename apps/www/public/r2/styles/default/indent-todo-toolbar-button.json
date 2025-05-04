@@ -5,12 +5,8 @@
   "title": "Indent Todo Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "A toolbar control for creating todo list items.",
-  "dependencies": [
-    "@udecode/plate-indent-list"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
+  "dependencies": ["@udecode/plate-indent-list"],
+  "registryDependencies": ["https://platejs.org/r/toolbar.json"],
   "files": [
     {
       "path": "plate-ui/indent-todo-toolbar-button.tsx",
@@ -25,8 +21,6 @@
         "route": "/docs/indent-list"
       }
     ],
-    "examples": [
-      "list-demo"
-    ]
+    "examples": ["list-demo"]
   }
 }

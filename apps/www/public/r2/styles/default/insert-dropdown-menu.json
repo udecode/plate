@@ -22,7 +22,7 @@
   "registryDependencies": [
     "dropdown-menu",
     "toolbar",
-    "https://platejs.org/r/styles/default/transforms.json"
+    "https://platejs.org/r/transforms.json"
   ],
   "files": [
     {
@@ -33,8 +33,6 @@
     }
   ],
   "meta": {
-    "examples": [
-      "basic-nodes-demo"
-    ]
+    "examples": ["basic-nodes-demo"]
   }
 }

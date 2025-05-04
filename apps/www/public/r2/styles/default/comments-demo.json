@@ -5,8 +5,8 @@
   "author": "udecode (https://platejs.org)",
   "description": "Adding and displaying comments within content.",
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/comments-plugin.json",
-    "https://platejs.org/r/styles/default/discussion-plugin.json"
+    "https://platejs.org/r/comments-plugin.json",
+    "https://platejs.org/r/discussion-plugin.json"
   ],
   "files": [
     {

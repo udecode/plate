@@ -5,9 +5,7 @@
   "title": "Cursor Overlay",
   "author": "udecode (https://platejs.org)",
   "description": "Visual indicator for cursor position within the editor.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/cursor-overlay-plugin.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/cursor-overlay-plugin.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

@@ -5,12 +5,10 @@
   "title": "Font Size Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "A toolbar control for adjusting font size.",
-  "dependencies": [
-    "@udecode/plate-font"
-  ],
+  "dependencies": ["@udecode/plate-font"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/popover.json",
-    "https://platejs.org/r/styles/default/toolbar.json"
+    "https://platejs.org/r/popover.json",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {
@@ -26,8 +24,6 @@
         "route": "/docs/font"
       }
     ],
-    "examples": [
-      "list-demo"
-    ]
+    "examples": ["list-demo"]
   }
 }

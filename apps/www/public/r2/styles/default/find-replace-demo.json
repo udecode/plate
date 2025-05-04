@@ -5,9 +5,9 @@
   "author": "udecode (https://platejs.org)",
   "description": "Find and replace functionality in text.",
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/fixed-toolbar.json",
-    "https://platejs.org/r/styles/default/input.json",
-    "https://platejs.org/r/styles/default/search-highlight-leaf.json"
+    "https://platejs.org/r/fixed-toolbar.json",
+    "https://platejs.org/r/input.json",
+    "https://platejs.org/r/search-highlight-leaf.json"
   ],
   "files": [
     {

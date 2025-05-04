@@ -5,12 +5,8 @@
   "title": "Mention Element",
   "author": "udecode (https://platejs.org)",
   "description": "A mention element with customizable prefix and label.",
-  "dependencies": [
-    "@udecode/plate-mention"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/use-mounted.json"
-  ],
+  "dependencies": ["@udecode/plate-mention"],
+  "registryDependencies": ["https://platejs.org/r/use-mounted.json"],
   "files": [
     {
       "path": "plate-ui/mention-element.tsx",
@@ -34,8 +30,6 @@
         "route": "https://pro.platejs.org/docs/components/mention-element"
       }
     ],
-    "examples": [
-      "mention-demo"
-    ]
+    "examples": ["mention-demo"]
   }
 }

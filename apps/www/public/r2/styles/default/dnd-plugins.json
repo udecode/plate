@@ -8,9 +8,7 @@
     "@udecode/plate-media",
     "@udecode/plate-node-id"
   ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/draggable.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/draggable.json"],
   "files": [
     {
       "path": "components/editor/plugins/dnd-plugins.tsx",

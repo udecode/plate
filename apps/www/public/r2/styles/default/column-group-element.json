@@ -5,12 +5,10 @@
   "title": "Column Group Element",
   "author": "udecode (https://platejs.org)",
   "description": "A resizable column component for layout.",
-  "dependencies": [
-    "@udecode/plate-layout"
-  ],
+  "dependencies": ["@udecode/plate-layout"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/command.json",
-    "https://platejs.org/r/styles/default/resizable.json"
+    "https://platejs.org/r/command.json",
+    "https://platejs.org/r/resizable.json"
   ],
   "files": [
     {
@@ -35,8 +33,6 @@
         "route": "https://pro.platejs.org/docs/components/column-group-element"
       }
     ],
-    "examples": [
-      "column-demo"
-    ]
+    "examples": ["column-demo"]
   }
 }

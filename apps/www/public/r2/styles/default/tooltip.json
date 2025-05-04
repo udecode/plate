@@ -5,12 +5,8 @@
   "title": "Tooltip",
   "author": "udecode (https://platejs.org)",
   "description": "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-  "dependencies": [
-    "@radix-ui/react-tooltip"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/button.json"
-  ],
+  "dependencies": ["@radix-ui/react-tooltip"],
+  "registryDependencies": ["https://platejs.org/r/button.json"],
   "files": [
     {
       "path": "plate-ui/tooltip.tsx",

@@ -3,12 +3,8 @@
   "name": "cursor-overlay-plugin",
   "type": "registry:component",
   "author": "udecode (https://platejs.org)",
-  "dependencies": [
-    "@udecode/plate-selection"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/cursor-overlay.json"
-  ],
+  "dependencies": ["@udecode/plate-selection"],
+  "registryDependencies": ["https://platejs.org/r/cursor-overlay.json"],
   "files": [
     {
       "path": "components/editor/plugins/cursor-overlay-plugin.tsx",

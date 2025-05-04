@@ -63,7 +63,7 @@ Each object within the `items` array of `registry.json` defines a single registr
 - `dependencies` (Optional): Array of npm package dependencies (e.g., `"react-day-picker@8.10.1"`)
 - `registryDependencies` (Optional): Array of other registry items required by this item:
   - Reference items from the same registry by name (e.g., `"button"`)
-  - Reference remote registry items by URL (e.g., `"https://platejs.org/r/styles/default/button.json"`)
+  - Reference remote registry items by URL (e.g., `"https://platejs.org/r/button.json"`)
 - `docs` (Optional): Use `docs` to show custom documentation or message when installing your registry item via the CLI.
 - `categories` (Optional): Array of category names for grouping items (e.g., ["Editors"])
 - `meta` (Optional): Additional metadata including:
@@ -183,9 +183,9 @@ Each object within the `items` array of `registry.json` defines a single registr
     }
   ],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/api-ai.json",
-    "https://platejs.org/r/styles/default/editor.json",
-    "https://platejs.org/r/styles/default/ghost-text.json"
+    "https://platejs.org/r/api-ai.json",
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/ghost-text.json"
   ]
 }
 ```
@@ -278,8 +278,8 @@ Example of adding an AI Editor block:
     }
   ],
   registryDependencies: [
-    "https://platejs.org/r/styles/default/api-ai.json",
-    "https://platejs.org/r/styles/default/editor.json",
+    "https://platejs.org/r/api-ai.json",
+    "https://platejs.org/r/editor.json",
     // ... other registry dependencies
   ]
 }
@@ -323,8 +323,8 @@ Example of adding an AI plugin component:
     }
   ],
   registryDependencies: [
-    "https://platejs.org/r/styles/default/basic-nodes-plugins.json",
-    "https://platejs.org/r/styles/default/block-selection-plugins.json",
+    "https://platejs.org/r/basic-nodes-plugins.json",
+    "https://platejs.org/r/block-selection-plugins.json",
     // ... other plugin dependencies
   ]
 }

@@ -3,9 +3,7 @@
   "name": "markdown-to-slate-demo",
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/use-debounce.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/use-debounce.json"],
   "files": [
     {
       "path": "examples/markdown-to-slate-demo.tsx",

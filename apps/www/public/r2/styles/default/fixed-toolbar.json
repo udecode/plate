@@ -6,9 +6,7 @@
   "author": "udecode (https://platejs.org)",
   "description": "A fixed toolbar that stays at the top of the editor.",
   "dependencies": [],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/toolbar.json"],
   "files": [
     {
       "path": "plate-ui/fixed-toolbar.tsx",
@@ -18,8 +16,6 @@
     }
   ],
   "meta": {
-    "examples": [
-      "basic-nodes-demo"
-    ]
+    "examples": ["basic-nodes-demo"]
   }
 }

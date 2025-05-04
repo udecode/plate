@@ -3,9 +3,7 @@
   "name": "indent-demo",
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/indent-list-plugins.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/indent-list-plugins.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

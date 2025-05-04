@@ -5,9 +5,7 @@
   "title": "Soft Break",
   "author": "udecode (https://platejs.org)",
   "description": "Insert line breaks within a block of text without starting a new block.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/soft-break-plugin.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/soft-break-plugin.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

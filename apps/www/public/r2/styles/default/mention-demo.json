@@ -4,9 +4,7 @@
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
   "description": "Mention functionality for referencing users or entities.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/mention-plugin.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/mention-plugin.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

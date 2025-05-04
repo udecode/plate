@@ -4,7 +4,7 @@ export const hooks: Registry['items'] = [
   {
     files: [
       {
-        path: 'registry/hooks/use-debounce.ts',
+        path: 'hooks/use-debounce.ts',
         type: 'registry:hook',
       },
     ],
@@ -14,7 +14,7 @@ export const hooks: Registry['items'] = [
   {
     files: [
       {
-        path: 'registry/hooks/use-mounted.ts',
+        path: 'hooks/use-mounted.ts',
         type: 'registry:hook',
       },
     ],
@@ -24,7 +24,7 @@ export const hooks: Registry['items'] = [
   {
     files: [
       {
-        path: 'registry/hooks/use-is-touch-device.ts',
+        path: 'hooks/use-is-touch-device.ts',
         type: 'registry:hook',
       },
     ],

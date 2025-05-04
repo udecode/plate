@@ -4,9 +4,7 @@
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
   "description": "Turn any block into a list item.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/indent-list-plugins.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/indent-list-plugins.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

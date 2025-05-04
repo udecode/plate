@@ -5,12 +5,8 @@
   "title": "Indent Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "A toolbar control for block indentation.",
-  "dependencies": [
-    "@udecode/plate-indent"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
+  "dependencies": ["@udecode/plate-indent"],
+  "registryDependencies": ["https://platejs.org/r/toolbar.json"],
   "files": [
     {
       "path": "plate-ui/indent-toolbar-button.tsx",
@@ -25,8 +21,6 @@
         "route": "/docs/indent"
       }
     ],
-    "examples": [
-      "indent-demo"
-    ]
+    "examples": ["indent-demo"]
   }
 }

@@ -4,9 +4,7 @@
   "type": "registry:component",
   "author": "udecode (https://platejs.org)",
   "dependencies": [],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/block-discussion.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/block-discussion.json"],
   "files": [
     {
       "path": "components/editor/plugins/discussion-plugin.tsx",

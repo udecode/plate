@@ -5,14 +5,11 @@
   "title": "Image Element",
   "author": "udecode (https://platejs.org)",
   "description": "Image element with lazy loading, resizing capabilities, and optional caption.",
-  "dependencies": [
-    "@udecode/plate-media",
-    "@udecode/plate-resizable"
-  ],
+  "dependencies": ["@udecode/plate-media", "@udecode/plate-resizable"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/media-popover.json",
-    "https://platejs.org/r/styles/default/caption.json",
-    "https://platejs.org/r/styles/default/resizable.json"
+    "https://platejs.org/r/media-popover.json",
+    "https://platejs.org/r/caption.json",
+    "https://platejs.org/r/resizable.json"
   ],
   "files": [
     {
@@ -40,9 +37,6 @@
         "route": "https://pro.platejs.org/docs/components/image-element"
       }
     ],
-    "examples": [
-      "media-demo",
-      "media-toolbar-pro"
-    ]
+    "examples": ["media-demo", "media-toolbar-pro"]
   }
 }

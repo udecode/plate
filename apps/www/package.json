@@ -15,8 +15,8 @@
     "lint:debug": "TIMING=1 DEBUG=eslint:cli-engine yarn lint:fix",
     "lint:fix": "yarn p:lint:fix",
     "preview": "next build && next start",
-    "registry:build": "shadcn build",
     "registry:capture": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/capture-registry.mts",
+    "shadcn:build": "shadcn build",
     "start": "next start",
     "typecheck": "yarn prebuild && tsc --noEmit",
     "typecheck:watch": "yarn typecheck --watch"

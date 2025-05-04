@@ -5,12 +5,8 @@
   "title": "Todo List Element",
   "author": "udecode (https://platejs.org)",
   "description": "A checkbox list element with interactive todo items.",
-  "dependencies": [
-    "@udecode/plate-list"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/checkbox.json"
-  ],
+  "dependencies": ["@udecode/plate-list"],
+  "registryDependencies": ["https://platejs.org/r/checkbox.json"],
   "files": [
     {
       "path": "plate-ui/todo-list-element.tsx",
@@ -25,8 +21,6 @@
         "route": "/docs/list"
       }
     ],
-    "examples": [
-      "list-demo"
-    ]
+    "examples": ["list-demo"]
   }
 }

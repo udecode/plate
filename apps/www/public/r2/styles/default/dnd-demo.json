@@ -5,9 +5,7 @@
   "title": "Drag & Drop",
   "author": "udecode (https://platejs.org)",
   "description": "Implements draggable functionality for editor blocks, including drag handles and drop indicators.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/dnd-plugins.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/dnd-plugins.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

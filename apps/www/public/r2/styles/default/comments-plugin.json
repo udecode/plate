@@ -3,12 +3,8 @@
   "name": "comments-plugin",
   "type": "registry:component",
   "author": "udecode (https://platejs.org)",
-  "dependencies": [
-    "@udecode/plate-comments"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/discussion-plugin.json"
-  ],
+  "dependencies": ["@udecode/plate-comments"],
+  "registryDependencies": ["https://platejs.org/r/discussion-plugin.json"],
   "files": [
     {
       "path": "components/editor/plugins/comments-plugin.tsx",

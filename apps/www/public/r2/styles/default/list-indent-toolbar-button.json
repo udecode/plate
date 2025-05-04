@@ -5,12 +5,8 @@
   "title": "List Indent Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "A toolbar control for indenting lists.",
-  "dependencies": [
-    "@udecode/plate-list"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
+  "dependencies": ["@udecode/plate-list"],
+  "registryDependencies": ["https://platejs.org/r/toolbar.json"],
   "files": [
     {
       "path": "plate-ui/list-indent-toolbar-button.tsx",
@@ -25,8 +21,6 @@
         "route": "/docs/list"
       }
     ],
-    "examples": [
-      "list-demo"
-    ]
+    "examples": ["list-demo"]
   }
 }

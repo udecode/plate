@@ -5,12 +5,10 @@
   "title": "Import Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "A toolbar button to import editor content from a file.",
-  "dependencies": [
-    "use-file-picker"
-  ],
+  "dependencies": ["use-file-picker"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/dropdown-menu.json",
-    "https://platejs.org/r/styles/default/toolbar.json"
+    "https://platejs.org/r/dropdown-menu.json",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {
@@ -27,9 +25,7 @@
         "title": "Import"
       }
     ],
-    "examples": [
-      "basic-nodes-demo"
-    ],
+    "examples": ["basic-nodes-demo"],
     "label": "New"
   }
 }

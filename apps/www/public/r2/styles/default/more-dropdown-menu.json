@@ -11,8 +11,8 @@
     "@udecode/plate-kbd"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/dropdown-menu.json",
-    "https://platejs.org/r/styles/default/toolbar.json"
+    "https://platejs.org/r/dropdown-menu.json",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {
@@ -28,9 +28,6 @@
         "route": "https://pro.platejs.org/docs/components/more-dropdown-menu"
       }
     ],
-    "examples": [
-      "basic-marks-demo",
-      "basic-nodes-pro"
-    ]
+    "examples": ["basic-marks-demo", "basic-nodes-pro"]
   }
 }

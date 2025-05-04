@@ -3,12 +3,8 @@
   "name": "suggestion-plugin",
   "type": "registry:component",
   "author": "udecode (https://platejs.org)",
-  "dependencies": [
-    "@udecode/plate-suggestion"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/discussion-plugin.json"
-  ],
+  "dependencies": ["@udecode/plate-suggestion"],
+  "registryDependencies": ["https://platejs.org/r/discussion-plugin.json"],
   "files": [
     {
       "path": "components/editor/plugins/suggestion-plugin.tsx",

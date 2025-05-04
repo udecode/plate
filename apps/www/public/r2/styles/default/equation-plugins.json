@@ -3,12 +3,10 @@
   "name": "equation-plugins",
   "type": "registry:component",
   "author": "udecode (https://platejs.org)",
-  "dependencies": [
-    "@udecode/plate-math"
-  ],
+  "dependencies": ["@udecode/plate-math"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/equation-element.json",
-    "https://platejs.org/r/styles/default/inline-equation-toolbar-button.json"
+    "https://platejs.org/r/equation-element.json",
+    "https://platejs.org/r/inline-equation-toolbar-button.json"
   ],
   "files": [
     {

@@ -5,12 +5,8 @@
   "title": "Suggestion Leaf",
   "author": "udecode (https://platejs.org)",
   "description": "A text component for suggestion.",
-  "dependencies": [
-    "@udecode/plate-suggestion"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/suggestion-plugin.json"
-  ],
+  "dependencies": ["@udecode/plate-suggestion"],
+  "registryDependencies": ["https://platejs.org/r/suggestion-plugin.json"],
   "files": [
     {
       "path": "plate-ui/suggestion-leaf.tsx",
@@ -31,9 +27,6 @@
         "route": "/docs/suggestion"
       }
     ],
-    "examples": [
-      "comments-demo",
-      "comments-pro"
-    ]
+    "examples": ["comments-demo", "comments-pro"]
   }
 }

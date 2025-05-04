@@ -5,13 +5,8 @@
   "title": "Column Element",
   "author": "udecode (https://platejs.org)",
   "description": "A resizable column component for layout.",
-  "dependencies": [
-    "@udecode/plate-layout",
-    "@udecode/plate-resizable"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/resizable.json"
-  ],
+  "dependencies": ["@udecode/plate-layout", "@udecode/plate-resizable"],
+  "registryDependencies": ["https://platejs.org/r/resizable.json"],
   "files": [
     {
       "path": "plate-ui/column-element.tsx",
@@ -35,8 +30,6 @@
         "route": "https://pro.platejs.org/docs/components/column-element"
       }
     ],
-    "examples": [
-      "column-demo"
-    ]
+    "examples": ["column-demo"]
   }
 }

@@ -5,15 +5,12 @@
   "title": "Link Floating Toolbar",
   "author": "udecode (https://platejs.org)",
   "description": "A floating interface for link editing.",
-  "dependencies": [
-    "@udecode/plate-link",
-    "@udecode/plate-floating"
-  ],
+  "dependencies": ["@udecode/plate-link", "@udecode/plate-floating"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/button.json",
-    "https://platejs.org/r/styles/default/input.json",
-    "https://platejs.org/r/styles/default/popover.json",
-    "https://platejs.org/r/styles/default/separator.json"
+    "https://platejs.org/r/button.json",
+    "https://platejs.org/r/input.json",
+    "https://platejs.org/r/popover.json",
+    "https://platejs.org/r/separator.json"
   ],
   "files": [
     {
@@ -35,9 +32,6 @@
         "route": "https://pro.platejs.org/docs/components/link-floating-toolbar"
       }
     ],
-    "examples": [
-      "link-demo",
-      "link-pro"
-    ]
+    "examples": ["link-demo", "link-pro"]
   }
 }

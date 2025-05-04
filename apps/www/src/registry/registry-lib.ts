@@ -10,7 +10,7 @@ export const lib: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/lib/uploadthing.ts',
+        path: 'lib/uploadthing.ts',
         type: 'registry:lib',
       },
     ],

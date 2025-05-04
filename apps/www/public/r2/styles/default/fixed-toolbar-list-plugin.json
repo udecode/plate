@@ -5,8 +5,8 @@
   "author": "udecode (https://platejs.org)",
   "dependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/fixed-toolbar.json",
-    "https://platejs.org/r/styles/default/fixed-toolbar-buttons.json"
+    "https://platejs.org/r/fixed-toolbar.json",
+    "https://platejs.org/r/fixed-toolbar-buttons.json"
   ],
   "files": [
     {

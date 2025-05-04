@@ -5,8 +5,8 @@
   "author": "udecode (https://platejs.org)",
   "dependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/floating-toolbar.json",
-    "https://platejs.org/r/styles/default/floating-toolbar-buttons.json"
+    "https://platejs.org/r/floating-toolbar.json",
+    "https://platejs.org/r/floating-toolbar-buttons.json"
   ],
   "files": [
     {

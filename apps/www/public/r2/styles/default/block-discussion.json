@@ -5,25 +5,22 @@
   "title": "Block Discussion",
   "author": "udecode (https://platejs.org)",
   "description": "A popover interface for managing discussions: comments, replies, suggestions.",
-  "dependencies": [
-    "@udecode/plate-comments",
-    "date-fns"
-  ],
+  "dependencies": ["@udecode/plate-comments", "date-fns"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/suggestion-plugin.json",
-    "https://platejs.org/r/styles/default/button.json",
-    "https://platejs.org/r/styles/default/popover.json",
-    "https://platejs.org/r/styles/default/avatar.json",
-    "https://platejs.org/r/styles/default/dropdown-menu.json",
-    "https://platejs.org/r/styles/default/editor.json",
-    "https://platejs.org/r/styles/default/ai-leaf.json",
-    "https://platejs.org/r/styles/default/avatar.json",
-    "https://platejs.org/r/styles/default/date-element.json",
-    "https://platejs.org/r/styles/default/emoji-input-element.json",
-    "https://platejs.org/r/styles/default/inline-equation-element.json",
-    "https://platejs.org/r/styles/default/link-element.json",
-    "https://platejs.org/r/styles/default/mention-element.json",
-    "https://platejs.org/r/styles/default/mention-input-element.json"
+    "https://platejs.org/r/suggestion-plugin.json",
+    "https://platejs.org/r/button.json",
+    "https://platejs.org/r/popover.json",
+    "https://platejs.org/r/avatar.json",
+    "https://platejs.org/r/dropdown-menu.json",
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/ai-leaf.json",
+    "https://platejs.org/r/avatar.json",
+    "https://platejs.org/r/date-element.json",
+    "https://platejs.org/r/emoji-input-element.json",
+    "https://platejs.org/r/inline-equation-element.json",
+    "https://platejs.org/r/link-element.json",
+    "https://platejs.org/r/mention-element.json",
+    "https://platejs.org/r/mention-input-element.json"
   ],
   "files": [
     {
@@ -60,9 +57,6 @@
         "route": "https://pro.platejs.org/docs/components/block-discussion"
       }
     ],
-    "examples": [
-      "comments-demo",
-      "comments-pro"
-    ]
+    "examples": ["comments-demo", "comments-pro"]
   }
 }

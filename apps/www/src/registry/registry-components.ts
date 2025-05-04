@@ -6,12 +6,12 @@ const plugins: Registry['items'] = [
     dependencies: ['@ai-sdk/openai', 'ai'],
     files: [
       {
-        path: 'registry/app/api/ai/command/route.ts',
+        path: 'app/api/ai/command/route.ts',
         target: 'app/api/ai/command/route.ts',
         type: 'registry:file',
       },
       {
-        path: 'registry/app/api/ai/copilot/route.ts',
+        path: 'app/api/ai/copilot/route.ts',
         target: 'app/api/ai/copilot/route.ts',
         type: 'registry:file',
       },
@@ -24,7 +24,7 @@ const plugins: Registry['items'] = [
     dependencies: ['uploadthing@7.2.0'],
     files: [
       {
-        path: 'registry/app/api/uploadthing/route.ts',
+        path: 'app/api/uploadthing/route.ts',
         target: 'app/api/uploadthing/route.ts',
         type: 'registry:file',
       },
@@ -55,35 +55,35 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/editor-plugins.tsx',
+        path: 'components/editor/plugins/editor-plugins.tsx',
         type: 'registry:component',
       },
     ],
     name: 'editor-plugins',
     registryDependencies: [
-      'https://platejs.org/r/styles/default/ai-plugins.json',
-      'https://platejs.org/r/styles/default/markdown-plugin.json',
-      'https://platejs.org/r/styles/default/basic-nodes-plugins.json',
-      'https://platejs.org/r/styles/default/align-plugin.json',
-      'https://platejs.org/r/styles/default/autoformat-plugin.json',
-      'https://platejs.org/r/styles/default/block-menu-plugins.json',
-      'https://platejs.org/r/styles/default/equation-plugins.json',
-      'https://platejs.org/r/styles/default/cursor-overlay-plugin.json',
-      'https://platejs.org/r/styles/default/comments-plugin.json',
-      'https://platejs.org/r/styles/default/delete-plugins.json',
-      'https://platejs.org/r/styles/default/dnd-plugins.json',
-      'https://platejs.org/r/styles/default/exit-break-plugin.json',
-      'https://platejs.org/r/styles/default/indent-list-plugins.json',
-      'https://platejs.org/r/styles/default/line-height-plugin.json',
-      'https://platejs.org/r/styles/default/link-plugin.json',
-      'https://platejs.org/r/styles/default/media-plugins.json',
-      'https://platejs.org/r/styles/default/mention-plugin.json',
-      'https://platejs.org/r/styles/default/reset-block-type-plugin.json',
-      'https://platejs.org/r/styles/default/skip-mark-plugin.json',
-      'https://platejs.org/r/styles/default/suggestion-plugin.json',
-      'https://platejs.org/r/styles/default/soft-break-plugin.json',
-      'https://platejs.org/r/styles/default/table-plugin.json',
-      'https://platejs.org/r/styles/default/toc-plugin.json',
+      'http://localhost:3000/r/ai-plugins',
+      'http://localhost:3000/r/markdown-plugin',
+      'http://localhost:3000/r/basic-nodes-plugins',
+      'http://localhost:3000/r/align-plugin',
+      'http://localhost:3000/r/autoformat-plugin',
+      'http://localhost:3000/r/block-menu-plugins',
+      'http://localhost:3000/r/equation-plugins',
+      'http://localhost:3000/r/cursor-overlay-plugin',
+      'http://localhost:3000/r/comments-plugin',
+      'http://localhost:3000/r/delete-plugins',
+      'http://localhost:3000/r/dnd-plugins',
+      'http://localhost:3000/r/exit-break-plugin',
+      'http://localhost:3000/r/indent-list-plugins',
+      'http://localhost:3000/r/line-height-plugin',
+      'http://localhost:3000/r/link-plugin',
+      'http://localhost:3000/r/media-plugins',
+      'http://localhost:3000/r/mention-plugin',
+      'http://localhost:3000/r/reset-block-type-plugin',
+      'http://localhost:3000/r/skip-mark-plugin',
+      'http://localhost:3000/r/suggestion-plugin',
+      'http://localhost:3000/r/soft-break-plugin',
+      'http://localhost:3000/r/table-plugin',
+      'http://localhost:3000/r/toc-plugin',
     ],
     type: 'registry:component',
   },
@@ -100,28 +100,28 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/ai-plugins.tsx',
+        path: 'components/editor/plugins/ai-plugins.tsx',
         type: 'registry:component',
       },
     ],
     name: 'ai-plugins',
     registryDependencies: [
-      'https://platejs.org/r/styles/default/basic-nodes-plugins.json',
-      'https://platejs.org/r/styles/default/block-selection-plugins.json',
-      'https://platejs.org/r/styles/default/cursor-overlay-plugin.json',
-      'https://platejs.org/r/styles/default/indent-list-plugins.json',
-      'https://platejs.org/r/styles/default/link-plugin.json',
-      'https://platejs.org/r/styles/default/ai-menu.json',
-      'https://platejs.org/r/styles/default/blockquote-element.json',
-      'https://platejs.org/r/styles/default/code-block-element.json',
-      'https://platejs.org/r/styles/default/code-leaf.json',
-      'https://platejs.org/r/styles/default/code-line-element.json',
-      'https://platejs.org/r/styles/default/code-syntax-leaf.json',
-      'https://platejs.org/r/styles/default/cursor-overlay.json',
-      'https://platejs.org/r/styles/default/heading-element.json',
-      'https://platejs.org/r/styles/default/hr-element.json',
-      'https://platejs.org/r/styles/default/link-element.json',
-      'https://platejs.org/r/styles/default/paragraph-element.json',
+      'http://localhost:3000/r/basic-nodes-plugins',
+      'http://localhost:3000/r/block-selection-plugins',
+      'http://localhost:3000/r/cursor-overlay-plugin',
+      'http://localhost:3000/r/indent-list-plugins',
+      'http://localhost:3000/r/link-plugin',
+      'http://localhost:3000/r/ai-menu',
+      'http://localhost:3000/r/blockquote-element',
+      'http://localhost:3000/r/code-block-element',
+      'http://localhost:3000/r/code-leaf',
+      'http://localhost:3000/r/code-line-element',
+      'http://localhost:3000/r/code-syntax-leaf',
+      'http://localhost:3000/r/cursor-overlay',
+      'http://localhost:3000/r/heading-element',
+      'http://localhost:3000/r/hr-element',
+      'http://localhost:3000/r/link-element',
+      'http://localhost:3000/r/paragraph-element',
     ],
     type: 'registry:component',
   },
@@ -129,14 +129,14 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-math'],
     files: [
       {
-        path: 'registry/components/editor/plugins/equation-plugins.ts',
+        path: 'components/editor/plugins/equation-plugins.ts',
         type: 'registry:component',
       },
     ],
     name: 'equation-plugins',
     registryDependencies: [
-      'https://platejs.org/r/styles/default/equation-element.json',
-      'https://platejs.org/r/styles/default/inline-equation-toolbar-button.json',
+      'http://localhost:3000/r/equation-element',
+      'http://localhost:3000/r/inline-equation-toolbar-button',
     ],
     type: 'registry:component',
   },
@@ -148,7 +148,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/align-plugin.ts',
+        path: 'components/editor/plugins/align-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -169,7 +169,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/autoformat-plugin.ts',
+        path: 'components/editor/plugins/autoformat-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -190,7 +190,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/autoformat-list-plugin.ts',
+        path: 'components/editor/plugins/autoformat-list-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -207,7 +207,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/basic-nodes-plugins.tsx',
+        path: 'components/editor/plugins/basic-nodes-plugins.tsx',
         type: 'registry:component',
       },
     ],
@@ -218,28 +218,26 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-selection'],
     files: [
       {
-        path: 'registry/components/editor/plugins/block-selection-plugins.tsx',
+        path: 'components/editor/plugins/block-selection-plugins.tsx',
         type: 'registry:component',
       },
     ],
     name: 'block-selection-plugins',
-    registryDependencies: [
-      'https://platejs.org/r/styles/default/block-selection.json',
-    ],
+    registryDependencies: ['http://localhost:3000/r/block-selection'],
     type: 'registry:component',
   },
   {
     dependencies: ['@udecode/plate-selection'],
     files: [
       {
-        path: 'registry/components/editor/plugins/block-menu-plugins.ts',
+        path: 'components/editor/plugins/block-menu-plugins.ts',
         type: 'registry:component',
       },
     ],
     name: 'block-menu-plugins',
     registryDependencies: [
-      'https://platejs.org/r/styles/default/block-context-menu.json',
-      'https://platejs.org/r/styles/default/block-selection-plugins.json',
+      'http://localhost:3000/r/block-context-menu',
+      'http://localhost:3000/r/block-selection-plugins',
     ],
     type: 'registry:component',
   },
@@ -247,21 +245,19 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-comments'],
     files: [
       {
-        path: 'registry/components/editor/plugins/comments-plugin.tsx',
+        path: 'components/editor/plugins/comments-plugin.tsx',
         type: 'registry:component',
       },
     ],
     name: 'comments-plugin',
-    registryDependencies: [
-      'https://platejs.org/r/styles/default/discussion-plugin.json',
-    ],
+    registryDependencies: ['http://localhost:3000/r/discussion-plugin'],
     type: 'registry:component',
   },
   {
     dependencies: ['@udecode/plate-basic-marks'],
     files: [
       {
-        path: 'registry/components/editor/plugins/skip-mark-plugin.ts',
+        path: 'components/editor/plugins/skip-mark-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -272,43 +268,39 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-suggestion'],
     files: [
       {
-        path: 'registry/components/editor/plugins/suggestion-plugin.tsx',
+        path: 'components/editor/plugins/suggestion-plugin.tsx',
         type: 'registry:component',
       },
       {
-        path: 'registry/ui/suggestion-line-break.tsx',
+        path: 'ui/suggestion-line-break.tsx',
         type: 'registry:ui',
       },
       {
-        path: 'registry/ui/suggestion-toolbar-button.tsx',
+        path: 'ui/suggestion-toolbar-button.tsx',
         type: 'registry:ui',
       },
     ],
     name: 'suggestion-plugin',
-    registryDependencies: [
-      'https://platejs.org/r/styles/default/discussion-plugin.json',
-    ],
+    registryDependencies: ['http://localhost:3000/r/discussion-plugin'],
     type: 'registry:component',
   },
   {
     dependencies: ['@udecode/plate-selection'],
     files: [
       {
-        path: 'registry/components/editor/plugins/cursor-overlay-plugin.tsx',
+        path: 'components/editor/plugins/cursor-overlay-plugin.tsx',
         type: 'registry:component',
       },
     ],
     name: 'cursor-overlay-plugin',
-    registryDependencies: [
-      'https://platejs.org/r/styles/default/cursor-overlay.json',
-    ],
+    registryDependencies: ['http://localhost:3000/r/cursor-overlay'],
     type: 'registry:component',
   },
   {
     dependencies: ['@udecode/plate-markdown', 'remark-gfm', 'remark-math'],
     files: [
       {
-        path: 'registry/components/editor/plugins/markdown-plugin.tsx',
+        path: 'components/editor/plugins/markdown-plugin.tsx',
         type: 'registry:component',
       },
     ],
@@ -324,14 +316,12 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/copilot-plugins.tsx',
+        path: 'components/editor/plugins/copilot-plugins.tsx',
         type: 'registry:component',
       },
     ],
     name: 'copilot-plugins',
-    registryDependencies: [
-      'https://platejs.org/r/styles/default/ghost-text.json',
-    ],
+    registryDependencies: ['http://localhost:3000/r/ghost-text'],
     type: 'registry:component',
   },
   {
@@ -342,7 +332,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/delete-plugins.ts',
+        path: 'components/editor/plugins/delete-plugins.ts',
         type: 'registry:component',
       },
     ],
@@ -357,21 +347,19 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/dnd-plugins.tsx',
+        path: 'components/editor/plugins/dnd-plugins.tsx',
         type: 'registry:component',
       },
     ],
     name: 'dnd-plugins',
-    registryDependencies: [
-      'https://platejs.org/r/styles/default/draggable.json',
-    ],
+    registryDependencies: ['http://localhost:3000/r/draggable'],
     type: 'registry:component',
   },
   {
     dependencies: ['@udecode/plate-break', '@udecode/plate-heading'],
     files: [
       {
-        path: 'registry/components/editor/plugins/exit-break-plugin.ts',
+        path: 'components/editor/plugins/exit-break-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -382,14 +370,14 @@ const plugins: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'registry/components/editor/plugins/fixed-toolbar-plugin.tsx',
+        path: 'components/editor/plugins/fixed-toolbar-plugin.tsx',
         type: 'registry:component',
       },
     ],
     name: 'fixed-toolbar-plugin',
     registryDependencies: [
-      'https://platejs.org/r/styles/default/fixed-toolbar.json',
-      'https://platejs.org/r/styles/default/fixed-toolbar-buttons.json',
+      'http://localhost:3000/r/fixed-toolbar',
+      'http://localhost:3000/r/fixed-toolbar-buttons',
     ],
     type: 'registry:component',
   },
@@ -397,14 +385,14 @@ const plugins: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'registry/components/editor/plugins/fixed-toolbar-list-plugin.tsx',
+        path: 'components/editor/plugins/fixed-toolbar-list-plugin.tsx',
         type: 'registry:component',
       },
     ],
     name: 'fixed-toolbar-list-plugin',
     registryDependencies: [
-      'https://platejs.org/r/styles/default/fixed-toolbar.json',
-      'https://platejs.org/r/styles/default/fixed-toolbar-buttons.json',
+      'http://localhost:3000/r/fixed-toolbar',
+      'http://localhost:3000/r/fixed-toolbar-buttons',
     ],
     type: 'registry:component',
   },
@@ -412,14 +400,14 @@ const plugins: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'registry/components/editor/plugins/floating-toolbar-plugin.tsx',
+        path: 'components/editor/plugins/floating-toolbar-plugin.tsx',
         type: 'registry:component',
       },
     ],
     name: 'floating-toolbar-plugin',
     registryDependencies: [
-      'https://platejs.org/r/styles/default/floating-toolbar.json',
-      'https://platejs.org/r/styles/default/floating-toolbar-buttons.json',
+      'http://localhost:3000/r/floating-toolbar',
+      'http://localhost:3000/r/floating-toolbar-buttons',
     ],
     type: 'registry:component',
   },
@@ -434,14 +422,14 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/indent-list-plugins.ts',
+        path: 'components/editor/plugins/indent-list-plugins.ts',
         type: 'registry:component',
       },
     ],
     name: 'indent-list-plugins',
     registryDependencies: [
-      'https://platejs.org/r/styles/default/indent-fire-marker.json',
-      'https://platejs.org/r/styles/default/indent-todo-marker.json',
+      'http://localhost:3000/r/indent-fire-marker',
+      'http://localhost:3000/r/indent-todo-marker',
     ],
     type: 'registry:component',
   },
@@ -449,7 +437,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-heading', '@udecode/plate-line-height'],
     files: [
       {
-        path: 'registry/components/editor/plugins/line-height-plugin.ts',
+        path: 'components/editor/plugins/line-height-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -460,28 +448,26 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-link'],
     files: [
       {
-        path: 'registry/components/editor/plugins/link-plugin.tsx',
+        path: 'components/editor/plugins/link-plugin.tsx',
         type: 'registry:component',
       },
     ],
     name: 'link-plugin',
-    registryDependencies: [
-      'https://platejs.org/r/styles/default/link-floating-toolbar.json',
-    ],
+    registryDependencies: ['http://localhost:3000/r/link-floating-toolbar'],
     type: 'registry:component',
   },
   {
     dependencies: ['@udecode/plate-caption', '@udecode/plate-media'],
     files: [
       {
-        path: 'registry/components/editor/plugins/media-plugins.tsx',
+        path: 'components/editor/plugins/media-plugins.tsx',
         type: 'registry:component',
       },
     ],
     name: 'media-plugins',
     registryDependencies: [
-      'https://platejs.org/r/styles/default/image-preview.json',
-      'https://platejs.org/r/styles/default/media-upload-toast.json',
+      'http://localhost:3000/r/image-preview',
+      'http://localhost:3000/r/media-upload-toast',
     ],
     type: 'registry:component',
   },
@@ -489,7 +475,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-mention'],
     files: [
       {
-        path: 'registry/components/editor/plugins/mention-plugin.ts',
+        path: 'components/editor/plugins/mention-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -507,7 +493,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/reset-block-type-plugin.ts',
+        path: 'components/editor/plugins/reset-block-type-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -524,7 +510,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/soft-break-plugin.ts',
+        path: 'components/editor/plugins/soft-break-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -539,7 +525,7 @@ const plugins: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plugins/tabbable-plugin.ts',
+        path: 'components/editor/plugins/tabbable-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -550,7 +536,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-table'],
     files: [
       {
-        path: 'registry/components/editor/plugins/table-plugin.ts',
+        path: 'components/editor/plugins/table-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -561,7 +547,7 @@ const plugins: Registry['items'] = [
     dependencies: ['@udecode/plate-heading'],
     files: [
       {
-        path: 'registry/components/editor/plugins/toc-plugin.ts',
+        path: 'components/editor/plugins/toc-plugin.ts',
         type: 'registry:component',
       },
     ],
@@ -572,14 +558,12 @@ const plugins: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'registry/components/editor/plugins/discussion-plugin.tsx',
+        path: 'components/editor/plugins/discussion-plugin.tsx',
         type: 'registry:component',
       },
     ],
     name: 'discussion-plugin',
-    registryDependencies: [
-      'https://platejs.org/r/styles/default/block-discussion.json',
-    ],
+    registryDependencies: ['http://localhost:3000/r/block-discussion'],
     type: 'registry:component',
   },
 ];
@@ -590,7 +574,7 @@ export const components: Registry['items'] = [
     dependencies: ['ai', '@faker-js/faker'],
     files: [
       {
-        path: 'registry/components/editor/use-chat.ts',
+        path: 'components/editor/use-chat.ts',
         type: 'registry:component',
       },
     ],
@@ -613,7 +597,7 @@ export const components: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/transforms.ts',
+        path: 'components/editor/transforms.ts',
         type: 'registry:component',
       },
     ],
@@ -636,7 +620,7 @@ export const components: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plate-types.ts',
+        path: 'components/editor/plate-types.ts',
         type: 'registry:component',
       },
     ],
@@ -660,7 +644,7 @@ export const components: Registry['items'] = [
     ],
     files: [
       {
-        path: 'registry/components/editor/plate-list-types.ts',
+        path: 'components/editor/plate-list-types.ts',
         type: 'registry:component',
       },
     ],

@@ -5,13 +5,10 @@
   "title": "Table Dropdown Menu",
   "author": "udecode (https://platejs.org)",
   "description": "A menu for table manipulation and formatting.",
-  "dependencies": [
-    "@udecode/plate-table",
-    "@radix-ui/react-dropdown-menu"
-  ],
+  "dependencies": ["@udecode/plate-table", "@radix-ui/react-dropdown-menu"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/dropdown-menu.json",
-    "https://platejs.org/r/styles/default/toolbar.json"
+    "https://platejs.org/r/dropdown-menu.json",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {
@@ -33,8 +30,6 @@
         "route": "/docs/table"
       }
     ],
-    "examples": [
-      "table-demo"
-    ]
+    "examples": ["table-demo"]
   }
 }

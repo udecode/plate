@@ -5,12 +5,10 @@
   "title": "Toolbar",
   "author": "udecode (https://platejs.org)",
   "description": "A customizable toolbar component with various button styles and group",
-  "dependencies": [
-    "@radix-ui/react-toolbar"
-  ],
+  "dependencies": ["@radix-ui/react-toolbar"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/tooltip.json",
-    "https://platejs.org/r/styles/default/separator.json"
+    "https://platejs.org/r/tooltip.json",
+    "https://platejs.org/r/separator.json"
   ],
   "files": [
     {

@@ -4,9 +4,7 @@
   "type": "registry:block",
   "author": "udecode (https://platejs.org)",
   "description": "A multi-select editor",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/select-editor-demo.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/select-editor-demo.json"],
   "files": [
     {
       "path": "blocks/editor-select/page.tsx",

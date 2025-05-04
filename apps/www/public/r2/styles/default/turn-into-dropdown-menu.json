@@ -14,9 +14,9 @@
     "@udecode/plate-toggle"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/dropdown-menu.json",
-    "https://platejs.org/r/styles/default/toolbar.json",
-    "https://platejs.org/r/styles/default/transforms.json"
+    "https://platejs.org/r/dropdown-menu.json",
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/transforms.json"
   ],
   "files": [
     {
@@ -32,9 +32,6 @@
         "route": "https://pro.platejs.org/docs/components/turn-into-dropdown-menu"
       }
     ],
-    "examples": [
-      "basic-nodes-demo",
-      "basic-nodes-pro"
-    ]
+    "examples": ["basic-nodes-demo", "basic-nodes-pro"]
   }
 }

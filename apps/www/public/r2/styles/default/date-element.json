@@ -5,12 +5,8 @@
   "title": "Date Element",
   "author": "udecode (https://platejs.org)",
   "description": "A date field component with calendar picker.",
-  "dependencies": [
-    "@udecode/plate-date"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/calendar.json"
-  ],
+  "dependencies": ["@udecode/plate-date"],
+  "registryDependencies": ["https://platejs.org/r/calendar.json"],
   "files": [
     {
       "path": "plate-ui/date-element.tsx",
@@ -34,9 +30,7 @@
         "route": "https://pro.platejs.org/docs/components/date-element"
       }
     ],
-    "examples": [
-      "date-demo"
-    ],
+    "examples": ["date-demo"],
     "label": "New"
   }
 }

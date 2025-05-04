@@ -5,12 +5,8 @@
   "title": "Mark Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "A toolbar control for basic text formatting.",
-  "dependencies": [
-    "@udecode/plate-basic-marks"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
+  "dependencies": ["@udecode/plate-basic-marks"],
+  "registryDependencies": ["https://platejs.org/r/toolbar.json"],
   "files": [
     {
       "path": "plate-ui/mark-toolbar-button.tsx",
@@ -25,9 +21,6 @@
         "route": "/docs/basic-marks"
       }
     ],
-    "examples": [
-      "basic-marks-demo",
-      "basic-nodes-pro"
-    ]
+    "examples": ["basic-marks-demo", "basic-nodes-pro"]
   }
 }

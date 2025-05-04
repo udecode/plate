@@ -4,9 +4,7 @@
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
   "description": "Block-level context menu with formatting options.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/block-menu-plugins.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/block-menu-plugins.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

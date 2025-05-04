@@ -5,12 +5,8 @@
   "title": "Link Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "A toolbar control for link management.",
-  "dependencies": [
-    "@udecode/plate-link"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
+  "dependencies": ["@udecode/plate-link"],
+  "registryDependencies": ["https://platejs.org/r/toolbar.json"],
   "files": [
     {
       "path": "plate-ui/link-toolbar-button.tsx",
@@ -28,9 +24,6 @@
         "route": "https://pro.platejs.org/docs/components/link-toolbar-button"
       }
     ],
-    "examples": [
-      "link-demo",
-      "link-pro"
-    ]
+    "examples": ["link-demo", "link-pro"]
   }
 }

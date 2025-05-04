@@ -8,9 +8,7 @@
     "@udecode/plate-markdown",
     "@faker-js/faker"
   ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/ghost-text.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/ghost-text.json"],
   "files": [
     {
       "path": "components/editor/plugins/copilot-plugins.tsx",

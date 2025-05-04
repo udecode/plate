@@ -5,13 +5,8 @@
   "title": "Equation Element",
   "author": "udecode (https://platejs.org)",
   "description": "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
-  "dependencies": [
-    "@udecode/plate-math",
-    "react-textarea-autosize"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/popover.json"
-  ],
+  "dependencies": ["@udecode/plate-math", "react-textarea-autosize"],
+  "registryDependencies": ["https://platejs.org/r/popover.json"],
   "files": [
     {
       "path": "plate-ui/equation-element.tsx",
@@ -39,8 +34,6 @@
         "title": "Equation"
       }
     ],
-    "examples": [
-      "equation-demo"
-    ]
+    "examples": ["equation-demo"]
   }
 }

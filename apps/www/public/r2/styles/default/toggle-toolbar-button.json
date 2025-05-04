@@ -5,12 +5,8 @@
   "title": "Toggle Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "A toolbar button for expanding and collapsing blocks.",
-  "dependencies": [
-    "@udecode/plate-toggle"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
+  "dependencies": ["@udecode/plate-toggle"],
+  "registryDependencies": ["https://platejs.org/r/toolbar.json"],
   "files": [
     {
       "path": "plate-ui/toggle-toolbar-button.tsx",
@@ -25,8 +21,6 @@
         "route": "/docs/toggle"
       }
     ],
-    "examples": [
-      "toggle-demo"
-    ]
+    "examples": ["toggle-demo"]
   }
 }

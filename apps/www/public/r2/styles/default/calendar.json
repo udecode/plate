@@ -5,12 +5,8 @@
   "title": "Calendar",
   "author": "udecode (https://platejs.org)",
   "description": "A date field component that allows users to enter and edit date.",
-  "dependencies": [
-    "react-day-picker@8.10.1"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/button.json"
-  ],
+  "dependencies": ["react-day-picker@8.10.1"],
+  "registryDependencies": ["https://platejs.org/r/button.json"],
   "files": [
     {
       "path": "plate-ui/calendar.tsx",

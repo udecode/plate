@@ -3,13 +3,10 @@
   "name": "media-plugins",
   "type": "registry:component",
   "author": "udecode (https://platejs.org)",
-  "dependencies": [
-    "@udecode/plate-caption",
-    "@udecode/plate-media"
-  ],
+  "dependencies": ["@udecode/plate-caption", "@udecode/plate-media"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/image-preview.json",
-    "https://platejs.org/r/styles/default/media-upload-toast.json"
+    "https://platejs.org/r/image-preview.json",
+    "https://platejs.org/r/media-upload-toast.json"
   ],
   "files": [
     {

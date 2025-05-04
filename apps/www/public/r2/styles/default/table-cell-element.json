@@ -5,12 +5,8 @@
   "title": "Table Cell Element",
   "author": "udecode (https://platejs.org)",
   "description": "A table cell with resizable borders and selection.",
-  "dependencies": [
-    "@udecode/plate-table"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/resizable.json"
-  ],
+  "dependencies": ["@udecode/plate-table"],
+  "registryDependencies": ["https://platejs.org/r/resizable.json"],
   "files": [
     {
       "path": "plate-ui/table-cell-element.tsx",
@@ -34,8 +30,6 @@
         "route": "https://pro.platejs.org/docs/components/table-cell-element"
       }
     ],
-    "examples": [
-      "table-demo"
-    ]
+    "examples": ["table-demo"]
   }
 }

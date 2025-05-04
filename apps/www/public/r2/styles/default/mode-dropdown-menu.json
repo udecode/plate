@@ -5,12 +5,10 @@
   "title": "Mode Dropdown Menu",
   "author": "udecode (https://platejs.org)",
   "description": "A menu for switching between editor modes.",
-  "dependencies": [
-    "@radix-ui/react-dropdown-menu"
-  ],
+  "dependencies": ["@radix-ui/react-dropdown-menu"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/dropdown-menu.json",
-    "https://platejs.org/r/styles/default/toolbar.json"
+    "https://platejs.org/r/dropdown-menu.json",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {
@@ -21,8 +19,6 @@
     }
   ],
   "meta": {
-    "examples": [
-      "basic-nodes-demo"
-    ]
+    "examples": ["basic-nodes-demo"]
   }
 }

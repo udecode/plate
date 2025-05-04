@@ -5,12 +5,8 @@
   "title": "Mention Input Element",
   "author": "udecode (https://platejs.org)",
   "description": "An input component for user mentions with autocomplete.",
-  "dependencies": [
-    "@udecode/plate-mention"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/inline-combobox.json"
-  ],
+  "dependencies": ["@udecode/plate-mention"],
+  "registryDependencies": ["https://platejs.org/r/inline-combobox.json"],
   "files": [
     {
       "path": "plate-ui/mention-input-element.tsx",
@@ -28,8 +24,6 @@
         "route": "https://pro.platejs.org/docs/components/mention-input-element"
       }
     ],
-    "examples": [
-      "mention-demo"
-    ]
+    "examples": ["mention-demo"]
   }
 }

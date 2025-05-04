@@ -16,8 +16,8 @@
     "@udecode/plate-toggle"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/inline-combobox.json",
-    "https://platejs.org/r/styles/default/transforms.json"
+    "https://platejs.org/r/inline-combobox.json",
+    "https://platejs.org/r/transforms.json"
   ],
   "files": [
     {
@@ -37,10 +37,7 @@
         "route": "https://pro.platejs.org/docs/components/slash-input-element"
       }
     ],
-    "examples": [
-      "slash-command-demo",
-      "slash-menu-pro"
-    ],
+    "examples": ["slash-command-demo", "slash-menu-pro"],
     "label": "New"
   }
 }

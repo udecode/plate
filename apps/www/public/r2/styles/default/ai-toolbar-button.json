@@ -5,12 +5,8 @@
   "title": "AI Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "A toolbar button for accessing AI features.",
-  "dependencies": [
-    "@udecode/plate-ai"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
+  "dependencies": ["@udecode/plate-ai"],
+  "registryDependencies": ["https://platejs.org/r/toolbar.json"],
   "files": [
     {
       "path": "plate-ui/ai-toolbar-button.tsx",
@@ -29,11 +25,7 @@
         "route": "https://pro.platejs.org/docs/components/ai-toolbar-button"
       }
     ],
-    "examples": [
-      "ai-demo",
-      "floating-toolbar-demo",
-      "ai-pro"
-    ],
+    "examples": ["ai-demo", "floating-toolbar-demo", "ai-pro"],
     "label": "New"
   }
 }

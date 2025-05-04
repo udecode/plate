@@ -5,12 +5,8 @@
   "title": "Caption",
   "author": "udecode (https://platejs.org)",
   "description": "A text field for adding captions to media elements.",
-  "dependencies": [
-    "@udecode/plate-caption"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/button.json"
-  ],
+  "dependencies": ["@udecode/plate-caption"],
+  "registryDependencies": ["https://platejs.org/r/button.json"],
   "files": [
     {
       "path": "plate-ui/caption.tsx",
@@ -28,8 +24,6 @@
         "route": "https://pro.platejs.org/docs/components/caption"
       }
     ],
-    "examples": [
-      "media-demo"
-    ]
+    "examples": ["media-demo"]
   }
 }

@@ -5,16 +5,12 @@
   "title": "Media Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "Toolbar button for inserting and managing media.",
-  "dependencies": [
-    "@udecode/plate-media",
-    "use-file-picker",
-    "sonner"
-  ],
+  "dependencies": ["@udecode/plate-media", "use-file-picker", "sonner"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json",
-    "https://platejs.org/r/styles/default/input.json",
-    "https://platejs.org/r/styles/default/dropdown-menu.json",
-    "https://platejs.org/r/styles/default/alert-dialog.json"
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/input.json",
+    "https://platejs.org/r/dropdown-menu.json",
+    "https://platejs.org/r/alert-dialog.json"
   ],
   "files": [
     {
@@ -30,9 +26,6 @@
         "route": "/docs/media"
       }
     ],
-    "examples": [
-      "media-demo",
-      "upload-pro"
-    ]
+    "examples": ["media-demo", "upload-pro"]
   }
 }

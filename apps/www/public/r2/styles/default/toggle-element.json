@@ -5,12 +5,8 @@
   "title": "Toggle Element",
   "author": "udecode (https://platejs.org)",
   "description": "A collapsible component for toggling content visibility.",
-  "dependencies": [
-    "@udecode/plate-toggle"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/button.json"
-  ],
+  "dependencies": ["@udecode/plate-toggle"],
+  "registryDependencies": ["https://platejs.org/r/button.json"],
   "files": [
     {
       "path": "plate-ui/toggle-element.tsx",
@@ -31,8 +27,6 @@
         "route": "/docs/toggle"
       }
     ],
-    "examples": [
-      "toggle-demo"
-    ]
+    "examples": ["toggle-demo"]
   }
 }

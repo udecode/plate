@@ -6,10 +6,10 @@
   "author": "udecode (https://platejs.org)",
   "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/basic-nodes-plugins.json",
-    "https://platejs.org/r/styles/default/block-selection-plugins.json",
-    "https://platejs.org/r/styles/default/indent-list-plugins.json",
-    "https://platejs.org/r/styles/default/link-plugin.json"
+    "https://platejs.org/r/basic-nodes-plugins.json",
+    "https://platejs.org/r/block-selection-plugins.json",
+    "https://platejs.org/r/indent-list-plugins.json",
+    "https://platejs.org/r/link-plugin.json"
   ],
   "files": [
     {

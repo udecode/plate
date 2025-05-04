@@ -4,9 +4,7 @@
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
   "description": "Basic block elements like headings, quotes, and code blocks.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/basic-nodes-plugins.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/basic-nodes-plugins.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

@@ -5,12 +5,8 @@
   "title": "Inline Equation Toolbar Button",
   "author": "udecode (https://platejs.org)",
   "description": "A toolbar button for inserting and editing inline equations.",
-  "dependencies": [
-    "@udecode/plate-math"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/toolbar.json"
-  ],
+  "dependencies": ["@udecode/plate-math"],
+  "registryDependencies": ["https://platejs.org/r/toolbar.json"],
   "files": [
     {
       "path": "plate-ui/inline-equation-toolbar-button.tsx",
@@ -26,9 +22,6 @@
         "title": "Equation"
       }
     ],
-    "examples": [
-      "equation-demo",
-      "floating-toolbar-demo"
-    ]
+    "examples": ["equation-demo", "floating-toolbar-demo"]
   }
 }

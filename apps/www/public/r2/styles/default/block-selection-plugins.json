@@ -3,12 +3,8 @@
   "name": "block-selection-plugins",
   "type": "registry:component",
   "author": "udecode (https://platejs.org)",
-  "dependencies": [
-    "@udecode/plate-selection"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/block-selection.json"
-  ],
+  "dependencies": ["@udecode/plate-selection"],
+  "registryDependencies": ["https://platejs.org/r/block-selection.json"],
   "files": [
     {
       "path": "components/editor/plugins/block-selection-plugins.tsx",

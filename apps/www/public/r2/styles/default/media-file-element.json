@@ -5,13 +5,8 @@
   "title": "Media File Element",
   "author": "udecode (https://platejs.org)",
   "description": "A file attachment component with download capability and caption.",
-  "dependencies": [
-    "@udecode/plate-media",
-    "@udecode/plate-resizable"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/caption.json"
-  ],
+  "dependencies": ["@udecode/plate-media", "@udecode/plate-resizable"],
+  "registryDependencies": ["https://platejs.org/r/caption.json"],
   "files": [
     {
       "path": "plate-ui/media-file-element.tsx",
@@ -35,9 +30,6 @@
         "route": "https://pro.platejs.org/docs/components/media-file-element"
       }
     ],
-    "examples": [
-      "media-demo",
-      "upload-pro"
-    ]
+    "examples": ["media-demo", "upload-pro"]
   }
 }

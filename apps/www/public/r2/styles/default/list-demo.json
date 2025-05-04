@@ -5,9 +5,9 @@
   "author": "udecode (https://platejs.org)",
   "description": "List creation and formatting.",
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/autoformat-list-plugin.json",
-    "https://platejs.org/r/styles/default/list-element.json",
-    "https://platejs.org/r/styles/default/todo-list-element.json"
+    "https://platejs.org/r/autoformat-list-plugin.json",
+    "https://platejs.org/r/list-element.json",
+    "https://platejs.org/r/todo-list-element.json"
   ],
   "files": [
     {

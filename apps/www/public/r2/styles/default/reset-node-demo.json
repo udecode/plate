@@ -4,7 +4,7 @@
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/reset-block-type-plugin.json"
+    "https://platejs.org/r/reset-block-type-plugin.json"
   ],
   "files": [
     {

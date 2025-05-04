@@ -5,13 +5,10 @@
   "title": "Align Dropdown Menu",
   "author": "udecode (https://platejs.org)",
   "description": "A dropdown menu for text alignment controls.",
-  "dependencies": [
-    "@udecode/plate-alignment",
-    "@radix-ui/react-dropdown-menu"
-  ],
+  "dependencies": ["@udecode/plate-alignment", "@radix-ui/react-dropdown-menu"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/dropdown-menu.json",
-    "https://platejs.org/r/styles/default/toolbar.json"
+    "https://platejs.org/r/dropdown-menu.json",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {
@@ -27,8 +24,6 @@
         "route": "/docs/alignment"
       }
     ],
-    "examples": [
-      "align-demo"
-    ]
+    "examples": ["align-demo"]
   }
 }

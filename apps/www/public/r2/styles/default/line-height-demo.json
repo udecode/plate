@@ -4,9 +4,7 @@
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
   "description": "Line height adjustment controls.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/line-height-plugin.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/line-height-plugin.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

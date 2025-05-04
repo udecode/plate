@@ -12,9 +12,7 @@
     "@radix-ui/react-label",
     "@radix-ui/react-slot"
   ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/label.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/label.json"],
   "files": [
     {
       "path": "plate-ui/form.tsx",

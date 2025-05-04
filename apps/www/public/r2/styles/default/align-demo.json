@@ -4,9 +4,7 @@
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
   "description": "Text alignment controls for blocks.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/align-plugin.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/align-plugin.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

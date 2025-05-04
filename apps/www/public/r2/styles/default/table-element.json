@@ -10,9 +10,7 @@
     "@radix-ui/react-dropdown-menu",
     "@radix-ui/react-popover"
   ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/dropdown-menu.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/dropdown-menu.json"],
   "files": [
     {
       "path": "plate-ui/table-element.tsx",
@@ -42,8 +40,6 @@
         "route": "https://pro.platejs.org/docs/components/table-element"
       }
     ],
-    "examples": [
-      "table-demo"
-    ]
+    "examples": ["table-demo"]
   }
 }

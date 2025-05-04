@@ -3,12 +3,8 @@
   "name": "link-plugin",
   "type": "registry:component",
   "author": "udecode (https://platejs.org)",
-  "dependencies": [
-    "@udecode/plate-link"
-  ],
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/link-floating-toolbar.json"
-  ],
+  "dependencies": ["@udecode/plate-link"],
+  "registryDependencies": ["https://platejs.org/r/link-floating-toolbar.json"],
   "files": [
     {
       "path": "components/editor/plugins/link-plugin.tsx",

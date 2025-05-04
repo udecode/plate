@@ -4,9 +4,7 @@
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
   "description": "Customizable tables with resizable columns and row merging options.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/table-plugin.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/table-plugin.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

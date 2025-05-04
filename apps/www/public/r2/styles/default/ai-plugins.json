@@ -14,22 +14,22 @@
     "@udecode/plate-markdown"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/basic-nodes-plugins.json",
-    "https://platejs.org/r/styles/default/block-selection-plugins.json",
-    "https://platejs.org/r/styles/default/cursor-overlay-plugin.json",
-    "https://platejs.org/r/styles/default/indent-list-plugins.json",
-    "https://platejs.org/r/styles/default/link-plugin.json",
-    "https://platejs.org/r/styles/default/ai-menu.json",
-    "https://platejs.org/r/styles/default/blockquote-element.json",
-    "https://platejs.org/r/styles/default/code-block-element.json",
-    "https://platejs.org/r/styles/default/code-leaf.json",
-    "https://platejs.org/r/styles/default/code-line-element.json",
-    "https://platejs.org/r/styles/default/code-syntax-leaf.json",
-    "https://platejs.org/r/styles/default/cursor-overlay.json",
-    "https://platejs.org/r/styles/default/heading-element.json",
-    "https://platejs.org/r/styles/default/hr-element.json",
-    "https://platejs.org/r/styles/default/link-element.json",
-    "https://platejs.org/r/styles/default/paragraph-element.json"
+    "https://platejs.org/r/basic-nodes-plugins.json",
+    "https://platejs.org/r/block-selection-plugins.json",
+    "https://platejs.org/r/cursor-overlay-plugin.json",
+    "https://platejs.org/r/indent-list-plugins.json",
+    "https://platejs.org/r/link-plugin.json",
+    "https://platejs.org/r/ai-menu.json",
+    "https://platejs.org/r/blockquote-element.json",
+    "https://platejs.org/r/code-block-element.json",
+    "https://platejs.org/r/code-leaf.json",
+    "https://platejs.org/r/code-line-element.json",
+    "https://platejs.org/r/code-syntax-leaf.json",
+    "https://platejs.org/r/cursor-overlay.json",
+    "https://platejs.org/r/heading-element.json",
+    "https://platejs.org/r/hr-element.json",
+    "https://platejs.org/r/link-element.json",
+    "https://platejs.org/r/paragraph-element.json"
   ],
   "files": [
     {

@@ -11,11 +11,11 @@ export const uiComponents: Registry['items'] = [
     ],
     description: 'A menu for AI-powered content generation and insertion.',
     files: [
-      { path: 'registry/ui/ai-menu.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/ai-loading-bar.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/ai-anchor-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/ai-menu-items.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/ai-chat-editor.tsx', type: 'registry:ui' },
+      { path: 'ui/ai-menu.tsx', type: 'registry:ui' },
+      { path: 'ui/ai-loading-bar.tsx', type: 'registry:ui' },
+      { path: 'ui/ai-anchor-element.tsx', type: 'registry:ui' },
+      { path: 'ui/ai-menu-items.tsx', type: 'registry:ui' },
+      { path: 'ui/ai-chat-editor.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -41,7 +41,7 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-ai'],
     description: 'A toolbar button for accessing AI features.',
-    files: [{ path: 'registry/ui/ai-toolbar-button.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/ai-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/ai', title: 'AI' },
@@ -58,9 +58,7 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-alignment', '@radix-ui/react-dropdown-menu'],
     description: 'A dropdown menu for text alignment controls.',
-    files: [
-      { path: 'registry/ui/align-dropdown-menu.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/align-dropdown-menu.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/alignment' }],
       examples: ['align-demo'],
@@ -82,9 +80,7 @@ export const uiComponents: Registry['items'] = [
       '@udecode/plate-selection',
     ],
     description: 'A context menu for block-level operations.',
-    files: [
-      { path: 'registry/ui/block-context-menu.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/block-context-menu.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/block-menu' },
@@ -105,7 +101,7 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-selection'],
     description: 'A visual overlay for selected blocks.',
-    files: [{ path: 'registry/ui/block-selection.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/block-selection.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/block-selection' },
@@ -122,9 +118,7 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: ['use-file-picker'],
     description: 'A toolbar button to import editor content from a file.',
-    files: [
-      { path: 'registry/ui/import-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/import-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/import', title: 'Import' }],
       examples: ['basic-nodes-demo'],
@@ -141,9 +135,7 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: ['html2canvas-pro', 'pdf-lib'],
     description: 'A toolbar button to export editor content as PDF.',
-    files: [
-      { path: 'registry/ui/export-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/export-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/export', title: 'Export' }],
       examples: ['basic-nodes-demo'],
@@ -158,7 +150,7 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-caption'],
     description: 'A text field for adding captions to media elements.',
-    files: [{ path: 'registry/ui/caption.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/caption.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/caption' },
@@ -178,15 +170,15 @@ export const uiComponents: Registry['items'] = [
     dependencies: ['@udecode/plate-font', '@radix-ui/react-dropdown-menu'],
     description: 'A color picker with text and background color controls.',
     files: [
-      { path: 'registry/ui/color-constants.ts', type: 'registry:ui' },
+      { path: 'ui/color-constants.ts', type: 'registry:ui' },
       {
-        path: 'registry/ui/color-dropdown-menu-items.tsx',
+        path: 'ui/color-dropdown-menu-items.tsx',
         type: 'registry:ui',
       },
-      { path: 'registry/ui/color-dropdown-menu.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/color-input.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/color-picker.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/colors-custom.tsx', type: 'registry:ui' },
+      { path: 'ui/color-dropdown-menu.tsx', type: 'registry:ui' },
+      { path: 'ui/color-input.tsx', type: 'registry:ui' },
+      { path: 'ui/color-picker.tsx', type: 'registry:ui' },
+      { path: 'ui/colors-custom.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -213,9 +205,7 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-comments'],
     description: 'A toolbar button for adding inline comments.',
-    files: [
-      { path: 'registry/ui/comment-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/comment-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/comments' },
@@ -237,19 +227,19 @@ export const uiComponents: Registry['items'] = [
       'A popover interface for managing discussions: comments, replies, suggestions.',
     files: [
       {
-        path: 'registry/ui/block-discussion.tsx',
+        path: 'ui/block-discussion.tsx',
         type: 'registry:ui',
       },
       {
-        path: 'registry/ui/block-suggestion.tsx',
+        path: 'ui/block-suggestion.tsx',
         type: 'registry:ui',
       },
       {
-        path: 'registry/ui/comment.tsx',
+        path: 'ui/comment.tsx',
         type: 'registry:ui',
       },
       {
-        path: 'registry/ui/comment-create-form.tsx',
+        path: 'ui/comment-create-form.tsx',
         type: 'registry:ui',
       },
     ],
@@ -283,7 +273,7 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-selection'],
     description: 'A visual overlay for cursors and selections.',
-    files: [{ path: 'registry/ui/cursor-overlay.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/cursor-overlay.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/cursor-overlay' },
@@ -311,7 +301,7 @@ export const uiComponents: Registry['items'] = [
       'react-dnd-html5-backend',
     ],
     description: 'A drag handle for moving editor blocks.',
-    files: [{ path: 'registry/ui/draggable.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/draggable.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/dnd', title: 'Drag & Drop' },
@@ -360,8 +350,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     dependencies: [],
     description: 'A container for the editor content and styling.',
     files: [
-      { path: 'registry/ui/editor.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/editor-static.tsx', type: 'registry:ui' },
+      { path: 'ui/editor.tsx', type: 'registry:ui' },
+      { path: 'ui/editor-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [{ route: 'https://pro.platejs.org/docs/components/editor' }],
@@ -375,7 +365,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['fzf@0.5.2', '@udecode/plate-tag', '@udecode/cmdk'],
     description: 'An editor to select tags.',
-    files: [{ path: 'registry/ui/select-editor.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/select-editor.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/multi-select' }],
       examples: ['select-editor-demo'],
@@ -399,18 +389,18 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     ],
     description: 'A dropdown menu for emoji selection and insertion.',
     files: [
-      { path: 'registry/ui/emoji-dropdown-menu.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/emoji-icons.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/emoji-picker-content.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/emoji-picker-navigation.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/emoji-picker-preview.tsx', type: 'registry:ui' },
+      { path: 'ui/emoji-dropdown-menu.tsx', type: 'registry:ui' },
+      { path: 'ui/emoji-icons.tsx', type: 'registry:ui' },
+      { path: 'ui/emoji-picker-content.tsx', type: 'registry:ui' },
+      { path: 'ui/emoji-picker-navigation.tsx', type: 'registry:ui' },
+      { path: 'ui/emoji-picker-preview.tsx', type: 'registry:ui' },
       {
-        path: 'registry/ui/emoji-picker-search-and-clear.tsx',
+        path: 'ui/emoji-picker-search-and-clear.tsx',
         type: 'registry:ui',
       },
-      { path: 'registry/ui/emoji-picker-search-bar.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/emoji-picker.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/emoji-toolbar-dropdown.tsx', type: 'registry:ui' },
+      { path: 'ui/emoji-picker-search-bar.tsx', type: 'registry:ui' },
+      { path: 'ui/emoji-picker.tsx', type: 'registry:ui' },
+      { path: 'ui/emoji-toolbar-dropdown.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -433,9 +423,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       '@udecode/plate-highlight',
     ],
     description: 'A set of commonly used formatting buttons.',
-    files: [
-      { path: 'registry/ui/fixed-toolbar-buttons.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/fixed-toolbar-buttons.tsx', type: 'registry:ui' }],
     meta: {
       examples: ['basic-nodes-demo'],
     },
@@ -478,7 +466,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     ],
     files: [
       {
-        path: 'registry/ui/fixed-toolbar-list-buttons.tsx',
+        path: 'ui/fixed-toolbar-list-buttons.tsx',
         type: 'registry:ui',
       },
     ],
@@ -512,7 +500,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: [],
     description: 'A fixed toolbar that stays at the top of the editor.',
-    files: [{ path: 'registry/ui/fixed-toolbar.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/fixed-toolbar.tsx', type: 'registry:ui' }],
     meta: {
       examples: ['basic-nodes-demo'],
     },
@@ -524,9 +512,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-basic-marks'],
     description: 'A set of formatting buttons for the floating toolbar.',
-    files: [
-      { path: 'registry/ui/floating-toolbar-buttons.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/floating-toolbar-buttons.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/api/floating' },
@@ -553,7 +539,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-floating'],
     description: 'A contextual toolbar that appears over selected text.',
-    files: [{ path: 'registry/ui/floating-toolbar.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/floating-toolbar.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/api/floating' },
@@ -570,7 +556,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     dependencies: ['@udecode/plate-ai'],
     description:
       'A text suggestion system that displays AI-generated content after the cursor.',
-    files: [{ path: 'registry/ui/ghost-text.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/ghost-text.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         {
@@ -591,9 +577,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   },
   {
     dependencies: ['@udecode/plate-indent'],
-    files: [
-      { path: 'registry/ui/indent-fire-marker.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/indent-fire-marker.tsx', type: 'registry:ui' }],
     name: 'indent-fire-marker',
     title: 'Indent Fire Marker',
     type: 'registry:ui',
@@ -601,9 +585,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: [],
     description: 'Toolbar buttons for undo and redo operations.',
-    files: [
-      { path: 'registry/ui/history-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/history-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         {
@@ -623,7 +605,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     description: 'A toolbar control for adjusting list indentation.',
     files: [
       {
-        path: 'registry/ui/indent-list-toolbar-button.tsx',
+        path: 'ui/indent-list-toolbar-button.tsx',
         type: 'registry:ui',
       },
     ],
@@ -640,9 +622,9 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     dependencies: ['@udecode/plate-indent-list'],
     description: 'A checkbox marker for interactive todo lists.',
     files: [
-      { path: 'registry/ui/indent-todo-marker.tsx', type: 'registry:ui' },
+      { path: 'ui/indent-todo-marker.tsx', type: 'registry:ui' },
       {
-        path: 'registry/ui/indent-todo-marker-static.tsx',
+        path: 'ui/indent-todo-marker-static.tsx',
         type: 'registry:ui',
       },
     ],
@@ -663,7 +645,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     description: 'A toolbar control for creating todo list items.',
     files: [
       {
-        path: 'registry/ui/indent-todo-toolbar-button.tsx',
+        path: 'ui/indent-todo-toolbar-button.tsx',
         type: 'registry:ui',
       },
     ],
@@ -679,9 +661,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-indent'],
     description: 'A toolbar control for block indentation.',
-    files: [
-      { path: 'registry/ui/indent-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/indent-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/indent' }],
       examples: ['indent-demo'],
@@ -694,7 +674,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-combobox', '@ariakit/react'],
     description: 'A combobox for inline suggestions.',
-    files: [{ path: 'registry/ui/inline-combobox.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/inline-combobox.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/combobox' },
@@ -723,9 +703,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       '@udecode/plate-toggle',
     ],
     description: 'A menu for inserting different types of blocks.',
-    files: [
-      { path: 'registry/ui/insert-dropdown-menu.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/insert-dropdown-menu.tsx', type: 'registry:ui' }],
     meta: {
       examples: ['basic-nodes-demo'],
     },
@@ -746,7 +724,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     description: 'A menu for controlling text line spacing.',
     files: [
       {
-        path: 'registry/ui/line-height-dropdown-menu.tsx',
+        path: 'ui/line-height-dropdown-menu.tsx',
         type: 'registry:ui',
       },
     ],
@@ -765,9 +743,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-link', '@udecode/plate-floating'],
     description: 'A floating interface for link editing.',
-    files: [
-      { path: 'registry/ui/link-floating-toolbar.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/link-floating-toolbar.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/link' },
@@ -792,9 +768,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-link'],
     description: 'A toolbar control for link management.',
-    files: [
-      { path: 'registry/ui/link-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/link-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/link' },
@@ -814,7 +788,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     description: 'A toolbar control for indenting lists.',
     files: [
       {
-        path: 'registry/ui/list-indent-toolbar-button.tsx',
+        path: 'ui/list-indent-toolbar-button.tsx',
         type: 'registry:ui',
       },
     ],
@@ -830,9 +804,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-list'],
     description: 'A toolbar control for list creation and management.',
-    files: [
-      { path: 'registry/ui/list-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/list-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/list' }],
       examples: ['list-demo'],
@@ -845,9 +817,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-basic-marks'],
     description: 'A toolbar control for basic text formatting.',
-    files: [
-      { path: 'registry/ui/mark-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/mark-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/basic-marks' }],
       examples: ['basic-marks-demo', 'basic-nodes-pro'],
@@ -860,7 +830,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-media'],
     description: 'A popover interface for media settings.',
-    files: [{ path: 'registry/ui/media-popover.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/media-popover.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/media' }],
       examples: ['media-demo', 'media-toolbar-pro'],
@@ -878,9 +848,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-media', 'use-file-picker', 'sonner'],
     description: 'Toolbar button for inserting and managing media.',
-    files: [
-      { path: 'registry/ui/media-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/media-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/media' }],
       examples: ['media-demo', 'upload-pro'],
@@ -898,9 +866,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-media', 'sonner'],
     description: 'Show toast notifications for media uploads.',
-    files: [
-      { path: 'registry/ui/media-upload-toast.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/media-upload-toast.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/media' }],
       examples: ['media-demo', 'upload-pro'],
@@ -913,9 +879,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@radix-ui/react-dropdown-menu'],
     description: 'A menu for switching between editor modes.',
-    files: [
-      { path: 'registry/ui/mode-dropdown-menu.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/mode-dropdown-menu.tsx', type: 'registry:ui' }],
     meta: {
       examples: ['basic-nodes-demo'],
     },
@@ -934,9 +898,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       '@udecode/plate-kbd',
     ],
     description: 'A menu for additional text formatting options.',
-    files: [
-      { path: 'registry/ui/more-dropdown-menu.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/more-dropdown-menu.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: 'https://pro.platejs.org/docs/components/more-dropdown-menu' },
@@ -954,9 +916,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-indent'],
     description: 'A toolbar button for decreasing block indentation.',
-    files: [
-      { path: 'registry/ui/outdent-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/outdent-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/indent' }],
       examples: ['indent-demo'],
@@ -969,7 +929,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-heading'],
     description: 'A text placeholder for empty editor blocks.',
-    files: [{ path: 'registry/ui/placeholder.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/placeholder.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/basic-elements' },
@@ -985,7 +945,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['react-resizable-panels'],
     description: 'A resizable wrapper with resize handles.',
-    files: [{ path: 'registry/ui/resizable.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/resizable.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/api/resizable' },
@@ -1002,8 +962,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     dependencies: ['@udecode/plate-table', '@radix-ui/react-dropdown-menu'],
     description: 'A menu for table manipulation and formatting.',
     files: [
-      { path: 'registry/ui/table-dropdown-menu.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/table-icons.tsx', type: 'registry:ui' },
+      { path: 'ui/table-dropdown-menu.tsx', type: 'registry:ui' },
+      { path: 'ui/table-icons.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [{ route: '/docs/table' }],
@@ -1020,9 +980,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
   {
     dependencies: ['@udecode/plate-toggle'],
     description: 'A toolbar button for expanding and collapsing blocks.',
-    files: [
-      { path: 'registry/ui/toggle-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/toggle-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/toggle' }],
       examples: ['toggle-demo'],
@@ -1042,9 +1000,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       '@udecode/plate-toggle',
     ],
     description: 'A menu for converting between different block types.',
-    files: [
-      { path: 'registry/ui/turn-into-dropdown-menu.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/turn-into-dropdown-menu.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         {
@@ -1067,9 +1023,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     dependencies: ['@slate-yjs/react'],
     description:
       'A cursor overlay to display multiplayer cursors in the yjs plugin.',
-    files: [
-      { path: 'registry/ui/remote-cursor-overlay.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/remote-cursor-overlay.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/collaboration' }],
       examples: [],
@@ -1085,7 +1039,7 @@ export const uiNodes: Registry['items'] = [
   {
     dependencies: [],
     description: 'A text highlighter for AI-generated content.',
-    files: [{ path: 'registry/ui/ai-leaf.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/ai-leaf.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/ai', title: 'AI' },
@@ -1106,9 +1060,9 @@ export const uiNodes: Registry['items'] = [
     dependencies: [],
     description: 'A quote component for block quotes.',
     files: [
-      { path: 'registry/ui/blockquote-element.tsx', type: 'registry:ui' },
+      { path: 'ui/blockquote-element.tsx', type: 'registry:ui' },
       {
-        path: 'registry/ui/blockquote-element-static.tsx',
+        path: 'ui/blockquote-element-static.tsx',
         type: 'registry:ui',
       },
     ],
@@ -1129,12 +1083,12 @@ export const uiNodes: Registry['items'] = [
     description:
       'A code block with syntax highlighting and language selection.',
     files: [
-      { path: 'registry/ui/code-block-element.tsx', type: 'registry:ui' },
+      { path: 'ui/code-block-element.tsx', type: 'registry:ui' },
       {
-        path: 'registry/ui/code-block-element-static.tsx',
+        path: 'ui/code-block-element-static.tsx',
         type: 'registry:ui',
       },
-      { path: 'registry/ui/code-block-combobox.tsx', type: 'registry:ui' },
+      { path: 'ui/code-block-combobox.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1152,8 +1106,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: [],
     description: 'An inline component for code snippets.',
     files: [
-      { path: 'registry/ui/code-leaf.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/code-leaf-static.tsx', type: 'registry:ui' },
+      { path: 'ui/code-leaf.tsx', type: 'registry:ui' },
+      { path: 'ui/code-leaf-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1171,8 +1125,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: [],
     description: 'A line component for code blocks.',
     files: [
-      { path: 'registry/ui/code-line-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/code-line-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/code-line-element.tsx', type: 'registry:ui' },
+      { path: 'ui/code-line-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1190,8 +1144,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: ['@udecode/plate-code-block'],
     description: 'A syntax highlighting component for code blocks.',
     files: [
-      { path: 'registry/ui/code-syntax-leaf.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/code-syntax-leaf-static.tsx', type: 'registry:ui' },
+      { path: 'ui/code-syntax-leaf.tsx', type: 'registry:ui' },
+      { path: 'ui/code-syntax-leaf-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1209,8 +1163,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: ['@udecode/plate-layout', '@udecode/plate-resizable'],
     description: 'A resizable column component for layout.',
     files: [
-      { path: 'registry/ui/column-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/column-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/column-element.tsx', type: 'registry:ui' },
+      { path: 'ui/column-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1228,9 +1182,9 @@ export const uiNodes: Registry['items'] = [
     dependencies: ['@udecode/plate-layout'],
     description: 'A resizable column component for layout.',
     files: [
-      { path: 'registry/ui/column-group-element.tsx', type: 'registry:ui' },
+      { path: 'ui/column-group-element.tsx', type: 'registry:ui' },
       {
-        path: 'registry/ui/column-group-element-static.tsx',
+        path: 'ui/column-group-element-static.tsx',
         type: 'registry:ui',
       },
     ],
@@ -1256,8 +1210,8 @@ export const uiNodes: Registry['items'] = [
     description:
       'A text component for displaying comments with visual indicators.',
     files: [
-      { path: 'registry/ui/comment-leaf.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/comment-leaf-static.tsx', type: 'registry:ui' },
+      { path: 'ui/comment-leaf.tsx', type: 'registry:ui' },
+      { path: 'ui/comment-leaf-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1275,8 +1229,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: ['@udecode/plate-suggestion'],
     description: 'A text component for suggestion.',
     files: [
-      { path: 'registry/ui/suggestion-leaf.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/suggestion-leaf-static.tsx', type: 'registry:ui' },
+      { path: 'ui/suggestion-leaf.tsx', type: 'registry:ui' },
+      { path: 'ui/suggestion-leaf-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [{ route: '/docs/suggestion' }],
@@ -1290,9 +1244,7 @@ export const uiNodes: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-suggestion'],
     description: 'A line break component for suggestion.',
-    files: [
-      { path: 'registry/ui/suggestion-line-break.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/suggestion-line-break.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/suggestion' }],
       examples: ['comments-demo', 'comments-pro'],
@@ -1306,8 +1258,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: ['@udecode/plate-date'],
     description: 'A date field component with calendar picker.',
     files: [
-      { path: 'registry/ui/date-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/date-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/date-element.tsx', type: 'registry:ui' },
+      { path: 'ui/date-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1327,9 +1279,9 @@ export const uiNodes: Registry['items'] = [
     description:
       'Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.',
     files: [
-      { path: 'registry/ui/equation-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/equation-element-static.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/equation-popover.tsx', type: 'registry:ui' },
+      { path: 'ui/equation-element.tsx', type: 'registry:ui' },
+      { path: 'ui/equation-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/equation-popover.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1350,9 +1302,9 @@ export const uiNodes: Registry['items'] = [
     description:
       'An inline LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.',
     files: [
-      { path: 'registry/ui/inline-equation-element.tsx', type: 'registry:ui' },
+      { path: 'ui/inline-equation-element.tsx', type: 'registry:ui' },
       {
-        path: 'registry/ui/inline-equation-element-static.tsx',
+        path: 'ui/inline-equation-element-static.tsx',
         type: 'registry:ui',
       },
     ],
@@ -1375,7 +1327,7 @@ export const uiNodes: Registry['items'] = [
     description: 'A toolbar button for inserting and editing inline equations.',
     files: [
       {
-        path: 'registry/ui/inline-equation-toolbar-button.tsx',
+        path: 'ui/inline-equation-toolbar-button.tsx',
         type: 'registry:ui',
       },
     ],
@@ -1396,9 +1348,7 @@ export const uiNodes: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-emoji', '@emoji-mart/data@1.2.1'],
     description: 'An input component for emoji search and insertion.',
-    files: [
-      { path: 'registry/ui/emoji-input-element.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/emoji-input-element.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/emoji' },
@@ -1419,9 +1369,7 @@ export const uiNodes: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-excalidraw'],
     description: 'A drawing component powered by Excalidraw.',
-    files: [
-      { path: 'registry/ui/excalidraw-element.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/excalidraw-element.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/excalidraw' }],
       // FIXME
@@ -1435,9 +1383,7 @@ export const uiNodes: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-font'],
     description: 'A toolbar control for adjusting font size.',
-    files: [
-      { path: 'registry/ui/font-size-toolbar-button.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/font-size-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/font' }],
       examples: ['list-demo'],
@@ -1454,8 +1400,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: [],
     description: 'A heading with multiple level support.',
     files: [
-      { path: 'registry/ui/heading-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/heading-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/heading-element.tsx', type: 'registry:ui' },
+      { path: 'ui/heading-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1473,8 +1419,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: [],
     description: 'A text highlighter with customizable colors.',
     files: [
-      { path: 'registry/ui/highlight-leaf.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/highlight-leaf-static.tsx', type: 'registry:ui' },
+      { path: 'ui/highlight-leaf.tsx', type: 'registry:ui' },
+      { path: 'ui/highlight-leaf-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [{ route: '/docs/highlight' }],
@@ -1489,8 +1435,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: [],
     description: 'A horizontal rule component with focus states.',
     files: [
-      { path: 'registry/ui/hr-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/hr-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/hr-element.tsx', type: 'registry:ui' },
+      { path: 'ui/hr-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1509,8 +1455,8 @@ export const uiNodes: Registry['items'] = [
     description:
       'Image element with lazy loading, resizing capabilities, and optional caption.',
     files: [
-      { path: 'registry/ui/image-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/image-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/image-element.tsx', type: 'registry:ui' },
+      { path: 'ui/image-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1532,7 +1478,7 @@ export const uiNodes: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-media'],
     description: 'A modal component for previewing and manipulating images.',
-    files: [{ path: 'registry/ui/image-preview.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/image-preview.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/media' },
@@ -1549,8 +1495,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: ['@udecode/plate-kbd'],
     description: 'A component for styling keyboard shortcuts.',
     files: [
-      { path: 'registry/ui/kbd-leaf.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/kbd-leaf-static.tsx', type: 'registry:ui' },
+      { path: 'ui/kbd-leaf.tsx', type: 'registry:ui' },
+      { path: 'ui/kbd-leaf-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [{ route: '/docs/kbd', title: 'Keyboard Input' }],
@@ -1565,8 +1511,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: ['@udecode/plate-link'],
     description: 'A component for rendering hyperlinks with hover states.',
     files: [
-      { path: 'registry/ui/link-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/link-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/link-element.tsx', type: 'registry:ui' },
+      { path: 'ui/link-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1583,7 +1529,7 @@ export const uiNodes: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-list'],
     description: 'A list element for ordered and unordered items.',
-    files: [{ path: 'registry/ui/list-element.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/list-element.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/list' }],
       examples: ['list-demo'],
@@ -1597,9 +1543,9 @@ export const uiNodes: Registry['items'] = [
     dependencies: ['@udecode/plate-media', '@udecode/plate-resizable'],
     description: 'An audio player component with caption support.',
     files: [
-      { path: 'registry/ui/media-audio-element.tsx', type: 'registry:ui' },
+      { path: 'ui/media-audio-element.tsx', type: 'registry:ui' },
       {
-        path: 'registry/ui/media-audio-element-static.tsx',
+        path: 'ui/media-audio-element-static.tsx',
         type: 'registry:ui',
       },
     ],
@@ -1626,9 +1572,7 @@ export const uiNodes: Registry['items'] = [
     ],
     description:
       'A component for embedded media content with resizing and caption support.',
-    files: [
-      { path: 'registry/ui/media-embed-element.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/media-embed-element.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/media' },
@@ -1653,9 +1597,9 @@ export const uiNodes: Registry['items'] = [
     description:
       'A file attachment component with download capability and caption.',
     files: [
-      { path: 'registry/ui/media-file-element.tsx', type: 'registry:ui' },
+      { path: 'ui/media-file-element.tsx', type: 'registry:ui' },
       {
-        path: 'registry/ui/media-file-element-static.tsx',
+        path: 'ui/media-file-element-static.tsx',
         type: 'registry:ui',
       },
     ],
@@ -1676,7 +1620,7 @@ export const uiNodes: Registry['items'] = [
     description: 'A placeholder for media upload progress indication.',
     files: [
       {
-        path: 'registry/ui/media-placeholder-element.tsx',
+        path: 'ui/media-placeholder-element.tsx',
         type: 'registry:ui',
       },
     ],
@@ -1708,9 +1652,9 @@ export const uiNodes: Registry['items'] = [
     description:
       'A video player component with YouTube and file upload support.',
     files: [
-      { path: 'registry/ui/media-video-element.tsx', type: 'registry:ui' },
+      { path: 'ui/media-video-element.tsx', type: 'registry:ui' },
       {
-        path: 'registry/ui/media-video-element-static.tsx',
+        path: 'ui/media-video-element-static.tsx',
         type: 'registry:ui',
       },
     ],
@@ -1737,8 +1681,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: ['@udecode/plate-mention'],
     description: 'A mention element with customizable prefix and label.',
     files: [
-      { path: 'registry/ui/mention-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/mention-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/mention-element.tsx', type: 'registry:ui' },
+      { path: 'ui/mention-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1755,9 +1699,7 @@ export const uiNodes: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-mention'],
     description: 'An input component for user mentions with autocomplete.',
-    files: [
-      { path: 'registry/ui/mention-input-element.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/mention-input-element.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/mention' },
@@ -1777,8 +1719,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: [],
     description: 'A paragraph block with background color support.',
     files: [
-      { path: 'registry/ui/paragraph-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/paragraph-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/paragraph-element.tsx', type: 'registry:ui' },
+      { path: 'ui/paragraph-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1795,9 +1737,7 @@ export const uiNodes: Registry['items'] = [
   {
     dependencies: [],
     description: 'A component that highlights search results in text.',
-    files: [
-      { path: 'registry/ui/search-highlight-leaf.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/search-highlight-leaf.tsx', type: 'registry:ui' }],
     meta: {
       // examples: ['find-replace-demo'],
       docs: [{ route: '/docs/highlight' }],
@@ -1819,9 +1759,7 @@ export const uiNodes: Registry['items'] = [
       '@udecode/plate-toggle',
     ],
     description: 'A command input component for inserting various elements.',
-    files: [
-      { path: 'registry/ui/slash-input-element.tsx', type: 'registry:ui' },
-    ],
+    files: [{ path: 'ui/slash-input-element.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/slash-command', title: 'Slash' },
@@ -1844,9 +1782,9 @@ export const uiNodes: Registry['items'] = [
     dependencies: ['@udecode/plate-table'],
     description: 'A table cell with resizable borders and selection.',
     files: [
-      { path: 'registry/ui/table-cell-element.tsx', type: 'registry:ui' },
+      { path: 'ui/table-cell-element.tsx', type: 'registry:ui' },
       {
-        path: 'registry/ui/table-cell-element-static.tsx',
+        path: 'ui/table-cell-element-static.tsx',
         type: 'registry:ui',
       },
     ],
@@ -1871,9 +1809,9 @@ export const uiNodes: Registry['items'] = [
     description:
       'A table component with floating toolbar and border customization.',
     files: [
-      { path: 'registry/ui/table-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/table-icons.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/table-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/table-element.tsx', type: 'registry:ui' },
+      { path: 'ui/table-icons.tsx', type: 'registry:ui' },
+      { path: 'ui/table-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1891,8 +1829,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: [],
     description: 'A table row component with optional border hiding.',
     files: [
-      { path: 'registry/ui/table-row-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/table-row-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/table-row-element.tsx', type: 'registry:ui' },
+      { path: 'ui/table-row-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1909,7 +1847,7 @@ export const uiNodes: Registry['items'] = [
   {
     dependencies: [],
     description: 'A tag element component with selection states and styling.',
-    files: [{ path: 'registry/ui/tag-element.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/tag-element.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
         { route: '/docs/multi-select' },
@@ -1927,8 +1865,8 @@ export const uiNodes: Registry['items'] = [
     description:
       'A table of contents component with links to document headings.',
     files: [
-      { path: 'registry/ui/toc-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/toc-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/toc-element.tsx', type: 'registry:ui' },
+      { path: 'ui/toc-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [
@@ -1951,7 +1889,7 @@ export const uiNodes: Registry['items'] = [
   {
     dependencies: ['@udecode/plate-list'],
     description: 'A checkbox list element with interactive todo items.',
-    files: [{ path: 'registry/ui/todo-list-element.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/todo-list-element.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/list' }],
       examples: ['list-demo'],
@@ -1965,8 +1903,8 @@ export const uiNodes: Registry['items'] = [
     dependencies: ['@udecode/plate-toggle'],
     description: 'A collapsible component for toggling content visibility.',
     files: [
-      { path: 'registry/ui/toggle-element.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/toggle-element-static.tsx', type: 'registry:ui' },
+      { path: 'ui/toggle-element.tsx', type: 'registry:ui' },
+      { path: 'ui/toggle-element-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       docs: [{ route: '/docs/toggle' }],
@@ -1984,7 +1922,7 @@ export const uiPrimitives: Registry['items'] = [
     dependencies: ['@radix-ui/react-alert-dialog'],
     description:
       'A modal dialog that interrupts the user with important content and expects a response.',
-    files: [{ path: 'registry/ui/alert-dialog.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/alert-dialog.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/alert-dialog',
@@ -1998,7 +1936,7 @@ export const uiPrimitives: Registry['items'] = [
   {
     dependencies: ['@radix-ui/react-avatar'],
     description: 'An image element with a fallback for representing the user.',
-    files: [{ path: 'registry/ui/avatar.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/avatar.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/avatar',
@@ -2012,7 +1950,7 @@ export const uiPrimitives: Registry['items'] = [
   {
     dependencies: ['@radix-ui/react-slot'],
     description: 'Displays a button or a component that looks like a button.',
-    files: [{ path: 'registry/ui/button.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/button.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/button',
@@ -2027,7 +1965,7 @@ export const uiPrimitives: Registry['items'] = [
     dependencies: ['react-day-picker@8.10.1'],
     description:
       'A date field component that allows users to enter and edit date.',
-    files: [{ path: 'registry/ui/calendar.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/calendar.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/calendar',
@@ -2043,8 +1981,8 @@ export const uiPrimitives: Registry['items'] = [
     description:
       'A control that allows the user to toggle between checked and not checked.',
     files: [
-      { path: 'registry/ui/checkbox.tsx', type: 'registry:ui' },
-      { path: 'registry/ui/checkbox-static.tsx', type: 'registry:ui' },
+      { path: 'ui/checkbox.tsx', type: 'registry:ui' },
+      { path: 'ui/checkbox-static.tsx', type: 'registry:ui' },
     ],
     meta: {
       links: {
@@ -2059,7 +1997,7 @@ export const uiPrimitives: Registry['items'] = [
   {
     dependencies: ['@radix-ui/react-dialog', '@udecode/cmdk'],
     description: 'Fast, composable, unstyled command menu for React.',
-    files: [{ path: 'registry/ui/command.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/command.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/command',
@@ -2074,7 +2012,7 @@ export const uiPrimitives: Registry['items'] = [
     dependencies: ['@radix-ui/react-context-menu'],
     description:
       'Displays a menu to the user — such as a set of actions or functions — triggered by a button.',
-    files: [{ path: 'registry/ui/context-menu.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/context-menu.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/context-menu',
@@ -2089,7 +2027,7 @@ export const uiPrimitives: Registry['items'] = [
     dependencies: ['@radix-ui/react-dropdown-menu'],
     description:
       'Displays a menu to the user — such as a set of actions or functions — triggered by a button.',
-    files: [{ path: 'registry/ui/dropdown-menu.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/dropdown-menu.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/dropdown-menu',
@@ -2109,7 +2047,7 @@ export const uiPrimitives: Registry['items'] = [
       '@radix-ui/react-slot',
     ],
     description: 'Building forms with React Hook Form and Zod.',
-    files: [{ path: 'registry/ui/form.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/form.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/form',
@@ -2124,7 +2062,7 @@ export const uiPrimitives: Registry['items'] = [
     dependencies: [],
     description:
       'Displays a form input field or a component that looks like an input field.',
-    files: [{ path: 'registry/ui/input.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/input.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/input',
@@ -2138,7 +2076,7 @@ export const uiPrimitives: Registry['items'] = [
   {
     dependencies: ['@radix-ui/react-label'],
     description: 'Renders an accessible label associated with controls.',
-    files: [{ path: 'registry/ui/label.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/label.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/label',
@@ -2152,7 +2090,7 @@ export const uiPrimitives: Registry['items'] = [
   {
     dependencies: ['@radix-ui/react-popover'],
     description: 'Displays rich content in a portal, triggered by a button.',
-    files: [{ path: 'registry/ui/popover.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/popover.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/popover',
@@ -2166,7 +2104,7 @@ export const uiPrimitives: Registry['items'] = [
   {
     dependencies: ['@radix-ui/react-separator'],
     description: 'Visually or semantically separates content.',
-    files: [{ path: 'registry/ui/separator.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/separator.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/separator',
@@ -2181,7 +2119,7 @@ export const uiPrimitives: Registry['items'] = [
     dependencies: ['@radix-ui/react-toolbar'],
     description:
       'A customizable toolbar component with various button styles and group',
-    files: [{ path: 'registry/ui/toolbar.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/toolbar.tsx', type: 'registry:ui' }],
     meta: {
       // Add links here if needed
     },
@@ -2197,7 +2135,7 @@ export const uiPrimitives: Registry['items'] = [
     dependencies: ['@radix-ui/react-tooltip'],
     description:
       'A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.',
-    files: [{ path: 'registry/ui/tooltip.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/tooltip.tsx', type: 'registry:ui' }],
     meta: {
       links: {
         doc: 'https://ui.shadcn.com/docs/components/tooltip',
@@ -2210,7 +2148,7 @@ export const uiPrimitives: Registry['items'] = [
   },
   {
     description: 'A loading spinner component with size variants.',
-    files: [{ path: 'registry/ui/spinner.tsx', type: 'registry:ui' }],
+    files: [{ path: 'ui/spinner.tsx', type: 'registry:ui' }],
     meta: {
       // Add links here if needed
     },

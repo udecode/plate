@@ -3,12 +3,10 @@
   "name": "block-menu-plugins",
   "type": "registry:component",
   "author": "udecode (https://platejs.org)",
-  "dependencies": [
-    "@udecode/plate-selection"
-  ],
+  "dependencies": ["@udecode/plate-selection"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/block-context-menu.json",
-    "https://platejs.org/r/styles/default/block-selection-plugins.json"
+    "https://platejs.org/r/block-context-menu.json",
+    "https://platejs.org/r/block-selection-plugins.json"
   ],
   "files": [
     {

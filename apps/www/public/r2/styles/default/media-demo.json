@@ -4,9 +4,7 @@
   "type": "registry:example",
   "author": "udecode (https://platejs.org)",
   "description": "Media embedding and management.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/media-plugins.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/media-plugins.json"],
   "files": [
     {
       "path": "examples/demo.tsx",

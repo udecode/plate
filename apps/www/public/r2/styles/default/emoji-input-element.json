@@ -5,13 +5,10 @@
   "title": "Emoji Input Element",
   "author": "udecode (https://platejs.org)",
   "description": "An input component for emoji search and insertion.",
-  "dependencies": [
-    "@udecode/plate-emoji",
-    "@emoji-mart/data@1.2.1"
-  ],
+  "dependencies": ["@udecode/plate-emoji", "@emoji-mart/data@1.2.1"],
   "registryDependencies": [
-    "https://platejs.org/r/styles/default/inline-combobox.json",
-    "https://platejs.org/r/styles/default/use-debounce.json"
+    "https://platejs.org/r/inline-combobox.json",
+    "https://platejs.org/r/use-debounce.json"
   ],
   "files": [
     {
@@ -30,8 +27,6 @@
         "route": "https://pro.platejs.org/docs/components/emoji-input-element"
       }
     ],
-    "examples": [
-      "emoji-demo"
-    ]
+    "examples": ["emoji-demo"]
   }
 }

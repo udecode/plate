@@ -5,9 +5,7 @@
   "title": "Autoformat",
   "author": "udecode (https://platejs.org)",
   "description": "Apply formatting automatically using shortcodes.",
-  "registryDependencies": [
-    "https://platejs.org/r/styles/default/autoformat-plugin.json"
-  ],
+  "registryDependencies": ["https://platejs.org/r/autoformat-plugin.json"],
   "files": [
     {
       "path": "examples/demo.tsx",
