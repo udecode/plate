@@ -20,28 +20,26 @@ export type SlateTextProps<
     as?: React.ElementType;
   };
 
-export function SlateText(props: SlateTextProps) {
-  const {
-    as,
-    attributes,
-    children,
-    nodeProps,
-    text,
-    textToAttributes,
-    ...rest
-  } = omitPluginContext(props);
+export const SlateText = React.forwardRef<HTMLSpanElement, SlateTextProps>(
+  (props, ref) => {
+    const { as, attributes, children, text, textToAttributes, ...rest } =
+      omitPluginContext(props);
 
-  const className = clsx(props.className, nodeProps?.className);
+    const className = clsx(props.className, attributes?.className);
 
-  const rootProps = {
-    ...attributes,
-    ...rest,
-    ...nodeProps,
-    ...textToAttributes?.(text),
-    className: className || undefined,
-  };
+    const rootProps = {
+      ...rest,
+      ...attributes,
+      ...textToAttributes?.(text),
+      className: className || undefined,
+    };
 
-  const Text = (as ?? 'span') as any;
+    const Text = (as ?? 'span') as any;
 
-  return <Text {...rootProps}>{children}</Text>;
-}
+    return (
+      <Text {...rootProps} ref={ref}>
+        {children}
+      </Text>
+    );
+  }
+);

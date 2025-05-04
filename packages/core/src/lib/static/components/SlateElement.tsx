@@ -18,25 +18,26 @@ export type SlateElementProps<
 } & BoxStaticProps &
   SlateRenderElementProps<N, P>;
 
-export const SlateElement = (props: SlateElementProps) => {
-  const { as, attributes, element, elementToAttributes, nodeProps, ...rest } =
-    omitPluginContext(props);
+export const SlateElement = React.forwardRef<HTMLDivElement, SlateElementProps>(
+  (props, ref) => {
+    const { as, attributes, element, elementToAttributes, ...rest } =
+      omitPluginContext(props);
 
-  const block = !!element.id && props.editor.api.isBlock(element);
+    const block = !!element.id && props.editor.api.isBlock(element);
 
-  const className = clsx(props.className, nodeProps?.className);
+    const className = clsx(props.className, attributes?.className);
 
-  const rootProps = {
-    ...attributes,
-    ...rest,
-    ...nodeProps,
-    ...elementToAttributes?.(element),
-    className: className || undefined,
-    'data-block-id': block ? element.id : undefined,
-    style: { position: 'relative', ...props.style, ...nodeProps?.style },
-  };
+    const rootProps = {
+      ...rest,
+      ...attributes,
+      ...elementToAttributes?.(element),
+      className: className || undefined,
+      'data-block-id': block ? element.id : undefined,
+      style: { position: 'relative', ...props.style, ...attributes?.style },
+    };
 
-  const Element = (as ?? 'div') as any;
+    const Element = (as ?? 'div') as any;
 
-  return <Element {...rootProps} ref={attributes.ref} />;
-};
+    return <Element {...rootProps} ref={ref} />;
+  }
+);

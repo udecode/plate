@@ -1,12 +1,11 @@
 import {
+  type PlateElementProps,
   useComposing,
   useEditorRef,
   useFocused,
   useSelected,
 } from '@udecode/plate-core/react';
 import { type QueryNodeOptions, queryNode } from '@udecode/slate';
-
-import type { PlateElementProps } from './PlateElement';
 
 export interface PlaceholderProps extends PlateElementProps {
   placeholder: string;

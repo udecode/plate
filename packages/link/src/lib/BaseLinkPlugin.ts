@@ -95,9 +95,8 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
     dangerouslyAllowAttributes: ['target'],
     isElement: true,
     isInline: true,
-    props: ({ editor, element }) => ({
-      nodeProps: getLinkAttributes(editor, element as TLinkElement),
-    }),
+    props: ({ editor, element }) =>
+      getLinkAttributes(editor, element as TLinkElement),
   },
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],

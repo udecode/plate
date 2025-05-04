@@ -97,9 +97,8 @@ export const pipeRenderTextStatic = (
     }
 
     const ctxProps = getRenderNodeStaticProps({
-      attributes: { attributes } as any,
       editor,
-      props: { ...attributes, ...props } as any,
+      props: { attributes, ...props } as any,
     }) as any;
 
     const text = ctxProps.text;

@@ -98,9 +98,8 @@ export const pipeRenderLeafStatic = (
     }
 
     const ctxProps = getRenderNodeStaticProps({
-      attributes: attributes as any,
       editor,
-      props: { ...attributes, ...props } as any,
+      props: { attributes, ...props } as any,
     }) as any;
 
     const leaf = ctxProps.leaf;

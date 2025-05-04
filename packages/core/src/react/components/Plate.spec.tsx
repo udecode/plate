@@ -9,8 +9,8 @@ import isEqual from 'lodash/isEqual';
 import memoize from 'lodash/memoize';
 
 import type {
+  PlateElementProps,
   PlatePlugins,
-  PlateRenderElementProps,
   PlateRenderLeafProps,
 } from '../plugin';
 
@@ -437,19 +437,15 @@ describe('Plate', () => {
     const ParagraphElement = ({
       attributes,
       children,
-      nodeProps,
-    }: PlateRenderElementProps) => (
-      <p {...attributes} {...nodeProps} data-testid="paragraph">
+      ...props
+    }: PlateElementProps) => (
+      <p {...attributes} data-testid="paragraph">
         {children}
       </p>
     );
 
-    const BoldLeaf = ({
-      attributes,
-      children,
-      nodeProps,
-    }: PlateRenderLeafProps) => (
-      <strong {...attributes} {...nodeProps} data-testid="bold">
+    const BoldLeaf = ({ attributes, children }: PlateRenderLeafProps) => (
+      <strong {...attributes} data-testid="bold">
         {children}
       </strong>
     );

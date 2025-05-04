@@ -13,16 +13,18 @@ export const LinkElement = withRef<typeof PlateElement>(
     const element = props.element as TLinkElement;
     const { props: linkProps } = useLink({ element });
 
+    console.log;
+
     return (
       <PlateElement
         ref={ref}
         as="a"
         className={cn(
           className,
-          'font-medium text-primary underline decoration-primary underline-offset-4'
+          'text-primary decoration-primary font-medium underline underline-offset-4'
         )}
-        {...(linkProps as any)}
         {...props}
+        {...(linkProps as any)}
       >
         {children}
       </PlateElement>

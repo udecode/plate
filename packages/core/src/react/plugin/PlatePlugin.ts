@@ -44,10 +44,9 @@ import type {
   SlatePluginContext,
   WithAnyKey,
 } from '../../lib';
+import type { PlateElementProps, PlateLeafProps } from '../components';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from './DOMHandlers';
-import type { PlateRenderElementProps } from './PlateRenderElementProps';
-import type { PlateRenderLeafProps } from './PlateRenderLeafProps';
 
 export type AnyEditorPlatePlugin = EditorPlatePlugin<AnyPluginConfig>;
 
@@ -136,10 +135,8 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
   };
 
 export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
-  parse?: React.FC<
-    PlateRenderElementProps<TElement, C> & PlateRenderLeafProps<TText, C>
-  >;
-  query?: (options: PlateRenderElementProps) => boolean;
+  parse?: React.FC<PlateElementProps<TElement, C> & PlateLeafProps<TText, C>>;
+  query?: (options: PlateElementProps) => boolean;
 };
 
 // -----------------------------------------------------------------------------
@@ -194,7 +191,7 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
 // -----------------------------------------------------------------------------
 
 export type LeafNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: PlateRenderLeafProps<TText, C>) => AnyObject | undefined)
+  | ((props: PlateLeafProps<TText, C>) => AnyObject | undefined)
   | AnyObject;
 
 /**
@@ -204,8 +201,7 @@ export type LeafNodeProps<C extends AnyPluginConfig = PluginConfig> =
  */
 export type NodeProps<C extends AnyPluginConfig = PluginConfig> =
   | ((
-      props: PlateRenderElementProps<TElement, C> &
-        PlateRenderLeafProps<TText, C>
+      props: PlateElementProps<TElement, C> & PlateLeafProps<TText, C>
     ) => AnyObject | undefined)
   | AnyObject;
 
@@ -217,14 +213,14 @@ export type NodeWrapperComponent<C extends AnyPluginConfig = PluginConfig> = (
 /** @deprecated Use {@link RenderNodeWrapperProps} instead. */
 export interface NodeWrapperComponentProps<
   C extends AnyPluginConfig = PluginConfig,
-> extends PlateRenderElementProps<TElement, C> {
+> extends PlateElementProps<TElement, C> {
   key: string;
 }
 
 /** @deprecated Use {@link RenderNodeWrapperFunction} instead. */
 export type NodeWrapperComponentReturnType<
   C extends AnyPluginConfig = PluginConfig,
-> = React.FC<PlateRenderElementProps<TElement, C>> | undefined;
+> = React.FC<PlateElementProps<TElement, C>> | undefined;
 
 export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C> & { value: Value }
@@ -435,7 +431,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * in plate-core.
          */
         belowRootNodes?: (
-          props: PlateRenderElementProps<TElement, C>
+          props: PlateElementProps<TElement, C>
         ) => React.ReactNode;
       }>;
       /** @see {@link Shortcuts} */
@@ -774,12 +770,12 @@ export type RenderNodeWrapper<C extends AnyPluginConfig = PluginConfig> = (
 ) => RenderNodeWrapperFunction;
 
 export type RenderNodeWrapperFunction =
-  | ((elementProps: PlateRenderElementProps) => React.ReactNode)
+  | ((elementProps: PlateElementProps) => React.ReactNode)
   | undefined;
 
 export interface RenderNodeWrapperProps<
   C extends AnyPluginConfig = PluginConfig,
-> extends PlateRenderElementProps<TElement, C> {
+> extends PlateElementProps<TElement, C> {
   key: string;
 }
 
@@ -802,7 +798,7 @@ export type Shortcut = HotkeysOptions & {
 export type Shortcuts = Record<string, Shortcut | null>;
 
 export type TextNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: PlateRenderLeafProps<TText, C>) => AnyObject | undefined)
+  | ((props: PlateLeafProps<TText, C>) => AnyObject | undefined)
   | AnyObject;
 
 export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =

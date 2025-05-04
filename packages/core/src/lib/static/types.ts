@@ -26,6 +26,7 @@ export type SlateRenderLeafProps<
 
 export type SlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
   SlatePluginContext<C> & {
+    attributes?: AnyObject;
     className?: string;
     /** @see {@link NodeProps} */
     nodeProps?: AnyObject;

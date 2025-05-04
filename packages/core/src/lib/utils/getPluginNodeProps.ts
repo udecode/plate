@@ -8,7 +8,7 @@ import type { AnyEditorPlugin } from '../plugin';
 import { type SlateRenderNodeProps, getNodeDataAttributeKeys } from '../static';
 
 export const getPluginNodeProps = ({
-  attributes,
+  attributes: nodeAttributes,
   node,
   plugin,
   props,
@@ -18,44 +18,44 @@ export const getPluginNodeProps = ({
   node?: TElement | TText;
   plugin?: AnyEditorPlugin;
 }): any => {
-  let newProps: AnyObject = {};
+  const newProps: any = { ...props, attributes: { ...props.attributes } };
 
   if (plugin?.node.props) {
-    newProps =
+    const pluginNodeProps =
       (typeof plugin.node.props === 'function'
-        ? plugin.node.props(props as any)
+        ? plugin.node.props(newProps as any)
         : plugin.node.props) ?? {};
+
+    newProps.attributes = {
+      ...newProps.attributes,
+      ...pluginNodeProps,
+    };
   }
-  if (!newProps.nodeProps && attributes && plugin) {
-    /**
-     * WARNING: Improper use of `dangerouslyAllowAttributes` WILL make your
-     * application vulnerable to cross-site scripting (XSS) or information
-     * exposure attacks.
-     *
-     * @see {@link BasePluginNode.dangerouslyAllowAttributes}
-     */
-    newProps.nodeProps = pick(attributes, [
-      ...(plugin.node.dangerouslyAllowAttributes ?? []),
-      ...(node ? getNodeDataAttributeKeys(node) : []),
-    ]);
-  } else if (newProps.nodeProps && attributes && plugin) {
-    // Add data attributes to nodeProps if nodeProps is already set
-    newProps.nodeProps = {
-      ...newProps.nodeProps,
-      ...pick(attributes, [...(node ? getNodeDataAttributeKeys(node) : [])]),
+  if (nodeAttributes && plugin) {
+    // Add data attributes to attributes if attributes is already set
+    newProps.attributes = {
+      ...newProps.attributes,
+      ...pick(
+        nodeAttributes,
+        /**
+         * WARNING: Improper use of `dangerouslyAllowAttributes` WILL make your
+         * application vulnerable to cross-site scripting (XSS) or information
+         * exposure attacks.
+         *
+         * @see {@link BasePluginNode.dangerouslyAllowAttributes}
+         */
+        ...(plugin.node.dangerouslyAllowAttributes ?? []),
+        [...(node ? getNodeDataAttributeKeys(node) : [])]
+      ),
     };
   }
 
-  props = { ...props, ...newProps };
+  // remove attributes values that are undefined
+  Object.keys(newProps.attributes).forEach((key) => {
+    if (newProps.attributes?.[key] === undefined) {
+      delete newProps.attributes?.[key];
+    }
+  });
 
-  if (props.nodeProps) {
-    // remove attributes values that are undefined
-    Object.keys(props.nodeProps).forEach((key) => {
-      if (props.nodeProps?.[key] === undefined) {
-        delete props.nodeProps?.[key];
-      }
-    });
-  }
-
-  return props;
+  return newProps;
 };

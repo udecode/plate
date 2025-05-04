@@ -44,11 +44,7 @@ export const pipeRenderElementStatic = (
     }
 
     return (
-      <SlateElement
-        attributes={props.attributes}
-        element={props.element}
-        {...({} as any)}
-      >
+      <SlateElement element={props.element} {...(props.attributes as any)}>
         {props.children}
       </SlateElement>
     );

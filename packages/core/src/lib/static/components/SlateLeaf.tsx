@@ -21,29 +21,29 @@ export type SlateLeafProps<
     as?: React.ElementType;
   };
 
-export function SlateLeaf(props: SlateLeafProps) {
-  const {
-    as,
-    attributes,
-    leaf,
-    leafPosition,
-    leafToAttributes,
-    nodeProps,
-    text,
-    ...rest
-  } = omitPluginContext(props);
+export const SlateLeaf = React.forwardRef<HTMLSpanElement, SlateLeafProps>(
+  (props, ref) => {
+    const {
+      as,
+      attributes,
+      leaf,
+      leafPosition,
+      leafToAttributes,
+      text,
+      ...rest
+    } = omitPluginContext(props);
 
-  const className = clsx(props.className, nodeProps?.className);
+    const className = clsx(props.className, attributes?.className);
 
-  const rootProps = {
-    ...attributes,
-    ...rest,
-    ...nodeProps,
-    ...leafToAttributes?.(leaf),
-    className: className || undefined,
-  };
+    const rootProps = {
+      ...rest,
+      ...attributes,
+      ...leafToAttributes?.(leaf),
+      className: className || undefined,
+    };
 
-  const Leaf = (as ?? 'span') as any;
+    const Leaf = (as ?? 'span') as any;
 
-  return <Leaf {...rootProps} />;
-}
+    return <Leaf {...rootProps} ref={ref} />;
+  }
+);
