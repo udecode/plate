@@ -13,8 +13,6 @@ export const LinkElement = withRef<typeof PlateElement>(
     const element = props.element as TLinkElement;
     const { props: linkProps } = useLink({ element });
 
-    console.log;
-
     return (
       <PlateElement
         ref={ref}
