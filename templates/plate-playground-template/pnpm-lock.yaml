@@ -297,11 +297,11 @@ importers:
         specifier: ^2.1.2
         version: 2.1.2(react@19.1.0)
       zod:
-        specifier: ^3.24.3
+        specifier: 3.24.3
         version: 3.24.3
     devDependencies:
       '@tailwindcss/postcss':
-        specifier: 4.1.4
+        specifier: ^4.1.4
         version: 4.1.4
       '@types/node':
         specifier: ^22.13.1
