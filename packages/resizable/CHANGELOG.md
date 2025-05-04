@@ -1,5 +1,7 @@
 # @udecode/plate-resizable
 
+## 48.0.0
+
 ## 44.0.0
 
 ### Major Changes

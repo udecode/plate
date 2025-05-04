@@ -1,5 +1,11 @@
 # @udecode/plate-node-id
 
+## 48.0.0
+
+### Patch Changes
+
+- [#4225](https://github.com/udecode/plate/pull/4225) by [@zbeyens](https://github.com/zbeyens) – Fix: `TypeError: Cannot add property id, object is not extensible`
+
 ## 46.0.11
 
 ### Patch Changes

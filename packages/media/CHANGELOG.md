@@ -1,5 +1,7 @@
 # @udecode/plate-media
 
+## 48.0.0
+
 ## 44.0.6
 
 ### Patch Changes
