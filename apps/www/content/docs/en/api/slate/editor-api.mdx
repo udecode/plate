@@ -1646,6 +1646,22 @@ Get the paths that need to be normalized after an operation.
 </APIReturns>
 </API>
 
+### `shouldNormalizeNode`
+
+Override this method to prevent normalizing a specific node. Defaults to returning `true`.
+
+<API name="shouldNormalizeNode">
+<APIParameters>
+  <APIItem name="entry" type="NodeEntry">
+    The node entry (node and path) to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  True if the node should be normalized, false otherwise.
+</APIReturns>
+</API>
+
 ### `setNormalizing`
 
 Manually control the editor's normalizing state.

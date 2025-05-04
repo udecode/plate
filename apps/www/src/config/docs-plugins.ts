@@ -61,6 +61,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
   {
     description: 'Collaborate with others in a single document.',
     href: '/docs/collaboration',
+    label: 'New',
     title: 'Collaboration',
   },
   {

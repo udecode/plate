@@ -160,11 +160,9 @@ export const editorComponents = {
 export const useCreateEditor = (
   {
     components,
-    override,
     readOnly,
     ...options
   }: {
-    components?: Record<string, any>;
     plugins?: any[];
     readOnly?: boolean;
   } & Omit<CreatePlateEditorOptions, 'plugins'> = {},
@@ -172,12 +170,9 @@ export const useCreateEditor = (
 ) => {
   return usePlateEditor<Value, (typeof editorPlugins)[number]>(
     {
-      override: {
-        components: {
-          ...(readOnly ? viewComponents : withPlaceholders(editorComponents)),
-          ...components,
-        },
-        ...override,
+      components: {
+        ...(readOnly ? viewComponents : withPlaceholders(editorComponents)),
+        ...components,
       },
       plugins: (readOnly ? viewPlugins : editorPlugins) as any,
       ...options,

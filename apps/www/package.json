@@ -10,7 +10,7 @@
     "build:contentlayer": "contentlayer2 build",
     "build:registry": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "build:tw": "yarn tailwindcss -i ./src/styles/globals.css -o ./public/tailwind.css --minify",
-    "dev": "concurrently \"contentlayer2 dev\" \"next dev --turbo\"",
+    "dev": "concurrently \"contentlayer2 dev\" \"next dev --turbo\" \"PORT=4444 node ../../node_modules/y-webrtc/bin/server.js\"",
     "lint": "yarn p:lint",
     "lint:debug": "TIMING=1 DEBUG=eslint:cli-engine yarn lint:fix",
     "lint:fix": "yarn p:lint:fix",
@@ -37,6 +37,7 @@
     "@ariakit/react": "0.4.17",
     "@emoji-mart/data": "1.2.1",
     "@faker-js/faker": "9.7.0",
+    "@hocuspocus/provider": "^2.15.2",
     "@hookform/resolvers": "3.10.0",
     "@next/third-parties": "15.3.1",
     "@radix-ui/react-accordion": "1.2.8",
@@ -167,6 +168,7 @@
     "uploadthing": "7.6.0",
     "use-file-picker": "2.1.2",
     "vaul": "1.1.2",
+    "y-webrtc": "10.3.0",
     "zod": "3.24.3"
   },
   "devDependencies": {

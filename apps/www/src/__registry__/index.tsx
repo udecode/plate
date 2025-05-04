@@ -4136,5 +4136,20 @@ export const Index: Record<string, any> = {
       source: "",
       meta: undefined,
     },
+    "collaboration-demo": {
+      name: "collaboration-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: [],
+      files: [{
+        path: "src/registry/default/examples/collaboration-demo.tsx",
+        type: "registry:example",
+        target: ""
+      }],
+      categories: undefined,
+      component: React.lazy(() => import("@/registry/default/examples/collaboration-demo.tsx")),
+      source: "",
+      meta: undefined,
+    },
   },
 }

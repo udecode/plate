@@ -21,7 +21,7 @@ export default function ControlledEditorDemo() {
     <div>
       <Plate editor={editor}>
         <EditorContainer>
-          <Editor />
+          <Editor className="px-0" />
         </EditorContainer>
       </Plate>
 
@@ -51,6 +51,49 @@ export default function ControlledEditorDemo() {
           Reset Editor
         </Button>
       </div>
+
+      <hr className="my-8" />
+      <h2 className="mb-2 text-lg font-semibold">Async Controlled Editor</h2>
+      <AsyncControlledEditorDemo />
     </div>
+  );
+}
+
+function AsyncControlledEditorDemo() {
+  const [initialValue, setInitialValue] = React.useState<
+    { children: { text: string }[]; type: string }[] | undefined
+  >(undefined);
+  const [loading, setLoading] = React.useState(true);
+  const editor = usePlateEditor({
+    skipInitialization: true,
+  });
+
+  React.useEffect(() => {
+    // Simulate async fetch
+    setTimeout(() => {
+      setInitialValue([
+        {
+          children: [{ text: 'Loaded async value!' }],
+          type: 'p',
+        },
+      ]);
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  React.useEffect(() => {
+    if (!loading && initialValue) {
+      editor.tf.init({ autoSelect: 'end', value: initialValue });
+    }
+  }, [loading, initialValue, editor]);
+
+  if (loading) return <div>Loading…</div>;
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor className="px-0" />
+      </EditorContainer>
+    </Plate>
   );
 }

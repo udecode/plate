@@ -51,7 +51,6 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@hocuspocus/provider": "^2.15.2",
     "@slate-yjs/core": "^1.0.2",
     "yjs": "^13.6.23"
   },
@@ -59,9 +58,11 @@
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
+    "@hocuspocus/provider": "^2.15.2",
     "@udecode/plate": ">=47.3.1",
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react-dom": ">=18.0.0",
+    "y-webrtc": "10.3.0"
   },
   "publishConfig": {
     "access": "public"

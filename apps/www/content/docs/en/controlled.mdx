@@ -21,48 +21,45 @@ Given these challenges, it's generally recommended to use Plate as an uncontroll
 
 Alternatively, you can use `editor.tf.reset()` to reset the editor state, which will reset the selection and history.
 
+### Async Initial Value
+
+You can use `skipInitialization` to delay editor initialization until your async data is ready. Then, call `editor.tf.init` with your value:
+
 ```tsx
-function App() {
+function AsyncControlledEditor() {
+  const [initialValue, setInitialValue] = React.useState();
+  const [loading, setLoading] = React.useState(true);
   const editor = usePlateEditor({
-    value: 'Initial Value',
-    // Disable the editor if initial value is not yet ready
-    // enabled: !!value,
+    skipInitialization: true,
   });
 
+  React.useEffect(() => {
+    // Simulate async fetch
+    setTimeout(() => {
+      setInitialValue([
+        {
+          type: 'p',
+          children: [{ text: 'Loaded async value!' }],
+        },
+      ]);
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  React.useEffect(() => {
+    if (!loading && initialValue) {
+      editor.tf.init({ value: initialValue, autoSelect: 'end' });
+    }
+  }, [loading, initialValue, editor]);
+
+  if (loading) return <div>Loading…</div>;
+
   return (
-    <div>
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
-
-      <button
-        onClick={() => {
-          // Replace with HTML string
-          editor.tf.setValue('Replaced Value');
-
-          // Replace with JSON value
-          editor.tf.setValue([
-            {
-              type: 'p',
-              children: [{ text: 'Replaced Value' }],
-            },
-          ]);
-
-          // Replace with empty value
-          editor.tf.setValue();
-        }}
-      >
-        Replace Value
-      </button>
-      
-      <button
-        onClick={() => {
-          editor.tf.reset();
-        }}
-      >
-        Reset Editor
-      </button>
-    </div>
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
   );
 }
 ```
