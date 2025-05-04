@@ -86,7 +86,7 @@
     "html2canvas-pro": "^1.5.8",
     "lowlight": "^3.3.0",
     "lucide-react": "0.474.0",
-    "next": "^15.1.6",
+    "next": "^15.2.4",
     "pdf-lib": "^1.17.1",
     "react": "^19.0.0",
     "react-day-picker": "8.10.1",
