@@ -27,7 +27,7 @@ type delayer = (buffer: string) => number;
  *   a custom RegExp pattern for custom chunking.
  * @returns A transform stream that smooths text streaming output.
  */
-export function smoothStream<TOOLS extends ToolSet>({
+function smoothStream<TOOLS extends ToolSet>({
   _internal: { delay = originalDelay } = {},
   chunking = 'word',
   delayInMs = 10,
