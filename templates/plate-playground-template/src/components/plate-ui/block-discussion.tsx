@@ -9,10 +9,10 @@ import type {
 } from '@udecode/plate/react';
 
 import {
+  type AnyPluginConfig,
   type NodeEntry,
   type Path,
   type TElement,
-  createZustandStore,
   PathApi,
   TextApi,
 } from '@udecode/plate';
@@ -23,7 +23,6 @@ import {
   useEditorPlugin,
   useEditorRef,
   usePluginOption,
-  useStoreValue,
 } from '@udecode/plate/react';
 import {
   MessageSquareTextIcon,
@@ -31,10 +30,11 @@ import {
   PencilLineIcon,
 } from 'lucide-react';
 
+import { commentsPlugin } from '@/components/editor/plugins/comments-plugin';
 import {
-  type CommentsConfig,
-  commentsPlugin,
-} from '@/components/editor/plugins/comments-plugin';
+  type TDiscussion,
+  discussionPlugin,
+} from '@/components/editor/plugins/discussion-plugin';
 import { suggestionPlugin } from '@/components/editor/plugins/suggestion-plugin';
 import { Button } from '@/components/plate-ui/button';
 import {
@@ -49,157 +49,21 @@ import {
   isResolvedSuggestion,
   useResolveSuggestion,
 } from './block-suggestion';
-import { type TComment, Comment } from './comment';
+import { Comment } from './comment';
 import { CommentCreateForm } from './comment-create-form';
 
-export interface TDiscussion {
-  id: string;
-  comments: TComment[];
-  createdAt: Date;
-  isResolved: boolean;
-  userId: string;
-  documentContent?: string;
-}
+export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
+  const { editor, element } = props;
 
-const initTestDiscussions = [
-  {
-    id: 'discussion1',
-    comments: [
-      {
-        id: 'comment1',
-        contentRich: [
-          {
-            children: [
-              {
-                text: 'This is a comment',
-              },
-            ],
-            type: 'p',
-          },
-        ],
-        createdAt: new Date(Date.now() - 900_000),
-        discussionId: 'discussion1',
-        isEdited: false,
-        userId: 'user1',
-      },
-    ],
-    createdAt: new Date(),
-    documentContent: 'comments to your content',
-    isResolved: false,
-    userId: 'user1',
-  },
-  {
-    id: 'discussion2',
-    comments: [
-      {
-        id: 'comment1',
-        contentRich: [
-          {
-            children: [
-              {
-                text: 'Hey, what do you think about this approach?',
-              },
-            ],
-            type: 'p',
-          },
-        ],
-        createdAt: new Date(Date.now() - 900_000),
-        discussionId: 'discussion1',
-        isEdited: false,
-        userId: 'user1',
-      },
-      {
-        id: 'comment2',
-        contentRich: [
-          {
-            children: [
-              {
-                text: 'Looks good!',
-              },
-            ],
-            type: 'p',
-          },
-        ],
-        createdAt: new Date(Date.now() - 800_000),
-        discussionId: 'discussion1',
-        isEdited: false,
-        userId: 'user2',
-      },
-      {
-        id: 'comment3',
-        contentRich: [
-          {
-            children: [
-              {
-                text: 'Thanks for the feedback!',
-              },
-            ],
-            type: 'p',
-          },
-        ],
-        createdAt: new Date(Date.now() - 700_000),
-        discussionId: 'discussion1',
-        isEdited: false,
-        userId: 'user1',
-      },
-    ],
-    createdAt: new Date(),
-    documentContent: 'collaborate',
-    isResolved: false,
-    userId: 'user2',
-  },
-];
-
-type TDiscussionStore = {
-  discussions: TDiscussion[];
-};
-
-export const discussionStore = createZustandStore<TDiscussionStore>(
-  {
-    discussions: initTestDiscussions,
-  },
-  {
-    devtools: { enabled: true }, // Redux DevTools with options
-    mutative: true, // shorthand for { enabled: true }
-    name: 'discussion',
-  }
-);
-
-export const useFakeCurrentUserId = () => 'user3';
-
-export const useFakeUserInfo = (userId: string) => {
-  const mockUsers = [
-    {
-      id: 'user1',
-      avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
-      name: 'zbeyens',
-    },
-    {
-      id: 'user2',
-      avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',
-      name: '12joan',
-    },
-    {
-      id: 'user3',
-      avatarUrl: 'https://avatars.githubusercontent.com/u/164472012?v=4',
-      name: 'felixfeng33',
-    },
-  ];
-
-  return mockUsers.find((user) => user.id === userId);
-};
-
-export const BlockDiscussion: RenderNodeWrapper<CommentsConfig> = (props) => {
-  const { api, editor, element } = props;
-
+  const commentsApi = editor.getApi(CommentsPlugin).comment;
   const blockPath = editor.api.findPath(element);
 
   // avoid duplicate in table or column
   if (!blockPath || blockPath.length > 1) return;
 
-  const draftCommentNode = api.comment.node({ at: blockPath, isDraft: true });
+  const draftCommentNode = commentsApi.node({ at: blockPath, isDraft: true });
 
-  const commentNodes = [...api.comment.nodes({ at: blockPath })];
+  const commentNodes = [...commentsApi.nodes({ at: blockPath })];
 
   const suggestionNodes = [
     ...editor.getApi(SuggestionPlugin).suggestion.nodes({ at: blockPath }),
@@ -238,18 +102,17 @@ const BlockCommentsContent = ({
 }) => {
   const editor = useEditorRef();
 
-  const resolvedSuggestion = useResolveSuggestion(suggestionNodes, blockPath);
-
+  const resolvedSuggestions = useResolveSuggestion(suggestionNodes, blockPath);
   const resolvedDiscussions = useResolvedDiscussion(commentNodes, blockPath);
 
-  const suggestionsCount = resolvedSuggestion.length;
+  const suggestionsCount = resolvedSuggestions.length;
   const discussionsCount = resolvedDiscussions.length;
   const totalCount = suggestionsCount + discussionsCount;
 
   const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');
   const activeSuggestion =
     activeSuggestionId &&
-    resolvedSuggestion.find((s) => s.suggestionId === activeSuggestionId);
+    resolvedSuggestions.find((s) => s.suggestionId === activeSuggestionId);
 
   const commentingBlock = usePluginOption(commentsPlugin, 'commentingBlock');
   const activeCommentId = usePluginOption(commentsPlugin, 'activeId');
@@ -260,13 +123,14 @@ const BlockCommentsContent = ({
 
   const noneActive = !activeSuggestion && !activeDiscussion;
 
-  const sortedMergedData = [...resolvedDiscussions, ...resolvedSuggestion].sort(
-    (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
-  );
+  const sortedMergedData = [
+    ...resolvedDiscussions,
+    ...resolvedSuggestions,
+  ].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
   const selected =
     resolvedDiscussions.some((d) => d.id === activeCommentId) ||
-    resolvedSuggestion.some((s) => s.suggestionId === activeSuggestionId);
+    resolvedSuggestions.some((s) => s.suggestionId === activeSuggestionId);
 
   const [_open, setOpen] = React.useState(selected);
 
@@ -461,7 +325,7 @@ export const useResolvedDiscussion = (
 ) => {
   const { api, getOption, setOption } = useEditorPlugin(commentsPlugin);
 
-  const discussions = useStoreValue(discussionStore, 'discussions');
+  const discussions = usePluginOption(discussionPlugin, 'discussions');
 
   commentNodes.forEach(([node]) => {
     const id = api.comment.nodeId(node);

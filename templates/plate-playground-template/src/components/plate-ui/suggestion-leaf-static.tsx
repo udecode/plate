@@ -17,27 +17,21 @@ export function SuggestionLeafStatic(props: SlateLeafProps) {
 
   const hasRemove = dataList.some((data) => data.type === 'remove');
 
-  const diffOperation = {
-    type: hasRemove ? 'delete' : 'insert',
-  } as const;
+  const diffOperation = { type: hasRemove ? 'delete' : 'insert' } as const;
 
-  const Component = (
-    {
-      delete: 'del',
-      insert: 'ins',
-      update: 'span',
-    } as const
-  )[diffOperation.type];
+  const Component = ({ delete: 'del', insert: 'ins', update: 'span' } as const)[
+    diffOperation.type
+  ];
 
   return (
     <SlateLeaf
       {...props}
       as={Component}
       className={cn(
+        className,
         'border-b-2 border-b-brand/[.24] bg-brand/[.08] text-brand/80 no-underline transition-colors duration-200',
         hasRemove &&
-          'border-b-gray-300 bg-gray-300/25 text-gray-400 line-through',
-        className
+          'border-b-gray-300 bg-gray-300/25 text-gray-400 line-through'
       )}
     >
       {children}

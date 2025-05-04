@@ -4,11 +4,13 @@ import React from 'react';
 
 import { cn } from '@udecode/cn';
 import { RangeApi } from '@udecode/plate';
+import { AIChatPlugin } from '@udecode/plate-ai/react';
 import {
   type CursorData,
   type CursorOverlayState,
   useCursorOverlay,
 } from '@udecode/plate-selection/react';
+import { usePluginOption } from '@udecode/plate/react';
 
 export function Cursor({
   id,
@@ -17,8 +19,11 @@ export function Cursor({
   selection,
   selectionRects,
 }: CursorOverlayState<CursorData>) {
+  const streaming = usePluginOption(AIChatPlugin, 'streaming');
   const { style, selectionStyle = style } = data ?? ({} as CursorData);
   const isCursor = RangeApi.isCollapsed(selection);
+
+  if (streaming) return null;
 
   return (
     <>

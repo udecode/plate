@@ -190,10 +190,12 @@ const autoformatIndentLists: AutoformatRule[] = [
     matchByRegex: true,
     mode: 'block',
     type: 'list',
-    format: (editor) =>
+    format: (editor, { matchString }) => {
       toggleIndentList(editor, {
+        listRestartPolite: Number(matchString) || 1,
         listStyleType: ListStyleType.Decimal,
-      }),
+      });
+    },
   },
   {
     match: ['[] '],
