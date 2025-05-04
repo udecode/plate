@@ -6,7 +6,7 @@ import type { EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin';
 
-import { DefaultText } from '../components/DefaultText';
+import { PlateText } from '../components/plate-nodes';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderText, pluginRenderText } from './pluginRenderText';
 
@@ -51,23 +51,22 @@ export const pipeRenderText = (
           );
         }
 
-        props = {
-          ...props,
+        attributes = {
+          ...attributes,
           ...pluginTextProps,
         };
       }
     });
 
     if (renderTextProp) {
-      return renderTextProp({ ...attributes, ...props } as any);
+      return renderTextProp({ attributes, ...props } as any);
     }
 
     const ctxProps = getRenderNodeProps({
-      attributes: attributes as any,
       editor,
-      props: { ...attributes, ...props } as any,
+      props: { attributes, ...props } as any,
     }) as any;
 
-    return <DefaultText {...(ctxProps as any)} />;
+    return <PlateText {...ctxProps}>{props.children}</PlateText>;
   };
 };

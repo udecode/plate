@@ -6,7 +6,7 @@ import type { SlateEditor } from '../editor';
 import type { NodeComponents, SlatePlugin } from '../plugin';
 import type { RenderTextProps } from '../types/RenderTextProps';
 
-import { SlateText } from './components/SlateText';
+import { SlateText } from './components';
 import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
@@ -85,8 +85,8 @@ export const pipeRenderTextStatic = (
           );
         }
 
-        props = {
-          ...props,
+        attributes = {
+          ...attributes,
           ...pluginTextProps,
         };
       }
@@ -97,9 +97,8 @@ export const pipeRenderTextStatic = (
     }
 
     const ctxProps = getRenderNodeStaticProps({
-      attributes: { attributes } as any,
       editor,
-      props: { ...attributes, ...props } as any,
+      props: { attributes, ...props } as any,
     }) as any;
 
     const text = ctxProps.text;
@@ -107,6 +106,14 @@ export const pipeRenderTextStatic = (
       isText: true,
     });
 
-    return <SlateText {...ctxProps} {...dataAttributes} />;
+    return (
+      <SlateText
+        {...ctxProps}
+        attributes={{
+          ...ctxProps.attributes,
+          ...dataAttributes,
+        }}
+      />
+    );
   };
 };

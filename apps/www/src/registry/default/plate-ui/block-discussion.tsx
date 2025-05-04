@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 
 import type { TSuggestionText } from '@udecode/plate-suggestion';
 import type {
-  PlateRenderElementProps,
+  PlateElementProps,
   RenderNodeWrapper,
 } from '@udecode/plate/react';
 
@@ -94,7 +94,7 @@ const BlockCommentsContent = ({
   commentNodes,
   draftCommentNode,
   suggestionNodes,
-}: PlateRenderElementProps & {
+}: PlateElementProps & {
   blockPath: Path;
   commentNodes: NodeEntry<TCommentText>[];
   draftCommentNode: NodeEntry<TCommentText> | undefined;

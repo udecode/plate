@@ -2,9 +2,9 @@ import type { AnyObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';
 
+import type { PlateNodeProps } from '../components';
 import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
-import type { PlateRenderNodeProps } from '../plugin/PlateRenderNodeProps';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { getSlateClass } from '../../lib';
@@ -13,51 +13,58 @@ import { getEditorPlugin } from '../plugin';
 
 /**
  * Override node props with plugin props. Allowed properties in
- * `props.element.attributes` are passed as `nodeProps`. Extend the class name
- * with the node type.
+ * `props.element.attributes` are passed into `props.attributes`. Extend the
+ * class name with the node type.
  */
 export const getRenderNodeProps = ({
-  attributes,
+  attributes: nodeAttributes,
   editor,
   plugin,
   props,
 }: {
   editor: PlateEditor;
-  props: PlateRenderNodeProps;
+  props: PlateNodeProps;
   attributes?: AnyObject;
   plugin?: AnyEditorPlatePlugin;
-}): PlateRenderNodeProps => {
-  let nodeProps = {
+}): PlateNodeProps => {
+  let newProps = {
     ...props,
     ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
   };
 
   const { className } = props;
 
-  const pluginNodeProps = getPluginNodeProps({
-    attributes,
+  const pluginProps = getPluginNodeProps({
+    attributes: nodeAttributes,
     plugin: plugin as any,
-    props: nodeProps as any,
+    props: newProps as any,
   });
 
-  nodeProps = {
-    ...pluginNodeProps,
-    className: clsx(
-      getSlateClass(plugin?.node.type),
-      pluginNodeProps.className,
-      className
-    ),
+  newProps = {
+    ...pluginProps,
+    attributes: {
+      ...pluginProps.attributes,
+      className:
+        clsx(
+          getSlateClass(plugin?.node.type),
+          pluginProps.attributes?.className,
+          className
+        ) || undefined,
+    },
   };
 
-  nodeProps = pipeInjectNodeProps(
+  newProps = pipeInjectNodeProps(
     editor,
-    nodeProps,
+    newProps,
     (node) => editor.api.findPath(node)!
-  ) as PlateRenderNodeProps;
+  ) as PlateNodeProps;
 
-  if (nodeProps.style && Object.keys(nodeProps.style).length === 0) {
-    delete nodeProps.style;
+  if (
+    newProps.attributes?.style &&
+    Object.keys(newProps.attributes.style).length === 0
+  ) {
+    delete newProps.attributes.style;
   }
 
-  return nodeProps;
+  return newProps;
 };

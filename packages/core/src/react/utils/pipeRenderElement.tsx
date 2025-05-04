@@ -3,8 +3,9 @@ import React from 'react';
 import type { EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 
+import { PlateElement } from '../components';
 import { useNodePath } from '../hooks';
-import { DefaultElement } from '../slate-react';
+import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderElement, pluginRenderElement } from './pluginRenderElement';
 
 /** @see {@link RenderElement} */
@@ -37,10 +38,11 @@ export const pipeRenderElement = (
       return renderElementProp({ ...props, path } as any);
     }
 
-    return (
-      <DefaultElement attributes={props.attributes} element={props.element}>
-        {props.children}
-      </DefaultElement>
-    );
+    const ctxProps = getRenderNodeProps({
+      editor,
+      props: { ...props, path } as any,
+    }) as any;
+
+    return <PlateElement {...ctxProps}>{props.children}</PlateElement>;
   };
 };

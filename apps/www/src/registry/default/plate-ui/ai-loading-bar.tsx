@@ -2,10 +2,7 @@
 
 import { cn } from '@udecode/cn';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
-import {
-  useEditorPlugin,
-  usePluginOption,
-} from '@udecode/plate/react';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 import { Pause } from 'lucide-react';
 
 import { Button } from './button';

@@ -13,7 +13,7 @@ export const playgroundValue: Value = [
       { text: ' 和 ' },
       { children: [{ text: 'React' }], type: 'a', url: 'https://reactjs.org' },
       {
-        text: " 构建的现代富文本编辑器。这个演示平台仅展示了 Plate 功能的一部分。",
+        text: ' 构建的现代富文本编辑器。这个演示平台仅展示了 Plate 功能的一部分。',
       },
       {
         children: [{ text: '浏览文档' }],
@@ -81,9 +81,7 @@ export const playgroundValue: Value = [
       },
       { text: '。使用 ' },
       {
-        children: [
-          { comment: true, comment_discussion4: true, text: '评论' },
-        ],
+        children: [{ comment: true, comment_discussion4: true, text: '评论' }],
         type: 'a',
         url: '/docs/comments',
       },
@@ -144,17 +142,13 @@ export const playgroundValue: Value = [
     type: 'p',
   },
   {
-    children: [
-      { text: '生成内容（继续写作、总结、解释）' },
-    ],
+    children: [{ text: '生成内容（继续写作、总结、解释）' }],
     indent: 1,
     listStyleType: 'disc',
     type: 'p',
   },
   {
-    children: [
-      { text: '编辑现有文本（改进、修正语法、改变语气）' },
-    ],
+    children: [{ text: '编辑现有文本（改进、修正语法、改变语气）' }],
     indent: 1,
     listStyleType: 'disc',
     type: 'p',
@@ -295,9 +289,7 @@ export const playgroundValue: Value = [
       {
         children: [
           {
-            children: [
-              { children: [{ bold: true, text: '功能' }], type: 'p' },
-            ],
+            children: [{ children: [{ bold: true, text: '功能' }], type: 'p' }],
             type: 'th',
           },
           {
@@ -415,9 +407,7 @@ export const playgroundValue: Value = [
       {
         children: [
           {
-            children: [
-              { children: [{ text: '目录' }], type: 'p' },
-            ],
+            children: [{ children: [{ text: '目录' }], type: 'p' }],
             type: 'td',
           },
           {
@@ -463,9 +453,7 @@ export const playgroundValue: Value = [
       {
         children: [
           {
-            children: [
-              { children: [{ text: '协作（Yjs）' }], type: 'p' },
-            ],
+            children: [{ children: [{ text: '协作（Yjs）' }], type: 'p' }],
             type: 'td',
           },
           {

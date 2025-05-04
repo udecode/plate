@@ -58,10 +58,13 @@ export const DateElement = withRef<typeof PlateElement>(
 
     return (
       <PlateElement
+        {...props}
         ref={ref}
         className={cn(className, 'inline-block')}
-        contentEditable={false}
-        {...props}
+        attributes={{
+          ...props.attributes,
+          contentEditable: false,
+        }}
       >
         <Popover>
           <PopoverTrigger asChild>{trigger}</PopoverTrigger>

@@ -13,16 +13,16 @@ import {
 } from '@udecode/plate/react';
 
 export const Placeholder = (props: PlaceholderProps) => {
-  const { children, nodeProps, placeholder } = props;
+  const { attributes, children, placeholder } = props;
 
   const { enabled } = usePlaceholderState(props);
 
   return React.Children.map(children, (child) => {
     return React.cloneElement(child, {
-      className: child.props.className,
-      nodeProps: {
-        ...nodeProps,
+      attributes: {
+        ...attributes,
         className: cn(
+          attributes.className,
           enabled &&
             'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]'
         ),

@@ -14,6 +14,29 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 - `ai/command`: forked smoothStream from `ai` package now uses 30ms delay by default (only code blocks and tables use 100ms delay).
 
+v48 migration:
+- `PlateElement`, `PlateLeaf` and `PlateText` HTML attributes are moved from top-level props to `attributes` prop.
+- Remove `nodeProps` prop from `PlateElement`, `PlateLeaf`, `PlateText`. Use `attributes` prop instead.
+- Migrated components: 
+  - `block-discussion`
+  - `comment-leaf`
+  - `date-element`
+  - `draggable`
+  - `excalidraw-element`
+  - `hr-element` + `-static`
+  - `image-element` + `-static`
+  - `link-element`
+  - `media-audio-element`
+  - `media-file-element`
+  - `media-placeholder-element`
+  - `media-video-element`
+  - `mention-element`
+  - `placeholder`
+  - `suggestion-leaf`
+  - `table-cell-element` + `-static`
+  - `table-element`
+  - `tag-element`
+
 ### May 2 #22.1
 - `use-chat`: add `_abortFakeStream`.
 - `ai-menu`: Fix menu items are displayed incorrectly.
