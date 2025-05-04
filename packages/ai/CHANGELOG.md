@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 47.4.2
+
+### Patch Changes
+
+- [#4275](https://github.com/udecode/plate/pull/4275) by [@felixfeng33](https://github.com/felixfeng33) – Fix streaming indent list.
+
 ## 47.4.1
 
 ### Patch Changes
