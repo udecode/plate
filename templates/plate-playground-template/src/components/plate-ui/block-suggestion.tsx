@@ -46,18 +46,17 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 import {
   ParagraphPlugin,
   useEditorPlugin,
-  useStoreSelect,
+  usePluginOption,
 } from '@udecode/plate/react';
 import { CheckIcon, XIcon } from 'lucide-react';
 
+import {
+  type TDiscussion,
+  discussionPlugin,
+} from '@/components/editor/plugins/discussion-plugin';
 import { suggestionPlugin } from '@/components/editor/plugins/suggestion-plugin';
 
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import {
-  type TDiscussion,
-  discussionStore,
-  useFakeUserInfo,
-} from './block-discussion';
 import { Button } from './button';
 import { type TComment, Comment, formatCommentDate } from './comment';
 import { CommentCreateForm } from './comment-create-form';
@@ -111,7 +110,7 @@ export const BlockSuggestionCard = ({
 }) => {
   const { api, editor } = useEditorPlugin(SuggestionPlugin);
 
-  const userInfo = useFakeUserInfo(suggestion.userId);
+  const userInfo = usePluginOption(discussionPlugin, 'user', suggestion.userId);
 
   const accept = (suggestion: ResolvedSuggestion) => {
     api.suggestion.withoutSuggestions(() => {
@@ -145,7 +144,7 @@ export const BlockSuggestionCard = ({
       <div className="flex flex-col p-4">
         <div className="relative flex items-center">
           {/* Replace to your own backend or refer to potion */}
-          <Avatar className="size-6">
+          <Avatar className="size-5">
             <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
             <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
           </Avatar>
@@ -275,10 +274,7 @@ export const BlockSuggestionCard = ({
           </div>
         )}
 
-        <CommentCreateForm
-          discussionId={suggestion.suggestionId}
-          isSuggesting={suggestion.comments.length === 0}
-        />
+        <CommentCreateForm discussionId={suggestion.suggestionId} />
       </div>
 
       {!isLast && <div className="h-px w-full bg-muted" />}
@@ -290,10 +286,7 @@ export const useResolveSuggestion = (
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[],
   blockPath: Path
 ) => {
-  const discussions = useStoreSelect(
-    discussionStore,
-    (state) => state.discussions
-  );
+  const discussions = usePluginOption(discussionPlugin, 'discussions');
 
   const { api, editor, getOption, setOption } =
     useEditorPlugin(suggestionPlugin);

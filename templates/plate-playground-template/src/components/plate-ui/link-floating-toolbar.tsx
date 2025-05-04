@@ -8,16 +8,22 @@ import {
   flip,
   offset,
 } from '@udecode/plate-floating';
+import { type TLinkElement, getLinkAttributes } from '@udecode/plate-link';
 import {
   type LinkFloatingToolbarState,
   FloatingLinkUrlInput,
-  LinkOpenButton,
+  LinkPlugin,
   useFloatingLinkEdit,
   useFloatingLinkEditState,
   useFloatingLinkInsert,
   useFloatingLinkInsertState,
 } from '@udecode/plate-link/react';
-import { useFormInputProps } from '@udecode/plate/react';
+import {
+  useEditorRef,
+  useEditorSelection,
+  useFormInputProps,
+  usePluginOption,
+} from '@udecode/plate/react';
 import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
 
 import { buttonVariants } from './button';
@@ -25,22 +31,28 @@ import { inputVariants } from './input';
 import { popoverVariants } from './popover';
 import { Separator } from './separator';
 
-const floatingOptions: UseVirtualFloatingOptions = {
-  middleware: [
-    offset(12),
-    flip({
-      fallbackPlacements: ['bottom-end', 'top-start', 'top-end'],
-      padding: 12,
-    }),
-  ],
-  placement: 'bottom-start',
-};
-
 export interface LinkFloatingToolbarProps {
   state?: LinkFloatingToolbarState;
 }
 
 export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
+  const activeCommentId = usePluginOption({ key: 'comment' }, 'activeId');
+  const activeSuggestionId = usePluginOption({ key: 'suggestion' }, 'activeId');
+
+  const floatingOptions: UseVirtualFloatingOptions = React.useMemo(() => {
+    return {
+      middleware: [
+        offset(8),
+        flip({
+          fallbackPlacements: ['bottom-end', 'top-start', 'top-end'],
+          padding: 12,
+        }),
+      ],
+      placement:
+        activeSuggestionId || activeCommentId ? 'top-start' : 'bottom-start',
+    };
+  }, [activeCommentId, activeSuggestionId]);
+
   const insertState = useFloatingLinkInsertState({
     ...state,
     floatingOptions: {
@@ -116,14 +128,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
 
       <Separator orientation="vertical" />
 
-      <LinkOpenButton
-        className={buttonVariants({
-          size: 'icon',
-          variant: 'ghost',
-        })}
-      >
-        <ExternalLink width={18} />
-      </LinkOpenButton>
+      <LinkOpenButton />
 
       <Separator orientation="vertical" />
 
@@ -158,5 +163,42 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
         {editContent}
       </div>
     </>
+  );
+}
+
+function LinkOpenButton() {
+  const editor = useEditorRef();
+  const selection = useEditorSelection();
+
+  const attributes = React.useMemo(
+    () => {
+      const entry = editor.api.node<TLinkElement>({
+        match: { type: editor.getType(LinkPlugin) },
+      });
+      if (!entry) {
+        return {};
+      }
+      const [element] = entry;
+      return getLinkAttributes(editor, element);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [editor, selection]
+  );
+
+  return (
+    <a
+      {...attributes}
+      className={buttonVariants({
+        size: 'icon',
+        variant: 'ghost',
+      })}
+      onMouseOver={(e) => {
+        e.stopPropagation();
+      }}
+      aria-label="Open link in a new tab"
+      target="_blank"
+    >
+      <ExternalLink width={18} />
+    </a>
   );
 }

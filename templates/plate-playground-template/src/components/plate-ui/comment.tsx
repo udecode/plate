@@ -6,7 +6,12 @@ import type { Value } from '@udecode/plate';
 
 import { cn } from '@udecode/cn';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { Plate, useEditorPlugin, useStoreValue } from '@udecode/plate/react';
+import {
+  Plate,
+  useEditorPlugin,
+  useEditorRef,
+  usePluginOption,
+} from '@udecode/plate/react';
 import {
   differenceInDays,
   differenceInHours,
@@ -21,12 +26,9 @@ import {
   XIcon,
 } from 'lucide-react';
 
+import { discussionPlugin } from '@/components/editor/plugins/discussion-plugin';
+
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import {
-  discussionStore,
-  useFakeCurrentUserId,
-  useFakeUserInfo,
-} from './block-discussion';
 import { Button } from './button';
 import { useCommentEditor } from './comment-create-form';
 import {
@@ -86,27 +88,28 @@ export function Comment(props: {
     showDocumentContent = false,
     onEditorClick,
   } = props;
-  // const { user } = comment;
 
-  const discussions = useStoreValue(discussionStore, 'discussions');
-  const userInfo = useFakeUserInfo(comment.userId);
-  const currentUserId = useFakeCurrentUserId();
+  const editor = useEditorRef();
+  const userInfo = usePluginOption(discussionPlugin, 'user', comment.userId);
+  const currentUserId = usePluginOption(discussionPlugin, 'currentUserId');
 
   const resolveDiscussion = async (id: string) => {
-    const updatedDiscussions = discussions.map((discussion) => {
-      if (discussion.id === id) {
-        return { ...discussion, isResolved: true };
-      }
-      return discussion;
-    });
-    discussionStore.set('discussions', updatedDiscussions);
+    const updatedDiscussions = editor
+      .getOption(discussionPlugin, 'discussions')
+      .map((discussion) => {
+        if (discussion.id === id) {
+          return { ...discussion, isResolved: true };
+        }
+        return discussion;
+      });
+    editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
   };
 
   const removeDiscussion = async (id: string) => {
-    const updatedDiscussions = discussions.filter(
-      (discussion: any) => discussion.id !== id
-    );
-    discussionStore.set('discussions', updatedDiscussions);
+    const updatedDiscussions = editor
+      .getOption(discussionPlugin, 'discussions')
+      .filter((discussion: any) => discussion.id !== id);
+    editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
   };
 
   const updateComment = async (input: {
@@ -115,24 +118,26 @@ export function Comment(props: {
     discussionId: string;
     isEdited: boolean;
   }) => {
-    const updatedDiscussions = discussions.map((discussion) => {
-      if (discussion.id === input.discussionId) {
-        const updatedComments = discussion.comments.map((comment) => {
-          if (comment.id === input.id) {
-            return {
-              ...comment,
-              contentRich: input.contentRich,
-              isEdited: true,
-              updatedAt: new Date(),
-            };
-          }
-          return comment;
-        });
-        return { ...discussion, comments: updatedComments };
-      }
-      return discussion;
-    });
-    discussionStore.set('discussions', updatedDiscussions);
+    const updatedDiscussions = editor
+      .getOption(discussionPlugin, 'discussions')
+      .map((discussion) => {
+        if (discussion.id === input.discussionId) {
+          const updatedComments = discussion.comments.map((comment) => {
+            if (comment.id === input.id) {
+              return {
+                ...comment,
+                contentRich: input.contentRich,
+                isEdited: true,
+                updatedAt: new Date(),
+              };
+            }
+            return comment;
+          });
+          return { ...discussion, comments: updatedComments };
+        }
+        return discussion;
+      });
+    editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
   };
 
   const { tf } = useEditorPlugin(CommentsPlugin);
@@ -186,7 +191,7 @@ export function Comment(props: {
       onMouseLeave={() => setHovering(false)}
     >
       <div className="relative flex items-center">
-        <Avatar className="size-6">
+        <Avatar className="size-5">
           <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
           <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
         </Avatar>
@@ -313,7 +318,7 @@ export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
     onRemoveComment,
   } = props;
 
-  const discussions = useStoreValue(discussionStore, 'discussions');
+  const editor = useEditorRef();
 
   const selectedEditCommentRef = React.useRef<boolean>(false);
 
@@ -322,31 +327,33 @@ export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
       return alert('You are operating too quickly, please try again later.');
 
     // Find and update the discussion
-    const updatedDiscussions = discussions.map((discussion: any) => {
-      if (discussion.id !== comment.discussionId) {
-        return discussion;
-      }
+    const updatedDiscussions = editor
+      .getOption(discussionPlugin, 'discussions')
+      .map((discussion: any) => {
+        if (discussion.id !== comment.discussionId) {
+          return discussion;
+        }
 
-      const commentIndex = discussion.comments.findIndex(
-        (c: any) => c.id === comment.id
-      );
-      if (commentIndex === -1) {
-        return discussion;
-      }
+        const commentIndex = discussion.comments.findIndex(
+          (c: any) => c.id === comment.id
+        );
+        if (commentIndex === -1) {
+          return discussion;
+        }
 
-      return {
-        ...discussion,
-        comments: [
-          ...discussion.comments.slice(0, commentIndex),
-          ...discussion.comments.slice(commentIndex + 1),
-        ],
-      };
-    });
+        return {
+          ...discussion,
+          comments: [
+            ...discussion.comments.slice(0, commentIndex),
+            ...discussion.comments.slice(commentIndex + 1),
+          ],
+        };
+      });
 
     // Save back to session storage
-    discussionStore.set('discussions', updatedDiscussions);
+    editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
     onRemoveComment?.();
-  }, [comment.discussionId, comment.id, discussions, onRemoveComment]);
+  }, [comment.discussionId, comment.id, editor, onRemoveComment]);
 
   const onEditComment = React.useCallback(() => {
     selectedEditCommentRef.current = true;
