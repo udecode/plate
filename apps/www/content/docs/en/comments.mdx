@@ -29,17 +29,19 @@ npm install @udecode/plate-comments
 ## Usage
 
 ```tsx
-import { CommentsPlugin } from '@udecode/plate-comments/react';
+import { commentsPlugin } from '@/components/editor/plugins/comments-plugin';
+import { discussionPlugin } from '@/components/editor/plugins/discussion-plugin';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-  commentsPlugin.configure({
-    render: { aboveNodes: BlockDiscussion as any },
-  }),
+    discussionPlugin,
+    commentsPlugin,
   ],
 });
 ```
+
+The comments plugin works in conjunction with the discussion plugin to provide a complete discussion system. The discussion plugin provides the UI layer for managing discussions and users. Source code of both plugins is available in the example.
 
 ## Keyboard Shortcuts
 
@@ -62,7 +64,6 @@ Refer to the preview above.
 ## Plugins
 
 ### `CommentsPlugin`
-
 
 ## API
 

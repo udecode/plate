@@ -33,4 +33,19 @@ describe('roundTrip', () => {
     const slate = deserializeMd(editor, md);
     expect(slate).toEqual(input);
   });
+
+  it('should serialize callout correctly', () => {
+    const input = (
+      <fragment>
+        <hcallout>
+          <hp>
+            <htext>Callout</htext>
+          </hp>
+        </hcallout>
+      </fragment>
+    );
+
+    const md = serializeMd(editor, { value: input });
+    expect(md).toMatchSnapshot();
+  });
 });

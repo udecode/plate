@@ -15,10 +15,10 @@ export default defineConfig(
 
       'jsx-a11y/click-events-have-key-events': 'off',
       'jsx-a11y/heading-has-content': 'off',
-
       'jsx-a11y/html-has-lang': 'off',
       'jsx-a11y/interactive-supports-focus': 'off',
       'jsx-a11y/media-has-caption': 'off',
+      'jsx-a11y/mouse-events-have-key-events': 'off',
       'jsx-a11y/no-autofocus': 'off',
       'jsx-a11y/no-static-element-interactions': 'off',
       'react-hooks/exhaustive-deps': [

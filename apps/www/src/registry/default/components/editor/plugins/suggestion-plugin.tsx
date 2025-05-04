@@ -13,13 +13,13 @@ import {
 } from '@udecode/plate-suggestion';
 import { toTPlatePlugin } from '@udecode/plate/react';
 
+import { discussionPlugin } from '@/registry/default/components/editor/plugins/discussion-plugin';
 import { BlockSuggestion } from '@/registry/default/plate-ui/block-suggestion';
 
 export type SuggestionConfig = ExtendConfig<
   BaseSuggestionConfig,
   {
     activeId: string | null;
-    currentUserId: string;
     hoverId: string | null;
     uniquePathMap: Map<string, Path>;
   }
@@ -27,7 +27,7 @@ export type SuggestionConfig = ExtendConfig<
 
 export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
   BaseSuggestionPlugin,
-  {
+  ({ editor }) => ({
     handlers: {
       // unset active suggestion when clicking outside of suggestion
       onClick: ({ api, event, setOption, type }) => {
@@ -47,9 +47,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
           !isSlateEditor(leaf.parentElement)
         ) {
           if (leaf.classList.contains(`slate-${type}`)) {
-            const suggestionEntry = api.suggestion!.node({
-              isText: true,
-            });
+            const suggestionEntry = api.suggestion!.node({ isText: true });
 
             if (!suggestionEntry) {
               unsetActiveSuggestion();
@@ -73,7 +71,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
     },
     options: {
       activeId: null,
-      currentUserId: 'user3',
+      currentUserId: editor.getOption(discussionPlugin, 'currentUserId'),
       hoverId: null,
       uniquePathMap: new Map(),
     },
@@ -86,5 +84,5 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
         return <BlockSuggestion element={element} />;
       },
     },
-  }
+  })
 );

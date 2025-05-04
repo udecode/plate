@@ -39,6 +39,8 @@ export type AIChatPluginConfig = PluginConfig<
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
     chat: Partial<UseChatHelpers>;
+    /** @deprecated Use api.aiChat.node({streaming:true}) instead */
+    experimental_lastTextId: string | null;
     /**
      * Specifies how the assistant message is handled:
      *
@@ -72,7 +74,7 @@ export type AIChatPluginConfig = PluginConfig<
       submit: OmitFirst<typeof submitAIChat>;
       hide: () => void;
       node: (
-        options?: EditorNodesOptions & { anchor?: boolean }
+        options?: EditorNodesOptions & { anchor?: boolean; streaming?: boolean }
       ) => NodeEntry | undefined;
       reload: () => void;
       show: () => void;
@@ -100,6 +102,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     _blockPath: null,
     aiEditor: null,
     chat: { messages: [] } as any,
+    experimental_lastTextId: null,
     mode: 'chat',
     open: false,
     streaming: false,
@@ -108,27 +111,40 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     promptTemplate: () => '{prompt}',
     systemTemplate: () => {},
   },
+  useHooks: useAIChatHooks,
 })
   .overrideEditor(withAIChat)
-  .extend(() => ({
-    useHooks: useAIChatHooks,
-  }))
   .extendApi<
     Pick<
       AIChatPluginConfig['api']['aiChat'],
       'node' | 'reset' | 'stop' | 'submit'
     >
-  >(({ editor, getOptions, setOption, type }) => {
+  >(({ editor, getOption, getOptions, setOption, type }) => {
     return {
       reset: bindFirst(resetAIChat, editor),
       submit: bindFirst(submitAIChat, editor),
       node: (options = {}) => {
-        const { anchor = false, ...rest } = options;
+        const { anchor = false, streaming = false, ...rest } = options;
 
         if (anchor) {
           return editor.api.node({
             at: [],
             match: (n) => ElementApi.isElement(n) && n.type === type,
+            ...rest,
+          });
+        }
+
+        if (streaming) {
+          if (!getOption('streaming')) return;
+
+          const path = getOption('_blockPath');
+          if (!path) return;
+
+          return editor.api.node({
+            at: path,
+            mode: 'lowest',
+            reverse: true,
+            match: (t) => !!t.ai,
             ...rest,
           });
         }

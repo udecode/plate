@@ -1984,7 +1984,7 @@ export const Index: Record<string, any> = {
       name: "comments-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: ["block-discussion"],
+      registryDependencies: ["discussion-plugin"],
       files: [{
         path: "src/registry/default/components/editor/plugins/comments-plugin.tsx",
         type: "registry:component",
@@ -2014,7 +2014,7 @@ export const Index: Record<string, any> = {
       name: "suggestion-plugin",
       description: "",
       type: "registry:component",
-      registryDependencies: [],
+      registryDependencies: ["discussion-plugin"],
       files: [{
         path: "src/registry/default/components/editor/plugins/suggestion-plugin.tsx",
         type: "registry:component",
@@ -2315,6 +2315,21 @@ export const Index: Record<string, any> = {
       }],
       categories: undefined,
       component: React.lazy(() => import("@/registry/default/components/editor/plugins/toc-plugin.ts")),
+      source: "",
+      meta: undefined,
+    },
+    "discussion-plugin": {
+      name: "discussion-plugin",
+      description: "",
+      type: "registry:component",
+      registryDependencies: ["block-discussion"],
+      files: [{
+        path: "src/registry/default/components/editor/plugins/discussion-plugin.tsx",
+        type: "registry:component",
+        target: ""
+      }],
+      categories: undefined,
+      component: React.lazy(() => import("@/registry/default/components/editor/plugins/discussion-plugin.tsx")),
       source: "",
       meta: undefined,
     },
@@ -2815,7 +2830,7 @@ export const Index: Record<string, any> = {
       name: "comments-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["comments-plugin"],
+      registryDependencies: ["comments-plugin","discussion-plugin"],
       files: [{
         path: "src/registry/default/examples/demo.tsx",
         type: "registry:example",

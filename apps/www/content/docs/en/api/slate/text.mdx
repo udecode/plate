@@ -26,8 +26,8 @@ type TText = {
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TText[]">
-  An array of text nodes with the decorations applied.
+<APIReturns type="{ leaf: TText, position?: LeafPosition }[]">
+  An array of leaves and their positions. The position is undefined if there is a single leaf.
 </APIReturns>
 </API>
 

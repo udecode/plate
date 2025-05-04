@@ -1,5 +1,17 @@
 # @udecode/plate-utils
 
+## 47.3.1
+
+### Patch Changes
+
+- [#4267](https://github.com/udecode/plate/pull/4267) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `className` if empty
+  - Add `PlateText` component
+
+## 47.2.7
+
+## 47.2.3
+
 ## 47.1.1
 
 ## 46.0.10

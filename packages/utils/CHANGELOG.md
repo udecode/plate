@@ -1,5 +1,11 @@
 # @udecode/utils
 
+## 47.2.7
+
+### Patch Changes
+
+- [#4260](https://github.com/udecode/plate/pull/4260) by [@zbeyens](https://github.com/zbeyens) – `sanitizeUrl` now supports internal links starting with `/` or `#`
+
 ## 42.0.0
 
 ### Patch Changes

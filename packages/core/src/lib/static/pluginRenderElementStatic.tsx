@@ -4,7 +4,7 @@ import type { SlateEditor } from '../editor';
 import type { AnyEditorPlugin, NodeComponents } from '../plugin';
 import type { RenderElementProps } from '../types/RenderElementProps';
 
-import { SlateElement } from './components/SlateElement';
+import { SlateElement } from './components/slate-nodes';
 import { getPluginDataAttributes } from './utils';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 

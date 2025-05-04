@@ -83,4 +83,129 @@ describe('serializePlateStatic nodes', () => {
       '<span data-slate-string="true">Encoded string 100%25</span>'
     );
   });
+
+  it('should serialize with both render.node and render.leaf', async () => {
+    const testPlugin = createTSlatePlugin({
+      key: 'test',
+      node: {
+        isDecoration: false,
+        isLeaf: true,
+      },
+      render: {
+        leaf: ({ children }) => (
+          <span data-slate-test="leaf-wrapper">{children}</span>
+        ),
+      },
+    });
+
+    const editor = createSlateEditor({
+      plugins: [testPlugin],
+      value: [
+        {
+          children: [
+            {
+              test: true,
+              text: 'test content',
+            },
+          ],
+          type: 'p',
+        },
+      ],
+    });
+
+    const html = await serializeHtml(editor, {
+      components: {
+        ...components,
+        test: ({ children }) => (
+          <span data-slate-test="node-wrapper">{children}</span>
+        ),
+      },
+      preserveClassNames: [],
+      stripClassNames: true,
+    });
+
+    expect(html).toContain(
+      '<span data-slate-node="text" data-slate-test="true"><span data-slate-test="node-wrapper"><span data-slate-leaf="true"><span data-slate-test="leaf-wrapper"><span data-slate-string="true">test content</span></span></span></span></span>'
+    );
+  });
+
+  it('should serialize with both render.node', async () => {
+    const testPlugin = createTSlatePlugin({
+      key: 'test',
+      node: {
+        isDecoration: true,
+        isLeaf: true,
+      },
+    });
+
+    const editor = createSlateEditor({
+      plugins: [testPlugin],
+      value: [
+        {
+          children: [
+            {
+              test: true,
+              text: 'test content',
+            },
+          ],
+          type: 'p',
+        },
+      ],
+    });
+
+    const html = await serializeHtml(editor, {
+      components: {
+        ...components,
+        test: ({ children }) => (
+          <span data-slate-test="leaf-wrapper">{children}</span>
+        ),
+      },
+      preserveClassNames: [],
+      stripClassNames: true,
+    });
+
+    expect(html).toContain(
+      '<span data-slate-node="text"><span data-slate-leaf="true" data-slate-test="true"><span data-slate-test="leaf-wrapper"><span data-slate-string="true">test content</span></span></span></span>'
+    );
+  });
+
+  it('should serialize with both render.node', async () => {
+    const testPlugin = createTSlatePlugin({
+      key: 'test',
+      node: {
+        isDecoration: false,
+        isLeaf: true,
+      },
+    });
+
+    const editor = createSlateEditor({
+      plugins: [testPlugin],
+      value: [
+        {
+          children: [
+            {
+              test: true,
+              text: 'test content',
+            },
+          ],
+          type: 'p',
+        },
+      ],
+    });
+
+    const html = await serializeHtml(editor, {
+      components: {
+        ...components,
+        test: ({ children }) => (
+          <span data-slate-test="node-wrapper">{children}</span>
+        ),
+      },
+      preserveClassNames: [],
+      stripClassNames: true,
+    });
+
+    expect(html).toContain(
+      '<span data-slate-node="text" data-slate-test="true"><span data-slate-test="node-wrapper"><span data-slate-leaf="true"><span data-slate-string="true">test content</span></span></span></span>'
+    );
+  });
 });

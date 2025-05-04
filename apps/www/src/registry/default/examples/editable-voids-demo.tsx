@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import type { PlateRenderElementProps } from '@udecode/plate/react';
+import type { PlateElementProps } from '@udecode/plate/react';
 
 import { createPlatePlugin, Plate } from '@udecode/plate/react';
 
@@ -26,7 +26,7 @@ export const EditableVoidPlugin = createPlatePlugin({
 export function EditableVoidElement({
   attributes,
   children,
-}: PlateRenderElementProps) {
+}: PlateElementProps) {
   const [inputValue, setInputValue] = useState('');
 
   const editor = useCreateEditor({

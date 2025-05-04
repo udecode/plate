@@ -10,6 +10,8 @@ import { ListStyleType } from '../types';
 
 export interface IndentListOptions {
   at?: TLocation;
+  listRestart?: number;
+  listRestartPolite?: number;
   listStyleType?: ListStyleType | string;
 }
 

@@ -44,10 +44,9 @@ import type {
   SlatePluginContext,
   WithAnyKey,
 } from '../../lib';
+import type { PlateElementProps, PlateLeafProps } from '../components';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from './DOMHandlers';
-import type { PlateRenderElementProps } from './PlateRenderElementProps';
-import type { PlateRenderLeafProps } from './PlateRenderLeafProps';
 
 export type AnyEditorPlatePlugin = EditorPlatePlugin<AnyPluginConfig>;
 
@@ -136,10 +135,8 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
   };
 
 export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
-  parse?: React.FC<
-    PlateRenderElementProps<TElement, C> & PlateRenderLeafProps<TText, C>
-  >;
-  query?: (options: PlateRenderElementProps) => boolean;
+  parse?: React.FC<PlateElementProps<TElement, C> & PlateLeafProps<TText, C>>;
+  query?: (options: PlateElementProps) => boolean;
 };
 
 // -----------------------------------------------------------------------------
@@ -193,6 +190,10 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
 
 // -----------------------------------------------------------------------------
 
+export type LeafNodeProps<C extends AnyPluginConfig = PluginConfig> =
+  | ((props: PlateLeafProps<TText, C>) => AnyObject | undefined)
+  | AnyObject;
+
 /**
  * Property used by Plate to override node `component` props. If function, its
  * returning value will be shallow merged to the old props, with the old props
@@ -200,8 +201,7 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
  */
 export type NodeProps<C extends AnyPluginConfig = PluginConfig> =
   | ((
-      props: PlateRenderElementProps<TElement, C> &
-        PlateRenderLeafProps<TText, C>
+      props: PlateElementProps<TElement, C> & PlateLeafProps<TText, C>
     ) => AnyObject | undefined)
   | AnyObject;
 
@@ -213,14 +213,14 @@ export type NodeWrapperComponent<C extends AnyPluginConfig = PluginConfig> = (
 /** @deprecated Use {@link RenderNodeWrapperProps} instead. */
 export interface NodeWrapperComponentProps<
   C extends AnyPluginConfig = PluginConfig,
-> extends PlateRenderElementProps<TElement, C> {
+> extends PlateElementProps<TElement, C> {
   key: string;
 }
 
 /** @deprecated Use {@link RenderNodeWrapperFunction} instead. */
 export type NodeWrapperComponentReturnType<
   C extends AnyPluginConfig = PluginConfig,
-> = React.FC<PlateRenderElementProps<TElement, C>> | undefined;
+> = React.FC<PlateElementProps<TElement, C>> | undefined;
 
 export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C> & { value: Value }
@@ -351,8 +351,12 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         ) => Partial<PlatePlugin<AnyPluginConfig>>;
       }>;
       node: {
-        /** @see {@link NodeProps} */
+        /** Override `data-slate-leaf` element attributes */
+        leafProps?: LeafNodeProps<WithAnyKey<C>>;
+        /** Override node attributes */
         props?: NodeProps<WithAnyKey<C>>;
+        /** Override `data-slate-node="text"` element attributes */
+        textProps?: TextNodeProps<WithAnyKey<C>>;
       };
       override: {
         /** Replace plugin {@link NodeComponent} by key. */
@@ -386,8 +390,8 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
           };
       render: Nullable<{
         /**
-         * When other plugins' `node` components are rendered, this function can
-         * return an optional wrapper function that turns a `node`'s props to a
+         * When other plugins' node components are rendered, this function can
+         * return an optional wrapper function that turns a node's props to a
          * wrapper React node as its parent. Useful for wrapping or decorating
          * nodes with additional UI elements.
          *
@@ -407,9 +411,9 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         /** Renders a component before the `Editable` component. */
         beforeEditable?: EditableSiblingComponent;
         /**
-         * When other plugins' `node` components are rendered, this function can
-         * return an optional wrapper function that turns a `node`'s props to a
-         * wrapper React node. The wrapper node is the `node`'s child and its
+         * When other plugins' node components are rendered, this function can
+         * return an optional wrapper function that turns a node's props to a
+         * wrapper React node. The wrapper node is the node's child and its
          * original children's parent. Useful for wrapping or decorating nodes
          * with additional UI elements.
          *
@@ -417,8 +421,6 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * in the wrapper function. It is not equivalent to a React component.
          */
         belowNodes?: RenderNodeWrapper<WithAnyKey<C>>;
-        /** @see {@link NodeComponent} */
-        node?: NodeComponent;
         /**
          * Function to render content below the root element but above its
          * children. Similar to belowNodes but renders directly in the element
@@ -429,7 +431,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * in plate-core.
          */
         belowRootNodes?: (
-          props: PlateRenderElementProps<TElement, C>
+          props: PlateElementProps<TElement, C>
         ) => React.ReactNode;
       }>;
       /** @see {@link Shortcuts} */
@@ -768,12 +770,12 @@ export type RenderNodeWrapper<C extends AnyPluginConfig = PluginConfig> = (
 ) => RenderNodeWrapperFunction;
 
 export type RenderNodeWrapperFunction =
-  | ((elementProps: PlateRenderElementProps) => React.ReactNode)
+  | ((elementProps: PlateElementProps) => React.ReactNode)
   | undefined;
 
 export interface RenderNodeWrapperProps<
   C extends AnyPluginConfig = PluginConfig,
-> extends PlateRenderElementProps<TElement, C> {
+> extends PlateElementProps<TElement, C> {
   key: string;
 }
 
@@ -794,6 +796,10 @@ export type Shortcut = HotkeysOptions & {
 };
 
 export type Shortcuts = Record<string, Shortcut | null>;
+
+export type TextNodeProps<C extends AnyPluginConfig = PluginConfig> =
+  | ((props: PlateLeafProps<TText, C>) => AnyObject | undefined)
+  | AnyObject;
 
 export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =
   BaseTransformOptions & PlatePluginContext<C>;

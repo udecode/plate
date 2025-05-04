@@ -20,7 +20,7 @@ export const registryApp: Registry['items'] = [
     type: 'registry:lib',
   },
   {
-    dependencies: ['uploadthing@7.2.0'],
+    dependencies: ['uploadthing@7.6.0'],
     files: [
       {
         path: 'app/api/uploadthing/route.ts',

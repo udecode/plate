@@ -1,5 +1,26 @@
 # @udecode/plate-core
 
+## 47.3.1
+
+### Patch Changes
+
+- [#4267](https://github.com/udecode/plate/pull/4267) by [@zbeyens](https://github.com/zbeyens) –
+  - Upgrade `slate` to `0.114.0`
+  - Fix: plugin `node.props.className` merging
+  - Fix: remove redundant `data-slate-leaf` attribute from leaf components
+  - Add `node.leafProps` to override `data-slate-leaf` element attributes
+  - Add `node.textProps` to override `data-slate-node="text"` element attributes
+  - Add `render.leaf` to render a component below leaf nodes when `isLeaf: true` and `isDecoration: false`
+  - Add `node.isDecoration` to control if a plugin's nodes can be rendered as decorated leaf
+
+## 47.2.7
+
+## 47.2.3
+
+### Patch Changes
+
+- [`f4996e3`](https://github.com/udecode/plate/commit/f4996e3c3e606cb1dc0f6f66dc54364330a1655a) by [@felixfeng33](https://github.com/felixfeng33) – Extend `DomPlugin` to support `editor.tf.withScrolling`.
+
 ## 47.1.1
 
 ### Patch Changes

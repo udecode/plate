@@ -55,6 +55,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
 
       const regex = new RegExp(`"${getCommentKey(id)}":true`);
 
+      // TODO perf
       return regex.test(JSON.stringify(editor.children));
     },
     node: (options = {}) => {

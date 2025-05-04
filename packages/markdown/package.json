@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-markdown",
-  "version": "47.2.0",
+  "version": "47.4.1",
   "description": "Markdown serializer plugin for Plate",
   "keywords": [
     "markdown",
@@ -47,7 +47,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "marked": "^15.0.6",
+    "marked": "^15.0.11",
     "mdast-util-math": "3.0.0",
     "mdast-util-mdx": "3.0.0",
     "remark-mdx": "^3.1.0",
@@ -57,12 +57,12 @@
     "zeed-dom": "0.15.1"
   },
   "devDependencies": {
-    "@types/mdast": "^4.0.3",
-    "@types/unist": "^3.0.2",
+    "@types/mdast": "^4.0.4",
+    "@types/unist": "^3.0.3",
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=47.1.1",
+    "@udecode/plate": ">=47.3.1",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

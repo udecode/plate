@@ -3,11 +3,11 @@ import type { AnyPluginConfig, PluginConfig } from '../plugin/BasePlugin';
 import type { SlatePlugin } from '../plugin/SlatePlugin';
 
 import { AstPlugin } from './AstPlugin';
-import { DOMPlugin } from './DOMPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
 import { InlineVoidPlugin } from './InlineVoidPlugin';
 import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
+import { DOMPlugin } from './dom';
 import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';
 import { BaseParagraphPlugin } from './paragraph';

@@ -161,6 +161,16 @@ export const defaultRules: TRules = {
       };
     },
   },
+  callout: {
+    serialize(slateNode, options): MdMdxJsxTextElement {
+      return {
+        attributes: [],
+        children: convertNodesSerialize(slateNode.children, options) as any,
+        name: 'callout',
+        type: 'mdxJsxTextElement',
+      };
+    },
+  },
   code: {
     mark: true,
     deserialize: (mdastNode, deco, options) => {
@@ -187,7 +197,11 @@ export const defaultRules: TRules = {
         lang: node.lang,
         type: 'code',
         value: node.children
-          .map((child: any) => child.children.map((c: any) => c.text).join(''))
+          .map((child: any) =>
+            child?.children === undefined
+              ? child.text
+              : child.children.map((c: any) => c.text).join('')
+          )
           .join('\n'),
       };
     },

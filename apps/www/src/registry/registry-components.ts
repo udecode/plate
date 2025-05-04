@@ -214,7 +214,7 @@ const plugins: Registry['items'] = [
       },
     ],
     name: 'comments-plugin',
-    registryDependencies: ['block-discussion'],
+    registryDependencies: ['discussion-plugin'],
     type: 'registry:component',
   },
   {
@@ -245,7 +245,7 @@ const plugins: Registry['items'] = [
       },
     ],
     name: 'suggestion-plugin',
-    registryDependencies: [],
+    registryDependencies: ['discussion-plugin'],
     type: 'registry:component',
   },
   {
@@ -501,6 +501,18 @@ const plugins: Registry['items'] = [
       },
     ],
     name: 'toc-plugin',
+    type: 'registry:component',
+  },
+  {
+    dependencies: [],
+    files: [
+      {
+        path: 'components/editor/plugins/discussion-plugin.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'discussion-plugin',
+    registryDependencies: ['block-discussion'],
     type: 'registry:component',
   },
 ];

@@ -53,6 +53,7 @@ import { isEditorEnd } from './internal/editor-extension/isEditorEnd';
 import { isText } from './internal/editor-extension/isText';
 import { nodesRange } from './internal/editor-extension/nodes-range';
 import { prop } from './internal/editor-extension/prop';
+import { scrollIntoView } from './internal/editor-extension/scrollIntoView';
 import { some } from './internal/editor-extension/some';
 import { above } from './internal/editor/above';
 import { addMark } from './internal/editor/addMark';
@@ -309,6 +310,7 @@ export const createEditor = <V extends Value>({
     mark: bindFirst(mark, editor) as any,
     nodesRange: bindFirst(nodesRange, editor),
     prop: prop as any,
+    scrollIntoView: bindFirst(scrollIntoView, editor),
     some: bindFirst(some, editor),
     toDOMNode: bindFirst(toDOMNode, editor),
     toDOMPoint: bindFirst(toDOMPoint, editor),

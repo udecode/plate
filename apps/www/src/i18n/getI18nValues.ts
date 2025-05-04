@@ -50,6 +50,7 @@ import {
 import { mediaValue as mediaValueCn } from '@/registry/default/examples/values/cn/media-value';
 import { mentionValue as mentionValueCn } from '@/registry/default/examples/values/cn/mention-value';
 import { placeholderValue as placeholderValueCn } from '@/registry/default/examples/values/cn/placeholder-value';
+import { playgroundValue as playgroundValueCn } from '@/registry/default/examples/values/cn/playground-value';
 import { previewMdValue as previewMdValueCn } from '@/registry/default/examples/values/cn/preview-md-value';
 import { singleLineValue as singleLineValueCn } from '@/registry/default/examples/values/cn/single-line-value';
 import { slashCommandValue as slashCommandValueCn } from '@/registry/default/examples/values/cn/slash-command-value';
@@ -95,11 +96,11 @@ import {
 import { mediaValue as mediaValueEn } from '@/registry/default/examples/values/media-value';
 import { mentionValue as mentionValueEn } from '@/registry/default/examples/values/mention-value';
 import { placeholderValue as placeholderValueEn } from '@/registry/default/examples/values/placeholder-value';
+import { playgroundValue as playgroundValueEn } from '@/registry/default/examples/values/playground-value';
 import { previewMdValue as previewMdValueEn } from '@/registry/default/examples/values/preview-md-value';
 import { singleLineValue as singleLineValueEn } from '@/registry/default/examples/values/single-line-value';
 import { slashCommandValue as slashCommandValueEn } from '@/registry/default/examples/values/slash-command-value';
 import { softBreakValue as softBreakValueEn } from '@/registry/default/examples/values/soft-break-value';
-import { suggestionValue as suggestionValueEn } from '@/registry/default/examples/values/suggestion-value';
 import { tabbableValue as tabbableValueEn } from '@/registry/default/examples/values/tabbable-value';
 import { tableValue as tableValueEn } from '@/registry/default/examples/values/table-value';
 import { tocValue as tocValueEn } from '@/registry/default/examples/values/toc-value';
@@ -144,6 +145,7 @@ const i18n = {
     media: mediaValueCn,
     mention: mentionValueCn,
     placeholder: placeholderValueCn,
+    playground: playgroundValueCn,
     previewMd: previewMdValueCn,
     singleLine: singleLineValueCn,
     slashCommand: slashCommandValueCn,
@@ -195,11 +197,11 @@ const i18n = {
     media: mediaValueEn,
     mention: mentionValueEn,
     placeholder: placeholderValueEn,
+    playground: playgroundValueEn,
     previewMd: previewMdValueEn,
     singleLine: singleLineValueEn,
     slashCommand: slashCommandValueEn,
     softBreak: softBreakValueEn,
-    suggestion: suggestionValueEn,
     tabbable: tabbableValueEn,
     table: tableValueEn,
     toc: tocValueEn,

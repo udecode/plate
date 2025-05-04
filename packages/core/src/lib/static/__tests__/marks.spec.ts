@@ -18,11 +18,10 @@ describe('serializePlateStatic marks', () => {
       components: components,
       preserveClassNames: [],
       stripClassNames: true,
-      stripDataAttributes: true,
     });
 
     expect(html).toContain(
-      '<strong data-slate-bold="true"><span>bold</span></strong>'
+      '<span data-slate-leaf="true" data-slate-bold="true"><strong><span data-slate-string="true">bold</span></strong></span>'
     );
   });
 
@@ -42,10 +41,9 @@ describe('serializePlateStatic marks', () => {
       components: components,
       preserveClassNames: [],
       stripClassNames: true,
-      stripDataAttributes: true,
     });
     expect(html).toContain(
-      '<em data-slate-italic="true"><span>italic</span></em>'
+      '<span data-slate-leaf="true" data-slate-italic="true"><em><span data-slate-string="true">italic</span></em></span>'
     );
   });
 
@@ -65,10 +63,9 @@ describe('serializePlateStatic marks', () => {
       components: components,
       preserveClassNames: [],
       stripClassNames: true,
-      stripDataAttributes: true,
     });
     expect(html).toContain(
-      '<u data-slate-underline="true"><span>underlined</span></u>'
+      '<span data-slate-leaf="true" data-slate-underline="true"><u><span data-slate-string="true">underlined</span></u></span>'
     );
   });
 
@@ -88,10 +85,9 @@ describe('serializePlateStatic marks', () => {
       components: components,
       preserveClassNames: [],
       stripClassNames: true,
-      stripDataAttributes: true,
     });
     expect(html).toContain(
-      '<del data-slate-strikethrough="true"><span>strikethrough</span></del>'
+      '<span data-slate-leaf="true" data-slate-strikethrough="true"><del><span data-slate-string="true">strikethrough</span></del></span>'
     );
   });
 
@@ -111,10 +107,9 @@ describe('serializePlateStatic marks', () => {
       components: components,
       preserveClassNames: [],
       stripClassNames: true,
-      stripDataAttributes: true,
     });
     expect(html).toContain(
-      '<code data-slate-code="true"><span>some code</span></code>'
+      '<span data-slate-leaf="true" data-slate-code="true"><code><span data-slate-string="true">some code</span></code></span>'
     );
   });
 
@@ -134,10 +129,9 @@ describe('serializePlateStatic marks', () => {
       components: components,
       preserveClassNames: [],
       stripClassNames: true,
-      stripDataAttributes: true,
     });
     expect(html).toContain(
-      '<sub data-slate-subscript="true"><span>subscripted</span></sub>'
+      '<span data-slate-leaf="true" data-slate-subscript="true"><sub><span data-slate-string="true">subscripted</span></sub></span>'
     );
   });
 
@@ -157,10 +151,9 @@ describe('serializePlateStatic marks', () => {
       components: components,
       preserveClassNames: [],
       stripClassNames: true,
-      stripDataAttributes: true,
     });
     expect(html).toContain(
-      '<sup data-slate-superscript="true"><span>superscripted</span></sup>'
+      '<span data-slate-leaf="true" data-slate-superscript="true"><sup><span data-slate-string="true">superscripted</span></sup></span>'
     );
   });
 
@@ -180,10 +173,9 @@ describe('serializePlateStatic marks', () => {
       components: components,
       preserveClassNames: [],
       stripClassNames: true,
-      stripDataAttributes: true,
     });
     expect(html).toContain(
-      '<kbd data-slate-kbd="true"><span>keyboard shortcut</span></kbd>'
+      '<span data-slate-leaf="true" data-slate-kbd="true"><kbd><span data-slate-string="true">keyboard shortcut</span></kbd></span>'
     );
   });
 
@@ -203,12 +195,10 @@ describe('serializePlateStatic marks', () => {
       components: components,
       preserveClassNames: [],
       stripClassNames: true,
-      stripDataAttributes: true,
     });
 
-    // FIXME: This is not working as expected a bit redundant for data attributes
     expect(html).toContain(
-      '<em data-slate-bold="true" data-slate-italic="true"><strong data-slate-bold="true" data-slate-italic="true"><span>bold and italic</span></strong></em>'
+      '<span data-slate-leaf="true" data-slate-bold="true" data-slate-italic="true"><em><strong><span data-slate-string="true">bold and italic</span></strong></em></span>'
     );
   });
 });

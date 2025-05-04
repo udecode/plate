@@ -1,0 +1,100 @@
+---
+title: 位置
+description: Slate 中位置的 API 参考。
+---
+
+位置可以是路径、点或范围。方法通常接受位置而不是仅接受路径、点或范围。
+
+```typescript
+type TLocation = Path | Point | TRange
+```
+
+- [Path](/docs/api/slate/path)
+- [PathRef](/docs/api/slate/location-ref#pathref)
+- [Point](/docs/api/slate/point)
+- [PointRef](/docs/api/slate/location-ref#pointref)
+- [Range](/docs/api/slate/range)
+- [RangeRef](/docs/api/slate/location-ref#rangeref)
+
+## `LocationApi`
+
+### `isAt`
+
+检查一个值是否实现了 `At` 接口。
+
+<API name="isAt">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值是位置或节点，则返回 `true`。
+</APIReturns>
+</API>
+
+### `isLocation`
+
+检查一个值是否实现了 `TLocation` 接口。
+
+<API name="isLocation">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值是 `Path`、`Point` 或 `TRange`，则返回 `true`。
+</APIReturns>
+</API>
+
+### `isSpan`
+
+检查一个值是否实现了 `Span` 接口。
+
+<API name="isSpan">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值是有效的 `Span`，则返回 `true`。
+</APIReturns>
+</API>
+
+## 类型
+
+### `TLocation`
+
+`Location` 是 `TLocation` 的类型别名。
+
+<API name="TLocation">
+<APIAttributes>
+  <APIItem name="Path" type="Path">
+    表示节点位置的数字数组。
+  </APIItem>
+  <APIItem name="Point" type="Point">
+    包含 `path` 和 `offset` 的对象。
+  </APIItem>
+  <APIItem name="TRange" type="TRange">
+    包含 `anchor` 和 `focus` 的对象。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `Span`
+
+<API name="Span">
+<APIAttributes>
+  <APIItem name="[0]" type="Path">
+    起始路径。
+  </APIItem>
+  <APIItem name="[1]" type="Path">
+    结束路径。
+  </APIItem>
+</APIAttributes>
+</API>

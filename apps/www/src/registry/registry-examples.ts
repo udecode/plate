@@ -525,7 +525,7 @@ export const docExamples: Registry['items'] = [
       },
     ],
     name: 'comments-demo',
-    registryDependencies: ['comments-plugin'],
+    registryDependencies: ['comments-plugin', 'discussion-plugin'],
     type: 'registry:example',
   },
   {

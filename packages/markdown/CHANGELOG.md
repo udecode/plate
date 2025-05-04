@@ -1,5 +1,46 @@
 # @udecode/plate-markdown
 
+## 47.4.1
+
+### Patch Changes
+
+- [#4269](https://github.com/udecode/plate/pull/4269) by [@felixfeng33](https://github.com/felixfeng33) – If `deserializeMd` returns an inline element, wrap it with a paragraph
+
+## 47.3.1
+
+### Patch Changes
+
+- [#4267](https://github.com/udecode/plate/pull/4267) by [@zbeyens](https://github.com/zbeyens) – Update deps
+
+## 47.2.6
+
+### Patch Changes
+
+- [#4258](https://github.com/udecode/plate/pull/4258) by [@felixfeng33](https://github.com/felixfeng33) – Fix #4256
+
+## 47.2.4
+
+### Patch Changes
+
+- [#4250](https://github.com/udecode/plate/pull/4250) by [@martin-lysk](https://github.com/martin-lysk) – Fixes serialization of nested formatting of inlineCode blocks like
+  ```
+  `code`**`boldCode`**`code`
+  ```
+
+## 47.2.2
+
+### Patch Changes
+
+- [#4245](https://github.com/udecode/plate/pull/4245) by [@martin-lysk](https://github.com/martin-lysk) – fixes serialization of code_blocks created in plate editor
+
+## 47.2.1
+
+### Patch Changes
+
+- [#4224](https://github.com/udecode/plate/pull/4224) by [@martin-lysk](https://github.com/martin-lysk) – Fix overlapping inline formatting
+
+- [#4243](https://github.com/udecode/plate/pull/4243) by [@martin-lysk](https://github.com/martin-lysk) – Fix formatted empty paragraph
+
 ## 47.2.0
 
 ### Minor Changes

@@ -10,12 +10,16 @@ const ourFileRouter = {
       return {};
     })
     .onUploadComplete(({ file }) => {
-      return { file };
+      return {
+        key: file.key,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: file.ufsUrl,
+      };
     }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;
 
-export const { GET, POST } = createRouteHandler({
-  router: ourFileRouter,
-});
+export const { GET, POST } = createRouteHandler({ router: ourFileRouter });

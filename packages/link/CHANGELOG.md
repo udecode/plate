@@ -1,5 +1,19 @@
 # @udecode/plate-link
 
+## 47.3.1
+
+## 47.3.0
+
+### Patch Changes
+
+- [`a44f7be`](https://github.com/udecode/plate/commit/a44f7bebd4b298336e33eb918c6852ee6fd05d2a) by [@zbeyens](https://github.com/zbeyens) – `validateUrl` now supports internal links starting with `/` or `#`
+
+## 47.2.1
+
+### Patch Changes
+
+- [#4241](https://github.com/udecode/plate/pull/4241) by [@iamdustan](https://github.com/iamdustan) – Fixes #3156: LinkPlugin having a `target` attribute.
+
 ## 44.0.4
 
 ### Patch Changes

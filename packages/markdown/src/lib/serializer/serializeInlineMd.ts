@@ -16,13 +16,17 @@ export const serializeInlineMd = (
 
   const toRemarkProcessor = unified()
     .use(mergedOptions.remarkPlugins ?? [])
-    .use(remarkStringify);
+    .use(remarkStringify, {
+      emphasis: '_',
+    });
 
   if (options?.value?.length === 0) return '';
 
+  const convertedTexts = convertTextsSerialize(mergedOptions.value as any, {});
+
   // Serialize the content
   const serializedContent = toRemarkProcessor.stringify({
-    children: convertTextsSerialize(mergedOptions.value as any, {}),
+    children: convertedTexts,
     type: 'root',
   });
 

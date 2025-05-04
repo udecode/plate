@@ -98,10 +98,14 @@ import { TocElementStatic } from 'www/src/registry/default/plate-ui/toc-element-
 import { ToggleElementStatic } from 'www/src/registry/default/plate-ui/toggle-element-static';
 
 import { BaseParagraphPlugin, SlateLeaf } from '../..';
-import { createSlateEditor } from '../../editor';
+import { createSlateEditor, CreateSlateEditorOptions } from '../../editor';
 
-export const createStaticEditor = (value: Value) => {
+export const createStaticEditor = (
+  value: Value,
+  options?: Partial<CreateSlateEditorOptions>
+) => {
   return createSlateEditor({
+    ...options,
     plugins: [
       BaseColumnPlugin,
       BaseColumnItemPlugin,

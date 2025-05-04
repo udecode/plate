@@ -1,5 +1,43 @@
 # @udecode/plate-ai
 
+## 47.4.2
+
+### Patch Changes
+
+- [#4275](https://github.com/udecode/plate/pull/4275) by [@felixfeng33](https://github.com/felixfeng33) – Fix streaming indent list.
+
+## 47.4.1
+
+### Patch Changes
+
+- [#4269](https://github.com/udecode/plate/pull/4269) by [@felixfeng33](https://github.com/felixfeng33) – deprecate `experimental_lastTextId` use `api.aiChat.node({stream:true})` instead
+
+## 47.3.1
+
+### Patch Changes
+
+- [#4267](https://github.com/udecode/plate/pull/4267) by [@zbeyens](https://github.com/zbeyens) – Update deps
+
+## 47.2.6
+
+## 47.2.5
+
+### Patch Changes
+
+- [#4252](https://github.com/udecode/plate/pull/4252) by [@felixfeng33](https://github.com/felixfeng33) – Add `experimental_lastTextId` to support ai indicator.
+
+## 47.2.4
+
+## 47.2.3
+
+### Patch Changes
+
+- [`f4996e3`](https://github.com/udecode/plate/commit/f4996e3c3e606cb1dc0f6f66dc54364330a1655a) by [@felixfeng33](https://github.com/felixfeng33) – Use `withScrolling` when streaming.
+
+## 47.2.2
+
+## 47.2.1
+
 ## 47.2.0
 
 ### Patch Changes

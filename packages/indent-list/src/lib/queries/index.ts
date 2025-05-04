@@ -3,6 +3,7 @@
  */
 
 export * from './areEqListStyleType';
+export * from './getIndentListAbove';
 export * from './getIndentListSiblings';
 export * from './getNextIndentList';
 export * from './getPreviousIndentList';

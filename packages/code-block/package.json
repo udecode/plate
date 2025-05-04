@@ -54,7 +54,7 @@
     "lowlight": "^3.3.0"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=47.1.1",
+    "@udecode/plate": ">=47.3.1",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
