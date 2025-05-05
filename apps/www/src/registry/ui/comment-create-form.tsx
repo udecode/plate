@@ -66,6 +66,7 @@ export const useCommentEditor = (
         [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
         // [SlashInputPlugin.key]: SlashInputElement,
       },
+      placeholders: false,
       plugins: [BasicMarksPlugin],
       value: [],
       ...options,
@@ -220,7 +221,7 @@ export function CommentCreateForm({
 
   return (
     <div className={cn('flex w-full', className)}>
-      <div className="mt-1 mr-1 shrink-0">
+      <div className="mt-2 mr-1 shrink-0">
         {/* Replace to your own backend or refer to potion */}
         <Avatar className="size-5">
           <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
@@ -253,7 +254,7 @@ export function CommentCreateForm({
             <Button
               size="icon"
               variant="ghost"
-              className="absolute right-0 bottom-0 ml-auto shrink-0"
+              className="absolute right-0.5 bottom-0.5 ml-auto shrink-0"
               disabled={commentContent.trim().length === 0}
               onClick={(e) => {
                 e.stopPropagation();

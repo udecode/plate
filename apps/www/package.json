@@ -162,7 +162,7 @@
     "remark-gfm": "4.0.1",
     "remark-math": "6.0.0",
     "sass": "1.87.0",
-    "shadcn": "2.6.0-canary.1",
+    "shadcn": "2.5.0",
     "shadcx": "workspace:^",
     "sonner": "2.0.3",
     "stream-browserify": "3.0.0",

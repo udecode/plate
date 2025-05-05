@@ -12,7 +12,7 @@
     "@udecode/plate-highlight"
   ],
   "registryDependencies": [
-    "toolbar",
+    "http://localhost:3000/r/toolbar",
     "http://localhost:3000/r/ai-toolbar-button",
     "http://localhost:3000/r/align-dropdown-menu",
     "http://localhost:3000/r/color-dropdown-menu",

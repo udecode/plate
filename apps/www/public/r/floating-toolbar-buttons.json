@@ -8,7 +8,7 @@
     "@udecode/plate-basic-marks"
   ],
   "registryDependencies": [
-    "toolbar",
+    "http://localhost:3000/r/toolbar",
     "http://localhost:3000/r/ai-toolbar-button",
     "http://localhost:3000/r/comment-toolbar-button",
     "http://localhost:3000/r/link-toolbar-button",

@@ -160,9 +160,11 @@ export const editorComponents = {
 export const useCreateEditor = (
   {
     components,
+    placeholders = true,
     readOnly,
     ...options
   }: {
+    placeholders?: boolean;
     plugins?: any[];
     readOnly?: boolean;
   } & Omit<CreatePlateEditorOptions, 'plugins'> = {},
@@ -171,7 +173,11 @@ export const useCreateEditor = (
   return usePlateEditor<Value, (typeof editorPlugins)[number]>(
     {
       components: {
-        ...(readOnly ? viewComponents : withPlaceholders(editorComponents)),
+        ...(readOnly
+          ? viewComponents
+          : placeholders
+            ? withPlaceholders(editorComponents)
+            : editorComponents),
         ...components,
       },
       plugins: (readOnly ? viewPlugins : editorPlugins) as any,

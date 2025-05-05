@@ -2,6 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "floating-toolbar-plugin",
   "type": "registry:component",
+  "dependencies": [],
   "registryDependencies": [
     "http://localhost:3000/r/floating-toolbar",
     "http://localhost:3000/r/floating-toolbar-buttons"

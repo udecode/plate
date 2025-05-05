@@ -19,8 +19,8 @@
     "@udecode/plate-toggle"
   ],
   "registryDependencies": [
-    "dropdown-menu",
-    "toolbar",
+    "http://localhost:3000/r/dropdown-menu",
+    "http://localhost:3000/r/toolbar",
     "http://localhost:3000/r/transforms"
   ],
   "files": [
