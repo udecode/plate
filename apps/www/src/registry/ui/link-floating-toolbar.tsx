@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { cn } from '@udecode/cn';
 import {
   type UseVirtualFloatingOptions,
   flip,
@@ -24,18 +23,22 @@ import {
   useFormInputProps,
   usePluginOption,
 } from '@udecode/plate/react';
+import { cva } from 'class-variance-authority';
 import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
 
 import { buttonVariants } from './button';
 import { inputVariants } from './input';
-import { popoverVariants } from './popover';
 import { Separator } from './separator';
 
-export interface LinkFloatingToolbarProps {
-  state?: LinkFloatingToolbarState;
-}
+const popoverVariants = cva(
+  'z-50 w-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden'
+);
 
-export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
+export function LinkFloatingToolbar({
+  state,
+}: {
+  state?: LinkFloatingToolbarState;
+}) {
   const activeCommentId = usePluginOption({ key: 'comment' }, 'activeId');
   const activeSuggestionId = usePluginOption({ key: 'suggestion' }, 'activeId');
 
@@ -147,19 +150,11 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
 
   return (
     <>
-      <div
-        ref={insertRef}
-        className={cn(popoverVariants(), 'w-auto p-1')}
-        {...insertProps}
-      >
+      <div ref={insertRef} className={popoverVariants()} {...insertProps}>
         {input}
       </div>
 
-      <div
-        ref={editRef}
-        className={cn(popoverVariants(), 'w-auto p-1')}
-        {...editProps}
-      >
+      <div ref={editRef} className={popoverVariants()} {...editProps}>
         {editContent}
       </div>
     </>

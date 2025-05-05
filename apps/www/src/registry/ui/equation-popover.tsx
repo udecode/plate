@@ -18,8 +18,9 @@ import {
 } from '@udecode/plate/react';
 import { CornerDownLeftIcon } from 'lucide-react';
 
+import { PopoverContent } from '@/components/ui/popover';
+
 import { Button } from './button';
-import { PopoverContent } from './popover';
 
 const EquationInput = createPrimitiveComponent(TextareaAutosize)({
   propsHook: useEquationInput,

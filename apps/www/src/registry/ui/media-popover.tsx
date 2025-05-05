@@ -20,10 +20,15 @@ import {
 } from '@udecode/plate/react';
 import { Link, Trash2Icon } from 'lucide-react';
 
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from '@/components/ui/popover';
+
 import { Button, buttonVariants } from './button';
 import { CaptionButton } from './caption';
 import { inputVariants } from './input';
-import { Popover, PopoverAnchor, PopoverContent } from './popover';
 import { Separator } from './separator';
 
 export interface MediaPopoverProps {

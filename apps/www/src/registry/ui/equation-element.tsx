@@ -9,8 +9,9 @@ import { useEquationElement } from '@udecode/plate-math/react';
 import { PlateElement, useElement, useSelected } from '@udecode/plate/react';
 import { RadicalIcon } from 'lucide-react';
 
+import { Popover, PopoverTrigger } from '@/components/ui/popover';
+
 import { EquationPopoverContent } from './equation-popover';
-import { Popover, PopoverTrigger } from './popover';
 
 export const EquationElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {

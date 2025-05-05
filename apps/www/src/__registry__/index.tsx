@@ -19,7 +19,7 @@ export const Index: Record<string, any> = {
     name: "ai-menu",
     description: "A menu for AI-powered content generation and insertion.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/use-chat","command","http://localhost:3000/r/popover","http://localhost:3000/r/editor"],
+    registryDependencies: ["http://localhost:3000/r/use-chat","command","popover","http://localhost:3000/r/editor"],
     files: [{
       path: "src/registry/ui/ai-menu.tsx",
       type: "registry:ui",
@@ -225,7 +225,7 @@ export const Index: Record<string, any> = {
     name: "block-discussion",
     description: "A popover interface for managing discussions: comments, replies, suggestions.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/suggestion-plugin","http://localhost:3000/r/button","http://localhost:3000/r/popover","http://localhost:3000/r/avatar","http://localhost:3000/r/dropdown-menu","http://localhost:3000/r/editor","http://localhost:3000/r/ai-leaf","http://localhost:3000/r/avatar","http://localhost:3000/r/date-element","http://localhost:3000/r/emoji-input-element","http://localhost:3000/r/inline-equation-element","http://localhost:3000/r/link-element","http://localhost:3000/r/mention-element","http://localhost:3000/r/mention-input-element"],
+    registryDependencies: ["http://localhost:3000/r/suggestion-plugin","http://localhost:3000/r/button","popover","avatar","http://localhost:3000/r/dropdown-menu","http://localhost:3000/r/editor","http://localhost:3000/r/ai-leaf","http://localhost:3000/r/date-element","http://localhost:3000/r/emoji-input-element","http://localhost:3000/r/inline-equation-element","http://localhost:3000/r/link-element","http://localhost:3000/r/mention-element","http://localhost:3000/r/mention-input-element"],
     files: [{
       path: "src/registry/ui/block-discussion.tsx",
       type: "registry:ui",
@@ -309,7 +309,7 @@ export const Index: Record<string, any> = {
     name: "select-editor",
     description: "An editor to select tags.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/editor","command","http://localhost:3000/r/popover","http://localhost:3000/r/tag-element"],
+    registryDependencies: ["http://localhost:3000/r/editor","command","popover","http://localhost:3000/r/tag-element"],
     files: [{
       path: "src/registry/ui/select-editor.tsx",
       type: "registry:ui",
@@ -634,7 +634,7 @@ export const Index: Record<string, any> = {
     name: "link-floating-toolbar",
     description: "A floating interface for link editing.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/button","http://localhost:3000/r/input","http://localhost:3000/r/popover","http://localhost:3000/r/separator"],
+    registryDependencies: ["http://localhost:3000/r/button","http://localhost:3000/r/input","popover","http://localhost:3000/r/separator"],
     files: [{
       path: "src/registry/ui/link-floating-toolbar.tsx",
       type: "registry:ui",
@@ -719,7 +719,7 @@ export const Index: Record<string, any> = {
     name: "media-popover",
     description: "A popover interface for media settings.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/button","http://localhost:3000/r/input","http://localhost:3000/r/popover","http://localhost:3000/r/separator"],
+    registryDependencies: ["http://localhost:3000/r/button","http://localhost:3000/r/input","popover","http://localhost:3000/r/separator"],
     files: [{
       path: "src/registry/ui/media-popover.tsx",
       type: "registry:ui",
@@ -736,7 +736,7 @@ export const Index: Record<string, any> = {
     name: "media-toolbar-button",
     description: "Toolbar button for inserting and managing media.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar","http://localhost:3000/r/input","http://localhost:3000/r/dropdown-menu","http://localhost:3000/r/alert-dialog"],
+    registryDependencies: ["http://localhost:3000/r/toolbar","http://localhost:3000/r/input","http://localhost:3000/r/dropdown-menu","alert-dialog"],
     files: [{
       path: "src/registry/ui/media-toolbar-button.tsx",
       type: "registry:ui",
@@ -1175,7 +1175,7 @@ export const Index: Record<string, any> = {
     name: "equation-element",
     description: "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/popover"],
+    registryDependencies: ["popover"],
     files: [{
       path: "src/registry/ui/equation-element.tsx",
       type: "registry:ui",
@@ -1200,7 +1200,7 @@ export const Index: Record<string, any> = {
     name: "inline-equation-element",
     description: "An inline LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/popover"],
+    registryDependencies: ["popover"],
     files: [{
       path: "src/registry/ui/inline-equation-element.tsx",
       type: "registry:ui",
@@ -1272,7 +1272,7 @@ export const Index: Record<string, any> = {
     name: "font-size-toolbar-button",
     description: "A toolbar control for adjusting font size.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/popover","http://localhost:3000/r/toolbar"],
+    registryDependencies: ["popover","http://localhost:3000/r/toolbar"],
     files: [{
       path: "src/registry/ui/font-size-toolbar-button.tsx",
       type: "registry:ui",
@@ -1778,40 +1778,6 @@ export const Index: Record<string, any> = {
     }),
     meta: {"docs":[{"route":"/docs/toggle"}],"examples":["toggle-demo"]},
   },
-  "alert-dialog": {
-    name: "alert-dialog",
-    description: "A modal dialog that interrupts the user with important content and expects a response.",
-    type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/button"],
-    files: [{
-      path: "src/registry/ui/alert-dialog.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/alert-dialog.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/alert-dialog"}},
-  },
-  "avatar": {
-    name: "avatar",
-    description: "An image element with a fallback for representing the user.",
-    type: "registry:ui",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/ui/avatar.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/avatar.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/avatar"}},
-  },
   "button": {
     name: "button",
     description: "Displays a button or a component that looks like a button.",
@@ -1901,23 +1867,6 @@ export const Index: Record<string, any> = {
     }),
     meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/dropdown-menu"}},
   },
-  "form": {
-    name: "form",
-    description: "Building forms with React Hook Form and Zod.",
-    type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/label"],
-    files: [{
-      path: "src/registry/ui/form.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/form.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/form"}},
-  },
   "input": {
     name: "input",
     description: "Displays a form input field or a component that looks like an input field.",
@@ -1934,40 +1883,6 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/input"}},
-  },
-  "label": {
-    name: "label",
-    description: "Renders an accessible label associated with controls.",
-    type: "registry:ui",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/ui/label.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/label.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/label"}},
-  },
-  "popover": {
-    name: "popover",
-    description: "Displays rich content in a portal, triggered by a button.",
-    type: "registry:ui",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/ui/popover.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/popover.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/popover"}},
   },
   "separator": {
     name: "separator",
@@ -3919,7 +3834,7 @@ export const Index: Record<string, any> = {
     name: "select-editor-demo",
     description: "A form with a select editor component for managing labels.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/form","http://localhost:3000/r/button","http://localhost:3000/r/select-editor"],
+    registryDependencies: ["form","http://localhost:3000/r/button","http://localhost:3000/r/select-editor"],
     files: [{
       path: "src/registry/examples/select-editor-demo.tsx",
       type: "registry:example",

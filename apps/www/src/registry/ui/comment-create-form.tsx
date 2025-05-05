@@ -26,12 +26,12 @@ import { Plate, useEditorRef, usePluginOption } from '@udecode/plate/react';
 import { type CreatePlateEditorOptions, PlateLeaf } from '@udecode/plate/react';
 import { ArrowUpIcon } from 'lucide-react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   type TDiscussion,
   discussionPlugin,
 } from '@/registry/components/editor/plugins/discussion-plugin';
 import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
-import { Avatar, AvatarFallback, AvatarImage } from '@/registry/ui/avatar';
 
 import type { TComment } from './comment';
 
@@ -220,7 +220,7 @@ export function CommentCreateForm({
 
   return (
     <div className={cn('flex w-full', className)}>
-      <div className="mr-1 mt-1 shrink-0">
+      <div className="mt-1 mr-1 shrink-0">
         {/* Replace to your own backend or refer to potion */}
         <Avatar className="size-5">
           <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
@@ -238,7 +238,7 @@ export function CommentCreateForm({
           <EditorContainer variant="comment">
             <Editor
               variant="comment"
-              className="min-h-[25px] grow pr-8 pt-0.5"
+              className="min-h-[25px] grow pt-0.5 pr-8"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -253,7 +253,7 @@ export function CommentCreateForm({
             <Button
               size="icon"
               variant="ghost"
-              className="absolute bottom-0 right-0 ml-auto shrink-0"
+              className="absolute right-0 bottom-0 ml-auto shrink-0"
               disabled={commentContent.trim().length === 0}
               onClick={(e) => {
                 e.stopPropagation();

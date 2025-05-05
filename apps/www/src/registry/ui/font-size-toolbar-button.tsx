@@ -11,7 +11,12 @@ import { HEADING_KEYS } from '@udecode/plate-heading';
 import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
 import { Minus, Plus } from 'lucide-react';
 
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+
 import { ToolbarButton } from './toolbar';
 
 const DEFAULT_FONT_SIZE = '16';

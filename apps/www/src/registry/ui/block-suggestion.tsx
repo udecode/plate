@@ -50,13 +50,13 @@ import {
 } from '@udecode/plate/react';
 import { CheckIcon, XIcon } from 'lucide-react';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   type TDiscussion,
   discussionPlugin,
 } from '@/registry/components/editor/plugins/discussion-plugin';
 import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
 
-import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import { Button } from './button';
 import { type TComment, Comment, formatCommentDate } from './comment';
 import { CommentCreateForm } from './comment-create-form';
@@ -148,23 +148,23 @@ export const BlockSuggestionCard = ({
             <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
             <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
           </Avatar>
-          <h4 className="mx-2 text-sm font-semibold leading-none">
+          <h4 className="mx-2 text-sm leading-none font-semibold">
             {userInfo?.name}
           </h4>
-          <div className="text-muted-foreground/80 text-xs leading-none">
+          <div className="text-xs leading-none text-muted-foreground/80">
             <span className="mr-1">
               {formatCommentDate(new Date(suggestion.createdAt))}
             </span>
           </div>
         </div>
 
-        <div className="relative mb-4 mt-1 pl-[32px]">
+        <div className="relative mt-1 mb-4 pl-[32px]">
           <div className="flex flex-col gap-2">
             {suggestion.type === 'remove' && (
               <React.Fragment>
                 {suggestionText2Array(suggestion.text!).map((text, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm">
+                    <span className="text-sm text-muted-foreground">
                       Delete:
                     </span>
 
@@ -181,7 +181,7 @@ export const BlockSuggestionCard = ({
                 {suggestionText2Array(suggestion.newText!).map(
                   (text, index) => (
                     <div key={index} className="flex items-center gap-2">
-                      <span className="text-muted-foreground text-sm">
+                      <span className="text-sm text-muted-foreground">
                         Add:
                       </span>
 
@@ -201,7 +201,7 @@ export const BlockSuggestionCard = ({
                     <React.Fragment key={index}>
                       <div
                         key={index}
-                        className="text-brand/80 flex items-start gap-2"
+                        className="flex items-start gap-2 text-brand/80"
                       >
                         <span className="text-sm">with:</span>
                         <span className="text-sm">{text || 'line breaks'}</span>
@@ -213,7 +213,7 @@ export const BlockSuggestionCard = ({
                 {suggestionText2Array(suggestion.text!).map((text, index) => (
                   <React.Fragment key={index}>
                     <div key={index} className="flex items-start gap-2">
-                      <span className="text-muted-foreground text-sm">
+                      <span className="text-sm text-muted-foreground">
                         {index === 0 ? 'Replace:' : 'Delete:'}
                       </span>
                       <span className="text-sm">{text || 'line breaks'}</span>
@@ -225,7 +225,7 @@ export const BlockSuggestionCard = ({
 
             {suggestion.type === 'update' && (
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-sm">
+                <span className="text-sm text-muted-foreground">
                   {Object.keys(suggestion.properties).map((key) => (
                     <span key={key}>Un{key}</span>
                   ))}
@@ -255,10 +255,10 @@ export const BlockSuggestionCard = ({
         ))}
 
         {hovering && (
-          <div className="absolute right-4 top-4 flex gap-2">
+          <div className="absolute top-4 right-4 flex gap-2">
             <Button
               variant="ghost"
-              className="text-muted-foreground h-6 p-1"
+              className="h-6 p-1 text-muted-foreground"
               onClick={() => accept(suggestion)}
             >
               <CheckIcon className="size-4" />
@@ -266,7 +266,7 @@ export const BlockSuggestionCard = ({
 
             <Button
               variant="ghost"
-              className="text-muted-foreground h-6 p-1"
+              className="h-6 p-1 text-muted-foreground"
               onClick={() => reject(suggestion)}
             >
               <XIcon className="size-4" />
@@ -277,7 +277,7 @@ export const BlockSuggestionCard = ({
         <CommentCreateForm discussionId={suggestion.suggestionId} />
       </div>
 
-      {!isLast && <div className="bg-muted h-px w-full" />}
+      {!isLast && <div className="h-px w-full bg-muted" />}
     </div>
   );
 };
@@ -521,7 +521,7 @@ export function BlockSuggestion({ element }: { element: TSuggestionElement }) {
   return (
     <div
       className={cn(
-        'z-1 border-brand/[0.8] pointer-events-none absolute inset-0 border-2 transition-opacity',
+        'pointer-events-none absolute inset-0 z-1 border-2 border-brand/[0.8] transition-opacity',
         isRemove && 'border-gray-300'
       )}
       contentEditable={false}

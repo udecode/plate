@@ -16,9 +16,13 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 import { Button } from './button';
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 const languages: { label: string; value: string }[] = [
   { label: 'Auto', value: 'auto' },

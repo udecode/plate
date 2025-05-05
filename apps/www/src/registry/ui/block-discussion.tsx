@@ -30,6 +30,12 @@ import {
   PencilLineIcon,
 } from 'lucide-react';
 
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { commentsPlugin } from '@/registry/components/editor/plugins/comments-plugin';
 import {
   type TDiscussion,
@@ -37,12 +43,6 @@ import {
 } from '@/registry/components/editor/plugins/discussion-plugin';
 import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
 import { Button } from '@/registry/ui/button';
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/registry/ui/popover';
 
 import {
   BlockSuggestionCard,
@@ -209,7 +209,7 @@ const BlockCommentsContent = ({
         )}
 
         <PopoverContent
-          className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] min-w-[130px] max-w-[calc(100vw-24px)] overflow-y-auto p-0 data-[state=closed]:opacity-0"
+          className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] overflow-y-auto p-0 data-[state=closed]:opacity-0"
           onCloseAutoFocus={(e) => e.preventDefault()}
           onOpenAutoFocus={(e) => e.preventDefault()}
           align="center"
@@ -261,7 +261,7 @@ const BlockCommentsContent = ({
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
-                className="text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted ml-1 mt-1 flex h-6 gap-1 px-1.5 py-0"
+                className="mt-1 ml-1 flex h-6 gap-1 px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
                 data-active={open}
                 contentEditable={false}
               >
@@ -314,7 +314,7 @@ export const BlockComment = ({
         <CommentCreateForm discussionId={discussion.id} />
       </div>
 
-      {!isLast && <div className="bg-muted h-px w-full" />}
+      {!isLast && <div className="h-px w-full bg-muted" />}
     </React.Fragment>
   );
 };

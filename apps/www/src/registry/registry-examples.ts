@@ -1035,7 +1035,7 @@ export const docExamples: Registry['items'] = [
       ],
     },
     name: 'select-editor-demo',
-    registryDependencies: ['form', 'button', 'select-editor'],
+    registryDependencies: ['shadcn/form', 'button', 'select-editor'],
     title: 'Select Editor Form',
     type: 'registry:example',
   },

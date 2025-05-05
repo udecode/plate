@@ -16,9 +16,13 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { getDocIcon } from '@/config/docs-icons';
 import { Button } from '@/registry/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/registry/ui/popover';
 
 export function DocBreadcrumb({
   buttonClassName,

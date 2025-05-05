@@ -14,8 +14,9 @@ import {
 } from '@udecode/plate/react';
 import { RadicalIcon } from 'lucide-react';
 
+import { Popover, PopoverTrigger } from '@/components/ui/popover';
+
 import { EquationPopoverContent } from './equation-popover';
-import { Popover, PopoverTrigger } from './popover';
 
 export const InlineEquationElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {

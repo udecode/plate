@@ -4,13 +4,11 @@
   "type": "registry:ui",
   "title": "Label",
   "description": "Renders an accessible label associated with controls.",
-  "dependencies": [
-    "@radix-ui/react-label"
-  ],
+  "dependencies": ["@radix-ui/react-label"],
   "registryDependencies": [],
   "files": [
     {
-      "path": "src/registry/ui/label.tsx",
+      "path": "src/components/ui/label.tsx",
       "content": "'use client';\n\nimport * as React from 'react';\n\nimport * as LabelPrimitive from '@radix-ui/react-label';\nimport { cn } from '@udecode/cn';\nimport { type VariantProps, cva } from 'class-variance-authority';\n\nconst labelVariants = cva(\n  'text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'\n);\n\nconst Label = React.forwardRef<\n  React.ElementRef<typeof LabelPrimitive.Root>,\n  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &\n    VariantProps<typeof labelVariants>\n>(({ className, ...props }, ref) => (\n  <LabelPrimitive.Root\n    ref={ref}\n    className={cn(labelVariants(), className)}\n    {...props}\n  />\n));\nLabel.displayName = LabelPrimitive.Root.displayName;\n\nexport { Label };\n",
       "type": "registry:ui"
     }

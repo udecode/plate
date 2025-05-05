@@ -21,8 +21,13 @@ import {
 import { Fzf } from 'fzf';
 import { PlusIcon } from 'lucide-react';
 
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from '@/components/ui/popover';
+
 import { Editor, EditorContainer } from './editor';
-import { Popover, PopoverAnchor, PopoverContent } from './popover';
 import { TagElement } from './tag-element';
 
 export type SelectItem = {

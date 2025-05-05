@@ -12,7 +12,7 @@ import { useCreateEditor } from '@/registry/components/editor/use-create-editor'
 import { editableVoidsValue } from '@/registry/examples/values/editable-voids-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { Input } from '@/registry/ui/input';
-import { Label } from '@/registry/ui/label';
+import { Label } from '@/components/ui/label';
 
 export const EditableVoidPlugin = createPlatePlugin({
   key: 'editable-void',

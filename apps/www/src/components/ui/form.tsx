@@ -8,14 +8,15 @@ import {
   Controller,
   FormProvider,
   useFormContext,
+  useFormState,
 } from 'react-hook-form';
 
 import type * as LabelPrimitive from '@radix-ui/react-label';
 
 import { Slot } from '@radix-ui/react-slot';
-import { cn } from '@udecode/cn';
 
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 const Form = FormProvider;
 
@@ -46,8 +47,8 @@ const FormField = <
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext);
   const itemContext = React.useContext(FormItemContext);
-  const { formState, getFieldState } = useFormContext();
-
+  const { getFieldState } = useFormContext();
+  const formState = useFormState({ name: fieldContext.name });
   const fieldState = getFieldState(fieldContext.name, formState);
 
   if (!fieldContext) {
@@ -74,81 +75,70 @@ const FormItemContext = React.createContext<FormItemContextValue>(
   {} as FormItemContextValue
 );
 
-const FormItem = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
+function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
   const id = React.useId();
 
   return (
     <FormItemContext.Provider value={{ id }}>
-      <div ref={ref} className={cn('space-y-2', className)} {...props} />
+      <div
+        className={cn('grid gap-2', className)}
+        data-slot="form-item"
+        {...props}
+      />
     </FormItemContext.Provider>
   );
-});
-FormItem.displayName = 'FormItem';
+}
 
-const FormLabel = React.forwardRef<
-  React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
->(({ className, ...props }, ref) => {
+function FormLabel({
+  className,
+  ...props
+}: React.ComponentProps<typeof LabelPrimitive.Root>) {
   const { error, formItemId } = useFormField();
 
   return (
     <Label
-      ref={ref}
-      className={cn(error && 'text-destructive', className)}
+      className={cn('data-[error=true]:text-destructive', className)}
+      data-error={!!error}
+      data-slot="form-label"
       htmlFor={formItemId}
       {...props}
     />
   );
-});
-FormLabel.displayName = 'FormLabel';
+}
 
-const FormControl = React.forwardRef<
-  React.ElementRef<typeof Slot>,
-  React.ComponentPropsWithoutRef<typeof Slot>
->(({ ...props }, ref) => {
+function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
   const { error, formDescriptionId, formItemId, formMessageId } =
     useFormField();
 
   return (
     <Slot
       id={formItemId}
-      ref={ref}
       aria-describedby={
         error ? `${formDescriptionId} ${formMessageId}` : `${formDescriptionId}`
       }
       aria-invalid={!!error}
+      data-slot="form-control"
       {...props}
     />
   );
-});
-FormControl.displayName = 'FormControl';
+}
 
-const FormDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => {
+function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
   const { formDescriptionId } = useFormField();
 
   return (
     <p
       id={formDescriptionId}
-      ref={ref}
       className={cn('text-sm text-muted-foreground', className)}
+      data-slot="form-description"
       {...props}
     />
   );
-});
-FormDescription.displayName = 'FormDescription';
+}
 
-const FormMessage = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ children, className, ...props }, ref) => {
+function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
   const { error, formMessageId } = useFormField();
-  const body = error ? String(error?.message) : children;
+  const body = error ? String(error?.message ?? '') : props.children;
 
   if (!body) {
     return null;
@@ -157,15 +147,14 @@ const FormMessage = React.forwardRef<
   return (
     <p
       id={formMessageId}
-      ref={ref}
-      className={cn('text-sm font-medium text-destructive', className)}
+      className={cn('text-sm text-destructive', className)}
+      data-slot="form-message"
       {...props}
     >
       {body}
     </p>
   );
-});
-FormMessage.displayName = 'FormMessage';
+}
 
 export {
   Form,

@@ -14,7 +14,7 @@ import { useMounted } from '@/registry/hooks/use-mounted';
 import { Button } from '@/registry/ui/button';
 import { Separator } from '@/registry/ui/separator';
 
-import { Label } from '../registry/ui/label';
+import { Label } from '../components/ui/label';
 import { CopyCodeButton, getThemeCode } from './copy-code-button';
 import { ThemesSwitcher } from './themes-selector-mini';
 import { Skeleton } from './ui/skeleton';

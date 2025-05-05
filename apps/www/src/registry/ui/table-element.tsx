@@ -41,6 +41,8 @@ import {
   XIcon,
 } from 'lucide-react';
 
+import { Popover, PopoverContent } from '@/components/ui/popover';
+
 import { DEFAULT_COLORS } from './color-constants';
 import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
 import {
@@ -52,7 +54,6 @@ import {
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from './dropdown-menu';
-import { Popover, PopoverContent } from './popover';
 import {
   BorderAll,
   BorderBottom,
