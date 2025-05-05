@@ -112,9 +112,9 @@ Text with custom line height
 
 Mention: @User
 
-Date: 2024-01-01
+Date: <date>2024-01-01</date>
 
-Text with <highlight style="background-color: yellow;">highlight</highlight> and <u>underline</u> and keyboard formatting
+Text with <highlight style="background-color: yellow;">highlight</highlight> and <u>underline</u> and <kbd>keyboard</kbd> formatting
 
 Text with color and background color
 "

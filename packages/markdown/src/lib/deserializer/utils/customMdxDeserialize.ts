@@ -31,6 +31,24 @@ export const customMdxDeserialize = (
       return nodeParserDeserialize(mdastNode, deco, options) as any;
   }
 
+  if (mdastNode.name === 'sup') {
+    const parserKey = 'superscript';
+
+    const nodeParserDeserialize = getDeserializerByKey(parserKey, options);
+
+    if (nodeParserDeserialize)
+      return nodeParserDeserialize(mdastNode, deco, options) as any;
+  }
+
+  if (mdastNode.name === 'sub') {
+    const parserKey = 'subscript';
+
+    const nodeParserDeserialize = getDeserializerByKey(parserKey, options);
+
+    if (nodeParserDeserialize)
+      return nodeParserDeserialize(mdastNode, deco, options) as any;
+  }
+
   const customJsxElementKey = mdastNode.name;
 
   if (customJsxElementKey) {

@@ -162,6 +162,12 @@ export const defaultRules: TRules = {
     },
   },
   callout: {
+    deserialize: (mdastNode, deco, options) => {
+      return {
+        children: convertChildrenDeserialize(mdastNode.children, deco, options),
+        type: 'callout',
+      };
+    },
     serialize(slateNode, options): MdMdxJsxTextElement {
       return {
         attributes: [],
@@ -207,10 +213,20 @@ export const defaultRules: TRules = {
     },
   },
   date: {
-    serialize: ({ date }) => {
+    deserialize(mdastNode, deco, options) {
+      const dateValue = (mdastNode.children?.[0] as any)?.value || '';
       return {
-        type: 'text',
-        value: date ?? '',
+        children: [{ text: '' }],
+        date: dateValue,
+        type: 'date',
+      };
+    },
+    serialize({ date }): MdMdxJsxTextElement {
+      return {
+        attributes: [],
+        children: [{ type: 'text', value: date ?? '' }],
+        name: 'date',
+        type: 'mdxJsxTextElement',
       };
     },
   },
@@ -392,6 +408,14 @@ export const defaultRules: TRules = {
         { kbd: true, ...deco },
         options
       ) as any;
+    },
+    serialize(slateNode, options): MdMdxJsxTextElement {
+      return {
+        attributes: [],
+        children: [{ type: 'text', value: slateNode.text }],
+        name: 'kbd',
+        type: 'mdxJsxTextElement',
+      };
     },
   },
   list: {
@@ -725,6 +749,42 @@ export const defaultRules: TRules = {
     mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
+    },
+  },
+  subscript: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        deco,
+        options
+      ) as any;
+    },
+    serialize(slateNode, options): MdMdxJsxTextElement {
+      return {
+        attributes: [],
+        children: [{ type: 'text', value: slateNode.text }],
+        name: 'sub',
+        type: 'mdxJsxTextElement',
+      };
+    },
+  },
+  superscript: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        { superscript: true, ...deco },
+        options
+      ) as any;
+    },
+    serialize(slateNode, options): MdMdxJsxTextElement {
+      return {
+        attributes: [],
+        children: [{ type: 'text', value: slateNode.text }],
+        name: 'sup',
+        type: 'mdxJsxTextElement',
+      };
     },
   },
   table: {

@@ -10,20 +10,41 @@ import {
   BaseCodePlugin,
   BaseItalicPlugin,
   BaseStrikethroughPlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
+import { BaseCalloutPlugin } from '@udecode/plate-callout';
 import {
   BaseCodeBlockPlugin,
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
+import { BaseDatePlugin } from '@udecode/plate-date';
+import {
+  BaseHeadingPlugin,
+  BaseTocPlugin,
+  HEADING_KEYS,
+} from '@udecode/plate-heading';
+import { BaseHighlightPlugin } from '@udecode/plate-highlight';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
+import { BaseKbdPlugin } from '@udecode/plate-kbd';
 import { BaseLinkPlugin } from '@udecode/plate-link';
+import {
+  BaseEquationPlugin,
+  BaseInlineEquationPlugin,
+} from '@udecode/plate-math';
+import { BaseImagePlugin } from '@udecode/plate-media';
 import { BaseMentionPlugin } from '@udecode/plate-mention';
+import {
+  BaseTableCellHeaderPlugin,
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '@udecode/plate-table';
 import { usePlateEditor } from '@udecode/plate/react';
 
 import { markdownPlugin } from '@/registry/default/components/editor/plugins/markdown-plugin';
@@ -33,41 +54,85 @@ import {
 } from '@/registry/default/plate-ui/indent-todo-marker-static';
 
 import { BlockquoteElementStatic } from './blockquote-element-static';
+import { CalloutElementStatic } from './callout-element-static';
 import { CodeBlockElementStatic } from './code-block-element-static';
 import { CodeLeafStatic } from './code-leaf-static';
 import { CodeLineElementStatic } from './code-line-element-static';
 import { CodeSyntaxLeafStatic } from './code-syntax-leaf-static';
+import { DateElement } from './date-element';
 import { EditorStatic } from './editor-static';
+import { EquationElementStatic } from './equation-element-static';
 import { HeadingElementStatic } from './heading-element-static';
+import { HighlightLeafStatic } from './highlight-leaf-static';
 import { HrElementStatic } from './hr-element-static';
+import { ImageElementStatic } from './image-element-static';
+import { InlineEquationElementStatic } from './inline-equation-element-static';
+import { KbdLeaf } from './kbd-leaf';
 import { LinkElementStatic } from './link-element-static';
 import { MentionElementStatic } from './mention-element-static';
 import { ParagraphElementStatic } from './paragraph-element-static';
-
+import {
+  TableCellElementStatic,
+  TableCellHeaderStaticElement,
+} from './table-cell-element-static';
+import { TableElementStatic } from './table-element-static';
+import { TableRowElementStatic } from './table-row-element-static';
+import { TocElementStatic } from './toc-element-static';
 const components = {
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
   [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
+  [BaseCalloutPlugin.key]: CalloutElementStatic,
   [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
   [BaseCodeLinePlugin.key]: CodeLineElementStatic,
   [BaseCodePlugin.key]: CodeLeafStatic,
   [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
+  [BaseDatePlugin.key]: DateElement,
+  [BaseEquationPlugin.key]: EquationElementStatic,
+  [BaseHighlightPlugin.key]: HighlightLeafStatic,
   [BaseHorizontalRulePlugin.key]: HrElementStatic,
+  [BaseImagePlugin.key]: ImageElementStatic,
+  [BaseInlineEquationPlugin.key]: InlineEquationElementStatic,
   [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: 'em' }),
+  [BaseKbdPlugin.key]: KbdLeaf,
   [BaseLinkPlugin.key]: LinkElementStatic,
   [BaseMentionPlugin.key]: MentionElementStatic,
   [BaseParagraphPlugin.key]: ParagraphElementStatic,
   [BaseStrikethroughPlugin.key]: withProps(SlateLeaf, { as: 's' }),
+  [BaseSubscriptPlugin.key]: withProps(SlateLeaf, { as: 'sub' }),
+  [BaseSuperscriptPlugin.key]: withProps(SlateLeaf, { as: 'sup' }),
+  [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
+  [BaseTableCellPlugin.key]: TableCellElementStatic,
+  [BaseTablePlugin.key]: TableElementStatic,
+  [BaseTableRowPlugin.key]: TableRowElementStatic,
+  [BaseTocPlugin.key]: TocElementStatic,
   [BaseUnderlinePlugin.key]: withProps(SlateLeaf, { as: 'u' }),
   [HEADING_KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
   [HEADING_KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
   [HEADING_KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
+
+  // [BaseFilePlugin.key]: MediaFileElementStatic
+  // [BaseAudioPlugin.key]: MediaAudioElementStatic
+  // [BaseVideoPlugin.key]: MediaVideoElementStatic
+
+  // [BaseColumnItemPlugin.key]: ColumnElementStatic
+  // [BaseColumnPlugin.key]: ColumnGroupElementStatic
+  
+  // [BaseCommentsPlugin.key]: CommentLeafStatic
+  // [BaseTogglePlugin.key]: ToggleElementStatic
 };
 
 const plugins = [
   BaseBlockquotePlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
+  BaseImagePlugin,
+  BaseKbdPlugin,
   BaseBoldPlugin,
   BaseCodeBlockPlugin,
+  BaseDatePlugin,
   BaseCodeLinePlugin,
+  BaseEquationPlugin,
+  BaseInlineEquationPlugin,
   BaseCodePlugin,
   BaseCodeSyntaxPlugin,
   BaseItalicPlugin,
@@ -75,6 +140,10 @@ const plugins = [
   BaseUnderlinePlugin,
   BaseHeadingPlugin,
   BaseHorizontalRulePlugin,
+  BaseTablePlugin,
+  BaseTocPlugin,
+  BaseCalloutPlugin,
+  BaseHighlightPlugin,
   BaseLinkPlugin,
   BaseMentionPlugin,
   BaseParagraphPlugin,
