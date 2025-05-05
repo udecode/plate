@@ -12,14 +12,14 @@ import {
 import { RefreshCw } from 'lucide-react';
 import { nanoid } from 'nanoid';
 
-import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
-import { editorComponents } from '@/registry/default/components/editor/use-create-editor';
-import { useMounted } from '@/registry/default/hooks/use-mounted';
-import { Button } from '@/registry/default/plate-ui/button';
-import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
-import { Input } from '@/registry/default/plate-ui/input';
-import { withPlaceholders } from '@/registry/default/plate-ui/placeholder';
-import { RemoteCursorOverlay } from '@/registry/default/plate-ui/remote-cursor-overlay';
+import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
+import { editorComponents } from '@/registry/components/editor/use-create-editor';
+import { useMounted } from '@/registry/hooks/use-mounted';
+import { Button } from '@/registry/ui/button';
+import { Editor, EditorContainer } from '@/registry/ui/editor';
+import { Input } from '@/registry/ui/input';
+import { withPlaceholders } from '@/registry/ui/placeholder';
+import { RemoteCursorOverlay } from '@/registry/ui/remote-cursor-overlay';
 
 const INITIAL_VALUE = [
   {

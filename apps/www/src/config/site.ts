@@ -16,7 +16,10 @@ export const siteConfig = {
   },
   name: 'Plate',
   ogImage: 'https://platejs.org/og.png',
-  url: 'https://platejs.org',
+  url:
+    process.env.NODE_ENV === 'development'
+      ? 'http://localhost:3000'
+      : 'https://platejs.org',
 };
 
 export type SiteConfig = typeof siteConfig;

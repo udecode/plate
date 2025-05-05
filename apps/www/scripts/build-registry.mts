@@ -8,45 +8,60 @@ import { z } from 'zod';
 import { blocks } from '@/registry/registry-blocks';
 import { lib } from '@/registry/registry-lib';
 import { ui } from '@/registry/registry-ui';
+import { examples } from '@/registry/registry-examples';
+import { hooks } from '@/registry/registry-hooks';
+import { components } from '@/registry/registry-components';
 
-const registry = {
+const registry: Registry = {
   name: 'plate',
-  homepage: 'https://platejs.org',
-  items: z.array(registryItemSchema).parse([
-    {
-      name: 'plate',
-      type: 'registry:style',
-      dependencies: [
-        'tailwind-scrollbar-hide',
-        '@udecode/cn',
-        '@udecode/plate',
-      ],
-      devDependencies: [],
-      registryDependencies: [],
-      cssVars: {
-        theme: {
-          'font-heading':
-            "'var(--font-heading)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
-          'font-mono':
-            "'var(--font-mono)', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-          'font-sans':
-            "'var(--font-sans)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+  homepage: process.env.NEXT_PUBLIC_URL ?? 'http://localhost:3000',
+  items: z.array(registryItemSchema).parse(
+    [
+      {
+        name: 'plate',
+        type: 'registry:style',
+        dependencies: [
+          'tailwind-scrollbar-hide',
+          '@udecode/cn',
+          '@udecode/plate',
+        ],
+        devDependencies: [],
+        registryDependencies: [],
+        cssVars: {
+          theme: {
+            'font-heading':
+              "'var(--font-heading)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+            'font-mono':
+              "'var(--font-mono)', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+            'font-sans':
+              "'var(--font-sans)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+          },
+          light: {
+            brand: 'oklch(0.623 0.214 259.815)',
+            highlight: 'oklch(0.852 0.199 91.936)',
+          },
+          dark: {
+            brand: 'oklch(0.707 0.165 254.624)',
+            highlight: 'oklch(0.852 0.199 91.936)',
+          },
         },
-        light: {
-          brand: 'oklch(0.623 0.214 259.815)',
-          highlight: 'oklch(0.852 0.199 91.936)',
-        },
-        dark: {
-          brand: 'oklch(0.707 0.165 254.624)',
-          highlight: 'oklch(0.852 0.199 91.936)',
-        },
+        files: [],
       },
-      files: [],
-    },
-    ...ui,
-    ...blocks,
-    ...lib,
-  ]),
+      ...ui,
+      ...components,
+      ...blocks,
+      ...lib,
+      ...hooks,
+      ...examples,
+    ].map((item) => ({
+      ...item,
+      registryDependencies: item.registryDependencies?.map((dep) =>
+        dep.startsWith('/r')
+          ? (process.env.URL || 'http://localhost:3000') + dep
+          : dep
+      ),
+    }))
+  ),
 } satisfies Registry;
 
 async function buildRegistryIndex() {

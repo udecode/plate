@@ -6,7 +6,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "contentlayer/generated": [".contentlayer/generated"],
+      "contentlayer/generated": ["./.contentlayer/generated"],
       "registry": ["./registry.json"]
     },
     "plugins": [

@@ -8,8 +8,13 @@ import { lib } from './registry-lib';
 import { themes } from './registry-themes';
 import { ui } from './registry-ui';
 
+const url =
+  process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3000'
+    : 'https://platejs.org';
+
 export const registry = {
-  homepage: 'https://platejs.org',
+  homepage: url,
   items: [
     ...ui,
     ...components,
@@ -20,6 +25,11 @@ export const registry = {
 
     // Internal use only.
     ...examples,
-  ],
+  ].map((item) => ({
+    ...item,
+    registryDependencies: item.registryDependencies?.map((dep) =>
+      dep.startsWith('/r') ? url + dep : dep
+    ),
+  })),
   name: 'plate',
 } satisfies Registry;

@@ -24,14 +24,14 @@ export function getRegistryComponent(name: string) {
     return React.lazy(() => import('@/registry/blocks/slate-to-html/page'));
   }
 
-  return memoizedIndex.default[name]?.component;
+  return memoizedIndex[name]?.component;
 }
 
 export async function getRegistryItem(
   name: string,
   prefetch = false
 ): Promise<RegistryItem | null> {
-  const item = memoizedIndex.default[name];
+  const item = memoizedIndex[name];
 
   if (!item) {
     return null;
@@ -102,7 +102,7 @@ async function getAllItemFiles(
 
   seen.add(name);
 
-  const item = memoizedIndex.default[name];
+  const item = memoizedIndex[name];
 
   if (!item) return [];
 
