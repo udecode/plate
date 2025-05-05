@@ -1,11 +1,14 @@
+import kebabCase from 'lodash/kebabCase.js';
+
 import type { MdMdxJsxTextElement } from '../mdast';
 import type { TRules } from './types';
 
 import { convertChildrenDeserialize } from '../deserializer';
 import { getStyleValue } from '../deserializer/utils/getStyleValue';
 
-function createFontRuleSerialize(styleName: string, propName: string) {
+function createFontRuleSerialize(propName: string) {
   return function (slateNode: any): MdMdxJsxTextElement {
+    const styleName = kebabCase(propName);
     return {
       attributes: [
         {
@@ -21,7 +24,9 @@ function createFontRuleSerialize(styleName: string, propName: string) {
   };
 }
 
-function createFontRuleDeserialize(styleName: string, propName: string) {
+function createFontRuleDeserialize(propName: string) {
+  const styleName = kebabCase(propName);
+
   return function (mdastNode: MdMdxJsxTextElement, deco: any, options: any) {
     const value = getStyleValue(mdastNode, styleName);
     return convertChildrenDeserialize(
@@ -34,31 +39,28 @@ function createFontRuleDeserialize(styleName: string, propName: string) {
 
 export const fontRules: TRules = {
   backgroundColor: {
-    deserialize: createFontRuleDeserialize(
-      'background-color',
-      'backgroundColor'
-    ),
+    deserialize: createFontRuleDeserialize('backgroundColor'),
     mark: true,
-    serialize: createFontRuleSerialize('background-color', 'backgroundColor'),
+    serialize: createFontRuleSerialize('backgroundColor'),
   },
   color: {
-    deserialize: createFontRuleDeserialize('color', 'color'),
+    deserialize: createFontRuleDeserialize('color'),
     mark: true,
-    serialize: createFontRuleSerialize('color', 'color'),
+    serialize: createFontRuleSerialize('color'),
   },
   fontFamily: {
-    deserialize: createFontRuleDeserialize('font-family', 'fontFamily'),
+    deserialize: createFontRuleDeserialize('fontFamily'),
     mark: true,
-    serialize: createFontRuleSerialize('font-family', 'fontFamily'),
+    serialize: createFontRuleSerialize('fontFamily'),
   },
   fontSize: {
-    deserialize: createFontRuleDeserialize('font-size', 'fontSize'),
+    deserialize: createFontRuleDeserialize('fontSize'),
     mark: true,
-    serialize: createFontRuleSerialize('font-size', 'fontSize'),
+    serialize: createFontRuleSerialize('fontSize'),
   },
   fontWeight: {
-    deserialize: createFontRuleDeserialize('font-weight', 'fontWeight'),
+    deserialize: createFontRuleDeserialize('fontWeight'),
     mark: true,
-    serialize: createFontRuleSerialize('font-weight', 'fontWeight'),
+    serialize: createFontRuleSerialize('fontWeight'),
   },
 };
