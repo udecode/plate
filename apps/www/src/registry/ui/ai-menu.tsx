@@ -103,8 +103,14 @@ export function AIMenu() {
     { enableOnContentEditable: true, enableOnFormTags: true }
   );
 
-  const isLoading =
-    (status === 'streaming' && streaming) || status === 'submitted';
+  useHotkeys('esc', () => {
+    api.aiChat.stop();
+
+    // remove when you implement the route /api/ai/command
+    chat._abortFakeStream();
+  });
+
+  const isLoading = status === 'streaming' || status === 'submitted';
 
   if (isLoading && mode === 'insert') {
     return null;

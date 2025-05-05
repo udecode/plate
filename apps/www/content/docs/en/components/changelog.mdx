@@ -7,6 +7,43 @@ toc: true
 Since Plate UI is not a component library, a changelog is maintained here.
 
 Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
+
+## May 2025 #22
+
+### May 4 #22.2
+
+- `ai/command`: forked smoothStream from `ai` package now uses 30ms delay by default (only code blocks and tables use 100ms delay).
+
+v48 migration:
+- `PlateElement`, `PlateLeaf` and `PlateText` HTML attributes are moved from top-level props to `attributes` prop.
+- Remove `nodeProps` prop from `PlateElement`, `PlateLeaf`, `PlateText`. Use `attributes` prop instead.
+- Migrated components: 
+  - `block-discussion`
+  - `comment-leaf`
+  - `date-element`
+  - `draggable`
+  - `excalidraw-element`
+  - `hr-element` + `-static`
+  - `image-element` + `-static`
+  - `link-element`
+  - `media-audio-element`
+  - `media-file-element`
+  - `media-placeholder-element`
+  - `media-video-element`
+  - `mention-element`
+  - `placeholder`
+  - `suggestion-leaf`
+  - `table-cell-element` + `-static`
+  - `table-element`
+  - `tag-element`
+
+### May 2 #22.1
+- `use-chat`: add `_abortFakeStream`.
+- `ai-menu`: Fix menu items are displayed incorrectly.
+- `ai-loading-bar`: Move esc keydown handler to `ai-menu`.
+- `ai/command`: add chunking delay to 100ms (Temporary workaround with performance issue).
+
+
 ## April 2025 #21
 
 ### April 30 #21.3

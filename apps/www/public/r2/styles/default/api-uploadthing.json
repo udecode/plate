@@ -4,7 +4,7 @@
   "type": "registry:lib",
   "author": "udecode (https://platejs.org)",
   "dependencies": [
-    "uploadthing@7.2.0"
+    "uploadthing@7.6.0"
   ],
   "registryDependencies": [],
   "files": [

@@ -177,17 +177,19 @@ function DiffLeaf({ children, ...props }: PlateLeafProps) {
   )[diffOperation.type];
 
   return (
-    <PlateLeaf {...props} asChild>
-      <Component
-        className={diffOperationColors[diffOperation.type]}
-        title={
+    <PlateLeaf
+      {...props}
+      as={Component}
+      className={diffOperationColors[diffOperation.type]}
+      attributes={{
+        ...props.attributes,
+        title:
           diffOperation.type === 'update'
             ? describeUpdate(diffOperation)
-            : undefined
-        }
-      >
-        {children}
-      </Component>
+            : undefined,
+      }}
+    >
+      {children}
     </PlateLeaf>
   );
 }

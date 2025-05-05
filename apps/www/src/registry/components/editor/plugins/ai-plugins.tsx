@@ -165,7 +165,6 @@ export const aiPlugins = [
           editor.setOption(AIChatPlugin, 'streaming', false);
           editor.setOption(AIChatPlugin, '_blockChunks', '');
           editor.setOption(AIChatPlugin, '_blockPath', null);
-          editor.setOption(AIChatPlugin, 'experimental_lastTextId', null);
         },
       });
     },

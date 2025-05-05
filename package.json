@@ -23,6 +23,7 @@
     "deps:check": "npx npm-check-updates@latest --configFileName config/ncurc.yml --workspaces --root --mergeConfig",
     "deps:update": "npx npm-check-updates@latest --configFileName config/ncurc.yml -u --workspaces --root --mergeConfig",
     "dev": "turbo --filter=www dev",
+    "dev:webrtc": "PORT=4444 node ./node_modules/y-webrtc/bin/server.js",
     "devt": "yarn workspace www devt",
     "docs:build": "cd docs && yarn && yarn build",
     "docs:start": "cd docs && yarn && yarn start",

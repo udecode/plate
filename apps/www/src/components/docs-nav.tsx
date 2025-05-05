@@ -186,7 +186,7 @@ function DocsNavItems({
           <React.Fragment key={index}>
             <Link
               className={cn(
-                'hover:bg-accent hover:text-accent-foreground group relative flex h-8 w-full items-center rounded-lg px-2 after:absolute after:inset-x-0 after:inset-y-[-2px] after:rounded-lg',
+                'hover:bg-accent hover:text-accent-foreground group relative flex h-8 w-full items-center truncate whitespace-nowrap rounded-lg px-2 after:absolute after:inset-x-0 after:inset-y-[-2px] after:rounded-lg',
                 item.disabled && 'cursor-not-allowed opacity-60',
                 pathname === item.href
                   ? 'bg-accent text-accent-foreground font-medium'

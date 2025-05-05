@@ -8,20 +8,68 @@ import {
   type CursorOverlayData,
   useRemoteCursorOverlayPositions,
 } from '@slate-yjs/react';
-import { useEditorContainerRef } from '@udecode/plate/react';
+import { YjsPlugin } from '@udecode/plate-yjs/react';
+import { useEditorContainerRef, usePluginOption } from '@udecode/plate/react';
 
-export function addAlpha(hexColor: string, opacity: number): string {
-  const normalized = Math.round(Math.min(Math.max(opacity, 0), 1) * 255);
+export function RemoteCursorOverlay() {
+  const isSynced = usePluginOption(YjsPlugin, '_isSynced');
 
-  return hexColor + normalized.toString(16).toUpperCase();
+  if (!isSynced) {
+    return null;
+  }
+
+  return <RemoteCursorOverlayContent />;
+}
+
+function RemoteCursorOverlayContent() {
+  const containerRef: any = useEditorContainerRef();
+  const [cursors] = useRemoteCursorOverlayPositions<CursorData>({
+    containerRef,
+  });
+
+  return (
+    <>
+      {cursors.map((cursor) => (
+        <RemoteSelection key={cursor.clientId} {...cursor} />
+      ))}
+    </>
+  );
+}
+
+function RemoteSelection({
+  caretPosition,
+  data,
+  selectionRects,
+}: CursorOverlayData<CursorData>) {
+  if (!data) {
+    return null;
+  }
+
+  const selectionStyle: CSSProperties = {
+    // Add a opacity to the background color
+    backgroundColor: addAlpha(data.color, 0.5),
+  };
+
+  return (
+    <React.Fragment>
+      {selectionRects.map((position, i) => (
+        <div
+          key={i}
+          className="pointer-events-none absolute"
+          style={{ ...selectionStyle, ...position }}
+        ></div>
+      ))}
+      {caretPosition && <Caret data={data} caretPosition={caretPosition} />}
+    </React.Fragment>
+  );
 }
 
 export type CursorData = {
   color: string;
   name: string;
 };
-
 type CaretProps = Pick<CursorOverlayData<CursorData>, 'caretPosition' | 'data'>;
+
 const cursorOpacity = 0.7;
 const hoverOpacity = 1;
 
@@ -67,45 +115,8 @@ function Caret({ caretPosition, data }: CaretProps) {
   );
 }
 
-function RemoteSelection({
-  caretPosition,
-  data,
-  selectionRects,
-}: CursorOverlayData<CursorData>) {
-  if (!data) {
-    return null;
-  }
+function addAlpha(hexColor: string, opacity: number): string {
+  const normalized = Math.round(Math.min(Math.max(opacity, 0), 1) * 255);
 
-  const selectionStyle: CSSProperties = {
-    // Add a opacity to the background color
-    backgroundColor: addAlpha(data.color, 0.5),
-  };
-
-  return (
-    <React.Fragment>
-      {selectionRects.map((position, i) => (
-        <div
-          key={i}
-          className="pointer-events-none absolute"
-          style={{ ...selectionStyle, ...position }}
-        ></div>
-      ))}
-      {caretPosition && <Caret data={data} caretPosition={caretPosition} />}
-    </React.Fragment>
-  );
-}
-
-export function RemoteCursorOverlay() {
-  const containerRef: any = useEditorContainerRef();
-  const [cursors] = useRemoteCursorOverlayPositions<CursorData>({
-    containerRef,
-  });
-
-  return (
-    <>
-      {cursors.map((cursor) => (
-        <RemoteSelection key={cursor.clientId} {...cursor} />
-      ))}
-    </>
-  );
+  return hexColor + normalized.toString(16).toUpperCase();
 }

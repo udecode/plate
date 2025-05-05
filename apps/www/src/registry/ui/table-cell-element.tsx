@@ -81,11 +81,12 @@ export const TableCellElement = withRef<
           ...style,
         } as React.CSSProperties
       }
-      {...{
+      {...props}
+      attributes={{
+        ...props.attributes,
         colSpan: api.table.getColSpan(element),
         rowSpan: api.table.getRowSpan(element),
       }}
-      {...props}
     >
       <div
         className="relative z-20 box-border h-full px-3 py-2"

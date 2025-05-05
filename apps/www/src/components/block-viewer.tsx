@@ -189,7 +189,7 @@ function BlockViewerProvider({
         className="group/block-view-wrapper flex min-w-0 flex-col items-stretch gap-4"
         style={
           {
-            '--height': item.meta?.iframeHeight ?? '650px',
+            '--height': (item.meta?.iframeHeight ?? 650) + 'px',
           } as React.CSSProperties
         }
         data-view={view}
@@ -408,9 +408,10 @@ function BlockViewerView({ preview }: { preview: React.ReactNode }) {
             {preview ?? (
               <iframe
                 // className="chunk-mode relative z-20 hidden w-full bg-background md:block"
-                className="chunk-mode bg-background relative z-20 w-full"
+                className="chunk-mode bg-background relative z-20 size-full"
                 title={item.name}
                 height={item.meta?.iframeHeight ?? '100%'}
+                sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
                 src={item.src ?? `/blocks/${item.name}`}
               />
             )}

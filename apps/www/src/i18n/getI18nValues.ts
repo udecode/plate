@@ -50,6 +50,7 @@ import {
 import { mediaValue as mediaValueCn } from '@/registry/examples/values/cn/media-value';
 import { mentionValue as mentionValueCn } from '@/registry/examples/values/cn/mention-value';
 import { placeholderValue as placeholderValueCn } from '@/registry/examples/values/cn/placeholder-value';
+import { playgroundValue as playgroundValueCn } from '@/registry/examples/values/cn/playground-value';
 import { previewMdValue as previewMdValueCn } from '@/registry/examples/values/cn/preview-md-value';
 import { singleLineValue as singleLineValueCn } from '@/registry/examples/values/cn/single-line-value';
 import { slashCommandValue as slashCommandValueCn } from '@/registry/examples/values/cn/slash-command-value';
@@ -95,6 +96,7 @@ import {
 import { mediaValue as mediaValueEn } from '@/registry/examples/values/media-value';
 import { mentionValue as mentionValueEn } from '@/registry/examples/values/mention-value';
 import { placeholderValue as placeholderValueEn } from '@/registry/examples/values/placeholder-value';
+import { playgroundValue as playgroundValueEn } from '@/registry/examples/values/playground-value';
 import { previewMdValue as previewMdValueEn } from '@/registry/examples/values/preview-md-value';
 import { singleLineValue as singleLineValueEn } from '@/registry/examples/values/single-line-value';
 import { slashCommandValue as slashCommandValueEn } from '@/registry/examples/values/slash-command-value';
@@ -103,6 +105,7 @@ import { tabbableValue as tabbableValueEn } from '@/registry/examples/values/tab
 import { tableValue as tableValueEn } from '@/registry/examples/values/table-value';
 import { tocValue as tocValueEn } from '@/registry/examples/values/toc-value';
 import { toggleValue as toggleValueEn } from '@/registry/examples/values/toggle-value';
+
 const i18n = {
   cn: {
     ai: aiValueCn,
@@ -143,6 +146,7 @@ const i18n = {
     media: mediaValueCn,
     mention: mentionValueCn,
     placeholder: placeholderValueCn,
+    playground: playgroundValueCn,
     previewMd: previewMdValueCn,
     singleLine: singleLineValueCn,
     slashCommand: slashCommandValueCn,
@@ -194,6 +198,7 @@ const i18n = {
     media: mediaValueEn,
     mention: mentionValueEn,
     placeholder: placeholderValueEn,
+    playground: playgroundValueEn,
     previewMd: previewMdValueEn,
     singleLine: singleLineValueEn,
     slashCommand: slashCommandValueEn,

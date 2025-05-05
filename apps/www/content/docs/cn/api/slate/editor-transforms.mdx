@@ -1,0 +1,909 @@
+---
+title: 编辑器转换
+description: Slate 中编辑器转换操作的 API 参考文档。
+---
+
+转换是用于操作 Slate 文档的辅助函数。
+
+## 节点操作
+
+### `duplicateNodes`
+
+复制指定位置的节点并将其插入到该位置之后。
+
+<API name="duplicateNodes">
+<APIOptions type="DuplicateNodesOptions">
+  <APIItem name="...options" type="InsertNodesOptions" optional>
+    `insertNodes` 选项。
+  </APIItem>
+  <APIItem name="at" type="At" optional>
+    要复制并在其后插入的位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="block" type="boolean" optional>
+    如果为 true，复制位置上方的块。如果提供了 `nodes`，则忽略此选项。
+  </APIItem>
+  <APIItem name="nodes" type="NodeEntry[]" optional>
+    要复制的特定节点。优先于 `block` 选项。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertFragment`
+
+在指定位置插入节点片段。
+
+<API name="insertFragment">
+<APIParameters>
+  <APIItem name="fragment" type="N[]">
+    要插入的节点片段。
+  </APIItem>
+  <APIItem name="options" type="InsertFragmentOptions" optional />
+</APIParameters>
+
+<APIOptions type="InsertFragmentOptions">
+  <APIItem name="at" type="At" optional>
+    插入位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="hanging" type="boolean" optional>
+    范围是否悬挂。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    是否允许在空节点中插入。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertNode`
+
+原子性地插入单个节点。
+
+<API name="insertNode">
+<APIParameters>
+  <APIItem name="node" type="N">
+    要插入的节点。
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional />
+</APIParameters>
+</API>
+
+### `insertNodes`
+
+原子性地插入一个或多个节点。
+
+<API name="insertNodes">
+<APIParameters>
+  <APIItem name="nodes" type="N | N[]">
+    要插入的节点。
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional />
+</APIParameters>
+
+<APIOptions type="InsertNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional>
+    通用查询选项。
+  </APIItem>
+  <APIItem name="batchDirty" type="boolean" optional />
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="nextBlock" type="boolean" optional>
+    如果 `removeEmpty` 导致当前块被移除，则在当前块之后插入。
+  </APIItem>
+  <APIItem name="removeEmpty" type="QueryNodeOptions | boolean" optional>
+    如果为空则移除当前块。默认移除空段落，但可以自定义。
+  </APIItem>
+  <APIItem name="select" type="boolean" optional>
+    选中插入的节点。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    允许在空节点中插入。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `liftNodes`
+
+将指定位置的节点在文档树中向上提升。如有必要，会分割父节点。
+
+<API name="liftNodes">
+<APIOptions type="LiftNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `mergeNodes`
+
+将指定位置的节点与同一深度的前一个节点合并。合并后产生的空容器节点将被移除。
+
+<API name="mergeNodes">
+<APIOptions type="MergeNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="mergeNode" type="(editor: E, options: { at: Path; to: Path }) => void" optional>
+    处理节点合并的自定义函数。
+  </APIItem>
+  <APIItem name="removeEmptyAncestor" type="(editor: E, options: { at: Path }) => void" optional>
+    合并后移除空祖先节点的自定义函数。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `moveNodes`
+
+将节点从一个位置移动到另一个位置。
+
+<API name="moveNodes">
+<APIOptions type="MoveNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="to" type="Path">
+    目标路径。
+  </APIItem>
+  <APIItem name="children" type="boolean" optional>
+    仅移动指定位置节点的子节点。
+  </APIItem>
+  <APIItem name="fromIndex" type="number" optional>
+    要移动的子节点的起始索引。默认为 0。
+  </APIItem>
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `removeNodes`
+
+移除指定位置的节点。
+
+<API name="removeNodes">
+<APIOptions type="RemoveNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="children" type="boolean" optional>
+    为 true 时，移除指定位置节点的所有子节点。
+  </APIItem>
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="previousEmptyBlock" type="boolean" optional>
+    如果存在，移除前一个空块。
+  </APIItem>
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `replaceNodes`
+
+用新节点替换指定位置的节点。
+
+<API name="replaceNodes">
+<APIParameters>
+  <APIItem name="nodes" type="N | N[]">
+    要插入的新节点。
+  </APIItem>
+  <APIItem name="options" type="ReplaceNodesOptions" optional />
+</APIParameters>
+
+<APIOptions type="ReplaceNodesOptions">
+  <APIItem name="...options" type="InsertNodesOptions" optional>
+    `insertNodes` 选项。
+  </APIItem>
+  <APIItem name="children" type="boolean" optional>
+    替换指定位置节点的所有子节点，而不是节点本身。
+  </APIItem>
+  <APIItem name="removeNodes" type="Omit<RemoveNodesOptions, 'at'>" optional>
+    替换前移除节点的选项。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `reset`
+
+重置编辑器状态，包括历史记录、选区和子节点。
+
+<API name="reset">
+<APIOptions type="ResetOptions">
+  <APIItem name="...options" type="ReplaceNodesOptions" optional>
+    `replaceNodes` 选项。
+  </APIItem>
+  <APIItem name="children" type="boolean" optional>
+    为 true 时，仅重置子节点而不清除历史记录/操作。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `setNodes`
+
+设置节点的属性。
+
+<API name="setNodes">
+<APIParameters>
+  <APIItem name="props" type="Partial<NodeProps<N>>">
+    要设置的属性。使用 `undefined` 取消设置。
+  </APIItem>
+  <APIItem name="options" type="SetNodesOptions" optional />
+</APIParameters>
+
+<APIOptions type="SetNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="compare" type="(prop: Partial<Descendant>, node: Partial<Descendant>) => boolean" optional />
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="marks" type="boolean" optional>
+    为 true 时，仅应用于非空节点或可标记空节点中的文本节点。
+  </APIItem>
+  <APIItem name="merge" type="(prop: Partial<Descendant>, node: Partial<Descendant>) => object" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="split" type="boolean" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `splitNodes`
+
+在指定位置分割节点。
+
+<API name="splitNodes">
+<APIOptions type="SplitNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="always" type="boolean" optional />
+  <APIItem name="height" type="number" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `toggleBlock`
+
+在指定位置切换块类型。
+
+<API name="toggleBlock">
+<APIParameters>
+  <APIItem name="type" type="string">
+    要切换的块类型。
+  </APIItem>
+  <APIItem name="options" type="ToggleBlockOptions" optional />
+</APIParameters>
+
+<APIOptions type="ToggleBlockOptions">
+  <APIItem name="...options" type="SetNodesOptions" optional>
+    传递给 `setNodes` 的选项。
+  </APIItem>
+  <APIItem name="defaultType" type="string" optional>
+    取消切换时的默认块类型。默认为段落。
+  </APIItem>
+  <APIItem name="someOptions" type="EditorNodesOptions" optional>
+    用于确定块是否处于活动状态的选项。
+  </APIItem>
+  <APIItem name="wrap" type="boolean" optional>
+    如果为 true，切换使用 `type` 包装。否则，直接设置块类型。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `unsetNodes`
+
+从节点中移除属性。
+
+<API name="unsetNodes">
+<APIParameters>
+  <APIItem name="props" type="string | string[]">
+    要移除的属性键。
+  </APIItem>
+  <APIItem name="options" type="UnsetNodesOptions" optional />
+</APIParameters>
+
+<APIOptions type="UnsetNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="split" type="boolean" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `unwrapNodes`
+
+解包指定位置的节点。如有必要，会分割父节点。
+
+<API name="unwrapNodes">
+<APIOptions type="UnwrapNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="split" type="boolean" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `wrapNodes`
+
+将指定位置的节点包装在 `element` 容器中。
+
+<API name="wrapNodes">
+<APIParameters>
+  <APIItem name="element" type="N">
+    包装元素。
+  </APIItem>
+  <APIItem name="options" type="WrapNodesOptions" optional />
+</APIParameters>
+
+<APIOptions type="WrapNodesOptions">
+  <APIItem name="...options" type="QueryOptions" optional />
+  <APIItem name="children" type="boolean" optional>
+    为 true 时，将所有子节点包装到单个容器元素中。
+  </APIItem>
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="mode" type="'highest' | 'lowest'" optional />
+  <APIItem name="split" type="boolean" optional />
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+## 文本操作
+
+### `delete`
+
+删除指定位置的文本。
+
+<API name="delete">
+<APIOptions type="DeleteTextOptions">
+  <APIItem name="at" type="At" optional />
+  <APIItem name="distance" type="number" optional>
+    要删除的字符（或其他单位）数量。默认为 1。
+  </APIItem>
+  <APIItem name="hanging" type="boolean" optional />
+  <APIItem name="reverse" type="boolean" optional>
+    如果为 true，向后删除。
+  </APIItem>
+  <APIItem name="unit" type="'character' | 'word' | 'line' | 'block'" optional>
+    删除的单位。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional />
+</APIOptions>
+</API>
+
+### `deleteBackward`
+
+向后删除文本。
+
+<API name="deleteBackward">
+<APIParameters>
+  <APIItem name="unit" type="'character' | 'word' | 'line' | 'block'" optional>
+    默认为 `'character'`。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `deleteForward`
+
+向前删除文本。
+
+<API name="deleteForward">
+<APIParameters>
+  <APIItem name="unit" type="'character' | 'word' | 'line' | 'block'" optional>
+    默认为 `'character'`。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `deleteFragment`
+
+删除节点片段。
+
+<API name="deleteFragment">
+<APIOptions type="EditorFragmentDeletionOptions">
+  <APIItem name="direction" type="'forward' | 'backward'" optional>
+    删除方向。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertText`
+
+在指定位置插入文本，可选择带有标记。行为取决于提供的选项：
+
+1. 如果在选项中指定了 `at`，则无论选区如何都在该位置插入
+2. 否则，如果存在选区：
+   - 如果 `marks` 为 true（默认）且编辑器有标记，则插入带有这些标记的文本
+   - 如果没有标记，则插入纯文本
+3. 如果既没有 `at` 也没有选区存在，则不插入文本
+
+<API name="insertText">
+<APIParameters>
+  <APIItem name="text" type="string">
+    要插入的文本。
+  </APIItem>
+  <APIItem name="options" type="InsertTextOptions" optional />
+</APIParameters>
+
+<APIOptions type="InsertTextOptions">
+  <APIItem name="at" type="TLocation" optional>
+    插入文本的位置。优先于当前选区。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    是否允许在空节点中插入。
+  </APIItem>
+  <APIItem name="marks" type="boolean" optional>
+    - **默认值:** `true`
+    为 true 且编辑器有标记时，插入的文本将包含这些标记。
+    为 false 时，插入不带标记的纯文本。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertBreak`
+
+在当前选区插入块换行。
+
+### `insertSoftBreak`
+
+在当前选区插入软换行。软换行是当前块中的新行。
+
+### `deselect`
+
+取消选区。
+
+### `move`
+
+向前或向后移动选区的点。
+
+<API name="move">
+<APIOptions type="object">
+  <APIItem name="distance" type="number" optional>
+    移动多少单位。默认为 1。
+  </APIItem>
+  <APIItem name="unit" type="'offset' | 'character' | 'word' | 'line'" optional>
+    默认为 `'character'`。
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    如果为 true，则向后移动。
+  </APIItem>
+  <APIItem name="edge" type="'anchor' | 'focus' | 'start' | 'end'" optional>
+    要移动的边缘。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 标记操作
+
+### `addMark`
+
+在当前选区内的非空节点或 `editor.markableVoid()` 允许的空节点中的叶文本节点添加自定义属性。如果选区当前已折叠，则标记将添加到 `editor.marks` 属性中，并在下次插入文本时应用。
+
+<API name="addMark">
+<APIParameters>
+  <APIItem name="key" type="string">
+    要添加的标记键。
+  </APIItem>
+  <APIItem name="value" type="any">
+    标记的值。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `addMarks`
+
+向当前选区添加多个标记。
+
+```ts
+editor.tf.addMarks({ bold: true, italic: true })
+editor.tf.addMarks({ bold: subscript }, { remove: 'superscript' })
+editor.tf.addMarks({ bold: true }, { remove: ['italic', 'underline'] })
+```
+<API name="addMarks">
+<APIParameters>
+  <APIItem name="marks" type="Record<string, any>">
+    标记属性的键值对。
+  </APIItem>
+  <APIItem name="options" type="AddMarksOptions" optional />
+</APIParameters>
+
+<APIOptions type="AddMarksOptions">
+  <APIItem name="remove" type="string[] | string" optional>
+    首先要移除的标记键。用于互斥的标记，例如下标/上标。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `removeMark`
+
+从选区中的文本移除标记。
+
+<API name="removeMark">
+<APIParameters>
+  <APIItem name="key" type="string">
+    要移除的标记键。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `removeMarks`
+
+从当前选区中的文本节点或从 `editor.marks` 中移除标记。行为取决于选区状态和选项：
+
+1. 如果选区已展开或位于可标记的空节点中：
+   - 从文本节点中移除指定的标记键
+2. 如果选区已折叠且未提供自定义范围：
+   - 从 `editor.marks` 中移除指定的键
+   - 如果未指定键，则清除 `editor.marks` 中的所有标记
+3. 如果提供了自定义范围（`at` 选项）：
+   - 仅从该范围内的文本节点中移除标记
+
+```ts
+editor.tf.removeMarks()             // remove all marks
+editor.tf.removeMarks('bold')       // remove the 'bold' mark
+editor.tf.removeMarks(['bold','italic'])
+editor.tf.removeMarks('bold', { at: range })
+```
+<API name="removeMarks">
+<APIParameters>
+  <APIItem name="keys" type="string | string[]" optional>
+    要移除的标记键。如果未提供且选区已折叠，则清除 `editor.marks` 中的所有标记。
+  </APIItem>
+  <APIItem name="options" type="RemoveMarksOptions" optional />
+</APIParameters>
+
+<APIOptions type="RemoveMarksOptions">
+  <APIItem name="...options" type="UnsetNodesOptions" optional />
+  <APIItem name="at" type="TRange" optional>
+    要从中移除标记的自定义范围。优先于当前选区。
+  </APIItem>
+  <APIItem name="shouldChange" type="boolean" optional>
+    - **默认值：** `true`
+    修改 editor.marks 时是否触发 onChange。
+  </APIItem>
+  <APIItem name="split" type="boolean" optional>
+    移除标记时是否拆分节点。
+  </APIItem>
+  <APIItem name="match" type="(node: Node, path: Path) => boolean" optional>
+    用于筛选要从中移除标记的节点的自定义函数。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    是否允许从空节点中移除标记。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `toggleMark`
+
+在当前选区中切换标记的开启或关闭状态。如果标记存在，则移除它。如果不存在：
+1. 首先移除 `remove` 选项中指定的任何标记
+2. 添加值为 `true` 的标记
+
+```ts
+editor.tf.toggleMark('bold')                                // Toggle bold on/off
+editor.tf.toggleMark('subscript', { remove: 'superscript'}) // Remove superscript before adding subscript
+```
+
+<API name="toggleMark">
+<APIParameters>
+  <APIItem name="key" type="string">
+    要切换的标记键。
+  </APIItem>
+  <APIItem name="options" type="ToggleMarkOptions" optional />
+</APIParameters>
+
+<APIOptions type="ToggleMarkOptions">
+  <APIItem name="remove" type="string[] | string" optional>
+    在添加标记之前要移除的标记键。对于互斥的标记（如下标/上标）很有用。
+    除了这些标记外，指定的标记键也总是会被移除。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 选区操作
+
+### `collapse`
+
+将选区折叠为一个点。
+
+<API name="collapse">
+<APIOptions type="object">
+  <APIItem name="edge" type="'anchor' | 'focus' | 'start' | 'end'" optional>
+    要折叠到的边缘。默认为 `'anchor'`。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `deselect`
+
+取消当前选区。
+
+### `move`
+
+移动选区的点。
+
+<API name="move">
+<APIOptions type="object">
+  <APIItem name="distance" type="number" optional>
+    默认为 1。
+  </APIItem>
+  <APIItem name="unit" type="'offset' | 'character' | 'word' | 'line'" optional>
+    默认为 `'character'`。
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    如果为 true，则向后移动。
+  </APIItem>
+  <APIItem name="edge" type="'anchor' | 'focus' | 'start' | 'end'" optional>
+    要移动的边缘。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `select`
+
+将选区设置为由 `at` 指定的新值。当已存在选区时，此方法只是调用 `setSelection`。
+
+```ts
+editor.tf.select(at)
+editor.tf.select(at, { edge: 'end' })
+editor.tf.select(at, { edge: 'start' })
+```
+<API name="select">
+<APIParameters>
+  <APIItem name="at" type="At">
+    要选择的位置。
+  </APIItem>
+  <APIItem name="options" type="SelectOptions" optional />
+</APIParameters>
+
+<APIOptions type="SelectOptions">
+  <APIItem name="edge" type="'start' | 'end'" optional>
+    选择 `at` 位置的开始或结束边缘。
+  </APIItem>
+  <APIItem name="focus" type="boolean" optional>
+    在选择前聚焦编辑器。
+  </APIItem>
+  <APIItem name="next" type="boolean" optional>
+    选择下一个兄弟节点的开始位置。
+  </APIItem>
+  <APIItem name="previous" type="boolean" optional>
+    选择上一个兄弟节点的结束位置。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `setPoint`
+
+设置选区的一个点的新属性。
+
+<API name="setPoint">
+<APIParameters>
+  <APIItem name="props" type="Partial<Point>">
+    要更新的点属性。
+  </APIItem>
+  <APIItem name="options" type="object" optional />
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="edge" type="'anchor' | 'focus' | 'start' | 'end'" optional>
+    要设置的选区边缘。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `setSelection`
+
+设置活动选区的新属性。由于值是 `Partial<Range>`，此方法只能处理对现有选区的更新。如果没有活动选区，操作将无效。如果没有选区时想要创建一个，请使用 `select`。
+
+<API name="setSelection">
+<APIParameters>
+  <APIItem name="props" type="Partial<TRange>">
+    用于更新现有选区属性的部分范围。
+  </APIItem>
+</APIParameters>
+</API>
+
+## DOM 操作
+
+### `blur`
+
+使编辑器失去焦点。
+
+### `deselectDOM`
+
+除了 `deselect` 外，还取消编辑器的 DOM 选区。
+
+### `focus`
+
+使编辑器获得焦点。
+
+```ts
+editor.tf.focus()
+editor.tf.focus({ edge: 'end' })
+editor.tf.focus({ edge: 'endEditor' })
+```
+<API name="focus">
+<APIOptions type="FocusOptions">
+  <APIItem name="at" type="At" optional>
+    在聚焦前选择此位置。
+  </APIItem>
+  <APIItem name="edge" type="'start' | 'startEditor' | 'end' | 'endEditor'" optional>
+    在位置或编辑器的边缘聚焦。
+  </APIItem>
+  <APIItem name="retries" type="number" optional>
+    重新聚焦的尝试次数。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertData`
+
+将 `DataTransfer` 中的数据插入编辑器。调用：
+
+1. `insertFragmentData(editor: ReactEditor, data: DataTransfer)`
+2. `insertTextData(editor: ReactEditor, data: DataTransfer)`
+
+<API name="insertData">
+<APIParameters>
+  <APIItem name="data" type="DataTransfer">
+    从剪贴板或拖拽事件中插入的数据。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `insertFragmentData`
+
+将 `DataTransfer` 中的片段数据插入编辑器。
+
+<API name="insertFragmentData">
+<APIParameters>
+  <APIItem name="data" type="DataTransfer">
+    要解析为片段的数据。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean" />
+</API>
+
+### `insertTextData`
+
+将 `DataTransfer` 中的文本数据插入编辑器。
+
+<API name="insertTextData">
+<APIParameters>
+  <APIItem name="data" type="DataTransfer">
+    要插入的文本数据。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean" />
+</API>
+
+### `setFragmentData`
+
+将当前选中的片段数据设置到 `DataTransfer` 中。
+
+<API name="setFragmentData">
+<APIParameters>
+  <APIItem name="data" type="DataTransfer">
+    用于存储片段的 DataTransfer。
+  </APIItem>
+</APIParameters>
+</API>
+
+## 历史操作
+
+### `redo`
+
+重做到下一个保存的状态。
+
+### `undo`
+
+撤销到前一个保存的状态。
+
+### `setSplittingOnce`
+
+<API name="setSplittingOnce">
+<APIParameters>
+  <APIItem name="value" type="boolean">
+    下一个操作是否应该在历史记录中分割为新的批次。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withMerging`
+
+在同步函数 `fn` 内应用一系列更改，这些操作将被合并到前一个历史记录中。
+
+<API name="withMerging">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    要合并到前一个历史点的批量更改。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withNewBatch`
+
+在同步函数 `fn` 内应用一系列更改，确保第一个操作在历史记录中开始一个新的批次。后续操作将照常合并。
+
+<API name="withNewBatch">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    新历史点中的批量更改。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withoutMerging`
+
+在同步函数 `fn` 内应用一系列更改，不将任何新操作合并到历史记录中的前一个保存点。
+
+<API name="withoutMerging">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    不合并到任何现有历史点的更改。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withoutSaving`
+
+在同步函数 `fn` 内应用一系列更改，不将其任何操作保存到历史记录中。
+
+<API name="withoutSaving">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    完全不保存到历史记录的更改。
+  </APIItem>
+</APIParameters>
+</API>
+
+## 核心操作
+
+### `apply`
+
+在编辑器中应用操作。
+
+<API name="apply">
+<APIParameters>
+  <APIItem name="operation" type="Operation<N>">
+    要应用的操作。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `normalizeNode`
+
+根据编辑器的模式规范化节点。
+
+<API name="normalizeNode">
+<APIParameters>
+  <APIItem name="entry" type="NodeEntry<N>">
+    要规范化的节点条目。
+  </APIItem>
+  <APIItem name="options" type="{ operation?: Operation }" optional />
+</APIParameters>
+
+<APIOptions type="{ operation?: Operation }">
+  <APIItem name="operation" type="Operation" optional>
+    触发操作。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `normalize`
+
+规范化编辑器中的脏节点。
+
+<API name="normalize">
+<APIOptions type="EditorNormalizeOptions">
+  <APIItem name="force" type="boolean" optional>
+    当为 true 时，强制重新规范化所有节点。
+  </APIItem>
+  <APIItem name="operation" type="Operation" optional />
+</APIOptions>
+</API>
+
+### `withoutNormalizing`
+
+调用函数，延迟规范化直到函数完成。
+
+<API name="withoutNormalizing">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    在操作之间不进行规范化的同步函数。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果之后执行了规范化，则返回 true。
+</APIReturns>
+</API>

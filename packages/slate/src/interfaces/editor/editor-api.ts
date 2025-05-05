@@ -122,6 +122,11 @@ export type EditorApi<V extends Value = Value> = {
     iteration: number;
     operation?: Operation;
   }) => boolean;
+  /**
+   * Override this method to prevent normalizing a specific node. Defaults to
+   * returning `true`.
+   */
+  shouldNormalizeNode: (entry: NodeEntry) => boolean;
   /** Called when there is a change in the editor. */
   onChange: (options?: { operation?: Operation }) => void;
 } & {

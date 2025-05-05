@@ -10,8 +10,7 @@ import { createSlateEditor } from '../../editor';
 import { createSlatePlugin } from '../../plugin';
 // We assume these are your real components (memoized) imported:
 import { PlateStatic } from './PlateStatic';
-import { SlateElement } from './SlateElement';
-import { SlateLeaf } from './SlateLeaf';
+import { SlateElement, SlateLeaf } from './slate-nodes';
 
 const createEditor = ({
   value = [

@@ -6,7 +6,8 @@ export const siteConfig = {
     github: 'https://github.com/udecode/plate',
     platePro: 'https://pro.platejs.org',
     plateProIframe: 'https://pro.platejs.org/iframe',
-    potionIframe: 'https://potion.platejs.org/playground?iframe=true',
+    // Quick fix: playground crashes on iOS
+    potionIframe: 'https://potion.platejs.org/ai?iframe=true',
     potionTemplate: 'https://pro.platejs.org/docs/templates/potion',
     profile: 'https://github.com/zbeyens',
     twitter: 'https://twitter.com/zbeyens',

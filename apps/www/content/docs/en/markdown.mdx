@@ -415,7 +415,7 @@ const markdownOutput = editor.api.markdown.serialize();
 
 ### Customizing Rendering (Syntax Highlighting)
 
-This example shows two approaches: customizing the *conversion* using `rules` (advanced) and customizing the *rendering* using `override.components` (common).
+This example shows two approaches: customizing the *conversion* using `rules` (advanced) and customizing the *rendering* using `components` (common).
 
 **Background:**
 
@@ -425,7 +425,7 @@ This example shows two approaches: customizing the *conversion* using `rules` (a
 
 **Approach 1: Customizing Rendering Component (Recommended for UI changes)**
 
-If you just want to change *how* code blocks look, override the component for the `code_block` plugin key.
+If you just want to change *how* code blocks look, set the component for the `code_block` plugin key.
 
 ```tsx
 import { createPlateEditor } from '@udecode/plate/react';
@@ -439,12 +439,10 @@ const editor = createPlateEditor({
     MarkdownPlugin, // For Markdown conversion
     // ... other plugins
   ],
-  override: {
-    components: {
-      [CodeBlockPlugin.key]: MyCustomCodeBlockElement,
-      [CodeLinePlugin.key]: MyCustomCodeLineElement,
-      [CodeSyntaxPlugin.key]: MyCustomCodeSyntaxElement,
-    },
+  components: {
+    [CodeBlockPlugin.key]: MyCustomCodeBlockElement,
+    [CodeLinePlugin.key]: MyCustomCodeLineElement,
+    [CodeSyntaxPlugin.key]: MyCustomCodeSyntaxElement,
   },
 });
 
@@ -636,7 +634,7 @@ Migrating from `react-markdown` to Plate with `@udecode/plate-markdown` involves
     *   `react-markdown`: The `components` prop directly replaces the React component used for rendering specific HTML tags (e.g., `h1`, `code`).
     *   Plate: Component customization happens in two places:
         *   `MarkdownPlugin` `rules`: Customize the *conversion* between mdast and Slate JSON.
-        *   `createPlateEditor` `override.components`: Customize the *React component* used by Plate to render a specific Slate node type (e.g., `p`, `code_block`). See [Appendix C: Components](#appendix-c-components).
+        *   `createPlateEditor` `components`: Customize the *React component* used by Plate to render a specific Slate node type (e.g., `p`, `code_block`). See [Appendix C: Components](#appendix-c-components).
 3.  **Plugin Ecosystem:**
     *   `react-markdown`: Uses both `remarkPlugins` (operating on mdast) and `rehypePlugins` (operating on hast, often for rendering aspects like raw HTML or KaTeX).
     *   `@udecode/plate-markdown`: Primarily uses `remarkPlugins`. `rehype` plugins are generally not needed for rendering, as Plate components handle that. They might be used in advanced scenarios *within* the remark pipeline (like `rehype-raw` for parsing HTML initially).
@@ -648,8 +646,8 @@ Migrating from `react-markdown` to Plate with `@udecode/plate-markdown` involves
 | `children` (string)           | Pass string to `editor.api.markdown.deserialize(string)`                 | Input for deserialization. Often used in `createPlateEditor`'s `value` option.                                                                        |
 | `remarkPlugins`               | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] }})`         | Direct mapping. Operates on mdast.                                                                                                                    |
 | `rehypePlugins`               | Usually **not needed**. Use `remarkPlugins` for syntax.                  | Rendering is handled by Plate components. For raw HTML, use `rehype-raw` via `remarkPlugins`.                                                    |
-| `components={{ h1: MyH1 }}`   | `createPlateEditor({ override: { components: { h1: MyH1 } } })`          | Overrides Plate rendering component. See Appendix C.                                                                                                  |
-| `components={{ code: MyCode }}` | 1. **Conversion**: `MarkdownPlugin > rules > code`. 2. **Rendering**: `override: { components: { code_block: MyCode } }` | `rules` handles Markdown AST (`code`) to Slate (`code_block`). `override.components` handles Slate (`code_block`) rendering. See Syntax Highlighting example. |
+| `components={{ h1: MyH1 }}`   | `createPlateEditor({ components: { h1: MyH1 } })`          | Configures Plate rendering component. See Appendix C.                                                                                                  |
+| `components={{ code: MyCode }}` | 1. **Conversion**: `MarkdownPlugin > rules > code`. 2. **Rendering**: `components: { code_block: MyCode }` | `rules` handles Markdown AST (`code`) to Slate (`code_block`). `components` handles Slate (`code_block`) rendering. See Syntax Highlighting example. |
 | `allowedElements`             | `MarkdownPlugin.configure({ options: { allowedNodes: [...] }})`         | Filters nodes during conversion (based on mdast/Slate types).                                                                                           |
 | `disallowedElements`          | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] }})`       | Filters nodes during conversion.                                                                                                                      |
 | `unwrapDisallowed`            | No direct equivalent. Filtering removes nodes.                           | Custom `rules` could potentially implement unwrapping logic during conversion.                                                                      |
@@ -794,11 +792,11 @@ Here's a summary of some key default conversions. See [`defaultRules.ts`](https:
 
 ## Appendix C: Components
 
-While `rules` customize the *conversion* between Markdown and Slate, Plate uses React components to *render* the Slate nodes in the editor. You can override these rendering components using the `override.components` option in `createPlateEditor`.
+While `rules` customize the *conversion* between Markdown and Slate, Plate uses React components to *render* the Slate nodes in the editor. You can configure these rendering components using the `components` option in `createPlateEditor`.
 
 This is similar in concept to `react-markdown`'s `components` prop, but it operates within the Plate editor context.
 
-Keys in `override.components` typically correspond to the `key` of the Plate plugin responsible for that node type (e.g., `ParagraphPlugin.key`, `HeadingPlugin.keys.h1`, `CodeBlockPlugin.key`) or the default Slate type (`p`, `h1`, `code_block`).
+Keys in `components` typically correspond to the `key` of the Plate plugin responsible for that node type (e.g., `ParagraphPlugin.key`, `HeadingPlugin.keys.h1`, `CodeBlockPlugin.key`) or the default Slate type (`p`, `h1`, `code_block`).
 
 **Example:**
 
@@ -820,21 +818,19 @@ const editor = createPlateEditor({
     CodeBlockPlugin,
     // ... other plugins
   ],
-  override: {
-    components: {
-      // Map Slate type 'p' to ParagraphElement component
-      [ParagraphPlugin.key]: ParagraphElement,
+  components: {
+    // Map Slate type 'p' to ParagraphElement component
+    [ParagraphPlugin.key]: ParagraphElement,
 
-      // Map Slate type 'code_block' to CodeBlockElement component
-      [CodeBlockPlugin.key]: CodeBlockElement,
+    // Map Slate type 'code_block' to CodeBlockElement component
+    [CodeBlockPlugin.key]: CodeBlockElement,
 
-      // Map Slate mark 'bold' to render as <strong>
-      [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
+    // Map Slate mark 'bold' to render as <strong>
+    [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
 
-      // Map Slate mark 'code' to CodeLeaf component
-      // Note: CodeLeaf applies syntax highlighting styles
-      [CodeBlockPlugin.keys.syntax]: CodeLeaf, // Assuming CodeBlockPlugin defines keys.syntax for the leaf
-    },
+    // Map Slate mark 'code' to CodeLeaf component
+    // Note: CodeLeaf applies syntax highlighting styles
+    [CodeBlockPlugin.keys.syntax]: CodeLeaf, // Assuming CodeBlockPlugin defines keys.syntax for the leaf
   },
 });
 
@@ -879,7 +875,7 @@ export interface PlateMarkdownProps {
   remarkPlugins?: any[];
   
   /**
-   * Override components for specific node types
+   * Configure components for specific node types
    * Keys should match Plate plugin keys or default types
    */
   components?: Record<string, React.ComponentType<any>>;
@@ -914,8 +910,7 @@ export function PlateMarkdown({
         options: { remarkPlugins },
       }),
     ],
-    // Apply component overrides
-    override: { components },
+    components,
   });
 
   // Update content when markdown changes

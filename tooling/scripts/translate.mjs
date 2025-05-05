@@ -1,13 +1,55 @@
-import { glob } from 'glob';
+#!/usr/bin/env node
+/**
+ * List files under apps/www/content/docs/en/** whose last Git commit is within
+ * N days (default 60). Usage:
+ *
+ *     node listDocsLastModified.js [days]
+ *
+ * Example: node listDocsLastModified.js 45 # 45 天内修改过的文件
+ */
+
+import { execSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+// Load environment variables
 import OpenAI from 'openai';
 
-// Load environment variables
+const TARGET_DIR = 'apps/www/content/docs/en';
+const DAYS = Number(process.argv[2]) || 60; // 默认 60 天
+const CUTOFF = Date.now() - DAYS * 24 * 60 * 60 * 1000;
+
+// 1) 列出目标目录所有受 Git 跟踪的文件
+const files = execSync(`git ls-files ${TARGET_DIR}`, { encoding: 'utf8' })
+  .trim()
+  .split('\n')
+  .filter(Boolean);
+
+if (files.length === 0) {
+  console.error(`No tracked files found in ${TARGET_DIR}`);
+  process.exit(1);
+}
+
+console.error(`Scanning ${files.length} files… (cutoff = ${DAYS} days)`);
+
+// 2) 查询最后提交时间并过滤
+const results = files.flatMap((f) => {
+  const out = spawnSync('git', ['log', '-1', '--format=%ci', '--', f], {
+    encoding: 'utf8',
+  });
+  if (out.status !== 0) return [];
+  const dateStr = out.stdout.trim();
+  const ts = Date.parse(dateStr);
+  if (Number.isNaN(ts) || ts < CUTOFF) return []; // 超过时间窗口，丢弃
+  return { file: f, lastModified: dateStr };
+});
+
+// 3) 排序并输出
+results.sort((a, b) => a.file.localeCompare(b.file));
+console.table(results);
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: 'xxxx',
+  apiKey: 'sk-xxxx',
   baseURL: 'https://api.deepseek.com',
 });
 
@@ -34,6 +76,8 @@ async function translateContent(content, targetLanguage) {
           The content is in .mdx format, which combines Markdown with JSX components.
           - Do not translate the provider as 提供者, just keep it as provider.
           - Do not translate the entry as 条目, just keep it as entry.
+          - Do not translate the leaf as 叶子, just keep it as leaf.
+          - Do not translate the element as 元素, just keep it as element.
           `,
           role: 'system',
         },
@@ -62,40 +106,37 @@ async function processTranslation() {
     process.exit(1);
   }
 
-  for (const contentItem of contentConfig) {
-    const sourcePattern = contentItem.source;
-    
-    // Get source files (can be an array of file paths)
-    const sourceFiles = await glob(sourcePattern);
+  // Only translate files from the results array (files modified within the cutoff period)
+  for (const { file: sourceFile } of results) {
+    const sourceContent = fs.readFileSync(sourceFile, 'utf8');
 
-    for (const sourceFile of sourceFiles) {
-      const sourceContent = fs.readFileSync(sourceFile, 'utf8');
+    for (const targetLanguage of language.targets) {
+      // Simply replace 'en' with the target language code in the path
+      const targetFile = sourceFile.replace('/en/', `/${targetLanguage}/`);
 
-      for (const targetLanguage of language.targets) {
-        // Simply replace 'en' with 'cn' in the path
-        const targetFile = sourceFile.replace('/en/', `/${targetLanguage}/`);
+      console.log(
+        `Translating ${sourceFile} to ${targetLanguage} (${targetFile})`
+      );
 
-        console.log(
-          `Translating ${sourceFile} to ${targetLanguage} (${targetFile})`
+      // Create target directory if it doesn't exist
+      const targetDir = path.dirname(targetFile);
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+
+      // Process translations sequentially instead of in parallel
+      try {
+        const translatedContent = await translateContent(
+          sourceContent,
+          targetLanguage
         );
-
-        // Create target directory if it doesn't exist
-        const targetDir = path.dirname(targetFile);
-        if (!fs.existsSync(targetDir)) {
-          fs.mkdirSync(targetDir, { recursive: true });
-        }
-
-        // Process translations sequentially instead of in parallel
-        try {
-          const translatedContent = await translateContent(
-            sourceContent,
-            targetLanguage
-          );
-          fs.writeFileSync(targetFile, translatedContent);
-          console.log(`Successfully translated to ${targetFile}`);
-        } catch (error) {
-          console.error(`Failed to translate ${sourceFile} to ${targetLanguage}:`, error);
-        }
+        fs.writeFileSync(targetFile, translatedContent);
+        console.log(`Successfully translated to ${targetFile}`);
+      } catch (error) {
+        console.error(
+          `Failed to translate ${sourceFile} to ${targetLanguage}:`,
+          error
+        );
       }
     }
   }

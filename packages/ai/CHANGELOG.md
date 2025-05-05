@@ -1,5 +1,19 @@
 # @udecode/plate-ai
 
+## 48.0.0
+
+## 47.4.2
+
+### Patch Changes
+
+- [#4275](https://github.com/udecode/plate/pull/4275) by [@felixfeng33](https://github.com/felixfeng33) – Fix streaming indent list.
+
+## 47.4.1
+
+### Patch Changes
+
+- [#4269](https://github.com/udecode/plate/pull/4269) by [@felixfeng33](https://github.com/felixfeng33) – deprecate `experimental_lastTextId` use `api.aiChat.node({stream:true})` instead
+
 ## 47.3.1
 
 ### Patch Changes

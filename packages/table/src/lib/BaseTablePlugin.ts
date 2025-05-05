@@ -62,10 +62,8 @@ export const BaseTableCellPlugin = createSlatePlugin({
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
     isElement: true,
     props: ({ element }) => ({
-      nodeProps: {
-        colSpan: (element?.attributes as any)?.colspan,
-        rowSpan: (element?.attributes as any)?.rowspan,
-      },
+      colSpan: (element?.attributes as any)?.colspan,
+      rowSpan: (element?.attributes as any)?.rowspan,
     }),
   },
   parsers: {
@@ -85,10 +83,8 @@ export const BaseTableCellHeaderPlugin = createSlatePlugin({
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
     isElement: true,
     props: ({ element }) => ({
-      nodeProps: {
-        colSpan: (element?.attributes as any)?.colspan,
-        rowSpan: (element?.attributes as any)?.rowspan,
-      },
+      colSpan: (element?.attributes as any)?.colspan,
+      rowSpan: (element?.attributes as any)?.rowspan,
     }),
   },
   parsers: {

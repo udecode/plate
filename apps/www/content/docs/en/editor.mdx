@@ -44,6 +44,52 @@ const editor = createPlateEditor({
 
 For a comprehensive list of plugins that support HTML string deserialization, refer to the [Plugin Deserialization Rules](/docs/html#plugin-deserialization-rules) section.
 
+### Async Initial Value
+
+If you need to fetch the initial value asynchronously (e.g., from an API), you can use the `skipInitialization` option and call `editor.tf.init` once your data is ready:
+
+```tsx
+function AsyncEditor() {
+  const [initialValue, setInitialValue] = React.useState();
+  const [loading, setLoading] = React.useState(true);
+  const editor = usePlateEditor({
+    skipInitialization: true,
+    plugins: [ParagraphPlugin],
+  });
+
+  React.useEffect(() => {
+    // Simulate async fetch
+    setTimeout(() => {
+      setInitialValue([
+        {
+          type: 'p',
+          children: [{ text: 'Loaded async value!' }],
+        },
+      ]);
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  React.useEffect(() => {
+    if (!loading && initialValue) {
+      editor.tf.init({ value: initialValue });
+    }
+  }, [loading, initialValue, editor]);
+
+  if (loading) return <div>Loading…</div>;
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+This pattern is useful when you need to wait for data before initializing the editor, such as when loading content from a server or database.
+
 ### Adding Plugins
 
 You can add plugins to your editor by including them in the `plugins` array:
@@ -113,11 +159,9 @@ Override default components for plugins:
 ```ts
 const editor = createPlateEditor({
   plugins: [ParagraphPlugin, HeadingPlugin],
-  override: {
-    components: {
-      [ParagraphPlugin.key]: CustomParagraphComponent,
-      [HeadingPlugin.key]: CustomHeadingComponent,
-    },
+  components: {
+    [ParagraphPlugin.key]: CustomParagraphComponent,
+    [HeadingPlugin.key]: CustomHeadingComponent,
   },
 });
 ```

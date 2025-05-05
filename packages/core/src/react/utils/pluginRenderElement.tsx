@@ -2,9 +2,8 @@ import React from 'react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
-import type { PlateRenderElementProps } from '../plugin/PlateRenderElementProps';
 
-import { DefaultElement } from '../slate-react';
+import { type PlateElementProps, PlateElement } from '../components';
 import { useElement } from '../stores';
 import { ElementProvider } from '../stores/element/useElementStore';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -15,23 +14,15 @@ import { getRenderNodeProps } from './getRenderNodeProps';
  * element then that JSX element is rendered.
  */
 export type RenderElement = (
-  props: PlateRenderElementProps
+  props: PlateElementProps
 ) => React.ReactElement<any> | undefined;
 
-function ElementContent({
-  editor,
-  nodeProps,
-  plugin,
-}: {
-  editor: PlateEditor;
-  nodeProps: PlateRenderElementProps;
-  plugin: AnyEditorPlatePlugin;
-}) {
+function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
   const element = useElement();
 
-  const { children: _children } = nodeProps;
+  const { children: _children } = props;
   const key = plugin.key;
-  const Element = plugin.render?.node ?? (DefaultElement as any);
+  const Element = plugin.render?.node ?? (PlateElement as any);
 
   const aboveNodes = editor.pluginList.flatMap(
     (o) => o.render?.aboveNodes ?? []
@@ -40,30 +31,30 @@ function ElementContent({
     (o) => o.render?.belowNodes ?? []
   );
 
-  nodeProps = getRenderNodeProps({
+  props = getRenderNodeProps({
     attributes: element.attributes as any,
     editor,
     plugin,
-    props: nodeProps as any,
+    props: props as any,
   }) as any;
 
   let children = _children;
 
   belowNodes.forEach((withHOC) => {
-    const hoc = withHOC({ ...nodeProps, key } as any);
+    const hoc = withHOC({ ...props, key } as any);
 
     if (hoc) {
-      children = hoc({ ...nodeProps, children } as any);
+      children = hoc({ ...props, children } as any);
     }
   });
 
-  let component: React.ReactNode = <Element {...nodeProps}>{children}</Element>;
+  let component: React.ReactNode = <Element {...props}>{children}</Element>;
 
   aboveNodes.forEach((withHOC) => {
-    const hoc = withHOC({ ...nodeProps, key } as any);
+    const hoc = withHOC({ ...props, key } as any);
 
     if (hoc) {
-      component = hoc({ ...nodeProps, children: component } as any);
+      component = hoc({ ...props, children: component } as any);
     }
   });
 
@@ -79,8 +70,8 @@ export const pluginRenderElement = (
   editor: PlateEditor,
   plugin: AnyEditorPlatePlugin
 ): RenderElement =>
-  function render(nodeProps) {
-    const { element, path } = nodeProps;
+  function render(props) {
+    const { element, path } = props;
 
     if (element.type === plugin.node.type) {
       return (
@@ -90,11 +81,7 @@ export const pluginRenderElement = (
           path={path}
           scope={plugin.key}
         >
-          <ElementContent
-            editor={editor}
-            nodeProps={nodeProps}
-            plugin={plugin}
-          />
+          <ElementContent editor={editor} plugin={plugin} {...(props as any)} />
         </ElementProvider>
       );
     }

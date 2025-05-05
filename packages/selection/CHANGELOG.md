@@ -1,5 +1,7 @@
 # @udecode/plate-selection
 
+## 48.0.0
+
 ## 47.0.8
 
 ### Patch Changes

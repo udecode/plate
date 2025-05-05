@@ -3,8 +3,8 @@ import type { Registry } from 'shadcn/registry';
 export const lib: Registry['items'] = [
   {
     dependencies: [
-      'uploadthing@7.2.0',
-      '@uploadthing/react@7.1.0',
+      'uploadthing@7.6.0',
+      '@uploadthing/react@7.3.0',
       'sonner',
       'zod',
     ],

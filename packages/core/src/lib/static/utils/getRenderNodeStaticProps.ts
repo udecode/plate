@@ -12,7 +12,7 @@ import { getSlateClass } from '../../utils';
 import { getPluginNodeProps } from '../../utils/getPluginNodeProps';
 
 export const getRenderNodeStaticProps = ({
-  attributes,
+  attributes: nodeAttributes,
   editor,
   node,
   plugin,
@@ -24,32 +24,37 @@ export const getRenderNodeStaticProps = ({
   node?: TElement | TText;
   plugin?: AnyEditorPlugin;
 }): SlateRenderNodeProps => {
-  let nodeProps = {
+  let newProps = {
     ...props,
     ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
   };
 
   const { className } = props;
 
-  nodeProps = {
-    ...getPluginNodeProps({
-      attributes,
-      node,
-      plugin,
-      props: nodeProps,
-    }),
-    className: clsx(getSlateClass(plugin?.node.type), className),
+  const pluginProps = getPluginNodeProps({
+    attributes: nodeAttributes,
+    node,
+    plugin,
+    props: newProps,
+  });
+
+  newProps = {
+    ...pluginProps,
+    attributes: {
+      ...pluginProps.attributes,
+      className: clsx(getSlateClass(plugin?.node.type), className) || undefined,
+    },
   };
 
-  nodeProps = pipeInjectNodeProps(
+  newProps = pipeInjectNodeProps(
     editor,
-    nodeProps,
+    newProps,
     (node) => editor.api.findPath(node)!
   );
 
-  if (nodeProps.style && Object.keys(nodeProps.style).length === 0) {
-    delete nodeProps.style;
+  if (newProps.style && Object.keys(newProps.style).length === 0) {
+    delete newProps.style;
   }
 
-  return nodeProps;
+  return newProps;
 };

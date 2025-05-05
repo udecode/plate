@@ -1,5 +1,7 @@
 # @udecode/plate-juice
 
+## 48.0.0
+
 ## 47.3.1
 
 ### Patch Changes

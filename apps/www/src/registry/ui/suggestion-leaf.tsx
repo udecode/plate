@@ -44,8 +44,11 @@ export function SuggestionLeaf(props: PlateLeafProps) {
         hasRemove && 'bg-red-100 text-red-700',
         (hasActive || hasHover) && hasRemove && 'bg-red-200/80 no-underline'
       )}
-      onMouseEnter={() => setOption('hoverId', leafId)}
-      onMouseLeave={() => setOption('hoverId', null)}
+      attributes={{
+        ...props.attributes,
+        onMouseEnter: () => setOption('hoverId', leafId),
+        onMouseLeave: () => setOption('hoverId', null),
+      }}
     >
       {children}
     </PlateLeaf>

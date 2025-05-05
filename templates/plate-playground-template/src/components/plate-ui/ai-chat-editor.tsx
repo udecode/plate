@@ -23,6 +23,7 @@ import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseLinkPlugin } from '@udecode/plate-link';
+import { BaseMentionPlugin } from '@udecode/plate-mention';
 import { usePlateEditor } from '@udecode/plate/react';
 
 import { markdownPlugin } from '@/components/editor/plugins/markdown-plugin';
@@ -40,6 +41,7 @@ import { EditorStatic } from './editor-static';
 import { HeadingElementStatic } from './heading-element-static';
 import { HrElementStatic } from './hr-element-static';
 import { LinkElementStatic } from './link-element-static';
+import { MentionElementStatic } from './mention-element-static';
 import { ParagraphElementStatic } from './paragraph-element-static';
 
 const components = {
@@ -52,6 +54,7 @@ const components = {
   [BaseHorizontalRulePlugin.key]: HrElementStatic,
   [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: 'em' }),
   [BaseLinkPlugin.key]: LinkElementStatic,
+  [BaseMentionPlugin.key]: MentionElementStatic,
   [BaseParagraphPlugin.key]: ParagraphElementStatic,
   [BaseStrikethroughPlugin.key]: withProps(SlateLeaf, { as: 's' }),
   [BaseUnderlinePlugin.key]: withProps(SlateLeaf, { as: 'u' }),
@@ -73,6 +76,7 @@ const plugins = [
   BaseHeadingPlugin,
   BaseHorizontalRulePlugin,
   BaseLinkPlugin,
+  BaseMentionPlugin,
   BaseParagraphPlugin,
   BaseIndentPlugin.extend({
     inject: {

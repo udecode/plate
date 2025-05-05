@@ -552,4 +552,8 @@ export const playgroundValue: Value = [
     children: [{ text: '' }],
     type: 'toc',
   },
+  {
+    children: [{ text: '' }],
+    type: 'p',
+  },
 ];

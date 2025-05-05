@@ -9,30 +9,30 @@ docs:
 
 <PackageInfo>
 
-## Features
+## 功能特性
 
-- Combobox menu with predefined commands:
-  - Generate: continue writing, add summary, explain
-  - Edit: improve writing, emojify, make it longer or shorter, fix spelling & grammar, simplify language
-- Three trigger modes:
-  - Cursor mode: trigger at block end
-  - Selection mode: trigger with selected text
-  - Block selection mode: trigger with selected blocks
-- Streaming responses in preview or direct editor insertion
-- Markdown support
-- Built-in support for Vercel AI SDK chat API
+- 带预设命令的组合框菜单：
+  - 生成：继续写作、添加摘要、解释说明
+  - 编辑：优化写作、添加表情符号、扩写/缩写、修正拼写和语法、简化语言
+- 三种触发模式：
+  - 光标模式：在段落末尾触发
+  - 选区模式：选中文本时触发
+  - 块选区模式：选中多个段落时触发
+- 支持流式响应预览或直接插入编辑器
+- 支持Markdown语法
+- 内置Vercel AI SDK聊天API支持
 
 </PackageInfo>
 
-## Installation
+## 安装
 
 ```bash
 npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-marks
 ```
 
-## Usage
+## 使用指南
 
-### Plugins
+### 插件配置
 
 ```tsx
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
@@ -94,7 +94,11 @@ export const createAIEditor = () => {
           },
         },
       }),
-      MarkdownPlugin.configure({ options: { indentList: true } }),
+      MarkdownPlugin.configure({
+        options: {
+          remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+        },
+      }),
     ],
   });
 
@@ -103,24 +107,24 @@ export const createAIEditor = () => {
 };
 
 const systemCommon = `\
-You are an advanced AI-powered note-taking assistant, designed to enhance productivity and creativity in note management.
-Respond directly to user prompts with clear, concise, and relevant content. Maintain a neutral, helpful tone.
+你是一个先进的AI智能笔记助手，旨在提升笔记管理的生产力和创造力。
+直接响应用户提示，提供清晰、简洁且相关的内容。保持中立、有帮助的语气。
 
-Rules:
-- <Document> is the entire note the user is working on.
-- <Reminder> is a reminder of how you should reply to INSTRUCTIONS. It does not apply to questions.
-- Anything else is the user prompt.
-- Your response should be tailored to the user's prompt, providing precise assistance to optimize note management.
-- For INSTRUCTIONS: Follow the <Reminder> exactly. Provide ONLY the content to be inserted or replaced. No explanations or comments.
-- For QUESTIONS: Provide a helpful and concise answer. You may include brief explanations if necessary.
-- CRITICAL: Distinguish between INSTRUCTIONS and QUESTIONS. Instructions typically ask you to modify or add content. Questions ask for information or clarification.
+规则：
+- <Document>代表用户正在处理的整个笔记文档
+- <Reminder>是关于如何响应INSTRUCTIONS的提示，不适用于问题回答
+- 其他内容均为用户提示
+- 你的响应应针对用户提示，提供精确的笔记管理协助
+- 对于INSTRUCTIONS：严格遵循<Reminder>。仅提供需要插入或替换的内容，不要包含解释或评论
+- 对于QUESTIONS：提供有帮助且简洁的回答，必要时可包含简短说明
+- 关键：区分INSTRUCTIONS和QUESTIONS。指令通常要求修改或添加内容，问题则询问信息或澄清
 `;
 
 const systemDefault = `\
 ${systemCommon}
-- <Block> is the current block of text the user is working on.
-- Ensure your output can seamlessly fit into the existing <Block> structure.
-- CRITICAL: Provide only a single block of text. DO NOT create multiple paragraphs or separate blocks.
+- <Block>代表用户当前处理的文本块
+- 确保输出能无缝融入现有<Block>结构
+- 关键：仅提供单个文本块，不要创建多个段落或独立块
 <Block>
 {block}
 </Block>
@@ -128,10 +132,10 @@ ${systemCommon}
 
 const systemSelecting = `\
 ${systemCommon}
-- <Block> is the block of text containing the user's selection, providing context.
-- Ensure your output can seamlessly fit into the existing <Block> structure.
-- <Selection> is the specific text the user has selected in the block and wants to modify or ask about.
-- Consider the context provided by <Block>, but only modify <Selection>. Your response should be a direct replacement for <Selection>.
+- <Block>包含用户选区的文本块，提供上下文
+- 确保输出能无缝融入现有<Block>结构
+- <Selection>是用户在块中选定的特定文本，需要修改或询问
+- 考虑<Block>提供的上下文，但仅修改<Selection>。响应应直接替换<Selection>
 <Block>
 {block}
 </Block>
@@ -142,37 +146,37 @@ ${systemCommon}
 
 const systemBlockSelecting = `\
 ${systemCommon}
-- <Selection> represents the full blocks of text the user has selected and wants to modify or ask about.
-- Your response should be a direct replacement for the entire <Selection>.
-- Maintain the overall structure and formatting of the selected blocks, unless explicitly instructed otherwise.
-- CRITICAL: Provide only the content to replace <Selection>. Do not add additional blocks or change the block structure unless specifically requested.
+- <Selection>代表用户选中的完整文本块，需要修改或询问
+- 响应应直接替换整个<Selection>
+- 除非明确指示，否则保持选中块的整体结构和格式
+- 关键：仅提供替换<Selection>的内容。除非特别要求，不要添加额外块或改变块结构
 <Selection>
 {block}
 </Selection>
 `;
 
 const userDefault = `<Reminder>
-CRITICAL: DO NOT use block formatting. You can only use inline formatting.
-CRITICAL: DO NOT start new lines or paragraphs.
-NEVER write <Block>.
+关键：不要使用块级格式，仅允许行内格式
+关键：不要换行或新建段落
+永远不要输出<Block>
 </Reminder>
 {prompt}`;
 
 const userSelecting = `<Reminder>
-If this is a question, provide a helpful and concise answer about <Selection>.
-If this is an instruction, provide ONLY the text to replace <Selection>. No explanations.
-Ensure it fits seamlessly within <Block>. If <Block> is empty, write ONE random sentence.
-NEVER write <Block> or <Selection>.
+如果是问题，提供关于<Selection>的有帮助且简洁的回答
+如果是指令，仅提供替换<Selection>的文本，不要解释
+确保内容能无缝融入<Block>。如果<Block>为空，写一个随机句子
+永远不要输出<Block>或<Selection>
 </Reminder>
-{prompt} about <Selection>`;
+{prompt} 关于 <Selection>`;
 
 const userBlockSelecting = `<Reminder>
-If this is a question, provide a helpful and concise answer about <Selection>.
-If this is an instruction, provide ONLY the content to replace the entire <Selection>. No explanations.
-Maintain the overall structure unless instructed otherwise.
-NEVER write <Block> or <Selection>.
+如果是问题，提供关于<Selection>的有帮助且简洁的回答
+如果是指令，仅提供替换整个<Selection>的内容，不要解释
+除非另有指示，否则保持整体结构
+永远不要输出<Block>或<Selection>
 </Reminder>
-{prompt} about <Selection>`;
+{prompt} 关于 <Selection>`;
 
 export const PROMPT_TEMPLATES = {
   systemBlockSelecting,
@@ -184,8 +188,12 @@ export const PROMPT_TEMPLATES = {
 };
 
 const plugins = [
-  // ...otherPlugins,
-  MarkdownPlugin.configure({ options: { indentList: true } }),
+  // ...其他插件
+  MarkdownPlugin.configure({
+    options: {
+      remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+    },
+  }),
   AIPlugin,
   AIChatPlugin.configure({
     options: {
@@ -210,35 +218,32 @@ const plugins = [
 ];
 ```
 
-- [AIMenu](/docs/components/ai-menu)
+- [AI菜单组件](/docs/components/ai-menu)
 
-### AI SDK
+### AI SDK集成
 
-This plugin is depending on the [ai](https://npmjs.com/package/ai) package:
+本插件依赖[ai](https://npmjs.com/package/ai)包：
 
-- Setup a [route handler](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler) using [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext).
-- Wire up [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) in your [AI menu](/docs/components/ai-menu) component.
+1. 使用[streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext)设置[路由处理器](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler)
+2. 在[AI菜单组件](/docs/components/ai-menu)中集成[useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat)
 
-### Convert the chunk into a plate nodes.
-默认情况下，AI 响应会以 chunk-by-chunk（分块）的方式流式传输到 Plate 编辑器中。
+### 将数据块转换为Plate节点
 
-然而，这种分块方式在处理表格和代码块等复杂节点时会遇到问题。如果 chunk 分割过于频繁，会导致这些重型节点被反复替换，从而引发性能问题。
+默认情况下，AI响应以分块方式流式传输到Plate编辑器。但这种方式在处理复杂节点（如表格和代码块）时可能存在问题。如果分块过于频繁，会导致这些重量级节点被反复替换，引发性能问题。
 
-为解决此问题，建议在 `streamText` 函数中使用 `experimental_transform` 参数配合 `smoothStream` 函数来优化 chunk 的传输方式。
-
-下面的chunking函数默认做了以下处理，但遇到table math link code block 时采用行进行分块，其余情况使用单词进行分块
+解决方案是使用`streamText`函数中的`experimental_transform`参数配合`smoothStream`函数来优化分块传输。下面的分块函数实现了默认行为：对表格、数学公式、链接和代码块使用基于行的分块，对其他内容使用基于词的分块。
 
 ```ts
     const result = streamText({
       experimental_transform: smoothStream({
         chunking: (buffer) => {
-          // Check for code block markers
+          // 检测代码块标记
           if (/```[^\s]+/.test(buffer)) {
             isInCodeBlock = true
           }else if(isInCodeBlock && buffer.includes('```') ) {
             isInCodeBlock = false
           }
-          // test case: should not deserialize link with markdown syntax
+          // 测试用例：不应反序列化带有markdown语法的链接
           if (buffer.includes('http')) {
             isInLink = true;
           } else if (buffer.includes('https')) {
@@ -251,25 +256,24 @@ This plugin is depending on the [ai](https://npmjs.com/package/ai) package:
           } else if (buffer.includes('\n') && isInList) {
             isInList = false;
           }
-          // Simple table detection: enter on |, exit on double newline
+          // 简单表格检测：遇到|进入表格模式，遇到双换行退出
           if (!isInTable && buffer.includes('|')) {
             isInTable = true;
           } else if (isInTable && buffer.includes('\n\n')) {
             isInTable = false;
           }
 
-          // Use line chunking for code blocks and tables, word chunking otherwise
-          // Choose the appropriate chunking strategy based on content type
+          // 根据内容类型选择分块策略
           let match;
 
           if (isInCodeBlock || isInTable || isInLink) {
-            // Use line chunking for code blocks and tables
+            // 对代码块和表格使用行分块
             match = CHUNKING_REGEXPS.line.exec(buffer);
           } else if (isInList) {
-            // Use list chunking for lists
+            // 对列表使用列表分块
             match = CHUNKING_REGEXPS.list.exec(buffer);
           } else {
-            // Use word chunking for regular text
+            // 对常规文本使用词分块
             match = CHUNKING_REGEXPS.word.exec(buffer);
           }
           if (!match) {
@@ -279,254 +283,322 @@ This plugin is depending on the [ai](https://npmjs.com/package/ai) package:
           return buffer.slice(0, match.index) + match?.[0];
         },
       }),
-      maxTokens: 2048,
-      messages: convertToCoreMessages(messages),
-      model: openai('gpt-4o'),
-      system: system,
+      // 其他配置项
+      
+      // maxTokens: 2048,
+      // messages: convertToCoreMessages(messages),
+      // model: openai('gpt-4o'),
+      // system: system,
     });
 
 ```
 
-## Keyboard Shortcuts
+## 快捷键
 
 <KeyTable>
   <KeyTableItem hotkey="Space">
-    Open AI menu in empty block (cursor mode)
+    在空段落中打开AI菜单（光标模式）
   </KeyTableItem>
   <KeyTableItem hotkey="Cmd + J">
-    Open AI menu (cursor or selection mode)
+    打开AI菜单（光标或选区模式）
   </KeyTableItem>
-  <KeyTableItem hotkey="Escape">Close AI menu</KeyTableItem>
+  <KeyTableItem hotkey="Escape">关闭AI菜单</KeyTableItem>
 </KeyTable>
 
-## Examples
+## 示例
 
 ### Plate UI
 
-Refer to the preview above.
+参考上方预览。
 
 ### Plate Plus
 
 <ComponentPreviewPro name="ai-pro" />
 
-## Plugins
+## 插件
 
 ### `AIPlugin`
 
-Extends the editor with AI transforms.
+扩展编辑器以支持AI转换功能。
 
 ### `AIChatPlugin`
 
-This plugin is experimental.
+此插件为实验性功能。
 
-Enables chat operations and streaming text generation in the editor.
+在编辑器中启用聊天操作和流式文本生成。
 
 <API name="AIChatPlugin">
 <APIOptions>
-  <APIItem name="chat" type="UseChatHelpers">
-    Chat helpers returned by [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat).
+  <APIItem name="aiEditor" type="SlateEditor | null">
+    用于生成AI响应的编辑器实例。
   </APIItem>
-  <APIItem name="createAIEditor" type="() => PlateEditor" optional>
-    Function to create editor instance for preview mode.
-    - **Default:** Creates a basic editor with id 'ai'
+  <APIItem name="chat" type="Partial<UseChatHelpers>">
+    由[useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat)返回的聊天助手。
   </APIItem>
   <APIItem name="mode" type="'chat' | 'insert'" optional>
-    Specifies how assistant messages are handled:
-    - `'chat'`: Shows preview with accept/reject options
-    - `'insert'`: Directly inserts content into editor
-    - **Default:** `'chat'`
+    指定助手消息处理方式：
+    - `'chat'`：显示带接受/拒绝选项的预览
+    - `'insert'`：直接将内容插入编辑器
+    - **默认值：** `'chat'`
   </APIItem>
   <APIItem name="open" type="boolean" optional>
-    Whether the AI chat is open.
-    - **Default:** `false`
+    AI聊天界面是否打开。
+    - **默认值：** `false`
+  </APIItem>
+  <APIItem name="streaming" type="boolean" optional>
+    AI响应是否正在流式传输（仅光标模式）。
+    - **默认值：** `false`
   </APIItem>
   <APIItem name="promptTemplate" type="(props: EditorPromptParams) => string" optional>
-    Template for generating prompts. Supports placeholders:
-    - `{block}`: Markdown of blocks in selection
-    - `{editor}`: Markdown of entire editor content
-    - `{selection}`: Markdown of current selection
-    - `{prompt}`: Actual user prompt
-    - **Default:** `'{prompt}'`
+    提示模板，支持占位符：
+    - `{block}`：选区中块的Markdown
+    - `{editor}`：整个编辑器内容的Markdown
+    - `{selection}`：当前选区的Markdown
+    - `{prompt}`：实际用户提示
+    - **默认值：** `'{prompt}'`
   </APIItem>
   <APIItem name="systemTemplate" type="(props: EditorPromptParams) => string | void" optional>
-    Template for system messages. Supports same placeholders as `promptTemplate`.
+    系统消息模板，支持与promptTemplate相同的占位符。
+  </APIItem>
+    <APIItem name="_blockChunks" type="string">
+    内部使用，用于streamInsertChunk。
+  </APIItem>
+  <APIItem name="_blockPath" type="Path | null">
+    内部使用，用于跟踪块路径。
   </APIItem>
 </APIOptions>
 </API>
 
-## API
+## API接口
 
 ### `api.aiChat.accept`
 
-Accepts the current AI suggestion:
-- Removes AI marks from the content
-- Hides the AI chat interface
-- Focuses the editor
+接受当前AI建议：
+- 从内容中移除AI标记
+- 隐藏AI聊天界面
+- 聚焦编辑器
 
 ### `api.aiChat.insertBelow`
 
-Inserts AI content below the current block.
+在当前段落下方插入AI内容。
 
-Handles both block selection and normal selection modes:
-- In block selection: Inserts after the last selected block, applying formatting from the last block
-- In normal selection: Inserts after the current block, applying formatting from the current block
+处理块选区和普通选区模式：
+- 块选区：在最后一个选中块后插入，应用最后一个块的格式
+- 普通选区：在当前块后插入，应用当前块的格式
 
 <API name="insertBelow">
 <APIParameters>
   <APIItem name="sourceEditor" type="PlateEditor">
-    Editor containing the content to insert.
+    包含待插入内容的编辑器。
   </APIItem>
   <APIItem name="options" type="object" optional>
-    Options for insertion.
+    插入选项。
   </APIItem>
 </APIParameters>
 
 <APIOptions type="object">
   <APIItem name="format" type="'all' | 'none' | 'single'" optional>
-    Format to apply:
-    - `'all'`: Apply formatting to all blocks
-    - `'none'`: Insert without formatting
-    - `'single'`: Apply formatting only to first block
-    - **Default:** `'single'`
+    应用的格式：
+    - `'all'`：应用格式到所有块
+    - `'none'`：无格式插入
+    - `'single'`：仅对第一个块应用格式
+    - **默认值：** `'single'`
   </APIItem>
 </APIOptions>
 </API>
 
 ### `api.aiChat.replaceSelection`
 
-Replaces the current selection with AI content.
+用AI内容替换当前选区。
 
-Handles different selection modes:
-- Single block selection: Replaces the selected block, applying its formatting to inserted content based on format option
-- Multiple block selection: Replaces all selected blocks
-  - With `format: 'none'` or `'single'`: Preserves original formatting
-  - With `format: 'all'`: Applies first block's formatting to all content
-- Normal selection: Replaces the current selection while maintaining surrounding context
+处理不同选区模式：
+- 单块选区：替换选中块，根据format选项应用格式
+- 多块选区：替换所有选中块
+  - `format: 'none'`或`'single'`：保留原始格式
+  - `format: 'all'`：将第一个块的格式应用到所有内容
+- 普通选区：替换当前选区同时保持上下文
 
 <API name="replaceSelection">
 <APIParameters>
   <APIItem name="sourceEditor" type="PlateEditor">
-    Editor containing the content to replace with.
+    包含替换内容的编辑器。
   </APIItem>
   <APIItem name="options" type="object" optional>
-    Options for replacement.
+    替换选项。
   </APIItem>
 </APIParameters>
 
 <APIOptions type="object">
   <APIItem name="format" type="'all' | 'none' | 'single'" optional>
-    Format to apply:
-    - `'all'`: Apply formatting to all blocks
-    - `'none'`: Insert without formatting
-    - `'single'`: Apply formatting only to first block
-    - **Default:** `'single'`
+    应用的格式：
+    - `'all'`：应用格式到所有块
+    - `'none'`：无格式插入
+    - `'single'`：仅对第一个块应用格式
+    - **默认值：** `'single'`
   </APIItem>
 </APIOptions>
 </API>
 
 ### `api.aiChat.reset`
 
-Resets the chat state:
-- Stops any ongoing generation
-- Clears chat messages
-- Removes all AI nodes from the editor
+重置聊天状态：
+- 停止任何正在进行的生成
+- 清除聊天消息
+- 从编辑器中移除所有AI节点
+
+### `api.aiChat.node`
+
+获取AI聊天节点entry。
+
+<API name="node">
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions & { anchor?: boolean }" optional>
+    查找节点的选项：
+    - `anchor`：为true时查找匹配插件类型的节点
+    - 默认（false）查找带有`ai`属性的节点
+  </APIItem>
+</APIParameters>
+<APIReturns type="NodeEntry | undefined">
+  找到的节点entry或未找到时返回undefined。
+</APIReturns>
+</API>
+
+### `api.aiChat.reload`
+
+重新加载当前AI聊天：
+- 插入模式：撤销之前的AI更改
+- 使用当前系统提示重新加载聊天
+
+### `api.aiChat.show`
+
+显示AI聊天界面：
+- 重置聊天状态
+- 清除消息
+- 将打开状态设为true
+
+### `api.aiChat.hide`
+
+隐藏AI聊天界面：
+- 重置聊天状态
+- 将打开状态设为false
+- 聚焦编辑器
+- 移除AI锚点
+
+### `api.aiChat.stop`
+
+停止当前AI生成：
+- 将流式状态设为false
+- 调用聊天停止函数
 
 ### `api.aiChat.submit`
 
-Submits a prompt to generate AI content.
+提交提示生成AI内容。
 
 <API name="submit">
 <APIOptions type="SubmitOptions">
   <APIItem name="mode" type="'chat' | 'insert'" optional>
-    Mode to use. In insert mode, undoes previous AI changes before submitting.
-    - **Default:** `'chat'` for selection, `'insert'` otherwise
+    使用模式。插入模式会在提交前撤销之前的AI更改。
+    - **默认值：** 选区时为`'chat'`，其他为`'insert'`
   </APIItem>
   <APIItem name="prompt" type="string" optional>
-    Custom prompt.
-    - **Default:** Uses chat input if not provided
+    自定义提示。
+    - **默认值：** 未提供时使用聊天输入
   </APIItem>
   <APIItem name="system" type="string" optional>
-    Custom system message.
+    自定义系统消息。
   </APIItem>
 </APIOptions>
 </API>
 
-## Transforms
+## 转换方法
+
+### `tf.aiChat.removeAnchor`
+
+移除AI聊天锚点节点。
+
+<API name="removeAnchor">
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions" optional>
+    查找要移除节点的选项。
+  </APIItem>
+</APIParameters>
+</API>
 
 ### `tf.ai.insertNodes`
 
-Inserts AI-generated nodes with the AI mark.
+插入带AI标记的AI生成节点。
 
 <API name="tf.ai.insertNodes">
 <APIParameters>
   <APIItem name="nodes" type="Descendant[]">
-    Nodes to insert with AI mark.
+    要插入的带AI标记的节点。
   </APIItem>
-  <APIItem name="options" type="InsertNodesOptions" optional>
-    Options for inserting nodes.
+
+<APIItem name="options" type="InsertNodesOptions" optional>
+    插入节点的选项。
   </APIItem>
 </APIParameters>
 
 <APIOptions type="InsertNodesOptions">
   <APIItem name="target" type="Path" optional>
-    Target path.
-    - **Default:** Current selection
+    目标路径。
+    - **默认值：** 当前选区
   </APIItem>
 </APIOptions>
 </API>
 
 ### `tf.ai.removeMarks`
 
-Removes AI marks from nodes in the specified location.
+从指定位置的节点中移除AI标记。
 
 <API name="tf.ai.removeMarks">
 <APIOptions type="RemoveMarksOptions">
   <APIItem name="at" type="Location" optional>
-    Location to remove marks from.
-    - **Default:** Entire document
+    要移除标记的位置。
+    - **默认值：** 整个文档
   </APIItem>
 </APIOptions>
 </API>
 
 ### `tf.ai.removeNodes`
 
-Removes nodes that have the AI mark.
+移除具有AI标记的节点。
 
 <API name="tf.ai.removeNodes">
 <APIOptions type="RemoveNodesOptions">
   <APIItem name="at" type="Path" optional>
-    Path to remove nodes from.
-    - **Default:** Entire document
+    要移除节点的路径。
+    - **默认值：** 整个文档
   </APIItem>
 </APIOptions>
 </API>
 
 ### `tf.ai.undo`
 
-Special undo operation for AI changes:
-- Undoes the last operation if it was AI-generated
-- Removes the redo stack entry to prevent redoing AI operations
+AI更改的特殊撤销操作：
+- 如果最后一个操作是AI生成的，则撤销该操作
+- 移除重做栈条目以防止重做AI操作
 
 ### `useAIChatEditor`
 
-A hook that registers an editor in the AI chat plugin, and deserializes markdown content with block-level memoization.
+一个在AI聊天插件中注册编辑器的钩子，并使用块级记忆化反序列化markdown内容。
 
 <API name="useAIChatEditor">
 <APIParameters>
   <APIItem name="content" type="string">
-    The markdown content to deserialize into the editor.
+    要反序列化到编辑器中的markdown内容。
   </APIItem>
   <APIItem name="options" type="object" optional>
     <APISubList>
       <APISubListItem parent="options" name="memoize" type="boolean" optional>
-        Enable block-level memoization with `_memo` property.
-        - **Default:** `true`
+        使用`_memo`属性启用块级记忆化。
+        - **默认值：** `true`
       </APISubListItem>
       <APISubListItem parent="options" name="parser" type="ParseMarkdownBlocksOptions" optional>
-        Options for the markdown token parser. Can filter out specific token types.
+        markdown标记解析器的选项。可以过滤掉特定的标记类型。
       </APISubListItem>
       <APISubListItem parent="options" name="processor" type="(processor: Processor) => Processor" optional>
-        Function to customize the markdown processor.
+        自定义markdown处理器的函数。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -536,14 +608,14 @@ A hook that registers an editor in the AI chat plugin, and deserializes markdown
 const AIChatEditor = ({ content }: { content: string }) => {
   const aiEditor = usePlateEditor({
     plugins: [
-      // Your editor plugins
+      // 你的编辑器插件
       MarkdownPlugin,
-      // etc...
+      // 等等...
     ],
   });
 
   useAIChatEditor(aiEditor, content, {
-    // Optional markdown parser options
+    // 可选的markdown解析器选项
     parser: {
       exclude: ['space'],
     },

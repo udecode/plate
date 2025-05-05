@@ -12,7 +12,7 @@ const values = createMultiEditorsValue();
 function WithPlate({ id, value }: any) {
   const editor = usePlateEditor({
     id,
-    // override: { components: PlateUI },
+    // components: PlateUI,
     // plugins: [BasicElementsPlugin, BasicMarksPlugin],
     value,
   });

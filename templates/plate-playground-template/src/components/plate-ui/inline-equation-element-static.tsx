@@ -31,8 +31,8 @@ export function InlineEquationElementStatic({
   return (
     <SlateElement
       className={cn(
-        'inline-block rounded-sm select-none [&_.katex-display]:my-0',
-        className
+        className,
+        'inline-block rounded-sm select-none [&_.katex-display]:my-0'
       )}
       {...props}
     >
@@ -50,9 +50,7 @@ export function InlineEquationElementStatic({
             element.texExpression.length === 0 && 'hidden',
             'font-mono leading-none'
           )}
-          dangerouslySetInnerHTML={{
-            __html: html,
-          }}
+          dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>
       {children}

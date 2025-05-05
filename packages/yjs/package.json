@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-yjs",
-  "version": "44.0.0",
+  "version": "48.0.0",
   "description": "Yjs plugin for Plate",
   "keywords": [
     "plate",
@@ -51,7 +51,6 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@hocuspocus/provider": "^2.15.2",
     "@slate-yjs/core": "^1.0.2",
     "yjs": "^13.6.23"
   },
@@ -59,9 +58,11 @@
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=47.3.1",
+    "@hocuspocus/provider": "^2.15.2",
+    "@udecode/plate": ">=48.0.1",
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react-dom": ">=18.0.0",
+    "y-webrtc": "10.3.0"
   },
   "publishConfig": {
     "access": "public"

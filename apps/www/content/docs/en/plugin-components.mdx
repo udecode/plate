@@ -83,17 +83,15 @@ const ParagraphPlugin = BaseParagraphPlugin.withComponent(ParagraphElement)
 
 ### Editor Options
 
-Alternatively, you can specify the component for each plugin key using the `override.components` option of `createPlateEditor`: 
+Alternatively, you can specify the component for each plugin key using the `components` option of `createPlateEditor`: 
 
 ```tsx showLineNumbers {5-6}
 const editor = createPlateEditor({
   plugins: [ParagraphPlugin, LinkPlugin],
-  override: {
-    components: {
-      [ParagraphPlugin.key]: ParagraphElement,
-      [LinkPlugin.key]: LinkElement,
-      // ...other components
-    },
+  components: {
+    [ParagraphPlugin.key]: ParagraphElement,
+    [LinkPlugin.key]: LinkElement,
+    // ...other components
   },
 });
 ```

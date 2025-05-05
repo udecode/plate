@@ -38,13 +38,16 @@ export const TagElement = withRef<typeof PlateElement>(
 
     return (
       <PlateElement
+        {...props}
         ref={ref}
         className={cn(
           className,
           'm-0.5 inline-flex cursor-pointer select-none'
         )}
-        draggable
-        {...props}
+        attributes={{
+          ...props.attributes,
+          draggable: true,
+        }}
       >
         {content}
         {children}
