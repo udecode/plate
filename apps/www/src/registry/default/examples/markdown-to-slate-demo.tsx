@@ -65,6 +65,7 @@ import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
+import { MentionElement } from '@/registry/default/plate-ui/mention-element';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 import {
   TableCellElement,
@@ -73,15 +74,12 @@ import {
 import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 
-import { MentionElement } from '../plate-ui/mention-element';
-
 const initialMarkdown = `# Markdown syntax guide
 
 ## Headers
 
 # This is a Heading h1
 ## This is a Heading h2
-###### This is a Heading h6
 
 ## Emphasis
 
