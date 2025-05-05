@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 48.0.1
+
+### Patch Changes
+
+- [`24b81d7`](https://github.com/udecode/plate/commit/24b81d724314c81b70aa951fd8e08d52b131f29f) by [@zbeyens](https://github.com/zbeyens) – New api `editor.api.shouldNormalizeNode`: use case is to prevent `normalizeNode` from being called when the editor is not ready
+
 ## 47.3.1
 
 ### Patch Changes

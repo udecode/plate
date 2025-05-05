@@ -1,5 +1,7 @@
 # @udecode/plate-core
 
+## 48.0.1
+
 ## 48.0.0
 
 ### Major Changes
