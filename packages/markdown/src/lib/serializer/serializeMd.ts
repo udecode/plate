@@ -26,11 +26,6 @@ const serializeMdxJsxElement = (
   node: any,
   options: SerializeMdOptions
 ): string => {
-  // Handle text nodes
-  if (node.type === 'text') {
-    return node.value || '';
-  }
-
   // Handle MDX JSX elements
   if (node.type === 'mdxJsxTextElement' || node.type === 'mdxJsxFlowElement') {
     const attributes = node.attributes.reduce(

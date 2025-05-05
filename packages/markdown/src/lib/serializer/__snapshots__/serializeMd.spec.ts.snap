@@ -116,7 +116,11 @@ Date: <date>2024-01-01</date>
 
 Text with <highlight style="background-color: yellow;">highlight</highlight> and <u>underline</u> and <kbd>keyboard</kbd> formatting
 
-Text with color and background color
+Text with <color style="color: rgb(252, 109, 38);">color</color> and <backgroundColor style="background-color: rgb(252, 109, 38);">background</backgroundColor> color
+
+Superscript: x<sup>2</sup>Subscript: x<sub>2</sub>
+
+<callout>callout</callout>
 "
 `;
 

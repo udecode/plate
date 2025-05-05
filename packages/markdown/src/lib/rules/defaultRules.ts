@@ -1,4 +1,5 @@
 import type { TText } from '@udecode/plate';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx';
 
 import type {
   TIndentListElement,
@@ -28,6 +29,7 @@ import {
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
+import { fontRules } from './fontRules';
 
 function isBoolean(value: any) {
   return (
@@ -149,6 +151,11 @@ export const defaultRules: TRules = {
       return convertTextsDeserialize(mdastNode, deco, options);
     },
   },
+  br: {
+    deserialize() {
+      return [{ text: '\n' }];
+    },
+  },
   break: {
     deserialize: (mdastNode, deco) => {
       return {
@@ -168,12 +175,12 @@ export const defaultRules: TRules = {
         type: 'callout',
       };
     },
-    serialize(slateNode, options): MdMdxJsxTextElement {
+    serialize(slateNode, options): MdxJsxFlowElement {
       return {
         attributes: [],
         children: convertNodesSerialize(slateNode.children, options) as any,
         name: 'callout',
-        type: 'mdxJsxTextElement',
+        type: 'mdxJsxFlowElement',
       };
     },
   },
@@ -212,6 +219,7 @@ export const defaultRules: TRules = {
       };
     },
   },
+
   date: {
     deserialize(mdastNode, deco, options) {
       const dateValue = (mdastNode.children?.[0] as any)?.value || '';
@@ -908,4 +916,5 @@ export const defaultRules: TRules = {
       };
     },
   },
+  ...fontRules,
 };

@@ -23,6 +23,13 @@ import {
 } from '@udecode/plate-code-block';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
+  BaseFontBackgroundColorPlugin,
+  BaseFontColorPlugin,
+  BaseFontFamilyPlugin,
+  BaseFontSizePlugin,
+  BaseFontWeightPlugin,
+} from '@udecode/plate-font';
+import {
   BaseHeadingPlugin,
   BaseTocPlugin,
   HEADING_KEYS,
@@ -116,7 +123,7 @@ const components = {
 
   // [BaseColumnItemPlugin.key]: ColumnElementStatic
   // [BaseColumnPlugin.key]: ColumnGroupElementStatic
-  
+
   // [BaseCommentsPlugin.key]: CommentLeafStatic
   // [BaseTogglePlugin.key]: ToggleElementStatic
 };
@@ -142,6 +149,11 @@ const plugins = [
   BaseHorizontalRulePlugin,
   BaseTablePlugin,
   BaseTocPlugin,
+  BaseFontColorPlugin,
+  BaseFontSizePlugin,
+  BaseFontFamilyPlugin,
+  BaseFontWeightPlugin,
+  BaseFontBackgroundColorPlugin,
   BaseCalloutPlugin,
   BaseHighlightPlugin,
   BaseLinkPlugin,
