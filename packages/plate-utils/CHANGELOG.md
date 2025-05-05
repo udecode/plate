@@ -1,5 +1,7 @@
 # @udecode/plate-utils
 
+## 48.0.1
+
 ## 48.0.0
 
 ### Major Changes
