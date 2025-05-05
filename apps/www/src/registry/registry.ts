@@ -22,14 +22,7 @@ export const registry = {
     ...lib,
     ...hooks,
     ...themes,
-
-    // Internal use only.
     ...examples,
-  ].map((item) => ({
-    ...item,
-    registryDependencies: item.registryDependencies?.map((dep) =>
-      dep.startsWith('/r') ? url + dep : dep
-    ),
-  })),
+  ],
   name: 'plate',
 } satisfies Registry;

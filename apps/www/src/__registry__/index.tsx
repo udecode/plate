@@ -19,7 +19,7 @@ export const Index: Record<string, any> = {
     name: "ai-menu",
     description: "A menu for AI-powered content generation and insertion.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/use-chat","http://localhost:3000/r/command","http://localhost:3000/r/popover","http://localhost:3000/r/editor"],
+    registryDependencies: ["http://localhost:3000/r/use-chat","command","http://localhost:3000/r/popover","http://localhost:3000/r/editor"],
     files: [{
       path: "src/registry/ui/ai-menu.tsx",
       type: "registry:ui",
@@ -309,7 +309,7 @@ export const Index: Record<string, any> = {
     name: "select-editor",
     description: "An editor to select tags.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/editor","command","popover","http://localhost:3000/r/tag-element"],
+    registryDependencies: ["http://localhost:3000/r/editor","command","http://localhost:3000/r/popover","http://localhost:3000/r/tag-element"],
     files: [{
       path: "src/registry/ui/select-editor.tsx",
       type: "registry:ui",
@@ -375,7 +375,7 @@ export const Index: Record<string, any> = {
     name: "fixed-toolbar-buttons",
     description: "A set of commonly used formatting buttons.",
     type: "registry:ui",
-    registryDependencies: ["toolbar","http://localhost:3000/r/ai-toolbar-button","http://localhost:3000/r/align-dropdown-menu","http://localhost:3000/r/color-dropdown-menu","http://localhost:3000/r/comment-toolbar-button","http://localhost:3000/r/emoji-dropdown-menu","http://localhost:3000/r/font-size-toolbar-button","http://localhost:3000/r/history-toolbar-button","http://localhost:3000/r/indent-list-toolbar-button","http://localhost:3000/r/indent-todo-toolbar-button","http://localhost:3000/r/indent-toolbar-button","http://localhost:3000/r/import-toolbar-button","http://localhost:3000/r/insert-dropdown-menu","http://localhost:3000/r/line-height-dropdown-menu","http://localhost:3000/r/link-toolbar-button","http://localhost:3000/r/mark-toolbar-button","http://localhost:3000/r/media-toolbar-button","http://localhost:3000/r/mode-dropdown-menu","http://localhost:3000/r/more-dropdown-menu","http://localhost:3000/r/outdent-toolbar-button","http://localhost:3000/r/table-dropdown-menu","http://localhost:3000/r/toggle-toolbar-button","http://localhost:3000/r/turn-into-dropdown-menu","http://localhost:3000/r/export-toolbar-button"],
+    registryDependencies: ["http://localhost:3000/r/toolbar","http://localhost:3000/r/ai-toolbar-button","http://localhost:3000/r/align-dropdown-menu","http://localhost:3000/r/color-dropdown-menu","http://localhost:3000/r/comment-toolbar-button","http://localhost:3000/r/emoji-dropdown-menu","http://localhost:3000/r/font-size-toolbar-button","http://localhost:3000/r/history-toolbar-button","http://localhost:3000/r/indent-list-toolbar-button","http://localhost:3000/r/indent-todo-toolbar-button","http://localhost:3000/r/indent-toolbar-button","http://localhost:3000/r/import-toolbar-button","http://localhost:3000/r/insert-dropdown-menu","http://localhost:3000/r/line-height-dropdown-menu","http://localhost:3000/r/link-toolbar-button","http://localhost:3000/r/mark-toolbar-button","http://localhost:3000/r/media-toolbar-button","http://localhost:3000/r/mode-dropdown-menu","http://localhost:3000/r/more-dropdown-menu","http://localhost:3000/r/outdent-toolbar-button","http://localhost:3000/r/table-dropdown-menu","http://localhost:3000/r/toggle-toolbar-button","http://localhost:3000/r/turn-into-dropdown-menu","http://localhost:3000/r/export-toolbar-button"],
     files: [{
       path: "src/registry/ui/fixed-toolbar-buttons.tsx",
       type: "registry:ui",
@@ -392,7 +392,7 @@ export const Index: Record<string, any> = {
     name: "fixed-toolbar-list-buttons",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["toolbar","http://localhost:3000/r/ai-toolbar-button","http://localhost:3000/r/align-dropdown-menu","http://localhost:3000/r/color-dropdown-menu","http://localhost:3000/r/comment-toolbar-button","http://localhost:3000/r/emoji-dropdown-menu","http://localhost:3000/r/insert-dropdown-menu","http://localhost:3000/r/line-height-dropdown-menu","http://localhost:3000/r/list-indent-toolbar-button","http://localhost:3000/r/link-toolbar-button","http://localhost:3000/r/mark-toolbar-button","http://localhost:3000/r/media-toolbar-button","http://localhost:3000/r/mode-dropdown-menu","http://localhost:3000/r/more-dropdown-menu","http://localhost:3000/r/table-dropdown-menu","http://localhost:3000/r/toggle-toolbar-button","http://localhost:3000/r/turn-into-dropdown-menu"],
+    registryDependencies: ["http://localhost:3000/r/toolbar","http://localhost:3000/r/ai-toolbar-button","http://localhost:3000/r/align-dropdown-menu","http://localhost:3000/r/color-dropdown-menu","http://localhost:3000/r/comment-toolbar-button","http://localhost:3000/r/emoji-dropdown-menu","http://localhost:3000/r/insert-dropdown-menu","http://localhost:3000/r/line-height-dropdown-menu","http://localhost:3000/r/list-indent-toolbar-button","http://localhost:3000/r/link-toolbar-button","http://localhost:3000/r/mark-toolbar-button","http://localhost:3000/r/media-toolbar-button","http://localhost:3000/r/mode-dropdown-menu","http://localhost:3000/r/more-dropdown-menu","http://localhost:3000/r/table-dropdown-menu","http://localhost:3000/r/toggle-toolbar-button","http://localhost:3000/r/turn-into-dropdown-menu"],
     files: [{
       path: "src/registry/ui/fixed-toolbar-list-buttons.tsx",
       type: "registry:ui",
@@ -426,7 +426,7 @@ export const Index: Record<string, any> = {
     name: "floating-toolbar-buttons",
     description: "A set of formatting buttons for the floating toolbar.",
     type: "registry:ui",
-    registryDependencies: ["toolbar","http://localhost:3000/r/ai-toolbar-button","http://localhost:3000/r/comment-toolbar-button","http://localhost:3000/r/link-toolbar-button","http://localhost:3000/r/mark-toolbar-button","http://localhost:3000/r/more-dropdown-menu","http://localhost:3000/r/turn-into-dropdown-menu"],
+    registryDependencies: ["http://localhost:3000/r/toolbar","http://localhost:3000/r/ai-toolbar-button","http://localhost:3000/r/comment-toolbar-button","http://localhost:3000/r/link-toolbar-button","http://localhost:3000/r/mark-toolbar-button","http://localhost:3000/r/more-dropdown-menu","http://localhost:3000/r/turn-into-dropdown-menu"],
     files: [{
       path: "src/registry/ui/floating-toolbar-buttons.tsx",
       type: "registry:ui",
@@ -443,7 +443,7 @@ export const Index: Record<string, any> = {
     name: "floating-toolbar",
     description: "A contextual toolbar that appears over selected text.",
     type: "registry:ui",
-    registryDependencies: ["toolbar"],
+    registryDependencies: ["http://localhost:3000/r/toolbar"],
     files: [{
       path: "src/registry/ui/floating-toolbar.tsx",
       type: "registry:ui",
@@ -600,7 +600,7 @@ export const Index: Record<string, any> = {
     name: "insert-dropdown-menu",
     description: "A menu for inserting different types of blocks.",
     type: "registry:ui",
-    registryDependencies: ["dropdown-menu","toolbar","http://localhost:3000/r/transforms"],
+    registryDependencies: ["http://localhost:3000/r/dropdown-menu","http://localhost:3000/r/toolbar","http://localhost:3000/r/transforms"],
     files: [{
       path: "src/registry/ui/insert-dropdown-menu.tsx",
       type: "registry:ui",
@@ -965,7 +965,7 @@ export const Index: Record<string, any> = {
     name: "code-block-element",
     description: "A code block with syntax highlighting and language selection.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/command"],
+    registryDependencies: ["command"],
     files: [{
       path: "src/registry/ui/code-block-element.tsx",
       type: "registry:ui",
@@ -1074,7 +1074,7 @@ export const Index: Record<string, any> = {
     name: "column-group-element",
     description: "A resizable column component for layout.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/command","http://localhost:3000/r/resizable"],
+    registryDependencies: ["http://localhost:3000/r/resizable"],
     files: [{
       path: "src/registry/ui/column-group-element.tsx",
       type: "registry:ui",
@@ -1866,23 +1866,6 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/checkbox"}},
-  },
-  "command": {
-    name: "command",
-    description: "Fast, composable, unstyled command menu for React.",
-    type: "registry:ui",
-    registryDependencies: ["dialog","http://localhost:3000/r/input"],
-    files: [{
-      path: "src/registry/ui/command.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/command.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/command"}},
   },
   "context-menu": {
     name: "context-menu",
@@ -2797,11 +2780,7 @@ export const Index: Record<string, any> = {
       type: "registry:component",
       target: ""
     }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/blocks/slate-to-html/page.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
+    component: null,
     meta: {"rsc":true},
   },
   "uploadthing": {

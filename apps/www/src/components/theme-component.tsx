@@ -20,7 +20,7 @@ export function ThemeComponent({ name, ...props }: ThemeComponentProps) {
   const [config] = useConfig();
 
   const Preview = React.useMemo(() => {
-    const Component = Index[config.style][name]?.component;
+    const Component = Index[name]?.component;
 
     if (!Component) {
       return (
@@ -35,7 +35,7 @@ export function ThemeComponent({ name, ...props }: ThemeComponentProps) {
     }
 
     return <Component />;
-  }, [name, config.style]);
+  }, [name]);
 
   return (
     <div className={cn('relative')} {...props}>

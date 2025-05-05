@@ -24,9 +24,8 @@ apps
         └── app
             ├── components
             └── registry
-                └── default
                     ├── example
-                    └── plate-ui
+                    └── ui
 packages
 └── core
 ```
@@ -102,18 +101,11 @@ yarn dev
 apps
 └── www
     └── registry
-        ├── default
         │   ├── example
-        │   └── plate-ui
+        │   └── ui
 ```
 
 添加或修改组件时，请确保更新相应的文档。
-
-## CLI
-
-`shadcx` 包是一个用于向项目添加组件的命令行工具。您可以在[这里](https://platejs.org/docs/components/cli)找到 CLI 的文档。
-
-对 CLI 的任何更改都应在 `packages/plate-ui` 目录中进行。如果可能的话，最好为您的更改添加测试。
 
 ### 运行代码检查器
 

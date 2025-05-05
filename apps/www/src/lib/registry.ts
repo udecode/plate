@@ -169,7 +169,7 @@ function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
       target = `components/${fileName}`;
     }
     if (file.type === 'registry:ui') {
-      target = `components/plate-ui/${fileName}`;
+      target = `components/ui/${fileName}`;
     }
     if (file.type === 'registry:hook') {
       target = `hooks/${fileName}`;

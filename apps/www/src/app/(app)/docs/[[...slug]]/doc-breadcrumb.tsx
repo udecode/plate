@@ -8,8 +8,6 @@ import { cn } from '@udecode/cn';
 import { ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import { getDocIcon } from '@/config/docs-icons';
-import { Button } from '@/registry/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -17,7 +15,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/registry/ui/command';
+} from '@/components/ui/command';
+import { getDocIcon } from '@/config/docs-icons';
+import { Button } from '@/registry/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/registry/ui/popover';
 
 export function DocBreadcrumb({
@@ -111,7 +111,7 @@ export function DocBreadcrumb({
                           {item.title}
                         </div>
                         {category && item.description && (
-                          <div className="text-muted-foreground line-clamp-1 text-xs">
+                          <div className="line-clamp-1 text-xs text-muted-foreground">
                             {item.description}
                           </div>
                         )}

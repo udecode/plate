@@ -12,9 +12,14 @@ import { examples } from '@/registry/registry-examples';
 import { hooks } from '@/registry/registry-hooks';
 import { components } from '@/registry/registry-components';
 
+const url =
+  process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3000'
+    : 'https://platejs.org';
+
 const registry: Registry = {
   name: 'plate',
-  homepage: process.env.NEXT_PUBLIC_URL ?? 'http://localhost:3000',
+  homepage: url,
   items: z.array(registryItemSchema).parse(
     [
       {
@@ -56,9 +61,7 @@ const registry: Registry = {
     ].map((item) => ({
       ...item,
       registryDependencies: item.registryDependencies?.map((dep) =>
-        dep.startsWith('/r')
-          ? (process.env.URL || 'http://localhost:3000') + dep
-          : dep
+        dep.startsWith('shadcn/') ? dep.split('shadcn/')[1] : `${url}/r/${dep}`
       ),
     }))
   ),
@@ -79,9 +82,10 @@ export const Index: Record<string, any> = {`;
       continue;
     }
 
-    const componentPath = item.files?.[0]?.path
-      ? `@/registry/${item.files[0].path}`
-      : '';
+    const componentPath =
+      !item.meta?.rsc && item.files?.[0]?.path
+        ? `@/registry/${item.files[0].path}`
+        : '';
 
     index += `
   "${item.name}": {

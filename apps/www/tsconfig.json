@@ -7,7 +7,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "contentlayer/generated": ["./.contentlayer/generated"],
-      "registry": ["./registry.json"]
+      "registry": ["./registry.json"],
+      "registry-shadcn": ["./registry-shadcn.json"]
     },
     "plugins": [
       {

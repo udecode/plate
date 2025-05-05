@@ -10,7 +10,6 @@ import Image from 'next/image';
 
 import { CodeTabs } from '@/components/code-tabs';
 import { ComponentInstallation } from '@/components/component-installation';
-import { useConfig } from '@/hooks/use-config';
 import { packageInfoAtom } from '@/hooks/use-package-info';
 
 import {
@@ -219,10 +218,7 @@ export function Mdx({
     gzip: string | null;
   };
 }) {
-  const [config] = useConfig();
-  const Component = useMDXComponent(code, {
-    style: config.style,
-  });
+  const Component = useMDXComponent(code);
 
   return (
     <div className="typography">

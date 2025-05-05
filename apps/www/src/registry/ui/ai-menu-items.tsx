@@ -26,7 +26,7 @@ import {
   X,
 } from 'lucide-react';
 
-import { CommandGroup, CommandItem } from './command';
+import { CommandGroup, CommandItem } from '@/components/ui/command';
 
 export type EditorChatState =
   | 'cursorCommand'

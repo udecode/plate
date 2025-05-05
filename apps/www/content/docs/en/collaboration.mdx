@@ -45,8 +45,8 @@ Set up `YjsPlugin` within your Plate editor configuration. Define the providers 
 ```tsx
 import { YjsPlugin } from '@udecode/plate-yjs/react';
 import { Plate, createPlateEditor } from '@udecode/plate/react';
-import { RemoteCursorOverlay } from '@/registry/default/plate-ui/remote-cursor-overlay';
-import { EditorContainer } from '@/registry/default/plate-ui/editor';
+import { RemoteCursorOverlay } from '@/components/ui/remote-cursor-overlay';
+import { EditorContainer } from '@/components/ui/editor';
 
 const editor = createPlateEditor({
   plugins: [
@@ -110,7 +110,7 @@ Yjs connection and state initialization are handled manually, typically within a
 ```tsx
 import React, { useEffect } from 'react';
 import { YjsPlugin } from '@udecode/plate-yjs/react';
-import { useMounted } from '@/registry/default/hooks/use-mounted'; // Or your own mounted check
+import { useMounted } from '@/hooks/use-mounted'; // Or your own mounted check
 
 const MyEditorComponent = ({ documentId, initialValue }) => {
   const editor = usePlateEditor(/** editor config from step 1 **/);

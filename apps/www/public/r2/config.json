@@ -5,6 +5,6 @@
     "baseColor": "slate"
   },
   "aliases": {
-    "ui": "@/components/plate-ui"
+    "ui": "@/components/ui"
   }
 }

@@ -6,7 +6,6 @@ import { cn } from '@udecode/cn';
 
 import { Index } from '@/__registry__';
 import { BlockViewer } from '@/components/block-viewer';
-import { useConfig } from '@/hooks/use-config';
 import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { Icons } from './icons';
@@ -42,16 +41,14 @@ export function ComponentPreview({
   type,
   ...props
 }: ComponentPreviewProps) {
-  const [config] = useConfig();
-
   const Preview = React.useMemo(() => {
-    const Component = Index[config.style][name]?.component;
+    const Component = Index[name]?.component;
 
     if (!Component) {
       return (
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           Component{' '}
-          <code className="bg-muted relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm">
+          <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
             {name}
           </code>{' '}
           not found in registry.
@@ -61,19 +58,19 @@ export function ComponentPreview({
 
     // DIFF
     return <Component {...props} id={props.id ?? name.replace('-demo', '')} />;
-  }, [config.style, name, props]);
+  }, [name, props]);
 
   const mounted = useMounted();
 
   const loadingPreview = (
-    <div className="preview text-muted-foreground flex size-full min-h-[350px] items-center justify-center p-0 text-sm">
+    <div className="preview flex size-full min-h-[350px] items-center justify-center p-0 text-sm text-muted-foreground">
       <Icons.spinner className="mr-2 size-4 animate-spin" />
       Loading...
     </div>
   );
 
   return (
-    <div className="mb-12 mt-4">
+    <div className="mt-4 mb-12">
       <BlockViewer
         block={false}
         dependencies={

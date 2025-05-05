@@ -34,10 +34,10 @@ export function ThemeCustomizer() {
     <div className="flex h-full flex-col space-y-4 md:space-y-6">
       <div className="flex items-start justify-between px-6">
         <div className="space-y-1 pr-2">
-          <div className="font-semibold leading-none tracking-tight">
+          <div className="leading-none font-semibold tracking-tight">
             Customize
           </div>
-          <div className="text-muted-foreground text-xs">
+          <div className="text-xs text-muted-foreground">
             Customize your components colors.
           </div>
         </div>
@@ -50,7 +50,6 @@ export function ThemeCustomizer() {
               installationType: 'cli',
               packageManager: 'pnpm',
               radius: 0.5,
-              style: 'default',
               theme: 'slate',
             });
             setThemesConfig({
@@ -78,7 +77,7 @@ export function ThemeCustomizer() {
                   variant="outline"
                   className={cn(
                     config.radius === Number.parseFloat(value) &&
-                      'border-primary border-2'
+                      'border-2 border-primary'
                   )}
                   onClick={() => {
                     setConfig({
@@ -101,7 +100,7 @@ export function ThemeCustomizer() {
                 <Button
                   size="md"
                   variant="outline"
-                  className={cn(mode === 'light' && 'border-primary border-2')}
+                  className={cn(mode === 'light' && 'border-2 border-primary')}
                   onClick={() => setMode('light')}
                 >
                   <SunIcon />
@@ -110,7 +109,7 @@ export function ThemeCustomizer() {
                 <Button
                   size="md"
                   variant="outline"
-                  className={cn(mode === 'dark' && 'border-primary border-2')}
+                  className={cn(mode === 'dark' && 'border-2 border-primary')}
                   onClick={() => setMode('dark')}
                 >
                   <MoonIcon />
@@ -146,7 +145,7 @@ export function ThemeCustomizer() {
               </pre>
             </div>
           </div>
-          <CopyCodeButton className="absolute right-4 top-4" compact />
+          <CopyCodeButton className="absolute top-4 right-4" compact />
         </div>
       </div>
     </div>

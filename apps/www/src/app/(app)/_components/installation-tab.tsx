@@ -298,7 +298,7 @@ export default function InstallationTab() {
       ([componentId, importValues]) =>
         `import { ${Array.from(importValues).join(
           ', '
-        )} } from '@/components/plate-ui/${componentId}';`
+        )} } from '@/components/ui/${componentId}';`
     );
 
     const imports = [
@@ -317,7 +317,7 @@ export default function InstallationTab() {
 
     if (someComponents && isManual) {
       imports.push(
-        `import { TooltipProvider } from '@/components/plate-ui/tooltip';`
+        `import { TooltipProvider } from '@/components/ui/tooltip';`
       );
     }
 

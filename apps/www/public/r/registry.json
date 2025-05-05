@@ -43,7 +43,7 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/use-chat",
-        "http://localhost:3000/r/command",
+        "command",
         "http://localhost:3000/r/popover",
         "http://localhost:3000/r/editor"
       ],
@@ -582,7 +582,7 @@
       "registryDependencies": [
         "http://localhost:3000/r/editor",
         "command",
-        "popover",
+        "http://localhost:3000/r/popover",
         "http://localhost:3000/r/tag-element"
       ],
       "files": [
@@ -682,7 +682,7 @@
         "@udecode/plate-highlight"
       ],
       "registryDependencies": [
-        "toolbar",
+        "http://localhost:3000/r/toolbar",
         "http://localhost:3000/r/ai-toolbar-button",
         "http://localhost:3000/r/align-dropdown-menu",
         "http://localhost:3000/r/color-dropdown-menu",
@@ -730,7 +730,7 @@
         "@udecode/plate-media"
       ],
       "registryDependencies": [
-        "toolbar",
+        "http://localhost:3000/r/toolbar",
         "http://localhost:3000/r/ai-toolbar-button",
         "http://localhost:3000/r/align-dropdown-menu",
         "http://localhost:3000/r/color-dropdown-menu",
@@ -786,7 +786,7 @@
         "@udecode/plate-basic-marks"
       ],
       "registryDependencies": [
-        "toolbar",
+        "http://localhost:3000/r/toolbar",
         "http://localhost:3000/r/ai-toolbar-button",
         "http://localhost:3000/r/comment-toolbar-button",
         "http://localhost:3000/r/link-toolbar-button",
@@ -824,7 +824,7 @@
         "@udecode/plate-floating"
       ],
       "registryDependencies": [
-        "toolbar"
+        "http://localhost:3000/r/toolbar"
       ],
       "files": [
         {
@@ -1090,8 +1090,8 @@
         "@udecode/plate-toggle"
       ],
       "registryDependencies": [
-        "dropdown-menu",
-        "toolbar",
+        "http://localhost:3000/r/dropdown-menu",
+        "http://localhost:3000/r/toolbar",
         "http://localhost:3000/r/transforms"
       ],
       "files": [
@@ -1725,7 +1725,7 @@
         "lowlight"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/command"
+        "command"
       ],
       "files": [
         {
@@ -1897,7 +1897,6 @@
         "@udecode/plate-layout"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/command",
         "http://localhost:3000/r/resizable"
       ],
       "files": [
@@ -3184,31 +3183,6 @@
       "meta": {
         "links": {
           "doc": "https://ui.shadcn.com/docs/components/checkbox"
-        }
-      }
-    },
-    {
-      "name": "command",
-      "type": "registry:ui",
-      "title": "Command",
-      "description": "Fast, composable, unstyled command menu for React.",
-      "dependencies": [
-        "@radix-ui/react-dialog",
-        "@udecode/cmdk"
-      ],
-      "registryDependencies": [
-        "dialog",
-        "http://localhost:3000/r/input"
-      ],
-      "files": [
-        {
-          "path": "src/registry/ui/command.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "links": {
-          "doc": "https://ui.shadcn.com/docs/components/command"
         }
       }
     },

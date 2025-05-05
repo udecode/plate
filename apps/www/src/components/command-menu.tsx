@@ -11,8 +11,6 @@ import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 
-import { docsConfig } from '@/config/docs';
-import { Button } from '@/registry/ui/button';
 import {
   CommandDialog,
   CommandEmpty,
@@ -20,7 +18,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/registry/ui/command';
+} from '@/components/ui/command';
+import { docsConfig } from '@/config/docs';
+import { Button } from '@/registry/ui/button';
 
 export function CommandItems({
   children,
@@ -140,14 +140,14 @@ export function CommandMenu({ ...props }: DialogProps) {
       <Button
         variant="outline"
         className={cn(
-          'bg-muted/50 text-muted-foreground relative flex h-8 w-full items-center justify-start rounded-[0.5rem] text-sm font-normal shadow-none sm:pr-12 md:w-40 lg:w-56 xl:w-64'
+          'relative flex h-8 w-full items-center justify-start rounded-[0.5rem] bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-56 xl:w-64'
         )}
         onClick={() => setOpen(true)}
         {...props}
       >
         <span className="hidden lg:inline-flex">Search documentation...</span>
         <span className="inline-flex lg:hidden">Search...</span>
-        <kbd className="bg-muted pointer-events-none absolute right-[0.3rem] top-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+        <kbd className="pointer-events-none absolute top-[0.3rem] right-[0.3rem] hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex">
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>

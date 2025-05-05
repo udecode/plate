@@ -24,9 +24,8 @@ apps
         └── app
             ├── components
             └── registry
-                └── default
-                    ├── example
-                    └── plate-ui
+                    ├── examples
+                    └── ui
 packages
 └── core
 ```
@@ -102,18 +101,10 @@ We use a registry system for developing components. You can find the source code
 apps
 └── www
     └── registry
-        ├── default
-        │   ├── example
-        │   └── plate-ui
+        │   └── ui
 ```
 
 When adding or modifying components, please ensure that you update the documentation.
-
-## CLI
-
-The `shadcx` package is a CLI for adding components to your project. You can find the documentation for the CLI [here](https://platejs.org/docs/components/cli).
-
-Any changes to the CLI should be made in the `packages/plate-ui` directory. If you can, it would be great if you could add tests for your changes.
 
 ### Run Linter
 

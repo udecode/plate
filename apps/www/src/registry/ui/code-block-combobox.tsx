@@ -8,7 +8,6 @@ import { cn } from '@udecode/cn';
 import { useEditorRef, useElement, useReadOnly } from '@udecode/plate/react';
 import { Check } from 'lucide-react';
 
-import { Button } from './button';
 import {
   Command,
   CommandEmpty,
@@ -16,7 +15,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from './command';
+} from '@/components/ui/command';
+
+import { Button } from './button';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 const languages: { label: string; value: string }[] = [

@@ -77,7 +77,7 @@ export function DocContent({
       )}
     >
       <div className="w-full min-w-0">
-        <div className="text-muted-foreground mb-4 flex items-center space-x-1 text-sm">
+        <div className="mb-4 flex items-center space-x-1 text-sm text-muted-foreground">
           {category === 'guide' ? (
             <DocBreadcrumb
               value={category}
@@ -103,7 +103,7 @@ export function DocContent({
             {title}
           </h1>
           {doc?.description && (
-            <p className="text-muted-foreground text-lg">
+            <p className="text-lg text-muted-foreground">
               <Balancer>{doc?.description}</Balancer>
             </p>
           )}
@@ -149,7 +149,7 @@ export function DocContent({
             ))}
           </div>
         ) : null}
-        <div className="pb-12 pt-8">{children}</div>
+        <div className="pt-8 pb-12">{children}</div>
         {doc && <DocsPager doc={doc as any} />}
       </div>
 
