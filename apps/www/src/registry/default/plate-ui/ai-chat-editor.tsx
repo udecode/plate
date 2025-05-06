@@ -53,6 +53,7 @@ import {
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
 import { usePlateEditor } from '@udecode/plate/react';
+import { all, createLowlight } from 'lowlight';
 
 import { markdownPlugin } from '@/registry/default/components/editor/plugins/markdown-plugin';
 import {
@@ -85,6 +86,7 @@ import {
 import { TableElementStatic } from './table-element-static';
 import { TableRowElementStatic } from './table-row-element-static';
 import { TocElementStatic } from './toc-element-static';
+
 const components = {
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
   [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
@@ -127,6 +129,7 @@ const components = {
   // [BaseCommentsPlugin.key]: CommentLeafStatic
   // [BaseTogglePlugin.key]: ToggleElementStatic
 };
+const lowlight = createLowlight(all);
 
 const plugins = [
   BaseBlockquotePlugin,
@@ -135,13 +138,11 @@ const plugins = [
   BaseImagePlugin,
   BaseKbdPlugin,
   BaseBoldPlugin,
-  BaseCodeBlockPlugin,
+  BaseCodeBlockPlugin.configure({ options: { lowlight } }),
   BaseDatePlugin,
-  BaseCodeLinePlugin,
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
   BaseCodePlugin,
-  BaseCodeSyntaxPlugin,
   BaseItalicPlugin,
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
