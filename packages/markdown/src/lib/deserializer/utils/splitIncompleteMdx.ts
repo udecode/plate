@@ -1,50 +1,97 @@
-export const splitIncompleteMdx = (data: string): string[] | string => {
-  const tagRe = /<([A-Za-z][^\s/>]*)(?:\s[^>]*)?>|<\/([A-Za-z][^\s/>]*)\s*>/g;
+/** Check if character is valid for tag name: A-Z / a-z / 0-9 / - _ : */
+const isNameChar = (c: number) =>
+  (c >= 48 && c <= 57) || // 0-9
+  (c >= 65 && c <= 90) || // A-Z
+  (c >= 97 && c <= 122) || // a-z
+  c === 45 || // -
+  c === 95 || // _
+  c === 58; // :
 
+export const splitIncompleteMdx = (data: string): string[] | string => {
   interface Frame {
-    idx: number;
     name: string;
+    pos: number;
   }
   const stack: Frame[] = [];
 
-  let m: RegExpExecArray | null;
-  let lastMatchEnd = 0; // end offset of the last tag we matched
+  const len = data.length;
+  let i = 0;
+  let cutPos = -1; // Once "incomplete" is found, record the starting position and exit scanning
 
-  while ((m = tagRe.exec(data))) {
-    lastMatchEnd = tagRe.lastIndex;
-    const full = m[0];
+  while (i < len) {
+    if (data.codePointAt(i) !== 60 /* '<' */) {
+      i++;
+      continue;
+    }
 
-    if (full.endsWith('/>')) continue; // self‑closing
+    const tagStart = i; // Remember the position of '<'
+    i++; // Skip '<'
+    if (i >= len) {
+      cutPos = tagStart;
+      break;
+    } // Stream breaks at '<'
 
-    if (m[1]) stack.push({ idx: m.index, name: m[1].toLowerCase() });
-    else if (m[2]) {
-      const want = m[2].toLowerCase();
-      for (let i = stack.length - 1; i >= 0; i--) {
-        if (stack[i].name === want) {
-          stack.splice(i, 1);
+    let closing = false;
+    if (data[i] === '/') {
+      closing = true;
+      i++;
+    }
+
+    /* Parse tag name -------------------------------------------------- */
+    const nameStart = i;
+    while (i < len && isNameChar(data.codePointAt(i) as number)) i++;
+    if (nameStart === i) {
+      cutPos = tagStart;
+      break;
+    } // No name after '<'
+
+    const tagName = data.slice(nameStart, i).toLowerCase();
+
+    /* Skip to matching '>' (considering quotes) ------------------------------------ */
+    let inQuote: "'" | '"' | null = null;
+    let selfClosing = false;
+
+    while (i < len) {
+      const ch = data[i];
+      if (inQuote) {
+        if (ch === inQuote) inQuote = null;
+      } else {
+        if (ch === '"' || ch === "'") inQuote = ch;
+        else if (ch === '>') {
+          selfClosing = data[i - 1] === '/';
+          i++; // Include '>'
           break;
         }
       }
+      i++;
+    }
+
+    if (i >= len) {
+      // Didn't reach '>'
+      cutPos = tagStart;
+      break;
+    }
+
+    /* Maintain stack ------------------------------------------------------ */
+    if (selfClosing) continue;
+
+    if (closing) {
+      for (let j = stack.length - 1; j >= 0; j--) {
+        if (stack[j].name === tagName) {
+          stack.splice(j, 1);
+          break;
+        }
+      }
+    } else {
+      stack.push({ name: tagName, pos: tagStart });
     }
   }
 
-  // Case 1: unmatched opening tags → split at the first of them
+  /* Calculate final cut point -------------------------------------------------- */
   if (stack.length > 0) {
-    const cut = stack[0].idx;
-    return [data.slice(0, cut), data.slice(cut)];
+    const firstUnmatched = stack[0].pos;
+    cutPos = cutPos === -1 ? firstUnmatched : Math.min(cutPos, firstUnmatched);
   }
 
-  // Case 2: no unmatched tags, but the stream ended inside a tag name
-  const tail = data.slice(lastMatchEnd);
-  const lt = tail.indexOf('<');
-  const gt = tail.indexOf('>');
-
-  if (lt !== -1 && gt === -1) {
-    // Incomplete tag starts at absolute offset = lastMatchEnd + lt
-    const cut = lastMatchEnd + lt;
-    return [data.slice(0, cut), data.slice(cut)];
-  }
-
-  // Fully balanced
-  return data;
+  return cutPos === -1 ? data : [data.slice(0, cutPos), data.slice(cutPos)];
 };
