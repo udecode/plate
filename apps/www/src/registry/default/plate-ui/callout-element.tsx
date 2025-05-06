@@ -13,6 +13,7 @@ import { EmojiPicker } from './emoji-picker';
 import { EmojiToolbarDropdown } from './emoji-toolbar-dropdown';
 
 export function CalloutElement({
+  attributes,
   children,
   className,
   ...props
@@ -33,7 +34,13 @@ export function CalloutElement({
       style={{
         backgroundColor: props.element.backgroundColor as any,
       }}
-      data-plate-open-context-menu
+      attributes={{
+        ...attributes,
+        'data-plate-open-context-menu': true,
+        style: {
+          backgroundColor: props.element.backgroundColor as any,
+        },
+      }}
       {...props}
     >
       <div className="flex w-full gap-2 rounded-md">
