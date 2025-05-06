@@ -15,6 +15,7 @@ import type { TRules } from '../rules';
 
 import { mdastToSlate } from './mdastToSlate';
 import { type ParseMarkdownBlocksOptions, parseMarkdownBlocks } from './utils';
+import { splitIncompleteMdx } from './utils';
 import { getMergedOptionsDeserialize } from './utils/getMergedOptionsDeserialize';
 
 // TODO: fixes tests
@@ -90,6 +91,26 @@ export const deserializeMd = (
         ...options,
         withoutMdx: true,
       });
+    }
+
+    if (!options?.withoutMdx) {
+      const result = splitIncompleteMdx(data);
+
+      if (Array.isArray(result)) {
+        const [data1, data2] = result;
+        output = [
+          ...markdownToSlateNodes(editor, data1, options),
+          ...markdownToSlateNodes(editor, data2, {
+            ...options,
+            withoutMdx: true,
+          }),
+        ];
+      } else {
+        output = markdownToSlateNodes(editor, data, {
+          ...options,
+          withoutMdx: true,
+        });
+      }
     }
   }
 

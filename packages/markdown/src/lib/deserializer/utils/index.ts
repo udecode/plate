@@ -8,4 +8,5 @@ export * from './getDeserializerByKey';
 export * from './getMergedOptionsDeserialize';
 export * from './getStyleValue';
 export * from './parseMarkdownBlocks';
+export * from './splitIncompleteMdx';
 export * from './stripMarkdown';
