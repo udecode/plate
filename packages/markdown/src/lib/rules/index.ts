@@ -3,4 +3,5 @@
  */
 
 export * from './defaultRules';
+export * from './fontRules';
 export * from './types';
