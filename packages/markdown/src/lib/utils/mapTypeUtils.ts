@@ -93,7 +93,12 @@ export const getMdAstNodeType = (plateType: plateTypes) => {
 
 export type MdastTypes = MdRootContent['type'] | GFMKeys | FontKeys;
 
-type FontKeys = 'fontFamily' | 'fontSize' | 'fontWeight' | 'backgroundColor' | 'color';
+type FontKeys =
+  | 'fontFamily'
+  | 'fontSize'
+  | 'fontWeight'
+  | 'backgroundColor'
+  | 'color';
 
 type GFMKeys = 'del' | 'u' | 'sub' | 'sup';
 

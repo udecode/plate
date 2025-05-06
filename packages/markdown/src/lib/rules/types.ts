@@ -46,14 +46,7 @@ import type {
 } from '../mdast';
 import type { SerializeMdOptions } from '../serializer';
 
-/* eslint-disable perfectionist/sort-modules */
-
 /* eslint-disable perfectionist/sort-object-types */
-export type TRules = Partial<{
-  [K in keyof PlateNodeTypeMap]: Nullable<TNodeParser<K>>;
-}> &
-  Record<string, Nullable<AnyNodeParser>>;
-
 export type AnyNodeParser = {
   mark?: boolean;
   deserialize?: (
@@ -76,6 +69,11 @@ export type TNodeParser<K extends keyof PlateNodeTypeMap> = {
     options: SerializeMdOptions
   ) => MdastNodeTypeMap[K];
 };
+
+export type TRules = Partial<{
+  [K in keyof PlateNodeTypeMap]: Nullable<TNodeParser<K>>;
+}> &
+  Record<string, Nullable<AnyNodeParser>>;
 
 type MdastNodeTypeMap = {
   /** Common Elements */
