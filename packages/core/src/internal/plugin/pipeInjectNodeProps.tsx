@@ -14,22 +14,25 @@ export const pipeInjectNodeProps = (
 ) => {
   editor.pluginList.forEach((plugin) => {
     if (plugin.inject.nodeProps) {
-      const newProps = pluginInjectNodeProps(
+      const newAttributes = pluginInjectNodeProps(
         editor,
         plugin,
         nodeProps,
         getElementPath
       );
 
-      if (!newProps) return;
+      if (!newAttributes) return;
 
-      nodeProps = {
-        ...nodeProps,
-        ...newProps,
-        className: clsx(nodeProps.className, newProps.className),
+      const attributes = nodeProps.attributes;
+
+      nodeProps.attributes = {
+        ...attributes,
+        ...newAttributes,
+        className:
+          clsx(attributes?.className, newAttributes.className) || undefined,
         style: {
-          ...nodeProps.style,
-          ...newProps.style,
+          ...attributes?.style,
+          ...newAttributes.style,
         },
       };
     }

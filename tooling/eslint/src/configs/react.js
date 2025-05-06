@@ -25,7 +25,7 @@ export default defineConfig(
         'warn',
         {
           additionalHooks: '(useMyCustomHook|useMyOtherCustomHook)',
-          enableDangerousAutofixThisMayCauseInfiniteLoops: true,
+          enableDangerousAutofixThisMayCauseInfiniteLoops: false,
         },
       ],
       'react-hooks/rules-of-hooks': 'error',

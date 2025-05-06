@@ -65,6 +65,7 @@ import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
+import { MentionElement } from '@/registry/default/plate-ui/mention-element';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 import {
   TableCellElement,
@@ -73,15 +74,12 @@ import {
 import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 
-import { MentionElement } from '../plate-ui/mention-element';
-
 const initialMarkdown = `# Markdown syntax guide
 
 ## Headers
 
 # This is a Heading h1
 ## This is a Heading h2
-###### This is a Heading h6
 
 ## Emphasis
 
@@ -173,36 +171,34 @@ export default function MarkdownDemo() {
 
   const editor = usePlateEditor(
     {
-      override: {
-        components: {
-          [BlockquotePlugin.key]: BlockquoteElement,
-          [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
-          [CodeBlockPlugin.key]: CodeBlockElement,
-          [CodePlugin.key]: CodeLeaf,
-          [CodeSyntaxPlugin.key]: CodeSyntaxLeaf,
-          [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
-          [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
-          [HEADING_KEYS.h3]: withProps(HeadingElement, { variant: 'h3' }),
-          [HEADING_KEYS.h4]: withProps(HeadingElement, { variant: 'h4' }),
-          [HEADING_KEYS.h5]: withProps(HeadingElement, { variant: 'h5' }),
-          [HEADING_KEYS.h6]: withProps(HeadingElement, { variant: 'h6' }),
-          [HighlightPlugin.key]: HighlightLeaf,
-          [HorizontalRulePlugin.key]: HrElement,
-          [ImagePlugin.key]: ImageElement,
-          [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
-          [KbdPlugin.key]: KbdLeaf,
-          [LinkPlugin.key]: LinkElement,
-          [MentionPlugin.key]: MentionElement,
-          [ParagraphPlugin.key]: ParagraphElement,
-          [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
-          [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
-          [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: 'sup' }),
-          [TableCellHeaderPlugin.key]: TableCellHeaderElement,
-          [TableCellPlugin.key]: TableCellElement,
-          [TablePlugin.key]: TableElement,
-          [TableRowPlugin.key]: TableRowElement,
-          [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
-        },
+      components: {
+        [BlockquotePlugin.key]: BlockquoteElement,
+        [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
+        [CodeBlockPlugin.key]: CodeBlockElement,
+        [CodePlugin.key]: CodeLeaf,
+        [CodeSyntaxPlugin.key]: CodeSyntaxLeaf,
+        [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
+        [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
+        [HEADING_KEYS.h3]: withProps(HeadingElement, { variant: 'h3' }),
+        [HEADING_KEYS.h4]: withProps(HeadingElement, { variant: 'h4' }),
+        [HEADING_KEYS.h5]: withProps(HeadingElement, { variant: 'h5' }),
+        [HEADING_KEYS.h6]: withProps(HeadingElement, { variant: 'h6' }),
+        [HighlightPlugin.key]: HighlightLeaf,
+        [HorizontalRulePlugin.key]: HrElement,
+        [ImagePlugin.key]: ImageElement,
+        [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
+        [KbdPlugin.key]: KbdLeaf,
+        [LinkPlugin.key]: LinkElement,
+        [MentionPlugin.key]: MentionElement,
+        [ParagraphPlugin.key]: ParagraphElement,
+        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
+        [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
+        [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: 'sup' }),
+        [TableCellHeaderPlugin.key]: TableCellHeaderElement,
+        [TableCellPlugin.key]: TableCellElement,
+        [TablePlugin.key]: TableElement,
+        [TableRowPlugin.key]: TableRowElement,
+        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
       },
       plugins: [
         ...basicNodesPlugins,

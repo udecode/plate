@@ -320,6 +320,7 @@ export const createEditor = <V extends Value>({
     toSlateRange: bindFirst(toSlateRange, editor),
     isCollapsed: () => RangeApi.isCollapsed(editor.selection),
     isExpanded: () => RangeApi.isExpanded(editor.selection),
+    shouldNormalizeNode: () => true,
   };
 
   const transforms: Partial<Editor<V>['transforms']> = {

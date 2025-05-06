@@ -1,5 +1,7 @@
 # @udecode/plate-markdown
 
+## 48.0.0
+
 ## 47.4.1
 
 ### Patch Changes

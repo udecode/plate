@@ -1,5 +1,7 @@
 # @udecode/plate-floating
 
+## 48.0.0
+
 ## 47.3.1
 
 ### Patch Changes

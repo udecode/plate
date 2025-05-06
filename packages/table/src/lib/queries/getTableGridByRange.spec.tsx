@@ -33,7 +33,9 @@ describe('getTableGridByRange', () => {
         const output = (
           <htable>
             <htr>
-              <htd>1</htd>
+              <htd>
+                <hp>1</hp>
+              </htd>
             </htr>
           </htable>
         ) as any as TElement[];
@@ -79,10 +81,14 @@ describe('getTableGridByRange', () => {
         const output = (
           <htable>
             <htr>
-              <htd>12</htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>22</htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         ) as any as TElement;
@@ -128,8 +134,12 @@ describe('getTableGridByRange', () => {
         const output = (
           <htable>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         ) as any as TElement;
@@ -176,10 +186,14 @@ describe('getTableGridByRange', () => {
         const output = (
           <htable>
             <htr>
-              <htd>11</htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
             </htr>
           </htable>
         ) as any as TElement;
@@ -225,12 +239,20 @@ describe('getTableGridByRange', () => {
         const output = (
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         ) as any as TElement;
@@ -276,12 +298,20 @@ describe('getTableGridByRange', () => {
         const output = (
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         ) as any as TElement;
@@ -327,12 +357,20 @@ describe('getTableGridByRange', () => {
         const output = (
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         ) as any as TElement;
@@ -378,12 +416,20 @@ describe('getTableGridByRange', () => {
         const output = (
           <htable>
             <htr>
-              <htd>11</htd>
-              <htd>12</htd>
+              <htd>
+                <hp>11</hp>
+              </htd>
+              <htd>
+                <hp>12</hp>
+              </htd>
             </htr>
             <htr>
-              <htd>21</htd>
-              <htd>22</htd>
+              <htd>
+                <hp>21</hp>
+              </htd>
+              <htd>
+                <hp>22</hp>
+              </htd>
             </htr>
           </htable>
         ) as any as TElement;

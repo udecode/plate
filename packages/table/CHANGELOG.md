@@ -1,5 +1,7 @@
 # @udecode/plate-table
 
+## 48.0.0
+
 ## 47.0.2
 
 ### Patch Changes

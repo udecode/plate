@@ -1,7 +1,6 @@
 // Components
 export {
   type RenderPlaceholderProps,
-  DefaultElement,
   DefaultPlaceholder,
   Editable,
   Slate,

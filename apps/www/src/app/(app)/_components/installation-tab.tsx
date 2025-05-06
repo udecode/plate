@@ -390,13 +390,11 @@ export default function InstallationTab() {
     '  plugins: [',
     pluginsCode.join('\n'),
     '  ],',
-    '  override: {',
-    `    components: ${hasPlaceholder ? 'withPlaceholders(' : ''}({`,
+    `  components: ${hasPlaceholder ? 'withPlaceholders(' : ''}({`,
     ...componentsWithPluginKey.map(
       ({ pluginKey, usage }) => `      [${pluginKey}]: ${usage},`
     ),
-    `    })${hasPlaceholder ? ')' : ''},`,
-    '  },',
+    `  })${hasPlaceholder ? ')' : ''},`,
     '  value: [',
     '    {',
     '      id: "1",',

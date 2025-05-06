@@ -8,11 +8,8 @@ import { useAtomStoreValue } from 'jotai-x';
 import isEqual from 'lodash/isEqual';
 import memoize from 'lodash/memoize';
 
-import type {
-  PlatePlugins,
-  PlateRenderElementProps,
-  PlateRenderLeafProps,
-} from '../plugin';
+import type { PlatePlugins } from '../plugin';
+import type { PlateElementProps, PlateLeafProps } from './plate-nodes';
 
 import { type SlatePlugins, createSlatePlugin } from '../../lib';
 import { createPlateEditor, usePlateEditor } from '../editor';
@@ -437,19 +434,15 @@ describe('Plate', () => {
     const ParagraphElement = ({
       attributes,
       children,
-      nodeProps,
-    }: PlateRenderElementProps) => (
-      <p {...attributes} {...nodeProps} data-testid="paragraph">
+      ...props
+    }: PlateElementProps) => (
+      <p {...attributes} data-testid="paragraph">
         {children}
       </p>
     );
 
-    const BoldLeaf = ({
-      attributes,
-      children,
-      nodeProps,
-    }: PlateRenderLeafProps) => (
-      <strong {...attributes} {...nodeProps} data-testid="bold">
+    const BoldLeaf = ({ attributes, children }: PlateLeafProps) => (
+      <strong {...attributes} data-testid="bold">
         {children}
       </strong>
     );

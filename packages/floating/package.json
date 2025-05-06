@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-floating",
-  "version": "47.3.1",
+  "version": "48.0.0",
   "description": "React floating UI for Plate",
   "keywords": [
     "plate",
@@ -51,7 +51,7 @@
     "@udecode/plate": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=47.3.1",
+    "@udecode/plate": ">=48.0.1",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

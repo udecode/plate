@@ -1,5 +1,14 @@
 # @udecode/plate-utils
 
+## 48.0.1
+
+## 48.0.0
+
+### Major Changes
+
+- [#4281](https://github.com/udecode/plate/pull/4281) by [@zbeyens](https://github.com/zbeyens) –
+  - Moved `PlateElement`, `PlateLeaf`, `PlateText` to `@udecode/plate-core`. No migration needed if you're importing from `@udecode/plate`.
+
 ## 47.3.1
 
 ### Patch Changes

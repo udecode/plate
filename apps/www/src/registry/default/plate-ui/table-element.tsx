@@ -81,6 +81,7 @@ export const TableElement = withHOC(
 
     const content = (
       <PlateElement
+        ref={ref}
         className={cn(
           className,
           'overflow-x-auto py-5',
@@ -91,7 +92,6 @@ export const TableElement = withHOC(
       >
         <div className="group/table relative w-fit">
           <table
-            ref={ref}
             className={cn(
               'mr-0 ml-px table h-px table-fixed border-collapse',
               isSelectingCell && 'selection:bg-transparent'

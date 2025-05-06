@@ -1,5 +1,7 @@
 # @udecode/plate-comments
 
+## 48.0.0
+
 ## 45.0.0
 
 ### Major Changes

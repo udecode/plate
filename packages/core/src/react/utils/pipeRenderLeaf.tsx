@@ -6,7 +6,7 @@ import type { EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin';
 
-import { DefaultLeaf } from '../components';
+import { PlateLeaf } from '../components';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderLeaf, pluginRenderLeaf } from './pluginRenderLeaf';
 
@@ -54,23 +54,22 @@ export const pipeRenderLeaf = (
           );
         }
 
-        props = {
-          ...props,
+        attributes = {
+          ...attributes,
           ...pluginLeafProps,
         };
       }
     });
 
     if (renderLeafProp) {
-      return renderLeafProp({ ...attributes, ...props } as any);
+      return renderLeafProp({ attributes, ...props } as any);
     }
 
     const ctxProps = getRenderNodeProps({
-      attributes: attributes as any,
       editor,
-      props: { ...attributes, ...props } as any,
+      props: { attributes, ...props } as any,
     }) as any;
 
-    return <DefaultLeaf {...(ctxProps as any)} />;
+    return <PlateLeaf {...ctxProps}>{props.children}</PlateLeaf>;
   };
 };
