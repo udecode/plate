@@ -31,9 +31,6 @@ export function CalloutElement({
   return (
     <PlateElement
       className={cn('my-1 flex rounded-sm bg-muted p-4 pl-3', className)}
-      style={{
-        backgroundColor: props.element.backgroundColor as any,
-      }}
       attributes={{
         ...attributes,
         'data-plate-open-context-menu': true,
