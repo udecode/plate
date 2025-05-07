@@ -196,7 +196,6 @@ const plugins = [
 ];
 
 export const AIChatEditor = memo(({ content }: { content: string }) => {
-  console.log("🚀 ~ AIChatEditor ~ content:", content)
   const aiEditor = usePlateEditor({
     plugins,
   });

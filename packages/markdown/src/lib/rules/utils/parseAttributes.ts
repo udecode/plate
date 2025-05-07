@@ -1,7 +1,5 @@
 // Helper function to parse JSON attributes to props
 export function parseAttributes(attributes: any[]): Record<string, any> {
-  console.log(attributes, 'fj');
-
   const props: Record<string, any> = {};
 
   if (attributes && attributes.length > 0) {
