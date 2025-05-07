@@ -1,5 +1,4 @@
 import type { TText } from '@udecode/plate';
-import type { MdxJsxFlowElement } from 'mdast-util-mdx';
 
 import type {
   TIndentListElement,
@@ -29,7 +28,9 @@ import {
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
+import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
+import { mediaRules } from './mediaRules';
 
 function isBoolean(value: any) {
   return (
@@ -175,7 +176,7 @@ export const defaultRules: TRules = {
         type: 'callout',
       };
     },
-    serialize(slateNode, options): MdxJsxFlowElement {
+    serialize(slateNode, options): MdMdxJsxFlowElement {
       return {
         attributes: [],
         children: convertNodesSerialize(slateNode.children, options) as any,
@@ -219,7 +220,6 @@ export const defaultRules: TRules = {
       };
     },
   },
-
   date: {
     deserialize(mdastNode, deco, options) {
       const dateValue = (mdastNode.children?.[0] as any)?.value || '';
@@ -917,4 +917,6 @@ export const defaultRules: TRules = {
     },
   },
   ...fontRules,
+  ...mediaRules,
+  ...columnRules,
 };

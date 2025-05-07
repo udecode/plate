@@ -10,6 +10,7 @@ import type {
   TEquationElement,
   TImageElement,
   TLinkElement,
+  TMediaElement,
   TMentionElement,
   TSuggestionText,
   TTableCellElement,
@@ -126,6 +127,9 @@ type MdastNodeTypeMap = {
   html: MdHtml;
 
   /** PlateOnly */
+  file: any;
+  video: any;
+  audio: any;
 };
 
 type PlateNodeTypeMap = {
@@ -179,5 +183,9 @@ type PlateNodeTypeMap = {
   imageReference: any;
   linkReference: any;
   html: any;
-  /** PlateOnly */
+
+  /** PlateOnly media */
+  file: TMediaElement;
+  video: TMediaElement;
+  audio: TMediaElement;
 };

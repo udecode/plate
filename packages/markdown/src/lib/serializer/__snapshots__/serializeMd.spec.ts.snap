@@ -110,6 +110,22 @@ Centered text
 
 Text with custom line height
 
+<file name="sample.pdf" url="https://example.com/sample.pdf" />
+
+<audio url="https://example.com/audio.mp3" />
+
+<video url="https://example.com/video.mp4" />
+
+<column_group layout="[50,50]">
+  <column width="50%">
+    Left column
+  </column>
+
+  <column width="50%">
+    Right column
+  </column>
+</column_group>
+
 Mention: @User
 
 Date: <date>2024-01-01</date>
@@ -120,7 +136,9 @@ Text with <color style="color: rgb(252, 109, 38);">color</color> and <background
 
 Superscript: x<sup>2</sup>Subscript: x<sub>2</sub>
 
-<callout>callout</callout>
+<callout>
+  callout
+</callout>
 "
 `;
 

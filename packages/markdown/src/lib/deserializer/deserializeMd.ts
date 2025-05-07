@@ -84,6 +84,7 @@ export const deserializeMd = (
   try {
     output = markdownToSlateNodes(editor, data, options);
   } catch (error) {
+    console.log("🚀 ~ error:", error)
     options?.onError?.(error as Error);
 
     if (!options?.withoutMdx) {
@@ -98,13 +99,25 @@ export const deserializeMd = (
 
       if (Array.isArray(result)) {
         const [data1, data2] = result;
-        output = [
-          ...markdownToSlateNodes(editor, data1, options),
-          ...markdownToSlateNodes(editor, data2, {
-            ...options,
-            withoutMdx: true,
-          }),
-        ];
+
+        const inlineNodes = markdownToSlateNodes(editor, data2, {
+          ...options,
+          withoutMdx: true,
+        });
+
+        const blockNodes = markdownToSlateNodes(editor, data1, options);
+
+        // Push inlineNodes to the children of the last block in blockNodes
+        if (blockNodes.length > 0 && inlineNodes.length > 0) {
+          const lastBlock = blockNodes.at(-1);
+
+          // FIXME the case of lastblock is  table or code block 
+          if (lastBlock.children) {
+            lastBlock.children.push(...inlineNodes);
+          }
+        }
+
+        output = blockNodes;
       } else {
         output = markdownToSlateNodes(editor, data, {
           ...options,
@@ -135,6 +148,7 @@ const remarkToSlate: Plugin<[DeserializeMdOptions?], Root, Descendant[]> =
   // TODO: options
   function (options = {}) {
     this.compiler = function (node) {
+      console.log("🚀 ~ node:", node)
       return mdastToSlate(node as Root, options);
     };
   };

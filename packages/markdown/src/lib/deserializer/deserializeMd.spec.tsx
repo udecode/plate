@@ -23,7 +23,7 @@ describe('deserializeMd', () => {
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual(output);
+    expect(deserializeMd(editor, input, { withoutMdx: true })).toEqual(output);
   });
 
   it('should deserialize strikethrough', () => {

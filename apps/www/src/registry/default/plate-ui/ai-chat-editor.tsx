@@ -39,12 +39,18 @@ import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseKbdPlugin } from '@udecode/plate-kbd';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
 } from '@udecode/plate-math';
-import { BaseImagePlugin } from '@udecode/plate-media';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseVideoPlugin,
+} from '@udecode/plate-media';
 import { BaseMentionPlugin } from '@udecode/plate-mention';
 import {
   BaseTableCellHeaderPlugin,
@@ -67,6 +73,8 @@ import { CodeBlockElementStatic } from './code-block-element-static';
 import { CodeLeafStatic } from './code-leaf-static';
 import { CodeLineElementStatic } from './code-line-element-static';
 import { CodeSyntaxLeafStatic } from './code-syntax-leaf-static';
+import { ColumnElementStatic } from './column-element-static';
+import { ColumnGroupElementStatic } from './column-group-element-static';
 import { DateElement } from './date-element';
 import { EditorStatic } from './editor-static';
 import { EquationElementStatic } from './equation-element-static';
@@ -77,6 +85,9 @@ import { ImageElementStatic } from './image-element-static';
 import { InlineEquationElementStatic } from './inline-equation-element-static';
 import { KbdLeaf } from './kbd-leaf';
 import { LinkElementStatic } from './link-element-static';
+import { MediaAudioElementStatic } from './media-audio-element-static';
+import { MediaFileElementStatic } from './media-file-element-static';
+import { MediaVideoElementStatic } from './media-video-element-static';
 import { MentionElementStatic } from './mention-element-static';
 import { ParagraphElementStatic } from './paragraph-element-static';
 import {
@@ -88,6 +99,7 @@ import { TableRowElementStatic } from './table-row-element-static';
 import { TocElementStatic } from './toc-element-static';
 
 const components = {
+  [BaseAudioPlugin.key]: MediaAudioElementStatic,
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
   [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
   [BaseCalloutPlugin.key]: CalloutElementStatic,
@@ -95,8 +107,11 @@ const components = {
   [BaseCodeLinePlugin.key]: CodeLineElementStatic,
   [BaseCodePlugin.key]: CodeLeafStatic,
   [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
+  [BaseColumnItemPlugin.key]: ColumnElementStatic,
+  [BaseColumnPlugin.key]: ColumnGroupElementStatic,
   [BaseDatePlugin.key]: DateElement,
   [BaseEquationPlugin.key]: EquationElementStatic,
+  [BaseFilePlugin.key]: MediaFileElementStatic,
   [BaseHighlightPlugin.key]: HighlightLeafStatic,
   [BaseHorizontalRulePlugin.key]: HrElementStatic,
   [BaseImagePlugin.key]: ImageElementStatic,
@@ -115,16 +130,12 @@ const components = {
   [BaseTableRowPlugin.key]: TableRowElementStatic,
   [BaseTocPlugin.key]: TocElementStatic,
   [BaseUnderlinePlugin.key]: withProps(SlateLeaf, { as: 'u' }),
+
+  [BaseVideoPlugin.key]: MediaVideoElementStatic,
   [HEADING_KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
+
   [HEADING_KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
   [HEADING_KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
-
-  // [BaseFilePlugin.key]: MediaFileElementStatic
-  // [BaseAudioPlugin.key]: MediaAudioElementStatic
-  // [BaseVideoPlugin.key]: MediaVideoElementStatic
-
-  // [BaseColumnItemPlugin.key]: ColumnElementStatic
-  // [BaseColumnPlugin.key]: ColumnGroupElementStatic
 
   // [BaseCommentsPlugin.key]: CommentLeafStatic
   // [BaseTogglePlugin.key]: ToggleElementStatic
@@ -132,6 +143,8 @@ const components = {
 const lowlight = createLowlight(all);
 
 const plugins = [
+  BaseColumnItemPlugin,
+  BaseColumnPlugin,
   BaseBlockquotePlugin,
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
@@ -146,20 +159,20 @@ const plugins = [
   BaseItalicPlugin,
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
-  BaseHeadingPlugin,
-  BaseHorizontalRulePlugin,
-  BaseTablePlugin,
-  BaseTocPlugin,
   BaseFontColorPlugin,
   BaseFontSizePlugin,
   BaseFontFamilyPlugin,
   BaseFontWeightPlugin,
   BaseFontBackgroundColorPlugin,
-  BaseCalloutPlugin,
+  BaseHeadingPlugin,
+  BaseHorizontalRulePlugin,
+  BaseTablePlugin,
+  BaseTocPlugin,
   BaseHighlightPlugin,
   BaseLinkPlugin,
   BaseMentionPlugin,
   BaseParagraphPlugin,
+  BaseCalloutPlugin,
   BaseIndentPlugin.extend({
     inject: {
       targetPlugins: [BaseParagraphPlugin.key],
@@ -183,6 +196,7 @@ const plugins = [
 ];
 
 export const AIChatEditor = memo(({ content }: { content: string }) => {
+  console.log("🚀 ~ AIChatEditor ~ content:", content)
   const aiEditor = usePlateEditor({
     plugins,
   });
