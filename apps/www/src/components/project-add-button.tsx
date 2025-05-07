@@ -5,7 +5,11 @@ import { Check, PlusCircle } from 'lucide-react';
 
 import { useProject } from '@/hooks/use-project';
 import { Button } from '@/registry/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/registry/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function ProjectAddButton({
   className,

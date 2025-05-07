@@ -15,9 +15,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+import { Separator } from '@/components/ui/separator';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Button } from '@/registry/ui/button';
-import { Separator } from '@/registry/ui/separator';
 
 import { BlockCopyButton } from './block-copy-button';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
@@ -46,7 +46,7 @@ export function PlaygroundPreviewToolbar({
         // fullScreen && 'bottom-4'
       )}
     >
-      <Button asChild variant="link" className="whitespace-normal px-1 md:px-2">
+      <Button asChild variant="link" className="px-1 whitespace-normal md:px-2">
         <a
           className="whitespace-nowrap"
           href={src ?? `#${block.name}`}
@@ -61,7 +61,7 @@ export function PlaygroundPreviewToolbar({
         <Button
           size="sm"
           variant="ghost"
-          className="bg-muted h-7 rounded-md border shadow-none"
+          className="h-7 rounded-md border bg-muted shadow-none"
           onClick={() => {
             copyToClipboard(`npx shadcx@latest add plate/${block.name}`);
           }}
@@ -70,8 +70,9 @@ export function PlaygroundPreviewToolbar({
           npx shadcx add plate/{block.name}
         </Button>
         <Separator orientation="vertical" className="mx-2 hidden h-4 md:flex" />
-        <div className="bg-background shadow-xs hidden h-[28px] items-center gap-1.5 rounded-md border p-[2px] md:flex">
+        <div className="hidden h-[28px] items-center gap-1.5 rounded-md border bg-background p-[2px] shadow-xs md:flex">
           <ToggleGroup
+            className="w-full"
             defaultValue="100"
             onValueChange={(value) => {
               // if (value === 'full') {

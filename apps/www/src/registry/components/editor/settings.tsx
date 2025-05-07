@@ -31,13 +31,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Button } from '@/registry/ui/button';
-import { Input } from '@/registry/ui/input';
 
 interface Model {
   label: string;

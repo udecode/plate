@@ -19,9 +19,9 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
 
 import { Button } from './button';
-import { Separator } from './separator';
 
 export const ColumnGroupElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {

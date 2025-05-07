@@ -573,7 +573,11 @@ export const docExamples: Registry['items'] = [
     ],
     meta: {},
     name: 'find-replace-demo',
-    registryDependencies: ['fixed-toolbar', 'input', 'search-highlight-leaf'],
+    registryDependencies: [
+      'fixed-toolbar',
+      'shadcn/input',
+      'search-highlight-leaf',
+    ],
     type: 'registry:example',
   },
   {

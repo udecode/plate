@@ -5,7 +5,6 @@ import * as React from 'react';
 import { cn } from '@udecode/cn';
 
 import { Index } from '@/__registry__';
-import { useConfig } from '@/hooks/use-config';
 
 import { Icons } from './icons';
 
@@ -17,8 +16,6 @@ interface ThemeComponentProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function ThemeComponent({ name, ...props }: ThemeComponentProps) {
-  const [config] = useConfig();
-
   const Preview = React.useMemo(() => {
     const Component = Index[name]?.component;
 

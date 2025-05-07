@@ -6,13 +6,13 @@ import type { PlateElementProps } from '@udecode/plate/react';
 
 import { createPlatePlugin, Plate } from '@udecode/plate/react';
 
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
 import { editableVoidsValue } from '@/registry/examples/values/editable-voids-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { Input } from '@/registry/ui/input';
-import { Label } from '@/components/ui/label';
 
 export const EditableVoidPlugin = createPlatePlugin({
   key: 'editable-void',

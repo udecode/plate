@@ -179,7 +179,7 @@ function DiffLeaf({ children, ...props }: PlateLeafProps) {
   return (
     <PlateLeaf
       {...props}
-      as={Component}
+      // as={Component}
       className={diffOperationColors[diffOperation.type]}
       attributes={{
         ...props.attributes,

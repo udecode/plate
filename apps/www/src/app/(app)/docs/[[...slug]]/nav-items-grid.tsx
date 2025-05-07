@@ -10,11 +10,11 @@ import Link from 'next/link';
 import { DocBreadcrumb } from '@/app/(app)/docs/[[...slug]]/doc-breadcrumb';
 import { H3 } from '@/components/typography';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { getDocIcon } from '@/config/docs-icons';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { useLocale } from '@/hooks/useLocale';
 import { hrefWithLocale } from '@/lib/withLocale';
-import { Input } from '@/registry/ui/input';
 
 export function NavItemCard({
   category,
@@ -32,7 +32,7 @@ export function NavItemCard({
       className="rounded-lg"
       href={hrefWithLocale(item.href!, locale)}
     >
-      <Card className="bg-muted/30 h-full transition-shadow duration-200 hover:shadow-md">
+      <Card className="h-full bg-muted/30 transition-shadow duration-200 hover:shadow-md">
         <CardContent className="flex gap-2 p-2">
           {Icon && (
             <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-white">
@@ -44,7 +44,7 @@ export function NavItemCard({
               {item.title}
             </CardTitle>
             {item.description && (
-              <p className="text-muted-foreground line-clamp-1 text-sm">
+              <p className="line-clamp-1 text-sm text-muted-foreground">
                 {item.description}
               </p>
             )}
@@ -91,7 +91,7 @@ export function NavItemsGrid({
         {showFilter && (
           <Input
             className={cn(
-              'bg-muted/50 text-muted-foreground h-10 max-w-sm rounded-lg px-3 py-1 text-base shadow-none focus-visible:ring-transparent'
+              'h-10 max-w-sm rounded-lg bg-muted/50 px-3 py-1 text-base text-muted-foreground shadow-none focus-visible:ring-transparent'
             )}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}

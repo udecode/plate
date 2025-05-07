@@ -10,9 +10,9 @@ import { parseAsBoolean, useQueryState } from 'nuqs';
 
 import { SettingsStore } from '@/components/context/settings-store';
 import { PlaygroundPreview } from '@/components/playground-preview';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocale } from '@/hooks/useLocale';
-import { Button } from '@/registry/ui/button';
 
 const i18n = {
   cn: {
@@ -58,6 +58,7 @@ export default function HomeTabs() {
   return (
     <div>
       <Tabs
+        className="block"
         value={homeTab}
         onValueChange={(value) => {
           SettingsStore.set('homeTab', value);
@@ -69,11 +70,10 @@ export default function HomeTabs() {
         </TabsList>
 
         <Button
-          size="lg"
           variant="outline"
           className={cn(
             'ml-2 translate-y-[3px]',
-            active && 'border-primary border-2'
+            active && 'border-2 border-primary'
           )}
           onClick={() => {
             if (active) {

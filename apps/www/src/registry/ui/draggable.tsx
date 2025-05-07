@@ -35,9 +35,13 @@ import {
 import { useReadOnly, useSelected } from '@udecode/plate/react';
 import { GripVertical } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { STRUCTURAL_TYPES } from '@/registry/components/editor/transforms';
-
-import { TooltipButton } from './tooltip';
 
 const UNDRAGGABLE_KEYS = [
   ColumnItemPlugin.key,
@@ -138,9 +142,14 @@ export const Draggable = withRef<'div', PlateElementProps>(
                   isInColumn && 'mr-1.5'
                 )}
               >
-                <div ref={handleRef} className="size-4">
+                <Button
+                  ref={handleRef}
+                  variant="ghost"
+                  className="h-6 w-4.5 p-0"
+                  data-plate-prevent-deselect
+                >
                   <DragHandle />
-                </div>
+                </Button>
               </div>
             </div>
           </Gutter>
@@ -178,7 +187,7 @@ const Gutter = React.forwardRef<
       ref={ref}
       className={cn(
         'slate-gutterLeft',
-        'absolute -top-px z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
+        'absolute top-0 z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
         STRUCTURAL_TYPES.includes(element.type)
           ? 'group-hover/structural:opacity-100'
           : 'group-hover:opacity-100',
@@ -186,14 +195,14 @@ const Gutter = React.forwardRef<
         !selected && 'opacity-0',
         isNodeType(HEADING_KEYS.h1) && 'pb-1 text-[1.875em]',
         isNodeType(HEADING_KEYS.h2) && 'pb-1 text-[1.5em]',
-        isNodeType(HEADING_KEYS.h3) && 'pb-1 pt-[2px] text-[1.25em]',
+        isNodeType(HEADING_KEYS.h3) && 'pt-[2px] pb-1 text-[1.25em]',
         isNodeType([HEADING_KEYS.h4, HEADING_KEYS.h5]) &&
-          'pb-0 pt-[3px] text-[1.1em]',
+          'pt-1 pb-0 text-[1.1em]',
         isNodeType(HEADING_KEYS.h6) && 'pb-0',
-        isNodeType(ParagraphPlugin.key) && 'pb-0 pt-[3px]',
+        isNodeType(ParagraphPlugin.key) && 'pt-1 pb-0',
         isNodeType(['ul', 'ol']) && 'pb-0',
         isNodeType(BlockquotePlugin.key) && 'pb-0',
-        isNodeType(CodeBlockPlugin.key) && 'pb-0 pt-6',
+        isNodeType(CodeBlockPlugin.key) && 'pt-6 pb-0',
         isNodeType([
           ImagePlugin.key,
           MediaEmbedPlugin.key,
@@ -201,7 +210,7 @@ const Gutter = React.forwardRef<
           TogglePlugin.key,
           ColumnPlugin.key,
         ]) && 'py-0',
-        isNodeType([PlaceholderPlugin.key, TablePlugin.key]) && 'pb-0 pt-3',
+        isNodeType([PlaceholderPlugin.key, TablePlugin.key]) && 'pt-3 pb-0',
         isInColumn && 'mt-2 h-4 pt-0',
         className
       )}
@@ -218,19 +227,22 @@ const DragHandle = React.memo(() => {
   const element = useElement();
 
   return (
-    <TooltipButton
-      variant="ghost"
-      className="w-4.5 h-6 p-0"
-      onClick={() => {
-        editor
-          .getApi(BlockSelectionPlugin)
-          .blockSelection.set(element.id as string);
-      }}
-      data-plate-prevent-deselect
-      tooltip="Drag to move"
-    >
-      <GripVertical className="text-muted-foreground" />
-    </TooltipButton>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="flex size-full items-center justify-center"
+          onClick={() => {
+            editor
+              .getApi(BlockSelectionPlugin)
+              .blockSelection.set(element.id as string);
+          }}
+          role="button"
+        >
+          <GripVertical className="text-muted-foreground" />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>Drag to move</TooltipContent>
+    </Tooltip>
   );
 });
 

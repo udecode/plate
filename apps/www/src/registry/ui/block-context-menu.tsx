@@ -17,8 +17,6 @@ import {
   usePlateState,
 } from '@udecode/plate/react';
 
-import { useIsTouchDevice } from '@/registry/hooks/use-is-touch-device';
-
 import {
   ContextMenu,
   ContextMenuContent,
@@ -28,7 +26,8 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-} from './context-menu';
+} from '@/components/ui/context-menu';
+import { useIsTouchDevice } from '@/registry/hooks/use-is-touch-device';
 
 type Value = 'askAI' | null;
 

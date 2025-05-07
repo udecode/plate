@@ -15,7 +15,7 @@ export function ThemesButton() {
     <div className="flex items-center">
       <div className="mr-2 flex items-center space-x-0.5">
         <ThemesSwitcher
-          className="bg-background/95 supports-backdrop-filter:bg-background/60 fixed inset-x-0 bottom-0 z-40 flex backdrop-blur-sm lg:sticky lg:bottom-auto lg:top-20"
+          className="fixed inset-x-0 bottom-0 z-40 flex w-full bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 lg:sticky lg:top-20 lg:bottom-auto"
           themes={THEME_LIST}
         />
       </div>

@@ -31,15 +31,14 @@ export const useNodeAttributes = (props: any, ref?: any) => {
 export type SlateElementProps<
   N extends TElement = TElement,
   C extends AnyPluginConfig = PluginConfig,
-  T extends keyof HTMLElementTagNameMap = 'div',
 > = SlateNodeProps<C> &
-  RenderElementProps<N, T> & {
+  RenderElementProps<N> & {
     path: Path;
-    as?: T;
   };
 
 export type SlateNodeProps<C extends AnyPluginConfig = PluginConfig> =
   SlatePluginContext<C> & {
+    as?: React.ElementType;
     attributes?: AnyObject;
     className?: string;
     style?: React.CSSProperties;
@@ -48,9 +47,8 @@ export type SlateNodeProps<C extends AnyPluginConfig = PluginConfig> =
 export const SlateElement = React.forwardRef(function SlateElement<
   N extends TElement = TElement,
   P extends AnySlatePlugin = AnySlatePlugin,
-  T extends keyof HTMLElementTagNameMap = 'div',
 >(
-  { as: Tag = 'div' as T, children, ...props }: SlateElementProps<N, P, T>,
+  { as: Tag = 'div', children, ...props }: SlateElementProps<N, P>,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
   const attributes = useNodeAttributes(props, ref);
@@ -81,16 +79,15 @@ export const SlateElement = React.forwardRef(function SlateElement<
       ))}
     </Tag>
   );
-}) as <T extends keyof HTMLElementTagNameMap = 'div'>(
-  props: SlateElementProps<TElement, AnySlatePlugin, T> &
+}) as (
+  props: SlateElementProps<TElement, AnySlatePlugin> &
     React.RefAttributes<HTMLDivElement>
 ) => React.ReactElement<any>;
 
 export type SlateTextProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> = SlateNodeProps<C> & RenderTextProps<N, T> & { as?: T };
+> = SlateNodeProps<C> & RenderTextProps<N>;
 
 export const SlateText = React.forwardRef<HTMLSpanElement, SlateTextProps>(
   ({ as: Tag = 'span', children, ...props }, ref) => {
@@ -98,21 +95,16 @@ export const SlateText = React.forwardRef<HTMLSpanElement, SlateTextProps>(
 
     return <Tag {...attributes}>{children}</Tag>;
   }
-) as <
-  N extends TText = TText,
-  P extends AnySlatePlugin = AnySlatePlugin,
-  T extends keyof HTMLElementTagNameMap = 'span',
->({
+) as <N extends TText = TText, P extends AnySlatePlugin = AnySlatePlugin>({
   className,
   ...props
-}: SlateTextProps<N, P, T> &
+}: SlateTextProps<N, P> &
   React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>;
 
 export type SlateLeafProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> = SlateNodeProps<C> & RenderLeafProps<N, T> & { as?: T };
+> = SlateNodeProps<C> & RenderLeafProps<N>;
 
 export const SlateLeaf = React.forwardRef<HTMLSpanElement, SlateLeafProps>(
   ({ as: Tag = 'span', children, ...props }, ref) => {
@@ -120,12 +112,8 @@ export const SlateLeaf = React.forwardRef<HTMLSpanElement, SlateLeafProps>(
 
     return <Tag {...attributes}>{children}</Tag>;
   }
-) as <
-  N extends TText = TText,
-  P extends AnySlatePlugin = AnySlatePlugin,
-  T extends keyof HTMLElementTagNameMap = 'span',
->({
+) as <N extends TText = TText, P extends AnySlatePlugin = AnySlatePlugin>({
   className,
   ...props
-}: SlateLeafProps<N, P, T> &
+}: SlateLeafProps<N, P> &
   React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>;

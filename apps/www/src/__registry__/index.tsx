@@ -86,7 +86,7 @@ export const Index: Record<string, any> = {
     name: "block-context-menu",
     description: "A context menu for block-level operations.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/calendar","http://localhost:3000/r/context-menu","http://localhost:3000/r/use-is-touch-device"],
+    registryDependencies: ["calendar","context-menu","http://localhost:3000/r/use-is-touch-device"],
     files: [{
       path: "src/registry/ui/block-context-menu.tsx",
       type: "registry:ui",
@@ -171,7 +171,7 @@ export const Index: Record<string, any> = {
     name: "color-dropdown-menu",
     description: "A color picker with text and background color controls.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/dropdown-menu","http://localhost:3000/r/toolbar","http://localhost:3000/r/separator","http://localhost:3000/r/button","http://localhost:3000/r/tooltip"],
+    registryDependencies: ["http://localhost:3000/r/dropdown-menu","http://localhost:3000/r/toolbar","separator","http://localhost:3000/r/button","tooltip"],
     files: [{
       path: "src/registry/ui/color-constants.ts",
       type: "registry:ui",
@@ -271,7 +271,7 @@ export const Index: Record<string, any> = {
     name: "draggable",
     description: "A drag handle for moving editor blocks.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/tooltip","http://localhost:3000/r/use-mounted"],
+    registryDependencies: ["tooltip","http://localhost:3000/r/use-mounted"],
     files: [{
       path: "src/registry/ui/draggable.tsx",
       type: "registry:ui",
@@ -528,7 +528,7 @@ export const Index: Record<string, any> = {
     name: "indent-todo-marker",
     description: "A checkbox marker for interactive todo lists.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/checkbox"],
+    registryDependencies: ["checkbox"],
     files: [{
       path: "src/registry/ui/indent-todo-marker.tsx",
       type: "registry:ui",
@@ -634,7 +634,7 @@ export const Index: Record<string, any> = {
     name: "link-floating-toolbar",
     description: "A floating interface for link editing.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/button","http://localhost:3000/r/input","popover","http://localhost:3000/r/separator"],
+    registryDependencies: ["http://localhost:3000/r/button","input","popover","separator"],
     files: [{
       path: "src/registry/ui/link-floating-toolbar.tsx",
       type: "registry:ui",
@@ -719,7 +719,7 @@ export const Index: Record<string, any> = {
     name: "media-popover",
     description: "A popover interface for media settings.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/button","http://localhost:3000/r/input","popover","http://localhost:3000/r/separator"],
+    registryDependencies: ["http://localhost:3000/r/button","input","popover","separator"],
     files: [{
       path: "src/registry/ui/media-popover.tsx",
       type: "registry:ui",
@@ -736,7 +736,7 @@ export const Index: Record<string, any> = {
     name: "media-toolbar-button",
     description: "Toolbar button for inserting and managing media.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar","http://localhost:3000/r/input","http://localhost:3000/r/dropdown-menu","alert-dialog"],
+    registryDependencies: ["http://localhost:3000/r/toolbar","input","http://localhost:3000/r/dropdown-menu","alert-dialog"],
     files: [{
       path: "src/registry/ui/media-toolbar-button.tsx",
       type: "registry:ui",
@@ -1154,7 +1154,7 @@ export const Index: Record<string, any> = {
     name: "date-element",
     description: "A date field component with calendar picker.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/calendar"],
+    registryDependencies: ["calendar"],
     files: [{
       path: "src/registry/ui/date-element.tsx",
       type: "registry:ui",
@@ -1508,7 +1508,7 @@ export const Index: Record<string, any> = {
     name: "media-placeholder-element",
     description: "A placeholder for media upload progress indication.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/spinner","http://localhost:3000/r/uploadthing"],
+    registryDependencies: ["http://localhost:3000/r/uploadthing"],
     files: [{
       path: "src/registry/ui/media-placeholder-element.tsx",
       type: "registry:ui",
@@ -1744,7 +1744,7 @@ export const Index: Record<string, any> = {
     name: "todo-list-element",
     description: "A checkbox list element with interactive todo items.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/checkbox"],
+    registryDependencies: ["checkbox"],
     files: [{
       path: "src/registry/ui/todo-list-element.tsx",
       type: "registry:ui",
@@ -1795,61 +1795,6 @@ export const Index: Record<string, any> = {
     }),
     meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/button"}},
   },
-  "calendar": {
-    name: "calendar",
-    description: "A date field component that allows users to enter and edit date.",
-    type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/button"],
-    files: [{
-      path: "src/registry/ui/calendar.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/calendar.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/calendar"}},
-  },
-  "checkbox": {
-    name: "checkbox",
-    description: "A control that allows the user to toggle between checked and not checked.",
-    type: "registry:ui",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/ui/checkbox.tsx",
-      type: "registry:ui",
-      target: ""
-    },{
-      path: "src/registry/ui/checkbox-static.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/checkbox.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/checkbox"}},
-  },
-  "context-menu": {
-    name: "context-menu",
-    description: "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
-    type: "registry:ui",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/ui/context-menu.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/context-menu.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/context-menu"}},
-  },
   "dropdown-menu": {
     name: "dropdown-menu",
     description: "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
@@ -1867,45 +1812,11 @@ export const Index: Record<string, any> = {
     }),
     meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/dropdown-menu"}},
   },
-  "input": {
-    name: "input",
-    description: "Displays a form input field or a component that looks like an input field.",
-    type: "registry:ui",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/ui/input.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/input.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/input"}},
-  },
-  "separator": {
-    name: "separator",
-    description: "Visually or semantically separates content.",
-    type: "registry:ui",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/ui/separator.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/separator.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/separator"}},
-  },
   "toolbar": {
     name: "toolbar",
     description: "A customizable toolbar component with various button styles and group",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/tooltip","http://localhost:3000/r/separator"],
+    registryDependencies: ["tooltip","separator"],
     files: [{
       path: "src/registry/ui/toolbar.tsx",
       type: "registry:ui",
@@ -1913,40 +1824,6 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/ui/toolbar.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {},
-  },
-  "tooltip": {
-    name: "tooltip",
-    description: "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-    type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/button"],
-    files: [{
-      path: "src/registry/ui/tooltip.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/tooltip.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"links":{"doc":"https://ui.shadcn.com/docs/components/tooltip"}},
-  },
-  "spinner": {
-    name: "spinner",
-    description: "A loading spinner component with size variants.",
-    type: "registry:ui",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/ui/spinner.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/spinner.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -3304,7 +3181,7 @@ export const Index: Record<string, any> = {
     name: "find-replace-demo",
     description: "Find and replace functionality in text.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/fixed-toolbar","http://localhost:3000/r/input","http://localhost:3000/r/search-highlight-leaf"],
+    registryDependencies: ["http://localhost:3000/r/fixed-toolbar","input","http://localhost:3000/r/search-highlight-leaf"],
     files: [{
       path: "src/registry/examples/find-replace-demo.tsx",
       type: "registry:example",

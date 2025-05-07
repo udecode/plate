@@ -3,10 +3,7 @@ import type React from 'react';
 import type { TText } from '@udecode/slate';
 
 export type RenderTextFn = (props: RenderTextProps) => React.ReactElement<any>;
-export interface RenderTextProps<
-  N extends TText = TText,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> {
+export interface RenderTextProps<N extends TText = TText> {
   /** The text node being rendered. */
   text: N;
   /** The children (leaves) rendered within this text node. */
@@ -18,5 +15,5 @@ export interface RenderTextProps<
   attributes: {
     'data-slate-node': 'text';
     ref: any;
-  } & React.HTMLAttributes<HTMLElementTagNameMap[T]>;
+  } & React.HTMLAttributes<HTMLSpanElement>;
 }

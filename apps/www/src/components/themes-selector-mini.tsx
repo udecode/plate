@@ -5,15 +5,15 @@ import * as React from 'react';
 import { cn } from '@udecode/cn';
 import { useTheme } from 'next-themes';
 
-import { useThemesConfig } from '@/hooks/use-themes-config';
-import { type Theme, THEME_LIST, THEMES } from '@/lib/themes';
-import { useMounted } from '@/registry/hooks/use-mounted';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/registry/ui/tooltip';
+} from '@/components/ui/tooltip';
+import { useThemesConfig } from '@/hooks/use-themes-config';
+import { type Theme, THEME_LIST, THEMES } from '@/lib/themes';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { Skeleton } from './ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
@@ -70,18 +70,14 @@ export function ThemesSwitcher({
         {themes.map((theme) => {
           const isActive = theme.name === activeTheme.name;
           // const isDarkTheme = ['Midnight'].includes(theme.name);
-          const cssVars =
-            mounted && mode === 'dark'
-              ? theme.cssVars.dark
-              : theme.cssVars.light;
+          const cssVars = mounted && mode === 'dark' ? theme.dark : theme.light;
 
           return (
             <Tooltip key={theme.name}>
               <TooltipTrigger asChild>
                 <ToggleGroupItem
-                  variant="none"
                   className={cn(
-                    'aria-checked:border-(--color-1) group flex size-10 shrink-0 items-center justify-center rounded-lg border-2 border-transparent p-0'
+                    'group flex size-10 shrink-0 items-center justify-center rounded-lg border-2 border-transparent p-0 aria-checked:border-(--color-1)'
                     // mounted && isDarkTheme && mode !== 'dark' ? 'invert-1' : ''
                   )}
                   style={
@@ -112,10 +108,10 @@ export function ThemesSwitcher({
                         isActive ? 'rotate-45 group-hover:rotate-0' : 'rotate-0'
                       )}
                     >
-                      <span className="bg-(--color-1) flex size-6" />
-                      <span className="bg-(--color-2) flex size-6" />
-                      <span className="bg-(--color-3) flex size-6" />
-                      <span className="bg-(--color-4) flex size-6" />
+                      <span className="flex size-6 bg-(--color-1)" />
+                      <span className="flex size-6 bg-(--color-2)" />
+                      <span className="flex size-6 bg-(--color-3)" />
+                      <span className="flex size-6 bg-(--color-4)" />
                       <span className="sr-only">{theme.name}</span>
                     </div>
                   </div>

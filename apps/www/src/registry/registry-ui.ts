@@ -87,7 +87,11 @@ export const uiComponents: Registry['items'] = [
       label: 'New',
     },
     name: 'block-context-menu',
-    registryDependencies: ['calendar', 'context-menu', 'use-is-touch-device'],
+    registryDependencies: [
+      'shadcn/calendar',
+      'shadcn/context-menu',
+      'use-is-touch-device',
+    ],
     title: 'Block Context Menu',
     type: 'registry:ui',
   },
@@ -185,9 +189,9 @@ export const uiComponents: Registry['items'] = [
     registryDependencies: [
       'dropdown-menu',
       'toolbar',
-      'separator',
+      'shadcn/separator',
       'button',
-      'tooltip',
+      'shadcn/tooltip',
     ],
     title: 'Color Dropdown Menu',
     type: 'registry:ui',
@@ -326,7 +330,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       // Click the plus button next to the drag button to insert blocks
     },
     name: 'draggable',
-    registryDependencies: ['tooltip', 'use-mounted'],
+    registryDependencies: ['shadcn/tooltip', 'use-mounted'],
     title: 'Draggable',
     type: 'registry:ui',
   },
@@ -620,7 +624,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       examples: ['list-demo'],
     },
     name: 'indent-todo-marker',
-    registryDependencies: ['checkbox'],
+    registryDependencies: ['shadcn/checkbox'],
     title: 'Indent Todo Marker',
     type: 'registry:ui',
   },
@@ -733,7 +737,12 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       examples: ['link-demo', 'link-pro'],
     },
     name: 'link-floating-toolbar',
-    registryDependencies: ['button', 'input', 'shadcn/popover', 'separator'],
+    registryDependencies: [
+      'button',
+      'shadcn/input',
+      'shadcn/popover',
+      'shadcn/separator',
+    ],
     title: 'Link Floating Toolbar',
     type: 'registry:ui',
   },
@@ -808,7 +817,12 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
       examples: ['media-demo', 'media-toolbar-pro'],
     },
     name: 'media-popover',
-    registryDependencies: ['button', 'input', 'shadcn/popover', 'separator'],
+    registryDependencies: [
+      'button',
+      'shadcn/input',
+      'shadcn/popover',
+      'shadcn/separator',
+    ],
     title: 'Media Popover',
     type: 'registry:ui',
   },
@@ -823,7 +837,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     name: 'media-toolbar-button',
     registryDependencies: [
       'toolbar',
-      'input',
+      'shadcn/input',
       'dropdown-menu',
       'shadcn/alert-dialog',
     ],
@@ -985,6 +999,19 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     name: 'remote-cursor-overlay',
     registryDependencies: [],
     title: 'Remote Cursor Overlay',
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@radix-ui/react-toolbar'],
+    description:
+      'A customizable toolbar component with various button styles and group',
+    files: [{ path: 'ui/toolbar.tsx', type: 'registry:ui' }],
+    meta: {
+      // Add links here if needed
+    },
+    name: 'toolbar',
+    registryDependencies: ['shadcn/tooltip', 'shadcn/separator'],
+    title: 'Toolbar',
     type: 'registry:ui',
   },
 ];
@@ -1221,7 +1248,7 @@ export const uiNodes: Registry['items'] = [
       label: 'New',
     },
     name: 'date-element',
-    registryDependencies: ['calendar'],
+    registryDependencies: ['shadcn/calendar'],
     title: 'Date Element',
     type: 'registry:ui',
   },
@@ -1572,7 +1599,7 @@ export const uiNodes: Registry['items'] = [
       examples: ['media-demo', 'upload-pro'],
     },
     name: 'media-placeholder-element',
-    registryDependencies: ['spinner', 'uploadthing'],
+    registryDependencies: ['uploadthing'],
     title: 'Media Placeholder Element',
     type: 'registry:ui',
   },
@@ -1802,7 +1829,7 @@ export const uiNodes: Registry['items'] = [
       ],
       examples: ['toc-demo', 'toc-pro'],
       label: 'New',
-      //       - Responsive design that adapts to different screen sizes
+      // - Responsive design that adapts to different screen sizes
       // - Dynamic highlighting of the corresponding thumbnail on the right side based on the current section
       // - Hover thumbnail to see the preview of the section with smooth animation
       // - Elegant transition effects when navigating between sections
@@ -1822,7 +1849,7 @@ export const uiNodes: Registry['items'] = [
       examples: ['list-demo'],
     },
     name: 'todo-list-element',
-    registryDependencies: ['checkbox'],
+    registryDependencies: ['shadcn/checkbox'],
     title: 'Todo List Element',
     type: 'registry:ui',
   },
@@ -1860,54 +1887,6 @@ export const uiPrimitives: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['react-day-picker@8.10.1'],
-    description:
-      'A date field component that allows users to enter and edit date.',
-    files: [{ path: 'ui/calendar.tsx', type: 'registry:ui' }],
-    meta: {
-      links: {
-        doc: 'https://ui.shadcn.com/docs/components/calendar',
-      },
-    },
-    name: 'calendar',
-    registryDependencies: ['button'],
-    title: 'Calendar',
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@radix-ui/react-checkbox'],
-    description:
-      'A control that allows the user to toggle between checked and not checked.',
-    files: [
-      { path: 'ui/checkbox.tsx', type: 'registry:ui' },
-      { path: 'ui/checkbox-static.tsx', type: 'registry:ui' },
-    ],
-    meta: {
-      links: {
-        doc: 'https://ui.shadcn.com/docs/components/checkbox',
-      },
-    },
-    name: 'checkbox',
-    registryDependencies: [],
-    title: 'Checkbox',
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@radix-ui/react-context-menu'],
-    description:
-      'Displays a menu to the user — such as a set of actions or functions — triggered by a button.',
-    files: [{ path: 'ui/context-menu.tsx', type: 'registry:ui' }],
-    meta: {
-      links: {
-        doc: 'https://ui.shadcn.com/docs/components/context-menu',
-      },
-    },
-    name: 'context-menu',
-    registryDependencies: [],
-    title: 'Context Menu',
-    type: 'registry:ui',
-  },
-  {
     dependencies: ['@radix-ui/react-dropdown-menu'],
     description:
       'Displays a menu to the user — such as a set of actions or functions — triggered by a button.',
@@ -1920,74 +1899,6 @@ export const uiPrimitives: Registry['items'] = [
     name: 'dropdown-menu',
     registryDependencies: [],
     title: 'Dropdown Menu',
-    type: 'registry:ui',
-  },
-  {
-    dependencies: [],
-    description:
-      'Displays a form input field or a component that looks like an input field.',
-    files: [{ path: 'ui/input.tsx', type: 'registry:ui' }],
-    meta: {
-      links: {
-        doc: 'https://ui.shadcn.com/docs/components/input',
-      },
-    },
-    name: 'input',
-    registryDependencies: [],
-    title: 'Input',
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@radix-ui/react-separator'],
-    description: 'Visually or semantically separates content.',
-    files: [{ path: 'ui/separator.tsx', type: 'registry:ui' }],
-    meta: {
-      links: {
-        doc: 'https://ui.shadcn.com/docs/components/separator',
-      },
-    },
-    name: 'separator',
-    registryDependencies: [],
-    title: 'Separator',
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@radix-ui/react-toolbar'],
-    description:
-      'A customizable toolbar component with various button styles and group',
-    files: [{ path: 'ui/toolbar.tsx', type: 'registry:ui' }],
-    meta: {
-      // Add links here if needed
-    },
-    name: 'toolbar',
-    registryDependencies: ['tooltip', 'separator'],
-    title: 'Toolbar',
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@radix-ui/react-tooltip'],
-    description:
-      'A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.',
-    files: [{ path: 'ui/tooltip.tsx', type: 'registry:ui' }],
-    meta: {
-      links: {
-        doc: 'https://ui.shadcn.com/docs/components/tooltip',
-      },
-    },
-    name: 'tooltip',
-    registryDependencies: ['button'],
-    title: 'Tooltip',
-    type: 'registry:ui',
-  },
-  {
-    description: 'A loading spinner component with size variants.',
-    files: [{ path: 'ui/spinner.tsx', type: 'registry:ui' }],
-    meta: {
-      // Add links here if needed
-    },
-    name: 'spinner',
-    registryDependencies: [],
-    title: 'Spinner',
     type: 'registry:ui',
   },
 ];

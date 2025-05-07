@@ -7,7 +7,6 @@ import { notFound } from 'next/navigation';
 
 import { getAllBlockIds } from '@/lib/blocks';
 import { getRegistryComponent, getRegistryItem } from '@/lib/registry';
-import { styles } from '@/registry/registry-styles';
 
 const getCachedRegistryItem = React.cache(async (name: string) => {
   return await getRegistryItem(name, true);
@@ -53,12 +52,9 @@ export async function generateMetadata({
 export async function generateStaticParams() {
   const blockIds = await getAllBlockIds();
 
-  return styles.flatMap((style) =>
-    blockIds.map((name) => ({
-      name,
-      style: style.name,
-    }))
-  );
+  return blockIds.map((name) => ({
+    name,
+  }));
 }
 
 export default async function BlockPage({

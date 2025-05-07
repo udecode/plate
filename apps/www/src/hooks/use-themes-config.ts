@@ -6,7 +6,7 @@ import { type Theme, THEMES } from '@/lib/themes';
 type ThemesConfig = {
   activeTheme: Theme;
 };
-const configAtom = atomWithStorage<ThemesConfig>('themes:config', {
+const configAtom = atomWithStorage<ThemesConfig>('themes:config4', {
   activeTheme: THEMES['default-shadcn'],
 });
 

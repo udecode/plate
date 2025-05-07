@@ -12,7 +12,6 @@ import {
 } from '../lib/registry';
 import { examples } from '../registry/registry-examples';
 import { proExamples } from '../registry/registry-pro';
-import { styles } from '../registry/registry-styles';
 import { highlightFiles } from './highlight-code';
 import {
   fixImport,
@@ -98,7 +97,7 @@ export function rehypeComponent() {
                     });
                   }
 
-                  const component = Index[styles[0].name][name];
+                  const component = Index[name];
 
                   if (component.meta?.preview) {
                     const example = examples.find((ex) => ex.name === name);
@@ -126,57 +125,47 @@ export function rehypeComponent() {
           }
           if (node.name === 'ComponentSource') {
             try {
-              for (const style of styles) {
-                const component = Index[style.name][name];
+              const component = Index[name];
 
-                if (!component) {
-                  throw new Error(
-                    `Component ${name} not found in ${style.name}`
-                  );
-                }
-
-                const file = component.files[0]?.path;
-
-                let source = fs.readFileSync(file, 'utf8');
-                source = fixImport(source);
-
-                // Add code as children so that rehype can take over at build time.
-                node.children?.push(
-                  u('element', {
-                    attributes: [
-                      {
-                        name: 'styleName',
-                        type: 'mdxJsxAttribute',
-                        value: style.name,
-                      },
-                      {
-                        name: 'title',
-                        type: 'mdxJsxAttribute',
-                        value: path.basename(file),
-                      },
-                    ],
-                    children: [
-                      u('element', {
-                        children: [
-                          {
-                            type: 'text',
-                            value: source,
-                          },
-                        ],
-                        properties: {
-                          className: ['language-tsx'],
-                        },
-                        tagName: 'code',
-                      }),
-                    ],
-                    properties: {
-                      __src__: file,
-                      __style__: style.name,
-                    },
-                    tagName: 'pre',
-                  })
-                );
+              if (!component) {
+                throw new Error(`Component ${name} not found`);
               }
+
+              const file = component.files[0]?.path;
+
+              let source = fs.readFileSync(file, 'utf8');
+              source = fixImport(source);
+
+              // Add code as children so that rehype can take over at build time.
+              node.children?.push(
+                u('element', {
+                  attributes: [
+                    {
+                      name: 'title',
+                      type: 'mdxJsxAttribute',
+                      value: path.basename(file),
+                    },
+                  ],
+                  children: [
+                    u('element', {
+                      children: [
+                        {
+                          type: 'text',
+                          value: source,
+                        },
+                      ],
+                      properties: {
+                        className: ['language-tsx'],
+                      },
+                      tagName: 'code',
+                    }),
+                  ],
+                  properties: {
+                    __src__: file,
+                  },
+                  tagName: 'pre',
+                })
+              );
             } catch (error) {
               console.error(error);
             }

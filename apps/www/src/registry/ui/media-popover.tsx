@@ -18,6 +18,7 @@ import {
   useRemoveNodeButton,
   useSelected,
 } from '@udecode/plate/react';
+import { cva } from 'class-variance-authority';
 import { Link, Trash2Icon } from 'lucide-react';
 
 import {
@@ -25,11 +26,14 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
 
 import { Button, buttonVariants } from './button';
 import { CaptionButton } from './caption';
-import { inputVariants } from './input';
-import { Separator } from './separator';
+
+const inputVariants = cva(
+  'flex h-[28px] w-full rounded-md border-none bg-transparent px-1.5 py-1 text-base placeholder:text-muted-foreground focus-visible:ring-transparent focus-visible:outline-none md:text-sm'
+);
 
 export interface MediaPopoverProps {
   children: React.ReactNode;
@@ -78,7 +82,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
               </div>
 
               <FloatingMediaPrimitive.UrlInput
-                className={inputVariants({ h: 'sm', variant: 'ghost' })}
+                className={inputVariants()}
                 placeholder="Paste the embed link..."
                 options={{ plugin }}
               />

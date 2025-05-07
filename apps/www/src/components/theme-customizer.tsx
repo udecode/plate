@@ -7,12 +7,12 @@ import { cn } from '@udecode/cn';
 import { RepeatIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
+import { Separator } from '@/components/ui/separator';
 import { useConfig } from '@/hooks/use-config';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { THEMES } from '@/lib/themes';
 import { useMounted } from '@/registry/hooks/use-mounted';
 import { Button } from '@/registry/ui/button';
-import { Separator } from '@/registry/ui/separator';
 
 import { Label } from '../components/ui/label';
 import { CopyCodeButton, getThemeCode } from './copy-code-button';
@@ -50,7 +50,6 @@ export function ThemeCustomizer() {
               installationType: 'cli',
               packageManager: 'pnpm',
               radius: 0.5,
-              theme: 'slate',
             });
             setThemesConfig({
               activeTheme: THEMES['default-shadcn'],
@@ -145,7 +144,7 @@ export function ThemeCustomizer() {
               </pre>
             </div>
           </div>
-          <CopyCodeButton className="absolute top-4 right-4" compact />
+          <CopyCodeButton className="absolute top-2 right-6" compact />
         </div>
       </div>
     </div>

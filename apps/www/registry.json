@@ -165,8 +165,8 @@
         "@udecode/plate-selection"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/calendar",
-        "http://localhost:3000/r/context-menu",
+        "calendar",
+        "context-menu",
         "http://localhost:3000/r/use-is-touch-device"
       ],
       "files": [
@@ -327,9 +327,9 @@
       "registryDependencies": [
         "http://localhost:3000/r/dropdown-menu",
         "http://localhost:3000/r/toolbar",
-        "http://localhost:3000/r/separator",
+        "separator",
         "http://localhost:3000/r/button",
-        "http://localhost:3000/r/tooltip"
+        "tooltip"
       ],
       "files": [
         {
@@ -509,7 +509,7 @@
         "react-dnd-html5-backend"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/tooltip",
+        "tooltip",
         "http://localhost:3000/r/use-mounted"
       ],
       "files": [
@@ -955,7 +955,7 @@
         "@udecode/plate-indent-list"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/checkbox"
+        "checkbox"
       ],
       "files": [
         {
@@ -1146,9 +1146,9 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/button",
-        "http://localhost:3000/r/input",
+        "input",
         "popover",
-        "http://localhost:3000/r/separator"
+        "separator"
       ],
       "files": [
         {
@@ -1301,9 +1301,9 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/button",
-        "http://localhost:3000/r/input",
+        "input",
         "popover",
-        "http://localhost:3000/r/separator"
+        "separator"
       ],
       "files": [
         {
@@ -1335,7 +1335,7 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/toolbar",
-        "http://localhost:3000/r/input",
+        "input",
         "http://localhost:3000/r/dropdown-menu",
         "alert-dialog"
       ],
@@ -2027,7 +2027,7 @@
         "@udecode/plate-date"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/calendar"
+        "calendar"
       ],
       "files": [
         {
@@ -2617,7 +2617,6 @@
         "use-file-picker"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/spinner",
         "http://localhost:3000/r/uploadthing"
       ],
       "files": [
@@ -3021,7 +3020,7 @@
         "@udecode/plate-list"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/checkbox"
+        "checkbox"
       ],
       "files": [
         {
@@ -3094,75 +3093,6 @@
       }
     },
     {
-      "name": "calendar",
-      "type": "registry:ui",
-      "title": "Calendar",
-      "description": "A date field component that allows users to enter and edit date.",
-      "dependencies": [
-        "react-day-picker@8.10.1"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/r/button"
-      ],
-      "files": [
-        {
-          "path": "src/registry/ui/calendar.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "links": {
-          "doc": "https://ui.shadcn.com/docs/components/calendar"
-        }
-      }
-    },
-    {
-      "name": "checkbox",
-      "type": "registry:ui",
-      "title": "Checkbox",
-      "description": "A control that allows the user to toggle between checked and not checked.",
-      "dependencies": [
-        "@radix-ui/react-checkbox"
-      ],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/ui/checkbox.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/checkbox-static.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "links": {
-          "doc": "https://ui.shadcn.com/docs/components/checkbox"
-        }
-      }
-    },
-    {
-      "name": "context-menu",
-      "type": "registry:ui",
-      "title": "Context Menu",
-      "description": "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
-      "dependencies": [
-        "@radix-ui/react-context-menu"
-      ],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/ui/context-menu.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "links": {
-          "doc": "https://ui.shadcn.com/docs/components/context-menu"
-        }
-      }
-    },
-    {
       "name": "dropdown-menu",
       "type": "registry:ui",
       "title": "Dropdown Menu",
@@ -3184,46 +3114,6 @@
       }
     },
     {
-      "name": "input",
-      "type": "registry:ui",
-      "title": "Input",
-      "description": "Displays a form input field or a component that looks like an input field.",
-      "dependencies": [],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/ui/input.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "links": {
-          "doc": "https://ui.shadcn.com/docs/components/input"
-        }
-      }
-    },
-    {
-      "name": "separator",
-      "type": "registry:ui",
-      "title": "Separator",
-      "description": "Visually or semantically separates content.",
-      "dependencies": [
-        "@radix-ui/react-separator"
-      ],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/ui/separator.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "links": {
-          "doc": "https://ui.shadcn.com/docs/components/separator"
-        }
-      }
-    },
-    {
       "name": "toolbar",
       "type": "registry:ui",
       "title": "Toolbar",
@@ -3232,49 +3122,12 @@
         "@radix-ui/react-toolbar"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/tooltip",
-        "http://localhost:3000/r/separator"
+        "tooltip",
+        "separator"
       ],
       "files": [
         {
           "path": "src/registry/ui/toolbar.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {}
-    },
-    {
-      "name": "tooltip",
-      "type": "registry:ui",
-      "title": "Tooltip",
-      "description": "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-      "dependencies": [
-        "@radix-ui/react-tooltip"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/r/button"
-      ],
-      "files": [
-        {
-          "path": "src/registry/ui/tooltip.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "links": {
-          "doc": "https://ui.shadcn.com/docs/components/tooltip"
-        }
-      }
-    },
-    {
-      "name": "spinner",
-      "type": "registry:ui",
-      "title": "Spinner",
-      "description": "A loading spinner component with size variants.",
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/ui/spinner.tsx",
           "type": "registry:ui"
         }
       ],
@@ -4797,7 +4650,7 @@
       "description": "Find and replace functionality in text.",
       "registryDependencies": [
         "http://localhost:3000/r/fixed-toolbar",
-        "http://localhost:3000/r/input",
+        "input",
         "http://localhost:3000/r/search-highlight-leaf"
       ],
       "files": [

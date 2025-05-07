@@ -3,12 +3,12 @@
   "compilerOptions": {
     "jsx": "preserve",
     "incremental": true,
-    "baseUrl": ".",
+    "baseUrl": "src",
     "paths": {
-      "@/*": ["./src/*"],
-      "contentlayer/generated": ["./.contentlayer/generated"],
-      "registry": ["./registry.json"],
-      "registry-shadcn": ["./registry-shadcn.json"]
+      "@/*": ["./*"],
+      "contentlayer/generated": ["../.contentlayer/generated"],
+      "registry": ["../registry.json"],
+      "registry-shadcn": ["../registry-shadcn.json"]
     },
     "plugins": [
       {

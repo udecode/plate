@@ -17,14 +17,14 @@ import {
 } from '@udecode/plate/react';
 import { GripHorizontal } from 'lucide-react';
 
-import { Button } from './button';
 import {
   Tooltip,
   TooltipContent,
-  TooltipPortal,
   TooltipProvider,
   TooltipTrigger,
-} from './tooltip';
+} from '@/components/ui/tooltip';
+
+import { Button } from './button';
 
 export const ColumnElement = withHOC(
   ResizableProvider,
@@ -102,9 +102,8 @@ const ColumnDragHandle = React.memo(() => {
             />
           </Button>
         </TooltipTrigger>
-        <TooltipPortal>
-          <TooltipContent>Drag to move column</TooltipContent>
-        </TooltipPortal>
+
+        <TooltipContent>Drag to move column</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

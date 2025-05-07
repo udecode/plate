@@ -1,7 +1,6 @@
 import * as React from 'react';
 
 import type { Event } from '@/lib/events';
-import type { Style } from '@/registry/registry-styles';
 import type { NpmCommands } from '@/types/unist';
 
 import { cn } from '@udecode/cn';
@@ -9,7 +8,6 @@ import { cn } from '@udecode/cn';
 import { CodeBlockCommand } from '@/components/code-block-command';
 
 import { CopyButton } from './copy-button';
-import { StyleWrapper } from './style-wrapper';
 
 export const H1 = ({
   className,
@@ -210,7 +208,6 @@ export const Pre = ({
   __pnpmCommand__,
   __rawString__,
   __src__,
-  __style__,
   __withMeta__,
   __yarnCommand__,
   className,
@@ -219,7 +216,6 @@ export const Pre = ({
   __event__?: Event['name'];
   __rawString__?: string;
   __src__?: string;
-  __style__?: Style['name'];
   __withMeta__?: boolean;
 } & NpmCommands &
   React.HTMLAttributes<HTMLPreElement>) => {
@@ -237,7 +233,7 @@ export const Pre = ({
   }
 
   return (
-    <StyleWrapper styleName={__style__}>
+    <>
       <pre
         className={cn(
           'mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 text-white dark:bg-zinc-900 *:[code]:bg-inherit',
@@ -253,7 +249,7 @@ export const Pre = ({
           src={__src__}
         />
       )}
-    </StyleWrapper>
+    </>
   );
 };
 

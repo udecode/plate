@@ -12,12 +12,12 @@ import {
 import { RefreshCw } from 'lucide-react';
 import { nanoid } from 'nanoid';
 
+import { Input } from '@/components/ui/input';
 import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
 import { editorComponents } from '@/registry/components/editor/use-create-editor';
 import { useMounted } from '@/registry/hooks/use-mounted';
 import { Button } from '@/registry/ui/button';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { Input } from '@/registry/ui/input';
 import { withPlaceholders } from '@/registry/ui/placeholder';
 import { RemoteCursorOverlay } from '@/registry/ui/remote-cursor-overlay';
 
@@ -103,10 +103,9 @@ export default function CollaborativeEditingDemo(): React.ReactNode {
             <div className="flex items-center gap-2">
               <Input
                 id="room-id"
-                className="bg-background"
+                className="h-[28px] bg-background px-1.5 py-1"
                 value={roomName}
                 onChange={handleRoomChange}
-                h="sm"
                 type="text"
               />
               <Button

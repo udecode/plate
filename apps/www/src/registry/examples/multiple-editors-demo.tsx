@@ -14,7 +14,7 @@ import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 import { imageValue } from '@/registry/examples/values/media-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
-import { Separator } from '@/registry/ui/separator';
+import { Separator } from '@/components/ui/separator';
 import { TurnIntoDropdownMenu } from '@/registry/ui/turn-into-dropdown-menu';
 
 export default function MultipleEditorsDemo() {

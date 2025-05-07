@@ -4,10 +4,7 @@ export type RenderElementFn = (
   props: RenderElementProps
 ) => React.ReactElement<any>;
 
-export interface RenderElementProps<
-  N extends TElement = TElement,
-  T extends keyof HTMLElementTagNameMap = 'div',
-> {
+export interface RenderElementProps<N extends TElement = TElement> {
   attributes: {
     'data-slate-node': 'element';
     ref: any;

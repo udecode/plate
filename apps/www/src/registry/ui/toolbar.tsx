@@ -7,15 +7,17 @@ import { cn, withCn, withRef, withVariants } from '@udecode/cn';
 import { type VariantProps, cva } from 'class-variance-authority';
 import { ChevronDown } from 'lucide-react';
 
-import { Separator } from './separator';
-import { withTooltip } from './tooltip';
+import { Separator } from '@/components/ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export const Toolbar = withCn(
   ToolbarPrimitive.Root,
   'relative flex items-center select-none'
 );
-
-const a = cn('flex items-center');
 
 export const ToolbarToggleGroup = withCn(
   ToolbarPrimitive.ToolbarToggleGroup,
@@ -247,3 +249,48 @@ export const ToolbarGroup = withRef<'div'>(({ children, className }, ref) => {
     </div>
   );
 });
+
+type TooltipProps<T extends React.ElementType> = {
+  tooltip?: React.ReactNode;
+  tooltipContentProps?: Omit<
+    React.ComponentPropsWithoutRef<typeof TooltipContent>,
+    'children'
+  >;
+  tooltipProps?: Omit<
+    React.ComponentPropsWithoutRef<typeof Tooltip>,
+    'children'
+  >;
+  tooltipTriggerProps?: React.ComponentPropsWithoutRef<typeof TooltipTrigger>;
+} & React.ComponentProps<T>;
+
+function withTooltip<T extends React.ElementType>(Component: T) {
+  return function ExtendComponent({
+    tooltip,
+    tooltipContentProps,
+    tooltipProps,
+    tooltipTriggerProps,
+    ...props
+  }: TooltipProps<T>) {
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+      setMounted(true);
+    }, []);
+
+    const component = <Component {...(props as React.ComponentProps<T>)} />;
+
+    if (tooltip && mounted) {
+      return (
+        <Tooltip {...tooltipProps}>
+          <TooltipTrigger asChild {...tooltipTriggerProps}>
+            {component}
+          </TooltipTrigger>
+
+          <TooltipContent {...tooltipContentProps}>{tooltip}</TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return component;
+  };
+}

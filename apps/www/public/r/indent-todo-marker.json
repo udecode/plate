@@ -8,7 +8,7 @@
     "@udecode/plate-indent-list"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/checkbox"
+    "checkbox"
   ],
   "files": [
     {
@@ -18,7 +18,7 @@
     },
     {
       "path": "src/registry/ui/indent-todo-marker-static.tsx",
-      "content": "import React from 'react';\n\nimport type { SlateRenderElementProps } from '@udecode/plate';\n\nimport { cn } from '@udecode/cn';\n\nimport { CheckboxStatic } from './checkbox-static';\n\nexport const TodoMarkerStatic = ({\n  element,\n}: Omit<SlateRenderElementProps, 'children'>) => {\n  return (\n    <div contentEditable={false}>\n      <CheckboxStatic\n        className=\"pointer-events-none absolute top-1 -left-6\"\n        checked={element.checked as boolean}\n      />\n    </div>\n  );\n};\n\nexport const TodoLiStatic = ({\n  children,\n  element,\n}: SlateRenderElementProps) => {\n  return (\n    <li\n      className={cn(\n        'list-none',\n        (element.checked as boolean) && 'text-muted-foreground line-through'\n      )}\n    >\n      {children}\n    </li>\n  );\n};\n",
+      "content": "import React from 'react';\n\nimport type { SlateRenderElementProps } from '@udecode/plate';\n\nimport { cn } from '@udecode/cn';\nimport { CheckIcon } from 'lucide-react';\n\nexport const TodoMarkerStatic = ({\n  element,\n}: Omit<SlateRenderElementProps, 'children'>) => {\n  return (\n    <div contentEditable={false}>\n      <CheckboxStatic\n        className=\"pointer-events-none absolute top-1 -left-6\"\n        checked={element.checked as boolean}\n      />\n    </div>\n  );\n};\n\nexport const TodoLiStatic = ({\n  children,\n  element,\n}: SlateRenderElementProps) => {\n  return (\n    <li\n      className={cn(\n        'list-none',\n        (element.checked as boolean) && 'text-muted-foreground line-through'\n      )}\n    >\n      {children}\n    </li>\n  );\n};\n\nfunction CheckboxStatic({\n  className,\n  ...props\n}: {\n  checked: boolean;\n  className?: string;\n  style?: React.CSSProperties;\n}) {\n  return (\n    <button\n      className={cn(\n        'peer size-4 shrink-0 rounded-sm border border-primary bg-background ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',\n        className\n      )}\n      data-state={props.checked ? 'checked' : 'unchecked'}\n      type=\"button\"\n      {...props}\n    >\n      <div className={cn('flex items-center justify-center text-current')}>\n        {props.checked && <CheckIcon className=\"size-4\" />}\n      </div>\n    </button>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

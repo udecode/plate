@@ -5,7 +5,6 @@ import { components } from './registry-components';
 import { examples } from './registry-examples';
 import { hooks } from './registry-hooks';
 import { lib } from './registry-lib';
-import { themes } from './registry-themes';
 import { ui } from './registry-ui';
 
 const url =
@@ -15,14 +14,6 @@ const url =
 
 export const registry = {
   homepage: url,
-  items: [
-    ...ui,
-    ...components,
-    ...blocks,
-    ...lib,
-    ...hooks,
-    ...themes,
-    ...examples,
-  ],
+  items: [...ui, ...components, ...blocks, ...lib, ...hooks, ...examples],
   name: 'plate',
 } satisfies Registry;

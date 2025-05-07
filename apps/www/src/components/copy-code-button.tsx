@@ -1,12 +1,13 @@
 import * as React from 'react';
 
+import type { Theme } from '@/lib/themes';
+
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons';
 import { cn } from '@udecode/cn';
 import { ClipboardIcon } from 'lucide-react';
 
 import { useConfig } from '@/hooks/use-config';
 import { useThemesConfig } from '@/hooks/use-themes-config';
-import { type Theme, themeColorsToCssVariables } from '@/lib/themes';
 import { Button } from '@/registry/ui/button';
 
 import { copyToClipboardWithMeta } from './copy-button';
@@ -36,7 +37,10 @@ export function CopyCodeButton({
       <Button
         size="icon"
         variant="ghost"
-        className={cn('size-7 rounded-[6px] [&_svg]:size-3.5', className)}
+        className={cn(
+          'size-7 rounded-[6px] text-primary-foreground [&_svg]:size-3.5',
+          className
+        )}
         onClick={() => {
           copyToClipboardWithMeta(themeCode, {
             name: 'copy_theme_code',
@@ -76,28 +80,23 @@ export function CopyCodeButton({
   );
 }
 
-export function getThemeCode(theme: Theme, radius: number): string {
+export function getThemeCode(theme: Theme | undefined, radius: number) {
   if (!theme) {
     return '';
   }
 
-  const lightVars = themeColorsToCssVariables(theme.colors);
-  const darkVars = themeColorsToCssVariables(theme.colorsDark);
+  const rootSection =
+    ':root {\n  --radius: ' +
+    radius +
+    'rem;\n' +
+    Object.entries(theme.light)
+      .map((entry) => '  ' + entry[0] + ': ' + entry[1] + ';')
+      .join('\n') +
+    '\n}\n\n.dark {\n' +
+    Object.entries(theme.dark)
+      .map((entry) => '  ' + entry[0] + ': ' + entry[1] + ';')
+      .join('\n') +
+    '\n}\n';
 
-  return `\
-@layer base {
-  :root {
-${Object.entries(lightVars)
-  .map(([key, value]) => `    ${key}: ${value};`)
-  .join('\n')}
-    --radius: ${radius}rem;
-  }
-
-  .dark {
-${Object.entries(darkVars)
-  .map(([key, value]) => `    ${key}: ${value};`)
-  .join('\n')}
-  }
-}
-`;
+  return rootSection;
 }

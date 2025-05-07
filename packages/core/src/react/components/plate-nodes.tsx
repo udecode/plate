@@ -31,15 +31,14 @@ export const useNodeAttributes = (props: any, ref?: any) => {
 export type PlateElementProps<
   N extends TElement = TElement,
   C extends AnyPluginConfig = PluginConfig,
-  T extends keyof HTMLElementTagNameMap = 'div',
 > = PlateNodeProps<C> &
-  RenderElementProps<N, T> & {
+  RenderElementProps<N> & {
     path: Path;
-    as?: T;
   };
 
 export type PlateNodeProps<C extends AnyPluginConfig = PluginConfig> =
   PlatePluginContext<C> & {
+    as?: React.ElementType;
     attributes?: AnyObject;
     className?: string;
     style?: React.CSSProperties;
@@ -48,9 +47,8 @@ export type PlateNodeProps<C extends AnyPluginConfig = PluginConfig> =
 export const PlateElement = React.forwardRef(function PlateElement<
   N extends TElement = TElement,
   P extends AnyPlatePlugin = AnyPlatePlugin,
-  T extends keyof HTMLElementTagNameMap = 'div',
 >(
-  { as: Tag = 'div' as T, children, ...props }: PlateElementProps<N, P, T>,
+  { as: Tag = 'div', children, ...props }: PlateElementProps<N, P>,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
   const attributes = useNodeAttributes(props, ref);
@@ -92,16 +90,15 @@ export const PlateElement = React.forwardRef(function PlateElement<
       ))}
     </Tag>
   );
-}) as <T extends keyof HTMLElementTagNameMap = 'div'>(
-  props: PlateElementProps<TElement, AnyPlatePlugin, T> &
+}) as (
+  props: PlateElementProps<TElement, AnyPlatePlugin> &
     React.RefAttributes<HTMLDivElement>
 ) => React.ReactElement<any>;
 
 export type PlateTextProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> = PlateNodeProps<C> & RenderTextProps<N, T> & { as?: T };
+> = PlateNodeProps<C> & RenderTextProps<N>;
 
 export const PlateText = React.forwardRef<HTMLSpanElement, PlateTextProps>(
   ({ as: Tag = 'span', children, ...props }, ref) => {
@@ -109,21 +106,16 @@ export const PlateText = React.forwardRef<HTMLSpanElement, PlateTextProps>(
 
     return <Tag {...attributes}>{children}</Tag>;
   }
-) as <
-  N extends TText = TText,
-  P extends AnyPlatePlugin = AnyPlatePlugin,
-  T extends keyof HTMLElementTagNameMap = 'span',
->({
+) as <N extends TText = TText, P extends AnyPlatePlugin = AnyPlatePlugin>({
   className,
   ...props
-}: PlateTextProps<N, P, T> &
+}: PlateTextProps<N, P> &
   React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>;
 
 export type PlateLeafProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> = PlateNodeProps<C> & RenderLeafProps<N, T> & { as?: T };
+> = PlateNodeProps<C> & RenderLeafProps<N>;
 
 export const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
   ({ as: Tag = 'span', children, ...props }, ref) => {
@@ -131,12 +123,8 @@ export const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
 
     return <Tag {...attributes}>{children}</Tag>;
   }
-) as <
-  N extends TText = TText,
-  P extends AnyPlatePlugin = AnyPlatePlugin,
-  T extends keyof HTMLElementTagNameMap = 'span',
->({
+) as <N extends TText = TText, P extends AnyPlatePlugin = AnyPlatePlugin>({
   className,
   ...props
-}: PlateLeafProps<N, P, T> &
+}: PlateLeafProps<N, P> &
   React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>;

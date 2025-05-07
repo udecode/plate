@@ -1,57 +1,60 @@
 import * as React from 'react';
 
 import { Slot } from '@radix-ui/react-slot';
-import { cn, withRef } from '@udecode/cn';
 import { type VariantProps, cva } from 'class-variance-authority';
 
-export const buttonVariants = cva(
-  'inline-flex cursor-pointer items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap ring-offset-background transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+import { cn } from '@/lib/utils';
+
+const buttonVariants = cva(
+  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     defaultVariants: {
-      size: 'sm',
+      size: 'default',
       variant: 'default',
     },
     variants: {
-      isMenu: {
-        true: 'w-full cursor-pointer justify-start',
-      },
       size: {
-        icon: 'size-[28px] rounded-md px-1.5',
-        lg: 'h-9 rounded-md px-4',
-        md: 'h-8 px-3 text-sm',
-        none: '',
-        sm: 'h-[28px] rounded-md px-2.5',
-        xs: 'h-8 rounded-md px-3 text-xs',
+        default: 'h-9 px-4 py-2 has-[>svg]:px-3',
+        icon: 'size-9',
+        lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
+        sm: 'h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5',
       },
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        default:
+          'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
         destructive:
-          'text-destructive-foreground bg-destructive hover:bg-destructive/90',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
-        inlineLink: 'text-base text-primary underline underline-offset-4',
+          'bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40',
+        ghost:
+          'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
         link: 'text-primary underline-offset-4 hover:underline',
         outline:
-          'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+          'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50',
         secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
       },
     },
   }
 );
 
-export const Button = withRef<
-  'button',
-  {
+function Button({
+  asChild = false,
+  className,
+  size,
+  variant,
+  ...props
+}: React.ComponentProps<'button'> &
+  VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
-  } & VariantProps<typeof buttonVariants>
->(({ asChild = false, className, isMenu, size, variant, ...props }, ref) => {
+  }) {
   const Comp = asChild ? Slot : 'button';
 
   return (
     <Comp
-      ref={ref}
-      className={cn(buttonVariants({ className, isMenu, size, variant }))}
+      className={cn(buttonVariants({ className, size, variant }))}
+      data-slot="button"
       {...props}
     />
   );
-});
+}
+
+export { Button, buttonVariants };

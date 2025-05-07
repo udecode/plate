@@ -13,7 +13,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/registry/ui/tooltip';
+} from '@/components/ui/tooltip';
 
 export function BlockCopyButton({
   className,
