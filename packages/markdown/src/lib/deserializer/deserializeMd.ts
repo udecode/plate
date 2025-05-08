@@ -15,8 +15,8 @@ import type { TRules } from '../rules';
 
 import { mdastToSlate } from './mdastToSlate';
 import { type ParseMarkdownBlocksOptions, parseMarkdownBlocks } from './utils';
-import { splitIncompleteMdx } from './utils';
 import { getMergedOptionsDeserialize } from './utils/getMergedOptionsDeserialize';
+import { markdownToSlateNodesSafely } from './utils/markdownToSlateNodesSafely';
 
 // TODO: fixes tests
 
@@ -87,42 +87,7 @@ export const deserializeMd = (
     options?.onError?.(error as Error);
 
     if (!options?.withoutMdx) {
-      output = markdownToSlateNodes(editor, data, {
-        ...options,
-        withoutMdx: true,
-      });
-    }
-
-    if (!options?.withoutMdx) {
-      const result = splitIncompleteMdx(data);
-
-      if (Array.isArray(result)) {
-        const [data1, data2] = result;
-
-        const inlineNodes = markdownToSlateNodes(editor, data2, {
-          ...options,
-          withoutMdx: true,
-        });
-
-        const blockNodes = markdownToSlateNodes(editor, data1, options);
-
-        // Push inlineNodes to the children of the last block in blockNodes
-        if (blockNodes.length > 0 && inlineNodes.length > 0) {
-          const lastBlock = blockNodes.at(-1);
-
-          // FIXME the case of lastblock is  table or code block
-          if (lastBlock.children) {
-            lastBlock.children.push(...inlineNodes);
-          }
-        }
-
-        output = blockNodes;
-      } else {
-        output = markdownToSlateNodes(editor, data, {
-          ...options,
-          withoutMdx: true,
-        });
-      }
+      output = markdownToSlateNodesSafely(editor, data, options);
     }
   }
 

@@ -4,6 +4,7 @@ import {
   CodePlugin,
   ItalicPlugin,
   StrikethroughPlugin,
+  UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -18,13 +19,11 @@ jsxt;
 import { markdownPlugin } from '../../../../../../apps/www/src/registry/default/components/editor/plugins/markdown-plugin';
 import { createSlateEditor, SlateEditor } from '@udecode/plate';
 import { AIChatPlugin, AIPlugin } from '../../../react';
+import { BasicMarksPlugin } from '../../../../../basic-marks/src/react/BasicMarksPlugin';
 // Helper function to create input and editor with common configuration
 export const defaultPlugins = [
   ParagraphPlugin,
-  BoldPlugin,
-  CodePlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
+  BasicMarksPlugin,
   IndentPlugin,
   IndentListPlugin,
   markdownPlugin,
