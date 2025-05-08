@@ -10,16 +10,7 @@ function createFontRule(propName: string) {
 
   return {
     mark: true,
-    deserialize: (mdastNode: MdMdxJsxTextElement, deco: any, options: any) => {
-      const value = getStyleValue(mdastNode, styleName);
-      return convertChildrenDeserialize(
-        mdastNode.children,
-        { [propName]: value, ...deco },
-        options
-      ) as any;
-    },
     serialize: (slateNode: any): MdMdxJsxTextElement => {
-      const styleName = kebabCase(propName);
       return {
         attributes: [
           {
@@ -29,7 +20,7 @@ function createFontRule(propName: string) {
           },
         ],
         children: [{ type: 'text', value: slateNode.text }],
-        name: propName,
+        name: 'span',
         type: 'mdxJsxTextElement',
       };
     },
@@ -42,4 +33,27 @@ export const fontRules: TRules = {
   fontFamily: createFontRule('fontFamily'),
   fontSize: createFontRule('fontSize'),
   fontWeight: createFontRule('fontWeight'),
+  span: {
+    mark: true,
+    deserialize: (mdastNode: MdMdxJsxTextElement, deco: any, options: any) => {
+      const fontFamily = getStyleValue(mdastNode, 'font-family');
+      const fontSize = getStyleValue(mdastNode, 'font-size');
+      const fontWeight = getStyleValue(mdastNode, 'font-weight');
+      const color = getStyleValue(mdastNode, 'color');
+      const backgroundColor = getStyleValue(mdastNode, 'background-color');
+
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        {
+          ...deco,
+          backgroundColor,
+          color,
+          fontFamily,
+          fontSize,
+          fontWeight,
+        },
+        options
+      ) as any;
+    },
+  },
 };

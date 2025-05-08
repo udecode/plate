@@ -100,7 +100,7 @@ type FontKeys =
   | 'backgroundColor'
   | 'color';
 
-type GFMKeys = 'del' | 'u' | 'sub' | 'sup';
+type GFMKeys = 'del' | 'u' | 'sub' | 'sup' | 'mark';
 
 const mdastToPlateTypeMap: Record<MdastTypes, plateTypes | (string & {})> = {
   // common elements
@@ -139,11 +139,12 @@ const mdastToPlateTypeMap: Record<MdastTypes, plateTypes | (string & {})> = {
   mdxJsxFlowElement: 'mdxJsxFlowElement',
   mdxJsxTextElement: 'mdxJsxTextElement',
   mdxjsEsm: 'mdxjsEsm',
-  // GFM
+  // GFM / html
   del: 'strikethrough',
   sub: 'subscript',
   sup: 'superscript',
   u: 'underline',
+  mark: 'highlight',
   // font
   fontFamily: 'fontFamily',
   fontSize: 'fontSize',

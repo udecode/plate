@@ -8,8 +8,14 @@ export const getStyleValue = (
     (attr) => 'name' in attr && attr.name === 'style'
   ) as any;
 
-  const mach = styleAttribute?.value?.match(
-    new RegExp(`${styleName}:\\s*([^;]+);`)
-  );
-  return mach ? mach[1] : undefined;
+  if (!styleAttribute?.value) return undefined;
+
+  const styles = styleAttribute.value.split(';');
+  for (const style of styles) {
+    const [name, value] = style.split(':').map((s: string) => s.trim());
+    if (name === styleName) {
+      return value;
+    }
+  }
+  return undefined;
 };

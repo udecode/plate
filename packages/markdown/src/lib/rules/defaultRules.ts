@@ -331,17 +331,11 @@ export const defaultRules: TRules = {
         options
       ) as any;
     },
-    serialize(slateNode, options): MdMdxJsxTextElement {
+    serialize(slateNode): MdMdxJsxTextElement {
       return {
-        attributes: [
-          {
-            name: 'style',
-            type: 'mdxJsxAttribute',
-            value: 'background-color: yellow;',
-          },
-        ],
+        attributes: [],
         children: [{ type: 'text', value: slateNode.text }],
-        name: 'highlight',
+        name: 'mark',
         type: 'mdxJsxTextElement',
       };
     },

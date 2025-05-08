@@ -2,7 +2,11 @@
 
 import React from 'react';
 
-import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
+import {
+  MarkdownPlugin,
+  remarkMdx,
+  remarkMention,
+} from '@udecode/plate-markdown';
 import { Plate, usePlateEditor } from '@udecode/plate/react';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
@@ -106,7 +110,13 @@ export default function MarkdownDemo() {
       plugins: editorPlugins,
       value: (editor) =>
         editor.getApi(MarkdownPlugin).markdown.deserialize(initialMarkdown, {
-          remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkEmoji as any],
+          remarkPlugins: [
+            remarkMath,
+            remarkGfm,
+            remarkMdx,
+            remarkMention,
+            remarkEmoji as any,
+          ],
         }),
     },
     []
@@ -117,7 +127,13 @@ export default function MarkdownDemo() {
       editor.tf.reset();
       editor.tf.setValue(
         editor.api.markdown.deserialize(debouncedMarkdownValue, {
-          remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkEmoji as any],
+          remarkPlugins: [
+            remarkMath,
+            remarkGfm,
+            remarkMdx,
+            remarkMention,
+            remarkEmoji as any,
+          ],
         })
       );
     }
