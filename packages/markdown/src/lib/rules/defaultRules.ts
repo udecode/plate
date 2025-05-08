@@ -764,7 +764,7 @@ export const defaultRules: TRules = {
     deserialize: (mdastNode, deco, options) => {
       return convertChildrenDeserialize(
         mdastNode.children,
-        deco,
+        { subscript: true, ...deco },
         options
       ) as any;
     },
