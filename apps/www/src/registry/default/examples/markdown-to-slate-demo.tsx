@@ -55,7 +55,7 @@ function greet() {
 The following node and marks are not supported in Markdown but can be serialized and deserialized using MDX or specialized UnifiedJS plugins.
 </callout>
 
-Advanced marks: <kbd>⌘ + B</kbd>,<u>underlined</u>, <highlight style="background-color: yellow;">highlighted</highlight> text, <color style="color: #93C47D;">colored text</color> and <backgroundColor style="background-color: #6C9EEB;">background highlights</backgroundColor> for visual emphasis.
+Advanced marks: <kbd>⌘ + B</kbd>,<u>underlined</u>, <mark>highlighted</mark> text, <span style="color: #93C47D;">colored text</span> and <span style="background-color: #6C9EEB;">background highlights</span> for visual emphasis.
 
 Superscript like E=mc<sup>2</sup> and subscript like H<sub>2</sub>O demonstrate mathematical and chemical notation capabilities.
 
@@ -84,13 +84,13 @@ left
 </column_group>
 
 PDF embedding makes document referencing simple and intuitive.
-<file name="sample.pdf" align="center" url="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf" width="80%" isUpload="true" />
+<file name="sample.pdf" align="center" src="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf" width="80%" isUpload="true" />
 
 Audio players can be embedded directly into documents, supporting online audio resources.
-<audio align="center" url="https://samplelib.com/lib/preview/mp3/sample-3s.mp3" width="80%" />
+<audio align="center" src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3" width="80%" />
 
 Video playback features support embedding various online video resources, enriching document content.
-<video align="center" url="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4" width="80%" isUpload="true" />
+<video align="center" src="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4" width="80%" isUpload="true" />
 
 :smile: :heart:
 `;

@@ -8,19 +8,20 @@ import { parseAttributes, propsToAttributes } from './utils';
 function createMediaRule() {
   return {
     deserialize: (node: MdMdxJsxFlowElement): TMediaElement => {
-      const props = parseAttributes(node.attributes);
+      const { src, ...props } = parseAttributes(node.attributes);
 
       return {
         children: [{ text: '' }],
         type: node.name!,
+        url: src,
         ...props,
       } as TMediaElement;
     },
     serialize: (node: TMediaElement, options: any) => {
-      const { id, children, type, ...rest } = node;
+      const { id, children, type, url, ...rest } = node;
 
       return {
-        attributes: propsToAttributes(rest),
+        attributes: propsToAttributes({ ...rest, src: url }),
         children: convertNodesSerialize(children, options) as any,
         name: type,
         type: 'mdxJsxFlowElement',

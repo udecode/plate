@@ -110,11 +110,11 @@ Centered text
 
 Text with custom line height
 
-<file name="sample.pdf" url="https://example.com/sample.pdf" />
+<file name="sample.pdf" src="https://example.com/sample.pdf" />
 
-<audio url="https://example.com/audio.mp3" />
+<audio src="https://example.com/audio.mp3" />
 
-<video url="https://example.com/video.mp4" />
+<video src="https://example.com/video.mp4" />
 
 <column_group layout="[50,50]">
   <column width="50%">
