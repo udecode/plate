@@ -39,6 +39,25 @@ export const Index: Record<string, any> = {
       source: "",
       meta: undefined,
     },
+    "callout-element": {
+      name: "callout-element",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: [],
+      files: [{
+        path: "src/registry/default/plate-ui/callout-element.tsx",
+        type: "registry:ui",
+        target: ""
+      },{
+        path: "src/registry/default/plate-ui/callout-element-static.tsx",
+        type: "registry:ui",
+        target: ""
+      }],
+      categories: undefined,
+      component: React.lazy(() => import("@/registry/default/plate-ui/callout-element.tsx")),
+      source: "",
+      meta: undefined,
+    },
     "code-block-element": {
       name: "code-block-element",
       description: "",
@@ -2431,7 +2450,7 @@ export const Index: Record<string, any> = {
       name: "editor-ai",
       description: "An AI editor",
       type: "registry:block",
-      registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","block-discussion","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","suggestion-leaf","date-element","draggable","equation-element","inline-equation-element","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
+      registryDependencies: ["api-ai","api-uploadthing","plate-types","editor-plugins","copilot-plugins","floating-toolbar-plugin","fixed-toolbar-plugin","ai-menu","ghost-text","block-discussion","cursor-overlay","editor","block-context-menu","ai-leaf","blockquote-element","code-block-element","code-leaf","code-line-element","code-syntax-leaf","column-element","column-group-element","comment-leaf","callout-element","suggestion-leaf","date-element","draggable","equation-element","inline-equation-element","emoji-input-element","excalidraw-element","heading-element","highlight-leaf","hr-element","image-element","kbd-leaf","link-element","media-audio-element","media-embed-element","media-file-element","media-placeholder-element","media-video-element","mention-element","mention-input-element","paragraph-element","placeholder","slash-input-element","table-cell-element","table-element","table-row-element","toc-element","toggle-element"],
       files: [{
         path: "src/registry/default/blocks/editor-ai/page.tsx",
         type: "registry:page",
@@ -4125,9 +4144,13 @@ export const Index: Record<string, any> = {
       name: "markdown-to-slate-demo",
       description: "",
       type: "registry:example",
-      registryDependencies: ["use-debounce"],
+      registryDependencies: ["use-debounce","editor-plugins"],
       files: [{
         path: "src/registry/default/examples/markdown-to-slate-demo.tsx",
+        type: "registry:example",
+        target: ""
+      },{
+        path: "src/registry/default/components/editor/use-create-editor.ts",
         type: "registry:example",
         target: ""
       }],
