@@ -4,6 +4,7 @@ apps/www/public/rd
 apps/www/src/app/api/ai
 **/tsconfig.tsbuildinfo
 templates/my-app
+*.local.json
 
 .yarn/*
 !.yarn/patches
