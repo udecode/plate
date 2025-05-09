@@ -37,6 +37,8 @@ const nextConfig = async (phase: string) => {
 
     staticPageGenerationTimeout: 1200,
 
+    transpilePackages: ['ts-morph'],
+
     // typescript: {
     //   ignoreBuildErrors: true,
     // },
@@ -70,7 +72,6 @@ const nextConfig = async (phase: string) => {
     webpack: (config, { buildId, dev, isServer, webpack }) => {
       config.externals.push({
         shiki: 'shiki',
-        'ts-morph': 'ts-morph',
         typescript: 'typescript',
       });
 
@@ -112,7 +113,10 @@ const nextConfig = async (phase: string) => {
       })
       .filter((pkg) => pkg?.startsWith('@udecode'));
 
-    config.transpilePackages = packageNames;
+    config.transpilePackages = [
+      ...(config.transpilePackages || []),
+      ...packageNames,
+    ];
   }
 
   return config;
