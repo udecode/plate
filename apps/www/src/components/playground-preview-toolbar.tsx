@@ -15,9 +15,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { siteConfig } from '@/config/site';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
-import { Button } from '@/registry/ui/button';
 
 import { BlockCopyButton } from './block-copy-button';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
@@ -63,11 +64,13 @@ export function PlaygroundPreviewToolbar({
           variant="ghost"
           className="h-7 rounded-md border bg-muted shadow-none"
           onClick={() => {
-            copyToClipboard(`npx shadcx@latest add plate/${block.name}`);
+            copyToClipboard(
+              `npx shadcn@canary add ${siteConfig.url}/r/${block.name}`
+            );
           }}
         >
           {isCopied ? <CheckIcon /> : <TerminalIcon />}
-          npx shadcx add plate/{block.name}
+          npx shadcn@canary add {siteConfig.url}/r/{block.name}
         </Button>
         <Separator orientation="vertical" className="mx-2 hidden h-4 md:flex" />
         <div className="hidden h-[28px] items-center gap-1.5 rounded-md border bg-background p-[2px] shadow-xs md:flex">

@@ -1,0 +1,74 @@
+---
+title: MCP Server
+description: Use the Model Context Protocol with Plate.
+---
+
+Plate has an official MCP server. This lets AI tools understand and work with our rich ecosystem of editor blocks (templates), plugin configurations, and UI components.
+
+## What is MCP?
+
+The Model Context Protocol (MCP) is an open protocol that standardizes how applications provide context to LLMs. This is useful for Plate because you can now give your AI-assisted IDE direct access to all Plate resources.
+
+## Using MCP with Plate
+
+Your AI can now:
+
+- Access to all our editor templates, plugins, and UI components
+- Generate code with the right imports and configurations
+- Help with setting up full editor instances or specific features
+- Keep your Plate configurations and components up to date
+
+Try asking your AI:
+
+```bash
+"Set up a Plate editor with basic formatting and table support"
+"Add the Plate AI plugin and components to my current editor"
+"Update my editor components to the latest version"
+```
+
+## How it works
+
+The Plate registry provides structured information about our resources that MCP-enabled tools can read:
+
+- Editor templates
+- Plugin configurations
+- UI components and styles
+- Dependencies and requirements for all resources
+- Documentation and migration guides (coming soon)
+
+## Setup with Cursor
+
+To enable Plate's MCP server in Cursor:
+
+1.  Open Cursor Settings.
+2.  Navigate to the "MCP" section.
+3.  Click "Add new global MCP server".
+4.  Enter the following JSON configuration:
+
+```json
+{
+  "mcpServers": {
+    "plate": {
+      "description": "Plate editors, plugins and components",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "shadcn@canary",
+        "registry:mcp"
+      ],
+      "env": {
+        "REGISTRY_URL": "https://platejs.org//r/registry.json"
+      }
+    }
+  }
+}
+```
+
+Once configured, Cursor will use this server to get context about Plate.
+
+## Best Practices
+
+1.  Let AI (like Cursor with MCP) handle editor setup, plugin integration, and component additions.
+2.  Use the [shadcn CLI](/docs/components/cli) for manual additions or when AI needs a fallback. This may happen when using a small model or when our documentation is not up to date.
+3.  Regularly check our [changelog](/docs/components/changelog) or ask your AI about updates to keep your Plate resources current.

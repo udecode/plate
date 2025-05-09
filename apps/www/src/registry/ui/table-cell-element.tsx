@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
 import type { TTableCellElement } from '@udecode/plate-table';
+import type { PlateElementProps } from '@udecode/plate/react';
 
-import { cn, withProps, withRef } from '@udecode/cn';
+import { cn } from '@udecode/cn';
 import {
   BlockSelectionPlugin,
   useBlockSelected,
@@ -27,15 +28,15 @@ import { cva } from 'class-variance-authority';
 import { blockSelectionVariants } from './block-selection';
 import { ResizeHandle } from './resizable';
 
-export const TableCellElement = withRef<
-  typeof PlateElement,
-  {
-    isHeader?: boolean;
-  }
->(({ children, className, isHeader, style, ...props }, ref) => {
+export function TableCellElement({
+  isHeader,
+  ...props
+}: PlateElementProps<TTableCellElement> & {
+  isHeader?: boolean;
+}) {
   const { api } = useEditorPlugin(TablePlugin);
   const readOnly = useReadOnly();
-  const element = props.element as TTableCellElement;
+  const element = props.element;
 
   const rowId = useElementSelector(([node]) => node.id as string, [], {
     key: TableRowPlugin.key,
@@ -58,10 +59,9 @@ export const TableCellElement = withRef<
 
   return (
     <PlateElement
-      ref={ref}
+      {...props}
       as={isHeader ? 'th' : 'td'}
       className={cn(
-        className,
         'h-full overflow-visible border-none bg-background p-0',
         element.background ? 'bg-(--cellBackground)' : 'bg-background',
         isHeader && 'text-left *:m-0',
@@ -78,10 +78,8 @@ export const TableCellElement = withRef<
           '--cellBackground': element.background,
           maxWidth: width || 240,
           minWidth: width || 120,
-          ...style,
         } as React.CSSProperties
       }
-      {...props}
       attributes={{
         ...props.attributes,
         colSpan: api.table.getColSpan(element),
@@ -92,7 +90,7 @@ export const TableCellElement = withRef<
         className="relative z-20 box-border h-full px-3 py-2"
         style={{ minHeight }}
       >
-        {children}
+        {props.children}
       </div>
 
       {!isSelectionAreaVisible && (
@@ -143,11 +141,13 @@ export const TableCellElement = withRef<
       )}
     </PlateElement>
   );
-});
+}
 
-export const TableCellHeaderElement = withProps(TableCellElement, {
-  isHeader: true,
-});
+export function TableCellHeaderElement(
+  props: React.ComponentProps<typeof TableCellElement>
+) {
+  return <TableCellElement {...props} isHeader />;
+}
 
 const columnResizeVariants = cva('hidden animate-in fade-in', {
   variants: {

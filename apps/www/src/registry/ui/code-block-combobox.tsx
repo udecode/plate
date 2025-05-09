@@ -8,6 +8,7 @@ import { cn } from '@udecode/cn';
 import { useEditorRef, useElement, useReadOnly } from '@udecode/plate/react';
 import { Check } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -21,8 +22,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-
-import { Button } from './button';
 
 const languages: { label: string; value: string }[] = [
   { label: 'Auto', value: 'auto' },
@@ -140,7 +139,7 @@ export function CodeBlockCombobox() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          size="xs"
+          size="sm"
           variant="ghost"
           className="h-6 justify-between gap-1 px-2 text-xs text-muted-foreground select-none"
           aria-expanded={open}

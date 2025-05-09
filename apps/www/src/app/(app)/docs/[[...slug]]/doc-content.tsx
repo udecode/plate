@@ -19,7 +19,7 @@ import { badgeVariants } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 
 // import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 

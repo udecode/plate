@@ -6,9 +6,9 @@ import { cn } from '@udecode/cn';
 import Link, { type LinkProps } from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
+import { Button } from '@/components/ui/button';
 import { docsConfig } from '@/config/docs';
 import { useMetaColor } from '@/hooks/use-meta-color';
-import { Button } from '@/registry/ui/button';
 
 import { Drawer, DrawerContent, DrawerTrigger } from './ui/drawer';
 
@@ -31,9 +31,8 @@ export function MobileNav() {
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerTrigger asChild>
         <Button
-          size="lg"
           variant="ghost"
-          className="-ml-2 mr-2 size-8 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+          className="mr-2 -ml-2 size-8 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
         >
           <svg
             className="size-6!"

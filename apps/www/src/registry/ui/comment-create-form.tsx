@@ -36,7 +36,7 @@ import { useCreateEditor } from '@/registry/components/editor/use-create-editor'
 import type { TComment } from './comment';
 
 import { AILeaf } from './ai-leaf';
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
 import { DateElement } from './date-element';
 import { Editor, EditorContainer } from './editor';
 import { EmojiInputElement } from './emoji-input-element';

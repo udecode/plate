@@ -1,45 +1,44 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
-import { cn, withRef } from '@udecode/cn';
+import type { TTodoListItemElement } from '@udecode/plate-list';
+import type { PlateElementProps } from '@udecode/plate/react';
+
 import {
   useTodoListElement,
   useTodoListElementState,
 } from '@udecode/plate-list/react';
 import { PlateElement } from '@udecode/plate/react';
 
-import { Checkbox } from './checkbox';
+import { Checkbox } from '@/components/ui/checkbox';
 
-export const TodoListElement = withRef<typeof PlateElement>(
-  ({ children, className, ...props }, ref) => {
-    const { element } = props;
-    const state = useTodoListElementState({ element });
-    const { checkboxProps } = useTodoListElement(state);
+export function TodoListElement(
+  props: PlateElementProps<TTodoListItemElement>
+) {
+  const { element } = props;
+  const state = useTodoListElementState({ element });
+  const { checkboxProps } = useTodoListElement(state);
 
-    return (
-      <PlateElement
-        ref={ref}
-        className={cn(className, 'flex flex-row py-1')}
-        {...props}
+  return (
+    <PlateElement {...props} className="flex flex-row py-1">
+      <div
+        className="mr-1.5 flex items-center justify-center select-none"
+        contentEditable={false}
       >
-        <div
-          className="mr-1.5 flex items-center justify-center select-none"
-          contentEditable={false}
-        >
-          <Checkbox {...checkboxProps} />
-        </div>
-        <span
-          className={cn(
-            'flex-1 focus:outline-none',
-            state.checked && 'text-muted-foreground line-through'
-          )}
-          contentEditable={!state.readOnly}
-          suppressContentEditableWarning
-        >
-          {children}
-        </span>
-      </PlateElement>
-    );
-  }
-);
+        <Checkbox {...checkboxProps} />
+      </div>
+      <span
+        className={
+          state.checked
+            ? 'flex-1 text-muted-foreground line-through focus:outline-none'
+            : 'flex-1 focus:outline-none'
+        }
+        contentEditable={!state.readOnly}
+        suppressContentEditableWarning
+      >
+        {props.children}
+      </span>
+    </PlateElement>
+  );
+}

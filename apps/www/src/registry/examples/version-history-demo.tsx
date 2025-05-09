@@ -30,8 +30,8 @@ import {
 } from '@udecode/plate/react';
 import { cloneDeep } from 'lodash';
 
+import { Button } from '@/components/ui/button';
 import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
-import { Button } from '@/registry/ui/button';
 
 const InlinePlugin = createPlatePlugin({
   key: 'inline',

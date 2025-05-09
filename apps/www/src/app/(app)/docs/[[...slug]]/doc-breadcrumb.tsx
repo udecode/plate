@@ -8,6 +8,7 @@ import { cn } from '@udecode/cn';
 import { ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -22,7 +23,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { getDocIcon } from '@/config/docs-icons';
-import { Button } from '@/registry/ui/button';
 
 export function DocBreadcrumb({
   buttonClassName,
@@ -108,8 +108,8 @@ export function DocBreadcrumb({
                       <div>
                         <div
                           className={cn(
-                            'line-clamp-1',
-                            category && 'font-medium'
+                            'line-clamp-1'
+                            // category && 'font-medium'
                           )}
                         >
                           {item.title}

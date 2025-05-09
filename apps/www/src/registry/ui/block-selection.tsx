@@ -26,8 +26,7 @@ export const blockSelectionVariants = cva(
 export function BlockSelection({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement> &
-  VariantProps<typeof blockSelectionVariants>) {
+}: React.ComponentProps<'div'> & VariantProps<typeof blockSelectionVariants>) {
   const isBlockSelected = useBlockSelected();
   const isDragging = usePluginOption(DndPlugin, 'isDragging');
 

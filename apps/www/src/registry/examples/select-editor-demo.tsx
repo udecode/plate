@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckIcon, PlusIcon } from 'lucide-react';
 import * as z from 'zod';
 
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,

@@ -5,17 +5,16 @@
   "title": "Line Height Dropdown Menu",
   "description": "A menu for controlling text line spacing.",
   "dependencies": [
-    "@udecode/plate-line-height",
-    "@radix-ui/react-dropdown-menu"
+    "@udecode/plate-line-height"
   ],
   "registryDependencies": [
     "http://localhost:3000/r/toolbar",
-    "http://localhost:3000/r/dropdown-menu"
+    "dropdown-menu"
   ],
   "files": [
     {
       "path": "src/registry/ui/line-height-dropdown-menu.tsx",
-      "content": "'use client';\n\nimport React from 'react';\n\nimport type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';\n\nimport {\n  useLineHeightDropdownMenu,\n  useLineHeightDropdownMenuState,\n} from '@udecode/plate-line-height/react';\nimport { WrapText } from 'lucide-react';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuRadioGroup,\n  DropdownMenuRadioItem,\n  DropdownMenuTrigger,\n  useOpenState,\n} from './dropdown-menu';\nimport { ToolbarButton } from './toolbar';\n\nexport function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {\n  const openState = useOpenState();\n  const state = useLineHeightDropdownMenuState();\n  const { radioGroupProps } = useLineHeightDropdownMenu(state);\n\n  return (\n    <DropdownMenu modal={false} {...openState} {...props}>\n      <DropdownMenuTrigger asChild>\n        <ToolbarButton\n          pressed={openState.open}\n          tooltip=\"Line height\"\n          isDropdown\n        >\n          <WrapText />\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent className=\"min-w-0\" align=\"start\">\n        <DropdownMenuRadioGroup {...radioGroupProps}>\n          {state.values.map((_value) => (\n            <DropdownMenuRadioItem\n              key={_value}\n              className=\"min-w-[180px]\"\n              value={_value}\n            >\n              {_value}\n            </DropdownMenuRadioItem>\n          ))}\n        </DropdownMenuRadioGroup>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';\n\nimport { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';\nimport {\n  useLineHeightDropdownMenu,\n  useLineHeightDropdownMenuState,\n} from '@udecode/plate-line-height/react';\nimport { CheckIcon, WrapText } from 'lucide-react';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuRadioGroup,\n  DropdownMenuRadioItem,\n  DropdownMenuTrigger,\n} from '@/components/ui/dropdown-menu';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {\n  const [open, setOpen] = React.useState(false);\n  const state = useLineHeightDropdownMenuState();\n  const { radioGroupProps } = useLineHeightDropdownMenu(state);\n\n  return (\n    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>\n      <DropdownMenuTrigger asChild>\n        <ToolbarButton pressed={open} tooltip=\"Line height\" isDropdown>\n          <WrapText />\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent className=\"min-w-0\" align=\"start\">\n        <DropdownMenuRadioGroup {...radioGroupProps}>\n          {state.values.map((_value) => (\n            <DropdownMenuRadioItem\n              key={_value}\n              className=\"min-w-[180px] pl-2 *:first:[span]:hidden\"\n              value={_value}\n            >\n              <span className=\"pointer-events-none absolute right-2 flex size-3.5 items-center justify-center\">\n                <DropdownMenuItemIndicator>\n                  <CheckIcon />\n                </DropdownMenuItemIndicator>\n              </span>\n              {_value}\n            </DropdownMenuRadioItem>\n          ))}\n        </DropdownMenuRadioGroup>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

@@ -1,11 +1,12 @@
 'use client';
-import React from 'react';
+
+import * as React from 'react';
 
 import type { TSuggestionText } from '@udecode/plate-suggestion';
+import type { PlateLeafProps } from '@udecode/plate/react';
 
 import { cn } from '@udecode/cn';
 import {
-  type PlateLeafProps,
   PlateLeaf,
   useEditorPlugin,
   usePluginOption,
@@ -13,15 +14,14 @@ import {
 
 import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
 
-export function SuggestionLeaf(props: PlateLeafProps) {
-  const { children, className, leaf } = props;
-
+export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
   const { api, setOption } = useEditorPlugin(suggestionPlugin);
+  const leaf = props.leaf;
 
-  const leafId: string = api.suggestion.nodeId(leaf as TSuggestionText) ?? '';
+  const leafId: string = api.suggestion.nodeId(leaf) ?? '';
   const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');
   const hoverSuggestionId = usePluginOption(suggestionPlugin, 'hoverId');
-  const dataList = api.suggestion.dataList(leaf as TSuggestionText);
+  const dataList = api.suggestion.dataList(leaf);
 
   const hasRemove = dataList.some((data) => data.type === 'remove');
   const hasActive = dataList.some((data) => data.id === activeSuggestionId);
@@ -38,7 +38,6 @@ export function SuggestionLeaf(props: PlateLeafProps) {
       {...props}
       as={Component}
       className={cn(
-        className,
         'bg-emerald-100 text-emerald-700 no-underline transition-colors duration-200',
         (hasActive || hasHover) && 'bg-emerald-200/80',
         hasRemove && 'bg-red-100 text-red-700',
@@ -50,7 +49,7 @@ export function SuggestionLeaf(props: PlateLeafProps) {
         onMouseLeave: () => setOption('hoverId', null),
       }}
     >
-      {children}
+      {props.children}
     </PlateLeaf>
   );
 }

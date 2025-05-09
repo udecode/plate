@@ -32,13 +32,15 @@ export function NavItemCard({
       className="rounded-lg"
       href={hrefWithLocale(item.href!, locale)}
     >
-      <Card className="h-full bg-muted/30 transition-shadow duration-200 hover:shadow-md">
+      <Card className="h-full bg-muted/30 p-0 transition-shadow duration-200 hover:shadow-md">
         <CardContent className="flex gap-2 p-2">
-          {Icon && (
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-white">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-white">
+            {Icon ? (
               <Icon className="size-5 text-neutral-800" />
-            </div>
-          )}
+            ) : (
+              <div className="size-5" />
+            )}
+          </div>
           <div className="space-y-0">
             <CardTitle className="mt-0.5 line-clamp-1 text-base font-medium">
               {item.title}

@@ -20,7 +20,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { docsConfig } from '@/config/docs';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 
 export function CommandItems({
   children,

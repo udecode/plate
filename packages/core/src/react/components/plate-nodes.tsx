@@ -2,7 +2,7 @@
 import React from 'react';
 
 import type { Path, TElement, TText } from '@udecode/slate';
-import type { AnyObject } from '@udecode/utils';
+import type { UnknownObject } from '@udecode/utils';
 
 import { useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
@@ -14,7 +14,7 @@ import type {
   RenderLeafProps,
   RenderTextProps,
 } from '../../lib';
-import type { AnyPlatePlugin, PlatePluginContext } from '../plugin';
+import type { PlatePluginContext } from '../plugin';
 
 import { useEditorMounted } from '../stores';
 
@@ -34,21 +34,54 @@ export type PlateElementProps<
 > = PlateNodeProps<C> &
   RenderElementProps<N> & {
     path: Path;
-  };
+  } & DeprecatedNodeProps;
+
+type DeprecatedNodeProps = {
+  /**
+   * @deprecated Optional class to be merged with `attributes.className`.
+   * @default undefined
+   */
+  className?: string;
+  /**
+   * @deprecated Optional style to be merged with `attributes.style`
+   * @default undefined
+   */
+  style?: React.CSSProperties;
+};
 
 export type PlateNodeProps<C extends AnyPluginConfig = PluginConfig> =
   PlatePluginContext<C> & {
-    as?: React.ElementType;
-    attributes?: AnyObject;
-    className?: string;
-    style?: React.CSSProperties;
+    /**
+     * Optional ref to be merged with `attributes.ref`
+     *
+     * @default undefined
+     */
+    ref?: any;
   };
 
-export const PlateElement = React.forwardRef(function PlateElement<
+export type PlateHTMLProps<
+  C extends AnyPluginConfig = PluginConfig,
+  T extends keyof HTMLElementTagNameMap = 'div',
+> = PlateNodeProps<C> & {
+  /** HTML attributes to pass to the underlying HTML element */
+  attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
+    UnknownObject;
+  as?: T;
+  /** Class to be merged with `attributes.className` */
+  className?: string;
+  /** Style to be merged with `attributes.style` */
+  style?: React.CSSProperties;
+};
+
+export type StyledPlateElementProps<
   N extends TElement = TElement,
-  P extends AnyPlatePlugin = AnyPlatePlugin,
->(
-  { as: Tag = 'div', children, ...props }: PlateElementProps<N, P>,
+  C extends AnyPluginConfig = PluginConfig,
+  T extends keyof HTMLElementTagNameMap = 'div',
+> = Omit<PlateElementProps<N, C>, keyof DeprecatedNodeProps> &
+  PlateHTMLProps<C, T>;
+
+export const PlateElement = React.forwardRef(function PlateElement(
+  { as: Tag = 'div', children, ...props }: StyledPlateElementProps,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
   const attributes = useNodeAttributes(props, ref);
@@ -90,41 +123,65 @@ export const PlateElement = React.forwardRef(function PlateElement<
       ))}
     </Tag>
   );
-}) as (
-  props: PlateElementProps<TElement, AnyPlatePlugin> &
-    React.RefAttributes<HTMLDivElement>
-) => React.ReactElement<any>;
+}) as <
+  N extends TElement = TElement,
+  C extends AnyPluginConfig = PluginConfig,
+  T extends keyof HTMLElementTagNameMap = 'div',
+>(
+  props: StyledPlateElementProps<N, C, T>
+) => React.ReactElement;
 
 export type PlateTextProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-> = PlateNodeProps<C> & RenderTextProps<N>;
+> = PlateNodeProps<C> & RenderTextProps<N> & DeprecatedNodeProps;
 
-export const PlateText = React.forwardRef<HTMLSpanElement, PlateTextProps>(
-  ({ as: Tag = 'span', children, ...props }, ref) => {
-    const attributes = useNodeAttributes(props, ref);
+export type StyledPlateTextProps<
+  N extends TText = TText,
+  C extends AnyPluginConfig = PluginConfig,
+  T extends keyof HTMLElementTagNameMap = 'span',
+> = Omit<PlateTextProps<N, C>, keyof DeprecatedNodeProps> &
+  PlateHTMLProps<C, T>;
 
-    return <Tag {...attributes}>{children}</Tag>;
-  }
-) as <N extends TText = TText, P extends AnyPlatePlugin = AnyPlatePlugin>({
-  className,
-  ...props
-}: PlateTextProps<N, P> &
-  React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>;
+export const PlateText = React.forwardRef<
+  HTMLSpanElement,
+  StyledPlateTextProps
+>(({ as: Tag = 'span', children, ...props }, ref) => {
+  const attributes = useNodeAttributes(props, ref);
+
+  return <Tag {...attributes}>{children}</Tag>;
+}) as <
+  N extends TText = TText,
+  C extends AnyPluginConfig = PluginConfig,
+  T extends keyof HTMLElementTagNameMap = 'span',
+>(
+  props: StyledPlateTextProps<N, C, T>
+) => React.ReactElement;
 
 export type PlateLeafProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-> = PlateNodeProps<C> & RenderLeafProps<N>;
+> = PlateNodeProps<C> & RenderLeafProps<N> & DeprecatedNodeProps;
 
-export const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
-  ({ as: Tag = 'span', children, ...props }, ref) => {
-    const attributes = useNodeAttributes(props, ref);
+export type StyledPlateLeafProps<
+  N extends TText = TText,
+  C extends AnyPluginConfig = PluginConfig,
+  T extends keyof HTMLElementTagNameMap = 'span',
+> = Omit<PlateLeafProps<N, C>, keyof DeprecatedNodeProps> &
+  PlateHTMLProps<C, T>;
 
-    return <Tag {...attributes}>{children}</Tag>;
-  }
-) as <N extends TText = TText, P extends AnyPlatePlugin = AnyPlatePlugin>({
+export const PlateLeaf = React.forwardRef<
+  HTMLSpanElement,
+  StyledPlateLeafProps
+>(({ as: Tag = 'span', children, ...props }, ref) => {
+  const attributes = useNodeAttributes(props, ref);
+
+  return <Tag {...attributes}>{children}</Tag>;
+}) as <
+  N extends TText = TText,
+  C extends AnyPluginConfig = PluginConfig,
+  T extends keyof HTMLElementTagNameMap = 'span',
+>({
   className,
   ...props
-}: PlateLeafProps<N, P> &
-  React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>;
+}: StyledPlateLeafProps<N, C, T>) => React.ReactElement;

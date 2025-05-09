@@ -9,12 +9,12 @@
   "files": [
     {
       "path": "src/registry/ui/code-line-element.tsx",
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate/react';\n\nexport const CodeLineElement = withRef<typeof PlateElement>((props, ref) => (\n  <PlateElement ref={ref} {...props} />\n));\n",
+      "content": "'use client';\n\nimport { type PlateElementProps, PlateElement } from '@udecode/plate/react';\n\nexport function CodeLineElement(props: PlateElementProps) {\n  return <PlateElement {...props} />;\n}\n",
       "type": "registry:ui"
     },
     {
       "path": "src/registry/ui/code-line-element-static.tsx",
-      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate';\n\nimport { SlateElement } from '@udecode/plate';\n\nexport const CodeLineElementStatic = ({\n  children,\n  ...props\n}: SlateElementProps) => {\n  return <SlateElement {...props}>{children}</SlateElement>;\n};\n",
+      "content": "import { type SlateElementProps, SlateElement } from '@udecode/plate';\n\nexport function CodeLineElementStatic(props: SlateElementProps) {\n  return <SlateElement {...props} />;\n}\n",
       "type": "registry:ui"
     }
   ],

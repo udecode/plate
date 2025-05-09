@@ -1,8 +1,7 @@
-import React from 'react';
+import * as React from 'react';
 
 import type { SlateEditor, SlateElementProps, TElement } from '@udecode/plate';
 
-import { cn } from '@udecode/cn';
 import { NodeApi, SlateElement } from '@udecode/plate';
 import {
   type Heading,
@@ -12,7 +11,7 @@ import {
 } from '@udecode/plate-heading';
 import { cva } from 'class-variance-authority';
 
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
 
 const headingItemVariants = cva(
   'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-left font-medium text-muted-foreground underline decoration-[0.5px] underline-offset-4 hover:bg-accent hover:text-muted-foreground',
@@ -27,23 +26,21 @@ const headingItemVariants = cva(
   }
 );
 
-export function TocElementStatic({
-  children,
-  className,
-  ...props
-}: SlateElementProps) {
+export function TocElementStatic(props: SlateElementProps) {
   const { editor } = props;
   const headingList = getHeadingList(editor);
 
   return (
-    <SlateElement className={cn(className, 'mb-1 p-0')} {...props}>
+    <SlateElement {...props} className="mb-1 p-0">
       <div>
         {headingList.length > 0 ? (
           headingList.map((item) => (
             <Button
               key={item.title}
               variant="ghost"
-              className={cn(headingItemVariants({ depth: item.depth as any }))}
+              className={headingItemVariants({
+                depth: item.depth as 1 | 2 | 3,
+              })}
             >
               {item.title}
             </Button>
@@ -54,7 +51,7 @@ export function TocElementStatic({
           </div>
         )}
       </div>
-      {children}
+      {props.children}
     </SlateElement>
   );
 }

@@ -91,10 +91,10 @@ export function DocsNav({ config }: { config: DocsConfig }) {
             return (
               <AccordionItem
                 key={index}
-                className="mb-4 border-none px-2"
+                className="mb-4 border-none"
                 value={`item-${index}`}
               >
-                <AccordionTrigger className="py-1 text-sm font-semibold outline-none">
+                <AccordionTrigger className="px-2 py-1 text-sm font-semibold outline-none">
                   <div className="flex items-center">
                     {item.title}
                     {item.label && (

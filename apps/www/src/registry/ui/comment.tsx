@@ -27,17 +27,17 @@ import {
 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-plugin';
-
-import { Button } from './button';
-import { useCommentEditor } from './comment-create-form';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './dropdown-menu';
+} from '@/components/ui/dropdown-menu';
+import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-plugin';
+
+import { useCommentEditor } from './comment-create-form';
 import { Editor, EditorContainer } from './editor';
 
 export const formatCommentDate = (date: Date) => {

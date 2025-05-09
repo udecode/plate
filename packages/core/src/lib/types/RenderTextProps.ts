@@ -15,5 +15,7 @@ export interface RenderTextProps<N extends TText = TText> {
   attributes: {
     'data-slate-node': 'text';
     ref: any;
-  } & React.HTMLAttributes<HTMLSpanElement>;
+    className?: string;
+    style?: React.CSSProperties;
+  };
 }

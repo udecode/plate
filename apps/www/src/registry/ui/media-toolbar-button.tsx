@@ -32,16 +32,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  useOpenState,
-} from './dropdown-menu';
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+
 import {
   ToolbarSplitButton,
   ToolbarSplitButtonPrimary,
@@ -91,7 +90,7 @@ export function MediaToolbarButton({
   const currentConfig = MEDIA_CONFIG[nodeType];
 
   const editor = useEditorRef();
-  const openState = useOpenState();
+  const [open, setOpen] = React.useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const { openFilePicker } = useFilePicker({
@@ -111,16 +110,21 @@ export function MediaToolbarButton({
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown') {
             e.preventDefault();
-            openState.onOpenChange(true);
+            setOpen(true);
           }
         }}
-        pressed={openState.open}
+        pressed={open}
       >
-        <ToolbarSplitButtonPrimary tooltip={currentConfig.tooltip}>
+        <ToolbarSplitButtonPrimary>
           {currentConfig.icon}
         </ToolbarSplitButtonPrimary>
 
-        <DropdownMenu {...openState} modal={false} {...props}>
+        <DropdownMenu
+          open={open}
+          onOpenChange={setOpen}
+          modal={false}
+          {...props}
+        >
           <DropdownMenuTrigger asChild>
             <ToolbarSplitButtonSecondary />
           </DropdownMenuTrigger>

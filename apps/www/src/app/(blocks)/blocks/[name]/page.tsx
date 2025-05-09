@@ -26,7 +26,7 @@ export async function generateMetadata({
   }
 
   const title = `${item.description ? `${item.description}` : ''}`;
-  const description = `npx shadcx@latest add ${item.name}`;
+  const description = `npx shadcn@canary add ${item.name}`;
 
   return {
     description,

@@ -4,8 +4,8 @@ import * as React from 'react';
 
 import { ArrowRightIcon } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import { useLocale } from '@/hooks/useLocale';
-import { Button } from '@/registry/ui/button';
 const i18n = {
   cn: {
     description: 'AI, Copilot, 上传, 数学, 以及更多',
@@ -21,9 +21,8 @@ export function AnnouncementButton() {
 
   return (
     <Button
-      size="lg"
       variant="link"
-      className="group mb-2 inline-flex h-5 flex-wrap items-center gap-0 rounded-lg px-0.5 text-sm font-medium hover:no-underline"
+      className="group mb-2 inline-flex h-5 flex-wrap items-center gap-0 rounded-lg !px-0.5 text-sm font-medium hover:no-underline"
       onClick={() => {
         window.open('https://pro.platejs.org', '_blank');
       }}
@@ -36,7 +35,7 @@ export function AnnouncementButton() {
           Plate Plus
         </span> */}
       </span>
-      <ArrowRightIcon className="ml-2 size-6" />
+      <ArrowRightIcon className="ml-2" />
     </Button>
   );
 }

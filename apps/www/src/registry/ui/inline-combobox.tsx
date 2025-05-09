@@ -29,7 +29,7 @@ import {
   useComboboxContext,
   useComboboxStore,
 } from '@ariakit/react';
-import { cn, withCn } from '@udecode/cn';
+import { cn } from '@udecode/cn';
 import { filterWords } from '@udecode/plate-combobox';
 import {
   type UseComboboxInputResult,
@@ -371,15 +371,35 @@ const InlineComboboxEmpty = ({
 
 const InlineComboboxRow = ComboboxRow;
 
-const InlineComboboxGroup = withCn(
-  ComboboxGroup,
-  'hidden py-1.5 not-last:border-b [&:has([role=option])]:block'
-);
+function InlineComboboxGroup({
+  className,
+  ...props
+}: React.ComponentProps<typeof ComboboxGroup>) {
+  return (
+    <ComboboxGroup
+      {...props}
+      className={cn(
+        'hidden py-1.5 not-last:border-b [&:has([role=option])]:block',
+        className
+      )}
+    />
+  );
+}
 
-const InlineComboboxGroupLabel = withCn(
-  ComboboxGroupLabel,
-  'mt-1.5 mb-2 px-3 text-xs font-medium text-muted-foreground'
-);
+function InlineComboboxGroupLabel({
+  className,
+  ...props
+}: React.ComponentProps<typeof ComboboxGroupLabel>) {
+  return (
+    <ComboboxGroupLabel
+      {...props}
+      className={cn(
+        'mt-1.5 mb-2 px-3 text-xs font-medium text-muted-foreground',
+        className
+      )}
+    />
+  );
+}
 
 export {
   InlineCombobox,

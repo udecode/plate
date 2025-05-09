@@ -30,6 +30,7 @@ import {
 import Link from 'next/link';
 
 import { CopyNpmCommandButton } from '@/components/copy-button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Collapsible,
   CollapsibleContent,
@@ -57,7 +58,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { siteConfig } from '@/config/site';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
-import { Button, buttonVariants } from '@/registry/ui/button';
 
 // SYNC
 
@@ -264,14 +264,16 @@ function BlockViewerToolbar({
               variant="ghost"
               className="flex size-7 rounded-md border bg-transparent px-1.5 shadow-none lg:w-auto"
               onClick={() => {
-                copyToClipboard(`npx shadcx@latest add plate/${item.name}`);
+                copyToClipboard(
+                  `npx shadcn@canary add ${siteConfig.url}/r/${item.name}`
+                );
               }}
             >
               {isCopied ? <Check /> : <Terminal />}
 
               {block && (
                 <span className="hidden lg:inline">
-                  npx shadcx@latest add plate/{item.name}
+                  npx shadcn@canary add {siteConfig.url}/r/{item.name}
                 </span>
               )}
             </Button>

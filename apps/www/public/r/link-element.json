@@ -11,12 +11,12 @@
   "files": [
     {
       "path": "src/registry/ui/link-element.tsx",
-      "content": "'use client';\n\nimport React from 'react';\n\nimport type { TLinkElement } from '@udecode/plate-link';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { useLink } from '@udecode/plate-link/react';\nimport { PlateElement } from '@udecode/plate/react';\n\nexport const LinkElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const element = props.element as TLinkElement;\n    const { props: linkProps } = useLink({ element });\n\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"a\"\n        className={cn(\n          className,\n          'font-medium text-primary underline decoration-primary underline-offset-4'\n        )}\n        {...props}\n        {...(linkProps as any)}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TLinkElement } from '@udecode/plate-link';\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { useLink } from '@udecode/plate-link/react';\nimport { PlateElement } from '@udecode/plate/react';\n\nexport function LinkElement(props: PlateElementProps<TLinkElement>) {\n  const { props: linkProps } = useLink({ element: props.element });\n\n  return (\n    <PlateElement\n      {...props}\n      as=\"a\"\n      className=\"font-medium text-primary underline decoration-primary underline-offset-4\"\n      {...(linkProps as any)}\n    >\n      {props.children}\n    </PlateElement>\n  );\n}\n",
       "type": "registry:ui"
     },
     {
       "path": "src/registry/ui/link-element-static.tsx",
-      "content": "import React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate';\n\nexport const LinkElementStatic = ({\n  children,\n  className,\n  ...props\n}: SlateElementProps) => {\n  return (\n    <SlateElement\n      as=\"a\"\n      className={cn(\n        className,\n        'font-medium text-primary underline decoration-primary underline-offset-4'\n      )}\n      {...props}\n    >\n      {children}\n    </SlateElement>\n  );\n};\n",
+      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate';\nimport type { TLinkElement } from '@udecode/plate-link';\n\nimport { SlateElement } from '@udecode/plate';\n\nexport function LinkElementStatic(props: SlateElementProps<TLinkElement>) {\n  return (\n    <SlateElement\n      {...props}\n      as=\"a\"\n      className=\"font-medium text-primary underline decoration-primary underline-offset-4\"\n    >\n      {props.children}\n    </SlateElement>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

@@ -6,9 +6,9 @@ import { CheckIcon, CopyIcon } from '@radix-ui/react-icons';
 import { cn } from '@udecode/cn';
 import { ClipboardIcon } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import { useConfig } from '@/hooks/use-config';
 import { useThemesConfig } from '@/hooks/use-themes-config';
-import { Button } from '@/registry/ui/button';
 
 import { copyToClipboardWithMeta } from './copy-button';
 

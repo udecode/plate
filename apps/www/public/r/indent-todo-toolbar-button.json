@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "src/registry/ui/indent-todo-toolbar-button.tsx",
-      "content": "'use client';\n\nimport { withRef } from '@udecode/cn';\nimport {\n  useIndentTodoToolBarButton,\n  useIndentTodoToolBarButtonState,\n} from '@udecode/plate-indent-list/react';\nimport { ListTodoIcon } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const IndentTodoToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const state = useIndentTodoToolBarButtonState({ nodeType: 'todo' });\n    const { props } = useIndentTodoToolBarButton(state);\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Todo\" {...props} {...rest}>\n        <ListTodoIcon />\n      </ToolbarButton>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport {\n  useIndentTodoToolBarButton,\n  useIndentTodoToolBarButtonState,\n} from '@udecode/plate-indent-list/react';\nimport { ListTodoIcon } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function IndentTodoToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const state = useIndentTodoToolBarButtonState({ nodeType: 'todo' });\n  const { props: buttonProps } = useIndentTodoToolBarButton(state);\n\n  return (\n    <ToolbarButton {...props} {...buttonProps} tooltip=\"Todo\">\n      <ListTodoIcon />\n    </ToolbarButton>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

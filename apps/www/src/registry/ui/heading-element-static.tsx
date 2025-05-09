@@ -2,13 +2,8 @@ import * as React from 'react';
 
 import type { SlateElementProps } from '@udecode/plate';
 
-import { cn } from '@udecode/cn';
 import { SlateElement } from '@udecode/plate';
-import { cva } from 'class-variance-authority';
-
-interface HeadingElementViewProps extends SlateElementProps {
-  variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-}
+import { type VariantProps, cva } from 'class-variance-authority';
 
 const headingVariants = cva('relative mb-1', {
   variants: {
@@ -23,19 +18,17 @@ const headingVariants = cva('relative mb-1', {
   },
 });
 
-export const HeadingElementStatic = ({
-  children,
-  className,
+export function HeadingElementStatic({
   variant = 'h1',
   ...props
-}: HeadingElementViewProps) => {
+}: SlateElementProps & VariantProps<typeof headingVariants>) {
   return (
     <SlateElement
-      as={variant}
-      className={cn(className, headingVariants({ variant }))}
+      as={variant!}
+      className={headingVariants({ variant })}
       {...props}
     >
-      {children}
+      {props.children}
     </SlateElement>
   );
-};
+}

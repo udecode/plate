@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import * as React from 'react';
 
-import { cn, withRef } from '@udecode/cn';
+import { cn } from '@udecode/cn';
 import { isType } from '@udecode/plate';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
@@ -53,7 +53,7 @@ export const DraggableAboveNodes: RenderNodeWrapper = (props) => {
   const { editor, element, path } = props;
   const readOnly = useReadOnly();
 
-  const enabled = useMemo(() => {
+  const enabled = React.useMemo(() => {
     if (readOnly) return false;
     if (path.length === 1 && !isType(editor, element, UNDRAGGABLE_KEYS)) {
       return true;
@@ -91,84 +91,80 @@ export const DraggableAboveNodes: RenderNodeWrapper = (props) => {
   return (props) => <Draggable {...props} />;
 };
 
-export const Draggable = withRef<'div', PlateElementProps>(
-  ({ className, ...props }, ref) => {
-    const { children, editor, element, path } = props;
-    const blockSelectionApi =
-      editor.getApi(BlockSelectionPlugin).blockSelection;
-    const { isDragging, previewRef, handleRef } = useDraggable({
-      element,
-      onDropHandler: (_, { dragItem }) => {
-        const id = (dragItem as any).id;
+export function Draggable(props: PlateElementProps) {
+  const { children, editor, element, path } = props;
+  const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
+  const { isDragging, previewRef, handleRef } = useDraggable({
+    element,
+    onDropHandler: (_, { dragItem }) => {
+      const id = (dragItem as any).id;
 
-        if (blockSelectionApi && id) {
-          blockSelectionApi.set(id);
-        }
-      },
-    });
+      if (blockSelectionApi && id) {
+        blockSelectionApi.set(id);
+      }
+    },
+  });
 
-    const isInColumn = path.length === 3;
-    const isInTable = path.length === 4;
+  const isInColumn = path.length === 3;
+  const isInTable = path.length === 4;
 
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'relative',
-          isDragging && 'opacity-50',
-          STRUCTURAL_TYPES.includes(element.type) ? 'group/structural' : 'group'
-        )}
-      >
-        {!isInTable && (
-          <Gutter>
+  return (
+    <div
+      className={cn(
+        'relative',
+        isDragging && 'opacity-50',
+        STRUCTURAL_TYPES.includes(element.type) ? 'group/structural' : 'group'
+      )}
+    >
+      {!isInTable && (
+        <Gutter>
+          <div
+            className={cn(
+              'slate-blockToolbarWrapper',
+              'flex h-[1.5em]',
+              isType(editor, element, [
+                HEADING_KEYS.h1,
+                HEADING_KEYS.h2,
+                HEADING_KEYS.h3,
+                HEADING_KEYS.h4,
+                HEADING_KEYS.h5,
+              ]) && 'h-[1.3em]',
+              isInColumn && 'h-4'
+            )}
+          >
             <div
               className={cn(
-                'slate-blockToolbarWrapper',
-                'flex h-[1.5em]',
-                isType(editor, element, [
-                  HEADING_KEYS.h1,
-                  HEADING_KEYS.h2,
-                  HEADING_KEYS.h3,
-                  HEADING_KEYS.h4,
-                  HEADING_KEYS.h5,
-                ]) && 'h-[1.3em]',
-                isInColumn && 'h-4'
+                'slate-blockToolbar',
+                'pointer-events-auto mr-1 flex items-center',
+                isInColumn && 'mr-1.5'
               )}
             >
-              <div
-                className={cn(
-                  'slate-blockToolbar',
-                  'pointer-events-auto mr-1 flex items-center',
-                  isInColumn && 'mr-1.5'
-                )}
+              <Button
+                ref={handleRef}
+                variant="ghost"
+                className="h-6 w-4.5 p-0"
+                data-plate-prevent-deselect
               >
-                <Button
-                  ref={handleRef}
-                  variant="ghost"
-                  className="h-6 w-4.5 p-0"
-                  data-plate-prevent-deselect
-                >
-                  <DragHandle />
-                </Button>
-              </div>
+                <DragHandle />
+              </Button>
             </div>
-          </Gutter>
-        )}
+          </div>
+        </Gutter>
+      )}
 
-        <div ref={previewRef} className="slate-blockWrapper">
-          <MemoizedChildren>{children}</MemoizedChildren>
-
-          <DropLine />
-        </div>
+      <div ref={previewRef} className="slate-blockWrapper">
+        <MemoizedChildren>{children}</MemoizedChildren>
+        <DropLine />
       </div>
-    );
-  }
-);
+    </div>
+  );
+}
 
-const Gutter = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ children, className, ...props }, ref) => {
+function Gutter({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<'div'>) {
   const editor = useEditorRef();
   const element = useElement();
   const path = usePath();
@@ -184,7 +180,7 @@ const Gutter = React.forwardRef<
 
   return (
     <div
-      ref={ref}
+      {...props}
       className={cn(
         'slate-gutterLeft',
         'absolute top-0 z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
@@ -215,14 +211,13 @@ const Gutter = React.forwardRef<
         className
       )}
       contentEditable={false}
-      {...props}
     >
       {children}
     </div>
   );
-});
+}
 
-const DragHandle = React.memo(() => {
+const DragHandle = React.memo(function DragHandle() {
   const editor = useEditorRef();
   const element = useElement();
 
@@ -246,27 +241,25 @@ const DragHandle = React.memo(() => {
   );
 });
 
-const DropLine = React.memo(
-  React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-    ({ className, ...props }, ref) => {
-      const { dropLine } = useDropLine();
+const DropLine = React.memo(function DropLine({
+  className,
+  ...props
+}: React.ComponentProps<'div'>) {
+  const { dropLine } = useDropLine();
 
-      if (!dropLine) return null;
+  if (!dropLine) return null;
 
-      return (
-        <div
-          ref={ref}
-          {...props}
-          className={cn(
-            'slate-dropLine',
-            'absolute inset-x-0 h-0.5 opacity-100 transition-opacity',
-            'bg-brand/50',
-            dropLine === 'top' && '-top-px',
-            dropLine === 'bottom' && '-bottom-px',
-            className
-          )}
-        />
-      );
-    }
-  )
-);
+  return (
+    <div
+      {...props}
+      className={cn(
+        'slate-dropLine',
+        'absolute inset-x-0 h-0.5 opacity-100 transition-opacity',
+        'bg-brand/50',
+        dropLine === 'top' && '-top-px',
+        dropLine === 'bottom' && '-bottom-px',
+        className
+      )}
+    />
+  );
+});

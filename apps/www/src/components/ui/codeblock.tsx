@@ -9,7 +9,7 @@ import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 import { Icons } from '@/components/icons';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 
 const SyntaxHighlighter =
   Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
@@ -103,7 +103,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           <Button
             size="sm"
             variant="ghost"
-            className="[&_svg]:hover:text-muted-foreground hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0"
+            className="hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 [&_svg]:hover:text-muted-foreground"
             onClick={downloadAsFile}
           >
             <Icons.download className="size-4" />
@@ -114,7 +114,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           <Button
             size="sm"
             variant="ghost"
-            className="[&_svg]:hover:text-muted-foreground text-xs hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0"
+            className="text-xs hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 [&_svg]:hover:text-muted-foreground"
             onClick={onCopy}
           >
             {isCopied ? (

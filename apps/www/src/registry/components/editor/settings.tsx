@@ -37,7 +37,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 
 interface Model {
   label: string;

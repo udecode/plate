@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "src/registry/ui/toggle-toolbar-button.tsx",
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport {\n  useToggleToolbarButton,\n  useToggleToolbarButtonState,\n} from '@udecode/plate-toggle/react';\nimport { ListCollapseIcon } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const ToggleToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const state = useToggleToolbarButtonState();\n    const { props } = useToggleToolbarButton(state);\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Toggle\" {...props} {...rest}>\n        <ListCollapseIcon />\n      </ToolbarButton>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport {\n  useToggleToolbarButton,\n  useToggleToolbarButtonState,\n} from '@udecode/plate-toggle/react';\nimport { ListCollapseIcon } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function ToggleToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const state = useToggleToolbarButtonState();\n  const { props: buttonProps } = useToggleToolbarButton(state);\n\n  return (\n    <ToolbarButton {...props} {...buttonProps} tooltip=\"Toggle\">\n      <ListCollapseIcon />\n    </ToolbarButton>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

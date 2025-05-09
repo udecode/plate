@@ -128,11 +128,10 @@
       "title": "Align Dropdown Menu",
       "description": "A dropdown menu for text alignment controls.",
       "dependencies": [
-        "@udecode/plate-alignment",
-        "@radix-ui/react-dropdown-menu"
+        "@udecode/plate-alignment"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/dropdown-menu",
+        "dropdown-menu",
         "http://localhost:3000/r/toolbar"
       ],
       "files": [
@@ -231,7 +230,7 @@
         "use-file-picker"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/dropdown-menu",
+        "dropdown-menu",
         "http://localhost:3000/r/toolbar"
       ],
       "files": [
@@ -293,7 +292,7 @@
         "@udecode/plate-caption"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/button"
+        "button"
       ],
       "files": [
         {
@@ -321,14 +320,13 @@
       "title": "Color Dropdown Menu",
       "description": "A color picker with text and background color controls.",
       "dependencies": [
-        "@udecode/plate-font",
-        "@radix-ui/react-dropdown-menu"
+        "@udecode/plate-font"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/dropdown-menu",
+        "dropdown-menu",
         "http://localhost:3000/r/toolbar",
         "separator",
-        "http://localhost:3000/r/button",
+        "button",
         "tooltip"
       ],
       "files": [
@@ -415,10 +413,10 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/r/suggestion-plugin",
-        "http://localhost:3000/r/button",
+        "button",
         "popover",
         "avatar",
-        "http://localhost:3000/r/dropdown-menu",
+        "dropdown-menu",
         "http://localhost:3000/r/editor",
         "http://localhost:3000/r/ai-leaf",
         "http://localhost:3000/r/date-element",
@@ -1075,7 +1073,6 @@
       "title": "Insert Dropdown Menu",
       "description": "A menu for inserting different types of blocks.",
       "dependencies": [
-        "@radix-ui/react-dropdown-menu",
         "@udecode/plate-block-quote",
         "@udecode/plate-code-block",
         "@udecode/plate-date",
@@ -1089,7 +1086,7 @@
         "@udecode/plate-toggle"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/dropdown-menu",
+        "dropdown-menu",
         "http://localhost:3000/r/toolbar",
         "http://localhost:3000/r/transforms"
       ],
@@ -1111,12 +1108,11 @@
       "title": "Line Height Dropdown Menu",
       "description": "A menu for controlling text line spacing.",
       "dependencies": [
-        "@udecode/plate-line-height",
-        "@radix-ui/react-dropdown-menu"
+        "@udecode/plate-line-height"
       ],
       "registryDependencies": [
         "http://localhost:3000/r/toolbar",
-        "http://localhost:3000/r/dropdown-menu"
+        "dropdown-menu"
       ],
       "files": [
         {
@@ -1145,7 +1141,7 @@
         "@udecode/plate-floating"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/button",
+        "button",
         "input",
         "popover",
         "separator"
@@ -1300,7 +1296,7 @@
         "@udecode/plate-media"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/button",
+        "button",
         "input",
         "popover",
         "separator"
@@ -1336,7 +1332,7 @@
       "registryDependencies": [
         "http://localhost:3000/r/toolbar",
         "input",
-        "http://localhost:3000/r/dropdown-menu",
+        "dropdown-menu",
         "alert-dialog"
       ],
       "files": [
@@ -1390,11 +1386,9 @@
       "type": "registry:ui",
       "title": "Mode Dropdown Menu",
       "description": "A menu for switching between editor modes.",
-      "dependencies": [
-        "@radix-ui/react-dropdown-menu"
-      ],
+      "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/dropdown-menu",
+        "dropdown-menu",
         "http://localhost:3000/r/toolbar"
       ],
       "files": [
@@ -1415,12 +1409,11 @@
       "title": "More Dropdown Menu",
       "description": "A menu for additional text formatting options.",
       "dependencies": [
-        "@radix-ui/react-dropdown-menu",
         "@udecode/plate-basic-marks",
         "@udecode/plate-kbd"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/dropdown-menu",
+        "dropdown-menu",
         "http://localhost:3000/r/toolbar"
       ],
       "files": [
@@ -1535,11 +1528,10 @@
       "title": "Table Dropdown Menu",
       "description": "A menu for table manipulation and formatting.",
       "dependencies": [
-        "@udecode/plate-table",
-        "@radix-ui/react-dropdown-menu"
+        "@udecode/plate-table"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/dropdown-menu",
+        "dropdown-menu",
         "http://localhost:3000/r/toolbar"
       ],
       "files": [
@@ -1597,7 +1589,6 @@
       "title": "Turn Into Dropdown Menu",
       "description": "A menu for converting between different block types.",
       "dependencies": [
-        "@radix-ui/react-dropdown-menu",
         "@udecode/plate-block-quote",
         "@udecode/plate-code-block",
         "@udecode/plate-heading",
@@ -1605,7 +1596,7 @@
         "@udecode/plate-toggle"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/dropdown-menu",
+        "dropdown-menu",
         "http://localhost:3000/r/toolbar",
         "http://localhost:3000/r/transforms"
       ],
@@ -1650,6 +1641,27 @@
         ],
         "examples": []
       }
+    },
+    {
+      "name": "toolbar",
+      "type": "registry:ui",
+      "title": "Toolbar",
+      "description": "A customizable toolbar component with various button styles and group",
+      "dependencies": [
+        "@radix-ui/react-toolbar"
+      ],
+      "registryDependencies": [
+        "tooltip",
+        "separator",
+        "dropdown-menu"
+      ],
+      "files": [
+        {
+          "path": "src/registry/ui/toolbar.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {}
     },
     {
       "name": "ai-leaf",
@@ -2887,11 +2899,10 @@
       "description": "A table component with floating toolbar and border customization.",
       "dependencies": [
         "@udecode/plate-table",
-        "@radix-ui/react-dropdown-menu",
         "@radix-ui/react-popover"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/dropdown-menu"
+        "dropdown-menu"
       ],
       "files": [
         {
@@ -3048,7 +3059,7 @@
         "@udecode/plate-toggle"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/button"
+        "button"
       ],
       "files": [
         {
@@ -3070,68 +3081,6 @@
           "toggle-demo"
         ]
       }
-    },
-    {
-      "name": "button",
-      "type": "registry:ui",
-      "title": "Button",
-      "description": "Displays a button or a component that looks like a button.",
-      "dependencies": [
-        "@radix-ui/react-slot"
-      ],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/ui/button.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "links": {
-          "doc": "https://ui.shadcn.com/docs/components/button"
-        }
-      }
-    },
-    {
-      "name": "dropdown-menu",
-      "type": "registry:ui",
-      "title": "Dropdown Menu",
-      "description": "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
-      "dependencies": [
-        "@radix-ui/react-dropdown-menu"
-      ],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/ui/dropdown-menu.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "links": {
-          "doc": "https://ui.shadcn.com/docs/components/dropdown-menu"
-        }
-      }
-    },
-    {
-      "name": "toolbar",
-      "type": "registry:ui",
-      "title": "Toolbar",
-      "description": "A customizable toolbar component with various button styles and group",
-      "dependencies": [
-        "@radix-ui/react-toolbar"
-      ],
-      "registryDependencies": [
-        "tooltip",
-        "separator"
-      ],
-      "files": [
-        {
-          "path": "src/registry/ui/toolbar.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {}
     },
     {
       "name": "api-ai",

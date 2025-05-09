@@ -5,7 +5,7 @@ import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 import { Pause } from 'lucide-react';
 
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
 
 export const AILoadingBar = () => {
   const chat = usePluginOption(AIChatPlugin, 'chat');
@@ -24,10 +24,10 @@ export const AILoadingBar = () => {
   return (
     <div
       className={cn(
-        'border-border bg-muted text-muted-foreground absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-md border px-3 py-1.5 text-sm shadow-md transition-all duration-300'
+        'absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-muted-foreground shadow-md transition-all duration-300'
       )}
     >
-      <span className="border-muted-foreground h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+      <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
       <span>{status === 'submitted' ? 'Thinking...' : 'Writing...'}</span>
       <Button
         size="sm"
@@ -37,7 +37,7 @@ export const AILoadingBar = () => {
       >
         <Pause className="h-4 w-4" />
         Stop
-        <kbd className="bg-border text-muted-foreground ml-1 rounded px-1 font-mono text-[10px] shadow-sm">
+        <kbd className="ml-1 rounded bg-border px-1 font-mono text-[10px] text-muted-foreground shadow-sm">
           Esc
         </kbd>
       </Button>

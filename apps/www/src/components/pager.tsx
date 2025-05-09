@@ -5,7 +5,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { docsConfig } from '@/config/docs';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 
 interface DocsPagerProps {
   doc: Doc;

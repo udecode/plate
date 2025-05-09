@@ -4,8 +4,10 @@ export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement<any>;
 
 export interface RenderLeafProps<N extends TText = TText> {
   attributes: {
+    className?: string;
     'data-slate-leaf'?: true;
-  } & React.HTMLAttributes<HTMLSpanElement>;
+    style?: React.CSSProperties;
+  };
   children: any;
   leaf: N;
   text: N;

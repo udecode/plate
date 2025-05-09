@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Plate, usePlateEditor } from '@udecode/plate/react';
 
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export default function ControlledEditorDemo() {

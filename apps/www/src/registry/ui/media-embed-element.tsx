@@ -1,10 +1,13 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
 
-import { cn, withRef } from '@udecode/cn';
+import type { TMediaEmbedElement } from '@udecode/plate-media';
+import type { PlateElementProps } from '@udecode/plate/react';
+
+import { cn } from '@udecode/cn';
 import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';
 import { MediaEmbedPlugin, useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider, useResizableValue } from '@udecode/plate-resizable';
@@ -20,7 +23,7 @@ import {
 
 export const MediaEmbedElement = withHOC(
   ResizableProvider,
-  withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
+  function MediaEmbedElement(props: PlateElementProps<TMediaEmbedElement>) {
     const {
       align = 'center',
       embed,
@@ -38,7 +41,7 @@ export const MediaEmbedElement = withHOC(
 
     return (
       <MediaPopover plugin={MediaEmbedPlugin}>
-        <PlateElement ref={ref} className={cn(className, 'py-2.5')} {...props}>
+        <PlateElement className="py-2.5" {...props}>
           <figure
             className="group relative m-0 w-full cursor-default"
             contentEditable={false}
@@ -126,9 +129,9 @@ export const MediaEmbedElement = withHOC(
             </Caption>
           </figure>
 
-          {children}
+          {props.children}
         </PlateElement>
       </MediaPopover>
     );
-  })
+  }
 );

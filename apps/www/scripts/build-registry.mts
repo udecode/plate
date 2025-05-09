@@ -23,7 +23,7 @@ const registry: Registry = {
   items: z.array(registryItemSchema).parse(
     [
       {
-        name: 'plate',
+        name: 'style',
         type: 'registry:style',
         dependencies: [
           'tailwind-scrollbar-hide',

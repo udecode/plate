@@ -2,7 +2,7 @@ import { cn } from '@udecode/cn';
 import Link from 'next/link';
 
 import { useLocale } from '@/hooks/useLocale';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 
 import { siteConfig } from '../config/site';
 
@@ -26,11 +26,11 @@ export function OpenInPlus({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'bg-card group relative flex flex-col gap-2 rounded-lg border p-4 text-sm',
+        'group relative flex flex-col gap-2 rounded-lg border bg-card p-4 text-sm',
         className
       )}
     >
-      <div className="text-balance text-lg font-semibold leading-tight group-hover:underline">
+      <div className="text-lg leading-tight font-semibold text-balance group-hover:underline">
         {content.buildYourEditor}
       </div>
       <div>{content.productionReady}</div>

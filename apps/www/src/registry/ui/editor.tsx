@@ -38,7 +38,7 @@ export const EditorContainer = ({
   className,
   variant,
   ...props
-}: React.HTMLAttributes<HTMLDivElement> &
+}: React.ComponentProps<'div'> &
   VariantProps<typeof editorContainerVariants>) => {
   return (
     <PlateContainer

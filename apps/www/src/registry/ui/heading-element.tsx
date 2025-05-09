@@ -2,9 +2,10 @@
 
 import React from 'react';
 
-import { withRef, withVariants } from '@udecode/cn';
+import type { PlateElementProps } from '@udecode/plate/react';
+
 import { PlateElement } from '@udecode/plate/react';
-import { cva } from 'class-variance-authority';
+import { type VariantProps, cva } from 'class-variance-authority';
 
 const headingVariants = cva('relative mb-1', {
   variants: {
@@ -19,21 +20,17 @@ const headingVariants = cva('relative mb-1', {
   },
 });
 
-const HeadingElementVariants = withVariants(PlateElement, headingVariants, [
-  'variant',
-]);
-
-export const HeadingElement = withRef<typeof HeadingElementVariants>(
-  ({ children, variant = 'h1', ...props }, ref) => {
-    return (
-      <HeadingElementVariants
-        ref={ref}
-        as={variant!}
-        variant={variant}
-        {...props}
-      >
-        {children}
-      </HeadingElementVariants>
-    );
-  }
-);
+export function HeadingElement({
+  variant = 'h1',
+  ...props
+}: PlateElementProps & VariantProps<typeof headingVariants>) {
+  return (
+    <PlateElement
+      as={variant!}
+      className={headingVariants({ variant })}
+      {...props}
+    >
+      {props.children}
+    </PlateElement>
+  );
+}

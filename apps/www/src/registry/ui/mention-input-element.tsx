@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import * as React from 'react';
 
-import { withRef } from '@udecode/cn';
+import type { TMentionInputElement } from '@udecode/plate-mention';
+import type { PlateElementProps } from '@udecode/plate/react';
+
 import { getMentionOnSelectItem } from '@udecode/plate-mention';
 import { PlateElement } from '@udecode/plate/react';
 
@@ -17,52 +19,46 @@ import {
 
 const onSelectItem = getMentionOnSelectItem();
 
-export const MentionInputElement = withRef<typeof PlateElement>(
-  ({ className, ...props }, ref) => {
-    const { children, editor, element } = props;
-    const [search, setSearch] = useState('');
+export function MentionInputElement(
+  props: PlateElementProps<TMentionInputElement>
+) {
+  const { editor, element } = props;
+  const [search, setSearch] = React.useState('');
 
-    return (
-      <PlateElement
-        ref={ref}
-        as="span"
-        className={className}
-        data-slate-value={element.value}
-        {...props}
+  return (
+    <PlateElement {...props} as="span" data-slate-value={element.value}>
+      <InlineCombobox
+        value={search}
+        element={element}
+        setValue={setSearch}
+        showTrigger={false}
+        trigger="@"
       >
-        <InlineCombobox
-          value={search}
-          element={element}
-          setValue={setSearch}
-          showTrigger={false}
-          trigger="@"
-        >
-          <span className="inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm ring-ring focus-within:ring-2">
-            <InlineComboboxInput />
-          </span>
+        <span className="inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm ring-ring focus-within:ring-2">
+          <InlineComboboxInput />
+        </span>
 
-          <InlineComboboxContent className="my-1.5">
-            <InlineComboboxEmpty>No results</InlineComboboxEmpty>
+        <InlineComboboxContent className="my-1.5">
+          <InlineComboboxEmpty>No results</InlineComboboxEmpty>
 
-            <InlineComboboxGroup>
-              {MENTIONABLES.map((item) => (
-                <InlineComboboxItem
-                  key={item.key}
-                  value={item.text}
-                  onClick={() => onSelectItem(editor, item, search)}
-                >
-                  {item.text}
-                </InlineComboboxItem>
-              ))}
-            </InlineComboboxGroup>
-          </InlineComboboxContent>
-        </InlineCombobox>
+          <InlineComboboxGroup>
+            {MENTIONABLES.map((item) => (
+              <InlineComboboxItem
+                key={item.key}
+                value={item.text}
+                onClick={() => onSelectItem(editor, item, search)}
+              >
+                {item.text}
+              </InlineComboboxItem>
+            ))}
+          </InlineComboboxGroup>
+        </InlineComboboxContent>
+      </InlineCombobox>
 
-        {children}
-      </PlateElement>
-    );
-  }
-);
+      {props.children}
+    </PlateElement>
+  );
+}
 
 export const MENTIONABLES = [
   { key: '0', text: 'Aayla Secura' },

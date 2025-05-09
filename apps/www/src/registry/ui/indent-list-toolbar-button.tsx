@@ -16,8 +16,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  useOpenState,
-} from './dropdown-menu';
+} from '@/components/ui/dropdown-menu';
+
 import {
   ToolbarSplitButton,
   ToolbarSplitButtonPrimary,
@@ -26,7 +26,7 @@ import {
 
 export function NumberedIndentListToolbarButton() {
   const editor = useEditorRef();
-  const openState = useOpenState();
+  const [open, setOpen] = React.useState(false);
 
   const pressed = useEditorSelector(
     (editor) =>
@@ -41,7 +41,7 @@ export function NumberedIndentListToolbarButton() {
   );
 
   return (
-    <ToolbarSplitButton pressed={openState.open}>
+    <ToolbarSplitButton pressed={open}>
       <ToolbarSplitButtonPrimary
         className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
         onClick={() =>
@@ -50,12 +50,11 @@ export function NumberedIndentListToolbarButton() {
           })
         }
         data-state={pressed ? 'on' : 'off'}
-        tooltip="Numbered List"
       >
         <ListOrdered className="size-4" />
       </ToolbarSplitButtonPrimary>
 
-      <DropdownMenu {...openState} modal={false}>
+      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
         <DropdownMenuTrigger asChild>
           <ToolbarSplitButtonSecondary />
         </DropdownMenuTrigger>
@@ -116,7 +115,7 @@ export function NumberedIndentListToolbarButton() {
 
 export function BulletedIndentListToolbarButton() {
   const editor = useEditorRef();
-  const openState = useOpenState();
+  const [open, setOpen] = React.useState(false);
 
   const pressed = useEditorSelector(
     (editor) =>
@@ -129,7 +128,7 @@ export function BulletedIndentListToolbarButton() {
   );
 
   return (
-    <ToolbarSplitButton pressed={openState.open}>
+    <ToolbarSplitButton pressed={open}>
       <ToolbarSplitButtonPrimary
         className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
         onClick={() => {
@@ -138,12 +137,11 @@ export function BulletedIndentListToolbarButton() {
           });
         }}
         data-state={pressed ? 'on' : 'off'}
-        tooltip="Bulleted List"
       >
         <List className="size-4" />
       </ToolbarSplitButtonPrimary>
 
-      <DropdownMenu {...openState} modal={false}>
+      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
         <DropdownMenuTrigger asChild>
           <ToolbarSplitButtonSecondary />
         </DropdownMenuTrigger>

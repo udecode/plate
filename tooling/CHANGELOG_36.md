@@ -10,27 +10,27 @@ No breaking changes
 
 ### Major Changes
 
--   [#3282](https://github.com/udecode/plate/pull/3282) by [@12joan](https://github.com/12joan) – Make the dependency on prismjs optional
+- [#3282](https://github.com/udecode/plate/pull/3282) by [@12joan](https://github.com/12joan) – Make the dependency on prismjs optional
 
-    New usage:
+  New usage:
 
-    ```ts
-    // Import Prism with your supported languages
-    import Prism from "prismjs";
+  ```ts
+  // Import Prism with your supported languages
+  import Prism from 'prismjs';
 
-    import "prismjs/components/prism-antlr4.js";
-    import "prismjs/components/prism-bash.js";
-    import "prismjs/components/prism-c.js";
-    // ...
+  import 'prismjs/components/prism-antlr4.js';
+  import 'prismjs/components/prism-bash.js';
+  import 'prismjs/components/prism-c.js';
+  // ...
 
-    const plugins = createPlugins([
-      createCodeBlockPlugin({
-        options: {
-          prism: Prism,
-        },
-      }),
-    ]);
-    ```
+  const plugins = createPlugins([
+    createCodeBlockPlugin({
+      options: {
+        prism: Prism,
+      },
+    }),
+  ]);
+  ```
 
 # 34.0.0
 
@@ -211,10 +211,10 @@ None (CI release issue)
 - [#2537](https://github.com/udecode/plate/pull/2537) by [@haydencarlson](https://github.com/haydencarlson) – `MediaEmbedElement` is now more headless with a smaller bundle size.
   Update the following components:
 
-  - `npx shadcx@latest add media-embed-element`
+  - `npx shadcn@canary add media-embed-element`
     - now uses `react-lite-youtube-embed` for YouTube videos.
     - now uses `react-tweet` for Twitter tweets.
-  - `npx shadcx@latest add image-element`
+  - `npx shadcn@canary add image-element`
 
   Breaking changes:
 
@@ -242,7 +242,7 @@ None (CI release issue)
 - [#2541](https://github.com/udecode/plate/pull/2541) by [@zbeyens](https://github.com/zbeyens) –
   - Package renamed to `@udecode/plate-resizable`.
   - `ResizeHandle` is now fully headless: no style is applied by default. Add your own `Resizable`, `ResizeHandle` components:
-    - `npx shadcx@latest add resizable`
+    - `npx shadcn@canary add resizable`
 
 ## @udecode/plate-table@23.0
 

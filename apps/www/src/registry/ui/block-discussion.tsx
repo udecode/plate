@@ -42,7 +42,7 @@ import {
   discussionPlugin,
 } from '@/registry/components/editor/plugins/discussion-plugin';
 import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 
 import {
   BlockSuggestionCard,

@@ -7,7 +7,7 @@ import { useTheme } from 'next-themes';
 
 import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 import { Editor } from '@/registry/ui/editor';
 
 function useThemedHtml(html: string, serverTheme?: string) {

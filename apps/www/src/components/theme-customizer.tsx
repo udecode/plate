@@ -7,12 +7,12 @@ import { cn } from '@udecode/cn';
 import { RepeatIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useConfig } from '@/hooks/use-config';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { THEMES } from '@/lib/themes';
 import { useMounted } from '@/registry/hooks/use-mounted';
-import { Button } from '@/registry/ui/button';
 
 import { Label } from '../components/ui/label';
 import { CopyCodeButton, getThemeCode } from './copy-code-button';
@@ -72,7 +72,7 @@ export function ThemeCustomizer() {
               return (
                 <Button
                   key={value}
-                  size="md"
+                  size="sm"
                   variant="outline"
                   className={cn(
                     config.radius === Number.parseFloat(value) &&
@@ -97,7 +97,7 @@ export function ThemeCustomizer() {
             {mounted ? (
               <>
                 <Button
-                  size="md"
+                  size="sm"
                   variant="outline"
                   className={cn(mode === 'light' && 'border-2 border-primary')}
                   onClick={() => setMode('light')}
@@ -106,7 +106,7 @@ export function ThemeCustomizer() {
                   Light
                 </Button>
                 <Button
-                  size="md"
+                  size="sm"
                   variant="outline"
                   className={cn(mode === 'dark' && 'border-2 border-primary')}
                   onClick={() => setMode('dark')}

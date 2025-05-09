@@ -1,26 +1,20 @@
 import React from 'react';
 
 import type { SlateElementProps } from '@udecode/plate';
+import type { TDateElement } from '@udecode/plate-date';
 
-import { cn } from '@udecode/cn';
 import { SlateElement } from '@udecode/plate';
 
-export function DateElementStatic({
-  children,
-  className,
-  ...props
-}: SlateElementProps) {
+export function DateElementStatic(props: SlateElementProps<TDateElement>) {
   const { element } = props;
 
   return (
-    <SlateElement className={cn(className, 'inline-block')} {...props}>
-      <span
-        className={cn('w-fit rounded-sm bg-muted px-1 text-muted-foreground')}
-      >
+    <SlateElement className="inline-block" {...props}>
+      <span className="w-fit rounded-sm bg-muted px-1 text-muted-foreground">
         {element.date ? (
           (() => {
             const today = new Date();
-            const elementDate = new Date(element.date as string);
+            const elementDate = new Date(element.date);
             const isToday =
               elementDate.getDate() === today.getDate() &&
               elementDate.getMonth() === today.getMonth() &&
@@ -47,7 +41,7 @@ export function DateElementStatic({
           <span>Pick a date</span>
         )}
       </span>
-      {children}
+      {props.children}
     </SlateElement>
   );
 }

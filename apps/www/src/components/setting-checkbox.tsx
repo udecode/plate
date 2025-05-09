@@ -4,14 +4,14 @@ import { cn } from '@udecode/cn';
 import { useStoreValue } from '@udecode/plate/react';
 import Link from 'next/link';
 
+import { buttonVariants } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { type SettingPlugin, customizerItems } from '@/config/customizer-items';
-import { buttonVariants } from '@/registry/ui/button';
-import { Checkbox } from '@/registry/ui/checkbox';
 
 import { Label } from '../components/ui/label';
 import { Code } from './code';

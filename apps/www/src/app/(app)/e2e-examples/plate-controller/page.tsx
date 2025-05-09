@@ -9,7 +9,7 @@ import {
   usePlateEditor,
 } from '@udecode/plate/react';
 
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 
 let nextId = 3;
 

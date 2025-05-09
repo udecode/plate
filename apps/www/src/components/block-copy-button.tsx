@@ -7,7 +7,7 @@ import { CheckIcon, ClipboardIcon } from '@radix-ui/react-icons';
 import { cn } from '@udecode/cn';
 
 import { type Event, trackEvent } from '@/lib/events';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipContent,

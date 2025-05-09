@@ -9,14 +9,15 @@ import {
 } from '@udecode/plate-font/react';
 import { PlusIcon } from 'lucide-react';
 
-import { buttonVariants } from './button';
+import { buttonVariants } from '@/components/ui/button';
+// import { ColorInput } from './color-input';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+
 import {
   type TColor,
   ColorDropdownMenuItems,
 } from './color-dropdown-menu-items';
 import { ColorInput } from './color-input';
-// import { ColorInput } from './color-input';
-import { DropdownMenuItem } from './dropdown-menu';
 
 type ColorCustomProps = {
   colors: TColor[];
@@ -54,11 +55,10 @@ export function ColorCustom({
           <DropdownMenuItem
             className={cn(
               buttonVariants({
-                isMenu: true,
                 size: 'icon',
                 variant: 'outline',
               }),
-              'absolute top-1.5 right-2 bottom-2 flex size-7 items-center justify-center rounded-full'
+              'absolute top-1 right-2 bottom-2 flex size-8 items-center justify-center rounded-full'
             )}
             {...menuItemProps}
           >

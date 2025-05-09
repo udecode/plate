@@ -72,6 +72,13 @@ import { useEditorRef } from '@udecode/plate/react';
 import { all, createLowlight } from 'lowlight';
 import { ArrowDownToLineIcon } from 'lucide-react';
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { BlockquoteElementStatic } from '@/registry/ui/blockquote-element-static';
 import { CodeBlockElementStatic } from '@/registry/ui/code-block-element-static';
 import { CodeLeafStatic } from '@/registry/ui/code-leaf-static';
@@ -106,14 +113,6 @@ import { TableRowElementStatic } from '@/registry/ui/table-row-element-static';
 import { TocElementStatic } from '@/registry/ui/toc-element-static';
 import { ToggleElementStatic } from '@/registry/ui/toggle-element-static';
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  useOpenState,
-} from './dropdown-menu';
 import { EditorStatic } from './editor-static';
 import { EquationElementStatic } from './equation-element-static';
 import { InlineEquationElementStatic } from './inline-equation-element-static';
@@ -124,7 +123,7 @@ const lowlight = createLowlight(all);
 
 export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
   const editor = useEditorRef();
-  const openState = useOpenState();
+  const [open, setOpen] = React.useState(false);
 
   const getCanvas = async () => {
     const { default: html2canvas } = await import('html2canvas-pro');
@@ -375,9 +374,9 @@ export function ExportToolbarButton({ children, ...props }: DropdownMenuProps) {
   };
 
   return (
-    <DropdownMenu modal={false} {...openState} {...props}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={openState.open} tooltip="Export" isDropdown>
+        <ToolbarButton pressed={open} tooltip="Export" isDropdown>
           <ArrowDownToLineIcon className="size-4" />
         </ToolbarButton>
       </DropdownMenuTrigger>

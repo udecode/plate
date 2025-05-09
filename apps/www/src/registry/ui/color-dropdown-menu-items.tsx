@@ -5,10 +5,9 @@ import React from 'react';
 import type { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
 
 import { cn } from '@udecode/cn';
-import { Check } from 'lucide-react';
 
-import { buttonVariants } from './button';
-import { DropdownMenuItem } from './dropdown-menu';
+import { buttonVariants } from '@/components/ui/button';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
@@ -43,12 +42,12 @@ export function ColorDropdownMenuItem({
     <DropdownMenuItem
       className={cn(
         buttonVariants({
-          isMenu: true,
           size: 'icon',
           variant: 'outline',
         }),
         'my-1 flex size-6 items-center justify-center rounded-full border border-solid border-muted p-0 transition-all hover:scale-125',
-        !isBrightColor && 'border-transparent text-white hover:text-white!',
+        !isBrightColor && 'border-transparent',
+        isSelected && 'border-2 border-primary',
         className
       )}
       style={{ backgroundColor: value }}
@@ -57,9 +56,7 @@ export function ColorDropdownMenuItem({
         updateColor(value);
       }}
       {...props}
-    >
-      {isSelected ? <Check className="size-3!" /> : null}
-    </DropdownMenuItem>
+    />
   );
 
   return name ? (
@@ -76,7 +73,7 @@ type ColorDropdownMenuItemsProps = {
   colors: TColor[];
   updateColor: (color: string) => void;
   color?: string;
-} & React.HTMLAttributes<HTMLDivElement>;
+} & React.ComponentProps<'div'>;
 
 export function ColorDropdownMenuItems({
   className,
@@ -88,7 +85,7 @@ export function ColorDropdownMenuItems({
   return (
     <div
       className={cn(
-        'grid grid-cols-[repeat(10,1fr)] place-items-center',
+        'grid grid-cols-[repeat(10,1fr)] place-items-center gap-x-1',
         className
       )}
       {...props}

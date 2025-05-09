@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
-import { cn, withRef } from '@udecode/cn';
+import type { PlateElementProps } from '@udecode/plate/react';
+
+import { cn } from '@udecode/cn';
 import {
   PlateElement,
   useFocused,
@@ -10,27 +12,23 @@ import {
   useSelected,
 } from '@udecode/plate/react';
 
-export const HrElement = withRef<typeof PlateElement>(
-  ({ className, ...props }, ref) => {
-    const { children } = props;
+export function HrElement(props: PlateElementProps) {
+  const readOnly = useReadOnly();
+  const selected = useSelected();
+  const focused = useFocused();
 
-    const readOnly = useReadOnly();
-    const selected = useSelected();
-    const focused = useFocused();
-
-    return (
-      <PlateElement ref={ref} className={className} {...props}>
-        <div className="py-6" contentEditable={false}>
-          <hr
-            className={cn(
-              'h-0.5 rounded-sm border-none bg-muted bg-clip-content',
-              selected && focused && 'ring-2 ring-ring ring-offset-2',
-              !readOnly && 'cursor-pointer'
-            )}
-          />
-        </div>
-        {children}
-      </PlateElement>
-    );
-  }
-);
+  return (
+    <PlateElement {...props}>
+      <div className="py-6" contentEditable={false}>
+        <hr
+          className={cn(
+            'h-0.5 rounded-sm border-none bg-muted bg-clip-content',
+            selected && focused && 'ring-2 ring-ring ring-offset-2',
+            !readOnly && 'cursor-pointer'
+          )}
+        />
+      </div>
+      {props.children}
+    </PlateElement>
+  );
+}

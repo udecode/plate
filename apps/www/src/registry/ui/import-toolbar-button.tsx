@@ -16,15 +16,15 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  useOpenState,
-} from './dropdown-menu';
+} from '@/components/ui/dropdown-menu';
+
 import { ToolbarButton } from './toolbar';
 
 type ImportType = 'html' | 'markdown';
 
 export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
   const editor = useEditorRef();
-  const openState = useOpenState();
+  const [open, setOpen] = React.useState(false);
 
   const getFileNodes = (text: string, type: ImportType) => {
     if (type === 'html') {
@@ -68,9 +68,9 @@ export function ImportToolbarButton({ children, ...props }: DropdownMenuProps) {
   });
 
   return (
-    <DropdownMenu modal={false} {...openState} {...props}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={openState.open} tooltip="Import" isDropdown>
+        <ToolbarButton pressed={open} tooltip="Import" isDropdown>
           <ArrowUpToLineIcon className="size-4" />
         </ToolbarButton>
       </DropdownMenuTrigger>

@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
-import { cn, withRef } from '@udecode/cn';
+import type { TAudioElement } from '@udecode/plate-media';
+import type { PlateElementProps } from '@udecode/plate/react';
+
 import { useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider } from '@udecode/plate-resizable';
 import { PlateElement, withHOC } from '@udecode/plate/react';
@@ -11,11 +13,11 @@ import { Caption, CaptionTextarea } from './caption';
 
 export const MediaAudioElement = withHOC(
   ResizableProvider,
-  withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
+  function MediaAudioElement(props: PlateElementProps<TAudioElement>) {
     const { align = 'center', readOnly, unsafeUrl } = useMediaState();
 
     return (
-      <PlateElement ref={ref} className={cn(className, 'mb-1')} {...props}>
+      <PlateElement {...props} className="mb-1">
         <figure
           className="group relative cursor-default"
           contentEditable={false}
@@ -32,8 +34,8 @@ export const MediaAudioElement = withHOC(
             />
           </Caption>
         </figure>
-        {children}
+        {props.children}
       </PlateElement>
     );
-  })
+  }
 );

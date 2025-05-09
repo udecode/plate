@@ -3,13 +3,13 @@
 import { cn } from '@udecode/cn';
 import { Check, PlusCircle } from 'lucide-react';
 
-import { useProject } from '@/hooks/use-project';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useProject } from '@/hooks/use-project';
 
 export function ProjectAddButton({
   className,

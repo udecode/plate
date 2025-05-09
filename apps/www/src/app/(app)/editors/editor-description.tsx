@@ -2,12 +2,11 @@
 
 import {
   PageActions,
-  PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
+import { Button } from '@/components/ui/button';
 import { useLocale } from '@/hooks/useLocale';
-import { Button } from '@/registry/ui/button';
 
 const i18n = {
   cn: {
@@ -27,12 +26,12 @@ export function EditorDescription() {
   const content = i18n[locale as keyof typeof i18n];
 
   return (
-    <PageHeader>
+    <section className="flex flex-col items-start gap-2 py-8 md:py-10 lg:py-12">
       {/* <Announcement /> */}
       <PageHeaderHeading>{content.title}</PageHeaderHeading>
       <PageHeaderDescription>{content.description}</PageHeaderDescription>
       <PageActions>
-        <Button asChild size="lg">
+        <Button asChild size="sm" className="text-xs">
           <a href="#blocks">{content.browseEditors}</a>
         </Button>
         {/* <Button asChild size="sm" variant="ghost">
@@ -45,6 +44,6 @@ export function EditorDescription() {
           </a>
         </Button> */}
       </PageActions>
-    </PageHeader>
+    </section>
   );
 }

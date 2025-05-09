@@ -57,7 +57,7 @@ import {
 } from '@/registry/components/editor/plugins/discussion-plugin';
 import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
 
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
 import { type TComment, Comment, formatCommentDate } from './comment';
 import { CommentCreateForm } from './comment-create-form';
 

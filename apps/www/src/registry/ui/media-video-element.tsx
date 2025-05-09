@@ -1,10 +1,13 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactPlayer from 'react-player';
 
-import { cn, withRef } from '@udecode/cn';
+import type { TVideoElement } from '@udecode/plate-media';
+import type { PlateElementProps } from '@udecode/plate/react';
+
+import { cn } from '@udecode/cn';
 import { useDraggable } from '@udecode/plate-dnd';
 import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';
 import { useMediaState } from '@udecode/plate-media/react';
@@ -20,7 +23,7 @@ import {
 
 export const MediaVideoElement = withHOC(
   ResizableProvider,
-  withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
+  function MediaVideoElement(props: PlateElementProps<TVideoElement>) {
     const {
       align = 'center',
       embed,
@@ -42,7 +45,7 @@ export const MediaVideoElement = withHOC(
     });
 
     return (
-      <PlateElement {...props} ref={ref} className={cn(className, 'py-2.5')}>
+      <PlateElement className="py-2.5" {...props}>
         <figure className="relative m-0 cursor-default" contentEditable={false}>
           <Resizable
             className={cn(isDragging && 'opacity-50')}
@@ -72,7 +75,6 @@ export const MediaVideoElement = withHOC(
                     title="youtube"
                     wrapperClass={cn(
                       'aspect-video rounded-sm',
-                      // focused && selected && 'ring-2 ring-ring ring-offset-2',
                       'relative block cursor-pointer bg-black bg-cover bg-center [contain:content]',
                       '[&.lyt-activated]:before:absolute [&.lyt-activated]:before:top-0 [&.lyt-activated]:before:h-[60px] [&.lyt-activated]:before:w-full [&.lyt-activated]:before:bg-top [&.lyt-activated]:before:bg-repeat-x [&.lyt-activated]:before:pb-[50px] [&.lyt-activated]:before:[transition:all_0.2s_cubic-bezier(0,_0,_0.2,_1)]',
                       '[&.lyt-activated]:before:bg-[url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAADGCAYAAAAT+OqFAAAAdklEQVQoz42QQQ7AIAgEF/T/D+kbq/RWAlnQyyazA4aoAB4FsBSA/bFjuF1EOL7VbrIrBuusmrt4ZZORfb6ehbWdnRHEIiITaEUKa5EJqUakRSaEYBJSCY2dEstQY7AuxahwXFrvZmWl2rh4JZ07z9dLtesfNj5q0FU3A5ObbwAAAABJRU5ErkJggg==)]',
@@ -91,7 +93,6 @@ export const MediaVideoElement = withHOC(
                 </div>
               )}
 
-              {/* TODO: Lazy load */}
               {isUpload && isEditorMounted && (
                 <div ref={handleRef}>
                   <ReactPlayer
@@ -112,8 +113,8 @@ export const MediaVideoElement = withHOC(
             />
           </Caption>
         </figure>
-        {children}
+        {props.children}
       </PlateElement>
     );
-  })
+  }
 );

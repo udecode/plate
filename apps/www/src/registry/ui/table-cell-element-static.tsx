@@ -1,16 +1,14 @@
-import React from 'react';
+import * as React from 'react';
 
 import type { SlateElementProps } from '@udecode/plate';
+import type { TTableCellElement } from '@udecode/plate-table';
 
 import { cn } from '@udecode/cn';
 import { SlateElement } from '@udecode/plate';
-import { type TTableCellElement, BaseTablePlugin } from '@udecode/plate-table';
+import { BaseTablePlugin } from '@udecode/plate-table';
 
 export function TableCellElementStatic({
-  children,
-  className,
   isHeader,
-  style,
   ...props
 }: SlateElementProps<TTableCellElement> & {
   isHeader?: boolean;
@@ -23,33 +21,29 @@ export function TableCellElementStatic({
 
   return (
     <SlateElement
+      {...props}
       as={isHeader ? 'th' : 'td'}
       className={cn(
-        className,
         'h-full overflow-visible border-none bg-background p-0',
         element.background ? 'bg-(--cellBackground)' : 'bg-background',
-        cn(
-          isHeader && 'text-left font-normal *:m-0',
-          'before:size-full',
-          "before:absolute before:box-border before:content-[''] before:select-none",
-          borders &&
-            cn(
-              borders.bottom?.size && `before:border-b before:border-b-border`,
-              borders.right?.size && `before:border-r before:border-r-border`,
-              borders.left?.size && `before:border-l before:border-l-border`,
-              borders.top?.size && `before:border-t before:border-t-border`
-            )
-        )
+        isHeader && 'text-left font-normal *:m-0',
+        'before:size-full',
+        "before:absolute before:box-border before:content-[''] before:select-none",
+        borders &&
+          cn(
+            borders.bottom?.size && `before:border-b before:border-b-border`,
+            borders.right?.size && `before:border-r before:border-r-border`,
+            borders.left?.size && `before:border-l before:border-l-border`,
+            borders.top?.size && `before:border-t before:border-t-border`
+          )
       )}
       style={
         {
           '--cellBackground': element.background,
           maxWidth: width || 240,
           minWidth: width || 120,
-          ...style,
         } as React.CSSProperties
       }
-      {...props}
       attributes={{
         ...props.attributes,
         colSpan: api.table.getColSpan(element),
@@ -60,12 +54,14 @@ export function TableCellElementStatic({
         className="relative z-20 box-border h-full px-4 py-2"
         style={{ minHeight }}
       >
-        {children}
+        {props.children}
       </div>
     </SlateElement>
   );
 }
 
-export function TableCellHeaderStaticElement(props: SlateElementProps) {
+export function TableCellHeaderStaticElement(
+  props: SlateElementProps<TTableCellElement>
+) {
   return <TableCellElementStatic {...props} isHeader />;
 }

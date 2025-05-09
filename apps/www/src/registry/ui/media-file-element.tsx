@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
-import { cn, withRef } from '@udecode/cn';
+import type { TFileElement } from '@udecode/plate-media';
+import type { PlateElementProps } from '@udecode/plate/react';
+
 import { useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider } from '@udecode/plate-resizable';
 import { PlateElement, useReadOnly, withHOC } from '@udecode/plate/react';
@@ -12,17 +14,12 @@ import { Caption, CaptionTextarea } from './caption';
 
 export const MediaFileElement = withHOC(
   ResizableProvider,
-  withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
+  function MediaFileElement(props: PlateElementProps<TFileElement>) {
     const readOnly = useReadOnly();
-
     const { name, unsafeUrl } = useMediaState();
 
     return (
-      <PlateElement
-        ref={ref}
-        className={cn(className, 'my-px rounded-sm')}
-        {...props}
-      >
+      <PlateElement className="my-px rounded-sm" {...props}>
         <a
           className="group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted"
           contentEditable={false}
@@ -34,11 +31,7 @@ export const MediaFileElement = withHOC(
         >
           <div className="flex items-center gap-1 p-1">
             <FileUp className="size-5" />
-
             <div>{name}</div>
-
-            {/* TODO: add size */}
-            {/* <div className="text-muted-foreground">{element.size}</div> */}
           </div>
 
           <Caption align="left">
@@ -49,8 +42,8 @@ export const MediaFileElement = withHOC(
             />
           </Caption>
         </a>
-        {children}
+        {props.children}
       </PlateElement>
     );
-  })
+  }
 );

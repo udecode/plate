@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/ui/list-element.tsx",
-      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef, withVariants } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate/react';\nimport { cva } from 'class-variance-authority';\n\nconst listVariants = cva('m-0 ps-6', {\n  variants: {\n    variant: {\n      ol: 'list-decimal',\n      ul: 'list-disc [&_ul]:list-[circle] [&_ul_ul]:list-[square]',\n    },\n  },\n});\n\nconst ListElementVariants = withVariants(PlateElement, listVariants, [\n  'variant',\n]);\n\nexport const ListElement = withRef<typeof ListElementVariants>(\n  ({ children, variant = 'ul', ...props }, ref) => {\n    return (\n      <ListElementVariants ref={ref} as={variant!} variant={variant} {...props}>\n        {children}\n      </ListElementVariants>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { PlateElement } from '@udecode/plate/react';\nimport { type VariantProps, cva } from 'class-variance-authority';\n\nconst listVariants = cva('m-0 ps-6', {\n  variants: {\n    variant: {\n      ol: 'list-decimal',\n      ul: 'list-disc [&_ul]:list-[circle] [&_ul_ul]:list-[square]',\n    },\n  },\n});\n\nexport function ListElement({\n  variant,\n  ...props\n}: PlateElementProps & VariantProps<typeof listVariants>) {\n  return (\n    <PlateElement\n      as={variant!}\n      className={listVariants({ variant })}\n      {...props}\n    >\n      {props.children}\n    </PlateElement>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

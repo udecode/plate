@@ -12,11 +12,11 @@ import {
 import { RefreshCw } from 'lucide-react';
 import { nanoid } from 'nanoid';
 
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
 import { editorComponents } from '@/registry/components/editor/use-create-editor';
 import { useMounted } from '@/registry/hooks/use-mounted';
-import { Button } from '@/registry/ui/button';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { withPlaceholders } from '@/registry/ui/placeholder';
 import { RemoteCursorOverlay } from '@/registry/ui/remote-cursor-overlay';
@@ -195,9 +195,9 @@ function CollaborativeEditor({
             </span>
           ))}
           <Button
-            size="xs"
+            size="sm"
             variant="outline"
-            className="ml-auto h-6"
+            className="ml-auto"
             onClick={toggleConnection}
           >
             {isConnected ? 'Disconnect' : 'Connect'}

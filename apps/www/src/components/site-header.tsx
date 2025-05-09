@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { ModeSwitcher } from '@/components/mode-switcher';
 import { siteConfig } from '@/config/site';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 
 import { CommandMenu } from './command-menu';
 import { Icons } from './icons';

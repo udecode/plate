@@ -1,18 +1,13 @@
-import React from 'react';
+import * as React from 'react';
 
 import type { SlateElementProps } from '@udecode/plate';
 
-import { cn } from '@udecode/cn';
 import { SlateElement } from '@udecode/plate';
 
-export function TableRowElementStatic({
-  children,
-  className,
-  ...props
-}: SlateElementProps) {
+export function TableRowElementStatic(props: SlateElementProps) {
   return (
-    <SlateElement as="tr" className={cn(className, 'h-full')} {...props}>
-      {children}
+    <SlateElement {...props} as="tr" className="h-full">
+      {props.children}
     </SlateElement>
   );
 }

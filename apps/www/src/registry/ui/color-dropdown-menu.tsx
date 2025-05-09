@@ -7,13 +7,14 @@ import {
   useColorDropdownMenuState,
 } from '@udecode/plate-font/react';
 
-import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './color-constants';
-import { ColorPicker } from './color-picker';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from './dropdown-menu';
+} from '@/components/ui/dropdown-menu';
+
+import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from './color-constants';
+import { ColorPicker } from './color-picker';
 import { ToolbarButton } from './toolbar';
 
 type ColorDropdownMenuProps = {

@@ -5,7 +5,7 @@ import * as React from 'react';
 import { Paintbrush } from 'lucide-react';
 
 import { THEME_LIST } from '@/lib/themes';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 
 import { SettingsStore } from './context/settings-store';
 import { ThemesSwitcher } from './themes-selector-mini';

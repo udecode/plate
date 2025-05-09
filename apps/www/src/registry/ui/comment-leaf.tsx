@@ -2,10 +2,12 @@
 
 import React from 'react';
 
+import type { TCommentText } from '@udecode/plate-comments';
+import type { PlateLeafProps } from '@udecode/plate/react';
+
 import { cn } from '@udecode/cn';
-import { type TCommentText, getCommentCount } from '@udecode/plate-comments';
+import { getCommentCount } from '@udecode/plate-comments';
 import {
-  type PlateLeafProps,
   PlateLeaf,
   useEditorPlugin,
   usePluginOption,
@@ -13,10 +15,7 @@ import {
 
 import { commentsPlugin } from '@/registry/components/editor/plugins/comments-plugin';
 
-export function CommentLeaf({
-  className,
-  ...props
-}: PlateLeafProps<TCommentText>) {
+export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
   const { children, leaf } = props;
 
   const { api, setOption } = useEditorPlugin(commentsPlugin);
@@ -32,10 +31,9 @@ export function CommentLeaf({
     <PlateLeaf
       {...props}
       className={cn(
-        className,
-        'border-b-highlight/[.36] bg-highlight/[.13] border-b-2 transition-colors duration-200',
+        'border-b-2 border-b-highlight/[.36] bg-highlight/[.13] transition-colors duration-200',
         (isHover || isActive) && 'border-b-highlight bg-highlight/25',
-        isOverlapping && 'border-b-highlight/[.7] bg-highlight/25 border-b-2',
+        isOverlapping && 'border-b-2 border-b-highlight/[.7] bg-highlight/25',
         (isHover || isActive) &&
           isOverlapping &&
           'border-b-highlight bg-highlight/45'

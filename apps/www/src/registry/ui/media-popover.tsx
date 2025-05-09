@@ -21,6 +21,7 @@ import {
 import { cva } from 'class-variance-authority';
 import { Link, Trash2Icon } from 'lucide-react';
 
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Popover,
   PopoverAnchor,
@@ -28,7 +29,6 @@ import {
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 
-import { Button, buttonVariants } from './button';
 import { CaptionButton } from './caption';
 
 const inputVariants = cva(

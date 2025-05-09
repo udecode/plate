@@ -9,7 +9,7 @@ import { CheckIcon, ClipboardIcon } from 'lucide-react';
 import { copyToClipboardWithMeta } from '@/components/copy-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useConfig } from '@/hooks/use-config';
-import { Button } from '@/registry/ui/button';
+import { Button } from '@/components/ui/button';
 
 export function CodeBlockCommand({
   __bunCommand__,
@@ -92,7 +92,7 @@ export function CodeBlockCommand({
       <Button
         size="icon"
         variant="ghost"
-        className="absolute right-2.5 top-2 z-10 h-6 w-6 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50 [&_svg]:h-3 [&_svg]:w-3"
+        className="absolute top-2 right-2.5 z-10 h-6 w-6 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50 [&_svg]:h-3 [&_svg]:w-3"
         onClick={copyCommand}
       >
         <span className="sr-only">Copy</span>

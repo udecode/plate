@@ -68,7 +68,6 @@ export default function CustomizerDrawer() {
               onClick={() => SettingsStore.set('showSettings', false)}
             >
               <Button
-                size="lg"
                 variant="ghost"
                 className="absolute top-4 left-4 size-8 p-0 px-1.5"
               >

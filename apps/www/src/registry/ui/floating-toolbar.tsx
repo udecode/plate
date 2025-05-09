@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
-import { cn, withRef } from '@udecode/cn';
+import { cn, useComposedRef } from '@udecode/cn';
 import {
   type FloatingToolbarState,
   flip,
@@ -11,7 +11,6 @@ import {
   useFloatingToolbarState,
 } from '@udecode/plate-floating';
 import {
-  useComposedRef,
   useEditorId,
   useEventEditorValue,
   usePluginOption,
@@ -19,12 +18,16 @@ import {
 
 import { Toolbar } from './toolbar';
 
-export const FloatingToolbar = withRef<
-  typeof Toolbar,
-  {
-    state?: FloatingToolbarState;
-  }
->(({ children, state, ...props }, componentRef) => {
+type FloatingToolbarProps = React.ComponentProps<typeof Toolbar> & {
+  state?: FloatingToolbarState;
+};
+
+export function FloatingToolbar({
+  children,
+  className,
+  state,
+  ...props
+}: FloatingToolbarProps) {
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorValue('focus');
   const isFloatingLinkOpen = !!usePluginOption({ key: 'a' }, 'mode');
@@ -60,23 +63,24 @@ export const FloatingToolbar = withRef<
     ref: floatingRef,
   } = useFloatingToolbar(floatingToolbarState);
 
-  const ref = useComposedRef<HTMLDivElement>(componentRef, floatingRef);
+  const ref = useComposedRef<HTMLDivElement>(props.ref, floatingRef);
 
   if (hidden) return null;
 
   return (
     <div ref={clickOutsideRef}>
       <Toolbar
+        {...props}
+        {...rootProps}
         ref={ref}
         className={cn(
           'absolute z-50 scrollbar-hide overflow-x-auto rounded-md border bg-popover p-1 whitespace-nowrap opacity-100 shadow-md print:hidden',
-          'max-w-[80vw]'
+          'max-w-[80vw]',
+          className
         )}
-        {...rootProps}
-        {...props}
       >
         {children}
       </Toolbar>
     </div>
   );
-});
+}

@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { cn } from '@udecode/cn';
-import { Check } from 'lucide-react';
+import { CheckIcon } from 'lucide-react';
 
 export function CheckboxStatic({
   className,
@@ -22,7 +22,7 @@ export function CheckboxStatic({
       {...props}
     >
       <div className={cn('flex items-center justify-center text-current')}>
-        {props.checked && <Check className="size-4" />}
+        {props.checked && <CheckIcon className="size-4" />}
       </div>
     </button>
   );

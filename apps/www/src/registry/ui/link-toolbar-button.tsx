@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
-import { withRef } from '@udecode/cn';
 import {
   useLinkToolbarButton,
   useLinkToolbarButtonState,
@@ -11,19 +10,15 @@ import { Link } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
 
-export const LinkToolbarButton = withRef<typeof ToolbarButton>((rest, ref) => {
+export function LinkToolbarButton(
+  props: React.ComponentProps<typeof ToolbarButton>
+) {
   const state = useLinkToolbarButtonState();
-  const { props } = useLinkToolbarButton(state);
+  const { props: buttonProps } = useLinkToolbarButton(state);
 
   return (
-    <ToolbarButton
-      ref={ref}
-      data-plate-focus
-      tooltip="Link"
-      {...props}
-      {...rest}
-    >
+    <ToolbarButton {...props} {...buttonProps} data-plate-focus tooltip="Link">
       <Link />
     </ToolbarButton>
   );
-});
+}

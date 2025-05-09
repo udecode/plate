@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import * as React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import type { TPlaceholderElement } from '@udecode/plate-media';
+import type { PlateElementProps } from '@udecode/plate/react';
 
 import { cn } from '@udecode/cn';
 import {
@@ -15,12 +17,7 @@ import {
   updateUploadHistory,
   VideoPlugin,
 } from '@udecode/plate-media/react';
-import {
-  PlateElement,
-  useEditorPlugin,
-  withHOC,
-  withRef,
-} from '@udecode/plate/react';
+import { PlateElement, useEditorPlugin, withHOC } from '@udecode/plate/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
 
@@ -58,9 +55,10 @@ const CONTENT: Record<
 
 export const MediaPlaceholderElement = withHOC(
   PlaceholderProvider,
-  withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
-    const editor = props.editor;
-    const element = props.element as TPlaceholderElement;
+  function MediaPlaceholderElement(
+    props: PlateElementProps<TPlaceholderElement>
+  ) {
+    const { editor, element } = props;
 
     const { api } = useEditorPlugin(PlaceholderPlugin);
 
@@ -144,7 +142,7 @@ export const MediaPlaceholderElement = withHOC(
     }, [isReplaced]);
 
     return (
-      <PlateElement ref={ref} className={cn(className, 'my-1')} {...props}>
+      <PlateElement className="my-1" {...props}>
         {(!loading || !isImage) && (
           <div
             className={cn(
@@ -183,10 +181,10 @@ export const MediaPlaceholderElement = withHOC(
           />
         )}
 
-        {children}
+        {props.children}
       </PlateElement>
     );
-  })
+  }
 );
 
 export function ImageProgress({
