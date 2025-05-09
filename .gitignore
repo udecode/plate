@@ -3,6 +3,7 @@
 apps/www/public/rd
 apps/www/src/app/api/ai
 **/tsconfig.tsbuildinfo
+temp
 
 .yarn/*
 !.yarn/patches

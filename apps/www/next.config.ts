@@ -53,6 +53,11 @@ const nextConfig = async (phase: string) => {
           permanent: true,
           source: '/r/:path([^.]*)',
         },
+        {
+          destination: '/rd/:path.json',
+          permanent: true,
+          source: '/rd/:path([^.]*)',
+        },
       ];
     },
 
