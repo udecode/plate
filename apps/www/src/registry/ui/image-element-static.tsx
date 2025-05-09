@@ -4,8 +4,9 @@ import type { SlateElementProps } from '@udecode/plate';
 import type { TCaptionElement } from '@udecode/plate-caption';
 import type { TImageElement } from '@udecode/plate-media';
 
-import { cn } from '@udecode/cn';
 import { NodeApi, SlateElement } from '@udecode/plate';
+
+import { cn } from '@/lib/utils';
 
 export function ImageElementStatic(
   props: SlateElementProps<TImageElement & TCaptionElement & { width: number }>

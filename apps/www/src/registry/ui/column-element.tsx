@@ -5,7 +5,7 @@ import React from 'react';
 import type { TColumnElement } from '@udecode/plate-layout';
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import { cn, useComposedRef } from '@udecode/cn';
+import { useComposedRef } from '@udecode/cn';
 import { PathApi } from '@udecode/plate';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { ResizableProvider } from '@udecode/plate-resizable';
@@ -25,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 export const ColumnElement = withHOC(
   ResizableProvider,

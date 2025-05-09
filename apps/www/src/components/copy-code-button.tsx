@@ -3,12 +3,12 @@ import * as React from 'react';
 import type { Theme } from '@/lib/themes';
 
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons';
-import { cn } from '@udecode/cn';
 import { ClipboardIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useConfig } from '@/hooks/use-config';
 import { useThemesConfig } from '@/hooks/use-themes-config';
+import { cn } from '@/lib/utils';
 
 import { copyToClipboardWithMeta } from './copy-button';
 

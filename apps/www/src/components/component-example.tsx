@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 
 import { CopyButton, CopyWithClassNames } from './copy-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';

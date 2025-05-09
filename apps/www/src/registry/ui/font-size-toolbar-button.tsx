@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import type { TElement } from '@udecode/plate';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { toUnitLess } from '@udecode/plate-font';
 import { FontSizePlugin } from '@udecode/plate-font/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';

@@ -3,6 +3,7 @@ import type { Registry } from 'shadcn/registry';
 export const uiComponents: Registry['items'] = [
   {
     dependencies: [
+      '@udecode/cn',
       '@udecode/plate-ai',
       '@udecode/plate-markdown',
       '@udecode/plate-selection',
@@ -125,7 +126,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['html2canvas-pro', 'pdf-lib'],
+    dependencies: ['@udecode/cn', 'html2canvas-pro', 'pdf-lib'],
     description: 'A toolbar button to export editor content as PDF.',
     files: [{ path: 'ui/export-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
@@ -140,7 +141,7 @@ export const uiComponents: Registry['items'] = [
   },
 
   {
-    dependencies: ['@udecode/plate-caption'],
+    dependencies: ['@udecode/cn', '@udecode/plate-caption'],
     description: 'A text field for adding captions to media elements.',
     files: [{ path: 'ui/caption.tsx', type: 'registry:ui' }],
     meta: {
@@ -214,7 +215,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-comments', 'date-fns'],
+    dependencies: ['@udecode/cn', '@udecode/plate-comments', 'date-fns'],
     description:
       'A popover interface for managing discussions: comments, replies, suggestions.',
     files: [
@@ -523,7 +524,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';`,
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-floating'],
+    dependencies: ['@udecode/cn', '@udecode/plate-floating'],
     description: 'A contextual toolbar that appears over selected text.',
     files: [{ path: 'ui/floating-toolbar.tsx', type: 'registry:ui' }],
     meta: {
@@ -1134,7 +1135,11 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-layout', '@udecode/plate-resizable'],
+    dependencies: [
+      '@udecode/cn',
+      '@udecode/plate-layout',
+      '@udecode/plate-resizable',
+    ],
     description: 'A resizable column component for layout.',
     files: [
       { path: 'ui/column-element.tsx', type: 'registry:ui' },
@@ -1767,7 +1772,7 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: [],
+    dependencies: ['@udecode/cn'],
     description: 'A table row component with optional border hiding.',
     files: [
       { path: 'ui/table-row-element.tsx', type: 'registry:ui' },

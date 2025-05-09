@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { isHotkey } from '@udecode/plate';
 import { isEqualTags } from '@udecode/plate-tag';
 import {

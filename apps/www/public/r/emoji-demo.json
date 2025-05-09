@@ -3,6 +3,9 @@
   "name": "emoji-demo",
   "type": "registry:example",
   "description": "Emoji insertion via toolbar or colon-triggered combobox.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

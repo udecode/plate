@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { ArrowUpRight } from 'lucide-react';
 import LinkPrimitive from 'next/link';
 

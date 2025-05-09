@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo } from 'react';
 
-import { cn, withProps } from '@udecode/cn';
+import { withProps } from '@udecode/cn';
 import { type Value, nanoid, NodeApi } from '@udecode/plate';
 import { AIPlugin } from '@udecode/plate-ai/react';
 import {
@@ -27,6 +27,8 @@ import { type CreatePlateEditorOptions, PlateLeaf } from '@udecode/plate/react';
 import { ArrowUpIcon } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   type TDiscussion,
   discussionPlugin,
@@ -36,7 +38,6 @@ import { useCreateEditor } from '@/registry/components/editor/use-create-editor'
 import type { TComment } from './comment';
 
 import { AILeaf } from './ai-leaf';
-import { Button } from '@/components/ui/button';
 import { DateElement } from './date-element';
 import { Editor, EditorContainer } from './editor';
 import { EmojiInputElement } from './emoji-input-element';

@@ -2,7 +2,7 @@
 
 import { type ReactNode, createContext, useContext, useState } from 'react';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { useEditorPlugin } from '@udecode/plate/react';
 import {

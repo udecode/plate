@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
 import { isType } from '@udecode/plate';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
@@ -41,6 +40,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 import { STRUCTURAL_TYPES } from '@/registry/components/editor/transforms';
 
 const UNDRAGGABLE_KEYS = [

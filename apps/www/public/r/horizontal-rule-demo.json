@@ -3,6 +3,9 @@
   "name": "horizontal-rule-demo",
   "type": "registry:example",
   "description": "Horizontal lines for visually separating content sections.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

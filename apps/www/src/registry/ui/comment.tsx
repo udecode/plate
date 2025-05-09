@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 
 import type { Value } from '@udecode/plate';
 
-import { cn } from '@udecode/cn';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import {
   Plate,
@@ -35,6 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-plugin';
 
 import { useCommentEditor } from './comment-create-form';

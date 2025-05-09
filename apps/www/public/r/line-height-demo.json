@@ -3,6 +3,9 @@
   "name": "line-height-demo",
   "type": "registry:example",
   "description": "Line height adjustment controls.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/line-height-plugin"
   ],

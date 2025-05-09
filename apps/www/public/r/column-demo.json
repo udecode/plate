@@ -3,6 +3,9 @@
   "name": "column-demo",
   "type": "registry:example",
   "description": "Column layout.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

@@ -4,7 +4,6 @@ import * as React from 'react';
 
 import type { SlateRenderElementProps } from '@udecode/plate';
 
-import { cn } from '@udecode/cn';
 import {
   useIndentTodoListElement,
   useIndentTodoListElementState,
@@ -12,6 +11,7 @@ import {
 import { useReadOnly } from '@udecode/plate/react';
 
 import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
 
 export function TodoMarker(props: Omit<SlateRenderElementProps, 'children'>) {
   const state = useIndentTodoListElementState({ element: props.element });

@@ -2,11 +2,12 @@
 
 import React from 'react';
 
-import { cn } from '@udecode/cn';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { useBlockSelected } from '@udecode/plate-selection/react';
 import { usePluginOption } from '@udecode/plate/react';
 import { type VariantProps, cva } from 'class-variance-authority';
+
+import { cn } from '@/lib/utils';
 
 export const blockSelectionVariants = cva(
   'pointer-events-none absolute inset-0 z-1 bg-brand/[.13] transition-opacity',

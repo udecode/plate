@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { TableOfContents } from '@/lib/toc';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 
 import { useLocale } from '@/hooks/useLocale';
 

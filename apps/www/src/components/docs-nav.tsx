@@ -5,7 +5,6 @@ import React, { Suspense, useState } from 'react';
 import type { DocsConfig } from '@/config/docs';
 import type { SidebarNavItem } from '@/types/nav';
 
-import { cn } from '@udecode/cn';
 import { castArray } from 'lodash';
 import { Leaf, X } from 'lucide-react';
 import Link from 'next/link';
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import { useLocale } from '@/hooks/useLocale';
+import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 
 export function DocsNav({ config }: { config: DocsConfig }) {

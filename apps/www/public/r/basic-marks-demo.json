@@ -3,6 +3,9 @@
   "name": "basic-marks-demo",
   "type": "registry:example",
   "description": "Basic text formatting marks like bold, italic, and underline.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/basic-nodes-plugins"
   ],

@@ -3,6 +3,9 @@
   "name": "equation-demo",
   "type": "registry:example",
   "description": "LaTeX equations with inline and block formats.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

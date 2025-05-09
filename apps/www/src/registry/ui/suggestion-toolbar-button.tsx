@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 import { PencilLineIcon } from 'lucide-react';

@@ -4,7 +4,7 @@ import React from 'react';
 
 import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { EmojiSettings } from '@udecode/plate-emoji';
 
 import { EmojiPickerContent } from './emoji-picker-content';

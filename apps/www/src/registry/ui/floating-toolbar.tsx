@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { cn, useComposedRef } from '@udecode/cn';
+import { useComposedRef } from '@udecode/cn';
 import {
   type FloatingToolbarState,
   flip,
@@ -15,6 +15,8 @@ import {
   useEventEditorValue,
   usePluginOption,
 } from '@udecode/plate/react';
+
+import { cn } from '@/lib/utils';
 
 import { Toolbar } from './toolbar';
 

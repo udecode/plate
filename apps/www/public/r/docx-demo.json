@@ -4,6 +4,9 @@
   "type": "registry:example",
   "title": "Serializing Docx",
   "description": "Copy paste from DOCX to Slate.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "files": [
     {
       "path": "src/registry/examples/demo.tsx",

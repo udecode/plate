@@ -3,6 +3,9 @@
   "name": "media-demo",
   "type": "registry:example",
   "description": "Media embedding and management.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/media-plugins"
   ],

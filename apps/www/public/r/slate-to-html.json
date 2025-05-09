@@ -2,8 +2,11 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "slate-to-html",
   "type": "registry:block",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
-    "http://localhost:3000/r/style"
+    "http://localhost:3000/r/plate-ui"
   ],
   "files": [
     {

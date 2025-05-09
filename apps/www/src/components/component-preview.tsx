@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 
 import { Index } from '@/__registry__';
 import { BlockViewer } from '@/components/block-viewer';

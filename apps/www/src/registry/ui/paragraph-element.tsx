@@ -4,8 +4,9 @@ import * as React from 'react';
 
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import { cn } from '@udecode/cn';
 import { PlateElement } from '@udecode/plate/react';
+
+import { cn } from '@/lib/utils';
 
 export function ParagraphElement(props: PlateElementProps) {
   return (

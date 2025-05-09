@@ -7,7 +7,7 @@ import type { TableOfContents } from '@/lib/toc';
 import type { Doc } from 'contentlayer/generated';
 import type { RegistryItem } from 'shadcn/registry';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 

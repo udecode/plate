@@ -3,8 +3,11 @@
   "name": "editor-select",
   "type": "registry:block",
   "description": "A multi-select editor",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
-    "http://localhost:3000/r/style",
+    "http://localhost:3000/r/plate-ui",
     "http://localhost:3000/r/select-editor-demo"
   ],
   "files": [

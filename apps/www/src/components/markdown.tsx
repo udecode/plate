@@ -5,7 +5,7 @@
 import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import remarkGfm from 'remark-gfm';
 
 import { Link } from '@/components/link';

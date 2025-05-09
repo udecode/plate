@@ -5,13 +5,13 @@ import * as React from 'react';
 import type { TSuggestionText } from '@udecode/plate-suggestion';
 import type { PlateLeafProps } from '@udecode/plate/react';
 
-import { cn } from '@udecode/cn';
 import {
   PlateLeaf,
   useEditorPlugin,
   usePluginOption,
 } from '@udecode/plate/react';
 
+import { cn } from '@/lib/utils';
 import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
 
 export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {

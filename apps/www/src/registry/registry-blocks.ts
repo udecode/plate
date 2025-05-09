@@ -51,7 +51,7 @@ export const blocks: Registry['items'] = [
     ],
     name: 'editor-ai',
     registryDependencies: [
-      'style',
+      'plate-ui',
       'api-ai',
       'api-uploadthing',
       'plate-types',
@@ -110,6 +110,7 @@ export const blocks: Registry['items'] = [
   },
   {
     categories: ['Editors'],
+    dependencies: ['@udecode/cn'],
     description: 'A multi-select editor',
     files: [
       {
@@ -119,12 +120,13 @@ export const blocks: Registry['items'] = [
       },
     ],
     name: 'editor-select',
-    registryDependencies: ['style', 'select-editor-demo'],
+    registryDependencies: ['plate-ui', 'select-editor-demo'],
     type: 'registry:block',
   },
   {
     categories: ['Editors'],
     dependencies: [
+      '@udecode/cn',
       '@udecode/plate-basic-elements',
       '@udecode/plate-basic-marks',
     ],
@@ -145,11 +147,12 @@ export const blocks: Registry['items'] = [
       },
     ],
     name: 'editor-basic',
-    registryDependencies: ['style', 'editor'],
+    registryDependencies: ['plate-ui', 'editor'],
     type: 'registry:block',
   },
   {
     categories: ['Serializers'],
+    dependencies: ['@udecode/cn'],
     files: [
       {
         path: 'blocks/slate-to-html/page.tsx',
@@ -165,7 +168,7 @@ export const blocks: Registry['items'] = [
       rsc: true,
     },
     name: 'slate-to-html',
-    registryDependencies: ['style'],
+    registryDependencies: ['plate-ui'],
     type: 'registry:block',
   },
 ];

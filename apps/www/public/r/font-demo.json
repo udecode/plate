@@ -3,6 +3,9 @@
   "name": "font-demo",
   "type": "registry:example",
   "description": "Color picker for text and background colors.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

@@ -3,9 +3,10 @@ import * as React from 'react';
 import type { SlateElementProps } from '@udecode/plate';
 import type { TEquationElement } from '@udecode/plate-math';
 
-import { cn } from '@udecode/cn';
 import { SlateElement } from '@udecode/plate';
 import { getEquationHtml } from '@udecode/plate-math';
+
+import { cn } from '@/lib/utils';
 
 export function InlineEquationElementStatic(
   props: SlateElementProps<TEquationElement>

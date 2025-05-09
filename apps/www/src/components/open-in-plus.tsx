@@ -1,4 +1,4 @@
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 import { useLocale } from '@/hooks/useLocale';

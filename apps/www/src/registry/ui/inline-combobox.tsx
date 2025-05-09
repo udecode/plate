@@ -29,7 +29,7 @@ import {
   useComboboxContext,
   useComboboxStore,
 } from '@ariakit/react';
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { filterWords } from '@udecode/plate-combobox';
 import {
   type UseComboboxInputResult,

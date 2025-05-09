@@ -3,6 +3,9 @@
   "name": "editor-default",
   "type": "registry:example",
   "title": "Default",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

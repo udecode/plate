@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from '@udecode/cn';
 import { Check, PlusCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useProject } from '@/hooks/use-project';
+import { cn } from '@/lib/utils';
 
 export function ProjectAddButton({
   className,

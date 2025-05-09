@@ -3,9 +3,8 @@ import * as React from 'react';
 import type { Event } from '@/lib/events';
 import type { NpmCommands } from '@/types/unist';
 
-import { cn } from '@udecode/cn';
-
 import { CodeBlockCommand } from '@/components/code-block-command';
+import { cn } from '@/lib/utils';
 
 import { CopyButton } from './copy-button';
 

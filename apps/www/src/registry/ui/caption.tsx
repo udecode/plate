@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { VariantProps } from 'class-variance-authority';
 
-import { cn, createPrimitiveComponent } from '@udecode/cn';
+import { createPrimitiveComponent } from '@udecode/cn';
 import {
   Caption as CaptionPrimitive,
   CaptionTextarea as CaptionTextareaPrimitive,
@@ -14,6 +14,7 @@ import {
 import { cva } from 'class-variance-authority';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const captionVariants = cva('max-w-full', {
   defaultVariants: {

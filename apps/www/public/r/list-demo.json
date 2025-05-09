@@ -3,6 +3,9 @@
   "name": "list-demo",
   "type": "registry:example",
   "description": "List creation and formatting.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/autoformat-list-plugin",
     "http://localhost:3000/r/list-element",

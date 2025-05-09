@@ -7,7 +7,6 @@ import type { NpmCommands } from '@/types/unist';
 import type { DropdownMenuTriggerProps } from '@radix-ui/react-dropdown-menu';
 
 import { CheckIcon, ClipboardIcon } from '@radix-ui/react-icons';
-import { cn } from '@udecode/cn';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { type Event, trackEvent } from '@/lib/events';
+import { cn } from '@/lib/utils';
 
 import { Icons } from './icons';
 

@@ -5,7 +5,6 @@ import * as React from 'react';
 import type { TTagElement } from '@udecode/plate-tag';
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import { cn } from '@udecode/cn';
 import {
   PlateElement,
   useFocused,
@@ -13,6 +12,8 @@ import {
   useSelected,
 } from '@udecode/plate/react';
 import Link from 'next/link';
+
+import { cn } from '@/lib/utils';
 
 export function TagElement(props: PlateElementProps<TTagElement>) {
   const { element } = props;

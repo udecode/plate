@@ -3,6 +3,9 @@
   "name": "editor-full-width",
   "type": "registry:example",
   "title": "Full Width",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

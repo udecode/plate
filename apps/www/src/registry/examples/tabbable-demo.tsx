@@ -4,7 +4,6 @@ import React from 'react';
 
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import { cn } from '@udecode/cn';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import {
   Plate,
@@ -13,6 +12,7 @@ import {
   useSelected,
 } from '@udecode/plate/react';
 
+import { cn } from '@/lib/utils';
 import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
 import { tabbableValue } from '@/registry/examples/values/tabbable-value';

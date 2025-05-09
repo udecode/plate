@@ -7,7 +7,6 @@ import type { ReactNode } from 'react';
 import type { TPlaceholderElement } from '@udecode/plate-media';
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import { cn } from '@udecode/cn';
 import {
   AudioPlugin,
   FilePlugin,
@@ -21,6 +20,7 @@ import { PlateElement, useEditorPlugin, withHOC } from '@udecode/plate/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
 
+import { cn } from '@/lib/utils';
 import { useUploadFile } from '@/registry/lib/uploadthing';
 
 const CONTENT: Record<

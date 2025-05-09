@@ -2,6 +2,9 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "potion-iframe-demo",
   "type": "registry:example",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "files": [
     {
       "path": "src/registry/examples/potion-iframe-demo.tsx",

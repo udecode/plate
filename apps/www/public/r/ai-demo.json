@@ -4,6 +4,9 @@
   "type": "registry:example",
   "title": "AI",
   "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/basic-nodes-plugins",
     "http://localhost:3000/r/block-selection-plugins",

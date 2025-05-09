@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
 import { EraserIcon } from 'lucide-react';
 
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 import { ToolbarMenuGroup } from '@/registry/ui/toolbar';
 
 import {

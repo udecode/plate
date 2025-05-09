@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { Metadata, Viewport } from 'next';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { GA } from '@/components/analytics/ga';

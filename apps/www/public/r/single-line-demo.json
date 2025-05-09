@@ -4,6 +4,9 @@
   "type": "registry:example",
   "title": "Single Line",
   "description": "Restrict the editor to a single block.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "files": [
     {
       "path": "src/registry/examples/single-line-demo.tsx",

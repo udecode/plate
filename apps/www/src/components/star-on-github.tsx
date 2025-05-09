@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { StarIcon } from 'lucide-react';
 import Link from 'next/link';
 

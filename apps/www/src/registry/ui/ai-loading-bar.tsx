@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 import { Pause } from 'lucide-react';

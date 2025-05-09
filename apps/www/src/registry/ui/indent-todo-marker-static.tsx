@@ -2,8 +2,9 @@ import * as React from 'react';
 
 import type { SlateRenderElementProps } from '@udecode/plate';
 
-import { cn } from '@udecode/cn';
 import { CheckIcon } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
 
 export function TodoMarkerStatic(
   props: Omit<SlateRenderElementProps, 'children'>

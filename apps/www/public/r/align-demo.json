@@ -3,6 +3,9 @@
   "name": "align-demo",
   "type": "registry:example",
   "description": "Text alignment controls for blocks.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/align-plugin"
   ],

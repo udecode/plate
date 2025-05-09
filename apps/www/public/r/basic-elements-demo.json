@@ -3,6 +3,9 @@
   "name": "basic-elements-demo",
   "type": "registry:example",
   "description": "Basic block elements like headings, quotes, and code blocks.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/basic-nodes-plugins"
   ],

@@ -4,6 +4,9 @@
   "type": "registry:example",
   "title": "Soft Break",
   "description": "Insert line breaks within a block of text without starting a new block.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/soft-break-plugin"
   ],

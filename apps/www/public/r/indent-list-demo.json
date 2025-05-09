@@ -3,6 +3,9 @@
   "name": "indent-list-demo",
   "type": "registry:example",
   "description": "Turn any block into a list item.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/indent-list-plugins"
   ],

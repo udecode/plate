@@ -23,15 +23,19 @@ const registry: Registry = {
   items: z.array(registryItemSchema).parse(
     [
       {
-        name: 'style',
-        type: 'registry:style',
-        dependencies: [
-          'tailwind-scrollbar-hide',
-          '@udecode/cn',
-          '@udecode/plate',
-        ],
+        name: 'plate',
+        type: 'registry:lib',
+        dependencies: ['@udecode/plate'],
         devDependencies: [],
         registryDependencies: [],
+        files: [],
+      },
+      {
+        name: 'plate-ui',
+        type: 'registry:style',
+        dependencies: ['tailwind-scrollbar-hide'],
+        devDependencies: [],
+        registryDependencies: ['plate'],
         cssVars: {
           theme: {
             'font-heading':

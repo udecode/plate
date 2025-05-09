@@ -5,7 +5,6 @@ import * as React from 'react';
 import type { TEquationElement } from '@udecode/plate-math';
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import { cn } from '@udecode/cn';
 import { useEquationElement } from '@udecode/plate-math/react';
 import {
   PlateElement,
@@ -15,6 +14,7 @@ import {
 import { RadicalIcon } from 'lucide-react';
 
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 import { EquationPopoverContent } from './equation-popover';
 

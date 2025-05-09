@@ -4,8 +4,6 @@ import React from 'react';
 
 import type { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
 
-import { cn } from '@udecode/cn';
-
 import { buttonVariants } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
@@ -14,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 export type TColor = {
   isBrightColor: boolean;

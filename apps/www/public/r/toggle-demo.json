@@ -3,6 +3,9 @@
   "name": "toggle-demo",
   "type": "registry:example",
   "description": "Collapsible content blocks.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

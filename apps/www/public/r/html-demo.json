@@ -4,6 +4,9 @@
   "type": "registry:example",
   "title": "Serializing HTML",
   "description": "Copy paste from HTML to Slate.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "files": [
     {
       "path": "src/registry/examples/demo.tsx",

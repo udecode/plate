@@ -3,6 +3,9 @@
   "name": "find-replace-demo",
   "type": "registry:example",
   "description": "Find and replace functionality in text.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/fixed-toolbar",
     "input",

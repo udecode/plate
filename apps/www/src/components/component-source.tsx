@@ -2,10 +2,9 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
-
 import { Button } from '@/components/ui/button';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { cn } from '@/lib/utils';
 
 import { CodeBlockWrapper } from './code-block-wrapper';
 

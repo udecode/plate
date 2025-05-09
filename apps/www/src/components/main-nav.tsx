@@ -2,12 +2,12 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { siteConfig } from '@/config/site';
 import { useLocale } from '@/hooks/useLocale';
+import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 
 import { Icons } from './icons';

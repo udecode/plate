@@ -5,7 +5,6 @@ import * as React from 'react';
 import type { TMentionElement } from '@udecode/plate-mention';
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import { cn } from '@udecode/cn';
 import { IS_APPLE } from '@udecode/plate';
 import {
   PlateElement,
@@ -14,6 +13,7 @@ import {
   useSelected,
 } from '@udecode/plate/react';
 
+import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
 
 export function MentionElement(

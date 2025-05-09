@@ -4,7 +4,6 @@ import * as React from 'react';
 
 import type { VariantProps } from 'class-variance-authority';
 
-import { cn } from '@udecode/cn';
 import {
   type ResizeHandle as ResizeHandlePrimitive,
   Resizable as ResizablePrimitive,
@@ -12,6 +11,8 @@ import {
   useResizeHandleState,
 } from '@udecode/plate-resizable';
 import { cva } from 'class-variance-authority';
+
+import { cn } from '@/lib/utils';
 
 export const mediaResizeHandleVariants = cva(
   cn(

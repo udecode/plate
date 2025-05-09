@@ -2,6 +2,9 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "mode-toggle",
   "type": "registry:example",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "files": [
     {
       "path": "src/registry/examples/mode-toggle.tsx",

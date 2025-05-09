@@ -3,15 +3,25 @@
   "homepage": "http://localhost:3000",
   "items": [
     {
-      "name": "style",
-      "type": "registry:style",
+      "name": "plate",
+      "type": "registry:lib",
       "dependencies": [
-        "tailwind-scrollbar-hide",
-        "@udecode/cn",
         "@udecode/plate"
       ],
       "devDependencies": [],
       "registryDependencies": [],
+      "files": []
+    },
+    {
+      "name": "plate-ui",
+      "type": "registry:style",
+      "dependencies": [
+        "tailwind-scrollbar-hide"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/r/plate"
+      ],
       "files": [],
       "cssVars": {
         "theme": {
@@ -35,6 +45,7 @@
       "title": "AI Menu",
       "description": "A menu for AI-powered content generation and insertion.",
       "dependencies": [
+        "@udecode/cn",
         "@udecode/plate-ai",
         "@udecode/plate-markdown",
         "@udecode/plate-selection",
@@ -256,6 +267,7 @@
       "title": "Export Toolbar Button",
       "description": "A toolbar button to export editor content as PDF.",
       "dependencies": [
+        "@udecode/cn",
         "html2canvas-pro",
         "pdf-lib"
       ],
@@ -287,6 +299,7 @@
       "title": "Caption",
       "description": "A text field for adding captions to media elements.",
       "dependencies": [
+        "@udecode/cn",
         "@udecode/plate-caption"
       ],
       "registryDependencies": [
@@ -406,6 +419,7 @@
       "title": "Block Discussion",
       "description": "A popover interface for managing discussions: comments, replies, suggestions.",
       "dependencies": [
+        "@udecode/cn",
         "@udecode/plate-comments",
         "date-fns"
       ],
@@ -816,6 +830,7 @@
       "title": "Floating Toolbar",
       "description": "A contextual toolbar that appears over selected text.",
       "dependencies": [
+        "@udecode/cn",
         "@udecode/plate-floating"
       ],
       "registryDependencies": [
@@ -1867,6 +1882,7 @@
       "title": "Column Element",
       "description": "A resizable column component for layout.",
       "dependencies": [
+        "@udecode/cn",
         "@udecode/plate-layout",
         "@udecode/plate-resizable"
       ],
@@ -2933,7 +2949,9 @@
       "type": "registry:ui",
       "title": "Table Row Element",
       "description": "A table row component with optional border hiding.",
-      "dependencies": [],
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -3811,7 +3829,7 @@
         "sonner"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/style",
+        "http://localhost:3000/r/plate-ui",
         "http://localhost:3000/r/api-ai",
         "http://localhost:3000/r/api-uploadthing",
         "http://localhost:3000/r/plate-types",
@@ -3890,8 +3908,11 @@
       "name": "editor-select",
       "type": "registry:block",
       "description": "A multi-select editor",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
-        "http://localhost:3000/r/style",
+        "http://localhost:3000/r/plate-ui",
         "http://localhost:3000/r/select-editor-demo"
       ],
       "files": [
@@ -3910,11 +3931,12 @@
       "type": "registry:block",
       "description": "A basic editor",
       "dependencies": [
+        "@udecode/cn",
         "@udecode/plate-basic-elements",
         "@udecode/plate-basic-marks"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/style",
+        "http://localhost:3000/r/plate-ui",
         "http://localhost:3000/r/editor"
       ],
       "files": [
@@ -3939,8 +3961,11 @@
     {
       "name": "slate-to-html",
       "type": "registry:block",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
-        "http://localhost:3000/r/style"
+        "http://localhost:3000/r/plate-ui"
       ],
       "files": [
         {
@@ -4011,6 +4036,9 @@
       "type": "registry:example",
       "title": "AI",
       "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/basic-nodes-plugins",
         "http://localhost:3000/r/block-selection-plugins",
@@ -4052,6 +4080,9 @@
       "name": "align-demo",
       "type": "registry:example",
       "description": "Text alignment controls for blocks.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/align-plugin"
       ],
@@ -4080,6 +4111,9 @@
       "type": "registry:example",
       "title": "Autoformat",
       "description": "Apply formatting automatically using shortcodes.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/autoformat-plugin"
       ],
@@ -4107,6 +4141,9 @@
       "name": "basic-elements-demo",
       "type": "registry:example",
       "description": "Basic block elements like headings, quotes, and code blocks.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/basic-nodes-plugins"
       ],
@@ -4141,6 +4178,9 @@
       "name": "basic-marks-demo",
       "type": "registry:example",
       "description": "Basic text formatting marks like bold, italic, and underline.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/basic-nodes-plugins"
       ],
@@ -4175,6 +4215,9 @@
       "name": "basic-nodes-demo",
       "type": "registry:example",
       "description": "Basic block elements and text marks.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/basic-nodes-plugins"
       ],
@@ -4221,6 +4264,9 @@
       "name": "block-menu-demo",
       "type": "registry:example",
       "description": "Block-level context menu with formatting options.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/block-menu-plugins"
       ],
@@ -4255,6 +4301,9 @@
       "name": "block-selection-demo",
       "type": "registry:example",
       "description": "Visual block selection with keyboard support.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/block-selection-plugins"
       ],
@@ -4282,6 +4331,9 @@
       "name": "column-demo",
       "type": "registry:example",
       "description": "Column layout.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -4314,6 +4366,9 @@
       "name": "comments-demo",
       "type": "registry:example",
       "description": "Adding and displaying comments within content.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/comments-plugin",
         "http://localhost:3000/r/discussion-plugin"
@@ -4350,6 +4405,7 @@
       "type": "registry:example",
       "description": "Renders AI ghost text suggestions at the cursor position.",
       "dependencies": [
+        "@udecode/cn",
         "@udecode/plate-ai",
         "@udecode/plate-markdown"
       ],
@@ -4388,6 +4444,9 @@
       "type": "registry:example",
       "title": "Cursor Overlay",
       "description": "Visual indicator for cursor position within the editor.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/cursor-overlay-plugin"
       ],
@@ -4415,6 +4474,9 @@
       "name": "date-demo",
       "type": "registry:example",
       "description": "Inline date elements with calendar selection interface.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -4448,6 +4510,9 @@
       "type": "registry:example",
       "title": "Drag & Drop",
       "description": "Implements draggable functionality for editor blocks, including drag handles and drop indicators.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/dnd-plugins"
       ],
@@ -4482,6 +4547,9 @@
       "name": "emoji-demo",
       "type": "registry:example",
       "description": "Emoji insertion via toolbar or colon-triggered combobox.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -4514,6 +4582,9 @@
       "name": "equation-demo",
       "type": "registry:example",
       "description": "LaTeX equations with inline and block formats.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -4547,6 +4618,9 @@
       "type": "registry:example",
       "title": "Exit Break",
       "description": "Exit a large block using a shortcut.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/exit-break-plugin"
       ],
@@ -4573,6 +4647,9 @@
     {
       "name": "excalidraw-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -4597,6 +4674,9 @@
       "name": "find-replace-demo",
       "type": "registry:example",
       "description": "Find and replace functionality in text.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/fixed-toolbar",
         "input",
@@ -4626,6 +4706,9 @@
       "name": "floating-toolbar-demo",
       "type": "registry:example",
       "description": "Floating toolbar with text formatting and AI assistance options.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -4658,6 +4741,9 @@
       "name": "font-demo",
       "type": "registry:example",
       "description": "Color picker for text and background colors.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -4682,6 +4768,9 @@
     {
       "name": "highlight-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -4706,6 +4795,9 @@
       "name": "horizontal-rule-demo",
       "type": "registry:example",
       "description": "Horizontal lines for visually separating content sections.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -4737,6 +4829,9 @@
     {
       "name": "indent-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/indent-list-plugins"
       ],
@@ -4763,6 +4858,9 @@
       "name": "indent-list-demo",
       "type": "registry:example",
       "description": "Turn any block into a list item.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/indent-list-plugins"
       ],
@@ -4800,6 +4898,9 @@
     {
       "name": "kbd-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -4824,6 +4925,9 @@
       "name": "line-height-demo",
       "type": "registry:example",
       "description": "Line height adjustment controls.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/line-height-plugin"
       ],
@@ -4851,6 +4955,9 @@
       "name": "link-demo",
       "type": "registry:example",
       "description": "Hyperlinks with toolbar insertion and URL pasting support.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/link-plugin"
       ],
@@ -4885,6 +4992,9 @@
       "name": "list-demo",
       "type": "registry:example",
       "description": "List creation and formatting.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/autoformat-list-plugin",
         "http://localhost:3000/r/list-element",
@@ -4922,6 +5032,9 @@
       "name": "media-demo",
       "type": "registry:example",
       "description": "Media embedding and management.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/media-plugins"
       ],
@@ -4949,6 +5062,9 @@
       "name": "mention-demo",
       "type": "registry:example",
       "description": "Mention functionality for referencing users or entities.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/mention-plugin"
       ],
@@ -4982,6 +5098,9 @@
     {
       "name": "reset-node-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/reset-block-type-plugin"
       ],
@@ -5009,6 +5128,9 @@
       "type": "registry:example",
       "title": "Serializing CSV",
       "description": "Copy paste from CSV to Slate.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -5034,6 +5156,9 @@
       "type": "registry:example",
       "title": "Serializing Docx",
       "description": "Copy paste from DOCX to Slate.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -5059,6 +5184,9 @@
       "type": "registry:example",
       "title": "Serializing HTML",
       "description": "Copy paste from HTML to Slate.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -5084,6 +5212,9 @@
       "type": "registry:example",
       "title": "Serializing Markdown",
       "description": "Copy paste from Markdown to Slate.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -5109,6 +5240,9 @@
       "type": "registry:example",
       "title": "Select Editor Form",
       "description": "A form with a select editor component for managing labels.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "form",
         "http://localhost:3000/r/button",
@@ -5133,6 +5267,9 @@
       "type": "registry:example",
       "title": "Single Line",
       "description": "Restrict the editor to a single block.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "files": [
         {
           "path": "src/registry/examples/single-line-demo.tsx",
@@ -5157,6 +5294,9 @@
       "name": "slash-command-demo",
       "type": "registry:example",
       "description": "Slash command menu for quick insertion of various content types.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5190,6 +5330,9 @@
       "type": "registry:example",
       "title": "Soft Break",
       "description": "Insert line breaks within a block of text without starting a new block.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/soft-break-plugin"
       ],
@@ -5216,6 +5359,9 @@
     {
       "name": "tabbable-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "files": [
         {
           "path": "src/registry/examples/tabbable-demo.tsx",
@@ -5239,6 +5385,9 @@
       "name": "table-demo",
       "type": "registry:example",
       "description": "Customizable tables with resizable columns and row merging options.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/table-plugin"
       ],
@@ -5272,6 +5421,9 @@
     {
       "name": "table-nomerge-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "files": [
         {
           "path": "src/registry/examples/table-nomerge-demo.tsx",
@@ -5296,6 +5448,9 @@
       "type": "registry:example",
       "title": "Table of Contents",
       "description": "Dynamic TOC with in-document element for easy navigation.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/toc-plugin"
       ],
@@ -5330,6 +5485,9 @@
       "name": "toggle-demo",
       "type": "registry:example",
       "description": "Collapsible content blocks.",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5350,6 +5508,9 @@
     {
       "name": "demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -5368,6 +5529,9 @@
     {
       "name": "pro-iframe-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "files": [
         {
           "path": "src/registry/examples/pro-iframe-demo.tsx",
@@ -5378,6 +5542,9 @@
     {
       "name": "potion-iframe-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "files": [
         {
           "path": "src/registry/examples/potion-iframe-demo.tsx",
@@ -5389,6 +5556,9 @@
       "name": "editor-default",
       "type": "registry:example",
       "title": "Default",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5402,6 +5572,9 @@
       "name": "editor-disabled",
       "type": "registry:example",
       "title": "Disabled",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5415,6 +5588,9 @@
       "name": "editor-full-width",
       "type": "registry:example",
       "title": "Full Width",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5427,6 +5603,9 @@
     {
       "name": "basic-editor-default-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5438,6 +5617,9 @@
     {
       "name": "controlled-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5449,6 +5631,9 @@
     {
       "name": "basic-editor-styling-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5460,6 +5645,9 @@
     {
       "name": "basic-editor-handler-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5471,6 +5659,9 @@
     {
       "name": "basic-editor-value-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5482,6 +5673,9 @@
     {
       "name": "basic-plugins-components-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5493,6 +5687,9 @@
     {
       "name": "basic-plugins-default-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5504,6 +5701,9 @@
     {
       "name": "editable-voids-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5515,6 +5715,9 @@
     {
       "name": "hundreds-blocks-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5526,6 +5729,9 @@
     {
       "name": "hundreds-editors-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5537,6 +5743,9 @@
     {
       "name": "mode-toggle",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "files": [
         {
           "path": "src/registry/examples/mode-toggle.tsx",
@@ -5547,6 +5756,9 @@
     {
       "name": "multiple-editors-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5558,6 +5770,9 @@
     {
       "name": "version-history-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5569,6 +5784,9 @@
     {
       "name": "playground-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5588,6 +5806,9 @@
     {
       "name": "preview-markdown-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {
@@ -5600,6 +5821,9 @@
     {
       "name": "markdown-to-slate-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [
         "http://localhost:3000/r/use-debounce"
       ],
@@ -5614,6 +5838,9 @@
     {
       "name": "collaboration-demo",
       "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
       "registryDependencies": [],
       "files": [
         {

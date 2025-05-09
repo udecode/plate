@@ -3,6 +3,9 @@
   "name": "block-selection-demo",
   "type": "registry:example",
   "description": "Visual block selection with keyboard support.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/block-selection-plugins"
   ],

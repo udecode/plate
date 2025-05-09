@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 
 import type { TCodeBlockElement } from '@udecode/plate-code-block';
 
-import { cn } from '@udecode/cn';
 import { useEditorRef, useElement, useReadOnly } from '@udecode/plate/react';
 import { Check } from 'lucide-react';
 
@@ -22,6 +21,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 const languages: { label: string; value: string }[] = [
   { label: 'Auto', value: 'auto' },

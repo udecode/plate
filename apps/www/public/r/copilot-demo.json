@@ -4,6 +4,7 @@
   "type": "registry:example",
   "description": "Renders AI ghost text suggestions at the cursor position.",
   "dependencies": [
+    "@udecode/cn",
     "@udecode/plate-ai",
     "@udecode/plate-markdown"
   ],

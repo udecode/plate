@@ -3,6 +3,9 @@
   "name": "link-demo",
   "type": "registry:example",
   "description": "Hyperlinks with toolbar insertion and URL pasting support.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/link-plugin"
   ],

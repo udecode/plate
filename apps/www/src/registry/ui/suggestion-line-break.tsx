@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 
 import type { TSuggestionData } from '@udecode/plate-suggestion';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { type RenderNodeWrapper, usePluginOption } from '@udecode/plate/react';
 import { CornerDownLeftIcon } from 'lucide-react';
 
@@ -53,7 +53,7 @@ function SuggestionLineBreak({
     <span
       ref={spanRef}
       className={cn(
-        'border-b-brand/[.24] bg-brand/[.08] text-brand/80 absolute border-b-2 text-justify no-underline transition-colors duration-200',
+        'absolute border-b-2 border-b-brand/[.24] bg-brand/[.08] text-justify text-brand/80 no-underline transition-colors duration-200',
         isInsert &&
           (isActive || isHover) &&
           'border-b-brand/[.60] bg-brand/[.13]',

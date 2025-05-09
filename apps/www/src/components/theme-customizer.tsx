@@ -3,7 +3,6 @@
 import * as React from 'react';
 
 import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
-import { cn } from '@udecode/cn';
 import { RepeatIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
@@ -12,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useConfig } from '@/hooks/use-config';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { THEMES } from '@/lib/themes';
+import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { Label } from '../components/ui/label';

@@ -9,12 +9,12 @@
   "files": [
     {
       "path": "src/registry/ui/paragraph-element.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { cn } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate/react';\n\nexport function ParagraphElement(props: PlateElementProps) {\n  return (\n    <PlateElement {...props} className={cn('m-0 px-0 py-1')}>\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { PlateElement } from '@udecode/plate/react';\n\nimport { cn } from '@/lib/utils';\n\nexport function ParagraphElement(props: PlateElementProps) {\n  return (\n    <PlateElement {...props} className={cn('m-0 px-0 py-1')}>\n      {props.children}\n    </PlateElement>\n  );\n}\n",
       "type": "registry:ui"
     },
     {
       "path": "src/registry/ui/paragraph-element-static.tsx",
-      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate';\n\nimport { cn } from '@udecode/cn';\nimport { SlateElement } from '@udecode/plate';\n\nexport function ParagraphElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement {...props} className={cn('m-0 px-0 py-1')}>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate';\n\nimport { SlateElement } from '@udecode/plate';\n\nimport { cn } from '@/lib/utils';\n\nexport function ParagraphElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement {...props} className={cn('m-0 px-0 py-1')}>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

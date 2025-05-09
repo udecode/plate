@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 
-import { cn } from '@udecode/cn';
 import { useStoreValue } from '@udecode/plate/react';
 import { Settings2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -13,6 +12,7 @@ import { PlaygroundPreview } from '@/components/playground-preview';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocale } from '@/hooks/useLocale';
+import { cn } from '@/lib/utils';
 
 const i18n = {
   cn: {

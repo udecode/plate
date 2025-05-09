@@ -4,7 +4,6 @@ import * as React from 'react';
 
 import type { SidebarNavItem } from '@/types/nav';
 
-import { cn } from '@udecode/cn';
 import { ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -23,6 +22,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { getDocIcon } from '@/config/docs-icons';
+import { cn } from '@/lib/utils';
 
 export function DocBreadcrumb({
   buttonClassName,

@@ -6,7 +6,6 @@ import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import type { TTableElement } from '@udecode/plate-table';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
-import { cn } from '@udecode/cn';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { setCellBackground } from '@udecode/plate-table';
 import {
@@ -53,6 +52,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 import { DEFAULT_COLORS } from './color-constants';
 import { ColorDropdownMenuItems } from './color-dropdown-menu-items';

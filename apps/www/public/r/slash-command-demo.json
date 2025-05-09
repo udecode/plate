@@ -3,6 +3,9 @@
   "name": "slash-command-demo",
   "type": "registry:example",
   "description": "Slash command menu for quick insertion of various content types.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

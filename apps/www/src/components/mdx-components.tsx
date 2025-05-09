@@ -3,7 +3,6 @@
 import * as React from 'react';
 import type { ReactNode } from 'react';
 
-import { cn } from '@udecode/cn';
 import { Provider } from 'jotai';
 import { useMDXComponent } from 'next-contentlayer2/hooks';
 import Image from 'next/image';
@@ -11,6 +10,7 @@ import Image from 'next/image';
 import { CodeTabs } from '@/components/code-tabs';
 import { ComponentInstallation } from '@/components/component-installation';
 import { packageInfoAtom } from '@/hooks/use-package-info';
+import { cn } from '@/lib/utils';
 
 import {
   API,

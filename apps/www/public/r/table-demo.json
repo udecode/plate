@@ -3,6 +3,9 @@
   "name": "table-demo",
   "type": "registry:example",
   "description": "Customizable tables with resizable columns and row merging options.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/table-plugin"
   ],

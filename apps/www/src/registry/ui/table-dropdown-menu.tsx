@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { cn } from '@udecode/cn';
 import { TablePlugin, useTableMergeState } from '@udecode/plate-table/react';
 import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
 import {
@@ -30,6 +29,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 import { ToolbarButton } from './toolbar';
 

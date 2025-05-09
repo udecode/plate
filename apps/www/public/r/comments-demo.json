@@ -3,6 +3,9 @@
   "name": "comments-demo",
   "type": "registry:example",
   "description": "Adding and displaying comments within content.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/comments-plugin",
     "http://localhost:3000/r/discussion-plugin"

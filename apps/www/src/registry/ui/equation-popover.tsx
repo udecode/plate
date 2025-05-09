@@ -7,7 +7,7 @@ import TextareaAutosize, {
 
 import type { TEquationElement } from '@udecode/plate-math';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import { useEquationInput } from '@udecode/plate-math/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import {

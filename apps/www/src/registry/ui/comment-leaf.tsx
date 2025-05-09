@@ -5,7 +5,6 @@ import React from 'react';
 import type { TCommentText } from '@udecode/plate-comments';
 import type { PlateLeafProps } from '@udecode/plate/react';
 
-import { cn } from '@udecode/cn';
 import { getCommentCount } from '@udecode/plate-comments';
 import {
   PlateLeaf,
@@ -13,6 +12,7 @@ import {
   usePluginOption,
 } from '@udecode/plate/react';
 
+import { cn } from '@/lib/utils';
 import { commentsPlugin } from '@/registry/components/editor/plugins/comments-plugin';
 
 export function CommentLeaf(props: PlateLeafProps<TCommentText>) {

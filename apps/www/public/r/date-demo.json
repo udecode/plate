@@ -3,6 +3,9 @@
   "name": "date-demo",
   "type": "registry:example",
   "description": "Inline date elements with calendar selection interface.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

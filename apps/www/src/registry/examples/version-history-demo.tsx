@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { cn } from '@udecode/cn';
 import { type Value, createSlatePlugin } from '@udecode/plate';
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
 import { SoftBreakPlugin } from '@udecode/plate-break/react';
@@ -31,6 +30,7 @@ import {
 import { cloneDeep } from 'lodash';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
 
 const InlinePlugin = createPlatePlugin({

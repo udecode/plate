@@ -3,6 +3,9 @@
   "name": "editor-disabled",
   "type": "registry:example",
   "title": "Disabled",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

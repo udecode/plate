@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
 import Link, { type LinkProps } from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { docsConfig } from '@/config/docs';
 import { useMetaColor } from '@/hooks/use-meta-color';
+import { cn } from '@/lib/utils';
 
 import { Drawer, DrawerContent, DrawerTrigger } from './ui/drawer';
 

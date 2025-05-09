@@ -1,9 +1,10 @@
 'use client';
 
-import { cn } from '@udecode/cn';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { type PlateTextProps, PlateText } from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
+
+import { cn } from '@/lib/utils';
 
 const aiIndicatorVariants = cva(
   'after:ml-1.5 after:inline-block after:h-3 after:w-3 after:animate-pulse after:rounded-full after:bg-primary after:align-middle after:content-[""]'

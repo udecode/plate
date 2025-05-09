@@ -5,7 +5,6 @@ import * as React from 'react';
 import type { TTableCellElement } from '@udecode/plate-table';
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import { cn } from '@udecode/cn';
 import {
   BlockSelectionPlugin,
   useBlockSelected,
@@ -24,6 +23,8 @@ import {
   useReadOnly,
 } from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
+
+import { cn } from '@/lib/utils';
 
 import { blockSelectionVariants } from './block-selection';
 import { ResizeHandle } from './resizable';

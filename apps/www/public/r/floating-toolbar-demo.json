@@ -3,6 +3,9 @@
   "name": "floating-toolbar-demo",
   "type": "registry:example",
   "description": "Floating toolbar with text formatting and AI assistance options.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [],
   "files": [
     {

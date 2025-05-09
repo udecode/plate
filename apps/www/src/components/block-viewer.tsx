@@ -13,7 +13,6 @@ import type {
 } from 'shadcn/registry';
 import type { z } from 'zod';
 
-import { cn } from '@udecode/cn';
 import {
   Check,
   ChevronRight,
@@ -58,6 +57,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { siteConfig } from '@/config/site';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { cn } from '@/lib/utils';
 
 // SYNC
 

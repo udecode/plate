@@ -1243,277 +1243,282 @@ export const docExamples: Registry['items'] = [
   },
 ];
 
-export const examples: Registry['items'] = [
-  ...docExamples,
+export const examples: Registry['items'] = (
+  [
+    ...docExamples,
 
-  {
-    files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      {
-        path: 'components/editor/use-create-editor.ts',
-        type: 'registry:example',
-      },
-      {
-        path: 'components/editor/plugins/editor-plugins.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'demo',
-    type: 'registry:example',
-  },
-  // Others
-  {
-    files: [
-      {
-        path: 'examples/pro-iframe-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'pro-iframe-demo',
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/potion-iframe-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'potion-iframe-demo',
-    type: 'registry:example',
-  },
-  // Editor
-  {
-    files: [
-      {
-        path: 'examples/editor-default.tsx',
-        type: 'registry:example',
-      },
-    ],
-    meta: {},
-    name: 'editor-default',
-    registryDependencies: [],
-    title: 'Default',
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/editor-disabled.tsx',
-        type: 'registry:example',
-      },
-    ],
-    meta: {},
-    name: 'editor-disabled',
-    registryDependencies: [],
-    title: 'Disabled',
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/editor-full-width.tsx',
-        type: 'registry:example',
-      },
-    ],
-    meta: {},
-    name: 'editor-full-width',
-    registryDependencies: [],
-    title: 'Full Width',
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/basic-editor-default-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'basic-editor-default-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/controlled-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'controlled-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/basic-editor-styling-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'basic-editor-styling-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/basic-editor-handler-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'basic-editor-handler-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/basic-editor-value-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'basic-editor-value-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/basic-plugins-components-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'basic-plugins-components-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/basic-plugins-default-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'basic-plugins-default-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/editable-voids-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'editable-voids-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/hundreds-blocks-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'hundreds-blocks-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/hundreds-editors-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'hundreds-editors-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [{ path: 'examples/mode-toggle.tsx', type: 'registry:example' }],
-    name: 'mode-toggle',
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/multiple-editors-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'multiple-editors-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/version-history-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'version-history-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      { path: 'examples/demo.tsx', type: 'registry:example' },
-      {
-        path: 'components/editor/use-create-editor.ts',
-        type: 'registry:example',
-      },
-      {
-        path: 'components/editor/plugins/editor-plugins.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'playground-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/preview-markdown-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    meta: {},
-    name: 'preview-markdown-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/markdown-to-slate-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    meta: {},
-    name: 'markdown-to-slate-demo',
-    registryDependencies: ['use-debounce'],
-    type: 'registry:example',
-  },
-  {
-    files: [
-      {
-        path: 'examples/collaboration-demo.tsx',
-        type: 'registry:example',
-      },
-    ],
-    name: 'collaboration-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  // {
-  //   external: true,
-  // {type: 'registry:example',path:  //   files: ['lib/plate-types.ts'],}
-  //   name: 'plate-types',
-  //   type: 'registry:lib',
-  // },
-];
+    {
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'components/editor/use-create-editor.ts',
+          type: 'registry:example',
+        },
+        {
+          path: 'components/editor/plugins/editor-plugins.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'demo',
+      type: 'registry:example',
+    },
+    // Others
+    {
+      files: [
+        {
+          path: 'examples/pro-iframe-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'pro-iframe-demo',
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/potion-iframe-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'potion-iframe-demo',
+      type: 'registry:example',
+    },
+    // Editor
+    {
+      files: [
+        {
+          path: 'examples/editor-default.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {},
+      name: 'editor-default',
+      registryDependencies: [],
+      title: 'Default',
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/editor-disabled.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {},
+      name: 'editor-disabled',
+      registryDependencies: [],
+      title: 'Disabled',
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/editor-full-width.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {},
+      name: 'editor-full-width',
+      registryDependencies: [],
+      title: 'Full Width',
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/basic-editor-default-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'basic-editor-default-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/controlled-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'controlled-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/basic-editor-styling-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'basic-editor-styling-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/basic-editor-handler-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'basic-editor-handler-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/basic-editor-value-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'basic-editor-value-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/basic-plugins-components-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'basic-plugins-components-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/basic-plugins-default-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'basic-plugins-default-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/editable-voids-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'editable-voids-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/hundreds-blocks-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'hundreds-blocks-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/hundreds-editors-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'hundreds-editors-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [{ path: 'examples/mode-toggle.tsx', type: 'registry:example' }],
+      name: 'mode-toggle',
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/multiple-editors-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'multiple-editors-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/version-history-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'version-history-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'components/editor/use-create-editor.ts',
+          type: 'registry:example',
+        },
+        {
+          path: 'components/editor/plugins/editor-plugins.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'playground-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/preview-markdown-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {},
+      name: 'preview-markdown-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/markdown-to-slate-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {},
+      name: 'markdown-to-slate-demo',
+      registryDependencies: ['use-debounce'],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        {
+          path: 'examples/collaboration-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'collaboration-demo',
+      registryDependencies: [],
+      type: 'registry:example',
+    },
+    // {
+    //   external: true,
+    // {type: 'registry:example',path:  //   files: ['lib/plate-types.ts'],}
+    //   name: 'plate-types',
+    //   type: 'registry:lib',
+    // },
+  ] as Registry['items']
+).map((example) => ({
+  ...example,
+  dependencies: ['@udecode/cn', ...(example.dependencies || [])],
+}));

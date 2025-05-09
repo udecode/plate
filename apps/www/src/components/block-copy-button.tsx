@@ -4,7 +4,7 @@ import type { ComponentProps } from 'react';
 import * as React from 'react';
 
 import { CheckIcon, ClipboardIcon } from '@radix-ui/react-icons';
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 
 import { type Event, trackEvent } from '@/lib/events';
 import { Button } from '@/components/ui/button';

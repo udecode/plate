@@ -3,6 +3,9 @@
   "name": "mention-demo",
   "type": "registry:example",
   "description": "Mention functionality for referencing users or entities.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/mention-plugin"
   ],

@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { TTableRowElement } from '@udecode/plate-table';
 
-import { cn, useComposedRef } from '@udecode/cn';
+import { useComposedRef } from '@udecode/cn';
 import { PathApi } from '@udecode/plate';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
@@ -20,6 +20,7 @@ import {
 import { GripVertical } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export function TableRowElement(props: PlateElementProps<TTableRowElement>) {
   const { element } = props;

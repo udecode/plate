@@ -4,7 +4,6 @@ import * as React from 'react';
 
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 
-import { cn } from '@udecode/cn';
 import {
   CheckIcon,
   Fullscreen,
@@ -19,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { siteConfig } from '@/config/site';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { cn } from '@/lib/utils';
 
 import { BlockCopyButton } from './block-copy-button';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';

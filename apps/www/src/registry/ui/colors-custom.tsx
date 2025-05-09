@@ -2,7 +2,6 @@
 
 import React, { type ComponentPropsWithoutRef } from 'react';
 
-import { cn } from '@udecode/cn';
 import {
   useColorsCustom,
   useColorsCustomState,
@@ -12,6 +11,7 @@ import { PlusIcon } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 // import { ColorInput } from './color-input';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 import {
   type TColor,

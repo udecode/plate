@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
 import { useTheme } from 'next-themes';
 
 import {
@@ -14,6 +13,7 @@ import {
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { type Theme, THEME_LIST } from '@/lib/themes';
+import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { Skeleton } from './ui/skeleton';

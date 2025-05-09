@@ -5,6 +5,7 @@
   "title": "Export Toolbar Button",
   "description": "A toolbar button to export editor content as PDF.",
   "dependencies": [
+    "@udecode/cn",
     "html2canvas-pro",
     "pdf-lib"
   ],

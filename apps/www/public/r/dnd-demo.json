@@ -4,6 +4,9 @@
   "type": "registry:example",
   "title": "Drag & Drop",
   "description": "Implements draggable functionality for editor blocks, including drag handles and drop indicators.",
+  "dependencies": [
+    "@udecode/cn"
+  ],
   "registryDependencies": [
     "http://localhost:3000/r/dnd-plugins"
   ],

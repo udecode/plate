@@ -2,9 +2,8 @@
 
 import React, { type ReactNode, createContext, useState } from 'react';
 
-import { cn } from '@udecode/cn';
-
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 import { Icons } from './icons';
 import {

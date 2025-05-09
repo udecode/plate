@@ -2,9 +2,8 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
-
 import { Index } from '@/__registry__';
+import { cn } from '@/lib/utils';
 
 import { Icons } from './icons';
 

@@ -2,11 +2,11 @@ import * as React from 'react';
 
 import type { Metadata } from 'next';
 
-import { cn } from '@udecode/cn';
 import { notFound } from 'next/navigation';
 
 import { getAllBlockIds } from '@/lib/blocks';
 import { getRegistryComponent, getRegistryItem } from '@/lib/registry';
+import { cn } from '@/lib/utils';
 
 const getCachedRegistryItem = React.cache(async (name: string) => {
   return await getRegistryItem(name, true);

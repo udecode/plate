@@ -2,9 +2,8 @@ import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 
-import { cn } from '@udecode/cn';
-
 import { siteConfig } from '@/config/site';
+import { cn } from '@/lib/utils';
 import PlaygroundDemo from '@/registry/examples/playground-demo';
 
 const title = 'Playground';

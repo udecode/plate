@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { cn } from '@udecode/cn';
 import { useStoreValue } from '@udecode/plate/react';
 import Link from 'next/link';
 
@@ -12,6 +11,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { type SettingPlugin, customizerItems } from '@/config/customizer-items';
+import { cn } from '@/lib/utils';
 
 import { Label } from '../components/ui/label';
 import { Code } from './code';
