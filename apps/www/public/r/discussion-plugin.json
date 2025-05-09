@@ -4,7 +4,7 @@
   "type": "registry:component",
   "dependencies": [],
   "registryDependencies": [
-    "http://localhost:3000/r/block-discussion"
+    "https://platejs.org/r/block-discussion"
   ],
   "files": [
     {

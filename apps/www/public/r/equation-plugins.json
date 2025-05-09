@@ -6,8 +6,8 @@
     "@udecode/plate-math"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/equation-element",
-    "http://localhost:3000/r/inline-equation-toolbar-button"
+    "https://platejs.org/r/equation-element",
+    "https://platejs.org/r/inline-equation-toolbar-button"
   ],
   "files": [
     {

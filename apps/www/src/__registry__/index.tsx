@@ -19,7 +19,7 @@ export const Index: Record<string, any> = {
     name: "plate-ui",
     description: "",
     type: "registry:style",
-    registryDependencies: ["http://localhost:3000/r/plate"],
+    registryDependencies: ["https://platejs.org/r/plate"],
     files: [],
     component: null,
     meta: undefined,
@@ -28,7 +28,7 @@ export const Index: Record<string, any> = {
     name: "ai-menu",
     description: "A menu for AI-powered content generation and insertion.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/use-chat","command","popover","http://localhost:3000/r/editor"],
+    registryDependencies: ["https://platejs.org/r/use-chat","command","popover","https://platejs.org/r/editor"],
     files: [{
       path: "src/registry/ui/ai-menu.tsx",
       type: "registry:ui",
@@ -61,7 +61,7 @@ export const Index: Record<string, any> = {
     name: "ai-toolbar-button",
     description: "A toolbar button for accessing AI features.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/ai-toolbar-button.tsx",
       type: "registry:ui",
@@ -78,7 +78,7 @@ export const Index: Record<string, any> = {
     name: "align-dropdown-menu",
     description: "A dropdown menu for text alignment controls.",
     type: "registry:ui",
-    registryDependencies: ["dropdown-menu","http://localhost:3000/r/toolbar"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/align-dropdown-menu.tsx",
       type: "registry:ui",
@@ -95,7 +95,7 @@ export const Index: Record<string, any> = {
     name: "block-context-menu",
     description: "A context menu for block-level operations.",
     type: "registry:ui",
-    registryDependencies: ["calendar","context-menu","http://localhost:3000/r/use-is-touch-device"],
+    registryDependencies: ["calendar","context-menu","https://platejs.org/r/use-is-touch-device"],
     files: [{
       path: "src/registry/ui/block-context-menu.tsx",
       type: "registry:ui",
@@ -129,7 +129,7 @@ export const Index: Record<string, any> = {
     name: "import-toolbar-button",
     description: "A toolbar button to import editor content from a file.",
     type: "registry:ui",
-    registryDependencies: ["dropdown-menu","http://localhost:3000/r/toolbar"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/import-toolbar-button.tsx",
       type: "registry:ui",
@@ -146,7 +146,7 @@ export const Index: Record<string, any> = {
     name: "export-toolbar-button",
     description: "A toolbar button to export editor content as PDF.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/export-toolbar-button.tsx",
       type: "registry:ui",
@@ -180,7 +180,7 @@ export const Index: Record<string, any> = {
     name: "color-dropdown-menu",
     description: "A color picker with text and background color controls.",
     type: "registry:ui",
-    registryDependencies: ["dropdown-menu","http://localhost:3000/r/toolbar","separator","button","tooltip"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar","separator","button","tooltip"],
     files: [{
       path: "src/registry/ui/color-constants.ts",
       type: "registry:ui",
@@ -217,7 +217,7 @@ export const Index: Record<string, any> = {
     name: "comment-toolbar-button",
     description: "A toolbar button for adding inline comments.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/comments-plugin"],
+    registryDependencies: ["https://platejs.org/r/comments-plugin"],
     files: [{
       path: "src/registry/ui/comment-toolbar-button.tsx",
       type: "registry:ui",
@@ -234,7 +234,7 @@ export const Index: Record<string, any> = {
     name: "block-discussion",
     description: "A popover interface for managing discussions: comments, replies, suggestions.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/suggestion-plugin","button","popover","avatar","dropdown-menu","http://localhost:3000/r/editor","http://localhost:3000/r/ai-leaf","http://localhost:3000/r/date-element","http://localhost:3000/r/emoji-input-element","http://localhost:3000/r/inline-equation-element","http://localhost:3000/r/link-element","http://localhost:3000/r/mention-element","http://localhost:3000/r/mention-input-element"],
+    registryDependencies: ["https://platejs.org/r/suggestion-plugin","button","popover","avatar","dropdown-menu","https://platejs.org/r/editor","https://platejs.org/r/ai-leaf","https://platejs.org/r/date-element","https://platejs.org/r/emoji-input-element","https://platejs.org/r/inline-equation-element","https://platejs.org/r/link-element","https://platejs.org/r/mention-element","https://platejs.org/r/mention-input-element"],
     files: [{
       path: "src/registry/ui/block-discussion.tsx",
       type: "registry:ui",
@@ -280,7 +280,7 @@ export const Index: Record<string, any> = {
     name: "draggable",
     description: "A drag handle for moving editor blocks.",
     type: "registry:ui",
-    registryDependencies: ["tooltip","http://localhost:3000/r/use-mounted"],
+    registryDependencies: ["tooltip","https://platejs.org/r/use-mounted"],
     files: [{
       path: "src/registry/ui/draggable.tsx",
       type: "registry:ui",
@@ -318,7 +318,7 @@ export const Index: Record<string, any> = {
     name: "select-editor",
     description: "An editor to select tags.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/editor","command","popover","http://localhost:3000/r/tag-element"],
+    registryDependencies: ["https://platejs.org/r/editor","command","popover","https://platejs.org/r/tag-element"],
     files: [{
       path: "src/registry/ui/select-editor.tsx",
       type: "registry:ui",
@@ -335,7 +335,7 @@ export const Index: Record<string, any> = {
     name: "emoji-dropdown-menu",
     description: "A dropdown menu for emoji selection and insertion.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/emoji-dropdown-menu.tsx",
       type: "registry:ui",
@@ -384,7 +384,7 @@ export const Index: Record<string, any> = {
     name: "fixed-toolbar-buttons",
     description: "A set of commonly used formatting buttons.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar","http://localhost:3000/r/ai-toolbar-button","http://localhost:3000/r/align-dropdown-menu","http://localhost:3000/r/color-dropdown-menu","http://localhost:3000/r/comment-toolbar-button","http://localhost:3000/r/emoji-dropdown-menu","http://localhost:3000/r/font-size-toolbar-button","http://localhost:3000/r/history-toolbar-button","http://localhost:3000/r/indent-list-toolbar-button","http://localhost:3000/r/indent-todo-toolbar-button","http://localhost:3000/r/indent-toolbar-button","http://localhost:3000/r/import-toolbar-button","http://localhost:3000/r/insert-dropdown-menu","http://localhost:3000/r/line-height-dropdown-menu","http://localhost:3000/r/link-toolbar-button","http://localhost:3000/r/mark-toolbar-button","http://localhost:3000/r/media-toolbar-button","http://localhost:3000/r/mode-dropdown-menu","http://localhost:3000/r/more-dropdown-menu","http://localhost:3000/r/outdent-toolbar-button","http://localhost:3000/r/table-dropdown-menu","http://localhost:3000/r/toggle-toolbar-button","http://localhost:3000/r/turn-into-dropdown-menu","http://localhost:3000/r/export-toolbar-button"],
+    registryDependencies: ["https://platejs.org/r/toolbar","https://platejs.org/r/ai-toolbar-button","https://platejs.org/r/align-dropdown-menu","https://platejs.org/r/color-dropdown-menu","https://platejs.org/r/comment-toolbar-button","https://platejs.org/r/emoji-dropdown-menu","https://platejs.org/r/font-size-toolbar-button","https://platejs.org/r/history-toolbar-button","https://platejs.org/r/indent-list-toolbar-button","https://platejs.org/r/indent-todo-toolbar-button","https://platejs.org/r/indent-toolbar-button","https://platejs.org/r/import-toolbar-button","https://platejs.org/r/insert-dropdown-menu","https://platejs.org/r/line-height-dropdown-menu","https://platejs.org/r/link-toolbar-button","https://platejs.org/r/mark-toolbar-button","https://platejs.org/r/media-toolbar-button","https://platejs.org/r/mode-dropdown-menu","https://platejs.org/r/more-dropdown-menu","https://platejs.org/r/outdent-toolbar-button","https://platejs.org/r/table-dropdown-menu","https://platejs.org/r/toggle-toolbar-button","https://platejs.org/r/turn-into-dropdown-menu","https://platejs.org/r/export-toolbar-button"],
     files: [{
       path: "src/registry/ui/fixed-toolbar-buttons.tsx",
       type: "registry:ui",
@@ -401,7 +401,7 @@ export const Index: Record<string, any> = {
     name: "fixed-toolbar-list-buttons",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar","http://localhost:3000/r/ai-toolbar-button","http://localhost:3000/r/align-dropdown-menu","http://localhost:3000/r/color-dropdown-menu","http://localhost:3000/r/comment-toolbar-button","http://localhost:3000/r/emoji-dropdown-menu","http://localhost:3000/r/insert-dropdown-menu","http://localhost:3000/r/line-height-dropdown-menu","http://localhost:3000/r/list-indent-toolbar-button","http://localhost:3000/r/link-toolbar-button","http://localhost:3000/r/mark-toolbar-button","http://localhost:3000/r/media-toolbar-button","http://localhost:3000/r/mode-dropdown-menu","http://localhost:3000/r/more-dropdown-menu","http://localhost:3000/r/table-dropdown-menu","http://localhost:3000/r/toggle-toolbar-button","http://localhost:3000/r/turn-into-dropdown-menu"],
+    registryDependencies: ["https://platejs.org/r/toolbar","https://platejs.org/r/ai-toolbar-button","https://platejs.org/r/align-dropdown-menu","https://platejs.org/r/color-dropdown-menu","https://platejs.org/r/comment-toolbar-button","https://platejs.org/r/emoji-dropdown-menu","https://platejs.org/r/insert-dropdown-menu","https://platejs.org/r/line-height-dropdown-menu","https://platejs.org/r/list-indent-toolbar-button","https://platejs.org/r/link-toolbar-button","https://platejs.org/r/mark-toolbar-button","https://platejs.org/r/media-toolbar-button","https://platejs.org/r/mode-dropdown-menu","https://platejs.org/r/more-dropdown-menu","https://platejs.org/r/table-dropdown-menu","https://platejs.org/r/toggle-toolbar-button","https://platejs.org/r/turn-into-dropdown-menu"],
     files: [{
       path: "src/registry/ui/fixed-toolbar-list-buttons.tsx",
       type: "registry:ui",
@@ -418,7 +418,7 @@ export const Index: Record<string, any> = {
     name: "fixed-toolbar",
     description: "A fixed toolbar that stays at the top of the editor.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/fixed-toolbar.tsx",
       type: "registry:ui",
@@ -435,7 +435,7 @@ export const Index: Record<string, any> = {
     name: "floating-toolbar-buttons",
     description: "A set of formatting buttons for the floating toolbar.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar","http://localhost:3000/r/ai-toolbar-button","http://localhost:3000/r/comment-toolbar-button","http://localhost:3000/r/link-toolbar-button","http://localhost:3000/r/mark-toolbar-button","http://localhost:3000/r/more-dropdown-menu","http://localhost:3000/r/turn-into-dropdown-menu"],
+    registryDependencies: ["https://platejs.org/r/toolbar","https://platejs.org/r/ai-toolbar-button","https://platejs.org/r/comment-toolbar-button","https://platejs.org/r/link-toolbar-button","https://platejs.org/r/mark-toolbar-button","https://platejs.org/r/more-dropdown-menu","https://platejs.org/r/turn-into-dropdown-menu"],
     files: [{
       path: "src/registry/ui/floating-toolbar-buttons.tsx",
       type: "registry:ui",
@@ -452,7 +452,7 @@ export const Index: Record<string, any> = {
     name: "floating-toolbar",
     description: "A contextual toolbar that appears over selected text.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/floating-toolbar.tsx",
       type: "registry:ui",
@@ -503,7 +503,7 @@ export const Index: Record<string, any> = {
     name: "history-toolbar-button",
     description: "Toolbar buttons for undo and redo operations.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/history-toolbar-button.tsx",
       type: "registry:ui",
@@ -520,7 +520,7 @@ export const Index: Record<string, any> = {
     name: "indent-list-toolbar-button",
     description: "A toolbar control for adjusting list indentation.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/indent-list-toolbar-button.tsx",
       type: "registry:ui",
@@ -558,7 +558,7 @@ export const Index: Record<string, any> = {
     name: "indent-todo-toolbar-button",
     description: "A toolbar control for creating todo list items.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/indent-todo-toolbar-button.tsx",
       type: "registry:ui",
@@ -575,7 +575,7 @@ export const Index: Record<string, any> = {
     name: "indent-toolbar-button",
     description: "A toolbar control for block indentation.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/indent-toolbar-button.tsx",
       type: "registry:ui",
@@ -609,7 +609,7 @@ export const Index: Record<string, any> = {
     name: "insert-dropdown-menu",
     description: "A menu for inserting different types of blocks.",
     type: "registry:ui",
-    registryDependencies: ["dropdown-menu","http://localhost:3000/r/toolbar","http://localhost:3000/r/transforms"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar","https://platejs.org/r/transforms"],
     files: [{
       path: "src/registry/ui/insert-dropdown-menu.tsx",
       type: "registry:ui",
@@ -626,7 +626,7 @@ export const Index: Record<string, any> = {
     name: "line-height-dropdown-menu",
     description: "A menu for controlling text line spacing.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar","dropdown-menu"],
+    registryDependencies: ["https://platejs.org/r/toolbar","dropdown-menu"],
     files: [{
       path: "src/registry/ui/line-height-dropdown-menu.tsx",
       type: "registry:ui",
@@ -660,7 +660,7 @@ export const Index: Record<string, any> = {
     name: "link-toolbar-button",
     description: "A toolbar control for link management.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/link-toolbar-button.tsx",
       type: "registry:ui",
@@ -677,7 +677,7 @@ export const Index: Record<string, any> = {
     name: "list-indent-toolbar-button",
     description: "A toolbar control for indenting lists.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/list-indent-toolbar-button.tsx",
       type: "registry:ui",
@@ -694,7 +694,7 @@ export const Index: Record<string, any> = {
     name: "list-toolbar-button",
     description: "A toolbar control for list creation and management.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/list-toolbar-button.tsx",
       type: "registry:ui",
@@ -711,7 +711,7 @@ export const Index: Record<string, any> = {
     name: "mark-toolbar-button",
     description: "A toolbar control for basic text formatting.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/mark-toolbar-button.tsx",
       type: "registry:ui",
@@ -745,7 +745,7 @@ export const Index: Record<string, any> = {
     name: "media-toolbar-button",
     description: "Toolbar button for inserting and managing media.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar","input","dropdown-menu","alert-dialog"],
+    registryDependencies: ["https://platejs.org/r/toolbar","input","dropdown-menu","alert-dialog"],
     files: [{
       path: "src/registry/ui/media-toolbar-button.tsx",
       type: "registry:ui",
@@ -779,7 +779,7 @@ export const Index: Record<string, any> = {
     name: "mode-dropdown-menu",
     description: "A menu for switching between editor modes.",
     type: "registry:ui",
-    registryDependencies: ["dropdown-menu","http://localhost:3000/r/toolbar"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/mode-dropdown-menu.tsx",
       type: "registry:ui",
@@ -796,7 +796,7 @@ export const Index: Record<string, any> = {
     name: "more-dropdown-menu",
     description: "A menu for additional text formatting options.",
     type: "registry:ui",
-    registryDependencies: ["dropdown-menu","http://localhost:3000/r/toolbar"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/more-dropdown-menu.tsx",
       type: "registry:ui",
@@ -813,7 +813,7 @@ export const Index: Record<string, any> = {
     name: "outdent-toolbar-button",
     description: "A toolbar button for decreasing block indentation.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/outdent-toolbar-button.tsx",
       type: "registry:ui",
@@ -864,7 +864,7 @@ export const Index: Record<string, any> = {
     name: "table-dropdown-menu",
     description: "A menu for table manipulation and formatting.",
     type: "registry:ui",
-    registryDependencies: ["dropdown-menu","http://localhost:3000/r/toolbar"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/table-dropdown-menu.tsx",
       type: "registry:ui",
@@ -885,7 +885,7 @@ export const Index: Record<string, any> = {
     name: "toggle-toolbar-button",
     description: "A toolbar button for expanding and collapsing blocks.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/toggle-toolbar-button.tsx",
       type: "registry:ui",
@@ -902,7 +902,7 @@ export const Index: Record<string, any> = {
     name: "turn-into-dropdown-menu",
     description: "A menu for converting between different block types.",
     type: "registry:ui",
-    registryDependencies: ["dropdown-menu","http://localhost:3000/r/toolbar","http://localhost:3000/r/transforms"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar","https://platejs.org/r/transforms"],
     files: [{
       path: "src/registry/ui/turn-into-dropdown-menu.tsx",
       type: "registry:ui",
@@ -1079,7 +1079,7 @@ export const Index: Record<string, any> = {
     name: "column-element",
     description: "A resizable column component for layout.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/resizable"],
     files: [{
       path: "src/registry/ui/column-element.tsx",
       type: "registry:ui",
@@ -1100,7 +1100,7 @@ export const Index: Record<string, any> = {
     name: "column-group-element",
     description: "A resizable column component for layout.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/resizable"],
     files: [{
       path: "src/registry/ui/column-group-element.tsx",
       type: "registry:ui",
@@ -1142,7 +1142,7 @@ export const Index: Record<string, any> = {
     name: "suggestion-leaf",
     description: "A text component for suggestion.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/suggestion-plugin"],
+    registryDependencies: ["https://platejs.org/r/suggestion-plugin"],
     files: [{
       path: "src/registry/ui/suggestion-leaf.tsx",
       type: "registry:ui",
@@ -1163,7 +1163,7 @@ export const Index: Record<string, any> = {
     name: "suggestion-line-break",
     description: "A line break component for suggestion.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/suggestion-plugin"],
+    registryDependencies: ["https://platejs.org/r/suggestion-plugin"],
     files: [{
       path: "src/registry/ui/suggestion-line-break.tsx",
       type: "registry:ui",
@@ -1247,7 +1247,7 @@ export const Index: Record<string, any> = {
     name: "inline-equation-toolbar-button",
     description: "A toolbar button for inserting and editing inline equations.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/inline-equation-toolbar-button.tsx",
       type: "registry:ui",
@@ -1264,7 +1264,7 @@ export const Index: Record<string, any> = {
     name: "emoji-input-element",
     description: "An input component for emoji search and insertion.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/inline-combobox","http://localhost:3000/r/use-debounce"],
+    registryDependencies: ["https://platejs.org/r/inline-combobox","https://platejs.org/r/use-debounce"],
     files: [{
       path: "src/registry/ui/emoji-input-element.tsx",
       type: "registry:ui",
@@ -1298,7 +1298,7 @@ export const Index: Record<string, any> = {
     name: "font-size-toolbar-button",
     description: "A toolbar control for adjusting font size.",
     type: "registry:ui",
-    registryDependencies: ["popover","http://localhost:3000/r/toolbar"],
+    registryDependencies: ["popover","https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/font-size-toolbar-button.tsx",
       type: "registry:ui",
@@ -1378,7 +1378,7 @@ export const Index: Record<string, any> = {
     name: "image-element",
     description: "Image element with lazy loading, resizing capabilities, and optional caption.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/media-popover","http://localhost:3000/r/caption","http://localhost:3000/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/media-popover","https://platejs.org/r/caption","https://platejs.org/r/resizable"],
     files: [{
       path: "src/registry/ui/image-element.tsx",
       type: "registry:ui",
@@ -1475,7 +1475,7 @@ export const Index: Record<string, any> = {
     name: "media-audio-element",
     description: "An audio player component with caption support.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/caption"],
+    registryDependencies: ["https://platejs.org/r/caption"],
     files: [{
       path: "src/registry/ui/media-audio-element.tsx",
       type: "registry:ui",
@@ -1496,7 +1496,7 @@ export const Index: Record<string, any> = {
     name: "media-embed-element",
     description: "A component for embedded media content with resizing and caption support.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/media-popover","http://localhost:3000/r/caption","http://localhost:3000/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/media-popover","https://platejs.org/r/caption","https://platejs.org/r/resizable"],
     files: [{
       path: "src/registry/ui/media-embed-element.tsx",
       type: "registry:ui",
@@ -1513,7 +1513,7 @@ export const Index: Record<string, any> = {
     name: "media-file-element",
     description: "A file attachment component with download capability and caption.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/caption"],
+    registryDependencies: ["https://platejs.org/r/caption"],
     files: [{
       path: "src/registry/ui/media-file-element.tsx",
       type: "registry:ui",
@@ -1534,7 +1534,7 @@ export const Index: Record<string, any> = {
     name: "media-placeholder-element",
     description: "A placeholder for media upload progress indication.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/uploadthing"],
+    registryDependencies: ["https://platejs.org/r/uploadthing"],
     files: [{
       path: "src/registry/ui/media-placeholder-element.tsx",
       type: "registry:ui",
@@ -1551,7 +1551,7 @@ export const Index: Record<string, any> = {
     name: "media-video-element",
     description: "A video player component with YouTube and file upload support.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/media-popover","http://localhost:3000/r/caption","http://localhost:3000/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/media-popover","https://platejs.org/r/caption","https://platejs.org/r/resizable"],
     files: [{
       path: "src/registry/ui/media-video-element.tsx",
       type: "registry:ui",
@@ -1572,7 +1572,7 @@ export const Index: Record<string, any> = {
     name: "mention-element",
     description: "A mention element with customizable prefix and label.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/use-mounted"],
+    registryDependencies: ["https://platejs.org/r/use-mounted"],
     files: [{
       path: "src/registry/ui/mention-element.tsx",
       type: "registry:ui",
@@ -1593,7 +1593,7 @@ export const Index: Record<string, any> = {
     name: "mention-input-element",
     description: "An input component for user mentions with autocomplete.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/inline-combobox"],
+    registryDependencies: ["https://platejs.org/r/inline-combobox"],
     files: [{
       path: "src/registry/ui/mention-input-element.tsx",
       type: "registry:ui",
@@ -1648,7 +1648,7 @@ export const Index: Record<string, any> = {
     name: "slash-input-element",
     description: "A command input component for inserting various elements.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/inline-combobox","http://localhost:3000/r/transforms"],
+    registryDependencies: ["https://platejs.org/r/inline-combobox","https://platejs.org/r/transforms"],
     files: [{
       path: "src/registry/ui/slash-input-element.tsx",
       type: "registry:ui",
@@ -1665,7 +1665,7 @@ export const Index: Record<string, any> = {
     name: "table-cell-element",
     description: "A table cell with resizable borders and selection.",
     type: "registry:ui",
-    registryDependencies: ["http://localhost:3000/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/resizable"],
     files: [{
       path: "src/registry/ui/table-cell-element.tsx",
       type: "registry:ui",
@@ -1846,7 +1846,7 @@ export const Index: Record<string, any> = {
     name: "editor-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/ai-plugins","http://localhost:3000/r/markdown-plugin","http://localhost:3000/r/basic-nodes-plugins","http://localhost:3000/r/align-plugin","http://localhost:3000/r/autoformat-plugin","http://localhost:3000/r/block-menu-plugins","http://localhost:3000/r/equation-plugins","http://localhost:3000/r/cursor-overlay-plugin","http://localhost:3000/r/comments-plugin","http://localhost:3000/r/delete-plugins","http://localhost:3000/r/dnd-plugins","http://localhost:3000/r/exit-break-plugin","http://localhost:3000/r/indent-list-plugins","http://localhost:3000/r/line-height-plugin","http://localhost:3000/r/link-plugin","http://localhost:3000/r/media-plugins","http://localhost:3000/r/mention-plugin","http://localhost:3000/r/reset-block-type-plugin","http://localhost:3000/r/skip-mark-plugin","http://localhost:3000/r/suggestion-plugin","http://localhost:3000/r/soft-break-plugin","http://localhost:3000/r/table-plugin","http://localhost:3000/r/toc-plugin"],
+    registryDependencies: ["https://platejs.org/r/ai-plugins","https://platejs.org/r/markdown-plugin","https://platejs.org/r/basic-nodes-plugins","https://platejs.org/r/align-plugin","https://platejs.org/r/autoformat-plugin","https://platejs.org/r/block-menu-plugins","https://platejs.org/r/equation-plugins","https://platejs.org/r/cursor-overlay-plugin","https://platejs.org/r/comments-plugin","https://platejs.org/r/delete-plugins","https://platejs.org/r/dnd-plugins","https://platejs.org/r/exit-break-plugin","https://platejs.org/r/indent-list-plugins","https://platejs.org/r/line-height-plugin","https://platejs.org/r/link-plugin","https://platejs.org/r/media-plugins","https://platejs.org/r/mention-plugin","https://platejs.org/r/reset-block-type-plugin","https://platejs.org/r/skip-mark-plugin","https://platejs.org/r/suggestion-plugin","https://platejs.org/r/soft-break-plugin","https://platejs.org/r/table-plugin","https://platejs.org/r/toc-plugin"],
     files: [{
       path: "src/registry/components/editor/plugins/editor-plugins.tsx",
       type: "registry:component",
@@ -1863,7 +1863,7 @@ export const Index: Record<string, any> = {
     name: "ai-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/basic-nodes-plugins","http://localhost:3000/r/block-selection-plugins","http://localhost:3000/r/cursor-overlay-plugin","http://localhost:3000/r/indent-list-plugins","http://localhost:3000/r/link-plugin","http://localhost:3000/r/ai-menu","http://localhost:3000/r/blockquote-element","http://localhost:3000/r/code-block-element","http://localhost:3000/r/code-leaf","http://localhost:3000/r/code-line-element","http://localhost:3000/r/code-syntax-leaf","http://localhost:3000/r/cursor-overlay","http://localhost:3000/r/heading-element","http://localhost:3000/r/hr-element","http://localhost:3000/r/link-element","http://localhost:3000/r/paragraph-element"],
+    registryDependencies: ["https://platejs.org/r/basic-nodes-plugins","https://platejs.org/r/block-selection-plugins","https://platejs.org/r/cursor-overlay-plugin","https://platejs.org/r/indent-list-plugins","https://platejs.org/r/link-plugin","https://platejs.org/r/ai-menu","https://platejs.org/r/blockquote-element","https://platejs.org/r/code-block-element","https://platejs.org/r/code-leaf","https://platejs.org/r/code-line-element","https://platejs.org/r/code-syntax-leaf","https://platejs.org/r/cursor-overlay","https://platejs.org/r/heading-element","https://platejs.org/r/hr-element","https://platejs.org/r/link-element","https://platejs.org/r/paragraph-element"],
     files: [{
       path: "src/registry/components/editor/plugins/ai-plugins.tsx",
       type: "registry:component",
@@ -1880,7 +1880,7 @@ export const Index: Record<string, any> = {
     name: "equation-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/equation-element","http://localhost:3000/r/inline-equation-toolbar-button"],
+    registryDependencies: ["https://platejs.org/r/equation-element","https://platejs.org/r/inline-equation-toolbar-button"],
     files: [{
       path: "src/registry/components/editor/plugins/equation-plugins.ts",
       type: "registry:component",
@@ -1965,7 +1965,7 @@ export const Index: Record<string, any> = {
     name: "block-selection-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/block-selection"],
+    registryDependencies: ["https://platejs.org/r/block-selection"],
     files: [{
       path: "src/registry/components/editor/plugins/block-selection-plugins.tsx",
       type: "registry:component",
@@ -1982,7 +1982,7 @@ export const Index: Record<string, any> = {
     name: "block-menu-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/block-context-menu","http://localhost:3000/r/block-selection-plugins"],
+    registryDependencies: ["https://platejs.org/r/block-context-menu","https://platejs.org/r/block-selection-plugins"],
     files: [{
       path: "src/registry/components/editor/plugins/block-menu-plugins.ts",
       type: "registry:component",
@@ -1999,7 +1999,7 @@ export const Index: Record<string, any> = {
     name: "comments-plugin",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/discussion-plugin"],
+    registryDependencies: ["https://platejs.org/r/discussion-plugin"],
     files: [{
       path: "src/registry/components/editor/plugins/comments-plugin.tsx",
       type: "registry:component",
@@ -2033,7 +2033,7 @@ export const Index: Record<string, any> = {
     name: "suggestion-plugin",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/discussion-plugin"],
+    registryDependencies: ["https://platejs.org/r/discussion-plugin"],
     files: [{
       path: "src/registry/components/editor/plugins/suggestion-plugin.tsx",
       type: "registry:component",
@@ -2058,7 +2058,7 @@ export const Index: Record<string, any> = {
     name: "cursor-overlay-plugin",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/cursor-overlay"],
+    registryDependencies: ["https://platejs.org/r/cursor-overlay"],
     files: [{
       path: "src/registry/components/editor/plugins/cursor-overlay-plugin.tsx",
       type: "registry:component",
@@ -2092,7 +2092,7 @@ export const Index: Record<string, any> = {
     name: "copilot-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/ghost-text"],
+    registryDependencies: ["https://platejs.org/r/ghost-text"],
     files: [{
       path: "src/registry/components/editor/plugins/copilot-plugins.tsx",
       type: "registry:component",
@@ -2126,7 +2126,7 @@ export const Index: Record<string, any> = {
     name: "dnd-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/draggable"],
+    registryDependencies: ["https://platejs.org/r/draggable"],
     files: [{
       path: "src/registry/components/editor/plugins/dnd-plugins.tsx",
       type: "registry:component",
@@ -2160,7 +2160,7 @@ export const Index: Record<string, any> = {
     name: "fixed-toolbar-plugin",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/fixed-toolbar","http://localhost:3000/r/fixed-toolbar-buttons"],
+    registryDependencies: ["https://platejs.org/r/fixed-toolbar","https://platejs.org/r/fixed-toolbar-buttons"],
     files: [{
       path: "src/registry/components/editor/plugins/fixed-toolbar-plugin.tsx",
       type: "registry:component",
@@ -2177,7 +2177,7 @@ export const Index: Record<string, any> = {
     name: "fixed-toolbar-list-plugin",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/fixed-toolbar","http://localhost:3000/r/fixed-toolbar-buttons"],
+    registryDependencies: ["https://platejs.org/r/fixed-toolbar","https://platejs.org/r/fixed-toolbar-buttons"],
     files: [{
       path: "src/registry/components/editor/plugins/fixed-toolbar-list-plugin.tsx",
       type: "registry:component",
@@ -2194,7 +2194,7 @@ export const Index: Record<string, any> = {
     name: "floating-toolbar-plugin",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/floating-toolbar","http://localhost:3000/r/floating-toolbar-buttons"],
+    registryDependencies: ["https://platejs.org/r/floating-toolbar","https://platejs.org/r/floating-toolbar-buttons"],
     files: [{
       path: "src/registry/components/editor/plugins/floating-toolbar-plugin.tsx",
       type: "registry:component",
@@ -2211,7 +2211,7 @@ export const Index: Record<string, any> = {
     name: "indent-list-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/indent-fire-marker","http://localhost:3000/r/indent-todo-marker"],
+    registryDependencies: ["https://platejs.org/r/indent-fire-marker","https://platejs.org/r/indent-todo-marker"],
     files: [{
       path: "src/registry/components/editor/plugins/indent-list-plugins.ts",
       type: "registry:component",
@@ -2245,7 +2245,7 @@ export const Index: Record<string, any> = {
     name: "link-plugin",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/link-floating-toolbar"],
+    registryDependencies: ["https://platejs.org/r/link-floating-toolbar"],
     files: [{
       path: "src/registry/components/editor/plugins/link-plugin.tsx",
       type: "registry:component",
@@ -2262,7 +2262,7 @@ export const Index: Record<string, any> = {
     name: "media-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/image-preview","http://localhost:3000/r/media-upload-toast"],
+    registryDependencies: ["https://platejs.org/r/image-preview","https://platejs.org/r/media-upload-toast"],
     files: [{
       path: "src/registry/components/editor/plugins/media-plugins.tsx",
       type: "registry:component",
@@ -2381,7 +2381,7 @@ export const Index: Record<string, any> = {
     name: "discussion-plugin",
     description: "",
     type: "registry:component",
-    registryDependencies: ["http://localhost:3000/r/block-discussion"],
+    registryDependencies: ["https://platejs.org/r/block-discussion"],
     files: [{
       path: "src/registry/components/editor/plugins/discussion-plugin.tsx",
       type: "registry:component",
@@ -2466,7 +2466,7 @@ export const Index: Record<string, any> = {
     name: "editor-ai",
     description: "An AI editor",
     type: "registry:block",
-    registryDependencies: ["http://localhost:3000/r/plate-ui","http://localhost:3000/r/api-ai","http://localhost:3000/r/api-uploadthing","http://localhost:3000/r/plate-types","http://localhost:3000/r/editor-plugins","http://localhost:3000/r/copilot-plugins","http://localhost:3000/r/floating-toolbar-plugin","http://localhost:3000/r/fixed-toolbar-plugin","http://localhost:3000/r/ai-menu","http://localhost:3000/r/ghost-text","http://localhost:3000/r/block-discussion","http://localhost:3000/r/cursor-overlay","http://localhost:3000/r/editor","http://localhost:3000/r/block-context-menu","http://localhost:3000/r/ai-leaf","http://localhost:3000/r/blockquote-element","http://localhost:3000/r/code-block-element","http://localhost:3000/r/code-leaf","http://localhost:3000/r/code-line-element","http://localhost:3000/r/code-syntax-leaf","http://localhost:3000/r/column-element","http://localhost:3000/r/column-group-element","http://localhost:3000/r/comment-leaf","http://localhost:3000/r/suggestion-leaf","http://localhost:3000/r/date-element","http://localhost:3000/r/draggable","http://localhost:3000/r/equation-element","http://localhost:3000/r/inline-equation-element","http://localhost:3000/r/emoji-input-element","http://localhost:3000/r/excalidraw-element","http://localhost:3000/r/heading-element","http://localhost:3000/r/highlight-leaf","http://localhost:3000/r/hr-element","http://localhost:3000/r/image-element","http://localhost:3000/r/kbd-leaf","http://localhost:3000/r/link-element","http://localhost:3000/r/media-audio-element","http://localhost:3000/r/media-embed-element","http://localhost:3000/r/media-file-element","http://localhost:3000/r/media-placeholder-element","http://localhost:3000/r/media-video-element","http://localhost:3000/r/mention-element","http://localhost:3000/r/mention-input-element","http://localhost:3000/r/paragraph-element","http://localhost:3000/r/placeholder","http://localhost:3000/r/slash-input-element","http://localhost:3000/r/table-cell-element","http://localhost:3000/r/table-element","http://localhost:3000/r/table-row-element","http://localhost:3000/r/toc-element","http://localhost:3000/r/toggle-element"],
+    registryDependencies: ["https://platejs.org/r/plate-ui","https://platejs.org/r/api-ai","https://platejs.org/r/api-uploadthing","https://platejs.org/r/plate-types","https://platejs.org/r/editor-plugins","https://platejs.org/r/copilot-plugins","https://platejs.org/r/floating-toolbar-plugin","https://platejs.org/r/fixed-toolbar-plugin","https://platejs.org/r/ai-menu","https://platejs.org/r/ghost-text","https://platejs.org/r/block-discussion","https://platejs.org/r/cursor-overlay","https://platejs.org/r/editor","https://platejs.org/r/block-context-menu","https://platejs.org/r/ai-leaf","https://platejs.org/r/blockquote-element","https://platejs.org/r/code-block-element","https://platejs.org/r/code-leaf","https://platejs.org/r/code-line-element","https://platejs.org/r/code-syntax-leaf","https://platejs.org/r/column-element","https://platejs.org/r/column-group-element","https://platejs.org/r/comment-leaf","https://platejs.org/r/suggestion-leaf","https://platejs.org/r/date-element","https://platejs.org/r/draggable","https://platejs.org/r/equation-element","https://platejs.org/r/inline-equation-element","https://platejs.org/r/emoji-input-element","https://platejs.org/r/excalidraw-element","https://platejs.org/r/heading-element","https://platejs.org/r/highlight-leaf","https://platejs.org/r/hr-element","https://platejs.org/r/image-element","https://platejs.org/r/kbd-leaf","https://platejs.org/r/link-element","https://platejs.org/r/media-audio-element","https://platejs.org/r/media-embed-element","https://platejs.org/r/media-file-element","https://platejs.org/r/media-placeholder-element","https://platejs.org/r/media-video-element","https://platejs.org/r/mention-element","https://platejs.org/r/mention-input-element","https://platejs.org/r/paragraph-element","https://platejs.org/r/placeholder","https://platejs.org/r/slash-input-element","https://platejs.org/r/table-cell-element","https://platejs.org/r/table-element","https://platejs.org/r/table-row-element","https://platejs.org/r/toc-element","https://platejs.org/r/toggle-element"],
     files: [{
       path: "src/registry/blocks/editor-ai/page.tsx",
       type: "registry:page",
@@ -2495,7 +2495,7 @@ export const Index: Record<string, any> = {
     name: "editor-select",
     description: "A multi-select editor",
     type: "registry:block",
-    registryDependencies: ["http://localhost:3000/r/plate-ui","http://localhost:3000/r/select-editor-demo"],
+    registryDependencies: ["https://platejs.org/r/plate-ui","https://platejs.org/r/select-editor-demo"],
     files: [{
       path: "src/registry/blocks/editor-select/page.tsx",
       type: "registry:page",
@@ -2512,7 +2512,7 @@ export const Index: Record<string, any> = {
     name: "editor-basic",
     description: "A basic editor",
     type: "registry:block",
-    registryDependencies: ["http://localhost:3000/r/plate-ui","http://localhost:3000/r/editor"],
+    registryDependencies: ["https://platejs.org/r/plate-ui","https://platejs.org/r/editor"],
     files: [{
       path: "src/registry/blocks/editor-basic/page.tsx",
       type: "registry:page",
@@ -2537,7 +2537,7 @@ export const Index: Record<string, any> = {
     name: "slate-to-html",
     description: "",
     type: "registry:block",
-    registryDependencies: ["http://localhost:3000/r/plate-ui"],
+    registryDependencies: ["https://platejs.org/r/plate-ui"],
     files: [{
       path: "src/registry/blocks/slate-to-html/page.tsx",
       type: "registry:page",
@@ -2622,7 +2622,7 @@ export const Index: Record<string, any> = {
     name: "ai-demo",
     description: "AI menu with commands, streaming responses in a preview or directly into the editor.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/basic-nodes-plugins","http://localhost:3000/r/block-selection-plugins","http://localhost:3000/r/indent-list-plugins","http://localhost:3000/r/link-plugin"],
+    registryDependencies: ["https://platejs.org/r/basic-nodes-plugins","https://platejs.org/r/block-selection-plugins","https://platejs.org/r/indent-list-plugins","https://platejs.org/r/link-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2655,7 +2655,7 @@ export const Index: Record<string, any> = {
     name: "align-demo",
     description: "Text alignment controls for blocks.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/align-plugin"],
+    registryDependencies: ["https://platejs.org/r/align-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2684,7 +2684,7 @@ export const Index: Record<string, any> = {
     name: "autoformat-demo",
     description: "Apply formatting automatically using shortcodes.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/autoformat-plugin"],
+    registryDependencies: ["https://platejs.org/r/autoformat-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2713,7 +2713,7 @@ export const Index: Record<string, any> = {
     name: "basic-elements-demo",
     description: "Basic block elements like headings, quotes, and code blocks.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/basic-nodes-plugins"],
+    registryDependencies: ["https://platejs.org/r/basic-nodes-plugins"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2742,7 +2742,7 @@ export const Index: Record<string, any> = {
     name: "basic-marks-demo",
     description: "Basic text formatting marks like bold, italic, and underline.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/basic-nodes-plugins"],
+    registryDependencies: ["https://platejs.org/r/basic-nodes-plugins"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2771,7 +2771,7 @@ export const Index: Record<string, any> = {
     name: "basic-nodes-demo",
     description: "Basic block elements and text marks.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/basic-nodes-plugins"],
+    registryDependencies: ["https://platejs.org/r/basic-nodes-plugins"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2808,7 +2808,7 @@ export const Index: Record<string, any> = {
     name: "block-menu-demo",
     description: "Block-level context menu with formatting options.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/block-menu-plugins"],
+    registryDependencies: ["https://platejs.org/r/block-menu-plugins"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2837,7 +2837,7 @@ export const Index: Record<string, any> = {
     name: "block-selection-demo",
     description: "Visual block selection with keyboard support.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/block-selection-plugins"],
+    registryDependencies: ["https://platejs.org/r/block-selection-plugins"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2895,7 +2895,7 @@ export const Index: Record<string, any> = {
     name: "comments-demo",
     description: "Adding and displaying comments within content.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/comments-plugin","http://localhost:3000/r/discussion-plugin"],
+    registryDependencies: ["https://platejs.org/r/comments-plugin","https://platejs.org/r/discussion-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2924,7 +2924,7 @@ export const Index: Record<string, any> = {
     name: "copilot-demo",
     description: "Renders AI ghost text suggestions at the cursor position.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/copilot-plugins"],
+    registryDependencies: ["https://platejs.org/r/copilot-plugins"],
     files: [{
       path: "src/registry/examples/copilot-demo.tsx",
       type: "registry:example",
@@ -2953,7 +2953,7 @@ export const Index: Record<string, any> = {
     name: "cursor-overlay-demo",
     description: "Visual indicator for cursor position within the editor.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/cursor-overlay-plugin"],
+    registryDependencies: ["https://platejs.org/r/cursor-overlay-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3011,7 +3011,7 @@ export const Index: Record<string, any> = {
     name: "dnd-demo",
     description: "Implements draggable functionality for editor blocks, including drag handles and drop indicators.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/dnd-plugins"],
+    registryDependencies: ["https://platejs.org/r/dnd-plugins"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3098,7 +3098,7 @@ export const Index: Record<string, any> = {
     name: "exit-break-demo",
     description: "Exit a large block using a shortcut.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/exit-break-plugin"],
+    registryDependencies: ["https://platejs.org/r/exit-break-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3156,7 +3156,7 @@ export const Index: Record<string, any> = {
     name: "find-replace-demo",
     description: "Find and replace functionality in text.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/fixed-toolbar","input","http://localhost:3000/r/search-highlight-leaf"],
+    registryDependencies: ["https://platejs.org/r/fixed-toolbar","input","https://platejs.org/r/search-highlight-leaf"],
     files: [{
       path: "src/registry/examples/find-replace-demo.tsx",
       type: "registry:example",
@@ -3301,7 +3301,7 @@ export const Index: Record<string, any> = {
     name: "indent-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/indent-list-plugins"],
+    registryDependencies: ["https://platejs.org/r/indent-list-plugins"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3330,7 +3330,7 @@ export const Index: Record<string, any> = {
     name: "indent-list-demo",
     description: "Turn any block into a list item.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/indent-list-plugins"],
+    registryDependencies: ["https://platejs.org/r/indent-list-plugins"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3388,7 +3388,7 @@ export const Index: Record<string, any> = {
     name: "line-height-demo",
     description: "Line height adjustment controls.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/line-height-plugin"],
+    registryDependencies: ["https://platejs.org/r/line-height-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3417,7 +3417,7 @@ export const Index: Record<string, any> = {
     name: "link-demo",
     description: "Hyperlinks with toolbar insertion and URL pasting support.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/link-plugin"],
+    registryDependencies: ["https://platejs.org/r/link-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3446,7 +3446,7 @@ export const Index: Record<string, any> = {
     name: "list-demo",
     description: "List creation and formatting.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/autoformat-list-plugin","http://localhost:3000/r/list-element","http://localhost:3000/r/todo-list-element"],
+    registryDependencies: ["https://platejs.org/r/autoformat-list-plugin","https://platejs.org/r/list-element","https://platejs.org/r/todo-list-element"],
     files: [{
       path: "src/registry/examples/list-demo.tsx",
       type: "registry:example",
@@ -3483,7 +3483,7 @@ export const Index: Record<string, any> = {
     name: "media-demo",
     description: "Media embedding and management.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/media-plugins"],
+    registryDependencies: ["https://platejs.org/r/media-plugins"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3512,7 +3512,7 @@ export const Index: Record<string, any> = {
     name: "mention-demo",
     description: "Mention functionality for referencing users or entities.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/mention-plugin"],
+    registryDependencies: ["https://platejs.org/r/mention-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3541,7 +3541,7 @@ export const Index: Record<string, any> = {
     name: "reset-node-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/reset-block-type-plugin"],
+    registryDependencies: ["https://platejs.org/r/reset-block-type-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3686,7 +3686,7 @@ export const Index: Record<string, any> = {
     name: "select-editor-demo",
     description: "A form with a select editor component for managing labels.",
     type: "registry:example",
-    registryDependencies: ["form","http://localhost:3000/r/button","http://localhost:3000/r/select-editor"],
+    registryDependencies: ["form","https://platejs.org/r/button","https://platejs.org/r/select-editor"],
     files: [{
       path: "src/registry/examples/select-editor-demo.tsx",
       type: "registry:example",
@@ -3761,7 +3761,7 @@ export const Index: Record<string, any> = {
     name: "soft-break-demo",
     description: "Insert line breaks within a block of text without starting a new block.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/soft-break-plugin"],
+    registryDependencies: ["https://platejs.org/r/soft-break-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3819,7 +3819,7 @@ export const Index: Record<string, any> = {
     name: "table-demo",
     description: "Customizable tables with resizable columns and row merging options.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/table-plugin"],
+    registryDependencies: ["https://platejs.org/r/table-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3877,7 +3877,7 @@ export const Index: Record<string, any> = {
     name: "toc-demo",
     description: "Dynamic TOC with in-document element for easy navigation.",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/toc-plugin"],
+    registryDependencies: ["https://platejs.org/r/toc-plugin"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -4304,7 +4304,7 @@ export const Index: Record<string, any> = {
     name: "markdown-to-slate-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["http://localhost:3000/r/use-debounce"],
+    registryDependencies: ["https://platejs.org/r/use-debounce"],
     files: [{
       path: "src/registry/examples/markdown-to-slate-demo.tsx",
       type: "registry:example",

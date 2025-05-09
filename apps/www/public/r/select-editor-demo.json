@@ -9,8 +9,8 @@
   ],
   "registryDependencies": [
     "form",
-    "http://localhost:3000/r/button",
-    "http://localhost:3000/r/select-editor"
+    "https://platejs.org/r/button",
+    "https://platejs.org/r/select-editor"
   ],
   "files": [
     {

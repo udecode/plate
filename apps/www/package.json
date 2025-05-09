@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "prebuild": "yarn build:contentlayer",
-    "build": "yarn prebuild && yarn build:registry && next build",
+    "build": "yarn prebuild && yarn r && next build",
     "build:contentlayer": "contentlayer2 build",
     "build:tw": "yarn tailwindcss -i ./src/app/globals.css -o ./public/tailwind.css --minify",
     "dev": "concurrently \"contentlayer2 dev\" \"next dev --turbo\" \"PORT=4444 node ../../node_modules/y-webrtc/bin/server.js\"",
@@ -18,6 +18,7 @@
     "rd": "NODE_ENV=development tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "registry:capture": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/capture-registry.mts",
     "shadcn:build": "shadcn build",
+    "shadcn:dev": "shadcn build --output ./public/rd",
     "start": "next start",
     "typecheck": "yarn prebuild && tsc --noEmit",
     "typecheck:watch": "yarn typecheck --watch"

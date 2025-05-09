@@ -10,10 +10,10 @@
     "@udecode/cmdk"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/editor",
+    "https://platejs.org/r/editor",
     "command",
     "popover",
-    "http://localhost:3000/r/tag-element"
+    "https://platejs.org/r/tag-element"
   ],
   "files": [
     {

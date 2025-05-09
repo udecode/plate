@@ -14,7 +14,7 @@
   "registryDependencies": [
     "calendar",
     "context-menu",
-    "http://localhost:3000/r/use-is-touch-device"
+    "https://platejs.org/r/use-is-touch-device"
   ],
   "files": [
     {

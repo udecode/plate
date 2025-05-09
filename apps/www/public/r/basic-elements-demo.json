@@ -7,7 +7,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/basic-nodes-plugins"
+    "https://platejs.org/r/basic-nodes-plugins"
   ],
   "files": [
     {

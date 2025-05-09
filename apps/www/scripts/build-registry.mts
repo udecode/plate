@@ -12,14 +12,19 @@ import { examples } from '@/registry/registry-examples';
 import { hooks } from '@/registry/registry-hooks';
 import { components } from '@/registry/registry-components';
 
-const url =
-  process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000'
-    : 'https://platejs.org';
+const isDev = process.env.NODE_ENV === 'development';
+
+const url = isDev ? 'http://localhost:3000/rd' : 'https://platejs.org/r';
+
+const target = isDev ? 'registry.local.json' : 'registry.json';
+
+const publicTarget = isDev
+  ? 'public/rd/registry.json'
+  : 'public/r/registry.json';
 
 const registry: Registry = {
   name: 'plate',
-  homepage: url,
+  homepage: 'https://platejs.org',
   items: z.array(registryItemSchema).parse(
     [
       {
@@ -65,7 +70,7 @@ const registry: Registry = {
     ].map((item) => ({
       ...item,
       registryDependencies: item.registryDependencies?.map((dep) =>
-        dep.startsWith('shadcn/') ? dep.split('shadcn/')[1] : `${url}/r/${dep}`
+        dep.startsWith('shadcn/') ? dep.split('shadcn/')[1] : `${url}/${dep}`
       ),
     }))
   ),
@@ -152,21 +157,24 @@ async function buildRegistryJsonFile() {
   };
 
   // 2. Write the content of the registry to `registry.json` and public folder
-  rimraf.sync(path.join(process.cwd(), `registry.json`));
-  rimraf.sync(path.join(process.cwd(), `public/r/registry.json`));
+  rimraf.sync(path.join(process.cwd(), target));
+  rimraf.sync(path.join(process.cwd(), publicTarget));
 
   const registryJson = JSON.stringify(fixedRegistry, null, 2);
 
-  await fs.writeFile(path.join(process.cwd(), `registry.json`), registryJson);
-  await fs.writeFile(
-    path.join(process.cwd(), `public/r/registry.json`),
-    registryJson
-  );
+  // Create directories if they don't exist
+  const targetDir = path.dirname(path.join(process.cwd(), target));
+  const publicTargetDir = path.dirname(path.join(process.cwd(), publicTarget));
+  await fs.mkdir(targetDir, { recursive: true });
+  await fs.mkdir(publicTargetDir, { recursive: true });
+
+  await fs.writeFile(path.join(process.cwd(), target), registryJson);
+  await fs.writeFile(path.join(process.cwd(), publicTarget), registryJson);
 }
 
 async function buildRegistry() {
   return new Promise((resolve, reject) => {
-    const process = exec(`yarn shadcn:build`);
+    const process = exec(`yarn shadcn:${isDev ? 'dev' : 'build'}`);
 
     process.on('exit', (code) => {
       if (code === 0) {

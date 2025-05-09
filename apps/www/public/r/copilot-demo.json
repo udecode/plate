@@ -9,7 +9,7 @@
     "@udecode/plate-markdown"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/copilot-plugins"
+    "https://platejs.org/r/copilot-plugins"
   ],
   "files": [
     {

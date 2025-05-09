@@ -8,10 +8,10 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/basic-nodes-plugins",
-    "http://localhost:3000/r/block-selection-plugins",
-    "http://localhost:3000/r/indent-list-plugins",
-    "http://localhost:3000/r/link-plugin"
+    "https://platejs.org/r/basic-nodes-plugins",
+    "https://platejs.org/r/block-selection-plugins",
+    "https://platejs.org/r/indent-list-plugins",
+    "https://platejs.org/r/link-plugin"
   ],
   "files": [
     {

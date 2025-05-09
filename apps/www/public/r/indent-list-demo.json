@@ -7,7 +7,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/indent-list-plugins"
+    "https://platejs.org/r/indent-list-plugins"
   ],
   "files": [
     {

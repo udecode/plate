@@ -8,7 +8,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/exit-break-plugin"
+    "https://platejs.org/r/exit-break-plugin"
   ],
   "files": [
     {

@@ -15,8 +15,8 @@
     "@udecode/plate-toggle"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/inline-combobox",
-    "http://localhost:3000/r/transforms"
+    "https://platejs.org/r/inline-combobox",
+    "https://platejs.org/r/transforms"
   ],
   "files": [
     {

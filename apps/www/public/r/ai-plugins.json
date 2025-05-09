@@ -13,22 +13,22 @@
     "@udecode/plate-markdown"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/basic-nodes-plugins",
-    "http://localhost:3000/r/block-selection-plugins",
-    "http://localhost:3000/r/cursor-overlay-plugin",
-    "http://localhost:3000/r/indent-list-plugins",
-    "http://localhost:3000/r/link-plugin",
-    "http://localhost:3000/r/ai-menu",
-    "http://localhost:3000/r/blockquote-element",
-    "http://localhost:3000/r/code-block-element",
-    "http://localhost:3000/r/code-leaf",
-    "http://localhost:3000/r/code-line-element",
-    "http://localhost:3000/r/code-syntax-leaf",
-    "http://localhost:3000/r/cursor-overlay",
-    "http://localhost:3000/r/heading-element",
-    "http://localhost:3000/r/hr-element",
-    "http://localhost:3000/r/link-element",
-    "http://localhost:3000/r/paragraph-element"
+    "https://platejs.org/r/basic-nodes-plugins",
+    "https://platejs.org/r/block-selection-plugins",
+    "https://platejs.org/r/cursor-overlay-plugin",
+    "https://platejs.org/r/indent-list-plugins",
+    "https://platejs.org/r/link-plugin",
+    "https://platejs.org/r/ai-menu",
+    "https://platejs.org/r/blockquote-element",
+    "https://platejs.org/r/code-block-element",
+    "https://platejs.org/r/code-leaf",
+    "https://platejs.org/r/code-line-element",
+    "https://platejs.org/r/code-syntax-leaf",
+    "https://platejs.org/r/cursor-overlay",
+    "https://platejs.org/r/heading-element",
+    "https://platejs.org/r/hr-element",
+    "https://platejs.org/r/link-element",
+    "https://platejs.org/r/paragraph-element"
   ],
   "files": [
     {

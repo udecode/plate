@@ -7,7 +7,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/media-plugins"
+    "https://platejs.org/r/media-plugins"
   ],
   "files": [
     {

@@ -7,9 +7,9 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/fixed-toolbar",
+    "https://platejs.org/r/fixed-toolbar",
     "input",
-    "http://localhost:3000/r/search-highlight-leaf"
+    "https://platejs.org/r/search-highlight-leaf"
   ],
   "files": [
     {

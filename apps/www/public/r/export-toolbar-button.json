@@ -10,7 +10,7 @@
     "pdf-lib"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/toolbar"
+    "https://platejs.org/r/toolbar"
   ],
   "files": [
     {

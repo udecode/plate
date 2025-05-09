@@ -6,7 +6,7 @@
     "@udecode/plate-comments"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/discussion-plugin"
+    "https://platejs.org/r/discussion-plugin"
   ],
   "files": [
     {

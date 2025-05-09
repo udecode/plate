@@ -7,7 +7,7 @@
   ],
   "devDependencies": [],
   "registryDependencies": [
-    "http://localhost:3000/r/plate"
+    "https://platejs.org/r/plate"
   ],
   "files": [],
   "cssVars": {

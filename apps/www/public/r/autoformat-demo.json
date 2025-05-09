@@ -8,7 +8,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/autoformat-plugin"
+    "https://platejs.org/r/autoformat-plugin"
   ],
   "files": [
     {

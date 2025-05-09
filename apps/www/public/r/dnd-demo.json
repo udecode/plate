@@ -8,7 +8,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/dnd-plugins"
+    "https://platejs.org/r/dnd-plugins"
   ],
   "files": [
     {

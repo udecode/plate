@@ -7,7 +7,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/link-plugin"
+    "https://platejs.org/r/link-plugin"
   ],
   "files": [
     {

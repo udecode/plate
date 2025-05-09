@@ -8,7 +8,7 @@
     "@udecode/plate-layout"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/resizable"
+    "https://platejs.org/r/resizable"
   ],
   "files": [
     {

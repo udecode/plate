@@ -9,7 +9,7 @@
   ],
   "registryDependencies": [
     "dropdown-menu",
-    "http://localhost:3000/r/toolbar",
+    "https://platejs.org/r/toolbar",
     "separator",
     "button",
     "tooltip"

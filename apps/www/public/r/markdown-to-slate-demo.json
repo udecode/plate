@@ -6,7 +6,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/use-debounce"
+    "https://platejs.org/r/use-debounce"
   ],
   "files": [
     {

@@ -7,7 +7,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/line-height-plugin"
+    "https://platejs.org/r/line-height-plugin"
   ],
   "files": [
     {

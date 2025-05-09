@@ -7,8 +7,8 @@
     "@udecode/plate-media"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/image-preview",
-    "http://localhost:3000/r/media-upload-toast"
+    "https://platejs.org/r/image-preview",
+    "https://platejs.org/r/media-upload-toast"
   ],
   "files": [
     {

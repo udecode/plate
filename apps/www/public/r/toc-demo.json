@@ -8,7 +8,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/toc-plugin"
+    "https://platejs.org/r/toc-plugin"
   ],
   "files": [
     {

@@ -13,8 +13,8 @@
   ],
   "registryDependencies": [
     "dropdown-menu",
-    "http://localhost:3000/r/toolbar",
-    "http://localhost:3000/r/transforms"
+    "https://platejs.org/r/toolbar",
+    "https://platejs.org/r/transforms"
   ],
   "files": [
     {

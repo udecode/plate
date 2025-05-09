@@ -6,7 +6,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/reset-block-type-plugin"
+    "https://platejs.org/r/reset-block-type-plugin"
   ],
   "files": [
     {

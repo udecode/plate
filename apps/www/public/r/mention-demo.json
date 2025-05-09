@@ -7,7 +7,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/mention-plugin"
+    "https://platejs.org/r/mention-plugin"
   ],
   "files": [
     {

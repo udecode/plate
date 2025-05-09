@@ -7,7 +7,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/block-menu-plugins"
+    "https://platejs.org/r/block-menu-plugins"
   ],
   "files": [
     {

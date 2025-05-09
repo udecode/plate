@@ -19,7 +19,7 @@
   ],
   "registryDependencies": [
     "tooltip",
-    "http://localhost:3000/r/use-mounted"
+    "https://platejs.org/r/use-mounted"
   ],
   "files": [
     {

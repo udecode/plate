@@ -9,8 +9,8 @@
     "@udecode/plate-basic-marks"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/plate-ui",
-    "http://localhost:3000/r/editor"
+    "https://platejs.org/r/plate-ui",
+    "https://platejs.org/r/editor"
   ],
   "files": [
     {

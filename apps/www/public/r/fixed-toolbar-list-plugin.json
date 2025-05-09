@@ -4,8 +4,8 @@
   "type": "registry:component",
   "dependencies": [],
   "registryDependencies": [
-    "http://localhost:3000/r/fixed-toolbar",
-    "http://localhost:3000/r/fixed-toolbar-buttons"
+    "https://platejs.org/r/fixed-toolbar",
+    "https://platejs.org/r/fixed-toolbar-buttons"
   ],
   "files": [
     {

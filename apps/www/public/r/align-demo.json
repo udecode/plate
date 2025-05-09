@@ -7,7 +7,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/align-plugin"
+    "https://platejs.org/r/align-plugin"
   ],
   "files": [
     {

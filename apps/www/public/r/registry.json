@@ -1,6 +1,6 @@
 {
   "name": "plate",
-  "homepage": "http://localhost:3000",
+  "homepage": "https://platejs.org",
   "items": [
     {
       "name": "plate",
@@ -20,7 +20,7 @@
       ],
       "devDependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/plate"
+        "https://platejs.org/r/plate"
       ],
       "files": [],
       "cssVars": {
@@ -53,10 +53,10 @@
         "@faker-js/faker"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/use-chat",
+        "https://platejs.org/r/use-chat",
         "command",
         "popover",
-        "http://localhost:3000/r/editor"
+        "https://platejs.org/r/editor"
       ],
       "files": [
         {
@@ -107,7 +107,7 @@
         "@udecode/plate-ai"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -143,7 +143,7 @@
       ],
       "registryDependencies": [
         "dropdown-menu",
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -177,7 +177,7 @@
       "registryDependencies": [
         "calendar",
         "context-menu",
-        "http://localhost:3000/r/use-is-touch-device"
+        "https://platejs.org/r/use-is-touch-device"
       ],
       "files": [
         {
@@ -240,7 +240,7 @@
       ],
       "registryDependencies": [
         "dropdown-menu",
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -272,7 +272,7 @@
         "pdf-lib"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -335,7 +335,7 @@
       ],
       "registryDependencies": [
         "dropdown-menu",
-        "http://localhost:3000/r/toolbar",
+        "https://platejs.org/r/toolbar",
         "separator",
         "button",
         "tooltip"
@@ -389,7 +389,7 @@
         "@udecode/plate-comments"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/comments-plugin"
+        "https://platejs.org/r/comments-plugin"
       ],
       "files": [
         {
@@ -424,19 +424,19 @@
         "date-fns"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/suggestion-plugin",
+        "https://platejs.org/r/suggestion-plugin",
         "button",
         "popover",
         "avatar",
         "dropdown-menu",
-        "http://localhost:3000/r/editor",
-        "http://localhost:3000/r/ai-leaf",
-        "http://localhost:3000/r/date-element",
-        "http://localhost:3000/r/emoji-input-element",
-        "http://localhost:3000/r/inline-equation-element",
-        "http://localhost:3000/r/link-element",
-        "http://localhost:3000/r/mention-element",
-        "http://localhost:3000/r/mention-input-element"
+        "https://platejs.org/r/editor",
+        "https://platejs.org/r/ai-leaf",
+        "https://platejs.org/r/date-element",
+        "https://platejs.org/r/emoji-input-element",
+        "https://platejs.org/r/inline-equation-element",
+        "https://platejs.org/r/link-element",
+        "https://platejs.org/r/mention-element",
+        "https://platejs.org/r/mention-input-element"
       ],
       "files": [
         {
@@ -520,7 +520,7 @@
       ],
       "registryDependencies": [
         "tooltip",
-        "http://localhost:3000/r/use-mounted"
+        "https://platejs.org/r/use-mounted"
       ],
       "files": [
         {
@@ -589,10 +589,10 @@
         "@udecode/cmdk"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/editor",
+        "https://platejs.org/r/editor",
         "command",
         "popover",
-        "http://localhost:3000/r/tag-element"
+        "https://platejs.org/r/tag-element"
       ],
       "files": [
         {
@@ -623,7 +623,7 @@
         "@radix-ui/react-popover"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -691,30 +691,30 @@
         "@udecode/plate-highlight"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar",
-        "http://localhost:3000/r/ai-toolbar-button",
-        "http://localhost:3000/r/align-dropdown-menu",
-        "http://localhost:3000/r/color-dropdown-menu",
-        "http://localhost:3000/r/comment-toolbar-button",
-        "http://localhost:3000/r/emoji-dropdown-menu",
-        "http://localhost:3000/r/font-size-toolbar-button",
-        "http://localhost:3000/r/history-toolbar-button",
-        "http://localhost:3000/r/indent-list-toolbar-button",
-        "http://localhost:3000/r/indent-todo-toolbar-button",
-        "http://localhost:3000/r/indent-toolbar-button",
-        "http://localhost:3000/r/import-toolbar-button",
-        "http://localhost:3000/r/insert-dropdown-menu",
-        "http://localhost:3000/r/line-height-dropdown-menu",
-        "http://localhost:3000/r/link-toolbar-button",
-        "http://localhost:3000/r/mark-toolbar-button",
-        "http://localhost:3000/r/media-toolbar-button",
-        "http://localhost:3000/r/mode-dropdown-menu",
-        "http://localhost:3000/r/more-dropdown-menu",
-        "http://localhost:3000/r/outdent-toolbar-button",
-        "http://localhost:3000/r/table-dropdown-menu",
-        "http://localhost:3000/r/toggle-toolbar-button",
-        "http://localhost:3000/r/turn-into-dropdown-menu",
-        "http://localhost:3000/r/export-toolbar-button"
+        "https://platejs.org/r/toolbar",
+        "https://platejs.org/r/ai-toolbar-button",
+        "https://platejs.org/r/align-dropdown-menu",
+        "https://platejs.org/r/color-dropdown-menu",
+        "https://platejs.org/r/comment-toolbar-button",
+        "https://platejs.org/r/emoji-dropdown-menu",
+        "https://platejs.org/r/font-size-toolbar-button",
+        "https://platejs.org/r/history-toolbar-button",
+        "https://platejs.org/r/indent-list-toolbar-button",
+        "https://platejs.org/r/indent-todo-toolbar-button",
+        "https://platejs.org/r/indent-toolbar-button",
+        "https://platejs.org/r/import-toolbar-button",
+        "https://platejs.org/r/insert-dropdown-menu",
+        "https://platejs.org/r/line-height-dropdown-menu",
+        "https://platejs.org/r/link-toolbar-button",
+        "https://platejs.org/r/mark-toolbar-button",
+        "https://platejs.org/r/media-toolbar-button",
+        "https://platejs.org/r/mode-dropdown-menu",
+        "https://platejs.org/r/more-dropdown-menu",
+        "https://platejs.org/r/outdent-toolbar-button",
+        "https://platejs.org/r/table-dropdown-menu",
+        "https://platejs.org/r/toggle-toolbar-button",
+        "https://platejs.org/r/turn-into-dropdown-menu",
+        "https://platejs.org/r/export-toolbar-button"
       ],
       "files": [
         {
@@ -739,23 +739,23 @@
         "@udecode/plate-media"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar",
-        "http://localhost:3000/r/ai-toolbar-button",
-        "http://localhost:3000/r/align-dropdown-menu",
-        "http://localhost:3000/r/color-dropdown-menu",
-        "http://localhost:3000/r/comment-toolbar-button",
-        "http://localhost:3000/r/emoji-dropdown-menu",
-        "http://localhost:3000/r/insert-dropdown-menu",
-        "http://localhost:3000/r/line-height-dropdown-menu",
-        "http://localhost:3000/r/list-indent-toolbar-button",
-        "http://localhost:3000/r/link-toolbar-button",
-        "http://localhost:3000/r/mark-toolbar-button",
-        "http://localhost:3000/r/media-toolbar-button",
-        "http://localhost:3000/r/mode-dropdown-menu",
-        "http://localhost:3000/r/more-dropdown-menu",
-        "http://localhost:3000/r/table-dropdown-menu",
-        "http://localhost:3000/r/toggle-toolbar-button",
-        "http://localhost:3000/r/turn-into-dropdown-menu"
+        "https://platejs.org/r/toolbar",
+        "https://platejs.org/r/ai-toolbar-button",
+        "https://platejs.org/r/align-dropdown-menu",
+        "https://platejs.org/r/color-dropdown-menu",
+        "https://platejs.org/r/comment-toolbar-button",
+        "https://platejs.org/r/emoji-dropdown-menu",
+        "https://platejs.org/r/insert-dropdown-menu",
+        "https://platejs.org/r/line-height-dropdown-menu",
+        "https://platejs.org/r/list-indent-toolbar-button",
+        "https://platejs.org/r/link-toolbar-button",
+        "https://platejs.org/r/mark-toolbar-button",
+        "https://platejs.org/r/media-toolbar-button",
+        "https://platejs.org/r/mode-dropdown-menu",
+        "https://platejs.org/r/more-dropdown-menu",
+        "https://platejs.org/r/table-dropdown-menu",
+        "https://platejs.org/r/toggle-toolbar-button",
+        "https://platejs.org/r/turn-into-dropdown-menu"
       ],
       "files": [
         {
@@ -772,7 +772,7 @@
       "description": "A fixed toolbar that stays at the top of the editor.",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -795,13 +795,13 @@
         "@udecode/plate-basic-marks"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar",
-        "http://localhost:3000/r/ai-toolbar-button",
-        "http://localhost:3000/r/comment-toolbar-button",
-        "http://localhost:3000/r/link-toolbar-button",
-        "http://localhost:3000/r/mark-toolbar-button",
-        "http://localhost:3000/r/more-dropdown-menu",
-        "http://localhost:3000/r/turn-into-dropdown-menu"
+        "https://platejs.org/r/toolbar",
+        "https://platejs.org/r/ai-toolbar-button",
+        "https://platejs.org/r/comment-toolbar-button",
+        "https://platejs.org/r/link-toolbar-button",
+        "https://platejs.org/r/mark-toolbar-button",
+        "https://platejs.org/r/more-dropdown-menu",
+        "https://platejs.org/r/turn-into-dropdown-menu"
       ],
       "files": [
         {
@@ -834,7 +834,7 @@
         "@udecode/plate-floating"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -909,7 +909,7 @@
       "description": "Toolbar buttons for undo and redo operations.",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -938,7 +938,7 @@
         "@udecode/plate-indent-list"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1001,7 +1001,7 @@
         "@udecode/plate-indent-list"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1029,7 +1029,7 @@
         "@udecode/plate-indent"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1100,8 +1100,8 @@
       ],
       "registryDependencies": [
         "dropdown-menu",
-        "http://localhost:3000/r/toolbar",
-        "http://localhost:3000/r/transforms"
+        "https://platejs.org/r/toolbar",
+        "https://platejs.org/r/transforms"
       ],
       "files": [
         {
@@ -1124,7 +1124,7 @@
         "@udecode/plate-line-height"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar",
+        "https://platejs.org/r/toolbar",
         "dropdown-menu"
       ],
       "files": [
@@ -1192,7 +1192,7 @@
         "@udecode/plate-link"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1224,7 +1224,7 @@
         "@udecode/plate-list"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1252,7 +1252,7 @@
         "@udecode/plate-list"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1280,7 +1280,7 @@
         "@udecode/plate-basic-marks"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1343,7 +1343,7 @@
         "sonner"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar",
+        "https://platejs.org/r/toolbar",
         "input",
         "dropdown-menu",
         "alert-dialog"
@@ -1402,7 +1402,7 @@
       "dependencies": [],
       "registryDependencies": [
         "dropdown-menu",
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1427,7 +1427,7 @@
       ],
       "registryDependencies": [
         "dropdown-menu",
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1456,7 +1456,7 @@
         "@udecode/plate-indent"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1545,7 +1545,7 @@
       ],
       "registryDependencies": [
         "dropdown-menu",
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1577,7 +1577,7 @@
         "@udecode/plate-toggle"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -1610,8 +1610,8 @@
       ],
       "registryDependencies": [
         "dropdown-menu",
-        "http://localhost:3000/r/toolbar",
-        "http://localhost:3000/r/transforms"
+        "https://platejs.org/r/toolbar",
+        "https://platejs.org/r/transforms"
       ],
       "files": [
         {
@@ -1887,7 +1887,7 @@
         "@udecode/plate-resizable"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/resizable"
+        "https://platejs.org/r/resizable"
       ],
       "files": [
         {
@@ -1922,7 +1922,7 @@
         "@udecode/plate-layout"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/resizable"
+        "https://platejs.org/r/resizable"
       ],
       "files": [
         {
@@ -1991,7 +1991,7 @@
         "@udecode/plate-suggestion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/suggestion-plugin"
+        "https://platejs.org/r/suggestion-plugin"
       ],
       "files": [
         {
@@ -2024,7 +2024,7 @@
         "@udecode/plate-suggestion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/suggestion-plugin"
+        "https://platejs.org/r/suggestion-plugin"
       ],
       "files": [
         {
@@ -2159,7 +2159,7 @@
         "@udecode/plate-math"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -2190,8 +2190,8 @@
         "@emoji-mart/data@1.2.1"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/inline-combobox",
-        "http://localhost:3000/r/use-debounce"
+        "https://platejs.org/r/inline-combobox",
+        "https://platejs.org/r/use-debounce"
       ],
       "files": [
         {
@@ -2246,7 +2246,7 @@
       ],
       "registryDependencies": [
         "popover",
-        "http://localhost:3000/r/toolbar"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -2366,9 +2366,9 @@
         "@udecode/plate-resizable"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/media-popover",
-        "http://localhost:3000/r/caption",
-        "http://localhost:3000/r/resizable"
+        "https://platejs.org/r/media-popover",
+        "https://platejs.org/r/caption",
+        "https://platejs.org/r/resizable"
       ],
       "files": [
         {
@@ -2528,7 +2528,7 @@
         "@udecode/plate-resizable"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/caption"
+        "https://platejs.org/r/caption"
       ],
       "files": [
         {
@@ -2567,9 +2567,9 @@
         "react-lite-youtube-embed"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/media-popover",
-        "http://localhost:3000/r/caption",
-        "http://localhost:3000/r/resizable"
+        "https://platejs.org/r/media-popover",
+        "https://platejs.org/r/caption",
+        "https://platejs.org/r/resizable"
       ],
       "files": [
         {
@@ -2605,7 +2605,7 @@
         "@udecode/plate-resizable"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/caption"
+        "https://platejs.org/r/caption"
       ],
       "files": [
         {
@@ -2642,7 +2642,7 @@
         "use-file-picker"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/uploadthing"
+        "https://platejs.org/r/uploadthing"
       ],
       "files": [
         {
@@ -2677,9 +2677,9 @@
         "react-lite-youtube-embed"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/media-popover",
-        "http://localhost:3000/r/caption",
-        "http://localhost:3000/r/resizable"
+        "https://platejs.org/r/media-popover",
+        "https://platejs.org/r/caption",
+        "https://platejs.org/r/resizable"
       ],
       "files": [
         {
@@ -2718,7 +2718,7 @@
         "@udecode/plate-mention"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/use-mounted"
+        "https://platejs.org/r/use-mounted"
       ],
       "files": [
         {
@@ -2753,7 +2753,7 @@
         "@udecode/plate-mention"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/inline-combobox"
+        "https://platejs.org/r/inline-combobox"
       ],
       "files": [
         {
@@ -2844,8 +2844,8 @@
         "@udecode/plate-toggle"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/inline-combobox",
-        "http://localhost:3000/r/transforms"
+        "https://platejs.org/r/inline-combobox",
+        "https://platejs.org/r/transforms"
       ],
       "files": [
         {
@@ -2878,7 +2878,7 @@
         "@udecode/plate-table"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/resizable"
+        "https://platejs.org/r/resizable"
       ],
       "files": [
         {
@@ -3153,29 +3153,29 @@
         "@udecode/plate-trailing-block"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/ai-plugins",
-        "http://localhost:3000/r/markdown-plugin",
-        "http://localhost:3000/r/basic-nodes-plugins",
-        "http://localhost:3000/r/align-plugin",
-        "http://localhost:3000/r/autoformat-plugin",
-        "http://localhost:3000/r/block-menu-plugins",
-        "http://localhost:3000/r/equation-plugins",
-        "http://localhost:3000/r/cursor-overlay-plugin",
-        "http://localhost:3000/r/comments-plugin",
-        "http://localhost:3000/r/delete-plugins",
-        "http://localhost:3000/r/dnd-plugins",
-        "http://localhost:3000/r/exit-break-plugin",
-        "http://localhost:3000/r/indent-list-plugins",
-        "http://localhost:3000/r/line-height-plugin",
-        "http://localhost:3000/r/link-plugin",
-        "http://localhost:3000/r/media-plugins",
-        "http://localhost:3000/r/mention-plugin",
-        "http://localhost:3000/r/reset-block-type-plugin",
-        "http://localhost:3000/r/skip-mark-plugin",
-        "http://localhost:3000/r/suggestion-plugin",
-        "http://localhost:3000/r/soft-break-plugin",
-        "http://localhost:3000/r/table-plugin",
-        "http://localhost:3000/r/toc-plugin"
+        "https://platejs.org/r/ai-plugins",
+        "https://platejs.org/r/markdown-plugin",
+        "https://platejs.org/r/basic-nodes-plugins",
+        "https://platejs.org/r/align-plugin",
+        "https://platejs.org/r/autoformat-plugin",
+        "https://platejs.org/r/block-menu-plugins",
+        "https://platejs.org/r/equation-plugins",
+        "https://platejs.org/r/cursor-overlay-plugin",
+        "https://platejs.org/r/comments-plugin",
+        "https://platejs.org/r/delete-plugins",
+        "https://platejs.org/r/dnd-plugins",
+        "https://platejs.org/r/exit-break-plugin",
+        "https://platejs.org/r/indent-list-plugins",
+        "https://platejs.org/r/line-height-plugin",
+        "https://platejs.org/r/link-plugin",
+        "https://platejs.org/r/media-plugins",
+        "https://platejs.org/r/mention-plugin",
+        "https://platejs.org/r/reset-block-type-plugin",
+        "https://platejs.org/r/skip-mark-plugin",
+        "https://platejs.org/r/suggestion-plugin",
+        "https://platejs.org/r/soft-break-plugin",
+        "https://platejs.org/r/table-plugin",
+        "https://platejs.org/r/toc-plugin"
       ],
       "files": [
         {
@@ -3198,22 +3198,22 @@
         "@udecode/plate-markdown"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/basic-nodes-plugins",
-        "http://localhost:3000/r/block-selection-plugins",
-        "http://localhost:3000/r/cursor-overlay-plugin",
-        "http://localhost:3000/r/indent-list-plugins",
-        "http://localhost:3000/r/link-plugin",
-        "http://localhost:3000/r/ai-menu",
-        "http://localhost:3000/r/blockquote-element",
-        "http://localhost:3000/r/code-block-element",
-        "http://localhost:3000/r/code-leaf",
-        "http://localhost:3000/r/code-line-element",
-        "http://localhost:3000/r/code-syntax-leaf",
-        "http://localhost:3000/r/cursor-overlay",
-        "http://localhost:3000/r/heading-element",
-        "http://localhost:3000/r/hr-element",
-        "http://localhost:3000/r/link-element",
-        "http://localhost:3000/r/paragraph-element"
+        "https://platejs.org/r/basic-nodes-plugins",
+        "https://platejs.org/r/block-selection-plugins",
+        "https://platejs.org/r/cursor-overlay-plugin",
+        "https://platejs.org/r/indent-list-plugins",
+        "https://platejs.org/r/link-plugin",
+        "https://platejs.org/r/ai-menu",
+        "https://platejs.org/r/blockquote-element",
+        "https://platejs.org/r/code-block-element",
+        "https://platejs.org/r/code-leaf",
+        "https://platejs.org/r/code-line-element",
+        "https://platejs.org/r/code-syntax-leaf",
+        "https://platejs.org/r/cursor-overlay",
+        "https://platejs.org/r/heading-element",
+        "https://platejs.org/r/hr-element",
+        "https://platejs.org/r/link-element",
+        "https://platejs.org/r/paragraph-element"
       ],
       "files": [
         {
@@ -3229,8 +3229,8 @@
         "@udecode/plate-math"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/equation-element",
-        "http://localhost:3000/r/inline-equation-toolbar-button"
+        "https://platejs.org/r/equation-element",
+        "https://platejs.org/r/inline-equation-toolbar-button"
       ],
       "files": [
         {
@@ -3320,7 +3320,7 @@
         "@udecode/plate-selection"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/block-selection"
+        "https://platejs.org/r/block-selection"
       ],
       "files": [
         {
@@ -3336,8 +3336,8 @@
         "@udecode/plate-selection"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/block-context-menu",
-        "http://localhost:3000/r/block-selection-plugins"
+        "https://platejs.org/r/block-context-menu",
+        "https://platejs.org/r/block-selection-plugins"
       ],
       "files": [
         {
@@ -3353,7 +3353,7 @@
         "@udecode/plate-comments"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/discussion-plugin"
+        "https://platejs.org/r/discussion-plugin"
       ],
       "files": [
         {
@@ -3382,7 +3382,7 @@
         "@udecode/plate-suggestion"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/discussion-plugin"
+        "https://platejs.org/r/discussion-plugin"
       ],
       "files": [
         {
@@ -3406,7 +3406,7 @@
         "@udecode/plate-selection"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/cursor-overlay"
+        "https://platejs.org/r/cursor-overlay"
       ],
       "files": [
         {
@@ -3440,7 +3440,7 @@
         "@faker-js/faker"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/ghost-text"
+        "https://platejs.org/r/ghost-text"
       ],
       "files": [
         {
@@ -3473,7 +3473,7 @@
         "@udecode/plate-node-id"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/draggable"
+        "https://platejs.org/r/draggable"
       ],
       "files": [
         {
@@ -3501,8 +3501,8 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/fixed-toolbar",
-        "http://localhost:3000/r/fixed-toolbar-buttons"
+        "https://platejs.org/r/fixed-toolbar",
+        "https://platejs.org/r/fixed-toolbar-buttons"
       ],
       "files": [
         {
@@ -3516,8 +3516,8 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/fixed-toolbar",
-        "http://localhost:3000/r/fixed-toolbar-buttons"
+        "https://platejs.org/r/fixed-toolbar",
+        "https://platejs.org/r/fixed-toolbar-buttons"
       ],
       "files": [
         {
@@ -3531,8 +3531,8 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/floating-toolbar",
-        "http://localhost:3000/r/floating-toolbar-buttons"
+        "https://platejs.org/r/floating-toolbar",
+        "https://platejs.org/r/floating-toolbar-buttons"
       ],
       "files": [
         {
@@ -3553,8 +3553,8 @@
         "@udecode/plate-toggle"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/indent-fire-marker",
-        "http://localhost:3000/r/indent-todo-marker"
+        "https://platejs.org/r/indent-fire-marker",
+        "https://platejs.org/r/indent-todo-marker"
       ],
       "files": [
         {
@@ -3584,7 +3584,7 @@
         "@udecode/plate-link"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/link-floating-toolbar"
+        "https://platejs.org/r/link-floating-toolbar"
       ],
       "files": [
         {
@@ -3601,8 +3601,8 @@
         "@udecode/plate-media"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/image-preview",
-        "http://localhost:3000/r/media-upload-toast"
+        "https://platejs.org/r/image-preview",
+        "https://platejs.org/r/media-upload-toast"
       ],
       "files": [
         {
@@ -3705,7 +3705,7 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/r/block-discussion"
+        "https://platejs.org/r/block-discussion"
       ],
       "files": [
         {
@@ -3829,57 +3829,57 @@
         "sonner"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/plate-ui",
-        "http://localhost:3000/r/api-ai",
-        "http://localhost:3000/r/api-uploadthing",
-        "http://localhost:3000/r/plate-types",
-        "http://localhost:3000/r/editor-plugins",
-        "http://localhost:3000/r/copilot-plugins",
-        "http://localhost:3000/r/floating-toolbar-plugin",
-        "http://localhost:3000/r/fixed-toolbar-plugin",
-        "http://localhost:3000/r/ai-menu",
-        "http://localhost:3000/r/ghost-text",
-        "http://localhost:3000/r/block-discussion",
-        "http://localhost:3000/r/cursor-overlay",
-        "http://localhost:3000/r/editor",
-        "http://localhost:3000/r/block-context-menu",
-        "http://localhost:3000/r/ai-leaf",
-        "http://localhost:3000/r/blockquote-element",
-        "http://localhost:3000/r/code-block-element",
-        "http://localhost:3000/r/code-leaf",
-        "http://localhost:3000/r/code-line-element",
-        "http://localhost:3000/r/code-syntax-leaf",
-        "http://localhost:3000/r/column-element",
-        "http://localhost:3000/r/column-group-element",
-        "http://localhost:3000/r/comment-leaf",
-        "http://localhost:3000/r/suggestion-leaf",
-        "http://localhost:3000/r/date-element",
-        "http://localhost:3000/r/draggable",
-        "http://localhost:3000/r/equation-element",
-        "http://localhost:3000/r/inline-equation-element",
-        "http://localhost:3000/r/emoji-input-element",
-        "http://localhost:3000/r/excalidraw-element",
-        "http://localhost:3000/r/heading-element",
-        "http://localhost:3000/r/highlight-leaf",
-        "http://localhost:3000/r/hr-element",
-        "http://localhost:3000/r/image-element",
-        "http://localhost:3000/r/kbd-leaf",
-        "http://localhost:3000/r/link-element",
-        "http://localhost:3000/r/media-audio-element",
-        "http://localhost:3000/r/media-embed-element",
-        "http://localhost:3000/r/media-file-element",
-        "http://localhost:3000/r/media-placeholder-element",
-        "http://localhost:3000/r/media-video-element",
-        "http://localhost:3000/r/mention-element",
-        "http://localhost:3000/r/mention-input-element",
-        "http://localhost:3000/r/paragraph-element",
-        "http://localhost:3000/r/placeholder",
-        "http://localhost:3000/r/slash-input-element",
-        "http://localhost:3000/r/table-cell-element",
-        "http://localhost:3000/r/table-element",
-        "http://localhost:3000/r/table-row-element",
-        "http://localhost:3000/r/toc-element",
-        "http://localhost:3000/r/toggle-element"
+        "https://platejs.org/r/plate-ui",
+        "https://platejs.org/r/api-ai",
+        "https://platejs.org/r/api-uploadthing",
+        "https://platejs.org/r/plate-types",
+        "https://platejs.org/r/editor-plugins",
+        "https://platejs.org/r/copilot-plugins",
+        "https://platejs.org/r/floating-toolbar-plugin",
+        "https://platejs.org/r/fixed-toolbar-plugin",
+        "https://platejs.org/r/ai-menu",
+        "https://platejs.org/r/ghost-text",
+        "https://platejs.org/r/block-discussion",
+        "https://platejs.org/r/cursor-overlay",
+        "https://platejs.org/r/editor",
+        "https://platejs.org/r/block-context-menu",
+        "https://platejs.org/r/ai-leaf",
+        "https://platejs.org/r/blockquote-element",
+        "https://platejs.org/r/code-block-element",
+        "https://platejs.org/r/code-leaf",
+        "https://platejs.org/r/code-line-element",
+        "https://platejs.org/r/code-syntax-leaf",
+        "https://platejs.org/r/column-element",
+        "https://platejs.org/r/column-group-element",
+        "https://platejs.org/r/comment-leaf",
+        "https://platejs.org/r/suggestion-leaf",
+        "https://platejs.org/r/date-element",
+        "https://platejs.org/r/draggable",
+        "https://platejs.org/r/equation-element",
+        "https://platejs.org/r/inline-equation-element",
+        "https://platejs.org/r/emoji-input-element",
+        "https://platejs.org/r/excalidraw-element",
+        "https://platejs.org/r/heading-element",
+        "https://platejs.org/r/highlight-leaf",
+        "https://platejs.org/r/hr-element",
+        "https://platejs.org/r/image-element",
+        "https://platejs.org/r/kbd-leaf",
+        "https://platejs.org/r/link-element",
+        "https://platejs.org/r/media-audio-element",
+        "https://platejs.org/r/media-embed-element",
+        "https://platejs.org/r/media-file-element",
+        "https://platejs.org/r/media-placeholder-element",
+        "https://platejs.org/r/media-video-element",
+        "https://platejs.org/r/mention-element",
+        "https://platejs.org/r/mention-input-element",
+        "https://platejs.org/r/paragraph-element",
+        "https://platejs.org/r/placeholder",
+        "https://platejs.org/r/slash-input-element",
+        "https://platejs.org/r/table-cell-element",
+        "https://platejs.org/r/table-element",
+        "https://platejs.org/r/table-row-element",
+        "https://platejs.org/r/toc-element",
+        "https://platejs.org/r/toggle-element"
       ],
       "files": [
         {
@@ -3912,8 +3912,8 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/plate-ui",
-        "http://localhost:3000/r/select-editor-demo"
+        "https://platejs.org/r/plate-ui",
+        "https://platejs.org/r/select-editor-demo"
       ],
       "files": [
         {
@@ -3936,8 +3936,8 @@
         "@udecode/plate-basic-marks"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/plate-ui",
-        "http://localhost:3000/r/editor"
+        "https://platejs.org/r/plate-ui",
+        "https://platejs.org/r/editor"
       ],
       "files": [
         {
@@ -3965,7 +3965,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/plate-ui"
+        "https://platejs.org/r/plate-ui"
       ],
       "files": [
         {
@@ -4040,10 +4040,10 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/basic-nodes-plugins",
-        "http://localhost:3000/r/block-selection-plugins",
-        "http://localhost:3000/r/indent-list-plugins",
-        "http://localhost:3000/r/link-plugin"
+        "https://platejs.org/r/basic-nodes-plugins",
+        "https://platejs.org/r/block-selection-plugins",
+        "https://platejs.org/r/indent-list-plugins",
+        "https://platejs.org/r/link-plugin"
       ],
       "files": [
         {
@@ -4084,7 +4084,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/align-plugin"
+        "https://platejs.org/r/align-plugin"
       ],
       "files": [
         {
@@ -4115,7 +4115,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/autoformat-plugin"
+        "https://platejs.org/r/autoformat-plugin"
       ],
       "files": [
         {
@@ -4145,7 +4145,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/basic-nodes-plugins"
+        "https://platejs.org/r/basic-nodes-plugins"
       ],
       "files": [
         {
@@ -4182,7 +4182,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/basic-nodes-plugins"
+        "https://platejs.org/r/basic-nodes-plugins"
       ],
       "files": [
         {
@@ -4219,7 +4219,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/basic-nodes-plugins"
+        "https://platejs.org/r/basic-nodes-plugins"
       ],
       "files": [
         {
@@ -4268,7 +4268,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/block-menu-plugins"
+        "https://platejs.org/r/block-menu-plugins"
       ],
       "files": [
         {
@@ -4305,7 +4305,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/block-selection-plugins"
+        "https://platejs.org/r/block-selection-plugins"
       ],
       "files": [
         {
@@ -4370,8 +4370,8 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/comments-plugin",
-        "http://localhost:3000/r/discussion-plugin"
+        "https://platejs.org/r/comments-plugin",
+        "https://platejs.org/r/discussion-plugin"
       ],
       "files": [
         {
@@ -4410,7 +4410,7 @@
         "@udecode/plate-markdown"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/copilot-plugins"
+        "https://platejs.org/r/copilot-plugins"
       ],
       "files": [
         {
@@ -4448,7 +4448,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/cursor-overlay-plugin"
+        "https://platejs.org/r/cursor-overlay-plugin"
       ],
       "files": [
         {
@@ -4514,7 +4514,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/dnd-plugins"
+        "https://platejs.org/r/dnd-plugins"
       ],
       "files": [
         {
@@ -4622,7 +4622,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/exit-break-plugin"
+        "https://platejs.org/r/exit-break-plugin"
       ],
       "files": [
         {
@@ -4678,9 +4678,9 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/fixed-toolbar",
+        "https://platejs.org/r/fixed-toolbar",
         "input",
-        "http://localhost:3000/r/search-highlight-leaf"
+        "https://platejs.org/r/search-highlight-leaf"
       ],
       "files": [
         {
@@ -4833,7 +4833,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/indent-list-plugins"
+        "https://platejs.org/r/indent-list-plugins"
       ],
       "files": [
         {
@@ -4862,7 +4862,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/indent-list-plugins"
+        "https://platejs.org/r/indent-list-plugins"
       ],
       "files": [
         {
@@ -4929,7 +4929,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/line-height-plugin"
+        "https://platejs.org/r/line-height-plugin"
       ],
       "files": [
         {
@@ -4959,7 +4959,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/link-plugin"
+        "https://platejs.org/r/link-plugin"
       ],
       "files": [
         {
@@ -4996,9 +4996,9 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/autoformat-list-plugin",
-        "http://localhost:3000/r/list-element",
-        "http://localhost:3000/r/todo-list-element"
+        "https://platejs.org/r/autoformat-list-plugin",
+        "https://platejs.org/r/list-element",
+        "https://platejs.org/r/todo-list-element"
       ],
       "files": [
         {
@@ -5036,7 +5036,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/media-plugins"
+        "https://platejs.org/r/media-plugins"
       ],
       "files": [
         {
@@ -5066,7 +5066,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/mention-plugin"
+        "https://platejs.org/r/mention-plugin"
       ],
       "files": [
         {
@@ -5102,7 +5102,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/reset-block-type-plugin"
+        "https://platejs.org/r/reset-block-type-plugin"
       ],
       "files": [
         {
@@ -5245,8 +5245,8 @@
       ],
       "registryDependencies": [
         "form",
-        "http://localhost:3000/r/button",
-        "http://localhost:3000/r/select-editor"
+        "https://platejs.org/r/button",
+        "https://platejs.org/r/select-editor"
       ],
       "files": [
         {
@@ -5334,7 +5334,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/soft-break-plugin"
+        "https://platejs.org/r/soft-break-plugin"
       ],
       "files": [
         {
@@ -5389,7 +5389,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/table-plugin"
+        "https://platejs.org/r/table-plugin"
       ],
       "files": [
         {
@@ -5452,7 +5452,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/toc-plugin"
+        "https://platejs.org/r/toc-plugin"
       ],
       "files": [
         {
@@ -5825,7 +5825,7 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/r/use-debounce"
+        "https://platejs.org/r/use-debounce"
       ],
       "files": [
         {

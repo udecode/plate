@@ -7,9 +7,9 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/autoformat-list-plugin",
-    "http://localhost:3000/r/list-element",
-    "http://localhost:3000/r/todo-list-element"
+    "https://platejs.org/r/autoformat-list-plugin",
+    "https://platejs.org/r/list-element",
+    "https://platejs.org/r/todo-list-element"
   ],
   "files": [
     {

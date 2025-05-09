@@ -9,7 +9,7 @@
     "@udecode/plate-resizable"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/caption"
+    "https://platejs.org/r/caption"
   ],
   "files": [
     {

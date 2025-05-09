@@ -7,7 +7,7 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/block-selection-plugins"
+    "https://platejs.org/r/block-selection-plugins"
   ],
   "files": [
     {

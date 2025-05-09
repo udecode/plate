@@ -9,9 +9,9 @@
     "@udecode/plate-resizable"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/media-popover",
-    "http://localhost:3000/r/caption",
-    "http://localhost:3000/r/resizable"
+    "https://platejs.org/r/media-popover",
+    "https://platejs.org/r/caption",
+    "https://platejs.org/r/resizable"
   ],
   "files": [
     {

@@ -6,7 +6,7 @@
     "@udecode/plate-link"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/link-floating-toolbar"
+    "https://platejs.org/r/link-floating-toolbar"
   ],
   "files": [
     {

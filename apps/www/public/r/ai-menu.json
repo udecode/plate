@@ -13,10 +13,10 @@
     "@faker-js/faker"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/use-chat",
+    "https://platejs.org/r/use-chat",
     "command",
     "popover",
-    "http://localhost:3000/r/editor"
+    "https://platejs.org/r/editor"
   ],
   "files": [
     {

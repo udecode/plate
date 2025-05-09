@@ -10,19 +10,19 @@
     "date-fns"
   ],
   "registryDependencies": [
-    "http://localhost:3000/r/suggestion-plugin",
+    "https://platejs.org/r/suggestion-plugin",
     "button",
     "popover",
     "avatar",
     "dropdown-menu",
-    "http://localhost:3000/r/editor",
-    "http://localhost:3000/r/ai-leaf",
-    "http://localhost:3000/r/date-element",
-    "http://localhost:3000/r/emoji-input-element",
-    "http://localhost:3000/r/inline-equation-element",
-    "http://localhost:3000/r/link-element",
-    "http://localhost:3000/r/mention-element",
-    "http://localhost:3000/r/mention-input-element"
+    "https://platejs.org/r/editor",
+    "https://platejs.org/r/ai-leaf",
+    "https://platejs.org/r/date-element",
+    "https://platejs.org/r/emoji-input-element",
+    "https://platejs.org/r/inline-equation-element",
+    "https://platejs.org/r/link-element",
+    "https://platejs.org/r/mention-element",
+    "https://platejs.org/r/mention-input-element"
   ],
   "files": [
     {
