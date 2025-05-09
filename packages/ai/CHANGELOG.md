@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 48.0.2
+
+### Patch Changes
+
+- [#4288](https://github.com/udecode/plate/pull/4288) by [@felixfeng33](https://github.com/felixfeng33) – Fix test case and missing import
+
 ## 48.0.0
 
 ## 47.4.2
