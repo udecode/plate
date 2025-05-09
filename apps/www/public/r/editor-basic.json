@@ -8,6 +8,7 @@
     "@udecode/plate-basic-marks"
   ],
   "registryDependencies": [
+    "http://localhost:3000/r/style",
     "http://localhost:3000/r/editor"
   ],
   "files": [

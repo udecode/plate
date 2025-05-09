@@ -30,6 +30,7 @@
     "sonner"
   ],
   "registryDependencies": [
+    "http://localhost:3000/r/style",
     "http://localhost:3000/r/api-ai",
     "http://localhost:3000/r/api-uploadthing",
     "http://localhost:3000/r/plate-types",

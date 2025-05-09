@@ -6,8 +6,8 @@
 import * as React from "react"
 
 export const Index: Record<string, any> = {
-  "plate": {
-    name: "plate",
+  "style": {
+    name: "style",
     description: "",
     type: "registry:style",
     registryDependencies: [],
@@ -97,7 +97,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/block-menu"},{"route":"https://pro.platejs.org/docs/components/block-context-menu"}],"examples":["block-menu-demo","block-menu-pro"],"label":"New"},
+    meta: {"docs":[{"route":"/docs/block-menu"},{"route":"https://pro.platejs.org/docs/components/block-context-menu"}],"examples":["block-menu-demo","block-menu-pro"]},
   },
   "block-selection": {
     name: "block-selection",
@@ -114,7 +114,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/block-selection"},{"route":"https://pro.platejs.org/docs/components/block-selection"}],"examples":["block-selection-demo","block-selection-pro"],"label":"New"},
+    meta: {"docs":[{"route":"/docs/block-selection"},{"route":"https://pro.platejs.org/docs/components/block-selection"}],"examples":["block-selection-demo","block-selection-pro"]},
   },
   "import-toolbar-button": {
     name: "import-toolbar-button",
@@ -1186,7 +1186,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/date"},{"route":"https://pro.platejs.org/docs/components/date-element"}],"examples":["date-demo"],"label":"New"},
+    meta: {"docs":[{"route":"/docs/date"},{"route":"https://pro.platejs.org/docs/components/date-element"}],"examples":["date-demo"]},
   },
   "equation-element": {
     name: "equation-element",
@@ -1650,7 +1650,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/slash-command","title":"Slash"},{"route":"https://pro.platejs.org/docs/components/slash-input-element"}],"examples":["slash-command-demo","slash-menu-pro"],"label":"New"},
+    meta: {"docs":[{"route":"/docs/slash-command","title":"Slash"},{"route":"https://pro.platejs.org/docs/components/slash-input-element"}],"examples":["slash-command-demo","slash-menu-pro"]},
   },
   "table-cell-element": {
     name: "table-cell-element",
@@ -1755,7 +1755,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/basic-elements"},{"route":"https://pro.platejs.org/docs/components/toc-element"}],"examples":["toc-demo","toc-pro"],"label":"New"},
+    meta: {"docs":[{"route":"/docs/basic-elements"},{"route":"https://pro.platejs.org/docs/components/toc-element"}],"examples":["toc-demo","toc-pro"]},
   },
   "todo-list-element": {
     name: "todo-list-element",
@@ -2457,7 +2457,7 @@ export const Index: Record<string, any> = {
     name: "editor-ai",
     description: "An AI editor",
     type: "registry:block",
-    registryDependencies: ["http://localhost:3000/r/api-ai","http://localhost:3000/r/api-uploadthing","http://localhost:3000/r/plate-types","http://localhost:3000/r/editor-plugins","http://localhost:3000/r/copilot-plugins","http://localhost:3000/r/floating-toolbar-plugin","http://localhost:3000/r/fixed-toolbar-plugin","http://localhost:3000/r/ai-menu","http://localhost:3000/r/ghost-text","http://localhost:3000/r/block-discussion","http://localhost:3000/r/cursor-overlay","http://localhost:3000/r/editor","http://localhost:3000/r/block-context-menu","http://localhost:3000/r/ai-leaf","http://localhost:3000/r/blockquote-element","http://localhost:3000/r/code-block-element","http://localhost:3000/r/code-leaf","http://localhost:3000/r/code-line-element","http://localhost:3000/r/code-syntax-leaf","http://localhost:3000/r/column-element","http://localhost:3000/r/column-group-element","http://localhost:3000/r/comment-leaf","http://localhost:3000/r/suggestion-leaf","http://localhost:3000/r/date-element","http://localhost:3000/r/draggable","http://localhost:3000/r/equation-element","http://localhost:3000/r/inline-equation-element","http://localhost:3000/r/emoji-input-element","http://localhost:3000/r/excalidraw-element","http://localhost:3000/r/heading-element","http://localhost:3000/r/highlight-leaf","http://localhost:3000/r/hr-element","http://localhost:3000/r/image-element","http://localhost:3000/r/kbd-leaf","http://localhost:3000/r/link-element","http://localhost:3000/r/media-audio-element","http://localhost:3000/r/media-embed-element","http://localhost:3000/r/media-file-element","http://localhost:3000/r/media-placeholder-element","http://localhost:3000/r/media-video-element","http://localhost:3000/r/mention-element","http://localhost:3000/r/mention-input-element","http://localhost:3000/r/paragraph-element","http://localhost:3000/r/placeholder","http://localhost:3000/r/slash-input-element","http://localhost:3000/r/table-cell-element","http://localhost:3000/r/table-element","http://localhost:3000/r/table-row-element","http://localhost:3000/r/toc-element","http://localhost:3000/r/toggle-element"],
+    registryDependencies: ["http://localhost:3000/r/style","http://localhost:3000/r/api-ai","http://localhost:3000/r/api-uploadthing","http://localhost:3000/r/plate-types","http://localhost:3000/r/editor-plugins","http://localhost:3000/r/copilot-plugins","http://localhost:3000/r/floating-toolbar-plugin","http://localhost:3000/r/fixed-toolbar-plugin","http://localhost:3000/r/ai-menu","http://localhost:3000/r/ghost-text","http://localhost:3000/r/block-discussion","http://localhost:3000/r/cursor-overlay","http://localhost:3000/r/editor","http://localhost:3000/r/block-context-menu","http://localhost:3000/r/ai-leaf","http://localhost:3000/r/blockquote-element","http://localhost:3000/r/code-block-element","http://localhost:3000/r/code-leaf","http://localhost:3000/r/code-line-element","http://localhost:3000/r/code-syntax-leaf","http://localhost:3000/r/column-element","http://localhost:3000/r/column-group-element","http://localhost:3000/r/comment-leaf","http://localhost:3000/r/suggestion-leaf","http://localhost:3000/r/date-element","http://localhost:3000/r/draggable","http://localhost:3000/r/equation-element","http://localhost:3000/r/inline-equation-element","http://localhost:3000/r/emoji-input-element","http://localhost:3000/r/excalidraw-element","http://localhost:3000/r/heading-element","http://localhost:3000/r/highlight-leaf","http://localhost:3000/r/hr-element","http://localhost:3000/r/image-element","http://localhost:3000/r/kbd-leaf","http://localhost:3000/r/link-element","http://localhost:3000/r/media-audio-element","http://localhost:3000/r/media-embed-element","http://localhost:3000/r/media-file-element","http://localhost:3000/r/media-placeholder-element","http://localhost:3000/r/media-video-element","http://localhost:3000/r/mention-element","http://localhost:3000/r/mention-input-element","http://localhost:3000/r/paragraph-element","http://localhost:3000/r/placeholder","http://localhost:3000/r/slash-input-element","http://localhost:3000/r/table-cell-element","http://localhost:3000/r/table-element","http://localhost:3000/r/table-row-element","http://localhost:3000/r/toc-element","http://localhost:3000/r/toggle-element"],
     files: [{
       path: "src/registry/blocks/editor-ai/page.tsx",
       type: "registry:page",
@@ -2486,7 +2486,7 @@ export const Index: Record<string, any> = {
     name: "editor-select",
     description: "A multi-select editor",
     type: "registry:block",
-    registryDependencies: ["http://localhost:3000/r/select-editor-demo"],
+    registryDependencies: ["http://localhost:3000/r/style","http://localhost:3000/r/select-editor-demo"],
     files: [{
       path: "src/registry/blocks/editor-select/page.tsx",
       type: "registry:page",
@@ -2503,7 +2503,7 @@ export const Index: Record<string, any> = {
     name: "editor-basic",
     description: "A basic editor",
     type: "registry:block",
-    registryDependencies: ["http://localhost:3000/r/editor"],
+    registryDependencies: ["http://localhost:3000/r/style","http://localhost:3000/r/editor"],
     files: [{
       path: "src/registry/blocks/editor-basic/page.tsx",
       type: "registry:page",
@@ -2528,7 +2528,7 @@ export const Index: Record<string, any> = {
     name: "slate-to-html",
     description: "",
     type: "registry:block",
-    registryDependencies: [],
+    registryDependencies: ["http://localhost:3000/r/style"],
     files: [{
       path: "src/registry/blocks/slate-to-html/page.tsx",
       type: "registry:page",

@@ -2,7 +2,9 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "slate-to-html",
   "type": "registry:block",
-  "registryDependencies": [],
+  "registryDependencies": [
+    "http://localhost:3000/r/style"
+  ],
   "files": [
     {
       "path": "src/registry/blocks/slate-to-html/page.tsx",

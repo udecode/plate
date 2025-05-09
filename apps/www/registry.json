@@ -3,7 +3,7 @@
   "homepage": "http://localhost:3000",
   "items": [
     {
-      "name": "plate",
+      "name": "style",
       "type": "registry:style",
       "dependencies": [
         "tailwind-scrollbar-hide",
@@ -186,8 +186,7 @@
         "examples": [
           "block-menu-demo",
           "block-menu-pro"
-        ],
-        "label": "New"
+        ]
       }
     },
     {
@@ -217,8 +216,7 @@
         "examples": [
           "block-selection-demo",
           "block-selection-pro"
-        ],
-        "label": "New"
+        ]
       }
     },
     {
@@ -2062,8 +2060,7 @@
         ],
         "examples": [
           "date-demo"
-        ],
-        "label": "New"
+        ]
       }
     },
     {
@@ -2853,8 +2850,7 @@
         "examples": [
           "slash-command-demo",
           "slash-menu-pro"
-        ],
-        "label": "New"
+        ]
       }
     },
     {
@@ -3018,8 +3014,7 @@
         "examples": [
           "toc-demo",
           "toc-pro"
-        ],
-        "label": "New"
+        ]
       }
     },
     {
@@ -3816,6 +3811,7 @@
         "sonner"
       ],
       "registryDependencies": [
+        "http://localhost:3000/r/style",
         "http://localhost:3000/r/api-ai",
         "http://localhost:3000/r/api-uploadthing",
         "http://localhost:3000/r/plate-types",
@@ -3895,6 +3891,7 @@
       "type": "registry:block",
       "description": "A multi-select editor",
       "registryDependencies": [
+        "http://localhost:3000/r/style",
         "http://localhost:3000/r/select-editor-demo"
       ],
       "files": [
@@ -3917,6 +3914,7 @@
         "@udecode/plate-basic-marks"
       ],
       "registryDependencies": [
+        "http://localhost:3000/r/style",
         "http://localhost:3000/r/editor"
       ],
       "files": [
@@ -3941,7 +3939,9 @@
     {
       "name": "slate-to-html",
       "type": "registry:block",
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/r/style"
+      ],
       "files": [
         {
           "path": "src/registry/blocks/slate-to-html/page.tsx",

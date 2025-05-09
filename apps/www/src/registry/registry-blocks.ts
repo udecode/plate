@@ -51,6 +51,7 @@ export const blocks: Registry['items'] = [
     ],
     name: 'editor-ai',
     registryDependencies: [
+      'style',
       'api-ai',
       'api-uploadthing',
       'plate-types',
@@ -118,7 +119,7 @@ export const blocks: Registry['items'] = [
       },
     ],
     name: 'editor-select',
-    registryDependencies: ['select-editor-demo'],
+    registryDependencies: ['style', 'select-editor-demo'],
     type: 'registry:block',
   },
   {
@@ -144,7 +145,7 @@ export const blocks: Registry['items'] = [
       },
     ],
     name: 'editor-basic',
-    registryDependencies: ['editor'],
+    registryDependencies: ['style', 'editor'],
     type: 'registry:block',
   },
   {
@@ -164,7 +165,7 @@ export const blocks: Registry['items'] = [
       rsc: true,
     },
     name: 'slate-to-html',
-    registryDependencies: [],
+    registryDependencies: ['style'],
     type: 'registry:block',
   },
 ];
