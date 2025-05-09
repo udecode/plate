@@ -501,4 +501,32 @@ export const testValue = [
       },
     ],
   },
+  {
+    type: 'p',
+    children: [
+      {
+        text: 'Superscript: x',
+      },
+      {
+        text: '2',
+        superscript: true,
+      },
+      {
+        text: 'Subscript: x',
+      },
+      {
+        text: '2',
+        subscript: true,
+      },
+    ],
+  },
+  {
+    children: [
+      {
+        text: 'callout',
+      },
+    ],
+    icon: '💡',
+    type: 'callout',
+  },
 ];

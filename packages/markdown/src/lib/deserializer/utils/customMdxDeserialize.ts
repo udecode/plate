@@ -3,6 +3,7 @@ import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { DeserializeMdOptions } from '../deserializeMd';
 import type { Decoration } from '../type';
 
+import { getPlateNodeType } from '../../utils';
 import { convertChildrenDeserialize } from '../convertChildrenDeserialize';
 import { getDeserializerByKey } from './getDeserializerByKey';
 
@@ -11,42 +12,22 @@ export const customMdxDeserialize = (
   deco: Decoration,
   options: DeserializeMdOptions
 ) => {
-  /** Handle custom mdx nodes */
-  if (mdastNode.name === 'br') {
-    const parserKey = mdastNode.name;
-    const nodeParserDeserialize = getDeserializerByKey(parserKey, options);
-
-    if (nodeParserDeserialize)
-      return nodeParserDeserialize(mdastNode, deco, options);
-
-    return [{ text: '\n' }];
-  }
-
-  if (mdastNode.name === 'u') {
-    const parserKey = 'underline';
-
-    const nodeParserDeserialize = getDeserializerByKey(parserKey, options);
-
-    if (nodeParserDeserialize)
-      return nodeParserDeserialize(mdastNode, deco, options) as any;
-  }
-
   const customJsxElementKey = mdastNode.name;
 
   if (customJsxElementKey) {
     const nodeParserDeserialize = getDeserializerByKey(
-      customJsxElementKey,
+      getPlateNodeType(customJsxElementKey as any),
       options
     );
 
     if (nodeParserDeserialize)
       return nodeParserDeserialize(mdastNode, deco, options) as any;
+  } else {
+    console.warn(
+      'This MDX node does not have a parser for deserialization',
+      mdastNode
+    );
   }
-
-  console.warn(
-    'This MDX node does not have a parser for deserialization',
-    mdastNode
-  );
 
   // Default fallback: preserve tag structure as text
   if (mdastNode.type === 'mdxJsxTextElement') {

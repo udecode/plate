@@ -404,4 +404,31 @@ describe('indentListToMdastTree', () => {
     expect(JSON.stringify(nestedItem[0])).toContain('link');
     expect(JSON.stringify(nestedItem[0])).toContain('https://example.com');
   });
+
+  it('should handle todo lists correctly', () => {
+    const nodes = [
+      {
+        checked: true,
+        children: [{ text: 'todo 1' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'todo',
+        type: 'p',
+      },
+      {
+        checked: false,
+        children: [{ text: 'todo 2' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'todo',
+        type: 'p',
+      },
+    ];
+
+    const result = indentListToMdastTree(nodes as any, {
+      editor,
+    }) as any;
+
+    expect(result).toMatchSnapshot();
+  });
 });

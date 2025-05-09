@@ -1633,9 +1633,13 @@ export const examples: Registry['items'] = [
   {
     files: [
       { path: 'examples/markdown-to-slate-demo.tsx', type: 'registry:example' },
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:example',
+      },
     ],
     name: 'markdown-to-slate-demo',
-    registryDependencies: ['use-debounce'],
+    registryDependencies: ['use-debounce', 'editor-plugins'],
     type: 'registry:example',
   },
   {

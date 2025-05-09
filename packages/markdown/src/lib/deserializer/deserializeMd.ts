@@ -16,6 +16,7 @@ import type { TRules } from '../rules';
 import { mdastToSlate } from './mdastToSlate';
 import { type ParseMarkdownBlocksOptions, parseMarkdownBlocks } from './utils';
 import { getMergedOptionsDeserialize } from './utils/getMergedOptionsDeserialize';
+import { markdownToSlateNodesSafely } from './utils/markdownToSlateNodesSafely';
 
 // TODO: fixes tests
 
@@ -86,10 +87,7 @@ export const deserializeMd = (
     options?.onError?.(error as Error);
 
     if (!options?.withoutMdx) {
-      output = markdownToSlateNodes(editor, data, {
-        ...options,
-        withoutMdx: true,
-      });
+      output = markdownToSlateNodesSafely(editor, data, options);
     }
   }
 

@@ -845,10 +845,19 @@ describe('steamInsertChunk', () => {
         </fragment>
       ) as any;
 
-      console.log(JSON.stringify(editor.children), 'before');
-      console.log(JSON.stringify(output), 'after');
-
       expect(editor.children).toEqual(output);
+    });
+
+    it('streaming insert incomplete mdx tag', () => {
+      const chunks = ['**bold**, _italic_,', '<u>', 'underline', '</', 'u>'];
+
+      const { editor } = createTestEditor();
+
+      for (const text of chunks) {
+        streamInsertChunk(editor, text);
+      }
+
+      expect(editor.children).toMatchSnapshot();
     });
   });
 });

@@ -3,7 +3,7 @@ import type { TText } from '@udecode/plate';
 import type { astMarks } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
 
-import { getCustomMark, unreachable } from './utils';
+import { getCustomMark } from './utils';
 import { getSerializerByKey } from './utils/getSerializerByKey';
 
 // inlineCode should be last because of the spec in mdast
@@ -130,11 +130,6 @@ export const convertTextsSerialize = (
                 children: [res],
                 type: 'delete',
               };
-              break;
-            }
-
-            default: {
-              unreachable(k);
               break;
             }
           }
