@@ -112,6 +112,7 @@
     "zod": "3.24.3"
   },
   "devDependencies": {
+    "@antfu/ni": "^24.3.0",
     "@tailwindcss/postcss": "^4.1.4",
     "@types/node": "^22.13.1",
     "@types/react": "^19.0.8",
