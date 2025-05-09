@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 
 import { notFound } from 'next/navigation';
 
+import { siteConfig } from '@/config/site';
 import { getAllBlockIds } from '@/lib/blocks';
 import { getRegistryComponent, getRegistryItem } from '@/lib/registry';
 import { cn } from '@/lib/utils';
@@ -26,7 +27,7 @@ export async function generateMetadata({
   }
 
   const title = `${item.description ? `${item.description}` : ''}`;
-  const description = `npx shadcn@canary add ${item.name}`;
+  const description = `npx shadcn@canary add ${siteConfig.registryUrl}${item.name}`;
 
   return {
     description,

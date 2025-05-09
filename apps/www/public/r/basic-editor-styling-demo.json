@@ -5,7 +5,9 @@
   "dependencies": [
     "@udecode/cn"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/editor"
+  ],
   "files": [
     {
       "path": "src/registry/examples/basic-editor-styling-demo.tsx",

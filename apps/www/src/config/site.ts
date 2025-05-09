@@ -16,6 +16,10 @@ export const siteConfig = {
   },
   name: 'Plate',
   ogImage: 'https://platejs.org/og.png',
+  registryUrl:
+    process.env.NODE_ENV === 'development'
+      ? 'http://localhost:3000/rd/'
+      : 'https://platejs.org/r/',
   url:
     process.env.NODE_ENV === 'development'
       ? 'http://localhost:3000'

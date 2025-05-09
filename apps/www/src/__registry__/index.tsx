@@ -4075,7 +4075,7 @@ export const Index: Record<string, any> = {
     name: "basic-editor-styling-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: [],
+    registryDependencies: ["https://platejs.org/r/editor"],
     files: [{
       path: "src/registry/examples/basic-editor-styling-demo.tsx",
       type: "registry:example",

@@ -196,7 +196,7 @@ export default function InstallationTab() {
 
   const installCommands = useMemo(() => {
     return {
-      components: `npx shadcn@canary add ${siteConfig.url}/r/${Array.from(
+      components: `npx shadcn@canary add ${siteConfig.registryUrl}${Array.from(
         components.reduce(
           (uniqueFilenames, { id, filename, noImport, registry }) => {
             if (noImport) return uniqueFilenames;
@@ -518,7 +518,7 @@ export default function InstallationTab() {
           <div className="mt-6">
             <Typography.P>{content.useCommand}</Typography.P>
             <InstallationCode
-              code={`npx shadcn@canary add ${siteConfig.url}/r/editor-${
+              code={`npx shadcn@canary add ${siteConfig.registryUrl}editor-${
                 radioValue === 'editor-ai' ? 'ai' : 'basic'
               }`}
               bash

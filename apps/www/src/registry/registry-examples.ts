@@ -1353,7 +1353,7 @@ export const examples: Registry['items'] = (
         },
       ],
       name: 'basic-editor-styling-demo',
-      registryDependencies: [],
+      registryDependencies: ['editor'],
       type: 'registry:example',
     },
     {

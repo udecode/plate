@@ -65,12 +65,12 @@ export function PlaygroundPreviewToolbar({
           className="h-7 rounded-md border bg-muted shadow-none"
           onClick={() => {
             copyToClipboard(
-              `npx shadcn@canary add ${siteConfig.url}/r/${block.name}`
+              `npx shadcn@canary add ${siteConfig.registryUrl}${block.name}`
             );
           }}
         >
           {isCopied ? <CheckIcon /> : <TerminalIcon />}
-          npx shadcn@canary add {siteConfig.url}/r/{block.name}
+          npx shadcn@canary add {block.name}
         </Button>
         <Separator orientation="vertical" className="mx-2 hidden h-4 md:flex" />
         <div className="hidden h-[28px] items-center gap-1.5 rounded-md border bg-background p-[2px] shadow-xs md:flex">

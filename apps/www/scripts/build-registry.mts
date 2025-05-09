@@ -11,6 +11,7 @@ import { ui } from '@/registry/registry-ui';
 import { examples } from '@/registry/registry-examples';
 import { hooks } from '@/registry/registry-hooks';
 import { components } from '@/registry/registry-components';
+import { init } from '@/registry/registry';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -27,40 +28,7 @@ const registry: Registry = {
   homepage: 'https://platejs.org',
   items: z.array(registryItemSchema).parse(
     [
-      {
-        name: 'plate',
-        type: 'registry:lib',
-        dependencies: ['@udecode/plate'],
-        devDependencies: [],
-        registryDependencies: [],
-        files: [],
-      },
-      {
-        name: 'plate-ui',
-        type: 'registry:style',
-        dependencies: ['tailwind-scrollbar-hide'],
-        devDependencies: [],
-        registryDependencies: ['plate'],
-        cssVars: {
-          theme: {
-            'font-heading':
-              "'var(--font-heading)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
-            'font-mono':
-              "'var(--font-mono)', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-            'font-sans':
-              "'var(--font-sans)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
-          },
-          light: {
-            brand: 'oklch(0.623 0.214 259.815)',
-            highlight: 'oklch(0.852 0.199 91.936)',
-          },
-          dark: {
-            brand: 'oklch(0.707 0.165 254.624)',
-            highlight: 'oklch(0.852 0.199 91.936)',
-          },
-        },
-        files: [],
-      },
+      ...init,
       ...ui,
       ...components,
       ...blocks,

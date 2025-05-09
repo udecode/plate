@@ -265,7 +265,7 @@ function BlockViewerToolbar({
               className="flex size-7 rounded-md border bg-transparent px-1.5 shadow-none lg:w-auto"
               onClick={() => {
                 copyToClipboard(
-                  `npx shadcn@canary add ${siteConfig.url}/r/${item.name}`
+                  `npx shadcn@canary add ${siteConfig.registryUrl}${item.name}`
                 );
               }}
             >
@@ -273,7 +273,7 @@ function BlockViewerToolbar({
 
               {block && (
                 <span className="hidden lg:inline">
-                  npx shadcn@canary add {siteConfig.url}/r/{item.name}
+                  npx shadcn@canary add {item.name}
                 </span>
               )}
             </Button>

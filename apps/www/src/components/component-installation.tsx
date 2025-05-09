@@ -84,7 +84,7 @@ export function ComponentInstallation({
         <TabsContent value="cli">
           <CodeBlock
             className="mt-6 mb-4"
-            value={`npx shadcn@canary add ${siteConfig.url}/r/${name}`}
+            value={`npx shadcn@canary add ${siteConfig.registryUrl}${name}`}
             language="bash"
           />
         </TabsContent>
