@@ -12,11 +12,10 @@ import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
+import { editorPlugins } from '@/registry/default/components/editor/plugins/editor-plugins';
+import { editorComponents } from '@/registry/default/components/editor/use-create-editor';
 import { useDebounce } from '@/registry/default/hooks/use-debounce';
 import { Editor, EditorContainer } from '@/registry/default/plate-ui/editor';
-
-import { editorPlugins } from '../components/editor/plugins/editor-plugins';
-import { editorComponents } from '../components/editor/use-create-editor';
 
 const initialMarkdown = `## Basic Markdown
 
