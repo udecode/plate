@@ -119,7 +119,6 @@
     "react-dnd-test-backend": "16.0.1",
     "react-dom": "19.1.0",
     "rimraf": "6.0.1",
-    "shadcx": "workspace:^",
     "slate-test-utils": "1.3.2",
     "tailwindcss": "4.1.4",
     "ts-jest": "29.3.2",

@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "depset": "pnpm dlx depset@latest @udecode --yes",
     "dev": "next dev --turbo",
     "lint": "next lint",
     "lint:fix": "next lint --fix && prettier --write . --log-level warn",
     "preview": "next build && next start",
     "start": "next start",
-    "sync": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/sync.mts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -112,7 +112,6 @@
     "zod": "3.24.3"
   },
   "devDependencies": {
-    "@antfu/ni": "^24.3.0",
     "@tailwindcss/postcss": "^4.1.4",
     "@types/node": "^22.13.1",
     "@types/react": "^19.0.8",

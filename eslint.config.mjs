@@ -8,6 +8,7 @@ export default defineConfig(
       '**/__registry__/*',
       '**/build-registry.mts',
       'packages/cli/src',
+      'packages/depset/tsup.config.ts',
       'prisma/kysely',
       'src/lib/db/types',
       '**/*.mdx',

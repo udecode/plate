@@ -163,7 +163,6 @@
     "remark-math": "6.0.0",
     "sass": "1.87.0",
     "shadcn": "2.5.0",
-    "shadcx": "workspace:^",
     "sonner": "2.0.3",
     "stream-browserify": "3.0.0",
     "tailwind-merge": "3.2.0",
