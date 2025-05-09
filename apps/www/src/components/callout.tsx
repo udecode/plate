@@ -1,19 +1,20 @@
-import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { type Alert, AlertTitle } from './ui/alert';
 
-interface CalloutProps {
-  children?: React.ReactNode;
-  icon?: string;
-  title?: string;
-}
-
-export function Callout({ children, icon, title, ...props }: CalloutProps) {
+export function Callout({
+  children,
+  className,
+  icon,
+  title,
+  ...props
+}: React.ComponentProps<typeof Alert> & { icon?: string }) {
   return (
-    <Alert className="mt-2 pl-4" {...props}>
+    <div
+      className="relative mt-4 w-full rounded-lg border bg-muted/50 p-4 text-foreground"
+      {...props}
+    >
       {icon && <span className="mr-4 text-2xl">{icon}</span>}
       {title && <AlertTitle>{title}</AlertTitle>}
-      <AlertDescription className="text-foreground">
-        {children}
-      </AlertDescription>
-    </Alert>
+      <div className="text-sm [&_p]:leading-relaxed">{children}</div>
+    </div>
   );
 }
