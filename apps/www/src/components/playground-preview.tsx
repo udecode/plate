@@ -5,11 +5,10 @@ import * as React from 'react';
 
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 
-import { cn } from '@udecode/cn';
-
 import { useLiftMode } from '@/hooks/use-lift-mode';
 import { useLocale } from '@/hooks/useLocale';
-import PlaygroundDemo from '@/registry/default/examples/playground-demo';
+import { cn } from '@/lib/utils';
+import PlaygroundDemo from '@/registry/examples/playground-demo';
 
 import { PlaygroundPreviewToolbar } from './playground-preview-toolbar';
 import { ThemeWrapper } from './theme-wrapper';

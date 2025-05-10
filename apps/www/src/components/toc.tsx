@@ -4,9 +4,8 @@ import * as React from 'react';
 
 import type { TableOfContents } from '@/lib/toc';
 
-import { cn } from '@udecode/cn';
-
 import { useLocale } from '@/hooks/useLocale';
+import { cn } from '@/lib/utils';
 
 interface TocProps {
   toc: TableOfContents;

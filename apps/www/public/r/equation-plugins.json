@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "equation-plugins",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-math"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/inline-equation-toolbar-button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/equation-plugins.ts",
+      "content": "'use client';\n\nimport {\n  EquationPlugin,\n  InlineEquationPlugin,\n} from '@udecode/plate-math/react';\n\nexport const equationPlugins = [InlineEquationPlugin, EquationPlugin];\n",
+      "type": "registry:component"
+    }
+  ]
+}

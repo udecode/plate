@@ -1,19 +1,19 @@
 import React from 'react';
 
-import { cn } from '@udecode/cn';
 import { useStoreValue } from '@udecode/plate/react';
 import Link from 'next/link';
 
-import { type SettingPlugin, customizerItems } from '@/config/customizer-items';
-import { buttonVariants } from '@/registry/default/plate-ui/button';
-import { Checkbox } from '@/registry/default/plate-ui/checkbox';
+import { buttonVariants } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/registry/default/plate-ui/popover';
+} from '@/components/ui/popover';
+import { type SettingPlugin, customizerItems } from '@/config/customizer-items';
+import { cn } from '@/lib/utils';
 
-import { Label } from '../registry/default/plate-ui/label';
+import { Label } from '../components/ui/label';
 import { Code } from './code';
 import { SettingsStore } from './context/settings-store';
 import { Icons } from './icons';

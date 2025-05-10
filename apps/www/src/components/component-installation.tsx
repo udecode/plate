@@ -2,10 +2,11 @@
 
 import * as React from 'react';
 
-import type { RegistryItem } from 'shadcx/registry';
+import type { RegistryItem } from 'shadcn/registry';
 
 import { BlockCode } from '@/components/block-viewer';
 import { ComponentPreviewPro } from '@/components/component-preview-pro';
+import { siteConfig } from '@/config/site';
 import { getRegistryTitle } from '@/lib/registry-utils';
 
 import { CodeBlock } from './codeblock';
@@ -68,13 +69,13 @@ export function ComponentInstallation({
       <Tabs className="relative mt-6 w-full" defaultValue="cli">
         <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
           <TabsTrigger
-            className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            className="relative h-9 flex-none rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
             value="cli"
           >
             CLI
           </TabsTrigger>
           <TabsTrigger
-            className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            className="relative h-9 flex-none rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
             value="manual"
           >
             Manual
@@ -83,7 +84,7 @@ export function ComponentInstallation({
         <TabsContent value="cli">
           <CodeBlock
             className="mt-6 mb-4"
-            value={`npx shadcx@latest add plate/${name}`}
+            value={`npx shadcn@canary add ${siteConfig.registryUrl}${name}`}
             language="bash"
           />
         </TabsContent>
@@ -134,7 +135,7 @@ export function ComponentInstallation({
 
                     <ComponentPreviewPro
                       id={example.name.replace('-pro', '')}
-                      description={example.doc?.description}
+                      description={example.description}
                     />
                   </React.Fragment>
                 );

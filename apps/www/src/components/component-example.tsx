@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 
 import { CopyButton, CopyWithClassNames } from './copy-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -46,13 +46,13 @@ export function ComponentExample({
         <div className="flex items-center justify-between pb-3">
           <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
             <TabsTrigger
-              className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              className="relative flex-none rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
               value="preview"
             >
               Preview
             </TabsTrigger>
             <TabsTrigger
-              className="relative rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              className="relative flex-none rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
               value="code"
             >
               Code

@@ -2,9 +2,8 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
-
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 import {
   Collapsible,

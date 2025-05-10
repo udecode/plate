@@ -1,5 +1,5 @@
 import type { PackageInfoType } from '@/hooks/use-package-info';
-import type { RegistryItem } from 'shadcx/registry';
+import type { RegistryItem } from 'shadcn/registry';
 
 import type { Metadata } from 'next';
 
@@ -24,7 +24,8 @@ import { getRegistryTitle } from '@/lib/registry-utils';
 import { getAllDependencies, getAllFiles } from '@/lib/rehype-utils';
 import { getTableOfContents } from '@/lib/toc';
 import { registry } from '@/registry/registry';
-import { examples, proExamples } from '@/registry/registry-examples';
+import { examples } from '@/registry/registry-examples';
+import { proExamples } from '@/registry/registry-pro';
 import { ui } from '@/registry/registry-ui';
 
 interface DocPageProps {
@@ -90,8 +91,8 @@ export async function generateMetadata({
 
     const path = slugParam?.join('/') || '';
     slug = '/docs' + (path ? '/' + path : '');
-    title = file.doc?.title || docName;
-    description = file.doc?.description;
+    title = file.title || docName;
+    description = file.description;
   }
 
   return {
@@ -184,9 +185,11 @@ export default async function DocPage(props: DocPageProps) {
     const [tree, highlightedFiles, componentExamples] = await Promise.all([
       getCachedFileTree(item.files),
       getCachedHighlightedFiles(item.files as any),
-      file.doc?.examples
+      file.meta?.examples
         ? Promise.all(
-            file.doc.examples.map(async (ex) => await getExampleCode(ex))
+            file.meta.examples.map(
+              async (ex: string) => await getExampleCode(ex)
+            )
           )
         : undefined,
     ]);
@@ -196,7 +199,7 @@ export default async function DocPage(props: DocPageProps) {
         category={category as any}
         {...file}
         doc={{
-          ...file.doc,
+          ...file.meta,
           docs,
           slug,
         }}
@@ -209,7 +212,7 @@ export default async function DocPage(props: DocPageProps) {
             highlightedFiles={highlightedFiles}
             item={item}
             tree={tree}
-            usage={file.doc?.usage}
+            usage={file.meta?.usage}
           />
         ) : (
           <ComponentPreview
@@ -249,9 +252,9 @@ function getRegistryDocs({
 }) {
   const usedBy = ui.filter(
     (item) =>
-      item.doc &&
-      Array.isArray(item.doc.examples) &&
-      item.doc.examples.includes(docName)
+      item.meta &&
+      Array.isArray(item.meta.examples) &&
+      item.meta.examples.includes(docName)
   );
 
   const relatedDocs = [
@@ -283,7 +286,7 @@ function getRegistryDocs({
         index === self.findIndex((d) => d.route === doc.route)
     );
 
-  const groups = [...(file.doc?.docs || []), ...relatedDocs].reduce(
+  const groups = [...(file.meta?.docs || []), ...relatedDocs].reduce(
     (acc, doc) => {
       if (doc.route!.startsWith(siteConfig.links.platePro)) {
         acc.external.push(doc as any);
@@ -318,9 +321,11 @@ function getRegistryDocs({
   );
 
   return [
-    ...groups.docs.sort((a, b) => a.title.localeCompare(b.title)),
-    ...groups.components.sort((a, b) => a.title.localeCompare(b.title)),
-    ...groups.external.sort((a, b) => a.title.localeCompare(b.title)),
+    ...groups.docs.sort((a: any, b: any) => a.title.localeCompare(b.title)),
+    ...groups.components.sort((a: any, b: any) =>
+      a.title.localeCompare(b.title)
+    ),
+    ...groups.external.sort((a: any, b: any) => a.title.localeCompare(b.title)),
   ];
 }
 
@@ -352,7 +357,7 @@ async function getExampleCode(name?: string) {
 
   return {
     dependencies,
-    doc: { title: example.doc?.title },
+    doc: { title: example.title },
     highlightedFiles,
     item,
     name: example.name,

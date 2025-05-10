@@ -2,7 +2,7 @@ import type { AnyObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';
 
-import type { PlateNodeProps } from '../components';
+import type { PlateHTMLProps } from '../components';
 import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
@@ -23,10 +23,10 @@ export const getRenderNodeProps = ({
   props,
 }: {
   editor: PlateEditor;
-  props: PlateNodeProps;
+  props: PlateHTMLProps;
   attributes?: AnyObject;
   plugin?: AnyEditorPlatePlugin;
-}): PlateNodeProps => {
+}): PlateHTMLProps => {
   let newProps = {
     ...props,
     ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
@@ -57,7 +57,7 @@ export const getRenderNodeProps = ({
     editor,
     newProps,
     (node) => editor.api.findPath(node)!
-  ) as PlateNodeProps;
+  ) as PlateHTMLProps;
 
   if (
     newProps.attributes?.style &&

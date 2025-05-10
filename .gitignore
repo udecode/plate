@@ -1,8 +1,10 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
 apps/www/src/app/api/ai
-
+apps/www/public/rd
+apps/www/registry.local.json
 **/tsconfig.tsbuildinfo
+templates/my-app
 
 .yarn/*
 !.yarn/patches

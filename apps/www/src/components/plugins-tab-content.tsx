@@ -5,12 +5,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useStoreValue } from '@udecode/plate/react';
 import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { customizerList } from '@/config/customizer-items';
-import { useDebounce } from '@/registry/default/hooks/use-debounce';
-import { Button } from '@/registry/default/plate-ui/button';
-import { Checkbox } from '@/registry/default/plate-ui/checkbox';
+import { useDebounce } from '@/registry/hooks/use-debounce';
 
-import { Label } from '../registry/default/plate-ui/label';
+import { Label } from '../components/ui/label';
 import { categoryIds, SettingsStore } from './context/settings-store';
 import { Icons } from './icons';
 import { SettingCheckbox } from './setting-checkbox';
@@ -102,9 +102,8 @@ export function PluginsTabContentLazy() {
         </Label>
 
         <Button
-          size="xs"
+          size="icon"
           variant="ghost"
-          className="px-2"
           onClick={() => {
             if (showComponents) {
               SettingsStore.set('checkedComponents', {} as any);
@@ -159,7 +158,6 @@ export function PluginsTabContent() {
             </div>
 
             <Button
-              size="lg"
               onClick={() => {
                 // settingsStore.set.homeTab('installation');
                 SettingsStore.set('showSettings', false);

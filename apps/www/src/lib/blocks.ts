@@ -1,25 +1,25 @@
 'use server';
 
-import { registryItemSchema } from 'shadcx/registry';
+import registry from 'registry';
+import { registryItemSchema } from 'shadcn/registry';
 import { z } from 'zod';
-
-import { Index } from '@/__registry__';
 
 // SYNC
 
 // const BLOCKS_WHITELIST_PREFIXES = ['sidebar', 'login'];
 const REGISTRY_BLOCK_TYPES = new Set(['registry:block']);
 
-export async function getAllBlockIds() {
+export async function getAllBlocks() {
   const blocks = _getAllBlocks();
 
-  return blocks.map((block) => block.name);
+  return blocks;
 }
 
 function _getAllBlocks() {
-  const index = z.record(registryItemSchema).parse(Index.default);
+  // Parse and validate the registry items
+  const items = z.array(registryItemSchema).parse(registry.items);
 
-  return Object.values(index).filter(
+  return items.filter(
     (block) => {
       return (
         REGISTRY_BLOCK_TYPES.has(block.type) &&

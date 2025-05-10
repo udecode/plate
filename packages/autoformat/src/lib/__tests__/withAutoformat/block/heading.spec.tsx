@@ -3,7 +3,7 @@
 import { createSlateEditor } from '@udecode/plate';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsxt } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
+import { autoformatPlugin } from 'www/src/registry/components/editor/plugins/autoformat-plugin';
 
 import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
 

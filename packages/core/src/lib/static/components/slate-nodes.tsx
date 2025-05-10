@@ -2,13 +2,12 @@
 import React from 'react';
 
 import type { Path, TElement, TText } from '@udecode/slate';
-import type { AnyObject } from '@udecode/utils';
+import type { UnknownObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';
 
 import type {
   AnyPluginConfig,
-  AnySlatePlugin,
   PluginConfig,
   SlatePluginContext,
 } from '../../plugin';
@@ -31,26 +30,57 @@ export const useNodeAttributes = (props: any, ref?: any) => {
 export type SlateElementProps<
   N extends TElement = TElement,
   C extends AnyPluginConfig = PluginConfig,
-  T extends keyof HTMLElementTagNameMap = 'div',
 > = SlateNodeProps<C> &
-  RenderElementProps<N, T> & {
+  RenderElementProps<N> & {
     path: Path;
-    as?: T;
-  };
+  } & DeprecatedNodeProps;
+
+type DeprecatedNodeProps = {
+  /**
+   * @deprecated Optional class to be merged with `attributes.className`.
+   * @default undefined
+   */
+  className?: string;
+  /**
+   * @deprecated Optional style to be merged with `attributes.style`
+   * @default undefined
+   */
+  style?: React.CSSProperties;
+};
 
 export type SlateNodeProps<C extends AnyPluginConfig = PluginConfig> =
   SlatePluginContext<C> & {
-    attributes?: AnyObject;
-    className?: string;
-    style?: React.CSSProperties;
+    /**
+     * Optional ref to be merged with `attributes.ref`
+     *
+     * @default undefined
+     */
+    ref?: any;
   };
 
-export const SlateElement = React.forwardRef(function SlateElement<
-  N extends TElement = TElement,
-  P extends AnySlatePlugin = AnySlatePlugin,
+export type SlateHTMLProps<
+  C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'div',
->(
-  { as: Tag = 'div' as T, children, ...props }: SlateElementProps<N, P, T>,
+> = SlateNodeProps<C> & {
+  /** HTML attributes to pass to the underlying HTML element */
+  attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
+    UnknownObject;
+  as?: T;
+  /** Class to be merged with `attributes.className` */
+  className?: string;
+  /** Style to be merged with `attributes.style` */
+  style?: React.CSSProperties;
+};
+
+export type StyledSlateElementProps<
+  N extends TElement = TElement,
+  C extends AnyPluginConfig = PluginConfig,
+  T extends keyof HTMLElementTagNameMap = 'div',
+> = Omit<SlateElementProps<N, C>, keyof DeprecatedNodeProps> &
+  SlateHTMLProps<C, T>;
+
+export const SlateElement = React.forwardRef(function SlateElement(
+  { as: Tag = 'div', children, ...props }: StyledSlateElementProps,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
   const attributes = useNodeAttributes(props, ref);
@@ -76,56 +106,70 @@ export const SlateElement = React.forwardRef(function SlateElement<
     >
       {children}
 
-      {belowRootComponents?.map((Component: any, index: number) => (
+      {belowRootComponents?.map((Component, index) => (
         <Component key={index} {...(props as any)} />
       ))}
     </Tag>
   );
-}) as <T extends keyof HTMLElementTagNameMap = 'div'>(
-  props: SlateElementProps<TElement, AnySlatePlugin, T> &
-    React.RefAttributes<HTMLDivElement>
-) => React.ReactElement<any>;
+}) as <
+  N extends TElement = TElement,
+  C extends AnyPluginConfig = PluginConfig,
+  T extends keyof HTMLElementTagNameMap = 'div',
+>(
+  props: StyledSlateElementProps<N, C, T>
+) => React.ReactElement;
 
 export type SlateTextProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> = SlateNodeProps<C> & RenderTextProps<N, T> & { as?: T };
+> = SlateNodeProps<C> & RenderTextProps<N> & DeprecatedNodeProps;
 
-export const SlateText = React.forwardRef<HTMLSpanElement, SlateTextProps>(
-  ({ as: Tag = 'span', children, ...props }, ref) => {
-    const attributes = useNodeAttributes(props, ref);
-
-    return <Tag {...attributes}>{children}</Tag>;
-  }
-) as <
+export type StyledSlateTextProps<
   N extends TText = TText,
-  P extends AnySlatePlugin = AnySlatePlugin,
+  C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
->({
-  className,
-  ...props
-}: SlateTextProps<N, P, T> &
-  React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>;
+> = Omit<SlateTextProps<N, C>, keyof DeprecatedNodeProps> &
+  SlateHTMLProps<C, T>;
+
+export const SlateText = React.forwardRef<
+  HTMLSpanElement,
+  StyledSlateTextProps
+>(({ as: Tag = 'span', children, ...props }, ref) => {
+  const attributes = useNodeAttributes(props, ref);
+
+  return <Tag {...attributes}>{children}</Tag>;
+}) as <
+  N extends TText = TText,
+  C extends AnyPluginConfig = PluginConfig,
+  T extends keyof HTMLElementTagNameMap = 'span',
+>(
+  props: StyledSlateTextProps<N, C, T>
+) => React.ReactElement;
 
 export type SlateLeafProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> = SlateNodeProps<C> & RenderLeafProps<N, T> & { as?: T };
+> = SlateNodeProps<C> & RenderLeafProps<N> & DeprecatedNodeProps;
 
-export const SlateLeaf = React.forwardRef<HTMLSpanElement, SlateLeafProps>(
-  ({ as: Tag = 'span', children, ...props }, ref) => {
-    const attributes = useNodeAttributes(props, ref);
-
-    return <Tag {...attributes}>{children}</Tag>;
-  }
-) as <
+export type StyledSlateLeafProps<
   N extends TText = TText,
-  P extends AnySlatePlugin = AnySlatePlugin,
+  C extends AnyPluginConfig = PluginConfig,
+  T extends keyof HTMLElementTagNameMap = 'span',
+> = Omit<SlateLeafProps<N, C>, keyof DeprecatedNodeProps> &
+  SlateHTMLProps<C, T>;
+
+export const SlateLeaf = React.forwardRef<
+  HTMLSpanElement,
+  StyledSlateLeafProps
+>(({ as: Tag = 'span', children, ...props }, ref) => {
+  const attributes = useNodeAttributes(props, ref);
+
+  return <Tag {...attributes}>{children}</Tag>;
+}) as <
+  N extends TText = TText,
+  C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 >({
   className,
   ...props
-}: SlateLeafProps<N, P, T> &
-  React.RefAttributes<HTMLSpanElement>) => React.ReactElement<any>;
+}: StyledSlateLeafProps<N, C, T>) => React.ReactElement;

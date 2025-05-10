@@ -1,8 +1,8 @@
-import { cn } from '@udecode/cn';
 import Link from 'next/link';
 
+import { Button } from '@/components/ui/button';
 import { useLocale } from '@/hooks/useLocale';
-import { Button } from '@/registry/default/plate-ui/button';
+import { cn } from '@/lib/utils';
 
 import { siteConfig } from '../config/site';
 

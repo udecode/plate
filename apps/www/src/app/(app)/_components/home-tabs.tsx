@@ -2,9 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { cn } from '@udecode/cn';
 import { useStoreValue } from '@udecode/plate/react';
-import { Settings2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { parseAsBoolean, useQueryState } from 'nuqs';
 
@@ -12,7 +10,6 @@ import { SettingsStore } from '@/components/context/settings-store';
 import { PlaygroundPreview } from '@/components/playground-preview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocale } from '@/hooks/useLocale';
-import { Button } from '@/registry/default/plate-ui/button';
 
 const i18n = {
   cn: {
@@ -58,6 +55,7 @@ export default function HomeTabs() {
   return (
     <div>
       <Tabs
+        className="block"
         value={homeTab}
         onValueChange={(value) => {
           SettingsStore.set('homeTab', value);
@@ -68,8 +66,7 @@ export default function HomeTabs() {
           <TabsTrigger value="installation">{content.installation}</TabsTrigger>
         </TabsList>
 
-        <Button
-          size="lg"
+        {/* <Button
           variant="outline"
           className={cn(
             'ml-2 translate-y-[3px]',
@@ -86,7 +83,7 @@ export default function HomeTabs() {
         >
           <Settings2 className="size-4" />
           {content.customize}
-        </Button>
+        </Button> */}
 
         <TabsContent className="pt-2" value="playground">
           <PlaygroundPreview className="" />

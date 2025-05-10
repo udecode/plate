@@ -2,12 +2,12 @@ import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 
-import { cn } from '@udecode/cn';
-
-import PlaygroundDemo from '@/registry/default/examples/playground-demo';
+import { siteConfig } from '@/config/site';
+import { cn } from '@/lib/utils';
+import PlaygroundDemo from '@/registry/examples/playground-demo';
 
 const title = 'Playground';
-const description = 'npx shadcx@latest add plate/editor-ai';
+const description = `npx shadcn@canary add ${siteConfig.registryUrl}editor-ai`;
 
 export const metadata: Metadata = {
   description,

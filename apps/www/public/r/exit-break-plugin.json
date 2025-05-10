@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "exit-break-plugin",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-break",
+    "@udecode/plate-heading"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/exit-break-plugin.ts",
+      "content": "'use client';\n\nimport { ExitBreakPlugin } from '@udecode/plate-break/react';\nimport { HEADING_LEVELS } from '@udecode/plate-heading';\n\nexport const exitBreakPlugin = ExitBreakPlugin.configure({\n  options: {\n    rules: [\n      {\n        hotkey: 'mod+enter',\n      },\n      {\n        before: true,\n        hotkey: 'mod+shift+enter',\n      },\n      {\n        hotkey: 'enter',\n        level: 1,\n        query: {\n          allow: HEADING_LEVELS,\n          end: true,\n          start: true,\n        },\n        relative: true,\n      },\n    ],\n  },\n});\n",
+      "type": "registry:component"
+    }
+  ]
+}

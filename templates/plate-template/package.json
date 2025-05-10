@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "depset": "pnpm dlx depset@latest @udecode --yes",
     "dev": "next dev --turbo",
     "lint": "next lint",
     "lint:fix": "next lint --fix && prettier --write . --log-level warn",

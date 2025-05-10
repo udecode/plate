@@ -1,15 +1,12 @@
 import * as React from 'react';
 
 import type { Event } from '@/lib/events';
-import type { Style } from '@/registry/registry-styles';
 import type { NpmCommands } from '@/types/unist';
 
-import { cn } from '@udecode/cn';
-
 import { CodeBlockCommand } from '@/components/code-block-command';
+import { cn } from '@/lib/utils';
 
 import { CopyButton } from './copy-button';
-import { StyleWrapper } from './style-wrapper';
 
 export const H1 = ({
   className,
@@ -174,7 +171,13 @@ export const TR = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableRowElement>) => (
-  <tr className={cn('m-0 border-b last:border-b-0', className)} {...props} />
+  <tr
+    className={cn(
+      'border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted',
+      className
+    )}
+    {...props}
+  />
 );
 
 export const TH = ({
@@ -210,7 +213,6 @@ export const Pre = ({
   __pnpmCommand__,
   __rawString__,
   __src__,
-  __style__,
   __withMeta__,
   __yarnCommand__,
   className,
@@ -219,7 +221,6 @@ export const Pre = ({
   __event__?: Event['name'];
   __rawString__?: string;
   __src__?: string;
-  __style__?: Style['name'];
   __withMeta__?: boolean;
 } & NpmCommands &
   React.HTMLAttributes<HTMLPreElement>) => {
@@ -237,7 +238,7 @@ export const Pre = ({
   }
 
   return (
-    <StyleWrapper styleName={__style__}>
+    <>
       <pre
         className={cn(
           'mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 text-white dark:bg-zinc-900 *:[code]:bg-inherit',
@@ -253,7 +254,7 @@ export const Pre = ({
           src={__src__}
         />
       )}
-    </StyleWrapper>
+    </>
   );
 };
 
@@ -261,6 +262,7 @@ export const Step = ({ className, ...props }: React.ComponentProps<'h3'>) => (
   <h3
     className={cn(
       'mt-8 scroll-m-20 font-heading text-xl font-semibold tracking-tight',
+      'first-child:mt-0 mt-8 mb-4 text-base font-semibold [counter-increment:step] before:absolute before:mt-[-4px] before:ml-[-50px] before:inline-flex before:h-9 before:w-9 before:items-center before:justify-center before:rounded-full before:border-4 before:border-background before:bg-muted before:text-center before:-indent-px before:font-mono before:text-base before:font-medium before:[content:counter(step)]',
       className
     )}
     {...props}
@@ -269,7 +271,33 @@ export const Step = ({ className, ...props }: React.ComponentProps<'h3'>) => (
 
 export const Steps = ({ ...props }) => (
   <div
-    className="[&>h3]:step steps mb-12 ml-4 border-l pl-8 [counter-reset:step]"
+    className={cn(
+      'mb-12 ml-4 border-l pl-8 [counter-reset:step]',
+      '*:[h3]:[counter-increment:step]',
+      '*:[h3]:first-child:mt-0',
+      '*:[h3]:mt-8',
+      '*:[h3]:mb-4',
+      '*:[h3]:text-base',
+      '*:[h3]:font-semibold',
+      '*:[h3]:before:absolute',
+      '*:[h3]:before:inline-flex',
+      '*:[h3]:before:h-9',
+      '*:[h3]:before:w-9',
+      '*:[h3]:before:items-center',
+      '*:[h3]:before:justify-center',
+      '*:[h3]:before:rounded-full',
+      '*:[h3]:before:border-4',
+      '*:[h3]:before:border-background',
+      '*:[h3]:before:bg-muted',
+      '*:[h3]:before:text-center',
+      '*:[h3]:before:-indent-px',
+      '*:[h3]:before:font-mono',
+      '*:[h3]:before:text-base',
+      '*:[h3]:before:font-medium',
+      '*:[h3]:before:mt-[-4px]',
+      '*:[h3]:before:ml-[-50px]',
+      '*:[h3]:before:[content:counter(step)]'
+    )}
     {...props}
   />
 );

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "basic-plugins-components-demo",
+  "type": "registry:example",
+  "dependencies": [
+    "@udecode/cn",
+    "@udecode/plate-basic-marks",
+    "@udecode/plate-block-quote",
+    "@udecode/plate-heading"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/editor"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/basic-plugins-components-demo.tsx",
+      "content": "'use client';\n\nimport { withProps } from '@udecode/cn';\nimport {\n  BoldPlugin,\n  CodePlugin,\n  ItalicPlugin,\n  UnderlinePlugin,\n} from '@udecode/plate-basic-marks/react';\nimport { BlockquotePlugin } from '@udecode/plate-block-quote/react';\nimport { HeadingPlugin } from '@udecode/plate-heading/react';\nimport {\n  Plate,\n  PlateElement,\n  PlateLeaf,\n  usePlateEditor,\n} from '@udecode/plate/react';\n\nimport { Editor, EditorContainer } from '@/registry/ui/editor';\n\nexport default function BasicPluginsComponentsDemo() {\n  const editor = usePlateEditor({\n    components: {\n      blockquote: withProps(PlateElement, {\n        as: 'blockquote',\n        className: 'mb-4 border-l-4 border-[#d0d7de] pl-4 text-[#636c76]',\n      }),\n      bold: withProps(PlateLeaf, { as: 'strong' }),\n      h1: withProps(PlateElement, {\n        as: 'h1',\n        className:\n          'mb-4 mt-6 text-3xl font-semibold tracking-tight lg:text-4xl',\n      }),\n      h2: withProps(PlateElement, {\n        as: 'h2',\n        className: 'mb-4 mt-6 text-2xl font-semibold tracking-tight',\n      }),\n      h3: withProps(PlateElement, {\n        as: 'h3',\n        className: 'mb-4 mt-6 text-xl font-semibold tracking-tight',\n      }),\n      italic: withProps(PlateLeaf, { as: 'em' }),\n      p: withProps(PlateElement, {\n        as: 'p',\n        className: 'mb-4',\n      }),\n      underline: withProps(PlateLeaf, { as: 'u' }),\n    },\n    plugins: [\n      BlockquotePlugin,\n      HeadingPlugin,\n      BoldPlugin,\n      ItalicPlugin,\n      UnderlinePlugin,\n      CodePlugin,\n    ],\n    value: basicEditorValue,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer>\n        <Editor placeholder=\"Type...\" autoFocus={false} spellCheck={false} />\n      </EditorContainer>\n    </Plate>\n  );\n}\n\nexport const basicEditorValue = [\n  {\n    id: '1',\n    children: [\n      {\n        text: '🌳 Blocks',\n      },\n    ],\n    type: 'h1',\n  },\n  {\n    id: '2',\n    children: [\n      {\n        text: 'Easily create headings of various levels, from H1 to H6, to structure your content and make it more organized.',\n      },\n    ],\n    type: 'p',\n  },\n  {\n    id: '3',\n    children: [\n      {\n        text: 'Create blockquotes to emphasize important information or highlight quotes from external sources.',\n      },\n    ],\n    type: 'blockquote',\n  },\n  {\n    id: '1',\n    children: [\n      {\n        text: '🌱 Marks',\n      },\n    ],\n    type: 'h1',\n  },\n  {\n    id: '2',\n    children: [\n      {\n        text: 'Add style and emphasis to your text using the mark plugins, which offers a variety of formatting options.',\n      },\n    ],\n    type: 'p',\n  },\n  {\n    id: '3',\n    children: [\n      {\n        text: 'Make text ',\n      },\n      {\n        bold: true,\n        text: 'bold',\n      },\n      {\n        text: ', ',\n      },\n      {\n        italic: true,\n        text: 'italic',\n      },\n      {\n        text: ', ',\n      },\n      {\n        text: 'underlined',\n        underline: true,\n      },\n      {\n        text: ', or apply a ',\n      },\n      {\n        bold: true,\n        italic: true,\n        text: 'combination',\n        underline: true,\n      },\n      {\n        text: ' of these styles for a visually striking effect.',\n      },\n    ],\n    type: 'p',\n  },\n];\n",
+      "type": "registry:example"
+    }
+  ]
+}

@@ -3,18 +3,18 @@
 import * as React from 'react';
 
 import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
-import { cn } from '@udecode/cn';
 import { RepeatIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { useConfig } from '@/hooks/use-config';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { THEMES } from '@/lib/themes';
-import { useMounted } from '@/registry/default/hooks/use-mounted';
-import { Button } from '@/registry/default/plate-ui/button';
-import { Separator } from '@/registry/default/plate-ui/separator';
+import { cn } from '@/lib/utils';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
-import { Label } from '../registry/default/plate-ui/label';
+import { Label } from '../components/ui/label';
 import { CopyCodeButton, getThemeCode } from './copy-code-button';
 import { ThemesSwitcher } from './themes-selector-mini';
 import { Skeleton } from './ui/skeleton';
@@ -50,8 +50,6 @@ export function ThemeCustomizer() {
               installationType: 'cli',
               packageManager: 'pnpm',
               radius: 0.5,
-              style: 'default',
-              theme: 'slate',
             });
             setThemesConfig({
               activeTheme: THEMES['default-shadcn'],
@@ -74,7 +72,7 @@ export function ThemeCustomizer() {
               return (
                 <Button
                   key={value}
-                  size="md"
+                  size="sm"
                   variant="outline"
                   className={cn(
                     config.radius === Number.parseFloat(value) &&
@@ -99,7 +97,7 @@ export function ThemeCustomizer() {
             {mounted ? (
               <>
                 <Button
-                  size="md"
+                  size="sm"
                   variant="outline"
                   className={cn(mode === 'light' && 'border-2 border-primary')}
                   onClick={() => setMode('light')}
@@ -108,7 +106,7 @@ export function ThemeCustomizer() {
                   Light
                 </Button>
                 <Button
-                  size="md"
+                  size="sm"
                   variant="outline"
                   className={cn(mode === 'dark' && 'border-2 border-primary')}
                   onClick={() => setMode('dark')}
@@ -146,7 +144,7 @@ export function ThemeCustomizer() {
               </pre>
             </div>
           </div>
-          <CopyCodeButton className="absolute top-4 right-4" compact />
+          <CopyCodeButton className="absolute top-2 right-6" compact />
         </div>
       </div>
     </div>

@@ -2,8 +2,8 @@ import React from 'react';
 
 import Link from 'next/link';
 
+import { Separator } from '@/components/ui/separator';
 import { usePackageInfo } from '@/hooks/use-package-info';
-import { Separator } from '@/registry/default/plate-ui/separator';
 
 export function PackageInfo({ children }: { children: React.ReactNode }) {
   const [packageInfo] = usePackageInfo();

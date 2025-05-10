@@ -6,10 +6,11 @@ import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
+  type RegistryItem,
   type registryItemFileSchema,
   registryItemSchema,
-} from 'shadcx/registry';
-import { type SourceFile, Project, ScriptKind, SyntaxKind } from 'ts-morph';
+} from 'shadcn/registry';
+import { type SourceFile, Project, ScriptKind } from 'ts-morph';
 
 import { Index } from '../__registry__';
 import { fixImport } from './rehype-utils';
@@ -20,16 +21,17 @@ const memoizedIndex: typeof Index = Object.fromEntries(
 
 export function getRegistryComponent(name: string) {
   if (name === 'slate-to-html') {
-    return React.lazy(
-      () => import('@/registry/default/blocks/slate-to-html/page')
-    );
+    return React.lazy(() => import('@/registry/blocks/slate-to-html/page'));
   }
 
-  return memoizedIndex.default[name]?.component;
+  return memoizedIndex[name]?.component;
 }
 
-export async function getRegistryItem(name: string, prefetch = false) {
-  const item = memoizedIndex.default[name];
+export async function getRegistryItem(
+  name: string,
+  prefetch = false
+): Promise<RegistryItem | null> {
+  const item = memoizedIndex[name];
 
   if (!item) {
     return null;
@@ -100,7 +102,7 @@ async function getAllItemFiles(
 
   seen.add(name);
 
-  const item = memoizedIndex.default[name];
+  const item = memoizedIndex[name];
 
   if (!item) return [];
 
@@ -136,12 +138,6 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
     scriptKind: ScriptKind.TSX,
   });
 
-  // Remove meta variables.
-  removeVariable(sourceFile, 'iframeHeight');
-  removeVariable(sourceFile, 'containerClassName');
-  removeVariable(sourceFile, 'description');
-  removeVariable(sourceFile, 'descriptionSrc');
-
   let code = sourceFile.getFullText();
 
   // FORK: not useful?
@@ -154,31 +150,6 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
   return code;
 }
 
-async function getFileMeta(filePath: string) {
-  const raw = await fs.readFile(filePath, 'utf8');
-
-  const project = new Project({
-    compilerOptions: {},
-  });
-
-  const tempFile = await createTempSourceFile(filePath);
-  const sourceFile = project.createSourceFile(tempFile, raw, {
-    scriptKind: ScriptKind.TSX,
-  });
-
-  const iframeHeight = extractVariable(sourceFile, 'iframeHeight');
-  const containerClassName = extractVariable(sourceFile, 'containerClassName');
-  const description = extractVariable(sourceFile, 'description');
-  const descriptionSrc = extractVariable(sourceFile, 'descriptionSrc');
-
-  return {
-    containerClassName,
-    description,
-    descriptionSrc,
-    iframeHeight,
-  };
-}
-
 function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
   let target = file.target;
 
@@ -186,13 +157,13 @@ function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
     const fileName = file.path.split('/').pop();
 
     if (file.type === 'registry:component') {
-      target = file.path.replace('src/registry/default/', '');
+      target = file.path.replace('src/registry/', '');
     }
     if (file.type === 'registry:block' || file.type === 'registry:example') {
       target = `components/${fileName}`;
     }
     if (file.type === 'registry:ui') {
-      target = `components/plate-ui/${fileName}`;
+      target = `components/ui/${fileName}`;
     }
     if (file.type === 'registry:hook') {
       target = `hooks/${fileName}`;
@@ -213,22 +184,6 @@ async function createTempSourceFile(filename: string) {
 
 function removeVariable(sourceFile: SourceFile, name: string) {
   sourceFile.getVariableDeclaration(name)?.remove();
-}
-
-function extractVariable(sourceFile: SourceFile, name: string) {
-  const variable = sourceFile.getVariableDeclaration(name);
-
-  if (!variable) {
-    return null;
-  }
-
-  const value = variable
-    .getInitializerIfKindOrThrow(SyntaxKind.StringLiteral)
-    .getLiteralValue();
-
-  variable.remove();
-
-  return value;
 }
 
 function fixFilePaths(files: z.infer<typeof registryItemSchema>['files']) {

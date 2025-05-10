@@ -1,11 +1,11 @@
 'use client';
 
-import { cn } from '@udecode/cn';
 import { StarIcon } from 'lucide-react';
 import Link from 'next/link';
 
+import { buttonVariants } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
-import { buttonVariants } from '@/registry/default/plate-ui/button';
+import { cn } from '@/lib/utils';
 
 import { CountingNumbers } from './counting-numbers';
 import { Icons } from './icons';

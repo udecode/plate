@@ -6,7 +6,7 @@
 import React, { type FC, memo } from 'react';
 import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 
 import { CopyButton, CopyNpmCommandButton } from './copy-button';
 

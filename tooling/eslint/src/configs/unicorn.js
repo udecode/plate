@@ -23,6 +23,7 @@ export default defineConfig(
         },
       ],
       'unicorn/expiring-todo-comments': 'off',
+      'unicorn/explicit-length-check': 'off',
       'unicorn/filename-case': 'off',
       'unicorn/import-style': 'off',
       'unicorn/new-for-builtins': 'off',

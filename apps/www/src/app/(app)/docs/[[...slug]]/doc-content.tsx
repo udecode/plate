@@ -4,9 +4,9 @@ import React, { Suspense } from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import type { TableOfContents } from '@/lib/toc';
-import type { RegistryItem } from 'shadcx/registry';
+import type { Doc } from 'contentlayer/generated';
+import type { RegistryItem } from 'shadcn/registry';
 
-import { cn } from '@udecode/cn';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 
@@ -15,10 +15,11 @@ import { OpenInPlus } from '@/components/open-in-plus';
 import { DocsPager } from '@/components/pager';
 import { DashboardTableOfContents } from '@/components/toc';
 import { badgeVariants } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
-import { Button } from '@/registry/default/plate-ui/button';
+import { cn } from '@/lib/utils';
 
 // import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 
@@ -56,8 +57,9 @@ export function DocContent({
 }: {
   category: 'api' | 'component' | 'example' | 'guide' | 'plugin';
   children: React.ReactNode;
+  doc: Partial<Doc>;
   toc?: TableOfContents;
-} & Omit<Partial<RegistryItem>, 'category'>) {
+} & Partial<RegistryItem>) {
   const title = doc?.title ?? getRegistryTitle(file);
   const hasToc = doc?.toc && toc;
 
@@ -130,7 +132,7 @@ export function DocContent({
                 <ExternalLinkIcon className="size-3" />
               </Link>
             )}
-            {doc?.docs?.map((item) => (
+            {doc?.docs?.map((item: any) => (
               <Link
                 key={item.route}
                 className={cn(

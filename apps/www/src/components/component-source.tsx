@@ -2,10 +2,9 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
-
+import { Button } from '@/components/ui/button';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
-import { Button } from '@/registry/default/plate-ui/button';
+import { cn } from '@/lib/utils';
 
 import { CodeBlockWrapper } from './code-block-wrapper';
 
@@ -31,7 +30,7 @@ export function ComponentSource({
     <div className="mt-4 mb-6">
       {displaySrc && (
         <Button
-          size="none"
+          size="sm"
           variant="ghost"
           className="mb-0.5 w-fit px-4 py-1 text-sm font-medium text-foreground select-auto"
           onClick={() => {

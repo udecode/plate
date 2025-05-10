@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 
 export function Code({
   className,

@@ -9,7 +9,12 @@ export default function SlateToHtmlPage() {
       doc={exampleNavMap['/docs/examples/slate-to-html']}
       toc={{}}
     >
-      <BlockDisplay name="slate-to-html" />
+      <BlockDisplay
+        item={{
+          name: 'slate-to-html',
+          type: 'registry:example',
+        }}
+      />
     </DocContent>
   );
 }

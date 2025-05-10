@@ -31,10 +31,13 @@ const nextConfig = async (phase: string) => {
       '/docs/*': ['./src/registry/**/*'],
       '/docs/examples/slate-to-html': ['./public/tailwind.css'],
     },
-
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
+
+    staticPageGenerationTimeout: 1200,
+
+    transpilePackages: ['ts-morph'],
 
     // typescript: {
     //   ignoreBuildErrors: true,
@@ -43,7 +46,20 @@ const nextConfig = async (phase: string) => {
     //   ignoreDuringBuilds: true,
     // },
 
-    staticPageGenerationTimeout: 1200,
+    async redirects() {
+      return [
+        {
+          destination: '/r/:path.json',
+          permanent: true,
+          source: '/r/:path([^.]*)',
+        },
+        {
+          destination: '/rd/:path.json',
+          permanent: true,
+          source: '/rd/:path([^.]*)',
+        },
+      ];
+    },
 
     rewrites: async () => {
       return [
@@ -61,7 +77,6 @@ const nextConfig = async (phase: string) => {
     webpack: (config, { buildId, dev, isServer, webpack }) => {
       config.externals.push({
         shiki: 'shiki',
-        'ts-morph': 'ts-morph',
         typescript: 'typescript',
       });
 
@@ -103,7 +118,10 @@ const nextConfig = async (phase: string) => {
       })
       .filter((pkg) => pkg?.startsWith('@udecode'));
 
-    config.transpilePackages = packageNames;
+    config.transpilePackages = [
+      ...(config.transpilePackages || []),
+      ...packageNames,
+    ];
   }
 
   return config;

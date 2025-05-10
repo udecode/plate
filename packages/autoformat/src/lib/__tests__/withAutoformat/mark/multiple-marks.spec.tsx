@@ -7,7 +7,7 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { jsxt } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'www/src/registry/default/components/editor/plugins/autoformat-plugin';
+import { autoformatPlugin } from 'www/src/registry/components/editor/plugins/autoformat-plugin';
 
 jsxt;
 

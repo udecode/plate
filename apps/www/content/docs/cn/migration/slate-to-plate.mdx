@@ -76,22 +76,16 @@ const renderElement = useCallback(({ attributes, children, element }) => {
 }, []);
 
 // 之后
-import { withCn, type PlateElement } from '@udecode/plate/react';
+import { type PlateElement, type PlateElementProps } from '@udecode/plate/react';
+import { cn } from '@/lib/utils';
 
-const ParagraphElement = withRef<typeof PlateElement>(
-  ({ children, className, ...props }, ref) => {
-    return (
-      <PlateElement
-        asChild
-        className={cn('py-1', className)}
-        ref={ref}
-        {...props}
-      >
-        <p>{children}</p>
-      </PlateElement>
-    );
-  }
-);
+export function ParagraphElement(props: PlateElementProps) {
+  return (
+    <PlateElement {...props} className="m-0 px-0 py-1'">
+      {props.children}
+    </PlateElement>
+  );
+}
 
 const ParagraphPlugin = createPlatePlugin({
   key: 'p',

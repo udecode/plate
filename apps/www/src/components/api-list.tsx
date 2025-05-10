@@ -2,9 +2,8 @@
 
 import React, { type ReactNode, createContext, useState } from 'react';
 
-import { cn } from '@udecode/cn';
-
-import { Separator } from '@/registry/default/plate-ui/separator';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 import { Icons } from './icons';
 import {
@@ -56,7 +55,7 @@ const listTypeToBadgeStyles: Record<string, string> = {
 export function API({ children, name }: { children: ReactNode; name: string }) {
   return (
     <APIContext.Provider value={{ name }}>
-      <Card className="mt-6 mb-16">
+      <Card className="mt-6 mb-16 p-0">
         <CardContent className="space-y-6 py-6">{children}</CardContent>
       </Card>
     </APIContext.Provider>

@@ -1,13 +1,14 @@
 'use client';
 
-import * as TogglePrimitive from '@radix-ui/react-toggle';
-import { cn, withVariants } from '@udecode/cn';
-import { cva } from 'class-variance-authority';
+import * as React from 'react';
 
-export const toggleVariants = cva(
-  cn(
-    'inline-flex cursor-pointer items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50'
-  ),
+import * as TogglePrimitive from '@radix-ui/react-toggle';
+import { type VariantProps, cva } from 'class-variance-authority';
+
+import { cn } from '@/lib/utils';
+
+const toggleVariants = cva(
+  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-[color,box-shadow] outline-none hover:bg-muted hover:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     defaultVariants: {
       size: 'default',
@@ -16,23 +17,35 @@ export const toggleVariants = cva(
     variants: {
       size: {
         circle: 'p-3',
-        default: 'h-10 px-3',
-        lg: 'h-11 px-5',
-        sm: 'h-9 px-2.5',
+        default: 'h-9 min-w-9 px-2',
+        lg: 'h-10 min-w-10 px-2.5',
+        sm: 'h-8 min-w-8 px-1.5',
       },
       variant: {
-        default:
-          'bg-transparent hover:bg-muted hover:text-muted-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground',
+        default: 'bg-transparent',
         floating: 'rounded-full bg-primary text-primary-foreground',
         none: '',
         outline:
-          'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
+          'border border-input bg-transparent shadow-xs hover:bg-accent hover:text-accent-foreground',
       },
     },
   }
 );
 
-export const Toggle = withVariants(TogglePrimitive.Root, toggleVariants, [
-  'size',
-  'variant',
-]);
+function Toggle({
+  className,
+  size,
+  variant,
+  ...props
+}: React.ComponentProps<typeof TogglePrimitive.Root> &
+  VariantProps<typeof toggleVariants>) {
+  return (
+    <TogglePrimitive.Root
+      className={cn(toggleVariants({ className, size, variant }))}
+      data-slot="toggle"
+      {...props}
+    />
+  );
+}
+
+export { Toggle, toggleVariants };

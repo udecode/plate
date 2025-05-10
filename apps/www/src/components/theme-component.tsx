@@ -2,10 +2,8 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
-
 import { Index } from '@/__registry__';
-import { useConfig } from '@/hooks/use-config';
+import { cn } from '@/lib/utils';
 
 import { Icons } from './icons';
 
@@ -17,10 +15,8 @@ interface ThemeComponentProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function ThemeComponent({ name, ...props }: ThemeComponentProps) {
-  const [config] = useConfig();
-
   const Preview = React.useMemo(() => {
-    const Component = Index[config.style][name]?.component;
+    const Component = Index[name]?.component;
 
     if (!Component) {
       return (
@@ -35,7 +31,7 @@ export function ThemeComponent({ name, ...props }: ThemeComponentProps) {
     }
 
     return <Component />;
-  }, [name, config.style]);
+  }, [name]);
 
   return (
     <div className={cn('relative')} {...props}>

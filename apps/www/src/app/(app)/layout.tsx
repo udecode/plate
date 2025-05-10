@@ -1,6 +1,5 @@
-import { cn } from '@udecode/cn';
-
 import { SiteHeader } from '@/components/site-header';
+import { cn } from '@/lib/utils';
 
 // SYNC
 

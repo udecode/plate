@@ -3,9 +3,8 @@
 import React, { Suspense, useState } from 'react';
 
 import type { DocsConfig } from '@/config/docs';
-import type { SidebarNavItem } from 'types/nav';
+import type { SidebarNavItem } from '@/types/nav';
 
-import { cn } from '@udecode/cn';
 import { castArray } from 'lodash';
 import { Leaf, X } from 'lucide-react';
 import Link from 'next/link';
@@ -17,9 +16,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Input } from '@/components/ui/input';
 import { useLocale } from '@/hooks/useLocale';
+import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
-import { Input } from '@/registry/default/plate-ui/input';
 
 export function DocsNav({ config }: { config: DocsConfig }) {
   const pathname = usePathname();
@@ -91,10 +91,10 @@ export function DocsNav({ config }: { config: DocsConfig }) {
             return (
               <AccordionItem
                 key={index}
-                className="mb-4 border-none px-2"
+                className="mb-4 border-none"
                 value={`item-${index}`}
               >
-                <AccordionTrigger className="py-1 text-sm font-semibold outline-none">
+                <AccordionTrigger className="px-2 py-1 text-sm font-semibold outline-none">
                   <div className="flex items-center">
                     {item.title}
                     {item.label && (

@@ -11,14 +11,19 @@ export const siteConfig = {
     potionTemplate: 'https://pro.platejs.org/docs/templates/potion',
     profile: 'https://github.com/zbeyens',
     twitter: 'https://twitter.com/zbeyens',
-    plateProComponent: (id: string) =>
-      `https://pro.platejs.org/docs/components/${id}`,
     plateProExample: (id: string) =>
       `https://pro.platejs.org/docs/examples/${id}`,
   },
   name: 'Plate',
   ogImage: 'https://platejs.org/og.png',
-  url: 'https://platejs.org',
+  registryUrl:
+    process.env.NODE_ENV === 'development'
+      ? 'http://localhost:3000/rd/'
+      : 'https://platejs.org/r/',
+  url:
+    process.env.NODE_ENV === 'development'
+      ? 'http://localhost:3000'
+      : 'https://platejs.org',
 };
 
 export type SiteConfig = typeof siteConfig;

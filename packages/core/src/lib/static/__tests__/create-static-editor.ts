@@ -59,43 +59,43 @@ import {
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
-import { BlockquoteElementStatic } from 'www/src/registry/default/plate-ui/blockquote-element-static';
-import { CodeBlockElementStatic } from 'www/src/registry/default/plate-ui/code-block-element-static';
-import { CodeLeafStatic } from 'www/src/registry/default/plate-ui/code-leaf-static';
-import { CodeLineElementStatic } from 'www/src/registry/default/plate-ui/code-line-element-static';
-import { CodeSyntaxLeafStatic } from 'www/src/registry/default/plate-ui/code-syntax-leaf-static';
-import { ColumnElementStatic } from 'www/src/registry/default/plate-ui/column-element-static';
-import { ColumnGroupElementStatic } from 'www/src/registry/default/plate-ui/column-group-element-static';
-import { CommentLeafStatic } from 'www/src/registry/default/plate-ui/comment-leaf-static';
-import { DateElementStatic } from 'www/src/registry/default/plate-ui/date-element-static';
-import { EquationElementStatic } from 'www/src/registry/default/plate-ui/equation-element-static';
-import { HeadingElementStatic } from 'www/src/registry/default/plate-ui/heading-element-static';
-import { HrElementStatic } from 'www/src/registry/default/plate-ui/hr-element-static';
-import { ImageElementStatic } from 'www/src/registry/default/plate-ui/image-element-static';
+import { BlockquoteElementStatic } from 'www/src/registry/ui/blockquote-element-static';
+import { CodeBlockElementStatic } from 'www/src/registry/ui/code-block-element-static';
+import { CodeLeafStatic } from 'www/src/registry/ui/code-leaf-static';
+import { CodeLineElementStatic } from 'www/src/registry/ui/code-line-element-static';
+import { CodeSyntaxLeafStatic } from 'www/src/registry/ui/code-syntax-leaf-static';
+import { ColumnElementStatic } from 'www/src/registry/ui/column-element-static';
+import { ColumnGroupElementStatic } from 'www/src/registry/ui/column-group-element-static';
+import { CommentLeafStatic } from 'www/src/registry/ui/comment-leaf-static';
+import { DateElementStatic } from 'www/src/registry/ui/date-element-static';
+import { EquationElementStatic } from 'www/src/registry/ui/equation-element-static';
+import { HeadingElementStatic } from 'www/src/registry/ui/heading-element-static';
+import { HrElementStatic } from 'www/src/registry/ui/hr-element-static';
+import { ImageElementStatic } from 'www/src/registry/ui/image-element-static';
 import {
   FireLiComponent,
   FireMarker,
-} from 'www/src/registry/default/plate-ui/indent-fire-marker';
+} from 'www/src/registry/ui/indent-fire-marker';
 import {
   TodoLiStatic,
   TodoMarkerStatic,
-} from 'www/src/registry/default/plate-ui/indent-todo-marker-static';
-import { InlineEquationElementStatic } from 'www/src/registry/default/plate-ui/inline-equation-element-static';
-import { KbdLeafStatic } from 'www/src/registry/default/plate-ui/kbd-leaf-static';
-import { LinkElementStatic } from 'www/src/registry/default/plate-ui/link-element-static';
-import { MediaAudioElementStatic } from 'www/src/registry/default/plate-ui/media-audio-element-static';
-import { MediaFileElementStatic } from 'www/src/registry/default/plate-ui/media-file-element-static';
-import { MediaVideoElementStatic } from 'www/src/registry/default/plate-ui/media-video-element-static';
-import { MentionElementStatic } from 'www/src/registry/default/plate-ui/mention-element-static';
-import { ParagraphElementStatic } from 'www/src/registry/default/plate-ui/paragraph-element-static';
+} from 'www/src/registry/ui/indent-todo-marker-static';
+import { InlineEquationElementStatic } from 'www/src/registry/ui/inline-equation-element-static';
+import { KbdLeafStatic } from 'www/src/registry/ui/kbd-leaf-static';
+import { LinkElementStatic } from 'www/src/registry/ui/link-element-static';
+import { MediaAudioElementStatic } from 'www/src/registry/ui/media-audio-element-static';
+import { MediaFileElementStatic } from 'www/src/registry/ui/media-file-element-static';
+import { MediaVideoElementStatic } from 'www/src/registry/ui/media-video-element-static';
+import { MentionElementStatic } from 'www/src/registry/ui/mention-element-static';
+import { ParagraphElementStatic } from 'www/src/registry/ui/paragraph-element-static';
 import {
   TableCellElementStatic,
   TableCellHeaderStaticElement,
-} from 'www/src/registry/default/plate-ui/table-cell-element-static';
-import { TableElementStatic } from 'www/src/registry/default/plate-ui/table-element-static';
-import { TableRowElementStatic } from 'www/src/registry/default/plate-ui/table-row-element-static';
-import { TocElementStatic } from 'www/src/registry/default/plate-ui/toc-element-static';
-import { ToggleElementStatic } from 'www/src/registry/default/plate-ui/toggle-element-static';
+} from 'www/src/registry/ui/table-cell-element-static';
+import { TableElementStatic } from 'www/src/registry/ui/table-element-static';
+import { TableRowElementStatic } from 'www/src/registry/ui/table-row-element-static';
+import { TocElementStatic } from 'www/src/registry/ui/toc-element-static';
+import { ToggleElementStatic } from 'www/src/registry/ui/toggle-element-static';
 
 import { BaseParagraphPlugin, SlateLeaf } from '../..';
 import { createSlateEditor, CreateSlateEditorOptions } from '../../editor';

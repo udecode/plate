@@ -3,18 +3,11 @@
 import { useEffect, useRef } from 'react';
 import * as React from 'react';
 
-import * as SheetPrimitive from '@radix-ui/react-dialog';
 import { useStoreValue } from '@udecode/plate/react';
-import { ChevronsRight } from 'lucide-react';
 
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useViewport } from '@/hooks/use-viewport';
-import { useMounted } from '@/registry/default/hooks/use-mounted';
-import { Button } from '@/registry/default/plate-ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/registry/default/plate-ui/dialog';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { SettingsStore } from './context/settings-store';
 import { CustomizerTabs } from './customizer-tabs';
@@ -63,30 +56,25 @@ export default function CustomizerDrawer() {
         <Sheet
           open={open}
           onOpenChange={(value) => {
-            if (value) SettingsStore.set('showSettings', true);
+            SettingsStore.set('showSettings', value);
           }}
           modal={false}
         >
-          <SheetContent
-            className="hidden min-w-[450px] rounded-[0.5rem] bg-background px-0 py-3 md:flex"
-            modal={false}
-            hideClose
-          >
+          <SheetContent className="hidden min-w-[450px] rounded-[0.5rem] bg-background px-0 py-3 md:flex">
             <DialogTitle className="sr-only">Customizer</DialogTitle>
 
-            <SheetPrimitive.Close
+            {/* <SheetPrimitive.Close
               asChild
               onClick={() => SettingsStore.set('showSettings', false)}
             >
               <Button
-                size="lg"
                 variant="ghost"
                 className="absolute top-4 left-4 size-8 p-0 px-1.5"
               >
                 <ChevronsRight className="size-5" />
                 <span className="sr-only">Close</span>
               </Button>
-            </SheetPrimitive.Close>
+            </SheetPrimitive.Close> */}
 
             <CustomizerTabs />
           </SheetContent>

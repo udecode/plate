@@ -1,0 +1,11 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plate",
+  "type": "registry:lib",
+  "dependencies": [
+    "@udecode/plate"
+  ],
+  "devDependencies": [],
+  "registryDependencies": [],
+  "files": []
+}

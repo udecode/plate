@@ -5,11 +5,11 @@
 import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import { cn } from '@udecode/cn';
 import remarkGfm from 'remark-gfm';
 
 import { Link } from '@/components/link';
 import * as Typography from '@/components/typography';
+import { cn } from '@/lib/utils';
 
 import { CodeBlock } from './ui/codeblock';
 

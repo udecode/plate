@@ -16,7 +16,7 @@ import {
 } from '@udecode/plate-math/react';
 jsxt;
 
-import { markdownPlugin } from '../../../../../../apps/www/src/registry/default/components/editor/plugins/markdown-plugin';
+import { markdownPlugin } from '../../../../../../apps/www/src/registry/components/editor/plugins/markdown-plugin';
 import { createSlateEditor, SlateEditor } from '@udecode/plate';
 import { AIChatPlugin, AIPlugin } from '../../../react';
 import { BasicMarksPlugin } from '../../../../../basic-marks/src/react/BasicMarksPlugin';

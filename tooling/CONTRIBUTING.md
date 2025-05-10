@@ -24,9 +24,8 @@ apps
         └── app
             ├── components
             └── registry
-                └── default
-                    ├── example
-                    └── plate-ui
+                    ├── examples
+                    └── ui
 packages
 └── core
 ```
@@ -102,18 +101,10 @@ We use a registry system for developing components. You can find the source code
 apps
 └── www
     └── registry
-        ├── default
-        │   ├── example
-        │   └── plate-ui
+        │   └── ui
 ```
 
 When adding or modifying components, please ensure that you update the documentation.
-
-## CLI
-
-The `shadcx` package is a CLI for adding components to your project. You can find the documentation for the CLI [here](https://platejs.org/docs/components/cli).
-
-Any changes to the CLI should be made in the `packages/plate-ui` directory. If you can, it would be great if you could add tests for your changes.
 
 ### Run Linter
 
@@ -222,7 +213,7 @@ You miss time/knowledge but still want to contribute? Just open a PR or a gist o
 
 ### How to: Create a Component
 
-- Create your component in `apps/www/src/registry/default/plate-ui`
+- Create your component in `apps/www/src/registry/ui`
 - Add your component to `apps/www/src/registry/registry.ts`
 - Run `yarn build:registry`
 
@@ -242,7 +233,7 @@ Adding a new value? Here's the process:
 Creating a new plugin?
 
 - Add your plugin to **`/apps/www/src/config/setting-plugins.ts`**
-- Add your plugin to **`/apps/www/src/registry/default/example/playground-demo.tsx`**
+- Add your plugin to **`/apps/www/src/registry/example/playground-demo.tsx`**
 
 Creating a new document?
 

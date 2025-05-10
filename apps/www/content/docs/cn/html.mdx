@@ -13,7 +13,7 @@ title: 序列化 HTML
 ```tsx
 // ...
 import { createSlateEditor, serializeHtml } from '@udecode/plate';
-import { EditorStatic } from '@/components/plate-ui/editor-static';
+import { EditorStatic } from '@/components/ui/editor-static';
 
 // 创建一个编辑器并配置所有需要的插件
 const editor = createSlateEditor({
@@ -73,9 +73,9 @@ const fullHtml = `<!DOCTYPE html>
 
 ```tsx
 import { createSlateEditor, serializeHtml } from '@udecode/plate';
-import { ParagraphElementStatic } from '@/components/plate-ui/paragraph-element-static';
-import { HeadingElementStatic } from '@/components/plate-ui/heading-element-static';
-import { ImageElementStatic } from '@/components/plate-ui/image-element-static';
+import { ParagraphElementStatic } from '@/components/ui/paragraph-element-static';
+import { HeadingElementStatic } from '@/components/ui/heading-element-static';
+import { ImageElementStatic } from '@/components/ui/image-element-static';
 // ... 等等。
 
 const editor = createSlateEditor({ /* 你的插件 */ });
