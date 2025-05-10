@@ -17,7 +17,8 @@ export const blockSelectionPlugins = [
     },
     render: {
       belowRootNodes: (props) => {
-        if (!props.className?.includes('slate-selectable')) return null;
+        if (!props.attributes.className?.includes('slate-selectable'))
+          return null;
 
         return <BlockSelection />;
       },

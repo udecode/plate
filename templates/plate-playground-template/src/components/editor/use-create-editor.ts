@@ -14,6 +14,7 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CalloutPlugin } from '@udecode/plate-callout/react';
 import {
   CodeBlockPlugin,
   CodeLinePlugin,
@@ -68,6 +69,7 @@ import { FixedToolbarPlugin } from '@/components/editor/plugins/fixed-toolbar-pl
 import { FloatingToolbarPlugin } from '@/components/editor/plugins/floating-toolbar-plugin';
 import { AILeaf } from '@/components/plate-ui/ai-leaf';
 import { BlockquoteElement } from '@/components/plate-ui/blockquote-element';
+import { CalloutElement } from '@/components/plate-ui/callout-element';
 import { CodeBlockElement } from '@/components/plate-ui/code-block-element';
 import { CodeLeaf } from '@/components/plate-ui/code-leaf';
 import { CodeLineElement } from '@/components/plate-ui/code-line-element';
@@ -110,6 +112,7 @@ export const viewComponents = {
   [AudioPlugin.key]: MediaAudioElement,
   [BlockquotePlugin.key]: BlockquoteElement,
   [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
+  [CalloutPlugin.key]: CalloutElement,
   [CodeBlockPlugin.key]: CodeBlockElement,
   [CodeLinePlugin.key]: CodeLineElement,
   [CodePlugin.key]: CodeLeaf,

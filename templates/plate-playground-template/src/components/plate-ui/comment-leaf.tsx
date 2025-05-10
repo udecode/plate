@@ -17,7 +17,7 @@ export function CommentLeaf({
   className,
   ...props
 }: PlateLeafProps<TCommentText>) {
-  const { children, leaf, nodeProps } = props;
+  const { children, leaf } = props;
 
   const { api, setOption } = useEditorPlugin(commentsPlugin);
   const hoverId = usePluginOption(commentsPlugin, 'hoverId');
@@ -40,10 +40,12 @@ export function CommentLeaf({
           isOverlapping &&
           'border-b-highlight bg-highlight/45'
       )}
-      onClick={() => setOption('activeId', currentId ?? null)}
-      onMouseEnter={() => setOption('hoverId', currentId ?? null)}
-      onMouseLeave={() => setOption('hoverId', null)}
-      nodeProps={{ ...nodeProps }}
+      attributes={{
+        ...props.attributes,
+        onClick: () => setOption('activeId', currentId ?? null),
+        onMouseEnter: () => setOption('hoverId', currentId ?? null),
+        onMouseLeave: () => setOption('hoverId', null),
+      }}
     >
       {children}
     </PlateLeaf>

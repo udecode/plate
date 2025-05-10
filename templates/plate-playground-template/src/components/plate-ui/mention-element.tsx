@@ -5,7 +5,7 @@ import React from 'react';
 import type { TMentionElement } from '@udecode/plate-mention';
 
 import { cn, withRef } from '@udecode/cn';
-import { getHandler, IS_APPLE } from '@udecode/plate';
+import { IS_APPLE } from '@udecode/plate';
 import {
   PlateElement,
   useFocused,
@@ -30,6 +30,7 @@ export const MentionElement = withRef<
 
   return (
     <PlateElement
+      {...props}
       ref={ref}
       className={cn(
         className,
@@ -40,11 +41,13 @@ export const MentionElement = withRef<
         element.children[0].italic === true && 'italic',
         element.children[0].underline === true && 'underline'
       )}
-      onClick={getHandler(onClick, element)}
-      data-slate-value={element.value}
-      contentEditable={false}
-      draggable
-      {...props}
+      attributes={{
+        ...props.attributes,
+        contentEditable: false,
+        'data-slate-value': element.value,
+        draggable: true,
+        onClick: () => onClick?.(element),
+      }}
     >
       {mounted && IS_APPLE ? (
         // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490

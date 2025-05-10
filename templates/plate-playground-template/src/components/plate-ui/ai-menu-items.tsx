@@ -119,6 +119,16 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
       });
     },
   },
+  generateMdxSample: {
+    icon: <BookOpenCheck />,
+    label: 'Generate MDX sample',
+    value: 'generateMdxSample',
+    onSelect: ({ editor }) => {
+      void editor.getApi(AIChatPlugin).aiChat.submit({
+        prompt: 'Generate a mdx sample',
+      });
+    },
+  },
   improveWriting: {
     icon: <Wand />,
     label: 'Improve writing',
@@ -227,6 +237,7 @@ const menuStateItems: Record<
   cursorCommand: [
     {
       items: [
+        aiChatItems.generateMdxSample,
         aiChatItems.generateMarkdownSample,
         aiChatItems.continueWrite,
         aiChatItems.summarize,
