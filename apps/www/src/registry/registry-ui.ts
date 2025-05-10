@@ -1054,6 +1054,25 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@udecode/plate-callout'],
+    doc: {
+      description:
+        'A callout component for highlighting important information with customizable icons and styles.',
+      docs: [
+        { route: '/docs/basic-elements' },
+        { route: siteConfig.links.plateProComponent('callout-element') },
+      ],
+      examples: ['basic-elements-demo'],
+    },
+    files: [
+      { path: 'plate-ui/callout-element.tsx', type: 'registry:ui' },
+      { path: 'plate-ui/callout-element-static.tsx', type: 'registry:ui' },
+    ],
+    name: 'callout-element',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-code-block', 'lowlight'],
     description:
       'A code block with syntax highlighting and language selection.',

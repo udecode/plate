@@ -32,3 +32,31 @@ exports[`steamInsertChunk fixures should correctly handle incomplete inline math
   },
 ]
 `;
+
+exports[`steamInsertChunk fixures streaming insert incomplete mdx tag 1`] = `
+[
+  {
+    "children": [
+      {
+        "bold": true,
+        "text": "bold",
+      },
+      {
+        "text": ", ",
+      },
+      {
+        "italic": true,
+        "text": "italic",
+      },
+      {
+        "text": ",",
+      },
+      {
+        "text": "underline",
+        "underline": true,
+      },
+    ],
+    "type": "p",
+  },
+]
+`;

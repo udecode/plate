@@ -33,6 +33,8 @@ export const docExamples: Registry['items'] = [
     },
     name: 'ai-demo',
     registryDependencies: [
+      'use-create-editor',
+      'editor-plugins',
       'basic-nodes-plugins',
       'block-selection-plugins',
       'indent-list-plugins',
@@ -1494,10 +1496,14 @@ export const examples: Registry['items'] = (
           path: 'examples/markdown-to-slate-demo.tsx',
           type: 'registry:example',
         },
+        {
+          path: 'components/editor/use-create-editor.ts',
+          type: 'registry:example',
+        },
       ],
       meta: {},
       name: 'markdown-to-slate-demo',
-      registryDependencies: ['use-debounce'],
+      registryDependencies: ['use-debounce', 'editor-plugins'],
       type: 'registry:example',
     },
     {

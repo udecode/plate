@@ -49,11 +49,12 @@ export function TableCellElementStatic({
           ...style,
         } as React.CSSProperties
       }
-      {...{
+      {...props}
+      attributes={{
+        ...props.attributes,
         colSpan: api.table.getColSpan(element),
         rowSpan: api.table.getRowSpan(element),
       }}
-      {...props}
     >
       <div
         className="relative z-20 box-border h-full px-4 py-2"

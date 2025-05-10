@@ -5,9 +5,16 @@ export type Decoration = Readonly<
     Record<
       | (MdDelete | MdEmphasis | MdInlineCode | MdStrong)['type']
       | plateOnlyMarks,
-      true
+      boolean | string
     >
   >
 >;
 
-type plateOnlyMarks = (string & {}) | 'underline';
+type plateOnlyMarks =
+  | (string & {})
+  | 'backgroundColor'
+  | 'color'
+  | 'fontFamily'
+  | 'fontSize'
+  | 'fontWeight'
+  | 'underline';

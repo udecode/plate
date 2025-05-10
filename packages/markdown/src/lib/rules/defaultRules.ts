@@ -28,6 +28,9 @@ import {
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
 import { getPlateNodeType } from '../utils';
+import { columnRules } from './columnRules';
+import { fontRules } from './fontRules';
+import { mediaRules } from './mediaRules';
 
 function isBoolean(value: any) {
   return (
@@ -149,6 +152,11 @@ export const defaultRules: TRules = {
       return convertTextsDeserialize(mdastNode, deco, options);
     },
   },
+  br: {
+    deserialize() {
+      return [{ text: '\n' }];
+    },
+  },
   break: {
     deserialize: (mdastNode, deco) => {
       return {
@@ -162,12 +170,18 @@ export const defaultRules: TRules = {
     },
   },
   callout: {
-    serialize(slateNode, options): MdMdxJsxTextElement {
+    deserialize: (mdastNode, deco, options) => {
+      return {
+        children: convertChildrenDeserialize(mdastNode.children, deco, options),
+        type: 'callout',
+      };
+    },
+    serialize(slateNode, options): MdMdxJsxFlowElement {
       return {
         attributes: [],
         children: convertNodesSerialize(slateNode.children, options) as any,
         name: 'callout',
-        type: 'mdxJsxTextElement',
+        type: 'mdxJsxFlowElement',
       };
     },
   },
@@ -207,10 +221,20 @@ export const defaultRules: TRules = {
     },
   },
   date: {
-    serialize: ({ date }) => {
+    deserialize(mdastNode, deco, options) {
+      const dateValue = (mdastNode.children?.[0] as any)?.value || '';
       return {
-        type: 'text',
-        value: date ?? '',
+        children: [{ text: '' }],
+        date: dateValue,
+        type: 'date',
+      };
+    },
+    serialize({ date }): MdMdxJsxTextElement {
+      return {
+        attributes: [],
+        children: [{ type: 'text', value: date ?? '' }],
+        name: 'date',
+        type: 'mdxJsxTextElement',
       };
     },
   },
@@ -307,17 +331,11 @@ export const defaultRules: TRules = {
         options
       ) as any;
     },
-    serialize(slateNode, options): MdMdxJsxTextElement {
+    serialize(slateNode): MdMdxJsxTextElement {
       return {
-        attributes: [
-          {
-            name: 'style',
-            type: 'mdxJsxAttribute',
-            value: 'background-color: yellow;',
-          },
-        ],
+        attributes: [],
         children: [{ type: 'text', value: slateNode.text }],
-        name: 'highlight',
+        name: 'mark',
         type: 'mdxJsxTextElement',
       };
     },
@@ -392,6 +410,14 @@ export const defaultRules: TRules = {
         { kbd: true, ...deco },
         options
       ) as any;
+    },
+    serialize(slateNode, options): MdMdxJsxTextElement {
+      return {
+        attributes: [],
+        children: [{ type: 'text', value: slateNode.text }],
+        name: 'kbd',
+        type: 'mdxJsxTextElement',
+      };
     },
   },
   list: {
@@ -727,6 +753,42 @@ export const defaultRules: TRules = {
       return convertTextsDeserialize(mdastNode, deco, options);
     },
   },
+  subscript: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        { subscript: true, ...deco },
+        options
+      ) as any;
+    },
+    serialize(slateNode, options): MdMdxJsxTextElement {
+      return {
+        attributes: [],
+        children: [{ type: 'text', value: slateNode.text }],
+        name: 'sub',
+        type: 'mdxJsxTextElement',
+      };
+    },
+  },
+  superscript: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        { superscript: true, ...deco },
+        options
+      ) as any;
+    },
+    serialize(slateNode, options): MdMdxJsxTextElement {
+      return {
+        attributes: [],
+        children: [{ type: 'text', value: slateNode.text }],
+        name: 'sup',
+        type: 'mdxJsxTextElement',
+      };
+    },
+  },
   table: {
     deserialize: (node, deco, options) => {
       const rows =
@@ -848,4 +910,7 @@ export const defaultRules: TRules = {
       };
     },
   },
+  ...fontRules,
+  ...mediaRules,
+  ...columnRules,
 };

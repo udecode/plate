@@ -2,160 +2,94 @@
 
 import React from 'react';
 
-import { withProps } from '@udecode/cn';
-import {
-  BoldPlugin,
-  CodePlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
-  UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import {
-  CodeBlockPlugin,
-  CodeSyntaxPlugin,
-} from '@udecode/plate-code-block/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HighlightPlugin } from '@udecode/plate-highlight/react';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { KbdPlugin } from '@udecode/plate-kbd/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
 import {
   MarkdownPlugin,
   remarkMdx,
   remarkMention,
 } from '@udecode/plate-markdown';
-import { InlineEquationPlugin } from '@udecode/plate-math/react';
-import { ImagePlugin } from '@udecode/plate-media/react';
-import { MentionPlugin } from '@udecode/plate-mention/react';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
-import {
-  TableCellHeaderPlugin,
-  TableCellPlugin,
-  TablePlugin,
-  TableRowPlugin,
-} from '@udecode/plate-table/react';
-import {
-  ParagraphPlugin,
-  Plate,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { autoformatPlugin } from '@/registry/components/editor/plugins/autoformat-plugin';
-import { basicNodesPlugins } from '@/registry/components/editor/plugins/basic-nodes-plugins';
-import { indentListPlugins } from '@/registry/components/editor/plugins/indent-list-plugins';
-import { linkPlugin } from '@/registry/components/editor/plugins/link-plugin';
-import { mediaPlugins } from '@/registry/components/editor/plugins/media-plugins';
-import { tablePlugin } from '@/registry/components/editor/plugins/table-plugin';
+import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
+import { editorComponents } from '@/registry/components/editor/use-create-editor';
 import { useDebounce } from '@/registry/hooks/use-debounce';
-import { BlockquoteElement } from '@/registry/ui/blockquote-element';
-import { CodeBlockElement } from '@/registry/ui/code-block-element';
-import { CodeLeaf } from '@/registry/ui/code-leaf';
-import { CodeSyntaxLeaf } from '@/registry/ui/code-syntax-leaf';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { HeadingElement } from '@/registry/ui/heading-element';
-import { HighlightLeaf } from '@/registry/ui/highlight-leaf';
-import { HrElement } from '@/registry/ui/hr-element';
-import { ImageElement } from '@/registry/ui/image-element';
-import { KbdLeaf } from '@/registry/ui/kbd-leaf';
-import { LinkElement } from '@/registry/ui/link-element';
-import { MentionElement } from '@/registry/ui/mention-element';
-import { ParagraphElement } from '@/registry/ui/paragraph-element';
-import {
-  TableCellElement,
-  TableCellHeaderElement,
-} from '@/registry/ui/table-cell-element';
-import { TableElement } from '@/registry/ui/table-element';
-import { TableRowElement } from '@/registry/ui/table-row-element';
 
-const initialMarkdown = `# Markdown syntax guide
+const initialMarkdown = `## Basic Markdown
 
-## Headers
+> The following node and marks is supported by the Markdown standard.
 
-# This is a Heading h1
-## This is a Heading h2
+Format text with **bold**, _italic_, _**combined styles**_, ~~strikethrough~~, \`code\` formatting, and [hyperlinks](https://en.wikipedia.org/wiki/Hypertext).
 
-## Emphasis
-
-*This text will be italic*. _This will also be italic_
-
-**This text will be bold**. __This will also be bold__
-
-_You **can** combine them_
-
-## Lists
-
-### Unordered
-
-* Item 1
-* Item 2
-* Item 2a
-* Item 2b
-
-### Ordered
-
-1. Item 1
-2. Item 2
-3. Item 3
-    1. Item 3a
-    2. Item 3b
-
-## Images
-
-![This is an alt text.](https://images.unsplash.com/photo-1506619216599-9d16d0903dfd?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D "This is a sample image.")
-
-## Links
-
-You may be using [Markdown Live Preview](https://markdownlivepreview.com/).
-
-## Blockquotes
-
-> Markdown is a lightweight markup language with plain-text-formatting syntax, created in 2004 by John Gruber with Aaron Swartz.
-
-## Tables
-
-| Left columns  | Right columns |
-| ------------- |:-------------:|
-| left foo      | right foo     |
-| left bar      | right bar     |
-| left baz      | right baz     |
-
-## Blocks of code
-
-\`\`\`js
-let message = 'Hello world';
-alert(message);
+\`\`\`javascript
+// Use code blocks to showcase code snippets
+function greet() {
+  console.info("Hello World!")
+}
 \`\`\`
 
-## Inline code
+- Simple lists for organizing content
 
-This website is using \`plate\`.
+1. Numbered lists for sequential steps
 
-## GitHub Flavored Markdown
+| **Plugin**  | **Element** | **Inline** | **Void** |
+| ----------- | ----------- | ---------- | -------- |
+| **Heading** |             |            | No       |
+| **Image**   | Yes         | No         | Yes      |
+| **Mention** | Yes         | Yes        | Yes      |
 
-### Task Lists
+![](https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)
 
-- [x] Completed task
-- [ ] Incomplete task
-- [ ] @mentions , [links](https://platejs.org), **formatting**, and <del>tags</del> supported
-- [ ] list syntax required (any unordered or ordered list supported)
+- [x] Completed tasks
 
-### Strikethrough
+- [ ] Pending tasks
 
-~~This text is strikethrough~~
+---
 
-### Autolinks
+## Advanced Features
 
-Visit https://github.com automatically converts to a link
-Email example@example.com also converts automatically
+<callout>
+The following node and marks are not supported in Markdown but can be serialized and deserialized using MDX or specialized UnifiedJS plugins.
+</callout>
 
-### Emoji
+Advanced marks: <kbd>⌘ + B</kbd>,<u>underlined</u>, <mark>highlighted</mark> text, <span style="color: #93C47D;">colored text</span> and <span style="background-color: #6C9EEB;">background highlights</span> for visual emphasis.
+
+Superscript like E=mc<sup>2</sup> and subscript like H<sub>2</sub>O demonstrate mathematical and chemical notation capabilities.
+
+Add mentions like @BB-8, dates (<date>2025-05-08</date>), and math formulas ($E=mc^2$).
+
+The table of contents feature automatically generates document structure for easy navigation.
+
+<toc />
+
+Math formula support makes displaying complex mathematical expressions simple.
+
+$$
+\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}
+$$
+
+Multi-column layout features enable richer page designs and content layouts.
+
+<column_group layout="[50,50]">
+<column width="50%">
+left
+</column>
+
+  <column width="50%">
+    right
+  </column>
+</column_group>
+
+PDF embedding makes document referencing simple and intuitive.
+<file name="sample.pdf" align="center" src="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf" width="80%" isUpload="true" />
+
+Audio players can be embedded directly into documents, supporting online audio resources.
+<audio align="center" src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3" width="80%" />
+
+Video playback features support embedding various online video resources, enriching document content.
+<video align="center" src="https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4" width="80%" isUpload="true" />
 
 :smile: :heart:
 `;
@@ -171,60 +105,17 @@ export default function MarkdownDemo() {
 
   const editor = usePlateEditor(
     {
-      components: {
-        [BlockquotePlugin.key]: BlockquoteElement,
-        [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
-        [CodeBlockPlugin.key]: CodeBlockElement,
-        [CodePlugin.key]: CodeLeaf,
-        [CodeSyntaxPlugin.key]: CodeSyntaxLeaf,
-        [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
-        [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
-        [HEADING_KEYS.h3]: withProps(HeadingElement, { variant: 'h3' }),
-        [HEADING_KEYS.h4]: withProps(HeadingElement, { variant: 'h4' }),
-        [HEADING_KEYS.h5]: withProps(HeadingElement, { variant: 'h5' }),
-        [HEADING_KEYS.h6]: withProps(HeadingElement, { variant: 'h6' }),
-        [HighlightPlugin.key]: HighlightLeaf,
-        [HorizontalRulePlugin.key]: HrElement,
-        [ImagePlugin.key]: ImageElement,
-        [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
-        [KbdPlugin.key]: KbdLeaf,
-        [LinkPlugin.key]: LinkElement,
-        [MentionPlugin.key]: MentionElement,
-        [ParagraphPlugin.key]: ParagraphElement,
-        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
-        [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
-        [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: 'sup' }),
-        [TableCellHeaderPlugin.key]: TableCellHeaderElement,
-        [TableCellPlugin.key]: TableCellElement,
-        [TablePlugin.key]: TableElement,
-        [TableRowPlugin.key]: TableRowElement,
-        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
-      },
-      plugins: [
-        ...basicNodesPlugins,
-        NodeIdPlugin,
-        HorizontalRulePlugin,
-        linkPlugin,
-        tablePlugin,
-        ...mediaPlugins,
-        InlineEquationPlugin,
-        HighlightPlugin,
-        KbdPlugin,
-        ImagePlugin,
-        ...indentListPlugins,
-        autoformatPlugin,
-        MarkdownPlugin.configure({
-          options: {
-            remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
-          },
-        }),
-        MentionPlugin.configure({
-          options: { triggerPreviousCharPattern: /^$|^[\s"']$/ },
-        }),
-      ],
+      components: editorComponents,
+      plugins: editorPlugins,
       value: (editor) =>
         editor.getApi(MarkdownPlugin).markdown.deserialize(initialMarkdown, {
-          remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkEmoji as any],
+          remarkPlugins: [
+            remarkMath,
+            remarkGfm,
+            remarkMdx,
+            remarkMention,
+            remarkEmoji as any,
+          ],
         }),
     },
     []
@@ -235,7 +126,13 @@ export default function MarkdownDemo() {
       editor.tf.reset();
       editor.tf.setValue(
         editor.api.markdown.deserialize(debouncedMarkdownValue, {
-          remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkEmoji as any],
+          remarkPlugins: [
+            remarkMath,
+            remarkGfm,
+            remarkMdx,
+            remarkMention,
+            remarkEmoji as any,
+          ],
         })
       );
     }

@@ -6,6 +6,7 @@ import type { TSlashInputElement } from '@udecode/plate-slash-command';
 
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CalloutPlugin } from '@udecode/plate-callout/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
@@ -31,6 +32,7 @@ import {
   Heading1Icon,
   Heading2Icon,
   Heading3Icon,
+  LightbulbIcon,
   ListIcon,
   ListOrdered,
   PilcrowIcon,
@@ -153,6 +155,13 @@ const groups: Group[] = [
         keywords: ['citation', 'blockquote', 'quote', '>'],
         label: 'Blockquote',
         value: BlockquotePlugin.key,
+      },
+      {
+        description: 'Insert a highlighted block.',
+        icon: <LightbulbIcon />,
+        keywords: ['note'],
+        label: 'Callout',
+        value: CalloutPlugin.key,
       },
     ].map((item) => ({
       ...item,

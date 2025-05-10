@@ -13,12 +13,12 @@ const editor = createTestEditor();
 
 describe('deserializeMd', () => {
   it('should deserialize strikethrough', () => {
-    const input = '<!DOCTYPE ';
+    const input = '<!DOCTYPE';
 
     const output = (
       <fragment>
         <hp>
-          <htext>{`<!DOCTYPE `}</htext>
+          <htext>{`<!DOCTYPE`}</htext>
         </hp>
       </fragment>
     );

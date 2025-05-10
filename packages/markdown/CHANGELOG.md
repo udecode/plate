@@ -1,5 +1,15 @@
 # @udecode/plate-markdown
 
+## 48.0.2
+
+### Patch Changes
+
+- [#4288](https://github.com/udecode/plate/pull/4288) by [@felixfeng33](https://github.com/felixfeng33) – Added support for `subscript`, `superscript`, `date`, `callout`, `font`.
+
+  Replaced dependency on `zeed-dom` with `remark-mdx` for more robust MDX tag generation.
+
+  Add `splitIncompleteMdx` to separate the complete and the incomplete mdx string.
+
 ## 48.0.0
 
 ## 47.4.1

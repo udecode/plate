@@ -790,6 +790,33 @@ Here's a summary of some key default conversions. See [`defaultRules.ts`](https:
 
 * The conversion target for lists (`ol`/`ul` vs. `p` with indent props) depends on whether `IndentListPlugin` is detected in the editor configuration.
 
+---
+
+The following table summarizes the default MDX conversions supported when using `remark-mdx`.
+
+| Mdx(mdast)       | Plate Type           | Notes                                    |
+| :---------------- | :------------------- | :--------------------------------------- |
+| `<del>...</del>`             | `strikethrough` (mark) | Alternative to `~~strikethrough~~`     |
+| `<sub>...</sub>`             | `subscript` (mark)   | Text like H<sub>2</sub>O                 |
+| `<sup>...</sup>`             | `superscript` (mark) | Text like E=mc<sup>2</sup>               |
+| `<u>...</u>`               | `underline` (mark)   | <u>Underlined text</u>                   |
+| `<mark>...</mark>`            | `highlight` (mark)   | <mark>Highlighted text</mark>            |
+| `<span style="font-family: ...">...</span>` | `fontFamily` (mark) | Changes text font family                |
+| `<span style="font-size: ...">...</span>`   | `fontSize` (mark)   | Changes text size                       |
+| `<span style="font-weight: ...">...</span>` | `fontWeight` (mark) | Changes text weight (bold, etc.)        |
+| `<span style="color: ...">...</span>`       | `color` (mark)      | Changes text color                      |
+| `<span style="background-color: ...">...</span>` | `backgroundColor` (mark) | Changes text background color |
+| `<date>...</date>`                             | `date`              | Date element                          |
+| `@mention`                                     | `mention`           | Mention element                       |
+| `<file name="..." src="..." />`                | `file`              | File attachment/embed                 |
+| `<audio src="..." />`                          | `audio`             | Audio player embed                    |
+| `<video src="..." />`                          | `video`             | Video player embed                    |
+| `<toc />`                                        | `toc`               | table of contents   |
+| `<callout>...</callout>`                     | `callout`          | highlight callout     |
+| `<column_group>...</column_group>`      | `column_group`          | multi-column layout  |
+| `<column>...</column>`                        | `column`             | single column layout  |
+
+
 ## Appendix C: Components
 
 While `rules` customize the *conversion* between Markdown and Slate, Plate uses React components to *render* the Slate nodes in the editor. You can configure these rendering components using the `components` option in `createPlateEditor`.

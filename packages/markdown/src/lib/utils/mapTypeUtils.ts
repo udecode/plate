@@ -76,11 +76,11 @@ const plateToMdastTypeMap: Record<plateTypes, MdastTypes | (string & {})> = {
   mention: 'mention',
   date: 'date',
   // plate only marks
-  underline: 'underline',
+  underline: 'u',
   suggestion: 'suggestion',
   comment: 'comment',
-  superscript: 'superscript',
-  subscript: 'subscript',
+  superscript: 'sup',
+  subscript: 'sub',
 };
 
 /**
@@ -91,12 +91,18 @@ export const getMdAstNodeType = (plateType: plateTypes) => {
   return plateToMdastTypeMap[plateType] ?? plateType;
 };
 
-export type MdastTypes = MdRootContent['type'];
+export type MdastTypes = MdRootContent['type'] | GFMKeys | FontKeys;
 
-const mdastToPlateTypeMap: Record<
-  MdRootContent['type'],
-  plateTypes | (string & {})
-> = {
+type FontKeys =
+  | 'fontFamily'
+  | 'fontSize'
+  | 'fontWeight'
+  | 'backgroundColor'
+  | 'color';
+
+type GFMKeys = 'del' | 'u' | 'sub' | 'sup' | 'mark';
+
+const mdastToPlateTypeMap: Record<MdastTypes, plateTypes | (string & {})> = {
   // common elements
   paragraph: 'p',
   heading: 'heading',
@@ -133,6 +139,18 @@ const mdastToPlateTypeMap: Record<
   mdxJsxFlowElement: 'mdxJsxFlowElement',
   mdxJsxTextElement: 'mdxJsxTextElement',
   mdxjsEsm: 'mdxjsEsm',
+  // GFM / html
+  del: 'strikethrough',
+  sub: 'subscript',
+  sup: 'superscript',
+  u: 'underline',
+  mark: 'highlight',
+  // font
+  fontFamily: 'fontFamily',
+  fontSize: 'fontSize',
+  fontWeight: 'fontWeight',
+  backgroundColor: 'backgroundColor',
+  color: 'color',
 };
 
 /**
