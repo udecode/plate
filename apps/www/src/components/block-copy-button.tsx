@@ -4,9 +4,7 @@ import type { ComponentProps } from 'react';
 import * as React from 'react';
 
 import { CheckIcon, ClipboardIcon } from '@radix-ui/react-icons';
-import { cn } from '@/lib/utils';
 
-import { type Event, trackEvent } from '@/lib/events';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -14,6 +12,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { type Event, trackEvent } from '@/lib/events';
+import { cn } from '@/lib/utils';
 
 export function BlockCopyButton({
   className,

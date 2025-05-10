@@ -100,7 +100,11 @@ const plugins = [
   markdownPlugin,
 ];
 
-export const AIChatEditor = memo(({ content }: { content: string }) => {
+export const AIChatEditor = memo(function AIChatEditor({
+  content,
+}: {
+  content: string;
+}) {
   const aiEditor = usePlateEditor({
     plugins,
   });

@@ -4,8 +4,8 @@ import type { Doc } from 'contentlayer/generated';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import Link from 'next/link';
 
-import { docsConfig } from '@/config/docs';
 import { Button } from '@/components/ui/button';
+import { docsConfig } from '@/config/docs';
 
 interface DocsPagerProps {
   doc: Doc;

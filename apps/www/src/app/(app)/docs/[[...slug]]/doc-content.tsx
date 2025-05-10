@@ -7,7 +7,6 @@ import type { TableOfContents } from '@/lib/toc';
 import type { Doc } from 'contentlayer/generated';
 import type { RegistryItem } from 'shadcn/registry';
 
-import { cn } from '@/lib/utils';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 
@@ -16,10 +15,11 @@ import { OpenInPlus } from '@/components/open-in-plus';
 import { DocsPager } from '@/components/pager';
 import { DashboardTableOfContents } from '@/components/toc';
 import { badgeVariants } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 // import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 

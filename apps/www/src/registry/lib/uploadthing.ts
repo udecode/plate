@@ -10,7 +10,7 @@ import { generateReactHelpers } from '@uploadthing/react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-export interface UploadedFile<T = unknown> extends ClientUploadedFileData<T> {}
+export type UploadedFile<T = unknown> = ClientUploadedFileData<T>;
 
 interface UseUploadFileProps
   extends Pick<

@@ -46,8 +46,6 @@ import type {
 } from '../mdast';
 import type { SerializeMdOptions } from '../serializer';
 
-/* eslint-disable perfectionist/sort-modules */
-
 /* eslint-disable perfectionist/sort-object-types */
 export type TRules = Partial<{
   [K in keyof PlateNodeTypeMap]: Nullable<TNodeParser<K>>;

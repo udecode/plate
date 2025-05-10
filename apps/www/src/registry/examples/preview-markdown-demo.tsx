@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { cn } from '@/lib/utils';
 import {
   type Decorate,
   type RenderLeafProps,
@@ -15,6 +14,7 @@ import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate } from '@udecode/plate/react';
 import Prism from 'prismjs';
 
+import { cn } from '@/lib/utils';
 import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
 import { previewMdValue } from '@/registry/examples/values/preview-md-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';

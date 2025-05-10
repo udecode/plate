@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import { type NodeEntry, isHotkey } from '@udecode/plate';
 import {
   AIChatPlugin,
@@ -27,6 +26,7 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import { useChat } from '@/registry/components/editor/use-chat';
 
 import { AIChatEditor } from './ai-chat-editor';

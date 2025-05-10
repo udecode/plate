@@ -5,8 +5,8 @@ import * as React from 'react';
 import { MoonIcon, SunIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
-import { useMounted } from '@/registry/hooks/use-mounted';
 import { Button } from '@/components/ui/button';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 export default function ModeToggle() {
   const { setTheme, theme } = useTheme();

@@ -5,9 +5,9 @@ import * as React from 'react';
 import { Plate } from '@udecode/plate/react';
 import { useTheme } from 'next-themes';
 
+import { Button } from '@/components/ui/button';
 import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
 import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
-import { Button } from '@/components/ui/button';
 import { Editor } from '@/registry/ui/editor';
 
 function useThemedHtml(html: string, serverTheme?: string) {

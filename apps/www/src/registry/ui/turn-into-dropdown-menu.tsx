@@ -3,6 +3,7 @@
 import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+import type { TElement } from '@udecode/plate';
 
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
@@ -119,7 +120,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
   const value = useSelectionFragmentProp({
     defaultValue: ParagraphPlugin.key,
     structuralTypes: STRUCTURAL_TYPES,
-    getProp: (node) => getBlockType(node as any),
+    getProp: (node) => getBlockType(node as TElement),
   });
   const selectedItem = React.useMemo(
     () =>

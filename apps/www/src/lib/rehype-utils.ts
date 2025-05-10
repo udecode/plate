@@ -140,7 +140,6 @@ export function getAllDependencies(
   const component = registryTarget.items.find((c) => c.name === name);
 
   if (!component) {
-    console.log(registryTarget.items);
     throw new Error(`Dependency ${name} not found`);
   }
 

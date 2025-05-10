@@ -108,13 +108,13 @@ export function Comment(props: {
   const removeDiscussion = async (id: string) => {
     const updatedDiscussions = editor
       .getOption(discussionPlugin, 'discussions')
-      .filter((discussion: any) => discussion.id !== id);
+      .filter((discussion) => discussion.id !== id);
     editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
   };
 
   const updateComment = async (input: {
     id: string;
-    contentRich: any;
+    contentRich: Value;
     discussionId: string;
     isEdited: boolean;
   }) => {
@@ -329,13 +329,13 @@ export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
     // Find and update the discussion
     const updatedDiscussions = editor
       .getOption(discussionPlugin, 'discussions')
-      .map((discussion: any) => {
+      .map((discussion) => {
         if (discussion.id !== comment.discussionId) {
           return discussion;
         }
 
         const commentIndex = discussion.comments.findIndex(
-          (c: any) => c.id === comment.id
+          (c) => c.id === comment.id
         );
         if (commentIndex === -1) {
           return discussion;

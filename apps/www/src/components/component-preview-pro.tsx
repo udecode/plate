@@ -2,11 +2,10 @@
 
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
-
 import { BlockViewer } from '@/components/block-viewer';
 import { Markdown } from '@/components/markdown';
 import { siteConfig } from '@/config/site';
+import { cn } from '@/lib/utils';
 
 interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
@@ -37,15 +36,16 @@ export function ComponentPreviewPro({
         block={false}
         dependencies={[]}
         highlightedFiles={[]}
-        item={
-          {
+        item={{
+          meta: {
             descriptionSrc: siteConfig.links.plateProExample(id),
-            name: id,
+            isPro: true,
             src: `${siteConfig.links.plateProIframe}/${id}`,
-          } as any
-        }
+          },
+          name: id,
+          type: 'registry:example',
+        }}
         tree={[]}
-        isPro
       />
     </div>
   );

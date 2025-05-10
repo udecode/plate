@@ -119,6 +119,9 @@ export const blocks: Registry['items'] = [
         type: 'registry:page',
       },
     ],
+    meta: {
+      descriptionSrc: '/docs/multi-select',
+    },
     name: 'editor-select',
     registryDependencies: ['plate-ui', 'select-editor-demo'],
     type: 'registry:block',
@@ -162,6 +165,10 @@ export const blocks: Registry['items'] = [
       {
         path: 'components/editor/slate-to-html.tsx',
         type: 'registry:component',
+      },
+      {
+        path: 'lib/create-html-document.ts',
+        type: 'registry:lib',
       },
     ],
     meta: {

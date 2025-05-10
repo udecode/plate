@@ -1,8 +1,8 @@
-import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/button';
+import { useLocale } from '@/hooks/useLocale';
+import { cn } from '@/lib/utils';
 
 import { siteConfig } from '../config/site';
 

@@ -2,24 +2,18 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import puppeteer from 'puppeteer';
 
-import { getAllBlockIds } from '../src/lib/blocks';
+import { getAllBlocks } from '../src/lib/blocks';
 
 const REGISTRY_PATH = path.join(process.cwd(), 'public/r');
 // ----------------------------------------------------------------------------
 // Capture screenshots.
 // ----------------------------------------------------------------------------
 async function captureScreenshots() {
-  const blockIds = await getAllBlockIds();
+  const blockIds = (await getAllBlocks()).map((block) => block.name);
   const blocks = blockIds.filter((block) => {
     // Check if screenshots already exist
-    const lightPath = path.join(
-      REGISTRY_PATH,
-      `styles/new-york/${block}-light.png`
-    );
-    const darkPath = path.join(
-      REGISTRY_PATH,
-      `styles/new-york/${block}-dark.png`
-    );
+    const lightPath = path.join(REGISTRY_PATH, `${block}-light.png`);
+    const darkPath = path.join(REGISTRY_PATH, `${block}-dark.png`);
     return !existsSync(lightPath) || !existsSync(darkPath);
   });
   if (blocks.length === 0) {
@@ -34,7 +28,7 @@ async function captureScreenshots() {
     },
   });
   for (const block of blocks) {
-    const pageUrl = `http://localhost:3333/view/styles/new-york/${block}`;
+    const pageUrl = `http://localhost:3333/view/${block}`;
     const page = await browser.newPage();
     await page.goto(pageUrl, {
       waitUntil: 'networkidle2',
@@ -43,7 +37,7 @@ async function captureScreenshots() {
     for (const theme of ['light', 'dark']) {
       const screenshotPath = path.join(
         REGISTRY_PATH,
-        `styles/new-york/${block}${theme === 'dark' ? '-dark' : '-light'}.png`
+        `${block}${theme === 'dark' ? '-dark' : '-light'}.png`
       );
       if (existsSync(screenshotPath)) {
         continue;

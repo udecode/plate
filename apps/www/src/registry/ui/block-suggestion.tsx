@@ -8,7 +8,6 @@ import type {
   TSuggestionText,
 } from '@udecode/plate-suggestion';
 
-import { cn } from '@/lib/utils';
 import {
   type NodeEntry,
   type Path,
@@ -51,13 +50,14 @@ import {
 import { CheckIcon, XIcon } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   type TDiscussion,
   discussionPlugin,
 } from '@/registry/components/editor/plugins/discussion-plugin';
 import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
 
-import { Button } from '@/components/ui/button';
 import { type TComment, Comment, formatCommentDate } from './comment';
 import { CommentCreateForm } from './comment-create-form';
 

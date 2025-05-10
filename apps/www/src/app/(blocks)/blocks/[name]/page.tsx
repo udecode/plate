@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { siteConfig } from '@/config/site';
-import { getAllBlockIds } from '@/lib/blocks';
+import { getAllBlocks } from '@/lib/blocks';
 import { getRegistryComponent, getRegistryItem } from '@/lib/registry';
 import { cn } from '@/lib/utils';
 
@@ -51,9 +51,9 @@ export async function generateMetadata({
 }
 
 export async function generateStaticParams() {
-  const blockIds = await getAllBlockIds();
+  const blocks = await getAllBlocks();
 
-  return blockIds.map((name) => ({
+  return blocks.map(({ name }) => ({
     name,
   }));
 }
@@ -75,7 +75,7 @@ export default async function BlockPage({
     <div
       className={cn(
         'themes-wrapper bg-background **:data-block-hide:hidden',
-        item.meta?.containerClassName
+        item.meta?.containerClassName ?? 'size-full'
       )}
     >
       <Component />

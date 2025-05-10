@@ -37,7 +37,7 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
 
   if (isSuggesting) value = 'suggestion';
 
-  const item: any = {
+  const item: Record<string, { icon: React.ReactNode; label: string }> = {
     editing: {
       icon: <PenIcon />,
       label: 'Editing',

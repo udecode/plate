@@ -1,11 +1,11 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 import { Pause } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export const AILoadingBar = () => {
   const chat = usePluginOption(AIChatPlugin, 'chat');

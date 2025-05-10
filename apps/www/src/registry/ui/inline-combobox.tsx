@@ -29,7 +29,6 @@ import {
   useComboboxContext,
   useComboboxStore,
 } from '@ariakit/react';
-import { cn } from '@/lib/utils';
 import { filterWords } from '@udecode/plate-combobox';
 import {
   type UseComboboxInputResult,
@@ -38,6 +37,8 @@ import {
 } from '@udecode/plate-combobox/react';
 import { useComposedRef, useEditorRef } from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
+
+import { cn } from '@/lib/utils';
 
 type FilterFn = (
   item: { value: string; group?: string; keywords?: string[]; label?: string },
@@ -55,7 +56,7 @@ interface InlineComboboxContextValue {
 }
 
 const InlineComboboxContext = createContext<InlineComboboxContextValue>(
-  null as any
+  null as unknown as InlineComboboxContextValue
 );
 
 export const defaultFilter: FilterFn = (

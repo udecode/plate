@@ -4,7 +4,7 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { setAlign } from '@udecode/plate-alignment';
+import { type Alignment, setAlign } from '@udecode/plate-alignment';
 import { useEditorRef, useSelectionFragmentProp } from '@udecode/plate/react';
 import {
   AlignCenterIcon,
@@ -43,7 +43,7 @@ const items = [
   },
 ];
 
-export function AlignDropdownMenu({ children, ...props }: DropdownMenuProps) {
+export function AlignDropdownMenu(props: DropdownMenuProps) {
   const editor = useEditorRef();
   const value = useSelectionFragmentProp({
     defaultValue: 'start',
@@ -66,8 +66,8 @@ export function AlignDropdownMenu({ children, ...props }: DropdownMenuProps) {
       <DropdownMenuContent className="min-w-0" align="start">
         <DropdownMenuRadioGroup
           value={value}
-          onValueChange={(value: any) => {
-            setAlign(editor, { value: value });
+          onValueChange={(value) => {
+            setAlign(editor, { value: value as Alignment });
             editor.tf.focus();
           }}
         >

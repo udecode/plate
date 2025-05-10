@@ -70,7 +70,13 @@ type BlockViewerContext = {
       })[]
     | null;
   isLoading: boolean;
-  item: z.infer<typeof registryItemSchema> & { src?: string };
+  item: z.infer<typeof registryItemSchema> & {
+    meta?: {
+      descriptionSrc?: string;
+      isPro?: boolean;
+      src?: string;
+    };
+  };
   resizablePanelRef: React.RefObject<ImperativePanelHandle | null> | null;
   tree: ReturnType<typeof createFileTreeForRegistryItemFiles> | null;
   view: 'code' | 'preview';
@@ -200,19 +206,13 @@ function BlockViewerProvider({
   );
 }
 
-function BlockViewerToolbar({
-  block,
-  isPro,
-}: {
-  block: boolean;
-  isPro?: boolean;
-}) {
+function BlockViewerToolbar({ block }: { block: boolean }) {
   const { item, resizablePanelRef, setView } = useBlockViewer();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   const description =
     item.meta?.descriptionSrc ??
-    item.src?.replace('?iframe=true', '') ??
+    item.meta?.src?.replace('?iframe=true', '') ??
     `/blocks/${item.name}`;
 
   return (
@@ -230,7 +230,7 @@ function BlockViewerToolbar({
             Preview
           </TabsTrigger>
 
-          {!isPro && (
+          {!item.meta?.isPro && (
             <TabsTrigger
               className="h-[1.45rem] rounded-sm px-2 text-xs"
               value="code"
@@ -256,7 +256,7 @@ function BlockViewerToolbar({
       )}
 
       <div className="ml-auto flex items-center gap-2">
-        {!item.src && !isPro && (
+        {!item.meta?.src && !item.meta?.isPro && (
           <>
             {/* NPX Command Button */}
             <Button
@@ -281,13 +281,13 @@ function BlockViewerToolbar({
             {block && (
               <Separator
                 orientation="vertical"
-                className="mx-2 hidden h-4 sm:flex"
+                className="mx-2 hidden h-4 lg:flex"
               />
             )}
           </>
         )}
 
-        {isPro && (
+        {item.meta?.isPro && (
           <Link
             className={cn(
               buttonVariants(),
@@ -353,7 +353,7 @@ function BlockViewerToolbar({
               >
                 <Link
                   href={
-                    item.src?.replace('?iframe=true', '') ??
+                    item.meta?.src?.replace('?iframe=true', '') ??
                     `/blocks/${item.name}`
                   }
                   target="_blank"
@@ -414,7 +414,7 @@ function BlockViewerView({ preview }: { preview: React.ReactNode }) {
                 title={item.name}
                 height={item.meta?.iframeHeight ?? '100%'}
                 sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
-                src={item.src ?? `/blocks/${item.name}`}
+                src={item.meta?.src ?? `/blocks/${item.name}`}
               />
             )}
           </ResizablePanel>
@@ -606,7 +606,6 @@ function BlockCopyCodeButton() {
 
 export function BlockViewer({
   block = true,
-  isPro,
   preview,
   ...props
 }: Pick<
@@ -614,12 +613,11 @@ export function BlockViewer({
   'dependencies' | 'highlightedFiles' | 'item' | 'tree'
 > & {
   block?: boolean;
-  isPro?: boolean;
   preview?: React.ReactNode;
 }) {
   return (
     <BlockViewerProvider {...props}>
-      <BlockViewerToolbar block={block} isPro={isPro} />
+      <BlockViewerToolbar block={block} />
       <BlockViewerView preview={preview} />
       <BlockViewerCode size={block ? 'default' : 'sm'} />
     </BlockViewerProvider>

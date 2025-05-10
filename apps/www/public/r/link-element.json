@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/ui/link-element.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TLinkElement } from '@udecode/plate-link';\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { useLink } from '@udecode/plate-link/react';\nimport { PlateElement } from '@udecode/plate/react';\n\nexport function LinkElement(props: PlateElementProps<TLinkElement>) {\n  const { props: linkProps } = useLink({ element: props.element });\n\n  return (\n    <PlateElement\n      {...props}\n      as=\"a\"\n      className=\"font-medium text-primary underline decoration-primary underline-offset-4\"\n      {...(linkProps as any)}\n    >\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TLinkElement } from '@udecode/plate-link';\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { useLink } from '@udecode/plate-link/react';\nimport { PlateElement } from '@udecode/plate/react';\n\nexport function LinkElement(props: PlateElementProps<TLinkElement>) {\n  const { props: linkProps } = useLink({ element: props.element });\n\n  return (\n    <PlateElement\n      {...props}\n      as=\"a\"\n      className=\"font-medium text-primary underline decoration-primary underline-offset-4\"\n      attributes={{\n        ...props.attributes,\n        ...(linkProps as any),\n      }}\n    >\n      {props.children}\n    </PlateElement>\n  );\n}\n",
       "type": "registry:ui"
     },
     {

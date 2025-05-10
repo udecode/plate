@@ -20,7 +20,7 @@ export function ColorInput({
       {React.Children.map(children, (child) => {
         if (!child) return child;
 
-        return React.cloneElement(child as React.ReactElement<any>, childProps);
+        return React.cloneElement(child as React.ReactElement, childProps);
       })}
       <input
         {...props}

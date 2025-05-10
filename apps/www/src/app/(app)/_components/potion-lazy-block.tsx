@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import type { RegistryItem } from 'shadcn/registry';
+
 import { useSearchParams } from 'next/navigation';
 
 import { BlockViewer } from '@/components/block-viewer';
@@ -61,15 +63,16 @@ export function PotionLazyBlock() {
 
   const content = i18n[locale];
 
-  const block = {
+  const block: RegistryItem = {
     description: content.potionDescription,
-    descriptionSrc: siteConfig.links.potionTemplate,
-    isPro: true,
     meta: {
+      descriptionSrc: siteConfig.links.potionTemplate,
       iframeHeight: 800,
+      isPro: true,
+      src: siteConfig.links.potionIframe,
     },
     name: 'potion',
-    src: siteConfig.links.potionIframe,
+    type: 'registry:block',
   };
 
   return (
@@ -78,14 +81,7 @@ export function PotionLazyBlock() {
         <BlockViewer
           dependencies={[]}
           highlightedFiles={[]}
-          isPro={block.isPro}
-          item={{
-            description: block.description,
-            meta: block.meta,
-            name: block.name,
-            src: block.src,
-            type: 'registry:block',
-          }}
+          item={block}
           tree={[]}
         />
       )}

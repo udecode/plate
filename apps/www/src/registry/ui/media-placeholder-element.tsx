@@ -82,7 +82,9 @@ export const MediaPlaceholderElement = withHOC(
 
         replaceCurrentPlaceholder(firstFile);
 
-        restFiles.length > 0 && (editor as any).tf.insert.media(restFiles);
+        if (restFiles.length > 0) {
+          editor.getTransforms(PlaceholderPlugin).insert.media(restFiles);
+        }
       },
     });
 

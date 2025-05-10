@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
-import { cn } from '@/lib/utils';
 import { isHotkey } from '@udecode/plate';
 import { isEqualTags } from '@udecode/plate-tag';
 import {
@@ -26,6 +25,7 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 import { Editor, EditorContainer } from './editor';
 import { TagElement } from './tag-element';

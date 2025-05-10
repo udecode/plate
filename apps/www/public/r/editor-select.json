@@ -13,11 +13,14 @@
   "files": [
     {
       "path": "src/registry/blocks/editor-select/page.tsx",
-      "content": "import EditorSelectForm from '@/registry/examples/select-editor-demo';\n\nexport const description = 'A select editor';\n\nexport const descriptionSrc = '/docs/multi-select';\n\nexport const iframeHeight = '650px';\n\nexport const containerClassName = 'w-full h-full';\n\nexport default function Page() {\n  return (\n    <div className=\"flex h-screen w-full justify-center\" data-registry=\"plate\">\n      <EditorSelectForm />\n    </div>\n  );\n}\n",
+      "content": "import EditorSelectForm from '@/registry/examples/select-editor-demo';\n\nexport default function Page() {\n  return (\n    <div className=\"flex h-screen w-full justify-center\" data-registry=\"plate\">\n      <EditorSelectForm />\n    </div>\n  );\n}\n",
       "type": "registry:page",
       "target": "app/editor/page.tsx"
     }
   ],
+  "meta": {
+    "descriptionSrc": "/docs/multi-select"
+  },
   "categories": [
     "Editors"
   ]

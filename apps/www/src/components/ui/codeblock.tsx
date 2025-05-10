@@ -8,8 +8,8 @@ import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
 import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 import { Icons } from '@/components/icons';
-import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Button } from '@/components/ui/button';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 
 const SyntaxHighlighter =
   Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;

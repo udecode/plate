@@ -10,6 +10,13 @@
     "https://platejs.org/r/plate"
   ],
   "files": [],
+  "tailwind": {
+    "config": {
+      "plugins": [
+        "tailwind-scrollbar-hide"
+      ]
+    }
+  },
   "cssVars": {
     "theme": {
       "font-heading": "'var(--font-heading)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",

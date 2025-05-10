@@ -26,9 +26,8 @@ import {
 import { cva } from 'class-variance-authority';
 import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
 
-import { Separator } from '@/components/ui/separator';
-
 import { buttonVariants } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 const popoverVariants = cva(
   'z-50 w-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden'

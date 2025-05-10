@@ -3,10 +3,10 @@ import React, { useRef } from 'react';
 
 import type { TSuggestionData } from '@udecode/plate-suggestion';
 
-import { cn } from '@/lib/utils';
 import { type RenderNodeWrapper, usePluginOption } from '@udecode/plate/react';
 import { CornerDownLeftIcon } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
 import {
   type SuggestionConfig,
   suggestionPlugin,

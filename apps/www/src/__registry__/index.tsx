@@ -2506,7 +2506,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: undefined,
+    meta: {"descriptionSrc":"/docs/multi-select"},
   },
   "editor-basic": {
     name: "editor-basic",
@@ -2545,6 +2545,10 @@ export const Index: Record<string, any> = {
     },{
       path: "src/registry/components/editor/slate-to-html.tsx",
       type: "registry:component",
+      target: ""
+    },{
+      path: "src/registry/lib/create-html-document.ts",
+      type: "registry:lib",
       target: ""
     }],
     component: null,

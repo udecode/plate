@@ -4,8 +4,9 @@ import { memo, useCallback } from 'react';
 
 import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';
 
-import { cn } from '@/lib/utils';
 import { type Emoji, type GridRow, EmojiSettings } from '@udecode/plate-emoji';
+
+import { cn } from '@/lib/utils';
 
 export type EmojiButtonProps = {
   emoji: Emoji;

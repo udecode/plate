@@ -97,7 +97,7 @@ export function Draggable(props: PlateElementProps) {
   const { isDragging, previewRef, handleRef } = useDraggable({
     element,
     onDropHandler: (_, { dragItem }) => {
-      const id = (dragItem as any).id;
+      const id = (dragItem as { id: string }).id;
 
       if (blockSelectionApi && id) {
         blockSelectionApi.set(id);

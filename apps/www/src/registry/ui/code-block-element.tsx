@@ -59,10 +59,9 @@ export function CodeBlockElement(props: PlateElementProps<TCodeBlockElement>) {
 }
 
 function CopyButton({
-  showLabel = false,
   value,
   ...props
-}: { value: (() => string) | string; showLabel?: boolean } & Omit<
+}: { value: (() => string) | string } & Omit<
   React.ComponentProps<typeof Button>,
   'value'
 >) {

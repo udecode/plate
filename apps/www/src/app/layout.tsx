@@ -2,7 +2,6 @@ import React from 'react';
 
 import type { Metadata, Viewport } from 'next';
 
-import { cn } from '@/lib/utils';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { GA } from '@/components/analytics/ga';
@@ -11,6 +10,7 @@ import { TailwindIndicator } from '@/components/tailwind-indicator';
 import { Toaster } from '@/components/ui/sonner';
 import { META_THEME_COLORS, siteConfig } from '@/config/site';
 import { fontMono, fontSans } from '@/lib/fonts';
+import { cn } from '@/lib/utils';
 
 import '@/app/globals.css';
 

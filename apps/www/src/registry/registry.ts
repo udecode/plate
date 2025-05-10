@@ -45,6 +45,11 @@ export const init: RegistryItem[] = [
     files: [],
     name: 'plate-ui',
     registryDependencies: ['plate'],
+    tailwind: {
+      config: {
+        plugins: ['tailwind-scrollbar-hide'],
+      },
+    },
     type: 'registry:style',
   },
 ];

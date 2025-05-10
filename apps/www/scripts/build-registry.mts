@@ -156,14 +156,14 @@ async function buildRegistry() {
 
 try {
   if (!isDev) {
-    console.log('🗂️ Building registry/__index__.tsx...');
+    console.info('🗂️ Building registry/__index__.tsx...');
     await buildRegistryIndex();
   }
 
-  console.log('💅 Building registry.json...');
+  console.info('💅 Building registry.json...');
   await buildRegistryJsonFile();
 
-  console.log('🏗️ Building registry...');
+  console.info('🏗️ Building registry...');
   await buildRegistry();
 } catch (error) {
   console.error(error);

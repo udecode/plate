@@ -9,6 +9,7 @@ import {
   AudioPlugin,
   FilePlugin,
   ImagePlugin,
+  PlaceholderPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
 import { useEditorRef } from '@udecode/plate/react';
@@ -83,7 +84,6 @@ const MEDIA_CONFIG: Record<
 };
 
 export function MediaToolbarButton({
-  children,
   nodeType,
   ...props
 }: DropdownMenuProps & { nodeType: string }) {
@@ -97,7 +97,7 @@ export function MediaToolbarButton({
     accept: currentConfig.accept,
     multiple: true,
     onFilesSelected: ({ plainFiles: updatedFiles }) => {
-      (editor as any).tf.insert.media(updatedFiles);
+      editor.getTransforms(PlaceholderPlugin).insert.media(updatedFiles);
     },
   });
 

@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { TTableRowElement } from '@udecode/plate-table';
 
 import { useComposedRef } from '@udecode/cn';
-import { PathApi } from '@udecode/plate';
+import { type TElement, PathApi } from '@udecode/plate';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import {
@@ -42,7 +42,7 @@ export function TableRowElement(props: PlateElementProps<TTableRowElement>) {
         PathApi.parent(dropEntry[1])
       ),
     onDropHandler: (_, { dragItem }) => {
-      const dragElement = (dragItem as any).element;
+      const dragElement = (dragItem as { element: TElement }).element;
 
       if (dragElement) {
         editor.tf.select(dragElement);

@@ -3,8 +3,8 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 
 import { ModeSwitcher } from '@/components/mode-switcher';
-import { siteConfig } from '@/config/site';
 import { Button } from '@/components/ui/button';
+import { siteConfig } from '@/config/site';
 
 import { CommandMenu } from './command-menu';
 import { Icons } from './icons';

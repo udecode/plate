@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { cn } from '@/lib/utils';
 import { RangeApi } from '@udecode/plate';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import {
@@ -11,6 +10,8 @@ import {
   useCursorOverlay,
 } from '@udecode/plate-selection/react';
 import { usePluginOption } from '@udecode/plate/react';
+
+import { cn } from '@/lib/utils';
 
 export function Cursor({
   id,

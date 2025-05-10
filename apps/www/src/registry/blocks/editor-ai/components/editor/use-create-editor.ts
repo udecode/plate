@@ -164,20 +164,26 @@ export const useCreateEditor = (
   {
     components,
     override,
+    placeholders,
     readOnly,
     ...options
   }: {
     components?: Record<string, any>;
+    placeholders?: boolean;
     plugins?: any[];
     readOnly?: boolean;
   } & Omit<CreatePlateEditorOptions, 'plugins'> = {},
   deps: any[] = []
 ) => {
-  return usePlateEditor<Value>(
+  return usePlateEditor<Value, (typeof editorPlugins)[number]>(
     {
       override: {
         components: {
-          ...(readOnly ? viewComponents : withPlaceholders(editorComponents)),
+          ...(readOnly
+            ? viewComponents
+            : placeholders
+              ? withPlaceholders(editorComponents)
+              : editorComponents),
           ...components,
         },
         ...override,

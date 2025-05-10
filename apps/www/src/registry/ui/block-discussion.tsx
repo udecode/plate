@@ -30,6 +30,7 @@ import {
   PencilLineIcon,
 } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import {
   Popover,
   PopoverAnchor,
@@ -42,7 +43,6 @@ import {
   discussionPlugin,
 } from '@/registry/components/editor/plugins/discussion-plugin';
 import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
-import { Button } from '@/components/ui/button';
 
 import {
   BlockSuggestionCard,

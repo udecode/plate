@@ -2,7 +2,6 @@
 
 import { type ReactNode, createContext, useContext, useState } from 'react';
 
-import { cn } from '@/lib/utils';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { useEditorPlugin } from '@udecode/plate/react';
 import {
@@ -15,6 +14,7 @@ import {
   Wand2Icon,
 } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -37,7 +37,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface Model {
   label: string;
@@ -199,23 +199,11 @@ export function SettingsDialog() {
           variant="default"
           className={cn(
             'group fixed right-4 bottom-4 z-50 size-10 overflow-hidden',
-            'rounded-full shadow-md hover:shadow-lg',
-            'transition-all duration-300 ease-in-out hover:w-[106px]'
+            'rounded-full shadow-md hover:shadow-lg'
           )}
           data-block-hide
         >
-          <div className="flex size-full items-center justify-start gap-2">
-            <Settings className="ml-1.5 size-4" />
-            <span
-              className={cn(
-                'whitespace-nowrap opacity-0 transition-all duration-300 ease-in-out',
-                'group-hover:translate-x-0 group-hover:opacity-100',
-                '-translate-x-2'
-              )}
-            >
-              Settings
-            </span>
-          </div>
+          <Settings className="size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>

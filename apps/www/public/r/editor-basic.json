@@ -15,7 +15,7 @@
   "files": [
     {
       "path": "src/registry/blocks/editor-basic/page.tsx",
-      "content": "import { PlateEditor } from '@/registry/blocks/editor-basic/components/editor/plate-editor';\n\nexport const description = 'A simple editor';\n\nexport const iframeHeight = '650px';\n\nexport const containerClassName = 'w-full h-full';\n\nexport default function Page() {\n  return (\n    <div className=\"h-screen w-full\" data-registry=\"plate\">\n      <PlateEditor />\n    </div>\n  );\n}\n",
+      "content": "import { PlateEditor } from '@/registry/blocks/editor-basic/components/editor/plate-editor';\n\nexport default function Page() {\n  return (\n    <div className=\"h-screen w-full\" data-registry=\"plate\">\n      <PlateEditor />\n    </div>\n  );\n}\n",
       "type": "registry:page",
       "target": "app/editor/page.tsx"
     },

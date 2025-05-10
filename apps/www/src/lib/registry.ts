@@ -138,12 +138,6 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
     scriptKind: ScriptKind.TSX,
   });
 
-  // Remove meta variables.
-  removeVariable(sourceFile, 'iframeHeight');
-  removeVariable(sourceFile, 'containerClassName');
-  removeVariable(sourceFile, 'description');
-  removeVariable(sourceFile, 'descriptionSrc');
-
   let code = sourceFile.getFullText();
 
   // FORK: not useful?

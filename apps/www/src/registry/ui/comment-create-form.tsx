@@ -99,9 +99,7 @@ export function CommentCreateForm({
   const [commentValue, setCommentValue] = React.useState<Value | undefined>();
   const commentContent = useMemo(
     () =>
-      commentValue
-        ? NodeApi.string({ children: commentValue as any, type: 'p' })
-        : '',
+      commentValue ? NodeApi.string({ children: commentValue, type: 'p' }) : '',
     [commentValue]
   );
   const commentEditor = useCommentEditor({}, []);
@@ -119,7 +117,7 @@ export function CommentCreateForm({
 
     if (discussionId) {
       // Get existing discussion
-      const discussion = discussions.find((d: any) => d.id === discussionId);
+      const discussion = discussions.find((d) => d.id === discussionId);
       if (!discussion) {
         // Mock creating suggestion
         const newDiscussion: TDiscussion = {
@@ -164,7 +162,7 @@ export function CommentCreateForm({
 
       // Filter out old discussion and add updated one
       const updatedDiscussions = discussions
-        .filter((d: any) => d.id !== discussionId)
+        .filter((d) => d.id !== discussionId)
         .concat(updatedDiscussion);
 
       editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
@@ -209,7 +207,7 @@ export function CommentCreateForm({
 
     const id = newDiscussion.id;
 
-    commentsNodeEntry.forEach(([_, path]) => {
+    commentsNodeEntry.forEach(([, path]) => {
       editor.tf.setNodes(
         {
           [getCommentKey(id)]: true,

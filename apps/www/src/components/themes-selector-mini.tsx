@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 
 import {
@@ -13,6 +12,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { type Theme, THEME_LIST, THEMES } from '@/lib/themes';
+import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { Skeleton } from './ui/skeleton';

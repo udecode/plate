@@ -84,8 +84,23 @@ const nextConfig = async (phase: string) => {
         config.resolve.fallback = {
           ...config.resolve.fallback,
           crypto: require.resolve('crypto-browserify'),
+          fs: false,
+          module: false,
+          path: false,
           stream: require.resolve('stream-browserify'),
+          url: require.resolve('url/'),
         };
+
+        config.module = config.module || {};
+        config.module.rules = config.module.rules || [];
+        config.module.rules.push({
+          loader: 'babel-loader',
+          options: {
+            plugins: ['@babel/plugin-transform-runtime'],
+            presets: ['@babel/preset-env'],
+          },
+          test: /[/\\]node_modules[/\\](@ts-morph|shadcn|cosmiconfig|tsconfig-paths)[/\\].*\.js$/,
+        });
 
         config.plugins.push(
           new webpack.ProvidePlugin({

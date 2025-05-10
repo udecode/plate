@@ -23,6 +23,13 @@
         "http://localhost:3000/rd/plate"
       ],
       "files": [],
+      "tailwind": {
+        "config": {
+          "plugins": [
+            "tailwind-scrollbar-hide"
+          ]
+        }
+      },
       "cssVars": {
         "theme": {
           "font-heading": "'var(--font-heading)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
@@ -3922,6 +3929,9 @@
           "target": "app/editor/page.tsx"
         }
       ],
+      "meta": {
+        "descriptionSrc": "/docs/multi-select"
+      },
       "categories": [
         "Editors"
       ]
@@ -3976,6 +3986,10 @@
         {
           "path": "src/registry/components/editor/slate-to-html.tsx",
           "type": "registry:component"
+        },
+        {
+          "path": "src/registry/lib/create-html-document.ts",
+          "type": "registry:lib"
         }
       ],
       "meta": {

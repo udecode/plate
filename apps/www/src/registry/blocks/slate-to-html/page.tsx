@@ -132,12 +132,6 @@ import { TableRowElementStatic } from '@/registry/ui/table-row-element-static';
 import { TocElementStatic } from '@/registry/ui/toc-element-static';
 import { ToggleElementStatic } from '@/registry/ui/toggle-element-static';
 
-export const description = 'Slate to HTML';
-
-export const iframeHeight = '800px';
-
-export const containerClassName = 'w-full h-full';
-
 const getCachedTailwindCss = React.cache(async () => {
   const cssPath = path.join(process.cwd(), 'public', 'tailwind.css');
 
@@ -340,7 +334,7 @@ export default async function SlateToHtmlBlock() {
       <div className="relative p-2">
         <H3>HTML Iframe</H3>
         <ExportHtmlButton
-          className="absolute right-0 top-10"
+          className="absolute top-10 right-0"
           html={html}
           serverTheme={theme}
         />

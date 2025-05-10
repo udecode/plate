@@ -1,6 +1,5 @@
-import { cn } from '@/lib/utils';
-
 import { SiteHeader } from '@/components/site-header';
+import { cn } from '@/lib/utils';
 
 // SYNC
 

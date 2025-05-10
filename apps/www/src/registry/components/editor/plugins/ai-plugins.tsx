@@ -121,14 +121,14 @@ export const aiPlugins = [
       afterEditable: () => <AIMenu />,
     },
   }).extend({
-    useHooks: ({ editor, getOption, setOption }) => {
+    useHooks: ({ editor, getOption }) => {
       const mode = usePluginOption(
         { key: 'aiChat' } as AIChatPluginConfig,
         'mode'
       );
 
       useChatChunk({
-        onChunk: ({ chunk, isFirst, nodes, text }) => {
+        onChunk: ({ chunk, isFirst, nodes }) => {
           if (isFirst && mode == 'insert') {
             editor.tf.withoutSaving(() => {
               editor.tf.insertNodes(
@@ -161,7 +161,7 @@ export const aiPlugins = [
             );
           }
         },
-        onFinish: ({ content }) => {
+        onFinish: () => {
           editor.setOption(AIChatPlugin, 'streaming', false);
           editor.setOption(AIChatPlugin, '_blockChunks', '');
           editor.setOption(AIChatPlugin, '_blockPath', null);

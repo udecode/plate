@@ -2,10 +2,9 @@
 
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
-
 import { Index } from '@/__registry__';
 import { BlockViewer } from '@/components/block-viewer';
+import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { Icons } from './icons';
@@ -69,6 +68,14 @@ export function ComponentPreview({
     </div>
   );
 
+  const item = props.item ?? JSON.parse(props.__item__ ?? '[]');
+  if (name === 'potion-iframe-demo') {
+    if (!item.meta) {
+      item.meta = {};
+    }
+    item.meta.isPro = true;
+  }
+
   return (
     <div className="mt-4 mb-12">
       <BlockViewer
@@ -80,8 +87,7 @@ export function ComponentPreview({
           props.highlightedFiles ??
           JSON.parse(props.__highlightedFiles__ ?? '[]')
         }
-        isPro={name === 'potion-iframe-demo'}
-        item={props.item ?? JSON.parse(props.__item__ ?? '[]')}
+        item={item}
         preview={
           <React.Suspense fallback={loadingPreview}>
             {mounted ? (

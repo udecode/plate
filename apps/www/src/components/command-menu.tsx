@@ -6,11 +6,11 @@ import * as React from 'react';
 import type { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
 import type { DialogProps } from '@radix-ui/react-dialog';
 
-import { cn } from '@/lib/utils';
 import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@/components/ui/button';
 import {
   CommandDialog,
   CommandEmpty,
@@ -20,7 +20,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { docsConfig } from '@/config/docs';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export function CommandItems({
   children,

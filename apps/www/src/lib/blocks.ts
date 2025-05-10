@@ -9,10 +9,10 @@ import { z } from 'zod';
 // const BLOCKS_WHITELIST_PREFIXES = ['sidebar', 'login'];
 const REGISTRY_BLOCK_TYPES = new Set(['registry:block']);
 
-export async function getAllBlockIds() {
+export async function getAllBlocks() {
   const blocks = _getAllBlocks();
 
-  return blocks.map((block) => block.name);
+  return blocks;
 }
 
 function _getAllBlocks() {

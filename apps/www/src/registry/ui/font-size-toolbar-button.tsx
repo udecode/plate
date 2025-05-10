@@ -4,7 +4,6 @@ import { useState } from 'react';
 
 import type { TElement } from '@udecode/plate';
 
-import { cn } from '@/lib/utils';
 import { toUnitLess } from '@udecode/plate-font';
 import { FontSizePlugin } from '@udecode/plate-font/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
@@ -16,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 import { ToolbarButton } from './toolbar';
 

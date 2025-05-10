@@ -7,9 +7,9 @@ import type { NpmCommands } from '@/types/unist';
 import { CheckIcon, ClipboardIcon } from 'lucide-react';
 
 import { copyToClipboardWithMeta } from '@/components/copy-button';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useConfig } from '@/hooks/use-config';
-import { Button } from '@/components/ui/button';
 
 export function CodeBlockCommand({
   __bunCommand__,

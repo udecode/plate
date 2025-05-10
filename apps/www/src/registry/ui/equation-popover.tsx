@@ -7,7 +7,6 @@ import TextareaAutosize, {
 
 import type { TEquationElement } from '@udecode/plate-math';
 
-import { cn } from '@/lib/utils';
 import { useEquationInput } from '@udecode/plate-math/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import {
@@ -18,9 +17,9 @@ import {
 } from '@udecode/plate/react';
 import { CornerDownLeftIcon } from 'lucide-react';
 
-import { PopoverContent } from '@/components/ui/popover';
-
 import { Button } from '@/components/ui/button';
+import { PopoverContent } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 const EquationInput = createPrimitiveComponent(TextareaAutosize)({
   propsHook: useEquationInput,
