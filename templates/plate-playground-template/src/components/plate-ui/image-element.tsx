@@ -18,69 +18,62 @@ import {
 
 export const ImageElement = withHOC(
   ResizableProvider,
-  withRef<typeof PlateElement>(
-    ({ children, className, nodeProps, ...props }, ref) => {
-      const { align = 'center', focused, readOnly, selected } = useMediaState();
+  withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
+    const { align = 'center', focused, readOnly, selected } = useMediaState();
 
-      const width = useResizableValue('width');
+    const width = useResizableValue('width');
 
-      const { isDragging, handleRef } = useDraggable({
-        element: props.element,
-      });
+    const { isDragging, handleRef } = useDraggable({
+      element: props.element,
+    });
 
-      return (
-        <MediaPopover plugin={ImagePlugin}>
-          <PlateElement
-            ref={ref}
-            className={cn(className, 'py-2.5')}
-            {...props}
-          >
-            <figure className="group relative m-0" contentEditable={false}>
-              <Resizable
-                align={align}
-                options={{
-                  align,
-                  readOnly,
+    return (
+      <MediaPopover plugin={ImagePlugin}>
+        <PlateElement ref={ref} className={cn(className, 'py-2.5')} {...props}>
+          <figure className="group relative m-0" contentEditable={false}>
+            <Resizable
+              align={align}
+              options={{
+                align,
+                readOnly,
+              }}
+            >
+              <ResizeHandle
+                className={mediaResizeHandleVariants({ direction: 'left' })}
+                options={{ direction: 'left' }}
+              />
+              <Image
+                ref={handleRef}
+                className={cn(
+                  'block w-full max-w-full cursor-pointer object-cover px-0',
+                  'rounded-sm',
+                  focused && selected && 'ring-2 ring-ring ring-offset-2',
+                  isDragging && 'opacity-50'
+                )}
+                alt={props.attributes?.alt}
+              />
+              <ResizeHandle
+                className={mediaResizeHandleVariants({
+                  direction: 'right',
+                })}
+                options={{ direction: 'right' }}
+              />
+            </Resizable>
+
+            <Caption style={{ width }} align={align}>
+              <CaptionTextarea
+                readOnly={readOnly}
+                onFocus={(e) => {
+                  e.preventDefault();
                 }}
-              >
-                <ResizeHandle
-                  className={mediaResizeHandleVariants({ direction: 'left' })}
-                  options={{ direction: 'left' }}
-                />
-                <Image
-                  ref={handleRef}
-                  className={cn(
-                    'block w-full max-w-full cursor-pointer object-cover px-0',
-                    'rounded-sm',
-                    focused && selected && 'ring-2 ring-ring ring-offset-2',
-                    isDragging && 'opacity-50'
-                  )}
-                  alt=""
-                  {...nodeProps}
-                />
-                <ResizeHandle
-                  className={mediaResizeHandleVariants({
-                    direction: 'right',
-                  })}
-                  options={{ direction: 'right' }}
-                />
-              </Resizable>
+                placeholder="Write a caption..."
+              />
+            </Caption>
+          </figure>
 
-              <Caption style={{ width }} align={align}>
-                <CaptionTextarea
-                  readOnly={readOnly}
-                  onFocus={(e) => {
-                    e.preventDefault();
-                  }}
-                  placeholder="Write a caption..."
-                />
-              </Caption>
-            </figure>
-
-            {children}
-          </PlateElement>
-        </MediaPopover>
-      );
-    }
-  )
+          {children}
+        </PlateElement>
+      </MediaPopover>
+    );
+  })
 );

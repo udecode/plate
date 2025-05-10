@@ -23,7 +23,7 @@ import {
 } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import {
-  type PlateRenderElementProps,
+  type PlateElementProps,
   type RenderNodeWrapper,
   MemoizedChildren,
   ParagraphPlugin,
@@ -87,7 +87,7 @@ export const DraggableAboveNodes: RenderNodeWrapper = (props) => {
   return (props) => <Draggable {...props} />;
 };
 
-export const Draggable = withRef<'div', PlateRenderElementProps>(
+export const Draggable = withRef<'div', PlateElementProps>(
   ({ className, ...props }, ref) => {
     const { children, editor, element, path } = props;
     const blockSelectionApi =
