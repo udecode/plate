@@ -5,7 +5,10 @@
   "dependencies": [
     "@udecode/cn"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/editor",
+    "button"
+  ],
   "files": [
     {
       "path": "src/registry/examples/controlled-demo.tsx",

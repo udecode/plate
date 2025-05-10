@@ -3,9 +3,19 @@
   "name": "multiple-editors-demo",
   "type": "registry:example",
   "dependencies": [
-    "@udecode/cn"
+    "@udecode/cn",
+    "@udecode/plate-basic-elements",
+    "@udecode/plate-basic-marks",
+    "@udecode/plate-media"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/use-create-editor",
+    "https://platejs.org/r/editor",
+    "https://platejs.org/r/fixed-toolbar",
+    "https://platejs.org/r/turn-into-dropdown-menu",
+    "https://platejs.org/r/delete-plugins",
+    "separator"
+  ],
   "files": [
     {
       "path": "src/registry/examples/multiple-editors-demo.tsx",

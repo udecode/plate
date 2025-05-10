@@ -54,28 +54,65 @@
       "dependencies": [
         "@udecode/cn",
         "@udecode/plate-ai",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-block-quote",
+        "@udecode/plate-callout",
+        "@udecode/plate-code-block",
+        "@udecode/plate-date",
+        "@udecode/plate-font",
+        "@udecode/plate-heading",
+        "@udecode/plate-highlight",
+        "@udecode/plate-horizontal-rule",
+        "@udecode/plate-indent",
+        "@udecode/plate-indent-list",
+        "@udecode/plate-kbd",
+        "@udecode/plate-layout",
+        "@udecode/plate-link",
+        "@udecode/plate-math",
+        "@udecode/plate-media",
+        "@udecode/plate-mention",
+        "@udecode/plate-table",
         "@udecode/plate-markdown",
         "@udecode/plate-selection",
         "ai",
+        "cmdk",
         "@faker-js/faker"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/use-chat",
         "command",
         "popover",
-        "http://localhost:3000/rd/editor"
+        "http://localhost:3000/rd/use-chat",
+        "http://localhost:3000/rd/editor",
+        "http://localhost:3000/rd/ai-leaf",
+        "http://localhost:3000/rd/blockquote-element",
+        "http://localhost:3000/rd/code-block-element",
+        "http://localhost:3000/rd/code-leaf",
+        "http://localhost:3000/rd/code-line-element",
+        "http://localhost:3000/rd/code-syntax-leaf",
+        "http://localhost:3000/rd/column-element",
+        "http://localhost:3000/rd/column-group-element",
+        "http://localhost:3000/rd/date-element",
+        "http://localhost:3000/rd/equation-element",
+        "http://localhost:3000/rd/inline-equation-element",
+        "http://localhost:3000/rd/heading-element",
+        "http://localhost:3000/rd/highlight-leaf",
+        "http://localhost:3000/rd/hr-element",
+        "http://localhost:3000/rd/image-element",
+        "http://localhost:3000/rd/kbd-leaf",
+        "http://localhost:3000/rd/link-element",
+        "http://localhost:3000/rd/media-audio-element",
+        "http://localhost:3000/rd/media-file-element",
+        "http://localhost:3000/rd/media-video-element",
+        "http://localhost:3000/rd/mention-element",
+        "http://localhost:3000/rd/paragraph-element",
+        "http://localhost:3000/rd/table-cell-element",
+        "http://localhost:3000/rd/table-element",
+        "http://localhost:3000/rd/table-row-element",
+        "http://localhost:3000/rd/toc-element"
       ],
       "files": [
         {
           "path": "src/registry/ui/ai-menu.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/ai-loading-bar.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/ai-anchor-element.tsx",
           "type": "registry:ui"
         },
         {
@@ -1694,6 +1731,10 @@
         {
           "path": "src/registry/ui/ai-leaf.tsx",
           "type": "registry:ui"
+        },
+        {
+          "path": "src/registry/ui/ai-anchor-element.tsx",
+          "type": "registry:ui"
         }
       ],
       "meta": {
@@ -1743,6 +1784,38 @@
         "examples": [
           "basic-elements-demo",
           "basic-nodes-pro"
+        ]
+      }
+    },
+    {
+      "name": "callout-element",
+      "type": "registry:ui",
+      "description": "A callout component for highlighting important information with customizable icons and styles.",
+      "dependencies": [
+        "@udecode/plate-callout"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "src/registry/ui/callout-element.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/registry/ui/callout-element-static.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/basic-elements"
+          },
+          {
+            "route": "https://pro.platejs.org/docs/components/callout-element"
+          }
+        ],
+        "examples": [
+          "basic-elements-demo"
         ]
       }
     },
@@ -3196,36 +3269,22 @@
       "type": "registry:component",
       "dependencies": [
         "@udecode/plate-ai",
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-block-quote",
-        "@udecode/plate-code-block",
-        "@udecode/plate-heading",
-        "@udecode/plate-horizontal-rule",
-        "@udecode/plate-link",
         "@udecode/plate-markdown"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/basic-nodes-plugins",
-        "http://localhost:3000/rd/block-selection-plugins",
+        "button",
+        "http://localhost:3000/rd/markdown-plugin",
         "http://localhost:3000/rd/cursor-overlay-plugin",
-        "http://localhost:3000/rd/indent-list-plugins",
-        "http://localhost:3000/rd/link-plugin",
-        "http://localhost:3000/rd/ai-menu",
-        "http://localhost:3000/rd/blockquote-element",
-        "http://localhost:3000/rd/code-block-element",
-        "http://localhost:3000/rd/code-leaf",
-        "http://localhost:3000/rd/code-line-element",
-        "http://localhost:3000/rd/code-syntax-leaf",
-        "http://localhost:3000/rd/cursor-overlay",
-        "http://localhost:3000/rd/heading-element",
-        "http://localhost:3000/rd/hr-element",
-        "http://localhost:3000/rd/link-element",
-        "http://localhost:3000/rd/paragraph-element"
+        "http://localhost:3000/rd/ai-menu"
       ],
       "files": [
         {
           "path": "src/registry/components/editor/plugins/ai-plugins.tsx",
           "type": "registry:component"
+        },
+        {
+          "path": "src/registry/ui/ai-loading-bar.tsx",
+          "type": "registry:ui"
         }
       ]
     },
@@ -3236,7 +3295,6 @@
         "@udecode/plate-math"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/equation-element",
         "http://localhost:3000/rd/inline-equation-toolbar-button"
       ],
       "files": [
@@ -3725,13 +3783,86 @@
       "name": "use-chat",
       "type": "registry:component",
       "dependencies": [
-        "ai",
+        "@ai-sdk/react",
         "@faker-js/faker"
       ],
       "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/use-chat.ts",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "use-create-editor",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/plate",
+        "@udecode/plate-ai",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-block-quote",
+        "@udecode/plate-callout",
+        "@udecode/plate-code-block",
+        "@udecode/plate-comments",
+        "@udecode/plate-date",
+        "@udecode/plate-emoji",
+        "@udecode/plate-heading",
+        "@udecode/plate-highlight",
+        "@udecode/plate-horizontal-rule",
+        "@udecode/plate-kbd",
+        "@udecode/plate-layout",
+        "@udecode/plate-link",
+        "@udecode/plate-math",
+        "@udecode/plate-media",
+        "@udecode/plate-mention",
+        "@udecode/plate-slash-command",
+        "@udecode/plate-suggestion",
+        "@udecode/plate-table",
+        "@udecode/plate-toggle",
+        "@udecode/cn"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/rd/ai-leaf",
+        "http://localhost:3000/rd/blockquote-element",
+        "http://localhost:3000/rd/callout-element",
+        "http://localhost:3000/rd/code-block-element",
+        "http://localhost:3000/rd/code-leaf",
+        "http://localhost:3000/rd/code-line-element",
+        "http://localhost:3000/rd/code-syntax-leaf",
+        "http://localhost:3000/rd/column-element",
+        "http://localhost:3000/rd/column-group-element",
+        "http://localhost:3000/rd/comment-leaf",
+        "http://localhost:3000/rd/date-element",
+        "http://localhost:3000/rd/emoji-input-element",
+        "http://localhost:3000/rd/equation-element",
+        "http://localhost:3000/rd/heading-element",
+        "http://localhost:3000/rd/highlight-leaf",
+        "http://localhost:3000/rd/hr-element",
+        "http://localhost:3000/rd/image-element",
+        "http://localhost:3000/rd/inline-equation-element",
+        "http://localhost:3000/rd/kbd-leaf",
+        "http://localhost:3000/rd/link-element",
+        "http://localhost:3000/rd/media-audio-element",
+        "http://localhost:3000/rd/media-embed-element",
+        "http://localhost:3000/rd/media-file-element",
+        "http://localhost:3000/rd/media-placeholder-element",
+        "http://localhost:3000/rd/media-video-element",
+        "http://localhost:3000/rd/mention-element",
+        "http://localhost:3000/rd/mention-input-element",
+        "http://localhost:3000/rd/paragraph-element",
+        "http://localhost:3000/rd/slash-input-element",
+        "http://localhost:3000/rd/suggestion-leaf",
+        "http://localhost:3000/rd/table-cell-element",
+        "http://localhost:3000/rd/table-element",
+        "http://localhost:3000/rd/table-row-element",
+        "http://localhost:3000/rd/toc-element",
+        "http://localhost:3000/rd/toggle-element",
+        "http://localhost:3000/rd/editor-plugins"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/use-create-editor.ts",
           "type": "registry:component"
         }
       ]
@@ -3816,6 +3947,7 @@
         "@udecode/plate-block-quote",
         "@udecode/plate-code-block",
         "@udecode/plate-comments",
+        "@udecode/plate-callout",
         "@udecode/plate-suggestion",
         "@udecode/plate",
         "@udecode/plate-date",
@@ -3859,6 +3991,7 @@
         "http://localhost:3000/rd/column-element",
         "http://localhost:3000/rd/column-group-element",
         "http://localhost:3000/rd/comment-leaf",
+        "http://localhost:3000/rd/callout-element",
         "http://localhost:3000/rd/suggestion-leaf",
         "http://localhost:3000/rd/date-element",
         "http://localhost:3000/rd/draggable",
@@ -4054,10 +4187,13 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
+        "http://localhost:3000/rd/use-create-editor",
+        "http://localhost:3000/rd/editor-plugins",
         "http://localhost:3000/rd/basic-nodes-plugins",
         "http://localhost:3000/rd/block-selection-plugins",
         "http://localhost:3000/rd/indent-list-plugins",
-        "http://localhost:3000/rd/link-plugin"
+        "http://localhost:3000/rd/link-plugin",
+        "http://localhost:3000/rd/ai-leaf"
       ],
       "files": [
         {
@@ -4159,7 +4295,12 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/basic-nodes-plugins"
+        "http://localhost:3000/rd/basic-nodes-plugins",
+        "http://localhost:3000/rd/blockquote-element",
+        "http://localhost:3000/rd/code-block-element",
+        "http://localhost:3000/rd/code-line-element",
+        "http://localhost:3000/rd/heading-element",
+        "http://localhost:3000/rd/paragraph-element"
       ],
       "files": [
         {
@@ -4196,7 +4337,8 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/basic-nodes-plugins"
+        "http://localhost:3000/rd/basic-nodes-plugins",
+        "http://localhost:3000/rd/code-leaf"
       ],
       "files": [
         {
@@ -4348,7 +4490,10 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/column-element",
+        "http://localhost:3000/rd/column-group-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4385,7 +4530,8 @@
       ],
       "registryDependencies": [
         "http://localhost:3000/rd/comments-plugin",
-        "http://localhost:3000/rd/discussion-plugin"
+        "http://localhost:3000/rd/discussion-plugin",
+        "http://localhost:3000/rd/comment-leaf"
       ],
       "files": [
         {
@@ -4491,7 +4637,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/date-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4564,7 +4712,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/emoji-input-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4599,14 +4749,18 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/equation-element",
+        "http://localhost:3000/rd/inline-equation-element",
+        "http://localhost:3000/rd/equation-plugins"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
           "type": "registry:example"
         },
         {
-          "path": "src/registry/examples/values/emoji-value.tsx",
+          "path": "src/registry/examples/values/equation-value.tsx",
           "type": "registry:example"
         },
         {
@@ -4782,10 +4936,13 @@
     {
       "name": "highlight-demo",
       "type": "registry:example",
+      "description": "Text highlighting with customizable colors.",
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/highlight-leaf"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4812,7 +4969,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/hr-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4915,7 +5074,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/kbd-leaf"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4973,7 +5134,8 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/link-plugin"
+        "http://localhost:3000/rd/link-plugin",
+        "http://localhost:3000/rd/link-element"
       ],
       "files": [
         {
@@ -5050,7 +5212,13 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/media-plugins"
+        "http://localhost:3000/rd/media-plugins",
+        "http://localhost:3000/rd/media-audio-element",
+        "http://localhost:3000/rd/media-embed-element",
+        "http://localhost:3000/rd/media-file-element",
+        "http://localhost:3000/rd/media-placeholder-element",
+        "http://localhost:3000/rd/media-video-element",
+        "http://localhost:3000/rd/image-element"
       ],
       "files": [
         {
@@ -5080,7 +5248,9 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/mention-plugin"
+        "http://localhost:3000/rd/mention-plugin",
+        "http://localhost:3000/rd/mention-element",
+        "http://localhost:3000/rd/mention-input-element"
       ],
       "files": [
         {
@@ -5121,10 +5291,6 @@
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
-          "type": "registry:example"
-        },
-        {
-          "path": "src/registry/examples/values/basic-elements-value.tsx",
           "type": "registry:example"
         },
         {
@@ -5229,6 +5395,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
+      "registryDependencies": [
+        "http://localhost:3000/rd/markdown-plugin"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -5311,7 +5480,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/slash-input-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -5403,7 +5574,10 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/table-plugin"
+        "http://localhost:3000/rd/table-plugin",
+        "http://localhost:3000/rd/table-element",
+        "http://localhost:3000/rd/table-row-element",
+        "http://localhost:3000/rd/table-cell-element"
       ],
       "files": [
         {
@@ -5466,7 +5640,8 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/toc-plugin"
+        "http://localhost:3000/rd/toc-plugin",
+        "http://localhost:3000/rd/toc-element"
       ],
       "files": [
         {
@@ -5502,7 +5677,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/toggle-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -5569,11 +5746,14 @@
     {
       "name": "editor-default",
       "type": "registry:example",
-      "title": "Default",
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/use-create-editor",
+        "http://localhost:3000/rd/editor",
+        "http://localhost:3000/rd/editor-plugins"
+      ],
       "files": [
         {
           "path": "src/registry/examples/editor-default.tsx",
@@ -5585,11 +5765,12 @@
     {
       "name": "editor-disabled",
       "type": "registry:example",
-      "title": "Disabled",
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/editor-disabled.tsx",
@@ -5601,11 +5782,14 @@
     {
       "name": "editor-full-width",
       "type": "registry:example",
-      "title": "Full Width",
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/use-create-editor",
+        "http://localhost:3000/rd/editor",
+        "http://localhost:3000/rd/editor-plugins"
+      ],
       "files": [
         {
           "path": "src/registry/examples/editor-full-width.tsx",
@@ -5634,7 +5818,10 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/editor",
+        "button"
+      ],
       "files": [
         {
           "path": "src/registry/examples/controlled-demo.tsx",
@@ -5664,7 +5851,10 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/editor",
+        "accordion"
+      ],
       "files": [
         {
           "path": "src/registry/examples/basic-editor-handler-demo.tsx",
@@ -5678,7 +5868,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/basic-editor-value-demo.tsx",
@@ -5690,9 +5882,14 @@
       "name": "basic-plugins-components-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-block-quote",
+        "@udecode/plate-heading"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/basic-plugins-components-demo.tsx",
@@ -5704,9 +5901,15 @@
       "name": "basic-plugins-default-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-block-quote",
+        "@udecode/plate-heading"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/editor",
+        "accordion"
+      ],
       "files": [
         {
           "path": "src/registry/examples/basic-plugins-default-demo.tsx",
@@ -5720,10 +5923,21 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/use-create-editor",
+        "http://localhost:3000/rd/editor",
+        "http://localhost:3000/rd/editor-plugins",
+        "input",
+        "label",
+        "radio-group"
+      ],
       "files": [
         {
           "path": "src/registry/examples/editable-voids-demo.tsx",
+          "type": "registry:example"
+        },
+        {
+          "path": "src/registry/examples/values/editable-voids-value.tsx",
           "type": "registry:example"
         }
       ]
@@ -5732,12 +5946,21 @@
       "name": "hundreds-blocks-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-elements",
+        "@udecode/plate-basic-marks"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/use-create-editor",
+        "http://localhost:3000/rd/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/hundreds-blocks-demo.tsx",
+          "type": "registry:example"
+        },
+        {
+          "path": "src/registry/examples/values/huge-document-value.tsx",
           "type": "registry:example"
         }
       ]
@@ -5748,10 +5971,17 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/use-create-editor",
+        "http://localhost:3000/rd/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/hundreds-editors-demo.tsx",
+          "type": "registry:example"
+        },
+        {
+          "path": "src/registry/examples/values/multi-editors-value.tsx",
           "type": "registry:example"
         }
       ]
@@ -5773,9 +6003,19 @@
       "name": "multiple-editors-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-elements",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-media"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/use-create-editor",
+        "http://localhost:3000/rd/editor",
+        "http://localhost:3000/rd/fixed-toolbar",
+        "http://localhost:3000/rd/turn-into-dropdown-menu",
+        "http://localhost:3000/rd/delete-plugins",
+        "separator"
+      ],
       "files": [
         {
           "path": "src/registry/examples/multiple-editors-demo.tsx",
@@ -5787,9 +6027,16 @@
       "name": "version-history-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-break",
+        "@udecode/plate-diff",
+        "lodash"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/use-create-editor",
+        "button"
+      ],
       "files": [
         {
           "path": "src/registry/examples/version-history-demo.tsx",
@@ -5823,12 +6070,22 @@
       "name": "preview-markdown-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-elements",
+        "@udecode/plate-basic-marks",
+        "prismjs"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/use-create-editor",
+        "http://localhost:3000/rd/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/preview-markdown-demo.tsx",
+          "type": "registry:example"
+        },
+        {
+          "path": "src/registry/examples/values/preview-md-value.tsx",
           "type": "registry:example"
         }
       ],
@@ -5838,10 +6095,16 @@
       "name": "markdown-to-slate-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-markdown",
+        "remark-emoji",
+        "remark-gfm",
+        "remark-math"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/use-debounce"
+        "http://localhost:3000/rd/use-create-editor",
+        "http://localhost:3000/rd/use-debounce",
+        "http://localhost:3000/rd/editor"
       ],
       "files": [
         {
@@ -5854,10 +6117,19 @@
     {
       "name": "collaboration-demo",
       "type": "registry:example",
+      "description": "Real-time collaboration with cursors and selections.",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-yjs",
+        "nanoid"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/use-create-editor",
+        "http://localhost:3000/rd/use-mounted",
+        "http://localhost:3000/rd/remote-cursor-overlay",
+        "button",
+        "input"
+      ],
       "files": [
         {
           "path": "src/registry/examples/collaboration-demo.tsx",

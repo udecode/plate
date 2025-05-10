@@ -3,9 +3,14 @@
   "name": "basic-plugins-components-demo",
   "type": "registry:example",
   "dependencies": [
-    "@udecode/cn"
+    "@udecode/cn",
+    "@udecode/plate-basic-marks",
+    "@udecode/plate-block-quote",
+    "@udecode/plate-heading"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/editor"
+  ],
   "files": [
     {
       "path": "src/registry/examples/basic-plugins-components-demo.tsx",

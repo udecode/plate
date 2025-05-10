@@ -3,9 +3,16 @@
   "name": "version-history-demo",
   "type": "registry:example",
   "dependencies": [
-    "@udecode/cn"
+    "@udecode/cn",
+    "@udecode/plate-basic-marks",
+    "@udecode/plate-break",
+    "@udecode/plate-diff",
+    "lodash"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/use-create-editor",
+    "button"
+  ],
   "files": [
     {
       "path": "src/registry/examples/version-history-demo.tsx",

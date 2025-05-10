@@ -2,11 +2,14 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "editor-default",
   "type": "registry:example",
-  "title": "Default",
   "dependencies": [
     "@udecode/cn"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/use-create-editor",
+    "https://platejs.org/r/editor",
+    "https://platejs.org/r/editor-plugins"
+  ],
   "files": [
     {
       "path": "src/registry/examples/editor-default.tsx",

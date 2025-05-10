@@ -54,28 +54,65 @@
       "dependencies": [
         "@udecode/cn",
         "@udecode/plate-ai",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-block-quote",
+        "@udecode/plate-callout",
+        "@udecode/plate-code-block",
+        "@udecode/plate-date",
+        "@udecode/plate-font",
+        "@udecode/plate-heading",
+        "@udecode/plate-highlight",
+        "@udecode/plate-horizontal-rule",
+        "@udecode/plate-indent",
+        "@udecode/plate-indent-list",
+        "@udecode/plate-kbd",
+        "@udecode/plate-layout",
+        "@udecode/plate-link",
+        "@udecode/plate-math",
+        "@udecode/plate-media",
+        "@udecode/plate-mention",
+        "@udecode/plate-table",
         "@udecode/plate-markdown",
         "@udecode/plate-selection",
         "ai",
+        "cmdk",
         "@faker-js/faker"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/use-chat",
         "command",
         "popover",
-        "https://platejs.org/r/editor"
+        "https://platejs.org/r/use-chat",
+        "https://platejs.org/r/editor",
+        "https://platejs.org/r/ai-leaf",
+        "https://platejs.org/r/blockquote-element",
+        "https://platejs.org/r/code-block-element",
+        "https://platejs.org/r/code-leaf",
+        "https://platejs.org/r/code-line-element",
+        "https://platejs.org/r/code-syntax-leaf",
+        "https://platejs.org/r/column-element",
+        "https://platejs.org/r/column-group-element",
+        "https://platejs.org/r/date-element",
+        "https://platejs.org/r/equation-element",
+        "https://platejs.org/r/inline-equation-element",
+        "https://platejs.org/r/heading-element",
+        "https://platejs.org/r/highlight-leaf",
+        "https://platejs.org/r/hr-element",
+        "https://platejs.org/r/image-element",
+        "https://platejs.org/r/kbd-leaf",
+        "https://platejs.org/r/link-element",
+        "https://platejs.org/r/media-audio-element",
+        "https://platejs.org/r/media-file-element",
+        "https://platejs.org/r/media-video-element",
+        "https://platejs.org/r/mention-element",
+        "https://platejs.org/r/paragraph-element",
+        "https://platejs.org/r/table-cell-element",
+        "https://platejs.org/r/table-element",
+        "https://platejs.org/r/table-row-element",
+        "https://platejs.org/r/toc-element"
       ],
       "files": [
         {
           "path": "src/registry/ui/ai-menu.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/ai-loading-bar.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/ai-anchor-element.tsx",
           "type": "registry:ui"
         },
         {
@@ -1694,6 +1731,10 @@
         {
           "path": "src/registry/ui/ai-leaf.tsx",
           "type": "registry:ui"
+        },
+        {
+          "path": "src/registry/ui/ai-anchor-element.tsx",
+          "type": "registry:ui"
         }
       ],
       "meta": {
@@ -1743,6 +1784,38 @@
         "examples": [
           "basic-elements-demo",
           "basic-nodes-pro"
+        ]
+      }
+    },
+    {
+      "name": "callout-element",
+      "type": "registry:ui",
+      "description": "A callout component for highlighting important information with customizable icons and styles.",
+      "dependencies": [
+        "@udecode/plate-callout"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "src/registry/ui/callout-element.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/registry/ui/callout-element-static.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/basic-elements"
+          },
+          {
+            "route": "https://pro.platejs.org/docs/components/callout-element"
+          }
+        ],
+        "examples": [
+          "basic-elements-demo"
         ]
       }
     },
@@ -3196,36 +3269,22 @@
       "type": "registry:component",
       "dependencies": [
         "@udecode/plate-ai",
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-block-quote",
-        "@udecode/plate-code-block",
-        "@udecode/plate-heading",
-        "@udecode/plate-horizontal-rule",
-        "@udecode/plate-link",
         "@udecode/plate-markdown"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/basic-nodes-plugins",
-        "https://platejs.org/r/block-selection-plugins",
+        "button",
+        "https://platejs.org/r/markdown-plugin",
         "https://platejs.org/r/cursor-overlay-plugin",
-        "https://platejs.org/r/indent-list-plugins",
-        "https://platejs.org/r/link-plugin",
-        "https://platejs.org/r/ai-menu",
-        "https://platejs.org/r/blockquote-element",
-        "https://platejs.org/r/code-block-element",
-        "https://platejs.org/r/code-leaf",
-        "https://platejs.org/r/code-line-element",
-        "https://platejs.org/r/code-syntax-leaf",
-        "https://platejs.org/r/cursor-overlay",
-        "https://platejs.org/r/heading-element",
-        "https://platejs.org/r/hr-element",
-        "https://platejs.org/r/link-element",
-        "https://platejs.org/r/paragraph-element"
+        "https://platejs.org/r/ai-menu"
       ],
       "files": [
         {
           "path": "src/registry/components/editor/plugins/ai-plugins.tsx",
           "type": "registry:component"
+        },
+        {
+          "path": "src/registry/ui/ai-loading-bar.tsx",
+          "type": "registry:ui"
         }
       ]
     },
@@ -3236,7 +3295,6 @@
         "@udecode/plate-math"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/equation-element",
         "https://platejs.org/r/inline-equation-toolbar-button"
       ],
       "files": [
@@ -3725,13 +3783,86 @@
       "name": "use-chat",
       "type": "registry:component",
       "dependencies": [
-        "ai",
+        "@ai-sdk/react",
         "@faker-js/faker"
       ],
       "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/use-chat.ts",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "use-create-editor",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/plate",
+        "@udecode/plate-ai",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-block-quote",
+        "@udecode/plate-callout",
+        "@udecode/plate-code-block",
+        "@udecode/plate-comments",
+        "@udecode/plate-date",
+        "@udecode/plate-emoji",
+        "@udecode/plate-heading",
+        "@udecode/plate-highlight",
+        "@udecode/plate-horizontal-rule",
+        "@udecode/plate-kbd",
+        "@udecode/plate-layout",
+        "@udecode/plate-link",
+        "@udecode/plate-math",
+        "@udecode/plate-media",
+        "@udecode/plate-mention",
+        "@udecode/plate-slash-command",
+        "@udecode/plate-suggestion",
+        "@udecode/plate-table",
+        "@udecode/plate-toggle",
+        "@udecode/cn"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/ai-leaf",
+        "https://platejs.org/r/blockquote-element",
+        "https://platejs.org/r/callout-element",
+        "https://platejs.org/r/code-block-element",
+        "https://platejs.org/r/code-leaf",
+        "https://platejs.org/r/code-line-element",
+        "https://platejs.org/r/code-syntax-leaf",
+        "https://platejs.org/r/column-element",
+        "https://platejs.org/r/column-group-element",
+        "https://platejs.org/r/comment-leaf",
+        "https://platejs.org/r/date-element",
+        "https://platejs.org/r/emoji-input-element",
+        "https://platejs.org/r/equation-element",
+        "https://platejs.org/r/heading-element",
+        "https://platejs.org/r/highlight-leaf",
+        "https://platejs.org/r/hr-element",
+        "https://platejs.org/r/image-element",
+        "https://platejs.org/r/inline-equation-element",
+        "https://platejs.org/r/kbd-leaf",
+        "https://platejs.org/r/link-element",
+        "https://platejs.org/r/media-audio-element",
+        "https://platejs.org/r/media-embed-element",
+        "https://platejs.org/r/media-file-element",
+        "https://platejs.org/r/media-placeholder-element",
+        "https://platejs.org/r/media-video-element",
+        "https://platejs.org/r/mention-element",
+        "https://platejs.org/r/mention-input-element",
+        "https://platejs.org/r/paragraph-element",
+        "https://platejs.org/r/slash-input-element",
+        "https://platejs.org/r/suggestion-leaf",
+        "https://platejs.org/r/table-cell-element",
+        "https://platejs.org/r/table-element",
+        "https://platejs.org/r/table-row-element",
+        "https://platejs.org/r/toc-element",
+        "https://platejs.org/r/toggle-element",
+        "https://platejs.org/r/editor-plugins"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/use-create-editor.ts",
           "type": "registry:component"
         }
       ]
@@ -3816,6 +3947,7 @@
         "@udecode/plate-block-quote",
         "@udecode/plate-code-block",
         "@udecode/plate-comments",
+        "@udecode/plate-callout",
         "@udecode/plate-suggestion",
         "@udecode/plate",
         "@udecode/plate-date",
@@ -3859,6 +3991,7 @@
         "https://platejs.org/r/column-element",
         "https://platejs.org/r/column-group-element",
         "https://platejs.org/r/comment-leaf",
+        "https://platejs.org/r/callout-element",
         "https://platejs.org/r/suggestion-leaf",
         "https://platejs.org/r/date-element",
         "https://platejs.org/r/draggable",
@@ -4054,10 +4187,13 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/use-create-editor",
+        "https://platejs.org/r/editor-plugins",
         "https://platejs.org/r/basic-nodes-plugins",
         "https://platejs.org/r/block-selection-plugins",
         "https://platejs.org/r/indent-list-plugins",
-        "https://platejs.org/r/link-plugin"
+        "https://platejs.org/r/link-plugin",
+        "https://platejs.org/r/ai-leaf"
       ],
       "files": [
         {
@@ -4159,7 +4295,12 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/basic-nodes-plugins"
+        "https://platejs.org/r/basic-nodes-plugins",
+        "https://platejs.org/r/blockquote-element",
+        "https://platejs.org/r/code-block-element",
+        "https://platejs.org/r/code-line-element",
+        "https://platejs.org/r/heading-element",
+        "https://platejs.org/r/paragraph-element"
       ],
       "files": [
         {
@@ -4196,7 +4337,8 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/basic-nodes-plugins"
+        "https://platejs.org/r/basic-nodes-plugins",
+        "https://platejs.org/r/code-leaf"
       ],
       "files": [
         {
@@ -4348,7 +4490,10 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/column-element",
+        "https://platejs.org/r/column-group-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4385,7 +4530,8 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/comments-plugin",
-        "https://platejs.org/r/discussion-plugin"
+        "https://platejs.org/r/discussion-plugin",
+        "https://platejs.org/r/comment-leaf"
       ],
       "files": [
         {
@@ -4491,7 +4637,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/date-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4564,7 +4712,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/emoji-input-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4599,14 +4749,18 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/equation-element",
+        "https://platejs.org/r/inline-equation-element",
+        "https://platejs.org/r/equation-plugins"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
           "type": "registry:example"
         },
         {
-          "path": "src/registry/examples/values/emoji-value.tsx",
+          "path": "src/registry/examples/values/equation-value.tsx",
           "type": "registry:example"
         },
         {
@@ -4782,10 +4936,13 @@
     {
       "name": "highlight-demo",
       "type": "registry:example",
+      "description": "Text highlighting with customizable colors.",
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/highlight-leaf"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4812,7 +4969,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/hr-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4915,7 +5074,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/kbd-leaf"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -4973,7 +5134,8 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/link-plugin"
+        "https://platejs.org/r/link-plugin",
+        "https://platejs.org/r/link-element"
       ],
       "files": [
         {
@@ -5050,7 +5212,13 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/media-plugins"
+        "https://platejs.org/r/media-plugins",
+        "https://platejs.org/r/media-audio-element",
+        "https://platejs.org/r/media-embed-element",
+        "https://platejs.org/r/media-file-element",
+        "https://platejs.org/r/media-placeholder-element",
+        "https://platejs.org/r/media-video-element",
+        "https://platejs.org/r/image-element"
       ],
       "files": [
         {
@@ -5080,7 +5248,9 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/mention-plugin"
+        "https://platejs.org/r/mention-plugin",
+        "https://platejs.org/r/mention-element",
+        "https://platejs.org/r/mention-input-element"
       ],
       "files": [
         {
@@ -5121,10 +5291,6 @@
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
-          "type": "registry:example"
-        },
-        {
-          "path": "src/registry/examples/values/basic-elements-value.tsx",
           "type": "registry:example"
         },
         {
@@ -5229,6 +5395,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
+      "registryDependencies": [
+        "https://platejs.org/r/markdown-plugin"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -5311,7 +5480,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/slash-input-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -5403,7 +5574,10 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/table-plugin"
+        "https://platejs.org/r/table-plugin",
+        "https://platejs.org/r/table-element",
+        "https://platejs.org/r/table-row-element",
+        "https://platejs.org/r/table-cell-element"
       ],
       "files": [
         {
@@ -5466,7 +5640,8 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toc-plugin"
+        "https://platejs.org/r/toc-plugin",
+        "https://platejs.org/r/toc-element"
       ],
       "files": [
         {
@@ -5502,7 +5677,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/toggle-element"
+      ],
       "files": [
         {
           "path": "src/registry/examples/demo.tsx",
@@ -5569,11 +5746,14 @@
     {
       "name": "editor-default",
       "type": "registry:example",
-      "title": "Default",
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/use-create-editor",
+        "https://platejs.org/r/editor",
+        "https://platejs.org/r/editor-plugins"
+      ],
       "files": [
         {
           "path": "src/registry/examples/editor-default.tsx",
@@ -5585,11 +5765,12 @@
     {
       "name": "editor-disabled",
       "type": "registry:example",
-      "title": "Disabled",
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/editor-disabled.tsx",
@@ -5601,11 +5782,14 @@
     {
       "name": "editor-full-width",
       "type": "registry:example",
-      "title": "Full Width",
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/use-create-editor",
+        "https://platejs.org/r/editor",
+        "https://platejs.org/r/editor-plugins"
+      ],
       "files": [
         {
           "path": "src/registry/examples/editor-full-width.tsx",
@@ -5634,7 +5818,10 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/editor",
+        "button"
+      ],
       "files": [
         {
           "path": "src/registry/examples/controlled-demo.tsx",
@@ -5664,7 +5851,10 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/editor",
+        "accordion"
+      ],
       "files": [
         {
           "path": "src/registry/examples/basic-editor-handler-demo.tsx",
@@ -5678,7 +5868,9 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/basic-editor-value-demo.tsx",
@@ -5690,9 +5882,14 @@
       "name": "basic-plugins-components-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-block-quote",
+        "@udecode/plate-heading"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/basic-plugins-components-demo.tsx",
@@ -5704,9 +5901,15 @@
       "name": "basic-plugins-default-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-block-quote",
+        "@udecode/plate-heading"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/editor",
+        "accordion"
+      ],
       "files": [
         {
           "path": "src/registry/examples/basic-plugins-default-demo.tsx",
@@ -5720,10 +5923,21 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/use-create-editor",
+        "https://platejs.org/r/editor",
+        "https://platejs.org/r/editor-plugins",
+        "input",
+        "label",
+        "radio-group"
+      ],
       "files": [
         {
           "path": "src/registry/examples/editable-voids-demo.tsx",
+          "type": "registry:example"
+        },
+        {
+          "path": "src/registry/examples/values/editable-voids-value.tsx",
           "type": "registry:example"
         }
       ]
@@ -5732,12 +5946,21 @@
       "name": "hundreds-blocks-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-elements",
+        "@udecode/plate-basic-marks"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/use-create-editor",
+        "https://platejs.org/r/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/hundreds-blocks-demo.tsx",
+          "type": "registry:example"
+        },
+        {
+          "path": "src/registry/examples/values/huge-document-value.tsx",
           "type": "registry:example"
         }
       ]
@@ -5748,10 +5971,17 @@
       "dependencies": [
         "@udecode/cn"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/use-create-editor",
+        "https://platejs.org/r/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/hundreds-editors-demo.tsx",
+          "type": "registry:example"
+        },
+        {
+          "path": "src/registry/examples/values/multi-editors-value.tsx",
           "type": "registry:example"
         }
       ]
@@ -5773,9 +6003,19 @@
       "name": "multiple-editors-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-elements",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-media"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/use-create-editor",
+        "https://platejs.org/r/editor",
+        "https://platejs.org/r/fixed-toolbar",
+        "https://platejs.org/r/turn-into-dropdown-menu",
+        "https://platejs.org/r/delete-plugins",
+        "separator"
+      ],
       "files": [
         {
           "path": "src/registry/examples/multiple-editors-demo.tsx",
@@ -5787,9 +6027,16 @@
       "name": "version-history-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-break",
+        "@udecode/plate-diff",
+        "lodash"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/use-create-editor",
+        "button"
+      ],
       "files": [
         {
           "path": "src/registry/examples/version-history-demo.tsx",
@@ -5823,12 +6070,22 @@
       "name": "preview-markdown-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-elements",
+        "@udecode/plate-basic-marks",
+        "prismjs"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/use-create-editor",
+        "https://platejs.org/r/editor"
+      ],
       "files": [
         {
           "path": "src/registry/examples/preview-markdown-demo.tsx",
+          "type": "registry:example"
+        },
+        {
+          "path": "src/registry/examples/values/preview-md-value.tsx",
           "type": "registry:example"
         }
       ],
@@ -5838,10 +6095,16 @@
       "name": "markdown-to-slate-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-markdown",
+        "remark-emoji",
+        "remark-gfm",
+        "remark-math"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/use-debounce"
+        "https://platejs.org/r/use-create-editor",
+        "https://platejs.org/r/use-debounce",
+        "https://platejs.org/r/editor"
       ],
       "files": [
         {
@@ -5854,10 +6117,19 @@
     {
       "name": "collaboration-demo",
       "type": "registry:example",
+      "description": "Real-time collaboration with cursors and selections.",
       "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-yjs",
+        "nanoid"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/use-create-editor",
+        "https://platejs.org/r/use-mounted",
+        "https://platejs.org/r/remote-cursor-overlay",
+        "button",
+        "input"
+      ],
       "files": [
         {
           "path": "src/registry/examples/collaboration-demo.tsx",

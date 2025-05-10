@@ -6,7 +6,6 @@
     "@udecode/plate-math"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/equation-element",
     "https://platejs.org/r/inline-equation-toolbar-button"
   ],
   "files": [

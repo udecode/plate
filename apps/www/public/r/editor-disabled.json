@@ -2,11 +2,12 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "editor-disabled",
   "type": "registry:example",
-  "title": "Disabled",
   "dependencies": [
     "@udecode/cn"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/editor"
+  ],
   "files": [
     {
       "path": "src/registry/examples/editor-disabled.tsx",

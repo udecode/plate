@@ -2,10 +2,19 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "collaboration-demo",
   "type": "registry:example",
+  "description": "Real-time collaboration with cursors and selections.",
   "dependencies": [
-    "@udecode/cn"
+    "@udecode/cn",
+    "@udecode/plate-yjs",
+    "nanoid"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/use-create-editor",
+    "https://platejs.org/r/use-mounted",
+    "https://platejs.org/r/remote-cursor-overlay",
+    "button",
+    "input"
+  ],
   "files": [
     {
       "path": "src/registry/examples/collaboration-demo.tsx",

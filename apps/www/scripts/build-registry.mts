@@ -144,6 +144,8 @@ async function buildRegistry() {
   return new Promise((resolve, reject) => {
     const process = exec(`yarn shadcn:${isDev ? 'dev' : 'build'}`);
 
+    console.log(`yarn shadcn:${isDev ? 'dev' : 'build'}`);
+
     process.on('exit', (code) => {
       if (code === 0) {
         resolve(undefined);
