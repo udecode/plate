@@ -1,0 +1,34 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "code-leaf",
+  "type": "registry:ui",
+  "title": "Code Leaf",
+  "description": "An inline component for code snippets.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/code-leaf.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateLeafProps } from '@udecode/plate/react';\n\nimport { PlateLeaf } from '@udecode/plate/react';\n\nexport function CodeLeaf(props: PlateLeafProps) {\n  return (\n    <PlateLeaf\n      {...props}\n      as=\"code\"\n      className=\"rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm whitespace-pre-wrap\"\n    >\n      {props.children}\n    </PlateLeaf>\n  );\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/code-leaf-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { SlateLeafProps } from '@udecode/plate';\n\nimport { SlateLeaf } from '@udecode/plate';\n\nexport function CodeLeafStatic(props: SlateLeafProps) {\n  return (\n    <SlateLeaf\n      {...props}\n      as=\"code\"\n      className=\"rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm whitespace-pre-wrap\"\n    >\n      {props.children}\n    </SlateLeaf>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-marks"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/code-leaf"
+      }
+    ],
+    "examples": [
+      "basic-marks-demo"
+    ]
+  }
+}

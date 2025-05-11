@@ -1,152 +1,107 @@
 const _THEMES = {
   ayu: {
     id: 'ayu',
-    colors: {
-      accent: '35 100% 50% / 0.3', // Semi-transparent version of brand
-      accentForeground: '0 0% 9%',
-      background: '38 100% 99%', // #FAFAFA
-      border: '44 17% 88%', // #E7E8E9
-      brand: '35 100% 50%', // #FF9940
-      card: '38 100% 99%', // #FAFAFA
-      cardForeground: '0 0% 9%', // #171717
-      destructive: '0 100% 67%', // #FF3333
-      destructiveForeground: '0 0% 100%', // #FFFFFF
-      foreground: '0 0% 9%', // #171717
-      highlight: '50 100% 60%', // #FFD740
-      input: '44 17% 88%', // #E7E8E9
-      muted: '44 17% 88%', // #E7E8E9
-      mutedForeground: '0 0% 45%', // #737373
-      popover: '38 100% 99%', // #FAFAFA
-      popoverForeground: '0 0% 9%', // #171717
-      primary: '35 100% 50%', // #FF9940
-      primaryForeground: '0 0% 100%', // #FFFFFF
-      ring: '35 100% 50%', // #FF9940
-      secondary: '44 17% 88%', // #E7E8E9
-      secondaryForeground: '0 0% 9%', // #171717
-    },
-    colorsDark: {
+    dark: {
       accent: '35 100% 50% / 0.2', // Semi-transparent version of brand
-      accentForeground: '0 0% 9%',
+      'accent-foreground': '0 0% 9%',
       background: '220 27% 18%', // #1F2430
       border: '220 13% 26%', // #33415E
       brand: '35 100% 50%', // #FF9940
       card: '220 27% 18%', // #1F2430
-      cardForeground: '0 0% 100%', // #FFFFFF
+      'card-foreground': '0 0% 100%', // #FFFFFF
       destructive: '0 100% 67%', // #FF3333
-      destructiveForeground: '0 0% 100%', // #FFFFFF
+      'destructive-foreground': '0 0% 100%', // #FFFFFF
       foreground: '0 0% 100%', // #FFFFFF
       highlight: '50 100% 60%', // #FFD740
       input: '220 13% 26%', // #33415E
       muted: '220 13% 26%', // #33415E
-      mutedForeground: '220 13% 65%', // #8A9199
+      'muted-foreground': '220 13% 65%', // #8A9199
       popover: '220 27% 18%', // #1F2430
-      popoverForeground: '0 0% 100%', // #FFFFFF
+      'popover-foreground': '0 0% 100%', // #FFFFFF
       primary: '35 100% 50%', // #FF9940
-      primaryForeground: '0 0% 100%', // #FFFFFF
+      'primary-foreground': '0 0% 100%', // #FFFFFF
       ring: '35 100% 50%', // #FF9940
       secondary: '220 13% 26%', // #33415E
-      secondaryForeground: '0 0% 100%', // #FFFFFF
+      'secondary-foreground': '0 0% 100%', // #FFFFFF
     },
-    fontFamily: {
-      body: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
-      heading: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
+    light: {
+      accent: '35 100% 50% / 0.3', // Semi-transparent version of brand
+      'accent-foreground': '0 0% 9%',
+      background: '38 100% 99%', // #FAFAFA
+      border: '44 17% 88%', // #E7E8E9
+      brand: '35 100% 50%', // #FF9940
+      card: '38 100% 99%', // #FAFAFA
+      'card-foreground': '0 0% 9%', // #171717
+      destructive: '0 100% 67%', // #FF3333
+      'destructive-foreground': '0 0% 100%', // #FFFFFF
+      foreground: '0 0% 9%', // #171717
+      highlight: '50 100% 60%', // #FFD740
+      input: '44 17% 88%', // #E7E8E9
+      muted: '44 17% 88%', // #E7E8E9
+      'muted-foreground': '0 0% 45%', // #737373
+      popover: '38 100% 99%', // #FAFAFA
+      'popover-foreground': '0 0% 9%', // #171717
+      primary: '35 100% 50%', // #FF9940
+      'primary-foreground': '0 0% 100%', // #FFFFFF
+      ring: '35 100% 50%', // #FF9940
+      secondary: '44 17% 88%', // #E7E8E9
+      'secondary-foreground': '0 0% 9%', // #171717
     },
     name: 'Ayu',
-    radius: 0.5,
   },
   catppuccin: {
     id: 'catppuccin',
-    colors: {
-      accent: '266 85% 58% / 0.2', // Mauve with opacity
-      accentForeground: '234 16% 35%', // Text
-      background: '220 23% 95%', // Base
-      border: '225 14% 77%', // Surface1
-      brand: '266 85% 58%', // Mauve
-      card: '220 23% 95%', // Base
-      cardForeground: '234 16% 35%', // Text
-      destructive: '347 87% 44%', // Red
-      destructiveForeground: '220 23% 95%', // Base
-      foreground: '234 16% 35%', // Text
-      highlight: '231 97% 72%', // Lavender
-      input: '227 12% 71%', // Surface2
-      muted: '223 16% 83%', // Surface0
-      mutedForeground: '233 10% 47%', // Subtext0
-      popover: '220 23% 95%', // Base
-      popoverForeground: '234 16% 35%', // Text
-      primary: '266 85% 58%', // Mauve
-      primaryForeground: '220 23% 95%', // Base
-      ring: '266 85% 58%', // Mauve
-      secondary: '231 97% 72%', // Lavender
-      secondaryForeground: '234 16% 35%', // Text
-    },
-    colorsDark: {
+    dark: {
       accent: '267 83% 80% / 0.2', // Mauve with opacity
-      accentForeground: '227 68% 88%', // Text
+      'accent-foreground': '227 68% 88%', // Text
       background: '232 23% 18%', // Base
       border: '231 16% 34%', // Surface1
       brand: '267 83% 80%', // Mauve
       card: '232 23% 18%', // Base
-      cardForeground: '227 68% 88%', // Text
+      'card-foreground': '227 68% 88%', // Text
       destructive: '351 74% 73%', // Red
-      destructiveForeground: '227 68% 88%', // Text
+      'destructive-foreground': '227 68% 88%', // Text
       foreground: '227 68% 88%', // Text
       highlight: '234 82% 85%', // Lavender
       input: '230 14% 41%', // Surface2
       muted: '230 19% 26%', // Surface0
-      mutedForeground: '228 39% 80%', // Subtext1
+      'muted-foreground': '228 39% 80%', // Subtext1
       popover: '232 23% 18%', // Base
-      popoverForeground: '227 68% 88%', // Text
+      'popover-foreground': '227 68% 88%', // Text
       primary: '267 83% 80%', // Mauve
-      primaryForeground: '232 23% 18%', // Base
+      'primary-foreground': '232 23% 18%', // Base
       ring: '267 83% 80%', // Mauve
       secondary: '234 82% 85%', // Lavender
-      secondaryForeground: '227 68% 88%', // Text
+      'secondary-foreground': '227 68% 88%', // Text
     },
-    fontFamily: {
-      body: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
-      heading: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
+    light: {
+      accent: '266 85% 58% / 0.2', // Mauve with opacity
+      'accent-foreground': '234 16% 35%', // Text
+      background: '220 23% 95%', // Base
+      border: '225 14% 77%', // Surface1
+      brand: '266 85% 58%', // Mauve
+      card: '220 23% 95%', // Base
+      'card-foreground': '234 16% 35%', // Text
+      destructive: '347 87% 44%', // Red
+      'destructive-foreground': '220 23% 95%', // Base
+      foreground: '234 16% 35%', // Text
+      highlight: '231 97% 72%', // Lavender
+      input: '227 12% 71%', // Surface2
+      muted: '223 16% 83%', // Surface0
+      'muted-foreground': '233 10% 47%', // Subtext0
+      popover: '220 23% 95%', // Base
+      'popover-foreground': '234 16% 35%', // Text
+      primary: '266 85% 58%', // Mauve
+      'primary-foreground': '220 23% 95%', // Base
+      ring: '266 85% 58%', // Mauve
+      secondary: '231 97% 72%', // Lavender
+      'secondary-foreground': '234 16% 35%', // Text
     },
     name: 'Catppuccin',
-    radius: 0.5,
   },
   'default-palette': {
     id: 'default-palette',
-    colors: {
-      accent: '240 4.8% 95.9%',
-      'accent-foreground': '240 5.9% 10%',
-      background: '0 0% 100%',
-      border: '240 5.9% 90%',
-      brand: '240 5.9% 10%', // Same as primary
-      card: '0 0% 100%',
-      'card-foreground': '240 10% 3.9%',
-      destructive: '0 84.2% 60.2%',
-      'destructive-foreground': '0 0% 98%',
-      foreground: '240 10% 3.9%',
-      highlight: '240 4.8% 95.9%', // Same as secondary
-      input: '240 5.9% 90%',
-      muted: '240 4.8% 95.9%',
-      'muted-foreground': '240 3.8% 46.1%',
-      popover: '0 0% 100%',
-      'popover-foreground': '240 10% 3.9%',
-      primary: '240 5.9% 10%',
-      'primary-foreground': '0 0% 98%',
-      ring: '240 10% 3.9%',
-      secondary: '240 4.8% 95.9%',
-      'secondary-foreground': '240 5.9% 10%',
-    },
-    colorsDark: {
+    dark: {
       accent: '240 3.7% 15.9%',
       'accent-foreground': '0 0% 98%',
       background: '240 10% 3.9%',
@@ -169,33 +124,18 @@ const _THEMES = {
       secondary: '240 3.7% 15.9%',
       'secondary-foreground': '0 0% 98%',
     },
-    fontFamily: {
-      body: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
-      heading: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
-    },
-    name: 'Default Palette',
-    radius: 0.5,
-  },
-  'default-shadcn': {
-    id: 'default-shadcn',
-    colors: {
+    light: {
       accent: '240 4.8% 95.9%',
       'accent-foreground': '240 5.9% 10%',
       background: '0 0% 100%',
       border: '240 5.9% 90%',
-      brand: '217.2 91.2% 59.8%',
+      brand: '240 5.9% 10%', // Same as primary
       card: '0 0% 100%',
       'card-foreground': '240 10% 3.9%',
       destructive: '0 84.2% 60.2%',
       'destructive-foreground': '0 0% 98%',
       foreground: '240 10% 3.9%',
-      highlight: '47.9 95.8% 53.1%',
+      highlight: '240 4.8% 95.9%', // Same as secondary
       input: '240 5.9% 90%',
       muted: '240 4.8% 95.9%',
       'muted-foreground': '240 3.8% 46.1%',
@@ -207,7 +147,11 @@ const _THEMES = {
       secondary: '240 4.8% 95.9%',
       'secondary-foreground': '240 5.9% 10%',
     },
-    colorsDark: {
+    name: 'Default Palette',
+  },
+  'default-shadcn': {
+    id: 'default-shadcn',
+    dark: {
       accent: '240 3.7% 15.9%',
       'accent-foreground': '0 0% 98%',
       background: '240 10% 3.9%',
@@ -230,107 +174,96 @@ const _THEMES = {
       secondary: '240 3.7% 15.9%',
       'secondary-foreground': '0 0% 98%',
     },
-    fontFamily: {
-      body: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
-      heading: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
+    light: {
+      accent: '240 4.8% 95.9%',
+      'accent-foreground': '240 5.9% 10%',
+      background: '0 0% 100%',
+      border: '240 5.9% 90%',
+      brand: '217.2 91.2% 59.8%',
+      card: '0 0% 100%',
+      'card-foreground': '240 10% 3.9%',
+      destructive: '0 84.2% 60.2%',
+      'destructive-foreground': '0 0% 98%',
+      foreground: '240 10% 3.9%',
+      highlight: '47.9 95.8% 53.1%',
+      input: '240 5.9% 90%',
+      muted: '240 4.8% 95.9%',
+      'muted-foreground': '240 3.8% 46.1%',
+      popover: '0 0% 100%',
+      'popover-foreground': '240 10% 3.9%',
+      primary: '240 5.9% 10%',
+      'primary-foreground': '0 0% 98%',
+      ring: '240 10% 3.9%',
+      secondary: '240 4.8% 95.9%',
+      'secondary-foreground': '240 5.9% 10%',
     },
     name: 'Default',
-    radius: 0.5,
   },
   dune: {
     id: 'dune',
-    colors: {
-      accent: '36 33% 75% / 0.2',
-      accentForeground: '39 14% 22%',
-      background: '43 47% 92%',
-      border: '43 27% 84%',
-      brand: '39 14% 22%', // #3D3A34
-      card: '43 47% 92%',
-      cardForeground: '39 14% 22%',
-      destructive: '0 84% 33%',
-      destructiveForeground: '0 0% 100%',
-      foreground: '39 14% 22%',
-      highlight: '36 33% 75%', // #C9B99B
-      input: '43 27% 84%',
-      muted: '43 27% 84%',
-      mutedForeground: '39 14% 46%',
-      popover: '43 47% 92%',
-      popoverForeground: '39 14% 22%',
-      primary: '39 14% 22%',
-      primaryForeground: '43 47% 92%',
-      ring: '39 14% 22%',
-      secondary: '43 27% 84%',
-      secondaryForeground: '39 14% 22%',
-    },
-    colorsDark: {
+    dark: {
       accent: '36 33% 75% / 0.3',
-      accentForeground: '39 14% 22%',
+      'accent-foreground': '39 14% 22%',
       background: '39 14% 12%',
       border: '43 27% 16%',
       brand: '43 47% 88%', // #EBE6D5
       card: '39 14% 14%',
-      cardForeground: '43 47% 88%',
+      'card-foreground': '43 47% 88%',
       destructive: '0 84% 60%',
-      destructiveForeground: '0 0% 100%',
+      'destructive-foreground': '0 0% 100%',
       foreground: '43 47% 88%',
       highlight: '36 33% 25%', // #564F3F
       input: '43 27% 16%',
       muted: '43 27% 16%',
-      mutedForeground: '39 14% 64%',
+      'muted-foreground': '39 14% 64%',
       popover: '39 14% 14%',
-      popoverForeground: '43 47% 88%',
+      'popover-foreground': '43 47% 88%',
       primary: '43 47% 88%',
-      primaryForeground: '39 14% 12%',
+      'primary-foreground': '39 14% 12%',
       ring: '43 47% 88%',
       secondary: '43 27% 16%',
-      secondaryForeground: '43 47% 88%',
+      'secondary-foreground': '43 47% 88%',
     },
-    fontFamily: {
-      body: {
-        name: 'Space Mono',
-        type: 'monospace',
-      },
-      heading: {
-        name: 'DM Sans',
-        type: 'sans-serif',
-      },
+    // fontFamily: {
+    //   body: {
+    //     name: 'Space Mono',
+    //     type: 'monospace',
+    //   },
+    //   heading: {
+    //     name: 'DM Sans',
+    //     type: 'sans-serif',
+    //   },
+    // },
+    light: {
+      accent: '36 33% 75% / 0.2',
+      'accent-foreground': '39 14% 22%',
+      background: '43 47% 92%',
+      border: '43 27% 84%',
+      brand: '39 14% 22%', // #3D3A34
+      card: '43 47% 92%',
+      'card-foreground': '39 14% 22%',
+      destructive: '0 84% 33%',
+      'destructive-foreground': '0 0% 100%',
+      foreground: '39 14% 22%',
+      highlight: '36 33% 75%', // #C9B99B
+      input: '43 27% 84%',
+      muted: '43 27% 84%',
+      'muted-foreground': '39 14% 46%',
+      popover: '43 47% 92%',
+      'popover-foreground': '39 14% 22%',
+      primary: '39 14% 22%',
+      'primary-foreground': '43 47% 92%',
+      ring: '39 14% 22%',
+      secondary: '43 27% 84%',
+      'secondary-foreground': '39 14% 22%',
     },
     name: 'Dune',
   },
   everforest: {
     id: 'everforest',
-    colors: {
-      accent: '142 40% 46% / 0.2',
-      accentForeground: '151 17% 39%',
-      background: '44 96% 98%', // #fdf6e3
-      border: '44 24% 83%', // #e0dcc7
-      brand: '142 40% 46%', // #8DA101
-      card: '44 96% 98%', // #fdf6e3
-      cardForeground: '151 17% 39%', // #5c6a72
-      destructive: '3 89% 65%', // #f85552
-      destructiveForeground: '44 96% 98%', // #fdf6e3
-      foreground: '151 17% 39%', // #5c6a72
-      highlight: '88 23% 63%', // #A7C080
-      input: '44 24% 83%', // #e0dcc7
-      muted: '44 24% 95%', // #f4f0d9
-      mutedForeground: '151 9% 43%',
-      popover: '44 96% 98%', // #fdf6e3
-      popoverForeground: '151 17% 39%', // #5c6a72
-      primary: '142 40% 46%', // #8da101
-      primaryForeground: '44 96% 98%', // #fdf6e3
-      ring: '142 40% 46%', // #8da101
-      secondary: '44 24% 95%', // #f4f0d9
-      secondaryForeground: '151 17% 39%',
-    },
-    colorsDark: {
+    dark: {
       accent: '88 23% 63% / 0.2',
-      accentForeground: '39 14% 74%',
+      'accent-foreground': '39 14% 74%',
       background: '220 17% 20%',
       border: '210 9% 33%',
       brand: '88 23% 63%', // #A7C080
@@ -351,168 +284,136 @@ const _THEMES = {
       secondary: '210 9% 31%',
       'secondary-foreground': '39 14% 74%',
     },
-    fontFamily: {
-      body: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
-      heading: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
+    light: {
+      accent: '142 40% 46% / 0.2',
+      'accent-foreground': '151 17% 39%',
+      background: '44 96% 98%', // #fdf6e3
+      border: '44 24% 83%', // #e0dcc7
+      brand: '142 40% 46%', // #8DA101
+      card: '44 96% 98%', // #fdf6e3
+      'card-foreground': '151 17% 39%', // #5c6a72
+      destructive: '3 89% 65%', // #f85552
+      'destructive-foreground': '44 96% 98%', // #fdf6e3
+      foreground: '151 17% 39%', // #5c6a72
+      highlight: '88 23% 63%', // #A7C080
+      input: '44 24% 83%', // #e0dcc7
+      muted: '44 24% 95%', // #f4f0d9
+      'muted-foreground': '151 9% 43%',
+      popover: '44 96% 98%', // #fdf6e3
+      'popover-foreground': '151 17% 39%', // #5c6a72
+      primary: '142 40% 46%', // #8da101
+      'primary-foreground': '44 96% 98%', // #fdf6e3
+      ring: '142 40% 46%', // #8da101
+      secondary: '44 24% 95%', // #f4f0d9
+      'secondary-foreground': '151 17% 39%',
     },
     name: 'Everforest',
-    radius: 0.5,
   },
   github: {
     id: 'github',
-    colors: {
-      accent: '215 69% 43% / 0.2',
-      accentForeground: '215 14% 34%',
-      background: '0 0% 100%',
-      border: '210 18% 87%',
-      brand: '215 69% 43%', // #2F81F7
-      card: '0 0% 100%',
-      cardForeground: '215 14% 34%',
-      destructive: '0 72% 51%',
-      destructiveForeground: '0 0% 100%',
-      foreground: '215 14% 34%',
-      highlight: '212 92% 45%', // #1F6FEB
-      input: '210 18% 87%',
-      muted: '210 18% 96%',
-      mutedForeground: '215 14% 45%',
-      popover: '0 0% 100%',
-      popoverForeground: '215 14% 34%',
-      primary: '215 69% 43%',
-      primaryForeground: '0 0% 100%',
-      ring: '215 69% 43%',
-      secondary: '210 18% 96%',
-      secondaryForeground: '215 14% 34%',
-    },
-    colorsDark: {
+    dark: {
       accent: '212 92% 45% / 0.2',
-      accentForeground: '210 14% 93%',
+      'accent-foreground': '210 14% 93%',
       background: '215 28% 17%',
       border: '215 14% 25%',
       brand: '212 92% 45%', // #1F6FEB
       card: '215 28% 17%',
-      cardForeground: '210 14% 93%',
+      'card-foreground': '210 14% 93%',
       destructive: '0 72% 51%',
-      destructiveForeground: '210 14% 93%',
+      'destructive-foreground': '210 14% 93%',
       foreground: '210 14% 93%',
       highlight: '215 69% 43%', // #2F81F7
       input: '215 14% 25%',
       muted: '215 14% 25%',
-      mutedForeground: '217 10% 64%',
+      'muted-foreground': '217 10% 64%',
       popover: '215 28% 17%',
-      popoverForeground: '210 14% 93%',
+      'popover-foreground': '210 14% 93%',
       primary: '212 92% 45%',
-      primaryForeground: '210 14% 93%',
+      'primary-foreground': '210 14% 93%',
       ring: '212 92% 45%',
       secondary: '215 14% 25%',
-      secondaryForeground: '210 14% 93%',
+      'secondary-foreground': '210 14% 93%',
     },
-    fontFamily: {
-      body: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
-      heading: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
+    light: {
+      accent: '215 69% 43% / 0.2',
+      'accent-foreground': '215 14% 34%',
+      background: '0 0% 100%',
+      border: '210 18% 87%',
+      brand: '215 69% 43%', // #2F81F7
+      card: '0 0% 100%',
+      'card-foreground': '215 14% 34%',
+      destructive: '0 72% 51%',
+      'destructive-foreground': '0 0% 100%',
+      foreground: '215 14% 34%',
+      highlight: '212 92% 45%', // #1F6FEB
+      input: '210 18% 87%',
+      muted: '210 18% 96%',
+      'muted-foreground': '215 14% 45%',
+      popover: '0 0% 100%',
+      'popover-foreground': '215 14% 34%',
+      primary: '215 69% 43%',
+      'primary-foreground': '0 0% 100%',
+      ring: '215 69% 43%',
+      secondary: '210 18% 96%',
+      'secondary-foreground': '215 14% 34%',
     },
     name: 'GitHub',
-    radius: 0.375,
+    radius: '0.375',
   },
   horizon: {
     id: 'horizon',
-    colors: {
+    dark: {
       accent: '345 80% 70% / 0.2',
-      accentForeground: '345 6% 30%',
-      background: '345 6% 95%', // #fdf0ed
-      border: '345 6% 85%', // #e4d8d4
-      brand: '345 80% 70%', // #F075B5
-      card: '345 6% 93%', // #f9e8e4
-      cardForeground: '345 6% 30%', // #52484e
-      destructive: '0 72% 51%', // #e33400
-      destructiveForeground: '345 6% 95%', // #fdf0ed
-      foreground: '345 6% 30%', // #52484e
-      highlight: '344 96% 92%', // #FCEAE5
-      input: '345 6% 85%', // #e4d8d4
-      muted: '345 6% 90%', // #eee0dc
-      mutedForeground: '345 6% 50%', // #8b7b82
-      popover: '345 6% 93%', // #f9e8e4
-      popoverForeground: '345 6% 30%', // #52484e
-      primary: '345 80% 70%', // #f075b5
-      primaryForeground: '345 6% 95%', // #fdf0ed
-      ring: '345 80% 70%', // #f075b5
-      secondary: '345 6% 90%', // #eee0dc
-      secondaryForeground: '345 6% 30%', // #52484e
-    },
-    colorsDark: {
-      accent: '345 80% 70% / 0.2',
-      accentForeground: '345 6% 80%',
+      'accent-foreground': '345 6% 80%',
       background: '345 6% 15%', // #1c1e26
       border: '345 6% 25%', // #3d3741
       brand: '345 80% 70%', // #F075B5
       card: '345 6% 17%', // #232530
-      cardForeground: '345 6% 80%', // #d5d0d2
+      'card-foreground': '345 6% 80%', // #d5d0d2
       destructive: '0 72% 51%', // #e33400
-      destructiveForeground: '345 6% 95%', // #fdf0ed
+      'destructive-foreground': '345 6% 95%', // #fdf0ed
       foreground: '345 6% 80%', // #d5d0d2
       highlight: '344 96% 92%', // #FCEAE5
       input: '345 6% 25%', // #3d3741
       muted: '345 6% 20%', // #2e3037
-      mutedForeground: '345 6% 60%', // #a39fa1
+      'muted-foreground': '345 6% 60%', // #a39fa1
       popover: '345 6% 17%', // #232530
-      popoverForeground: '345 6% 80%', // #d5d0d2
+      'popover-foreground': '345 6% 80%', // #d5d0d2
       primary: '345 80% 70%', // #f075b5
-      primaryForeground: '345 6% 15%', // #1c1e26
+      'primary-foreground': '345 6% 15%', // #1c1e26
       ring: '345 80% 70%', // #f075b5
       secondary: '345 6% 20%', // #2e3037
-      secondaryForeground: '345 6% 80%', // #d5d0d2
+      'secondary-foreground': '345 6% 80%', // #d5d0d2
     },
-    fontFamily: {
-      body: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
-      heading: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
+    light: {
+      accent: '345 80% 70% / 0.2',
+      'accent-foreground': '345 6% 30%',
+      background: '345 6% 95%', // #fdf0ed
+      border: '345 6% 85%', // #e4d8d4
+      brand: '345 80% 70%', // #F075B5
+      card: '345 6% 93%', // #f9e8e4
+      'card-foreground': '345 6% 30%', // #52484e
+      destructive: '0 72% 51%', // #e33400
+      'destructive-foreground': '345 6% 95%', // #fdf0ed
+      foreground: '345 6% 30%', // #52484e
+      highlight: '344 96% 92%', // #FCEAE5
+      input: '345 6% 85%', // #e4d8d4
+      muted: '345 6% 90%', // #eee0dc
+      'muted-foreground': '345 6% 50%', // #8b7b82
+      popover: '345 6% 93%', // #f9e8e4
+      'popover-foreground': '345 6% 30%', // #52484e
+      primary: '345 80% 70%', // #f075b5
+      'primary-foreground': '345 6% 95%', // #fdf0ed
+      ring: '345 80% 70%', // #f075b5
+      secondary: '345 6% 90%', // #eee0dc
+      'secondary-foreground': '345 6% 30%', // #52484e
     },
     name: 'Horizon',
-    radius: 0.5,
   },
   linear: {
     id: 'linear',
-    colors: {
-      accent: '231 62% 63%', // #6e79d6
-      'accent-foreground': '0 0% 98%', // #FBFBFB
-      background: '0 0% 98%', // #FBFBFB
-      border: '220 9% 93%', // #edeef1
-      brand: '220 13% 86%', // #E1E3E8
-      card: '220 13% 95%', // #f2f3f5
-      'card-foreground': '216 14% 43%', // #5d6a7e
-      destructive: '0 80% 60%', // #ef4343
-      'destructive-foreground': '0 0% 98%', // #FBFBFB
-      foreground: '216 14% 43%', // #5d6a7e
-      highlight: '220 13% 93%', // #F1F2F4
-      input: '220 13% 91%', // #e8eaee
-      muted: '220 13% 91%', // #e8eaee
-      'muted-foreground': '215 13% 65%', // #8b96a9
-      popover: '220 13% 95%', // #f2f3f5
-      'popover-foreground': '216 14% 43%', // #5d6a7e
-      primary: '231 62% 63%', // #6e79d6
-      'primary-foreground': '0 0% 98%', // #FBFBFB
-      ring: '231 62% 63%', // #6e79d6
-      secondary: '220 13% 91%', // #e8eaee
-      'secondary-foreground': '216 14% 43%', // #5d6a7e
-    },
     // Linear Dark
-    colorsDark: {
+    dark: {
       accent: '231 62% 60%', // #5e6ad2
       'accent-foreground': '220 5% 77%', // #c1c3c8
       background: '220 7% 13%', // #1f2023
@@ -535,22 +436,44 @@ const _THEMES = {
       secondary: '225 7% 21%', // #323439
       'secondary-foreground': '220 5% 77%', // #c1c3c8
     },
-    fontFamily: {
-      body: {
-        name: 'Manrope',
-        type: 'sans-serif',
-      },
-      heading: {
-        name: 'Manrope',
-        type: 'sans-serif',
-      },
+    // fontFamily: {
+    //   body: {
+    //     name: 'Manrope',
+    //     type: 'sans-serif',
+    //   },
+    //   heading: {
+    //     name: 'Manrope',
+    //     type: 'sans-serif',
+    //   },
+    // },
+    light: {
+      accent: '231 62% 63%', // #6e79d6
+      'accent-foreground': '0 0% 98%', // #FBFBFB
+      background: '0 0% 98%', // #FBFBFB
+      border: '220 9% 93%', // #edeef1
+      brand: '220 13% 86%', // #E1E3E8
+      card: '220 13% 95%', // #f2f3f5
+      'card-foreground': '216 14% 43%', // #5d6a7e
+      destructive: '0 80% 60%', // #ef4343
+      'destructive-foreground': '0 0% 98%', // #FBFBFB
+      foreground: '216 14% 43%', // #5d6a7e
+      highlight: '220 13% 93%', // #F1F2F4
+      input: '220 13% 91%', // #e8eaee
+      muted: '220 13% 91%', // #e8eaee
+      'muted-foreground': '215 13% 65%', // #8b96a9
+      popover: '220 13% 95%', // #f2f3f5
+      'popover-foreground': '216 14% 43%', // #5d6a7e
+      primary: '231 62% 63%', // #6e79d6
+      'primary-foreground': '0 0% 98%', // #FBFBFB
+      ring: '231 62% 63%', // #6e79d6
+      secondary: '220 13% 91%', // #e8eaee
+      'secondary-foreground': '216 14% 43%', // #5d6a7e
     },
     name: 'Linear',
-    radius: 0.5,
   },
   'one-dark-pro': {
     id: 'one-dark-pro',
-    colors: {
+    dark: {
       accent: '220 13% 33%',
       'accent-foreground': '220 13% 93%',
       background: '220 13% 18%',
@@ -573,7 +496,7 @@ const _THEMES = {
       secondary: '220 3% 25%',
       'secondary-foreground': '220 3% 85%',
     },
-    colorsDark: {
+    light: {
       accent: '220 13% 33%',
       'accent-foreground': '220 13% 93%',
       background: '220 13% 18%',
@@ -595,29 +518,16 @@ const _THEMES = {
       ring: '220 13% 86%',
       secondary: '220 3% 25%',
       'secondary-foreground': '220 3% 85%',
-    },
-    fontFamily: {
-      body: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
-      heading: {
-        name: 'Inter',
-        type: 'sans-serif',
-      },
     },
     name: 'One Dark Pro',
-    radius: 0.5,
   },
-};
+} as const;
 
 Object.entries(_THEMES).forEach(([key, theme]) => {
   (_THEMES as any)[key] = {
     ...theme,
-    cssVars: {
-      dark: themeColorsToCssVariables(theme.colorsDark),
-      light: themeColorsToCssVariables(theme.colors),
-    },
+    dark: themeColorsToCssVariables(theme.dark),
+    light: themeColorsToCssVariables(theme.light),
   };
 });
 
@@ -655,7 +565,7 @@ export const THEME_LIST = [
   THEMES['default-shadcn'],
   THEMES.github,
   THEMES.catppuccin,
-  // THEMES.linear,
+
   THEMES.ayu,
   THEMES.horizon,
   THEMES.everforest,
@@ -665,24 +575,9 @@ export const THEME_LIST = [
 
 export type Theme = {
   id: ThemeId;
-  colors: Record<string, string>;
-  colorsDark: Record<string, string>;
-  cssVars: {
-    dark: Record<string, string>;
-    light: Record<string, string>;
-  };
-  fontFamily: {
-    body: {
-      name: string;
-      type: string;
-    };
-    heading: {
-      name: string;
-      type: string;
-    };
-  };
+  dark: Record<string, string>;
+  light: Record<string, string>;
   name: string;
-  radius?: number;
 };
 
 export type ThemeId = keyof typeof _THEMES;

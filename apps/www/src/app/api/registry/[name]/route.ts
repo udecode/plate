@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { highlightFiles } from '@/lib/highlight-code';
-import { getRegistryItem } from '@/lib/registry';
+import { getRegistryItem } from '@/lib/rehype-utils';
 import { registry } from '@/registry/registry';
 
 export const dynamic = 'force-static';

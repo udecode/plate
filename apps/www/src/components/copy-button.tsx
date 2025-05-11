@@ -7,17 +7,17 @@ import type { NpmCommands } from '@/types/unist';
 import type { DropdownMenuTriggerProps } from '@radix-ui/react-dropdown-menu';
 
 import { CheckIcon, ClipboardIcon } from '@radix-ui/react-icons';
-import { cn } from '@udecode/cn';
 
-import { type Event, trackEvent } from '@/lib/events';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/registry/default/plate-ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
+import { type Event, trackEvent } from '@/lib/events';
+import { cn } from '@/lib/utils';
 
 import { Icons } from './icons';
 
@@ -56,7 +56,7 @@ export function CopyButton({
       size="icon"
       variant={variant}
       className={cn(
-        'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50 [&_svg]:size-3',
+        'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50 [&_svg]:!size-3',
         className
       )}
       onClick={() => {

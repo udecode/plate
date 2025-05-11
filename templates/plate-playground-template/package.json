@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "depset": "pnpm dlx depset@latest @udecode --yes",
     "dev": "next dev --turbo",
     "lint": "next lint",
     "lint:fix": "next lint --fix && prettier --write . --log-level warn",
     "preview": "next build && next start",
     "start": "next start",
-    "sync": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/sync.mts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

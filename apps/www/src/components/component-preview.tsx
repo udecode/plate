@@ -2,12 +2,10 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
-
 import { Index } from '@/__registry__';
 import { BlockViewer } from '@/components/block-viewer';
-import { useConfig } from '@/hooks/use-config';
-import { useMounted } from '@/registry/default/hooks/use-mounted';
+import { cn } from '@/lib/utils';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { Icons } from './icons';
 
@@ -42,10 +40,8 @@ export function ComponentPreview({
   type,
   ...props
 }: ComponentPreviewProps) {
-  const [config] = useConfig();
-
   const Preview = React.useMemo(() => {
-    const Component = Index[config.style][name]?.component;
+    const Component = Index[name]?.component;
 
     if (!Component) {
       return (
@@ -61,7 +57,7 @@ export function ComponentPreview({
 
     // DIFF
     return <Component {...props} id={props.id ?? name.replace('-demo', '')} />;
-  }, [config.style, name, props]);
+  }, [name, props]);
 
   const mounted = useMounted();
 
@@ -71,6 +67,14 @@ export function ComponentPreview({
       Loading...
     </div>
   );
+
+  const item = props.item ?? JSON.parse(props.__item__ ?? '[]');
+  if (name === 'potion-iframe-demo') {
+    if (!item.meta) {
+      item.meta = {};
+    }
+    item.meta.isPro = true;
+  }
 
   return (
     <div className="mt-4 mb-12">
@@ -83,8 +87,7 @@ export function ComponentPreview({
           props.highlightedFiles ??
           JSON.parse(props.__highlightedFiles__ ?? '[]')
         }
-        isPro={name === 'potion-iframe-demo'}
-        item={props.item ?? JSON.parse(props.__item__ ?? '[]')}
+        item={item}
         preview={
           <React.Suspense fallback={loadingPreview}>
             {mounted ? (

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "import-toolbar-button",
+  "type": "registry:ui",
+  "title": "Import Toolbar Button",
+  "description": "A toolbar button to import editor content from a file.",
+  "dependencies": [
+    "use-file-picker"
+  ],
+  "registryDependencies": [
+    "dropdown-menu",
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/import-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';\n\nimport { getEditorDOMFromHtmlString } from '@udecode/plate';\nimport { MarkdownPlugin } from '@udecode/plate-markdown';\nimport { useEditorRef } from '@udecode/plate/react';\nimport { ArrowUpToLineIcon } from 'lucide-react';\nimport { useFilePicker } from 'use-file-picker';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuGroup,\n  DropdownMenuItem,\n  DropdownMenuTrigger,\n} from '@/components/ui/dropdown-menu';\n\nimport { ToolbarButton } from './toolbar';\n\ntype ImportType = 'html' | 'markdown';\n\nexport function ImportToolbarButton(props: DropdownMenuProps) {\n  const editor = useEditorRef();\n  const [open, setOpen] = React.useState(false);\n\n  const getFileNodes = (text: string, type: ImportType) => {\n    if (type === 'html') {\n      const editorNode = getEditorDOMFromHtmlString(text);\n      const nodes = editor.api.html.deserialize({\n        element: editorNode,\n      });\n\n      return nodes;\n    }\n\n    if (type === 'markdown') {\n      return editor.getApi(MarkdownPlugin).markdown.deserialize(text);\n    }\n\n    return [];\n  };\n\n  const { openFilePicker: openMdFilePicker } = useFilePicker({\n    accept: ['.md', '.mdx'],\n    multiple: false,\n    onFilesSelected: async ({ plainFiles }) => {\n      const text = await plainFiles[0].text();\n\n      const nodes = getFileNodes(text, 'markdown');\n\n      editor.tf.insertNodes(nodes);\n    },\n  });\n\n  const { openFilePicker: openHtmlFilePicker } = useFilePicker({\n    accept: ['text/html'],\n    multiple: false,\n    onFilesSelected: async ({ plainFiles }) => {\n      const text = await plainFiles[0].text();\n\n      const nodes = getFileNodes(text, 'html');\n\n      editor.tf.insertNodes(nodes);\n    },\n  });\n\n  return (\n    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>\n      <DropdownMenuTrigger asChild>\n        <ToolbarButton pressed={open} tooltip=\"Import\" isDropdown>\n          <ArrowUpToLineIcon className=\"size-4\" />\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent align=\"start\">\n        <DropdownMenuGroup>\n          <DropdownMenuItem\n            onSelect={() => {\n              openHtmlFilePicker();\n            }}\n          >\n            Import from HTML\n          </DropdownMenuItem>\n\n          <DropdownMenuItem\n            onSelect={() => {\n              openMdFilePicker();\n            }}\n          >\n            Import from Markdown\n          </DropdownMenuItem>\n        </DropdownMenuGroup>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/import",
+        "title": "Import"
+      }
+    ],
+    "examples": [
+      "basic-nodes-demo"
+    ],
+    "label": "New"
+  }
+}

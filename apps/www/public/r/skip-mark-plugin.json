@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "skip-mark-plugin",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-basic-marks"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/skip-mark-plugin.ts",
+      "content": "'use client';\n\nimport { CodePlugin, SkipMarkPlugin } from '@udecode/plate-basic-marks/react';\nimport { CommentsPlugin } from '@udecode/plate-comments/react';\nimport { SuggestionPlugin } from '@udecode/plate-suggestion/react';\n\nexport const skipMarkPlugin = SkipMarkPlugin.configure({\n  options: {\n    query: {\n      allow: [SuggestionPlugin.key, CodePlugin.key, CommentsPlugin.key],\n    },\n  },\n});\n",
+      "type": "registry:component"
+    }
+  ]
+}

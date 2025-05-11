@@ -5,7 +5,7 @@ import { docsExamples } from '@/config/docs-examples';
 import { pluginNavMap, pluginsNavItems } from '@/config/docs-plugins';
 import { navToObject } from '@/config/nav-to-object';
 import { registryToNav } from '@/config/registry-to-nav';
-import { uiComponents, uiNodes, uiPrimitives } from '@/registry/registry-ui';
+import { uiComponents, uiNodes } from '@/registry/registry-ui';
 
 import { siteConfig } from './site';
 
@@ -23,10 +23,6 @@ export const componentNavGroups: SidebarNavItem[] = [
   {
     items: registryToNav(uiComponents),
     title: 'Components',
-  },
-  {
-    items: registryToNav(uiPrimitives),
-    title: 'Primitives',
   },
 ];
 
@@ -56,6 +52,11 @@ export const overviewNavItems: SidebarNavItem[] = [
   {
     href: '/docs/components',
     title: 'Components',
+  },
+  {
+    href: '/docs/components/mcp',
+    label: 'New',
+    title: 'MCP',
   },
 ];
 
@@ -143,20 +144,9 @@ export const componentGuidesNavItems: SidebarNavItem[] = [
     title: 'Installation',
   },
   {
-    href: '/docs/components/components-json',
-    title: 'components.json',
-  },
-  {
-    href: '/docs/components/theming',
-    title: 'Theming',
-  },
-  {
-    href: '/docs/components/dark-mode',
-    title: 'Dark mode',
-  },
-  {
-    href: '/docs/components/cli',
-    title: 'CLI',
+    href: '/docs/components/mcp',
+    label: 'New',
+    title: 'MCP',
   },
   {
     href: '/docs/components/changelog',

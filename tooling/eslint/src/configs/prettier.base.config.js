@@ -20,7 +20,7 @@ export default {
   tabWidth: 2,
 
   tailwindFunctions: ['cn', 'cva', 'withCn'],
-  tailwindStylesheet: '../../apps/www/src/styles/globals.css',
+  tailwindStylesheet: '../../apps/www/src/app/globals.css',
 
   // https://prettier.io/docs/en/options.html#trailing-commas
   trailingComma: 'es5',

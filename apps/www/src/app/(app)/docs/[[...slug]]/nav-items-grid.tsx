@@ -4,17 +4,17 @@ import { Suspense, useState } from 'react';
 
 import type { SidebarNavItem } from '@/types/nav';
 
-import { cn } from '@udecode/cn';
 import Link from 'next/link';
 
 import { DocBreadcrumb } from '@/app/(app)/docs/[[...slug]]/doc-breadcrumb';
 import { H3 } from '@/components/typography';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { getDocIcon } from '@/config/docs-icons';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { useLocale } from '@/hooks/useLocale';
+import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
-import { Input } from '@/registry/default/plate-ui/input';
 
 export function NavItemCard({
   category,
@@ -32,13 +32,15 @@ export function NavItemCard({
       className="rounded-lg"
       href={hrefWithLocale(item.href!, locale)}
     >
-      <Card className="h-full bg-muted/30 transition-shadow duration-200 hover:shadow-md">
+      <Card className="h-full bg-muted/30 p-0 transition-shadow duration-200 hover:shadow-md">
         <CardContent className="flex gap-2 p-2">
-          {Icon && (
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-white">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-white">
+            {Icon ? (
               <Icon className="size-5 text-neutral-800" />
-            </div>
-          )}
+            ) : (
+              <div className="size-5" />
+            )}
+          </div>
           <div className="space-y-0">
             <CardTitle className="mt-0.5 line-clamp-1 text-base font-medium">
               {item.title}

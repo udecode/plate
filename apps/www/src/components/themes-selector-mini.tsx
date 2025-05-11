@@ -2,18 +2,18 @@
 
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
 import { useTheme } from 'next-themes';
 
-import { useThemesConfig } from '@/hooks/use-themes-config';
-import { type Theme, THEME_LIST, THEMES } from '@/lib/themes';
-import { useMounted } from '@/registry/default/hooks/use-mounted';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/registry/default/plate-ui/tooltip';
+} from '@/components/ui/tooltip';
+import { useThemesConfig } from '@/hooks/use-themes-config';
+import { type Theme, THEME_LIST, THEMES } from '@/lib/themes';
+import { cn } from '@/lib/utils';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { Skeleton } from './ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
@@ -70,16 +70,12 @@ export function ThemesSwitcher({
         {themes.map((theme) => {
           const isActive = theme.name === activeTheme.name;
           // const isDarkTheme = ['Midnight'].includes(theme.name);
-          const cssVars =
-            mounted && mode === 'dark'
-              ? theme.cssVars.dark
-              : theme.cssVars.light;
+          const cssVars = mounted && mode === 'dark' ? theme.dark : theme.light;
 
           return (
             <Tooltip key={theme.name}>
               <TooltipTrigger asChild>
                 <ToggleGroupItem
-                  variant="none"
                   className={cn(
                     'group flex size-10 shrink-0 items-center justify-center rounded-lg border-2 border-transparent p-0 aria-checked:border-(--color-1)'
                     // mounted && isDarkTheme && mode !== 'dark' ? 'invert-1' : ''

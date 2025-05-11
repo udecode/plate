@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "potion-iframe-demo",
+  "type": "registry:example",
+  "dependencies": [
+    "@udecode/cn"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/potion-iframe-demo.tsx",
+      "content": "'use client';\n\nexport default function PotionIframeDemo() {\n  return (\n    <iframe\n      className=\"h-[800px] w-full rounded-lg border\"\n      title=\"potion\"\n      src=\"https://potion.platejs.org/?iframe=true\"\n    />\n  );\n}\n",
+      "type": "registry:example"
+    }
+  ]
+}

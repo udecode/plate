@@ -39,7 +39,7 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
 
   const ranges: SearchRange[] = [];
   let cumulativePosition = 0;
-  let matchIndex = 0; // Index in the matches array
+  let matchIndex = 0; // index in the matches array
 
   for (const [textIndex, text] of texts.entries()) {
     const textStart = cumulativePosition;

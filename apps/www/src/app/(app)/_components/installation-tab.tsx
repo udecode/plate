@@ -20,15 +20,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   allPlugins,
   customizerItems,
   orderedPluginKeys,
 } from '@/config/customizer-items';
+import { siteConfig } from '@/config/site';
 import { useLocale } from '@/hooks/useLocale';
-import { useMounted } from '@/registry/default/hooks/use-mounted';
-import { Label } from '@/registry/default/plate-ui/label';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { InstallationCode } from './installation-code';
 
@@ -195,7 +196,7 @@ export default function InstallationTab() {
 
   const installCommands = useMemo(() => {
     return {
-      components: `npx shadcx@latest add plate/${Array.from(
+      components: `npx shadcn@canary add ${siteConfig.registryUrl}${Array.from(
         components.reduce(
           (uniqueFilenames, { id, filename, noImport, registry }) => {
             if (noImport) return uniqueFilenames;
@@ -298,7 +299,7 @@ export default function InstallationTab() {
       ([componentId, importValues]) =>
         `import { ${Array.from(importValues).join(
           ', '
-        )} } from '@/components/plate-ui/${componentId}';`
+        )} } from '@/components/ui/${componentId}';`
     );
 
     const imports = [
@@ -317,7 +318,7 @@ export default function InstallationTab() {
 
     if (someComponents && isManual) {
       imports.push(
-        `import { TooltipProvider } from '@/components/plate-ui/tooltip';`
+        `import { TooltipProvider } from '@/components/ui/tooltip';`
       );
     }
 
@@ -517,7 +518,7 @@ export default function InstallationTab() {
           <div className="mt-6">
             <Typography.P>{content.useCommand}</Typography.P>
             <InstallationCode
-              code={`npx shadcx@latest add plate/editor-${
+              code={`npx shadcn@canary add ${siteConfig.registryUrl}editor-${
                 radioValue === 'editor-ai' ? 'ai' : 'basic'
               }`}
               bash

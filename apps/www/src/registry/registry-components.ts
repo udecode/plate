@@ -1,6 +1,44 @@
-import type { Registry } from 'shadcx/registry';
+import type { Registry } from 'shadcn/registry';
 
 const plugins: Registry['items'] = [
+  // Files
+  {
+    dependencies: [
+      '@ai-sdk/openai',
+      'ai',
+      '@ai-sdk/provider',
+      '@ai-sdk/provider-utils',
+    ],
+    files: [
+      {
+        path: 'app/api/ai/command/route.ts',
+        target: 'app/api/ai/command/route.ts',
+        type: 'registry:file',
+      },
+      {
+        path: 'app/api/ai/copilot/route.ts',
+        target: 'app/api/ai/copilot/route.ts',
+        type: 'registry:file',
+      },
+    ],
+    name: 'api-ai',
+    registryDependencies: [],
+    type: 'registry:file',
+  },
+  {
+    dependencies: ['uploadthing@7.6.0'],
+    files: [
+      {
+        path: 'app/api/uploadthing/route.ts',
+        target: 'app/api/uploadthing/route.ts',
+        type: 'registry:file',
+      },
+    ],
+    name: 'api-uploadthing',
+    registryDependencies: [],
+    type: 'registry:file',
+  },
+  // Components
   {
     dependencies: [
       '@udecode/plate-callout',
@@ -55,40 +93,23 @@ const plugins: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@udecode/plate-ai',
-      '@udecode/plate-basic-marks',
-      '@udecode/plate-block-quote',
-      '@udecode/plate-code-block',
-      '@udecode/plate-heading',
-      '@udecode/plate-horizontal-rule',
-      '@udecode/plate-link',
-      '@udecode/plate-markdown',
-    ],
+    dependencies: ['@udecode/plate-ai', '@udecode/plate-markdown'],
     files: [
       {
         path: 'components/editor/plugins/ai-plugins.tsx',
         type: 'registry:component',
       },
+      {
+        path: 'ui/ai-loading-bar.tsx',
+        type: 'registry:ui',
+      },
     ],
     name: 'ai-plugins',
     registryDependencies: [
-      'basic-nodes-plugins',
-      'block-selection-plugins',
+      'shadcn/button',
+      'markdown-plugin',
       'cursor-overlay-plugin',
-      'indent-list-plugins',
-      'link-plugin',
       'ai-menu',
-      'blockquote-element',
-      'code-block-element',
-      'code-leaf',
-      'code-line-element',
-      'code-syntax-leaf',
-      'cursor-overlay',
-      'heading-element',
-      'hr-element',
-      'link-element',
-      'paragraph-element',
     ],
     type: 'registry:component',
   },
@@ -101,10 +122,7 @@ const plugins: Registry['items'] = [
       },
     ],
     name: 'equation-plugins',
-    registryDependencies: [
-      'equation-element',
-      'inline-equation-toolbar-button',
-    ],
+    registryDependencies: ['inline-equation-toolbar-button'],
     type: 'registry:component',
   },
   {
@@ -236,11 +254,11 @@ const plugins: Registry['items'] = [
         type: 'registry:component',
       },
       {
-        path: 'plate-ui/suggestion-line-break.tsx',
+        path: 'ui/suggestion-line-break.tsx',
         type: 'registry:ui',
       },
       {
-        path: 'plate-ui/suggestion-toolbar-button.tsx',
+        path: 'ui/suggestion-toolbar-button.tsx',
         type: 'registry:ui',
       },
     ],
@@ -520,15 +538,98 @@ const plugins: Registry['items'] = [
 export const components: Registry['items'] = [
   ...plugins,
   {
-    dependencies: ['ai', '@faker-js/faker'],
+    dependencies: ['@ai-sdk/react', '@faker-js/faker'],
     files: [
       {
         path: 'components/editor/use-chat.ts',
         type: 'registry:component',
       },
+      {
+        path: 'components/editor/settings.tsx',
+        type: 'registry:component',
+      },
     ],
     name: 'use-chat',
-    registryDependencies: [],
+    registryDependencies: [
+      'shadcn/button',
+      'shadcn/dialog',
+      'shadcn/input',
+      'shadcn/popover',
+      'shadcn/command',
+    ],
+    type: 'registry:component',
+  },
+  {
+    dependencies: [
+      '@udecode/plate',
+      '@udecode/plate-ai',
+      '@udecode/plate-basic-marks',
+      '@udecode/plate-block-quote',
+      '@udecode/plate-callout',
+      '@udecode/plate-code-block',
+      '@udecode/plate-comments',
+      '@udecode/plate-date',
+      '@udecode/plate-emoji',
+      '@udecode/plate-heading',
+      '@udecode/plate-highlight',
+      '@udecode/plate-horizontal-rule',
+      '@udecode/plate-kbd',
+      '@udecode/plate-layout',
+      '@udecode/plate-link',
+      '@udecode/plate-math',
+      '@udecode/plate-media',
+      '@udecode/plate-mention',
+      '@udecode/plate-slash-command',
+      '@udecode/plate-suggestion',
+      '@udecode/plate-table',
+      '@udecode/plate-toggle',
+      '@udecode/cn',
+    ],
+    files: [
+      {
+        path: 'components/editor/use-create-editor.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'use-create-editor',
+    registryDependencies: [
+      'ai-leaf',
+      'blockquote-element',
+      'callout-element',
+      'code-block-element',
+      'code-leaf',
+      'code-line-element',
+      'code-syntax-leaf',
+      'column-element',
+      'column-group-element',
+      'comment-leaf',
+      'date-element',
+      'emoji-input-element',
+      'equation-element',
+      'heading-element',
+      'highlight-leaf',
+      'hr-element',
+      'image-element',
+      'inline-equation-element',
+      'kbd-leaf',
+      'link-element',
+      'media-audio-element',
+      'media-embed-element',
+      'media-file-element',
+      'media-placeholder-element',
+      'media-video-element',
+      'mention-element',
+      'mention-input-element',
+      'paragraph-element',
+      'slash-input-element',
+      'suggestion-leaf',
+      'table-cell-element',
+      'table-element',
+      'table-row-element',
+      'toc-element',
+      'toggle-element',
+      'editor-plugins',
+    ],
     type: 'registry:component',
   },
   {
@@ -545,7 +646,10 @@ export const components: Registry['items'] = [
       '@udecode/plate-table',
     ],
     files: [
-      { path: 'components/editor/transforms.ts', type: 'registry:component' },
+      {
+        path: 'components/editor/transforms.ts',
+        type: 'registry:component',
+      },
     ],
     name: 'transforms',
     type: 'registry:component',
@@ -565,7 +669,10 @@ export const components: Registry['items'] = [
       '@udecode/plate-toggle',
     ],
     files: [
-      { path: 'components/editor/plate-types.ts', type: 'registry:component' },
+      {
+        path: 'components/editor/plate-types.ts',
+        type: 'registry:component',
+      },
     ],
     name: 'plate-types',
     type: 'registry:component',

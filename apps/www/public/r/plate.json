@@ -1,0 +1,12 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plate",
+  "type": "registry:lib",
+  "description": "Use `npx shadcn@latest add https://platejs.org/r/<name>` to install items from this registry.",
+  "dependencies": [
+    "@udecode/plate"
+  ],
+  "devDependencies": [],
+  "registryDependencies": [],
+  "files": []
+}

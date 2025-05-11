@@ -3,13 +3,13 @@
 import { LanguagesIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/registry/default/plate-ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 
 export function LanguagesDropdownMenu() {
   const pathname = usePathname();

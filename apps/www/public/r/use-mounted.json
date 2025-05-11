@@ -1,0 +1,12 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "use-mounted",
+  "type": "registry:hook",
+  "files": [
+    {
+      "path": "src/registry/hooks/use-mounted.ts",
+      "content": "import * as React from 'react';\n\nexport function useMounted() {\n  const [mounted, setMounted] = React.useState(false);\n\n  React.useEffect(() => {\n    setMounted(true);\n  }, []);\n\n  return mounted;\n}\n",
+      "type": "registry:hook"
+    }
+  ]
+}

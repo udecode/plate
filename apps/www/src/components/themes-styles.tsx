@@ -2,7 +2,7 @@
 
 import { useConfig } from '@/hooks/use-config';
 import { useThemesConfig } from '@/hooks/use-themes-config';
-import { useMounted } from '@/registry/default/hooks/use-mounted';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 export function ThemesStyle() {
   const [config] = useConfig();
@@ -18,7 +18,7 @@ export function ThemesStyle() {
       {`
 .themes-wrapper,
 [data-chart] {
-  ${Object.entries(themesConfig.activeTheme.cssVars.light)
+  ${Object.entries(themesConfig.activeTheme.light)
     .map(([key, value]) => `${key}: hsl(${value});`)
     .join('\n')}
   --radius: ${config.radius}rem;
@@ -26,7 +26,7 @@ export function ThemesStyle() {
 
 .dark .themes-wrapper,
 .dark [data-chart] {
-  ${Object.entries(themesConfig.activeTheme.cssVars.dark)
+  ${Object.entries(themesConfig.activeTheme.dark)
     .map(([key, value]) => `${key}: hsl(${value});`)
     .join('\n')}
   --radius: ${config.radius}rem;

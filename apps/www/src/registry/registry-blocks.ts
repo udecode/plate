@@ -1,4 +1,4 @@
-import type { Registry } from 'shadcx/registry';
+import type { Registry } from 'shadcn/registry';
 
 export const blocks: Registry['items'] = [
   {
@@ -39,22 +39,20 @@ export const blocks: Registry['items'] = [
       },
       {
         path: 'blocks/editor-ai/components/editor/plate-editor.tsx',
-        target: 'components/editor/plate-editor.tsx',
         type: 'registry:component',
       },
       {
         path: 'blocks/editor-ai/components/editor/use-create-editor.ts',
-        target: 'components/editor/use-create-editor.ts',
         type: 'registry:component',
       },
       {
         path: 'components/editor/settings.tsx',
-        target: 'components/editor/settings.tsx',
         type: 'registry:component',
       },
     ],
     name: 'editor-ai',
     registryDependencies: [
+      'plate-ui',
       'api-ai',
       'api-uploadthing',
       'plate-types',
@@ -114,6 +112,7 @@ export const blocks: Registry['items'] = [
   },
   {
     categories: ['Editors'],
+    dependencies: ['@udecode/cn'],
     description: 'A multi-select editor',
     files: [
       {
@@ -122,13 +121,17 @@ export const blocks: Registry['items'] = [
         type: 'registry:page',
       },
     ],
+    meta: {
+      descriptionSrc: '/docs/multi-select',
+    },
     name: 'editor-select',
-    registryDependencies: ['select-editor-demo'],
+    registryDependencies: ['plate-ui', 'select-editor-demo'],
     type: 'registry:block',
   },
   {
     categories: ['Editors'],
     dependencies: [
+      '@udecode/cn',
       '@udecode/plate-basic-elements',
       '@udecode/plate-basic-marks',
     ],
@@ -141,21 +144,20 @@ export const blocks: Registry['items'] = [
       },
       {
         path: 'blocks/editor-basic/components/editor/plate-editor.tsx',
-        target: 'components/editor/plate-editor.tsx',
         type: 'registry:component',
       },
       {
         path: 'blocks/editor-basic/components/editor/use-create-editor.ts',
-        target: 'components/editor/use-create-editor.ts',
         type: 'registry:component',
       },
     ],
     name: 'editor-basic',
-    registryDependencies: ['editor'],
+    registryDependencies: ['plate-ui', 'editor'],
     type: 'registry:block',
   },
   {
-    category: 'Serializers',
+    categories: ['Serializers'],
+    dependencies: ['@udecode/cn'],
     files: [
       {
         path: 'blocks/slate-to-html/page.tsx',
@@ -164,13 +166,18 @@ export const blocks: Registry['items'] = [
       },
       {
         path: 'components/editor/slate-to-html.tsx',
-        target: 'components/editor/slate-to-html.tsx',
         type: 'registry:component',
       },
+      {
+        path: 'lib/create-html-document.ts',
+        type: 'registry:lib',
+      },
     ],
+    meta: {
+      rsc: true,
+    },
     name: 'slate-to-html',
-    registryDependencies: [],
-    rsc: true,
+    registryDependencies: ['plate-ui'],
     type: 'registry:block',
   },
 ];

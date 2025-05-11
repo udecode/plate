@@ -2,12 +2,12 @@ import * as React from 'react';
 
 import type { Metadata } from 'next';
 
-import { cn } from '@udecode/cn';
 import { notFound } from 'next/navigation';
 
-import { getAllBlockIds } from '@/lib/blocks';
-import { getRegistryComponent, getRegistryItem } from '@/lib/registry';
-import { styles } from '@/registry/registry-styles';
+import { siteConfig } from '@/config/site';
+import { getAllBlocks } from '@/lib/blocks';
+import { getRegistryComponent, getRegistryItem } from '@/lib/rehype-utils';
+import { cn } from '@/lib/utils';
 
 const getCachedRegistryItem = React.cache(async (name: string) => {
   return await getRegistryItem(name, true);
@@ -27,7 +27,7 @@ export async function generateMetadata({
   }
 
   const title = `${item.description ? `${item.description}` : ''}`;
-  const description = `npx shadcx@latest add ${item.name}`;
+  const description = `npx shadcn@canary add ${siteConfig.registryUrl}${item.name}`;
 
   return {
     description,
@@ -51,14 +51,11 @@ export async function generateMetadata({
 }
 
 export async function generateStaticParams() {
-  const blockIds = await getAllBlockIds();
+  const blocks = await getAllBlocks();
 
-  return styles.flatMap((style) =>
-    blockIds.map((name) => ({
-      name,
-      style: style.name,
-    }))
-  );
+  return blocks.map(({ name }) => ({
+    name,
+  }));
 }
 
 export default async function BlockPage({
@@ -78,7 +75,7 @@ export default async function BlockPage({
     <div
       className={cn(
         'themes-wrapper bg-background **:data-block-hide:hidden',
-        item.meta?.containerClassName
+        item.meta?.containerClassName ?? 'size-full'
       )}
     >
       <Component />

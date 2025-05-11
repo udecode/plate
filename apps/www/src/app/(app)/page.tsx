@@ -13,13 +13,13 @@ import {
 } from '@/components/page-header';
 import { SiteFooter } from '@/components/site-footer';
 import { ThemesButton } from '@/components/themes-button';
+import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
-import { Button } from '@/registry/default/plate-ui/button';
 
 import { AnnouncementButton } from './_components/announcement-button';
 import { PotionLazyBlock } from './_components/potion-lazy-block';
 
-import '../../../public/r/themes.css';
+// import '../../../public/r/themes.css';
 
 const CustomizerDrawer = dynamic(
   () => import('@/components/customizer-drawer')
@@ -103,10 +103,15 @@ export default async function IndexPage({
             </div>
             <PageHeaderDescription>{content.description}</PageHeaderDescription>
             <section className="flex w-full items-center space-x-2 py-2">
-              <Button asChild size="xs">
+              <Button asChild size="sm" className="rounded-md text-xs">
                 <Link href="/docs">{content.getStarted}</Link>
               </Button>
-              <Button asChild size="xs" variant="ghost">
+              <Button
+                asChild
+                size="sm"
+                variant="ghost"
+                className="rounded-md text-xs"
+              >
                 <Link
                   href={siteConfig.links.github}
                   rel="noreferrer"

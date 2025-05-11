@@ -1,5 +1,10 @@
 {
   "extends": "../../tooling/config/tsconfig.base.json",
   "include": ["src"],
-  "exclude": []
+  "exclude": [],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["../../apps/www/src/*"]
+    }
+  }
 }

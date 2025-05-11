@@ -1,0 +1,63 @@
+---
+title: MCP Server
+description: Use the Model Context Protocol with Plate.
+---
+
+Plate has an official MCP server. This lets AI tools understand and work with our rich ecosystem of editor templates, plugin configurations, and UI components.
+
+## What is MCP?
+
+The Model Context Protocol (MCP) is an open protocol that standardizes how applications provide context to LLMs. This is useful for Plate because you can now give your AI-assisted IDE direct access to hundreds of Plate resources.
+
+## Using MCP with Plate
+
+Your AI can now:
+
+- Access to all our editor templates, plugins, and UI components
+- Generate code with the right imports and configurations
+- Help with setting up full editor instances or specific features
+- Keep your Plate configurations and components up to date
+
+Try asking your AI:
+
+```bash
+"Set up a Plate editor with basic formatting and table support"
+"Add the Plate AI plugin and components to my current editor"
+"Update my editor components to the latest version"
+```
+
+## How it works
+
+The Plate registry provides structured information about our resources that MCP-enabled tools can read:
+
+- Editor templates
+- Plugin configurations
+- UI components
+- Dependencies and requirements for all files
+- Documentation and migration guides (coming soon)
+
+## Setup MCP
+
+Copy and paste the code into `.cursor/mcp.json` (or `.codeium/windsurf/mcp_config.json` for Windsurf)
+
+```json
+{
+  "mcpServers": {
+    "plate": {
+      "description": "Plate editors, plugins and components",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "shadcn@canary", "registry:mcp"],
+      "env": {
+        "REGISTRY_URL": "https://platejs.org/r/registry.json"
+      }
+    }
+  }
+}
+```
+
+## Best Practices
+
+1.  Let AI handle editor setup, plugin integration, and component additions.
+2.  Use the [shadcn CLI](/docs/components/cli) for manual additions or when AI needs a fallback. This may happen when using a small model or when our documentation is not up to date.
+3.  Regularly check our [changelog](/docs/components/changelog) or ask your AI about the updated files.

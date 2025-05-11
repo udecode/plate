@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "list-indent-toolbar-button",
+  "type": "registry:ui",
+  "title": "List Indent Toolbar Button",
+  "description": "A toolbar control for indenting lists.",
+  "dependencies": [
+    "@udecode/plate-list"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/list-indent-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { indentListItems, unindentListItems } from '@udecode/plate-list';\nimport { useEditorRef } from '@udecode/plate/react';\nimport { IndentIcon, OutdentIcon } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function ListIndentToolbarButton({\n  reverse = false,\n  ...props\n}: React.ComponentProps<typeof ToolbarButton> & {\n  reverse?: boolean;\n}) {\n  const editor = useEditorRef();\n\n  return (\n    <ToolbarButton\n      {...props}\n      onClick={() => {\n        reverse ? unindentListItems(editor) : indentListItems(editor);\n      }}\n      tooltip={reverse ? 'Outdent' : 'Indent'}\n    >\n      {reverse ? <OutdentIcon /> : <IndentIcon />}\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/list"
+      }
+    ],
+    "examples": [
+      "list-demo"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "mode-toggle",
+  "type": "registry:example",
+  "dependencies": [
+    "@udecode/cn"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/mode-toggle.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { MoonIcon, SunIcon } from 'lucide-react';\nimport { useTheme } from 'next-themes';\n\nimport { Button } from '@/components/ui/button';\nimport { useMounted } from '@/registry/hooks/use-mounted';\n\nexport default function ModeToggle() {\n  const { setTheme, theme } = useTheme();\n\n  const mounted = useMounted();\n\n  return (\n    <Button\n      size=\"sm\"\n      variant=\"ghost\"\n      className=\"size-8 px-0\"\n      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}\n    >\n      {mounted && theme === 'dark' ? (\n        <MoonIcon className=\"size-[1.2rem]\" />\n      ) : (\n        <SunIcon className=\"size-[1.2rem]\" />\n      )}\n      <span className=\"sr-only\">Toggle theme</span>\n    </Button>\n  );\n}\n",
+      "type": "registry:example"
+    }
+  ]
+}

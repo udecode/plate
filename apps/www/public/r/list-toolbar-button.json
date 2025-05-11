@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "list-toolbar-button",
+  "type": "registry:ui",
+  "title": "List Toolbar Button",
+  "description": "A toolbar control for list creation and management.",
+  "dependencies": [
+    "@udecode/plate-list"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/list-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport {\n  BulletedListPlugin,\n  useListToolbarButton,\n  useListToolbarButtonState,\n} from '@udecode/plate-list/react';\nimport { List, ListOrdered } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function ListToolbarButton({\n  nodeType = BulletedListPlugin.key,\n  ...props\n}: React.ComponentProps<typeof ToolbarButton> & {\n  nodeType?: string;\n}) {\n  const state = useListToolbarButtonState({ nodeType });\n  const { props: buttonProps } = useListToolbarButton(state);\n\n  return (\n    <ToolbarButton\n      {...props}\n      {...buttonProps}\n      tooltip={\n        nodeType === BulletedListPlugin.key ? 'Bulleted List' : 'Numbered List'\n      }\n    >\n      {nodeType === BulletedListPlugin.key ? <List /> : <ListOrdered />}\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/list"
+      }
+    ],
+    "examples": [
+      "list-demo"
+    ]
+  }
+}

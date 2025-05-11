@@ -71,8 +71,8 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { ParagraphPlugin } from '@udecode/plate/react';
 
 import { getComponentNavItem, getPluginNavItem } from '@/config/docs';
-import { FixedToolbarPlugin } from '@/registry/default/components/editor/plugins/fixed-toolbar-plugin';
-import { FloatingToolbarPlugin } from '@/registry/default/components/editor/plugins/floating-toolbar-plugin';
+import { FixedToolbarPlugin } from '@/registry/components/editor/plugins/fixed-toolbar-plugin';
+import { FloatingToolbarPlugin } from '@/registry/components/editor/plugins/floating-toolbar-plugin';
 
 export type CustomizerBadge = {
   label: string;

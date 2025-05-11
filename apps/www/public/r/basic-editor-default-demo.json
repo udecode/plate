@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "basic-editor-default-demo",
+  "type": "registry:example",
+  "dependencies": [
+    "@udecode/cn"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/examples/basic-editor-default-demo.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';\n\nexport default function BasicEditorDefaultDemo() {\n  const editor = usePlateEditor();\n\n  return (\n    <Plate editor={editor}>\n      <PlateContent placeholder=\"Type...\" />\n    </Plate>\n  );\n}\n",
+      "type": "registry:example"
+    }
+  ]
+}

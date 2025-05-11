@@ -1,8 +1,7 @@
 'use client';
 
-import { cn } from '@udecode/cn';
-
 import { useConfig } from '@/hooks/use-config';
+import { cn } from '@/lib/utils';
 
 import { ThemesStyle } from './themes-styles';
 

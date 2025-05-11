@@ -1,8 +1,8 @@
-import type { RegistryItem } from 'shadcx/registry';
+import type { RegistryItem } from 'shadcn/registry';
 
 export function getRegistryTitle(item: Partial<RegistryItem>): string {
   return (
-    item.doc?.title ??
+    item.title ??
     item.name
       ?.replace('-demo', '')
       ?.split('-')

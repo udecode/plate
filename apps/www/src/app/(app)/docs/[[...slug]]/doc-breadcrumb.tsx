@@ -4,12 +4,10 @@ import * as React from 'react';
 
 import type { SidebarNavItem } from '@/types/nav';
 
-import { cn } from '@udecode/cn';
 import { ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import { getDocIcon } from '@/config/docs-icons';
-import { Button } from '@/registry/default/plate-ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -17,12 +15,14 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/registry/default/plate-ui/command';
+} from '@/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/registry/default/plate-ui/popover';
+} from '@/components/ui/popover';
+import { getDocIcon } from '@/config/docs-icons';
+import { cn } from '@/lib/utils';
 
 export function DocBreadcrumb({
   buttonClassName,
@@ -108,8 +108,8 @@ export function DocBreadcrumb({
                       <div>
                         <div
                           className={cn(
-                            'line-clamp-1',
-                            category && 'font-medium'
+                            'line-clamp-1'
+                            // category && 'font-medium'
                           )}
                         >
                           {item.title}

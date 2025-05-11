@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "excalidraw-element",
+  "type": "registry:ui",
+  "title": "Excalidraw Element",
+  "description": "A drawing component powered by Excalidraw.",
+  "dependencies": [
+    "@udecode/plate-excalidraw"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/excalidraw-element.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TExcalidrawElement } from '@udecode/plate-excalidraw';\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { useExcalidrawElement } from '@udecode/plate-excalidraw/react';\nimport { PlateElement } from '@udecode/plate/react';\n\nexport function ExcalidrawElement(\n  props: PlateElementProps<TExcalidrawElement>\n) {\n  const { children, element } = props;\n\n  const { Excalidraw, excalidrawProps } = useExcalidrawElement({\n    element,\n  });\n\n  return (\n    <PlateElement {...props}>\n      <div contentEditable={false}>\n        <div className=\"mx-auto aspect-video h-[600px] w-[min(100%,600px)] overflow-hidden rounded-sm border\">\n          {Excalidraw && <Excalidraw {...(excalidrawProps as any)} />}\n        </div>\n      </div>\n      {children}\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/excalidraw"
+      }
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "code-line-element",
+  "type": "registry:ui",
+  "title": "Code Line Element",
+  "description": "A line component for code blocks.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/code-line-element.tsx",
+      "content": "'use client';\n\nimport { type PlateElementProps, PlateElement } from '@udecode/plate/react';\n\nexport function CodeLineElement(props: PlateElementProps) {\n  return <PlateElement {...props} />;\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/code-line-element-static.tsx",
+      "content": "import * as React from 'react';\n\nimport { type SlateElementProps, SlateElement } from '@udecode/plate';\n\nexport function CodeLineElementStatic(props: SlateElementProps) {\n  return <SlateElement {...props} />;\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-elements"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/code-line-element"
+      }
+    ],
+    "examples": [
+      "basic-elements-demo",
+      "basic-nodes-pro"
+    ]
+  }
+}

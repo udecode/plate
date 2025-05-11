@@ -1,4 +1,4 @@
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 
 interface TreeIconProps {
   isFirst: boolean;

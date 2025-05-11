@@ -5,15 +5,14 @@ import * as React from 'react';
 import type {
   createFileTreeForRegistryItemFiles,
   FileTree,
-} from '@/lib/registry';
+} from '@/lib/rehype-utils';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 import type {
   registryItemFileSchema,
   registryItemSchema,
-} from 'shadcx/registry';
+} from 'shadcn/registry';
 import type { z } from 'zod';
 
-import { cn } from '@udecode/cn';
 import {
   Check,
   ChevronRight,
@@ -30,6 +29,7 @@ import {
 import Link from 'next/link';
 
 import { CopyNpmCommandButton } from '@/components/copy-button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Collapsible,
   CollapsibleContent,
@@ -40,6 +40,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
+import { Separator } from '@/components/ui/separator';
 import {
   Sidebar,
   SidebarGroup,
@@ -51,13 +52,12 @@ import {
   SidebarMenuSub,
   SidebarProvider,
 } from '@/components/ui/sidebar';
+import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { siteConfig } from '@/config/site';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
-import { Button, buttonVariants } from '@/registry/default/plate-ui/button';
-import { Separator } from '@/registry/default/plate-ui/separator';
-import { Spinner } from '@/registry/default/plate-ui/spinner';
+import { cn } from '@/lib/utils';
 
 // SYNC
 
@@ -70,7 +70,13 @@ type BlockViewerContext = {
       })[]
     | null;
   isLoading: boolean;
-  item: z.infer<typeof registryItemSchema> & { src?: string };
+  item: z.infer<typeof registryItemSchema> & {
+    meta?: {
+      descriptionSrc?: string;
+      isPro?: boolean;
+      src?: string;
+    };
+  };
   resizablePanelRef: React.RefObject<ImperativePanelHandle | null> | null;
   tree: ReturnType<typeof createFileTreeForRegistryItemFiles> | null;
   view: 'code' | 'preview';
@@ -200,19 +206,13 @@ function BlockViewerProvider({
   );
 }
 
-function BlockViewerToolbar({
-  block,
-  isPro,
-}: {
-  block: boolean;
-  isPro?: boolean;
-}) {
+function BlockViewerToolbar({ block }: { block: boolean }) {
   const { item, resizablePanelRef, setView } = useBlockViewer();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
-  const descriptionSrc =
+  const description =
     item.meta?.descriptionSrc ??
-    item.src?.replace('?iframe=true', '') ??
+    item.meta?.src?.replace('?iframe=true', '') ??
     `/blocks/${item.name}`;
 
   return (
@@ -230,7 +230,7 @@ function BlockViewerToolbar({
             Preview
           </TabsTrigger>
 
-          {!isPro && (
+          {!item.meta?.isPro && (
             <TabsTrigger
               className="h-[1.45rem] rounded-sm px-2 text-xs"
               value="code"
@@ -241,19 +241,22 @@ function BlockViewerToolbar({
         </TabsList>
       </Tabs>
 
-      {item.description && (
+      {block && (
         <Separator orientation="vertical" className="mx-2 hidden h-4 sm:flex" />
       )}
 
-      <Link
-        className="text-sm font-medium underline-offset-2 hover:underline"
-        href={descriptionSrc}
-        target={descriptionSrc.startsWith('/') ? '_self' : '_blank'}
-      >
-        {item.description}
-      </Link>
+      {block && (
+        <Link
+          className="text-sm font-medium underline-offset-2 hover:underline"
+          href={description}
+          target={description.startsWith('/') ? '_self' : '_blank'}
+        >
+          {item.description}
+        </Link>
+      )}
+
       <div className="ml-auto flex items-center gap-2">
-        {!item.src && !isPro && (
+        {!item.meta?.src && !item.meta?.isPro && (
           <>
             {/* NPX Command Button */}
             <Button
@@ -261,14 +264,16 @@ function BlockViewerToolbar({
               variant="ghost"
               className="flex size-7 rounded-md border bg-transparent px-1.5 shadow-none lg:w-auto"
               onClick={() => {
-                copyToClipboard(`npx shadcx@latest add plate/${item.name}`);
+                copyToClipboard(
+                  `npx shadcn@canary add ${siteConfig.registryUrl}${item.name}`
+                );
               }}
             >
               {isCopied ? <Check /> : <Terminal />}
 
               {block && (
                 <span className="hidden lg:inline">
-                  npx shadcx@latest add plate/{item.name}
+                  npx shadcn@canary add {item.name}
                 </span>
               )}
             </Button>
@@ -276,13 +281,13 @@ function BlockViewerToolbar({
             {block && (
               <Separator
                 orientation="vertical"
-                className="mx-2 hidden h-4 sm:flex"
+                className="mx-2 hidden h-4 lg:flex"
               />
             )}
           </>
         )}
 
-        {isPro && (
+        {item.meta?.isPro && (
           <Link
             className={cn(
               buttonVariants(),
@@ -292,7 +297,7 @@ function BlockViewerToolbar({
               'transition-all duration-300 ease-out',
               'h-[26px] px-2 text-xs'
             )}
-            href={item.descriptionSrc ?? siteConfig.links.potionIframe}
+            href={item.meta?.descriptionSrc ?? siteConfig.links.potionIframe}
             target="_blank"
           >
             <span
@@ -302,7 +307,7 @@ function BlockViewerToolbar({
                 'transition-all duration-1000 ease-out'
               )}
             />
-            Get the code -&gt;
+            Get the code
           </Link>
         )}
 
@@ -348,7 +353,7 @@ function BlockViewerToolbar({
               >
                 <Link
                   href={
-                    item.src?.replace('?iframe=true', '') ??
+                    item.meta?.src?.replace('?iframe=true', '') ??
                     `/blocks/${item.name}`
                   }
                   target="_blank"
@@ -361,12 +366,18 @@ function BlockViewerToolbar({
           </div>
         )}
 
-        {/* <Separator orientation="vertical" className="mx-2 hidden h-4 xl:flex" />
-        <V0Button
-          id={`v0-button-${item.name}`}
-          name={`v0-${item.name}`}
-          className="hidden shadow-none sm:flex"
-        /> */}
+        {/* {!item.meta?.isPro && (
+          <>
+            <Separator
+              orientation="vertical"
+              className="mx-1 hidden h-4 xl:flex"
+            />
+            <OpenInV0Button
+              name={item.name}
+              className="hidden shadow-none sm:flex"
+            />
+          </>
+        )} */}
       </div>
     </div>
   );
@@ -409,7 +420,7 @@ function BlockViewerView({ preview }: { preview: React.ReactNode }) {
                 title={item.name}
                 height={item.meta?.iframeHeight ?? '100%'}
                 sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
-                src={item.src ?? `/blocks/${item.name}`}
+                src={item.meta?.src ?? `/blocks/${item.name}`}
               />
             )}
           </ResizablePanel>
@@ -601,7 +612,6 @@ function BlockCopyCodeButton() {
 
 export function BlockViewer({
   block = true,
-  isPro,
   preview,
   ...props
 }: Pick<
@@ -609,12 +619,11 @@ export function BlockViewer({
   'dependencies' | 'highlightedFiles' | 'item' | 'tree'
 > & {
   block?: boolean;
-  isPro?: boolean;
   preview?: React.ReactNode;
 }) {
   return (
     <BlockViewerProvider {...props}>
-      <BlockViewerToolbar block={block} isPro={isPro} />
+      <BlockViewerToolbar block={block} />
       <BlockViewerView preview={preview} />
       <BlockViewerCode size={block ? 'default' : 'sm'} />
     </BlockViewerProvider>

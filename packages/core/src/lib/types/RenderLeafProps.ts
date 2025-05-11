@@ -2,13 +2,12 @@ import type { LeafPosition, TText } from '@udecode/slate';
 
 export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement<any>;
 
-export interface RenderLeafProps<
-  N extends TText = TText,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> {
+export interface RenderLeafProps<N extends TText = TText> {
   attributes: {
+    className?: string;
     'data-slate-leaf'?: true;
-  } & React.HTMLAttributes<HTMLElementTagNameMap[T]>;
+    style?: React.CSSProperties;
+  };
   children: any;
   leaf: N;
   text: N;

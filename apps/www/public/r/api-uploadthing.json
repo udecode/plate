@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-uploadthing",
+  "type": "registry:file",
+  "dependencies": [
+    "uploadthing@7.6.0"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/app/api/uploadthing/route.ts",
+      "content": "import type { FileRouter } from 'uploadthing/next';\n\nimport { createRouteHandler, createUploadthing } from 'uploadthing/next';\n\nconst f = createUploadthing();\n\nconst ourFileRouter = {\n  editorUploader: f(['image', 'text', 'blob', 'pdf', 'video', 'audio'])\n    .middleware(() => {\n      return {};\n    })\n    .onUploadComplete(({ file }) => {\n      return {\n        key: file.key,\n        name: file.name,\n        size: file.size,\n        type: file.type,\n        url: file.ufsUrl,\n      };\n    }),\n} satisfies FileRouter;\n\nexport type OurFileRouter = typeof ourFileRouter;\n\nexport const { GET, POST } = createRouteHandler({ router: ourFileRouter });\n",
+      "type": "registry:file",
+      "target": "app/api/uploadthing/route.ts"
+    }
+  ]
+}

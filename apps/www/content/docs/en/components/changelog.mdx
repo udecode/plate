@@ -10,6 +10,23 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## May 2025 #22
 
+### May 10 #22.3
+
+- Migration to shadcn v4: 
+  - Plate had a forked version of shadcn/ui primitives that could conflict with your existing components. Our components now **fully depend** on the original shadcn/ui primitives, easing the integration of Plate into your existing shadcn/ui set of components.
+  - All components updated to [Tailwind v4](https://ui.shadcn.com/docs/tailwind-v4). 
+  - See the updated [installation guide](/docs/components/installation).
+- Migration to React 19. If you're using React 18, you may need to use `React.forwardRef` in a few places.
+- Migration to [shadcn CLI](https://ui.shadcn.com/docs/cli):
+  - Remove `registries` from `components.json`
+  - Use `npx shadcn` instead of `npx shadcx`
+- [MCP support](/docs/components/mcp)
+- Remove `withRef` from all components
+- Import `cn` from `@/lib/utils` instead of `@udecode/cn` to stay consistent with shadcn/ui
+- Remove unused `className`, `style` props from all element and leaf components
+- `draggable`:
+  - Fix dnd in Firefox
+
 ### May 6 #22.3
 
 - `ai-chat-editor`: support none-standard markdown nodes.

@@ -3,11 +3,12 @@
   "compilerOptions": {
     "jsx": "preserve",
     "incremental": true,
-    "baseUrl": "src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@/plate/*": ["./lib/plate/*"],
-      "contentlayer/generated": ["../.contentlayer/generated"]
+      "@/*": ["./src/*"],
+      "contentlayer/generated": ["./.contentlayer/generated"],
+      "registry": ["./registry.json"],
+      "registry-shadcn": ["./registry-shadcn.json"]
     },
     "plugins": [
       {
@@ -33,7 +34,8 @@
     "**/*.mjsx",
     ".next/types/**/*.ts",
     ".contentlayer/generated",
-    "./scripts/**/*.ts"
+    "./scripts/**/*.ts",
+    "./registry.json"
   ],
   "exclude": ["node_modules", "__registry__"]
 }

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "toggle-element",
+  "type": "registry:ui",
+  "title": "Toggle Element",
+  "description": "A collapsible component for toggling content visibility.",
+  "dependencies": [
+    "@udecode/plate-toggle"
+  ],
+  "registryDependencies": [
+    "button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/toggle-element.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport {\n  useToggleButton,\n  useToggleButtonState,\n} from '@udecode/plate-toggle/react';\nimport { PlateElement } from '@udecode/plate/react';\nimport { ChevronRight } from 'lucide-react';\n\nimport { Button } from '@/components/ui/button';\n\nexport function ToggleElement(props: PlateElementProps) {\n  const element = props.element;\n  const state = useToggleButtonState(element.id as string);\n  const { buttonProps, open } = useToggleButton(state);\n\n  return (\n    <PlateElement {...props} className=\"pl-6\">\n      <Button\n        size=\"icon\"\n        variant=\"ghost\"\n        className=\"absolute top-0 -left-0.5 size-6 cursor-pointer items-center justify-center rounded-md p-px text-muted-foreground transition-colors select-none hover:bg-accent [&_svg]:size-4\"\n        contentEditable={false}\n        {...buttonProps}\n      >\n        <ChevronRight\n          className={\n            open\n              ? 'rotate-90 transition-transform duration-75'\n              : 'rotate-0 transition-transform duration-75'\n          }\n        />\n      </Button>\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/toggle-element-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from '@udecode/plate';\n\nimport { SlateElement } from '@udecode/plate';\nimport { ChevronRight } from 'lucide-react';\n\nexport function ToggleElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement {...props} className=\"pl-6\">\n      <div\n        className=\"absolute top-0 -left-0.5 size-6 cursor-pointer items-center justify-center rounded-md p-px text-muted-foreground transition-colors select-none hover:bg-accent [&_svg]:size-4\"\n        contentEditable={false}\n      >\n        <ChevronRight className=\"rotate-0 transition-transform duration-75\" />\n      </div>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/toggle"
+      }
+    ],
+    "examples": [
+      "toggle-demo"
+    ]
+  }
+}
