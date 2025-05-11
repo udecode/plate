@@ -366,12 +366,18 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
           </div>
         )}
 
-        {/* <Separator orientation="vertical" className="mx-2 hidden h-4 xl:flex" />
-        <V0Button
-          id={`v0-button-${item.name}`}
-          name={`v0-${item.name}`}
-          className="hidden shadow-none sm:flex"
-        /> */}
+        {/* {!item.meta?.isPro && (
+          <>
+            <Separator
+              orientation="vertical"
+              className="mx-1 hidden h-4 xl:flex"
+            />
+            <OpenInV0Button
+              name={item.name}
+              className="hidden shadow-none sm:flex"
+            />
+          </>
+        )} */}
       </div>
     </div>
   );
