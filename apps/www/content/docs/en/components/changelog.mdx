@@ -19,11 +19,11 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 - Migration to React 19. If you're using React 18, you may need to use `React.forwardRef` in a few places.
 - Migration to [shadcn CLI](https://ui.shadcn.com/docs/cli):
   - Remove `registries` from `components.json`
-  - Use `npx shadcn@canary` instead of `npx shadcn@canary`
+  - Use `npx shadcn` instead of `npx shadcx`
 - [MCP support](/docs/components/mcp)
 - Remove `withRef` from all components
 - Import `cn` from `@/lib/utils` instead of `@udecode/cn` to stay consistent with shadcn/ui
-- Remove `className`, `style` props from all element and leaf components
+- Remove unused `className`, `style` props from all element and leaf components
 - `draggable`:
   - Fix dnd in Firefox
 

@@ -4,7 +4,9 @@
   "type": "registry:file",
   "dependencies": [
     "@ai-sdk/openai",
-    "ai"
+    "ai",
+    "@ai-sdk/provider",
+    "@ai-sdk/provider-utils"
   ],
   "registryDependencies": [],
   "files": [

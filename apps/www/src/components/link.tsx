@@ -8,8 +8,11 @@ import { cn } from '@/lib/utils';
 
 export function Link({
   className,
+  showArrow,
   ...props
-}: React.ComponentProps<typeof LinkPrimitive>) {
+}: React.ComponentProps<typeof LinkPrimitive> & {
+  showArrow?: boolean;
+}) {
   const isExternal =
     typeof props.href === 'string' && props.href.startsWith('http');
 
@@ -35,7 +38,7 @@ export function Link({
       )}
 
       {props.children}
-      {isExternal && (
+      {(isExternal || showArrow) && (
         <span className="inline-flex group-data-[empty=true]/subheading:hidden">
           <ArrowUpRight className="size-[14px]" />
         </span>

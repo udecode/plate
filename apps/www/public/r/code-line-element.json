@@ -14,7 +14,7 @@
     },
     {
       "path": "src/registry/ui/code-line-element-static.tsx",
-      "content": "import { type SlateElementProps, SlateElement } from '@udecode/plate';\n\nexport function CodeLineElementStatic(props: SlateElementProps) {\n  return <SlateElement {...props} />;\n}\n",
+      "content": "import * as React from 'react';\n\nimport { type SlateElementProps, SlateElement } from '@udecode/plate';\n\nexport function CodeLineElementStatic(props: SlateElementProps) {\n  return <SlateElement {...props} />;\n}\n",
       "type": "registry:ui"
     }
   ],

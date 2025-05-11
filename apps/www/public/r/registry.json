@@ -5,6 +5,7 @@
     {
       "name": "plate",
       "type": "registry:lib",
+      "description": "Use `npx shadcn@latest add https://platejs.org/r/<name>` to install items from this registry.",
       "dependencies": [
         "@udecode/plate"
       ],
@@ -82,9 +83,11 @@
         "command",
         "popover",
         "https://platejs.org/r/use-chat",
+        "https://platejs.org/r/markdown-plugin",
         "https://platejs.org/r/editor",
         "https://platejs.org/r/ai-leaf",
         "https://platejs.org/r/blockquote-element",
+        "https://platejs.org/r/callout-element",
         "https://platejs.org/r/code-block-element",
         "https://platejs.org/r/code-leaf",
         "https://platejs.org/r/code-line-element",
@@ -97,6 +100,7 @@
         "https://platejs.org/r/heading-element",
         "https://platejs.org/r/highlight-leaf",
         "https://platejs.org/r/hr-element",
+        "https://platejs.org/r/indent-todo-marker",
         "https://platejs.org/r/image-element",
         "https://platejs.org/r/kbd-leaf",
         "https://platejs.org/r/link-element",
@@ -1550,17 +1554,17 @@
       }
     },
     {
-      "name": "resizable",
+      "name": "resize-handle",
       "type": "registry:ui",
-      "title": "Resizable",
+      "title": "Resize Handle",
       "description": "A resizable wrapper with resize handles.",
       "dependencies": [
-        "react-resizable-panels"
+        "@udecode/plate-resizable"
       ],
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/resizable.tsx",
+          "path": "src/registry/ui/resize-handle.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1794,7 +1798,9 @@
       "dependencies": [
         "@udecode/plate-callout"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/emoji-dropdown-menu"
+      ],
       "files": [
         {
           "path": "src/registry/ui/callout-element.tsx",
@@ -1967,7 +1973,7 @@
         "@udecode/plate-resizable"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/resizable"
+        "https://platejs.org/r/resize-handle"
       ],
       "files": [
         {
@@ -2002,7 +2008,7 @@
         "@udecode/plate-layout"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/resizable"
+        "https://platejs.org/r/resize-handle"
       ],
       "files": [
         {
@@ -2448,7 +2454,7 @@
       "registryDependencies": [
         "https://platejs.org/r/media-popover",
         "https://platejs.org/r/caption",
-        "https://platejs.org/r/resizable"
+        "https://platejs.org/r/resize-handle"
       ],
       "files": [
         {
@@ -2649,7 +2655,7 @@
       "registryDependencies": [
         "https://platejs.org/r/media-popover",
         "https://platejs.org/r/caption",
-        "https://platejs.org/r/resizable"
+        "https://platejs.org/r/resize-handle"
       ],
       "files": [
         {
@@ -2759,7 +2765,7 @@
       "registryDependencies": [
         "https://platejs.org/r/media-popover",
         "https://platejs.org/r/caption",
-        "https://platejs.org/r/resizable"
+        "https://platejs.org/r/resize-handle"
       ],
       "files": [
         {
@@ -2958,7 +2964,8 @@
         "@udecode/plate-table"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/resizable"
+        "https://platejs.org/r/resize-handle",
+        "https://platejs.org/r/block-selection"
       ],
       "files": [
         {
@@ -3007,6 +3014,14 @@
         },
         {
           "path": "src/registry/ui/table-element-static.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/registry/ui/color-constants.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/registry/ui/color-dropdown-menu-items.tsx",
           "type": "registry:ui"
         }
       ],
@@ -3180,7 +3195,9 @@
       "type": "registry:file",
       "dependencies": [
         "@ai-sdk/openai",
-        "ai"
+        "ai",
+        "@ai-sdk/provider",
+        "@ai-sdk/provider-utils"
       ],
       "registryDependencies": [],
       "files": [
@@ -3786,10 +3803,20 @@
         "@ai-sdk/react",
         "@faker-js/faker"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "button",
+        "dialog",
+        "input",
+        "popover",
+        "command"
+      ],
       "files": [
         {
           "path": "src/registry/components/editor/use-chat.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/registry/components/editor/settings.tsx",
           "type": "registry:component"
         }
       ]

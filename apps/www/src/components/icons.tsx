@@ -294,7 +294,7 @@ export const Icons = {
   mcp: (props: LucideProps) => (
     <svg
       fill="currentColor"
-      fill-rule="evenodd"
+      fillRule="evenodd"
       height="1em"
       viewBox="0 0 24 24"
       width="1em"

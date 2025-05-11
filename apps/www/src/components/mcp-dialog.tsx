@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { Code } from '@/components/code';
 import { CodeBlock } from '@/components/codeblock';
 import { Icons } from '@/components/icons';
-import { Step, Steps } from '@/components/typography';
+import { Link } from '@/components/link';
+import { Steps } from '@/components/typography';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -41,54 +42,66 @@ export function SetupMCPDialog() {
           <span>MCP</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="overflow-hidden sm:max-w-3xl">
+      <DialogContent className="flex max-h-[90vh] flex-col overflow-y-auto sm:max-w-3xl">
         <DialogHeader className="w-full">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold">Setup MCP</DialogTitle>
           </div>
           <p className="mt-2 text-muted-foreground">
-            Use the code below to configure the registry MCP in your IDE.
+            <Link onClick={() => setOpen(false)} href="/docs/components/mcp">
+              Learn more about our MCP registry
+            </Link>
           </p>
         </DialogHeader>
 
         <Steps>
-          <Step title="Start from our basic template">
-            <CodeBlock
-              className="overflow-x-auto"
-              value={initCommand}
-              language="bash"
-            />
-          </Step>
+          <h3 className="!mt-0">Start from our basic template</h3>
+          <CodeBlock
+            className="overflow-x-auto"
+            value={initCommand}
+            language="bash"
+          />
 
-          <Step title="Add MCP config">
-            <Tabs className="mt-2" defaultValue="cursor">
-              <TabsList>
-                <TabsTrigger value="cursor">Cursor</TabsTrigger>
-                <TabsTrigger value="windsurf">Windsurf</TabsTrigger>
-              </TabsList>
-              <TabsContent className="mt-0" value="cursor">
-                <h2 className="font-semibold">
-                  Copy and paste the code into <Code>.cursor/mcp.json</Code>
-                </h2>
-                <CodeBlock
-                  className="mt-2"
-                  value={cursorConfig}
-                  language="json"
-                />
-              </TabsContent>
-              <TabsContent className="mt-0" value="windsurf">
-                <h2 className="font-semibold">
-                  2. Copy and paste the code into{' '}
-                  <Code>.codeium/windsurf/mcp_config.json</Code>
-                </h2>
-                <CodeBlock
-                  className="mt-2"
-                  value={cursorConfig}
-                  language="json"
-                />
-              </TabsContent>
-            </Tabs>
-          </Step>
+          <h3>Add MCP config</h3>
+          <Tabs className="mt-2" defaultValue="cursor">
+            <TabsList>
+              <TabsTrigger value="cursor">Cursor</TabsTrigger>
+              <TabsTrigger value="windsurf">Windsurf</TabsTrigger>
+            </TabsList>
+            <TabsContent className="mt-0" value="cursor">
+              <p>
+                Copy and paste the code into <Code>.cursor/mcp.json</Code>
+              </p>
+              <CodeBlock
+                className="mt-2 overflow-x-auto"
+                value={cursorConfig}
+                language="json"
+              />
+            </TabsContent>
+            <TabsContent className="mt-0" value="windsurf">
+              <p>
+                Copy and paste the code into{' '}
+                <Code>.codeium/windsurf/mcp_config.json</Code>
+              </p>
+              <CodeBlock
+                className="mt-2 overflow-x-auto"
+                value={cursorConfig}
+                language="json"
+              />
+            </TabsContent>
+          </Tabs>
+
+          <h3 className="!mb-0">
+            That's it! You can now ask anything about Plate.{' '}
+            <Link
+              className="ml-auto font-semibold"
+              href="https://github.com/udecode/plate/discussions/new?category=mcp"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Report issues here
+            </Link>
+          </h3>
         </Steps>
       </DialogContent>
     </Dialog>

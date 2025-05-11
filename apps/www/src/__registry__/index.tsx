@@ -8,7 +8,7 @@ import * as React from "react"
 export const Index: Record<string, any> = {
   "plate": {
     name: "plate",
-    description: "",
+    description: "Use `npx shadcn@latest add https://platejs.org/r/<name>` to install items from this registry.",
     type: "registry:lib",
     registryDependencies: [],
     files: [],
@@ -28,7 +28,7 @@ export const Index: Record<string, any> = {
     name: "ai-menu",
     description: "A menu for AI-powered content generation and insertion.",
     type: "registry:ui",
-    registryDependencies: ["command","popover","https://platejs.org/r/use-chat","https://platejs.org/r/editor","https://platejs.org/r/ai-leaf","https://platejs.org/r/blockquote-element","https://platejs.org/r/code-block-element","https://platejs.org/r/code-leaf","https://platejs.org/r/code-line-element","https://platejs.org/r/code-syntax-leaf","https://platejs.org/r/column-element","https://platejs.org/r/column-group-element","https://platejs.org/r/date-element","https://platejs.org/r/equation-element","https://platejs.org/r/inline-equation-element","https://platejs.org/r/heading-element","https://platejs.org/r/highlight-leaf","https://platejs.org/r/hr-element","https://platejs.org/r/image-element","https://platejs.org/r/kbd-leaf","https://platejs.org/r/link-element","https://platejs.org/r/media-audio-element","https://platejs.org/r/media-file-element","https://platejs.org/r/media-video-element","https://platejs.org/r/mention-element","https://platejs.org/r/paragraph-element","https://platejs.org/r/table-cell-element","https://platejs.org/r/table-element","https://platejs.org/r/table-row-element","https://platejs.org/r/toc-element"],
+    registryDependencies: ["command","popover","https://platejs.org/r/use-chat","https://platejs.org/r/markdown-plugin","https://platejs.org/r/editor","https://platejs.org/r/ai-leaf","https://platejs.org/r/blockquote-element","https://platejs.org/r/callout-element","https://platejs.org/r/code-block-element","https://platejs.org/r/code-leaf","https://platejs.org/r/code-line-element","https://platejs.org/r/code-syntax-leaf","https://platejs.org/r/column-element","https://platejs.org/r/column-group-element","https://platejs.org/r/date-element","https://platejs.org/r/equation-element","https://platejs.org/r/inline-equation-element","https://platejs.org/r/heading-element","https://platejs.org/r/highlight-leaf","https://platejs.org/r/hr-element","https://platejs.org/r/indent-todo-marker","https://platejs.org/r/image-element","https://platejs.org/r/kbd-leaf","https://platejs.org/r/link-element","https://platejs.org/r/media-audio-element","https://platejs.org/r/media-file-element","https://platejs.org/r/media-video-element","https://platejs.org/r/mention-element","https://platejs.org/r/paragraph-element","https://platejs.org/r/table-cell-element","https://platejs.org/r/table-element","https://platejs.org/r/table-row-element","https://platejs.org/r/toc-element"],
     files: [{
       path: "src/registry/ui/ai-menu.tsx",
       type: "registry:ui",
@@ -835,18 +835,18 @@ export const Index: Record<string, any> = {
     }),
     meta: {"docs":[{"route":"/docs/basic-elements"},{"route":"https://pro.platejs.org/docs/components/placeholder"}],"examples":["basic-elements-demo","placeholder-pro"]},
   },
-  "resizable": {
-    name: "resizable",
+  "resize-handle": {
+    name: "resize-handle",
     description: "A resizable wrapper with resize handles.",
     type: "registry:ui",
     registryDependencies: [],
     files: [{
-      path: "src/registry/ui/resizable.tsx",
+      path: "src/registry/ui/resize-handle.tsx",
       type: "registry:ui",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/resize-handle")
+      const mod = await import("@/registry/ui/resize-handle.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -987,7 +987,7 @@ export const Index: Record<string, any> = {
     name: "callout-element",
     description: "A callout component for highlighting important information with customizable icons and styles.",
     type: "registry:ui",
-    registryDependencies: [],
+    registryDependencies: ["https://platejs.org/r/emoji-dropdown-menu"],
     files: [{
       path: "src/registry/ui/callout-element.tsx",
       type: "registry:ui",
@@ -1096,7 +1096,7 @@ export const Index: Record<string, any> = {
     name: "column-element",
     description: "A resizable column component for layout.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/resize-handle"],
     files: [{
       path: "src/registry/ui/column-element.tsx",
       type: "registry:ui",
@@ -1117,7 +1117,7 @@ export const Index: Record<string, any> = {
     name: "column-group-element",
     description: "A resizable column component for layout.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/resize-handle"],
     files: [{
       path: "src/registry/ui/column-group-element.tsx",
       type: "registry:ui",
@@ -1395,7 +1395,7 @@ export const Index: Record<string, any> = {
     name: "image-element",
     description: "Image element with lazy loading, resizing capabilities, and optional caption.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/media-popover","https://platejs.org/r/caption","https://platejs.org/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/media-popover","https://platejs.org/r/caption","https://platejs.org/r/resize-handle"],
     files: [{
       path: "src/registry/ui/image-element.tsx",
       type: "registry:ui",
@@ -1513,7 +1513,7 @@ export const Index: Record<string, any> = {
     name: "media-embed-element",
     description: "A component for embedded media content with resizing and caption support.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/media-popover","https://platejs.org/r/caption","https://platejs.org/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/media-popover","https://platejs.org/r/caption","https://platejs.org/r/resize-handle"],
     files: [{
       path: "src/registry/ui/media-embed-element.tsx",
       type: "registry:ui",
@@ -1568,7 +1568,7 @@ export const Index: Record<string, any> = {
     name: "media-video-element",
     description: "A video player component with YouTube and file upload support.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/media-popover","https://platejs.org/r/caption","https://platejs.org/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/media-popover","https://platejs.org/r/caption","https://platejs.org/r/resize-handle"],
     files: [{
       path: "src/registry/ui/media-video-element.tsx",
       type: "registry:ui",
@@ -1682,7 +1682,7 @@ export const Index: Record<string, any> = {
     name: "table-cell-element",
     description: "A table cell with resizable borders and selection.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/resizable"],
+    registryDependencies: ["https://platejs.org/r/resize-handle","https://platejs.org/r/block-selection"],
     files: [{
       path: "src/registry/ui/table-cell-element.tsx",
       type: "registry:ui",
@@ -1714,6 +1714,14 @@ export const Index: Record<string, any> = {
       target: ""
     },{
       path: "src/registry/ui/table-element-static.tsx",
+      type: "registry:ui",
+      target: ""
+    },{
+      path: "src/registry/ui/color-constants.ts",
+      type: "registry:ui",
+      target: ""
+    },{
+      path: "src/registry/ui/color-dropdown-menu-items.tsx",
       type: "registry:ui",
       target: ""
     }],
@@ -2419,9 +2427,13 @@ export const Index: Record<string, any> = {
     name: "use-chat",
     description: "",
     type: "registry:component",
-    registryDependencies: [],
+    registryDependencies: ["button","dialog","input","popover","command"],
     files: [{
       path: "src/registry/components/editor/use-chat.ts",
+      type: "registry:component",
+      target: ""
+    },{
+      path: "src/registry/components/editor/settings.tsx",
       type: "registry:component",
       target: ""
     }],

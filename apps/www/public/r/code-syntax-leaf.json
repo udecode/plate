@@ -16,7 +16,7 @@
     },
     {
       "path": "src/registry/ui/code-syntax-leaf-static.tsx",
-      "content": "import { type SlateLeafProps, SlateLeaf } from '@udecode/plate';\n\nexport function CodeSyntaxLeafStatic(props: SlateLeafProps) {\n  const tokenClassName = props.leaf.className as string;\n\n  return <SlateLeaf className={tokenClassName} {...props} />;\n}\n",
+      "content": "import * as React from 'react';\n\nimport { type SlateLeafProps, SlateLeaf } from '@udecode/plate';\n\nexport function CodeSyntaxLeafStatic(props: SlateLeafProps) {\n  const tokenClassName = props.leaf.className as string;\n\n  return <SlateLeaf className={tokenClassName} {...props} />;\n}\n",
       "type": "registry:ui"
     }
   ],

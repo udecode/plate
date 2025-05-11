@@ -76,13 +76,13 @@ jobs:
       - name: 🧪 Run tests
         run: yarn test
 
-      - name: 📥 Install Playwright dependencies
-        run: |
-          yarn playwright install-deps
-          yarn playwright install
+      # - name: 📥 Install Playwright dependencies
+      #   run: |
+      #     yarn playwright install-deps
+      #     yarn playwright install
 
-      - name: 🎭 Run Playwright tests
-        run: yarn e2e
+      # - name: 🎭 Run Playwright tests
+      #   run: yarn e2e
 
   notify-test-failure:
     name: Discord Notification

@@ -14,7 +14,7 @@
     },
     {
       "path": "src/registry/ui/blockquote-element-static.tsx",
-      "content": "import { type SlateElementProps, SlateElement } from '@udecode/plate';\n\nexport function BlockquoteElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement\n      as=\"blockquote\"\n      className=\"my-1 border-l-2 pl-6 italic\"\n      {...props}\n    />\n  );\n}\n",
+      "content": "import * as React from 'react';\n\nimport { type SlateElementProps, SlateElement } from '@udecode/plate';\n\nexport function BlockquoteElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement\n      as=\"blockquote\"\n      className=\"my-1 border-l-2 pl-6 italic\"\n      {...props}\n    />\n  );\n}\n",
       "type": "registry:ui"
     }
   ],
