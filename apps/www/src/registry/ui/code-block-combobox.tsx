@@ -121,7 +121,7 @@ export function CodeBlockCombobox() {
   const editor = useEditorRef();
   const element = useElement<TCodeBlockElement>();
   const value = element.lang || 'plaintext';
-  const [searchValue, setSearchValue] = React.React.useState('');
+  const [searchValue, setSearchValue] = React.useState('');
 
   const items = React.useMemo(
     () =>

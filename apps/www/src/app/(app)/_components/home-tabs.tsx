@@ -1,15 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
-
-import { useStoreValue } from '@udecode/plate/react';
-import dynamic from 'next/dynamic';
-import { parseAsBoolean, useQueryState } from 'nuqs';
-
-import { SettingsStore } from '@/components/context/settings-store';
 import { PlaygroundPreview } from '@/components/playground-preview';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useLocale } from '@/hooks/useLocale';
 
 const i18n = {
   cn: {
@@ -24,37 +15,39 @@ const i18n = {
   },
 };
 
-const InstallationTab = dynamic(() => import('./installation-tab'));
+// const InstallationTab = dynamic(() => import('./installation-tab'));
 
 export default function HomeTabs() {
-  const locale = useLocale();
-  const content = i18n[locale as keyof typeof i18n];
+  // const locale = useLocale();
+  // const content = i18n[locale as keyof typeof i18n];
 
-  const active = useStoreValue(SettingsStore, 'showSettings');
-  const homeTab = useStoreValue(SettingsStore, 'homeTab');
-  const [builder, setBuilder] = useQueryState(
-    'builder',
-    parseAsBoolean.withDefault(false)
-  );
+  // const active = useStoreValue(SettingsStore, 'showSettings');
+  // const homeTab = useStoreValue(SettingsStore, 'homeTab');
+  // const [builder, setBuilder] = useQueryState(
+  //   'builder',
+  //   parseAsBoolean.withDefault(false)
+  // );
 
-  useEffect(() => {
-    if (builder) {
-      SettingsStore.set('showSettings', true);
-    }
-  }, [builder]);
+  // useEffect(() => {
+  //   if (builder) {
+  //     SettingsStore.set('showSettings', true);
+  //   }
+  // }, [builder]);
 
-  useEffect(() => {
-    if (active) {
-      void setBuilder(true);
-    } else {
-      void setBuilder(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active]);
+  // useEffect(() => {
+  //   if (active) {
+  //     void setBuilder(true);
+  //   } else {
+  //     void setBuilder(false);
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [active]);
 
   return (
     <div>
-      <Tabs
+      <PlaygroundPreview />
+
+      {/* <Tabs
         className="block"
         value={homeTab}
         onValueChange={(value) => {
@@ -66,25 +59,6 @@ export default function HomeTabs() {
           <TabsTrigger value="installation">{content.installation}</TabsTrigger>
         </TabsList>
 
-        {/* <Button
-          variant="outline"
-          className={cn(
-            'ml-2 translate-y-[3px]',
-            active && 'border-2 border-primary'
-          )}
-          onClick={() => {
-            if (active) {
-              SettingsStore.set('showSettings', false);
-            } else {
-              SettingsStore.set('customizerTab', 'plugins');
-              SettingsStore.set('showSettings', true);
-            }
-          }}
-        >
-          <Settings2 className="size-4" />
-          {content.customize}
-        </Button> */}
-
         <TabsContent className="pt-2" value="playground">
           <PlaygroundPreview className="" />
         </TabsContent>
@@ -94,7 +68,7 @@ export default function HomeTabs() {
             <InstallationTab />
           </div>
         </TabsContent>
-      </Tabs>
+      </Tabs> */}
     </div>
   );
 }

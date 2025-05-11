@@ -43,18 +43,13 @@ Copy and paste the code into `.cursor/mcp.json` (or `.codeium/windsurf/mcp_confi
 ```json
 {
   "mcpServers": {
-    "shadcn": {
-      "description": "shadcn/ui components",
-      "command": "npx",
-      "args": ["-y", "shadcn@canary", "registry:mcp"]
-    },
     "plate": {
       "description": "Plate editors, plugins and components",
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "platejs@canary", "registry:mcp"],
+      "args": ["-y", "shadcn@canary", "registry:mcp"],
       "env": {
-        "REGISTRY_URL": "https://platejs.org//r/registry.json"
+        "REGISTRY_URL": "https://platejs.org/r/registry.json"
       }
     }
   }

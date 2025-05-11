@@ -27,7 +27,7 @@ import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 import { blockSelectionVariants } from './block-selection';
-import { ResizeHandle } from './resizable';
+import { ResizeHandle } from './resize-handle';
 
 export function TableCellElement({
   isHeader,

@@ -6,9 +6,9 @@ import type { z } from 'zod';
 import { highlightFiles } from './highlight-code';
 import {
   createFileTreeForRegistryItemFiles,
+  getAllDependencies,
   getRegistryItem,
-} from './registry';
-import { getAllDependencies } from './rehype-utils';
+} from './rehype-utils';
 
 export const getCachedRegistryItem = React.cache(
   async (name: string, prefetch = false) => {

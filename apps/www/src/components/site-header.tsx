@@ -10,6 +10,7 @@ import { CommandMenu } from './command-menu';
 import { Icons } from './icons';
 import { LanguagesDropdownMenu } from './languages-dropdown-menu';
 import { MainNav } from './main-nav';
+import { SetupMCPDialog } from './mcp-dialog';
 import { MobileNav } from './mobile-nav';
 
 export function SiteHeader() {
@@ -83,8 +84,10 @@ export function SiteHeader() {
                 <span className="sr-only">Discord</span>
               </Link>
             </Button>
+
             <ModeSwitcher />
             <LanguagesDropdownMenu />
+            <SetupMCPDialog />
           </nav>
         </div>
       </div>

@@ -3,7 +3,12 @@ import type { Registry } from 'shadcn/registry';
 const plugins: Registry['items'] = [
   // Files
   {
-    dependencies: ['@ai-sdk/openai', 'ai'],
+    dependencies: [
+      '@ai-sdk/openai',
+      'ai',
+      '@ai-sdk/provider',
+      '@ai-sdk/provider-utils',
+    ],
     files: [
       {
         path: 'app/api/ai/command/route.ts',
@@ -539,9 +544,19 @@ export const components: Registry['items'] = [
         path: 'components/editor/use-chat.ts',
         type: 'registry:component',
       },
+      {
+        path: 'components/editor/settings.tsx',
+        type: 'registry:component',
+      },
     ],
     name: 'use-chat',
-    registryDependencies: [],
+    registryDependencies: [
+      'shadcn/button',
+      'shadcn/dialog',
+      'shadcn/input',
+      'shadcn/popover',
+      'shadcn/command',
+    ],
     type: 'registry:component',
   },
   {

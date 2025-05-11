@@ -5,7 +5,7 @@ import * as React from 'react';
 import type {
   createFileTreeForRegistryItemFiles,
   FileTree,
-} from '@/lib/registry';
+} from '@/lib/rehype-utils';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 import type {
   registryItemFileSchema,

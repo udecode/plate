@@ -6,17 +6,15 @@ import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
 
 import { Index } from '../__registry__';
-import {
-  createFileTreeForRegistryItemFiles,
-  getRegistryItem,
-} from '../lib/registry';
 import { examples } from '../registry/registry-examples';
 import { proExamples } from '../registry/registry-pro';
 import { highlightFiles } from './highlight-code';
 import {
+  createFileTreeForRegistryItemFiles,
   fixImport,
   getAllDependencies,
   getNodeAttributeByName,
+  getRegistryItem,
 } from './rehype-utils';
 
 // NOTE: shadcn fork

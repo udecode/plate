@@ -40,7 +40,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
   );
 
   const { editor, tf } = useEditorPlugin(TablePlugin);
-  const [open, setOpen] = React.React.useState(false);
+  const [open, setOpen] = React.useState(false);
   const mergeState = useTableMergeState();
 
   return (

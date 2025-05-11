@@ -90,7 +90,7 @@ export function MediaToolbarButton({
   const currentConfig = MEDIA_CONFIG[nodeType];
 
   const editor = useEditorRef();
-  const [open, setOpen] = React.React.useState(false);
+  const [open, setOpen] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const { openFilePicker } = useFilePicker({
