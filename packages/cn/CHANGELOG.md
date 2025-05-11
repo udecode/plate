@@ -1,5 +1,11 @@
 # @udecode/cn
 
+## 48.0.3
+
+### Patch Changes
+
+- [#4289](https://github.com/udecode/plate/pull/4289) by [@zbeyens](https://github.com/zbeyens) – `withProps` should not pass `className` if falsy
+
 ## 47.3.1
 
 ## 47.2.7
