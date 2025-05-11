@@ -1,3 +1,5 @@
+import * as React from 'react';
+
 import { type SlateLeafProps, SlateLeaf } from '@udecode/plate';
 
 export function CodeSyntaxLeafStatic(props: SlateLeafProps) {
