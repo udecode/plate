@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 48.0.3
+
+### Patch Changes
+
+- [#4289](https://github.com/udecode/plate/pull/4289) by [@zbeyens](https://github.com/zbeyens) – Fix Plate components generic types
+
 ## 48.0.1
 
 ## 48.0.0
