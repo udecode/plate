@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import * as React from 'react';
 
 import type { RenderElementProps, TElement, Value } from '@udecode/plate';
 
@@ -42,10 +42,13 @@ function Element({ attributes, children, element }: RenderElementProps) {
 }
 
 function WithoutPlate() {
-  const [initialValue, setValue] = useState(value);
-  const renderElement = useCallback((p: any) => <Element {...p} />, []);
-  const editor = useMemo(() => withReact(createEditor()), []);
-  const onChange = useCallback((newValue: Value) => setValue(newValue), []);
+  const [initialValue, setValue] = React.useState(value);
+  const renderElement = React.useCallback((p: any) => <Element {...p} />, []);
+  const editor = React.useMemo(() => withReact(createEditor()), []);
+  const onChange = React.useCallback(
+    (newValue: Value) => setValue(newValue),
+    []
+  );
 
   return (
     <Slate

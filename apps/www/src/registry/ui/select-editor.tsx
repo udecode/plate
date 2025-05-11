@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
 import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
 import { isHotkey } from '@udecode/plate';

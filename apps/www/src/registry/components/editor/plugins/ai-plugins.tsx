@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
 import type { AIChatPluginConfig } from '@udecode/plate-ai/react';
 

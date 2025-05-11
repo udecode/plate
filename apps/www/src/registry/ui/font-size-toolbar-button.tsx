@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import * as React from 'react';
 
 import type { TElement } from '@udecode/plate';
 
@@ -45,8 +45,8 @@ const FONT_SIZES = [
 ] as const;
 
 export function FontSizeToolbarButton() {
-  const [inputValue, setInputValue] = useState(DEFAULT_FONT_SIZE);
-  const [isFocused, setIsFocused] = useState(false);
+  const [inputValue, setInputValue] = React.useState(DEFAULT_FONT_SIZE);
+  const [isFocused, setIsFocused] = React.useState(false);
   const { api, editor } = useEditorPlugin(FontSizePlugin);
 
   const cursorFontSize = useEditorSelector((editor) => {

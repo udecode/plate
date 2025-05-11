@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import * as React from 'react';
 
 import type { Value } from '@udecode/plate';
 
@@ -26,7 +26,7 @@ const value = [
 ];
 
 export default function BasicEditorHandlerDemo() {
-  const [debugValue, setDebugValue] = useState<Value>(value);
+  const [debugValue, setDebugValue] = React.useState<Value>(value);
 
   const localValue =
     typeof window !== 'undefined' && localStorage.getItem('editorContent');

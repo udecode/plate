@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import * as React from 'react';
 
 import { PlaceholderPlugin, UploadErrorCode } from '@udecode/plate-media/react';
 import { usePluginOption } from '@udecode/plate/react';
@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 export const useUploadErrorToast = () => {
   const uploadError = usePluginOption(PlaceholderPlugin, 'error');
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!uploadError) return;
 
     const { code, data } = uploadError;

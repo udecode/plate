@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import * as React from 'react';
 
 import type { PlateElementProps } from '@udecode/plate/react';
 
@@ -27,7 +27,7 @@ export function EditableVoidElement({
   attributes,
   children,
 }: PlateElementProps) {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = React.useState('');
 
   const editor = useCreateEditor({
     plugins: editorPlugins,

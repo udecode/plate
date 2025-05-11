@@ -2,7 +2,7 @@
 
 // Lifted from slate-yjs https://github.com/BitPhinix/slate-yjs/blob/main/examples/frontend/src/pages/RemoteCursorOverlay/Overlay.tsx
 
-import React, { type CSSProperties, useState } from 'react';
+import * as React from 'react';
 
 import {
   type CursorOverlayData,
@@ -45,7 +45,7 @@ function RemoteSelection({
     return null;
   }
 
-  const selectionStyle: CSSProperties = {
+  const selectionStyle: React.CSSProperties = {
     // Add a opacity to the background color
     backgroundColor: addAlpha(data.color, 0.5),
   };
@@ -74,7 +74,7 @@ const cursorOpacity = 0.7;
 const hoverOpacity = 1;
 
 function Caret({ caretPosition, data }: CaretProps) {
-  const [isHover, setIsHover] = useState(false);
+  const [isHover, setIsHover] = React.useState(false);
 
   const handleMouseEnter = () => {
     setIsHover(true);
@@ -82,7 +82,7 @@ function Caret({ caretPosition, data }: CaretProps) {
   const handleMouseLeave = () => {
     setIsHover(false);
   };
-  const caretStyle: CSSProperties = {
+  const caretStyle: React.CSSProperties = {
     ...caretPosition,
     background: data?.color,
     opacity: cursorOpacity,
@@ -90,7 +90,7 @@ function Caret({ caretPosition, data }: CaretProps) {
   };
   const caretStyleHover = { ...caretStyle, opacity: hoverOpacity };
 
-  const labelStyle: CSSProperties = {
+  const labelStyle: React.CSSProperties = {
     background: data?.color,
     opacity: cursorOpacity,
     transform: 'translateY(-100%)',

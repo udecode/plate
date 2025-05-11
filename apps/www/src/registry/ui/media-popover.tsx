@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import * as React from 'react';
 
 import type { WithRequiredKey } from '@udecode/plate';
 
@@ -54,7 +54,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
     !readOnly && selected && selectionCollapsed && !isImagePreviewOpen;
   const isEditing = useFloatingMediaValue('isEditing');
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isOpen && isEditing) {
       FloatingMediaStore.set('isEditing', false);
     }

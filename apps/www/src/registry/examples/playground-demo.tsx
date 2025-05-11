@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import * as React from 'react';
 
 import { AIChatPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
@@ -111,7 +111,7 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
 function usePlaygroundEnabled(id?: string) {
   const enabled = useStoreValue(SettingsStore, 'checkedPlugins');
 
-  return useMemo(
+  return React.useMemo(
     () => ({
       [AIChatPlugin.key]: id === 'ai' || !!enabled[AIChatPlugin.key],
       [AlignPlugin.key]: !!enabled.align,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 
 import { NodeApi } from '@udecode/plate';
 import {
@@ -65,9 +65,9 @@ function CopyButton({
   React.ComponentProps<typeof Button>,
   'value'
 >) {
-  const [hasCopied, setHasCopied] = useState(false);
+  const [hasCopied, setHasCopied] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setTimeout(() => {
       setHasCopied(false);
     }, 2000);

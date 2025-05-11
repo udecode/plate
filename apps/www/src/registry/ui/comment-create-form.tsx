@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import * as React from 'react';
 
 import { withProps } from '@udecode/cn';
 import { type Value, nanoid, NodeApi } from '@udecode/plate';
@@ -97,14 +97,14 @@ export function CommentCreateForm({
 
   const userInfo = usePluginOption(discussionPlugin, 'currentUser');
   const [commentValue, setCommentValue] = React.useState<Value | undefined>();
-  const commentContent = useMemo(
+  const commentContent = React.useMemo(
     () =>
       commentValue ? NodeApi.string({ children: commentValue, type: 'p' }) : '',
     [commentValue]
   );
   const commentEditor = useCommentEditor({}, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (commentEditor && focusOnMount) {
       commentEditor.tf.focus();
     }

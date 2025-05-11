@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback } from 'react';
+import * as React from 'react';
 
 import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';
 
@@ -32,7 +32,7 @@ export type RowOfButtonsProps = {
   row: GridRow;
 } & Pick<UseEmojiPickerType, 'emojiLibrary' | 'onMouseOver' | 'onSelectEmoji'>;
 
-const Button = memo(
+const Button = React.memo(
   ({ emoji, index, onMouseOver, onSelect }: EmojiButtonProps) => {
     return (
       <button
@@ -65,7 +65,7 @@ const Button = memo(
 );
 Button.displayName = 'Button';
 
-const RowOfButtons = memo(
+const RowOfButtons = React.memo(
   ({ emojiLibrary, row, onMouseOver, onSelectEmoji }: RowOfButtonsProps) => (
     <div key={row.id} className="flex" data-index={row.id}>
       {row.elements.map((emojiId, index) => (
@@ -95,7 +95,7 @@ export function EmojiPickerContent({
 }: EmojiPickerContentProps) {
   const getRowWidth = settings.perLine.value * settings.buttonSize.value;
 
-  const isCategoryVisible = useCallback(
+  const isCategoryVisible = React.useCallback(
     (categoryId: any) => {
       return visibleCategories.has(categoryId)
         ? visibleCategories.get(categoryId)
@@ -104,7 +104,7 @@ export function EmojiPickerContent({
     [visibleCategories]
   );
 
-  const EmojiList = useCallback(() => {
+  const EmojiList = React.useCallback(() => {
     return emojiLibrary
       .getGrid()
       .sections()
@@ -152,7 +152,7 @@ export function EmojiPickerContent({
     settings,
   ]);
 
-  const SearchList = useCallback(() => {
+  const SearchList = React.useCallback(() => {
     return (
       <div style={{ width: getRowWidth }} data-id="search">
         <div className="sticky -top-px z-1 bg-popover/90 p-1 py-2 text-sm font-semibold text-card-foreground backdrop-blur-xs">

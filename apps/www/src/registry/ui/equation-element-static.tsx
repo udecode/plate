@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 import { type SlateElementProps, SlateElement } from '@udecode/plate';
 import { type TEquationElement, getEquationHtml } from '@udecode/plate-math';

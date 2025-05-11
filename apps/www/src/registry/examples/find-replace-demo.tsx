@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 import { Plate, useEditorPlugin, usePluginOption } from '@udecode/plate/react';

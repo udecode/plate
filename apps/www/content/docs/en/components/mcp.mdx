@@ -7,7 +7,7 @@ Plate has an official MCP server. This lets AI tools understand and work with ou
 
 ## What is MCP?
 
-The Model Context Protocol (MCP) is an open protocol that standardizes how applications provide context to LLMs. This is useful for Plate because you can now give your AI-assisted IDE direct access to all Plate resources.
+The Model Context Protocol (MCP) is an open protocol that standardizes how applications provide context to LLMs. This is useful for Plate because you can now give your AI-assisted IDE direct access to hundreds of Plate resources.
 
 ## Using MCP with Plate
 
@@ -32,31 +32,27 @@ The Plate registry provides structured information about our resources that MCP-
 
 - Editor templates
 - Plugin configurations
-- UI components and styles
-- Dependencies and requirements for all resources
+- UI components
+- Dependencies and requirements for all files
 - Documentation and migration guides (coming soon)
 
-## Setup with Cursor
+## Setup MCP
 
-To enable Plate's MCP server in Cursor:
-
-1.  Open Cursor Settings.
-2.  Navigate to the "MCP" section.
-3.  Click "Add new global MCP server".
-4.  Enter the following JSON configuration:
+Copy and paste the code into `.cursor/mcp.json` (or `.codeium/windsurf/mcp_config.json` for Windsurf)
 
 ```json
 {
   "mcpServers": {
+    "shadcn": {
+      "description": "shadcn/ui components",
+      "command": "npx",
+      "args": ["-y", "shadcn@canary", "registry:mcp"]
+    },
     "plate": {
       "description": "Plate editors, plugins and components",
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "shadcn@canary",
-        "registry:mcp"
-      ],
+      "args": ["-y", "platejs@canary", "registry:mcp"],
       "env": {
         "REGISTRY_URL": "https://platejs.org//r/registry.json"
       }
@@ -65,7 +61,8 @@ To enable Plate's MCP server in Cursor:
 }
 ```
 
-Once configured, Cursor will use this server to get context about Plate.
+- `shadcn` is the MCP server for shadcn/ui components.
+- `plate` is the MCP server for Plate components.
 
 ## Best Practices
 

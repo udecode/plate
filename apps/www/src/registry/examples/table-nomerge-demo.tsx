@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
 import { TablePlugin } from '@udecode/plate-table/react';
 import { Plate } from '@udecode/plate/react';

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import * as React from 'react';
 import TextareaAutosize, {
   type TextareaAutosizeProps,
 } from 'react-textarea-autosize';
@@ -40,7 +40,7 @@ const EquationPopoverContent = ({
   const readOnly = useReadOnly();
   const element = useElement<TEquationElement>();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (isInline && open) {
       setOpen(true);
     }

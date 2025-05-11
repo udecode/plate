@@ -1,5 +1,6 @@
 'use client';
-import React, { useRef } from 'react';
+
+import * as React from 'react';
 
 import type { TSuggestionData } from '@udecode/plate-suggestion';
 
@@ -47,7 +48,7 @@ function SuggestionLineBreak({
   const isActive = activeSuggestionId === suggestionData.id;
   const isHover = hoverSuggestionId === suggestionData.id;
 
-  const spanRef = useRef<HTMLSpanElement>(null);
+  const spanRef = React.useRef<HTMLSpanElement>(null);
 
   return (
     <span

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import * as React from 'react';
 
 import type { TCodeBlockElement } from '@udecode/plate-code-block';
 
@@ -116,12 +116,12 @@ const languages: { label: string; value: string }[] = [
 ];
 
 export function CodeBlockCombobox() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = React.useState(false);
   const readOnly = useReadOnly();
   const editor = useEditorRef();
   const element = useElement<TCodeBlockElement>();
   const value = element.lang || 'plaintext';
-  const [searchValue, setSearchValue] = React.useState('');
+  const [searchValue, setSearchValue] = React.React.useState('');
 
   const items = React.useMemo(
     () =>

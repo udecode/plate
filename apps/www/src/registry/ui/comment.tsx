@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import * as React from 'react';
 
 import type { Value } from '@udecode/plate';
 
@@ -182,8 +182,8 @@ export function Comment(props: {
   const isLast = index === discussionLength - 1;
   const isEditing = editingId && editingId === comment.id;
 
-  const [hovering, setHovering] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [hovering, setHovering] = React.useState(false);
+  const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
   return (
     <div

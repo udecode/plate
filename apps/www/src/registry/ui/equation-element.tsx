@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import * as React from 'react';
 
 import type { TEquationElement } from '@udecode/plate-math';
 import type { PlateElementProps } from '@udecode/plate/react';
@@ -16,8 +16,8 @@ import { EquationPopoverContent } from './equation-popover';
 
 export function EquationElement(props: PlateElementProps<TEquationElement>) {
   const selected = useSelected();
-  const [open, setOpen] = useState(selected);
-  const katexRef = useRef<HTMLDivElement | null>(null);
+  const [open, setOpen] = React.useState(selected);
+  const katexRef = React.useRef<HTMLDivElement | null>(null);
 
   useEquationElement({
     element: props.element,

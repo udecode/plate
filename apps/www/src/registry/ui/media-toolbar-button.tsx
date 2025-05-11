@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
@@ -90,8 +90,8 @@ export function MediaToolbarButton({
   const currentConfig = MEDIA_CONFIG[nodeType];
 
   const editor = useEditorRef();
-  const [open, setOpen] = React.useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [open, setOpen] = React.React.useState(false);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const { openFilePicker } = useFilePicker({
     accept: currentConfig.accept,
@@ -176,9 +176,9 @@ function MediaUrlDialogContent({
   setOpen: (value: boolean) => void;
 }) {
   const editor = useEditorRef();
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = React.useState('');
 
-  const embedMedia = useCallback(() => {
+  const embedMedia = React.useCallback(() => {
     if (!isUrl(url)) return toast.error('Invalid URL');
 
     setOpen(false);

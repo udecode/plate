@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import * as React from 'react';
 
 import { withProps } from '@udecode/cn';
 import { BaseParagraphPlugin, SlateLeaf } from '@udecode/plate';
@@ -195,7 +195,7 @@ const plugins = [
   markdownPlugin,
 ];
 
-export const AIChatEditor = memo(function AIChatEditor({
+export const AIChatEditor = React.memo(function AIChatEditor({
   content,
 }: {
   content: string;

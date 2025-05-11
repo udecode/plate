@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import * as React from 'react';
 
 import type { PlateElementProps } from '@udecode/plate/react';
 
@@ -22,11 +22,11 @@ import {
 export function EmojiInputElement(props: PlateElementProps) {
   const { children, editor, element } = props;
   const data = usePluginOption(EmojiPlugin, 'data')!;
-  const [value, setValue] = useState('');
+  const [value, setValue] = React.useState('');
   const debouncedValue = useDebounce(value, 100);
   const isPending = value !== debouncedValue;
 
-  const filteredEmojis = useMemo(() => {
+  const filteredEmojis = React.useMemo(() => {
     if (debouncedValue.trim().length === 0) return [];
 
     return EmojiInlineIndexSearch.getInstance(data)

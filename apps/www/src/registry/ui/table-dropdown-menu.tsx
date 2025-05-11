@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
@@ -40,7 +40,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
   );
 
   const { editor, tf } = useEditorPlugin(TablePlugin);
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.React.useState(false);
   const mergeState = useTableMergeState();
 
   return (
@@ -210,7 +210,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
 export function TablePicker() {
   const { editor, tf } = useEditorPlugin(TablePlugin);
 
-  const [tablePicker, setTablePicker] = useState({
+  const [tablePicker, setTablePicker] = React.useState({
     grid: Array.from({ length: 8 }, () => Array.from({ length: 8 }).fill(0)),
     size: { colCount: 0, rowCount: 0 },
   });

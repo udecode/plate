@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import * as React from 'react';
 
 import type { TSuggestionText } from '@udecode/plate-suggestion';
 import type {
@@ -143,7 +143,7 @@ const BlockCommentsContent = ({
     selected ||
     (isCommenting && !!draftCommentNode && commentingCurrent);
 
-  const anchorElement = useMemo(() => {
+  const anchorElement = React.useMemo(() => {
     let activeNode: NodeEntry | undefined;
 
     if (activeSuggestion) {

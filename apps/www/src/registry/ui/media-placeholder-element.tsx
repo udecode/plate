@@ -1,8 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
 
 import type { TPlaceholderElement } from '@udecode/plate-media';
 import type { PlateElementProps } from '@udecode/plate/react';
@@ -27,8 +25,8 @@ const CONTENT: Record<
   string,
   {
     accept: string[];
-    content: ReactNode;
-    icon: ReactNode;
+    content: React.ReactNode;
+    icon: React.ReactNode;
   }
 > = {
   [AudioPlugin.key]: {
@@ -71,7 +69,7 @@ export const MediaPlaceholderElement = withHOC(
 
     const isImage = element.mediaType === ImagePlugin.key;
 
-    const imageRef = useRef<HTMLImageElement>(null);
+    const imageRef = React.useRef<HTMLImageElement>(null);
 
     const { openFilePicker } = useFilePicker({
       accept: currentContent.accept,
@@ -88,7 +86,7 @@ export const MediaPlaceholderElement = withHOC(
       },
     });
 
-    const replaceCurrentPlaceholder = useCallback(
+    const replaceCurrentPlaceholder = React.useCallback(
       (file: File) => {
         void uploadFile(file);
         api.placeholder.addUploadingFile(element.id as string, file);
@@ -96,7 +94,7 @@ export const MediaPlaceholderElement = withHOC(
       [api.placeholder, element.id, uploadFile]
     );
 
-    useEffect(() => {
+    React.useEffect(() => {
       if (!uploadedFile) return;
 
       const path = editor.api.findPath(element);
@@ -124,11 +122,11 @@ export const MediaPlaceholderElement = withHOC(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [uploadedFile, element.id]);
 
-    // React dev mode will call useEffect twice
-    const isReplaced = useRef(false);
+    // React dev mode will call React.useEffect twice
+    const isReplaced = React.useRef(false);
 
     /** Paste and drop */
-    useEffect(() => {
+    React.useEffect(() => {
       if (isReplaced.current) return;
 
       isReplaced.current = true;
@@ -200,9 +198,9 @@ export function ImageProgress({
   imageRef?: React.RefObject<HTMLImageElement | null>;
   progress?: number;
 }) {
-  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [objectUrl, setObjectUrl] = React.useState<string | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const url = URL.createObjectURL(file);
     setObjectUrl(url);
 

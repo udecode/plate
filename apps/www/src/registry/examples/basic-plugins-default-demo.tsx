@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import * as React from 'react';
 
 import type { Value } from '@udecode/plate';
 
@@ -25,7 +25,7 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { basicEditorValue } from './basic-plugins-components-demo';
 
 export default function BasicPluginsDefaultDemo() {
-  const [debugValue, setDebugValue] = useState<Value>(basicEditorValue);
+  const [debugValue, setDebugValue] = React.useState<Value>(basicEditorValue);
   const editor = usePlateEditor({
     plugins: [
       BlockquotePlugin,

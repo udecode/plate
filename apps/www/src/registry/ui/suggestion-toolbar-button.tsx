@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';

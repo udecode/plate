@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import * as React from 'react';
 
 import type {
   TResolvedSuggestion,
@@ -124,7 +124,7 @@ export const BlockSuggestionCard = ({
     });
   };
 
-  const [hovering, setHovering] = useState(false);
+  const [hovering, setHovering] = React.useState(false);
 
   const suggestionText2Array = (text: string) => {
     if (text === BLOCK_SUGGESTION) return ['line breaks'];
@@ -132,7 +132,7 @@ export const BlockSuggestionCard = ({
     return text.split(BLOCK_SUGGESTION).filter(Boolean);
   };
 
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = React.useState<string | null>(null);
 
   return (
     <div
@@ -318,7 +318,7 @@ export const useResolveSuggestion = (
     setOption('uniquePathMap', new Map(map).set(id, blockPath));
   });
 
-  const resolvedSuggestion: ResolvedSuggestion[] = useMemo(() => {
+  const resolvedSuggestion: ResolvedSuggestion[] = React.useMemo(() => {
     const map = getOption('uniquePathMap');
 
     if (suggestionNodes.length === 0) return [];

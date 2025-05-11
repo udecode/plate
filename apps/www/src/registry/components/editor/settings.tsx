@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, createContext, useContext, useState } from 'react';
+import * as React from 'react';
 
 import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { useEditorPlugin } from '@udecode/plate/react';
@@ -60,16 +60,16 @@ export const models: Model[] = [
   { label: 'gpt-3.5-turbo-instruct', value: 'gpt-3.5-turbo-instruct' },
 ];
 
-const SettingsContext = createContext<SettingsContextType | undefined>(
+const SettingsContext = React.createContext<SettingsContextType | undefined>(
   undefined
 );
 
-export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [keys, setKeys] = useState({
+export function SettingsProvider({ children }: { children: React.ReactNode }) {
+  const [keys, setKeys] = React.useState({
     openai: '',
     uploadthing: '',
   });
-  const [model, setModel] = useState<Model>(models[0]);
+  const [model, setModel] = React.useState<Model>(models[0]);
 
   const setKey = (service: string, key: string) => {
     setKeys((prev) => ({ ...prev, [service]: key }));
@@ -83,7 +83,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 }
 
 export function useSettings() {
-  const context = useContext(SettingsContext);
+  const context = React.useContext(SettingsContext);
 
   return (
     context ?? {
@@ -100,10 +100,10 @@ export function useSettings() {
 
 export function SettingsDialog() {
   const { keys, model, setKey, setModel } = useSettings();
-  const [tempKeys, setTempKeys] = useState(keys);
-  const [showKey, setShowKey] = useState<Record<string, boolean>>({});
-  const [open, setOpen] = useState(false);
-  const [openModel, setOpenModel] = useState(false);
+  const [tempKeys, setTempKeys] = React.useState(keys);
+  const [showKey, setShowKey] = React.useState<Record<string, boolean>>({});
+  const [open, setOpen] = React.useState(false);
+  const [openModel, setOpenModel] = React.useState(false);
 
   const { getOptions, setOption } = useEditorPlugin(CopilotPlugin);
 

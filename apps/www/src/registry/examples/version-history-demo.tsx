@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
 import { type Value, createSlatePlugin } from '@udecode/plate';
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';

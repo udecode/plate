@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type ComponentPropsWithoutRef } from 'react';
+import * as React from 'react';
 
 import {
   useColorsCustom,
@@ -25,7 +25,7 @@ type ColorCustomProps = {
   updateColor: (color: string) => void;
   updateCustomColor: (color: string) => void;
   color?: string;
-} & ComponentPropsWithoutRef<'div'>;
+} & React.ComponentPropsWithoutRef<'div'>;
 
 export function ColorCustom({
   className,
