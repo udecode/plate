@@ -3217,9 +3217,11 @@
       "name": "api-uploadthing",
       "type": "registry:file",
       "dependencies": [
-        "uploadthing@7.6.0"
+        "uploadthing@7.7.2"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/uploadthing"
+      ],
       "files": [
         {
           "path": "src/registry/app/api/uploadthing/route.ts",
@@ -4161,14 +4163,18 @@
     },
     {
       "name": "uploadthing",
-      "type": "registry:lib",
+      "type": "registry:hook",
       "dependencies": [
-        "uploadthing@7.6.0",
-        "@uploadthing/react@7.3.0",
+        "uploadthing@7.7.2",
+        "@uploadthing/react@7.3.1",
         "sonner",
         "zod"
       ],
       "files": [
+        {
+          "path": "src/registry/hooks/use-upload-file.ts",
+          "type": "registry:hook"
+        },
         {
           "path": "src/registry/lib/uploadthing.ts",
           "type": "registry:lib"

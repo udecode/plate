@@ -1854,7 +1854,7 @@ export const Index: Record<string, any> = {
     name: "api-uploadthing",
     description: "",
     type: "registry:file",
-    registryDependencies: [],
+    registryDependencies: ["https://platejs.org/r/uploadthing"],
     files: [{
       path: "src/registry/app/api/uploadthing/route.ts",
       type: "registry:file",
@@ -2607,15 +2607,19 @@ export const Index: Record<string, any> = {
   "uploadthing": {
     name: "uploadthing",
     description: "",
-    type: "registry:lib",
+    type: "registry:hook",
     registryDependencies: undefined,
     files: [{
+      path: "src/registry/hooks/use-upload-file.ts",
+      type: "registry:hook",
+      target: ""
+    },{
       path: "src/registry/lib/uploadthing.ts",
       type: "registry:lib",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/lib/uploadthing.ts")
+      const mod = await import("@/registry/hooks/use-upload-file.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
