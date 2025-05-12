@@ -26,7 +26,7 @@ const plugins: Registry['items'] = [
     type: 'registry:file',
   },
   {
-    dependencies: ['uploadthing@7.6.0'],
+    dependencies: ['uploadthing@7.7.2'],
     files: [
       {
         path: 'app/api/uploadthing/route.ts',
@@ -35,7 +35,7 @@ const plugins: Registry['items'] = [
       },
     ],
     name: 'api-uploadthing',
-    registryDependencies: [],
+    registryDependencies: ['uploadthing'],
     type: 'registry:file',
   },
   // Components

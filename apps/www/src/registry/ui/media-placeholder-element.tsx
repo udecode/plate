@@ -19,7 +19,7 @@ import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
 
 import { cn } from '@/lib/utils';
-import { useUploadFile } from '@/registry/lib/uploadthing';
+import { useUploadFile } from '@/registry/hooks/use-upload-file';
 
 const CONTENT: Record<
   string,
