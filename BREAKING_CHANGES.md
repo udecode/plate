@@ -1,5 +1,170 @@
 For older changelogs, see https://github.com/udecode/plate/blob/main/tooling
 
+# @udecode/plate-core@48.0.0
+
+### Major Changes
+
+- [#4281](https://github.com/udecode/plate/pull/4281) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `PlateElement`, `PlateLeaf` and `PlateText` HTML attributes are moved from top-level props to `attributes` prop, except `className`, `style` and `as`. Migration:
+
+  ```tsx
+  // From
+  <PlateElement
+    {...props}
+    ref={ref}
+    contentEditable={false}
+  >
+    {children}
+  </PlateElement>
+
+  // To
+  <PlateElement
+    {...props}
+    ref={ref}
+    attributes={{
+      ...props.attributes,
+      contentEditable: false,
+    }}
+  >
+    {children}
+  </PlateElement>
+  ```
+
+  - Remove `nodeProps` prop from `PlateElement`, `PlateLeaf`, `PlateText`. It has been merged into `attributes` prop.
+  - Plugin `node.props` should return the props directly instead of inside `nodeProps` object. Migration:
+
+  ```ts
+  // From
+  node: {
+    props: ({ element }) => ({
+      nodeProps: {
+        colSpan: element?.attributes?.colspan,
+        rowSpan: element?.attributes?.rowspan,
+      },
+    });
+  }
+
+  // To
+  node: {
+    props: ({ element }) => ({
+      colSpan: element?.attributes?.colspan,
+      rowSpan: element?.attributes?.rowspan,
+    });
+  }
+  ```
+
+  - Remove `asChild` prop from `PlateElement`, `PlateLeaf`, `PlateText`. Use `as` prop instead.
+  - Remove `elementToAttributes`, `leafToAttributes`, `textToAttributes` props from `PlateElement`, `PlateLeaf`, `PlateText`.
+  - Remove `DefaultElement`, `DefaultLeaf`, `DefaultText`. Use `PlateElement`, `PlateLeaf`, `PlateText` instead.
+  - Types: remove `PlateRenderElementProps`, `PlateRenderLeafProps`, `PlateRenderTextProps`. Use `PlateElementProps`, `PlateLeafProps`, `PlateTextProps` instead.
+
+## @udecode/plate-utils@48.0.0
+
+### Major Changes
+
+- [#4281](https://github.com/udecode/plate/pull/4281) by [@zbeyens](https://github.com/zbeyens) –
+  - Moved `PlateElement`, `PlateLeaf`, `PlateText` to `@udecode/plate-core`. No migration needed if you're importing from `@udecode/plate`.
+
+## @udecode/plate-yjs@48.0.0
+
+### Major Changes
+
+- [#4225](https://github.com/udecode/plate/pull/4225) by [@bbyiringiro](<https://github.com/[bbyiringiro](https://github.com/bbyiringiro)>) –
+
+  - Add multi-provider support for improved collaboration: now supports both Hocuspocus and WebRTC simultaneously using a shared Y.Doc.
+    - **Migration**: Replace `hocuspocusProviderOptions` with the new `providers` array. See examples below.
+
+  **Before:**
+
+  ```tsx
+  YjsPlugin.configure({
+    options: {
+      cursorOptions: {
+        /* ... */
+      },
+      hocuspocusProviderOptions: {
+        url: 'wss://hocuspocus.example.com',
+        name: 'document-1',
+        // ... other Hocuspocus options
+      },
+    },
+  });
+  ```
+
+  **After (Hocuspocus only):**
+
+  ```tsx
+  YjsPlugin.configure({
+    options: {
+      cursors: {
+        /* ... */
+      },
+      providers: [
+        {
+          type: 'hocuspocus',
+          options: {
+            url: 'wss://hocuspocus.example.com',
+            name: 'document-1',
+            // ... other Hocuspocus options
+          },
+        },
+      ],
+    },
+  });
+  ```
+
+  **After (Hocuspocus + WebRTC):**
+
+  ```tsx
+  YjsPlugin.configure({
+    options: {
+      cursors: {
+        /* ... */
+      },
+      providers: [
+        {
+          type: 'hocuspocus',
+          options: {
+            url: 'wss://hocuspocus.example.com',
+            name: 'document-1',
+          },
+        },
+        {
+          type: 'webrtc',
+          options: {
+            roomName: 'document-1',
+            // signaling: ['wss://signaling.example.com'], // Optional
+          },
+        },
+      ],
+    },
+  });
+  ```
+
+  - Introduces `UnifiedProvider` interface that enables custom provider implementations (e.g., IndexedDB for offline persistence).
+  - Renamed `cursorOptions` to `cursors`.
+  - Merged `yjsOptions` into `options`.
+    - **Migration**: Move options previously under `yjsOptions` directly into the main `options` object.
+  - Removed `YjsAboveEditable`. You should now call `init` and `destroy` manually:
+
+  ```tsx
+  React.useEffect(() => {
+    if (!mounted) return;
+
+    // Initialize Yjs connection and sync
+    editor.getApi(YjsPlugin).yjs.init({
+      id: roomName, // Or your document identifier
+      value: INITIAL_VALUE, // Your initial editor content
+    });
+
+    // Destroy connection on component unmount
+    return () => {
+      editor.getApi(YjsPlugin).yjs.destroy();
+    };
+  }, [editor, mounted, roomName]); // Add relevant dependencies
+  ```
+
 # 47.0.0
 
 # @udecode/plate-markdown
@@ -24,8 +189,9 @@ For older changelogs, see https://github.com/udecode/plate/blob/main/tooling
   #### Breaking Changes
 
   **Plugin Options**
-  
+
   Removed options:
+
   - `elementRules` use `rules` instead
   - `textRules` use `rules` instead
   - `indentList` now automatically detects if the IndentList plugin is used
