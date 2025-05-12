@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button';
 import { useLocale } from '@/hooks/useLocale';
 const i18n = {
   cn: {
-    description: 'AI, Copilot, 上传, 数学, 以及更多',
+    description: 'MCP, AI, Copilot, 上传, 以及更多',
   },
   en: {
-    description: 'AI, Copilot, Upload, Math, and more',
+    description: 'MCP, AI, Copilot, Upload, and more',
   },
 };
 
