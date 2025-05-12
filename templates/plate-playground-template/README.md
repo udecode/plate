@@ -7,6 +7,7 @@ A Next.js 15 template with [Plate](https://platejs.org/) AI, plugins and compone
 - Next.js 15 App Directory
 - [Plate](https://platejs.org/) editor
 - [shadcn/ui](https://ui.shadcn.com/)
+- [MCP](https://platejs.org/docs/components/mcp)
 
 ## Installation
 
@@ -15,11 +16,7 @@ Choose one of these methods:
 ### 1. Using CLI (Recommended)
 
 ```bash
-npx shadcx@latest init plate
-```
-
-```bash
-npx shadcx@latest add plate/editor-ai
+npx shadcn@latest add https://platejs.org/r/editor-ai
 ```
 
 ### 2. Using Template

@@ -7,6 +7,7 @@ A minimal template for building rich-text editors with [Plate](https://platejs.o
 - Next.js 15 App Directory
 - [Plate](https://platejs.org/) editor
 - [shadcn/ui](https://ui.shadcn.com/)
+- [MCP](https://platejs.org/docs/components/mcp)
 
 ## Installation
 
@@ -15,11 +16,7 @@ Choose one of these methods:
 ### 1. Using CLI (Recommended)
 
 ```bash
-npx shadcx@latest init plate
-```
-
-```bash
-npx shadcx@latest add plate/editor-basic
+npx shadcn@latest add https://platejs.org/r/editor-basic
 ```
 
 ### 2. Using Template
@@ -43,5 +40,5 @@ Visit http://localhost:3000/editor to see the editor in action.
 Using the CLI, you can upgrade to `editor-ai` by running:
 
 ```bash
-npx shadcx@latest add editor-ai -r plate -o
+npx shadcn@latest add https://platejs.org/r/editor-ai -o
 ```
