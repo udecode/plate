@@ -129,7 +129,7 @@ const CHUNKING_REGEXPS = {
 };
 
 export async function POST(req: NextRequest) {
-  const { apiKey: key, messages, model = 'gpt-4o', system } = await req.json();
+  const { apiKey: key, messages, system } = await req.json();
 
   const apiKey = key || process.env.OPENAI_API_KEY;
 

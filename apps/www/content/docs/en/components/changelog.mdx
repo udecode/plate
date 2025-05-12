@@ -10,13 +10,9 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## May 2025 #22
 
-### May 12 #22.5
+### May 11-12 #22.5
 
-- `media-placeholder-element`: refactor to use `use-upload-file` hook instead of `uploadthing`
-  - Migration: `npx shadcn@latest add https://platejs.org/r/api-uploadthing`
-
-### May 11 #22.4
-
+- [Templates migration to Plate 48](https://github.com/udecode/plate/pull/4298/files)
 - Migration to shadcn v4: 
   - Plate had a forked version of shadcn/ui primitives that could conflict with your existing components. Our components now **fully depend** on the original shadcn/ui primitives, easing the integration of Plate into your existing shadcn/ui set of components.
   - All components updated to [Tailwind v4](https://ui.shadcn.com/docs/tailwind-v4). 
@@ -31,6 +27,8 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 - Remove unused `className`, `style` props from all element and leaf components
 - `draggable`:
   - Fix dnd in Firefox
+- `media-placeholder-element`: refactor to use `use-upload-file` hook instead of `uploadthing`
+  - Migration: `npx shadcn@latest add https://platejs.org/r/api-uploadthing`
 
 ### May 6 #22.3
 

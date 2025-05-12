@@ -3,7 +3,7 @@
 import { Plate } from '@udecode/plate/react';
 
 import { useCreateEditor } from '@/components/editor/use-create-editor';
-import { Editor, EditorContainer } from '@/components/plate-ui/editor';
+import { Editor, EditorContainer } from '@/components/ui/editor';
 
 export function PlateEditor() {
   const editor = useCreateEditor();

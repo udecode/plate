@@ -1,8 +1,7 @@
 'use client';
 
-import { type ReactNode, createContext, useContext, useState } from 'react';
+import * as React from 'react';
 
-import { cn } from '@udecode/cn';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { useEditorPlugin } from '@udecode/plate/react';
 import {
@@ -15,7 +14,7 @@ import {
   Wand2Icon,
 } from 'lucide-react';
 
-import { Button } from '@/components/plate-ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -23,7 +22,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/plate-ui/command';
+} from '@/components/ui/command';
 import {
   Dialog,
   DialogContent,
@@ -31,13 +30,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/plate-ui/dialog';
-import { Input } from '@/components/plate-ui/input';
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/plate-ui/popover';
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 interface Model {
   label: string;
@@ -60,16 +60,16 @@ export const models: Model[] = [
   { label: 'gpt-3.5-turbo-instruct', value: 'gpt-3.5-turbo-instruct' },
 ];
 
-const SettingsContext = createContext<SettingsContextType | undefined>(
+const SettingsContext = React.createContext<SettingsContextType | undefined>(
   undefined
 );
 
-export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [keys, setKeys] = useState({
+export function SettingsProvider({ children }: { children: React.ReactNode }) {
+  const [keys, setKeys] = React.useState({
     openai: '',
     uploadthing: '',
   });
-  const [model, setModel] = useState<Model>(models[0]);
+  const [model, setModel] = React.useState<Model>(models[0]);
 
   const setKey = (service: string, key: string) => {
     setKeys((prev) => ({ ...prev, [service]: key }));
@@ -83,7 +83,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 }
 
 export function useSettings() {
-  const context = useContext(SettingsContext);
+  const context = React.useContext(SettingsContext);
 
   return (
     context ?? {
@@ -100,10 +100,10 @@ export function useSettings() {
 
 export function SettingsDialog() {
   const { keys, model, setKey, setModel } = useSettings();
-  const [tempKeys, setTempKeys] = useState(keys);
-  const [showKey, setShowKey] = useState<Record<string, boolean>>({});
-  const [open, setOpen] = useState(false);
-  const [openModel, setOpenModel] = useState(false);
+  const [tempKeys, setTempKeys] = React.useState(keys);
+  const [showKey, setShowKey] = React.useState<Record<string, boolean>>({});
+  const [open, setOpen] = React.useState(false);
+  const [openModel, setOpenModel] = React.useState(false);
 
   const { getOptions, setOption } = useEditorPlugin(CopilotPlugin);
 
@@ -199,23 +199,11 @@ export function SettingsDialog() {
           variant="default"
           className={cn(
             'group fixed right-4 bottom-4 z-50 size-10 overflow-hidden',
-            'rounded-full shadow-md hover:shadow-lg',
-            'transition-all duration-300 ease-in-out hover:w-[106px]'
+            'rounded-full shadow-md hover:shadow-lg'
           )}
           data-block-hide
         >
-          <div className="flex size-full items-center justify-start gap-2">
-            <Settings className="ml-1.5 size-4" />
-            <span
-              className={cn(
-                'whitespace-nowrap opacity-0 transition-all duration-300 ease-in-out',
-                'group-hover:translate-x-0 group-hover:opacity-100',
-                '-translate-x-2'
-              )}
-            >
-              Settings
-            </span>
-          </div>
+          <Settings className="size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>
