@@ -67,46 +67,46 @@ import { copilotPlugins } from '@/components/editor/plugins/copilot-plugins';
 import { editorPlugins } from '@/components/editor/plugins/editor-plugins';
 import { FixedToolbarPlugin } from '@/components/editor/plugins/fixed-toolbar-plugin';
 import { FloatingToolbarPlugin } from '@/components/editor/plugins/floating-toolbar-plugin';
-import { AILeaf } from '@/components/plate-ui/ai-leaf';
-import { BlockquoteElement } from '@/components/plate-ui/blockquote-element';
-import { CalloutElement } from '@/components/plate-ui/callout-element';
-import { CodeBlockElement } from '@/components/plate-ui/code-block-element';
-import { CodeLeaf } from '@/components/plate-ui/code-leaf';
-import { CodeLineElement } from '@/components/plate-ui/code-line-element';
-import { CodeSyntaxLeaf } from '@/components/plate-ui/code-syntax-leaf';
-import { ColumnElement } from '@/components/plate-ui/column-element';
-import { ColumnGroupElement } from '@/components/plate-ui/column-group-element';
-import { CommentLeaf } from '@/components/plate-ui/comment-leaf';
-import { DateElement } from '@/components/plate-ui/date-element';
-import { EmojiInputElement } from '@/components/plate-ui/emoji-input-element';
-import { EquationElement } from '@/components/plate-ui/equation-element';
-import { ExcalidrawElement } from '@/components/plate-ui/excalidraw-element';
-import { HeadingElement } from '@/components/plate-ui/heading-element';
-import { HighlightLeaf } from '@/components/plate-ui/highlight-leaf';
-import { HrElement } from '@/components/plate-ui/hr-element';
-import { ImageElement } from '@/components/plate-ui/image-element';
-import { InlineEquationElement } from '@/components/plate-ui/inline-equation-element';
-import { KbdLeaf } from '@/components/plate-ui/kbd-leaf';
-import { LinkElement } from '@/components/plate-ui/link-element';
-import { MediaAudioElement } from '@/components/plate-ui/media-audio-element';
-import { MediaEmbedElement } from '@/components/plate-ui/media-embed-element';
-import { MediaFileElement } from '@/components/plate-ui/media-file-element';
-import { MediaPlaceholderElement } from '@/components/plate-ui/media-placeholder-element';
-import { MediaVideoElement } from '@/components/plate-ui/media-video-element';
-import { MentionElement } from '@/components/plate-ui/mention-element';
-import { MentionInputElement } from '@/components/plate-ui/mention-input-element';
-import { ParagraphElement } from '@/components/plate-ui/paragraph-element';
-import { withPlaceholders } from '@/components/plate-ui/placeholder';
-import { SlashInputElement } from '@/components/plate-ui/slash-input-element';
-import { SuggestionLeaf } from '@/components/plate-ui/suggestion-leaf';
+import { AILeaf } from '@/components/ui/ai-leaf';
+import { BlockquoteElement } from '@/components/ui/blockquote-element';
+import { CalloutElement } from '@/components/ui/callout-element';
+import { CodeBlockElement } from '@/components/ui/code-block-element';
+import { CodeLeaf } from '@/components/ui/code-leaf';
+import { CodeLineElement } from '@/components/ui/code-line-element';
+import { CodeSyntaxLeaf } from '@/components/ui/code-syntax-leaf';
+import { ColumnElement } from '@/components/ui/column-element';
+import { ColumnGroupElement } from '@/components/ui/column-group-element';
+import { CommentLeaf } from '@/components/ui/comment-leaf';
+import { DateElement } from '@/components/ui/date-element';
+import { EmojiInputElement } from '@/components/ui/emoji-input-element';
+import { EquationElement } from '@/components/ui/equation-element';
+import { ExcalidrawElement } from '@/components/ui/excalidraw-element';
+import { HeadingElement } from '@/components/ui/heading-element';
+import { HighlightLeaf } from '@/components/ui/highlight-leaf';
+import { HrElement } from '@/components/ui/hr-element';
+import { ImageElement } from '@/components/ui/image-element';
+import { InlineEquationElement } from '@/components/ui/inline-equation-element';
+import { KbdLeaf } from '@/components/ui/kbd-leaf';
+import { LinkElement } from '@/components/ui/link-element';
+import { MediaAudioElement } from '@/components/ui/media-audio-element';
+import { MediaEmbedElement } from '@/components/ui/media-embed-element';
+import { MediaFileElement } from '@/components/ui/media-file-element';
+import { MediaPlaceholderElement } from '@/components/ui/media-placeholder-element';
+import { MediaVideoElement } from '@/components/ui/media-video-element';
+import { MentionElement } from '@/components/ui/mention-element';
+import { MentionInputElement } from '@/components/ui/mention-input-element';
+import { ParagraphElement } from '@/components/ui/paragraph-element';
+import { withPlaceholders } from '@/components/ui/placeholder';
+import { SlashInputElement } from '@/components/ui/slash-input-element';
+import { SuggestionLeaf } from '@/components/ui/suggestion-leaf';
 import {
   TableCellElement,
   TableCellHeaderElement,
-} from '@/components/plate-ui/table-cell-element';
-import { TableElement } from '@/components/plate-ui/table-element';
-import { TableRowElement } from '@/components/plate-ui/table-row-element';
-import { TocElement } from '@/components/plate-ui/toc-element';
-import { ToggleElement } from '@/components/plate-ui/toggle-element';
+} from '@/components/ui/table-cell-element';
+import { TableElement } from '@/components/ui/table-element';
+import { TableRowElement } from '@/components/ui/table-row-element';
+import { TocElement } from '@/components/ui/toc-element';
+import { ToggleElement } from '@/components/ui/toggle-element';
 
 export const viewComponents = {
   [AudioPlugin.key]: MediaAudioElement,
@@ -167,20 +167,26 @@ export const useCreateEditor = (
   {
     components,
     override,
+    placeholders,
     readOnly,
     ...options
   }: {
     components?: Record<string, any>;
+    placeholders?: boolean;
     plugins?: any[];
     readOnly?: boolean;
   } & Omit<CreatePlateEditorOptions, 'plugins'> = {},
   deps: any[] = []
 ) => {
-  return usePlateEditor<Value>(
+  return usePlateEditor<Value, (typeof editorPlugins)[number]>(
     {
       override: {
         components: {
-          ...(readOnly ? viewComponents : withPlaceholders(editorComponents)),
+          ...(readOnly
+            ? viewComponents
+            : placeholders
+              ? withPlaceholders(editorComponents)
+              : editorComponents),
           ...components,
         },
         ...override,

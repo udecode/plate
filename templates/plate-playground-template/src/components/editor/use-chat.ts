@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import * as React from 'react';
 
 import { useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
@@ -11,7 +11,7 @@ export const useChat = () => {
   const { keys, model } = useSettings();
 
   // remove when you implement the route /api/ai/command
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const abortControllerRef = React.useRef<AbortController | null>(null);
   const _abortFakeStream = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();

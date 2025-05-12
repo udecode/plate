@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import * as React from 'react';
 
 import type { AIChatPluginConfig } from '@udecode/plate-ai/react';
 
@@ -10,8 +10,8 @@ import { AIChatPlugin, AIPlugin, useChatChunk } from '@udecode/plate-ai/react';
 import { usePluginOption } from '@udecode/plate/react';
 
 import { markdownPlugin } from '@/components/editor/plugins/markdown-plugin';
-import { AILoadingBar } from '@/components/plate-ui/ai-loading-bar';
-import { AIMenu } from '@/components/plate-ui/ai-menu';
+import { AILoadingBar } from '@/components/ui/ai-loading-bar';
+import { AIMenu } from '@/components/ui/ai-menu';
 
 import { cursorOverlayPlugin } from './cursor-overlay-plugin';
 
@@ -122,14 +122,14 @@ export const aiPlugins = [
       afterEditable: () => <AIMenu />,
     },
   }).extend({
-    useHooks: ({ editor, getOption, setOption }) => {
+    useHooks: ({ editor, getOption }) => {
       const mode = usePluginOption(
         { key: 'aiChat' } as AIChatPluginConfig,
         'mode'
       );
 
       useChatChunk({
-        onChunk: ({ chunk, isFirst, nodes, text }) => {
+        onChunk: ({ chunk, isFirst, nodes }) => {
           if (isFirst && mode == 'insert') {
             editor.tf.withoutSaving(() => {
               editor.tf.insertNodes(
@@ -162,7 +162,7 @@ export const aiPlugins = [
             );
           }
         },
-        onFinish: ({ content }) => {
+        onFinish: () => {
           editor.setOption(AIChatPlugin, 'streaming', false);
           editor.setOption(AIChatPlugin, '_blockChunks', '');
           editor.setOption(AIChatPlugin, '_blockPath', null);

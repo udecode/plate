@@ -156,12 +156,19 @@ const eslintConfig = [
             id: ['^id$', '^_id$'],
           },
           groupKind: 'required-first',
-          groups: ['key', 'id', 'unknown', 'method'],
+          groups: [
+            'key',
+            'id',
+            'unknown',
+            // 'multiline',
+            'method',
+          ],
           partitionByComment: true,
 
           type: 'natural',
         },
       ],
+      // breaking: ordering matters
       'perfectionist/sort-intersection-types': 'off',
       'perfectionist/sort-jsx-props': [
         'warn',
@@ -215,7 +222,7 @@ const eslintConfig = [
         },
       ],
       'perfectionist/sort-modules': [
-        'warn',
+        'off',
         {
           groups: [
             'declare-enum',
