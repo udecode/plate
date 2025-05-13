@@ -25,7 +25,7 @@
     "react-dom": "^19.1.0",
     "tailwind-merge": "3.3.0",
     "tailwind-scrollbar-hide": "^2.0.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tw-animate-css": "^1.2.9"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
