@@ -1,6 +1,7 @@
 /* eslint-disable unicorn/prefer-module,@typescript-eslint/no-shadow */
 import fs from 'node:fs';
 import path from 'node:path';
+import { convertPathToPattern } from 'tinyglobby';
 import { type Options, defineConfig } from 'tsup';
 
 const silent = false;
@@ -19,10 +20,10 @@ const REACT_INPUT_FILE_PATH = fs.existsSync(REACT_TS_INPUT_FILE_PATH)
   ? REACT_TS_INPUT_FILE_PATH
   : REACT_TSX_INPUT_FILE_PATH;
 
-const entry = [INPUT_FILE]
+const entry = [convertPathToPattern(INPUT_FILE)]
 
 if (fs.existsSync(REACT_INPUT_FILE_PATH)) {
-  entry.push(REACT_INPUT_FILE_PATH)
+  entry.push(convertPathToPattern(REACT_INPUT_FILE_PATH))
 }
 
 export default defineConfig((opts) => {
