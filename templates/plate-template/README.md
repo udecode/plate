@@ -9,6 +9,11 @@ A minimal template for building rich-text editors with [Plate](https://platejs.o
 - [shadcn/ui](https://ui.shadcn.com/)
 - [MCP](https://platejs.org/docs/components/mcp)
 
+## Requirements
+
+- Node.js 20+
+- pnpm 9+
+
 ## Installation
 
 Choose one of these methods:

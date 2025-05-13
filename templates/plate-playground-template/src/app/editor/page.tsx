@@ -5,7 +5,7 @@ import { SettingsProvider } from '@/components/editor/settings';
 
 export default function Page() {
   return (
-    <div className="h-screen w-full" data-registry="plate">
+    <div className="h-screen w-full">
       <SettingsProvider>
         <PlateEditor />
       </SettingsProvider>

@@ -44,9 +44,6 @@ importers:
       tailwind-scrollbar-hide:
         specifier: ^2.0.0
         version: 2.0.0(tailwindcss@4.1.6)
-      tailwindcss-animate:
-        specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@4.1.6)
       tw-animate-css:
         specifier: ^1.2.9
         version: 1.2.9
@@ -2271,11 +2268,6 @@ packages:
     resolution: {integrity: sha512-lqiIutHliEiODwBRHy4G2+Tcayo2U7+3+4frBmoMETD72qtah+XhOk5XcPzC1nJvXhXUdfl2ajlMhUc2qC6CIg==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || >= 4.0.0 || >= 4.0.0-beta.8 || >= 4.0.0-alpha.20'
-
-  tailwindcss-animate@1.0.7:
-    resolution: {integrity: sha512-bl6mpH3T7I3UFxuvDEXLxy/VuFxBk5bbzplh7tXI68mwMokNYd1t9qPBHlnyTwfa4JGC4zP516I1hYYtQ/vspA==}
-    peerDependencies:
-      tailwindcss: '>=3.0.0 || insiders'
 
   tailwindcss@4.1.6:
     resolution: {integrity: sha512-j0cGLTreM6u4OWzBeLBpycK0WIh8w7kSwcUsQZoGLHZ7xDTdM69lN64AgoIEEwFi0tnhs4wSykUa5YWxAzgFYg==}
@@ -4823,10 +4815,6 @@ snapshots:
   tailwind-merge@3.3.0: {}
 
   tailwind-scrollbar-hide@2.0.0(tailwindcss@4.1.6):
-    dependencies:
-      tailwindcss: 4.1.6
-
-  tailwindcss-animate@1.0.7(tailwindcss@4.1.6):
     dependencies:
       tailwindcss: 4.1.6
 
