@@ -12,22 +12,26 @@ This guide details how to install Plate UI, the component layer for Plate. Choos
 
 This is the fastest way to integrate Plate UI's core dependencies and base styles.
 
-Run the following command:
+<Steps>
 
-```bash
-npx shadcn@latest add https://platejs.org/r/plate-ui
-```
+### Install Plate UI
 
 <Callout type="info">
   If you are not using Next.js, refer to the official [shadcn/ui installation guides](https://ui.shadcn.com/docs/installation) for your specific framework before proceeding.
 </Callout>
 
-## Next Steps
+```bash
+npx shadcn@latest add https://platejs.org/r/plate-ui
+```
+
+### Basic Usage 
 
 With Plate UI's core installed, proceed to the guide specific to your framework:
 
 *   **[Next.js Guide](./next)** - For server-side rendered applications (Next, Remix, etc.)
 *   **[React Guide](./react)** - For single-page applications (Vite, React Router, etc.)
+
+</Steps>
 
 ## Manual Installation
 
@@ -60,9 +64,7 @@ Add the following CSS variables to your global stylesheet:
 }
 ```
 
-</Steps>
-
-## Next Steps
+### Add Components
 
 With Plate UI's core installed, you can now add individual Plate UI components to build your editor interface. For example, to add the `FixedToolbar` and a `MarkToolbarButton`:
 
@@ -94,3 +96,11 @@ export function MyEditor() {
 
 Explore the available [UI Components](/docs/components) and [Plugin Components](/docs/plugin-components) to customize your editor nodes (like paragraphs, headings, etc.) and build a feature-rich editing experience.
 
+### Basic Usage 
+
+With Plate UI's core installed, proceed to the guide specific to your framework:
+
+*   **[Next.js Guide](./next)** - For server-side rendered applications (Next, Remix, etc.)
+*   **[React Guide](./react)** - For single-page applications (Vite, React Router, etc.)
+
+</Steps>
