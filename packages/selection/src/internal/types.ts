@@ -16,11 +16,6 @@ export interface Behaviour {
   triggers: Trigger[];
 }
 
-export interface ChangedElements {
-  added: Element[];
-  removed: Element[];
-}
-
 export interface Coordinates {
   x: number;
   y: number;
@@ -101,7 +96,10 @@ export interface SelectionOptions {
 }
 
 export interface SelectionStore {
-  changed: ChangedElements;
+  changed: {
+    added: Element[];
+    removed: Element[];
+  };
   selected: Element[];
   stored: Element[];
   touched: Element[];
