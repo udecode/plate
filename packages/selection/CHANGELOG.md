@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 48.0.5
+
+### Patch Changes
+
+- [#4310](https://github.com/udecode/plate/pull/4310) by [@zbeyens](https://github.com/zbeyens) – Fixes #4134
+
 ## 48.0.0
 
 ## 47.0.8
