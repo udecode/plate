@@ -16,34 +16,17 @@
     {
       "name": "plate-ui",
       "type": "registry:style",
-      "dependencies": [
-        "tailwind-scrollbar-hide"
-      ],
       "devDependencies": [],
       "registryDependencies": [
         "http://localhost:3000/rd/plate"
       ],
       "files": [],
-      "tailwind": {
-        "config": {
-          "plugins": [
-            "tailwind-scrollbar-hide"
-          ]
-        }
-      },
       "cssVars": {
-        "theme": {
-          "font-heading": "'var(--font-heading)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
-          "font-mono": "'var(--font-mono)', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-          "font-sans": "'var(--font-sans)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'"
-        },
         "light": {
-          "brand": "oklch(0.623 0.214 259.815)",
-          "highlight": "oklch(0.852 0.199 91.936)"
+          "brand": "oklch(0.623 0.214 259.815)"
         },
         "dark": {
-          "brand": "oklch(0.707 0.165 254.624)",
-          "highlight": "oklch(0.852 0.199 91.936)"
+          "brand": "oklch(0.707 0.165 254.624)"
         }
       }
     },
@@ -484,7 +467,8 @@
         "http://localhost:3000/rd/inline-equation-element",
         "http://localhost:3000/rd/link-element",
         "http://localhost:3000/rd/mention-element",
-        "http://localhost:3000/rd/mention-input-element"
+        "http://localhost:3000/rd/mention-input-element",
+        "http://localhost:3000/rd/highlight-style"
       ],
       "files": [
         {
@@ -820,7 +804,8 @@
       "description": "A fixed toolbar that stays at the top of the editor.",
       "dependencies": [],
       "registryDependencies": [
-        "http://localhost:3000/rd/toolbar"
+        "http://localhost:3000/rd/toolbar",
+        "http://localhost:3000/rd/tailwind-scrollbar-hide"
       ],
       "files": [
         {
@@ -882,7 +867,8 @@
         "@udecode/plate-floating"
       ],
       "registryDependencies": [
-        "http://localhost:3000/rd/toolbar"
+        "http://localhost:3000/rd/toolbar",
+        "http://localhost:3000/rd/tailwind-scrollbar-hide"
       ],
       "files": [
         {
@@ -932,8 +918,7 @@
         "examples": [
           "copilot-demo",
           "copilot-pro"
-        ],
-        "label": "New"
+        ]
       }
     },
     {
@@ -2042,7 +2027,9 @@
       "dependencies": [
         "@udecode/plate-comments"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/highlight-style"
+      ],
       "files": [
         {
           "path": "src/registry/ui/comment-leaf.tsx",
@@ -2389,7 +2376,9 @@
       "title": "Highlight Leaf",
       "description": "A text highlighter with customizable colors.",
       "dependencies": [],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "http://localhost:3000/rd/highlight-style"
+      ],
       "files": [
         {
           "path": "src/registry/ui/highlight-leaf.tsx",
@@ -3001,7 +2990,8 @@
         "@radix-ui/react-popover"
       ],
       "registryDependencies": [
-        "dropdown-menu"
+        "dropdown-menu",
+        "http://localhost:3000/rd/tailwind-scrollbar-hide"
       ],
       "files": [
         {
@@ -4182,6 +4172,32 @@
       ]
     },
     {
+      "name": "tailwind-scrollbar-hide",
+      "type": "registry:style",
+      "dependencies": [
+        "tailwind-scrollbar-hide"
+      ],
+      "tailwind": {
+        "config": {
+          "plugins": [
+            "tailwind-scrollbar-hide"
+          ]
+        }
+      }
+    },
+    {
+      "name": "highlight-style",
+      "type": "registry:style",
+      "cssVars": {
+        "light": {
+          "highlight": "oklch(0.852 0.199 91.936)"
+        },
+        "dark": {
+          "highlight": "oklch(0.852 0.199 91.936)"
+        }
+      }
+    },
+    {
       "name": "use-debounce",
       "type": "registry:hook",
       "files": [
@@ -4286,8 +4302,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "autoformat-demo",
@@ -4317,8 +4332,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "basic-elements-demo",
@@ -4513,8 +4527,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "column-demo",
@@ -4660,8 +4673,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "date-demo",
@@ -4842,8 +4854,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "excalidraw-demo",
@@ -4900,8 +4911,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "floating-toolbar-demo",
@@ -4963,8 +4973,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "highlight-demo",
@@ -5156,8 +5165,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "link-demo",
@@ -5234,8 +5242,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "media-demo",
@@ -5270,8 +5277,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "mention-demo",
@@ -5361,8 +5367,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "docx-demo",
@@ -5389,8 +5394,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "html-demo",
@@ -5417,8 +5421,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "markdown-demo",
@@ -5448,8 +5451,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "select-editor-demo",
@@ -5503,8 +5505,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "slash-command-demo",
@@ -5571,8 +5572,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "tabbable-demo",
@@ -5726,14 +5726,16 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "demo",
       "type": "registry:example",
       "dependencies": [
         "@udecode/cn"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/rd/editor"
       ],
       "files": [
         {
@@ -5751,101 +5753,6 @@
       ]
     },
     {
-      "name": "pro-iframe-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/pro-iframe-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "potion-iframe-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/potion-iframe-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "editor-default",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/rd/use-create-editor",
-        "http://localhost:3000/rd/editor",
-        "http://localhost:3000/rd/editor-plugins"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/editor-default.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "meta": {}
-    },
-    {
-      "name": "editor-disabled",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/rd/editor"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/editor-disabled.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "meta": {}
-    },
-    {
-      "name": "editor-full-width",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/rd/use-create-editor",
-        "http://localhost:3000/rd/editor",
-        "http://localhost:3000/rd/editor-plugins"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/editor-full-width.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "meta": {}
-    },
-    {
-      "name": "basic-editor-default-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-editor-default-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
       "name": "controlled-demo",
       "type": "registry:example",
       "dependencies": [
@@ -5858,94 +5765,6 @@
       "files": [
         {
           "path": "src/registry/examples/controlled-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "basic-editor-styling-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/rd/editor"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-editor-styling-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "basic-editor-handler-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/rd/editor",
-        "accordion"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-editor-handler-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "basic-editor-value-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/rd/editor"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-editor-value-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "basic-plugins-components-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn",
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-block-quote",
-        "@udecode/plate-heading"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/rd/editor"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-plugins-components-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "basic-plugins-default-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn",
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-block-quote",
-        "@udecode/plate-heading"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/rd/editor",
-        "accordion"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-plugins-default-demo.tsx",
           "type": "registry:example"
         }
       ]
@@ -6015,19 +5834,6 @@
         },
         {
           "path": "src/registry/examples/values/multi-editors-value.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "mode-toggle",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/mode-toggle.tsx",
           "type": "registry:example"
         }
       ]
@@ -6121,8 +5927,7 @@
           "path": "src/registry/examples/values/preview-md-value.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "markdown-to-slate-demo",
@@ -6144,8 +5949,7 @@
           "path": "src/registry/examples/markdown-to-slate-demo.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "collaboration-demo",
@@ -6171,71 +5975,24 @@
       ]
     },
     {
-      "name": "nextjs-basic-editor-setup-demo",
+      "name": "installation-next-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/rd/editor"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/nextjs-basic-editor-setup-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "nextjs-editor-value-handling-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/rd/editor"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/nextjs-editor-value-handling-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "nextjs-editor-basic-marks-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "http://localhost:3000/rd/editor",
-        "http://localhost:3000/rd/fixed-toolbar",
-        "http://localhost:3000/rd/mark-toolbar-button"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/nextjs-editor-basic-marks-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "nextjs-editor-basic-elements-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
+        "@udecode/cn",
+        "@udecode/plate-basic-elements",
+        "@udecode/plate-basic-marks"
       ],
       "registryDependencies": [
         "http://localhost:3000/rd/editor",
         "http://localhost:3000/rd/fixed-toolbar",
         "http://localhost:3000/rd/mark-toolbar-button",
         "http://localhost:3000/rd/heading-element",
-        "http://localhost:3000/rd/paragraph-element"
+        "http://localhost:3000/rd/paragraph-element",
+        "http://localhost:3000/rd/blockquote-element"
       ],
       "files": [
         {
-          "path": "src/registry/examples/nextjs-editor-basic-elements-demo.tsx",
+          "path": "src/registry/examples/installation-next-04-value-demo.tsx",
           "type": "registry:example"
         }
       ]
