@@ -98,7 +98,9 @@ export const useEquationInput = ({
             selectionEnd === 0 &&
             isHotkey('ArrowLeft')(e)
           ) {
+            e.preventDefault();
             editor.tf.select(element, {
+              focus: true,
               previous: true,
             });
           }
@@ -108,7 +110,11 @@ export const useEquationInput = ({
             selectionStart === value.length &&
             isHotkey('ArrowRight')(e)
           ) {
-            editor.tf.select(element, { next: true });
+            e.preventDefault();
+            editor.tf.select(element, {
+              focus: true,
+              next: true,
+            });
           }
         }
       },
