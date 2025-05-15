@@ -1,6 +1,5 @@
 import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
 
-import type { ChangedElements } from '../../../internal';
 import type { BlockSelectionConfig } from '../../BlockSelectionPlugin';
 
 import { querySelectorSelectable } from '../../../lib';
@@ -12,7 +11,10 @@ export const setSelectedIds = (
     added,
     ids,
     removed,
-  }: Partial<ChangedElements> & {
+  }: Partial<{
+    added: Element[];
+    removed: Element[];
+  }> & {
     ids?: string[];
   }
 ) => {
