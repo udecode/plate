@@ -1,5 +1,11 @@
 # @udecode/plate-math
 
+## 48.0.4
+
+### Patch Changes
+
+- [#4305](https://github.com/udecode/plate/pull/4305) by [@felixfeng33](https://github.com/felixfeng33) – Left and right arrow keys should exit the input field.
+
 ## 48.0.0
 
 ## 47.3.1
