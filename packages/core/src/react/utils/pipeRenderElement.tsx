@@ -5,6 +5,7 @@ import type { PlateEditor } from '../editor/PlateEditor';
 
 import { PlateElement } from '../components';
 import { useNodePath } from '../hooks';
+import { ElementProvider } from '../stores';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderElement, pluginRenderElement } from './pluginRenderElement';
 
@@ -43,6 +44,15 @@ export const pipeRenderElement = (
       props: { ...props, path } as any,
     }) as any;
 
-    return <PlateElement {...ctxProps}>{props.children}</PlateElement>;
+    return (
+      <ElementProvider
+        element={ctxProps.element}
+        entry={[ctxProps.element, path]}
+        path={path}
+        scope={ctxProps.element.type ?? 'default'}
+      >
+        <PlateElement {...ctxProps}>{props.children}</PlateElement>
+      </ElementProvider>
+    );
   };
 };

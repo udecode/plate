@@ -30,6 +30,7 @@ export const getRenderNodeProps = ({
   let newProps = {
     ...props,
     ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
+    editor,
   };
 
   const { className } = props;

@@ -87,7 +87,7 @@ export const SlateElement = React.forwardRef(function SlateElement(
 
   const block = !!props.element.id && !!props.editor.api.isBlock(props.element);
 
-  const belowRootComponents = props.editor?.pluginList
+  const belowRootComponents = props.editor.pluginList
     .map((plugin) => plugin.render.belowRootNodes!)
     .filter(Boolean);
 

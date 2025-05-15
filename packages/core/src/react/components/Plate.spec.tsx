@@ -542,4 +542,34 @@ describe('Plate', () => {
       ]);
     });
   });
+
+  describe('when rendering unknown element type', () => {
+    it('should not crash when encountering an element with an unknown type', () => {
+      const initialValueWithUnknownType: Value = [
+        {
+          id: '1',
+          children: [
+            {
+              text: 'This content is of an unknown type and should not crash the editor.',
+            },
+          ],
+          type: 'unknown-element-type', // This type has no corresponding plugin
+        },
+      ];
+
+      const editor = createPlateEditor({
+        value: initialValueWithUnknownType,
+      });
+
+      // This assertion will fail if the bug exists, as render() will throw.
+      // If the bug is fixed, render() should not throw.
+      expect(() => {
+        render(
+          <Plate editor={editor}>
+            <PlateContent />
+          </Plate>
+        );
+      }).not.toThrow();
+    });
+  });
 });
