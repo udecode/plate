@@ -52,7 +52,7 @@ const EquationPopoverContent = ({
     setOpen(false);
 
     if (isInline) {
-      editor.tf.select(element, { next: true });
+      editor.tf.select(element, { focus: true, next: true });
     } else {
       editor
         .getApi(BlockSelectionPlugin)
