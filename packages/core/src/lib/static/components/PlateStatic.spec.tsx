@@ -299,4 +299,29 @@ describe('PlateStatic Memoization', () => {
     // Should re-render because _memo changed
     expect(getElementRenderCount()).toBe(2);
   });
+
+  describe('when rendering unknown element type', () => {
+    it('should not crash when encountering an element with an unknown type', () => {
+      const editor = createSlateEditor({
+        plugins: [createSlatePlugin({ key: 'bold', node: { isLeaf: true } })],
+        value: [
+          {
+            id: '1',
+            children: [
+              {
+                text: 'This content is of an unknown type and should not crash the editor.',
+              },
+            ],
+            type: 'unknown-element-type', // This type has no corresponding plugin
+          },
+        ],
+      });
+
+      // This assertion will fail if the bug exists, as render() will throw.
+      // If the bug is fixed, render() should not throw.
+      expect(() => {
+        render(<PlateStatic components={components} editor={editor} />);
+      }).not.toThrow();
+    });
+  });
 });
