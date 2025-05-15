@@ -1,0 +1,101 @@
+---
+title: Plate UI Installation
+description: How to set up Plate UI in your project.
+---
+
+This guide details how to install Plate UI, the component layer for Plate. Choose the method that suits your project:
+
+*   **CLI Installation (Recommended):** Quick setup using the shadcn CLI.
+*   **Manual Installation:** For more control over the setup process.
+
+## CLI Installation (Recommended)
+
+This is the fastest way to integrate Plate UI's core dependencies and base styles.
+
+<Callout type="info">
+  If you are not using Next.js, refer to the official [shadcn/ui installation guides](https://ui.shadcn.com/docs/installation) for your specific framework before proceeding.
+</Callout>
+
+Run the following command:
+
+```bash
+npx shadcn@latest add https://platejs.org/r/plate-ui
+```
+
+This command adds the necessary Plate dependencies and foundational styles to your project.
+
+## Next Steps
+
+With Plate UI's core installed, proceed to the guide specific to your framework:
+
+*   **[Next.js Guide](./next)** - For server-side rendered applications (Next, Remix, etc.)
+*   **[SPA Guide](./spa)** - For single-page applications (Vite, React Router, etc.)
+
+## Manual Installation
+
+If you prefer a step-by-step approach or are not using the shadcn CLI, follow these steps:
+
+<Steps>
+
+### Add Core Dependency
+
+Install the primary Plate package:
+
+```bash
+pnpm add @udecode/plate
+```
+
+<Callout type="note" title="Plugin Dependencies">
+  When manually installing Plate, you'll need to add the specific packages for each plugin you want to use. For example, if you want to use the `AIMenu` component, you would need `@udecode/plate-ai` and its dependencies. Check each component's documentation for its required packages, or use the CLI to automatically install the required packages.
+</Callout>
+
+### Configure CSS Variables
+
+Add the following CSS variables to your global stylesheet (e.g., `app/globals.css` or `src/index.css`):
+
+```css title="app/globals.css"
+:root {
+  /* Base brand color for Plate UI components */
+  --brand: oklch(0.623 0.214 259.815);
+}
+
+.dark {
+  /* Dark mode brand color */
+  --brand: oklch(0.707 0.165 254.624);
+}
+```
+
+</Steps>
+
+## Next Steps
+
+With Plate UI's core installed, you can now add individual Plate UI components to build your editor interface. For example, to add the `FixedToolbar` and a `MarkToolbarButton`:
+
+```bash
+npx shadcn@latest add https://platejs.org/r/fixed-toolbar https://platejs.org/r/mark-toolbar-button
+```
+
+Import and use them in your editor:
+
+```tsx showLineNumbers title="components/editor.tsx"
+import { Plate } from "@udecode/plate/react";
+import { FixedToolbar } from "@/components/ui/fixed-toolbar";
+import { MarkToolbarButton } from "@/components/ui/mark-toolbar-button";
+// ... other imports
+
+export function MyEditor() {
+  // ... editor setup
+  return (
+    <Plate editor={editor}>
+      <FixedToolbar>
+        <MarkToolbarButton nodeType="bold" tooltip="Bold">B</MarkToolbarButton>
+        {/* ... other toolbar buttons ... */}
+      </FixedToolbar>
+      {/* ... Editor component ... */}
+    </Plate>
+  );
+}
+```
+
+Explore the available [UI Components](/docs/components) and [Plugin Components](/docs/plugin-components) to customize your editor nodes (like paragraphs, headings, etc.) and build a feature-rich editing experience.
+

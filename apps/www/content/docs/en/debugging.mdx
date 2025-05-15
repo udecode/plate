@@ -82,8 +82,8 @@ try {
   editor.api.debug.error('An error occurred', 'CUSTOM_ERROR', { details: 'Additional information' });
 } catch (error) {
   if (error instanceof PlateError) {
-    console.log(error.type); // 'CUSTOM_ERROR'
-    console.log(error.message); // '[CUSTOM_ERROR] An error occurred'
+    console.debug(error.type); // 'CUSTOM_ERROR'
+    console.debug(error.message); // '[CUSTOM_ERROR] An error occurred'
   }
 }
 ```
@@ -112,7 +112,7 @@ const LoggingPlugin = createPlatePlugin({
 }).overrideEditor(({ editor, tf: { apply } }) => ({
   transforms: {
     apply(operation) {
-      console.log('Operation:', operation);
+      console.debug('Operation:', operation);
       apply(operation);
     },
   },
@@ -166,7 +166,7 @@ Set breakpoints in your code using browser DevTools:
 
 If you're facing a complex issue:
 
-1. Pick a [template](/docs/getting-started).
+1. Pick a [template](/docs/installation).
 2. Add only the essential plugins and components to reproduce the issue.
 3. If the issue persists, [open an issue on GitHub](https://github.com/udecode/plate/issues/new?assignees=&labels=bug&projects=&template=bug.yml) or share your example on [Discord](https://discord.gg/mAZRuBzGM3).
 

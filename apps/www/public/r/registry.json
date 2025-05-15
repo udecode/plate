@@ -16,34 +16,17 @@
     {
       "name": "plate-ui",
       "type": "registry:style",
-      "dependencies": [
-        "tailwind-scrollbar-hide"
-      ],
       "devDependencies": [],
       "registryDependencies": [
         "https://platejs.org/r/plate"
       ],
       "files": [],
-      "tailwind": {
-        "config": {
-          "plugins": [
-            "tailwind-scrollbar-hide"
-          ]
-        }
-      },
       "cssVars": {
-        "theme": {
-          "font-heading": "'var(--font-heading)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
-          "font-mono": "'var(--font-mono)', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-          "font-sans": "'var(--font-sans)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'"
-        },
         "light": {
-          "brand": "oklch(0.623 0.214 259.815)",
-          "highlight": "oklch(0.852 0.199 91.936)"
+          "brand": "oklch(0.623 0.214 259.815)"
         },
         "dark": {
-          "brand": "oklch(0.707 0.165 254.624)",
-          "highlight": "oklch(0.852 0.199 91.936)"
+          "brand": "oklch(0.707 0.165 254.624)"
         }
       }
     },
@@ -484,7 +467,8 @@
         "https://platejs.org/r/inline-equation-element",
         "https://platejs.org/r/link-element",
         "https://platejs.org/r/mention-element",
-        "https://platejs.org/r/mention-input-element"
+        "https://platejs.org/r/mention-input-element",
+        "https://platejs.org/r/highlight-style"
       ],
       "files": [
         {
@@ -820,7 +804,8 @@
       "description": "A fixed toolbar that stays at the top of the editor.",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar",
+        "https://platejs.org/r/tailwind-scrollbar-hide"
       ],
       "files": [
         {
@@ -882,7 +867,8 @@
         "@udecode/plate-floating"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar",
+        "https://platejs.org/r/tailwind-scrollbar-hide"
       ],
       "files": [
         {
@@ -2042,7 +2028,9 @@
       "dependencies": [
         "@udecode/plate-comments"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/highlight-style"
+      ],
       "files": [
         {
           "path": "src/registry/ui/comment-leaf.tsx",
@@ -2389,7 +2377,9 @@
       "title": "Highlight Leaf",
       "description": "A text highlighter with customizable colors.",
       "dependencies": [],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/highlight-style"
+      ],
       "files": [
         {
           "path": "src/registry/ui/highlight-leaf.tsx",
@@ -3001,7 +2991,8 @@
         "@radix-ui/react-popover"
       ],
       "registryDependencies": [
-        "dropdown-menu"
+        "dropdown-menu",
+        "https://platejs.org/r/tailwind-scrollbar-hide"
       ],
       "files": [
         {
@@ -4182,6 +4173,32 @@
       ]
     },
     {
+      "name": "tailwind-scrollbar-hide",
+      "type": "registry:style",
+      "dependencies": [
+        "tailwind-scrollbar-hide"
+      ],
+      "tailwind": {
+        "config": {
+          "plugins": [
+            "tailwind-scrollbar-hide"
+          ]
+        }
+      }
+    },
+    {
+      "name": "highlight-style",
+      "type": "registry:style",
+      "cssVars": {
+        "light": {
+          "highlight": "oklch(0.852 0.199 91.936)"
+        },
+        "dark": {
+          "highlight": "oklch(0.852 0.199 91.936)"
+        }
+      }
+    },
+    {
       "name": "use-debounce",
       "type": "registry:hook",
       "files": [
@@ -4286,8 +4303,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "autoformat-demo",
@@ -4317,8 +4333,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "basic-elements-demo",
@@ -4513,8 +4528,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "column-demo",
@@ -4660,8 +4674,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "date-demo",
@@ -4842,8 +4855,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "excalidraw-demo",
@@ -4900,8 +4912,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "floating-toolbar-demo",
@@ -4963,8 +4974,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "highlight-demo",
@@ -5156,8 +5166,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "link-demo",
@@ -5234,8 +5243,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "media-demo",
@@ -5270,8 +5278,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "mention-demo",
@@ -5361,8 +5368,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "docx-demo",
@@ -5389,8 +5395,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "html-demo",
@@ -5417,8 +5422,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "markdown-demo",
@@ -5448,8 +5452,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "select-editor-demo",
@@ -5503,8 +5506,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "slash-command-demo",
@@ -5571,8 +5573,7 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "tabbable-demo",
@@ -5726,14 +5727,16 @@
           "path": "src/registry/components/editor/plugins/editor-plugins.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "demo",
       "type": "registry:example",
       "dependencies": [
         "@udecode/cn"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/editor"
       ],
       "files": [
         {
@@ -5751,101 +5754,6 @@
       ]
     },
     {
-      "name": "pro-iframe-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/pro-iframe-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "potion-iframe-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/potion-iframe-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "editor-default",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/use-create-editor",
-        "https://platejs.org/r/editor",
-        "https://platejs.org/r/editor-plugins"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/editor-default.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "meta": {}
-    },
-    {
-      "name": "editor-disabled",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/editor"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/editor-disabled.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "meta": {}
-    },
-    {
-      "name": "editor-full-width",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/use-create-editor",
-        "https://platejs.org/r/editor",
-        "https://platejs.org/r/editor-plugins"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/editor-full-width.tsx",
-          "type": "registry:example"
-        }
-      ],
-      "meta": {}
-    },
-    {
-      "name": "basic-editor-default-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-editor-default-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
       "name": "controlled-demo",
       "type": "registry:example",
       "dependencies": [
@@ -5858,94 +5766,6 @@
       "files": [
         {
           "path": "src/registry/examples/controlled-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "basic-editor-styling-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/editor"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-editor-styling-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "basic-editor-handler-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/editor",
-        "accordion"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-editor-handler-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "basic-editor-value-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/editor"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-editor-value-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "basic-plugins-components-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn",
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-block-quote",
-        "@udecode/plate-heading"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/editor"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-plugins-components-demo.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "basic-plugins-default-demo",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn",
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-block-quote",
-        "@udecode/plate-heading"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/editor",
-        "accordion"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/basic-plugins-default-demo.tsx",
           "type": "registry:example"
         }
       ]
@@ -6015,19 +5835,6 @@
         },
         {
           "path": "src/registry/examples/values/multi-editors-value.tsx",
-          "type": "registry:example"
-        }
-      ]
-    },
-    {
-      "name": "mode-toggle",
-      "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "files": [
-        {
-          "path": "src/registry/examples/mode-toggle.tsx",
           "type": "registry:example"
         }
       ]
@@ -6121,8 +5928,7 @@
           "path": "src/registry/examples/values/preview-md-value.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "markdown-to-slate-demo",
@@ -6144,8 +5950,7 @@
           "path": "src/registry/examples/markdown-to-slate-demo.tsx",
           "type": "registry:example"
         }
-      ],
-      "meta": {}
+      ]
     },
     {
       "name": "collaboration-demo",
@@ -6166,6 +5971,29 @@
       "files": [
         {
           "path": "src/registry/examples/collaboration-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "installation-next-demo",
+      "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn",
+        "@udecode/plate-basic-elements",
+        "@udecode/plate-basic-marks"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/editor",
+        "https://platejs.org/r/fixed-toolbar",
+        "https://platejs.org/r/mark-toolbar-button",
+        "https://platejs.org/r/heading-element",
+        "https://platejs.org/r/paragraph-element",
+        "https://platejs.org/r/blockquote-element"
+      ],
+      "files": [
+        {
+          "path": "src/registry/examples/installation-next-04-value-demo.tsx",
           "type": "registry:example"
         }
       ]

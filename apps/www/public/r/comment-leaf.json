@@ -7,7 +7,9 @@
   "dependencies": [
     "@udecode/plate-comments"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/highlight-style"
+  ],
   "files": [
     {
       "path": "src/registry/ui/comment-leaf.tsx",

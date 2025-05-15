@@ -13,8 +13,10 @@ export function Callout({
       {...props}
     >
       {icon && <span className="mr-4 text-2xl">{icon}</span>}
-      {title && <AlertTitle>{title}</AlertTitle>}
-      <div className="text-sm [&_p]:leading-relaxed">{children}</div>
+      {title && <AlertTitle className="mb-2">{title}</AlertTitle>}
+      <div className="text-sm [&_p]:leading-relaxed **:[p,ul,ol,li]:first:my-0">
+        {children}
+      </div>
     </div>
   );
 }

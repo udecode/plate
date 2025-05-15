@@ -10,107 +10,133 @@ import { uiComponents, uiNodes } from '@/registry/registry-ui';
 import { siteConfig } from './site';
 
 export interface DocsConfig {
-  componentsNav: SidebarNavItem[];
   mainNav: MainNavItem[];
   sidebarNav: SidebarNavItem[];
 }
 
 export const componentNavGroups: SidebarNavItem[] = [
   {
-    items: registryToNav(uiNodes),
-    title: 'Node Components',
+    href: '/docs/components/changelog',
+    title: 'Changelog',
   },
   {
+    href: '/docs/components',
     items: registryToNav(uiComponents),
     title: 'Components',
+  },
+  {
+    href: '/docs/components#node-components',
+    items: registryToNav(uiNodes),
+    title: 'Node Components',
   },
 ];
 
 export const componentNavMap = navToObject(componentNavGroups);
 
-export const overviewNavItems: SidebarNavItem[] = [
+export const gettingStartedNavItems: SidebarNavItem[] = [
   {
     href: '/docs',
     title: 'Introduction',
   },
   {
-    href: '/docs/getting-started',
-    title: 'Getting Started',
+    href: '/docs/installation',
+    title: 'Installation',
+  },
+];
+
+export const installationNavItems: SidebarNavItem[] = [
+  {
+    href: '/docs/installation/plate-ui',
+    items: [
+      {
+        href: '/docs/installation/next',
+        title: 'Next.js',
+      },
+      {
+        href: '/docs/installation/react',
+        title: 'React',
+      },
+      {
+        href: '/docs/mcp',
+        label: 'New',
+        title: 'MCP',
+      },
+    ],
+    title: 'Plate UI',
   },
   {
-    href: '/docs/plugins',
-    title: 'Plugins',
+    href: '/docs/installation/manual',
+    title: 'Manual',
   },
   {
-    href: '/docs/examples',
-    title: 'Examples',
-  },
-  {
-    href: '/docs/api',
-    title: 'API Reference',
-  },
-  {
-    href: '/docs/components',
-    title: 'Components',
-  },
-  {
-    href: '/docs/components/mcp',
+    href: '/docs/installation/rsc',
     label: 'New',
-    title: 'MCP',
+    title: 'RSC',
+  },
+  {
+    href: '/docs/installation/node',
+    label: 'New',
+    title: 'Node.js',
   },
 ];
 
 export const guidesNavItems: SidebarNavItem[] = [
   {
     href: '/docs/plugin',
-    title: 'Plugin Configuration',
-  },
-  {
-    href: '/docs/plugin-methods',
-    title: 'Plugin Methods',
-  },
-  {
-    href: '/docs/plugin-shortcuts',
-    title: 'Plugin Shortcuts',
-  },
-  {
-    href: '/docs/plugin-context',
-    title: 'Plugin Context',
-  },
-  {
-    href: '/docs/plugin-components',
-    title: 'Plugin Components',
+    items: [
+      {
+        href: '/docs/plugin-methods',
+        title: 'Plugin Methods',
+      },
+      {
+        href: '/docs/plugin-shortcuts',
+        title: 'Plugin Shortcuts',
+      },
+      {
+        href: '/docs/plugin-context',
+        title: 'Plugin Context',
+      },
+      {
+        href: '/docs/plugin-components',
+        title: 'Plugin Components',
+      },
+    ],
+    title: 'Plugin',
   },
   {
     href: '/docs/editor',
-    title: 'Editor Configuration',
+    items: [
+      {
+        href: '/docs/editor-methods',
+        title: 'Editor Methods',
+      },
+      {
+        href: '/docs/controlled',
+        title: 'Controlled Value',
+      },
+    ],
+    title: 'Editor',
   },
   {
-    href: '/docs/editor-methods',
-    title: 'Editor Methods',
-  },
-  {
-    href: '/docs/controlled',
-    title: 'Controlled Value',
-  },
-  {
-    href: '/docs/form',
-    title: 'Form',
-  },
-  {
-    href: '/docs/plate-static',
-    title: 'Plate Static',
+    href: '/docs/static',
+    label: 'Updated',
+    title: 'Static Rendering',
   },
   {
     description: 'HTML ↔ Plate',
     href: '/docs/html',
+    label: 'Updated',
     title: 'HTML',
   },
   {
     description: 'Markdown ↔ Plate',
     href: '/docs/markdown',
-    label: 'New',
+    label: 'Updated',
     title: 'Markdown',
+  },
+  {
+    href: '/docs/form',
+    title: 'Form',
   },
   {
     href: '/docs/typescript',
@@ -134,40 +160,7 @@ export const guidesNavItems: SidebarNavItem[] = [
   },
 ];
 
-export const componentGuidesNavItems: SidebarNavItem[] = [
-  {
-    href: '/docs/components/introduction',
-    title: 'Introduction',
-  },
-  {
-    href: '/docs/components/installation',
-    title: 'Installation',
-  },
-  {
-    href: '/docs/components/mcp',
-    label: 'New',
-    title: 'MCP',
-  },
-  {
-    href: '/docs/components/changelog',
-    title: 'Changelog',
-  },
-  {
-    href: '/docs/components',
-    title: 'Components',
-  },
-];
-
-export const componentGuidesNavMap = navToObject(componentGuidesNavItems);
-
 export const docsConfig: DocsConfig = {
-  componentsNav: [
-    {
-      items: componentGuidesNavItems,
-      title: 'Plate UI',
-    },
-    ...componentNavGroups,
-  ],
   mainNav: [
     {
       href: '/',
@@ -175,11 +168,7 @@ export const docsConfig: DocsConfig = {
     },
     {
       href: '/docs',
-      title: 'Documentation',
-    },
-    {
-      href: '/docs/components',
-      title: 'Components',
+      title: 'Docs',
     },
     {
       href: '/editors',
@@ -206,17 +195,12 @@ export const docsConfig: DocsConfig = {
   ],
   sidebarNav: [
     {
-      items: overviewNavItems,
-      title: 'Overview',
+      items: gettingStartedNavItems,
+      title: 'Get Started',
     },
     {
-      items: [
-        {
-          href: '/docs/migration/slate-to-plate',
-          title: 'From Slate to Plate',
-        },
-      ],
-      title: 'Migration',
+      items: installationNavItems,
+      title: 'Installation',
     },
     {
       items: guidesNavItems,
@@ -233,6 +217,10 @@ export const docsConfig: DocsConfig = {
       title: 'Plugins',
     },
     {
+      items: componentNavGroups,
+      title: 'Components',
+    },
+    {
       items: [
         {
           href: '/docs/examples',
@@ -241,6 +229,15 @@ export const docsConfig: DocsConfig = {
         ...docsExamples,
       ],
       title: 'Examples',
+    },
+    {
+      items: [
+        {
+          href: '/docs/migration/slate-to-plate',
+          title: 'From Slate to Plate',
+        },
+      ],
+      title: 'Migrations',
     },
     {
       items: [

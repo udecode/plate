@@ -256,36 +256,40 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
       )}
 
       <div className="ml-auto flex items-center gap-2">
-        {!item.meta?.src && !item.meta?.isPro && (
-          <>
-            {/* NPX Command Button */}
-            <Button
-              size="sm"
-              variant="ghost"
-              className="flex size-7 rounded-md border bg-transparent px-1.5 shadow-none lg:w-auto"
-              onClick={() => {
-                copyToClipboard(
-                  `npx shadcn@canary add ${siteConfig.registryUrl}${item.name}`
-                );
-              }}
-            >
-              {isCopied ? <Check /> : <Terminal />}
+        {!item.meta?.src &&
+          !item.meta?.isPro &&
+          item.meta?.registry !== false && (
+            <>
+              {/* NPX Command Button */}
+              <Button
+                size="icon"
+                variant="ghost"
+                className={cn(
+                  'flex h-7 rounded-md border bg-transparent px-1.5 shadow-none lg:w-auto'
+                )}
+                onClick={() => {
+                  copyToClipboard(
+                    `npx shadcn@canary add ${siteConfig.registryUrl}${item.name}`
+                  );
+                }}
+              >
+                {isCopied ? <Check /> : <Terminal />}
+
+                {block && (
+                  <span className="hidden lg:inline">
+                    npx shadcn@canary add {item.name}
+                  </span>
+                )}
+              </Button>
 
               {block && (
-                <span className="hidden lg:inline">
-                  npx shadcn@canary add {item.name}
-                </span>
+                <Separator
+                  orientation="vertical"
+                  className="mx-2 hidden h-4 lg:flex"
+                />
               )}
-            </Button>
-
-            {block && (
-              <Separator
-                orientation="vertical"
-                className="mx-2 hidden h-4 lg:flex"
-              />
-            )}
-          </>
-        )}
+            </>
+          )}
 
         {item.meta?.isPro && (
           <Link
@@ -383,11 +387,20 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
   );
 }
 
-function BlockViewerView({ preview }: { preview: React.ReactNode }) {
+function BlockViewerView({
+  height,
+  preview,
+}: {
+  preview: React.ReactNode;
+  height?: string;
+}) {
   const { item, resizablePanelRef } = useBlockViewer();
 
   return (
-    <div className="h-(--height) group-data-[view=code]/block-view-wrapper:hidden">
+    <div
+      className="h-(--height) group-data-[view=code]/block-view-wrapper:hidden"
+      style={height ? { height } : undefined}
+    >
       <div className="grid size-full gap-4">
         <ResizablePanelGroup className="relative z-10" direction="horizontal">
           <ResizablePanel
@@ -465,7 +478,7 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
           <div className="ml-auto flex items-center gap-2">
             {dependencies.length > 0 && (
               <CopyNpmCommandButton
-                className="flex size-7 rounded-md bg-inherit text-inherit shadow-none lg:w-auto"
+                className="flex h-7 rounded-md bg-inherit px-1.5 text-inherit shadow-none lg:w-auto"
                 commands={{
                   __bunCommand__: 'bun add ' + deps,
                   __npmCommand__: 'npm install ' + deps,
@@ -612,6 +625,7 @@ function BlockCopyCodeButton() {
 
 export function BlockViewer({
   block = true,
+  height,
   preview,
   ...props
 }: Pick<
@@ -619,12 +633,13 @@ export function BlockViewer({
   'dependencies' | 'highlightedFiles' | 'item' | 'tree'
 > & {
   block?: boolean;
+  height?: string;
   preview?: React.ReactNode;
 }) {
   return (
     <BlockViewerProvider {...props}>
       <BlockViewerToolbar block={block} />
-      <BlockViewerView preview={preview} />
+      <BlockViewerView height={height} preview={preview} />
       <BlockViewerCode size={block ? 'default' : 'sm'} />
     </BlockViewerProvider>
   );

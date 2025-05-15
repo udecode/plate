@@ -9,7 +9,8 @@
     "@udecode/plate-floating"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/toolbar"
+    "https://platejs.org/r/toolbar",
+    "https://platejs.org/r/tailwind-scrollbar-hide"
   ],
   "files": [
     {

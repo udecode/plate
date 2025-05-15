@@ -114,7 +114,7 @@ async function processTranslation() {
       // Simply replace 'en' with the target language code in the path
       const targetFile = sourceFile.replace('/en/', `/${targetLanguage}/`);
 
-      console.log(
+      console.info(
         `Translating ${sourceFile} to ${targetLanguage} (${targetFile})`
       );
 
@@ -131,7 +131,7 @@ async function processTranslation() {
           targetLanguage
         );
         fs.writeFileSync(targetFile, translatedContent);
-        console.log(`Successfully translated to ${targetFile}`);
+        console.info(`Successfully translated to ${targetFile}`);
       } catch (error) {
         console.error(
           `Failed to translate ${sourceFile} to ${targetLanguage}:`,
@@ -145,7 +145,7 @@ async function processTranslation() {
 // Run the translation process
 try {
   await processTranslation();
-  console.log('Translation completed successfully');
+  console.info('Translation completed successfully');
 } catch (error) {
   console.error('Translation process failed:', error);
   process.exit(1);

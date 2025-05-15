@@ -1,11 +1,10 @@
 import type { SidebarNavItem } from '@/types/nav';
 
 import {
-  componentGuidesNavItems,
-  componentGuidesNavMap,
   componentNavGroups,
+  gettingStartedNavItems,
   guidesNavItems,
-  overviewNavItems,
+  installationNavItems,
 } from '@/config/docs';
 import { docsApi } from '@/config/docs-api';
 import { docsExamples } from '@/config/docs-examples';
@@ -16,8 +15,8 @@ export const docSections: SidebarNavItem[] = [
     items: [
       { href: '/docs', title: 'Guides', value: 'guide' },
       { href: '/docs/plugins', title: 'Plugins', value: 'plugin' },
-      { href: '/docs/examples', title: 'Examples', value: 'example' },
       { href: '/docs/components', title: 'Components', value: 'component' },
+      { href: '/docs/examples', title: 'Examples', value: 'example' },
       { href: '/docs/api', title: 'API Reference', value: 'api' },
     ],
   },
@@ -28,7 +27,7 @@ export const slugToCategory = (slug: string[]) => {
   const path = '/docs/' + (slug?.join('/') || '');
 
   if (name === 'examples') return 'example';
-  if (name === 'components' && !componentGuidesNavMap[path]) return 'component';
+  if (name === 'components') return 'component';
   if (name === 'plugins') return 'plugin';
   if (name === 'api') return 'api';
   if (pluginNavMap[path]) return 'plugin';
@@ -41,7 +40,9 @@ export const categoryNavGroups = {
   component: componentNavGroups,
   example: [{ items: docsExamples }],
   guide: [
-    { items: overviewNavItems, title: 'Overview' },
+    { items: gettingStartedNavItems, title: 'Overview' },
+    { items: installationNavItems, title: 'Installation' },
+    { items: guidesNavItems, title: 'Guides' },
     {
       items: [
         {
@@ -51,8 +52,6 @@ export const categoryNavGroups = {
       ],
       title: 'Migration',
     },
-    { items: guidesNavItems, title: 'Guides' },
-    { items: componentGuidesNavItems, title: 'Components' },
   ],
   plugin: [{ items: pluginsNavItems }],
 };

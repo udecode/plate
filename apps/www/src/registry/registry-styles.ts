@@ -1,0 +1,26 @@
+import type { RegistryItem } from 'shadcn/registry';
+
+export const styles: RegistryItem[] = [
+  {
+    dependencies: ['tailwind-scrollbar-hide'],
+    name: 'tailwind-scrollbar-hide',
+    tailwind: {
+      config: {
+        plugins: ['tailwind-scrollbar-hide'],
+      },
+    },
+    type: 'registry:style',
+  },
+  {
+    cssVars: {
+      dark: {
+        highlight: 'oklch(0.852 0.199 91.936)',
+      },
+      light: {
+        highlight: 'oklch(0.852 0.199 91.936)',
+      },
+    },
+    name: 'highlight-style',
+    type: 'registry:style',
+  },
+];

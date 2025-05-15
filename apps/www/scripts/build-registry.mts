@@ -12,6 +12,7 @@ import { examples } from '@/registry/registry-examples';
 import { hooks } from '@/registry/registry-hooks';
 import { components } from '@/registry/registry-components';
 import { init } from '@/registry/registry';
+import { styles } from '@/registry/registry-styles';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -33,6 +34,7 @@ const registry: Registry = {
       ...components,
       ...blocks,
       ...lib,
+      ...styles,
       ...hooks,
       ...examples,
     ].map((item) => ({
@@ -109,19 +111,22 @@ async function buildRegistryJsonFile() {
   // 1. Fix the path for registry items.
   const fixedRegistry = {
     ...registry,
-    items: registry.items.map((item) => {
-      const files = item.files?.map((file) => {
-        return {
-          ...file,
-          path: `src/registry/${file.path}`,
-        };
-      });
+    items: registry.items
+      // Filter internal examples.
+      .filter((item) => item.meta?.registry !== false)
+      .map((item) => {
+        const files = item.files?.map((file) => {
+          return {
+            ...file,
+            path: `src/registry/${file.path}`,
+          };
+        });
 
-      return {
-        ...item,
-        files,
-      };
-    }),
+        return {
+          ...item,
+          files,
+        };
+      }),
   };
 
   // 2. Write the content of the registry to `registry.json` and public folder
@@ -144,7 +149,7 @@ async function buildRegistry() {
   return new Promise((resolve, reject) => {
     const process = exec(`yarn shadcn:${isDev ? 'dev' : 'build'}`);
 
-    console.log(`yarn shadcn:${isDev ? 'dev' : 'build'}`);
+    console.info(`yarn shadcn:${isDev ? 'dev' : 'build'}`);
 
     process.on('exit', (code) => {
       if (code === 0) {

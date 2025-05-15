@@ -6,7 +6,8 @@
   "description": "A fixed toolbar that stays at the top of the editor.",
   "dependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/toolbar"
+    "https://platejs.org/r/toolbar",
+    "https://platejs.org/r/tailwind-scrollbar-hide"
   ],
   "files": [
     {

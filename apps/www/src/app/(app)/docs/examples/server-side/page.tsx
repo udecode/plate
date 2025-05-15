@@ -15,11 +15,7 @@ import {
   BaseUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
-import {
-  BaseExitBreakPlugin,
-  BaseSingleLinePlugin,
-  BaseSoftBreakPlugin,
-} from '@udecode/plate-break';
+import { BaseExitBreakPlugin, BaseSoftBreakPlugin } from '@udecode/plate-break';
 import { BaseCaptionPlugin } from '@udecode/plate-caption';
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
@@ -42,11 +38,10 @@ import { BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import { BaseListPlugin, BaseTodoListPlugin } from '@udecode/plate-list';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
 import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@udecode/plate-media';
 import { BaseMentionPlugin } from '@udecode/plate-mention';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
-import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BaseSlashPlugin } from '@udecode/plate-slash-command';
@@ -214,11 +209,6 @@ export default function RSCPage() {
       BaseEmojiPlugin,
       BaseExitBreakPlugin,
       NodeIdPlugin,
-      NormalizeTypesPlugin.configure({
-        options: {
-          rules: [{ path: [0], strictType: HEADING_KEYS.h1 }],
-        },
-      }),
       BaseResetNodePlugin,
       SelectOnBackspacePlugin.configure({
         options: {
@@ -228,7 +218,6 @@ export default function RSCPage() {
         },
       }),
       DeletePlugin,
-      BaseSingleLinePlugin,
       BaseSoftBreakPlugin,
       BaseTabbablePlugin,
       TrailingBlockPlugin,
@@ -240,7 +229,7 @@ export default function RSCPage() {
       DocxPlugin,
       MarkdownPlugin.configure({
         options: {
-          remarkPlugins: [remarkMath, remarkGfm],
+          remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
         },
       }),
       JuicePlugin,

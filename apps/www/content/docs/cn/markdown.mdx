@@ -117,7 +117,7 @@ const editor = createPlateEditor({
 // 使用MarkdownPlugin配置中的规则
 const markdownOutput = editor.api.markdown.serialize();
 
-console.log(markdownOutput);
+console.debug(markdownOutput);
 ```
 
 **序列化特定节点：**
@@ -132,7 +132,7 @@ const partialMarkdownOutput = editor.api.markdown.serialize({
   value: specificNodes,
 });
 
-console.log(partialMarkdownOutput);
+console.debug(partialMarkdownOutput);
 ```
 
 ### 自定义元素双向序列化（MDX）
@@ -805,7 +805,6 @@ MarkdownPlugin.configure({
 ```tsx
 import { createPlateEditor, PlateElement, PlateLeaf, withProps } from '@udecode/plate/react';
 // 导入必要的插件
-import { ParagraphPlugin } from '@udecode/plate-paragraph/react';
 import { BoldPlugin } from '@udecode/plate-basic-marks/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 // 导入自定义组件或 Plate UI 组件
@@ -853,7 +852,6 @@ import React, { useEffect } from 'react';
 import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 // 导入渲染常见 Markdown 功能所需的 Plate 插件
-import { ParagraphPlugin } from '@udecode/plate-paragraph/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
@@ -954,7 +952,7 @@ export function PlateMarkdown({
 ```
 
 <Callout>
-  **注意**: 此组件提供 Markdown 内容的只读视图。有关编辑功能，请参阅 [入门](/docs/getting-started)。
+  **注意**: 此组件提供 Markdown 内容的只读视图。有关编辑功能，请参阅 [入门](/docs/installation)。
 </Callout>
 
 ## 安全性

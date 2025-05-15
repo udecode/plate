@@ -5,7 +5,9 @@
   "title": "Highlight Leaf",
   "description": "A text highlighter with customizable colors.",
   "dependencies": [],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/highlight-style"
+  ],
   "files": [
     {
       "path": "src/registry/ui/highlight-leaf.tsx",

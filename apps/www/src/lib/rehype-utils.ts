@@ -294,24 +294,48 @@ export async function getRegistryItem(
 // New helper function to get all files including dependencies
 async function getAllItemFiles(
   name: string,
-  seen = new Set<string>()
-): Promise<{ path: string }[]> {
+  seen = new Set<string>(),
+  isShadcn?: boolean
+): Promise<{ path: string; type?: string }[]> {
   if (seen.has(name)) return [];
 
   seen.add(name);
 
-  const item = memoizedIndex[name];
+  // Skip shadcn files unless explicitly requested
+  if (!isShadcn && name.includes('shadcn/')) {
+    return [];
+  }
+
+  const registryTarget = isShadcn ? registryShadcn : registry;
+  const item = registryTarget.items.find((c) => c.name === name);
 
   if (!item) return [];
 
-  let allFiles = [...(item.files ?? [])].map((file) =>
-    typeof file === 'string' ? { path: file } : file
-  );
+  let allFiles = [...(item.files ?? [])].map((file) => {
+    const filePath = typeof file === 'string' ? file : file.path;
+    // Ensure path starts with src/registry/
+    const normalizedPath = filePath.startsWith('src/registry/')
+      ? filePath
+      : `src/registry/${filePath}`;
+
+    return typeof file === 'string'
+      ? { path: normalizedPath }
+      : { ...file, path: normalizedPath };
+  });
 
   // Recursively get files from dependencies
-  if (item.registryDependencies) {
-    for (const dep of item.registryDependencies) {
-      const depFiles = await getAllItemFiles(dep, seen);
+  for (const dep of item.registryDependencies ?? []) {
+    const isDependencyShadcn = dep.includes('shadcn/');
+    // Skip shadcn dependencies unless we're already in a shadcn context
+    if (!isShadcn && isDependencyShadcn) {
+      continue;
+    }
+    const depFiles = await getAllItemFiles(
+      isDependencyShadcn ? dep.split('shadcn/')[1] : dep,
+      seen,
+      isShadcn || isDependencyShadcn
+    );
+    if (depFiles.length > 0) {
       allFiles = [...allFiles, ...depFiles];
     }
   }
@@ -325,7 +349,29 @@ async function getAllItemFiles(
 }
 
 async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
-  const raw = await fs.readFile(path.join(process.cwd(), file.path), 'utf8');
+  // Try different path resolutions
+  const possiblePaths = [
+    file.path,
+    file.path.replace('src/registry/', ''),
+    `src/registry/${file.path}`,
+  ].map((p) => path.join(process.cwd(), p));
+
+  let raw: string | undefined;
+
+  // Try each path until we find one that exists
+  for (const filePath of possiblePaths) {
+    try {
+      raw = await fs.readFile(filePath, 'utf8');
+      break;
+    } catch (error) {
+      // Continue to next path
+      continue;
+    }
+  }
+
+  if (!raw) {
+    throw new Error(`File not found: ${file.path}`);
+  }
 
   const project = new Project({
     compilerOptions: {},
@@ -337,10 +383,6 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
   });
 
   let code = sourceFile.getFullText();
-
-  // FORK: not useful?
-  // Format the code.
-  // code = code.replaceAll('export default', 'export');
 
   // Fix imports.
   code = fixImport(code);

@@ -226,7 +226,7 @@ export const Index: Record<string, any> = {
     name: "block-discussion",
     description: "A popover interface for managing discussions: comments, replies, suggestions.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/suggestion-plugin","button","popover","avatar","dropdown-menu","https://platejs.org/r/editor","https://platejs.org/r/ai-leaf","https://platejs.org/r/date-element","https://platejs.org/r/emoji-input-element","https://platejs.org/r/inline-equation-element","https://platejs.org/r/link-element","https://platejs.org/r/mention-element","https://platejs.org/r/mention-input-element"],
+    registryDependencies: ["https://platejs.org/r/suggestion-plugin","button","popover","avatar","dropdown-menu","https://platejs.org/r/editor","https://platejs.org/r/ai-leaf","https://platejs.org/r/date-element","https://platejs.org/r/emoji-input-element","https://platejs.org/r/inline-equation-element","https://platejs.org/r/link-element","https://platejs.org/r/mention-element","https://platejs.org/r/mention-input-element","https://platejs.org/r/highlight-style"],
     files: [{
       path: "src/registry/ui/block-discussion.tsx",
       type: "registry:ui",
@@ -410,7 +410,7 @@ export const Index: Record<string, any> = {
     name: "fixed-toolbar",
     description: "A fixed toolbar that stays at the top of the editor.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar","https://platejs.org/r/tailwind-scrollbar-hide"],
     files: [{
       path: "src/registry/ui/fixed-toolbar.tsx",
       type: "registry:ui",
@@ -444,7 +444,7 @@ export const Index: Record<string, any> = {
     name: "floating-toolbar",
     description: "A contextual toolbar that appears over selected text.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/toolbar"],
+    registryDependencies: ["https://platejs.org/r/toolbar","https://platejs.org/r/tailwind-scrollbar-hide"],
     files: [{
       path: "src/registry/ui/floating-toolbar.tsx",
       type: "registry:ui",
@@ -1138,7 +1138,7 @@ export const Index: Record<string, any> = {
     name: "comment-leaf",
     description: "A text component for displaying comments with visual indicators.",
     type: "registry:ui",
-    registryDependencies: [],
+    registryDependencies: ["https://platejs.org/r/highlight-style"],
     files: [{
       path: "src/registry/ui/comment-leaf.tsx",
       type: "registry:ui",
@@ -1353,7 +1353,7 @@ export const Index: Record<string, any> = {
     name: "highlight-leaf",
     description: "A text highlighter with customizable colors.",
     type: "registry:ui",
-    registryDependencies: [],
+    registryDependencies: ["https://platejs.org/r/highlight-style"],
     files: [{
       path: "src/registry/ui/highlight-leaf.tsx",
       type: "registry:ui",
@@ -1703,7 +1703,7 @@ export const Index: Record<string, any> = {
     name: "table-element",
     description: "A table component with floating toolbar and border customization.",
     type: "registry:ui",
-    registryDependencies: ["dropdown-menu"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/tailwind-scrollbar-hide"],
     files: [{
       path: "src/registry/ui/table-element.tsx",
       type: "registry:ui",
@@ -2736,7 +2736,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "autoformat-demo": {
     name: "autoformat-demo",
@@ -2765,7 +2765,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "basic-elements-demo": {
     name: "basic-elements-demo",
@@ -2918,7 +2918,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "column-demo": {
     name: "column-demo",
@@ -3034,7 +3034,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "date-demo": {
     name: "date-demo",
@@ -3179,7 +3179,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "excalidraw-demo": {
     name: "excalidraw-demo",
@@ -3237,7 +3237,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "floating-toolbar-demo": {
     name: "floating-toolbar-demo",
@@ -3295,7 +3295,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "highlight-demo": {
     name: "highlight-demo",
@@ -3469,7 +3469,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "link-demo": {
     name: "link-demo",
@@ -3535,7 +3535,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "media-demo": {
     name: "media-demo",
@@ -3564,7 +3564,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "mention-demo": {
     name: "mention-demo",
@@ -3647,7 +3647,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "docx-demo": {
     name: "docx-demo",
@@ -3676,7 +3676,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "html-demo": {
     name: "html-demo",
@@ -3705,7 +3705,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "markdown-demo": {
     name: "markdown-demo",
@@ -3734,7 +3734,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "select-editor-demo": {
     name: "select-editor-demo",
@@ -3780,7 +3780,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "slash-command-demo": {
     name: "slash-command-demo",
@@ -3838,7 +3838,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "tabbable-demo": {
     name: "tabbable-demo",
@@ -3979,13 +3979,13 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "demo": {
     name: "demo",
     description: "",
     type: "registry:example",
-    registryDependencies: undefined,
+    registryDependencies: ["https://platejs.org/r/editor"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -4006,108 +4006,6 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
-  "pro-iframe-demo": {
-    name: "pro-iframe-demo",
-    description: "",
-    type: "registry:example",
-    registryDependencies: undefined,
-    files: [{
-      path: "src/registry/examples/pro-iframe-demo.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/pro-iframe-demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
-  "potion-iframe-demo": {
-    name: "potion-iframe-demo",
-    description: "",
-    type: "registry:example",
-    registryDependencies: undefined,
-    files: [{
-      path: "src/registry/examples/potion-iframe-demo.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/potion-iframe-demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
-  "editor-default": {
-    name: "editor-default",
-    description: "",
-    type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor","https://platejs.org/r/editor-plugins"],
-    files: [{
-      path: "src/registry/examples/editor-default.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/editor-default.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {},
-  },
-  "editor-disabled": {
-    name: "editor-disabled",
-    description: "",
-    type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor"],
-    files: [{
-      path: "src/registry/examples/editor-disabled.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/editor-disabled.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {},
-  },
-  "editor-full-width": {
-    name: "editor-full-width",
-    description: "",
-    type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor","https://platejs.org/r/editor-plugins"],
-    files: [{
-      path: "src/registry/examples/editor-full-width.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/editor-full-width.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {},
-  },
-  "basic-editor-default-demo": {
-    name: "basic-editor-default-demo",
-    description: "",
-    type: "registry:example",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/examples/basic-editor-default-demo.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/basic-editor-default-demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
   "controlled-demo": {
     name: "controlled-demo",
     description: "",
@@ -4120,91 +4018,6 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/examples/controlled-demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
-  "basic-editor-styling-demo": {
-    name: "basic-editor-styling-demo",
-    description: "",
-    type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor"],
-    files: [{
-      path: "src/registry/examples/basic-editor-styling-demo.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/basic-editor-styling-demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
-  "basic-editor-handler-demo": {
-    name: "basic-editor-handler-demo",
-    description: "",
-    type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor","accordion"],
-    files: [{
-      path: "src/registry/examples/basic-editor-handler-demo.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/basic-editor-handler-demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
-  "basic-editor-value-demo": {
-    name: "basic-editor-value-demo",
-    description: "",
-    type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor"],
-    files: [{
-      path: "src/registry/examples/basic-editor-value-demo.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/basic-editor-value-demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
-  "basic-plugins-components-demo": {
-    name: "basic-plugins-components-demo",
-    description: "",
-    type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor"],
-    files: [{
-      path: "src/registry/examples/basic-plugins-components-demo.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/basic-plugins-components-demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
-  "basic-plugins-default-demo": {
-    name: "basic-plugins-default-demo",
-    description: "",
-    type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor","accordion"],
-    files: [{
-      path: "src/registry/examples/basic-plugins-default-demo.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/basic-plugins-default-demo.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -4268,23 +4081,6 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/examples/hundreds-editors-demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
-  "mode-toggle": {
-    name: "mode-toggle",
-    description: "",
-    type: "registry:example",
-    registryDependencies: undefined,
-    files: [{
-      path: "src/registry/examples/mode-toggle.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/mode-toggle.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -4368,7 +4164,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "markdown-to-slate-demo": {
     name: "markdown-to-slate-demo",
@@ -4385,7 +4181,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {},
+    meta: undefined,
   },
   "collaboration-demo": {
     name: "collaboration-demo",
@@ -4403,5 +4199,158 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: undefined,
+  },
+  "installation-next-demo": {
+    name: "installation-next-demo",
+    description: "",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/editor","https://platejs.org/r/fixed-toolbar","https://platejs.org/r/mark-toolbar-button","https://platejs.org/r/heading-element","https://platejs.org/r/paragraph-element","https://platejs.org/r/blockquote-element"],
+    files: [{
+      path: "src/registry/examples/installation-next-04-value-demo.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/installation-next-04-value-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
+  "pro-iframe-demo": {
+    name: "pro-iframe-demo",
+    description: "",
+    type: "registry:example",
+    registryDependencies: undefined,
+    files: [{
+      path: "src/registry/examples/pro-iframe-demo.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/pro-iframe-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"registry":false},
+  },
+  "potion-iframe-demo": {
+    name: "potion-iframe-demo",
+    description: "",
+    type: "registry:example",
+    registryDependencies: undefined,
+    files: [{
+      path: "src/registry/examples/potion-iframe-demo.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/potion-iframe-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"registry":false},
+  },
+  "installation-next-01-editor-demo": {
+    name: "installation-next-01-editor-demo",
+    description: "",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/editor"],
+    files: [{
+      path: "src/registry/examples/installation-next-01-editor-demo.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/installation-next-01-editor-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"registry":false},
+  },
+  "installation-next-02-marks-demo": {
+    name: "installation-next-02-marks-demo",
+    description: "",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/editor","https://platejs.org/r/fixed-toolbar","https://platejs.org/r/mark-toolbar-button"],
+    files: [{
+      path: "src/registry/examples/installation-next-02-marks-demo.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/installation-next-02-marks-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"registry":false},
+  },
+  "installation-next-03-elements-demo": {
+    name: "installation-next-03-elements-demo",
+    description: "",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/editor","https://platejs.org/r/fixed-toolbar","https://platejs.org/r/mark-toolbar-button","https://platejs.org/r/heading-element","https://platejs.org/r/paragraph-element","https://platejs.org/r/blockquote-element"],
+    files: [{
+      path: "src/registry/examples/installation-next-03-elements-demo.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/installation-next-03-elements-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"registry":false},
+  },
+  "editor-default": {
+    name: "editor-default",
+    description: "",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor","https://platejs.org/r/editor-plugins"],
+    files: [{
+      path: "src/registry/examples/editor-default.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/editor-default.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"registry":false},
+  },
+  "editor-disabled": {
+    name: "editor-disabled",
+    description: "",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/editor"],
+    files: [{
+      path: "src/registry/examples/editor-disabled.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/editor-disabled.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"registry":false},
+  },
+  "editor-full-width": {
+    name: "editor-full-width",
+    description: "",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor","https://platejs.org/r/editor-plugins"],
+    files: [{
+      path: "src/registry/examples/editor-full-width.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/editor-full-width.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"registry":false},
   },
   }

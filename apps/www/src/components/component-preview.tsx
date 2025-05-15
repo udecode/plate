@@ -20,6 +20,7 @@ interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   description?: string;
   extractClassname?: boolean;
   extractedClassNames?: string;
+  height?: string;
   hideCode?: boolean;
   highlightedFiles?: any;
   item?: any;
@@ -35,6 +36,7 @@ export function ComponentPreview({
   description,
   extractClassname,
   extractedClassNames,
+  height,
   name,
   padding,
   type,
@@ -83,6 +85,7 @@ export function ComponentPreview({
         dependencies={
           props.dependencies ?? JSON.parse(props.__dependencies__ ?? '[]')
         }
+        height={height}
         highlightedFiles={
           props.highlightedFiles ??
           JSON.parse(props.__highlightedFiles__ ?? '[]')

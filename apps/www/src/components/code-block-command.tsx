@@ -91,8 +91,8 @@ export function CodeBlockCommand({
       </Tabs>
       <Button
         size="icon"
-        variant="ghost"
-        className="absolute top-2 right-2.5 z-10 h-6 w-6 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50 [&_svg]:h-3 [&_svg]:w-3"
+        variant="default"
+        className="absolute top-2 right-2.5 z-10 h-6 w-6 text-zinc-50 hover:bg-zinc-700 hover:text-zinc-50 [&_svg]:!size-3"
         onClick={copyCommand}
       >
         <span className="sr-only">Copy</span>

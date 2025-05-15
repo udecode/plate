@@ -23,6 +23,5 @@
       "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const previewMdValue: any = (\n  <fragment>\n    <hh2>👀 Preview Markdown</hh2>\n    <hp>\n      Slate is flexible enough to add **decorations** that can format text based\n      on its content. For example, this editor has **Markdown** preview\n      decorations on it, to make it _dead_ simple to make an editor with\n      built-in `Markdown` previewing.\n    </hp>\n    <hp>- List.</hp>\n    <hp> Blockquote.</hp>\n    <hp>---</hp>\n    <hp>## Try it out!</hp>\n    <hp>Try it out for yourself!</hp>\n  </fragment>\n);\n",
       "type": "registry:example"
     }
-  ],
-  "meta": {}
+  ]
 }

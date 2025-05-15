@@ -257,6 +257,6 @@
   }
 
   [data-rehype-pretty-code-title] + pre {
-    @apply mt-2;
+    @apply !mt-2;
   }
 }

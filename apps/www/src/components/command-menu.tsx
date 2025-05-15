@@ -181,13 +181,6 @@ export function CommandMenu({ ...props }: DialogProps) {
               />
             );
           })}
-          {docsConfig.componentsNav.map((group) => (
-            <CommandMenuGroup
-              key={group.title}
-              runCommand={runCommand}
-              {...group}
-            />
-          ))}
 
           <CommandGroup heading="Theme">
             <CommandItem onSelect={() => runCommand(() => setTheme('light'))}>

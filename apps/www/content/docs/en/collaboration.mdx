@@ -181,9 +181,9 @@ function EditorStatus() {
 YjsPlugin.configure({
   options: {
     // ... other options
-    onConnect: ({ type }) => console.log(`Provider ${type} connected!`),
-    onDisconnect: ({ type }) => console.log(`Provider ${type} disconnected.`),
-    onSyncChange: ({ type, isSynced }) => console.log(`Provider ${type} sync status: ${isSynced}`),
+    onConnect: ({ type }) => console.debug(`Provider ${type} connected!`),
+    onDisconnect: ({ type }) => console.debug(`Provider ${type} disconnected.`),
+    onSyncChange: ({ type, isSynced }) => console.debug(`Provider ${type} sync status: ${isSynced}`),
     onError: ({ type, error }) => console.error(`Error in provider ${type}:`, error),
   },
 });

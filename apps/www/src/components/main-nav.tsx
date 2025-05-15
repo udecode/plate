@@ -29,7 +29,6 @@ const i18n = {
 
 export function MainNav() {
   const pathname = usePathname();
-  const isUI = pathname?.includes('/docs/components');
   const locale = useLocale();
   const content = i18n[locale as keyof typeof i18n];
 
@@ -41,7 +40,7 @@ export function MainNav() {
       >
         <Icons.minus className="size-6" />
         <span className="hidden items-center font-bold lg:inline-flex">
-          {siteConfig.name} {isUI && 'UI'}
+          {siteConfig.name}
         </span>
       </Link>
       <nav className="flex items-center gap-4 text-sm xl:gap-6">
@@ -55,17 +54,6 @@ export function MainNav() {
           href={hrefWithLocale('/docs', locale)}
         >
           {content.docs}
-        </Link>
-        <Link
-          className={cn(
-            'transition-colors hover:text-foreground/80',
-            pathname?.includes('/docs/components')
-              ? 'font-medium text-foreground'
-              : 'text-foreground/80'
-          )}
-          href={hrefWithLocale('/docs/components/introduction', locale)}
-        >
-          {content.components}
         </Link>
         <Link
           className={cn(

@@ -9,7 +9,8 @@
     "@radix-ui/react-popover"
   ],
   "registryDependencies": [
-    "dropdown-menu"
+    "dropdown-menu",
+    "https://platejs.org/r/tailwind-scrollbar-hide"
   ],
   "files": [
     {

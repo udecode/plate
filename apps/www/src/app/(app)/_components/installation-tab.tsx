@@ -465,7 +465,7 @@ export default function InstallationTab() {
 
       <Typography.P>
         {content.gettingStartedGuide}{' '}
-        <Link href="/docs/getting-started" target="_blank">
+        <Link href="/docs/installation" target="_blank">
           {content.gettingStarted}
         </Link>{' '}
         {content.section}

@@ -5,6 +5,9 @@
   "dependencies": [
     "@udecode/cn"
   ],
+  "registryDependencies": [
+    "https://platejs.org/r/editor"
+  ],
   "files": [
     {
       "path": "src/registry/examples/demo.tsx",

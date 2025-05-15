@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import Link, { type LinkProps } from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { docsConfig } from '@/config/docs';
@@ -13,9 +13,7 @@ import { cn } from '@/lib/utils';
 import { Drawer, DrawerContent, DrawerTrigger } from './ui/drawer';
 
 export function MobileNav() {
-  const pathname = usePathname();
-  const isUI = pathname?.startsWith('/docs/components');
-  const navItems = isUI ? docsConfig.componentsNav : docsConfig.sidebarNav;
+  const navItems = docsConfig.sidebarNav;
 
   const [open, setOpen] = React.useState(false);
   const { metaColor, setMetaColor } = useMetaColor();

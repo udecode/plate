@@ -48,7 +48,7 @@ export function SetupMCPDialog() {
             <DialogTitle className="text-xl font-bold">Setup MCP</DialogTitle>
           </div>
           <p className="mt-2 text-muted-foreground">
-            <Link onClick={() => setOpen(false)} href="/docs/components/mcp">
+            <Link onClick={() => setOpen(false)} href="/docs/mcp">
               Learn more about our MCP registry
             </Link>
           </p>

@@ -7,6 +7,7 @@ import type { SidebarNavItem } from '@/types/nav';
 import Link from 'next/link';
 
 import { DocBreadcrumb } from '@/app/(app)/docs/[[...slug]]/doc-breadcrumb';
+import { Icons } from '@/components/icons';
 import { H3 } from '@/components/typography';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -104,7 +105,27 @@ export function NavItemsGrid({
       <div className="space-y-16">
         {filteredItems.map((group, index) => (
           <div key={index}>
-            {group.title && <H3 className="mb-4">{group.title}</H3>}
+            {group.title && (
+              <div className="group relative">
+                <H3
+                  id={group.title.toLowerCase().replace(/ /g, '-')}
+                  className="mb-4 scroll-mt-20"
+                >
+                  <a
+                    className={cn(
+                      'opacity-0 group-hover:opacity-100 hover:opacity-100'
+                    )}
+                    onClick={(e) => e.stopPropagation()}
+                    href={`#${group.title.toLowerCase().replace(/ /g, '-')}`}
+                  >
+                    <div className="absolute top-1/2 -left-5 -translate-y-1/2 pr-1 leading-none">
+                      <Icons.pragma className="size-4 text-muted-foreground" />
+                    </div>
+                  </a>
+                  {group.title}
+                </H3>
+              </div>
+            )}
             <Suspense fallback={null}>
               <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
                 {group.items?.map((item) => (

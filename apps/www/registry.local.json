@@ -6169,6 +6169,76 @@
           "type": "registry:example"
         }
       ]
+    },
+    {
+      "name": "nextjs-basic-editor-setup-demo",
+      "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/rd/editor"
+      ],
+      "files": [
+        {
+          "path": "src/registry/examples/nextjs-basic-editor-setup-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "nextjs-editor-value-handling-demo",
+      "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/rd/editor"
+      ],
+      "files": [
+        {
+          "path": "src/registry/examples/nextjs-editor-value-handling-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "nextjs-editor-basic-marks-demo",
+      "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/rd/editor",
+        "http://localhost:3000/rd/fixed-toolbar",
+        "http://localhost:3000/rd/mark-toolbar-button"
+      ],
+      "files": [
+        {
+          "path": "src/registry/examples/nextjs-editor-basic-marks-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "nextjs-editor-basic-elements-demo",
+      "type": "registry:example",
+      "dependencies": [
+        "@udecode/cn"
+      ],
+      "registryDependencies": [
+        "http://localhost:3000/rd/editor",
+        "http://localhost:3000/rd/fixed-toolbar",
+        "http://localhost:3000/rd/mark-toolbar-button",
+        "http://localhost:3000/rd/heading-element",
+        "http://localhost:3000/rd/paragraph-element"
+      ],
+      "files": [
+        {
+          "path": "src/registry/examples/nextjs-editor-basic-elements-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
     }
   ]
 }

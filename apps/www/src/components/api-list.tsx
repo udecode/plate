@@ -385,16 +385,16 @@ export function APISubList({
   const [value, setValue] = useState(open ? '1' : '');
 
   return (
-    <Card className="my-2">
+    <Card className="my-2 p-0">
       <Accordion
-        className="w-full"
+        className="w-full py-0"
         defaultValue={open ? '1' : ''}
         onValueChange={setValue}
         type="single"
         collapsible
       >
         <AccordionItem className="border-none" value="1">
-          <AccordionTrigger className="group px-3" iconVariant="plus">
+          <AccordionTrigger className="group px-3 py-2" iconVariant="plus">
             {value ? 'Hide' : 'Show'} child attributes
           </AccordionTrigger>
           <AccordionContent>{children}</AccordionContent>

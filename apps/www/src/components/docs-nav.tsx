@@ -24,10 +24,9 @@ import { hrefWithLocale } from '@/lib/withLocale';
 export function DocsNav({ config }: { config: DocsConfig }) {
   const pathname = usePathname();
   const [filter, setFilter] = useState('');
+  const [activeSection, setActiveSection] = useState<string | undefined>();
 
-  const sidebarNav = pathname?.includes('/docs/components')
-    ? config.componentsNav
-    : config.sidebarNav;
+  const sidebarNav = config.sidebarNav;
 
   const filteredNav = React.useMemo(() => {
     const lowercasedFilter = filter?.toLowerCase();
@@ -55,6 +54,25 @@ export function DocsNav({ config }: { config: DocsConfig }) {
       .filter((section) => section.items && section.items.length > 0);
   }, [sidebarNav, filter]);
 
+  // Update active section when pathname changes
+  React.useEffect(() => {
+    if (!pathname) return;
+
+    const newActiveIndex = filteredNav.findIndex((section) =>
+      section.items?.some((item) => {
+        const isItemActive = item.href === pathname;
+        const hasActiveChild = item.items?.some(
+          (subItem) => subItem.href === pathname
+        );
+        return isItemActive || hasActiveChild;
+      })
+    );
+
+    setActiveSection(
+      newActiveIndex === -1 ? undefined : `item-${newActiveIndex}`
+    );
+  }, [pathname, filteredNav]);
+
   return sidebarNav.length > 0 ? (
     <div className="relative w-[calc(100%-1rem)]">
       <div className="sticky top-0 z-10 flex w-full items-center bg-background/95 px-2 pb-3 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
@@ -80,82 +98,45 @@ export function DocsNav({ config }: { config: DocsConfig }) {
       </div>
 
       <Accordion
-        className="flex flex-col gap-6"
-        defaultValue={filteredNav.map((_, i) => `item-${i}`)}
-        type="multiple"
+        value={activeSection}
+        onValueChange={setActiveSection}
+        type="single"
+        collapsible
       >
         {filteredNav.map((item, index) => {
-          const isAccordion = ['Examples', 'Plugins'].includes(item.title!);
-
-          if (isAccordion) {
-            return (
-              <AccordionItem
-                key={index}
-                className="mb-4 border-none"
-                value={`item-${index}`}
-              >
-                <AccordionTrigger className="px-2 py-1 text-sm font-semibold outline-none">
-                  <div className="flex items-center">
-                    {item.title}
-                    {item.label && (
-                      <div className="flex gap-1">
-                        {castArray(item.label).map((label, labelIndex) => (
-                          <span
-                            key={labelIndex}
-                            className={cn(
-                              'ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
-                              label === 'Plus' &&
-                                'bg-primary text-background dark:text-background',
-                              label === 'New' &&
-                                'bg-[#adfa1d] dark:text-background'
-                            )}
-                          >
-                            {label}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </AccordionTrigger>
-                <Suspense fallback={null}>
-                  <AccordionContent className="mt-1">
-                    {item?.items?.length && (
-                      <DocsNavItems items={item.items} pathname={pathname} />
-                    )}
-                  </AccordionContent>
-                </Suspense>
-              </AccordionItem>
-            );
-          }
-
           return (
-            <div key={index} className="flex flex-col gap-1">
-              <h4 className="rounded-md px-2 py-1 text-sm font-semibold">
-                {item.title}
-                {item.label && (
-                  <div className="ml-2 flex gap-1">
-                    {castArray(item.label).map((label, labelIndex) => (
-                      <span
-                        key={labelIndex}
-                        className={cn(
-                          'rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
-                          label === 'Plus' &&
-                            'bg-primary text-background dark:text-background',
-                          label === 'New' && 'bg-[#adfa1d] dark:text-background'
-                        )}
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </h4>
-              {item?.items?.length && (
-                <Suspense fallback={null}>
-                  <DocsNavItems items={item.items} pathname={pathname} />
-                </Suspense>
-              )}
-            </div>
+            <AccordionItem key={index} value={`item-${index}`}>
+              <AccordionTrigger className="h-9 items-center px-2 py-1 text-sm outline-none">
+                <div className="flex items-center">
+                  {item.title}
+                  {item.label && (
+                    <div className="flex gap-1">
+                      {castArray(item.label).map((label, labelIndex) => (
+                        <span
+                          key={labelIndex}
+                          className={cn(
+                            'ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
+                            label === 'Plus' &&
+                              'bg-primary text-background dark:text-background',
+                            label === 'New' &&
+                              'bg-[#adfa1d] dark:text-background'
+                          )}
+                        >
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </AccordionTrigger>
+              <Suspense fallback={null}>
+                <AccordionContent className="mt-1">
+                  {item?.items?.length && (
+                    <DocsNavItems items={item.items} pathname={pathname} />
+                  )}
+                </AccordionContent>
+              </Suspense>
+            </AccordionItem>
           );
         })}
       </Accordion>
@@ -222,7 +203,7 @@ function DocsNavItems({
               <Link
                 key={subIndex}
                 className={cn(
-                  'group flex h-8 w-full items-center rounded-lg px-6 font-normal text-foreground underline-offset-2 hover:bg-accent hover:text-accent-foreground',
+                  'group flex h-8 w-full items-center truncate rounded-lg px-6 font-normal text-foreground underline-offset-2 hover:bg-accent hover:text-accent-foreground',
                   subItem.disabled && 'cursor-not-allowed opacity-60',
                   pathname === subItem.href &&
                     'bg-accent font-medium text-accent-foreground'

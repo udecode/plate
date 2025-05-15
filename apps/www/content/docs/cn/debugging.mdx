@@ -82,8 +82,8 @@ try {
   editor.api.debug.error('发生错误', 'CUSTOM_ERROR', { details: '附加信息' });
 } catch (error) {
   if (error instanceof PlateError) {
-    console.log(error.type); // 'CUSTOM_ERROR'
-    console.log(error.message); // '[CUSTOM_ERROR] 发生错误'
+    console.debug(error.type); // 'CUSTOM_ERROR'
+    console.debug(error.message); // '[CUSTOM_ERROR] 发生错误'
   }
 }
 ```
@@ -112,7 +112,7 @@ const LoggingPlugin = createPlatePlugin({
 }).overrideEditor(({ editor, tf: { apply } }) => ({
   transforms: {
     apply(operation) {
-      console.log('操作:', operation);
+      console.debug('操作:', operation);
       apply(operation);
     },
   },
@@ -166,7 +166,7 @@ React DevTools 对于调试 Plate 组件非常有用：
 
 如果您遇到复杂问题：
 
-1. 选择一个[模板](/docs/getting-started)。
+1. 选择一个[模板](/docs/installation)。
 2. 仅添加重现问题所需的基本插件和组件。
 3. 如果问题仍然存在，[在 GitHub 上提出问题](https://github.com/udecode/plate/issues/new?assignees=&labels=bug&projects=&template=bug.yml)或在 [Discord](https://discord.gg/mAZRuBzGM3) 上分享您的示例。
 
