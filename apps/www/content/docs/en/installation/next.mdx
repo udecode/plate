@@ -4,7 +4,7 @@ description: Install and configure Plate UI for Next.js
 ---
 
 <Callout type="warning" title="Prerequisites">
-  Before you begin, ensure you have installed and configured [shadcn/ui](https://ui.shadcn.com/docs/installation/next) and Plate UI. Follow the **[Plate UI Installation Guide](./plate-ui)** first.
+  Before you begin, ensure you have installed and configured [shadcn/ui](https://ui.shadcn.com/docs/installation/next) and [Plate UI](/docs/installation/plate-ui).
 </Callout>
 
 This guide walks you through incrementally building a Plate editor in your Next.js application.
@@ -221,7 +221,7 @@ export default function MyEditorPage() {
 
 To make the editor content persistent, let's integrate `localStorage` to save and load the editor's value client-side.
 
-```tsx showLineNumbers title="app/editor/page.tsx" {50-58,61-64,69-71,83-89}
+```tsx showLineNumbers title="app/editor/page.tsx" {50-58,61-64,69-71,81-87}
 'use client';
 
 import * as React from 'react';

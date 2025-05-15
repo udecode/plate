@@ -12,24 +12,22 @@ This guide details how to install Plate UI, the component layer for Plate. Choos
 
 This is the fastest way to integrate Plate UI's core dependencies and base styles.
 
-<Callout type="info">
-  If you are not using Next.js, refer to the official [shadcn/ui installation guides](https://ui.shadcn.com/docs/installation) for your specific framework before proceeding.
-</Callout>
-
 Run the following command:
 
 ```bash
 npx shadcn@latest add https://platejs.org/r/plate-ui
 ```
 
-This command adds the necessary Plate dependencies and foundational styles to your project.
+<Callout type="info">
+  If you are not using Next.js, refer to the official [shadcn/ui installation guides](https://ui.shadcn.com/docs/installation) for your specific framework before proceeding.
+</Callout>
 
 ## Next Steps
 
 With Plate UI's core installed, proceed to the guide specific to your framework:
 
 *   **[Next.js Guide](./next)** - For server-side rendered applications (Next, Remix, etc.)
-*   **[SPA Guide](./spa)** - For single-page applications (Vite, React Router, etc.)
+*   **[React Guide](./react)** - For single-page applications (Vite, React Router, etc.)
 
 ## Manual Installation
 
@@ -37,12 +35,10 @@ If you prefer a step-by-step approach or are not using the shadcn CLI, follow th
 
 <Steps>
 
-### Add Core Dependency
-
-Install the primary Plate package:
+### Install Plate
 
 ```bash
-pnpm add @udecode/plate
+npm add @udecode/plate
 ```
 
 <Callout type="note" title="Plugin Dependencies">
@@ -51,7 +47,7 @@ pnpm add @udecode/plate
 
 ### Configure CSS Variables
 
-Add the following CSS variables to your global stylesheet (e.g., `app/globals.css` or `src/index.css`):
+Add the following CSS variables to your global stylesheet:
 
 ```css title="app/globals.css"
 :root {
@@ -60,7 +56,6 @@ Add the following CSS variables to your global stylesheet (e.g., `app/globals.cs
 }
 
 .dark {
-  /* Dark mode brand color */
   --brand: oklch(0.707 0.165 254.624);
 }
 ```

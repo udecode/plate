@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "highlight-style",
+  "type": "registry:style",
+  "files": [],
+  "cssVars": {
+    "light": {
+      "highlight": "oklch(0.852 0.199 91.936)"
+    },
+    "dark": {
+      "highlight": "oklch(0.852 0.199 91.936)"
+    }
+  }
+}

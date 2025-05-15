@@ -1,5 +1,5 @@
 ---
-title: Manual Plate Setup
+title: Manual Installation
 description: Install and configure Plate in your React project without relying on UI component libraries.
 ---
 
@@ -60,21 +60,15 @@ import React from 'react';
 import type { Value } from '@udecode/plate';
 import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
 
-const initialValue: Value = [
-  {
-    type: 'p',
-    children: [{ text: 'Hello, world! This is a basic Plate editor.' }],
-  },
-];
-
 export default function App() {
-  const editor = usePlateEditor({
-    value: initialValue,
-  });
+  const editor = usePlateEditor();
 
   return (
     <Plate editor={editor}>
-      <PlateContent style={{ border: '1px solid #ccc', padding: '10px', minHeight: '100px' }} />
+      <PlateContent 
+        style={{ padding: '16px 64px', minHeight: '100px' }}
+        placeholder="Type your amazing content here..."
+      />
     </Plate>
   );
 }
@@ -84,6 +78,8 @@ export default function App() {
   `usePlateEditor` creates a memoized editor instance, ensuring stability across re-renders. For a non-memoized version, use `createPlateEditor` from `@udecode/plate/react`.
 </Callout>
 
+<ComponentPreview name="installation-next-01-editor-demo" height="200px" />
+
 At this point, you'll have a very basic editor capable of displaying and editing plain text.
 
 ### Adding Basic Marks
@@ -92,7 +88,7 @@ Let's add support for basic text formatting like bold, italic, and underline.
 
 Update your editor to include the `BasicMarksPlugin` and define how these marks should be rendered.
 
-```tsx title="src/App.tsx" {4,6,10,13,17-25,32}
+```tsx showLineNumbers title="src/App.tsx" {3-4,11,13,15,24-31}
 import React from 'react';
 import type { Value } from '@udecode/plate';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react'; // Import the plugin
@@ -102,13 +98,13 @@ const initialValue: Value = [
   {
     type: 'p',
     children: [
-      { text: 'This is editable ' },
+      { text: 'Hello! Try out the ' },
       { text: 'bold', bold: true },
-      { text: ' text, an ' },
+      { text: ', ' },
       { text: 'italic', italic: true },
-      { text: ' example, and ' },
-      { text: 'underlined', underline: true },
-      { text: ' text.' },
+      { text: ', and ' },
+      { text: 'underline', underline: true },
+      { text: ' formatting.' },
     ],
   },
 ];
@@ -128,8 +124,8 @@ export default function App() {
 
   return (
     <Plate editor={editor}>
-      <PlateContent style={{ border: '1px solid #ccc', padding: '10px', minHeight: '100px' }} />
       {/* You would typically add a toolbar here to toggle marks */}
+      <PlateContent style={{ padding: '16px 64px', minHeight: '100px' }} />
     </Plate>
   );
 }
@@ -139,13 +135,15 @@ export default function App() {
   When adding plugins for new mark types (like `bold`), you **must** map their plugin `key` (e.g., `'bold'`) to your React components in the `components` option of `usePlateEditor`. This tells Plate how to render them. `PlateLeaf` is a helper component from `@udecode/plate/react` that simplifies rendering leaf nodes.
 </Callout>
 
+<ComponentPreview name="installation-next-02-marks-demo" height="200px" />
+
 You'll need to implement your own toolbar to apply these marks. For example, to toggle bold: `editor.tf.toggleMark('bold')`.
 
 ### Adding Basic Elements
 
 Now, let's add support for block-level elements like paragraphs (which is often a default), headings, and blockquotes.
 
-```tsx title="src/App.tsx" {5,7,10,13,17-25,30-37,44}
+```tsx showLineNumbers title="src/App.tsx" {4-5,8-9,23,27-30}
 import React from 'react';
 import type { Value } from '@udecode/plate';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
@@ -153,19 +151,14 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react'; // Im
 import { Plate, PlateContent, PlateLeaf, PlateElement, usePlateEditor, type PlateLeafProps, type PlateElementProps } from '@udecode/plate/react';
 
 const initialValue: Value = [
-  { type: 'h1', children: [{ text: 'Heading 1' }] },
-  { type: 'h2', children: [{ text: 'Heading 2' }] },
-  { type: 'p', children: [{ text: 'This is a paragraph.' }] },
-  {
-    type: 'blockquote',
-    children: [{ text: 'This is a blockquote.' }],
-  },
+  { type: 'h3', children: [{ text: 'Title' }] },
+  { type: 'blockquote', children: [{ text: 'This is a quote.' }] },
   {
     type: 'p',
     children: [
       { text: 'With some ' },
       { text: 'bold', bold: true },
-      { text: ' text.' },
+      { text: ' text for emphasis!' },
     ],
   },
 ];
@@ -180,7 +173,7 @@ export default function App() {
       h1: (props: PlateElementProps) => <PlateElement {...props} as="h1" />,
       h2: (props: PlateElementProps) => <PlateElement {...props} as="h2" />,
       p: (props: PlateElementProps) => <PlateElement {...props} as="p" />,
-      blockquote: (props: PlateElementProps) => <PlateElement {...props} as="blockquote" style={{ borderLeft: '2px solid #eee', marginLeft: 0, marginRight: 0, paddingLeft: '10px', color: '#aaa' }} />,
+      blockquote: (props: PlateElementProps) => <PlateElement {...props} as="blockquote" style={{ borderLeft: '2px solid #eee', marginLeft: 0, marginRight: 0, paddingLeft: '16px 64px', color: '#aaa' }} />,
       // Marks from previous step
       bold: (props: PlateLeafProps) => <PlateLeaf {...props} as="strong" />,
       italic: (props: PlateLeafProps) => <PlateLeaf {...props} as="em" />,
@@ -190,8 +183,8 @@ export default function App() {
 
   return (
     <Plate editor={editor}>
-      <PlateContent style={{ border: '1px solid #ccc', padding: '10px', minHeight: '100px' }}/>
-      {/* You would typically add a toolbar here to toggle elements */}
+      {/* Toolbar here */}
+      <PlateContent style={{ padding: '16px 64px', minHeight: '100px' }}/>
     </Plate>
   );
 }
@@ -201,11 +194,13 @@ export default function App() {
   Similar to marks, you map element `type`s (e.g., `'h1'`, `'p'`) to components. `PlateElement` is a helper for rendering element nodes. You'll need to implement UI (e.g., a dropdown) to toggle block types, for example, using `editor.tf.toggleBlock('h1')`.
 </Callout>
 
+<ComponentPreview name="installation-next-03-elements-demo" height="200px" />
+
 ### Handling Editor Value
 
 To make the editor's content persistent, let's integrate state management to save and load the editor's value.
 
-```tsx title="src/App.tsx" {4,7-10,13-16,19-22,31-35,42-48}
+```tsx showLineNumbers title="src/App.tsx" {34-40,46-48,52-54}
 import React, { useCallback } from 'react';
 import type { Value } from '@udecode/plate';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
@@ -213,8 +208,16 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { Plate, PlateContent, PlateLeaf, PlateElement, usePlateEditor, type PlateLeafProps, type PlateElementProps } from '@udecode/plate/react';
 
 const initialValue: Value = [
-  { type: 'h1', children: [{ text: 'Title' }] },
-  { type: 'p', children: [{ text: 'Try the editor!' }] },
+  { type: 'h3', children: [{ text: 'Title' }] },
+  { type: 'blockquote', children: [{ text: 'This is a quote.' }] },
+  {
+    type: 'p',
+    children: [
+      { text: 'With some ' },
+      { text: 'bold', bold: true },
+      { text: ' text for emphasis!' },
+    ],
+  },
 ];
 
 export default function App() {
@@ -225,36 +228,39 @@ export default function App() {
       h2: (props: PlateElementProps) => <PlateElement {...props} as="h2" />,
       p: (props: PlateElementProps) => <PlateElement {...props} as="p" />,
       blockquote: (props: PlateElementProps) => (
-        <PlateElement {...props} as="blockquote" style={{ borderLeft: '2px solid #eee', marginLeft: 0, marginRight: 0, paddingLeft: '10px', color: '#aaa' }} />
+        <PlateElement {...props} as="blockquote" style={{ borderLeft: '2px solid #eee', marginLeft: 0, marginRight: 0, paddingLeft: '16px 64px', color: '#aaa' }} />
       ),
       bold: (props: PlateLeafProps) => <PlateLeaf {...props} as="strong" />,
       italic: (props: PlateLeafProps) => <PlateLeaf {...props} as="em" />,
       underline: (props: PlateLeafProps) => <PlateLeaf {...props} as="u" />,
     },
-    value: initialValue,
+    value: () => {
+      const savedValue = localStorage.getItem('plate-value-demo');
+      if (savedValue) {
+        return JSON.parse(savedValue);
+      }
+      return initialValue;
+    },
   });
 
   return (
-    <div style={{padding: '20px'}}>
-      <h1>My Manual Plate Editor</h1>
-      <Plate 
-        editor={editor}
-        onChange={({ value }) => {
-          // saveValue(value);
-        }}
-      >
-        <PlateContent 
-          style={{ border: '1px solid #ccc', padding: '10px', minHeight: '100px' }} 
-          placeholder="Type your amazing content here..."
-        />
-        <button
-          onClick={() => editor.tf.setValue(initialValue)}
-          style={{ marginTop: '10px', padding: '4px 8px' }}
-        >
+    <Plate 
+      editor={editor}
+      onChange={({ value }) => {
+        localStorage.setItem('plate-value-demo', JSON.stringify(value));
+      }}
+    >
+      {/* <FixedToolbar> */}
+      {/* ...buttons */}
+        <button onClick={() => editor.tf.setValue(initialValue)}>
           Reset
         </button>
-      </Plate>
-    </div>
+      {/* </FixedToolbar> */}
+      <PlateContent 
+        style={{ padding: '16px 64px', minHeight: '100px' }} 
+        placeholder="Type your amazing content here..."
+      />
+    </Plate>
   );
 }
 ```
@@ -266,6 +272,8 @@ export default function App() {
   - The reset button uses `editor.tf.setValue()` to restore the initial value
   - To control the value, see [Controlled Value](/docs/controlled)
 </Callout>
+
+<ComponentPreview name="installation-next-demo" />
 
 ### Next Steps
 

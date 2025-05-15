@@ -3,6 +3,7 @@ import type { RegistryItem } from 'shadcn/registry';
 export const styles: RegistryItem[] = [
   {
     dependencies: ['tailwind-scrollbar-hide'],
+    files: [],
     name: 'tailwind-scrollbar-hide',
     tailwind: {
       config: {
@@ -20,6 +21,7 @@ export const styles: RegistryItem[] = [
         highlight: 'oklch(0.852 0.199 91.936)',
       },
     },
+    files: [],
     name: 'highlight-style',
     type: 'registry:style',
   },

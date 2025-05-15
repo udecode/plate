@@ -4177,6 +4177,7 @@
       "dependencies": [
         "tailwind-scrollbar-hide"
       ],
+      "files": [],
       "tailwind": {
         "config": {
           "plugins": [
@@ -4188,6 +4189,7 @@
     {
       "name": "highlight-style",
       "type": "registry:style",
+      "files": [],
       "cssVars": {
         "light": {
           "highlight": "oklch(0.852 0.199 91.936)"
