@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "docs-kbd",
+  "type": "registry:file",
+  "title": "Keyboard Input",
+  "description": "Documentation for Keyboard Input",
+  "files": [
+    {
+      "path": "../../docs/kbd.mdx",
+      "content": "---\ntitle: Keyboard Input\ndocs:\n  - route: /docs/components/kbd-leaf\n    title: Kbd Leaf\n---\n\n<ComponentPreview name=\"kbd-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Adds support for keyboard input marks\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-kbd\n```\n\n## Usage\n\n```tsx\nimport { KbdPlugin } from '@udecode/plate-kbd';\n```\n\n```tsx\nconst plugins = [\n  // ...otherPlugins,\n  KbdPlugin,\n];\n```\n\n```tsx\nconst components = {\n  [KbdPlugin.key]: KbdLeaf,\n}\n```\n\nSee also: [KbdLeaf](/docs/components/kbd-leaf)\n\n## Plugins\n\n### `KbdPlugin`\n\nPlugin for keyboard input marks.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plugins/kbd.mdx"
+    }
+  ]
+}

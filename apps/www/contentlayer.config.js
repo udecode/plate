@@ -97,8 +97,8 @@ export const Doc = defineDocumentType(() => ({
 }));
 
 export default makeSource({
-  contentDirInclude: ['docs', 'docs-18n'],
-  contentDirPath: './src/registry',
+  contentDirInclude: ['docs'],
+  contentDirPath: '../..',
   documentTypes: [Doc],
   mdx: {
     rehypePlugins: [

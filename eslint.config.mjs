@@ -12,6 +12,7 @@ export default defineConfig(
       'prisma/kysely',
       'src/lib/db/types',
       '**/*.mdx',
+      '**/blocks/fumadocs/**/*',
     ],
   },
   ...configs.base,

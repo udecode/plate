@@ -13,7 +13,8 @@ const NAME = 'plate';
 
 const isDev = process.env.NODE_ENV === 'development';
 const REGISTRY_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
-const SOURCE_DIR = path.join(process.cwd(), 'src/registry/docs');
+const RELATIVE_SOURCE_DIR = '../../docs';
+const SOURCE_DIR = path.join(process.cwd(), RELATIVE_SOURCE_DIR);
 const TARGET_FILE = 'registry-docs.json';
 const TARGET_DIR = isDev ? 'public/rd' : 'public/r';
 const TARGET = `${TARGET_DIR}/${TARGET_FILE}`;
@@ -25,7 +26,11 @@ async function getFiles(dir: string): Promise<string[]> {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         return getFiles(fullPath);
-      } else if (entry.name.endsWith('.mdx')) {
+      } else if (
+        entry.name.endsWith('.mdx') &&
+        // Ignore translated docs
+        !entry.name.endsWith('.cn.mdx')
+      ) {
         return [fullPath];
       }
       return [];
@@ -66,7 +71,7 @@ export async function buildDocsRegistry() {
   // Create meta.json content
   const metaContent = {
     description: 'Rich-text editor framework',
-    pages: Object.keys(docsStructure),
+    pages: ['index', ...Object.keys(docsStructure)],
     root: true,
     title: NAME.charAt(0).toUpperCase() + NAME.slice(1),
   };
@@ -79,8 +84,8 @@ export async function buildDocsRegistry() {
     files: [
       {
         content: JSON.stringify(metaContent, null, 2),
-        path: `docs/content/docs/${NAME}/meta.json`,
-        target: `docs/content/docs/${NAME}/meta.json`,
+        path: `../../docs/${NAME}/meta.json`,
+        target: `content/docs/${NAME}/meta.json`,
         type: 'registry:file' as const,
       },
       // Add all meta.json files recursively
@@ -109,20 +114,21 @@ export async function buildDocsRegistry() {
 
       // Get the target path based on the navigation hierarchy
       let targetPath: string;
-      if (pathWithoutExt === 'index') {
-        targetPath = `docs/content/docs/${NAME}/get-started/index.mdx`;
-      } else {
-        const section = pathMap.get(pathWithoutExt);
-        if (section) {
-          const fileName = path.basename(pathWithoutExt);
-          // If the filename matches the last part of the section path, use index.mdx
-          const lastSection = section.split('/').pop()!;
-          const finalFileName = fileName === lastSection ? 'index' : fileName;
-          targetPath = `docs/content/docs/${NAME}/${section}/${finalFileName}.mdx`;
+      const section = pathMap.get(pathWithoutExt);
+      if (section) {
+        const fileName = path.basename(pathWithoutExt);
+        // If the filename matches the last part of the section path, use index.mdx
+        const lastSection = section.split('/').pop()!;
+        const finalFileName = fileName === lastSection ? 'index' : fileName;
+        // Skip get-started section and place those files at root
+        if (section.startsWith('get-started')) {
+          targetPath = `content/docs/${NAME}/${finalFileName}.mdx`;
         } else {
-          // Default fallback if no mapping found
-          targetPath = `docs/content/docs/${NAME}/${pathWithoutExt}.mdx`;
+          targetPath = `content/docs/${NAME}/${section}/${finalFileName}.mdx`;
         }
+      } else {
+        // Default fallback if no mapping found
+        targetPath = `content/docs/${NAME}/${pathWithoutExt}.mdx`;
       }
 
       return {
@@ -130,7 +136,7 @@ export async function buildDocsRegistry() {
           description || `Documentation for ${title || pathToTitle(filePath)}`,
         files: [
           {
-            path: `src/registry/docs/${relativePath}`,
+            path: `${RELATIVE_SOURCE_DIR}/${relativePath}`,
             target: targetPath,
             type: 'registry:file',
           },
@@ -149,11 +155,45 @@ export async function buildDocsRegistry() {
         description: `All documentation files for ${NAME}`,
         files: [],
         name: 'docs',
-        registryDependencies: [
-          `${REGISTRY_URL}/docs-meta`,
-          ...items.map((item) => `${REGISTRY_URL}/${item.name}`),
-        ],
+        registryDependencies: items.map(
+          (item) => `${REGISTRY_URL}/${item.name}`
+        ),
         title: 'Documentation',
+        type: 'registry:file',
+      },
+      {
+        dependencies: [
+          '@radix-ui/react-separator',
+          '@radix-ui/react-accordion',
+          'lucide-react',
+          'class-variance-authority',
+          'tailwind-merge',
+          'clsx',
+        ],
+        description: `Fumadocs app for ${NAME}`,
+        files: [
+          {
+            path: 'src/registry/blocks/fumadocs/content/docs/index.mdx',
+            target: 'content/docs/index.mdx',
+            type: 'registry:file',
+          },
+          {
+            path: 'src/registry/blocks/fumadocs/fumadocs-mdx-components.tsx',
+            target: 'mdx-components.tsx',
+            type: 'registry:file',
+          },
+          {
+            path: 'src/registry/blocks/fumadocs/mdx-plate-components.tsx',
+            target: 'mdx-plate-components.tsx',
+            type: 'registry:file',
+          },
+        ],
+        name: 'fumadocs',
+        registryDependencies: [
+          `${REGISTRY_URL}/docs`,
+          `${REGISTRY_URL}/docs-meta`,
+        ],
+        title: 'Fumadocs app',
         type: 'registry:file',
       },
       ...items,
@@ -187,16 +227,13 @@ function buildPathMap(nav: SidebarNavItem[], parentTitle?: string) {
       ? `${parentTitle}/${currentTitle}`
       : currentTitle;
 
-    // Special case for root /docs path
-    if (item.href === '/docs') {
-      pathMap.set('index', 'get-started');
-      return;
-    }
-
     // Map this item's href if it has one
     if (item.href) {
       const href = item.href.replace(/^\/docs\//, '');
-      pathMap.set(href, fullTitle);
+      // Skip get-started section mapping except for installation
+      if (!fullTitle.startsWith('get-started') || href === 'installation') {
+        pathMap.set(href, fullTitle);
+      }
     }
 
     // If this item has subitems, process them with the current title as parent
@@ -234,7 +271,13 @@ function transformNavToFumadocs(
   const result: Record<string, { pages: string[]; title: string }> = {};
 
   nav.forEach((item) => {
-    if (!item.items || !item.title) return;
+    // Skip only the Get Started section, but keep Installation
+    if (
+      !item.items ||
+      !item.title ||
+      (item.title === 'Get Started' && !item.href?.includes('installation'))
+    )
+      return;
 
     const folderName = item.title.toLowerCase().replace(/\s+/g, '-');
 
@@ -258,7 +301,12 @@ function generateMetaFiles(
   const files: { content: string; path: string; target: string }[] = [];
 
   nav.forEach((item) => {
-    if (!item.title) return;
+    // Skip only the Get Started section, but keep Installation
+    if (
+      !item.title ||
+      (item.title === 'Get Started' && !item.href?.includes('installation'))
+    )
+      return;
 
     const currentPath = parentPath
       ? `${parentPath}/${item.title.toLowerCase().replace(/\s+/g, '-')}`
@@ -279,8 +327,8 @@ function generateMetaFiles(
 
       files.push({
         content: JSON.stringify(content, null, 2),
-        path: `docs/content/docs/${NAME}/${currentPath}/meta.json`,
-        target: `docs/content/docs/${NAME}/${currentPath}/meta.json`,
+        path: `content/docs/${NAME}/${currentPath}/meta.json`,
+        target: `content/docs/${NAME}/${currentPath}/meta.json`,
       });
 
       // Process nested items that have their own subitems
@@ -298,8 +346,8 @@ function generateMetaFiles(
 
           files.push({
             content: JSON.stringify(subContent, null, 2),
-            path: `docs/content/docs/${NAME}/${subPath}/meta.json`,
-            target: `docs/content/docs/${NAME}/${subPath}/meta.json`,
+            path: `content/docs/${NAME}/${subPath}/meta.json`,
+            target: `content/docs/${NAME}/${subPath}/meta.json`,
           });
         }
       });

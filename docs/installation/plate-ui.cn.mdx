@@ -1,0 +1,106 @@
+---
+title: Plate UI 安装
+description: 如何在你的项目中设置 Plate UI。
+---
+
+本指南详细介绍了如何安装 Plate UI（Plate 的组件层）。请选择适合你项目的方法：
+
+*   **CLI 安装（推荐）：** 使用 shadcn CLI 快速集成。
+*   **手动安装：** 如果你需要更细致的控制。
+
+## CLI 安装（推荐）
+
+这是集成 Plate UI 核心依赖和基础样式的最快方式。
+
+<Steps>
+
+### 安装 Plate UI
+
+<Callout type="info">
+  如果你不是在使用 Next.js，请先参考官方 [shadcn/ui 安装指南](https://ui.shadcn.com/docs/installation) 选择你的框架。
+</Callout>
+
+```bash
+npx shadcn@latest add https://platejs.org/r/plate-ui
+```
+
+### 基本用法
+
+安装好 Plate UI 核心后，请根据你的框架继续阅读对应的指南：
+
+*   **[Next.js 指南](./next)** - 适用于服务端渲染应用（Next、Remix 等）
+*   **[React 指南](./react)** - 适用于单页应用（Vite、React Router 等）
+
+</Steps>
+
+## 手动安装
+
+如果你更喜欢逐步操作，或不使用 shadcn CLI，请按以下步骤操作：
+
+<Steps>
+
+### 安装 Plate
+
+```bash
+npm add @udecode/plate
+```
+
+<Callout type="note" title="插件依赖">
+  手动安装 Plate 时，你需要为每个想用的插件单独安装依赖包。例如，如果你想用 `AIMenu` 组件，需要安装 `@udecode/plate-ai` 及其依赖。请查阅每个组件的文档了解所需包，或直接用 CLI 自动安装。
+</Callout>
+
+### 配置 CSS 变量
+
+将以下 CSS 变量添加到你的全局样式表：
+
+```css title="app/globals.css"
+:root {
+  /* Plate UI 组件的基础品牌色 */
+  --brand: oklch(0.623 0.214 259.815);
+}
+
+.dark {
+  --brand: oklch(0.707 0.165 254.624);
+}
+```
+
+### 添加组件
+
+安装好 Plate UI 核心后，你可以按需添加 Plate UI 组件来构建编辑器界面。例如，添加 `FixedToolbar` 和 `MarkToolbarButton`：
+
+```bash
+npx shadcn@latest add https://platejs.org/r/fixed-toolbar https://platejs.org/r/mark-toolbar-button
+```
+
+在编辑器中导入并使用它们：
+
+```tsx showLineNumbers title="components/editor.tsx"
+import { Plate } from "@udecode/plate/react";
+import { FixedToolbar } from "@/components/ui/fixed-toolbar";
+import { MarkToolbarButton } from "@/components/ui/mark-toolbar-button";
+// ... 其他导入
+
+export function MyEditor() {
+  // ... 编辑器设置
+  return (
+    <Plate editor={editor}>
+      <FixedToolbar>
+        <MarkToolbarButton nodeType="bold" tooltip="Bold">B</MarkToolbarButton>
+        {/* ... 其他工具栏按钮 ... */}
+      </FixedToolbar>
+      {/* ... Editor 组件 ... */}
+    </Plate>
+  );
+}
+```
+
+探索可用的 [UI 组件](/docs/components) 和 [插件组件](/docs/plugin-components)，自定义你的编辑器节点（如段落、标题等），打造功能丰富的编辑体验。
+
+### 基本用法
+
+安装好 Plate UI 核心后，请根据你的框架继续阅读对应的指南：
+
+*   **[Next.js 指南](./next)** - 适用于服务端渲染应用（Next、Remix 等）
+*   **[React 指南](./react)** - 适用于单页应用（Vite、React Router 等）
+
+</Steps> 

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "docs-horizontal-rule",
+  "type": "registry:file",
+  "title": "Horizontal Rule",
+  "description": "Documentation for Horizontal Rule",
+  "files": [
+    {
+      "path": "../../docs/horizontal-rule.mdx",
+      "content": "---\ntitle: Horizontal Rule\ndocs:\n  - route: /docs/components/hr-element\n    title: Hr Element\n---\n\n<ComponentPreview name=\"horizontal-rule-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Insert horizontal lines to separate content or indicate topic shifts\n- Type three dashes (`---`) at a new line start to transform into a horizontal rule\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-horizontal-rule\n```\n\n## Usage\n\n```tsx\nimport { insertNodes, setNodes } from '@udecode/plate';\nimport { AutoformatPlugin } from '@udecode/plate-autoformat/react';\nimport { ParagraphPlugin } from '@udecode/plate/react';\nimport { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';\nimport { SelectOnBackspacePlugin } from '@udecode/plate-select/react';\n\nconst plugins = [\n  // ...otherPlugins,\n  HorizontalRulePlugin,\n  SelectOnBackspacePlugin.configure({\n    options: { query: { allow: [HorizontalRulePlugin.key] } },\n  }),\n  AutoformatPlugin.configure({\n    options: {\n      rules: [\n        {\n          mode: 'block',\n          type: HorizontalRulePlugin.key,\n          match: ['---', '—-', '___ '],\n          format: (editor) => {\n            setNodes(editor, { type: HorizontalRulePlugin.key });\n            insertNodes(editor, {\n              type: ParagraphPlugin.key,\n              children: [{ text: '' }],\n            });\n          },\n        },\n      ],\n    },\n  }),\n];\n```\n\n## Plugins\n\n### `HorizontalRulePlugin`\n\nPlugin for inserting horizontal rules to separate content.",
+      "type": "registry:file",
+      "target": "content/docs/plate/plugins/horizontal-rule.mdx"
+    }
+  ]
+}

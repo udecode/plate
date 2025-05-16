@@ -24,11 +24,22 @@ export function SetupMCPDialog() {
   const initCommand = `npx shadcn@canary add ${siteConfig.registryUrl}editor-basic`;
   const cursorConfig = `{
   "mcpServers": {
-    "shadcn": {
+    "plate": {
+      "description": "Plate editors, plugins and components",
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "shadcn@canary", "registry:mcp"],
       "env": {
         "REGISTRY_URL": "${siteConfig.registryUrl}registry.json"
+      }
+    },
+    "plate-docs": {
+      "description": "Plate documentation",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "shadcn@canary", "registry:mcp"],
+      "env": {
+        "REGISTRY_URL": "${siteConfig.registryUrl}registry-docs.json"
       }
     }
   }
@@ -99,7 +110,7 @@ export function SetupMCPDialog() {
               rel="noopener noreferrer"
               target="_blank"
             >
-              Report issues here
+              Report any issues here
             </Link>
           </h3>
         </Steps>

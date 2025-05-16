@@ -5998,19 +5998,6 @@
           "type": "registry:example"
         }
       ]
-    },
-    {
-      "description": "Introduction to Plate",
-      "files": [
-        {
-          "path": "src/registry/docs/index.mdx",
-          "target": "docs/plate/introduction.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "docs-introduction",
-      "title": "Introduction",
-      "type": "registry:file"
     }
   ]
 }

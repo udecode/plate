@@ -1,0 +1,103 @@
+---
+title: Node.js
+description: 为 Node.js 安装和配置 Plate
+---
+
+本指南演示如何在 Node.js 环境中使用 Plate。这对于后端任务（如数据处理、内容迁移、校验）或任何需要在无浏览器或无完整 React 前端的情况下操作 Plate 编辑器内容的场景都很有用。
+
+<Callout type="warning" title="Node.js 关键限制">
+  在 Node.js 环境中使用 Plate 时，**绝不能**从任何 `@udecode/plate*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@udecode/plate-basic-elements`，而不是 `@udecode/plate-basic-elements/react`）。
+
+  这意味着你不能使用 `@udecode/plate/react` 的 `createPlateEditor`。请改用 `@udecode/plate` 的 `createSlateEditor`。
+</Callout>
+
+<Steps>
+
+### 安装 Plate
+
+安装核心 Plate 包以及你数据处理所需的特定插件包。
+
+```bash
+npm add @udecode/plate
+```
+
+### 创建编辑器实例
+
+在 Node.js 脚本中，使用 `@udecode/plate` 的 `createSlateEditor` 初始化编辑器实例。此函数与框架无关，不依赖 React 或浏览器 API。
+
+```typescript title="scripts/process-content.ts"
+import { createSlateEditor } from '@udecode/plate';
+import { BaseHeadingPlugin } from '@udecode/plate-heading';
+import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
+import remarkGfm from 'remark-gfm';
+// ... 仅导入其他基础插件（不要从 /react 路径导入）
+
+async function processDocument(value: any[]) {
+  const editor = createSlateEditor({
+    plugins: [
+      BaseHeadingPlugin,
+      MarkdownPlugin.configure({
+        options: {
+          remarkPlugins: [remarkGfm, remarkMdx],
+        },
+      }),
+      // ... 添加与你内容结构相关的其他基础插件
+    ],
+    value, // 将 Slate 内容赋给编辑器
+  });
+
+  // 使用 editor.api 或 editor.tf 进行操作
+  const textContent = editor.api.string([]);
+  console.log('Extracted Text:', textContent);
+
+  const markdownContent = editor.api.markdown.serialize();
+  console.log('Serialized Markdown:', markdownContent);
+
+  // 示例：将所有 H1 转为 H2
+  editor.tf.setNodes(
+    { type: 'h2' },
+    { at: [], match: (n) => n.type === 'h1' }
+  );
+  console.log('Transformed Value:', editor.children);
+
+  return { textContent, markdownContent, transformedValue: editor.children };
+}
+
+// 示例用法：
+const mySlateValue = [
+  { type: 'h1', children: [{ text: 'Original Document Title' }] },
+  { type: 'p', children: [{ text: 'Some paragraph content.' }] },
+];
+
+processDocument(mySlateValue).then(result => {
+  console.log('Processing complete.', result);
+});
+```
+
+### 内容操作
+
+在 Node.js 中使用 Plate 的主要场景是编程式内容操作：
+
+-   **[`editor.api`](/docs/api/slate/editor-api)**：访问各种实用函数以查询编辑器状态。例如：
+    -   `editor.api.nodes({ at: [], match })`：查找特定节点。
+    -   `editor.api.string([])`：提取文本内容。
+    -   [HTML 序列化](/docs/html)
+    -   [Markdown 序列化](/docs/markdown)
+
+-   **[`editor.tf`](/docs/api/slate/editor-transforms)**：使用变换函数修改编辑器内容。例如：
+    -   `editor.tf.insertNodes(nodes, opts)`：插入新节点。
+    -   `editor.tf.removeNodes(opts)`：删除节点。
+    -   `editor.tf.setNodes(props, opts)`：更新现有节点属性。
+    -   `editor.tf.normalize({ force: true })`：强制规范化编辑器。
+
+</Steps>
+
+### 下一步
+
+在 Node.js 环境中配置好 Plate 后，你可以：
+
+*   编写脚本，将其他系统的内容迁移为 Plate 格式。
+*   对现有 Plate 文档进行批量更新或转换。
+*   校验内容结构，或从文档中提取特定数据。
+*   与其他后端服务集成，实现内容处理流水线。
+*   如需生成静态内容，可探索 [Markdown 序列化](/docs/markdown)、[HTML 序列化](/docs/html) 和 [`PlateStatic`](/docs/plate-static)。 

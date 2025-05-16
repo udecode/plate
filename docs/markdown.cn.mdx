@@ -1,0 +1,893 @@
+---
+title: Markdown（Markdown 支持）
+description: Plate 内容与 Markdown 的互转。
+toc: true
+---
+
+`@udecode/plate-markdown` 包为 Markdown 与 Plate 内容结构之间提供了强大、双向的转换能力。
+
+<ComponentPreview name="markdown-to-slate-demo" />
+
+<ComponentPreview name="markdown-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+-   **Markdown 转 Slate JSON：** 将 Markdown 字符串转换为 Plate 可编辑格式（`deserialize`）。
+-   **Slate JSON 转 Markdown：** 将 Plate 内容转换回 Markdown 字符串（`serialize`）。
+-   **默认安全：** 转换过程中不使用 `dangerouslySetInnerHTML`，保证安全。
+-   **自定义规则：** 可通过 `rules` 自定义特定 Markdown 语法或自定义 Plate 元素的转换方式。支持 MDX。
+-   **可扩展：** 通过 `remarkPlugins` 选项使用 [remark 插件](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins)。
+-   **标准兼容：** 支持 CommonMark，支持通过 [`remark-gfm`](https://github.com/remarkjs/remark-gfm) 启用 GFM（GitHub Flavored Markdown）。
+-   **循环序列化：** 在转换周期内通过 MDX 语法保留自定义元素。
+
+</PackageInfo>
+
+## 为什么选择 `@udecode/plate-markdown`？
+
+虽然像 `react-markdown` 这样的库可以将 Markdown 渲染为 React 元素，`@udecode/plate-markdown` 则为 Plate 生态提供了更深度的集成：
+
+-   **富文本编辑：** 支持将 Markdown 转换为 Plate 结构，启用高级编辑功能。
+-   **所见即所得体验：** 可在富文本视图中编辑内容，并序列化回 Markdown。
+-   **自定义元素与数据：** 支持复杂的自定义 Plate 元素（如 mention、embed），可在 MDX 中互转。
+-   **可扩展性：** 利用 Plate 插件系统和 unified/remark 生态实现强大自定义。
+
+<Callout type="note">
+  如果你只需将 Markdown 显示为 HTML（无需编辑或自定义元素），`react-markdown` 已足够。若需富文本编辑器并支持 Markdown 导入/导出及自定义内容，`@udecode/plate-markdown` 是集成方案。
+</Callout>
+
+## 安装
+
+```bash
+npm install @udecode/plate @udecode/plate-markdown
+```
+
+## 用法
+
+<Steps>
+
+### 配置插件
+
+推荐配置 `MarkdownPlugin`，以启用 Markdown 粘贴处理并设置默认转换 `rules`。
+
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from '@udecode/plate/react';
+import { MarkdownPlugin, remarkMention, remarkMdx } from '@udecode/plate-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他 Plate 插件
+    MarkdownPlugin.configure({
+      options: {
+        // 添加 remark 插件以扩展语法（GFM、Math、MDX）
+        remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
+        // 如需自定义规则
+        rules: {
+          // date: { /* ... 规则实现 ... */ },
+        },
+      },
+    }),
+  ],
+});
+
+// 如需禁用 Markdown 粘贴处理：
+const editorWithoutPaste = createPlateEditor({
+  plugins: [
+    // ...其他 Plate 插件
+    MarkdownPlugin.configure(() => ({ parser: null })),
+  ],
+});
+```
+
+<Callout type="info">
+  即使不通过 `configure` 配置 `MarkdownPlugin`，也可直接使用 `editor.api.markdown.deserialize` 和 `editor.api.markdown.serialize`，但不会有插件默认规则或粘贴处理。
+</Callout>
+
+### Markdown 转 Plate（反序列化）
+
+使用 `editor.api.markdown.deserialize` 将 Markdown 字符串转换为 Slate `Value`（节点数组）。常用于编辑器初始内容。
+
+```tsx title="components/my-editor.tsx"
+import { createPlateEditor } from '@udecode/plate/react';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+// ...导入其他用于渲染元素的 Plate 插件
+
+const markdownString = '# Hello, *Plate*!';
+
+const editor = createPlateEditor({
+  plugins: [
+    // 必须包含 MarkdownPlugin
+    MarkdownPlugin,
+    // ...渲染反序列化元素所需的其他插件（如 HeadingPlugin、ItalicPlugin）
+  ],
+  // 在 value 工厂中用 deserialize 作为初始内容
+  value: (editor) => editor.getApi(MarkdownPlugin).markdown.deserialize(markdownString),
+});
+```
+
+<Callout type="warning" title="插件要求">
+  反序列化 Markdown 后，编辑器的 `plugins` 数组中需包含所有用于渲染的 Plate 插件（如 `HeadingPlugin`、`TablePlugin` 等）。
+</Callout>
+
+### Plate 转 Markdown（序列化）
+
+使用 `editor.api.markdown.serialize` 将当前编辑器内容（或指定节点数组）转换为 Markdown 字符串。
+
+**序列化当前编辑器内容：**
+
+```tsx
+// 假设 `editor` 是已包含内容的 Plate 编辑器实例
+const markdownOutput = editor.api.markdown.serialize();
+console.info(markdownOutput);
+```
+
+**序列化指定节点：**
+
+```tsx
+const specificNodes = [
+  { type: 'p', children: [{ text: '只序列化这一段。' }] },
+  { type: 'h1', children: [{ text: '还有这个标题。' }] }
+];
+
+// 假设 `editor` 是 Plate 编辑器实例
+const partialMarkdownOutput = editor.api.markdown.serialize({
+  value: specificNodes,
+});
+console.info(partialMarkdownOutput);
+```
+
+### 自定义元素的循环序列化（MDX）
+
+一大亮点是支持无标准 Markdown 表达的自定义 Plate 元素（如 underline、mention），通过 MDX 元素序列化，并在反序列化时还原。
+
+**示例：自定义 `date` 元素**
+
+**Slate 节点结构：**
+```ts
+{
+  type: 'p',
+  children: [
+    { text: 'Today is ' },
+    { type: 'date', date: '2025-03-31', children: [{ text: '' }] } // leaf 元素需有 text 子节点
+  ],
+}
+```
+
+**插件规则配置：**
+```tsx title="lib/plate-editor.ts"
+import type { MdMdxJsxTextElement } from '@udecode/plate-markdown';
+import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
+// ...其他导入
+
+MarkdownPlugin.configure({
+  options: {
+    rules: {
+      // key 匹配：
+      // 1. Plate 元素的 plugin 'key' 或 'type'
+      // 2. mdast 节点类型
+      // 3. MDX 标签名
+      date: {
+        // Markdown -> Slate
+        deserialize(mdastNode: MdMdxJsxTextElement, deco, options) {
+          const dateValue = (mdastNode.children?.[0] as any)?.value || '';
+          return {
+            type: 'date', // 你的 Plate 元素类型
+            date: dateValue,
+            children: [{ text: '' }], // 合法 Slate 结构
+          };
+        },
+        // Slate -> Markdown (MDX)
+        serialize: (slateNode): MdMdxJsxTextElement => {
+          return {
+            type: 'mdxJsxTextElement',
+            name: 'date', // MDX 标签名
+            attributes: [], // 可选: [{ type: 'mdxJsxAttribute', name: 'date', value: slateNode.date }]
+            children: [{ type: 'text', value: slateNode.date || '1999-01-01' }],
+          };
+        },
+      },
+      // ...其他自定义元素规则
+    },
+    remarkPlugins: [remarkMdx /*, ...如 remarkGfm 等其他插件 */],
+  },
+});
+```
+
+**转换流程：**
+
+1.  **序列化（Slate → Markdown）：** Plate 的 `date` 节点会变为 `<date>2025-03-31</date>`。
+2.  **反序列化（Markdown → Slate）：** MDX 标签 `<date>2025-03-31</date>` 会还原为 Plate 的 `date` 节点。
+
+</Steps>
+
+## API 参考
+
+### `MarkdownPlugin`
+
+核心插件配置对象。用 `MarkdownPlugin.configure({ options: {} })` 设置全局 Markdown 处理选项。
+
+<API name="MarkdownPlugin">
+<APIOptions>
+  <APIItem name="allowedNodes" type="NodesConfig | null">
+    白名单，仅允许指定节点类型（Slate 类型和 Markdown AST 类型如 `strong`）。不能与 `disallowedNodes` 同时用。默认：`null`（全部允许）。
+  </APIItem>
+  <APIItem name="disallowedNodes" type="NodesConfig | null">
+    黑名单，过滤指定节点类型。不能与 `allowedNodes` 同时用。默认：`null`。
+  </APIItem>
+  <APIItem name="allowNode" type="AllowNodeConfig">
+    更细粒度的节点过滤函数，在 `allowedNodes`/`disallowedNodes` 之后应用。
+    - `deserialize?: (mdastNode: any) => boolean`：Markdown → Slate 过滤。返回 `true` 保留。
+    - `serialize?: (slateNode: any) => boolean`：Slate → Markdown 过滤。返回 `true` 保留。
+    默认：`null`。
+  </APIItem>
+  <APIItem name="rules" type="TRules | null">
+    自定义 Markdown AST 与 Slate 元素的转换规则。见[循环序列化](#round-trip-serialization-with-custom-elements-mdx)和[自定义规则](#appendix-b-customizing-conversion-rules)。如为 marks/leaf，需加 `mark: true`。默认：`null`（用内置 `defaultRules`）。
+  </APIItem>
+  <APIItem name="remarkPlugins" type="Plugin[]">
+    [remark 插件](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins)数组（如 `remark-gfm`、`remark-math`、`remark-mdx`）。作用于 Markdown AST（mdast）。默认：`[]`。
+  </APIItem>
+</APIOptions>
+<APIAttributes>
+  <APIItem name="parser" type="Parser | null">
+    粘贴内容的解析配置。设为 `null` 可禁用 Markdown 粘贴处理。默认启用将 `text/plain` 作为 Markdown 粘贴。见 [PlatePlugin API > parser](/docs/api/core/plate-plugin#parser)。
+  </APIItem>
+</APIAttributes>
+</API>
+
+---
+
+### `editor.api.markdown.deserialize`
+
+将 Markdown 字符串转换为 Slate `Value`（`Descendant[]`）。
+
+<API name="deserialize">
+<APIParameters>
+  <APIItem name="markdown" type="string">
+    要反序列化的 Markdown 字符串。
+  </APIItem>
+  <APIItem name="options" type="DeserializeMdOptions" optional>
+    本次调用的选项，覆盖插件默认。
+  </APIItem>
+</APIParameters>
+<APIOptions type="DeserializeMdOptions">
+  <APIItem name="allowedNodes" type="NodesConfig" optional>
+    覆盖插件 `allowedNodes`。
+  </APIItem>
+  <APIItem name="disallowedNodes" type="NodesConfig" optional>
+    覆盖插件 `disallowedNodes`。
+  </APIItem>
+  <APIItem name="allowNode" type="AllowNodeConfig" optional>
+    覆盖插件 `allowNode`。
+  </APIItem>
+  <APIItem name="memoize" type="boolean" optional>
+    若为 true，则在顶层块节点加 `_memo` 属性，存储原始 Markdown（如配合 `PlateStatic`）。默认：`false`。
+  </APIItem>
+  <APIItem name="rules" type="TRules | null" optional>
+    覆盖插件 `rules`。
+  </APIItem>
+  <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
+    底层 Markdown 块解析器（`parseMarkdownBlocks`）的选项。见下文。
+  </APIItem>
+  <APIItem name="remarkPlugins" type="Plugin[]" optional>
+    覆盖插件 `remarkPlugins`。
+  </APIItem>
+  <APIItem name="splitLineBreaks" type="boolean" optional>
+    若为 true，段落中的单个换行符（`\n`）会变为段落分隔。默认：`false`。
+  </APIItem>
+</APIOptions>
+<APIReturns type="Descendant[]">
+  Slate 节点数组。
+</APIReturns>
+</API>
+
+---
+
+### `editor.api.markdown.serialize`
+
+将 Slate `Value`（`Descendant[]`）转换为 Markdown 字符串。
+
+<API name="serialize">
+<APIParameters>
+  <APIItem name="options" type="SerializeMdOptions" optional>
+    本次调用的选项，覆盖插件默认。
+  </APIItem>
+</APIParameters>
+<APIOptions type="SerializeMdOptions">
+ <APIItem name="value" type="Descendant[]" optional>
+    要序列化的 Slate 节点。默认用 `editor.children`。
+  </APIItem>
+  <APIItem name="allowedNodes" type="NodesConfig" optional>
+    覆盖插件 `allowedNodes`。
+  </APIItem>
+  <APIItem name="disallowedNodes" type="NodesConfig" optional>
+    覆盖插件 `disallowedNodes`。
+  </APIItem>
+  <APIItem name="allowNode" type="AllowNodeConfig" optional>
+    覆盖插件 `allowNode`。
+  </APIItem>
+  <APIItem name="rules" type="TRules | null" optional>
+    覆盖插件 `rules`。
+  </APIItem>
+  <APIItem name="remarkPlugins" type="Plugin[]" optional>
+    覆盖插件 `remarkPlugins`（影响字符串化）。
+  </APIItem>
+</APIOptions>
+<APIReturns type="string">
+  Markdown 字符串。
+</APIReturns>
+</API>
+
+---
+
+### `parseMarkdownBlocks`
+
+将 Markdown 字符串解析为块级 token（`deserialize` 用到，配合 `memoize` 有用）。
+
+<API name="parseMarkdownBlocks">
+<APIParameters>
+  <APIItem name="markdown" type="string">
+    Markdown 字符串。
+  </APIItem>
+  <APIItem name="options" type="ParseMarkdownBlocksOptions" optional>
+    解析选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="ParseMarkdownBlocksOptions">
+  <APIItem name="exclude" type="string[]" optional>
+    要排除的 token 类型（如 'space'）。默认：`['space']`。
+  </APIItem>
+  <APIItem name="trim" type="boolean" optional>
+    是否裁剪输入末尾空白。默认：`true`。
+  </APIItem>
+</APIOptions>
+<APIReturns type="Token[]">
+  含原始 Markdown 的 token 数组。
+</APIReturns>
+</API>
+
+## 示例
+
+<Steps>
+
+### 使用 remark 插件（GFM）
+
+添加对 GitHub Flavored Markdown（表格、删除线、任务列表、自动链接等）的支持。
+
+**插件配置：**
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from '@udecode/plate/react';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+import remarkGfm from 'remark-gfm';
+// 导入 GFM 元素的 Plate 插件
+import { TablePlugin } from '@udecode/plate-table/react';
+import { TodoListPlugin } from '@udecode/plate-list/react'; // 任务列表插件
+import { StrikethroughPlugin } from '@udecode/plate-basic-marks/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    TablePlugin,
+    TodoListPlugin, // 或你的任务列表插件
+    StrikethroughPlugin,
+    LinkPlugin,
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkGfm],
+      },
+    }),
+  ],
+});
+```
+
+**用法：**
+```tsx
+const markdown = `
+A table:
+
+| a | b |
+| - | - |
+
+~~Strikethrough~~
+
+- [x] Task list item
+
+Visit https://platejs.org
+`;
+
+// 假设 `editor` 是已配置的 Plate 编辑器实例
+const slateValue = editor.api.markdown.deserialize(markdown);
+// editor.tf.setValue(slateValue); // 设置编辑器内容
+
+const markdownOutput = editor.api.markdown.serialize();
+// markdownOutput 会包含 GFM 语法
+```
+
+### 自定义渲染（语法高亮）
+
+本例展示两种方式：自定义渲染组件（常用于 UI 变更）和自定义转换规则（高级用法，改变 Slate 结构）。
+
+**背景：**
+-   `@udecode/plate-markdown` 会将 Markdown 的代码块（如 \`\`\`js ... \`\`\`）转换为 Slate 的 `code_block` 元素，子节点为 `code_line`。
+-   Plate 的 `CodeBlockElement`（通常来自 `@udecode/plate-code-block/react`）负责渲染。
+-   语法高亮通常在 `CodeBlockElement` 内用如 `lowlight`（通过 `CodeBlockPlugin`）实现。详见[代码块插件](/docs/plugins/code-block)。
+
+**方式 1：自定义渲染组件（推荐 UI 变更）**
+
+如需更改代码块外观，自定义 `code_block` 插件 key 的组件。
+
+```tsx title="components/my-editor.tsx"
+import { createPlateEditor } from '@udecode/plate/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react'; // 主插件
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { MyCustomCodeBlockElement } from './my-custom-code-block'; // 你的自定义组件
+
+const editor = createPlateEditor({
+  plugins: [
+    CodeBlockPlugin, // 结构/逻辑基础插件
+    MarkdownPlugin,  // Markdown 转换
+    // ...其他插件
+  ],
+  components: {
+    [CodeBlockPlugin.key]: MyCustomCodeBlockElement,
+    // 如需自定义 code_line、code_syntax 组件，需一并配置
+  },
+});
+// MyCustomCodeBlockElement.tsx 负责自定义渲染（如用 react-syntax-highlighter），消费 PlateElement 的 props。
+```
+详见[代码块插件文档](/docs/plugins/code-block)。
+
+**方式 2：自定义转换规则（高级 - 改变 Slate 结构）**
+
+如需根本改变代码块的 Slate JSON（如将代码存为单一字符串属性），可重写 `deserialize` 规则。
+
+```tsx title="lib/plate-editor.ts"
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+
+MarkdownPlugin.configure({
+  options: {
+    rules: {
+      // 重写 mdast 的 'code' 类型反序列化
+      code: {
+        deserialize: (mdastNode, deco, options) => {
+          return {
+            type: CodeBlockPlugin.key, // Plate 类型
+            lang: mdastNode.lang ?? undefined,
+            rawCode: mdastNode.value || '', // 直接存储原始代码
+            children: [{ text: '' }], // Slate Element 需有 text 子节点
+          };
+        },
+      },
+      // 还需自定义 `serialize` 规则，将 `rawCode` 转回 mdast 'code' 节点
+      [CodeBlockPlugin.key]: { // 假设 key 为 'code_block'
+          serialize: (slateNode, options) => {
+             return {
+                type: 'code',
+                lang: slateNode.lang,
+                value: slateNode.rawCode,
+             };
+          },
+      },
+    },
+    // remarkPlugins: [...]
+  },
+});
+// 你的自定义渲染组件需从 `rawCode` 属性读取代码。
+```
+根据需求选择 UI 变更（方式 1）或数据结构变更（方式 2）。
+
+### 使用 remark-math 支持数学公式
+
+启用 TeX 数学语法（`$inline$`、`$$block$$`）。
+
+**插件配置：**
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from '@udecode/plate/react';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+import remarkMath from 'remark-math';
+// 导入 Plate 数学插件
+import { MathPlugin } from '@udecode/plate-math/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    MathPlugin, // 渲染公式
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkMath],
+        // 默认规则已支持 'math' 和 'inlineMath' 类型
+      },
+    }),
+  ],
+});
+```
+
+**用法：**
+```tsx
+const markdown = `
+Inline math: $E=mc^2$
+
+Block math:
+$$
+\\int_a^b f(x) dx = F(b) - F(a)
+$$
+`;
+
+// 假设 `editor` 是已配置的 Plate 编辑器实例
+const slateValue = editor.api.markdown.deserialize(markdown);
+// slateValue 会包含 'inline_equation' 和 'equation' 节点
+
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+// markdownOutput 会包含 $...$ 和 $$...$$ 语法
+```
+
+</Steps>
+
+## remark 插件
+
+`@udecode/plate-markdown` 基于 [unified][github-unified] / [remark][github-remark] 生态。可通过 `MarkdownPlugin.configure` 的 `remarkPlugins` 选项扩展能力。这些插件操作 [mdast (Markdown 抽象语法树)][github-mdast]。
+
+**插件查找：**
+-   [remark 插件列表][github-remark-plugins]（官方）
+-   [`remark-plugin` 主题][github-topic-remark-plugin]
+-   [Awesome Remark][github-awesome-remark]
+
+**常见用途：**
+-   **语法扩展：** `remark-gfm`（表格等）、`remark-math`（TeX）、`remark-frontmatter`、`remark-mdx`。
+-   **Lint/格式化：** `remark-lint`（通常为独立工具）。
+-   **自定义转换：** 自定义插件修改 mdast。
+
+<Callout type="info" title="remark vs. rehype">
+  Plate 组件（如 `TableElement`、`CodeBlockElement`）渲染 Slate JSON。`remarkPlugins` 修改 Markdown AST。与部分渲染器不同，rehypePlugins（HTML AST）通常无需用于 Plate 渲染，但可在 remark 流程中用于复杂 HTML 转换（如配合 `rehype-raw`）。
+</Callout>
+
+## 语法支持
+
+`@udecode/plate-markdown` 使用 [`remark-parse`][github-remark-parse]，遵循 [CommonMark][commonmark-spec]。可通过 `remarkPlugins` 启用 GFM 或其他语法。
+
+-   **Markdown 学习：** [CommonMark 帮助][commonmark-help]
+-   **GFM 规范：** [GitHub Flavored Markdown Spec][gfm-spec]
+
+## 架构概览
+
+`@udecode/plate-markdown` 通过 unified/remark 生态桥接 Markdown 字符串与 Plate 编辑器格式。
+
+```
+                                             @udecode/plate-markdown
+          +--------------------------------------------------------------------------------------------+
+          |                                                                                            |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |  |           |        |                |        |               |      |           |       |
+ markdown-+->+ remark    +-mdast->+ remark plugins +-mdast->+ mdast-to-slate+----->+   nodes   +-plate-+->react elements 
+          |  |           |        |                |        |               |      |           |       |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |       ^                                                                      |             |
+          |       |                                                                      v             |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |  |           |        |                |        |               |      |           |       |
+          |  | stringify |<-mdast-+ remark plugins |<-mdast-+ slate-to-mdast+<-----+ serialize |       |
+          |  |           |        |                |        |               |      |           |       |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |                                                                                            |
+          +--------------------------------------------------------------------------------------------+
+```
+
+**关键流程：**
+
+1.  **解析（反序列化）：**
+    -   Markdown 字符串 → `remark-parse` → mdast。
+    -   `remarkPlugins` 转换 mdast（如 `remark-gfm`）。
+    -   `mdast-to-slate` 用 `rules` 转为 Plate 节点。
+    -   Plate 通过组件系统渲染节点。
+2.  **字符串化（序列化）：**
+    -   Plate 节点 → `slate-to-mdast`（用 `rules`）→ mdast。
+    -   `remarkPlugins` 转换 mdast。
+    -   `remark-stringify` 转为 Markdown 字符串。
+
+<Callout type="note" title="与 react-markdown 对比">
+  -   **直接节点渲染：** Plate 直接通过组件渲染节点，而 `react-markdown` 通常用 rehype 将 Markdown 转为 HTML，再转为 React 元素。
+  -   **双向转换：** Plate 的 Markdown 处理器完全双向。
+  -   **富文本集成：** 节点与 Plate 编辑能力深度集成。
+  -   **插件系统：** 组件由 Plate 插件系统管理。
+</Callout>
+
+## 从 `react-markdown` 迁移
+
+迁移需将 `react-markdown` 概念映射到 Plate 架构。
+
+**主要区别：**
+1.  **渲染流程：** `react-markdown`（MD → mdast → hast → React） vs. `@udecode/plate-markdown`（MD ↔ mdast ↔ Slate JSON；Plate 组件渲染 Slate JSON）。
+2.  **组件自定义：**
+    -   `react-markdown`：`components` 属性替换 HTML 标签渲染器。
+    -   Plate：
+        -   `MarkdownPlugin` 的 `rules`：自定义 mdast ↔ Slate JSON 转换。
+        -   `createPlateEditor` 的 `components`：自定义 React 组件渲染节点。详见[附录 C](#appendix-c-components)。
+3.  **插件生态：** `@udecode/plate-markdown` 主要用 `remarkPlugins`，`rehypePlugins` 很少用。
+
+**映射关系：**
+
+| `react-markdown` 属性         | `@udecode/plate-markdown` 对应/概念                                | 说明                                                                                                                                                 |
+| :---------------------------- | :---------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `children` (string)           | 传给 `editor.api.markdown.deserialize(string)`                             | 反序列化输入，常用于 `createPlateEditor` 的 `value` 选项。                                                                             |
+| `remarkPlugins`               | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] }})`              | 直接映射，作用于 mdast。                                                                                                                    |
+| `rehypePlugins`               | 通常**无需**。用 `remarkPlugins` 扩展语法。                       | Plate 组件负责渲染。如需处理原始 HTML，可通过 `rehype-raw` 加入 `remarkPlugins`。                                                            |
+| `components={{ h1: MyH1 }}`   | `createPlateEditor({ components: { h1: MyH1 } })`         | 配置 Plate 渲染组件。key 取决于 `HeadingPlugin` 配置。                                                                        |
+| `components={{ code: MyCode }}` | 1. **转换**：`MarkdownPlugin > rules > code`。 2. **渲染**：`components: { [CodeBlockPlugin.key]: MyCode }` | `rules` 控制 mdast（`code`）到 Slate（`code_block`）的转换。`components` 控制 Slate 渲染。                                                                 |
+| `allowedElements`             | `MarkdownPlugin.configure({ options: { allowedNodes: [...] }})`              | 转换时过滤节点（mdast/Slate 类型）。                                                                                                  |
+| `disallowedElements`          | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] }})`            | 转换时过滤节点。                                                                                                                      |
+| `unwrapDisallowed`            | 无直接等价。过滤即移除节点。                                | 可用自定义 `rules` 实现 unwrap。                                                                                                          |
+| `skipHtml`                    | 默认行为会移除大部分 HTML。                                            | 如需处理原始 HTML，可通过 `rehype-raw` 加入 `remarkPlugins`。                                                                                       |
+| `urlTransform`                | 可在 `rules` 的 `link`（反序列化）或插件类型（序列化）自定义。  | 在转换规则中处理 URL。                                                                                                     |
+| `allowElement`                | `MarkdownPlugin.configure({ options: { allowNode: { ... } } })`               | 转换时基于函数过滤节点。                                                                                                         |
+
+
+## 附录 A：Markdown 中的 HTML
+
+默认情况下，`@udecode/plate-markdown` **不会**处理原始 HTML 标签以保证安全。标准 Markdown 生成的 HTML（如 `*emphasis*` → `<em>`）会被处理。
+
+如需在**可信环境**下处理原始 HTML：
+1.  **引入 `remark-mdx`：** 加入 `remarkPlugins`。
+2.  **用 `rehype-raw`：** 将 [`rehype-raw`][github-rehype-raw] 加入 `remarkPlugins`。
+3.  **配置规则：** 需为解析出的 HTML `hast` 节点配置 `rules`，映射为 Slate 结构。
+
+```tsx title="lib/plate-editor.ts"
+import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
+import rehypeRaw from 'rehype-raw';
+// import { VFile } from 'vfile'; // 如 rehype-raw 需要
+
+MarkdownPlugin.configure({
+  options: {
+    remarkPlugins: [
+      remarkMdx,
+      // 在 remark 流程中用 rehype 插件可能较复杂
+      [rehypeRaw, { /* 选项，如传递 vfile */ }],
+    ],
+    rules: {
+      // rehype-raw 解析出的 HTML 节点规则
+      element: {
+        deserialize: (mdastNode, deco, options) => {
+          // 简化示例：需根据 mdastNode.tagName 和属性处理
+          // 实际需为每个 HTML 标签单独配置
+          if (mdastNode.tagName === 'div') {
+            return {
+              type: 'html_div',
+              children: convertChildrenDeserialize(mdastNode.children, deco, options),
+            };
+          }
+          // 其他标签处理
+          return convertChildrenDeserialize(mdastNode.children, deco, options);
+        },
+      },
+      // 如需输出原始 HTML，还需配置序列化规则
+    },
+  },
+});
+```
+
+<Callout type="destructive" title="安全警告">
+  启用原始 HTML 渲染会增加 XSS 风险，若 Markdown 来源不可信，务必用 [`rehype-sanitize`][github-rehype-sanitize] 白名单过滤 HTML 元素/属性。
+</Callout>
+
+## 附录 B：自定义转换规则（`rules`）
+
+`MarkdownPlugin.configure` 的 `rules` 选项可精细控制 mdast ↔ Slate JSON 转换。`rules` 对象的 key 匹配节点类型。
+
+-   **反序列化（Markdown → Slate）：** key 为 mdast 节点类型（如 `paragraph`、`heading`、`strong`、`link`，MDX 类型如 `mdxJsxTextElement`）。`deserialize` 函数参数为 `(mdastNode, deco, options)`，返回 Slate `Descendant` 或数组。
+-   **序列化（Slate → Markdown）：** key 为 Plate 元素/文本类型（如 `p`、`h1`、`a`、`code_block`、`bold`）。`serialize` 函数参数为 `(slateNode, options)`，返回 mdast 节点。
+
+**示例：重写链接反序列化**
+```tsx title="lib/plate-editor.ts"
+MarkdownPlugin.configure({
+  options: {
+    rules: {
+      // mdast 的 'link' 类型规则
+      link: {
+        deserialize: (mdastNode, deco, options) => {
+          // 默认生成 { type: 'a', url: ..., children: [...] }
+          // 可自定义属性：
+          return {
+            type: 'a',
+            url: mdastNode.url,
+            title: mdastNode.title,
+            customProp: 'added-during-deserialize',
+            children: convertChildrenDeserialize(mdastNode.children, deco, options),
+          };
+        },
+      },
+      // Plate 的 'a' 类型（如需序列化 customProp）
+      a: {
+         serialize: (slateNode, options) => {
+           return {
+             type: 'link',
+             url: slateNode.url,
+             title: slateNode.title,
+             // customProp: slateNode.customProp, // MDX 属性？
+             children: convertNodesSerialize(slateNode.children, options),
+           };
+         },
+      },
+    },
+    // ... remarkPlugins ...
+  },
+});
+```
+
+**默认规则简表：**
+详见 [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages/markdown/src/lib/rules/defaultRules.ts)。主要转换关系：
+
+| Markdown (mdast)  | Plate 类型            | 说明                                                       |
+| :---------------- | :-------------------- | :---------------------------------------------------------- |
+| `paragraph`       | `p`                   |                                                             |
+| `heading` (depth) | `h1` - `h6`           | 根据 depth 映射。                                             |
+| `blockquote`      | `blockquote`          |                                                             |
+| `list` (ordered)  | `ol` / `p`*           | `ol`/`li`/`lic` 或带缩进属性的 `p`。              |
+| `list` (unordered)| `ul` / `p`*           | `ul`/`li`/`lic` 或带缩进属性的 `p`。              |
+| `code` (fenced)   | `code_block`          | 子节点为 `code_line`。                              |
+| `inlineCode`      | `code` (mark)         | 应用于文本。                                            |
+| `strong`          | `bold` (mark)         | 应用于文本。                                            |
+| `emphasis`        | `italic` (mark)       | 应用于文本。                                            |
+| `delete`          | `strikethrough` (mark)| 应用于文本。                                            |
+| `link`            | `a`                   |                                                             |
+| `image`           | `img`                 | 序列化时包裹在段落中。                    |
+| `thematicBreak`   | `hr`                  |                                                             |
+| `table`           | `table`               | 子节点为 `tr`。                                              |
+| `math` (block)    | `equation`            | 需 remark-math。                                     |
+| `inlineMath`      | `inline_equation`     | 需 remark-math。                                     |
+| `mdxJsxFlowElement`| *自定义*              | 需 remark-mdx 和自定义 `rules`。                   |
+| `mdxJsxTextElement`| *自定义*              | 需 remark-mdx 和自定义 `rules`。                   |
+
+* 列表转换依赖 IndentListPlugin 检测。
+
+---
+
+**默认 MDX 转换（需 `remark-mdx`）：**
+
+| MDX (mdast)           | Plate 类型                | 说明                                      |
+| :-------------------- | :------------------------ | :----------------------------------------- |
+| `<del>...</del>`      | `strikethrough` (mark)    | 也可用 `~~strikethrough~~`                |
+| `<sub>...</sub>`      | `subscript` (mark)        | H<sub>2</sub>O                             |
+| `<sup>...</sup>`      | `superscript` (mark)      | E=mc<sup>2</sup>                           |
+| `<u>...</u>`        | `underline` (mark)        | <u>下划线</u>                          |
+| `<mark>...</mark>`     | `highlight` (mark)        | <mark>高亮</mark>                   |
+| `<span style="font-family: ...">` | `fontFamily` (mark)    |                                            |
+| `<span style="font-size: ...">`   | `fontSize` (mark)       |                                            |
+| `<span style="font-weight: ...">` | `fontWeight` (mark)     |                                            |
+| `<span style="color: ...">`       | `color` (mark)          |                                            |
+| `<span style="background-color: ...">` | `backgroundColor` (mark)|                                            |
+| `<date>...</date>`      | `date`                    | 自定义 Date 元素                        |
+| `@mention`              | `mention`                 | 自定义 Mention 元素                       |
+| `<file name="..." />` | `file`                    | 自定义 File 元素                        |
+| `<audio src="..." />`   | `audio`                   | 自定义 Audio 元素                       |
+| `<video src="..." />`   | `video`                   | 自定义 Video 元素                       |
+| `<toc />`               | `toc`                     | 目录                                    |
+| `<callout>...</callout>`| `callout`                 | Callout 块                              |
+| `<column_group>...`| `column_group`            | 多列布局                      |
+| `<column>...`       | `column`                  | 单列（column_group 的一部分）       |
+
+## 附录 C：渲染组件
+
+`rules` 负责 MD ↔ Slate 转换，Plate 用 React 组件*渲染* Slate 节点。通过 `createPlateEditor` 的 `components` 选项配置。类似于 `react-markdown` 的 `components`，但在 Plate 生态内。
+
+`components` 的 key 通常为 Plate 插件 key（如 `ParagraphPlugin.key`、`CodeBlockPlugin.key`）或默认 Slate 类型（如 `p`、`h1`）。
+
+**示例：**
+```tsx title="components/my-editor.tsx"
+import { createPlateEditor, PlateLeaf, withProps } from '@udecode/plate/react';
+import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { ParagraphElement } from '@/components/ui/paragraph-element';
+import { CodeBlockElement } from '@/components/ui/code-block-element';
+// marks 可用 PlateLeaf 或自定义 leaf 组件
+// import { CodeLeaf } from '@/components/ui/code-leaf';
+
+const editor = createPlateEditor({
+  plugins: [BoldPlugin, CodeBlockPlugin /* ... */],
+  components: {
+    [ParagraphPlugin.key]: ParagraphElement,
+    [CodeBlockPlugin.key]: CodeBlockElement,
+    [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
+    // 如需代码块内语法高亮：
+    // [CodeBlockPlugin.keys.syntax]: CodeLeaf, // 若 CodeBlockPlugin 提供该 key
+  },
+});
+```
+详见[插件组件](/docs/plugin-components)。
+
+## 附录 D：`PlateMarkdown` 组件（只读展示）
+
+如需类似 `react-markdown` 的只读组件：
+
+```tsx title="components/plate-markdown.tsx"
+import React, { useEffect } from 'react';
+import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+// 导入常用 Markdown 功能的 Plate 插件
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+// ...其他如 BlockquotePlugin、CodeBlockPlugin、ListPlugin、BoldPlugin、ItalicPlugin 等
+
+export interface PlateMarkdownProps {
+  children: string; // Markdown 内容
+  remarkPlugins?: any[];
+  components?: Record<string, React.ComponentType<any>>;
+  className?: string;
+}
+
+export function PlateMarkdown({
+  children,
+  remarkPlugins = [],
+  components = {},
+  className,
+}: PlateMarkdownProps) {
+  const editor = usePlateEditor({
+    plugins: [
+      HeadingPlugin, /* ...其他插件 ... */
+      MarkdownPlugin.configure({ options: { remarkPlugins } }),
+    ],
+    components,
+  });
+
+  useEffect(() => {
+    editor.tf.reset();
+    editor.tf.setValue(
+      editor.getApi(MarkdownPlugin).markdown.deserialize(children)
+    );
+  }, [children, editor, remarkPlugins]);
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent readOnly className={className} />
+    </Plate>
+  );
+}
+
+// 用法示例：
+// const markdownString = "# Hello\nThis is *Markdown*.";
+// <PlateMarkdown className="prose dark:prose-invert">
+//   {markdownString}
+// </PlateMarkdown>
+```
+
+<Callout type="info" title="初始值">
+  `PlateMarkdown` 组件为**只读**视图。如需完整编辑功能，见[安装指南](/docs/installation)。
+</Callout>
+
+## 安全性说明
+
+`@udecode/plate-markdown` 优先保证安全，将 Markdown 转为结构化 Slate 格式，避免直接渲染 HTML。但安全性还取决于：
+
+-   **自定义 `rules`：** 确保 `deserialize` 规则不会引入不安全数据。
+-   **`remarkPlugins`：** 审查第三方 remark 插件的安全风险。
+-   **原始 HTML 处理：** 若用 `rehype-raw`，务必配合 [`rehype-sanitize`][github-rehype-sanitize] 过滤不可信 Markdown。
+-   **插件责任：** 链接（[`isUrl`](/docs/plugins/link#linkplugin)）或媒体嵌入（[`parseMediaUrl`](/docs/plugins/media#parsemediaurl)）插件需校验 URL。
+
+**建议：** 对不可信 Markdown 输入务必谨慎。如启用复杂特性或原始 HTML，务必做安全过滤。
+
+## 相关链接
+
+-   **[remark][github-remark]：** Markdown 处理器。
+-   **[unified][github-unified]：** 核心处理引擎。
+-   **[MDX][github-mdx]：** Markdown 中的 JSX。
+-   **[react-markdown][github-react-markdown]：** 另一个 React Markdown 组件。
+-   **[remark-slate-transformer][github-remark-slate-transformer]：** [inokawa](https://github.com/inokawa) 的 mdast ↔ Slate 转换初步实现。
+
+[commonmark-help]: https://commonmark.org/help/
+[commonmark-spec]: https://spec.commonmark.org/
+[gfm-spec]: https://github.github.com/gfm/
+[github-awesome-remark]: https://github.com/remarkjs/awesome-remark
+[github-mdast]: https://github.com/syntax-tree/mdast
+[github-mdx]: https://mdxjs.com/
+[github-react-markdown]: https://github.com/remarkjs/react-markdown
+[github-remark-slate-transformer]: https://github.com/inokawa/remark-slate-transformer
+[github-rehype-raw]: https://github.com/rehypejs/rehype-raw
+[github-rehype-sanitize]: https://github.com/rehypejs/rehype-sanitize
+[github-remark]: https://github.com/remarkjs/remark
+[github-remark-gfm]: https://github.com/remarkjs/remark-gfm
+[github-remark-parse]: https://github.com/remarkjs/remark/tree/main/packages/remark-parse
+[github-remark-plugins]: https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins
+[github-remark-stringify]: https://github.com/remarkjs/remark/tree/main/packages/remark-stringify
+[github-topic-remark-plugin]: https://github.com/topics/remark-plugin
+[github-unified]: https://github.com/unifiedjs/unified

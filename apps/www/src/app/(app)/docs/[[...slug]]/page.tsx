@@ -43,13 +43,25 @@ async function getDocFromParams({ params, searchParams }: DocPageProps) {
 
   let slug = slugParam?.join('/') || '';
 
-  // Only prepend locale for Chinese, English docs are at root level
-  if (locale) {
-    slug = `docs-18n/${locale}${slug ? '/' + slug : ''}`;
-  } else {
-    slug = `docs${slug ? '/' + slug : ''}`;
+  // For Chinese docs, look for .cn.mdx files
+  if (locale === 'cn') {
+    // First try to find the Chinese version with .cn.mdx
+    const cnDoc = allDocs.find((doc) => {
+      return (
+        doc.slugAsParams === `docs/${slug || 'index'}.cn` &&
+        doc._raw.sourceFileName?.endsWith('.cn.mdx')
+      );
+    });
+
+    if (cnDoc) {
+      const path = slugParam?.join('/') || '';
+      cnDoc.slug = '/docs' + (path ? '/' + path : '') + '?locale=cn';
+      return cnDoc;
+    }
   }
 
+  // Default behavior for non-Chinese or fallback
+  slug = `docs${slug ? '/' + slug : ''}`;
   const doc = allDocs.find((doc) => doc.slugAsParams === slug);
 
   if (!doc) {
@@ -137,9 +149,17 @@ export async function generateMetadata({
 const registryNames = new Set(registry.items.map((item) => item.name));
 
 export function generateStaticParams() {
-  const docs = allDocs.map((doc) => ({
-    slug: doc.slugAsParams.split('/'),
-  }));
+  const docs = allDocs
+    .filter((doc) => {
+      // Include all non-Chinese docs and Chinese docs ending with .cn.mdx
+      return (
+        !doc._raw.sourceFileName?.endsWith('.cn.mdx') ||
+        doc.slugAsParams.startsWith('docs/')
+      );
+    })
+    .map((doc) => ({
+      slug: doc.slugAsParams.split('/'),
+    }));
 
   return docs;
 }

@@ -5,8 +5,8 @@
   },
   "content": [
     {
-      "source": "apps/www/src/registry/docs/*.mdx",
-      "target": "apps/www/src/registry/docs-18n/cn/*.mdx"
+      "source": "content/docs/*.mdx",
+      "target": "content/docs/*.cn.mdx"
     }
   ]
 }
