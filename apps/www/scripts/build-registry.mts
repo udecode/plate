@@ -15,17 +15,17 @@ import { registryInit } from '@/registry/registry';
 import { registryStyles } from '@/registry/registry-styles';
 import { buildDocsRegistry } from './build-docs-registry.mts';
 
+const HOMEPAGE = 'https://platejs.org';
+const NAME = 'plate';
+const BASE_URL = 'src/';
+
 const isDev = process.env.NODE_ENV === 'development';
-
-const url = isDev ? 'http://localhost:3000/rd' : 'https://platejs.org/r';
-
-const publicTarget = isDev
-  ? 'public/rd/registry.json'
-  : 'public/r/registry.json';
+const REGISTRY_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
+const TARGET = isDev ? 'public/rd/registry.json' : 'public/r/registry.json';
 
 const registry: Registry = {
-  name: 'plate',
-  homepage: 'https://platejs.org',
+  name: NAME,
+  homepage: HOMEPAGE,
   items: z.array(registryItemSchema).parse(
     [
       ...registryInit,
@@ -39,7 +39,9 @@ const registry: Registry = {
     ].map((item) => ({
       ...item,
       registryDependencies: item.registryDependencies?.map((dep) =>
-        dep.startsWith('shadcn/') ? dep.split('shadcn/')[1] : `${url}/${dep}`
+        dep.startsWith('shadcn/')
+          ? dep.split('shadcn/')[1]
+          : `${REGISTRY_URL}/${dep}`
       ),
     }))
   ),
@@ -72,7 +74,7 @@ export const Index: Record<string, any> = {`;
     type: "${item.type}",
     registryDependencies: ${JSON.stringify(item.registryDependencies)},
     files: [${item.files?.map((file) => {
-      const filePath = `src/registry/${typeof file === 'string' ? file : file.path}`;
+      const filePath = `${BASE_URL}registry/${typeof file === 'string' ? file : file.path}`;
       const resolvedFilePath = path.resolve(filePath);
       return typeof file === 'string'
         ? `"${resolvedFilePath}"`
@@ -99,11 +101,33 @@ export const Index: Record<string, any> = {`;
   }`;
 
   // Write style index.
-  rimraf.sync(path.join(process.cwd(), 'src/__registry__/index.tsx'));
+  rimraf.sync(path.join(process.cwd(), `${BASE_URL}__registry__/index.tsx`));
   await fs.writeFile(
-    path.join(process.cwd(), 'src/__registry__/index.tsx'),
+    path.join(process.cwd(), `${BASE_URL}__registry__/index.tsx`),
     index
   );
+}
+
+function sanitizeRegistry(registry: Registry) {
+  return {
+    ...registry,
+    items: registry.items
+      // Filter internal examples.
+      .filter((item) => item.meta?.registry !== false)
+      .map((item) => {
+        const files = item.files?.map((file) => {
+          return {
+            ...file,
+            path: `${BASE_URL}registry/${file.path}`,
+          };
+        });
+
+        return {
+          ...item,
+          files,
+        };
+      }),
+  };
 }
 
 async function buildRegistryJsonFile() {
@@ -111,15 +135,15 @@ async function buildRegistryJsonFile() {
   const fixedRegistry = sanitizeRegistry(registry);
 
   // 2. Write the content of the registry to `registry.json` and public folder
-  rimraf.sync(path.join(process.cwd(), publicTarget));
+  rimraf.sync(path.join(process.cwd(), TARGET));
 
   const registryJson = JSON.stringify(fixedRegistry, null, 2);
 
   // Create directories if they don't exist
-  const publicTargetDir = path.dirname(path.join(process.cwd(), publicTarget));
+  const publicTargetDir = path.dirname(path.join(process.cwd(), TARGET));
 
   await fs.mkdir(publicTargetDir, { recursive: true });
-  await fs.writeFile(path.join(process.cwd(), publicTarget), registryJson);
+  await fs.writeFile(path.join(process.cwd(), TARGET), registryJson);
 }
 
 async function buildRegistry() {
@@ -138,28 +162,6 @@ async function buildRegistry() {
   });
 }
 
-function sanitizeRegistry(registry: Registry) {
-  return {
-    ...registry,
-    items: registry.items
-      // Filter internal examples.
-      .filter((item) => item.meta?.registry !== false)
-      .map((item) => {
-        const files = item.files?.map((file) => {
-          return {
-            ...file,
-            path: `src/registry/${file.path}`,
-          };
-        });
-
-        return {
-          ...item,
-          files,
-        };
-      }),
-  };
-}
-
 try {
   if (!isDev) {
     console.info('🗂️ Building registry/__index__.tsx...');
@@ -172,7 +174,7 @@ try {
   console.info('📖 Building docs.json...');
   await buildDocsRegistry();
 
-  console.info(`🏗️ Building ${publicTarget.replace('/registry.json', '')}...`);
+  console.info(`🏗️ Building ${TARGET.replace('/registry.json', '')}...`);
   await buildRegistry();
 } catch (error) {
   console.error(error);
