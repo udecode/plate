@@ -130,7 +130,7 @@ export function DocsNav({ config }: { config: DocsConfig }) {
                 </div>
               </AccordionTrigger>
               <Suspense fallback={null}>
-                <AccordionContent className="mt-1">
+                <AccordionContent className="pt-0 pb-2">
                   {item?.items?.length && (
                     <DocsNavItems items={item.items} pathname={pathname} />
                   )}

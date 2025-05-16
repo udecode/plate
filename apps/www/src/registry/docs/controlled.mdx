@@ -13,7 +13,7 @@ Implementing a fully controlled editor value in Plate (and Slate) is complex due
 
 Given these challenges, it's generally recommended to use Plate as an uncontrolled input. However, if you need to make external changes to the editor's content, you can use `editor.tf.setValue(value)` function.
 
-<Callout className="my-4">
+<Callout type="warning" title="Performance Consideration">
   Using `editor.tf.setValue` will re-render all nodes on each call, so it
   should be used carefully and sparingly. It may impact performance if used
   frequently or with large documents.

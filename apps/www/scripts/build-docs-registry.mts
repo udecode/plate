@@ -1,17 +1,20 @@
-import type { RegistryItem } from 'shadcn/registry';
+import type { SidebarNavItem } from '@/types/nav';
+import type { Registry, RegistryItem } from 'shadcn/registry';
 
 import matter from 'gray-matter';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { rimraf } from 'rimraf';
 
+import { docsConfig } from '../src/config/docs';
+
 const isDev = process.env.NODE_ENV === 'development';
 const url = isDev ? 'http://localhost:3000/rd' : 'https://platejs.org/r';
 
 const DOCS_DIR = path.join(process.cwd(), 'src/registry/docs');
-const DOCS_TARGET = isDev
-  ? 'public/rd/registry-docs.json'
-  : 'public/r/registry-docs.json';
+const FILE_TARGET = 'registry-docs.json';
+const FOLDER_TARGET = isDev ? 'public/rd' : 'public/r';
+const TARGET = `${FOLDER_TARGET}/${FILE_TARGET}`;
 
 async function getFiles(dir: string): Promise<string[]> {
   const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -47,12 +50,78 @@ async function getFrontmatter(filePath: string) {
   };
 }
 
+function transformNavToFumadocs(
+  nav: SidebarNavItem[]
+): Record<string, { pages: string[]; title: string }> {
+  const result: Record<string, { pages: string[]; title: string }> = {};
+
+  nav.forEach((item) => {
+    if (!item.items || !item.title) return;
+
+    // Convert title to folder name: "Get Started" -> "get-started"
+    const folderName = item.title.toLowerCase().replace(/\s+/g, '-');
+
+    result[folderName] = {
+      pages: item.items.map((subItem) => {
+        // Convert href to page name: "/docs/installation/next" -> "next"
+        // or "/docs/installation" -> "index"
+        if (!subItem.href) return 'index';
+        const pagePath = subItem.href.split('/').pop();
+        return pagePath === folderName ? 'index' : pagePath || 'index';
+      }),
+      title: item.title,
+    };
+  });
+
+  return result;
+}
+
 export async function buildDocsRegistry() {
-  rimraf.sync(path.join(process.cwd(), DOCS_TARGET));
+  rimraf.sync(path.join(process.cwd(), TARGET));
 
   const files = await getFiles(DOCS_DIR);
 
-  const registry = await Promise.all(
+  // Transform sidebarNav into fumadocs structure
+  const docsStructure = transformNavToFumadocs(docsConfig.sidebarNav);
+
+  // Create meta.json content
+  const metaContent = {
+    description: 'Rich-text editor framework',
+    pages: Object.keys(docsStructure),
+    root: true,
+    title: 'Plate',
+  };
+
+  const docsMetaJson: RegistryItem = {
+    description: 'Rich-text editor framework',
+    files: [
+      {
+        content: JSON.stringify(metaContent, null, 2),
+        path: 'docs/content/docs/plate/meta.json',
+        target: 'docs/content/docs/plate/meta.json',
+        type: 'registry:file' as const,
+      },
+      // Add meta.json for each section
+      ...Object.entries(docsStructure).map(([folder, { pages, title }]) => ({
+        content: JSON.stringify(
+          {
+            pages,
+            title,
+          },
+          null,
+          2
+        ),
+        path: `docs/content/docs/plate/${folder}/meta.json`,
+        target: `docs/content/docs/plate/${folder}/meta.json`,
+        type: 'registry:file' as const,
+      })),
+    ],
+    name: 'docs-meta',
+    title: 'Fumadocs Meta',
+    type: 'registry:file',
+  };
+
+  const items = await Promise.all(
     files.map(async (filePath) => {
       const relativePath = path.relative(DOCS_DIR, filePath);
       const name = `docs-${relativePath
@@ -68,7 +137,7 @@ export async function buildDocsRegistry() {
         files: [
           {
             path: `src/registry/docs/${relativePath}`,
-            target: `docs/content/docs/${relativePath}`,
+            target: `docs/content/docs/plate/${relativePath}`,
             type: 'registry:file',
           },
         ],
@@ -79,27 +148,33 @@ export async function buildDocsRegistry() {
     })
   );
 
-  // Create the main docs item that includes all other items as dependencies
-  const docsItem: RegistryItem = {
-    description: 'All documentation files for Plate',
-    files: [],
-    name: 'docs',
-    registryDependencies: registry.map((item) => `${url}/${item.name}`),
-    title: 'Documentation',
-    type: 'registry:file',
+  const registry: Registry = {
+    homepage: 'https://platejs.org',
+    items: [
+      {
+        description: 'All documentation files for Plate',
+        files: [],
+        name: 'docs',
+        registryDependencies: [
+          `${url}/docs-meta`,
+          ...items.map((item) => `${url}/${item.name}`),
+        ],
+        title: 'Documentation',
+        type: 'registry:file',
+      },
+      ...items,
+    ],
+    name: 'plate-docs',
   };
 
-  const docsJson = JSON.stringify(
-    {
-      homepage: 'https://platejs.org',
-      items: [docsItem, ...registry],
-      name: 'plate-docs',
-    },
-    null,
-    2
-  );
+  const docsJson = JSON.stringify(registry, null, 2);
 
-  const docsTargetDir = path.dirname(path.join(process.cwd(), DOCS_TARGET));
+  const docsTargetDir = path.dirname(path.join(process.cwd(), TARGET));
   await fs.mkdir(docsTargetDir, { recursive: true });
-  await fs.writeFile(path.join(process.cwd(), DOCS_TARGET), docsJson);
+  await fs.writeFile(path.join(process.cwd(), TARGET), docsJson);
+
+  await fs.writeFile(
+    path.join(FOLDER_TARGET, 'docs-meta.json'),
+    JSON.stringify(docsMetaJson, null, 2)
+  );
 }

@@ -100,7 +100,7 @@ async function getFullHtmlDocument() {
 }
 ```
 
-<Callout type="info">
+<Callout type="info" title="Static Output Only">
   The serialization process converts Slate nodes to static HTML. Interactive features (React event handlers, client-side hooks) or components relying on browser APIs will not function in the serialized output.
 </Callout>
 
@@ -205,7 +205,7 @@ Each Plate plugin can define rules for how it interprets specific HTML tags, sty
 | `style="text-align: ..."`                                | [`AlignPlugin`](/docs/alignment)           | Sets `align` property on block elements.                                 |
 | `style="line-height: ..."`                               | [`LineHeightPlugin`](/docs/line-height)      | Sets `lineHeight` property on block elements.                            |
 
-<Callout type="note">
+<Callout type="note" title="Plugin Configuration">
   The exact Plate type (e.g., `ParagraphPlugin.key` vs. `'p'`) depends on how plugins are configured. The table shows typical associations. Ensure the corresponding Plate plugins are included in your editor for these rules to apply.
 </Callout>
 

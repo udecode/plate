@@ -6385,11 +6385,11 @@ __metadata:
   dependencies:
     "@udecode/plate-combobox": "npm:48.0.0"
     "@udecode/plate-markdown": "npm:48.0.2"
-    "@udecode/plate-selection": "npm:48.0.0"
+    "@udecode/plate-selection": "npm:48.0.5"
     ai: "npm:4.3.11"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=48.0.0"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6401,7 +6401,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6414,7 +6414,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6429,7 +6429,7 @@ __metadata:
     "@udecode/plate-code-block": "npm:48.0.0"
     "@udecode/plate-heading": "npm:48.0.0"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6441,7 +6441,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6453,7 +6453,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6465,7 +6465,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6477,7 +6477,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6490,7 +6490,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     react-textarea-autosize: "npm:^8.5.9"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6503,7 +6503,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lowlight: "npm:^3.3.0"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6515,7 +6515,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6528,13 +6528,13 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-core@npm:48.0.3, @udecode/plate-core@workspace:packages/core":
+"@udecode/plate-core@npm:48.0.5, @udecode/plate-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-core@workspace:packages/core"
   dependencies:
@@ -6571,7 +6571,7 @@ __metadata:
     "@udecode/plate-table": "npm:48.0.0"
     papaparse: "npm:^5.5.2"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6583,7 +6583,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6595,7 +6595,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6609,7 +6609,7 @@ __metadata:
     diff-match-patch-ts: "npm:^0.6.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6623,7 +6623,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     raf: "npm:^3.4.1"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dnd: ">=14.0.0"
     react-dnd-html5-backend: ">=14.0.0"
@@ -6643,7 +6643,7 @@ __metadata:
     "@udecode/plate-table": "npm:48.0.0"
     validator: "npm:^13.15.0"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6658,7 +6658,7 @@ __metadata:
     "@udecode/plate-combobox": "npm:48.0.0"
   peerDependencies:
     "@emoji-mart/data": ">=1.2.0"
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6671,7 +6671,7 @@ __metadata:
     "@excalidraw/excalidraw": "npm:0.16.4"
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6683,7 +6683,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6697,7 +6697,7 @@ __metadata:
     "@floating-ui/react": "npm:^0.27.8"
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6710,7 +6710,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6722,7 +6722,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6734,7 +6734,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6746,7 +6746,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6761,7 +6761,7 @@ __metadata:
     "@udecode/plate-list": "npm:48.0.0"
     clsx: "npm:^2.1.1"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6773,7 +6773,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6786,7 +6786,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     juice: "npm:^11.0.1"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6798,7 +6798,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6810,7 +6810,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6822,7 +6822,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6836,7 +6836,7 @@ __metadata:
     "@udecode/plate-floating": "npm:48.0.0"
     "@udecode/plate-normalizers": "npm:48.0.0"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6850,7 +6850,7 @@ __metadata:
     "@udecode/plate-reset-node": "npm:48.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6871,7 +6871,7 @@ __metadata:
     remark-stringify: "npm:^11.0.0"
     unified: "npm:^11.0.5"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6885,7 +6885,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     katex: "npm:0.16.22"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6898,7 +6898,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     js-video-url-parser: "npm:^0.5.1"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6911,7 +6911,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     "@udecode/plate-combobox": "npm:48.0.0"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6924,7 +6924,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6937,7 +6937,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6950,7 +6950,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
   peerDependencies:
     "@playwright/test": ">=1.42.1"
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6962,7 +6962,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6974,7 +6974,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -6986,20 +6986,20 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:48.0.0, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:48.0.5, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
     "@udecode/plate": "workspace:^"
     copy-to-clipboard: "npm:^3.3.3"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -7012,7 +7012,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     "@udecode/plate-combobox": "npm:48.0.0"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -7026,7 +7026,7 @@ __metadata:
     "@udecode/plate-diff": "npm:48.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -7039,7 +7039,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     tabbable: "npm:^6.2.0"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -7054,7 +7054,7 @@ __metadata:
     "@udecode/plate-resizable": "npm:48.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -7066,7 +7066,7 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -7090,7 +7090,7 @@ __metadata:
     "@udecode/plate-node-id": "npm:48.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
@@ -7102,17 +7102,17 @@ __metadata:
   dependencies:
     "@udecode/plate": "workspace:^"
   peerDependencies:
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-utils@npm:48.0.3, @udecode/plate-utils@workspace:packages/plate-utils":
+"@udecode/plate-utils@npm:48.0.5, @udecode/plate-utils@workspace:packages/plate-utils":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-utils@workspace:packages/plate-utils"
   dependencies:
-    "@udecode/plate-core": "npm:48.0.3"
+    "@udecode/plate-core": "npm:48.0.5"
     "@udecode/react-utils": "npm:47.3.1"
     "@udecode/slate": "npm:48.0.1"
     "@udecode/utils": "npm:47.2.7"
@@ -7133,7 +7133,7 @@ __metadata:
     yjs: "npm:^13.6.23"
   peerDependencies:
     "@hocuspocus/provider": ^2.15.2
-    "@udecode/plate": ">=48.0.3"
+    "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
     y-webrtc: 10.3.0
@@ -7144,8 +7144,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
-    "@udecode/plate-core": "npm:48.0.3"
-    "@udecode/plate-utils": "npm:48.0.3"
+    "@udecode/plate-core": "npm:48.0.5"
+    "@udecode/plate-utils": "npm:48.0.5"
     "@udecode/react-hotkeys": "npm:37.0.0"
     "@udecode/react-utils": "npm:47.3.1"
     "@udecode/slate": "npm:48.0.1"
@@ -17377,6 +17377,7 @@ __metadata:
     rimraf: "npm:6.0.1"
     slate-test-utils: "npm:1.3.2"
     tailwindcss: "npm:4.1.4"
+    tinyglobby: "npm:0.2.13"
     ts-jest: "npm:29.3.2"
     tsup: "npm:8.4.0"
     turbo: "npm:2.5.2"
@@ -20533,7 +20534,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinyglobby@npm:^0.2.11, tinyglobby@npm:^0.2.13":
+"tinyglobby@npm:0.2.13, tinyglobby@npm:^0.2.11, tinyglobby@npm:^0.2.13":
   version: 0.2.13
   resolution: "tinyglobby@npm:0.2.13"
   dependencies:

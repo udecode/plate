@@ -245,8 +245,7 @@ const CustomNormalizerPlugin = createPlatePlugin({
 });
 ```
 
-<Callout>
-The difference between `extendEditor` and `overrideEditor`:
+<Callout type="info" title="Difference between extendEditor and overrideEditor">
 - Use `extendEditor` when integrating legacy Slate plugins like `withYjs` that need direct editor mutation. There is only one `extendEditor` per plugin.
 - Prefer using `overrideEditor` for modifying editor behavior as it has single purpose responsibility and better type safety. It can be called multiple times to layer different overrides.
 </Callout>

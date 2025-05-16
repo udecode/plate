@@ -284,7 +284,11 @@ function Accordion({
 }
 
 const calloutVariants = cva(
-  'my-4 flex gap-2 rounded-lg border border-s-2 bg-muted p-3 text-sm text-foreground/80 shadow-md first:mt-0 **:[[data-slot="mdx-link"]]:hover:underline-offset-0',
+  cn(
+    'my-4 flex gap-2 rounded-lg border border-s-2 bg-neutral-50 p-3 text-sm shadow-md first:mt-0 dark:bg-neutral-900',
+    '*:[svg]:text-neutral-50 dark:*:[svg]:text-neutral-900',
+    '**:[[data-slot="mdx-link"]]:hover:after:bottom-0'
+  ),
   {
     variants: {
       type: {
@@ -310,10 +314,18 @@ function Callout({
   icon?: ReactNode;
   title?: ReactNode;
   /** @defaultValue info */
-  type?: 'error' | 'info' | 'note' | 'success' | 'warn' | 'warning';
+  type?:
+    | 'destructive'
+    | 'error'
+    | 'info'
+    | 'note'
+    | 'success'
+    | 'warn'
+    | 'warning';
 }) {
   if (type === 'warning') type = 'warn';
   if (type === 'note') type = 'info';
+  if (type === 'destructive') type = 'error';
 
   return (
     <div
@@ -327,14 +339,14 @@ function Callout({
     >
       {icon ??
         {
-          error: <CircleX className="size-5 fill-red-500 text-muted" />,
-          info: <Info className="size-5 fill-blue-500 text-muted" />,
-          success: <CircleCheck className="size-5 fill-green-500 text-muted" />,
-          warn: <TriangleAlert className="size-5 fill-orange-500 text-muted" />,
+          error: <CircleX className="size-5 fill-red-500" />,
+          info: <Info className="size-5 fill-blue-500" />,
+          success: <CircleCheck className="size-5 fill-green-500" />,
+          warn: <TriangleAlert className="size-5 fill-orange-500" />,
         }[type]}
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         {title ? <p className="!my-0 font-medium">{title}</p> : null}
-        <div className="prose-no-margin text-foreground/80 **:leading-[calc(1.25/.875)] empty:hidden">
+        <div className="prose-no-margin text-neutral-600 **:leading-[calc(1.25/.875)] empty:hidden dark:text-neutral-400">
           {children}
         </div>
       </div>

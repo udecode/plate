@@ -34,14 +34,10 @@ This exposes various utilities on `window.platePlaywrightAdapter`.
 
 ### Get Editor Handle
 
-<Callout>
+<Callout type="info" title="What is an editor handle?">
+  Most Playwright test code runs in a non-browser environment. Interacting with a Plate editor requires running JavaScript inside the browser context using Playwright's `evaluate` and `evaluateHandle` [APIs](https://playwright.dev/docs/evaluating).
 
-**What is an editor handle?**
-
-Most Playwright test code runs in a non-browser environment. Interacting with a Plate editor requires running JavaScript inside the browser context using Playwright's `evaluate` and `evaluateHandle` [APIs](https://playwright.dev/docs/evaluating).
-
-A [handle](https://playwright.dev/docs/handles) references a JavaScript object within the browser. The editor handle refers to the `editor` instance of your Plate editor (`JSHandle<PlateEditor>`).
-
+  A [handle](https://playwright.dev/docs/handles) references a JavaScript object within the browser. The editor handle refers to the `editor` instance of your Plate editor (`JSHandle<PlateEditor>`).
 </Callout>
 
 In your Playwright test, get the editor handle before interacting with Plate:

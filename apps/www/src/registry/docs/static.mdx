@@ -23,7 +23,7 @@ It's a core part of [`serializeHtml`](/docs/api/core/plate-plugin#serializehtml)
 -   Optimizing performance-critical read-only views.
 -   Rendering AI-streaming content.
 
-<Callout type="info">
+<Callout type="info" title="Interactive vs. Static">
   For interactive read-only features (like comment popovers or selections), use the standard `<Plate>` component in the browser. For purely server-rendered, non-interactive content, `<PlateStatic>` is the recommended choice.
 </Callout>
 
@@ -121,7 +121,7 @@ export default async function MyStaticPage() {
 }
 ```
 
-<Callout type="note">
+<Callout type="note" title="Value Override">
   If you pass a `value` prop directly to `<PlateStatic>`, it will override `editor.children`.
   ```tsx
   <PlateStatic
