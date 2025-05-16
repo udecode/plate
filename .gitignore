@@ -2,7 +2,6 @@
 
 apps/www/src/app/api/ai
 apps/www/public/rd
-apps/www/registry.local.json
 **/tsconfig.tsbuildinfo
 templates/my-app
 .cursor/local

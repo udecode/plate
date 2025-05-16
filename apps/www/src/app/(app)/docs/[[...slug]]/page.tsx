@@ -24,9 +24,9 @@ import { getRegistryTitle } from '@/lib/registry-utils';
 import { getAllDependencies, getAllFiles } from '@/lib/rehype-utils';
 import { getTableOfContents } from '@/lib/toc';
 import { registry } from '@/registry/registry';
-import { examples } from '@/registry/registry-examples';
+import { registryExamples } from '@/registry/registry-examples';
 import { proExamples } from '@/registry/registry-pro';
-import { ui } from '@/registry/registry-ui';
+import { registryUI } from '@/registry/registry-ui';
 
 interface DocPageProps {
   params: Promise<{
@@ -42,7 +42,13 @@ async function getDocFromParams({ params, searchParams }: DocPageProps) {
   const slugParam = (await params).slug;
 
   let slug = slugParam?.join('/') || '';
-  slug = `${locale ?? 'en'}${slug ? '/' + slug : ''}`;
+
+  // Only prepend locale for Chinese, English docs are at root level
+  if (locale) {
+    slug = `docs-18n/${locale}${slug ? '/' + slug : ''}`;
+  } else {
+    slug = `docs${slug ? '/' + slug : ''}`;
+  }
 
   const doc = allDocs.find((doc) => doc.slugAsParams === slug);
 
@@ -50,11 +56,12 @@ async function getDocFromParams({ params, searchParams }: DocPageProps) {
     return null;
   }
 
-  // TODO
   const path = slugParam?.join('/') || '';
   doc.slug = '/docs' + (path ? '/' + path : '');
-  if (locale && locale !== 'en') {
-    doc.slug += `?locale=${locale}`;
+
+  // Only add locale param for Chinese
+  if (locale === 'cn') {
+    doc.slug += `?locale=cn`;
   }
 
   return doc;
@@ -80,10 +87,10 @@ export async function generateMetadata({
     let file: RegistryItem | undefined;
 
     if (category === 'component') {
-      file = ui.find((c) => c.name === docName);
+      file = registryUI.find((c) => c.name === docName);
     } else if (category === 'example') {
       docName += '-demo';
-      file = examples.find((c) => c.name === docName);
+      file = registryExamples.find((c) => c.name === docName);
     }
     if (!docName || !file) {
       return {};
@@ -155,10 +162,10 @@ export default async function DocPage(props: DocPageProps) {
     let file: RegistryItem | undefined;
 
     if (category === 'component') {
-      file = ui.find((c) => c.name === docName);
+      file = registryUI.find((c) => c.name === docName);
     } else if (category === 'example') {
       docName += '-demo';
-      file = examples.find((c) => c.name === docName);
+      file = registryExamples.find((c) => c.name === docName);
     }
     if (!docName || !file) {
       notFound();
@@ -250,7 +257,7 @@ function getRegistryDocs({
   files: { name: string }[];
   registryNames: Set<string>;
 }) {
-  const usedBy = ui.filter(
+  const usedBy = registryUI.filter(
     (item) =>
       item.meta &&
       Array.isArray(item.meta.examples) &&
@@ -265,7 +272,7 @@ function getRegistryDocs({
           !!fileName && registryNames.has(fileName) && fileName !== docName
       )
       .map((fileName) => {
-        const uiItem = ui.find((item) => item.name === fileName);
+        const uiItem = registryUI.find((item) => item.name === fileName);
 
         if (!uiItem) return null;
 
@@ -335,7 +342,7 @@ async function getExampleCode(name?: string) {
     return proExamples.find((ex) => ex.name === name);
   }
 
-  const example = examples.find((ex) => ex.name === name);
+  const example = registryExamples.find((ex) => ex.name === name);
 
   if (!example) {
     throw new Error(`Component ${name} not found`);

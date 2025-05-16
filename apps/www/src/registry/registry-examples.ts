@@ -1562,7 +1562,7 @@ export const internalExamples: Registry['items'] = (
   },
 }));
 
-export const examples: Registry['items'] = (
+export const registryExamples: Registry['items'] = (
   [
     ...docExamples,
     ...externalExamples,

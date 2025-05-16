@@ -1,12 +1,12 @@
 import type { Registry, RegistryItem } from 'shadcn/registry';
 
-import { blocks } from './registry-blocks';
-import { components } from './registry-components';
-import { examples } from './registry-examples';
-import { hooks } from './registry-hooks';
-import { lib } from './registry-lib';
-import { styles } from './registry-styles';
-import { ui } from './registry-ui';
+import { registryBlocks } from './registry-blocks';
+import { registryComponents } from './registry-components';
+import { registryExamples } from './registry-examples';
+import { registryHooks } from './registry-hooks';
+import { registryLib } from './registry-lib';
+import { registryStyles } from './registry-styles';
+import { registryUI } from './registry-ui';
 
 const url =
   process.env.NODE_ENV === 'development'
@@ -18,7 +18,7 @@ const registryUrl =
     ? 'http://localhost:3000/r'
     : 'https://platejs.org/r';
 
-export const init: RegistryItem[] = [
+export const registryInit: RegistryItem[] = [
   {
     dependencies: ['@udecode/plate'],
     description: `Use \`npx shadcn@latest add ${registryUrl}/<name>\` to install items from this registry.`,
@@ -48,14 +48,14 @@ export const init: RegistryItem[] = [
 export const registry = {
   homepage: url,
   items: [
-    ...init,
-    ...ui,
-    ...components,
-    ...blocks,
-    ...lib,
-    ...styles,
-    ...hooks,
-    ...examples,
+    ...registryInit,
+    ...registryUI,
+    ...registryComponents,
+    ...registryBlocks,
+    ...registryLib,
+    ...registryStyles,
+    ...registryHooks,
+    ...registryExamples,
   ],
   name: 'plate',
 } satisfies Registry;

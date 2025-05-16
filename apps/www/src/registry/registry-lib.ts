@@ -1,6 +1,6 @@
 import type { Registry } from 'shadcn/registry';
 
-export const lib: Registry['items'] = [
+export const registryLib: Registry['items'] = [
   {
     dependencies: [
       'uploadthing@7.7.2',

@@ -20,11 +20,11 @@ import 'dotenv/config';
 const computedFields = {
   slug: {
     type: 'string',
-    resolve: (doc) => `/${doc._raw.flattenedPath}`,
+    resolve: (doc) => `/docs/${doc._raw.flattenedPath}`,
   },
   slugAsParams: {
     type: 'string',
-    resolve: (doc) => doc._raw.flattenedPath.split('/').slice(1).join('/'),
+    resolve: (doc) => doc._raw.flattenedPath,
   },
 };
 
@@ -92,12 +92,13 @@ export const Doc = defineDocumentType(() => ({
       type: 'boolean',
     },
   },
-  filePathPattern: `docs/**/*.mdx`,
+  filePathPattern: `**/*.mdx`,
   name: 'Doc',
 }));
 
 export default makeSource({
-  contentDirPath: './content',
+  contentDirInclude: ['docs', 'docs-18n'],
+  contentDirPath: './src/registry',
   documentTypes: [Doc],
   mdx: {
     rehypePlugins: [

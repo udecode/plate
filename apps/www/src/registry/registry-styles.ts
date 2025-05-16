@@ -1,6 +1,6 @@
 import type { RegistryItem } from 'shadcn/registry';
 
-export const styles: RegistryItem[] = [
+export const registryStyles: RegistryItem[] = [
   {
     dependencies: ['tailwind-scrollbar-hide'],
     files: [],

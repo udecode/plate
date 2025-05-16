@@ -20,8 +20,7 @@ For example:
 
 <Steps>
 
-<Step>
-Create an input plugin for the combobox:
+### Create an input plugin for the combobox
 
 ```ts
 const ComboboxInputPlugin = createPlatePlugin({
@@ -33,10 +32,8 @@ const ComboboxInputPlugin = createPlatePlugin({
   },
 });
 ```
-</Step>
 
-<Step>
-Create your main plugin with `withTriggerCombobox`:
+### Create your main plugin with `withTriggerCombobox`:
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -62,10 +59,10 @@ const MyPlugin = createPlatePlugin({
 }).overrideEditor(withTriggerCombobox);
 ```
 
-</Step>
-<Step>
+### Use the input plugin in your main plugin
+
 The input element component can be built using [Inline Combobox](/docs/components/inline-combobox).
-</Step>
+
 </Steps>
 
 ## Examples 

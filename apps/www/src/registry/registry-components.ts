@@ -535,7 +535,7 @@ const plugins: Registry['items'] = [
   },
 ];
 
-export const components: Registry['items'] = [
+export const registryComponents: Registry['items'] = [
   ...plugins,
   {
     dependencies: ['@ai-sdk/react', '@faker-js/faker'],
