@@ -134,9 +134,12 @@ async function buildRegistryJsonFile() {
   // 1. Fix the path for registry items.
   const fixedRegistry = sanitizeRegistry(registry);
 
-  // 2. Write the content of the registry to `registry.json` and public folder
-  rimraf.sync(path.join(process.cwd(), TARGET));
+  if (!isDev) {
+    // 2. Clean up the entire public/r directory first
+    rimraf.sync(path.join(process.cwd(), 'public/r'));
+  }
 
+  // 3. Write the content of the registry to `registry.json` and public folder
   const registryJson = JSON.stringify(fixedRegistry, null, 2);
 
   // Create directories if they don't exist
