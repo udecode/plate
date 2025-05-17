@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * List files under apps/www/src/registry/docs/en/** whose last Git commit is
- * within N days (default 60). Usage:
+ * List files under docs/** whose last Git commit is within N days (default 60).
+ * Usage:
  *
  *     node listDocsLastModified.js [days]
  *
@@ -14,7 +14,7 @@ import path from 'node:path';
 // Load environment variables
 import OpenAI from 'openai';
 
-const TARGET_DIR = 'apps/www/src/registry/docs/en';
+const TARGET_DIR = 'docs';
 const DAYS = Number(process.argv[2]) || 60; // 默认 60 天
 const CUTOFF = Date.now() - DAYS * 24 * 60 * 60 * 1000;
 

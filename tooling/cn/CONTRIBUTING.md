@@ -84,7 +84,7 @@ turbo --filter=@udecode/plate-core build
 yarn dev
 ```
 
-文档使用 [MDX](https://mdxjs.com) 编写。您可以在 `apps/www/src/registry/docs` 目录中找到文档文件。
+文档使用 [MDX](https://mdxjs.com) 编写。您可以在 `docs` 目录中找到文档文件。
 
 **在每次包更新后重新运行以下命令：**
 
@@ -238,7 +238,7 @@ yarn e2e
 
 创建新文档？
 
-- 在**`/apps/www/src/registry/docs`**中创建一个新的mdx文件
+- 在**`/docs`**中创建一个新的mdx文件
 - 将新文档添加到**`/apps/www/src/config/docs.ts`**
 
 ### 如何：创建Plate包

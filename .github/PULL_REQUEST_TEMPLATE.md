@@ -5,7 +5,7 @@
 - [x] `yarn test`
 - [x] `yarn brl`
 - [x] `yarn changeset`
-- [x] [ui changelog](apps/www/src/registry/docs/components/changelog.mdx)
+- [x] [ui changelog](docs/components/changelog.mdx)
 
 <!--
 
