@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "docs-highlight",
+  "type": "registry:file",
+  "title": "Highlight",
+  "description": "Documentation for Highlight",
+  "files": [
+    {
+      "path": "../../docs/highlight.mdx",
+      "content": "---\ntitle: Highlight\ndocs:\n  - route: /docs/components/highlight-leaf\n    title: Highlight Leaf\n---\n\n<ComponentPreview name=\"highlight-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Provides text marking tools for content review and referencing\n- Uses inline `<mark>` elements supporting markers (background color)\n- Enables support for highlights for reviewing and referencing content\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-highlight\n```\n\n## Usage\n\n```tsx\nimport { HighlightPlugin } from '@udecode/plate-highlight/react';\n\nconst plugins = [\n  // ...otherPlugins,\n  HighlightPlugin,\n];\n```\n\n## Keyboard Shortcuts\n\n<KeyTable>\n  <KeyTableItem hotkey=\"Cmd + Shift + H\">\n    Apply a highlight to the selected text.\n  </KeyTableItem>\n</KeyTable>\n\n## Plugins\n\n### `HighlightPlugin`\n\nPlugin for adding highlight functionality to text.",
+      "type": "registry:file",
+      "target": "content/docs/plate/plugins/highlight.mdx"
+    }
+  ]
+}

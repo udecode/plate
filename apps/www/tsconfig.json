@@ -7,7 +7,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "contentlayer/generated": ["./.contentlayer/generated"],
-      "registry": ["./registry.json"],
+      "registry": ["./public/r/registry.json"],
       "registry-shadcn": ["./registry-shadcn.json"]
     },
     "plugins": [
@@ -37,5 +37,5 @@
     "./scripts/**/*.ts",
     "./registry.json"
   ],
-  "exclude": ["node_modules", "__registry__"]
+  "exclude": ["node_modules", "__registry__", "**/blocks/fumadocs"]
 }

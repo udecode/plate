@@ -84,7 +84,7 @@ The documentation for this project is located in the `www` workspace. After runn
 yarn dev
 ```
 
-Documentation is written using [MDX](https://mdxjs.com). You can find the documentation files in the `apps/www/content/docs` directory.
+Documentation is written using [MDX](https://mdxjs.com). You can find the documentation files in the `docs` directory.
 
 **Re-run the following commands on each package update:**
 
@@ -237,7 +237,7 @@ Creating a new plugin?
 
 Creating a new document?
 
-- Create a new mdx file in **`/apps/www/content/docs`**
+- Create a new mdx file in **`/docs`**
 - Add the new document to **`/apps/www/src/config/docs.ts`**
 
 ### How to: Create a Plate Package

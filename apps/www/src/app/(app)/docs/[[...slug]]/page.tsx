@@ -24,9 +24,9 @@ import { getRegistryTitle } from '@/lib/registry-utils';
 import { getAllDependencies, getAllFiles } from '@/lib/rehype-utils';
 import { getTableOfContents } from '@/lib/toc';
 import { registry } from '@/registry/registry';
-import { examples } from '@/registry/registry-examples';
+import { registryExamples } from '@/registry/registry-examples';
 import { proExamples } from '@/registry/registry-pro';
-import { ui } from '@/registry/registry-ui';
+import { registryUI } from '@/registry/registry-ui';
 
 interface DocPageProps {
   params: Promise<{
@@ -42,19 +42,38 @@ async function getDocFromParams({ params, searchParams }: DocPageProps) {
   const slugParam = (await params).slug;
 
   let slug = slugParam?.join('/') || '';
-  slug = `${locale ?? 'en'}${slug ? '/' + slug : ''}`;
 
+  // For Chinese docs, look for .cn.mdx files
+  if (locale === 'cn') {
+    // First try to find the Chinese version with .cn.mdx
+    const cnDoc = allDocs.find((doc) => {
+      return (
+        doc.slugAsParams === `docs/${slug || 'index'}.cn` &&
+        doc._raw.sourceFileName?.endsWith('.cn.mdx')
+      );
+    });
+
+    if (cnDoc) {
+      const path = slugParam?.join('/') || '';
+      cnDoc.slug = '/docs' + (path ? '/' + path : '') + '?locale=cn';
+      return cnDoc;
+    }
+  }
+
+  // Default behavior for non-Chinese or fallback
+  slug = `docs${slug ? '/' + slug : ''}`;
   const doc = allDocs.find((doc) => doc.slugAsParams === slug);
 
   if (!doc) {
     return null;
   }
 
-  // TODO
   const path = slugParam?.join('/') || '';
   doc.slug = '/docs' + (path ? '/' + path : '');
-  if (locale && locale !== 'en') {
-    doc.slug += `?locale=${locale}`;
+
+  // Only add locale param for Chinese
+  if (locale === 'cn') {
+    doc.slug += `?locale=cn`;
   }
 
   return doc;
@@ -80,10 +99,10 @@ export async function generateMetadata({
     let file: RegistryItem | undefined;
 
     if (category === 'component') {
-      file = ui.find((c) => c.name === docName);
+      file = registryUI.find((c) => c.name === docName);
     } else if (category === 'example') {
       docName += '-demo';
-      file = examples.find((c) => c.name === docName);
+      file = registryExamples.find((c) => c.name === docName);
     }
     if (!docName || !file) {
       return {};
@@ -130,9 +149,17 @@ export async function generateMetadata({
 const registryNames = new Set(registry.items.map((item) => item.name));
 
 export function generateStaticParams() {
-  const docs = allDocs.map((doc) => ({
-    slug: doc.slugAsParams.split('/'),
-  }));
+  const docs = allDocs
+    .filter((doc) => {
+      // Include all non-Chinese docs and Chinese docs ending with .cn.mdx
+      return (
+        !doc._raw.sourceFileName?.endsWith('.cn.mdx') ||
+        doc.slugAsParams.startsWith('docs/')
+      );
+    })
+    .map((doc) => ({
+      slug: doc.slugAsParams.split('/'),
+    }));
 
   return docs;
 }
@@ -155,10 +182,10 @@ export default async function DocPage(props: DocPageProps) {
     let file: RegistryItem | undefined;
 
     if (category === 'component') {
-      file = ui.find((c) => c.name === docName);
+      file = registryUI.find((c) => c.name === docName);
     } else if (category === 'example') {
       docName += '-demo';
-      file = examples.find((c) => c.name === docName);
+      file = registryExamples.find((c) => c.name === docName);
     }
     if (!docName || !file) {
       notFound();
@@ -250,7 +277,7 @@ function getRegistryDocs({
   files: { name: string }[];
   registryNames: Set<string>;
 }) {
-  const usedBy = ui.filter(
+  const usedBy = registryUI.filter(
     (item) =>
       item.meta &&
       Array.isArray(item.meta.examples) &&
@@ -265,7 +292,7 @@ function getRegistryDocs({
           !!fileName && registryNames.has(fileName) && fileName !== docName
       )
       .map((fileName) => {
-        const uiItem = ui.find((item) => item.name === fileName);
+        const uiItem = registryUI.find((item) => item.name === fileName);
 
         if (!uiItem) return null;
 
@@ -335,7 +362,7 @@ async function getExampleCode(name?: string) {
     return proExamples.find((ex) => ex.name === name);
   }
 
-  const example = examples.find((ex) => ex.name === name);
+  const example = registryExamples.find((ex) => ex.name === name);
 
   if (!example) {
     throw new Error(`Component ${name} not found`);

@@ -1,0 +1,63 @@
+---
+title: MCP 服务器
+description: 在 Plate 中使用 Model Context Protocol。
+---
+
+Plate 提供了官方的 MCP 服务器。这让 AI 工具能够理解并操作我们丰富的编辑器模板、插件配置和 UI 组件生态。
+
+## 什么是 MCP？
+
+Model Context Protocol（MCP）是一种开放协议，用于标准化应用如何向大模型（LLM）提供上下文。对于 Plate，这意味着你可以让 AI 助手 IDE 直接访问数百个 Plate 资源。
+
+## 在 Plate 中使用 MCP
+
+你的 AI 现在可以：
+
+- 访问我们所有的编辑器模板、插件和 UI 组件
+- 生成带有正确导入和配置的代码
+- 协助搭建完整编辑器实例或特定功能
+- 保持你的 Plate 配置和组件为最新
+
+试着让你的 AI 执行：
+
+```bash
+"Set up a Plate editor with basic formatting and table support"
+"Add the Plate AI plugin and components to my current editor"
+"Update my editor components to the latest version"
+```
+
+## 工作原理
+
+Plate 注册表提供结构化信息，MCP 支持的工具可以读取：
+
+- 编辑器模板
+- 插件配置
+- UI 组件
+- 所有文件的依赖和要求
+- 文档和迁移指南（即将上线）
+
+## 配置 MCP
+
+将以下代码复制到 `.cursor/mcp.json`（或 Windsurf 用户用 `.codeium/windsurf/mcp_config.json`）
+
+```json
+{
+  "mcpServers": {
+    "plate": {
+      "description": "Plate editors, plugins and components",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "shadcn@canary", "registry:mcp"],
+      "env": {
+        "REGISTRY_URL": "https://platejs.org/r/registry.json"
+      }
+    }
+  }
+}
+```
+
+## 最佳实践
+
+1.  让 AI 处理编辑器搭建、插件集成和组件添加。
+2.  手动添加或 AI 需要兜底时，使用 [shadcn CLI](/docs/components/cli)。这在使用小模型或文档未及时更新时尤为有用。
+3.  定期查看我们的 [changelog](/docs/components/changelog) 或让 AI 告诉你有哪些文件已更新。 

@@ -1,6 +1,6 @@
 import type { Registry } from 'shadcn/registry';
 
-export const blocks: Registry['items'] = [
+export const registryBlocks: Registry['items'] = [
   {
     categories: ['Editors'],
     dependencies: [

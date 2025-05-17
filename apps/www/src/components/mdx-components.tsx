@@ -1,9 +1,11 @@
 'use client';
 
 import * as React from 'react';
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
+import { cva } from 'class-variance-authority';
 import { Provider } from 'jotai';
+import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 import { useMDXComponent } from 'next-contentlayer2/hooks';
 import Image from 'next/image';
 
@@ -29,7 +31,6 @@ import {
   APITransforms,
 } from './api-list';
 import { BadgeList, BadgePopover } from './badge-popover';
-import { Callout } from './callout';
 import { Code } from './code';
 import { CodeBlockWrapper } from './code-block-wrapper';
 import { ComponentExample } from './component-example';
@@ -42,9 +43,9 @@ import { Link } from './link';
 import { PackageInfo } from './package-info';
 import * as Typography from './typography';
 import {
-  Accordion,
   AccordionContent,
   AccordionItem,
+  Accordion as AccordionPrimitive,
   AccordionTrigger,
 } from './ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
@@ -64,6 +65,7 @@ const components = {
   Accordion,
   AccordionContent,
   AccordionItem,
+  Accordions,
   AccordionTrigger,
   Alert,
   AlertDescription,
@@ -227,6 +229,127 @@ export function Mdx({
           <Component components={components as any} />
         </HydrateAtoms>
       </Provider>
+    </div>
+  );
+}
+
+// Fumadocs
+function Accordions({
+  children,
+  disabled = false,
+  orientation = 'vertical',
+  type = 'single',
+  ...props
+}: {
+  children: ReactNode;
+  asChild?: boolean;
+  className?: string;
+  disabled?: boolean;
+  orientation?: 'horizontal' | 'vertical';
+  type?: 'multiple' | 'single';
+}) {
+  return (
+    <AccordionPrimitive
+      orientation={orientation}
+      disabled={disabled}
+      type={type}
+      {...props}
+    >
+      {children}
+    </AccordionPrimitive>
+  );
+}
+
+// Fumadocs
+function Accordion({
+  children,
+  disabled = false,
+  title,
+  value,
+  ...props
+}: {
+  children: ReactNode;
+  title: string;
+  asChild?: boolean;
+  className?: string;
+  disabled?: boolean;
+  value?: string;
+}) {
+  return (
+    <AccordionItem value={value ?? title} {...props}>
+      <AccordionTrigger disabled={disabled}>{title}</AccordionTrigger>
+      <AccordionContent>{children}</AccordionContent>
+    </AccordionItem>
+  );
+}
+
+const calloutVariants = cva(
+  cn(
+    'my-4 flex gap-2 rounded-lg border border-s-2 bg-neutral-50 p-3 text-sm shadow-md first:mt-0 dark:bg-neutral-900',
+    '*:[svg]:text-neutral-50 dark:*:[svg]:text-neutral-900',
+    '**:[[data-slot="mdx-link"]]:hover:after:bottom-0'
+  ),
+  {
+    variants: {
+      type: {
+        error: 'border-s-red-500/50',
+        info: 'border-s-blue-500/50',
+        success: 'border-s-green-500/50',
+        warn: 'border-s-orange-500/50',
+      },
+    },
+  }
+);
+
+// Fumadocs
+function Callout({
+  children,
+  className,
+  icon,
+  title,
+  type = 'info',
+  ...props
+}: Omit<HTMLAttributes<HTMLDivElement>, 'icon' | 'title' | 'type'> & {
+  /** Force an icon */
+  icon?: ReactNode;
+  title?: ReactNode;
+  /** @defaultValue info */
+  type?:
+    | 'destructive'
+    | 'error'
+    | 'info'
+    | 'note'
+    | 'success'
+    | 'warn'
+    | 'warning';
+}) {
+  if (type === 'warning') type = 'warn';
+  if (type === 'note') type = 'info';
+  if (type === 'destructive') type = 'error';
+
+  return (
+    <div
+      className={cn(
+        calloutVariants({
+          type: type,
+        }),
+        className
+      )}
+      {...props}
+    >
+      {icon ??
+        {
+          error: <CircleX className="size-5 fill-red-500" />,
+          info: <Info className="size-5 fill-blue-500" />,
+          success: <CircleCheck className="size-5 fill-green-500" />,
+          warn: <TriangleAlert className="size-5 fill-orange-500" />,
+        }[type]}
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        {title ? <p className="!my-0 font-medium">{title}</p> : null}
+        <div className="prose-no-margin text-neutral-600 **:leading-[calc(1.25/.875)] empty:hidden dark:text-neutral-400">
+          {children}
+        </div>
+      </div>
     </div>
   );
 }

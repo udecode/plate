@@ -1,0 +1,98 @@
+{
+  "description": "Rich-text editor framework",
+  "files": [
+    {
+      "content": "{\n  \"description\": \"Rich-text editor framework\",\n  \"pages\": [\n    \"index\",\n    \"installation\",\n    \"guides\",\n    \"plugins\",\n    \"components\",\n    \"examples\",\n    \"migrations\",\n    \"api\"\n  ],\n  \"root\": true,\n  \"title\": \"Plate\"\n}",
+      "path": "../../docs/plate/meta.json",
+      "target": "content/docs/plate/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"plate-ui\",\n    \"manual\",\n    \"rsc\",\n    \"node\",\n    \"docs\",\n    \"mcp\"\n  ],\n  \"title\": \"Installation\"\n}",
+      "path": "content/docs/plate/installation/meta.json",
+      "target": "content/docs/plate/installation/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"next\",\n    \"react\"\n  ],\n  \"title\": \"Plate UI\"\n}",
+      "path": "content/docs/plate/installation/plate-ui/meta.json",
+      "target": "content/docs/plate/installation/plate-ui/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"plugin\",\n    \"editor\",\n    \"static\",\n    \"html\",\n    \"markdown\",\n    \"form\",\n    \"typescript\",\n    \"debugging\",\n    \"unit-testing\",\n    \"playwright\",\n    \"troubleshooting\"\n  ],\n  \"title\": \"Guides\"\n}",
+      "path": "content/docs/plate/guides/meta.json",
+      "target": "content/docs/plate/guides/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"plugin-methods\",\n    \"plugin-shortcuts\",\n    \"plugin-context\",\n    \"plugin-components\"\n  ],\n  \"title\": \"Plugin\"\n}",
+      "path": "content/docs/plate/guides/plugin/meta.json",
+      "target": "content/docs/plate/guides/plugin/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"editor-methods\",\n    \"controlled\"\n  ],\n  \"title\": \"Editor\"\n}",
+      "path": "content/docs/plate/guides/editor/meta.json",
+      "target": "content/docs/plate/guides/editor/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"index\",\n    \"ai\",\n    \"copilot\",\n    \"alignment\",\n    \"autoformat\",\n    \"basic-elements\",\n    \"basic-marks\",\n    \"block-menu\",\n    \"block-selection\",\n    \"callout\",\n    \"caption\",\n    \"collaboration\",\n    \"column\",\n    \"combobox\",\n    \"comments\",\n    \"suggestion\",\n    \"cursor-overlay\",\n    \"date\",\n    \"dnd\",\n    \"emoji\",\n    \"equation\",\n    \"excalidraw\",\n    \"exit-break\",\n    \"font\",\n    \"forced-layout\",\n    \"highlight\",\n    \"horizontal-rule\",\n    \"indent\",\n    \"indent-list\",\n    \"kbd\",\n    \"line-height\",\n    \"link\",\n    \"list\",\n    \"media\",\n    \"mention\",\n    \"multi-select\",\n    \"node-id\",\n    \"reset-node\",\n    \"select\",\n    \"csv\",\n    \"docx\",\n    \"markdown\",\n    \"single-line\",\n    \"slash-command\",\n    \"soft-break\",\n    \"tabbable\",\n    \"table\",\n    \"toc\",\n    \"toggle\",\n    \"trailing-block\"\n  ],\n  \"title\": \"Plugins\"\n}",
+      "path": "content/docs/plate/plugins/meta.json",
+      "target": "content/docs/plate/plugins/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"changelog\",\n    \"index\",\n    \"components#node-components\"\n  ],\n  \"title\": \"Components\"\n}",
+      "path": "content/docs/plate/components/meta.json",
+      "target": "content/docs/plate/components/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"ai-menu\",\n    \"ai-toolbar-button\",\n    \"align-dropdown-menu\",\n    \"block-context-menu\",\n    \"block-selection\",\n    \"import-toolbar-button\",\n    \"export-toolbar-button\",\n    \"caption\",\n    \"color-dropdown-menu\",\n    \"comment-toolbar-button\",\n    \"block-discussion\",\n    \"cursor-overlay\",\n    \"draggable\",\n    \"editor\",\n    \"select-editor\",\n    \"emoji-dropdown-menu\",\n    \"fixed-toolbar-buttons\",\n    \"fixed-toolbar-list-buttons\",\n    \"fixed-toolbar\",\n    \"floating-toolbar-buttons\",\n    \"floating-toolbar\",\n    \"ghost-text\",\n    \"history-toolbar-button\",\n    \"indent-list-toolbar-button\",\n    \"indent-todo-marker\",\n    \"indent-todo-toolbar-button\",\n    \"indent-toolbar-button\",\n    \"inline-combobox\",\n    \"insert-dropdown-menu\",\n    \"line-height-dropdown-menu\",\n    \"link-floating-toolbar\",\n    \"link-toolbar-button\",\n    \"list-indent-toolbar-button\",\n    \"list-toolbar-button\",\n    \"mark-toolbar-button\",\n    \"media-popover\",\n    \"media-toolbar-button\",\n    \"media-upload-toast\",\n    \"mode-dropdown-menu\",\n    \"more-dropdown-menu\",\n    \"outdent-toolbar-button\",\n    \"placeholder\",\n    \"resize-handle\",\n    \"table-dropdown-menu\",\n    \"toggle-toolbar-button\",\n    \"turn-into-dropdown-menu\",\n    \"remote-cursor-overlay\",\n    \"toolbar\"\n  ],\n  \"title\": \"Components\"\n}",
+      "path": "content/docs/plate/components/components/meta.json",
+      "target": "content/docs/plate/components/components/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"ai-leaf\",\n    \"blockquote-element\",\n    \"callout-element\",\n    \"code-block-element\",\n    \"code-leaf\",\n    \"code-line-element\",\n    \"code-syntax-leaf\",\n    \"column-element\",\n    \"column-group-element\",\n    \"comment-leaf\",\n    \"suggestion-leaf\",\n    \"suggestion-line-break\",\n    \"date-element\",\n    \"equation-element\",\n    \"inline-equation-element\",\n    \"inline-equation-toolbar-button\",\n    \"emoji-input-element\",\n    \"excalidraw-element\",\n    \"font-size-toolbar-button\",\n    \"heading-element\",\n    \"highlight-leaf\",\n    \"hr-element\",\n    \"image-element\",\n    \"image-preview\",\n    \"kbd-leaf\",\n    \"link-element\",\n    \"list-element\",\n    \"media-audio-element\",\n    \"media-embed-element\",\n    \"media-file-element\",\n    \"media-placeholder-element\",\n    \"media-video-element\",\n    \"mention-element\",\n    \"mention-input-element\",\n    \"paragraph-element\",\n    \"search-highlight-leaf\",\n    \"slash-input-element\",\n    \"table-cell-element\",\n    \"table-element\",\n    \"table-row-element\",\n    \"tag-element\",\n    \"toc-element\",\n    \"todo-list-element\",\n    \"toggle-element\"\n  ],\n  \"title\": \"Node Components\"\n}",
+      "path": "content/docs/plate/components/node-components/meta.json",
+      "target": "content/docs/plate/components/node-components/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"index\",\n    \"slate-to-html\",\n    \"export\",\n    \"server-side\",\n    \"version-history\",\n    \"editable-voids\",\n    \"hundreds-blocks\",\n    \"hundreds-editors\",\n    \"preview-markdown\",\n    \"collaboration\",\n    \"table-nomerge\",\n    \"excalidraw\",\n    \"single-line\",\n    \"editable-voids\",\n    \"list\",\n    \"find-replace\",\n    \"ai\",\n    \"align\",\n    \"autoformat\",\n    \"basic-nodes\",\n    \"block-menu\",\n    \"block-selection\",\n    \"column\",\n    \"comments\",\n    \"cursor-overlay\",\n    \"date\",\n    \"dnd\",\n    \"emoji\",\n    \"equation\",\n    \"exit-break\",\n    \"floating-toolbar\",\n    \"font\",\n    \"highlight\",\n    \"horizontal-rule\",\n    \"indent\",\n    \"indent-list\",\n    \"kbd\",\n    \"line-height\",\n    \"link\",\n    \"media\",\n    \"mention\",\n    \"reset-node\",\n    \"csv\",\n    \"docx\",\n    \"html\",\n    \"markdown\",\n    \"slash-command\",\n    \"soft-break\",\n    \"table\",\n    \"toc\",\n    \"toggle\"\n  ],\n  \"title\": \"Examples\"\n}",
+      "path": "content/docs/plate/examples/meta.json",
+      "target": "content/docs/plate/examples/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"slate-to-plate\"\n  ],\n  \"title\": \"Migrations\"\n}",
+      "path": "content/docs/plate/migrations/meta.json",
+      "target": "content/docs/plate/migrations/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"index\",\n    \"plate\",\n    \"slate\",\n    \"core\",\n    \"utils\",\n    \"react-utils\",\n    \"cn\",\n    \"floating\",\n    \"resizable\"\n  ],\n  \"title\": \"API\"\n}",
+      "path": "content/docs/plate/api/meta.json",
+      "target": "content/docs/plate/api/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"editor-api\",\n    \"editor-transforms\",\n    \"node\",\n    \"element\",\n    \"text\",\n    \"path\",\n    \"point\",\n    \"range\",\n    \"location\",\n    \"location-ref\",\n    \"operation\"\n  ],\n  \"title\": \"Slate\"\n}",
+      "path": "content/docs/plate/api/slate/meta.json",
+      "target": "content/docs/plate/api/slate/meta.json",
+      "type": "registry:file"
+    },
+    {
+      "content": "{\n  \"pages\": [\n    \"plate-components\",\n    \"plate-editor\",\n    \"plate-plugin\",\n    \"plate-store\",\n    \"plate-controller\"\n  ],\n  \"title\": \"Plate Core\"\n}",
+      "path": "content/docs/plate/api/plate-core/meta.json",
+      "target": "content/docs/plate/api/plate-core/meta.json",
+      "type": "registry:file"
+    }
+  ],
+  "name": "docs-meta",
+  "title": "Fumadocs Meta",
+  "type": "registry:file"
+}

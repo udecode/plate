@@ -2,7 +2,7 @@ import type { SidebarNavItem } from '@/types/nav';
 
 import { navToObject } from '@/config/nav-to-object';
 import { registryToNav } from '@/config/registry-to-nav';
-import { docExamples } from '@/registry/registry-examples';
+import { demoExamples } from '@/registry/registry-examples';
 
 export const docsExamples: SidebarNavItem[] = [
   {
@@ -55,7 +55,7 @@ export const docsExamples: SidebarNavItem[] = [
     title: 'Collaboration Demo',
   },
   ...registryToNav(
-    docExamples.filter(
+    demoExamples.filter(
       (item) => !['basic-elements-demo', 'basic-marks-demo'].includes(item.name)
     )
   ).map((item) => ({

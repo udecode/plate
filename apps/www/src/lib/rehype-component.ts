@@ -6,7 +6,7 @@ import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
 
 import { Index } from '../__registry__';
-import { examples } from '../registry/registry-examples';
+import { registryExamples } from '../registry/registry-examples';
 import { proExamples } from '../registry/registry-pro';
 import { highlightFiles } from './highlight-code';
 import {
@@ -18,7 +18,6 @@ import {
 } from './rehype-utils';
 
 // NOTE: shadcn fork
-
 export function rehypeComponent() {
   return async (tree: UnistTree) => {
     const promises: Promise<void>[] = [];
@@ -98,7 +97,9 @@ export function rehypeComponent() {
                   const component = Index[name];
 
                   if (component.meta?.preview) {
-                    const example = examples.find((ex) => ex.name === name);
+                    const example = registryExamples.find(
+                      (ex) => ex.name === name
+                    );
 
                     if (example) {
                       node.attributes.push(

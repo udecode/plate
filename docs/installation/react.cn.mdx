@@ -1,0 +1,328 @@
+---
+title: React
+description: 为 React 安装和配置 Plate UI
+---
+
+<Callout type="warning" title="前置条件">
+  在开始之前，请确保你已安装并配置好 [shadcn/ui](https://ui.shadcn.com/docs/installation)（适配你的框架，如 Vite）和 [Plate UI](/docs/installation/plate-ui)。
+</Callout>
+
+本指南将带你在项目中逐步构建 Plate 编辑器。
+
+<Steps>
+
+### 创建你的第一个编辑器
+
+首先将核心 [Editor](/docs/components/editor) 组件添加到你的项目中：
+
+```bash
+npx shadcn@latest add https://platejs.org/r/editor
+```
+
+接下来，在主应用文件（如 `src/App.tsx`）中创建一个基础编辑器。以下示例在 `EditorContainer` 中设置了一个简单的编辑器。
+
+```tsx showLineNumbers title="src/App.tsx"
+import { Plate, usePlateEditor } from '@udecode/plate/react';
+
+import { Editor, EditorContainer } from '@/components/ui/editor';
+
+export default function App() {
+  const editor = usePlateEditor(); // 初始化编辑器实例
+
+  return (
+    <Plate editor={editor}>      {/* 提供编辑器上下文 */}
+      <EditorContainer>         {/* 设置编辑器区域样式 */}
+        <Editor placeholder="Type your amazing content here..." />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+<Callout type="info">
+  `usePlateEditor` 会创建一个 memoized 的编辑器实例，确保多次渲染时的稳定性。如果你需要非 memoized 版本，可以用 `createPlateEditor`。
+</Callout>
+
+<ComponentPreview name="installation-next-01-editor-demo" height="200px" />
+
+### 添加基础 Marks
+
+为编辑器添加文本格式功能。添加 [FixedToolbar](/docs/components/fixed-toolbar) 和 [MarkToolbarButton](/docs/components/mark-toolbar-button) 组件：
+
+```bash
+npx shadcn@latest add https://platejs.org/r/fixed-toolbar https://platejs.org/r/mark-toolbar-button
+```
+
+更新你的 `src/App.tsx`，加入这些组件和 `BasicMarksPlugin`。
+本例为编辑器添加了加粗、斜体和下划线功能。
+
+```tsx showLineNumbers title="src/App.tsx" {2,4,6,8,13-14,16-29,33-39,44-48}
+import * as React from 'react';
+import type { Value } from '@udecode/plate';
+
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import {
+  type PlateLeafProps,
+  Plate,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
+
+import { Editor, EditorContainer } from '@/components/ui/editor';
+import { FixedToolbar } from '@/components/ui/fixed-toolbar';
+import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+
+const initialValue: Value = [
+  {
+    type: 'p',
+    children: [
+      { text: 'Hello! Try out the ' },
+      { text: 'bold', bold: true },
+      { text: ', ' },
+      { text: 'italic', italic: true },
+      { text: ', and ' },
+      { text: 'underline', underline: true },
+      { text: ' formatting.' },
+    ],
+  },
+];
+
+export default function App() {
+  const editor = usePlateEditor({
+    plugins: [BasicMarksPlugin], // 添加 marks 插件
+    value: initialValue,         // 设置初始内容
+    components: {                // 映射 mark key 到组件
+      bold: (props: PlateLeafProps) => <PlateLeaf {...props} as="strong" />, 
+      italic: (props: PlateLeafProps) => <PlateLeaf {...props} as="em" />, 
+      underline: (props: PlateLeafProps) => <PlateLeaf {...props} as="u" />, 
+    },
+  });
+
+  return (
+    <Plate editor={editor}>
+      <FixedToolbar className="justify-start rounded-t-lg">
+        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+      </FixedToolbar>
+      <EditorContainer>
+        <Editor placeholder="Type your amazing content here..." />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+<ComponentPreview name="installation-next-02-marks-demo" height="200px" />
+
+### 添加基础 Elements
+
+引入如标题、段落等块级元素。添加 [HeadingElement](/docs/components/heading-element) 和 [ParagraphElement](/docs/components/paragraph-element) 组件：
+
+```bash
+npx shadcn@latest add https://platejs.org/r/heading-element https://platejs.org/r/paragraph-element https://platejs.org/r/blockquote-element
+```
+
+更新你的 `src/App.tsx`，加入 `BasicElementsPlugin` 和相关 element 组件。
+
+```tsx showLineNumbers title="src/App.tsx" {4,7,14,17,19-20,23-24,37,41-45,56-60}
+import * as React from 'react';
+import type { Value } from '@udecode/plate';
+
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import {
+  type PlateElementProps,
+  type PlateLeafProps,
+  Plate,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
+
+import { BlockquoteElement } from '@/components/ui/blockquote-element';
+import { Editor, EditorContainer } from '@/components/ui/editor';
+import { FixedToolbar } from '@/components/ui/fixed-toolbar';
+import { HeadingElement } from '@/components/ui/heading-element';
+import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+import { ParagraphElement } from '@/components/ui/paragraph-element';
+import { ToolbarButton } from '@/components/ui/toolbar'; // 通用工具栏按钮
+
+const initialValue: Value = [
+  { type: 'h3', children: [{ text: 'Title' }] },
+  { type: 'blockquote', children: [{ text: 'This is a quote.' }] },
+  {
+    type: 'p',
+    children: [
+      { text: 'With some ' },
+      { text: 'bold', bold: true },
+      { text: ' text for emphasis!' },
+    ],
+  },
+];
+
+export default function App() {
+  const editor = usePlateEditor({
+    plugins: [BasicElementsPlugin, BasicMarksPlugin], // 添加插件
+    value: initialValue,
+    components: {
+      // element 组件
+      blockquote: BlockquoteElement,
+      p: ParagraphElement,
+      h1: (props: PlateElementProps) => <HeadingElement {...props} variant="h1" />, 
+      h2: (props: PlateElementProps) => <HeadingElement {...props} variant="h2" />, 
+      h3: (props: PlateElementProps) => <HeadingElement {...props} variant="h3" />, 
+      // mark 组件（上一步）
+      bold: (props: PlateLeafProps) => <PlateLeaf {...props} as="strong" />, 
+      italic: (props: PlateLeafProps) => <PlateLeaf {...props} as="em" />, 
+      underline: (props: PlateLeafProps) => <PlateLeaf {...props} as="u" />, 
+    },
+  });
+
+  return (
+    <Plate editor={editor}>
+      <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
+        {/* element 工具栏按钮 */}
+        <ToolbarButton onClick={() => editor.tf.toggleBlock('h1')}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.toggleBlock('h2')}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.toggleBlock('h3')}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.toggleBlock('blockquote')}>Quote</ToolbarButton>
+        {/* mark 工具栏按钮 */}
+        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+      </FixedToolbar>
+      <EditorContainer>
+        <Editor placeholder="Type your amazing content here..." />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+<ComponentPreview name="installation-next-03-elements-demo" height="200px" />
+
+<Callout type="info" title="组件映射是关键">
+  当为新的 element 或 mark 类型添加插件时，**必须**在 `usePlateEditor` 的 `components` 选项中，将它们的 `type` 或插件 `key`（如 `'h1'`、`'p'`、`'bold'`）映射到你的 React 组件。这告诉 Plate 如何渲染它们。
+
+  想要更快上手常用插件和组件预配置，可直接使用 `editor-basic` 区块：
+  ```bash
+  npx shadcn@latest add https://platejs.org/r/editor-basic
+  ```
+  这会帮你处理大部分样板代码。
+</Callout>
+
+### 管理编辑器内容
+
+为了让编辑器内容持久化，我们可以集成 `localStorage`，在客户端保存和加载编辑器内容。
+
+```tsx showLineNumbers title="src/App.tsx" {48-54,60-62,72-78}
+import * as React from 'react';
+import type { Value } from '@udecode/plate';
+
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import {
+  type PlateElementProps,
+  type PlateLeafProps,
+  Plate,
+  PlateLeaf,
+  usePlateEditor,
+} from '@udecode/plate/react';
+
+import { BlockquoteElement } from '@/components/ui/blockquote-element';
+import { Editor, EditorContainer } from '@/components/ui/editor';
+import { FixedToolbar } from '@/components/ui/fixed-toolbar';
+import { HeadingElement } from '@/components/ui/heading-element';
+import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+import { ParagraphElement } from '@/components/ui/paragraph-element';
+import { ToolbarButton } from '@/components/ui/toolbar';
+
+const initialValue: Value = [
+  { type: 'h3', children: [{ text: 'Title' }] },
+  { type: 'blockquote', children: [{ text: 'This is a quote.' }] },
+  {
+    type: 'p',
+    children: [
+      { text: 'With some ' },
+      { text: 'bold', bold: true },
+      { text: ' text for emphasis!' },
+    ],
+  },
+];
+
+export default function App() {
+  const editor = usePlateEditor({
+    plugins: [BasicElementsPlugin, BasicMarksPlugin],
+    components: {
+      blockquote: BlockquoteElement,
+      p: ParagraphElement,
+      h1: (props: PlateElementProps) => <HeadingElement {...props} variant="h1" />, 
+      h2: (props: PlateElementProps) => <HeadingElement {...props} variant="h2" />, 
+      h3: (props: PlateElementProps) => <HeadingElement {...props} variant="h3" />, 
+      bold: (props: PlateLeafProps) => <PlateLeaf {...props} as="strong" />, 
+      italic: (props: PlateLeafProps) => <PlateLeaf {...props} as="em" />, 
+      underline: (props: PlateLeafProps) => <PlateLeaf {...props} as="u" />, 
+    },
+    value: () => {
+      const savedValue = localStorage.getItem('installation-react-demo');
+      if (savedValue) {
+        return JSON.parse(savedValue);
+      }
+      return initialValue;
+    },
+  });
+
+  return (
+    <Plate
+      editor={editor}
+      onChange={({ value }) => {
+        localStorage.setItem('installation-react-demo', JSON.stringify(value));
+      }}
+    >
+      <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
+        <ToolbarButton onClick={() => editor.tf.toggleBlock('h1')}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.toggleBlock('h2')}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.toggleBlock('h3')}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.toggleBlock('blockquote')}>Quote</ToolbarButton>
+        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+        <div className="flex-1" />
+        <ToolbarButton
+          className="px-2"
+          onClick={() => editor.tf.setValue(initialValue)}
+        >
+          Reset
+        </ToolbarButton>
+      </FixedToolbar>
+      <EditorContainer>
+        <Editor placeholder="Type your amazing content here..." />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+<ComponentPreview name="installation-next-demo" />
+
+<Callout type="note">
+  `usePlateEditor` 默认包含多个核心插件（如段落、历史、React 集成）。如需更高级功能（如表格、提及），需额外添加相应插件及组件。
+</Callout>
+
+### 下一步
+
+恭喜！你已在项目中构建了基础的 Plate 编辑器。
+
+进一步增强你的编辑器：
+
+*   **探索组件：** 了解 [工具栏、菜单、节点组件](/docs/components) 等。
+*   **添加插件：** 集成 [表格](/docs/plugins/table)、[提及](/docs/plugins/mention)、[AI](/docs/plugins/ai)、[Markdown](/docs/plugins/markdown) 等功能。
+*   **使用编辑器区块：** 快速搭建预配置编辑器：
+    *   基础编辑器：`npx shadcn@latest add https://platejs.org/r/editor-basic`
+    *   AI 编辑器：`npx shadcn@latest add https://platejs.org/r/editor-ai`
+*   **了解更多：**
+    *   [编辑器配置](/docs/editor)
+    *   [插件配置](/docs/plugin)
+    *   [插件组件](/docs/plugin-components)
+
+</Steps> 

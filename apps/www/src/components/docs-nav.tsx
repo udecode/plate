@@ -26,6 +26,11 @@ export function DocsNav({ config }: { config: DocsConfig }) {
   const [filter, setFilter] = useState('');
   const [activeSection, setActiveSection] = useState<string | undefined>();
 
+  // Normalize pathname by removing /cn prefix if it exists
+  const normalizedPathname = React.useMemo(() => {
+    return pathname?.replace(/^\/cn/, '') ?? '';
+  }, [pathname]);
+
   const sidebarNav = config.sidebarNav;
 
   const filteredNav = React.useMemo(() => {
@@ -56,13 +61,13 @@ export function DocsNav({ config }: { config: DocsConfig }) {
 
   // Update active section when pathname changes
   React.useEffect(() => {
-    if (!pathname) return;
+    if (!normalizedPathname) return;
 
     const newActiveIndex = filteredNav.findIndex((section) =>
       section.items?.some((item) => {
-        const isItemActive = item.href === pathname;
+        const isItemActive = item.href === normalizedPathname;
         const hasActiveChild = item.items?.some(
-          (subItem) => subItem.href === pathname
+          (subItem) => subItem.href === normalizedPathname
         );
         return isItemActive || hasActiveChild;
       })
@@ -71,7 +76,7 @@ export function DocsNav({ config }: { config: DocsConfig }) {
     setActiveSection(
       newActiveIndex === -1 ? undefined : `item-${newActiveIndex}`
     );
-  }, [pathname, filteredNav]);
+  }, [normalizedPathname, filteredNav]);
 
   return sidebarNav.length > 0 ? (
     <div className="relative w-[calc(100%-1rem)]">
@@ -130,9 +135,12 @@ export function DocsNav({ config }: { config: DocsConfig }) {
                 </div>
               </AccordionTrigger>
               <Suspense fallback={null}>
-                <AccordionContent className="mt-1">
+                <AccordionContent className="pt-0 pb-2">
                   {item?.items?.length && (
-                    <DocsNavItems items={item.items} pathname={pathname} />
+                    <DocsNavItems
+                      items={item.items}
+                      pathname={normalizedPathname}
+                    />
                   )}
                 </AccordionContent>
               </Suspense>
@@ -155,6 +163,9 @@ function DocsNavItems({
 }) {
   const locale = useLocale();
 
+  // Normalize pathname by removing /cn prefix if it exists
+  const normalizedPathname = pathname?.replace(/^\/cn/, '') ?? '';
+
   return items?.length ? (
     <div
       className={cn(
@@ -169,7 +180,7 @@ function DocsNavItems({
               className={cn(
                 'group relative flex h-8 w-full items-center truncate rounded-lg px-2 whitespace-nowrap after:absolute after:inset-x-0 after:inset-y-[-2px] after:rounded-lg hover:bg-accent hover:text-accent-foreground',
                 item.disabled && 'cursor-not-allowed opacity-60',
-                pathname === item.href
+                normalizedPathname === item.href
                   ? 'bg-accent font-medium text-accent-foreground'
                   : 'font-normal text-foreground'
               )}
@@ -205,7 +216,7 @@ function DocsNavItems({
                 className={cn(
                   'group flex h-8 w-full items-center truncate rounded-lg px-6 font-normal text-foreground underline-offset-2 hover:bg-accent hover:text-accent-foreground',
                   subItem.disabled && 'cursor-not-allowed opacity-60',
-                  pathname === subItem.href &&
+                  normalizedPathname === subItem.href &&
                     'bg-accent font-medium text-accent-foreground'
                 )}
                 href={hrefWithLocale(subItem.href!, locale)}

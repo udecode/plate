@@ -1935,4 +1935,4 @@ export const uiNodes: Registry['items'] = [
   },
 ];
 
-export const ui: Registry['items'] = [...uiComponents, ...uiNodes];
+export const registryUI: Registry['items'] = [...uiComponents, ...uiNodes];

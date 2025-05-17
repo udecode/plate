@@ -1,13 +1,12 @@
 {
   "language": {
     "source": "en",
-    "targets": [
-      "cn"
-    ]
+    "targets": ["cn"]
   },
   "content": [
     {
-      "source": "apps/www/content/docs/en/*.mdx"
+      "source": "docs/*.mdx",
+      "target": "docs/*.cn.mdx"
     }
   ]
 }

@@ -1,0 +1,76 @@
+---
+title: 介绍
+description: 富文本编辑器框架，支持 AI、MCP 和 shadcn/ui
+---
+
+Plate 是一个旨在简化 React 富文本编辑器开发的综合工具包，基于**开放性**、**组合性**和**无头架构**原则构建。
+
+Plate 通过三大核心支柱赋能开发者：
+
+*   **核心引擎：** 强大的 React 插件系统，支持 SSR，API 框架无关，强调模块化和可扩展性。
+*   **可扩展插件：** 丰富的无头插件，增强编辑器行为、hooks、序列化和规范化。自由组合，打造理想编辑体验。
+*   **Plate UI：** 可自定义组件，助力快速搭建美观、预配置的 UI。
+
+## 为什么选择 Plate UI？
+
+传统组件库常常带来妥协：样式覆盖、组件包裹、API 不兼容。Plate UI 提供了不同的思路：
+
+**它不仅是组件库，更是你构建*自己*组件库的方式。**
+
+-   **开放代码：** 组件代码完全可修改，无需与厂商样式"作斗争"。如需更改，直接编辑源码。
+-   **组合性：** 组件共享统一、可组合接口，兼容 [shadcn/ui](https://ui.shadcn.com/)，对团队和 AI 都可预测。
+-   **CLI 分发：** 利用 [shadcn CLI](https://ui.shadcn.com/docs/cli) 添加组件。如有需要可自建组件注册表。
+-   **美观默认：** 开箱即用的简洁、极简、一致 UI，易于扩展和自定义。
+-   **AI & MCP 友好：** 开放代码和一致 API 让组件易于 AI 理解。MCP（模型上下文协议）兼容，便于 AI 辅助组件管理和升级。[了解 MCP 服务器](/docs/mcp)
+
+Plate UI 包含：
+
+-   **UI 组件：** 预构建、样式化的编辑器元素组件（工具栏、块、marks），基于 shadcn/ui 和 Radix UI。
+-   **编辑器块：** 完整编辑器配置（如 `editor-ai`）作为起点。
+-   **独立插件：** 配置好的插件，随时集成。
+
+灵感来自 [shadcn/ui](https://ui.shadcn.com/)，你拥有集成代码的所有权和完全控制权。
+
+## 常见问题
+
+<Accordions>
+  <Accordion title="Plate 兼容哪些框架？">
+    Plate 的核心引擎和插件系统基于 [Slate](https://www.npmjs.com/package/slate) 和 [Slate React](https://www.npmjs.com/package/slate-react)，兼容所有 React 环境。Plate UI 组件基于 React，可无缝集成到 [Next.js](/docs/installation-nextjs)、[Vite](/docs/installation-vite)、[Remix](/docs/installation-remix) 等框架。
+  </Accordion>
+
+  <Accordion title="Plate 和 Plate UI 有什么区别？">
+    **Plate** 是基础富文本编辑器框架，提供核心引擎、插件系统和无头功能，助你用 Slate 构建高级编辑器。
+
+    **Plate UI** 是为 Plate 框架量身打造的预设样式、可自定义 UI 组件、编辑器块（模板）和插件集合。遵循 shadcn/ui 哲学，你将代码复制到项目中，完全拥有和控制编辑器 UI 及核心配置。
+  </Accordion>
+
+  <Accordion title="我可以在项目中使用 Plate / Plate UI 吗？">
+    可以。Plate（核心框架和 Plate UI）对个人和商业项目免费，无需署名。如果愿意，欢迎在 [这里](https://github.com/udecode/plate/discussions/2523) 分享你的编辑器应用！
+  </Accordion>
+
+  <Accordion title="Plate UI 能替代 shadcn/ui 吗？">
+    不能。Plate UI 基于 [shadcn/ui](https://ui.shadcn.com/) 和 [Radix UI](https://www.radix-ui.com/)，专为富文本编辑器设计。应用其他部分仍建议用 shadcn/ui 或其他库。Plate UI 遵循相同规范，确保无缝集成。
+  </Accordion>
+
+  <Accordion title="如何用开放代码方式管理更新？">
+    Plate UI 核心功能通过依赖管理获得更新。UI 层（你复制的代码）完全由你维护。如需更新，可手动对比并集成 Plate UI 源码的变更。
+
+    MCP 兼容性还允许 AI 工具辅助从 Plate 注册表拉取、合并和应用更新。
+  </Accordion>
+
+  <Accordion title="为什么要复制/粘贴组件而不是用 npm 包？">
+    这种方式让你完全拥有和控制组件代码，契合"开放代码"理念。你以合理默认为起点，按需自定义，设计与实现彻底分离。
+  </Accordion>
+
+  <Accordion title="Plate UI 会发布为 npm 包吗？">
+    不会。为坚持"开放代码"理念并赋予你最大控制权，我们暂无将 Plate UI 发布为 npm 包的计划。
+  </Accordion>
+</Accordions>
+
+## 鸣谢
+
+- [shadcn/ui](https://ui.shadcn.com/) - UI 灵感、文档和 CLI
+- [Radix UI](https://radix-ui.com) - 无样式、可访问性原子组件
+- [Vercel](https://vercel.com) - 托管服务
+- [Shu Ding](https://shud.in) - 字体样式借鉴自 [Nextra](https://nextra.site)
+- [cmdk](https://cmdk.paco.me) - `<Command />` 组件 

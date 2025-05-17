@@ -21,13 +21,14 @@ export function Link({
   return (
     <LinkPrimitive
       className={cn(
-        'relative inline-block h-5 font-medium',
+        'relative inline-block h-5 font-medium text-foreground',
         !isExternal && 'underline underline-offset-4',
         isExternal &&
           'no-underline hover:after:absolute hover:after:-bottom-1 hover:after:left-0 hover:after:h-[1.5px] hover:after:w-[calc(100%-2px)] hover:after:bg-primary',
         // 'relative font-medium text-blue-600 hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:h-[1.5px] hover:after:w-[calc(100%-2px)] hover:after:bg-brand',
         className
       )}
+      data-slot="mdx-link"
       target={isExternal ? '_blank' : undefined}
       {...props}
     >

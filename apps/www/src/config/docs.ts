@@ -56,11 +56,6 @@ export const installationNavItems: SidebarNavItem[] = [
         href: '/docs/installation/react',
         title: 'React',
       },
-      {
-        href: '/docs/mcp',
-        label: 'New',
-        title: 'MCP',
-      },
     ],
     title: 'Plate UI',
   },
@@ -77,6 +72,16 @@ export const installationNavItems: SidebarNavItem[] = [
     href: '/docs/installation/node',
     label: 'New',
     title: 'Node.js',
+  },
+  {
+    href: '/docs/installation/docs',
+    label: 'New',
+    title: 'Local Docs',
+  },
+  {
+    href: '/docs/mcp',
+    label: 'New',
+    title: 'MCP',
   },
 ];
 
