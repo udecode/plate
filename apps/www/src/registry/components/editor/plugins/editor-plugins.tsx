@@ -22,7 +22,7 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { FixedToolbarPlugin } from '@/registry/components/editor/plugins/fixed-toolbar-plugin';
 import { FloatingToolbarPlugin } from '@/registry/components/editor/plugins/floating-toolbar-plugin';
-import { SuggestionBelowNodes } from '@/registry/ui/suggestion-line-break';
+import { SuggestionLineBreak } from '@/registry/ui/suggestion-line-break';
 
 import { aiPlugins } from './ai-plugins';
 import { alignPlugin } from './align-plugin';
@@ -36,9 +36,9 @@ import { discussionPlugin } from './discussion-plugin';
 import { dndPlugins } from './dnd-plugins';
 import { equationPlugins } from './equation-plugins';
 import { exitBreakPlugin } from './exit-break-plugin';
-import { indentListPlugins } from './indent-list-plugins';
 import { lineHeightPlugin } from './line-height-plugin';
 import { linkPlugin } from './link-plugin';
+import { ListKit } from './list-plugins';
 import { markdownPlugin } from './markdown-plugin';
 import { mediaPlugins } from './media-plugins';
 import { mentionPlugin } from './mention-plugin';
@@ -73,14 +73,14 @@ export const viewPlugins = [
 
   // Block Style
   alignPlugin,
-  ...indentListPlugins,
+  ListKit,
   lineHeightPlugin,
 
   // Collaboration
   discussionPlugin,
   commentsPlugin,
   suggestionPlugin.configure({
-    render: { belowNodes: SuggestionBelowNodes as any },
+    render: { belowNodes: SuggestionLineBreak as any },
   }),
 ] as const;
 

@@ -34,34 +34,35 @@ import {
   WandSparklesIcon,
 } from 'lucide-react';
 
-import { MoreDropdownMenu } from '@/registry/ui/more-dropdown-menu';
-
 import { AIToolbarButton } from './ai-toolbar-button';
-import { AlignDropdownMenu } from './align-dropdown-menu';
-import { ColorDropdownMenu } from './color-dropdown-menu';
+import { AlignToolbarButton } from './align-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
-import { EmojiDropdownMenu } from './emoji-dropdown-menu';
+import { EmojiToolbarButton } from './emoji-toolbar-button';
 import { ExportToolbarButton } from './export-toolbar-button';
+import { FontColorToolbarButton } from './font-color-toolbar-button';
 import { FontSizeToolbarButton } from './font-size-toolbar-button';
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
 import { ImportToolbarButton } from './import-toolbar-button';
 import {
-  BulletedIndentListToolbarButton,
-  NumberedIndentListToolbarButton,
-} from './indent-list-toolbar-button';
-import { IndentTodoToolbarButton } from './indent-todo-toolbar-button';
-import { IndentToolbarButton } from './indent-toolbar-button';
-import { InsertDropdownMenu } from './insert-dropdown-menu';
-import { LineHeightDropdownMenu } from './line-height-dropdown-menu';
+  IndentToolbarButton,
+  OutdentToolbarButton,
+} from './indent-toolbar-button';
+import { InsertToolbarButton } from './insert-toolbar-button';
+import { LineHeightToolbarButton } from './line-height-toolbar-button';
 import { LinkToolbarButton } from './link-toolbar-button';
+import {
+  BulletedListToolbarButton,
+  NumberedListToolbarButton,
+  TodoListToolbarButton,
+} from './list-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MediaToolbarButton } from './media-toolbar-button';
-import { ModeDropdownMenu } from './mode-dropdown-menu';
-import { OutdentToolbarButton } from './outdent-toolbar-button';
-import { TableDropdownMenu } from './table-dropdown-menu';
+import { ModeToolbarButton } from './mode-toolbar-button';
+import { MoreToolbarButton } from './more-toolbar-button';
+import { TableToolbarButton } from './table-toolbar-button';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
 import { ToolbarGroup } from './toolbar';
-import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
+import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
 
 export function FixedToolbarButtons() {
   const readOnly = useEditorReadOnly();
@@ -90,8 +91,8 @@ export function FixedToolbarButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <InsertDropdownMenu />
-            <TurnIntoDropdownMenu />
+            <InsertToolbarButton />
+            <TurnIntoToolbarButton />
             <FontSizeToolbarButton />
           </ToolbarGroup>
 
@@ -125,34 +126,34 @@ export function FixedToolbarButtons() {
               <Code2Icon />
             </MarkToolbarButton>
 
-            <ColorDropdownMenu
+            <FontColorToolbarButton
               nodeType={FontColorPlugin.key}
               tooltip="Text color"
             >
               <BaselineIcon />
-            </ColorDropdownMenu>
+            </FontColorToolbarButton>
 
-            <ColorDropdownMenu
+            <FontColorToolbarButton
               nodeType={FontBackgroundColorPlugin.key}
               tooltip="Background color"
             >
               <PaintBucketIcon />
-            </ColorDropdownMenu>
+            </FontColorToolbarButton>
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <AlignDropdownMenu />
+            <AlignToolbarButton />
 
-            <NumberedIndentListToolbarButton />
-            <BulletedIndentListToolbarButton />
-            <IndentTodoToolbarButton />
+            <NumberedListToolbarButton />
+            <BulletedListToolbarButton />
+            <TodoListToolbarButton />
             <ToggleToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>
             <LinkToolbarButton />
-            <TableDropdownMenu />
-            <EmojiDropdownMenu />
+            <TableToolbarButton />
+            <EmojiToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>
@@ -163,13 +164,13 @@ export function FixedToolbarButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <LineHeightDropdownMenu />
+            <LineHeightToolbarButton />
             <OutdentToolbarButton />
             <IndentToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <MoreDropdownMenu />
+            <MoreToolbarButton />
           </ToolbarGroup>
         </>
       )}
@@ -184,7 +185,7 @@ export function FixedToolbarButtons() {
       </ToolbarGroup>
 
       <ToolbarGroup>
-        <ModeDropdownMenu />
+        <ModeToolbarButton />
       </ToolbarGroup>
     </div>
   );

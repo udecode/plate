@@ -64,16 +64,18 @@ function RemoteSelection({
   );
 }
 
-export type CursorData = {
+type CursorData = {
   color: string;
   name: string;
 };
-type CaretProps = Pick<CursorOverlayData<CursorData>, 'caretPosition' | 'data'>;
 
 const cursorOpacity = 0.7;
 const hoverOpacity = 1;
 
-function Caret({ caretPosition, data }: CaretProps) {
+function Caret({
+  caretPosition,
+  data,
+}: Pick<CursorOverlayData<CursorData>, 'caretPosition' | 'data'>) {
   const [isHover, setIsHover] = React.useState(false);
 
   const handleMouseEnter = () => {

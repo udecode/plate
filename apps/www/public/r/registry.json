@@ -5,7 +5,7 @@
     {
       "name": "plate",
       "type": "registry:lib",
-      "description": "Use `npx shadcn@latest add https://platejs.org/r/<name>` to install items from this registry.",
+      "description": "Install Plate package",
       "dependencies": [
         "@udecode/plate"
       ],
@@ -16,6 +16,7 @@
     {
       "name": "plate-ui",
       "type": "registry:style",
+      "description": "Install Plate package and styles",
       "devDependencies": [],
       "registryDependencies": [
         "https://platejs.org/r/plate"
@@ -48,7 +49,7 @@
         "@udecode/plate-highlight",
         "@udecode/plate-horizontal-rule",
         "@udecode/plate-indent",
-        "@udecode/plate-indent-list",
+        "@udecode/plate-list",
         "@udecode/plate-kbd",
         "@udecode/plate-layout",
         "@udecode/plate-link",
@@ -68,42 +69,32 @@
         "https://platejs.org/r/use-chat",
         "https://platejs.org/r/markdown-plugin",
         "https://platejs.org/r/editor",
-        "https://platejs.org/r/ai-leaf",
-        "https://platejs.org/r/blockquote-element",
-        "https://platejs.org/r/callout-element",
-        "https://platejs.org/r/code-block-element",
-        "https://platejs.org/r/code-leaf",
-        "https://platejs.org/r/code-line-element",
-        "https://platejs.org/r/code-syntax-leaf",
-        "https://platejs.org/r/column-element",
-        "https://platejs.org/r/column-group-element",
-        "https://platejs.org/r/date-element",
-        "https://platejs.org/r/equation-element",
-        "https://platejs.org/r/inline-equation-element",
-        "https://platejs.org/r/heading-element",
-        "https://platejs.org/r/highlight-leaf",
-        "https://platejs.org/r/hr-element",
-        "https://platejs.org/r/indent-todo-marker",
-        "https://platejs.org/r/image-element",
-        "https://platejs.org/r/kbd-leaf",
-        "https://platejs.org/r/link-element",
-        "https://platejs.org/r/media-audio-element",
-        "https://platejs.org/r/media-file-element",
-        "https://platejs.org/r/media-video-element",
-        "https://platejs.org/r/mention-element",
-        "https://platejs.org/r/paragraph-element",
-        "https://platejs.org/r/table-cell-element",
-        "https://platejs.org/r/table-element",
-        "https://platejs.org/r/table-row-element",
-        "https://platejs.org/r/toc-element"
+        "https://platejs.org/r/ai-node",
+        "https://platejs.org/r/blockquote-node",
+        "https://platejs.org/r/callout-node",
+        "https://platejs.org/r/code-block-node",
+        "https://platejs.org/r/code-node",
+        "https://platejs.org/r/column-node",
+        "https://platejs.org/r/date-node",
+        "https://platejs.org/r/equation-node",
+        "https://platejs.org/r/heading-node",
+        "https://platejs.org/r/highlight-node",
+        "https://platejs.org/r/hr-node",
+        "https://platejs.org/r/kbd-node",
+        "https://platejs.org/r/link-node",
+        "https://platejs.org/r/list-todo",
+        "https://platejs.org/r/media-audio-node",
+        "https://platejs.org/r/media-file-node",
+        "https://platejs.org/r/media-image-node",
+        "https://platejs.org/r/media-video-node",
+        "https://platejs.org/r/mention-node",
+        "https://platejs.org/r/paragraph-node",
+        "https://platejs.org/r/table-node",
+        "https://platejs.org/r/toc-node"
       ],
       "files": [
         {
           "path": "src/registry/ui/ai-menu.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/ai-menu-items.tsx",
           "type": "registry:ui"
         },
         {
@@ -165,20 +156,21 @@
       }
     },
     {
-      "name": "align-dropdown-menu",
+      "name": "align-toolbar-button",
       "type": "registry:ui",
-      "title": "Align Dropdown Menu",
+      "title": "Align Toolbar Button",
       "description": "A dropdown menu for text alignment controls.",
       "dependencies": [
         "@udecode/plate-alignment"
       ],
       "registryDependencies": [
         "dropdown-menu",
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar",
+        "https://platejs.org/r/transforms"
       ],
       "files": [
         {
-          "path": "src/registry/ui/align-dropdown-menu.tsx",
+          "path": "src/registry/ui/align-toolbar-button.tsx",
           "type": "registry:ui"
         }
       ],
@@ -202,7 +194,7 @@
         "@udecode/plate-ai",
         "@udecode/plate-block-quote",
         "@udecode/plate-heading",
-        "@udecode/plate-indent-list",
+        "@udecode/plate-list",
         "@udecode/plate-selection"
       ],
       "registryDependencies": [
@@ -296,14 +288,62 @@
       "name": "export-toolbar-button",
       "type": "registry:ui",
       "title": "Export Toolbar Button",
-      "description": "A toolbar button to export editor content as PDF.",
+      "description": "A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).",
       "dependencies": [
-        "@udecode/cn",
+        "@udecode/plate",
+        "@udecode/plate-alignment",
+        "@udecode/plate-basic-marks",
+        "@udecode/plate-block-quote",
+        "@udecode/plate-code-block",
+        "@udecode/plate-comments",
+        "@udecode/plate-date",
+        "@udecode/plate-font",
+        "@udecode/plate-heading",
+        "@udecode/plate-highlight",
+        "@udecode/plate-horizontal-rule",
+        "@udecode/plate-indent",
+        "@udecode/plate-list",
+        "@udecode/plate-kbd",
+        "@udecode/plate-layout",
+        "@udecode/plate-line-height",
+        "@udecode/plate-link",
+        "@udecode/plate-markdown",
+        "@udecode/plate-math",
+        "@udecode/plate-media",
+        "@udecode/plate-mention",
+        "@udecode/plate-table",
+        "@udecode/plate-toggle",
+        "lowlight",
         "html2canvas-pro",
-        "pdf-lib"
+        "pdf-lib",
+        "lucide-react"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "dropdown-menu",
+        "https://platejs.org/r/toolbar",
+        "https://platejs.org/r/editor",
+        "https://platejs.org/r/blockquote-node",
+        "https://platejs.org/r/code-block-node",
+        "https://platejs.org/r/code-node",
+        "https://platejs.org/r/column-node",
+        "https://platejs.org/r/comment-node",
+        "https://platejs.org/r/date-node",
+        "https://platejs.org/r/heading-node",
+        "https://platejs.org/r/highlight-node",
+        "https://platejs.org/r/hr-node",
+        "https://platejs.org/r/list-todo",
+        "https://platejs.org/r/kbd-node",
+        "https://platejs.org/r/link-node",
+        "https://platejs.org/r/media-audio-node",
+        "https://platejs.org/r/media-file-node",
+        "https://platejs.org/r/media-image-node",
+        "https://platejs.org/r/media-video-node",
+        "https://platejs.org/r/mention-node",
+        "https://platejs.org/r/paragraph-node",
+        "https://platejs.org/r/table-node",
+        "https://platejs.org/r/toc-node",
+        "https://platejs.org/r/toggle-node",
+        "https://platejs.org/r/equation-node"
       ],
       "files": [
         {
@@ -357,43 +397,23 @@
       }
     },
     {
-      "name": "color-dropdown-menu",
+      "name": "font-color-toolbar-button",
       "type": "registry:ui",
-      "title": "Color Dropdown Menu",
-      "description": "A color picker with text and background color controls.",
+      "title": "Font Color Toolbar Button",
+      "description": "A color picker toolbar button with text and background color controls.",
       "dependencies": [
         "@udecode/plate-font"
       ],
       "registryDependencies": [
         "dropdown-menu",
-        "https://platejs.org/r/toolbar",
         "separator",
         "button",
-        "tooltip"
+        "tooltip",
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
-          "path": "src/registry/ui/color-constants.ts",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/color-dropdown-menu-items.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/color-dropdown-menu.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/color-input.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/color-picker.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/colors-custom.tsx",
+          "path": "src/registry/ui/font-color-toolbar-button.tsx",
           "type": "registry:ui"
         }
       ],
@@ -403,7 +423,7 @@
             "route": "/docs/font"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/color-dropdown-menu"
+            "route": "https://pro.platejs.org/docs/components/font-color-toolbar-button"
           }
         ],
         "examples": [
@@ -461,13 +481,12 @@
         "avatar",
         "dropdown-menu",
         "https://platejs.org/r/editor",
-        "https://platejs.org/r/ai-leaf",
-        "https://platejs.org/r/date-element",
-        "https://platejs.org/r/emoji-input-element",
-        "https://platejs.org/r/inline-equation-element",
-        "https://platejs.org/r/link-element",
-        "https://platejs.org/r/mention-element",
-        "https://platejs.org/r/mention-input-element",
+        "https://platejs.org/r/ai-node",
+        "https://platejs.org/r/date-node",
+        "https://platejs.org/r/emoji-input-node",
+        "https://platejs.org/r/link-node",
+        "https://platejs.org/r/mention-node",
+        "https://platejs.org/r/mention-input-node",
         "https://platejs.org/r/highlight-style"
       ],
       "files": [
@@ -481,10 +500,6 @@
         },
         {
           "path": "src/registry/ui/comment.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/comment-create-form.tsx",
           "type": "registry:ui"
         }
       ],
@@ -533,10 +548,10 @@
       }
     },
     {
-      "name": "draggable",
+      "name": "block-draggable",
       "type": "registry:ui",
-      "title": "Draggable",
-      "description": "A drag handle for moving editor blocks.",
+      "title": "Block Draggable",
+      "description": "A block wrapper with a drag handle for moving editor blocks.",
       "dependencies": [
         "@udecode/plate-dnd",
         "@udecode/plate-selection",
@@ -552,11 +567,12 @@
       ],
       "registryDependencies": [
         "tooltip",
-        "https://platejs.org/r/use-mounted"
+        "https://platejs.org/r/use-mounted",
+        "https://platejs.org/r/transforms"
       ],
       "files": [
         {
-          "path": "src/registry/ui/draggable.tsx",
+          "path": "src/registry/ui/block-draggable.tsx",
           "type": "registry:ui"
         }
       ],
@@ -575,8 +591,7 @@
           "dnd-pro"
         ],
         "usage": [
-          "import { DndPlugin } from '@udecode/plate-dnd';\nimport { NodeIdPlugin } from '@udecode/plate-node-id';\nimport { DndProvider } from 'react-dnd';\nimport { HTML5Backend } from 'react-dnd-html5-backend';",
-          "export function MyEditor() {\n  const editor = usePlateEditor({\n    plugins: [\n      // ...otherPlugins,\n      NodeIdPlugin,\n      DndPlugin.configure({ options: { enableScroller: true } }),\n    ],\n    components: {\n      // ...components\n    },\n  });\n\n  return (\n    <DndProvider backend={HTML5Backend}>\n      <Plate editor={editor}>\n        <PlateContent />\n      </Plate>\n    </DndProvider>\n  );\n}"
+          "DndPlugin.configure({\n  render: {\n    aboveNodes: BlockDraggable,\n  },\n})"
         ]
       }
     },
@@ -624,7 +639,7 @@
         "https://platejs.org/r/editor",
         "command",
         "popover",
-        "https://platejs.org/r/tag-element"
+        "https://platejs.org/r/tag-node"
       ],
       "files": [
         {
@@ -645,10 +660,10 @@
       }
     },
     {
-      "name": "emoji-dropdown-menu",
+      "name": "emoji-toolbar-button",
       "type": "registry:ui",
-      "title": "Emoji Dropdown Menu",
-      "description": "A dropdown menu for emoji selection and insertion.",
+      "title": "Emoji Toolbar Button",
+      "description": "An emoji picker toolbar button.",
       "dependencies": [
         "@udecode/plate-emoji",
         "@emoji-mart/data@1.2.1",
@@ -659,39 +674,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/emoji-dropdown-menu.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/emoji-icons.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/emoji-picker-content.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/emoji-picker-navigation.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/emoji-picker-preview.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/emoji-picker-search-and-clear.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/emoji-picker-search-bar.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/emoji-picker.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/emoji-toolbar-dropdown.tsx",
+          "path": "src/registry/ui/emoji-toolbar-button.tsx",
           "type": "registry:ui"
         }
       ],
@@ -718,34 +701,32 @@
       "dependencies": [
         "@udecode/plate-basic-marks",
         "@udecode/plate-font",
-        "@udecode/plate-indent-list",
+        "@udecode/plate-list",
         "@udecode/plate-media",
         "@udecode/plate-highlight"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toolbar",
         "https://platejs.org/r/ai-toolbar-button",
-        "https://platejs.org/r/align-dropdown-menu",
-        "https://platejs.org/r/color-dropdown-menu",
+        "https://platejs.org/r/align-toolbar-button",
         "https://platejs.org/r/comment-toolbar-button",
-        "https://platejs.org/r/emoji-dropdown-menu",
+        "https://platejs.org/r/emoji-toolbar-button",
+        "https://platejs.org/r/font-color-toolbar-button",
         "https://platejs.org/r/font-size-toolbar-button",
         "https://platejs.org/r/history-toolbar-button",
-        "https://platejs.org/r/indent-list-toolbar-button",
-        "https://platejs.org/r/indent-todo-toolbar-button",
+        "https://platejs.org/r/list-toolbar-button",
         "https://platejs.org/r/indent-toolbar-button",
         "https://platejs.org/r/import-toolbar-button",
-        "https://platejs.org/r/insert-dropdown-menu",
-        "https://platejs.org/r/line-height-dropdown-menu",
+        "https://platejs.org/r/insert-toolbar-button",
+        "https://platejs.org/r/line-height-toolbar-button",
         "https://platejs.org/r/link-toolbar-button",
         "https://platejs.org/r/mark-toolbar-button",
         "https://platejs.org/r/media-toolbar-button",
-        "https://platejs.org/r/mode-dropdown-menu",
-        "https://platejs.org/r/more-dropdown-menu",
-        "https://platejs.org/r/outdent-toolbar-button",
-        "https://platejs.org/r/table-dropdown-menu",
+        "https://platejs.org/r/mode-toolbar-button",
+        "https://platejs.org/r/more-toolbar-button",
+        "https://platejs.org/r/table-toolbar-button",
         "https://platejs.org/r/toggle-toolbar-button",
-        "https://platejs.org/r/turn-into-dropdown-menu",
+        "https://platejs.org/r/turn-into-toolbar-button",
         "https://platejs.org/r/export-toolbar-button"
       ],
       "files": [
@@ -761,37 +742,37 @@
       }
     },
     {
-      "name": "fixed-toolbar-list-buttons",
+      "name": "fixed-toolbar-classic-buttons",
       "type": "registry:ui",
       "title": "Fixed Toolbar List Buttons",
       "dependencies": [
         "@udecode/plate-basic-marks",
         "@udecode/plate-font",
-        "@udecode/plate-list",
+        "@udecode/plate-list-classic",
         "@udecode/plate-media"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toolbar",
         "https://platejs.org/r/ai-toolbar-button",
-        "https://platejs.org/r/align-dropdown-menu",
-        "https://platejs.org/r/color-dropdown-menu",
+        "https://platejs.org/r/align-toolbar-button",
+        "https://platejs.org/r/font-color-toolbar-button",
         "https://platejs.org/r/comment-toolbar-button",
-        "https://platejs.org/r/emoji-dropdown-menu",
-        "https://platejs.org/r/insert-dropdown-menu",
-        "https://platejs.org/r/line-height-dropdown-menu",
-        "https://platejs.org/r/list-indent-toolbar-button",
+        "https://platejs.org/r/emoji-toolbar-button",
+        "https://platejs.org/r/insert-toolbar-button",
+        "https://platejs.org/r/line-height-toolbar-button",
+        "https://platejs.org/r/list-classic-toolbar-button",
         "https://platejs.org/r/link-toolbar-button",
         "https://platejs.org/r/mark-toolbar-button",
         "https://platejs.org/r/media-toolbar-button",
-        "https://platejs.org/r/mode-dropdown-menu",
-        "https://platejs.org/r/more-dropdown-menu",
-        "https://platejs.org/r/table-dropdown-menu",
+        "https://platejs.org/r/mode-toolbar-button",
+        "https://platejs.org/r/more-toolbar-button",
+        "https://platejs.org/r/table-toolbar-button",
         "https://platejs.org/r/toggle-toolbar-button",
-        "https://platejs.org/r/turn-into-dropdown-menu"
+        "https://platejs.org/r/turn-into-toolbar-button"
       ],
       "files": [
         {
-          "path": "src/registry/ui/fixed-toolbar-list-buttons.tsx",
+          "path": "src/registry/ui/fixed-toolbar-classic-buttons.tsx",
           "type": "registry:ui"
         }
       ],
@@ -831,10 +812,12 @@
         "https://platejs.org/r/toolbar",
         "https://platejs.org/r/ai-toolbar-button",
         "https://platejs.org/r/comment-toolbar-button",
+        "https://platejs.org/r/equation-toolbar-button",
         "https://platejs.org/r/link-toolbar-button",
         "https://platejs.org/r/mark-toolbar-button",
-        "https://platejs.org/r/more-dropdown-menu",
-        "https://platejs.org/r/turn-into-dropdown-menu"
+        "https://platejs.org/r/more-toolbar-button",
+        "https://platejs.org/r/suggestion-toolbar-button",
+        "https://platejs.org/r/turn-into-toolbar-button"
       ],
       "files": [
         {
@@ -922,7 +905,7 @@
       }
     },
     {
-      "name": "indent-fire-marker",
+      "name": "list-emoji",
       "type": "registry:ui",
       "title": "Indent Fire Marker",
       "dependencies": [
@@ -930,7 +913,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/indent-fire-marker.tsx",
+          "path": "src/registry/ui/list-emoji.tsx",
           "type": "registry:ui"
         }
       ]
@@ -963,26 +946,26 @@
       }
     },
     {
-      "name": "indent-list-toolbar-button",
+      "name": "list-toolbar-button",
       "type": "registry:ui",
-      "title": "Indent List Toolbar Button",
+      "title": "List Toolbar Button",
       "description": "A toolbar control for adjusting list indentation.",
       "dependencies": [
-        "@udecode/plate-indent-list"
+        "@udecode/plate-list"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
-          "path": "src/registry/ui/indent-list-toolbar-button.tsx",
+          "path": "src/registry/ui/list-toolbar-button.tsx",
           "type": "registry:ui"
         }
       ],
       "meta": {
         "docs": [
           {
-            "route": "/docs/indent-list"
+            "route": "/docs/list"
           }
         ],
         "examples": [
@@ -991,61 +974,33 @@
       }
     },
     {
-      "name": "indent-todo-marker",
+      "name": "list-todo",
       "type": "registry:ui",
-      "title": "Indent Todo Marker",
+      "title": "List Todo",
       "description": "A checkbox marker for interactive todo lists.",
       "dependencies": [
-        "@udecode/plate-indent-list"
+        "@udecode/plate-list"
       ],
       "registryDependencies": [
         "checkbox"
       ],
       "files": [
         {
-          "path": "src/registry/ui/indent-todo-marker.tsx",
+          "path": "src/registry/ui/list-todo.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/indent-todo-marker-static.tsx",
+          "path": "src/registry/ui/list-todo-static.tsx",
           "type": "registry:ui"
         }
       ],
       "meta": {
         "docs": [
           {
-            "route": "/docs/indent-list"
+            "route": "/docs/list"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/indent-todo-marker"
-          }
-        ],
-        "examples": [
-          "list-demo"
-        ]
-      }
-    },
-    {
-      "name": "indent-todo-toolbar-button",
-      "type": "registry:ui",
-      "title": "Indent Todo Toolbar Button",
-      "description": "A toolbar control for creating todo list items.",
-      "dependencies": [
-        "@udecode/plate-indent-list"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/toolbar"
-      ],
-      "files": [
-        {
-          "path": "src/registry/ui/indent-todo-toolbar-button.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "docs": [
-          {
-            "route": "/docs/indent-list"
+            "route": "https://pro.platejs.org/docs/components/list-todo"
           }
         ],
         "examples": [
@@ -1056,8 +1011,8 @@
     {
       "name": "indent-toolbar-button",
       "type": "registry:ui",
-      "title": "Indent Toolbar Button",
-      "description": "A toolbar control for block indentation.",
+      "title": "Indent Toolbar Buttons",
+      "description": "Toolbar controls for block indentation.",
       "dependencies": [
         "@udecode/plate-indent"
       ],
@@ -1114,9 +1069,9 @@
       }
     },
     {
-      "name": "insert-dropdown-menu",
+      "name": "insert-toolbar-button",
       "type": "registry:ui",
-      "title": "Insert Dropdown Menu",
+      "title": "Insert Toolbar Button",
       "description": "A menu for inserting different types of blocks.",
       "dependencies": [
         "@udecode/plate-block-quote",
@@ -1125,7 +1080,7 @@
         "@udecode/plate-excalidraw",
         "@udecode/plate-heading",
         "@udecode/plate-horizontal-rule",
-        "@udecode/plate-indent-list",
+        "@udecode/plate-list",
         "@udecode/plate-link",
         "@udecode/plate-media",
         "@udecode/plate-table",
@@ -1138,7 +1093,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/insert-dropdown-menu.tsx",
+          "path": "src/registry/ui/insert-toolbar-button.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1149,9 +1104,9 @@
       }
     },
     {
-      "name": "line-height-dropdown-menu",
+      "name": "line-height-toolbar-button",
       "type": "registry:ui",
-      "title": "Line Height Dropdown Menu",
+      "title": "Line Height Toolbar Button",
       "description": "A menu for controlling text line spacing.",
       "dependencies": [
         "@udecode/plate-line-height"
@@ -1162,7 +1117,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/line-height-dropdown-menu.tsx",
+          "path": "src/registry/ui/line-height-toolbar-button.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1178,7 +1133,7 @@
       }
     },
     {
-      "name": "link-floating-toolbar",
+      "name": "link-toolbar",
       "type": "registry:ui",
       "title": "Link Floating Toolbar",
       "description": "A floating interface for link editing.",
@@ -1194,7 +1149,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/link-floating-toolbar.tsx",
+          "path": "src/registry/ui/link-toolbar.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1207,7 +1162,7 @@
             "route": "/docs/api/floating"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/link-floating-toolbar"
+            "route": "https://pro.platejs.org/docs/components/link-toolbar"
           }
         ],
         "examples": [
@@ -1249,58 +1204,30 @@
       }
     },
     {
-      "name": "list-indent-toolbar-button",
+      "name": "list-classic-toolbar-button",
       "type": "registry:ui",
-      "title": "List Indent Toolbar Button",
-      "description": "A toolbar control for indenting lists.",
+      "title": "List Toolbar Buttons",
+      "description": "Toolbar controls for list creation and management.",
       "dependencies": [
-        "@udecode/plate-list"
+        "@udecode/plate-list-classic"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
-          "path": "src/registry/ui/list-indent-toolbar-button.tsx",
+          "path": "src/registry/ui/list-classic-toolbar-button.tsx",
           "type": "registry:ui"
         }
       ],
       "meta": {
         "docs": [
           {
-            "route": "/docs/list"
+            "route": "/docs/list-classic"
           }
         ],
         "examples": [
-          "list-demo"
-        ]
-      }
-    },
-    {
-      "name": "list-toolbar-button",
-      "type": "registry:ui",
-      "title": "List Toolbar Button",
-      "description": "A toolbar control for list creation and management.",
-      "dependencies": [
-        "@udecode/plate-list"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/toolbar"
-      ],
-      "files": [
-        {
-          "path": "src/registry/ui/list-toolbar-button.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "docs": [
-          {
-            "route": "/docs/list"
-          }
-        ],
-        "examples": [
-          "list-demo"
+          "list-classic-demo"
         ]
       }
     },
@@ -1334,10 +1261,10 @@
       }
     },
     {
-      "name": "media-popover",
+      "name": "media-toolbar",
       "type": "registry:ui",
-      "title": "Media Popover",
-      "description": "A popover interface for media settings.",
+      "title": "Media Toolbar",
+      "description": "A toolbar interface for media settings.",
       "dependencies": [
         "@udecode/plate-media"
       ],
@@ -1349,7 +1276,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/media-popover.tsx",
+          "path": "src/registry/ui/media-toolbar.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1428,9 +1355,9 @@
       }
     },
     {
-      "name": "mode-dropdown-menu",
+      "name": "mode-toolbar-button",
       "type": "registry:ui",
-      "title": "Mode Dropdown Menu",
+      "title": "Mode Toolbar Button",
       "description": "A menu for switching between editor modes.",
       "dependencies": [],
       "registryDependencies": [
@@ -1439,7 +1366,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/mode-dropdown-menu.tsx",
+          "path": "src/registry/ui/mode-toolbar-button.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1450,9 +1377,9 @@
       }
     },
     {
-      "name": "more-dropdown-menu",
+      "name": "more-toolbar-button",
       "type": "registry:ui",
-      "title": "More Dropdown Menu",
+      "title": "More Toolbar Button",
       "description": "A menu for additional text formatting options.",
       "dependencies": [
         "@udecode/plate-basic-marks",
@@ -1464,14 +1391,14 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/more-dropdown-menu.tsx",
+          "path": "src/registry/ui/more-toolbar-button.tsx",
           "type": "registry:ui"
         }
       ],
       "meta": {
         "docs": [
           {
-            "route": "https://pro.platejs.org/docs/components/more-dropdown-menu"
+            "route": "https://pro.platejs.org/docs/components/more-toolbar-button"
           }
         ],
         "examples": [
@@ -1481,45 +1408,17 @@
       }
     },
     {
-      "name": "outdent-toolbar-button",
+      "name": "block-placeholder",
       "type": "registry:ui",
-      "title": "Outdent Toolbar Button",
-      "description": "A toolbar button for decreasing block indentation.",
-      "dependencies": [
-        "@udecode/plate-indent"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/toolbar"
-      ],
-      "files": [
-        {
-          "path": "src/registry/ui/outdent-toolbar-button.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "docs": [
-          {
-            "route": "/docs/indent"
-          }
-        ],
-        "examples": [
-          "indent-demo"
-        ]
-      }
-    },
-    {
-      "name": "placeholder",
-      "type": "registry:ui",
-      "title": "Placeholder",
-      "description": "A text placeholder for empty editor blocks.",
+      "title": "Block Placeholder",
+      "description": "A block wrapper with a text placeholder for empty editor blocks.",
       "dependencies": [
         "@udecode/plate-heading"
       ],
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/placeholder.tsx",
+          "path": "src/registry/ui/block-placeholder.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1569,9 +1468,9 @@
       }
     },
     {
-      "name": "table-dropdown-menu",
+      "name": "table-toolbar-button",
       "type": "registry:ui",
-      "title": "Table Dropdown Menu",
+      "title": "Table Toolbar Button",
       "description": "A menu for table manipulation and formatting.",
       "dependencies": [
         "@udecode/plate-table"
@@ -1582,7 +1481,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/table-dropdown-menu.tsx",
+          "path": "src/registry/ui/table-toolbar-button.tsx",
           "type": "registry:ui"
         },
         {
@@ -1630,15 +1529,15 @@
       }
     },
     {
-      "name": "turn-into-dropdown-menu",
+      "name": "turn-into-toolbar-button",
       "type": "registry:ui",
-      "title": "Turn Into Dropdown Menu",
+      "title": "Turn Into Toolbar Button",
       "description": "A menu for converting between different block types.",
       "dependencies": [
         "@udecode/plate-block-quote",
         "@udecode/plate-code-block",
         "@udecode/plate-heading",
-        "@udecode/plate-indent-list",
+        "@udecode/plate-list",
         "@udecode/plate-toggle"
       ],
       "registryDependencies": [
@@ -1648,14 +1547,14 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/turn-into-dropdown-menu.tsx",
+          "path": "src/registry/ui/turn-into-toolbar-button.tsx",
           "type": "registry:ui"
         }
       ],
       "meta": {
         "docs": [
           {
-            "route": "https://pro.platejs.org/docs/components/turn-into-dropdown-menu"
+            "route": "https://pro.platejs.org/docs/components/turn-into-toolbar-button"
           }
         ],
         "examples": [
@@ -1710,7 +1609,36 @@
       "meta": {}
     },
     {
-      "name": "ai-leaf",
+      "name": "suggestion-toolbar-button",
+      "type": "registry:ui",
+      "title": "Suggestion Toolbar Button",
+      "description": "A toolbar button for toggling suggestion mode in the editor.",
+      "dependencies": [
+        "@udecode/plate-suggestion"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/toolbar"
+      ],
+      "files": [
+        {
+          "path": "src/registry/ui/suggestion-toolbar-button.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/suggestion"
+          }
+        ],
+        "examples": [
+          "comments-demo",
+          "comments-pro"
+        ]
+      }
+    },
+    {
+      "name": "ai-node",
       "type": "registry:ui",
       "title": "AI Leaf",
       "description": "A text highlighter for AI-generated content.",
@@ -1718,11 +1646,7 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/ai-leaf.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/ai-anchor-element.tsx",
+          "path": "src/registry/ui/ai-node.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1733,7 +1657,7 @@
             "title": "AI"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/ai-leaf",
+            "route": "https://pro.platejs.org/docs/components/ai-node",
             "title": "AI Leaf"
           }
         ],
@@ -1745,7 +1669,7 @@
       }
     },
     {
-      "name": "blockquote-element",
+      "name": "blockquote-node",
       "type": "registry:ui",
       "title": "Blockquote Element",
       "description": "A quote component for block quotes.",
@@ -1753,11 +1677,11 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/blockquote-element.tsx",
+          "path": "src/registry/ui/blockquote-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/blockquote-element-static.tsx",
+          "path": "src/registry/ui/blockquote-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1767,7 +1691,7 @@
             "route": "/docs/basic-elements"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/blockquote-element"
+            "route": "https://pro.platejs.org/docs/components/blockquote-node"
           }
         ],
         "examples": [
@@ -1777,22 +1701,22 @@
       }
     },
     {
-      "name": "callout-element",
+      "name": "callout-node",
       "type": "registry:ui",
       "description": "A callout component for highlighting important information with customizable icons and styles.",
       "dependencies": [
         "@udecode/plate-callout"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/emoji-dropdown-menu"
+        "https://platejs.org/r/emoji-toolbar-button"
       ],
       "files": [
         {
-          "path": "src/registry/ui/callout-element.tsx",
+          "path": "src/registry/ui/callout-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/callout-element-static.tsx",
+          "path": "src/registry/ui/callout-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1802,7 +1726,7 @@
             "route": "/docs/basic-elements"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/callout-element"
+            "route": "https://pro.platejs.org/docs/components/callout-node"
           }
         ],
         "examples": [
@@ -1811,9 +1735,9 @@
       }
     },
     {
-      "name": "code-block-element",
+      "name": "code-block-node",
       "type": "registry:ui",
-      "title": "Code Block Element",
+      "title": "Code Block Nodes",
       "description": "A code block with syntax highlighting and language selection.",
       "dependencies": [
         "@udecode/plate-code-block",
@@ -1824,15 +1748,11 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/code-block-element.tsx",
+          "path": "src/registry/ui/code-block-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/code-block-element-static.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/code-block-combobox.tsx",
+          "path": "src/registry/ui/code-block-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1842,7 +1762,7 @@
             "route": "/docs/basic-elements"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/code-block-element"
+            "route": "https://pro.platejs.org/docs/components/code-block-node"
           }
         ],
         "examples": [
@@ -1851,7 +1771,7 @@
       }
     },
     {
-      "name": "code-leaf",
+      "name": "code-node",
       "type": "registry:ui",
       "title": "Code Leaf",
       "description": "An inline component for code snippets.",
@@ -1859,11 +1779,11 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/code-leaf.tsx",
+          "path": "src/registry/ui/code-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/code-leaf-static.tsx",
+          "path": "src/registry/ui/code-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -1873,7 +1793,7 @@
             "route": "/docs/basic-marks"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/code-leaf"
+            "route": "https://pro.platejs.org/docs/components/code-node"
           }
         ],
         "examples": [
@@ -1882,113 +1802,10 @@
       }
     },
     {
-      "name": "code-line-element",
+      "name": "column-node",
       "type": "registry:ui",
-      "title": "Code Line Element",
-      "description": "A line component for code blocks.",
-      "dependencies": [],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/ui/code-line-element.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/code-line-element-static.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "docs": [
-          {
-            "route": "/docs/basic-elements"
-          },
-          {
-            "route": "https://pro.platejs.org/docs/components/code-line-element"
-          }
-        ],
-        "examples": [
-          "basic-elements-demo",
-          "basic-nodes-pro"
-        ]
-      }
-    },
-    {
-      "name": "code-syntax-leaf",
-      "type": "registry:ui",
-      "title": "Code Syntax Leaf",
-      "description": "A syntax highlighting component for code blocks.",
-      "dependencies": [
-        "@udecode/plate-code-block"
-      ],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/ui/code-syntax-leaf.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/code-syntax-leaf-static.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "docs": [
-          {
-            "route": "/docs/basic-elements"
-          },
-          {
-            "route": "https://pro.platejs.org/docs/components/code-syntax-leaf"
-          }
-        ],
-        "examples": [
-          "basic-elements-demo",
-          "basic-nodes-pro"
-        ]
-      }
-    },
-    {
-      "name": "column-element",
-      "type": "registry:ui",
-      "title": "Column Element",
-      "description": "A resizable column component for layout.",
-      "dependencies": [
-        "@udecode/cn",
-        "@udecode/plate-layout",
-        "@udecode/plate-resizable"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/resize-handle"
-      ],
-      "files": [
-        {
-          "path": "src/registry/ui/column-element.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/column-element-static.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "docs": [
-          {
-            "route": "/docs/column"
-          },
-          {
-            "route": "https://pro.platejs.org/docs/components/column-element"
-          }
-        ],
-        "examples": [
-          "column-demo"
-        ]
-      }
-    },
-    {
-      "name": "column-group-element",
-      "type": "registry:ui",
-      "title": "Column Group Element",
-      "description": "A resizable column component for layout.",
+      "title": "Column Nodes",
+      "description": "Resizable column components for layout.",
       "dependencies": [
         "@udecode/plate-layout"
       ],
@@ -1997,11 +1814,11 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/column-group-element.tsx",
+          "path": "src/registry/ui/column-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/column-group-element-static.tsx",
+          "path": "src/registry/ui/column-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2011,7 +1828,7 @@
             "route": "/docs/column"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/column-group-element"
+            "route": "https://pro.platejs.org/docs/components/column-node"
           }
         ],
         "examples": [
@@ -2020,7 +1837,7 @@
       }
     },
     {
-      "name": "comment-leaf",
+      "name": "comment-node",
       "type": "registry:ui",
       "title": "Comment Leaf",
       "description": "A text component for displaying comments with visual indicators.",
@@ -2032,11 +1849,11 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/comment-leaf.tsx",
+          "path": "src/registry/ui/comment-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/comment-leaf-static.tsx",
+          "path": "src/registry/ui/comment-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2046,7 +1863,7 @@
             "route": "/docs/comments"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/comment-leaf"
+            "route": "https://pro.platejs.org/docs/components/comment-node"
           }
         ],
         "examples": [
@@ -2056,7 +1873,7 @@
       }
     },
     {
-      "name": "suggestion-leaf",
+      "name": "suggestion-node",
       "type": "registry:ui",
       "title": "Suggestion Leaf",
       "description": "A text component for suggestion.",
@@ -2068,11 +1885,11 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/suggestion-leaf.tsx",
+          "path": "src/registry/ui/suggestion-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/suggestion-leaf-static.tsx",
+          "path": "src/registry/ui/suggestion-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2118,7 +1935,7 @@
       }
     },
     {
-      "name": "date-element",
+      "name": "date-node",
       "type": "registry:ui",
       "title": "Date Element",
       "description": "A date field component with calendar picker.",
@@ -2130,11 +1947,11 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/date-element.tsx",
+          "path": "src/registry/ui/date-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/date-element-static.tsx",
+          "path": "src/registry/ui/date-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2144,7 +1961,7 @@
             "route": "/docs/date"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/date-element"
+            "route": "https://pro.platejs.org/docs/components/date-node"
           }
         ],
         "examples": [
@@ -2153,7 +1970,7 @@
       }
     },
     {
-      "name": "equation-element",
+      "name": "equation-node",
       "type": "registry:ui",
       "title": "Equation Element",
       "description": "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
@@ -2166,15 +1983,11 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/equation-element.tsx",
+          "path": "src/registry/ui/equation-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/equation-element-static.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/equation-popover.tsx",
+          "path": "src/registry/ui/equation-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2191,43 +2004,10 @@
       }
     },
     {
-      "name": "inline-equation-element",
+      "name": "equation-toolbar-button",
       "type": "registry:ui",
-      "title": "Inline Equation Element",
-      "description": "An inline LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
-      "dependencies": [
-        "@udecode/plate-math"
-      ],
-      "registryDependencies": [
-        "popover"
-      ],
-      "files": [
-        {
-          "path": "src/registry/ui/inline-equation-element.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/inline-equation-element-static.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "docs": [
-          {
-            "route": "http://localhost:3000/docs/equation",
-            "title": "Equation"
-          }
-        ],
-        "examples": [
-          "equation-demo"
-        ]
-      }
-    },
-    {
-      "name": "inline-equation-toolbar-button",
-      "type": "registry:ui",
-      "title": "Inline Equation Toolbar Button",
-      "description": "A toolbar button for inserting and editing inline equations.",
+      "title": "Equation Toolbar Button",
+      "description": "A toolbar button for inserting and editing equations.",
       "dependencies": [
         "@udecode/plate-math"
       ],
@@ -2236,7 +2016,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/inline-equation-toolbar-button.tsx",
+          "path": "src/registry/ui/equation-toolbar-button.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2254,7 +2034,7 @@
       }
     },
     {
-      "name": "emoji-input-element",
+      "name": "emoji-input-node",
       "type": "registry:ui",
       "title": "Emoji Input Element",
       "description": "An input component for emoji search and insertion.",
@@ -2268,7 +2048,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/emoji-input-element.tsx",
+          "path": "src/registry/ui/emoji-input-node.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2278,7 +2058,7 @@
             "route": "/docs/emoji"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/emoji-input-element"
+            "route": "https://pro.platejs.org/docs/components/emoji-input-node"
           }
         ],
         "examples": [
@@ -2287,7 +2067,7 @@
       }
     },
     {
-      "name": "excalidraw-element",
+      "name": "excalidraw-node",
       "type": "registry:ui",
       "title": "Excalidraw Element",
       "description": "A drawing component powered by Excalidraw.",
@@ -2297,7 +2077,7 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/excalidraw-element.tsx",
+          "path": "src/registry/ui/excalidraw-node.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2334,12 +2114,12 @@
           }
         ],
         "examples": [
-          "list-demo"
+          "font-demo"
         ]
       }
     },
     {
-      "name": "heading-element",
+      "name": "heading-node",
       "type": "registry:ui",
       "title": "Heading Element",
       "description": "A heading with multiple level support.",
@@ -2347,11 +2127,11 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/heading-element.tsx",
+          "path": "src/registry/ui/heading-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/heading-element-static.tsx",
+          "path": "src/registry/ui/heading-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2361,7 +2141,7 @@
             "route": "/docs/basic-elements"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/heading-element"
+            "route": "https://pro.platejs.org/docs/components/heading-node"
           }
         ],
         "examples": [
@@ -2371,7 +2151,7 @@
       }
     },
     {
-      "name": "highlight-leaf",
+      "name": "highlight-node",
       "type": "registry:ui",
       "title": "Highlight Leaf",
       "description": "A text highlighter with customizable colors.",
@@ -2381,11 +2161,11 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/highlight-leaf.tsx",
+          "path": "src/registry/ui/highlight-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/highlight-leaf-static.tsx",
+          "path": "src/registry/ui/highlight-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2401,7 +2181,7 @@
       }
     },
     {
-      "name": "hr-element",
+      "name": "hr-node",
       "type": "registry:ui",
       "title": "Horizontal Rule Element",
       "description": "A horizontal rule component with focus states.",
@@ -2409,11 +2189,11 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/hr-element.tsx",
+          "path": "src/registry/ui/hr-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/hr-element-static.tsx",
+          "path": "src/registry/ui/hr-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2423,7 +2203,7 @@
             "route": "/docs/horizontal-rule"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/hr-element"
+            "route": "https://pro.platejs.org/docs/components/hr-node"
           }
         ],
         "examples": [
@@ -2432,7 +2212,7 @@
       }
     },
     {
-      "name": "image-element",
+      "name": "media-image-node",
       "type": "registry:ui",
       "title": "Image Element",
       "description": "Image element with lazy loading, resizing capabilities, and optional caption.",
@@ -2441,17 +2221,17 @@
         "@udecode/plate-resizable"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/media-popover",
+        "https://platejs.org/r/media-toolbar",
         "https://platejs.org/r/caption",
         "https://platejs.org/r/resize-handle"
       ],
       "files": [
         {
-          "path": "src/registry/ui/image-element.tsx",
+          "path": "src/registry/ui/media-image-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/image-element-static.tsx",
+          "path": "src/registry/ui/media-image-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2464,7 +2244,7 @@
             "route": "/docs/api/resizable"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/image-element"
+            "route": "https://pro.platejs.org/docs/components/image-node"
           }
         ],
         "examples": [
@@ -2474,9 +2254,9 @@
       }
     },
     {
-      "name": "image-preview",
+      "name": "media-preview-dialog",
       "type": "registry:ui",
-      "title": "Image Preview",
+      "title": "Media Preview Dialog",
       "description": "A modal component for previewing and manipulating images.",
       "dependencies": [
         "@udecode/plate-media"
@@ -2484,7 +2264,7 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/image-preview.tsx",
+          "path": "src/registry/ui/media-preview-dialog.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2504,7 +2284,7 @@
       }
     },
     {
-      "name": "kbd-leaf",
+      "name": "kbd-node",
       "type": "registry:ui",
       "title": "Keyboard Input Leaf",
       "description": "A component for styling keyboard shortcuts.",
@@ -2514,11 +2294,11 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/kbd-leaf.tsx",
+          "path": "src/registry/ui/kbd-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/kbd-leaf-static.tsx",
+          "path": "src/registry/ui/kbd-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2535,7 +2315,7 @@
       }
     },
     {
-      "name": "link-element",
+      "name": "link-node",
       "type": "registry:ui",
       "title": "Link Element",
       "description": "A component for rendering hyperlinks with hover states.",
@@ -2545,11 +2325,11 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/link-element.tsx",
+          "path": "src/registry/ui/link-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/link-element-static.tsx",
+          "path": "src/registry/ui/link-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2559,7 +2339,7 @@
             "route": "/docs/link"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/link-element"
+            "route": "https://pro.platejs.org/docs/components/link-node"
           }
         ],
         "examples": [
@@ -2568,33 +2348,35 @@
       }
     },
     {
-      "name": "list-element",
+      "name": "list-classic-node",
       "type": "registry:ui",
-      "title": "List Element",
-      "description": "A list element for ordered and unordered items.",
+      "title": "List Nodes",
+      "description": "List (classic) nodes for ordered and unordered items.",
       "dependencies": [
-        "@udecode/plate-list"
+        "@udecode/plate-list-classic"
       ],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "checkbox"
+      ],
       "files": [
         {
-          "path": "src/registry/ui/list-element.tsx",
+          "path": "src/registry/ui/list-classic-node.tsx",
           "type": "registry:ui"
         }
       ],
       "meta": {
         "docs": [
           {
-            "route": "/docs/list"
+            "route": "/docs/list-classic"
           }
         ],
         "examples": [
-          "list-demo"
+          "list-classic-demo"
         ]
       }
     },
     {
-      "name": "media-audio-element",
+      "name": "media-audio-node",
       "type": "registry:ui",
       "title": "Media Audio Element",
       "description": "An audio player component with caption support.",
@@ -2607,11 +2389,11 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/media-audio-element.tsx",
+          "path": "src/registry/ui/media-audio-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/media-audio-element-static.tsx",
+          "path": "src/registry/ui/media-audio-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2621,7 +2403,7 @@
             "route": "/docs/media"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/media-audio-element"
+            "route": "https://pro.platejs.org/docs/components/media-audio-node"
           }
         ],
         "examples": [
@@ -2631,7 +2413,7 @@
       }
     },
     {
-      "name": "media-embed-element",
+      "name": "media-embed-node",
       "type": "registry:ui",
       "title": "Media Embed Element",
       "description": "A component for embedded media content with resizing and caption support.",
@@ -2642,13 +2424,13 @@
         "react-lite-youtube-embed"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/media-popover",
+        "https://platejs.org/r/media-toolbar",
         "https://platejs.org/r/caption",
         "https://platejs.org/r/resize-handle"
       ],
       "files": [
         {
-          "path": "src/registry/ui/media-embed-element.tsx",
+          "path": "src/registry/ui/media-embed-node.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2661,7 +2443,7 @@
             "route": "/docs/api/resizable"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/media-embed-element"
+            "route": "https://pro.platejs.org/docs/components/media-embed-node"
           }
         ],
         "examples": [
@@ -2671,7 +2453,7 @@
       }
     },
     {
-      "name": "media-file-element",
+      "name": "media-file-node",
       "type": "registry:ui",
       "title": "Media File Element",
       "description": "A file attachment component with download capability and caption.",
@@ -2684,11 +2466,11 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/media-file-element.tsx",
+          "path": "src/registry/ui/media-file-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/media-file-element-static.tsx",
+          "path": "src/registry/ui/media-file-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2698,7 +2480,7 @@
             "route": "/docs/media"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/media-file-element"
+            "route": "https://pro.platejs.org/docs/components/media-file-node"
           }
         ],
         "examples": [
@@ -2708,7 +2490,7 @@
       }
     },
     {
-      "name": "media-placeholder-element",
+      "name": "media-placeholder-node",
       "type": "registry:ui",
       "title": "Media Placeholder Element",
       "description": "A placeholder for media upload progress indication.",
@@ -2721,7 +2503,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/media-placeholder-element.tsx",
+          "path": "src/registry/ui/media-placeholder-node.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2731,7 +2513,7 @@
             "route": "/docs/media"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/media-placeholder-element"
+            "route": "https://pro.platejs.org/docs/components/media-placeholder-node"
           }
         ],
         "examples": [
@@ -2741,7 +2523,7 @@
       }
     },
     {
-      "name": "media-video-element",
+      "name": "media-video-node",
       "type": "registry:ui",
       "title": "Media Video Element",
       "description": "A video player component with YouTube and file upload support.",
@@ -2752,17 +2534,17 @@
         "react-lite-youtube-embed"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/media-popover",
+        "https://platejs.org/r/media-toolbar",
         "https://platejs.org/r/caption",
         "https://platejs.org/r/resize-handle"
       ],
       "files": [
         {
-          "path": "src/registry/ui/media-video-element.tsx",
+          "path": "src/registry/ui/media-video-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/media-video-element-static.tsx",
+          "path": "src/registry/ui/media-video-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2775,7 +2557,7 @@
             "route": "/docs/api/resizable"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/media-video-element"
+            "route": "https://pro.platejs.org/docs/components/media-video-node"
           }
         ],
         "examples": [
@@ -2785,7 +2567,7 @@
       }
     },
     {
-      "name": "mention-element",
+      "name": "mention-node",
       "type": "registry:ui",
       "title": "Mention Element",
       "description": "A mention element with customizable prefix and label.",
@@ -2797,11 +2579,11 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/mention-element.tsx",
+          "path": "src/registry/ui/mention-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/mention-element-static.tsx",
+          "path": "src/registry/ui/mention-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2811,7 +2593,7 @@
             "route": "/docs/mention"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/mention-element"
+            "route": "https://pro.platejs.org/docs/components/mention-node"
           }
         ],
         "examples": [
@@ -2820,7 +2602,7 @@
       }
     },
     {
-      "name": "mention-input-element",
+      "name": "mention-input-node",
       "type": "registry:ui",
       "title": "Mention Input Element",
       "description": "An input component for user mentions with autocomplete.",
@@ -2832,7 +2614,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/mention-input-element.tsx",
+          "path": "src/registry/ui/mention-input-node.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2842,7 +2624,7 @@
             "route": "/docs/mention"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/mention-input-element"
+            "route": "https://pro.platejs.org/docs/components/mention-input-node"
           }
         ],
         "examples": [
@@ -2851,7 +2633,7 @@
       }
     },
     {
-      "name": "paragraph-element",
+      "name": "paragraph-node",
       "type": "registry:ui",
       "title": "Paragraph Element",
       "description": "A paragraph block with background color support.",
@@ -2859,11 +2641,11 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/paragraph-element.tsx",
+          "path": "src/registry/ui/paragraph-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/paragraph-element-static.tsx",
+          "path": "src/registry/ui/paragraph-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2873,7 +2655,7 @@
             "route": "/docs/basic-elements"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/paragraph-element"
+            "route": "https://pro.platejs.org/docs/components/paragraph-node"
           }
         ],
         "examples": [
@@ -2883,7 +2665,7 @@
       }
     },
     {
-      "name": "search-highlight-leaf",
+      "name": "search-highlight-node",
       "type": "registry:ui",
       "title": "Search Highlight Leaf",
       "description": "A component that highlights search results in text.",
@@ -2891,7 +2673,7 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/search-highlight-leaf.tsx",
+          "path": "src/registry/ui/search-highlight-node.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2904,7 +2686,7 @@
       }
     },
     {
-      "name": "slash-input-element",
+      "name": "slash-input-node",
       "type": "registry:ui",
       "title": "Slash Input Element",
       "description": "A command input component for inserting various elements.",
@@ -2914,7 +2696,7 @@
         "@udecode/plate-code-block",
         "@udecode/plate-date",
         "@udecode/plate-heading",
-        "@udecode/plate-indent-list",
+        "@udecode/plate-list",
         "@udecode/plate-table",
         "@udecode/plate-toggle"
       ],
@@ -2924,7 +2706,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/slash-input-element.tsx",
+          "path": "src/registry/ui/slash-input-node.tsx",
           "type": "registry:ui"
         }
       ],
@@ -2935,7 +2717,7 @@
             "title": "Slash"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/slash-input-element"
+            "route": "https://pro.platejs.org/docs/components/slash-input-node"
           }
         ],
         "examples": [
@@ -2945,43 +2727,7 @@
       }
     },
     {
-      "name": "table-cell-element",
-      "type": "registry:ui",
-      "title": "Table Cell Element",
-      "description": "A table cell with resizable borders and selection.",
-      "dependencies": [
-        "@udecode/plate-table"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/resize-handle",
-        "https://platejs.org/r/block-selection"
-      ],
-      "files": [
-        {
-          "path": "src/registry/ui/table-cell-element.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/table-cell-element-static.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "docs": [
-          {
-            "route": "/docs/table"
-          },
-          {
-            "route": "https://pro.platejs.org/docs/components/table-cell-element"
-          }
-        ],
-        "examples": [
-          "table-demo"
-        ]
-      }
-    },
-    {
-      "name": "table-element",
+      "name": "table-node",
       "type": "registry:ui",
       "title": "Table Element",
       "description": "A table component with floating toolbar and border customization.",
@@ -2991,11 +2737,16 @@
       ],
       "registryDependencies": [
         "dropdown-menu",
-        "https://platejs.org/r/tailwind-scrollbar-hide"
+        "popover",
+        "https://platejs.org/r/resize-handle",
+        "https://platejs.org/r/block-selection",
+        "https://platejs.org/r/toolbar",
+        "https://platejs.org/r/tailwind-scrollbar-hide",
+        "https://platejs.org/r/font-color-toolbar-button"
       ],
       "files": [
         {
-          "path": "src/registry/ui/table-element.tsx",
+          "path": "src/registry/ui/table-node.tsx",
           "type": "registry:ui"
         },
         {
@@ -3003,15 +2754,7 @@
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/table-element-static.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/color-constants.ts",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/color-dropdown-menu-items.tsx",
+          "path": "src/registry/ui/table-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -3021,7 +2764,7 @@
             "route": "/docs/table"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/table-element"
+            "route": "https://pro.platejs.org/docs/components/table-node"
           }
         ],
         "examples": [
@@ -3030,40 +2773,7 @@
       }
     },
     {
-      "name": "table-row-element",
-      "type": "registry:ui",
-      "title": "Table Row Element",
-      "description": "A table row component with optional border hiding.",
-      "dependencies": [
-        "@udecode/cn"
-      ],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/ui/table-row-element.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/table-row-element-static.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "docs": [
-          {
-            "route": "/docs/table"
-          },
-          {
-            "route": "https://pro.platejs.org/docs/components/table-row-element"
-          }
-        ],
-        "examples": [
-          "table-demo"
-        ]
-      }
-    },
-    {
-      "name": "tag-element",
+      "name": "tag-node",
       "type": "registry:ui",
       "title": "Tag Element",
       "description": "A tag element component with selection states and styling.",
@@ -3071,7 +2781,7 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/tag-element.tsx",
+          "path": "src/registry/ui/tag-node.tsx",
           "type": "registry:ui"
         }
       ],
@@ -3087,7 +2797,7 @@
       }
     },
     {
-      "name": "toc-element",
+      "name": "toc-node",
       "type": "registry:ui",
       "title": "TOC Element",
       "description": "A table of contents component with links to document headings.",
@@ -3097,11 +2807,11 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "src/registry/ui/toc-element.tsx",
+          "path": "src/registry/ui/toc-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/toc-element-static.tsx",
+          "path": "src/registry/ui/toc-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -3111,7 +2821,7 @@
             "route": "/docs/basic-elements"
           },
           {
-            "route": "https://pro.platejs.org/docs/components/toc-element"
+            "route": "https://pro.platejs.org/docs/components/toc-node"
           }
         ],
         "examples": [
@@ -3121,35 +2831,7 @@
       }
     },
     {
-      "name": "todo-list-element",
-      "type": "registry:ui",
-      "title": "Todo List Element",
-      "description": "A checkbox list element with interactive todo items.",
-      "dependencies": [
-        "@udecode/plate-list"
-      ],
-      "registryDependencies": [
-        "checkbox"
-      ],
-      "files": [
-        {
-          "path": "src/registry/ui/todo-list-element.tsx",
-          "type": "registry:ui"
-        }
-      ],
-      "meta": {
-        "docs": [
-          {
-            "route": "/docs/list"
-          }
-        ],
-        "examples": [
-          "list-demo"
-        ]
-      }
-    },
-    {
-      "name": "toggle-element",
+      "name": "toggle-node",
       "type": "registry:ui",
       "title": "Toggle Element",
       "description": "A collapsible component for toggling content visibility.",
@@ -3161,11 +2843,11 @@
       ],
       "files": [
         {
-          "path": "src/registry/ui/toggle-element.tsx",
+          "path": "src/registry/ui/toggle-node.tsx",
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/ui/toggle-element-static.tsx",
+          "path": "src/registry/ui/toggle-node-static.tsx",
           "type": "registry:ui"
         }
       ],
@@ -3181,7 +2863,7 @@
       }
     },
     {
-      "name": "api-ai",
+      "name": "ai-api",
       "type": "registry:file",
       "dependencies": [
         "@ai-sdk/openai",
@@ -3204,7 +2886,7 @@
       ]
     },
     {
-      "name": "api-uploadthing",
+      "name": "media-uploadthing-api",
       "type": "registry:file",
       "dependencies": [
         "uploadthing@7.7.2"
@@ -3254,7 +2936,9 @@
         "https://platejs.org/r/delete-plugins",
         "https://platejs.org/r/dnd-plugins",
         "https://platejs.org/r/exit-break-plugin",
-        "https://platejs.org/r/indent-list-plugins",
+        "https://platejs.org/r/fixed-toolbar-plugin",
+        "https://platejs.org/r/floating-toolbar-plugin",
+        "https://platejs.org/r/list-plugins",
         "https://platejs.org/r/line-height-plugin",
         "https://platejs.org/r/link-plugin",
         "https://platejs.org/r/media-plugins",
@@ -3290,10 +2974,6 @@
         {
           "path": "src/registry/components/editor/plugins/ai-plugins.tsx",
           "type": "registry:component"
-        },
-        {
-          "path": "src/registry/ui/ai-loading-bar.tsx",
-          "type": "registry:ui"
         }
       ]
     },
@@ -3304,7 +2984,7 @@
         "@udecode/plate-math"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/inline-equation-toolbar-button"
+        "https://platejs.org/r/equation-toolbar-button"
       ],
       "files": [
         {
@@ -3339,7 +3019,7 @@
         "@udecode/plate-heading",
         "@udecode/plate-highlight",
         "@udecode/plate-horizontal-rule",
-        "@udecode/plate-indent-list",
+        "@udecode/plate-list",
         "@udecode/plate-toggle"
       ],
       "files": [
@@ -3350,7 +3030,7 @@
       ]
     },
     {
-      "name": "autoformat-list-plugin",
+      "name": "autoformat-classic-plugin",
       "type": "registry:component",
       "dependencies": [
         "@udecode/plate-autoformat",
@@ -3360,12 +3040,12 @@
         "@udecode/plate-heading",
         "@udecode/plate-highlight",
         "@udecode/plate-horizontal-rule",
-        "@udecode/plate-list",
+        "@udecode/plate-list-classic",
         "@udecode/plate-toggle"
       ],
       "files": [
         {
-          "path": "src/registry/components/editor/plugins/autoformat-list-plugin.ts",
+          "path": "src/registry/components/editor/plugins/autoformat-classic-plugin.ts",
           "type": "registry:component"
         }
       ]
@@ -3547,7 +3227,7 @@
         "@udecode/plate-node-id"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/draggable"
+        "https://platejs.org/r/block-draggable"
       ],
       "files": [
         {
@@ -3586,7 +3266,7 @@
       ]
     },
     {
-      "name": "fixed-toolbar-list-plugin",
+      "name": "fixed-toolbar-classic-plugin",
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
@@ -3595,7 +3275,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/components/editor/plugins/fixed-toolbar-list-plugin.tsx",
+          "path": "src/registry/components/editor/plugins/fixed-toolbar-classic-plugin.tsx",
           "type": "registry:component"
         }
       ]
@@ -3616,23 +3296,22 @@
       ]
     },
     {
-      "name": "indent-list-plugins",
+      "name": "list-plugins",
       "type": "registry:component",
       "dependencies": [
         "@udecode/plate-block-quote",
         "@udecode/plate-code-block",
         "@udecode/plate-heading",
         "@udecode/plate-indent",
-        "@udecode/plate-indent-list",
+        "@udecode/plate-list",
         "@udecode/plate-toggle"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/indent-fire-marker",
-        "https://platejs.org/r/indent-todo-marker"
+        "https://platejs.org/r/list-todo"
       ],
       "files": [
         {
-          "path": "src/registry/components/editor/plugins/indent-list-plugins.ts",
+          "path": "src/registry/components/editor/plugins/list-plugins.tsx",
           "type": "registry:component"
         }
       ]
@@ -3658,7 +3337,7 @@
         "@udecode/plate-link"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/link-floating-toolbar"
+        "https://platejs.org/r/link-toolbar"
       ],
       "files": [
         {
@@ -3675,7 +3354,7 @@
         "@udecode/plate-media"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/image-preview",
+        "https://platejs.org/r/media-preview-dialog",
         "https://platejs.org/r/media-upload-toast"
       ],
       "files": [
@@ -3706,7 +3385,7 @@
         "@udecode/plate-callout",
         "@udecode/plate-code-block",
         "@udecode/plate-heading",
-        "@udecode/plate-indent-list",
+        "@udecode/plate-list",
         "@udecode/plate-reset-node"
       ],
       "files": [
@@ -3842,41 +3521,37 @@
         "@udecode/cn"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/ai-leaf",
-        "https://platejs.org/r/blockquote-element",
-        "https://platejs.org/r/callout-element",
-        "https://platejs.org/r/code-block-element",
-        "https://platejs.org/r/code-leaf",
-        "https://platejs.org/r/code-line-element",
-        "https://platejs.org/r/code-syntax-leaf",
-        "https://platejs.org/r/column-element",
-        "https://platejs.org/r/column-group-element",
-        "https://platejs.org/r/comment-leaf",
-        "https://platejs.org/r/date-element",
-        "https://platejs.org/r/emoji-input-element",
-        "https://platejs.org/r/equation-element",
-        "https://platejs.org/r/heading-element",
-        "https://platejs.org/r/highlight-leaf",
-        "https://platejs.org/r/hr-element",
-        "https://platejs.org/r/image-element",
-        "https://platejs.org/r/inline-equation-element",
-        "https://platejs.org/r/kbd-leaf",
-        "https://platejs.org/r/link-element",
-        "https://platejs.org/r/media-audio-element",
-        "https://platejs.org/r/media-embed-element",
-        "https://platejs.org/r/media-file-element",
-        "https://platejs.org/r/media-placeholder-element",
-        "https://platejs.org/r/media-video-element",
-        "https://platejs.org/r/mention-element",
-        "https://platejs.org/r/mention-input-element",
-        "https://platejs.org/r/paragraph-element",
-        "https://platejs.org/r/slash-input-element",
-        "https://platejs.org/r/suggestion-leaf",
-        "https://platejs.org/r/table-cell-element",
-        "https://platejs.org/r/table-element",
-        "https://platejs.org/r/table-row-element",
-        "https://platejs.org/r/toc-element",
-        "https://platejs.org/r/toggle-element",
+        "https://platejs.org/r/ai-node",
+        "https://platejs.org/r/blockquote-node",
+        "https://platejs.org/r/block-placeholder",
+        "https://platejs.org/r/callout-node",
+        "https://platejs.org/r/code-block-node",
+        "https://platejs.org/r/code-node",
+        "https://platejs.org/r/column-node",
+        "https://platejs.org/r/comment-node",
+        "https://platejs.org/r/date-node",
+        "https://platejs.org/r/emoji-input-node",
+        "https://platejs.org/r/equation-node",
+        "https://platejs.org/r/heading-node",
+        "https://platejs.org/r/highlight-node",
+        "https://platejs.org/r/hr-node",
+        "https://platejs.org/r/equation-node",
+        "https://platejs.org/r/kbd-node",
+        "https://platejs.org/r/link-node",
+        "https://platejs.org/r/media-audio-node",
+        "https://platejs.org/r/media-embed-node",
+        "https://platejs.org/r/media-image-node",
+        "https://platejs.org/r/media-file-node",
+        "https://platejs.org/r/media-placeholder-node",
+        "https://platejs.org/r/media-video-node",
+        "https://platejs.org/r/mention-node",
+        "https://platejs.org/r/mention-input-node",
+        "https://platejs.org/r/paragraph-node",
+        "https://platejs.org/r/slash-input-node",
+        "https://platejs.org/r/suggestion-node",
+        "https://platejs.org/r/table-node",
+        "https://platejs.org/r/toc-node",
+        "https://platejs.org/r/toggle-node",
         "https://platejs.org/r/editor-plugins"
       ],
       "files": [
@@ -3894,7 +3569,7 @@
         "@udecode/plate-code-block",
         "@udecode/plate-date",
         "@udecode/plate-heading",
-        "@udecode/plate-indent-list",
+        "@udecode/plate-list",
         "@udecode/plate-layout",
         "@udecode/plate-link",
         "@udecode/plate-math",
@@ -3932,7 +3607,7 @@
       ]
     },
     {
-      "name": "plate-list-types",
+      "name": "plate-classic-types",
       "type": "registry:component",
       "dependencies": [
         "@udecode/plate-block-quote",
@@ -3942,7 +3617,7 @@
         "@udecode/plate-heading",
         "@udecode/plate-horizontal-rule",
         "@udecode/plate-link",
-        "@udecode/plate-list",
+        "@udecode/plate-list-classic",
         "@udecode/plate-media",
         "@udecode/plate-mention",
         "@udecode/plate-table",
@@ -3950,7 +3625,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/components/editor/plate-list-types.ts",
+          "path": "src/registry/components/editor/plate-classic-types.ts",
           "type": "registry:component"
         }
       ]
@@ -3988,8 +3663,8 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/plate-ui",
-        "https://platejs.org/r/api-ai",
-        "https://platejs.org/r/api-uploadthing",
+        "https://platejs.org/r/ai-api",
+        "https://platejs.org/r/media-uploadthing-api",
         "https://platejs.org/r/plate-types",
         "https://platejs.org/r/editor-plugins",
         "https://platejs.org/r/copilot-plugins",
@@ -4001,44 +3676,38 @@
         "https://platejs.org/r/cursor-overlay",
         "https://platejs.org/r/editor",
         "https://platejs.org/r/block-context-menu",
-        "https://platejs.org/r/ai-leaf",
-        "https://platejs.org/r/blockquote-element",
-        "https://platejs.org/r/code-block-element",
-        "https://platejs.org/r/code-leaf",
-        "https://platejs.org/r/code-line-element",
-        "https://platejs.org/r/code-syntax-leaf",
-        "https://platejs.org/r/column-element",
-        "https://platejs.org/r/column-group-element",
-        "https://platejs.org/r/comment-leaf",
-        "https://platejs.org/r/callout-element",
-        "https://platejs.org/r/suggestion-leaf",
-        "https://platejs.org/r/date-element",
-        "https://platejs.org/r/draggable",
-        "https://platejs.org/r/equation-element",
-        "https://platejs.org/r/inline-equation-element",
-        "https://platejs.org/r/emoji-input-element",
-        "https://platejs.org/r/excalidraw-element",
-        "https://platejs.org/r/heading-element",
-        "https://platejs.org/r/highlight-leaf",
-        "https://platejs.org/r/hr-element",
-        "https://platejs.org/r/image-element",
-        "https://platejs.org/r/kbd-leaf",
-        "https://platejs.org/r/link-element",
-        "https://platejs.org/r/media-audio-element",
-        "https://platejs.org/r/media-embed-element",
-        "https://platejs.org/r/media-file-element",
-        "https://platejs.org/r/media-placeholder-element",
-        "https://platejs.org/r/media-video-element",
-        "https://platejs.org/r/mention-element",
-        "https://platejs.org/r/mention-input-element",
-        "https://platejs.org/r/paragraph-element",
-        "https://platejs.org/r/placeholder",
-        "https://platejs.org/r/slash-input-element",
-        "https://platejs.org/r/table-cell-element",
-        "https://platejs.org/r/table-element",
-        "https://platejs.org/r/table-row-element",
-        "https://platejs.org/r/toc-element",
-        "https://platejs.org/r/toggle-element"
+        "https://platejs.org/r/ai-node",
+        "https://platejs.org/r/blockquote-node",
+        "https://platejs.org/r/block-draggable",
+        "https://platejs.org/r/block-placeholder",
+        "https://platejs.org/r/code-block-node",
+        "https://platejs.org/r/code-node",
+        "https://platejs.org/r/column-node",
+        "https://platejs.org/r/comment-node",
+        "https://platejs.org/r/callout-node",
+        "https://platejs.org/r/suggestion-node",
+        "https://platejs.org/r/date-node",
+        "https://platejs.org/r/equation-node",
+        "https://platejs.org/r/emoji-input-node",
+        "https://platejs.org/r/excalidraw-node",
+        "https://platejs.org/r/heading-node",
+        "https://platejs.org/r/highlight-node",
+        "https://platejs.org/r/hr-node",
+        "https://platejs.org/r/kbd-node",
+        "https://platejs.org/r/link-node",
+        "https://platejs.org/r/media-audio-node",
+        "https://platejs.org/r/media-embed-node",
+        "https://platejs.org/r/media-image-node",
+        "https://platejs.org/r/media-file-node",
+        "https://platejs.org/r/media-placeholder-node",
+        "https://platejs.org/r/media-video-node",
+        "https://platejs.org/r/mention-node",
+        "https://platejs.org/r/mention-input-node",
+        "https://platejs.org/r/paragraph-node",
+        "https://platejs.org/r/slash-input-node",
+        "https://platejs.org/r/table-node",
+        "https://platejs.org/r/toc-node",
+        "https://platejs.org/r/toggle-node"
       ],
       "files": [
         {
@@ -4371,7 +4040,7 @@
         "https://platejs.org/r/use-create-editor",
         "https://platejs.org/r/editor",
         "https://platejs.org/r/fixed-toolbar",
-        "https://platejs.org/r/turn-into-dropdown-menu",
+        "https://platejs.org/r/turn-into-toolbar-button",
         "https://platejs.org/r/delete-plugins",
         "separator"
       ],
@@ -4484,9 +4153,9 @@
         "https://platejs.org/r/editor",
         "https://platejs.org/r/fixed-toolbar",
         "https://platejs.org/r/mark-toolbar-button",
-        "https://platejs.org/r/heading-element",
-        "https://platejs.org/r/paragraph-element",
-        "https://platejs.org/r/blockquote-element"
+        "https://platejs.org/r/heading-node",
+        "https://platejs.org/r/paragraph-node",
+        "https://platejs.org/r/blockquote-node"
       ],
       "files": [
         {
@@ -4516,6 +4185,1576 @@
           "type": "registry:example"
         }
       ]
+    },
+    {
+      "description": "All documentation files for plate",
+      "files": [],
+      "name": "docs",
+      "registryDependencies": [
+        "https://platejs.org/r/ai-docs",
+        "https://platejs.org/r/alignment-docs",
+        "https://platejs.org/r/api-cn-docs",
+        "https://platejs.org/r/api-core-plate-components-docs",
+        "https://platejs.org/r/api-core-plate-controller-docs",
+        "https://platejs.org/r/api-core-plate-editor-docs",
+        "https://platejs.org/r/api-core-plate-plugin-docs",
+        "https://platejs.org/r/api-core-plate-store-docs",
+        "https://platejs.org/r/api-core-docs",
+        "https://platejs.org/r/api-floating-docs",
+        "https://platejs.org/r/api-plate-docs",
+        "https://platejs.org/r/api-react-utils-docs",
+        "https://platejs.org/r/api-resizable-docs",
+        "https://platejs.org/r/api-slate-editor-api-docs",
+        "https://platejs.org/r/api-slate-editor-transforms-docs",
+        "https://platejs.org/r/api-slate-element-docs",
+        "https://platejs.org/r/api-slate-location-ref-docs",
+        "https://platejs.org/r/api-slate-location-docs",
+        "https://platejs.org/r/api-slate-node-docs",
+        "https://platejs.org/r/api-slate-operation-docs",
+        "https://platejs.org/r/api-slate-path-docs",
+        "https://platejs.org/r/api-slate-point-docs",
+        "https://platejs.org/r/api-slate-range-docs",
+        "https://platejs.org/r/api-slate-text-docs",
+        "https://platejs.org/r/api-slate-docs",
+        "https://platejs.org/r/api-utils-docs",
+        "https://platejs.org/r/autoformat-docs",
+        "https://platejs.org/r/basic-elements-docs",
+        "https://platejs.org/r/basic-marks-docs",
+        "https://platejs.org/r/block-menu-docs",
+        "https://platejs.org/r/block-selection-docs",
+        "https://platejs.org/r/callout-docs",
+        "https://platejs.org/r/caption-docs",
+        "https://platejs.org/r/collaboration-docs",
+        "https://platejs.org/r/column-docs",
+        "https://platejs.org/r/combobox-docs",
+        "https://platejs.org/r/comments-docs",
+        "https://platejs.org/r/components-changelog-docs",
+        "https://platejs.org/r/controlled-docs",
+        "https://platejs.org/r/copilot-docs",
+        "https://platejs.org/r/csv-docs",
+        "https://platejs.org/r/cursor-overlay-docs",
+        "https://platejs.org/r/date-docs",
+        "https://platejs.org/r/debugging-docs",
+        "https://platejs.org/r/dnd-docs",
+        "https://platejs.org/r/docx-docs",
+        "https://platejs.org/r/editor-methods-docs",
+        "https://platejs.org/r/editor-docs",
+        "https://platejs.org/r/emoji-docs",
+        "https://platejs.org/r/equation-docs",
+        "https://platejs.org/r/examples-collaboration-example-docs",
+        "https://platejs.org/r/examples-editable-voids-docs",
+        "https://platejs.org/r/examples-export-docs",
+        "https://platejs.org/r/examples-hundreds-blocks-docs",
+        "https://platejs.org/r/examples-hundreds-editors-docs",
+        "https://platejs.org/r/examples-preview-markdown-docs",
+        "https://platejs.org/r/examples-version-history-docs",
+        "https://platejs.org/r/excalidraw-docs",
+        "https://platejs.org/r/exit-break-docs",
+        "https://platejs.org/r/find-replace-docs",
+        "https://platejs.org/r/font-docs",
+        "https://platejs.org/r/forced-layout-docs",
+        "https://platejs.org/r/form-docs",
+        "https://platejs.org/r/highlight-docs",
+        "https://platejs.org/r/horizontal-rule-docs",
+        "https://platejs.org/r/html-docs",
+        "https://platejs.org/r/indent-docs",
+        "https://platejs.org/r/index-docs",
+        "https://platejs.org/r/installation-docs-docs",
+        "https://platejs.org/r/installation-manual-docs",
+        "https://platejs.org/r/installation-next-docs",
+        "https://platejs.org/r/installation-node-docs",
+        "https://platejs.org/r/installation-plate-ui-docs",
+        "https://platejs.org/r/installation-react-docs",
+        "https://platejs.org/r/installation-rsc-docs",
+        "https://platejs.org/r/installation-docs",
+        "https://platejs.org/r/kbd-docs",
+        "https://platejs.org/r/line-height-docs",
+        "https://platejs.org/r/link-docs",
+        "https://platejs.org/r/list-classic-docs",
+        "https://platejs.org/r/list-docs",
+        "https://platejs.org/r/markdown-docs",
+        "https://platejs.org/r/mcp-docs",
+        "https://platejs.org/r/media-docs",
+        "https://platejs.org/r/mention-docs",
+        "https://platejs.org/r/migration-slate-to-plate-docs",
+        "https://platejs.org/r/multi-select-docs",
+        "https://platejs.org/r/node-id-docs",
+        "https://platejs.org/r/playwright-docs",
+        "https://platejs.org/r/plugin-components-docs",
+        "https://platejs.org/r/plugin-context-docs",
+        "https://platejs.org/r/plugin-methods-docs",
+        "https://platejs.org/r/plugin-shortcuts-docs",
+        "https://platejs.org/r/plugin-docs",
+        "https://platejs.org/r/reset-node-docs",
+        "https://platejs.org/r/select-docs",
+        "https://platejs.org/r/single-line-docs",
+        "https://platejs.org/r/slash-command-docs",
+        "https://platejs.org/r/soft-break-docs",
+        "https://platejs.org/r/static-docs",
+        "https://platejs.org/r/suggestion-docs",
+        "https://platejs.org/r/tabbable-docs",
+        "https://platejs.org/r/table-docs",
+        "https://platejs.org/r/toc-docs",
+        "https://platejs.org/r/toggle-docs",
+        "https://platejs.org/r/trailing-block-docs",
+        "https://platejs.org/r/troubleshooting-docs",
+        "https://platejs.org/r/typescript-docs",
+        "https://platejs.org/r/unit-testing-docs"
+      ],
+      "title": "Documentation",
+      "type": "registry:file"
+    },
+    {
+      "dependencies": [
+        "@radix-ui/react-separator",
+        "@radix-ui/react-accordion",
+        "lucide-react",
+        "class-variance-authority",
+        "tailwind-merge",
+        "clsx"
+      ],
+      "description": "Fumadocs app for plate",
+      "files": [
+        {
+          "path": "src/registry/blocks/fumadocs/content/docs/index.mdx",
+          "target": "content/docs/index.mdx",
+          "type": "registry:file"
+        },
+        {
+          "path": "src/registry/blocks/fumadocs/fumadocs-mdx-components.tsx",
+          "target": "mdx-components.tsx",
+          "type": "registry:file"
+        },
+        {
+          "path": "src/registry/blocks/fumadocs/mdx-plate-components.tsx",
+          "target": "mdx-plate-components.tsx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "fumadocs",
+      "registryDependencies": [
+        "https://platejs.org/r/docs",
+        "https://platejs.org/r/docs-meta"
+      ],
+      "title": "Fumadocs app",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for AI",
+      "files": [
+        {
+          "path": "../../docs/ai.mdx",
+          "target": "content/docs/plate/plugins/ai.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "ai-docs",
+      "title": "AI",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Alignment",
+      "files": [
+        {
+          "path": "../../docs/alignment.mdx",
+          "target": "content/docs/plate/plugins/alignment.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "alignment-docs",
+      "title": "Alignment",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @udecode/cn.",
+      "files": [
+        {
+          "path": "../../docs/api/cn.mdx",
+          "target": "content/docs/plate/api/cn.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-cn-docs",
+      "title": "cn",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for Plate component.",
+      "files": [
+        {
+          "path": "../../docs/api/core/plate-components.mdx",
+          "target": "content/docs/plate/api/plate-core/plate-components.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-plate-components-docs",
+      "title": "Plate Components",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for PlateController component.",
+      "files": [
+        {
+          "path": "../../docs/api/core/plate-controller.mdx",
+          "target": "content/docs/plate/api/plate-core/plate-controller.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-plate-controller-docs",
+      "title": "Plate Controller",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for Plate editor.",
+      "files": [
+        {
+          "path": "../../docs/api/core/plate-editor.mdx",
+          "target": "content/docs/plate/api/plate-core/plate-editor.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-plate-editor-docs",
+      "title": "Plate Editor",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for Plate plugins.",
+      "files": [
+        {
+          "path": "../../docs/api/core/plate-plugin.mdx",
+          "target": "content/docs/plate/api/plate-core/plate-plugin.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-plate-plugin-docs",
+      "title": "Plate Plugin",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for Plate store.",
+      "files": [
+        {
+          "path": "../../docs/api/core/plate-store.mdx",
+          "target": "content/docs/plate/api/plate-core/plate-store.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-plate-store-docs",
+      "title": "Store",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @udecode/plate-core.",
+      "files": [
+        {
+          "path": "../../docs/api/core.mdx",
+          "target": "content/docs/plate/api/plate-core/core.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-docs",
+      "title": "Plate Core",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for floating UI components and hooks.",
+      "files": [
+        {
+          "path": "../../docs/api/floating.mdx",
+          "target": "content/docs/plate/api/floating.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-floating-docs",
+      "title": "Floating",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @udecode/plate.",
+      "files": [
+        {
+          "path": "../../docs/api/plate.mdx",
+          "target": "content/docs/plate/api/plate.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-plate-docs",
+      "title": "Plate",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @udecode/react-utils.",
+      "files": [
+        {
+          "path": "../../docs/api/react-utils.mdx",
+          "target": "content/docs/plate/api/react-utils.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-react-utils-docs",
+      "title": "React Utils",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @udecode/plate-resizable.",
+      "files": [
+        {
+          "path": "../../docs/api/resizable.mdx",
+          "target": "content/docs/plate/api/resizable.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-resizable-docs",
+      "title": "Resizable",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for the Editor API.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/editor-api.mdx",
+          "target": "content/docs/plate/api/slate/editor-api.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-editor-api-docs",
+      "title": "Editor API",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for editor transformation operations in Slate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/editor-transforms.mdx",
+          "target": "content/docs/plate/api/slate/editor-transforms.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-editor-transforms-docs",
+      "title": "Editor Transforms",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for elements in Slate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/element.mdx",
+          "target": "content/docs/plate/api/slate/element.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-element-docs",
+      "title": "Element",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for location references in Slate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/location-ref.mdx",
+          "target": "content/docs/plate/api/slate/location-ref.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-location-ref-docs",
+      "title": "Location Ref",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for locations in Slate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/location.mdx",
+          "target": "content/docs/plate/api/slate/location.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-location-docs",
+      "title": "Location",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for nodes in Slate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/node.mdx",
+          "target": "content/docs/plate/api/slate/node.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-node-docs",
+      "title": "Node",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for operations in Slate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/operation.mdx",
+          "target": "content/docs/plate/api/slate/operation.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-operation-docs",
+      "title": "Operation",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for paths in Slate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/path.mdx",
+          "target": "content/docs/plate/api/slate/path.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-path-docs",
+      "title": "Path",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for points in Slate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/point.mdx",
+          "target": "content/docs/plate/api/slate/point.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-point-docs",
+      "title": "Point",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for ranges in Slate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/range.mdx",
+          "target": "content/docs/plate/api/slate/range.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-range-docs",
+      "title": "Range",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for text nodes in Slate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/text.mdx",
+          "target": "content/docs/plate/api/slate/text.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-text-docs",
+      "title": "Text",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @udecode/slate",
+      "files": [
+        {
+          "path": "../../docs/api/slate.mdx",
+          "target": "content/docs/plate/api/slate/index.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-docs",
+      "title": "Slate",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @udecode/plate-utils.",
+      "files": [
+        {
+          "path": "../../docs/api/utils.mdx",
+          "target": "content/docs/plate/api/utils.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-utils-docs",
+      "title": "Plate Utils",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Autoformat",
+      "files": [
+        {
+          "path": "../../docs/autoformat.mdx",
+          "target": "content/docs/plate/plugins/autoformat.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "autoformat-docs",
+      "title": "Autoformat",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Basic Elements",
+      "files": [
+        {
+          "path": "../../docs/basic-elements.mdx",
+          "target": "content/docs/plate/plugins/basic-elements.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "basic-elements-docs",
+      "title": "Basic Elements",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Basic Marks",
+      "files": [
+        {
+          "path": "../../docs/basic-marks.mdx",
+          "target": "content/docs/plate/plugins/basic-marks.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "basic-marks-docs",
+      "title": "Basic Marks",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Block Menu",
+      "files": [
+        {
+          "path": "../../docs/block-menu.mdx",
+          "target": "content/docs/plate/plugins/block-menu.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "block-menu-docs",
+      "title": "Block Menu",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Block Selection",
+      "files": [
+        {
+          "path": "../../docs/block-selection.mdx",
+          "target": "content/docs/plate/plugins/block-selection.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "block-selection-docs",
+      "title": "Block Selection",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Callout",
+      "files": [
+        {
+          "path": "../../docs/callout.mdx",
+          "target": "content/docs/plate/plugins/callout.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "callout-docs",
+      "title": "Callout",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Caption",
+      "files": [
+        {
+          "path": "../../docs/caption.mdx",
+          "target": "content/docs/plate/plugins/caption.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "caption-docs",
+      "title": "Caption",
+      "type": "registry:file"
+    },
+    {
+      "description": "Real-time collaboration with Yjs",
+      "files": [
+        {
+          "path": "../../docs/collaboration.mdx",
+          "target": "content/docs/plate/plugins/collaboration.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "collaboration-docs",
+      "title": "Collaboration",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Column",
+      "files": [
+        {
+          "path": "../../docs/column.mdx",
+          "target": "content/docs/plate/plugins/column.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "column-docs",
+      "title": "Column",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Combobox",
+      "files": [
+        {
+          "path": "../../docs/combobox.mdx",
+          "target": "content/docs/plate/plugins/combobox.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "combobox-docs",
+      "title": "Combobox",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Comments",
+      "files": [
+        {
+          "path": "../../docs/comments.mdx",
+          "target": "content/docs/plate/plugins/comments.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "comments-docs",
+      "title": "Comments",
+      "type": "registry:file"
+    },
+    {
+      "description": "Latest component updates and announcements.",
+      "files": [
+        {
+          "path": "../../docs/components/changelog.mdx",
+          "target": "content/docs/plate/components/changelog.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "components-changelog-docs",
+      "title": "Changelog",
+      "type": "registry:file"
+    },
+    {
+      "description": "How to control the editor value.",
+      "files": [
+        {
+          "path": "../../docs/controlled.mdx",
+          "target": "content/docs/plate/guides/editor/controlled.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "controlled-docs",
+      "title": "Controlled Editor Value",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Copilot",
+      "files": [
+        {
+          "path": "../../docs/copilot.mdx",
+          "target": "content/docs/plate/plugins/copilot.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "copilot-docs",
+      "title": "Copilot",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Serializing CSV",
+      "files": [
+        {
+          "path": "../../docs/csv.mdx",
+          "target": "content/docs/plate/plugins/csv.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "csv-docs",
+      "title": "Serializing CSV",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Cursor Overlay",
+      "files": [
+        {
+          "path": "../../docs/cursor-overlay.mdx",
+          "target": "content/docs/plate/plugins/cursor-overlay.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "cursor-overlay-docs",
+      "title": "Cursor Overlay",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Date",
+      "files": [
+        {
+          "path": "../../docs/date.mdx",
+          "target": "content/docs/plate/plugins/date.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "date-docs",
+      "title": "Date",
+      "type": "registry:file"
+    },
+    {
+      "description": "Debugging in Plate.",
+      "files": [
+        {
+          "path": "../../docs/debugging.mdx",
+          "target": "content/docs/plate/guides/debugging.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "debugging-docs",
+      "title": "Debugging",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Drag & Drop",
+      "files": [
+        {
+          "path": "../../docs/dnd.mdx",
+          "target": "content/docs/plate/plugins/dnd.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "dnd-docs",
+      "title": "Drag & Drop",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Serializing Docx",
+      "files": [
+        {
+          "path": "../../docs/docx.mdx",
+          "target": "content/docs/plate/plugins/docx.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "docx-docs",
+      "title": "Serializing Docx",
+      "type": "registry:file"
+    },
+    {
+      "description": "Explore the various methods available for interacting with and customizing the Plate editor.",
+      "files": [
+        {
+          "path": "../../docs/editor-methods.mdx",
+          "target": "content/docs/plate/guides/editor/editor-methods.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "editor-methods-docs",
+      "title": "Editor Methods",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to configure and customize the Plate editor.",
+      "files": [
+        {
+          "path": "../../docs/editor.mdx",
+          "target": "content/docs/plate/guides/editor/index.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "editor-docs",
+      "title": "Editor Configuration",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Emoji",
+      "files": [
+        {
+          "path": "../../docs/emoji.mdx",
+          "target": "content/docs/plate/plugins/emoji.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "emoji-docs",
+      "title": "Emoji",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Equation",
+      "files": [
+        {
+          "path": "../../docs/equation.mdx",
+          "target": "content/docs/plate/plugins/equation.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "equation-docs",
+      "title": "Equation",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Collaboration Demo",
+      "files": [
+        {
+          "path": "../../docs/examples/collaboration-example.mdx",
+          "target": "content/docs/plate/examples/collaboration-example.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-collaboration-example-docs",
+      "title": "Collaboration Demo",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Editable Voids",
+      "files": [
+        {
+          "path": "../../docs/examples/editable-voids.mdx",
+          "target": "content/docs/plate/examples/editable-voids.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-editable-voids-docs",
+      "title": "Editable Voids",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Export",
+      "files": [
+        {
+          "path": "../../docs/examples/export.mdx",
+          "target": "content/docs/plate/examples/export.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-export-docs",
+      "title": "Export",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Hundreds Blocks",
+      "files": [
+        {
+          "path": "../../docs/examples/hundreds-blocks.mdx",
+          "target": "content/docs/plate/examples/hundreds-blocks.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-hundreds-blocks-docs",
+      "title": "Hundreds Blocks",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Hundreds Editors",
+      "files": [
+        {
+          "path": "../../docs/examples/hundreds-editors.mdx",
+          "target": "content/docs/plate/examples/hundreds-editors.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-hundreds-editors-docs",
+      "title": "Hundreds Editors",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Preview Markdown",
+      "files": [
+        {
+          "path": "../../docs/examples/preview-markdown.mdx",
+          "target": "content/docs/plate/examples/preview-markdown.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-preview-markdown-docs",
+      "title": "Preview Markdown",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Version History",
+      "files": [
+        {
+          "path": "../../docs/examples/version-history.mdx",
+          "target": "content/docs/plate/examples/version-history.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-version-history-docs",
+      "title": "Version History",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Excalidraw",
+      "files": [
+        {
+          "path": "../../docs/excalidraw.mdx",
+          "target": "content/docs/plate/plugins/excalidraw.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "excalidraw-docs",
+      "title": "Excalidraw",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Exit Break",
+      "files": [
+        {
+          "path": "../../docs/exit-break.mdx",
+          "target": "content/docs/plate/plugins/exit-break.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "exit-break-docs",
+      "title": "Exit Break",
+      "type": "registry:file"
+    },
+    {
+      "description": "Search and locate specific text or blocks within your document.",
+      "files": [
+        {
+          "path": "../../docs/find-replace.mdx",
+          "target": "content/docs/plate/find-replace.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "find-replace-docs",
+      "title": "Find",
+      "type": "registry:file"
+    },
+    {
+      "description": "Provide extended formatting options for document content.",
+      "files": [
+        {
+          "path": "../../docs/font.mdx",
+          "target": "content/docs/plate/plugins/font.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "font-docs",
+      "title": "Font",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Forced Layout",
+      "files": [
+        {
+          "path": "../../docs/forced-layout.mdx",
+          "target": "content/docs/plate/plugins/forced-layout.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "forced-layout-docs",
+      "title": "Forced Layout",
+      "type": "registry:file"
+    },
+    {
+      "description": "How to integrate Plate editor with react-hook-form.",
+      "files": [
+        {
+          "path": "../../docs/form.mdx",
+          "target": "content/docs/plate/guides/form.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "form-docs",
+      "title": "Form",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Highlight",
+      "files": [
+        {
+          "path": "../../docs/highlight.mdx",
+          "target": "content/docs/plate/plugins/highlight.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "highlight-docs",
+      "title": "Highlight",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Horizontal Rule",
+      "files": [
+        {
+          "path": "../../docs/horizontal-rule.mdx",
+          "target": "content/docs/plate/plugins/horizontal-rule.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "horizontal-rule-docs",
+      "title": "Horizontal Rule",
+      "type": "registry:file"
+    },
+    {
+      "description": "Convert Plate content to HTML and vice-versa.",
+      "files": [
+        {
+          "path": "../../docs/html.mdx",
+          "target": "content/docs/plate/guides/html.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "html-docs",
+      "title": "HTML",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Indent",
+      "files": [
+        {
+          "path": "../../docs/indent.mdx",
+          "target": "content/docs/plate/plugins/indent.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "indent-docs",
+      "title": "Indent",
+      "type": "registry:file"
+    },
+    {
+      "description": "Rich-text editor framework with AI, MCP, and shadcn/ui",
+      "files": [
+        {
+          "path": "../../docs/index.mdx",
+          "target": "content/docs/plate/index.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "index-docs",
+      "title": "Introduction",
+      "type": "registry:file"
+    },
+    {
+      "description": "Set up Plate's documentation locally for version-controlled, AI-enhanced development.",
+      "files": [
+        {
+          "path": "../../docs/installation/docs.mdx",
+          "target": "content/docs/plate/installation/docs.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-docs-docs",
+      "title": "Local Docs",
+      "type": "registry:file"
+    },
+    {
+      "description": "Install and configure Plate in your React project without relying on UI component libraries.",
+      "files": [
+        {
+          "path": "../../docs/installation/manual.mdx",
+          "target": "content/docs/plate/installation/manual.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-manual-docs",
+      "title": "Manual Installation",
+      "type": "registry:file"
+    },
+    {
+      "description": "Install and configure Plate UI for Next.js",
+      "files": [
+        {
+          "path": "../../docs/installation/next.mdx",
+          "target": "content/docs/plate/installation/plate-ui/next.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-next-docs",
+      "title": "Next.js",
+      "type": "registry:file"
+    },
+    {
+      "description": "Install and configure Plate for Node.js",
+      "files": [
+        {
+          "path": "../../docs/installation/node.mdx",
+          "target": "content/docs/plate/installation/node.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-node-docs",
+      "title": "Node.js",
+      "type": "registry:file"
+    },
+    {
+      "description": "How to set up Plate UI in your project.",
+      "files": [
+        {
+          "path": "../../docs/installation/plate-ui.mdx",
+          "target": "content/docs/plate/installation/plate-ui/index.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-plate-ui-docs",
+      "title": "Plate UI Installation",
+      "type": "registry:file"
+    },
+    {
+      "description": "Install and configure Plate UI for React",
+      "files": [
+        {
+          "path": "../../docs/installation/react.mdx",
+          "target": "content/docs/plate/installation/plate-ui/react.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-react-docs",
+      "title": "React",
+      "type": "registry:file"
+    },
+    {
+      "description": "Install and configure Plate for React Server Components",
+      "files": [
+        {
+          "path": "../../docs/installation/rsc.mdx",
+          "target": "content/docs/plate/installation/rsc.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-rsc-docs",
+      "title": "RSC",
+      "type": "registry:file"
+    },
+    {
+      "description": "Choose your path to integrate the Plate rich-text editor framework into your React project.",
+      "files": [
+        {
+          "path": "../../docs/installation.mdx",
+          "target": "content/docs/plate/installation.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-docs",
+      "title": "Getting Started",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Keyboard Input",
+      "files": [
+        {
+          "path": "../../docs/kbd.mdx",
+          "target": "content/docs/plate/plugins/kbd.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "kbd-docs",
+      "title": "Keyboard Input",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Line Height",
+      "files": [
+        {
+          "path": "../../docs/line-height.mdx",
+          "target": "content/docs/plate/plugins/line-height.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "line-height-docs",
+      "title": "Line Height",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Link",
+      "files": [
+        {
+          "path": "../../docs/link.mdx",
+          "target": "content/docs/plate/plugins/link.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "link-docs",
+      "title": "Link",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for List",
+      "files": [
+        {
+          "path": "../../docs/list-classic.mdx",
+          "target": "content/docs/plate/plugins/list-classic.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "list-classic-docs",
+      "title": "List",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for List",
+      "files": [
+        {
+          "path": "../../docs/list.mdx",
+          "target": "content/docs/plate/plugins/list.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "list-docs",
+      "title": "List",
+      "type": "registry:file"
+    },
+    {
+      "description": "Convert Plate content to Markdown and vice-versa.",
+      "files": [
+        {
+          "path": "../../docs/markdown.mdx",
+          "target": "content/docs/plate/plugins/markdown.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "markdown-docs",
+      "title": "Markdown",
+      "type": "registry:file"
+    },
+    {
+      "description": "Use the Model Context Protocol with Plate.",
+      "files": [
+        {
+          "path": "../../docs/mcp.mdx",
+          "target": "content/docs/plate/installation/mcp.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "mcp-docs",
+      "title": "MCP Server",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Media",
+      "files": [
+        {
+          "path": "../../docs/media.mdx",
+          "target": "content/docs/plate/plugins/media.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "media-docs",
+      "title": "Media",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Mention",
+      "files": [
+        {
+          "path": "../../docs/mention.mdx",
+          "target": "content/docs/plate/plugins/mention.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "mention-docs",
+      "title": "Mention",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to migrate from Slate to Plate.",
+      "files": [
+        {
+          "path": "../../docs/migration/slate-to-plate.mdx",
+          "target": "content/docs/plate/migrations/slate-to-plate.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "migration-slate-to-plate-docs",
+      "title": "Migrating from Slate to Plate",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Multi Select",
+      "files": [
+        {
+          "path": "../../docs/multi-select.mdx",
+          "target": "content/docs/plate/plugins/multi-select.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "multi-select-docs",
+      "title": "Multi Select",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Node ID",
+      "files": [
+        {
+          "path": "../../docs/node-id.mdx",
+          "target": "content/docs/plate/plugins/node-id.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "node-id-docs",
+      "title": "Node ID",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to write Playwright tests that integrate with Plate.",
+      "files": [
+        {
+          "path": "../../docs/playwright.mdx",
+          "target": "content/docs/plate/guides/playwright.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "playwright-docs",
+      "title": "Playwright Testing",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to create and style custom components for Plate plugins.",
+      "files": [
+        {
+          "path": "../../docs/plugin-components.mdx",
+          "target": "content/docs/plate/guides/plugin/plugin-components.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-components-docs",
+      "title": "Plugin Components",
+      "type": "registry:file"
+    },
+    {
+      "description": "Understanding and utilizing the Plugin Context in Plate plugins.",
+      "files": [
+        {
+          "path": "../../docs/plugin-context.mdx",
+          "target": "content/docs/plate/guides/plugin/plugin-context.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-context-docs",
+      "title": "Plugin Context",
+      "type": "registry:file"
+    },
+    {
+      "description": "Explore the various methods available for extending Plate plugins.",
+      "files": [
+        {
+          "path": "../../docs/plugin-methods.mdx",
+          "target": "content/docs/plate/guides/plugin/plugin-methods.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-methods-docs",
+      "title": "Plugin Methods",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to configure and use keyboard shortcuts in Plate plugins.",
+      "files": [
+        {
+          "path": "../../docs/plugin-shortcuts.mdx",
+          "target": "content/docs/plate/guides/plugin/plugin-shortcuts.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-shortcuts-docs",
+      "title": "Plugin Shortcuts",
+      "type": "registry:file"
+    },
+    {
+      "description": "How to configure and customize Plate plugins.",
+      "files": [
+        {
+          "path": "../../docs/plugin.mdx",
+          "target": "content/docs/plate/guides/plugin/index.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-docs",
+      "title": "Plugin Configuration",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Reset Node",
+      "files": [
+        {
+          "path": "../../docs/reset-node.mdx",
+          "target": "content/docs/plate/plugins/reset-node.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "reset-node-docs",
+      "title": "Reset Node",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Select",
+      "files": [
+        {
+          "path": "../../docs/select.mdx",
+          "target": "content/docs/plate/plugins/select.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "select-docs",
+      "title": "Select",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Single Line",
+      "files": [
+        {
+          "path": "../../docs/single-line.mdx",
+          "target": "content/docs/plate/plugins/single-line.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "single-line-docs",
+      "title": "Single Line",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Slash Command",
+      "files": [
+        {
+          "path": "../../docs/slash-command.mdx",
+          "target": "content/docs/plate/plugins/slash-command.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "slash-command-docs",
+      "title": "Slash Command",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Soft Break",
+      "files": [
+        {
+          "path": "../../docs/soft-break.mdx",
+          "target": "content/docs/plate/plugins/soft-break.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "soft-break-docs",
+      "title": "Soft Break",
+      "type": "registry:file"
+    },
+    {
+      "description": "A minimal, memoized, read-only version of Plate with RSC/SSR support.",
+      "files": [
+        {
+          "path": "../../docs/static.mdx",
+          "target": "content/docs/plate/guides/static.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "static-docs",
+      "title": "Static Rendering",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Suggestion",
+      "files": [
+        {
+          "path": "../../docs/suggestion.mdx",
+          "target": "content/docs/plate/plugins/suggestion.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "suggestion-docs",
+      "title": "Suggestion",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Tabbable",
+      "files": [
+        {
+          "path": "../../docs/tabbable.mdx",
+          "target": "content/docs/plate/plugins/tabbable.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "tabbable-docs",
+      "title": "Tabbable",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Table",
+      "files": [
+        {
+          "path": "../../docs/table.mdx",
+          "target": "content/docs/plate/plugins/table.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "table-docs",
+      "title": "Table",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Table of Contents",
+      "files": [
+        {
+          "path": "../../docs/toc.mdx",
+          "target": "content/docs/plate/plugins/toc.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "toc-docs",
+      "title": "Table of Contents",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Toggle",
+      "files": [
+        {
+          "path": "../../docs/toggle.mdx",
+          "target": "content/docs/plate/plugins/toggle.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "toggle-docs",
+      "title": "Toggle",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Trailing Block",
+      "files": [
+        {
+          "path": "../../docs/trailing-block.mdx",
+          "target": "content/docs/plate/plugins/trailing-block.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "trailing-block-docs",
+      "title": "Trailing Block",
+      "type": "registry:file"
+    },
+    {
+      "description": "Solutions for common issues when working with Plate.",
+      "files": [
+        {
+          "path": "../../docs/troubleshooting.mdx",
+          "target": "content/docs/plate/guides/troubleshooting.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "troubleshooting-docs",
+      "title": "Troubleshooting",
+      "type": "registry:file"
+    },
+    {
+      "description": "Configure TypeScript (tsconfig) for using Plate, including module resolution solutions.",
+      "files": [
+        {
+          "path": "../../docs/typescript.mdx",
+          "target": "content/docs/plate/guides/typescript.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "typescript-docs",
+      "title": "TypeScript",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to unit test Plate editor and plugins.",
+      "files": [
+        {
+          "path": "../../docs/unit-testing.mdx",
+          "target": "content/docs/plate/guides/unit-testing.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "unit-testing-docs",
+      "title": "Unit Testing Plate",
+      "type": "registry:file"
     }
   ]
 }

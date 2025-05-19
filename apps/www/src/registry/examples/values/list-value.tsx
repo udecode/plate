@@ -6,78 +6,82 @@ jsx;
 
 export const listValue: any = (
   <fragment>
-    <hh2>✍️ List</hh2>
-    <hp>
-      <htext />
-    </hp>
-    <hul>
-      <hli>
-        <hlic>Cats</hlic>
-      </hli>
-      <hli>
-        <hlic>Dogs</hlic>
-      </hli>
-      <hli>
-        <hlic>Birds</hlic>
-        <hul>
-          <hli>
-            <hlic>Parrots</hlic>
-          </hli>
-          <hli>
-            <hlic>Owls</hlic>
-            <hul>
-              <hli>
-                <hlic>Barn Owls</hlic>
-              </hli>
-              <hli>
-                <hlic>Snowy Owls</hlic>
-              </hli>
-            </hul>
-          </hli>
-        </hul>
-      </hli>
-    </hul>
-    <hol>
-      <hli>
-        <hlic>Red</hlic>
-      </hli>
-      <hli>
-        <hlic>Blue</hlic>
-        <hul>
-          <hli>
-            <hlic>Light blue</hlic>
-          </hli>
-          <hli>
-            <hlic>Dark blue</hlic>
-            <hol>
-              <hli>
-                <hlic>Navy blue</hlic>
-              </hli>
-              <hli>
-                <hlic>Turquoise blue</hlic>
-              </hli>
-            </hol>
-          </hli>
-        </hul>
-      </hli>
-      <hli>
-        <hlic>Green</hlic>
-      </hli>
-    </hol>
-  </fragment>
-);
+    <hh2>List</hh2>
 
-export const todoListValue: any = (
-  <fragment>
-    <hp>Each block is a React component in which you can manage the state:</hp>
-    <hp checked={true} indent={1} listStyleType="todo">
-      Create a "banana language" translation plugin
+    <hp>
+      Create indented lists with multiple levels of indentation and customize
+      the list style type for each level.
     </hp>
     <hp checked={true} indent={1} listStyleType="todo">
-      Create a "detect sarcasm" plugin (good luck with that)
+      Todo 1
     </hp>
-    <hp checked={false} indent={1} listStyleType="todo">
-      Create an AI auto-complete plugin
+
+    <hp indent={1} listStyleType="disc">
+      Disc 1
+    </hp>
+    <hp indent={2} listStyleType="disc">
+      Disc 2
+    </hp>
+    <hp checked={false} indent={3} listStyleType="todo">
+      Todo 2
+    </hp>
+    <hp indent={1} listStyleType="upper-roman">
+      Roman 1
+    </hp>
+    <hp indent={2} listStyleType="decimal">
+      Decimal 11
+    </hp>
+    <hp indent={3} listStart={2} listStyleType="decimal">
+      Decimal 111
+    </hp>
+    <hp indent={3} listStart={2} listStyleType="decimal">
+      Decimal 112
+    </hp>
+
+    {/* <hp indent={3} listStyleType="lower-latin"> */}
+    {/*  7K-T */}
+    {/* </hp> */}
+    {/* <hp indent={3} listStyleType="lower-latin"> */}
+    {/*  7K-TM */}
+    {/* </hp> */}
+    <hp indent={2} listStart={2} listStyleType="decimal">
+      Decimal 12
+    </hp>
+    <hp indent={2} listStart={3} listStyleType="decimal">
+      Decimal 13
+    </hp>
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  Soyuz TMA (retired) */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  Soyuz TMA-M (retired) */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  Soyuz MS */}
+    {/* </hp> */}
+    <hp indent={1} listStart={2} listStyleType="upper-roman">
+      Roman 2
+    </hp>
+    <hp indent={2} listStyleType="decimal">
+      Decimal 11
+    </hp>
+    <hp indent={2} listStart={2} listStyleType="decimal">
+      Decimal 12
+    </hp>
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  Discovery */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  Atlantis */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  Endeavour */}
+    {/* </hp> */}
+    <hp indent={1} listStart={3} listStyleType="upper-roman">
+      Roman 3
+    </hp>
+    <hp indent={1} listStart={4} listStyleType="upper-roman">
+      Roman 4
     </hp>
   </fragment>
 );

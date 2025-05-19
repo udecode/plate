@@ -6,12 +6,12 @@
     "@udecode/plate-link"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/link-floating-toolbar"
+    "https://platejs.org/r/link-toolbar"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/link-plugin.tsx",
-      "content": "'use client';\n\nimport { LinkPlugin } from '@udecode/plate-link/react';\n\nimport { LinkFloatingToolbar } from '@/registry/ui/link-floating-toolbar';\n\nexport const linkPlugin = LinkPlugin.extend({\n  render: { afterEditable: () => <LinkFloatingToolbar /> },\n});\n",
+      "content": "'use client';\n\nimport { LinkPlugin } from '@udecode/plate-link/react';\n\nimport { LinkFloatingToolbar } from '@/registry/ui/link-toolbar';\n\nexport const linkPlugin = LinkPlugin.extend({\n  render: { afterEditable: () => <LinkFloatingToolbar /> },\n});\n",
       "type": "registry:component"
     }
   ]

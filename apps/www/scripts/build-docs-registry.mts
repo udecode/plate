@@ -106,9 +106,9 @@ export async function buildDocsRegistry() {
       const relativePath = path.relative(SOURCE_DIR, filePath);
       const pathWithoutExt = relativePath.replace('.mdx', '');
 
-      const name = `docs-${pathWithoutExt
+      const name = `${pathWithoutExt
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')}`;
+        .replace(/[^a-z0-9]+/g, '-')}-docs`;
 
       const { description, title } = await getFrontmatter(filePath);
 
@@ -211,6 +211,8 @@ export async function buildDocsRegistry() {
     path.join(TARGET_DIR, 'docs-meta.json'),
     JSON.stringify(docsMetaJson, null, 2)
   );
+
+  return registry.items;
 }
 
 // (optional) Ordering from docs.ts

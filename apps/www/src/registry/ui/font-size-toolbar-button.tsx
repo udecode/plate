@@ -6,7 +6,6 @@ import type { TElement } from '@udecode/plate';
 
 import { toUnitLess } from '@udecode/plate-font';
 import { FontSizePlugin } from '@udecode/plate-font/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
 import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
 import { Minus, Plus } from 'lucide-react';
 
@@ -22,9 +21,9 @@ import { ToolbarButton } from './toolbar';
 const DEFAULT_FONT_SIZE = '16';
 
 const FONT_SIZE_MAP = {
-  [HEADING_KEYS.h1]: '36',
-  [HEADING_KEYS.h2]: '24',
-  [HEADING_KEYS.h3]: '20',
+  h1: '36',
+  h2: '24',
+  h3: '20',
 } as const;
 
 const FONT_SIZES = [

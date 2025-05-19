@@ -20,67 +20,64 @@ export type CommentsConfig = ExtendConfig<
   }
 >;
 
-export const commentsPlugin = toTPlatePlugin<CommentsConfig>(
-  BaseCommentsPlugin,
-  {
-    handlers: {
-      onClick: ({ api, event, setOption, type }) => {
-        let leaf = event.target as HTMLElement;
-        let isSet = false;
+export const CommentsKit = toTPlatePlugin<CommentsConfig>(BaseCommentsPlugin, {
+  handlers: {
+    onClick: ({ api, event, setOption, type }) => {
+      let leaf = event.target as HTMLElement;
+      let isSet = false;
 
-        const unsetActiveSuggestion = () => {
-          setOption('activeId', null);
-          isSet = true;
-        };
+      const unsetActiveSuggestion = () => {
+        setOption('activeId', null);
+        isSet = true;
+      };
 
-        if (!isSlateString(leaf)) unsetActiveSuggestion();
+      if (!isSlateString(leaf)) unsetActiveSuggestion();
 
-        while (leaf.parentElement) {
-          if (leaf.classList.contains(`slate-${type}`)) {
-            const commentsEntry = api.comment!.node();
+      while (leaf.parentElement) {
+        if (leaf.classList.contains(`slate-${type}`)) {
+          const commentsEntry = api.comment!.node();
 
-            if (!commentsEntry) {
-              unsetActiveSuggestion();
-
-              break;
-            }
-
-            const id = api.comment!.nodeId(commentsEntry[0]);
-
-            setOption('activeId', id ?? null);
-            isSet = true;
+          if (!commentsEntry) {
+            unsetActiveSuggestion();
 
             break;
           }
 
-          leaf = leaf.parentElement;
+          const id = api.comment!.nodeId(commentsEntry[0]);
+
+          setOption('activeId', id ?? null);
+          isSet = true;
+
+          break;
         }
 
-        if (!isSet) unsetActiveSuggestion();
+        leaf = leaf.parentElement;
+      }
+
+      if (!isSet) unsetActiveSuggestion();
+    },
+  },
+  options: {
+    activeId: null,
+    commentingBlock: null,
+    hotkey: ['meta+shift+m', 'ctrl+shift+m'],
+    hoverId: null,
+    uniquePathMap: new Map(),
+  },
+  useHooks: ({ editor, getOptions }) => {
+    const { hotkey } = getOptions();
+    useHotkeys(
+      hotkey!,
+      (e) => {
+        if (!editor.selection) return;
+
+        e.preventDefault();
+
+        if (!editor.api.isExpanded()) return;
       },
-    },
-    options: {
-      activeId: null,
-      commentingBlock: null,
-      hotkey: ['meta+shift+m', 'ctrl+shift+m'],
-      hoverId: null,
-      uniquePathMap: new Map(),
-    },
-    useHooks: ({ editor, getOptions }) => {
-      const { hotkey } = getOptions();
-      useHotkeys(
-        hotkey!,
-        (e) => {
-          if (!editor.selection) return;
-
-          e.preventDefault();
-
-          if (!editor.api.isExpanded()) return;
-        },
-        {
-          enableOnContentEditable: true,
-        }
-      );
-    },
-  }
-);
+      {
+        enableOnContentEditable: true,
+      }
+    );
+  },
+});

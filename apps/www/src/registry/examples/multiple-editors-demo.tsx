@@ -15,7 +15,7 @@ import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 import { imageValue } from '@/registry/examples/values/media-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
-import { TurnIntoDropdownMenu } from '@/registry/ui/turn-into-dropdown-menu';
+import { TurnIntoToolbarButton } from '@/registry/ui/turn-into-toolbar-button';
 
 export default function MultipleEditorsDemo() {
   const editor = useCreateEditor({
@@ -45,7 +45,7 @@ export default function MultipleEditorsDemo() {
       <Plate editor={editorMarks}>
         <Plate editor={editorImage}>
           <FixedToolbar>
-            <TurnIntoDropdownMenu />
+            <TurnIntoToolbarButton />
           </FixedToolbar>
 
           <div>

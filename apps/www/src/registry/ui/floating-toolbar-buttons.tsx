@@ -21,13 +21,13 @@ import {
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
-import { InlineEquationToolbarButton } from './inline-equation-toolbar-button';
+import { InlineEquationToolbarButton } from './equation-toolbar-button';
 import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
-import { MoreDropdownMenu } from './more-dropdown-menu';
+import { MoreToolbarButton } from './more-toolbar-button';
 import { SuggestionToolbarButton } from './suggestion-toolbar-button';
 import { ToolbarGroup } from './toolbar';
-import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
+import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
 
 export function FloatingToolbarButtons() {
   const readOnly = useEditorReadOnly();
@@ -44,7 +44,7 @@ export function FloatingToolbarButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <TurnIntoDropdownMenu />
+            <TurnIntoToolbarButton />
 
             <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
               <BoldIcon />
@@ -86,7 +86,7 @@ export function FloatingToolbarButtons() {
         <CommentToolbarButton />
         <SuggestionToolbarButton />
 
-        {!readOnly && <MoreDropdownMenu />}
+        {!readOnly && <MoreToolbarButton />}
       </ToolbarGroup>
     </>
   );

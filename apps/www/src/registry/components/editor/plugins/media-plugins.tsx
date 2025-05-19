@@ -9,14 +9,15 @@ import {
   PlaceholderPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
+import { createPlatePlugins } from '@udecode/plate/react';
 
-import { ImagePreview } from '@/registry/ui/image-preview';
+import { MediaPreviewDialog } from '@/registry/ui/media-preview-dialog';
 import { MediaUploadToast } from '@/registry/ui/media-upload-toast';
 
-export const mediaPlugins = [
+export const MediaKit = createPlatePlugins([
   ImagePlugin.extend({
     options: { disableUploadInsert: true },
-    render: { afterEditable: ImagePreview },
+    render: { afterEditable: MediaPreviewDialog },
   }),
   MediaEmbedPlugin,
   VideoPlugin,
@@ -37,4 +38,4 @@ export const mediaPlugins = [
     options: { disableEmptyPlaceholder: true },
     render: { afterEditable: MediaUploadToast },
   }),
-] as const;
+]);

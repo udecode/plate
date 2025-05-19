@@ -11,7 +11,7 @@ import { useCreateEditor } from '@/registry/components/editor/use-create-editor'
 import { findReplaceValue } from '@/registry/examples/values/find-replace-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
-import { SearchHighlightLeaf } from '@/registry/ui/search-highlight-leaf';
+import { SearchHighlightLeaf } from '@/registry/ui/search-highlight-node';
 
 export function FindToolbar() {
   const { editor, setOption } = useEditorPlugin(FindReplacePlugin);

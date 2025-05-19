@@ -20,16 +20,14 @@ import { cn } from '@/lib/utils';
 
 import { Toolbar } from './toolbar';
 
-type FloatingToolbarProps = React.ComponentProps<typeof Toolbar> & {
-  state?: FloatingToolbarState;
-};
-
 export function FloatingToolbar({
   children,
   className,
   state,
   ...props
-}: FloatingToolbarProps) {
+}: React.ComponentProps<typeof Toolbar> & {
+  state?: FloatingToolbarState;
+}) {
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorValue('focus');
   const isFloatingLinkOpen = !!usePluginOption({ key: 'a' }, 'mode');

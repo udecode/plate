@@ -4,7 +4,7 @@ import { DndPlugin } from '@udecode/plate-dnd';
 import { PlaceholderPlugin } from '@udecode/plate-media/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 
-import { DraggableAboveNodes } from '@/registry/ui/draggable';
+import { BlockDraggable } from '@/registry/ui/block-draggable';
 
 export const dndPlugins = [
   NodeIdPlugin,
@@ -18,7 +18,7 @@ export const dndPlugins = [
       },
     },
     render: {
-      aboveNodes: DraggableAboveNodes,
+      aboveNodes: BlockDraggable,
     },
   }),
 ] as const;

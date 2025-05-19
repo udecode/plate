@@ -47,7 +47,7 @@ const InlineComboboxContext = React.createContext<InlineComboboxContextValue>(
   null as unknown as InlineComboboxContextValue
 );
 
-export const defaultFilter: FilterFn = (
+const defaultFilter: FilterFn = (
   { group, keywords = [], label, value },
   search
 ) => {
@@ -285,14 +285,6 @@ const comboboxItemVariants = cva(
   }
 );
 
-export type InlineComboboxItemProps = {
-  focusEditor?: boolean;
-  group?: string;
-  keywords?: string[];
-  label?: string;
-} & ComboboxItemProps &
-  Required<Pick<ComboboxItemProps, 'value'>>;
-
 const InlineComboboxItem = ({
   className,
   focusEditor = true,
@@ -301,7 +293,13 @@ const InlineComboboxItem = ({
   label,
   onClick,
   ...props
-}: InlineComboboxItemProps) => {
+}: {
+  focusEditor?: boolean;
+  group?: string;
+  keywords?: string[];
+  label?: string;
+} & ComboboxItemProps &
+  Required<Pick<ComboboxItemProps, 'value'>>) => {
   const { value } = props;
 
   const { filter, removeInput } = React.useContext(InlineComboboxContext);

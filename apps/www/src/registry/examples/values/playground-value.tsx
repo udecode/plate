@@ -176,7 +176,7 @@ export const playgroundValue: Value = [
       {
         children: [{ text: 'lists' }],
         type: 'a',
-        url: '/docs/indent-list',
+        url: '/docs/list',
       },
       { text: ', and ' },
       {

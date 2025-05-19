@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "alignment-docs",
+  "type": "registry:file",
+  "title": "Alignment",
+  "description": "Documentation for Alignment",
+  "files": [
+    {
+      "path": "../../docs/alignment.mdx",
+      "content": "---\ntitle: Alignment\ndocs:\n  - route: /docs/components/align-toolbar-button\n    title: Align Toolbar Button\n---\n\n<ComponentPreview name=\"align-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Provides text alignment options: left, right, center, or justify.\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-alignment\n```\n\n## Usage\n\n```tsx\nimport { createPlateEditor } from '@udecode/plate/react';\nimport { AlignPlugin } from '@udecode/plate-alignment/react';\nimport { ParagraphPlugin } from '@udecode/plate/react';\nimport { HeadingPlugin } from '@udecode/plate-heading/react';\n\nconst editor = createPlateEditor({\n  plugins: [\n    HeadingPlugin,\n    AlignPlugin.configure({\n      inject: {\n        targetPlugins: [\n          ParagraphPlugin.key,\n          HeadingPlugin.key,\n        ],\n      },\n    }),\n  ],\n});\n```\n\n## Plugins\n\n### `AlignPlugin`\n\nPlugin for aligning text within block elements.\n\n## API\n\n### `setAlign`\n\nSets the alignment for the specified block elements in the editor.\n\n<APIParameters>\n<APIItem name=\"editor\" type=\"PlateEditor\">\nThe editor instance.\n</APIItem>\n<APIItem name=\"options\" type=\"object\" optional>\n<APISubList>\n<APISubListItem parent=\"options\" name=\"value\" type=\"Alignment\" optional>\nThe alignment value.\n</APISubListItem>\n<APISubListItem parent=\"options\" name=\"setNodesOptions\" type=\"SetNodesOptions\" optional>\nOptions for the `setNodes` function.\n</APISubListItem>\n\n</APISubList>\n</APIItem>\n</APIParameters>\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plugins/alignment.mdx"
+    }
+  ]
+}

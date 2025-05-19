@@ -23,14 +23,13 @@ import {
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import {
   INDENT_LIST_KEYS,
   ListStyleType,
-  toggleIndentList,
-} from '@udecode/plate-indent-list';
+  toggleList,
+} from '@udecode/plate-list';
 import { openNextToggles, TogglePlugin } from '@udecode/plate-toggle/react';
 import { ParagraphPlugin } from '@udecode/plate/react';
 
@@ -111,32 +110,32 @@ const autoformatBlocks: AutoformatRule[] = [
   {
     match: '# ',
     mode: 'block',
-    type: HEADING_KEYS.h1,
+    type: 'h1',
   },
   {
     match: '## ',
     mode: 'block',
-    type: HEADING_KEYS.h2,
+    type: 'h2',
   },
   {
     match: '### ',
     mode: 'block',
-    type: HEADING_KEYS.h3,
+    type: 'h3',
   },
   {
     match: '#### ',
     mode: 'block',
-    type: HEADING_KEYS.h4,
+    type: 'h4',
   },
   {
     match: '##### ',
     mode: 'block',
-    type: HEADING_KEYS.h5,
+    type: 'h5',
   },
   {
     match: '###### ',
     mode: 'block',
-    type: HEADING_KEYS.h6,
+    type: 'h6',
   },
   {
     match: '> ',
@@ -174,13 +173,13 @@ const autoformatBlocks: AutoformatRule[] = [
   },
 ];
 
-const autoformatIndentLists: AutoformatRule[] = [
+const autoformatLists: AutoformatRule[] = [
   {
     match: ['* ', '- '],
     mode: 'block',
     type: 'list',
     format: (editor) => {
-      toggleIndentList(editor, {
+      toggleList(editor, {
         listStyleType: ListStyleType.Disc,
       });
     },
@@ -191,7 +190,7 @@ const autoformatIndentLists: AutoformatRule[] = [
     mode: 'block',
     type: 'list',
     format: (editor, { matchString }) => {
-      toggleIndentList(editor, {
+      toggleList(editor, {
         listRestartPolite: Number(matchString) || 1,
         listStyleType: ListStyleType.Decimal,
       });
@@ -202,7 +201,7 @@ const autoformatIndentLists: AutoformatRule[] = [
     mode: 'block',
     type: 'list',
     format: (editor) => {
-      toggleIndentList(editor, {
+      toggleList(editor, {
         listStyleType: INDENT_LIST_KEYS.todo,
       });
       editor.tf.setNodes({
@@ -216,7 +215,7 @@ const autoformatIndentLists: AutoformatRule[] = [
     mode: 'block',
     type: 'list',
     format: (editor) => {
-      toggleIndentList(editor, {
+      toggleList(editor, {
         listStyleType: INDENT_LIST_KEYS.todo,
       });
       editor.tf.setNodes({
@@ -239,7 +238,7 @@ export const autoformatPlugin = AutoformatPlugin.configure({
       ...autoformatLegalHtml,
       ...autoformatArrow,
       ...autoformatMath,
-      ...autoformatIndentLists,
+      ...autoformatLists,
     ].map(
       (rule): AutoformatRule => ({
         ...rule,

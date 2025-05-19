@@ -29,11 +29,11 @@ import { fontValue } from './font-value';
 import { highlightValue } from './highlight-value';
 import { horizontalRuleValue } from './horizontal-rule-value';
 import { iframeValue } from './iframe-value';
-import { indentListValue } from './indent-list-value';
 import { indentValue } from './indent-value';
 import { kbdValue } from './kbd-value';
 import { lineHeightValue } from './line-height-value';
 import { linkValue } from './link-value';
+import { listValue as listClassicValue } from './list-classic-value';
 import { listValue } from './list-value';
 import { mediaValue } from './media-value';
 import { mentionValue } from './mention-value';
@@ -81,11 +81,11 @@ const values = {
   // 'huge-document': hugeDocumentValue,
   iframe: iframeValue,
   indent: indentValue,
-  'indent-list': indentListValue,
   kbd: kbdValue,
   'line-height': lineHeightValue,
   link: linkValue,
   list: listValue,
+  'list-classic': listClassicValue,
   markdown: deserializeMdValue,
   media: mediaValue,
   // 'media-toolbar': mediaToolbarValue,

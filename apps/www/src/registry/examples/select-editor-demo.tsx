@@ -34,7 +34,7 @@ const LABELS = [
   { url: '/docs/components/input', value: 'Input' },
   { url: '/docs/components/label', value: 'Label' },
   { url: '/docs/components/popover', value: 'Popover' },
-  { url: '/docs/components/tag-element', value: 'Tag Element' },
+  { url: '/docs/components/tag-node', value: 'Tag Element' },
 ] satisfies (SelectItem & { url: string })[];
 
 const formSchema = z.object({

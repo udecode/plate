@@ -2,7 +2,7 @@ import type { Doc } from 'contentlayer/generated';
 
 import type { Metadata } from 'next';
 
-import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
+import { createSlateEditor } from '@udecode/plate';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
@@ -27,17 +27,16 @@ import {
   BaseFontColorPlugin,
   BaseFontSizePlugin,
 } from '@udecode/plate-font';
-import { BaseHeadingPlugin, HEADING_KEYS } from '@udecode/plate-heading';
+import { BaseHeadingPlugin } from '@udecode/plate-heading';
 import { BaseHighlightPlugin } from '@udecode/plate-highlight';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
-import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { BaseKbdPlugin } from '@udecode/plate-kbd';
 import { BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
-import { BaseListPlugin, BaseTodoListPlugin } from '@udecode/plate-list';
+import { BaseListPlugin } from '@udecode/plate-list';
 import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
 import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@udecode/plate-media';
 import { BaseMentionPlugin } from '@udecode/plate-mention';
@@ -109,7 +108,6 @@ export default function RSCPage() {
       BaseMentionPlugin,
       BaseSlashPlugin,
       BaseTablePlugin,
-      BaseTodoListPlugin,
       BaseTogglePlugin,
       BaseExcalidrawPlugin,
       BaseColumnPlugin,
@@ -132,44 +130,44 @@ export default function RSCPage() {
       BaseAlignPlugin.extend({
         inject: {
           targetPlugins: [
-            BaseParagraphPlugin.key,
-            BaseMediaEmbedPlugin.key,
-            HEADING_KEYS.h1,
-            HEADING_KEYS.h2,
-            HEADING_KEYS.h3,
-            HEADING_KEYS.h4,
-            HEADING_KEYS.h5,
+            'p',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
             BaseImagePlugin.key,
-            HEADING_KEYS.h6,
+            BaseMediaEmbedPlugin.key,
           ],
         },
       }),
       BaseIndentPlugin.extend({
         inject: {
           targetPlugins: [
-            BaseParagraphPlugin.key,
-            HEADING_KEYS.h1,
-            HEADING_KEYS.h2,
-            HEADING_KEYS.h3,
-            HEADING_KEYS.h4,
-            HEADING_KEYS.h5,
-            HEADING_KEYS.h6,
+            'p',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
             BaseBlockquotePlugin.key,
             BaseCodeBlockPlugin.key,
             BaseTogglePlugin.key,
           ],
         },
       }),
-      BaseIndentListPlugin.extend({
+      BaseListPlugin.extend({
         inject: {
           targetPlugins: [
-            BaseParagraphPlugin.key,
-            HEADING_KEYS.h1,
-            HEADING_KEYS.h2,
-            HEADING_KEYS.h3,
-            HEADING_KEYS.h4,
-            HEADING_KEYS.h5,
-            HEADING_KEYS.h6,
+            'p',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
             BaseBlockquotePlugin.key,
             BaseCodeBlockPlugin.key,
             BaseTogglePlugin.key,
@@ -192,15 +190,7 @@ export default function RSCPage() {
             defaultNodeValue: 1.5,
             validNodeValues: [1, 1.2, 1.5, 2, 3],
           },
-          targetPlugins: [
-            BaseParagraphPlugin.key,
-            HEADING_KEYS.h1,
-            HEADING_KEYS.h2,
-            HEADING_KEYS.h3,
-            HEADING_KEYS.h4,
-            HEADING_KEYS.h5,
-            HEADING_KEYS.h6,
-          ],
+          targetPlugins: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
         },
       }),
 

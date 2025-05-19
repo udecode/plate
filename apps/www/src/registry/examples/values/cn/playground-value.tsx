@@ -170,7 +170,7 @@ export const playgroundValue: Value = [
       {
         children: [{ text: '列表' }],
         type: 'a',
-        url: '/docs/indent-list',
+        url: '/docs/list',
       },
       { text: ' 和 ' },
       {

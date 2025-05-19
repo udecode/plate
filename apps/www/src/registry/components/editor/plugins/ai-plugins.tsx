@@ -7,13 +7,12 @@ import type { AIChatPluginConfig } from '@udecode/plate-ai/react';
 import { PathApi } from '@udecode/plate';
 import { streamInsertChunk, withAIBatch } from '@udecode/plate-ai';
 import { AIChatPlugin, AIPlugin, useChatChunk } from '@udecode/plate-ai/react';
-import { usePluginOption } from '@udecode/plate/react';
+import { createPlatePlugins, usePluginOption } from '@udecode/plate/react';
 
 import { markdownPlugin } from '@/registry/components/editor/plugins/markdown-plugin';
-import { AILoadingBar } from '@/registry/ui/ai-loading-bar';
-import { AIMenu } from '@/registry/ui/ai-menu';
+import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
 
-import { cursorOverlayPlugin } from './cursor-overlay-plugin';
+import { CursorOverlayKit } from './cursor-overlay-plugin';
 
 const systemCommon = `\
 You are an advanced AI-powered note-taking assistant, designed to enhance productivity and creativity in note management.
@@ -96,8 +95,8 @@ export const PROMPT_TEMPLATES = {
   userSelecting,
 };
 
-export const aiPlugins = [
-  cursorOverlayPlugin,
+export const AiKit = createPlatePlugins([
+  CursorOverlayKit,
   markdownPlugin,
   AIPlugin,
   AIChatPlugin.configure({
@@ -170,4 +169,4 @@ export const aiPlugins = [
       });
     },
   }),
-] as const;
+]);

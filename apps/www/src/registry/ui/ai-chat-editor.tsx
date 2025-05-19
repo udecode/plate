@@ -29,18 +29,14 @@ import {
   BaseFontSizePlugin,
   BaseFontWeightPlugin,
 } from '@udecode/plate-font';
-import {
-  BaseHeadingPlugin,
-  BaseTocPlugin,
-  HEADING_KEYS,
-} from '@udecode/plate-heading';
+import { BaseHeadingPlugin, BaseTocPlugin } from '@udecode/plate-heading';
 import { BaseHighlightPlugin } from '@udecode/plate-highlight';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
-import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BaseKbdPlugin } from '@udecode/plate-kbd';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLinkPlugin } from '@udecode/plate-link';
+import { BaseListPlugin } from '@udecode/plate-list';
 import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
@@ -62,44 +58,47 @@ import { usePlateEditor } from '@udecode/plate/react';
 import { all, createLowlight } from 'lowlight';
 
 import { markdownPlugin } from '@/registry/components/editor/plugins/markdown-plugin';
-import {
-  TodoLiStatic,
-  TodoMarkerStatic,
-} from '@/registry/ui/indent-todo-marker-static';
+import { TodoLiStatic, TodoMarkerStatic } from '@/registry/ui/list-todo-static';
 
-import { BlockquoteElementStatic } from './blockquote-element-static';
-import { CalloutElementStatic } from './callout-element-static';
-import { CodeBlockElementStatic } from './code-block-element-static';
-import { CodeLeafStatic } from './code-leaf-static';
-import { CodeLineElementStatic } from './code-line-element-static';
-import { CodeSyntaxLeafStatic } from './code-syntax-leaf-static';
-import { ColumnElementStatic } from './column-element-static';
-import { ColumnGroupElementStatic } from './column-group-element-static';
-import { DateElement } from './date-element';
+import { BlockquoteElementStatic } from './blockquote-node-static';
+import { CalloutElementStatic } from './callout-node-static';
+import {
+  CodeBlockElementStatic,
+  CodeLineElementStatic,
+  CodeSyntaxLeafStatic,
+} from './code-block-node-static';
+import { CodeLeafStatic } from './code-node-static';
+import {
+  ColumnElementStatic,
+  ColumnGroupElementStatic,
+} from './column-node-static';
+import { DateElement } from './date-node';
 import { EditorStatic } from './editor-static';
-import { EquationElementStatic } from './equation-element-static';
-import { HeadingElementStatic } from './heading-element-static';
-import { HighlightLeafStatic } from './highlight-leaf-static';
-import { HrElementStatic } from './hr-element-static';
-import { ImageElementStatic } from './image-element-static';
-import { InlineEquationElementStatic } from './inline-equation-element-static';
-import { KbdLeaf } from './kbd-leaf';
-import { LinkElementStatic } from './link-element-static';
-import { MediaAudioElementStatic } from './media-audio-element-static';
-import { MediaFileElementStatic } from './media-file-element-static';
-import { MediaVideoElementStatic } from './media-video-element-static';
-import { MentionElementStatic } from './mention-element-static';
-import { ParagraphElementStatic } from './paragraph-element-static';
+import {
+  EquationElementStatic,
+  InlineEquationElementStatic,
+} from './equation-node-static';
+import { HeadingElementStatic } from './heading-node-static';
+import { HighlightLeafStatic } from './highlight-node-static';
+import { HrElementStatic } from './hr-node-static';
+import { KbdLeaf } from './kbd-node';
+import { LinkElementStatic } from './link-node-static';
+import { AudioElementStatic } from './media-audio-node-static';
+import { FileElementStatic } from './media-file-node-static';
+import { ImageElementStatic } from './media-image-node-static';
+import { VideoElementStatic } from './media-video-node-static';
+import { MentionElementStatic } from './mention-node-static';
+import { ParagraphElementStatic } from './paragraph-node-static';
 import {
   TableCellElementStatic,
   TableCellHeaderStaticElement,
-} from './table-cell-element-static';
-import { TableElementStatic } from './table-element-static';
-import { TableRowElementStatic } from './table-row-element-static';
-import { TocElementStatic } from './toc-element-static';
+  TableElementStatic,
+  TableRowElementStatic,
+} from './table-node-static';
+import { TocElementStatic } from './toc-node-static';
 
 const components = {
-  [BaseAudioPlugin.key]: MediaAudioElementStatic,
+  [BaseAudioPlugin.key]: AudioElementStatic,
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
   [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
   [BaseCalloutPlugin.key]: CalloutElementStatic,
@@ -111,7 +110,7 @@ const components = {
   [BaseColumnPlugin.key]: ColumnGroupElementStatic,
   [BaseDatePlugin.key]: DateElement,
   [BaseEquationPlugin.key]: EquationElementStatic,
-  [BaseFilePlugin.key]: MediaFileElementStatic,
+  [BaseFilePlugin.key]: FileElementStatic,
   [BaseHighlightPlugin.key]: HighlightLeafStatic,
   [BaseHorizontalRulePlugin.key]: HrElementStatic,
   [BaseImagePlugin.key]: ImageElementStatic,
@@ -131,11 +130,10 @@ const components = {
   [BaseTocPlugin.key]: TocElementStatic,
   [BaseUnderlinePlugin.key]: withProps(SlateLeaf, { as: 'u' }),
 
-  [BaseVideoPlugin.key]: MediaVideoElementStatic,
-  [HEADING_KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
-
-  [HEADING_KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
-  [HEADING_KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
+  [BaseVideoPlugin.key]: VideoElementStatic,
+  h1: withProps(HeadingElementStatic, { variant: 'h1' }),
+  h2: withProps(HeadingElementStatic, { variant: 'h2' }),
+  h3: withProps(HeadingElementStatic, { variant: 'h3' }),
 
   // [BaseCommentsPlugin.key]: CommentLeafStatic
   // [BaseTogglePlugin.key]: ToggleElementStatic
@@ -178,7 +176,7 @@ const plugins = [
       targetPlugins: [BaseParagraphPlugin.key],
     },
   }),
-  BaseIndentListPlugin.extend({
+  BaseListPlugin.extend({
     inject: {
       targetPlugins: [BaseParagraphPlugin.key],
     },

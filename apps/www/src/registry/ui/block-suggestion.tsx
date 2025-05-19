@@ -19,12 +19,11 @@ import {
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CalloutPlugin } from '@udecode/plate-callout/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
 import { TocPlugin } from '@udecode/plate-heading/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
+import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-list';
+import { ListPlugin } from '@udecode/plate-list/react';
 import { EquationPlugin } from '@udecode/plate-math/react';
 import {
   AudioPlugin,
@@ -58,16 +57,20 @@ import {
 } from '@/registry/components/editor/plugins/discussion-plugin';
 import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
 
-import { type TComment, Comment, formatCommentDate } from './comment';
-import { CommentCreateForm } from './comment-create-form';
+import {
+  type TComment,
+  Comment,
+  CommentCreateForm,
+  formatCommentDate,
+} from './comment';
 
 export interface ResolvedSuggestion extends TResolvedSuggestion {
   comments: TComment[];
 }
 
-export const BLOCK_SUGGESTION = '__block__';
+const BLOCK_SUGGESTION = '__block__';
 
-export const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
+const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
   [AudioPlugin.key]: () => 'Audio',
   [BlockquotePlugin.key]: () => 'Blockquote',
   [CalloutPlugin.key]: () => 'Callout',
@@ -75,21 +78,19 @@ export const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
   [ColumnPlugin.key]: () => 'Column',
   [EquationPlugin.key]: () => 'Equation',
   [FilePlugin.key]: () => 'File',
-  [HEADING_KEYS.h1]: () => `Heading 1`,
-  [HEADING_KEYS.h2]: () => `Heading 2`,
-  [HEADING_KEYS.h3]: () => `Heading 3`,
-  [HEADING_KEYS.h4]: () => `Heading 4`,
-  [HEADING_KEYS.h5]: () => `Heading 5`,
-  [HEADING_KEYS.h6]: () => `Heading 6`,
+  h1: () => `Heading 1`,
+  h2: () => `Heading 2`,
+  h3: () => `Heading 3`,
+  h4: () => `Heading 4`,
+  h5: () => `Heading 5`,
+  h6: () => `Heading 6`,
   [HorizontalRulePlugin.key]: () => 'Horizontal Rule',
   [ImagePlugin.key]: () => 'Image',
   [MediaEmbedPlugin.key]: () => 'Media',
   [ParagraphPlugin.key]: (node) => {
-    if (node?.[IndentListPlugin.key] === INDENT_LIST_KEYS.todo)
-      return 'Todo List';
-    if (node?.[IndentListPlugin.key] === ListStyleType.Decimal)
-      return 'Ordered List';
-    if (node?.[IndentListPlugin.key] === ListStyleType.Disc) return 'List';
+    if (node?.[ListPlugin.key] === INDENT_LIST_KEYS.todo) return 'Todo List';
+    if (node?.[ListPlugin.key] === ListStyleType.Decimal) return 'Ordered List';
+    if (node?.[ListPlugin.key] === ListStyleType.Disc) return 'List';
 
     return 'Paragraph';
   },
@@ -99,7 +100,25 @@ export const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
   [VideoPlugin.key]: () => 'Video',
 };
 
-export const BlockSuggestionCard = ({
+export function BlockSuggestion({ element }: { element: TSuggestionElement }) {
+  const suggestionData = element.suggestion;
+
+  if (suggestionData?.isLineBreak) return null;
+
+  const isRemove = suggestionData?.type === 'remove';
+
+  return (
+    <div
+      className={cn(
+        'pointer-events-none absolute inset-0 z-1 border-2 border-brand/[0.8] transition-opacity',
+        isRemove && 'border-gray-300'
+      )}
+      contentEditable={false}
+    />
+  );
+}
+
+export function BlockSuggestionCard({
   idx,
   isLast,
   suggestion,
@@ -107,7 +126,7 @@ export const BlockSuggestionCard = ({
   idx: number;
   isLast: boolean;
   suggestion: ResolvedSuggestion;
-}) => {
+}) {
   const { api, editor } = useEditorPlugin(SuggestionPlugin);
 
   const userInfo = usePluginOption(discussionPlugin, 'user', suggestion.userId);
@@ -280,7 +299,7 @@ export const BlockSuggestionCard = ({
       {!isLast && <div className="h-px w-full bg-muted" />}
     </div>
   );
-};
+}
 
 export const useResolveSuggestion = (
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[],
@@ -510,21 +529,3 @@ export const isResolvedSuggestion = (
 ): suggestion is ResolvedSuggestion => {
   return 'suggestionId' in suggestion;
 };
-
-export function BlockSuggestion({ element }: { element: TSuggestionElement }) {
-  const suggestionData = element.suggestion;
-
-  if (suggestionData?.isLineBreak) return null;
-
-  const isRemove = suggestionData?.type === 'remove';
-
-  return (
-    <div
-      className={cn(
-        'pointer-events-none absolute inset-0 z-1 border-2 border-brand/[0.8] transition-opacity',
-        isRemove && 'border-gray-300'
-      )}
-      contentEditable={false}
-    />
-  );
-}

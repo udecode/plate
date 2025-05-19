@@ -75,7 +75,7 @@ export const useCreateEditor = () => {
           { strikethrough: true, text: 'strikethrough' },
           { text: '.' },
         ],
-        type: ParagraphPlugin.key,
+        type: 'p',
       },
     ],
   });

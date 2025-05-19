@@ -32,15 +32,6 @@ export function SetupMCPDialog() {
       "env": {
         "REGISTRY_URL": "${siteConfig.registryUrl}registry.json"
       }
-    },
-    "plate-docs": {
-      "description": "Plate documentation",
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "shadcn@canary", "registry:mcp"],
-      "env": {
-        "REGISTRY_URL": "${siteConfig.registryUrl}registry-docs.json"
-      }
     }
   }
 }`;

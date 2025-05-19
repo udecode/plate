@@ -37,13 +37,13 @@ import {
 import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { TodoListPlugin } from '@udecode/plate-list/react';
+import { ListPlugin as ListClassicPlugin } from '@udecode/plate-list-classic/react';
+import { ListPlugin } from '@udecode/plate-list/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 import {
   ImagePlugin,
@@ -83,12 +83,12 @@ export type SettingPlugin = {
   badges?: CustomizerBadge[];
   cnImports?: string[];
   components?: {
-    id: string; // e.g. 'blockquote-element'
+    id: string; // e.g. 'blockquote-node'
     label: string; // e.g. 'Blockquote'
     usage: string; // e.g. 'BlockquoteElement'
     cnImports?: string[];
     customImports?: string[];
-    filename?: string; // e.g. 'blockquote-element' (default: id)
+    filename?: string; // e.g. 'blockquote-node' (default: id)
     import?: string;
     noImport?: boolean;
     plateImports?: string[];
@@ -155,10 +155,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.handler],
     components: [
       {
-        id: 'ai-leaf',
+        id: 'ai-node',
         label: 'AILeaf',
         pluginKey: 'AIPlugin.key',
-        route: getComponentNavItem('ai-leaf').href,
+        route: getComponentNavItem('ai-node').href,
         usage: 'AILeaf',
       },
     ],
@@ -207,10 +207,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.element],
     components: [
       {
-        id: 'blockquote-element',
+        id: 'blockquote-node',
         label: 'BlockquoteElement',
         pluginKey: 'BlockquotePlugin.key',
-        route: getComponentNavItem('blockquote-element').href,
+        route: getComponentNavItem('blockquote-node').href,
         usage: 'BlockquoteElement',
       },
     ],
@@ -273,27 +273,11 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.element],
     components: [
       {
-        id: 'code-block-element',
+        id: 'code-block-node',
         label: 'CodeBlockElement',
         pluginKey: 'CodeBlockPlugin.key',
-        route: getComponentNavItem('code-block-element').href,
+        route: getComponentNavItem('code-block-node').href,
         usage: 'CodeBlockElement',
-      },
-      {
-        id: 'code-line-element',
-        label: 'CodeLineElement',
-        pluginImports: ['CodeLinePlugin'],
-        pluginKey: 'CodeLinePlugin.key',
-        route: getComponentNavItem('code-line-element').href,
-        usage: 'CodeLineElement',
-      },
-      {
-        id: 'code-syntax-leaf',
-        label: 'CodeSyntaxLeaf',
-        pluginImports: ['CodeSyntaxPlugin'],
-        pluginKey: 'CodeSyntaxPlugin.key',
-        route: getComponentNavItem('code-syntax-leaf').href,
-        usage: 'CodeSyntaxLeaf',
       },
     ],
     label: 'Code block',
@@ -314,10 +298,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.leaf],
     components: [
       {
-        id: 'code-leaf',
+        id: 'code-node',
         label: 'CodeLeaf',
         pluginKey: 'CodePlugin.key',
-        route: getComponentNavItem('code-leaf').href,
+        route: getComponentNavItem('code-node').href,
         usage: `CodeLeaf`,
       },
     ],
@@ -339,18 +323,11 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.element],
     components: [
       {
-        id: 'column-group-element',
-        label: 'ColumnGroupElement',
-        pluginKey: 'ColumnPlugin.key',
-        route: getComponentNavItem('column-group-element').href,
-        usage: 'ColumnGroupElement',
-      },
-      {
-        id: 'column-element',
+        id: 'column-node',
         label: 'ColumnElement',
         pluginImports: ['ColumnItemPlugin'],
         pluginKey: 'ColumnItemPlugin.key',
-        route: getComponentNavItem('column-element').href,
+        route: getComponentNavItem('column-node').href,
         usage: 'ColumnElement',
       },
     ],
@@ -365,10 +342,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.leaf],
     components: [
       {
-        id: 'comment-leaf',
+        id: 'comment-node',
         label: 'CommentLeaf',
         pluginKey: 'CommentsPlugin.key',
-        route: getComponentNavItem('comment-leaf').href,
+        route: getComponentNavItem('comment-node').href,
         usage: 'CommentLeaf',
       },
       // TODO: block-discussion
@@ -389,13 +366,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         label: 'Editor',
         route: getComponentNavItem('editor').href,
         usage: 'Editor',
-      },
-      {
-        id: 'placeholder',
-        label: 'Placeholder',
-        registry: 'placeholder',
-        route: getComponentNavItem('placeholder').href,
-        usage: 'withPlaceholders',
       },
     ],
     label: 'Components',
@@ -432,10 +402,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.element],
     components: [
       {
-        id: 'date-element',
+        id: 'date-node',
         label: 'DateElement',
         pluginKey: 'DatePlugin.key',
-        route: getComponentNavItem('date-element').href,
+        route: getComponentNavItem('date-node').href,
         usage: 'DateElement',
       },
     ],
@@ -456,16 +426,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
   [DndPlugin.key]: {
     id: DndPlugin.key,
     badges: [customizerBadges.handler, customizerBadges.ui],
-    // components: [
-    //   {
-    //     id: 'draggable',
-    //     filename: 'with-draggables',
-    //     label: 'Draggable',
-    //     registry: 'draggable',
-    //     route: getComponentNavItem('draggable').href,
-    //     usage: 'withDraggables',
-    //   },
-    // ],
     customImports: [
       `import { DndProvider } from 'react-dnd';`,
       `import { HTML5Backend } from 'react-dnd-html5-backend';`,
@@ -491,9 +451,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.handler],
     components: [
       {
-        id: 'emoji-input-element',
+        id: 'emoji-input-node',
         label: 'EmojiInputElement',
-        route: getComponentNavItem('emoji-input-element').href,
+        route: getComponentNavItem('emoji-input-node').href,
         usage: 'EmojiInputElement',
       },
     ],
@@ -515,10 +475,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.element, customizerBadges.void],
     components: [
       {
-        id: 'excalidraw-element',
+        id: 'excalidraw-node',
         label: 'ExcalidrawElement',
         pluginKey: 'ExcalidrawPlugin.key',
-        route: getComponentNavItem('excalidraw-element').href,
+        route: getComponentNavItem('excalidraw-node').href,
         usage: 'ExcalidrawElement',
       },
     ],
@@ -613,61 +573,61 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'h1',
         cnImports: ['withProps'],
-        filename: 'heading-element',
+        filename: 'heading-node',
         import: 'HeadingElement',
         label: 'H1Element',
-        pluginKey: 'HEADING_KEYS.h1',
-        route: getComponentNavItem('heading-element').href,
+        pluginKey: 'h1',
+        route: getComponentNavItem('heading-node').href,
         usage: `withProps(HeadingElement, { variant: 'h1' })`,
       },
       {
         id: 'h2',
         cnImports: ['withProps'],
-        filename: 'heading-element',
+        filename: 'heading-node',
         import: 'HeadingElement',
         label: 'H2Element',
-        pluginKey: 'HEADING_KEYS.h2',
-        route: getComponentNavItem('heading-element').href,
+        pluginKey: 'h2',
+        route: getComponentNavItem('heading-node').href,
         usage: `withProps(HeadingElement, { variant: 'h2' })`,
       },
       {
         id: 'h3',
         cnImports: ['withProps'],
-        filename: 'heading-element',
+        filename: 'heading-node',
         import: 'HeadingElement',
         label: 'H3Element',
-        pluginKey: 'HEADING_KEYS.h3',
-        route: getComponentNavItem('heading-element').href,
+        pluginKey: 'h3',
+        route: getComponentNavItem('heading-node').href,
         usage: `withProps(HeadingElement, { variant: 'h3' })`,
       },
       {
         id: 'h4',
         cnImports: ['withProps'],
-        filename: 'heading-element',
+        filename: 'heading-node',
         import: 'HeadingElement',
         label: 'H4Element',
-        pluginKey: 'HEADING_KEYS.h4',
-        route: getComponentNavItem('heading-element').href,
+        pluginKey: 'h4',
+        route: getComponentNavItem('heading-node').href,
         usage: `withProps(HeadingElement, { variant: 'h4' })`,
       },
       {
         id: 'h5',
         cnImports: ['withProps'],
-        filename: 'heading-element',
+        filename: 'heading-node',
         import: 'HeadingElement',
         label: 'H5Element',
-        pluginKey: 'HEADING_KEYS.h5',
-        route: getComponentNavItem('heading-element').href,
+        pluginKey: 'h5',
+        route: getComponentNavItem('heading-node').href,
         usage: `withProps(HeadingElement, { variant: 'h5' })`,
       },
       {
         id: 'h6',
         cnImports: ['withProps'],
-        filename: 'heading-element',
+        filename: 'heading-node',
         import: 'HeadingElement',
         label: 'H6Element',
-        pluginKey: 'HEADING_KEYS.h6',
-        route: getComponentNavItem('heading-element').href,
+        pluginKey: 'h6',
+        route: getComponentNavItem('heading-node').href,
         usage: `withProps(HeadingElement, { variant: 'h6' })`,
       },
     ],
@@ -683,10 +643,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.leaf],
     components: [
       {
-        id: 'highlight-leaf',
+        id: 'highlight-node',
         label: 'HighlightLeaf',
         pluginKey: 'HighlightPlugin.key',
-        route: getComponentNavItem('highlight-leaf').href,
+        route: getComponentNavItem('highlight-node').href,
         usage: 'HighlightLeaf',
       },
     ],
@@ -701,10 +661,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.element, customizerBadges.void],
     components: [
       {
-        id: 'hr-element',
+        id: 'hr-node',
         label: 'HrElement',
         pluginKey: 'HorizontalRulePlugin.key',
-        route: getComponentNavItem('hr-element').href,
+        route: getComponentNavItem('hr-node').href,
         usage: 'HrElement',
       },
     ],
@@ -719,10 +679,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.element, customizerBadges.void],
     components: [
       {
-        id: 'image-element',
+        id: 'media-image-node',
         label: 'ImageElement',
         pluginKey: 'ImagePlugin.key',
-        route: getComponentNavItem('image-element').href,
+        route: getComponentNavItem('media-image-node').href,
         usage: 'ImageElement',
       },
     ],
@@ -731,18 +691,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'ImagePlugin',
     reactImport: true,
     route: getPluginNavItem('media').href,
-  },
-  [IndentListPlugin.key]: {
-    id: IndentListPlugin.key,
-    badges: [customizerBadges.style],
-    conflicts: ['list'],
-    dependencies: [IndentPlugin.key],
-    label: 'Indent List',
-    npmPackage: '@udecode/plate-indent-list',
-    pluginFactory: 'IndentListPlugin',
-    pluginOptions: [`inject: { targetPlugins: ['p', 'h1', 'h2', 'h3'] },`],
-    reactImport: true,
-    route: getPluginNavItem('indent-list').href,
   },
   [IndentPlugin.key]: {
     id: IndentPlugin.key,
@@ -787,10 +735,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.leaf],
     components: [
       {
-        id: 'kbd-leaf',
+        id: 'kbd-node',
         label: 'KbdLeaf',
         pluginKey: 'KbdPlugin.key',
-        route: getComponentNavItem('kbd-leaf').href,
+        route: getComponentNavItem('kbd-node').href,
         usage: 'KbdLeaf',
       },
     ],
@@ -822,19 +770,19 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.element, customizerBadges.inline],
     components: [
       {
-        id: 'link-element',
+        id: 'link-node',
         label: 'LinkElement',
         pluginKey: 'LinkPlugin.key',
-        route: getComponentNavItem('link-element').href,
+        route: getComponentNavItem('link-node').href,
         usage: 'LinkElement',
       },
       {
-        id: 'link-floating-toolbar',
+        id: 'link-toolbar',
         label: 'LinkFloatingToolbar',
         pluginOptions: [
           `render: { afterEditable: () => <LinkFloatingToolbar /> },`,
         ],
-        route: getComponentNavItem('link-floating-toolbar').href,
+        route: getComponentNavItem('link-toolbar').href,
         usage: 'LinkFloatingToolbar',
       },
     ],
@@ -844,37 +792,37 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
     route: getPluginNavItem('link').href,
   },
-  list: {
-    id: 'list',
+  listClassic: {
+    id: 'listClassic',
     badges: [customizerBadges.element],
     components: [
       {
         id: 'ul',
         cnImports: ['withProps'],
-        filename: 'list-element',
+        filename: 'list-classic-node',
         import: 'ListElement',
         label: 'BulletedListElement',
         pluginImports: ['BulletedListPlugin'],
         pluginKey: 'BulletedListPlugin.key',
-        route: getComponentNavItem('list-element').href,
+        route: getComponentNavItem('list-classic-node').href,
         usage: `withProps(ListElement, { variant: 'ul' })`,
       },
       {
         id: 'ol',
         cnImports: ['withProps'],
-        filename: 'list-element',
+        filename: 'list-classic-node',
         import: 'ListElement',
         label: 'NumberedListElement',
         noImport: true,
         pluginImports: ['NumberedListPlugin'],
         pluginKey: 'NumberedListPlugin.key',
-        route: getComponentNavItem('list-element').href,
+        route: getComponentNavItem('list-classic-node').href,
         usage: `withProps(ListElement, { variant: 'ol' })`,
       },
       {
         id: 'li',
         cnImports: ['withProps'],
-        filename: 'list-element',
+        filename: 'list-classic-node',
         label: 'ListItemElement',
         noImport: true,
         plateImports: ['PlateElement'],
@@ -883,10 +831,22 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(PlateElement, { as: 'li' })`,
       },
     ],
-    conflicts: [IndentListPlugin.key],
+    conflicts: [ListPlugin.key],
+    label: 'List',
+    npmPackage: '@udecode/plate-list-classic',
+    pluginFactory: 'ListPlugin',
+    reactImport: true,
+    route: getPluginNavItem('list').href,
+  },
+  [ListPlugin.key]: {
+    id: ListPlugin.key,
+    badges: [customizerBadges.style],
+    conflicts: ['list'],
+    dependencies: [IndentPlugin.key],
     label: 'List',
     npmPackage: '@udecode/plate-list',
     pluginFactory: 'ListPlugin',
+    pluginOptions: [`inject: { targetPlugins: ['p', 'h1', 'h2', 'h3'] },`],
     reactImport: true,
     route: getPluginNavItem('list').href,
   },
@@ -912,10 +872,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.element, customizerBadges.void],
     components: [
       {
-        id: 'media-embed-element',
+        id: 'media-embed-node',
         label: 'MediaEmbedElement',
         pluginKey: 'MediaEmbedPlugin.key',
-        route: getComponentNavItem('media-embed-element').href,
+        route: getComponentNavItem('media-embed-node').href,
         usage: 'MediaEmbedElement',
       },
     ],
@@ -941,18 +901,18 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     components: [
       {
-        id: 'mention-element',
+        id: 'mention-node',
         label: 'MentionElement',
         pluginKey: 'MentionPlugin.key',
-        route: getComponentNavItem('mention-element').href,
+        route: getComponentNavItem('mention-node').href,
         usage: 'MentionElement',
       },
       {
-        id: 'mention-input-element',
+        id: 'mention-input-node',
         label: 'MentionInputElement',
         pluginImports: ['MentionInputPlugin'],
         pluginKey: 'MentionInputPlugin.key',
-        route: getComponentNavItem('mention-input-element').href,
+        route: getComponentNavItem('mention-input-node').href,
         usage: 'MentionInputElement',
       },
     ],
@@ -983,10 +943,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.element],
     components: [
       {
-        id: 'paragraph-element',
+        id: 'paragraph-node',
         label: 'ParagraphElement',
         pluginKey: 'ParagraphPlugin.key',
-        route: getComponentNavItem('paragraph-element').href,
+        route: getComponentNavItem('paragraph-node').href,
         usage: 'ParagraphElement',
       },
     ],
@@ -1145,36 +1105,36 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.element],
     components: [
       {
-        id: 'table-element',
+        id: 'table-node',
         label: 'TableElement',
         pluginKey: 'TablePlugin.key',
-        route: getComponentNavItem('table-element').href,
+        route: getComponentNavItem('table-node').href,
         usage: 'TableElement',
       },
       {
-        id: 'table-row-element',
+        id: 'table-node',
         label: 'TableRowElement',
         pluginImports: ['TableRowPlugin'],
         pluginKey: 'TableRowPlugin.key',
-        route: getComponentNavItem('table-row-element').href,
+        route: getComponentNavItem('table-node').href,
         usage: 'TableRowElement',
       },
       {
         id: 'td',
-        filename: 'table-cell-element',
+        filename: 'table-node',
         label: 'TableCellElement',
         pluginImports: ['TableCellPlugin'],
         pluginKey: 'TableCellPlugin.key',
-        route: getComponentNavItem('table-cell-element').href,
+        route: getComponentNavItem('table-node').href,
         usage: 'TableCellElement',
       },
       {
         id: 'th',
-        filename: 'table-cell-element',
+        filename: 'table-node',
         label: 'TableCellHeaderElement',
         pluginImports: ['TableCellHeaderPlugin'],
         pluginKey: 'TableCellHeaderPlugin.key',
-        route: getComponentNavItem('table-cell-element').href,
+        route: getComponentNavItem('table-node').href,
         usage: 'TableCellHeaderElement',
       },
     ],
@@ -1192,33 +1152,15 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'TocPlugin',
     route: getPluginNavItem('toc').href,
   },
-  [TodoListPlugin.key]: {
-    id: TodoListPlugin.key,
-    badges: [customizerBadges.element],
-    components: [
-      {
-        id: 'todo-list-element',
-        label: 'TodoListElement',
-        pluginKey: 'TodoListPlugin.key',
-        route: getComponentNavItem('todo-list-element').href,
-        usage: 'TodoListElement',
-      },
-    ],
-    label: 'Todo List',
-    npmPackage: '@udecode/plate-list',
-    pluginFactory: 'TodoListPlugin',
-    reactImport: true,
-    route: getPluginNavItem('list').href,
-  },
   [TogglePlugin.key]: {
     id: TogglePlugin.key,
     badges: [customizerBadges.element],
     components: [
       {
-        id: 'toggle-element',
+        id: 'toggle-node',
         label: 'ToggleElement',
         pluginKey: 'TogglePlugin.key',
-        route: getComponentNavItem('toggle-element').href,
+        route: getComponentNavItem('toggle-node').href,
         usage: 'ToggleElement',
       },
     ],
@@ -1283,13 +1225,12 @@ export const customizerList = [
       customizerItems[TogglePlugin.key],
       customizerItems.column,
       customizerItems.heading,
-      customizerItems.list,
+      customizerItems.listClassic,
       customizerItems[MediaEmbedPlugin.key],
       customizerItems.media_placeholder,
       customizerItems[MentionPlugin.key],
       customizerItems[ParagraphPlugin.key],
       customizerItems[TablePlugin.key],
-      customizerItems[TodoListPlugin.key],
       customizerItems[DatePlugin.key],
       customizerItems[TocPlugin.key],
       customizerItems[EquationPlugin.key],
@@ -1320,7 +1261,7 @@ export const customizerList = [
     children: [
       customizerItems[AlignPlugin.key],
       customizerItems[IndentPlugin.key],
-      customizerItems[IndentListPlugin.key],
+      customizerItems[ListPlugin.key],
       customizerItems[LineHeightPlugin.key],
     ],
     label: 'Block Style',
@@ -1371,14 +1312,13 @@ export const orderedPluginKeys = [
   CodeBlockPlugin,
   HorizontalRulePlugin.key,
   LinkPlugin.key,
-  'list',
+  ListClassicPlugin.key,
   ImagePlugin.key,
   MediaEmbedPlugin.key,
   PlaceholderPlugin.key,
   CaptionPlugin.key,
   MentionPlugin.key,
   TablePlugin.key,
-  TodoListPlugin.key,
   ExcalidrawPlugin.key,
 
   // Marks
@@ -1398,7 +1338,7 @@ export const orderedPluginKeys = [
   // Block Style
   AlignPlugin.key,
   IndentPlugin.key,
-  IndentListPlugin.key,
+  ListPlugin.key,
   LineHeightPlugin.key,
 
   // Functionality
@@ -1434,6 +1374,11 @@ import { uniqBy } from 'lodash';
 export const allPlugins = customizerList.flatMap((group) => group.children);
 
 export const allComponents = uniqBy(
-  allPlugins.flatMap((plugin) => plugin.components ?? []),
+  allPlugins.flatMap((plugin) => {
+    if (!plugin) {
+      console.log(allPlugins);
+    }
+    return plugin.components ?? [];
+  }),
   'id'
 );

@@ -2,6 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "plate-ui",
   "type": "registry:style",
+  "description": "Install Plate package and styles",
   "devDependencies": [],
   "registryDependencies": [
     "https://platejs.org/r/plate"

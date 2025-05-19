@@ -29,7 +29,7 @@ const defaultCheckedPlugins = customizerList.reduce(
 export const getDefaultCheckedPlugins = () => {
   return {
     ...defaultCheckedPlugins,
-    list: false,
+    listClassic: false,
     [NormalizeTypesPlugin.key]: false,
     [SelectOnBackspacePlugin.key]: false,
     [SingleLinePlugin.key]: false,

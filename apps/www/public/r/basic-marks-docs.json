@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "basic-marks-docs",
+  "type": "registry:file",
+  "title": "Basic Marks",
+  "description": "Documentation for Basic Marks",
+  "files": [
+    {
+      "path": "../../docs/basic-marks.mdx",
+      "content": "---\ntitle: Basic Marks\ndocs:\n  - route: /docs/components/mark-toolbar-button\n    title: Mark Toolbar Button\n---\n\n<ComponentPreview name=\"basic-marks-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Includes commonly used text styling features: bold, italic, underline, strikethrough, subscript, superscript, and code.\n\n</PackageInfo>\n\n## Plugins\n\n- `BoldPlugin` for `bold` mark\n- `ItalicPlugin` for `italic` mark\n- `UnderlinePlugin` for `underline` mark\n- `StrikethroughPlugin` for `strikethrough` mark\n- `SubscriptPlugin` for `subscript` mark\n- `SuperscriptPlugin` for `superscript` mark\n- `CodePlugin` for `code` mark\n\n## Installation\n\n```bash\nnpm install @udecode/plate-basic-marks\n```\n\n## Usage\n\n```tsx\nimport { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';\n\nconst plugins = [\n  // ...otherPlugins,\n  BasicMarksPlugin,\n];\n```\n\n## Keyboard Shortcuts\n\n<KeyTable>\n  <KeyTableItem hotkey=\"Cmd + B\">\n    Toggle the bold formatting for the selected text.\n  </KeyTableItem>\n  <KeyTableItem hotkey=\"Cmd + I\">\n    Toggle the italic formatting for the selected text.\n  </KeyTableItem>\n  <KeyTableItem hotkey=\"Cmd + U\">\n    Toggle the underline formatting for the selected text.\n  </KeyTableItem>\n  <KeyTableItem hotkey=\"Cmd + E\">\n    Toggle the code formatting for the selected text.\n  </KeyTableItem>\n  <KeyTableItem hotkey=\"Cmd + Shift + X\">\n    Toggle the strikethrough formatting for the selected text.\n  </KeyTableItem>\n  <KeyTableItem hotkey=\"Cmd + ,\">\n    Toggle the subscript formatting for the selected text.\n  </KeyTableItem>\n  <KeyTableItem hotkey=\"Cmd + .\">\n    Toggle the superscript formatting for the selected text.\n  </KeyTableItem>\n</KeyTable>\n\n## Plugins\n\n### `BasicMarksPlugin`\n\nPlugin that includes all basic mark plugins.\n\n### `BoldPlugin`\n\nPlugin for bold formatting.\n\n### `CodePlugin`\n\nPlugin for code formatting.\n\n### `ItalicPlugin`\n\nPlugin for italic formatting.\n\n### `UnderlinePlugin`\n\nPlugin for underline formatting.\n\n### `StrikethroughPlugin`\n\nPlugin for strikethrough formatting.\n\n### `SubscriptPlugin`\n\nPlugin for subscript formatting.\n\n### `SuperscriptPlugin`\n\nPlugin for superscript formatting.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plugins/basic-marks.mdx"
+    }
+  ]
+}

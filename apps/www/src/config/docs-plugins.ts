@@ -155,11 +155,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Indent',
   },
   {
-    description: 'Turn any block into a list item.',
-    href: '/docs/indent-list',
-    title: 'Indent List',
-  },
-  {
     description: 'Keyboard input markup.',
     href: '/docs/kbd',
     label: 'Leaf',
@@ -177,10 +172,15 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Link',
   },
   {
-    description: 'Organize nestable items in a bulleted or numbered list.',
+    description: 'Turn any block into a list item.',
     href: '/docs/list',
-    label: 'Element',
     title: 'List',
+  },
+  {
+    description: 'Organize nestable items in a bulleted or numbered list.',
+    href: '/docs/list-classic',
+    label: 'Element',
+    title: 'List Classic',
   },
   {
     description: 'Embed medias like videos or tweets into your document.',

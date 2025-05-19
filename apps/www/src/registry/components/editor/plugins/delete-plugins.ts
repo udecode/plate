@@ -9,8 +9,9 @@ import {
   VideoPlugin,
 } from '@udecode/plate-media/react';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
+import { createPlatePlugins } from '@udecode/plate/react';
 
-export const deletePlugins = [
+export const DeleteKit = createPlatePlugins([
   SelectOnBackspacePlugin.configure({
     options: {
       query: {
@@ -26,4 +27,4 @@ export const deletePlugins = [
     },
   }),
   DeletePlugin,
-] as const;
+]);

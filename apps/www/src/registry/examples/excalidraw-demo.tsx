@@ -9,7 +9,7 @@ import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugi
 import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
 import { excalidrawValue } from '@/registry/examples/values/excalidraw-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { ExcalidrawElement } from '@/registry/ui/excalidraw-element';
+import { ExcalidrawElement } from '@/registry/ui/excalidraw-node';
 
 export default function ExcalidrawDemo() {
   const editor = useCreateEditor({

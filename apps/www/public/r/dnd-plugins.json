@@ -8,12 +8,12 @@
     "@udecode/plate-node-id"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/draggable"
+    "https://platejs.org/r/block-draggable"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/dnd-plugins.tsx",
-      "content": "'use client';\n\nimport { DndPlugin } from '@udecode/plate-dnd';\nimport { PlaceholderPlugin } from '@udecode/plate-media/react';\nimport { NodeIdPlugin } from '@udecode/plate-node-id';\n\nimport { DraggableAboveNodes } from '@/registry/ui/draggable';\n\nexport const dndPlugins = [\n  NodeIdPlugin,\n  DndPlugin.configure({\n    options: {\n      enableScroller: true,\n      onDropFiles: ({ dragItem, editor, target }) => {\n        editor\n          .getTransforms(PlaceholderPlugin)\n          .insert.media(dragItem.files, { at: target, nextBlock: false });\n      },\n    },\n    render: {\n      aboveNodes: DraggableAboveNodes,\n    },\n  }),\n] as const;\n",
+      "content": "'use client';\n\nimport { DndPlugin } from '@udecode/plate-dnd';\nimport { PlaceholderPlugin } from '@udecode/plate-media/react';\nimport { NodeIdPlugin } from '@udecode/plate-node-id';\n\nimport { BlockDraggable } from '@/registry/ui/block-draggable';\n\nexport const dndPlugins = [\n  NodeIdPlugin,\n  DndPlugin.configure({\n    options: {\n      enableScroller: true,\n      onDropFiles: ({ dragItem, editor, target }) => {\n        editor\n          .getTransforms(PlaceholderPlugin)\n          .insert.media(dragItem.files, { at: target, nextBlock: false });\n      },\n    },\n    render: {\n      aboveNodes: BlockDraggable,\n    },\n  }),\n] as const;\n",
       "type": "registry:component"
     }
   ]

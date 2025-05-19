@@ -49,8 +49,7 @@ import {
   isResolvedSuggestion,
   useResolveSuggestion,
 } from './block-suggestion';
-import { Comment } from './comment';
-import { CommentCreateForm } from './comment-create-form';
+import { Comment, CommentCreateForm } from './comment';
 
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   const { editor, element } = props;
@@ -287,13 +286,13 @@ const BlockCommentsContent = ({
   );
 };
 
-export const BlockComment = ({
+function BlockComment({
   discussion,
   isLast,
 }: {
   discussion: TDiscussion;
   isLast: boolean;
-}) => {
+}) {
   const [editingId, setEditingId] = React.useState<string | null>(null);
 
   return (
@@ -317,9 +316,9 @@ export const BlockComment = ({
       {!isLast && <div className="h-px w-full bg-muted" />}
     </React.Fragment>
   );
-};
+}
 
-export const useResolvedDiscussion = (
+const useResolvedDiscussion = (
   commentNodes: NodeEntry<TCommentText>[],
   blockPath: Path
 ) => {

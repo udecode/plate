@@ -11,7 +11,6 @@ import type {
 import type { TCommentText } from '@udecode/plate-comments';
 import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
 import type { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
-import type { HEADING_KEYS } from '@udecode/plate-heading';
 import type { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import type { TLinkElement } from '@udecode/plate-link';
 import type { LinkPlugin } from '@udecode/plate-link/react';
@@ -46,8 +45,8 @@ export interface MyAlignProps {
 }
 
 export interface MyBlockElement
-  extends MyIndentListProps,
-    MyLineHeightProps,
+  extends MyLineHeightProps,
+    MyListProps,
     TElement {
   id?: string;
 }
@@ -78,19 +77,19 @@ export interface MyExcalidrawElement
 
 export interface MyH1Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof HEADING_KEYS.h1;
+  type: 'h1';
 }
 
 export interface MyH2Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof HEADING_KEYS.h2;
+  type: 'h2';
 }
 
 /** Block props */
 
 export interface MyH3Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof HEADING_KEYS.h3;
+  type: 'h3';
 }
 
 export interface MyHrElement extends MyBlockElement {
@@ -103,7 +102,7 @@ export interface MyImageElement extends MyBlockElement, TImageElement {
   type: typeof ImagePlugin.key;
 }
 
-export interface MyIndentListProps extends MyIndentProps {
+export interface MyListProps extends MyIndentProps {
   listRestart?: number;
   listStart?: number;
   listStyleType?: string;

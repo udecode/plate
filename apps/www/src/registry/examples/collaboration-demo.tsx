@@ -17,8 +17,8 @@ import { Input } from '@/components/ui/input';
 import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
 import { editorComponents } from '@/registry/components/editor/use-create-editor';
 import { useMounted } from '@/registry/hooks/use-mounted';
+import { withPlaceholders } from '@/registry/ui/block-placeholder';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { withPlaceholders } from '@/registry/ui/placeholder';
 import { RemoteCursorOverlay } from '@/registry/ui/remote-cursor-overlay';
 
 const INITIAL_VALUE = [

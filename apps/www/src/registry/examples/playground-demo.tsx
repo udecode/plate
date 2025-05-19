@@ -32,18 +32,20 @@ import {
   FontColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
 import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { ListPlugin, TodoListPlugin } from '@udecode/plate-list/react';
+import {
+  ListPlugin as ListClassicPlugin,
+  TodoListPlugin,
+} from '@udecode/plate-list-classic/react';
+import { ListPlugin } from '@udecode/plate-list/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { MentionPlugin } from '@udecode/plate-mention/react';
@@ -85,7 +87,7 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
 
         NormalizeTypesPlugin.configure({
           options: {
-            rules: [{ path: [0], strictType: HEADING_KEYS.h1 }],
+            rules: [{ path: [0], strictType: 'h1' }],
           },
         }),
 
@@ -98,6 +100,8 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
     },
     []
   );
+
+  console.log(editor.pluginList);
 
   return (
     <Plate editor={editor}>
@@ -140,13 +144,13 @@ function usePlaygroundEnabled(id?: string) {
       [HighlightPlugin.key]: !!enabled.highlight,
       [HorizontalRulePlugin.key]: !!enabled.hr,
       [ImagePlugin.key]: !!enabled.img,
-      [IndentListPlugin.key]: id === 'indent-list' || !!enabled.listStyleType,
-      [IndentPlugin.key]: id !== 'list' && !!enabled.indent,
+      [IndentPlugin.key]: id !== 'listClassic' && !!enabled.indent,
       [ItalicPlugin.key]: !!enabled.italic,
       [JuicePlugin.key]: !!enabled.juice,
       [KbdPlugin.key]: !!enabled.kbd,
       [LineHeightPlugin.key]: !!enabled.lineHeight,
       [LinkPlugin.key]: !!enabled.a,
+      [ListClassicPlugin.key]: id === 'listClassic' && !!enabled.listClassic,
       [ListPlugin.key]: id === 'list' || !!enabled.list,
       [MarkdownPlugin.key]: !!enabled.markdown,
       [MediaEmbedPlugin.key]: !!enabled.media_embed,

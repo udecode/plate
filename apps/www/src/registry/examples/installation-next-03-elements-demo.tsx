@@ -14,12 +14,12 @@ import {
   usePlateEditor,
 } from '@udecode/plate/react';
 
-import { BlockquoteElement } from '@/registry/ui/blockquote-element';
+import { BlockquoteElement } from '@/registry/ui/blockquote-node';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
-import { HeadingElement } from '@/registry/ui/heading-element';
+import { HeadingElement } from '@/registry/ui/heading-node';
 import { MarkToolbarButton } from '@/registry/ui/mark-toolbar-button';
-import { ParagraphElement } from '@/registry/ui/paragraph-element';
+import { ParagraphElement } from '@/registry/ui/paragraph-node';
 import { ToolbarButton } from '@/registry/ui/toolbar';
 
 const initialValue: Value = [

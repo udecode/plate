@@ -23,7 +23,6 @@ import {
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { EmojiInputPlugin } from '@udecode/plate-emoji/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
 import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
@@ -62,52 +61,54 @@ import {
   usePlateEditor,
 } from '@udecode/plate/react';
 
-import { AIAnchorElement } from '@/registry/ui/ai-anchor-element';
-import { AILeaf } from '@/registry/ui/ai-leaf';
-import { BlockquoteElement } from '@/registry/ui/blockquote-element';
-import { CalloutElement } from '@/registry/ui/callout-element';
-import { CodeBlockElement } from '@/registry/ui/code-block-element';
-import { CodeLeaf } from '@/registry/ui/code-leaf';
-import { CodeLineElement } from '@/registry/ui/code-line-element';
-import { CodeSyntaxLeaf } from '@/registry/ui/code-syntax-leaf';
-import { ColumnElement } from '@/registry/ui/column-element';
-import { ColumnGroupElement } from '@/registry/ui/column-group-element';
-import { CommentLeaf } from '@/registry/ui/comment-leaf';
-import { DateElement } from '@/registry/ui/date-element';
-import { EmojiInputElement } from '@/registry/ui/emoji-input-element';
-import { EquationElement } from '@/registry/ui/equation-element';
-import { HeadingElement } from '@/registry/ui/heading-element';
-import { HighlightLeaf } from '@/registry/ui/highlight-leaf';
-import { HrElement } from '@/registry/ui/hr-element';
-import { ImageElement } from '@/registry/ui/image-element';
-import { InlineEquationElement } from '@/registry/ui/inline-equation-element';
-import { KbdLeaf } from '@/registry/ui/kbd-leaf';
-import { LinkElement } from '@/registry/ui/link-element';
-import { MediaAudioElement } from '@/registry/ui/media-audio-element';
-import { MediaEmbedElement } from '@/registry/ui/media-embed-element';
-import { MediaFileElement } from '@/registry/ui/media-file-element';
-import { MediaPlaceholderElement } from '@/registry/ui/media-placeholder-element';
-import { MediaVideoElement } from '@/registry/ui/media-video-element';
-import { MentionElement } from '@/registry/ui/mention-element';
-import { MentionInputElement } from '@/registry/ui/mention-input-element';
-import { ParagraphElement } from '@/registry/ui/paragraph-element';
-import { withPlaceholders } from '@/registry/ui/placeholder';
-import { SlashInputElement } from '@/registry/ui/slash-input-element';
-import { SuggestionLeaf } from '@/registry/ui/suggestion-leaf';
+import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
+import { withPlaceholders } from '@/registry/ui/block-placeholder';
+import { BlockquoteElement } from '@/registry/ui/blockquote-node';
+import { CalloutElement } from '@/registry/ui/callout-node';
+import {
+  CodeBlockElement,
+  CodeLineElement,
+  CodeSyntaxLeaf,
+} from '@/registry/ui/code-block-node';
+import { CodeLeaf } from '@/registry/ui/code-node';
+import { ColumnElement, ColumnGroupElement } from '@/registry/ui/column-node';
+import { CommentLeaf } from '@/registry/ui/comment-node';
+import { DateElement } from '@/registry/ui/date-node';
+import { EmojiInputElement } from '@/registry/ui/emoji-input-node';
+import {
+  EquationElement,
+  InlineEquationElement,
+} from '@/registry/ui/equation-node';
+import { HeadingElement } from '@/registry/ui/heading-node';
+import { HighlightLeaf } from '@/registry/ui/highlight-node';
+import { HrElement } from '@/registry/ui/hr-node';
+import { KbdLeaf } from '@/registry/ui/kbd-node';
+import { LinkElement } from '@/registry/ui/link-node';
+import { AudioElement } from '@/registry/ui/media-audio-node';
+import { MediaEmbedElement } from '@/registry/ui/media-embed-node';
+import { FileElement } from '@/registry/ui/media-file-node';
+import { ImageElement } from '@/registry/ui/media-image-node';
+import { MediaPlaceholderElement } from '@/registry/ui/media-placeholder-node';
+import { VideoElement } from '@/registry/ui/media-video-node';
+import { MentionInputElement } from '@/registry/ui/mention-input-node';
+import { MentionElement } from '@/registry/ui/mention-node';
+import { ParagraphElement } from '@/registry/ui/paragraph-node';
+import { SlashInputElement } from '@/registry/ui/slash-input-node';
+import { SuggestionLeaf } from '@/registry/ui/suggestion-node';
 import {
   TableCellElement,
   TableCellHeaderElement,
-} from '@/registry/ui/table-cell-element';
-import { TableElement } from '@/registry/ui/table-element';
-import { TableRowElement } from '@/registry/ui/table-row-element';
-import { TocElement } from '@/registry/ui/toc-element';
-import { ToggleElement } from '@/registry/ui/toggle-element';
+  TableElement,
+  TableRowElement,
+} from '@/registry/ui/table-node';
+import { TocElement } from '@/registry/ui/toc-node';
+import { ToggleElement } from '@/registry/ui/toggle-node';
 
 import { editorPlugins, viewPlugins } from './plugins/editor-plugins';
 
 export const viewComponents = {
   [AIChatPlugin.key]: AIAnchorElement,
-  [AudioPlugin.key]: MediaAudioElement,
+  [AudioPlugin.key]: AudioElement,
   [BlockquotePlugin.key]: BlockquoteElement,
   [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
   [CalloutPlugin.key]: CalloutElement,
@@ -120,13 +121,13 @@ export const viewComponents = {
   [CommentsPlugin.key]: CommentLeaf,
   [DatePlugin.key]: DateElement,
   [EquationPlugin.key]: EquationElement,
-  [FilePlugin.key]: MediaFileElement,
-  [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
-  [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
-  [HEADING_KEYS.h3]: withProps(HeadingElement, { variant: 'h3' }),
-  [HEADING_KEYS.h4]: withProps(HeadingElement, { variant: 'h4' }),
-  [HEADING_KEYS.h5]: withProps(HeadingElement, { variant: 'h5' }),
-  [HEADING_KEYS.h6]: withProps(HeadingElement, { variant: 'h6' }),
+  [FilePlugin.key]: FileElement,
+  h1: withProps(HeadingElement, { variant: 'h1' }),
+  h2: withProps(HeadingElement, { variant: 'h2' }),
+  h3: withProps(HeadingElement, { variant: 'h3' }),
+  h4: withProps(HeadingElement, { variant: 'h4' }),
+  h5: withProps(HeadingElement, { variant: 'h5' }),
+  h6: withProps(HeadingElement, { variant: 'h6' }),
   [HighlightPlugin.key]: HighlightLeaf,
   [HorizontalRulePlugin.key]: HrElement,
   [ImagePlugin.key]: ImageElement,
@@ -149,7 +150,7 @@ export const viewComponents = {
   [TocPlugin.key]: TocElement,
   [TogglePlugin.key]: ToggleElement,
   [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
-  [VideoPlugin.key]: MediaVideoElement,
+  [VideoPlugin.key]: VideoElement,
 };
 
 export const editorComponents = {

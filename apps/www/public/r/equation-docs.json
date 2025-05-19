@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "equation-docs",
+  "type": "registry:file",
+  "title": "Equation",
+  "description": "Documentation for Equation",
+  "files": [
+    {
+      "path": "../../docs/equation.mdx",
+      "content": "---\ntitle: Equation\ndocs:\n  - route: https://pro.platejs.org/docs/components/equation-node\n    title: Equation Element\n  - route: https://pro.platejs.org/docs/components/equation-toolbar-button\n    title: Equation Toolbar Button\n---\n\n<ComponentPreview name=\"equation-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- LaTeX syntax support for complex mathematical expressions\n- Both inline and block equation formats\n- Real-time rendering of equations using KaTeX\n- Easy editing and navigation within equations\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-math\n```\n\n## Usage\n\n```tsx\nimport { EquationPlugin, InlineEquationPlugin } from '@udecode/plate-math/react';\n```\n\n```tsx\nconst plugins = [\n  // ...otherPlugins,\n  EquationPlugin,\n  InlineEquationPlugin,\n]\n```\n\n```tsx\nconst components = {\n  // ...otherComponents,\n  [EquationPlugin.key]: EquationElement,\n  [InlineEquationPlugin.key]: InlineEquationElement,\n}\n```\n\n- [EquationElement](https://pro.platejs.org/docs/components/equation-node) (Plus)\n\n## Examples\n\n### Plate UI\n\nRefer to the preview above.\n\n### Plate Plus\n\n<ComponentPreviewPro name=\"equation-pro\" />\n\n## Plugins\n\n### `EquationPlugin`\n\nPlugin for block equation elements.\n\n### `InlineEquationPlugin`\n\nPlugin for inline equation elements.\n\n## Transforms\n\n### `editor.tf.insert.equation`\n\n<API name=\"insert.equation\">\n<APIOptions type=\"InsertNodesOptions\">\n    Options for the insert nodes transform.\n</APIOptions>\n</API>\n\n### `editor.tf.insert.inlineEquation`\n\nInserts an inline equation.\n\n<API name=\"insert.inlineEquation\">\n<APIParameters>\n  <APIItem name=\"texExpression\" type=\"string\" optional>\n    The LaTeX expression to insert. Empty equation if not provided.\n  </APIItem>\n  <APIItem name=\"options\" type=\"InsertNodesOptions\" optional>\n    Options for the insert nodes transform.\n  </APIItem>\n</APIParameters>\n</API>\n\n## Types\n\n### `TEquationElement`\n\n```typescript\ninterface TEquationElement extends TElement {\n  texExpression: string;\n}\n```",
+      "type": "registry:file",
+      "target": "content/docs/plate/plugins/equation.mdx"
+    }
+  ]
+}

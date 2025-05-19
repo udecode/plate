@@ -4,8 +4,7 @@ import * as React from 'react';
 
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { ListPlugin } from '@udecode/plate-list/react';
 import {
   BLOCK_CONTEXT_MENU_ID,
   BlockMenuPlugin,
@@ -43,8 +42,8 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
         .getApi(BlockSelectionPlugin)
         .blockSelection.getNodes()
         .forEach(([node, path]) => {
-          if (node[IndentListPlugin.key]) {
-            editor.tf.unsetNodes([IndentListPlugin.key, 'indent'], {
+          if (node[ListPlugin.key]) {
+            editor.tf.unsetNodes([ListPlugin.key, 'indent'], {
               at: path,
             });
           }
@@ -147,13 +146,13 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
                 Paragraph
               </ContextMenuItem>
 
-              <ContextMenuItem onClick={() => handleTurnInto(HEADING_KEYS.h1)}>
+              <ContextMenuItem onClick={() => handleTurnInto('h1')}>
                 Heading 1
               </ContextMenuItem>
-              <ContextMenuItem onClick={() => handleTurnInto(HEADING_KEYS.h2)}>
+              <ContextMenuItem onClick={() => handleTurnInto('h2')}>
                 Heading 2
               </ContextMenuItem>
-              <ContextMenuItem onClick={() => handleTurnInto(HEADING_KEYS.h3)}>
+              <ContextMenuItem onClick={() => handleTurnInto('h3')}>
                 Heading 3
               </ContextMenuItem>
               <ContextMenuItem

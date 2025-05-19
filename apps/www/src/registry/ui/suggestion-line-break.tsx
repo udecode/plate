@@ -13,7 +13,7 @@ import {
   suggestionPlugin,
 } from '@/registry/components/editor/plugins/suggestion-plugin';
 
-export const SuggestionBelowNodes: RenderNodeWrapper<SuggestionConfig> = ({
+export const SuggestionLineBreak: RenderNodeWrapper<SuggestionConfig> = ({
   api,
   element,
 }) => {
@@ -27,13 +27,13 @@ export const SuggestionBelowNodes: RenderNodeWrapper<SuggestionConfig> = ({
     return (
       <React.Fragment>
         {children}
-        <SuggestionLineBreak suggestionData={suggestionData} />
+        <SuggestionLineBreakContent suggestionData={suggestionData} />
       </React.Fragment>
     );
   };
 };
 
-function SuggestionLineBreak({
+function SuggestionLineBreakContent({
   suggestionData,
 }: {
   suggestionData: TSuggestionData;

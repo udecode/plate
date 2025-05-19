@@ -13,7 +13,19 @@ import { usePluginOption } from '@udecode/plate/react';
 
 import { cn } from '@/lib/utils';
 
-export function Cursor({
+export function CursorOverlay() {
+  const { cursors } = useCursorOverlay();
+
+  return (
+    <>
+      {cursors.map((cursor) => (
+        <Cursor key={cursor.id} {...cursor} />
+      ))}
+    </>
+  );
+}
+
+function Cursor({
   id,
   caretPosition,
   data,
@@ -53,18 +65,6 @@ export function Cursor({
           style={{ ...caretPosition, ...style }}
         />
       )}
-    </>
-  );
-}
-
-export function CursorOverlay() {
-  const { cursors } = useCursorOverlay();
-
-  return (
-    <>
-      {cursors.map((cursor) => (
-        <Cursor key={cursor.id} {...cursor} />
-      ))}
     </>
   );
 }

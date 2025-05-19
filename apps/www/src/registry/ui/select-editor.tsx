@@ -28,7 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 
 import { Editor, EditorContainer } from './editor';
-import { TagElement } from './tag-element';
+import { TagElement } from './tag-node';
 
 export type SelectItem = {
   value: string;

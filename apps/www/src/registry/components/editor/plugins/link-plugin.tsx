@@ -2,7 +2,7 @@
 
 import { LinkPlugin } from '@udecode/plate-link/react';
 
-import { LinkFloatingToolbar } from '@/registry/ui/link-floating-toolbar';
+import { LinkFloatingToolbar } from '@/registry/ui/link-toolbar';
 
 export const linkPlugin = LinkPlugin.extend({
   render: { afterEditable: () => <LinkFloatingToolbar /> },

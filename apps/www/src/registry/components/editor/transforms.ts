@@ -16,11 +16,11 @@ import { insertDate } from '@udecode/plate-date';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { insertToc } from '@udecode/plate-heading';
 import { TocPlugin } from '@udecode/plate-heading/react';
-import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { insertColumnGroup, toggleColumnGroup } from '@udecode/plate-layout';
 import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
 import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link/react';
+import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-list';
+import { ListPlugin } from '@udecode/plate-list/react';
 import { insertEquation, insertInlineEquation } from '@udecode/plate-math';
 import {
   EquationPlugin,
@@ -170,8 +170,8 @@ export const setBlockType = (
     const setEntry = (entry: NodeEntry<TElement>) => {
       const [node, path] = entry;
 
-      if (node[IndentListPlugin.key]) {
-        editor.tf.unsetNodes([IndentListPlugin.key, 'indent'], { at: path });
+      if (node[ListPlugin.key]) {
+        editor.tf.unsetNodes([ListPlugin.key, 'indent'], { at: path });
       }
       if (type in setBlockMap) {
         return setBlockMap[type](editor, type, entry);
@@ -198,10 +198,10 @@ export const setBlockType = (
 };
 
 export const getBlockType = (block: TElement) => {
-  if (block[IndentListPlugin.key]) {
-    if (block[IndentListPlugin.key] === ListStyleType.Decimal) {
+  if (block[ListPlugin.key]) {
+    if (block[ListPlugin.key] === ListStyleType.Decimal) {
       return ListStyleType.Decimal;
-    } else if (block[IndentListPlugin.key] === INDENT_LIST_KEYS.todo) {
+    } else if (block[ListPlugin.key] === INDENT_LIST_KEYS.todo) {
       return INDENT_LIST_KEYS.todo;
     } else {
       return ListStyleType.Disc;

@@ -38,15 +38,15 @@ import { fontValue as fontValueCn } from '@/registry/examples/values/cn/font-val
 import { highlightValue as highlightValueCn } from '@/registry/examples/values/cn/highlight-value';
 import { horizontalRuleValue as horizontalRuleValueCn } from '@/registry/examples/values/cn/horizontal-rule-value';
 import { iframeValue as iframeValueCn } from '@/registry/examples/values/cn/iframe-value';
-import { indentListValue as indentListValueCn } from '@/registry/examples/values/cn/indent-list-value';
 import { indentValue as indentValueCn } from '@/registry/examples/values/cn/indent-value';
 import { kbdValue as kbdValueCn } from '@/registry/examples/values/cn/kbd-value';
 import { lineHeightValue as lineHeightValueCn } from '@/registry/examples/values/cn/line-height-value';
 import { linkValue as linkValueCn } from '@/registry/examples/values/cn/link-value';
 import {
+  listValue as listClassicValueCn,
   listValue as listValueCn,
   todoListValue as todoListValueCn,
-} from '@/registry/examples/values/cn/list-value';
+} from '@/registry/examples/values/cn/list-classic-value';
 import { mediaValue as mediaValueCn } from '@/registry/examples/values/cn/media-value';
 import { mentionValue as mentionValueCn } from '@/registry/examples/values/cn/mention-value';
 import { placeholderValue as placeholderValueCn } from '@/registry/examples/values/cn/placeholder-value';
@@ -84,7 +84,6 @@ import { fontValue as fontValueEn } from '@/registry/examples/values/font-value'
 import { highlightValue as highlightValueEn } from '@/registry/examples/values/highlight-value';
 import { horizontalRuleValue as horizontalRuleValueEn } from '@/registry/examples/values/horizontal-rule-value';
 import { iframeValue as iframeValueEn } from '@/registry/examples/values/iframe-value';
-import { indentListValue as indentListValueEn } from '@/registry/examples/values/indent-list-value';
 import { indentValue as indentValueEn } from '@/registry/examples/values/indent-value';
 import { kbdValue as kbdValueEn } from '@/registry/examples/values/kbd-value';
 import { lineHeightValue as lineHeightValueEn } from '@/registry/examples/values/line-height-value';
@@ -92,7 +91,7 @@ import { linkValue as linkValueEn } from '@/registry/examples/values/link-value'
 import {
   listValue as listValueEn,
   todoListValue as todoListValueEn,
-} from '@/registry/examples/values/list-value';
+} from '@/registry/examples/values/list-classic-value';
 import { mediaValue as mediaValueEn } from '@/registry/examples/values/media-value';
 import { mentionValue as mentionValueEn } from '@/registry/examples/values/mention-value';
 import { placeholderValue as placeholderValueEn } from '@/registry/examples/values/placeholder-value';
@@ -138,11 +137,11 @@ const i18n = {
     horizontalRule: horizontalRuleValueCn,
     iframe: iframeValueCn,
     indent: indentValueCn,
-    indentList: indentListValueCn,
     kbd: kbdValueCn,
     lineHeight: lineHeightValueCn,
     link: linkValueCn,
     list: listValueCn,
+    listClassic: listClassicValueCn,
     media: mediaValueCn,
     mention: mentionValueCn,
     placeholder: placeholderValueCn,
@@ -190,7 +189,6 @@ const i18n = {
     horizontalRule: horizontalRuleValueEn,
     iframe: iframeValueEn,
     indent: indentValueEn,
-    indentList: indentListValueEn,
     kbd: kbdValueEn,
     lineHeight: lineHeightValueEn,
     link: linkValueEn,
