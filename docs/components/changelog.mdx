@@ -10,6 +10,70 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## May 2025 #22
 
+### May 18 #22.7
+
+Merging files, using a more consistent naming convention, and removing unused `export` statements.
+
+Components:
+
+- Rename all `*-element`, `*-leaf` files to `*-node` (and static versions)
+- Removed `ai-anchor-element`, merged into `ai-node`
+- Removed `ai-loading-bar`, merged into `ai-menu`
+- Removed `ai-menu-items`, merged into `ai-menu`
+- Renamed `align-dropdown-menu` to `align-toolbar-button`, `AlignDropdownMenu` to `AlignToolbarButton`
+- Renamed `api-ai` to `ai-api`
+- Renamed `api-uploadthing` to `media-uploadthing-api`
+- Removed `code-block-combobox`, merged into `code-block-node`
+- Removed `code-line-element`, merged into `code-block-node` (and static version)
+- Removed `code-syntax-leaf`, merged into `code-block-node` (and static version)
+- Rename `color-toolbar-button` to `font-color-toolbar-button`, `ColorDropdownMenu` to `FontColorToolbarButton`
+- Removed all `color-*` files, merged into `font-color-toolbar-button`
+  - Rename `color-dropdown-menu` to `font-color-toolbar-button`
+- Removed `column-group-element`, merged into `column-node` (and static version)
+- Removed `comment-create-form`, merged into `comment`
+- Renamed `draggable` to `block-draggable`, `DraggableAboveNodes` to `BlockDraggable`
+- Removed all `emoji-*` files (except `emoji-input-node`), merged into `emoji-toolbar-button`
+  - Rename `EmojiToolbarDropdown` to `EmojiPopover`, `EmojiDropdownMenu` to `EmojiToolbarButton`
+  - `EmojiPicker` `icons` prop is now optional and defaulted to `emojiCategoryIcons` and `emojiSearchIcons`
+- Renamed `image-preview` to `media-preview-dialog`, `ImagePreview` to `MediaPreviewDialog`
+- Renamed `image-element` to `media-image-node`
+  - Renamed `MediaFileElement` to `FileElement` (and static version)
+  - Renamed `MediaAudioElement` to `AudioElement` (and static version)
+  - Renamed `MediaVideoElement` to `VideoElement` (and static version)
+- Renamed `indent-list-toolbar-button` to `list-toolbar-button`
+  - Renamed `BulletedIndentListToolbarButton` to `BulletedListToolbarButton`
+  - Renamed `NumberedIndentListToolbarButton` to `NumberedListToolbarButton`
+- Renamed `indent-todo-marker` to `list-todo`, `indent-fire-marker` to `list-emoji`
+- Removed `indent-todo-toolbar-button`, merged into `list-toolbar-button`
+- Renamed `IndentTodoToolbarButton` into `TodoListToolbarButton`
+- Removed `inline-equation-element` and `equation-popover`, merged into `equation-node` (and static version)
+- Removed `inline-equation-toolbar-button`, merged into `equation-toolbar-button`
+- Renamed `insert-dropdown-menu` to `insert-toolbar-button`, `InsertDropdownMenu` to `InsertToolbarButton`
+- Renamed `line-height-dropdown-menu` to `line-height-toolbar-button`, `LineHeightDropdownMenu` to `LineHeightToolbarButton`
+- Rename `link-floating-toolbar` to `link-toolbar`
+- Removed `list-indent-toolbar-button`, merged into `list-classic-toolbar-button`
+- Renamed `ListIndentToolbarButton` to `IndentToolbarButton`
+- Renamed `list-node` to `list-classic-node`
+- Renamed `media-popover` to `media-toolbar`, `MediaPopover` to `MediaToolbar`
+- Renamed `mode-dropdown-menu` to `mode-toolbar-button`, `ModeDropdownMenu` to `ModeToolbarButton`
+- Renamed `more-dropdown-menu` to `more-toolbar-button`, `MoreDropdownMenu` to `MoreToolbarButton`
+- Renamed `placeholder` to `block-placeholder`, `Placeholder` to `BlockPlaceholder`
+- Removed `outdent-toolbar-button`, merged into `indent-toolbar-button`
+- `table-icons`: rename `Border*` to `Border*Icon`
+- Renamed `SuggestionBelowNodes` to `SuggestionLineBreak`
+- Removed `table-cell-element`, merged into `table-node` (and static version)
+- Removed `table-row-element`, merged into `table-node` (and static version)
+- Renamed `table-dropdown-menu` to `table-toolbar-button`, `TableDropdownMenu` to `TableToolbarButton`
+- Removed `todo-list-node`, merged into `list-classic-node`
+- Renamed `turn-into-dropdown-menu` to `turn-into-toolbar-button`, `TurnIntoDropdownMenu` to `TurnIntoToolbarButton`
+- `export-toolbar-button`, `indent-list-plugins`: remove fire from `listStyleTypes`
+
+Plugins:
+
+- Renamed all `*-plugin`, `*-plugins` files to `-kit`, and `*Plugin`, `*Plugins` to `*Kit`. A **plugin kit** is a collection of configured plugins.
+  - Renamed `indent-list-plugins` to `list-kit`, `indentListPlugins` to `ListKit`
+
+
 ### May 15 #22.6
 
 - [Fix inline math keyboard behavior and style](https://github.com/udecode/plate/pull/4305)

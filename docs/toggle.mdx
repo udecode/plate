@@ -1,7 +1,7 @@
 ---
 title: Toggle
 docs:
-  - route: /docs/components/toggle-element
+  - route: /docs/components/toggle-node
     title: Toggle Element
   - route: /docs/components/toggle-toolbar-button
     title: Toggle Button
@@ -43,7 +43,7 @@ const plugins = [
   HeadingPlugin,
   IndentPlugin.configure({
     inject: {
-      targetPlugins: [TogglePlugin.key, ParagraphPlugin.key, HEADING_KEYS.h1],
+      targetPlugins: ['p', 'h1', TogglePlugin.key],
     },
   }),
   NodeIdPlugin,

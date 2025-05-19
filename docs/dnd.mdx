@@ -25,6 +25,36 @@ npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-
 
 ## Usage
 
+<Steps>
+
+### Wrap with DndProvider
+
+The drag and drop functionality relies on `react-dnd`. You need to wrap your editor component or a higher-level component with `DndProvider` from `react-dnd` and provide an HTML5 backend.
+
+```tsx title="components/plate-editor.tsx"
+import * as React from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+import { Plate } from '@udecode/plate/react';
+// ... other imports
+
+export function PlateEditor() {
+  // ... editor setup
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <Plate editor={editor}>
+        {/* ... your editor components ... */}
+      </Plate>
+    </DndProvider>
+  );
+}
+```
+
+### Add Plugins
+
+Include `NodeIdPlugin` and `DndPlugin` in your Plate plugins array.
+
 ```tsx
 import { DndPlugin } from '@udecode/plate-dnd';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
@@ -36,7 +66,23 @@ const plugins = [
 ];
 ```
 
-Then, wrap your plugin components with [Draggable](/docs/components/draggable).
+### Configure `DndPlugin`
+
+<ComponentSource name="dnd-plugins" />
+
+The example above shows the key configuration options:
+
+- `enableScroller: true` - Enables automatic scrolling when dragging blocks near the viewport edges
+- `onDropFiles` - Handles file drops by inserting them as media blocks at the target location
+- `render.aboveNodes` - Uses the `BlockDraggable` component to render drag handles and drop indicators above blocks
+
+### Add Draggable Component
+
+To enable drag and drop functionality on your editor blocks, you'll need to implement draggable components. These components use hooks like `useDraggable` to handle drag interactions and provide visual feedback.
+
+You can use our [BlockDraggable](/docs/components/block-draggable) component or implement your own using the API below.
+
+</Steps>
 
 ## Plugins
 
@@ -92,71 +138,6 @@ Returns an array of blocks that have an ID.
     The ID of the block to select.
   </APIItem>
 </APIParameters>
-</API>
-
-## Components
-
-### `withDraggable`
-
-Enhances a component with draggable behavior.
-
-<API name="withDraggable">
-<APIParameters>
-  <APIItem name="Draggable" type="React.FC">
-    The draggable component to be rendered.
-  </APIItem>
-  <APIItem name="Component" type="React.FC">
-    The component to be enhanced with draggable behavior.
-  </APIItem>
-  <APIItem name="options" type="WithDraggableOptions" optional>
-    Options for draggable behavior.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="WithDraggableOptions">
-  <APIItem name="level" type="number | null" optional>
-    The level of the draggable component.
-  </APIItem>
-  <APIItem name="filter" type="(editor: PlateEditor, path: Path) => boolean" optional>
-    Function that returns whether the component should be draggable.
-  </APIItem>
-  <APIItem name="allowReadOnly" type="boolean" optional>
-    Whether the component should be draggable in read-only mode.
-  </APIItem>
-  <APIItem name="draggableProps" type="T" optional>
-    Props to be passed to the draggable component.
-  </APIItem>
-</APIOptions>
-</API>
-
-### `DndScroller`
-
-A wrapper component for the `Scroller` component that is conditionally rendered based on the dragging state.
-
-<API name="DndScroller">
-<APIState>
-  <APIItem name="enabled" type="boolean">
-    A flag indicating whether the scroll area is enabled. If set to false, the scroll functionality is disabled.
-  </APIItem>
-  <APIItem name="height" type="number">
-    Height of the scrollable area in pixels.
-  </APIItem>
-  <APIItem name="zIndex" type="number">
-    The stack order of the scrollable area. An element with a higher z-index is drawn in front of an element with a lower one.
-  </APIItem>
-  <APIItem name="minStrength" type="number">
-    The minimum strength (speed) of the scrolling action. Higher values will make the scroll action more sensitive.
-  </APIItem>
-  <APIItem name="strengthMultiplier" type="number">
-    A multiplier that increases the scroll speed. Higher values will result in faster scrolling.
-  </APIItem>
-  <APIItem name="containerRef" type="RefObject<any>">
-    Reference to the scrollable container DOM element.
-  </APIItem>
-  <APIItem name="scrollAreaProps" type="HTMLAttributes<HTMLDivElement>">
-    Additional props for the scroll area div element.
-  </APIItem>
-</APIState>
 </API>
 
 ## Hooks

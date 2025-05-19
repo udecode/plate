@@ -363,7 +363,7 @@ import { MarkdownPlugin } from '@udecode/plate-markdown';
 import remarkGfm from 'remark-gfm';
 // Import Plate plugins for GFM elements
 import { TablePlugin } from '@udecode/plate-table/react';
-import { TodoListPlugin } from '@udecode/plate-list/react'; // Ensure this is the correct List plugin for tasks
+import { TodoListPlugin } from '@udecode/plate-list-classic/react'; // Ensure this is the correct List plugin for tasks
 import { StrikethroughPlugin } from '@udecode/plate-basic-marks/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 
@@ -750,7 +750,7 @@ Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages
 | `mdxJsxFlowElement`| *Custom*              | Requires `remark-mdx` and custom `rules`.                   |
 | `mdxJsxTextElement`| *Custom*              | Requires `remark-mdx` and custom `rules`.                   |
 
-\* List conversion depends on `IndentListPlugin` detection.
+\* List conversion depends on `ListPlugin` detection.
 
 ---
 
@@ -789,10 +789,10 @@ Keys in `components` usually match Plate plugin keys (e.g., `ParagraphPlugin.key
 import { createPlateEditor, PlateLeaf, withProps } from '@udecode/plate/react';
 import { BoldPlugin } from '@udecode/plate-basic-marks/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { ParagraphElement } from '@/components/ui/paragraph-element'; // Example UI component
-import { CodeBlockElement } from '@/components/ui/code-block-element'; // Example UI component
+import { ParagraphElement } from '@/components/ui/paragraph-node'; // Example UI component
+import { CodeBlockElement } from '@/components/ui/code-block-node'; // Example UI component
 // For marks, you might use PlateLeaf or a custom leaf component
-// import { CodeLeaf } from '@/components/ui/code-leaf';
+// import { CodeLeaf } from '@/components/ui/code-node';
 
 const editor = createPlateEditor({
   plugins: [BoldPlugin, CodeBlockPlugin /* ... */],

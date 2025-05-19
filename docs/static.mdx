@@ -58,7 +58,7 @@ const editor = createSlateEditor({
 
 If your interactive editor uses client-side components (e.g., with `use client` or event handlers), you **must** create static, server-safe equivalents. These components should render pure HTML without browser-specific logic.
 
-```tsx title="components/ui/paragraph-element-static.tsx"
+```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
 import type { SlateElementProps } from '@udecode/plate';
 
@@ -77,8 +77,8 @@ Create similar static components for headings, images, links, etc.
 Create an object that maps plugin keys or node types to their corresponding static React components.
 
 ```ts title="components/static-components.ts"
-import { ParagraphElementStatic } from './ui/paragraph-element-static';
-import { HeadingElementStatic } from './ui/heading-element-static';
+import { ParagraphElementStatic } from './ui/paragraph-node-static';
+import { HeadingElementStatic } from './ui/heading-node-static';
 // ... import other static components
 
 export const staticComponents = {

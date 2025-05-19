@@ -31,8 +31,8 @@ import { createSlateEditor, serializeHtml } from '@udecode/plate'; // Base impor
 // Import base plugins (NOT from /react paths)
 import { BaseHeadingPlugin } from '@udecode/plate-heading';
 // Import your STATIC components for rendering
-import { ParagraphElementStatic } from '@/components/ui/paragraph-element-static';
-import { HeadingElementStatic } from '@/components/ui/heading-element-static';
+import { ParagraphElementStatic } from '@/components/ui/paragraph-node-static';
+import { HeadingElementStatic } from '@/components/ui/heading-node-static';
 // For a styled static output, you might use a wrapper like EditorStatic
 import { EditorStatic } from '@/components/ui/editor-static';
 
@@ -110,7 +110,7 @@ For server-side serialization, you **must** use static versions of your componen
 
 Refer to the [Static Rendering Guide](/docs/static) for detailed instructions on creating server-safe static components for your Plate elements and marks.
 
-```tsx title="components/ui/paragraph-element-static.tsx"
+```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
 import type { SlateElementProps } from '@udecode/plate';
 
@@ -182,10 +182,10 @@ Each Plate plugin can define rules for how it interprets specific HTML tags, sty
 | `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | Converts to `kbd: true` mark.                                            |
 | `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-elements)       | Converts to paragraph element.                                           |
 | `<h1>` - `<h6>`                                            | [`HeadingPlugin`](/docs/basic-elements)         | Converts to corresponding heading elements (`h1` - `h6`).                |
-| `<ul>`                                                     | [`ListPlugin`](/docs/list)            | Converts to unordered list (`ul` type). Items become `li`.               |
-| `<ol>`                                                     | [`ListPlugin`](/docs/list)            | Converts to ordered list (`ol` type). Items become `li`.                 |
-| `<li>` (within `<ul>` or `<ol>`)                           | [`ListPlugin`](/docs/list)            | Converts to list item (`li` type), with `lic` (list item content) child. |
-| `<li>` (with `aria-level` for indent)                      | [`IndentListPlugin`](/docs/indent-list)      | Converts to paragraph with `indent` and `listStyleType` props.           |
+| `<ul>`                                                     | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to unordered list (`ul` type). Items become `li`.               |
+| `<ol>`                                                     | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to ordered list (`ol` type). Items become `li`.                 |
+| `<li>` (within `<ul>` or `<ol>`)                           | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to list item (`li` type), with `lic` (list item content) child. |
+| `<li>` (with `aria-level` for indent)                      | [`ListPlugin`](/docs/list)      | Converts to paragraph with `indent` and `listStyleType` props.           |
 | `<blockquote>`                                             | [`BlockquotePlugin`](/docs/basic-elements)      | Converts to blockquote element.                                          |
 | `<pre>` (often with `<code>` inside)                       | [`CodeBlockPlugin`](/docs/basic-elements)       | Converts to `code_block` element. Content split into `code_line`.        |
 | `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | Converts to horizontal rule element.                                     |
@@ -269,15 +269,15 @@ const MyCustomCodeBlockPlugin = CodeBlockPlugin.extend({
 ```
 This example customizes `CodeBlockPlugin` to look for a `data-custom-lang` attribute or a `language-*` class for determining the code language.
 
-### Advanced Deserialization Example (`IndentListPlugin`)
+### Advanced Deserialization Example (`ListPlugin`)
 
-The `IndentListPlugin` demonstrates a more complex deserialization scenario where it transforms HTML list structures (`<li>` elements) into indented paragraphs within Plate, using `aria-level` to determine indentation.
+The `ListPlugin` demonstrates a more complex deserialization scenario where it transforms HTML list structures (`<li>` elements) into indented paragraphs within Plate, using `aria-level` to determine indentation.
 
 Here's a conceptual look at its deserialization logic:
 
 ```ts
-// Simplified concept from IndentListPlugin
-export const IndentListPluginConfig = {
+// Simplified concept from ListPlugin
+export const ListPluginConfig = {
   // ... other configurations ...
   parsers: {
     html: {

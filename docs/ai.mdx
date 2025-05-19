@@ -52,7 +52,7 @@ import {
 import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
 import { BaseHeadingPlugin, HEADING_LEVELS } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
+import { BaseListPlugin } from '@udecode/plate-list';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 ```
@@ -75,7 +75,7 @@ export const createAIEditor = () => {
       BaseHorizontalRulePlugin,
       BaseLinkPlugin,
       BaseParagraphPlugin,
-      BaseIndentListPlugin.extend({
+      BaseListPlugin.extend({
         inject: {
           targetPlugins: [
             BaseParagraphPlugin.key,

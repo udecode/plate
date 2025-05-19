@@ -2,9 +2,7 @@
 title: Indent
 docs:
   - route: /docs/components/indent-toolbar-button
-    title: Indent Toolbar Button
-  - route: /docs/components/outdent-toolbar-button
-    title: Outdent Toolbar Button
+    title: Indent Toolbar Buttons
 ---
 
 <ComponentPreview name="indent-demo" />
@@ -24,7 +22,7 @@ docs:
   - Control maximum depth
   - Custom CSS styling
 
-For list-specific features, see the [Indent List plugin](/docs/indent-list).
+For list-specific features, see the [List plugin](/docs/list).
 
 </PackageInfo>
 
@@ -47,7 +45,7 @@ const plugins = [
   HeadingPlugin,
   IndentPlugin.configure({
     inject: {
-      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+      targetPlugins: ['p', 'h1'],
     },
   }),
 ];

@@ -117,10 +117,10 @@ export default function App() {
 
 ### Adding Basic Elements
 
-Introduce block-level elements like headings and paragraphs. Add the [HeadingElement](/docs/components/heading-element) and [ParagraphElement](/docs/components/paragraph-element) components:
+Introduce block-level elements like headings and paragraphs. Add the [HeadingElement](/docs/components/heading-node) and [ParagraphElement](/docs/components/paragraph-node) components:
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/heading-element https://platejs.org/r/paragraph-element https://platejs.org/r/blockquote-element
+npx shadcn@latest add https://platejs.org/r/heading-node https://platejs.org/r/paragraph-node https://platejs.org/r/blockquote-node
 ```
 
 Update your `src/App.tsx` to include `BasicElementsPlugin` and the element components.
@@ -139,12 +139,12 @@ import {
   usePlateEditor,
 } from '@udecode/plate/react';
 
-import { BlockquoteElement } from '@/components/ui/blockquote-element';
+import { BlockquoteElement } from '@/components/ui/blockquote-node';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 import { FixedToolbar } from '@/components/ui/fixed-toolbar';
-import { HeadingElement } from '@/components/ui/heading-element';
+import { HeadingElement } from '@/components/ui/heading-node';
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
-import { ParagraphElement } from '@/components/ui/paragraph-element';
+import { ParagraphElement } from '@/components/ui/paragraph-node';
 import { ToolbarButton } from '@/components/ui/toolbar'; // Generic toolbar button
 
 const initialValue: Value = [
@@ -229,12 +229,12 @@ import {
   usePlateEditor,
 } from '@udecode/plate/react';
 
-import { BlockquoteElement } from '@/components/ui/blockquote-element';
+import { BlockquoteElement } from '@/components/ui/blockquote-node';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 import { FixedToolbar } from '@/components/ui/fixed-toolbar';
-import { HeadingElement } from '@/components/ui/heading-element';
+import { HeadingElement } from '@/components/ui/heading-node';
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
-import { ParagraphElement } from '@/components/ui/paragraph-element';
+import { ParagraphElement } from '@/components/ui/paragraph-node';
 import { ToolbarButton } from '@/components/ui/toolbar';
 
 const initialValue: Value = [

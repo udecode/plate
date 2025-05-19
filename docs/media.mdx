@@ -1,19 +1,19 @@
 ---
 title: Media
 docs:
-  - route: /docs/components/image-element
+  - route: /docs/components/media-image-node
     title: Image Element
-  - route: /docs/components/media-video-element
+  - route: /docs/components/media-video-node
     title: Video Element
-  - route: /docs/components/media-audio-element
+  - route: /docs/components/media-audio-node
     title: Audio Element
-  - route: /docs/components/media-file-element
+  - route: /docs/components/media-file-node
     title: File Element
-  - route: /docs/components/media-embed-element
+  - route: /docs/components/media-embed-node
     title: Media Embed Element
-  - route: /docs/components/media-popover
+  - route: /docs/components/media-toolbar
     title: Media Popover
-  - route: /docs/components/media-placeholder-element
+  - route: /docs/components/media-placeholder-node
     title: Media Placeholder Element
   - route: /docs/components/media-upload-toast
     title: Media Upload Toast
@@ -132,11 +132,11 @@ There are two ways to implement file uploads in your editor:
 
 #### UploadThing
 
-1. Add [MediaPlaceholderElement](/docs/components/media-placeholder-element) component
+1. Add [MediaPlaceholderElement](/docs/components/media-placeholder-node) component
 
 2. Add API routes for UploadThing:
 
-<ComponentInstallation name="api-uploadthing" inline />
+<ComponentInstallation name="media-uploadthing-api" inline />
 
 3. Get your secret key from [UploadThing](https://uploadthing.com/dashboard/settings) for free
 4. Add your UploadThing secret key to `.env`:
