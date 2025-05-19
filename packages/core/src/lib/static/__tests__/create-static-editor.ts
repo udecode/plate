@@ -35,7 +35,7 @@ import {
 import { BaseHighlightPlugin } from '@udecode/plate-highlight';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
-import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
+import { BaseListPlugin } from '@udecode/plate-list';
 import { BaseKbdPlugin } from '@udecode/plate-kbd';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
@@ -59,43 +59,46 @@ import {
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
-import { BlockquoteElementStatic } from 'www/src/registry/ui/blockquote-element-static';
-import { CodeBlockElementStatic } from 'www/src/registry/ui/code-block-element-static';
-import { CodeLeafStatic } from 'www/src/registry/ui/code-leaf-static';
-import { CodeLineElementStatic } from 'www/src/registry/ui/code-line-element-static';
-import { CodeSyntaxLeafStatic } from 'www/src/registry/ui/code-syntax-leaf-static';
-import { ColumnElementStatic } from 'www/src/registry/ui/column-element-static';
-import { ColumnGroupElementStatic } from 'www/src/registry/ui/column-group-element-static';
-import { CommentLeafStatic } from 'www/src/registry/ui/comment-leaf-static';
-import { DateElementStatic } from 'www/src/registry/ui/date-element-static';
-import { EquationElementStatic } from 'www/src/registry/ui/equation-element-static';
-import { HeadingElementStatic } from 'www/src/registry/ui/heading-element-static';
-import { HrElementStatic } from 'www/src/registry/ui/hr-element-static';
-import { ImageElementStatic } from 'www/src/registry/ui/image-element-static';
+import { BlockquoteElementStatic } from 'www/src/registry/ui/blockquote-node-static';
 import {
-  FireLiComponent,
-  FireMarker,
-} from 'www/src/registry/ui/indent-fire-marker';
+  CodeBlockElementStatic,
+  CodeLineElementStatic,
+  CodeSyntaxLeafStatic,
+} from 'www/src/registry/ui/code-block-node-static';
+import { CodeLeafStatic } from 'www/src/registry/ui/code-node-static';
+import {
+  ColumnElementStatic,
+  ColumnGroupElementStatic,
+} from 'www/src/registry/ui/column-node-static';
+import { CommentLeafStatic } from 'www/src/registry/ui/comment-node-static';
+import { DateElementStatic } from 'www/src/registry/ui/date-node-static';
+import {
+  EquationElementStatic,
+  InlineEquationElementStatic,
+} from 'www/src/registry/ui/equation-node-static';
+import { HeadingElementStatic } from 'www/src/registry/ui/heading-node-static';
+import { HrElementStatic } from 'www/src/registry/ui/hr-node-static';
+import { ImageElementStatic } from 'www/src/registry/ui/media-image-node-static';
+import { FireLiComponent, FireMarker } from 'www/src/registry/ui/list-emoji';
 import {
   TodoLiStatic,
   TodoMarkerStatic,
-} from 'www/src/registry/ui/indent-todo-marker-static';
-import { InlineEquationElementStatic } from 'www/src/registry/ui/inline-equation-element-static';
-import { KbdLeafStatic } from 'www/src/registry/ui/kbd-leaf-static';
-import { LinkElementStatic } from 'www/src/registry/ui/link-element-static';
-import { MediaAudioElementStatic } from 'www/src/registry/ui/media-audio-element-static';
-import { MediaFileElementStatic } from 'www/src/registry/ui/media-file-element-static';
-import { MediaVideoElementStatic } from 'www/src/registry/ui/media-video-element-static';
-import { MentionElementStatic } from 'www/src/registry/ui/mention-element-static';
-import { ParagraphElementStatic } from 'www/src/registry/ui/paragraph-element-static';
+} from 'www/src/registry/ui/list-todo-static';
+import { KbdLeafStatic } from 'www/src/registry/ui/kbd-node-static';
+import { LinkElementStatic } from 'www/src/registry/ui/link-node-static';
+import { AudioElementStatic } from 'www/src/registry/ui/media-audio-node-static';
+import { FileElementStatic } from 'www/src/registry/ui/media-file-node-static';
+import { VideoElementStatic } from 'www/src/registry/ui/media-video-node-static';
+import { MentionElementStatic } from 'www/src/registry/ui/mention-node-static';
+import { ParagraphElementStatic } from 'www/src/registry/ui/paragraph-node-static';
 import {
+  TableElementStatic,
+  TableRowElementStatic,
   TableCellElementStatic,
   TableCellHeaderStaticElement,
-} from 'www/src/registry/ui/table-cell-element-static';
-import { TableElementStatic } from 'www/src/registry/ui/table-element-static';
-import { TableRowElementStatic } from 'www/src/registry/ui/table-row-element-static';
-import { TocElementStatic } from 'www/src/registry/ui/toc-element-static';
-import { ToggleElementStatic } from 'www/src/registry/ui/toggle-element-static';
+} from 'www/src/registry/ui/table-node-static';
+import { TocElementStatic } from 'www/src/registry/ui/toc-node-static';
+import { ToggleElementStatic } from 'www/src/registry/ui/toggle-node-static';
 
 import { BaseParagraphPlugin, SlateLeaf } from '../..';
 import { createSlateEditor, CreateSlateEditorOptions } from '../../editor';
@@ -134,7 +137,7 @@ export const createStaticEditor = (
           ],
         },
       }),
-      BaseIndentListPlugin.extend({
+      BaseListPlugin.extend({
         inject: {
           targetPlugins: [
             BaseParagraphPlugin.key,
@@ -172,9 +175,9 @@ export const createStaticEditor = (
         inject: {
           targetPlugins: [
             BaseParagraphPlugin.key,
-            BaseMediaEmbedPlugin.key,
             ...HEADING_LEVELS,
             BaseImagePlugin.key,
+            BaseMediaEmbedPlugin.key,
           ],
         },
       }),
@@ -193,7 +196,7 @@ export const createStaticEditor = (
 };
 
 export const components = {
-  [BaseAudioPlugin.key]: MediaAudioElementStatic,
+  [BaseAudioPlugin.key]: AudioElementStatic,
   [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
   [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
   [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
@@ -205,7 +208,7 @@ export const components = {
   [BaseCommentsPlugin.key]: CommentLeafStatic,
   [BaseDatePlugin.key]: DateElementStatic,
   [BaseEquationPlugin.key]: EquationElementStatic,
-  [BaseFilePlugin.key]: MediaFileElementStatic,
+  [BaseFilePlugin.key]: FileElementStatic,
   [BaseHorizontalRulePlugin.key]: HrElementStatic,
   [BaseImagePlugin.key]: ImageElementStatic,
   [BaseInlineEquationPlugin.key]: InlineEquationElementStatic,
@@ -225,11 +228,11 @@ export const components = {
   [BaseTocPlugin.key]: TocElementStatic,
   [BaseTogglePlugin.key]: ToggleElementStatic,
   [BaseUnderlinePlugin.key]: withProps(SlateLeaf, { as: 'u' }),
-  [BaseVideoPlugin.key]: MediaVideoElementStatic,
-  [HEADING_KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
-  [HEADING_KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
-  [HEADING_KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
-  [HEADING_KEYS.h4]: withProps(HeadingElementStatic, { variant: 'h4' }),
-  [HEADING_KEYS.h5]: withProps(HeadingElementStatic, { variant: 'h5' }),
-  [HEADING_KEYS.h6]: withProps(HeadingElementStatic, { variant: 'h6' }),
+  [BaseVideoPlugin.key]: VideoElementStatic,
+  h1: withProps(HeadingElementStatic, { variant: 'h1' }),
+  h2: withProps(HeadingElementStatic, { variant: 'h2' }),
+  h3: withProps(HeadingElementStatic, { variant: 'h3' }),
+  h4: withProps(HeadingElementStatic, { variant: 'h4' }),
+  h5: withProps(HeadingElementStatic, { variant: 'h5' }),
+  h6: withProps(HeadingElementStatic, { variant: 'h6' }),
 };

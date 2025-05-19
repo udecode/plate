@@ -650,3 +650,63 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     expect(plugin.options.value).toBe('original');
   });
 });
+
+describe('resolvePlugins with keyless plugins', () => {
+  let editor: SlateEditor;
+
+  beforeEach(() => {
+    editor = createPlateEditor();
+  });
+
+  it('should not add a plugin without a key to the editor', () => {
+    const plugins = [
+      createSlatePlugin({ node: { type: 'no-key-plugin' } } as any), // Simulate a plugin without a key
+      createSlatePlugin({ key: 'keyedPlugin', node: { type: 'keyed-type' } }),
+    ];
+
+    resolvePlugins(editor, plugins);
+
+    expect(editor.pluginList.map((p) => p.key)).not.toContain('');
+    expect(editor.plugins.keyedPlugin).toBeDefined();
+    expect(editor.pluginList.some((p) => p.key === 'keyedPlugin')).toBe(true);
+    // Exact count depends on core plugins, but it should contain keyedPlugin and not the keyless one.
+  });
+
+  it('should process child plugins of a keyless plugin', () => {
+    const plugins = [
+      createSlatePlugin({
+        // No key for the parent
+        node: { type: 'parent-no-key' },
+        plugins: [
+          createSlatePlugin({
+            key: 'childKey1',
+            node: { type: 'child1-type' },
+            priority: 2,
+          }),
+          createSlatePlugin({
+            key: 'childKey2',
+            node: { type: 'child2-type' },
+            priority: 1,
+          }),
+        ],
+      } as any),
+      createSlatePlugin({
+        key: 'anotherPlugin',
+        node: { type: 'another-type' },
+        priority: 3,
+      }),
+    ];
+
+    resolvePlugins(editor, plugins);
+
+    expect(editor.plugins['parent-no-key']).toBeUndefined();
+    expect(editor.plugins.childKey1).toBeDefined();
+    expect(editor.plugins.childKey2).toBeDefined();
+    expect(editor.plugins.anotherPlugin).toBeDefined();
+
+    const pluginKeys = editor.pluginList.map((p) => p.key);
+    expect(pluginKeys).toContain('childKey1');
+    expect(pluginKeys).toContain('childKey2');
+    expect(pluginKeys).toContain('anotherPlugin');
+  });
+});

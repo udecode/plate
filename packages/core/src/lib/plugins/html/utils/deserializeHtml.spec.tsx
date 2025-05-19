@@ -18,7 +18,7 @@ import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { ListPlugin } from '@udecode/plate-list/react';
+import { ListPlugin } from '@udecode/plate-list-classic/react';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { getHtmlDocument, jsxt } from '@udecode/plate-test-utils';

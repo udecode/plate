@@ -5,6 +5,7 @@ import type { PlatePlugin, PlatePluginMethods } from './PlatePlugin';
 
 import {
   type AnyPluginConfig,
+  type InferPlugins,
   type PluginConfig,
   createSlatePlugin,
 } from '../../lib';
@@ -71,4 +72,12 @@ export function createTPlatePlugin<C extends AnyPluginConfig = PluginConfig>(
     | TPlatePluginConfig<C> = {}
 ): PlatePlugin<C> {
   return createPlatePlugin(config as any) as any;
+}
+
+export function createPlatePlugins<P extends AnyPluginConfig>(
+  plugins: P[]
+): PlatePlugin<InferPlugins<P[]>> {
+  return createPlatePlugin({
+    plugins,
+  }) as unknown as PlatePlugin<InferPlugins<P[]>>;
 }

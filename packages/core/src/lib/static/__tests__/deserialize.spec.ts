@@ -7,7 +7,7 @@ import { fontValue } from 'www/src/registry/examples/values/font-value';
 // import { equationValue } from 'www/src/registry/examples/values/equation-value';
 import { highlightValue } from 'www/src/registry/examples/values/highlight-value';
 import { horizontalRuleValue } from 'www/src/registry/examples/values/horizontal-rule-value';
-import { indentListValue } from 'www/src/registry/examples/values/indent-list-value';
+import { listValue } from 'www/src/registry/examples/values/list-value';
 import { indentValue } from 'www/src/registry/examples/values/indent-value';
 import { kbdValue } from 'www/src/registry/examples/values/kbd-value';
 import { lineHeightValue } from 'www/src/registry/examples/values/line-height-value';
@@ -39,7 +39,7 @@ describe('deserializePlateStatic', () => {
       ...alignValue,
       ...lineHeightValue,
       ...indentValue,
-      ...indentListValue,
+      ...listValue,
       // ...mediaValue,
     ]);
 
@@ -70,7 +70,7 @@ describe('deserializePlateStatic', () => {
       ...alignValue,
       ...lineHeightValue,
       ...indentValue,
-      ...indentListValue,
+      ...listValue,
       // ...mediaValue,
     ]);
   });

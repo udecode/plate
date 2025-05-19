@@ -388,6 +388,11 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
               serializer?: HtmlReactSerializer<WithAnyKey<C>>;
             }>;
           };
+      /**
+       * Recursive plugin support to allow having multiple plugins in a single
+       * plugin. Plate eventually flattens all the plugins into the editor.
+       */
+      plugins: any[];
       render: Nullable<{
         /**
          * When other plugins' node components are rendered, this function can

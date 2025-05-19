@@ -29,8 +29,13 @@ export const getRenderNodeProps = ({
 }): PlateHTMLProps => {
   let newProps = {
     ...props,
-    ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
-    editor,
+    ...(plugin
+      ? (getEditorPlugin(editor, plugin) as any)
+      : {
+          api: editor.api,
+          editor,
+          tf: editor.transforms,
+        }),
   };
 
   const { className } = props;

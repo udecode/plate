@@ -128,11 +128,6 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
     enabled?: Partial<Record<string, boolean>>;
   };
   /**
-   * Recursive plugin support to allow having multiple plugins in a single
-   * plugin. Plate eventually flattens all the plugins into the editor.
-   */
-  plugins: any[];
-  /**
    * Defines the order in which plugins are registered and executed.
    *
    * Plugins with higher priority values are registered and executed before

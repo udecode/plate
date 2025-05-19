@@ -203,16 +203,22 @@ const flattenAndResolvePlugins = (
 
   const processPlugin = (plugin: SlatePlugin) => {
     const resolvedPlugin = resolvePlugin(editor, plugin);
-    const existingPlugin = pluginMap.get(resolvedPlugin.key);
 
-    if (existingPlugin) {
-      pluginMap.set(
-        resolvedPlugin.key,
-        mergePlugins(existingPlugin, resolvedPlugin)
-      );
+    if (resolvedPlugin.key) {
+      const existingPlugin = pluginMap.get(resolvedPlugin.key);
+
+      if (existingPlugin) {
+        pluginMap.set(
+          resolvedPlugin.key,
+          mergePlugins(existingPlugin, resolvedPlugin)
+        );
+      } else {
+        pluginMap.set(resolvedPlugin.key, resolvedPlugin);
+      }
     } else {
-      pluginMap.set(resolvedPlugin.key, resolvedPlugin);
+      // If the plugin has no key, we just just skip it.
     }
+
     if (resolvedPlugin.plugins && resolvedPlugin.plugins.length > 0) {
       resolvedPlugin.plugins.forEach(processPlugin);
     }
