@@ -125,10 +125,12 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
           return;
         }
 
-        editor.tf.setNodes(
-          { [idKey!]: getOptions().idCreator!() },
-          { at: path }
-        );
+        editor.tf.withoutSaving(() => {
+          editor.tf.setNodes(
+            { [idKey!]: getOptions().idCreator!() },
+            { at: path }
+          );
+        });
       }
 
       // Only traverse children if this is an Element node
