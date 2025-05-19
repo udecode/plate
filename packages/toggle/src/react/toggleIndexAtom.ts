@@ -13,8 +13,8 @@ import {
 
 import { TogglePlugin } from './TogglePlugin';
 
-// Duplicate constant instead of importing from "plate-indent-list" to avoid a dependency.
-const IndentListPluginKey = 'listStyleType';
+// Duplicate constant instead of importing from "plate-list" to avoid a dependency.
+const ListPluginKey = 'listStyleType';
 
 // Returns, for each child, the enclosing toggle ids
 export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
@@ -23,13 +23,13 @@ export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
   elements.forEach((element) => {
     const elementIndent = (element[BaseIndentPlugin.key] as number) || 0;
     // For some reason, indent lists have a min indent of 1, even though they are not indented
-    const elementIndentWithIndentListCorrection =
-      element[IndentListPluginKey] && element[BaseIndentPlugin.key]
+    const elementIndentWithListCorrection =
+      element[ListPluginKey] && element[BaseIndentPlugin.key]
         ? elementIndent - 1
         : elementIndent;
 
     const enclosingToggles = currentEnclosingToggles.filter(([_, indent]) => {
-      return indent < elementIndentWithIndentListCorrection;
+      return indent < elementIndentWithListCorrection;
     });
     currentEnclosingToggles = enclosingToggles;
     result.set(

@@ -1,11 +1,9 @@
 /** @jsx jsx */
 
 import { type SlatePlugin, createSlateEditor } from '@udecode/plate';
-import { ParagraphPlugin } from '@udecode/plate/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
@@ -22,12 +20,7 @@ jsx;
 
 const injectConfig = {
   inject: {
-    targetPlugins: [
-      ParagraphPlugin.key,
-      HEADING_KEYS.h1,
-      HEADING_KEYS.h2,
-      HEADING_KEYS.h3,
-    ],
+    targetPlugins: ['p', 'h1', 'h2', 'h3'],
   },
 };
 

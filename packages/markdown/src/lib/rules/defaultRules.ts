@@ -1,9 +1,9 @@
 import type { TText } from '@udecode/plate';
 
 import type {
-  TIndentListElement,
+  TListClassicElement,
+  TListElement,
   TMentionElement,
-  TStandardListElement,
 } from '../internal/types';
 import type {
   MdHeading,
@@ -425,13 +425,13 @@ export const defaultRules: TRules = {
       mdastNode: MdList,
       deco,
       options
-    ): TIndentListElement[] | TStandardListElement => {
+    ): TListClassicElement | TListElement[] => {
       // Handle standard list
-      const isStandardList = !options.editor?.pluginList.some(
-        (p) => p.key === 'listStyleType'
+      const isListClassic = !options.editor?.pluginList.some(
+        (p) => p.key === 'list'
       );
 
-      if (isStandardList) {
+      if (isListClassic) {
         // For standard lists, we need to ensure each list item is properly structured
         const children = mdastNode.children.map((child) => {
           if (child.type === 'listItem') {
@@ -491,7 +491,7 @@ export const defaultRules: TRules = {
 
           // Add list properties to each node
           itemNodes.forEach((node: any) => {
-            const itemContent: TIndentListElement = {
+            const itemContent: TListElement = {
               ...node,
               indent,
               type: (node.type || 'p') as string,
@@ -548,7 +548,7 @@ export const defaultRules: TRules = {
       const startIndex = (mdastNode as any).start || 1;
       return parseListItems(mdastNode, 1, startIndex);
     },
-    serialize: (node: TStandardListElement, options): MdList => {
+    serialize: (node: TListClassicElement, options): MdList => {
       const isOrdered = node.type === 'ol';
 
       const serializeListItems = (children: any[]): any[] => {

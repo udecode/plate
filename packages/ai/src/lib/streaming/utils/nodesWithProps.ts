@@ -4,7 +4,7 @@ import { type Descendant, ElementApi } from '@udecode/plate';
 
 import type { SteamInsertChunkOptions } from '../streamInsertChunk';
 
-import { getIndentListNode } from './getIndentListNode';
+import { getListNode } from './getListNode';
 
 export const nodesWithProps = (
   editor: PlateEditor,
@@ -14,7 +14,7 @@ export const nodesWithProps = (
   return nodes.map((node): Descendant => {
     if (ElementApi.isElement(node)) {
       return {
-        ...getIndentListNode(editor, node),
+        ...getListNode(editor, node),
         ...options.elementProps,
         children: nodesWithProps(editor, node.children, options),
       };

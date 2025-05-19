@@ -3,16 +3,15 @@ import { type SlateEditor, type TElement, NodeApi } from '@udecode/plate';
 import type { Heading } from '../lib/types';
 
 import { BaseTocPlugin } from '../lib';
-import { HEADING_KEYS } from '../lib/constants';
 import { isHeading } from '../lib/utils/isHeading';
 
 const headingDepth: Record<string, number> = {
-  [HEADING_KEYS.h1]: 1,
-  [HEADING_KEYS.h2]: 2,
-  [HEADING_KEYS.h3]: 3,
-  [HEADING_KEYS.h4]: 4,
-  [HEADING_KEYS.h5]: 5,
-  [HEADING_KEYS.h6]: 6,
+  h1: 1,
+  h2: 2,
+  h3: 3,
+  h4: 4,
+  h5: 5,
+  h6: 6,
 };
 
 export const getHeadingList = (editor: SlateEditor) => {

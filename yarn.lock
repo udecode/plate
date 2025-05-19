@@ -6638,7 +6638,7 @@ __metadata:
     "@udecode/plate": "workspace:^"
     "@udecode/plate-heading": "npm:48.0.0"
     "@udecode/plate-indent": "npm:48.0.0"
-    "@udecode/plate-indent-list": "npm:48.0.0"
+    "@udecode/plate-list": "npm:48.0.0"
     "@udecode/plate-media": "npm:48.0.0"
     "@udecode/plate-table": "npm:48.0.0"
     validator: "npm:^13.15.0"
@@ -6752,7 +6752,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent-list@npm:48.0.0, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
+"@udecode/plate-indent-list@workspace:packages/indent-list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent-list@workspace:packages/indent-list"
   dependencies:
@@ -6842,13 +6842,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-list-classic@workspace:^, @udecode/plate-list-classic@workspace:packages/list-classic":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-list-classic@workspace:packages/list-classic"
+  dependencies:
+    "@udecode/plate": "workspace:^"
+    "@udecode/plate-reset-node": "npm:48.0.0"
+    lodash: "npm:^4.17.21"
+  peerDependencies:
+    "@udecode/plate": ">=48.0.5"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-list@npm:48.0.0, @udecode/plate-list@workspace:^, @udecode/plate-list@workspace:packages/list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-list@workspace:packages/list"
   dependencies:
     "@udecode/plate": "workspace:^"
-    "@udecode/plate-reset-node": "npm:48.0.0"
-    lodash: "npm:^4.17.21"
+    "@udecode/plate-indent": "npm:48.0.0"
+    clsx: "npm:^2.1.1"
   peerDependencies:
     "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
@@ -22266,13 +22280,13 @@ __metadata:
     "@udecode/plate-highlight": "workspace:^"
     "@udecode/plate-horizontal-rule": "workspace:^"
     "@udecode/plate-indent": "workspace:^"
-    "@udecode/plate-indent-list": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
     "@udecode/plate-kbd": "workspace:^"
     "@udecode/plate-layout": "workspace:^"
     "@udecode/plate-line-height": "workspace:^"
     "@udecode/plate-link": "workspace:^"
     "@udecode/plate-list": "workspace:^"
+    "@udecode/plate-list-classic": "workspace:^"
     "@udecode/plate-markdown": "workspace:^"
     "@udecode/plate-math": "workspace:^"
     "@udecode/plate-media": "workspace:^"

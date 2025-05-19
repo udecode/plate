@@ -31,7 +31,7 @@ it('should be', () => {
     plugins: [
       NormalizeTypesPlugin.configure({
         options: {
-          rules: [{ path: [0], strictType: HEADING_KEYS.h1 }],
+          rules: [{ path: [0], strictType: 'h1' }],
         },
       }),
     ],

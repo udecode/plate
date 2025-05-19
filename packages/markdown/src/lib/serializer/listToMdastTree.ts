@@ -1,11 +1,11 @@
-import type { TIndentListElement } from '../internal/types';
+import type { TListElement } from '../internal/types';
 import type { MdList, MdListItem, MdParagraph } from '../mdast';
 import type { SerializeMdOptions } from './serializeMd';
 
 import { convertNodesSerialize } from './convertNodesSerialize';
 
-export function indentListToMdastTree(
-  nodes: TIndentListElement[],
+export function listToMdastTree(
+  nodes: TListElement[],
   options: SerializeMdOptions
 ): MdList {
   if (nodes.length === 0) {

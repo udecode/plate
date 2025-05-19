@@ -3,9 +3,5 @@
  */
 
 export * from './ListPlugin';
-export * from './TodoListPlugin';
 export * from './onKeyDownList';
-export * from './withDeleteBackwardList';
-export * from './withInsertBreakList';
-export * from './withList';
 export * from './hooks/index';

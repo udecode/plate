@@ -16,7 +16,7 @@
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
     "check:install": "yarn dlx @yarnpkg/doctor@4.0.0-rc.10 --configFileName config/.ncurc.yml packages",
     "cli:basic": "sh ./tooling/scripts/pre-basic.sh && npx shadcn@canary add localhost:3000/rd/editor-basic -o -c templates/plate-template && sh ./tooling/scripts/post-basic.sh",
-    "cli:basic:dev": "sh ./tooling/scripts/pre-basic.sh && npx shadcn@canary add localhost:3000/rd/paragraph-element -c ../../templates/plate-template && sh ./tooling/scripts/post-basic.sh",
+    "cli:basic:dev": "sh ./tooling/scripts/pre-basic.sh && npx shadcn@canary add localhost:3000/rd/paragraph-node -c ../../templates/plate-template && sh ./tooling/scripts/post-basic.sh",
     "cli:sync": "sh ./tooling/scripts/pre-ai.sh && npx shadcn@canary add localhost:3000/rd/editor-ai -o -c templates/plate-playground-template && sh ./tooling/scripts/post-ai.sh",
     "cli:test": "sh ./tooling/scripts/pre-basic.sh && npx shadcn@canary add localhost:3000/rd/editor-ai -o -c templates/plate-template && sh ./tooling/scripts/post-basic.sh",
     "deps:check": "npx npm-check-updates@latest --configFileName config/ncurc.yml --workspaces --root --mergeConfig",

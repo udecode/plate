@@ -1,7 +1,6 @@
 /** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate';
-import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsxt } from '@udecode/plate-test-utils';
 import { ParagraphPlugin } from '@udecode/plate/react';
 
@@ -109,7 +108,7 @@ describe('when using query', () => {
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
-            exclude: [HEADING_KEYS.h1],
+            exclude: ['h1'],
             level: 0,
             type: ParagraphPlugin.key,
           },

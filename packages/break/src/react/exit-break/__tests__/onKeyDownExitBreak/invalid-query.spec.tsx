@@ -40,7 +40,7 @@ it('should be', () => {
       createPlateEditor({ editor: input }),
       ExitBreakPlugin.configure({
         options: {
-          rules: [{ hotkey: 'enter', query: { allow: [HEADING_KEYS.h1] } }],
+          rules: [{ hotkey: 'enter', query: { allow: ['h1'] } }],
         },
       })
     ),

@@ -1,5 +1,4 @@
 import { createSlateEditor } from '@udecode/plate';
-import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { markdownPlugin } from '../../../../../apps/www/src/registry/components/editor/plugins/markdown-plugin';
 import { BaseSuggestionPlugin } from '@udecode/plate-suggestion';

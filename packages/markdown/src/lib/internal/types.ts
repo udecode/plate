@@ -46,7 +46,7 @@ export interface TImageElement extends TElement {
   placeholderId?: string;
 }
 
-export type TIndentListElement = TElement & {
+export type TListElement = TElement & {
   indent: number;
   listStyleType: string;
   checked?: boolean;
@@ -62,7 +62,7 @@ export interface TMentionElement extends TElement {
   value: string;
 }
 
-export interface TStandardListElement extends TElement {
+export interface TListClassicElement extends TElement {
   type: 'ol' | 'ul';
 }
 export type TSuggestionText = TText & {

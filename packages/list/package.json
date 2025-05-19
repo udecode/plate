@@ -50,8 +50,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-reset-node": "48.0.0",
-    "lodash": "^4.17.21"
+    "@udecode/plate-indent": "48.0.0",
+    "clsx": "^2.1.1"
   },
   "devDependencies": {
     "@udecode/plate": "workspace:^"

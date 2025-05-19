@@ -1,9 +1,9 @@
 import { createTestEditor } from '../__tests__/createTestEditor';
-import { indentListToMdastTree } from './indentListToMdastTree';
+import { listToMdastTree } from './listToMdastTree';
 
 const editor = createTestEditor();
 
-describe('indentListToMdastTree', () => {
+describe('listToMdastTree', () => {
   it('should convert a flat list correctly', () => {
     const nodes = [
       {
@@ -22,7 +22,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes as any, {
       editor,
     });
 
@@ -80,7 +80,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes as any, {
       editor,
     });
 
@@ -148,7 +148,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes as any, {
       editor,
     });
 
@@ -220,7 +220,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes as any, {
       editor,
     }) as any;
 
@@ -231,7 +231,7 @@ describe('indentListToMdastTree', () => {
   });
 
   it('should throw error for empty nodes', () => {
-    expect(() => indentListToMdastTree([], { editor })).toThrow(
+    expect(() => listToMdastTree([], { editor })).toThrow(
       'Cannot create a list from empty nodes'
     );
   });
@@ -268,7 +268,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes as any, {
       editor,
     }) as any;
 
@@ -297,7 +297,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes as any, {
       editor,
     }) as any;
 
@@ -345,7 +345,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes as any, {
       editor,
     }) as any;
 
@@ -389,7 +389,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes as any, {
       editor,
     }) as any;
 
@@ -425,7 +425,7 @@ describe('indentListToMdastTree', () => {
       },
     ];
 
-    const result = indentListToMdastTree(nodes as any, {
+    const result = listToMdastTree(nodes as any, {
       editor,
     }) as any;
 

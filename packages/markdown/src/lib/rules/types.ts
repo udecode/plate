@@ -148,7 +148,7 @@ type PlateNodeTypeMap = {
   th: TElement;
   tr: TTableRowElement;
   // TODO support standard list
-  // list: TIndentListElement[] | TStandardListElement;
+  // list: TListElement[] | TStandardListElement;
   list: any;
 
   /** CommonMarks */

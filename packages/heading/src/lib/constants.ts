@@ -7,11 +7,4 @@ export const HEADING_KEYS = {
   h6: 'h6',
 } as const;
 
-export const HEADING_LEVELS = [
-  HEADING_KEYS.h1,
-  HEADING_KEYS.h2,
-  HEADING_KEYS.h3,
-  HEADING_KEYS.h4,
-  HEADING_KEYS.h5,
-  HEADING_KEYS.h6,
-];
+export const HEADING_LEVELS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];

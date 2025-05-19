@@ -36,7 +36,7 @@ describe('when #space', () => {
                 match: '# ',
                 mode: 'block',
                 // preFormat: preFormat,
-                type: HEADING_KEYS.h1,
+                type: 'h1',
               },
             ],
           },

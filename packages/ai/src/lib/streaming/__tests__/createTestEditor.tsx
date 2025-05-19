@@ -6,7 +6,7 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { ListPlugin } from '@udecode/plate-list/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsxt } from '@udecode/plate-test-utils';
 import { ParagraphPlugin } from '@udecode/plate/react';
@@ -25,7 +25,7 @@ export const defaultPlugins = [
   ParagraphPlugin,
   BasicMarksPlugin,
   IndentPlugin,
-  IndentListPlugin,
+  ListPlugin,
   markdownPlugin,
   EquationPlugin,
   InlineEquationPlugin,

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`indentListToMdastTree should handle todo lists correctly 1`] = `
+exports[`listToMdastTree should handle todo lists correctly 1`] = `
 {
   "children": [
     {

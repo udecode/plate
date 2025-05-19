@@ -1,94 +1,125 @@
 import {
-  type OmitFirst,
   type PluginConfig,
-  bindFirst,
-  createSlatePlugin,
+  type SlateRenderElementProps,
+  type TElement,
+  BaseParagraphPlugin,
   createTSlatePlugin,
   HtmlPlugin,
+  isHtmlBlockElement,
+  postCleanHtml,
+  traverseHtmlElements,
 } from '@udecode/plate';
 
-import {
-  toggleBulletedList,
-  toggleList,
-  toggleNumberedList,
-} from './transforms';
+import type { GetSiblingListOptions } from './queries/getSiblingList';
+import type { ListStyleType } from './types';
 
-export type ListConfig = PluginConfig<
+import { renderListBelowNodes } from './renderListBelowNodes';
+import { withList } from './withList';
+
+/**
+ * All list items are normalized to have a listStart prop indicating their
+ * position in the list (unless listStart would be 1, in which case it is
+ * omitted).
+ *
+ * ListRestart causes listStart to restart from the given number, regardless of
+ * any previous listStart.
+ *
+ * ListRestartPolite acts like listRestart, except it only takes effect for list
+ * items at the start of a list. When not at the start of a list, this prop is
+ * ignored, although it is not removed and may take effect in the future.
+ */
+
+export const INDENT_LIST_KEYS = {
+  checked: 'checked',
+  listRestart: 'listRestart',
+  listRestartPolite: 'listRestartPolite',
+  listStart: 'listStart',
+  listStyleType: 'listStyleType',
+  todo: 'todo',
+} as const;
+
+export type BaseListConfig = PluginConfig<
   'list',
   {
-    enableResetOnShiftTab?: boolean;
-    /** Valid children types for list items, in addition to p and ul types. */
-    validLiChildrenTypes?: string[];
-  },
-  {},
-  {
-    toggle: {
-      bulletedList: OmitFirst<typeof toggleBulletedList>;
-      list: OmitFirst<typeof toggleList>;
-      numberedList: OmitFirst<typeof toggleNumberedList>;
-    };
+    getSiblingListOptions?: GetSiblingListOptions<TElement>;
+    listStyleTypes?: Record<
+      string,
+      {
+        type: string;
+        isOrdered?: boolean;
+        liComponent?: React.FC<SlateRenderElementProps>;
+        markerComponent?: React.FC<Omit<SlateRenderElementProps, 'children'>>;
+      }
+    >;
+    /** Map html element to list style type. */
+    getListStyleType?: (element: HTMLElement) => ListStyleType;
   }
 >;
 
-export const BaseBulletedListPlugin = createSlatePlugin({
-  key: 'ul',
-  node: { isElement: true },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          {
-            validNodeName: 'UL',
-          },
-        ],
-      },
-    },
-  },
-});
-
-export const BaseNumberedListPlugin = createSlatePlugin({
-  key: 'ol',
-  node: { isElement: true },
-  parsers: { html: { deserializer: { rules: [{ validNodeName: 'OL' }] } } },
-});
-
-export const BaseListItemPlugin = createSlatePlugin({
-  key: 'li',
+export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
+  key: 'list',
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
         parser: {
-          preInsert: ({ editor, type }) => {
-            return editor.api.some({ match: { type } });
+          transformData: ({ data }) => {
+            const document = new DOMParser().parseFromString(data, 'text/html');
+            const { body } = document;
+
+            traverseHtmlElements(body, (element) => {
+              if (element.tagName === 'LI') {
+                const { childNodes } = element;
+
+                // replace li block children (e.g. p) by their children
+                const liChildren: Node[] = [];
+                childNodes.forEach((child) => {
+                  if (isHtmlBlockElement(child as Element)) {
+                    liChildren.push(...child.childNodes);
+                  } else {
+                    liChildren.push(child);
+                  }
+                });
+
+                element.replaceChildren(...liChildren);
+
+                // TODO: recursive check on ul parents for indent
+
+                return false;
+              }
+
+              return true;
+            });
+
+            return postCleanHtml(body.innerHTML);
           },
         },
       },
     },
   },
-  node: { isElement: true },
-  parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
-});
-
-export const BaseListItemContentPlugin = createSlatePlugin({
-  key: 'lic',
-  node: { isElement: true },
-});
-
-/** Enables support for bulleted, numbered and to-do lists. */
-export const BaseListPlugin = createTSlatePlugin<ListConfig>({
-  key: 'list',
-  // TODO react
-  // extendEditor: withList,
-  plugins: [
-    BaseBulletedListPlugin,
-    BaseNumberedListPlugin,
-    BaseListItemPlugin,
-    BaseListItemContentPlugin,
-  ],
-}).extendEditorTransforms(({ editor }) => ({
-  toggle: {
-    bulletedList: bindFirst(toggleBulletedList, editor),
-    list: bindFirst(toggleList, editor),
-    numberedList: bindFirst(toggleNumberedList, editor),
+  options: {
+    getListStyleType: (element) => element.style.listStyleType as ListStyleType,
   },
-}));
+  parsers: {
+    html: {
+      deserializer: {
+        isElement: true,
+        rules: [
+          {
+            validNodeName: 'LI',
+          },
+        ],
+        parse: ({ editor, element, getOptions }) => {
+          return {
+            // gdoc uses aria-level attribute
+            indent: Number(element.getAttribute('aria-level')),
+            listStyleType: getOptions().getListStyleType?.(element),
+            type: editor.getType(BaseParagraphPlugin),
+          };
+        },
+      },
+    },
+  },
+  render: {
+    belowNodes: renderListBelowNodes,
+  },
+}).overrideEditor(withList);

@@ -1,10 +1,7 @@
 import type { TElement } from '@udecode/plate';
 import type { PlateEditor } from '@udecode/plate/react';
 
-export const getIndentListNode = (
-  editor: PlateEditor,
-  node: TElement
-): TElement => {
+export const getListNode = (editor: PlateEditor, node: TElement): TElement => {
   if (node.listStyleType && node.listStart) {
     const previousNode = editor.api.previous({
       at: editor.selection?.focus,

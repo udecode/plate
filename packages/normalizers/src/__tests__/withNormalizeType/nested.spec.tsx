@@ -38,7 +38,7 @@ it('should be', () => {
           rules: [
             {
               path: [0, 0],
-              strictType: HEADING_KEYS.h1,
+              strictType: 'h1',
             },
             { path: [0, 1], type: ParagraphPlugin.key },
           ],
