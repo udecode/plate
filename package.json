@@ -74,6 +74,7 @@
     "sync:templates": "./tooling/scripts/sync-templates.sh \"templates/*\"",
     "test": "yarn g:test",
     "test:nc": "yarn g:test -- --no-cache",
+    "test:r": "yarn workspace www test:r",
     "test:wa": "yarn g:test:wa",
     "test:watch": "yarn g:test:watch",
     "translate": "ts-node tooling/scripts/translate.mjs",
