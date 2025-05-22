@@ -210,11 +210,3 @@ export interface RichText extends TCommentText, TText {
   subscript?: boolean;
   underline?: boolean;
 }
-
-// export type MyElement = ElementOf<MyEditor>;
-
-// export type MyBlock = Exclude<MyElement, MyInlineElement>;
-
-// export type MyEditor = ReturnType<typeof useCreateEditor>;
-
-// export const useEditor = () => useEditorRef<MyEditor>();

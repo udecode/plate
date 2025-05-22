@@ -2,12 +2,11 @@
 
 import * as React from 'react';
 
-import { Plate } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 import { useTheme } from 'next-themes';
 
 import { Button } from '@/components/ui/button';
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { Editor } from '@/registry/ui/editor';
 
 function useThemedHtml(html: string, serverTheme?: string) {
@@ -89,10 +88,14 @@ export function HtmlIframe({
 }
 
 export function EditorClient({ value }: { value: any }) {
-  const editor = useCreateEditor({
-    plugins: editorPlugins.filter(
-      (p) => !['fixed-toolbar', 'floating-toolbar'].includes(p.key)
-    ),
+  const editor = usePlateEditor({
+    override: {
+      enabled: {
+        'fixed-toolbar': false,
+        'floating-toolbar': false,
+      },
+    },
+    plugins: EditorKit,
     value,
   });
 

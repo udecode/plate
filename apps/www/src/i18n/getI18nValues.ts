@@ -94,7 +94,7 @@ import {
 } from '@/registry/examples/values/list-classic-value';
 import { mediaValue as mediaValueEn } from '@/registry/examples/values/media-value';
 import { mentionValue as mentionValueEn } from '@/registry/examples/values/mention-value';
-import { placeholderValue as placeholderValueEn } from '@/registry/examples/values/placeholder-value';
+import { blockPlaceholderValue as placeholderValueEn } from '@/registry/examples/values/placeholder-value';
 import { playgroundValue as playgroundValueEn } from '@/registry/examples/values/playground-value';
 import { previewMdValue as previewMdValueEn } from '@/registry/examples/values/preview-md-value';
 import { singleLineValue as singleLineValueEn } from '@/registry/examples/values/single-line-value';

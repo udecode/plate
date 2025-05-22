@@ -57,7 +57,7 @@ import {
 import { usePlateEditor } from '@udecode/plate/react';
 import { all, createLowlight } from 'lowlight';
 
-import { markdownPlugin } from '@/registry/components/editor/plugins/markdown-plugin';
+import { MarkdownKit } from '@/registry/components/editor/plugins/markdown-kit';
 import { TodoLiStatic, TodoMarkerStatic } from '@/registry/ui/list-todo-static';
 
 import { BlockquoteElementStatic } from './blockquote-node-static';
@@ -190,7 +190,7 @@ const plugins = [
       },
     },
   }),
-  markdownPlugin,
+  ...MarkdownKit,
 ];
 
 export const AIChatEditor = React.memo(function AIChatEditor({

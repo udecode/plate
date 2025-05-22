@@ -70,6 +70,10 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   <APIItem name="priority" type="number" optional>
     Priority of the editor plugin.
   </APIItem>
+  <APIItem name="readOnly" type="boolean" optional>
+    Editor read-only initial state. For dynamic value, use
+    `Plate.readOnly` prop.
+  </APIItem>
   <APIItem name="render" type="object" optional>
     Render functions for the editor.
   </APIItem>
@@ -288,11 +292,24 @@ Get the Slate editor reference with re-rendering.
 </APIReturns>
 </API>
 
+### `useEditorComposing`
+
+Get the editor's `composing` state.
+
+<API name="useEditorComposing">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    The ID of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  Whether the editor is composing.
+</APIReturns>
+</API>
 
 ### `useEditorReadOnly`
 
 Get the editor's `readOnly` state.
-
 <API name="useEditorReadOnly">
 <APIParameters>
   <APIItem name="id" type="string" optional>

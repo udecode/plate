@@ -235,6 +235,43 @@ extendEditor: ({ editor }) => {
 <APIItem name="useHooks" type="() => void" optional>
 Hook called when the editor is initialized.
 </APIItem>
+
+<APIItem name="editOnly" type="boolean | EditOnlyConfig" optional>
+Configures which plugin functionalities should only be active when the editor is not read-only.
+
+Can be either a boolean or an object configuration:
+
+```ts
+type EditOnlyConfig = {
+  render?: boolean;      // default: true
+  handlers?: boolean;    // default: true
+  inject?: boolean;      // default: true
+  normalizeInitialValue?: boolean;  // default: false
+}
+```
+
+When set to `true` (boolean):
+- `render`, `handlers`, and `inject.nodeProps` are only active when editor is not read-only
+- `normalizeInitialValue` remains active regardless of read-only state
+
+When set to an object:
+- Each property can be individually configured
+- Properties default to being edit-only (`true`) except `normalizeInitialValue` which defaults to always active (`false`)
+- Set a property to `false` to make it always active regardless of read-only state
+- For `normalizeInitialValue`, set to `true` to make it edit-only
+
+Examples:
+```ts
+// All features (except normalizeInitialValue) are edit-only
+editOnly: true
+
+// normalizeInitialValue is edit-only, others remain edit-only by default
+editOnly: { normalizeInitialValue: true }
+
+// render is always active, others follow default behavior
+editOnly: { render: false }
+```
+</APIItem>
 </APIAttributes>
 </API>
 

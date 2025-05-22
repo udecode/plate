@@ -2,33 +2,18 @@
 
 import * as React from 'react';
 
-import { withProps } from '@udecode/cn';
+import type { CreatePlateEditorOptions } from '@udecode/plate/react';
+
 import { type Value, nanoid, NodeApi } from '@udecode/plate';
-import { AIPlugin } from '@udecode/plate-ai/react';
-import {
-  BasicMarksPlugin,
-  BoldPlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
 import { getCommentKey, getDraftCommentKey } from '@udecode/plate-comments';
 import { CommentsPlugin, useCommentId } from '@udecode/plate-comments/react';
-import { DatePlugin } from '@udecode/plate-date/react';
-import { EmojiInputPlugin } from '@udecode/plate-emoji/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
-import { InlineEquationPlugin } from '@udecode/plate-math/react';
-import {
-  MentionInputPlugin,
-  MentionPlugin,
-} from '@udecode/plate-mention/react';
 import {
   Plate,
   useEditorPlugin,
   useEditorRef,
+  usePlateEditor,
   usePluginOption,
 } from '@udecode/plate/react';
-import { type CreatePlateEditorOptions, PlateLeaf } from '@udecode/plate/react';
 import {
   differenceInDays,
   differenceInHours,
@@ -54,20 +39,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { BasicMarksKit } from '@/registry/components/editor/plugins/basic-marks-kit';
 import {
   type TDiscussion,
   discussionPlugin,
-} from '@/registry/components/editor/plugins/discussion-plugin';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+} from '@/registry/components/editor/plugins/discussion-kit';
 
-import { AILeaf } from './ai-node';
-import { DateElement } from './date-node';
 import { Editor, EditorContainer } from './editor';
-import { EmojiInputElement } from './emoji-input-node';
-import { InlineEquationElement } from './equation-node';
-import { LinkElement } from './link-node';
-import { MentionInputElement } from './mention-input-node';
-import { MentionElement } from './mention-node';
 
 export interface TComment {
   id: string;
@@ -414,25 +392,10 @@ const useCommentEditor = (
   options: Omit<CreatePlateEditorOptions, 'plugins'> = {},
   deps: any[] = []
 ) => {
-  const commentEditor = useCreateEditor(
+  const commentEditor = usePlateEditor(
     {
       id: 'comment',
-      components: {
-        [AIPlugin.key]: AILeaf,
-        [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
-        [DatePlugin.key]: DateElement,
-        [EmojiInputPlugin.key]: EmojiInputElement,
-        [InlineEquationPlugin.key]: InlineEquationElement,
-        [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
-        [LinkPlugin.key]: LinkElement,
-        [MentionInputPlugin.key]: MentionInputElement,
-        [MentionPlugin.key]: MentionElement,
-        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
-        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
-        // [SlashInputPlugin.key]: SlashInputElement,
-      },
-      placeholders: false,
-      plugins: [BasicMarksPlugin],
+      plugins: BasicMarksKit,
       value: [],
       ...options,
     },
@@ -617,7 +580,7 @@ export function CommentCreateForm({
             <Button
               size="icon"
               variant="ghost"
-              className="absolute right-0.5 bottom-0.5 ml-auto shrink-0"
+              className="absolute right-0.5 bottom-0.5 ml-auto size-6 shrink-0"
               disabled={commentContent.trim().length === 0}
               onClick={(e) => {
                 e.stopPropagation();

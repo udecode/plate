@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "dnd-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-dnd",
+    "@udecode/plate-media"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/block-draggable",
+    "https://platejs.org/r/node-id-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/dnd-kit.tsx",
+      "content": "'use client';\n\nimport { DndPlugin } from '@udecode/plate-dnd';\nimport { PlaceholderPlugin } from '@udecode/plate-media/react';\n\nimport { NodeIdKit } from '@/registry/components/editor/plugins/node-id-kit';\nimport { BlockDraggable } from '@/registry/ui/block-draggable';\n\nexport const DndKit = [\n  ...NodeIdKit,\n  DndPlugin.configure({\n    options: {\n      enableScroller: true,\n      onDropFiles: ({ dragItem, editor, target }) => {\n        editor\n          .getTransforms(PlaceholderPlugin)\n          .insert.media(dragItem.files, { at: target, nextBlock: false });\n      },\n    },\n    render: {\n      aboveNodes: BlockDraggable,\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

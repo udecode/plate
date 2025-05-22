@@ -2,6 +2,12 @@
 
 import * as React from 'react';
 
+import {
+  DeletePlugin,
+  NormalizeTypesPlugin,
+  SelectOnBackspacePlugin,
+  TrailingBlockPlugin,
+} from '@udecode/plate';
 import { AIChatPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
@@ -15,11 +21,6 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import {
-  ExitBreakPlugin,
-  SingleLinePlugin,
-  SoftBreakPlugin,
-} from '@udecode/plate-break/react';
 import { CaptionPlugin } from '@udecode/plate-caption/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
@@ -50,10 +51,7 @@ import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
-import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { PlaywrightPlugin } from '@udecode/plate-playwright';
-import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
-import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import {
   BlockSelectionPlugin,
   CursorOverlayPlugin,
@@ -61,15 +59,22 @@ import {
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
-import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
-import { ParagraphPlugin, Plate, useStoreValue } from '@udecode/plate/react';
+import {
+  ExitBreakPlugin,
+  ParagraphPlugin,
+  Plate,
+  ResetNodePlugin,
+  SingleLinePlugin,
+  SoftBreakPlugin,
+  usePlateEditor,
+  useStoreValue,
+} from '@udecode/plate/react';
 
 import { SettingsStore } from '@/components/context/settings-store';
 import { useLocale } from '@/hooks/useLocale';
 import { getI18nValues } from '@/i18n/getI18nValues';
-import { copilotPlugins } from '@/registry/components/editor/plugins/copilot-plugins';
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export default function PlaygroundDemo({ className }: { className?: string }) {
@@ -78,12 +83,12 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
   const locale = useLocale();
   const value = getI18nValues(locale).playground;
 
-  const editor = useCreateEditor(
+  const editor = usePlateEditor(
     {
       override: { enabled },
       plugins: [
-        ...copilotPlugins,
-        ...editorPlugins,
+        ...CopilotKit,
+        ...EditorKit,
 
         NormalizeTypesPlugin.configure({
           options: {
@@ -100,8 +105,6 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
     },
     []
   );
-
-  console.log(editor.pluginList);
 
   return (
     <Plate editor={editor}>

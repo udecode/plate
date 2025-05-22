@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "toggle-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-toggle"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toggle-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/toggle-kit.tsx",
+      "content": "'use client';\n\nimport { TogglePlugin } from '@udecode/plate-toggle/react';\n\nimport { ToggleElement } from '@/registry/ui/toggle-node';\n\nexport const ToggleKit = [TogglePlugin.withComponent(ToggleElement)];\n",
+      "type": "registry:component"
+    }
+  ]
+}

@@ -36,6 +36,7 @@
         "https://platejs.org/r/basic-elements-docs",
         "https://platejs.org/r/basic-marks-docs",
         "https://platejs.org/r/block-menu-docs",
+        "https://platejs.org/r/block-placeholder-docs",
         "https://platejs.org/r/block-selection-docs",
         "https://platejs.org/r/callout-docs",
         "https://platejs.org/r/caption-docs",
@@ -542,6 +543,19 @@
       ],
       "name": "block-menu-docs",
       "title": "Block Menu",
+      "type": "registry:file"
+    },
+    {
+      "description": "Show placeholder when a block is empty.",
+      "files": [
+        {
+          "path": "../../docs/block-placeholder.mdx",
+          "target": "content/docs/plate/plugins/block-placeholder.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "block-placeholder-docs",
+      "title": "Block Placeholder",
       "type": "registry:file"
     },
     {

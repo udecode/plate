@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "slash-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-slash-command",
+    "@udecode/plate-code-block"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/slash-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/slash-kit.tsx",
+      "content": "'use client';\n\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport {\n  SlashInputPlugin,\n  SlashPlugin,\n} from '@udecode/plate-slash-command/react';\n\nimport { SlashInputElement } from '@/registry/ui/slash-node';\n\nexport const SlashKit = [\n  SlashPlugin.extend({\n    options: {\n      triggerQuery(editor) {\n        return !editor.api.some({\n          match: { type: editor.getType(CodeBlockPlugin) },\n        });\n      },\n    },\n  }),\n  SlashInputPlugin.withComponent(SlashInputElement),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

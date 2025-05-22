@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "basic-marks-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/cn",
+    "@udecode/plate-basic-marks"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/code-node",
+    "https://platejs.org/r/skip-mark-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/basic-marks-kit.tsx",
+      "content": "'use client';\n\nimport { withProps } from '@udecode/cn';\nimport {\n  BoldPlugin,\n  CodePlugin,\n  ItalicPlugin,\n  StrikethroughPlugin,\n  SubscriptPlugin,\n  SuperscriptPlugin,\n  UnderlinePlugin,\n} from '@udecode/plate-basic-marks/react';\nimport { PlateLeaf } from '@udecode/plate/react';\n\nimport { CodeLeaf } from '@/registry/ui/code-node';\n\nimport { SkipMarkKit } from './skip-mark-kit';\n\nexport const BasicMarksKit = [\n  BoldPlugin.withComponent(withProps(PlateLeaf, { as: 'strong' })),\n  CodePlugin.withComponent(CodeLeaf),\n  ItalicPlugin.withComponent(withProps(PlateLeaf, { as: 'em' })),\n  StrikethroughPlugin.withComponent(withProps(PlateLeaf, { as: 's' })),\n  UnderlinePlugin.withComponent(withProps(PlateLeaf, { as: 'u' })),\n  SubscriptPlugin.withComponent(withProps(PlateLeaf, { as: 'sub' })),\n  SuperscriptPlugin.withComponent(withProps(PlateLeaf, { as: 'sup' })),\n  ...SkipMarkKit,\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

@@ -37,12 +37,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { commentsPlugin } from '@/registry/components/editor/plugins/comments-plugin';
+import { commentsPlugin } from '@/registry/components/editor/plugins/comment-kit';
 import {
   type TDiscussion,
   discussionPlugin,
-} from '@/registry/components/editor/plugins/discussion-plugin';
-import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
+} from '@/registry/components/editor/plugins/discussion-kit';
+import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-kit';
 
 import {
   BlockSuggestionCard,
@@ -160,7 +160,7 @@ const BlockCommentsContent = ({
       } else {
         activeNode = commentNodes.find(
           ([node]) =>
-            editor.getApi(CommentsPlugin).comment.nodeId(node) ===
+            editor.getApi(commentsPlugin).comment.nodeId(node) ===
             activeCommentId
         );
       }
@@ -260,7 +260,7 @@ const BlockCommentsContent = ({
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
-                className="mt-1 ml-1 flex h-6 gap-1 px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
+                className="mt-1 ml-1 flex h-6 gap-1 !px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
                 data-active={open}
                 contentEditable={false}
               >

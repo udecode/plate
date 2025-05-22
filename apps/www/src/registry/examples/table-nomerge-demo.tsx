@@ -3,17 +3,16 @@
 import * as React from 'react';
 
 import { TablePlugin } from '@udecode/plate-table/react';
-import { Plate } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { tableValue } from '@/registry/examples/values/table-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
-export default function TableMergeDemo() {
-  const editor = useCreateEditor({
+export default function TableNoMergeDemo() {
+  const editor = usePlateEditor({
     plugins: [
-      ...editorPlugins,
+      ...EditorKit,
       TablePlugin.configure({
         options: {
           disableMerge: true,

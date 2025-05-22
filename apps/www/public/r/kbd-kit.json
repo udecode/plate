@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "kbd-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-kbd"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/kbd-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/kbd-kit.tsx",
+      "content": "'use client';\n\nimport { KbdPlugin } from '@udecode/plate-kbd/react';\n\nimport { KbdLeaf } from '@/registry/ui/kbd-node';\n\nexport const KbdKit = [KbdPlugin.withComponent(KbdLeaf)];\n",
+      "type": "registry:component"
+    }
+  ]
+}

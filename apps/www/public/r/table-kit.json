@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "table-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-table"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/node-id-kit",
+    "https://platejs.org/r/table-node",
+    "https://platejs.org/r/table-toolbar-button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/table-kit.tsx",
+      "content": "'use client';\n\nimport {\n  TableCellHeaderPlugin,\n  TableCellPlugin,\n  TablePlugin,\n  TableRowPlugin,\n} from '@udecode/plate-table/react';\n\nimport { NodeIdKit } from '@/registry/components/editor/plugins/node-id-kit';\nimport {\n  TableCellElement,\n  TableCellHeaderElement,\n  TableElement,\n  TableRowElement,\n} from '@/registry/ui/table-node';\n\nexport const TableKit = [\n  ...NodeIdKit,\n  TablePlugin.withComponent(TableElement),\n  TableRowPlugin.withComponent(TableRowElement),\n  TableCellPlugin.withComponent(TableCellElement),\n  TableCellHeaderPlugin.withComponent(TableCellHeaderElement),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

@@ -36,7 +36,13 @@ const registry: Registry = {
       ...registryInit,
       ...registryUI,
       ...registryComponents,
-      ...registryBlocks,
+      ...registryBlocks.map((block) => ({
+        ...block,
+        registryDependencies: [
+          'plate-ui',
+          ...(block.registryDependencies ?? []),
+        ],
+      })),
       ...registryLib,
       ...registryStyles,
       ...registryHooks,

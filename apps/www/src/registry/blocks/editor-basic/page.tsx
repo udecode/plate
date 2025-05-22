@@ -1,4 +1,4 @@
-import { PlateEditor } from '@/registry/blocks/editor-basic/components/editor/plate-editor';
+import { PlateEditor } from '@/registry/components/editor/plate-editor-basic';
 
 export default function Page() {
   return (

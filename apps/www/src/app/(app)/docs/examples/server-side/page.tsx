@@ -2,7 +2,15 @@ import type { Doc } from 'contentlayer/generated';
 
 import type { Metadata } from 'next';
 
-import { createSlateEditor } from '@udecode/plate';
+import {
+  BaseExitBreakPlugin,
+  BaseResetNodePlugin,
+  BaseSoftBreakPlugin,
+  createSlateEditor,
+  DeletePlugin,
+  SelectOnBackspacePlugin,
+  TrailingBlockPlugin,
+} from '@udecode/plate';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
@@ -15,7 +23,6 @@ import {
   BaseUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
-import { BaseExitBreakPlugin, BaseSoftBreakPlugin } from '@udecode/plate-break';
 import { BaseCaptionPlugin } from '@udecode/plate-caption';
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
@@ -41,13 +48,10 @@ import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
 import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@udecode/plate-media';
 import { BaseMentionPlugin } from '@udecode/plate-mention';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
-import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
-import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BaseSlashPlugin } from '@udecode/plate-slash-command';
 import { BaseTabbablePlugin } from '@udecode/plate-tabbable';
 import { BaseTablePlugin } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
-import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 

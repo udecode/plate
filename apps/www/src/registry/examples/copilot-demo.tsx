@@ -2,17 +2,16 @@
 
 import * as React from 'react';
 
-import { Plate } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 
-import { copilotPlugins } from '@/registry/components/editor/plugins/copilot-plugins';
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { copilotValue } from '@/registry/examples/values/copilot-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export default function CopilotDemo() {
-  const editor = useCreateEditor({
-    plugins: [...copilotPlugins, ...editorPlugins],
+  const editor = usePlateEditor({
+    plugins: [...CopilotKit, ...EditorKit],
     value: copilotValue,
   });
 

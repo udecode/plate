@@ -1,0 +1,87 @@
+---
+title: Block Placeholder
+description: Show placeholder when a block is empty.
+---
+
+<ComponentPreview name="block-placeholder-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Add customizable placeholder text to empty blocks
+- Show placeholders based on block type
+
+</PackageInfo>
+
+## Usage
+
+<Steps>
+
+### Add Plugin
+
+Include `BlockPlaceholderPlugin` in your Plate plugins array.
+
+```tsx
+import { BlockPlaceholderPlugin } from '@udecode/plate/react';
+
+const plugins = [
+  // ...otherPlugins,
+  BlockPlaceholderPlugin,
+];
+```
+
+### Configure Plugin
+
+<ComponentSource name="block-placeholder-kit" />
+
+- Setting `placeholders[ParagraphPlugin.key]` to `'Type something...'` shows this text in empty paragraph blocks
+- Using `query: ({ path }) => path.length === 1` only shows placeholders in root-level blocks, hiding them in nested blocks
+- Adding a `className` lets you style the placeholder text appearance (e.g. using Tailwind)
+
+### Customize Placeholders
+
+You can configure different placeholders for different block types:
+
+```tsx
+BlockPlaceholderPlugin.configure({
+  options: {
+    placeholders: {
+      [ParagraphPlugin.key]: 'Type something...',
+      [HeadingPlugin.key]: 'Enter heading...',
+      [BlockquotePlugin.key]: 'Enter quote...',
+      [CodeBlockPlugin.key]: 'Enter code...',
+    },
+  },
+})
+```
+
+</Steps>
+
+## Plugins
+
+### `BlockPlaceholderPlugin`
+
+The plugin shows placeholders when all of these conditions are met:
+
+1. The block is empty (contains no content)
+2. The editor is not empty (has other content)
+3. The editor is focused
+4. The block matches the query function
+5. The block type matches a key in the placeholders map
+
+<API name="BlockPlaceholderPlugin">
+<APIOptions>
+  <APIItem name="placeholders" type="Record<string, string>">
+    A map of plugin keys to placeholder text strings.
+    - **Default:** `{ [ParagraphPlugin.key]: 'Type something...' }`
+  </APIItem>
+  <APIItem name="query" type="(context: PlatePluginContext & { node: TElement; path: Path }) => boolean">
+    A function that determines whether a block should show a placeholder.
+    - **Default:** Returns true for root-level blocks (`path.length === 1`)
+  </APIItem>
+  <APIItem name="className" type="string" optional>
+    Class to apply to blocks with placeholders.
+  </APIItem>
+</APIOptions>
+</API>

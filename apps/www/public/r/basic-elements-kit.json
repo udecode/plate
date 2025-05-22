@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "basic-elements-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/cn",
+    "@udecode/plate-block-quote",
+    "@udecode/plate-code-block",
+    "@udecode/plate-heading",
+    "lowlight"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/blockquote-node",
+    "https://platejs.org/r/code-block-node",
+    "https://platejs.org/r/heading-node",
+    "https://platejs.org/r/paragraph-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/basic-elements-kit.tsx",
+      "content": "'use client';\n\nimport { withProps } from '@udecode/cn';\nimport { BlockquotePlugin } from '@udecode/plate-block-quote/react';\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport { HeadingPlugin } from '@udecode/plate-heading/react';\nimport { Key, ParagraphPlugin } from '@udecode/plate/react';\nimport { all, createLowlight } from 'lowlight';\n\nimport { BlockquoteElement } from '@/registry/ui/blockquote-node';\nimport {\n  CodeBlockElement,\n  CodeLineElement,\n  CodeSyntaxLeaf,\n} from '@/registry/ui/code-block-node';\nimport { HeadingElement } from '@/registry/ui/heading-node';\nimport { ParagraphElement } from '@/registry/ui/paragraph-node';\n\nconst lowlight = createLowlight(all);\n\nexport const BasicElementsKit = [\n  ParagraphPlugin.withComponent(ParagraphElement),\n  BlockquotePlugin.configure(() => ({\n    shortcuts: {\n      toggleBlockquote: {\n        keys: [[Key.Mod, Key.Shift, 'period']],\n      },\n    },\n  })).withComponent(BlockquoteElement),\n  HeadingPlugin.configure({\n    options: { levels: 3 },\n    override: {\n      components: {\n        h1: withProps(HeadingElement, { variant: 'h1' }),\n        h2: withProps(HeadingElement, { variant: 'h2' }),\n        h3: withProps(HeadingElement, { variant: 'h3' }),\n        h4: withProps(HeadingElement, { variant: 'h4' }),\n        h5: withProps(HeadingElement, { variant: 'h5' }),\n        h6: withProps(HeadingElement, { variant: 'h6' }),\n      },\n    },\n  }),\n  CodeBlockPlugin.configure({\n    options: { lowlight },\n    override: {\n      components: {\n        code_block: CodeBlockElement,\n        code_line: CodeLineElement,\n        code_syntax: CodeSyntaxLeaf,\n      },\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

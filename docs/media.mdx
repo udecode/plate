@@ -82,7 +82,7 @@ import {
   PlaceholderPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
-import { SelectOnBackspacePlugin } from '@udecode/plate-select';
+import { SelectOnBackspacePlugin } from '@udecode/plate';
 ```
 
 ```tsx
@@ -115,7 +115,7 @@ const components = {
   [AudioPlugin.key]: AudioElement,
   [FilePlugin.key]: FileElement,
   [MediaEmbedPlugin.key]: MediaEmbedElement,
-  [PlaceholderPlugin.key]: MediaPlaceholderElement,
+  [PlaceholderPlugin.key]: PlaceholderElement,
 };
 ```
 
@@ -132,7 +132,7 @@ There are two ways to implement file uploads in your editor:
 
 #### UploadThing
 
-1. Add [MediaPlaceholderElement](/docs/components/media-placeholder-node) component
+1. Add [PlaceholderElement](/docs/components/media-placeholder-node) component
 
 2. Add API routes for UploadThing:
 

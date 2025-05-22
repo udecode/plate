@@ -37,7 +37,7 @@ import { listValue as listClassicValue } from './list-classic-value';
 import { listValue } from './list-value';
 import { mediaValue } from './media-value';
 import { mentionValue } from './mention-value';
-import { placeholderValue } from './placeholder-value';
+import { blockPlaceholderValue } from './placeholder-value';
 import { previewMdValue } from './preview-md-value';
 import { singleLineValue } from './single-line-value';
 import { slashCommandValue } from './slash-command-value';
@@ -55,6 +55,8 @@ const values = {
   'basic-marks': basicMarksValue,
   'basic-nodes': basicNodesValue,
   'block-menu': blockMenuValue,
+  // 'multi-editors': multiEditorsValue,
+  'block-placeholder': blockPlaceholderValue,
   'block-selection': blockSelectionValue,
   // callout: calloutValue,
   column: columnValue,
@@ -90,8 +92,6 @@ const values = {
   media: mediaValue,
   // 'media-toolbar': mediaToolbarValue,
   mention: mentionValue,
-  // 'multi-editors': multiEditorsValue,
-  placeholder: placeholderValue,
   playground: playgroundValue,
   'preview-markdown': previewMdValue,
   'reset-node': basicElementsValue,

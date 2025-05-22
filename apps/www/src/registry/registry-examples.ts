@@ -15,7 +15,7 @@ export const examples: Registry['items'] = [
         type: 'registry:example',
       },
       {
-        path: 'components/editor/plugins/editor-plugins.tsx',
+        path: 'components/editor/plugins/editor-kit.tsx',
         type: 'registry:example',
       },
     ],
@@ -28,7 +28,7 @@ export const examples: Registry['items'] = [
       ],
     },
     name: 'copilot-demo',
-    registryDependencies: ['copilot-plugins', 'editor', 'use-create-editor'],
+    registryDependencies: ['copilot-kit', 'editor', 'use-create-editor'],
     type: 'registry:example',
   },
   {
@@ -107,22 +107,33 @@ export const examples: Registry['items'] = [
         path: 'examples/multiple-editors-demo.tsx',
         type: 'registry:example',
       },
+      {
+        path: 'examples/values/basic-elements-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/basic-marks-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/media-value.tsx',
+        type: 'registry:example',
+      },
     ],
     name: 'multiple-editors-demo',
     registryDependencies: [
-      'use-create-editor',
+      'shadcn/separator',
+      'basic-nodes-kit',
+      'media-kit',
       'editor',
       'fixed-toolbar',
       'turn-into-toolbar-button',
-      'delete-plugins',
-      'shadcn/separator',
     ],
     type: 'registry:example',
   },
   {
     dependencies: [
       '@udecode/plate-basic-marks',
-      '@udecode/plate-break',
       '@udecode/plate-diff',
       'lodash',
     ],
@@ -247,7 +258,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -274,7 +285,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -298,7 +309,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -321,7 +332,7 @@ export const demoExamples: Registry['items'] = (
       registryDependencies: [
         'use-create-editor',
         'editor',
-        'editor-plugins',
+        'editor-kit',
         'shadcn/input',
         'shadcn/label',
         'shadcn/radio-group',
@@ -337,7 +348,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/fixed-toolbar-classic-plugin.tsx',
+          path: 'components/editor/plugins/fixed-toolbar-classic-kit.tsx',
           type: 'registry:example',
         },
         {
@@ -349,12 +360,12 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'list-classic-demo',
-      registryDependencies: ['autoformat-classic-plugin', 'list-classic-node'],
+      registryDependencies: ['autoformat-classic-kit', 'list-classic-node'],
       type: 'registry:example',
     },
     {
@@ -374,7 +385,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -392,7 +403,7 @@ export const demoExamples: Registry['items'] = (
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
         {
-          path: 'components/editor/plugins/ai-plugins.tsx',
+          path: 'components/editor/plugins/ai-kit.tsx',
           type: 'registry:example',
         },
         {
@@ -404,7 +415,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -419,11 +430,11 @@ export const demoExamples: Registry['items'] = (
       name: 'ai-demo',
       registryDependencies: [
         'use-create-editor',
-        'editor-plugins',
-        'basic-nodes-plugins',
-        'block-selection-plugins',
-        'list-plugins',
-        'link-plugin',
+        'editor-kit',
+        'basic-nodes-kit',
+        'block-selection-kit',
+        'list-kit',
+        'link-kit',
         'ai-node',
       ],
       title: 'AI',
@@ -442,12 +453,12 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'align-demo',
-      registryDependencies: ['align-plugin'],
+      registryDependencies: ['align-kit'],
       type: 'registry:example',
     },
 
@@ -464,12 +475,12 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'autoformat-demo',
-      registryDependencies: ['autoformat-plugin'],
+      registryDependencies: ['autoformat-kit'],
       title: 'Autoformat',
       type: 'registry:example',
     },
@@ -487,7 +498,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -501,7 +512,7 @@ export const demoExamples: Registry['items'] = (
       },
       name: 'basic-elements-demo',
       registryDependencies: [
-        'basic-nodes-plugins',
+        'basic-nodes-kit',
         'blockquote-node',
         'code-block-node',
         'heading-node',
@@ -523,7 +534,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -536,7 +547,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'basic-marks-demo',
-      registryDependencies: ['basic-nodes-plugins', 'code-node'],
+      registryDependencies: ['basic-nodes-kit', 'code-node'],
       type: 'registry:example',
     },
     {
@@ -560,7 +571,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -574,7 +585,7 @@ export const demoExamples: Registry['items'] = (
         keywords: ['element', 'leaf'],
       },
       name: 'basic-nodes-demo',
-      registryDependencies: ['basic-nodes-plugins'],
+      registryDependencies: ['basic-nodes-kit'],
       type: 'registry:example',
     },
     {
@@ -590,7 +601,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -603,7 +614,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'block-menu-demo',
-      registryDependencies: ['block-menu-plugins'],
+      registryDependencies: ['block-menu-kit'],
       type: 'registry:example',
     },
     {
@@ -619,12 +630,12 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'block-selection-demo',
-      registryDependencies: ['block-selection-plugins'],
+      registryDependencies: ['block-selection-kit'],
       type: 'registry:example',
     },
     {
@@ -640,7 +651,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -669,7 +680,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -682,11 +693,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'comments-demo',
-      registryDependencies: [
-        'comments-plugin',
-        'discussion-plugin',
-        'comment-node',
-      ],
+      registryDependencies: ['comment-kit', 'discussion-kit', 'comment-node'],
       type: 'registry:example',
     },
     {
@@ -702,12 +709,12 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'cursor-overlay-demo',
-      registryDependencies: ['cursor-overlay-plugin'],
+      registryDependencies: ['cursor-overlay-kit'],
       title: 'Cursor Overlay',
       type: 'registry:example',
     },
@@ -724,7 +731,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -754,7 +761,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -767,7 +774,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'dnd-demo',
-      registryDependencies: ['dnd-plugins'],
+      registryDependencies: ['dnd-kit'],
       title: 'Drag & Drop',
       type: 'registry:example',
     },
@@ -784,7 +791,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -797,7 +804,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'emoji-demo',
-      registryDependencies: ['emoji-input-node'],
+      registryDependencies: ['emoji-node'],
       type: 'registry:example',
     },
     {
@@ -813,7 +820,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -826,7 +833,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'equation-demo',
-      registryDependencies: ['equation-node', 'equation-plugins'],
+      registryDependencies: ['equation-node', 'math-kit'],
       type: 'registry:example',
     },
     {
@@ -842,12 +849,12 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'exit-break-demo',
-      registryDependencies: ['exit-break-plugin'],
+      registryDependencies: ['exit-break-kit'],
       title: 'Exit Break',
       type: 'registry:example',
     },
@@ -863,7 +870,7 @@ export const demoExamples: Registry['items'] = (
     //   },
     //   files: [
     // {type: 'registry:example',path:  //     'examples/demo.tsx',}
-    // {type: 'registry:example',path:  //     'components/editor/plugins/equation-plugins.tsx',}
+    // {type: 'registry:example',path:  //     'components/editor/plugins/math-kit.tsx',}
     // {type: 'registry:example',path:  //     'examples/values/equation-value.tsx',}
     //   ],
     //   name: 'equation-demo',
@@ -884,7 +891,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -913,7 +920,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -934,7 +941,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -955,7 +962,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -992,12 +999,12 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'indent-demo',
-      registryDependencies: ['list-plugins'],
+      registryDependencies: ['list-kit'],
       type: 'registry:example',
     },
     {
@@ -1013,7 +1020,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1030,7 +1037,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'list-demo',
-      registryDependencies: ['list-plugins'],
+      registryDependencies: ['list-kit'],
       type: 'registry:example',
     },
     {
@@ -1045,7 +1052,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1066,12 +1073,12 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'line-height-demo',
-      registryDependencies: ['line-height-plugin'],
+      registryDependencies: ['line-height-kit'],
       type: 'registry:example',
     },
     {
@@ -1087,7 +1094,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1100,7 +1107,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'link-demo',
-      registryDependencies: ['link-plugin', 'link-node'],
+      registryDependencies: ['link-kit', 'link-node'],
       type: 'registry:example',
     },
     {
@@ -1116,13 +1123,13 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'media-demo',
       registryDependencies: [
-        'media-plugins',
+        'media-kit',
         'media-audio-node',
         'media-embed-node',
         'media-file-node',
@@ -1145,7 +1152,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1158,26 +1165,9 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'mention-demo',
-      registryDependencies: [
-        'mention-plugin',
-        'mention-node',
-        'mention-input-node',
-      ],
+      registryDependencies: ['mention-kit', 'mention-node'],
       type: 'registry:example',
     },
-    // {
-    //
-    //     description: 'Placeholder text in empty blocks.',
-    //   },
-    //   files: [
-    // {type: 'registry:example',path:  //     'examples/demo.tsx',}
-    // {type: 'registry:example',path:  //     'components/editor/use-create-editor.ts',}
-    // {type: 'registry:example',path:  //     'components/editor/plugins/editor-plugins.tsx',}
-    //   ],
-    //   name: 'placeholder-demo',
-    //   registryDependencies: [],
-    //   type: 'registry:example',
-    // },
     {
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -1186,12 +1176,28 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'block-placeholder-demo',
+      registryDependencies: ['block-placeholder-kit'],
+      type: 'registry:example',
+    },
+    {
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'components/editor/use-create-editor.ts',
+          type: 'registry:example',
+        },
+        {
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'reset-node-demo',
-      registryDependencies: ['reset-block-type-plugin'],
+      registryDependencies: ['reset-block-type-kit'],
       type: 'registry:example',
     },
     {
@@ -1207,7 +1213,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1228,7 +1234,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1249,7 +1255,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1270,12 +1276,12 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'markdown-demo',
-      registryDependencies: ['markdown-plugin'],
+      registryDependencies: ['markdown-kit'],
       title: 'Serializing Markdown',
       type: 'registry:example',
     },
@@ -1293,7 +1299,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1306,7 +1312,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'slash-command-demo',
-      registryDependencies: ['slash-input-node'],
+      registryDependencies: ['slash-node'],
       type: 'registry:example',
     },
     {
@@ -1323,12 +1329,12 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
       name: 'soft-break-demo',
-      registryDependencies: ['soft-break-plugin'],
+      registryDependencies: ['soft-break-kit'],
       title: 'Soft Break',
       type: 'registry:example',
     },
@@ -1346,7 +1352,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1359,7 +1365,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'table-demo',
-      registryDependencies: ['table-plugin', 'table-node'],
+      registryDependencies: ['table-kit', 'table-node'],
       type: 'registry:example',
     },
     {
@@ -1375,7 +1381,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1388,7 +1394,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'toc-demo',
-      registryDependencies: ['toc-plugin', 'toc-node'],
+      registryDependencies: ['toc-kit', 'toc-node'],
       title: 'Table of Contents',
       type: 'registry:example',
     },
@@ -1401,7 +1407,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1428,7 +1434,7 @@ export const internalExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1444,7 +1450,7 @@ export const internalExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'components/editor/plugins/editor-plugins.tsx',
+          path: 'components/editor/plugins/editor-kit.tsx',
           type: 'registry:example',
         },
       ],
@@ -1520,7 +1526,7 @@ export const internalExamples: Registry['items'] = (
         },
       ],
       name: 'editor-default',
-      registryDependencies: ['use-create-editor', 'editor', 'editor-plugins'],
+      registryDependencies: ['use-create-editor', 'editor', 'editor-kit'],
       type: 'registry:example',
     },
     {
@@ -1542,7 +1548,7 @@ export const internalExamples: Registry['items'] = (
         },
       ],
       name: 'editor-full-width',
-      registryDependencies: ['use-create-editor', 'editor', 'editor-plugins'],
+      registryDependencies: ['use-create-editor', 'editor', 'editor-kit'],
       type: 'registry:example',
     },
   ] as Registry['items']

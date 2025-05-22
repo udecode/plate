@@ -15,16 +15,30 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
   <APIItem name="key" type="any">
     A key that can be used to uniquely identify the editor.
   </APIItem>
-  <APIItem name="currentKeyboardEvent" type="KeyboardEventLike | null">
-    The current keyboard event being processed by the editor, or null if no event is being processed.
+  <APIItem name="dom" type="object">
+    An object containing the DOM state of the editor.
+    <APISubList>
+      <APISubListItem parent="dom" name="composing" type="boolean">
+        Whether the editor is currently composing text (e.g., during IME input).
+      </APISubListItem>
+      <APISubListItem parent="dom" name="currentKeyboardEvent" type="KeyboardEventLike | null">
+        The current keyboard event being processed by the editor, or null if no event is being processed.
+      </APISubListItem>
+      <APISubListItem parent="dom" name="focused" type="boolean">
+        Whether the editor currently has focus.
+      </APISubListItem>
+      <APISubListItem parent="dom" name="prevSelection" type="TRange | null">
+        The previous selection range in the editor.
+      </APISubListItem>
+      <APISubListItem parent="dom" name="readOnly" type="boolean">
+        Whether the editor is in read-only mode.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
   <APIItem name="isFallback" type="boolean">
     Whether the editor is a fallback editor.
     
     - **Default:** `false`
-  </APIItem>
-  <APIItem name="prevSelection" type="TRange | null">
-    The previous selection range in the editor.
   </APIItem>
   <APIItem name="pluginList" type="AnyEditorPlatePlugin[]">
     An array of plugins that are currently being used by the editor.

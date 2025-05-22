@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "font-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-font"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/font-size-toolbar-button",
+    "https://platejs.org/r/font-color-toolbar-button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/font-kit.tsx",
+      "content": "'use client';\n\nimport {\n  FontBackgroundColorPlugin,\n  FontColorPlugin,\n  FontSizePlugin,\n} from '@udecode/plate-font/react';\nimport { type PlatePluginConfig, ParagraphPlugin } from '@udecode/plate/react';\n\nconst options: PlatePluginConfig = {\n  inject: {\n    targetPlugins: [ParagraphPlugin.key],\n  },\n};\n\nexport const FontKit = [\n  FontColorPlugin.configure(options),\n  FontBackgroundColorPlugin.configure(options),\n  FontSizePlugin.configure(options),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

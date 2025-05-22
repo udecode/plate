@@ -1,0 +1,30 @@
+'use client';
+
+import { HEADING_LEVELS } from '@udecode/plate-heading';
+import { ExitBreakPlugin } from '@udecode/plate/react';
+
+export const ExitBreakKit = [
+  ExitBreakPlugin.configure({
+    options: {
+      rules: [
+        {
+          hotkey: 'mod+enter',
+        },
+        {
+          before: true,
+          hotkey: 'mod+shift+enter',
+        },
+        {
+          hotkey: 'enter',
+          level: 1,
+          query: {
+            allow: HEADING_LEVELS,
+            end: true,
+            start: true,
+          },
+          relative: true,
+        },
+      ],
+    },
+  }),
+];

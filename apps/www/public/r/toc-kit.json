@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "toc-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-heading"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toc-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/toc-kit.tsx",
+      "content": "'use client';\n\nimport { TocPlugin } from '@udecode/plate-heading/react';\n\nimport { TocElement } from '@/registry/ui/toc-node';\n\nexport const TocKit = [\n  TocPlugin.configure({\n    options: {\n      // isScroll: true,\n      topOffset: 80,\n    },\n  }).withComponent(TocElement),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

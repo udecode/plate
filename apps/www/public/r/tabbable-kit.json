@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "tabbable-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-code-block",
+    "@udecode/plate-tabbable",
+    "@udecode/plate-table"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/tabbable-kit.tsx",
+      "content": "'use client';\n\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport { TabbablePlugin } from '@udecode/plate-tabbable/react';\nimport { TablePlugin } from '@udecode/plate-table/react';\n\nexport const TabbableKit = TabbablePlugin.configure(({ editor }) => ({\n  node: {\n    isElement: true,\n  },\n  options: {\n    query: () => {\n      if (editor.api.isAt({ start: true }) || editor.api.isAt({ end: true }))\n        return false;\n\n      return !editor.api.some({\n        match: (n) => {\n          return !!(\n            n.type &&\n            ([\n              'action_item',\n              CodeBlockPlugin.key,\n              'li',\n              TablePlugin.key,\n            ].includes(n.type as string) ||\n              n.listStyleType)\n          );\n        },\n      });\n    },\n  },\n  override: {\n    enabled: {\n      indent: false,\n    },\n  },\n}));\n",
+      "type": "registry:component"
+    }
+  ]
+}

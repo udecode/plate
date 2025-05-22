@@ -30,7 +30,7 @@ import {
   usePath,
   usePluginOption,
 } from '@udecode/plate/react';
-import { useReadOnly, useSelected } from '@udecode/plate/react';
+import { useSelected } from '@udecode/plate/react';
 import { GripVertical } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -50,10 +50,8 @@ const UNDRAGGABLE_KEYS = [
 
 export const BlockDraggable: RenderNodeWrapper = (props) => {
   const { editor, element, path } = props;
-  const readOnly = useReadOnly();
 
   const enabled = React.useMemo(() => {
-    if (readOnly) return false;
     if (path.length === 1 && !isType(editor, element, UNDRAGGABLE_KEYS)) {
       return true;
     }
@@ -83,7 +81,7 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
     }
 
     return false;
-  }, [editor, element, path, readOnly]);
+  }, [editor, element, path]);
 
   if (!enabled) return;
 

@@ -32,6 +32,7 @@ Components:
 - Removed `column-group-element`, merged into `column-node` (and static version)
 - Removed `comment-create-form`, merged into `comment`
 - Renamed `draggable` to `block-draggable`, `DraggableAboveNodes` to `BlockDraggable`
+- Renamed `emoji-input-element` to `emoji-node`
 - Removed all `emoji-*` files (except `emoji-input-node`), merged into `emoji-toolbar-button`
   - Rename `EmojiToolbarDropdown` to `EmojiPopover`, `EmojiDropdownMenu` to `EmojiToolbarButton`
   - `EmojiPicker` `icons` prop is now optional and defaulted to `emojiCategoryIcons` and `emojiSearchIcons`
@@ -57,9 +58,9 @@ Components:
 - Renamed `media-popover` to `media-toolbar`, `MediaPopover` to `MediaToolbar`
 - Renamed `mode-dropdown-menu` to `mode-toolbar-button`, `ModeDropdownMenu` to `ModeToolbarButton`
 - Renamed `more-dropdown-menu` to `more-toolbar-button`, `MoreDropdownMenu` to `MoreToolbarButton`
-- Renamed `placeholder` to `block-placeholder`, `Placeholder` to `BlockPlaceholder`
 - Removed `outdent-toolbar-button`, merged into `indent-toolbar-button`
 - `table-icons`: rename `Border*` to `Border*Icon`
+- Renamed `slash-input-element` to `slash-input-node`
 - Renamed `SuggestionBelowNodes` to `SuggestionLineBreak`
 - Removed `table-cell-element`, merged into `table-node` (and static version)
 - Removed `table-row-element`, merged into `table-node` (and static version)
@@ -67,12 +68,16 @@ Components:
 - Removed `todo-list-node`, merged into `list-classic-node`
 - Renamed `turn-into-dropdown-menu` to `turn-into-toolbar-button`, `TurnIntoDropdownMenu` to `TurnIntoToolbarButton`
 - `export-toolbar-button`, `indent-list-plugins`: remove fire from `listStyleTypes`
+- `useCommentEditor`: `usePlateEditor` instead of `useCreateEditor`
+- Removed `placeholder`, `withPlaceholder`. Migration: use `block-placeholder-kit`, `BlockPlaceholderPlugin` instead.
 
 Plugins:
 
 - Renamed all `*-plugin`, `*-plugins` files to `-kit`, and `*Plugin`, `*Plugins` to `*Kit`. A **plugin kit** is a collection of configured plugins.
+  - Renamed `editor-plugins` to `editor-kit`
+  - Renamed `equation-plugins` to `math-kit`, `equationPlugins` to `MathKit`
   - Renamed `indent-list-plugins` to `list-kit`, `indentListPlugins` to `ListKit`
-
+  - Removed `use-create-editor`, use `usePlateEditor` instead
 
 ### May 15 #22.6
 

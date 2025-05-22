@@ -3,8 +3,6 @@
 import * as React from 'react';
 
 import { type Value, createSlatePlugin } from '@udecode/plate';
-import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
-import { SoftBreakPlugin } from '@udecode/plate-break/react';
 import {
   type DiffOperation,
   type DiffUpdate,
@@ -26,12 +24,14 @@ import {
   PlateContent,
   PlateElement,
   PlateLeaf,
+  usePlateEditor,
 } from '@udecode/plate/react';
 import { cloneDeep } from 'lodash';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { BasicMarksKit } from '@/registry/components/editor/plugins/basic-marks-kit';
+import { EditingKit } from '@/registry/components/editor/plugins/editing-kit';
 
 const InlinePlugin = createPlatePlugin({
   key: 'inline',
@@ -226,12 +226,11 @@ const initialValue: Value = [
 ];
 
 const plugins = [
+  ...BasicMarksKit,
+  ...EditingKit,
   InlinePlugin.withComponent(InlineElement),
   InlineVoidPlugin.withComponent(InlineVoidElement),
-  BoldPlugin,
-  ItalicPlugin,
   DiffPlugin,
-  SoftBreakPlugin,
 ];
 
 function VersionHistoryPlate(props: Omit<PlateProps, 'children'>) {
@@ -259,7 +258,7 @@ function Diff({ current, previous }: DiffProps) {
     }) as Value;
   }, [previous, current]);
 
-  const editor = useCreateEditor(
+  const editor = usePlateEditor(
     {
       plugins,
       value: diffValue,
@@ -295,12 +294,12 @@ export default function VersionHistoryDemo() {
     setRevisions([...revisions, value]);
   };
 
-  const editor = useCreateEditor({
+  const editor = usePlateEditor({
     plugins,
     value: initialValue,
   });
 
-  const editorRevision = useCreateEditor(
+  const editorRevision = usePlateEditor(
     {
       plugins,
       value: selectedRevisionValue,

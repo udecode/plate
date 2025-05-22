@@ -140,7 +140,7 @@ export function LinkFloatingToolbar({
 
       <button
         className={buttonVariants({
-          size: 'icon',
+          size: 'sm',
           variant: 'ghost',
         })}
         type="button"
@@ -187,7 +187,7 @@ function LinkOpenButton() {
     <a
       {...attributes}
       className={buttonVariants({
-        size: 'icon',
+        size: 'sm',
         variant: 'ghost',
       })}
       onMouseOver={(e) => {

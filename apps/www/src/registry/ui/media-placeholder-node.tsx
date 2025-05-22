@@ -51,11 +51,9 @@ const CONTENT: Record<
   },
 };
 
-export const MediaPlaceholderElement = withHOC(
+export const PlaceholderElement = withHOC(
   PlaceholderProvider,
-  function MediaPlaceholderElement(
-    props: PlateElementProps<TPlaceholderElement>
-  ) {
+  function PlaceholderElement(props: PlateElementProps<TPlaceholderElement>) {
     const { editor, element } = props;
 
     const { api } = useEditorPlugin(PlaceholderPlugin);

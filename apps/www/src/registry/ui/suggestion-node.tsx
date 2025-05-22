@@ -12,7 +12,7 @@ import {
 } from '@udecode/plate/react';
 
 import { cn } from '@/lib/utils';
-import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
+import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-kit';
 
 export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
   const { api, setOption } = useEditorPlugin(suggestionPlugin);

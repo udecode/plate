@@ -182,10 +182,10 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 | `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | 转为 `kbd: true` mark。                                            |
 | `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-elements)       | 转为段落 element。                                           |
 | `<h1>` - `<h6>`                                            | [`HeadingPlugin`](/docs/basic-elements)         | 转为对应 heading element（`h1` - `h6`）。                |
-| `<ul>`                                                     | [`ListPlugin`](/docs/list)            | 转为无序列表（`ul` 类型），子项为 `li`。               |
-| `<ol>`                                                     | [`ListPlugin`](/docs/list)            | 转为有序列表（`ol` 类型），子项为 `li`。                 |
-| `<li>`（在 `<ul>` 或 `<ol>` 内）                           | [`ListPlugin`](/docs/list)            | 转为列表项（`li` 类型），子节点为 `lic`。 |
-| `<li>`（带 `aria-level` 实现缩进）                      | [`IndentListPlugin`](/docs/indent-list)      | 转为带 `indent` 和 `listStyleType` 的段落。           |
+| `<ul>`                                                     | [`ListPlugin`](/docs/list-classic)            | 转为无序列表（`ul` 类型），子项为 `li`。               |
+| `<ol>`                                                     | [`ListPlugin`](/docs/list-classic)            | 转为有序列表（`ol` 类型），子项为 `li`。                 |
+| `<li>`（在 `<ul>` 或 `<ol>` 内）                           | [`ListPlugin`](/docs/list-classic)            | 转为列表项（`li` 类型），子节点为 `lic`。 |
+| `<li>`（带 `aria-level` 实现缩进）                      | [`IndentListPlugin`](/docs/list)      | 转为带 `indent` 和 `listStyleType` 的段落。           |
 | `<blockquote>`                                             | [`BlockquotePlugin`](/docs/basic-elements)      | 转为 blockquote element。                                          |
 | `<pre>`（通常内含 `<code>`）                       | [`CodeBlockPlugin`](/docs/basic-elements)       | 转为 `code_block` element，内容分为 `code_line`。        |
 | `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | 转为水平线 element。                                     |

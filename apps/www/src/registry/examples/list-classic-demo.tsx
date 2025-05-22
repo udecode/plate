@@ -9,12 +9,11 @@ import {
   NumberedListPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list-classic/react';
-import { Plate } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 
-import { AutoformatKit } from '@/registry/components/editor/plugins/autoformat-classic-plugin';
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { FixedToolbarPlugin } from '@/registry/components/editor/plugins/fixed-toolbar-classic-plugin';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { AutoformatKit } from '@/registry/components/editor/plugins/autoformat-classic-kit';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
+import { FixedToolbarKit } from '@/registry/components/editor/plugins/fixed-toolbar-classic-kit';
 import { listValue } from '@/registry/examples/values/list-classic-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import {
@@ -25,19 +24,16 @@ import {
 } from '@/registry/ui/list-classic-node';
 
 export default function ListClassicDemo() {
-  const editor = useCreateEditor({
-    components: {
-      [BulletedListPlugin.key]: BulletedListElement,
-      [ListItemPlugin.key]: ListItemElement,
-      [NumberedListPlugin.key]: NumberedListElement,
-      [TodoListPlugin.key]: TodoListElement,
-    },
+  const editor = usePlateEditor({
     plugins: [
-      ...editorPlugins,
+      ...EditorKit,
       ListPlugin,
-      TodoListPlugin,
-      FixedToolbarPlugin,
-      AutoformatKit,
+      BulletedListPlugin.withComponent(BulletedListElement),
+      NumberedListPlugin.withComponent(NumberedListElement),
+      ListItemPlugin.withComponent(ListItemElement),
+      TodoListPlugin.withComponent(TodoListElement),
+      ...FixedToolbarKit,
+      ...AutoformatKit,
     ],
     value: listValue,
   });

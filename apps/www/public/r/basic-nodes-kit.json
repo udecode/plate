@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "basic-nodes-kit",
+  "type": "registry:component",
+  "registryDependencies": [
+    "https://platejs.org/r/basic-elements-kit",
+    "https://platejs.org/r/basic-marks-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/basic-nodes-kit.tsx",
+      "content": "'use client';\n\nimport { BasicElementsKit } from './basic-elements-kit';\nimport { BasicMarksKit } from './basic-marks-kit';\n\nexport const BasicNodesKit = [...BasicElementsKit, ...BasicMarksKit];\n",
+      "type": "registry:component"
+    }
+  ]
+}

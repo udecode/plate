@@ -54,8 +54,8 @@ import { cn } from '@/lib/utils';
 import {
   type TDiscussion,
   discussionPlugin,
-} from '@/registry/components/editor/plugins/discussion-plugin';
-import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-plugin';
+} from '@/registry/components/editor/plugins/discussion-kit';
+import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-kit';
 
 import {
   type TComment,
@@ -277,7 +277,7 @@ export function BlockSuggestionCard({
           <div className="absolute top-4 right-4 flex gap-2">
             <Button
               variant="ghost"
-              className="h-6 p-1 text-muted-foreground"
+              className="size-6 p-1 text-muted-foreground"
               onClick={() => accept(suggestion)}
             >
               <CheckIcon className="size-4" />
@@ -285,7 +285,7 @@ export function BlockSuggestionCard({
 
             <Button
               variant="ghost"
-              className="h-6 p-1 text-muted-foreground"
+              className="size-6 p-1 text-muted-foreground"
               onClick={() => reject(suggestion)}
             >
               <XIcon className="size-4" />

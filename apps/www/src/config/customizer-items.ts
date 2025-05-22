@@ -1,3 +1,9 @@
+import {
+  DeletePlugin,
+  NormalizeTypesPlugin,
+  SelectOnBackspacePlugin,
+  TrailingBlockPlugin,
+} from '@udecode/plate';
 import { AIChatPlugin, AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
@@ -11,11 +17,6 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import {
-  ExitBreakPlugin,
-  SingleLinePlugin,
-  SoftBreakPlugin,
-} from '@udecode/plate-break/react';
 import { CaptionPlugin } from '@udecode/plate-caption/react';
 import {
   CodeBlockPlugin,
@@ -55,9 +56,6 @@ import {
   MentionPlugin,
 } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
-import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
-import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
-import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
@@ -67,12 +65,15 @@ import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
-import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
-import { ParagraphPlugin } from '@udecode/plate/react';
+import {
+  ExitBreakPlugin,
+  ParagraphPlugin,
+  ResetNodePlugin,
+  SingleLinePlugin,
+  SoftBreakPlugin,
+} from '@udecode/plate/react';
 
 import { getComponentNavItem, getPluginNavItem } from '@/config/docs';
-import { FixedToolbarPlugin } from '@/registry/components/editor/plugins/fixed-toolbar-plugin';
-import { FloatingToolbarPlugin } from '@/registry/components/editor/plugins/floating-toolbar-plugin';
 
 export type CustomizerBadge = {
   label: string;
@@ -419,7 +420,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: DeletePlugin.key,
     badges: [customizerBadges.handler],
     label: 'Delete',
-    npmPackage: '@udecode/plate-select',
+    npmPackage: '@udecode/plate',
     pluginFactory: 'DeletePlugin',
     route: getPluginNavItem('select').href,
   },
@@ -451,9 +452,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.handler],
     components: [
       {
-        id: 'emoji-input-node',
+        id: 'emoji-node',
         label: 'EmojiInputElement',
-        route: getComponentNavItem('emoji-input-node').href,
+        route: getComponentNavItem('emoji-node').href,
         usage: 'EmojiInputElement',
       },
     ],
@@ -492,7 +493,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: ExitBreakPlugin.key,
     badges: [customizerBadges.handler],
     label: 'Exit Break',
-    npmPackage: '@udecode/plate-break',
+    npmPackage: '@udecode/plate',
     pluginFactory: 'ExitBreakPlugin',
     pluginOptions: [
       `options: {`,
@@ -520,25 +521,25 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
     route: getPluginNavItem('exit-break').href,
   },
-  [FixedToolbarPlugin.key]: {
-    id: FixedToolbarPlugin.key,
+  ['fixed-toolbar']: {
+    id: 'fixed-toolbar',
     badges: [customizerBadges.handler, customizerBadges.ui],
     customImports: [
-      `import { FixedToolbarPlugin } from '@/components/editor/plugins/fixed-toolbar-plugin';`,
+      `import { FixedToolbarKit } from '@/components/editor/plugins/fixed-toolbar-kit';`,
     ],
     label: 'Fixed Toolbar',
-    pluginFactory: 'FixedToolbarPlugin',
+    pluginFactory: 'FixedToolbarKit',
     reactImport: true,
     // route: getPluginNavItem('fixed-toolbar').href,
   },
-  [FloatingToolbarPlugin.key]: {
-    id: FloatingToolbarPlugin.key,
+  ['floating-toolbar']: {
+    id: 'floating-toolbar',
     badges: [customizerBadges.handler, customizerBadges.ui],
     customImports: [
-      `import { FloatingToolbarPlugin } from '@/components/editor/plugins/floating-toolbar-plugin';`,
+      `import { FloatingToolbarKit } from '@/components/editor/plugins/floating-toolbar-kit';`,
     ],
     label: 'Floating Toolbar',
-    pluginFactory: 'FloatingToolbarPlugin',
+    pluginFactory: 'FloatingToolbarKit',
     reactImport: true,
     // route: getPluginNavItem('floating-toolbar').href,
   },
@@ -907,14 +908,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         route: getComponentNavItem('mention-node').href,
         usage: 'MentionElement',
       },
-      {
-        id: 'mention-input-node',
-        label: 'MentionInputElement',
-        pluginImports: ['MentionInputPlugin'],
-        pluginKey: 'MentionInputPlugin.key',
-        route: getComponentNavItem('mention-input-node').href,
-        usage: 'MentionInputElement',
-      },
     ],
     label: 'Mention',
     npmPackage: '@udecode/plate-mention',
@@ -934,7 +927,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: NormalizeTypesPlugin.key,
     badges: [customizerBadges.normalizer],
     label: 'Normalize Types',
-    npmPackage: '@udecode/plate-normalizers',
+    npmPackage: '@udecode/plate',
     pluginFactory: 'NormalizeTypesPlugin',
     route: getPluginNavItem('forced-layout').href,
   },
@@ -961,7 +954,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: ResetNodePlugin.key,
     badges: [customizerBadges.handler],
     label: 'Reset Node',
-    npmPackage: '@udecode/plate-reset-node',
+    npmPackage: '@udecode/plate',
     pluginFactory: 'ResetNodePlugin',
     pluginOptions: [
       `options: {`,
@@ -977,7 +970,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: SelectOnBackspacePlugin.key,
     badges: [customizerBadges.handler],
     label: 'Select on Backspace',
-    npmPackage: '@udecode/plate-select',
+    npmPackage: '@udecode/plate',
     pluginFactory: 'SelectOnBackspacePlugin',
     pluginOptions: [
       `options: {`,
@@ -996,7 +989,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     conflicts: [TrailingBlockPlugin.key],
     disablePlugins: [TrailingBlockPlugin.key],
     label: 'Single Line',
-    npmPackage: '@udecode/plate-break',
+    npmPackage: '@udecode/plate',
     pluginFactory: 'SingleLinePlugin',
     reactImport: true,
     route: getPluginNavItem('single-line').href,
@@ -1013,7 +1006,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: SoftBreakPlugin.key,
     badges: [customizerBadges.handler],
     label: 'Soft Break',
-    npmPackage: '@udecode/plate-break',
+    npmPackage: '@udecode/plate',
     pluginFactory: 'SoftBreakPlugin',
     pluginOptions: [
       `options: {`,
@@ -1176,7 +1169,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     conflicts: [SingleLinePlugin.key],
     disablePlugins: [SingleLinePlugin.key],
     label: 'Trailing Block',
-    npmPackage: '@udecode/plate-trailing-block',
+    npmPackage: '@udecode/plate',
     pluginFactory: 'TrailingBlockPlugin',
     pluginOptions: [`options: { type: 'p' },`],
     route: getPluginNavItem('trailing-block').href,
@@ -1278,8 +1271,8 @@ export const customizerList = [
       customizerItems[DndPlugin.key],
       customizerItems[EmojiPlugin.key],
       customizerItems[ExitBreakPlugin.key],
-      customizerItems[FixedToolbarPlugin.key],
-      customizerItems[FloatingToolbarPlugin.key],
+      customizerItems['fixed-toolbar'],
+      customizerItems['floating-toolbar'],
       customizerItems[NodeIdPlugin.key],
       customizerItems[NormalizeTypesPlugin.key],
       customizerItems[ResetNodePlugin.key],
@@ -1375,9 +1368,6 @@ export const allPlugins = customizerList.flatMap((group) => group.children);
 
 export const allComponents = uniqBy(
   allPlugins.flatMap((plugin) => {
-    if (!plugin) {
-      console.log(allPlugins);
-    }
     return plugin.components ?? [];
   }),
   'id'

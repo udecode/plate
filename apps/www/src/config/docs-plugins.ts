@@ -44,6 +44,12 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Block Menu',
   },
   {
+    description: 'Show placeholder when a block is empty.',
+    href: '/docs/block-placeholder',
+    label: 'New',
+    title: 'Block Placeholder',
+  },
+  {
     description: 'Select and manipulate entire text blocks.',
     href: '/docs/block-selection',
     title: 'Block Selection',

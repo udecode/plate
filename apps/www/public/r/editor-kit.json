@@ -1,0 +1,46 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "editor-kit",
+  "type": "registry:component",
+  "registryDependencies": [
+    "https://platejs.org/r/ai-kit",
+    "https://platejs.org/r/align-kit",
+    "https://platejs.org/r/autoformat-kit",
+    "https://platejs.org/r/basic-nodes-kit",
+    "https://platejs.org/r/block-menu-kit",
+    "https://platejs.org/r/callout-kit",
+    "https://platejs.org/r/column-kit",
+    "https://platejs.org/r/comment-kit",
+    "https://platejs.org/r/cursor-overlay-kit",
+    "https://platejs.org/r/date-kit",
+    "https://platejs.org/r/dnd-kit",
+    "https://platejs.org/r/docx-kit",
+    "https://platejs.org/r/editing-kit",
+    "https://platejs.org/r/emoji-kit",
+    "https://platejs.org/r/fixed-toolbar-kit",
+    "https://platejs.org/r/floating-toolbar-kit",
+    "https://platejs.org/r/font-kit",
+    "https://platejs.org/r/highlight-kit",
+    "https://platejs.org/r/hr-kit",
+    "https://platejs.org/r/kbd-kit",
+    "https://platejs.org/r/line-height-kit",
+    "https://platejs.org/r/link-kit",
+    "https://platejs.org/r/list-kit",
+    "https://platejs.org/r/markdown-kit",
+    "https://platejs.org/r/math-kit",
+    "https://platejs.org/r/media-kit",
+    "https://platejs.org/r/mention-kit",
+    "https://platejs.org/r/slash-kit",
+    "https://platejs.org/r/suggestion-kit",
+    "https://platejs.org/r/table-kit",
+    "https://platejs.org/r/toc-kit",
+    "https://platejs.org/r/toggle-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/editor-kit.tsx",
+      "content": "'use client';\n\nimport { AIKit } from './ai-kit';\nimport { AlignKit } from './align-kit';\nimport { AutoformatKit } from './autoformat-kit';\nimport { BasicNodesKit } from './basic-nodes-kit';\nimport { BlockMenuKit } from './block-menu-kit';\nimport { BlockPlaceholderKit } from './block-placeholder-kit';\nimport { CalloutKit } from './callout-kit';\nimport { ColumnKit } from './column-kit';\nimport { CommentKit } from './comment-kit';\nimport { CursorOverlayKit } from './cursor-overlay-kit';\nimport { DateKit } from './date-kit';\nimport { DiscussionKit } from './discussion-kit';\nimport { DndKit } from './dnd-kit';\nimport { DocxKit } from './docx-kit';\nimport { EditingKit } from './editing-kit';\nimport { EmojiKit } from './emoji-kit';\nimport { FixedToolbarKit } from './fixed-toolbar-kit';\nimport { FloatingToolbarKit } from './floating-toolbar-kit';\nimport { FontKit } from './font-kit';\nimport { HighlightKit } from './highlight-kit';\nimport { HorizontalRuleKit } from './hr-kit';\nimport { KbdKit } from './kbd-kit';\nimport { LineHeightKit } from './line-height-kit';\nimport { LinkKit } from './link-kit';\nimport { ListKit } from './list-kit';\nimport { MarkdownKit } from './markdown-kit';\nimport { MathKit } from './math-kit';\nimport { MediaKit } from './media-kit';\nimport { MentionKit } from './mention-kit';\nimport { SlashKit } from './slash-kit';\nimport { SuggestionKit } from './suggestion-kit';\nimport { TableKit } from './table-kit';\nimport { TocKit } from './toc-kit';\nimport { ToggleKit } from './toggle-kit';\n\nexport const ViewKit = [\n  // Elements\n  ...BasicNodesKit,\n  ...HorizontalRuleKit,\n  ...DateKit,\n  ...LinkKit,\n  ...MentionKit,\n  ...TableKit,\n  ...ToggleKit,\n  ...TocKit,\n  ...MediaKit,\n  ...MathKit,\n  ...CalloutKit,\n  ...ColumnKit,\n\n  // Marks\n  ...FontKit,\n  ...HighlightKit,\n  ...KbdKit,\n\n  // Block Style\n  ...AlignKit,\n  ...ListKit,\n  ...LineHeightKit,\n\n  // Collaboration\n  ...DiscussionKit,\n  ...CommentKit,\n  ...SuggestionKit,\n];\n\nexport const EditorKit = [\n  ...AIKit,\n  ...ViewKit,\n\n  // Edit-only\n  ...SlashKit,\n  ...AutoformatKit,\n  ...CursorOverlayKit,\n  ...BlockMenuKit,\n  ...DndKit,\n  ...EmojiKit,\n  ...EditingKit,\n\n  // Deserialization\n  ...DocxKit,\n  ...MarkdownKit,\n\n  // UI\n  ...BlockPlaceholderKit,\n  ...FixedToolbarKit,\n  ...FloatingToolbarKit,\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

@@ -6,17 +6,22 @@ import type { RenderElementProps, TElement, Value } from '@udecode/plate';
 
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { Editable, Plate, Slate, withReact } from '@udecode/plate/react';
+import {
+  Editable,
+  Plate,
+  Slate,
+  usePlateEditor,
+  withReact,
+} from '@udecode/plate/react';
 import { createEditor } from 'slate';
 
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 const value = createHugeDocumentValue();
 
 function WithPlate() {
-  const editor = useCreateEditor({
+  const editor = usePlateEditor({
     plugins: [BasicElementsPlugin, BasicMarksPlugin],
     value,
   });

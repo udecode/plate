@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import {
   type SuggestionConfig,
   suggestionPlugin,
-} from '@/registry/components/editor/plugins/suggestion-plugin';
+} from '@/registry/components/editor/plugins/suggestion-kit';
 
 export const SuggestionLineBreak: RenderNodeWrapper<SuggestionConfig> = ({
   api,

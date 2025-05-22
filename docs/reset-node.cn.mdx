@@ -13,12 +13,6 @@ title: 重置节点
 
 </PackageInfo>
 
-## 安装
-
-```bash
-npm install @udecode/plate-reset-node
-```
-
 ## 使用
 
 ```tsx
@@ -27,7 +21,7 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/plate';
-import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
+import { ResetNodePlugin } from '@udecode/plate/react';
 
 const resetBlockTypesCommonRule = {
   types: [BlockquotePlugin.key, TodoListPlugin.key],
@@ -48,12 +42,13 @@ const plugins = [
         {
           ...resetBlockTypesCommonRule,
           hotkey: 'Enter',
-          predicate: isBlockAboveEmpty,
+          predicate: (editor) =>
+            editor.api.isEmpty(editor.selection, { block: true }),
         },
         {
           ...resetBlockTypesCommonRule,
           hotkey: 'Backspace',
-          predicate: isSelectionAtBlockStart,
+          predicate: (editor) => editor.api.isAt({ start: true }),
         },
         {
           ...resetBlockTypesCodeBlockRule,
