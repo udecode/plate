@@ -30,6 +30,11 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
   plugins?: P[];
+  /**
+   * Editor read-only initial state. For dynamic value, use `Plate.readOnly`
+   * prop.
+   */
+  readOnly?: boolean;
   selection?: TSelection;
   /**
    * When `true`, it will normalize the initial `value` passed to the `editor`.
@@ -89,6 +94,7 @@ export const withSlate = <
     autoSelect,
     maxLength,
     plugins = [],
+    readOnly = false,
     rootPlugin,
     selection,
     shouldNormalizeEditor,
@@ -102,8 +108,13 @@ export const withSlate = <
   editor.id = id ?? editor.id ?? nanoid();
   editor.key = editor.key ?? nanoid();
   editor.isFallback = false;
-  editor.prevSelection = null;
-  editor.currentKeyboardEvent = null;
+  editor.dom = {
+    composing: false,
+    currentKeyboardEvent: null,
+    focused: false,
+    prevSelection: null,
+    readOnly,
+  };
 
   editor.getApi = () => editor.api as any;
   editor.getTransforms = () => editor.transforms as any;

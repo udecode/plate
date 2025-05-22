@@ -1,12 +1,12 @@
 import { createSlateEditor } from '@udecode/plate';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { markdownPlugin } from '../../../../../apps/www/src/registry/components/editor/plugins/markdown-plugin';
+import { MarkdownKit } from '../../../../../apps/www/src/registry/components/editor/plugins/markdown-kit';
 import { BaseSuggestionPlugin } from '@udecode/plate-suggestion';
 
 export const createTestEditor = (plugins: any[] = []) =>
   createSlateEditor({
     plugins: [
-      markdownPlugin,
+      ...MarkdownKit,
       BaseSuggestionPlugin,
       BasicMarksPlugin,
       ...plugins,

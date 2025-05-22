@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React from 'react';
 
 import type { EditableProps } from '../../lib';
@@ -5,6 +6,7 @@ import type { PlateEditor } from '../editor/PlateEditor';
 
 import { PlateElement } from '../components';
 import { useNodePath } from '../hooks';
+import { useReadOnly } from '../slate-react';
 import { ElementProvider } from '../stores';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderElement, pluginRenderElement } from './pluginRenderElement';
@@ -25,7 +27,8 @@ export const pipeRenderElement = (
   return function render(props) {
     let element;
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const readOnly = useReadOnly();
+
     const path = useNodePath(props.element)!;
 
     renderElements.some((renderElement) => {
@@ -42,6 +45,7 @@ export const pipeRenderElement = (
     const ctxProps = getRenderNodeProps({
       editor,
       props: { ...props, path } as any,
+      readOnly,
     }) as any;
 
     return (

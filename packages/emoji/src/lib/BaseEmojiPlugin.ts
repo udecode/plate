@@ -29,11 +29,13 @@ export type EmojiInputConfig = PluginConfig<
 
 export const BaseEmojiInputPlugin = createSlatePlugin({
   key: 'emoji_input',
+  editOnly: true,
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
 export const BaseEmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
   key: 'emoji',
+  editOnly: true,
   options: {
     data: DEFAULT_EMOJI_LIBRARY,
     trigger: ':',

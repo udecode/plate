@@ -102,6 +102,7 @@ export type BlockSelectionConfig = PluginConfig<
 
 export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   key: 'blockSelection',
+  editOnly: true,
   handlers: {
     onKeyDown: onKeyDownSelection,
     onMouseDown: ({ api, editor, event, getOptions }) => {
@@ -152,9 +153,6 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     afterEditable: BlockSelectionAfterEditable,
   },
 })
-  .extend(() => ({
-    inject: {},
-  }))
   .extendSelectors<BlockSelectionConfig['selectors']>(({ getOptions }) => ({
     isSelected: (id) => !!id && getOptions().selectedIds!.has(id),
     isSelectingSome: () => getOptions().selectedIds!.size > 0,

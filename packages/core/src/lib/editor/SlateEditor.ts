@@ -28,7 +28,19 @@ import type { CorePlugin } from '../plugins';
 
 export type BaseEditor = EditorBase & {
   key: any;
-  currentKeyboardEvent: KeyboardEventLike | null;
+  /** DOM state */
+  dom: {
+    /** Whether the editor is composing text. */
+    composing: boolean;
+    /** The current keyboard event. */
+    currentKeyboardEvent: KeyboardEventLike | null;
+    /** Whether the editor is focused. */
+    focused: boolean;
+    /** The previous selection. */
+    prevSelection: TRange | null;
+    /** Whether the editor is read-only. */
+    readOnly: boolean;
+  };
   /**
    * Whether the editor is a fallback editor.
    *
@@ -38,7 +50,6 @@ export type BaseEditor = EditorBase & {
   isFallback: boolean;
   pluginList: any[];
   plugins: Record<string, any>;
-  prevSelection: TRange | null;
   setOptions: {
     <C extends AnyPluginConfig>(
       plugin: WithRequiredKey<C>,

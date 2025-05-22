@@ -3,7 +3,7 @@
 import { createSlateEditor } from '@udecode/plate';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsxt } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'www/src/registry/components/editor/plugins/autoformat-plugin';
+import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
 
 import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
 
@@ -70,7 +70,7 @@ describe('when ##space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 

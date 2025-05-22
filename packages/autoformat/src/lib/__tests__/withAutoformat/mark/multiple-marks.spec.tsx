@@ -7,7 +7,7 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { jsxt } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'www/src/registry/components/editor/plugins/autoformat-plugin';
+import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
 
 jsxt;
 
@@ -33,7 +33,7 @@ describe('when inserting ***', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -68,7 +68,7 @@ describe('when inserting ***___', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        autoformatPlugin.configure({
+        AutoformatKit[0].configure({
           options: {
             rules: [
               {

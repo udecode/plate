@@ -3,7 +3,9 @@ import React from 'react';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { type PlateTextProps, PlateText } from '../components/plate-nodes';
+import { useReadOnly } from '../slate-react';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 export type RenderText = (props: PlateTextProps) => React.ReactElement<any>;
@@ -22,6 +24,10 @@ export const pluginRenderText = (
       render: { node },
     } = plugin;
     const { children, text } = nodeProps;
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const readOnly = useReadOnly();
+
+    if (isEditOnly(readOnly, plugin, 'render')) return children;
 
     if (text[plugin.node.type ?? plugin.key]) {
       const Text = node ?? PlateText;
@@ -31,6 +37,7 @@ export const pluginRenderText = (
         editor,
         plugin,
         props: nodeProps as any,
+        readOnly,
       }) as any;
 
       return <Text {...ctxProps}>{children}</Text>;

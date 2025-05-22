@@ -46,6 +46,7 @@ const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
 
 export const DocxPlugin = createSlatePlugin({
   key: 'docx',
+  editOnly: true,
   inject: {
     plugins: {
       [HtmlPlugin.key]: {

@@ -1,12 +1,18 @@
 import React, { type HTMLAttributes } from 'react';
 
-import { useEditorContainerRef, useEditorRef } from '../stores';
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import {
+  useEditorContainerRef,
+  useEditorReadOnly,
+  useEditorRef,
+} from '../stores';
 
 export const PlateContainer = ({
   children,
   ...props
 }: HTMLAttributes<HTMLDivElement>) => {
   const editor = useEditorRef();
+  const readOnly = useEditorReadOnly();
 
   const containerRef = useEditorContainerRef();
 
@@ -20,6 +26,8 @@ export const PlateContainer = ({
   );
 
   editor.pluginList.forEach((plugin) => {
+    if (isEditOnly(readOnly, plugin, 'render')) return;
+
     const {
       render: {
         afterContainer: AfterContainer,

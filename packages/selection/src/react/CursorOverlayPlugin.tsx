@@ -36,6 +36,9 @@ const getRemoveCursorHandler =
 
 export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
   key: 'cursorOverlay',
+  editOnly: {
+    render: false,
+  },
   options: { cursors: {} },
 })
   .extendApi<CursorOverlayConfig['api']['cursorOverlay']>(

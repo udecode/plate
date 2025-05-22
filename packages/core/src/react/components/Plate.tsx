@@ -48,7 +48,7 @@ function PlateInner({
 }) {
   return (
     <PlateStoreProvider
-      readOnly={readOnly}
+      readOnly={readOnly ?? editor?.dom.readOnly}
       onChange={onChange}
       onSelectionChange={onSelectionChange}
       onValueChange={onValueChange}

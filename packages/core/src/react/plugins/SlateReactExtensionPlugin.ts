@@ -9,7 +9,7 @@ export const SlateReactExtensionPlugin = toPlatePlugin(SlateExtensionPlugin, {
       // React 16.x needs this event to be persistented due to it's event pooling implementation.
       // https://reactjs.org/docs/legacy-event-pooling.html
       event.persist();
-      editor.currentKeyboardEvent = event;
+      editor.dom.currentKeyboardEvent = event;
     },
   },
 })

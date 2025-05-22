@@ -37,8 +37,8 @@ export const withCaption: OverrideEditor<CaptionConfig> = ({
           } as TRange | null;
 
           if (
-            editor.currentKeyboardEvent &&
-            isHotkey('up', editor.currentKeyboardEvent) &&
+            editor.dom.currentKeyboardEvent &&
+            isHotkey('up', editor.dom.currentKeyboardEvent) &&
             newSelection &&
             RangeApi.isCollapsed(newSelection)
           ) {

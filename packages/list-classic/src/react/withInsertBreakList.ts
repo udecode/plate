@@ -1,10 +1,7 @@
-import type { ResetNodeConfig } from '@udecode/plate-reset-node';
+import type { ResetNodeConfig } from '@udecode/plate';
 
 import { BaseParagraphPlugin, createTSlatePlugin } from '@udecode/plate';
-import {
-  onKeyDownResetNode,
-  SIMULATE_BACKSPACE,
-} from '@udecode/plate-reset-node/react';
+import { onKeyDownResetNode, SIMULATE_BACKSPACE } from '@udecode/plate/react';
 import { type OverrideEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import { type ListConfig, BaseListItemPlugin } from '../lib/BaseListPlugin';

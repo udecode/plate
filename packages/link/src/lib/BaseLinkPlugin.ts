@@ -4,11 +4,9 @@ import {
   createTSlatePlugin,
   getEditorPlugin,
   isUrl,
-} from '@udecode/plate';
-import {
   RemoveEmptyNodesPlugin,
   withRemoveEmptyNodes,
-} from '@udecode/plate-normalizers';
+} from '@udecode/plate';
 
 import type { TLinkElement } from './types';
 

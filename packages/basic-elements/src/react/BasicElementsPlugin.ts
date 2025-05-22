@@ -12,6 +12,5 @@ import { createPlatePlugin, ParagraphPlugin } from '@udecode/plate/react';
  * - Paragraph
  */
 export const BasicElementsPlugin = createPlatePlugin({
-  key: 'basicElements',
   plugins: [BlockquotePlugin, CodeBlockPlugin, HeadingPlugin, ParagraphPlugin],
 });

@@ -16,6 +16,7 @@ export type AutoformatConfig = PluginConfig<
 /** @see {@link withAutoformat} */
 export const BaseAutoformatPlugin = createTSlatePlugin<AutoformatConfig>({
   key: 'autoformat',
+  editOnly: true,
   options: {
     rules: [],
   },

@@ -7,7 +7,7 @@ import {
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
 import { jsxt } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'www/src/registry/components/editor/plugins/autoformat-plugin';
+import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
 
 jsxt;
 
@@ -33,7 +33,7 @@ describe('when ``` at block start', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -67,7 +67,7 @@ describe('when ``` at block start, but customising with query we get the most re
 
     const codeEditor = createSlateEditor({
       plugins: [
-        autoformatPlugin.configure({
+        AutoformatKit[0].configure({
           options: {
             rules: [
               {
@@ -134,7 +134,7 @@ describe('when ```', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 

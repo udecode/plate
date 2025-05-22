@@ -3,6 +3,7 @@ import juice from 'juice';
 
 export const JuicePlugin = createSlatePlugin({
   key: 'juice',
+  editOnly: true,
   inject: {
     plugins: {
       [HtmlPlugin.key]: {

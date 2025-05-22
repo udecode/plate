@@ -89,7 +89,7 @@ export const pluginInjectNodeProps = (
 
   let newProps: GetInjectNodePropsReturnType = {};
 
-  if (element && nodeKey) {
+  if (element && nodeKey && nodeValue) {
     newProps.className = `slate-${nodeKey}-${nodeValue}`;
   }
   if (classNames?.[nodeValue] || transformClassName) {

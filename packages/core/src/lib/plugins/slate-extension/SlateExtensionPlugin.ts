@@ -40,9 +40,9 @@ export const SlateExtensionPlugin = createSlatePlugin({
           apply(operation) {
             if (operation.type === 'set_selection') {
               const { properties } = operation;
-              editor.prevSelection = properties as TRange | null;
+              editor.dom.prevSelection = properties as TRange | null;
               apply(operation);
-              editor.currentKeyboardEvent = null;
+              editor.dom.currentKeyboardEvent = null;
 
               return;
             }

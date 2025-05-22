@@ -16,7 +16,7 @@ import {
 } from '@udecode/plate-math/react';
 jsxt;
 
-import { markdownPlugin } from '../../../../../../apps/www/src/registry/components/editor/plugins/markdown-plugin';
+import { MarkdownKit } from '../../../../../../apps/www/src/registry/components/editor/plugins/markdown-kit';
 import { createSlateEditor, SlateEditor } from '@udecode/plate';
 import { AIChatPlugin, AIPlugin } from '../../../react';
 import { BasicMarksPlugin } from '../../../../../basic-marks/src/react/BasicMarksPlugin';
@@ -26,7 +26,7 @@ export const defaultPlugins = [
   BasicMarksPlugin,
   IndentPlugin,
   ListPlugin,
-  markdownPlugin,
+  ...MarkdownKit,
   EquationPlugin,
   InlineEquationPlugin,
   AIPlugin,

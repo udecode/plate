@@ -31,6 +31,7 @@ type OpenId = (string & {}) | typeof BLOCK_CONTEXT_MENU_ID;
 
 export const BlockMenuPlugin = createTPlatePlugin<BlockMenuConfig>({
   key: 'blockMenu',
+  editOnly: true,
   options: {
     openId: null,
     position: {

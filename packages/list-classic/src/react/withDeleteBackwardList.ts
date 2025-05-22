@@ -5,11 +5,8 @@ import {
   deleteMerge,
   PathApi,
 } from '@udecode/plate';
-import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
-import {
-  onKeyDownResetNode,
-  SIMULATE_BACKSPACE,
-} from '@udecode/plate-reset-node/react';
+import { BaseResetNodePlugin } from '@udecode/plate';
+import { onKeyDownResetNode, SIMULATE_BACKSPACE } from '@udecode/plate/react';
 import { type OverrideEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import type { ListConfig } from '../lib/BaseListPlugin';

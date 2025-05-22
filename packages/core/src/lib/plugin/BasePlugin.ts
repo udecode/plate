@@ -173,6 +173,25 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   /** Transforms (state-modifying operations) that can be applied to the editor. */
   transforms: InferTransforms<C>;
   /**
+   * Configures edit-only behavior for various plugin functionalities.
+   *
+   * - If `true` (boolean):
+   *
+   *   - `render`, `handlers`, and `inject.nodeProps` are active only when the
+   *       editor is NOT read-only.
+   * - If an object ({@link EditOnlyConfig}): Allows fine-grained control:
+   *
+   *   - `render`: Edit-only by default (true if not specified). Set to `false` to
+   *       always be active.
+   *   - `handlers`: Edit-only by default (true if not specified). Set to `false` to
+   *       always be active.
+   *   - `inject` (for `inject.nodeProps`): Edit-only by default (true if not
+   *       specified). Set to `false` to always be active.
+   *   - `normalizeInitialValue`: NOT edit-only by default (false if not specified).
+   *       Set to `true` to make it edit-only.
+   */
+  editOnly?: EditOnlyConfig | boolean;
+  /**
    * Enables or disables the plugin. Used by Plate to determine if the plugin
    * should be used.
    */
@@ -314,6 +333,36 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 };
 
 // -----------------------------------------------------------------------------
+
+export type EditOnlyConfig = {
+  /**
+   * If true, `handlers` are only active when the editor is not read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  handlers?: boolean;
+  /**
+   * If true, `inject.nodeProps` is only active when the editor is not
+   * read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  inject?: boolean;
+  /**
+   * If true, `normalizeInitialValue` is only called when the editor is not
+   * read-only.
+   *
+   * @default false (This is an exception. It's not edit-only by default, even if `editOnly` is true or an object, unless explicitly set to true here).
+   */
+  normalizeInitialValue?: boolean;
+  /**
+   * If true, `render` functions are only active when the editor is not
+   * read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  render?: boolean;
+};
 
 export type ExtendConfig<
   C extends PluginConfig,

@@ -18,11 +18,13 @@ export interface TSlashInputElement extends TElement {}
 
 export const BaseSlashInputPlugin = createSlatePlugin({
   key: 'slash_input',
+  editOnly: true,
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
 export const BaseSlashPlugin = createTSlatePlugin<SlashConfig>({
   key: 'slash_command',
+  editOnly: true,
   options: {
     trigger: '/',
     triggerPreviousCharPattern: /^\s?$/,

@@ -39,6 +39,7 @@ export type DndConfig = PluginConfig<
 
 export const DndPlugin = createTPlatePlugin<DndConfig>({
   key: 'dnd',
+  editOnly: true,
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
       editor.setOption(plugin, 'isDragging', false);
