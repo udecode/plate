@@ -7,7 +7,7 @@ import type {
   DropdownMenuProps,
 } from '@radix-ui/react-dropdown-menu';
 
-import { cn, useComposedRef } from '@udecode/cn';
+import { useComposedRef } from '@udecode/cn';
 import {
   useColorDropdownMenu,
   useColorDropdownMenuState,
@@ -30,6 +30,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 

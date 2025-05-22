@@ -1559,14 +1559,14 @@ export const Index: Record<string, any> = {
     name: "editor-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/ai-kit","https://platejs.org/r/align-kit","https://platejs.org/r/autoformat-kit","https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/block-menu-kit","https://platejs.org/r/callout-kit","https://platejs.org/r/column-kit","https://platejs.org/r/comment-kit","https://platejs.org/r/cursor-overlay-kit","https://platejs.org/r/date-kit","https://platejs.org/r/dnd-kit","https://platejs.org/r/docx-kit","https://platejs.org/r/editing-kit","https://platejs.org/r/emoji-kit","https://platejs.org/r/fixed-toolbar-kit","https://platejs.org/r/floating-toolbar-kit","https://platejs.org/r/font-kit","https://platejs.org/r/highlight-kit","https://platejs.org/r/hr-kit","https://platejs.org/r/kbd-kit","https://platejs.org/r/line-height-kit","https://platejs.org/r/link-kit","https://platejs.org/r/list-kit","https://platejs.org/r/markdown-kit","https://platejs.org/r/math-kit","https://platejs.org/r/media-kit","https://platejs.org/r/mention-kit","https://platejs.org/r/slash-kit","https://platejs.org/r/suggestion-kit","https://platejs.org/r/table-kit","https://platejs.org/r/toc-kit","https://platejs.org/r/toggle-kit"],
+    registryDependencies: ["https://platejs.org/r/editor","https://platejs.org/r/ai-kit","https://platejs.org/r/align-kit","https://platejs.org/r/autoformat-kit","https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/block-menu-kit","https://platejs.org/r/callout-kit","https://platejs.org/r/column-kit","https://platejs.org/r/comment-kit","https://platejs.org/r/cursor-overlay-kit","https://platejs.org/r/date-kit","https://platejs.org/r/dnd-kit","https://platejs.org/r/docx-kit","https://platejs.org/r/editing-kit","https://platejs.org/r/emoji-kit","https://platejs.org/r/fixed-toolbar-kit","https://platejs.org/r/floating-toolbar-kit","https://platejs.org/r/font-kit","https://platejs.org/r/highlight-kit","https://platejs.org/r/hr-kit","https://platejs.org/r/kbd-kit","https://platejs.org/r/line-height-kit","https://platejs.org/r/link-kit","https://platejs.org/r/list-kit","https://platejs.org/r/markdown-kit","https://platejs.org/r/math-kit","https://platejs.org/r/media-kit","https://platejs.org/r/mention-kit","https://platejs.org/r/slash-kit","https://platejs.org/r/suggestion-kit","https://platejs.org/r/table-kit","https://platejs.org/r/toc-kit","https://platejs.org/r/toggle-kit"],
     files: [{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
+      path: "src/registry/components/editor/editor-kit.tsx",
       type: "registry:component",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/components/editor/editor-kit")
+      const mod = await import("@/registry/components/editor/editor-kit.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -2430,23 +2430,6 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
-  "use-create-editor": {
-    name: "use-create-editor",
-    description: "",
-    type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/ai-node","https://platejs.org/r/blockquote-node","https://platejs.org/r/callout-node","https://platejs.org/r/code-block-node","https://platejs.org/r/code-node","https://platejs.org/r/column-node","https://platejs.org/r/comment-node","https://platejs.org/r/date-node","https://platejs.org/r/emoji-node","https://platejs.org/r/equation-node","https://platejs.org/r/heading-node","https://platejs.org/r/highlight-node","https://platejs.org/r/hr-node","https://platejs.org/r/equation-node","https://platejs.org/r/kbd-node","https://platejs.org/r/link-node","https://platejs.org/r/media-audio-node","https://platejs.org/r/media-embed-node","https://platejs.org/r/media-image-node","https://platejs.org/r/media-file-node","https://platejs.org/r/media-placeholder-node","https://platejs.org/r/media-video-node","https://platejs.org/r/mention-node","https://platejs.org/r/paragraph-node","https://platejs.org/r/slash-node","https://platejs.org/r/suggestion-node","https://platejs.org/r/table-node","https://platejs.org/r/toc-node","https://platejs.org/r/toggle-node","https://platejs.org/r/editor-kit"],
-    files: [{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:component",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/components/editor/use-create-editor.ts")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
   "transforms": {
     name: "transforms",
     description: "",
@@ -2502,19 +2485,19 @@ export const Index: Record<string, any> = {
     name: "editor-ai",
     description: "An AI editor",
     type: "registry:block",
-    registryDependencies: ["https://platejs.org/r/plate-ui","https://platejs.org/r/ai-api","https://platejs.org/r/media-uploadthing-api","https://platejs.org/r/plate-types","https://platejs.org/r/editor-kit","https://platejs.org/r/copilot-kit","https://platejs.org/r/floating-toolbar-kit","https://platejs.org/r/fixed-toolbar-kit","https://platejs.org/r/ai-menu","https://platejs.org/r/ghost-text","https://platejs.org/r/block-discussion","https://platejs.org/r/cursor-overlay","https://platejs.org/r/editor","https://platejs.org/r/block-context-menu","https://platejs.org/r/ai-node","https://platejs.org/r/blockquote-node","https://platejs.org/r/block-draggable","https://platejs.org/r/block-placeholder-kit","https://platejs.org/r/code-block-node","https://platejs.org/r/code-node","https://platejs.org/r/column-node","https://platejs.org/r/comment-node","https://platejs.org/r/callout-node","https://platejs.org/r/suggestion-node","https://platejs.org/r/date-node","https://platejs.org/r/equation-node","https://platejs.org/r/emoji-node","https://platejs.org/r/excalidraw-node","https://platejs.org/r/heading-node","https://platejs.org/r/highlight-node","https://platejs.org/r/hr-node","https://platejs.org/r/kbd-node","https://platejs.org/r/link-node","https://platejs.org/r/media-audio-node","https://platejs.org/r/media-embed-node","https://platejs.org/r/media-image-node","https://platejs.org/r/media-file-node","https://platejs.org/r/media-placeholder-node","https://platejs.org/r/media-video-node","https://platejs.org/r/mention-node","https://platejs.org/r/paragraph-node","https://platejs.org/r/slash-node","https://platejs.org/r/table-node","https://platejs.org/r/toc-node","https://platejs.org/r/toggle-node"],
+    registryDependencies: ["https://platejs.org/r/plate-ui","https://platejs.org/r/copilot-kit","https://platejs.org/r/media-uploadthing-api","https://platejs.org/r/plate-types","https://platejs.org/r/editor","https://platejs.org/r/ai-kit","https://platejs.org/r/align-kit","https://platejs.org/r/autoformat-kit","https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/block-menu-kit","https://platejs.org/r/callout-kit","https://platejs.org/r/column-kit","https://platejs.org/r/comment-kit","https://platejs.org/r/cursor-overlay-kit","https://platejs.org/r/date-kit","https://platejs.org/r/dnd-kit","https://platejs.org/r/docx-kit","https://platejs.org/r/editing-kit","https://platejs.org/r/emoji-kit","https://platejs.org/r/fixed-toolbar-kit","https://platejs.org/r/floating-toolbar-kit","https://platejs.org/r/font-kit","https://platejs.org/r/highlight-kit","https://platejs.org/r/hr-kit","https://platejs.org/r/kbd-kit","https://platejs.org/r/line-height-kit","https://platejs.org/r/link-kit","https://platejs.org/r/list-kit","https://platejs.org/r/markdown-kit","https://platejs.org/r/math-kit","https://platejs.org/r/media-kit","https://platejs.org/r/mention-kit","https://platejs.org/r/slash-kit","https://platejs.org/r/suggestion-kit","https://platejs.org/r/table-kit","https://platejs.org/r/toc-kit","https://platejs.org/r/toggle-kit"],
     files: [{
       path: "src/registry/blocks/editor-ai/page.tsx",
       type: "registry:page",
       target: "app/editor/page.tsx"
     },{
-      path: "src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
+      path: "src/registry/components/editor/plate-editor-ai.tsx",
       type: "registry:component",
-      target: ""
+      target: "components/editor/plate-editor.tsx"
     },{
-      path: "src/registry/blocks/editor-ai/components/editor/use-create-editor.ts",
+      path: "src/registry/components/editor/editor-kit-ai.tsx",
       type: "registry:component",
-      target: ""
+      target: "components/editor/editor-kit.tsx"
     },{
       path: "src/registry/components/editor/settings.tsx",
       type: "registry:component",
@@ -2548,19 +2531,15 @@ export const Index: Record<string, any> = {
     name: "editor-basic",
     description: "A basic editor",
     type: "registry:block",
-    registryDependencies: ["https://platejs.org/r/plate-ui","https://platejs.org/r/editor"],
+    registryDependencies: ["https://platejs.org/r/plate-ui","https://platejs.org/r/editor","https://platejs.org/r/basic-nodes-kit"],
     files: [{
       path: "src/registry/blocks/editor-basic/page.tsx",
       type: "registry:page",
       target: "app/editor/page.tsx"
     },{
-      path: "src/registry/blocks/editor-basic/components/editor/plate-editor.tsx",
+      path: "src/registry/components/editor/plate-editor-basic.tsx",
       type: "registry:component",
-      target: ""
-    },{
-      path: "src/registry/blocks/editor-basic/components/editor/use-create-editor.ts",
-      type: "registry:component",
-      target: ""
+      target: "components/editor/plate-editor.tsx"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/blocks/editor-basic/page.tsx")
@@ -2573,7 +2552,7 @@ export const Index: Record<string, any> = {
     name: "slate-to-html",
     description: "",
     type: "registry:block",
-    registryDependencies: ["https://platejs.org/r/plate-ui"],
+    registryDependencies: ["https://platejs.org/r/plate-ui","https://platejs.org/r/editor-kit","button"],
     files: [{
       path: "src/registry/blocks/slate-to-html/page.tsx",
       type: "registry:page",
@@ -2585,6 +2564,82 @@ export const Index: Record<string, any> = {
     },{
       path: "src/registry/lib/create-html-document.ts",
       type: "registry:lib",
+      target: ""
+    },{
+      path: "src/registry/examples/values/align-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/basic-elements-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/basic-marks-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/column-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/comments-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/date-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/equation-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/font-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/highlight-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/horizontal-rule-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/indent-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/kbd-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/line-height-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/link-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/list-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/media-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/mention-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/table-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/toc-value.tsx",
+      type: "registry:example",
       target: ""
     }],
     component: null,
@@ -2684,21 +2739,13 @@ export const Index: Record<string, any> = {
     name: "copilot-demo",
     description: "Renders AI ghost text suggestions at the cursor position.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/copilot-kit","https://platejs.org/r/editor","https://platejs.org/r/use-create-editor"],
+    registryDependencies: ["https://platejs.org/r/copilot-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/copilot-demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/copilot-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -2747,7 +2794,7 @@ export const Index: Record<string, any> = {
     name: "hundreds-blocks-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor"],
+    registryDependencies: ["https://platejs.org/r/editor"],
     files: [{
       path: "src/registry/examples/hundreds-blocks-demo.tsx",
       type: "registry:example",
@@ -2768,7 +2815,7 @@ export const Index: Record<string, any> = {
     name: "hundreds-editors-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor"],
+    registryDependencies: ["https://platejs.org/r/editor"],
     files: [{
       path: "src/registry/examples/hundreds-editors-demo.tsx",
       type: "registry:example",
@@ -2789,9 +2836,21 @@ export const Index: Record<string, any> = {
     name: "multiple-editors-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor","https://platejs.org/r/fixed-toolbar","https://platejs.org/r/turn-into-toolbar-button","https://platejs.org/r/delete-kit","separator"],
+    registryDependencies: ["separator","https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/media-kit","https://platejs.org/r/editor","https://platejs.org/r/fixed-toolbar","https://platejs.org/r/turn-into-toolbar-button"],
     files: [{
       path: "src/registry/examples/multiple-editors-demo.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/basic-elements-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/basic-marks-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/media-value.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -2806,7 +2865,7 @@ export const Index: Record<string, any> = {
     name: "version-history-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","button"],
+    registryDependencies: ["button"],
     files: [{
       path: "src/registry/examples/version-history-demo.tsx",
       type: "registry:example",
@@ -2823,7 +2882,7 @@ export const Index: Record<string, any> = {
     name: "preview-markdown-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor"],
+    registryDependencies: ["https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/editor"],
     files: [{
       path: "src/registry/examples/preview-markdown-demo.tsx",
       type: "registry:example",
@@ -2844,7 +2903,7 @@ export const Index: Record<string, any> = {
     name: "markdown-to-slate-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/use-debounce","https://platejs.org/r/editor"],
+    registryDependencies: ["https://platejs.org/r/editor-kit","https://platejs.org/r/use-debounce"],
     files: [{
       path: "src/registry/examples/markdown-to-slate-demo.tsx",
       type: "registry:example",
@@ -2861,7 +2920,7 @@ export const Index: Record<string, any> = {
     name: "collaboration-demo",
     description: "Real-time collaboration with cursors and selections.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/use-mounted","https://platejs.org/r/remote-cursor-overlay","button","input"],
+    registryDependencies: ["https://platejs.org/r/use-mounted","https://platejs.org/r/remote-cursor-overlay","button","input"],
     files: [{
       path: "src/registry/examples/collaboration-demo.tsx",
       type: "registry:example",
@@ -2895,7 +2954,7 @@ export const Index: Record<string, any> = {
     name: "tabbable-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor","https://platejs.org/r/use-create-editor"],
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/tabbable-demo.tsx",
       type: "registry:example",
@@ -2916,21 +2975,13 @@ export const Index: Record<string, any> = {
     name: "table-nomerge-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor","https://platejs.org/r/use-create-editor"],
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/table-nomerge-demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/table-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -2945,21 +2996,13 @@ export const Index: Record<string, any> = {
     name: "excalidraw-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: [],
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/excalidraw-demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/excalidraw-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -2974,21 +3017,13 @@ export const Index: Record<string, any> = {
     name: "single-line-demo",
     description: "Restrict the editor to a single block.",
     type: "registry:example",
-    registryDependencies: undefined,
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/single-line-demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/single-line-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3003,7 +3038,7 @@ export const Index: Record<string, any> = {
     name: "editable-voids-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor","https://platejs.org/r/editor-kit","input","label","radio-group"],
+    registryDependencies: ["https://platejs.org/r/editor-kit","input","label","radio-group"],
     files: [{
       path: "src/registry/examples/editable-voids-demo.tsx",
       type: "registry:example",
@@ -3024,29 +3059,13 @@ export const Index: Record<string, any> = {
     name: "list-classic-demo",
     description: "List creation and formatting.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/autoformat-classic-kit","https://platejs.org/r/list-classic-node"],
+    registryDependencies: ["https://platejs.org/r/autoformat-classic-kit","https://platejs.org/r/fixed-toolbar-classic-kit","https://platejs.org/r/editor","https://platejs.org/r/list-classic-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/list-classic-demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/list-classic-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/fixed-toolbar-classic-kit.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/ui/fixed-toolbar-classic-buttons.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3061,21 +3080,13 @@ export const Index: Record<string, any> = {
     name: "find-replace-demo",
     description: "Find and replace functionality in text.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/fixed-toolbar","input","https://platejs.org/r/search-highlight-node"],
+    registryDependencies: ["https://platejs.org/r/fixed-toolbar","input","https://platejs.org/r/search-highlight-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/find-replace-demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/find-replace-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3090,7 +3101,7 @@ export const Index: Record<string, any> = {
     name: "ai-demo",
     description: "AI menu with commands, streaming responses in a preview or directly into the editor.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor-kit","https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/block-selection-kit","https://platejs.org/r/list-kit","https://platejs.org/r/link-kit","https://platejs.org/r/ai-node"],
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3101,14 +3112,6 @@ export const Index: Record<string, any> = {
       target: ""
     },{
       path: "src/registry/examples/values/ai-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3123,21 +3126,13 @@ export const Index: Record<string, any> = {
     name: "align-demo",
     description: "Text alignment controls for blocks.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/align-kit"],
+    registryDependencies: ["https://platejs.org/r/align-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/align-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3152,21 +3147,13 @@ export const Index: Record<string, any> = {
     name: "autoformat-demo",
     description: "Apply formatting automatically using shortcodes.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/autoformat-kit"],
+    registryDependencies: ["https://platejs.org/r/autoformat-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/autoformat-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3181,21 +3168,13 @@ export const Index: Record<string, any> = {
     name: "basic-elements-demo",
     description: "Basic block elements like headings, quotes, and code blocks.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/blockquote-node","https://platejs.org/r/code-block-node","https://platejs.org/r/heading-node","https://platejs.org/r/paragraph-node"],
+    registryDependencies: ["https://platejs.org/r/basic-elements-kit","https://platejs.org/r/blockquote-node","https://platejs.org/r/code-block-node","https://platejs.org/r/heading-node","https://platejs.org/r/paragraph-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/basic-elements-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3210,21 +3189,13 @@ export const Index: Record<string, any> = {
     name: "basic-marks-demo",
     description: "Basic text formatting marks like bold, italic, and underline.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/code-node"],
+    registryDependencies: ["https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/code-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/basic-marks-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3239,7 +3210,7 @@ export const Index: Record<string, any> = {
     name: "basic-nodes-demo",
     description: "Basic block elements and text marks.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/basic-nodes-kit"],
+    registryDependencies: ["https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3256,14 +3227,6 @@ export const Index: Record<string, any> = {
       path: "src/registry/examples/values/basic-marks-value.tsx",
       type: "registry:example",
       target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
-      type: "registry:example",
-      target: ""
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/examples/demo.tsx")
@@ -3276,21 +3239,13 @@ export const Index: Record<string, any> = {
     name: "block-menu-demo",
     description: "Block-level context menu with formatting options.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/block-menu-kit"],
+    registryDependencies: ["https://platejs.org/r/block-menu-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/block-menu-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3305,21 +3260,13 @@ export const Index: Record<string, any> = {
     name: "block-selection-demo",
     description: "Visual block selection with keyboard support.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/block-selection-kit"],
+    registryDependencies: ["https://platejs.org/r/block-selection-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/block-selection-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3334,21 +3281,13 @@ export const Index: Record<string, any> = {
     name: "column-demo",
     description: "Column layout.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/column-node"],
+    registryDependencies: ["https://platejs.org/r/column-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/column-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3363,21 +3302,13 @@ export const Index: Record<string, any> = {
     name: "comments-demo",
     description: "Adding and displaying comments within content.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/comment-kit","https://platejs.org/r/discussion-kit","https://platejs.org/r/comment-node"],
+    registryDependencies: ["https://platejs.org/r/comment-kit","https://platejs.org/r/discussion-kit","https://platejs.org/r/comment-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/comments-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3392,21 +3323,13 @@ export const Index: Record<string, any> = {
     name: "cursor-overlay-demo",
     description: "Visual indicator for cursor position within the editor.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/cursor-overlay-kit"],
+    registryDependencies: ["https://platejs.org/r/cursor-overlay-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/cursor-overlay-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3421,21 +3344,13 @@ export const Index: Record<string, any> = {
     name: "date-demo",
     description: "Inline date elements with calendar selection interface.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/date-node"],
+    registryDependencies: ["https://platejs.org/r/date-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/date-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3450,21 +3365,13 @@ export const Index: Record<string, any> = {
     name: "dnd-demo",
     description: "Implements draggable functionality for editor blocks, including drag handles and drop indicators.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/dnd-kit"],
+    registryDependencies: ["https://platejs.org/r/dnd-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/dnd-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3479,21 +3386,13 @@ export const Index: Record<string, any> = {
     name: "emoji-demo",
     description: "Emoji insertion via toolbar or colon-triggered combobox.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/emoji-node"],
+    registryDependencies: ["https://platejs.org/r/emoji-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/emoji-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3508,21 +3407,13 @@ export const Index: Record<string, any> = {
     name: "equation-demo",
     description: "LaTeX equations with inline and block formats.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/equation-node","https://platejs.org/r/math-kit"],
+    registryDependencies: ["https://platejs.org/r/equation-node","https://platejs.org/r/math-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/equation-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3537,21 +3428,13 @@ export const Index: Record<string, any> = {
     name: "exit-break-demo",
     description: "Exit a large block using a shortcut.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/exit-break-kit"],
+    registryDependencies: ["https://platejs.org/r/exit-break-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/exit-break-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3566,21 +3449,13 @@ export const Index: Record<string, any> = {
     name: "floating-toolbar-demo",
     description: "Floating toolbar with text formatting and AI assistance options.",
     type: "registry:example",
-    registryDependencies: [],
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/floating-toolbar-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3595,21 +3470,13 @@ export const Index: Record<string, any> = {
     name: "font-demo",
     description: "Color picker for text and background colors.",
     type: "registry:example",
-    registryDependencies: [],
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/font-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3624,21 +3491,13 @@ export const Index: Record<string, any> = {
     name: "highlight-demo",
     description: "Text highlighting with customizable colors.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/highlight-node"],
+    registryDependencies: ["https://platejs.org/r/highlight-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/highlight-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3653,21 +3512,13 @@ export const Index: Record<string, any> = {
     name: "horizontal-rule-demo",
     description: "Horizontal lines for visually separating content sections.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/hr-node"],
+    registryDependencies: ["https://platejs.org/r/hr-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/horizontal-rule-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3682,21 +3533,13 @@ export const Index: Record<string, any> = {
     name: "indent-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/list-kit"],
+    registryDependencies: ["https://platejs.org/r/list-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/indent-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3711,21 +3554,13 @@ export const Index: Record<string, any> = {
     name: "list-demo",
     description: "Turn any block into a list item.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/list-kit"],
+    registryDependencies: ["https://platejs.org/r/list-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/list-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3740,21 +3575,13 @@ export const Index: Record<string, any> = {
     name: "kbd-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/kbd-node"],
+    registryDependencies: ["https://platejs.org/r/kbd-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/kbd-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3769,21 +3596,13 @@ export const Index: Record<string, any> = {
     name: "line-height-demo",
     description: "Line height adjustment controls.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/line-height-kit"],
+    registryDependencies: ["https://platejs.org/r/line-height-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/line-height-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3798,21 +3617,13 @@ export const Index: Record<string, any> = {
     name: "link-demo",
     description: "Hyperlinks with toolbar insertion and URL pasting support.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/link-kit","https://platejs.org/r/link-node"],
+    registryDependencies: ["https://platejs.org/r/link-kit","https://platejs.org/r/link-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/link-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3827,21 +3638,13 @@ export const Index: Record<string, any> = {
     name: "media-demo",
     description: "Media embedding and management.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/media-kit","https://platejs.org/r/media-audio-node","https://platejs.org/r/media-embed-node","https://platejs.org/r/media-file-node","https://platejs.org/r/media-image-node","https://platejs.org/r/media-placeholder-node","https://platejs.org/r/media-video-node"],
+    registryDependencies: ["https://platejs.org/r/media-kit","https://platejs.org/r/media-audio-node","https://platejs.org/r/media-embed-node","https://platejs.org/r/media-file-node","https://platejs.org/r/media-image-node","https://platejs.org/r/media-placeholder-node","https://platejs.org/r/media-video-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/media-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3856,21 +3659,13 @@ export const Index: Record<string, any> = {
     name: "mention-demo",
     description: "Mention functionality for referencing users or entities.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/mention-kit","https://platejs.org/r/mention-node"],
+    registryDependencies: ["https://platejs.org/r/mention-kit","https://platejs.org/r/mention-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/mention-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3885,17 +3680,9 @@ export const Index: Record<string, any> = {
     name: "block-placeholder-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/block-placeholder-kit"],
+    registryDependencies: ["https://platejs.org/r/block-placeholder-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3910,17 +3697,9 @@ export const Index: Record<string, any> = {
     name: "reset-node-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/reset-block-type-kit"],
+    registryDependencies: ["https://platejs.org/r/reset-block-type-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3935,21 +3714,13 @@ export const Index: Record<string, any> = {
     name: "csv-demo",
     description: "Copy paste from CSV to Slate.",
     type: "registry:example",
-    registryDependencies: undefined,
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/deserialize-csv-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3964,21 +3735,13 @@ export const Index: Record<string, any> = {
     name: "docx-demo",
     description: "Copy paste from DOCX to Slate.",
     type: "registry:example",
-    registryDependencies: undefined,
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/deserialize-docx-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3993,21 +3756,13 @@ export const Index: Record<string, any> = {
     name: "html-demo",
     description: "Copy paste from HTML to Slate.",
     type: "registry:example",
-    registryDependencies: undefined,
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/deserialize-html-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -4022,21 +3777,13 @@ export const Index: Record<string, any> = {
     name: "markdown-demo",
     description: "Copy paste from Markdown to Slate.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/markdown-kit"],
+    registryDependencies: ["https://platejs.org/r/markdown-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/deserialize-md-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -4051,21 +3798,13 @@ export const Index: Record<string, any> = {
     name: "slash-command-demo",
     description: "Slash command menu for quick insertion of various content types.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/slash-node"],
+    registryDependencies: ["https://platejs.org/r/slash-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/slash-command-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -4080,21 +3819,13 @@ export const Index: Record<string, any> = {
     name: "soft-break-demo",
     description: "Insert line breaks within a block of text without starting a new block.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/soft-break-kit"],
+    registryDependencies: ["https://platejs.org/r/soft-break-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/soft-break-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -4109,21 +3840,13 @@ export const Index: Record<string, any> = {
     name: "table-demo",
     description: "Customizable tables with resizable columns and row merging options.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/table-kit","https://platejs.org/r/table-node"],
+    registryDependencies: ["https://platejs.org/r/table-kit","https://platejs.org/r/table-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/table-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -4138,21 +3861,13 @@ export const Index: Record<string, any> = {
     name: "toc-demo",
     description: "Dynamic TOC with in-document element for easy navigation.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/toc-kit","https://platejs.org/r/toc-node"],
+    registryDependencies: ["https://platejs.org/r/toc-kit","https://platejs.org/r/toc-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
       path: "src/registry/examples/values/toc-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -4167,17 +3882,9 @@ export const Index: Record<string, any> = {
     name: "toggle-demo",
     description: "Collapsible content blocks.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/toggle-node"],
+    registryDependencies: ["https://platejs.org/r/toggle-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -4192,17 +3899,9 @@ export const Index: Record<string, any> = {
     name: "playground-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: [],
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -4217,17 +3916,9 @@ export const Index: Record<string, any> = {
     name: "demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor"],
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/use-create-editor.ts",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/components/editor/plugins/editor-kit.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -4327,7 +4018,7 @@ export const Index: Record<string, any> = {
     name: "editor-default",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor","https://platejs.org/r/editor-kit"],
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/editor-default.tsx",
       type: "registry:example",
@@ -4361,7 +4052,7 @@ export const Index: Record<string, any> = {
     name: "editor-full-width",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/use-create-editor","https://platejs.org/r/editor","https://platejs.org/r/editor-kit"],
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/editor-full-width.tsx",
       type: "registry:example",

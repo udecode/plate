@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { Emoji } from '@emoji-mart/data';
 
 import * as Popover from '@radix-ui/react-popover';
-import { cn } from '@udecode/cn';
+import { cn } from '@/lib/utils';
 import {
   type EmojiCategoryList,
   type EmojiIconList,

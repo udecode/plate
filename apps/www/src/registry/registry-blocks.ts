@@ -3,33 +3,7 @@ import type { Registry } from 'shadcn/registry';
 export const registryBlocks: Registry['items'] = [
   {
     categories: ['Editors'],
-    dependencies: [
-      '@udecode/cn',
-      '@udecode/plate-ai',
-      '@udecode/plate-basic-marks',
-      '@udecode/plate-block-quote',
-      '@udecode/plate-code-block',
-      '@udecode/plate-comments',
-      '@udecode/plate-callout',
-      '@udecode/plate-suggestion',
-      '@udecode/plate',
-      '@udecode/plate-date',
-      '@udecode/plate-emoji',
-      '@emoji-mart/data@1.2.1',
-      '@udecode/plate-excalidraw',
-      '@udecode/plate-heading',
-      '@udecode/plate-highlight',
-      '@udecode/plate-horizontal-rule',
-      '@udecode/plate-kbd',
-      '@udecode/plate-layout',
-      '@udecode/plate-link',
-      '@udecode/plate-media',
-      '@udecode/plate-mention',
-      '@udecode/plate-slash-command',
-      '@udecode/plate-table',
-      '@udecode/plate-toggle',
-      'sonner',
-    ],
+    dependencies: ['sonner'],
     description: 'An AI editor',
     files: [
       {
@@ -38,31 +12,61 @@ export const registryBlocks: Registry['items'] = [
         type: 'registry:page',
       },
       {
-        path: 'components/editor/plate-ai-editor.tsx',
-        target: 'components/editor/plate-editor.tsx',
+        path: 'blocks/editor-ai/components/editor/plate-editor.tsx',
         type: 'registry:component',
       },
       {
-        path: 'blocks/editor-ai/components/editor/use-create-editor.ts',
-        type: 'registry:component',
-      },
-      {
-        path: 'components/editor/settings.tsx',
+        path: 'blocks/editor-ai/components/editor/editor-kit.tsx',
         type: 'registry:component',
       },
     ],
     name: 'editor-ai',
     registryDependencies: [
-      'editor-kit',
       'copilot-kit',
       'media-uploadthing-api',
       'plate-types',
+      'settings-dialog',
+
+      // editor-kit
+      'editor',
+      'ai-kit',
+      'align-kit',
+      'autoformat-kit',
+      'basic-nodes-kit',
+      'block-menu-kit',
+      'callout-kit',
+      'column-kit',
+      'comment-kit',
+      'cursor-overlay-kit',
+      'date-kit',
+      'dnd-kit',
+      'docx-kit',
+      'editing-kit',
+      'emoji-kit',
+      'fixed-toolbar-kit',
+      'floating-toolbar-kit',
+      'font-kit',
+      'highlight-kit',
+      'hr-kit',
+      'kbd-kit',
+      'line-height-kit',
+      'link-kit',
+      'list-kit',
+      'markdown-kit',
+      'math-kit',
+      'media-kit',
+      'mention-kit',
+      'slash-kit',
+      'suggestion-kit',
+      'table-kit',
+      'toc-kit',
+      'toggle-kit',
     ],
     type: 'registry:block',
   },
   {
     categories: ['Editors'],
-    dependencies: ['@udecode/cn'],
+    dependencies: [],
     description: 'A multi-select editor',
     files: [
       {
@@ -81,7 +85,6 @@ export const registryBlocks: Registry['items'] = [
   {
     categories: ['Editors'],
     dependencies: [
-      '@udecode/cn',
       '@udecode/plate-basic-elements',
       '@udecode/plate-basic-marks',
     ],
@@ -96,18 +99,14 @@ export const registryBlocks: Registry['items'] = [
         path: 'blocks/editor-basic/components/editor/plate-editor.tsx',
         type: 'registry:component',
       },
-      {
-        path: 'blocks/editor-basic/components/editor/use-create-editor.ts',
-        type: 'registry:component',
-      },
     ],
     name: 'editor-basic',
-    registryDependencies: ['editor'],
+    registryDependencies: ['editor', 'basic-nodes-kit', 'basic-marks-kit'],
     type: 'registry:block',
   },
   {
     categories: ['Serializers'],
-    dependencies: ['@udecode/cn'],
+    dependencies: ['@udecode/cn', 'next-themes'],
     files: [
       {
         path: 'blocks/slate-to-html/page.tsx',
@@ -122,12 +121,88 @@ export const registryBlocks: Registry['items'] = [
         path: 'lib/create-html-document.ts',
         type: 'registry:lib',
       },
+      {
+        path: 'examples/values/align-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/basic-elements-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/basic-marks-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/column-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/comments-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/date-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/equation-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/font-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/highlight-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/horizontal-rule-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/indent-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/kbd-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/line-height-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/link-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/list-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/media-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/mention-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/table-value.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/toc-value.tsx',
+        type: 'registry:example',
+      },
     ],
     meta: {
       rsc: true,
     },
     name: 'slate-to-html',
-    registryDependencies: [],
+    registryDependencies: ['editor-kit', 'shadcn/button'],
     type: 'registry:block',
   },
 ];

@@ -6,7 +6,6 @@
     "@udecode/cn"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/use-create-editor",
     "https://platejs.org/r/editor"
   ],
   "files": [

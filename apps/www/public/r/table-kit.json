@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/table-kit.tsx",
-      "content": "'use client';\n\nimport {\n  TableCellHeaderPlugin,\n  TableCellPlugin,\n  TablePlugin,\n  TableRowPlugin,\n} from '@udecode/plate-table/react';\n\nimport { NodeIdKit } from '@/registry/components/editor/plugins/node-id-kit';\nimport {\n  TableCellElement,\n  TableCellHeaderElement,\n  TableElement,\n  TableRowElement,\n} from '@/registry/ui/table-node';\n\nexport const TableKit = [\n  ...NodeIdKit,\n  TablePlugin.withComponent(TableElement),\n  TableRowPlugin.withComponent(TableRowElement),\n  TableCellPlugin.withComponent(TableCellElement),\n  TableCellHeaderPlugin.withComponent(TableCellHeaderElement),\n];\n",
+      "content": "'use client';\n\nimport {\n  TableCellHeaderPlugin,\n  TableCellPlugin,\n  TablePlugin,\n  TableRowPlugin,\n} from '@udecode/plate-table/react';\n\nimport {\n  TableCellElement,\n  TableCellHeaderElement,\n  TableElement,\n  TableRowElement,\n} from '@/registry/ui/table-node';\n\nimport { NodeIdKit } from './node-id-kit';\n\nexport const TableKit = [\n  ...NodeIdKit,\n  TablePlugin.withComponent(TableElement),\n  TableRowPlugin.withComponent(TableRowElement),\n  TableCellPlugin.withComponent(TableCellElement),\n  TableCellHeaderPlugin.withComponent(TableCellHeaderElement),\n];\n",
       "type": "registry:component"
     }
   ]

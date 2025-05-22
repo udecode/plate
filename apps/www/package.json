@@ -23,6 +23,7 @@
     "shadcn:dev": "shadcn build public/rd/registry.json --output public/rd",
     "shadcn:dev:docs": "shadcn build public/rd/registry-docs.json --output public/rd",
     "start": "next start",
+    "test:r": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/test-registry.mts",
     "typecheck": "yarn prebuild && tsc --noEmit",
     "typecheck:watch": "yarn typecheck --watch"
   },
@@ -180,7 +181,10 @@
     "autoprefixer": "10.4.21",
     "concurrently": "9.1.2",
     "glob": "11.0.1",
+    "kleur": "4.1.5",
+    "listr2": "8.3.3",
     "mdast-util-toc": "7.1.0",
+    "ora": "8.2.0",
     "postcss": "8.5.3",
     "puppeteer": "24.7.2",
     "rehype": "12.0.1",

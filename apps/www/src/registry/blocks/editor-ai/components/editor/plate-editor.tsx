@@ -6,8 +6,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { Plate, usePlateEditor } from '@udecode/plate/react';
 
-import { EditorKit } from '@/registry/components/editor/editor-kit-ai';
-import { SettingsDialog } from '@/registry/components/editor/settings';
+import { EditorKit } from '@/registry/blocks/editor-ai/components/editor/editor-kit';
+import { SettingsDialog } from '@/registry/components/editor/settings-dialog';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export function PlateEditor() {

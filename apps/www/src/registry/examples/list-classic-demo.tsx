@@ -11,8 +11,8 @@ import {
 } from '@udecode/plate-list-classic/react';
 import { Plate, usePlateEditor } from '@udecode/plate/react';
 
-import { AutoformatKit } from '@/registry/components/editor/plugins/autoformat-classic-kit';
 import { EditorKit } from '@/registry/components/editor/editor-kit';
+import { AutoformatKit } from '@/registry/components/editor/plugins/autoformat-classic-kit';
 import { FixedToolbarKit } from '@/registry/components/editor/plugins/fixed-toolbar-classic-kit';
 import { listValue } from '@/registry/examples/values/list-classic-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';

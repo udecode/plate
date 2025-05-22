@@ -184,7 +184,7 @@ export function SelectEditorCombobox() {
     <Popover open={open}>
       <PopoverAnchor virtualRef={containerRef as any} />
       <PopoverContent
-        className="p-0"
+        className="p-0 data-[state=open]:animate-none"
         style={{
           width: (containerRef.current?.offsetWidth ?? 0) + 8,
         }}
@@ -192,7 +192,6 @@ export function SelectEditorCombobox() {
         onOpenAutoFocus={(e) => e.preventDefault()}
         align="start"
         alignOffset={-4}
-        animate={false}
         sideOffset={8}
       >
         <CommandList>

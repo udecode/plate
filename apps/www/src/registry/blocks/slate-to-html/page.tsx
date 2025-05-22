@@ -63,11 +63,11 @@ import {
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
+import { cva } from 'class-variance-authority';
 import { all, createLowlight } from 'lowlight';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { H3 } from '@/components/typography';
 import {
   EditorClient,
   ExportHtmlButton,
@@ -116,7 +116,6 @@ import { HighlightLeafStatic } from '@/registry/ui/highlight-node-static';
 import { HrElementStatic } from '@/registry/ui/hr-node-static';
 import { KbdLeafStatic } from '@/registry/ui/kbd-node-static';
 import { LinkElementStatic } from '@/registry/ui/link-node-static';
-import { FireLiComponent, FireMarker } from '@/registry/ui/list-emoji';
 import { TodoLiStatic, TodoMarkerStatic } from '@/registry/ui/list-todo-static';
 import { AudioElementStatic } from '@/registry/ui/media-audio-node-static';
 import { FileElementStatic } from '@/registry/ui/media-file-node-static';
@@ -254,11 +253,6 @@ export default async function SlateToHtmlBlock() {
         },
         options: {
           listStyleTypes: {
-            fire: {
-              liComponent: FireLiComponent,
-              markerComponent: FireMarker,
-              type: 'fire',
-            },
             todo: {
               liComponent: TodoLiStatic,
               markerComponent: TodoMarkerStatic,
@@ -322,17 +316,17 @@ export default async function SlateToHtmlBlock() {
   return (
     <div className="grid grid-cols-3 px-4">
       <div className="p-2">
-        <H3>Editor</H3>
+        <h3 className={headingVariants()}>Editor</h3>
         <EditorClient value={createValue()} />
       </div>
 
       <div className="p-2">
-        <H3>EditorStatic</H3>
+        <h3 className={headingVariants()}>EditorStatic</h3>
         <EditorStatic components={components} editor={editor} />
       </div>
 
       <div className="relative p-2">
-        <H3>HTML Iframe</H3>
+        <h3 className={headingVariants()}>HTML Iframe</h3>
         <ExportHtmlButton
           className="absolute top-10 right-0"
           html={html}
@@ -347,3 +341,7 @@ export default async function SlateToHtmlBlock() {
     </div>
   );
 }
+
+const headingVariants = cva(
+  'group mt-8 scroll-m-20 font-heading text-xl font-semibold tracking-tight'
+);

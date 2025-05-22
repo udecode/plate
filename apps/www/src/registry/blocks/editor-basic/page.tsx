@@ -1,8 +1,8 @@
-import { PlateEditor } from '@/registry/components/editor/plate-editor-basic';
+import { PlateEditor } from '@/registry/blocks/editor-basic/components/editor/plate-editor';
 
 export default function Page() {
   return (
-    <div className="h-screen w-full" data-registry="plate">
+    <div className="h-screen w-full">
       <PlateEditor />
     </div>
   );

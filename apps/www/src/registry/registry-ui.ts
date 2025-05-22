@@ -166,7 +166,7 @@ export const uiComponents: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate',
+      '@udecode/cn',
       '@udecode/plate-alignment',
       '@udecode/plate-basic-marks',
       '@udecode/plate-block-quote',
@@ -254,7 +254,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-font'],
+    dependencies: ['@udecode/cn', '@udecode/plate-font'],
     description:
       'A color picker toolbar button with text and background color controls.',
     files: [{ path: 'ui/font-color-toolbar-button.tsx', type: 'registry:ui' }],
@@ -299,7 +299,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/cn', '@udecode/plate-comments', 'date-fns'],
+    dependencies: ['@udecode/plate-comments', 'date-fns'],
     description:
       'A popover interface for managing discussions: comments, replies, suggestions.',
     files: [
@@ -1090,7 +1090,7 @@ export const uiNodes: Registry['items'] = [
       examples: ['basic-elements-demo'],
     },
     name: 'code-block-node',
-    registryDependencies: ['shadcn/command'],
+    registryDependencies: ['shadcn/command', 'shadcn/popover', 'shadcn/button'],
     title: 'Code Block Nodes',
     type: 'registry:ui',
   },
@@ -1114,7 +1114,7 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-layout'],
+    dependencies: ['@udecode/cn', '@udecode/plate-layout'],
     description: 'Resizable column components for layout.',
     files: [
       { path: 'ui/column-node.tsx', type: 'registry:ui' },
@@ -1422,7 +1422,7 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-list-classic'],
+    dependencies: ['@udecode/cn', '@udecode/plate-list-classic'],
     description: 'List (classic) nodes for ordered and unordered items.',
     files: [{ path: 'ui/list-classic-node.tsx', type: 'registry:ui' }],
     meta: {

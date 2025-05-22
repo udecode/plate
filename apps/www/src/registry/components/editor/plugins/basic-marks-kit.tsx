@@ -14,8 +14,6 @@ import { PlateLeaf } from '@udecode/plate/react';
 
 import { CodeLeaf } from '@/registry/ui/code-node';
 
-import { SkipMarkKit } from './skip-mark-kit';
-
 export const BasicMarksKit = [
   BoldPlugin.withComponent(withProps(PlateLeaf, { as: 'strong' })),
   CodePlugin.withComponent(CodeLeaf),
@@ -24,5 +22,5 @@ export const BasicMarksKit = [
   UnderlinePlugin.withComponent(withProps(PlateLeaf, { as: 'u' })),
   SubscriptPlugin.withComponent(withProps(PlateLeaf, { as: 'sub' })),
   SuperscriptPlugin.withComponent(withProps(PlateLeaf, { as: 'sup' })),
-  ...SkipMarkKit,
+  // ...SkipMarkKit,
 ];
