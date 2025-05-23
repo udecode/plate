@@ -9,7 +9,7 @@ import { KEYS } from '@udecode/plate';
 
 import type { ListOptions } from './indentList';
 
-import { BaseListPlugin, INDENT_LIST_KEYS } from '../BaseListPlugin';
+import { BaseListPlugin } from '../BaseListPlugin';
 import {
   type GetSiblingListOptions,
   getListAbove,
@@ -80,12 +80,12 @@ export const toggleList = <
 
             const indent = node[KEYS.indent] as number;
 
-            editor.tf.unsetNodes(INDENT_LIST_KEYS.listStyleType, { at: path });
+            editor.tf.unsetNodes(KEYS.listType, { at: path });
 
             if (indent > 1) {
               editor.tf.setNodes({ [KEYS.indent]: indent - 1 }, { at: path });
             } else {
-              editor.tf.unsetNodes([KEYS.indent, INDENT_LIST_KEYS.checked], {
+              editor.tf.unsetNodes([KEYS.indent, KEYS.listChecked], {
                 at: path,
               });
             }
@@ -127,9 +127,7 @@ export const toggleList = <
     // If restartValue is 1, only apply listRestart if this is not the first
     if (isRestart && restartValue === 1 && isFirst) return;
 
-    const prop = isRestart
-      ? INDENT_LIST_KEYS.listRestart
-      : INDENT_LIST_KEYS.listRestartPolite;
+    const prop = isRestart ? KEYS.listRestart : KEYS.listRestartPolite;
 
     editor.tf.setNodes({ [prop]: restartValue }, { at: entry[1] });
   }

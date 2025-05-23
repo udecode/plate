@@ -6,7 +6,6 @@ import type { Path, TElement } from '@udecode/slate';
 import {
   type PlatePluginContext,
   createTPlatePlugin,
-  ParagraphPlugin,
   useEditorComposing,
   useEditorReadOnly,
   useEditorSelector,
@@ -38,7 +37,7 @@ export const BlockPlaceholderPlugin =
     options: {
       _target: null,
       placeholders: {
-        [ParagraphPlugin.key]: 'Type something...',
+        [KEYS.p]: 'Type something...',
       },
       query: ({ path }) => {
         return path.length === 1;

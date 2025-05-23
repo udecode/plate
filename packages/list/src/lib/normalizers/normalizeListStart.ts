@@ -4,11 +4,11 @@ import {
   type ElementOf,
   type NodeEntry,
   isDefined,
+  KEYS,
 } from '@udecode/plate';
 
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 
-import { INDENT_LIST_KEYS } from '../BaseListPlugin';
 import { getPreviousList } from '../queries/getPreviousList';
 
 export const getListExpectedListStart = (
@@ -18,9 +18,8 @@ export const getListExpectedListStart = (
   const [node] = entry;
   const [prevNode] = prevEntry ?? [null];
 
-  const restart = (node[INDENT_LIST_KEYS.listRestart] as number | null) ?? null;
-  const restartPolite =
-    (node[INDENT_LIST_KEYS.listRestartPolite] as number | null) ?? null;
+  const restart = (node[KEYS.listRestart] as number | null) ?? null;
+  const restartPolite = (node[KEYS.listRestartPolite] as number | null) ?? null;
 
   if (restart) {
     return restart;
@@ -31,7 +30,7 @@ export const getListExpectedListStart = (
   }
 
   if (prevNode) {
-    const prevListStart = (prevNode[INDENT_LIST_KEYS.listStart] as number) ?? 1;
+    const prevListStart = (prevNode[KEYS.listStart] as number) ?? 1;
     return prevListStart + 1;
   }
 
@@ -48,8 +47,8 @@ export const normalizeListStart = <
 ) => {
   return editor.tf.withoutNormalizing(() => {
     const [node, path] = entry;
-    const listStyleType = (node as any)[INDENT_LIST_KEYS.listStyleType];
-    const listStart = node[INDENT_LIST_KEYS.listStart] as number | undefined;
+    const listStyleType = (node as any)[KEYS.listType];
+    const listStart = node[KEYS.listStart] as number | undefined;
 
     if (!listStyleType) return;
 
@@ -57,16 +56,13 @@ export const normalizeListStart = <
     const expectedListStart = getListExpectedListStart(entry, prevEntry);
 
     if (isDefined(listStart) && expectedListStart === 1) {
-      editor.tf.unsetNodes(INDENT_LIST_KEYS.listStart, { at: path });
+      editor.tf.unsetNodes(KEYS.listStart, { at: path });
 
       return true;
     }
 
     if (listStart !== expectedListStart && expectedListStart > 1) {
-      editor.tf.setNodes(
-        { [INDENT_LIST_KEYS.listStart]: expectedListStart },
-        { at: path }
-      );
+      editor.tf.setNodes({ [KEYS.listStart]: expectedListStart }, { at: path });
 
       return true;
     }

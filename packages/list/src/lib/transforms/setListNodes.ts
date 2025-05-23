@@ -2,7 +2,6 @@ import type { Editor, NodeEntry } from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
 
-import { INDENT_LIST_KEYS } from '../BaseListPlugin';
 import { ListStyleType } from '../types';
 import { setIndentTodoNode, setListNode } from './setListNode';
 
@@ -25,13 +24,12 @@ export const setListNodes = (
 
       let indent = (node[KEYS.indent] as number) ?? 0;
       indent =
-        node[INDENT_LIST_KEYS.listStyleType] ||
-        node.hasOwnProperty(INDENT_LIST_KEYS.checked)
+        node[KEYS.listType] || node.hasOwnProperty(KEYS.listChecked)
           ? indent
           : indent + 1;
 
       if (listStyleType === 'todo') {
-        editor.tf.unsetNodes(INDENT_LIST_KEYS.listStyleType, { at: path });
+        editor.tf.unsetNodes(KEYS.listType, { at: path });
         setIndentTodoNode(editor, {
           at: path,
           indent,
@@ -41,7 +39,7 @@ export const setListNodes = (
         return;
       }
 
-      editor.tf.unsetNodes(INDENT_LIST_KEYS.checked, { at: path });
+      editor.tf.unsetNodes(KEYS.listChecked, { at: path });
       setListNode(editor, {
         at: path,
         indent,

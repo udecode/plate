@@ -1,6 +1,6 @@
 import type { OverrideEditor, TElement } from '@udecode/plate';
 
-import { BaseBlockquotePlugin } from './BaseBlockquotePlugin';
+import { KEYS } from '@udecode/plate';
 
 export const withBlockquote: OverrideEditor = ({
   api: { shouldMergeNodesRemovePrevNode },
@@ -9,7 +9,7 @@ export const withBlockquote: OverrideEditor = ({
     shouldMergeNodesRemovePrevNode(prevNodeEntry, curNodeEntry) {
       const prevNode = prevNodeEntry[0] as TElement;
 
-      if (prevNode.type === BaseBlockquotePlugin.key) return false;
+      if (prevNode.type === KEYS.blockquote) return false;
 
       return shouldMergeNodesRemovePrevNode(prevNodeEntry, curNodeEntry);
     },

@@ -1,4 +1,10 @@
-import { type SlateEditor, ElementApi, PathApi, TextApi } from '@udecode/plate';
+import {
+  type SlateEditor,
+  ElementApi,
+  KEYS,
+  PathApi,
+  TextApi,
+} from '@udecode/plate';
 
 import type { TResolvedSuggestion, TSuggestionText } from '../types';
 
@@ -35,7 +41,7 @@ export const acceptSuggestion = (
       editor.tf.mergeNodes({ at: PathApi.next(path) });
     });
 
-    editor.tf.unsetNodes([description.keyId, BaseSuggestionPlugin.key], {
+    editor.tf.unsetNodes([description.keyId, KEYS.suggestion], {
       at: [],
       mode: 'all',
       match: (n) => {

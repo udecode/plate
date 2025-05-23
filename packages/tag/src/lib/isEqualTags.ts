@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@udecode/plate';
+import { type SlateEditor, KEYS } from '@udecode/plate';
 
-import { type TagLike, type TTagElement, BaseTagPlugin } from './BaseTagPlugin';
+import type { TagLike, TTagElement } from './BaseTagPlugin';
 
 /**
  * Compares two sets of tags/labels for equality, ignoring order
@@ -16,7 +16,7 @@ export function isEqualTags<T extends TagLike>(
   const currentTags = [
     ...editor.api.nodes<TTagElement>({
       at: [],
-      match: { type: BaseTagPlugin.key },
+      match: { type: KEYS.tag },
     }),
   ].map(([node]) => node);
 

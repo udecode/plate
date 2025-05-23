@@ -31,7 +31,7 @@ export const BaseSlashPlugin = createTSlatePlugin<SlashConfig>({
     triggerPreviousCharPattern: /^\s?$/,
     createComboboxInput: () => ({
       children: [{ text: '' }],
-      type: BaseSlashInputPlugin.key,
+      type: KEYS.slashInput,
     }),
   },
   plugins: [BaseSlashInputPlugin],

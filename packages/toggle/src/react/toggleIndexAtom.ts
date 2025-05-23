@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 
 import type { Value } from '@udecode/plate';
+import type { TIndentElement } from '@udecode/plate-indent';
 
-import { type TIndentElement, BaseIndentPlugin } from '@udecode/plate-indent';
+import { KEYS } from '@udecode/plate';
 import {
   atom,
   plateStore,
@@ -21,10 +22,10 @@ export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
   const result = new Map<string, string[]>();
   let currentEnclosingToggles: [string, number][] = []; // [toggleId, indent][]
   elements.forEach((element) => {
-    const elementIndent = (element[BaseIndentPlugin.key] as number) || 0;
+    const elementIndent = (element[KEYS.indent] as number) || 0;
     // For some reason, indent lists have a min indent of 1, even though they are not indented
     const elementIndentWithListCorrection =
-      element[ListPluginKey] && element[BaseIndentPlugin.key]
+      element[ListPluginKey] && element[KEYS.indent]
         ? elementIndent - 1
         : elementIndent;
 
@@ -37,7 +38,7 @@ export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
       enclosingToggles.map(([toggleId]) => toggleId)
     );
 
-    if (element.type === TogglePlugin.key) {
+    if (element.type === KEYS.toggle) {
       currentEnclosingToggles.push([element.id as string, elementIndent]);
     }
   });

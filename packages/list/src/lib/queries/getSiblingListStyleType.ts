@@ -5,9 +5,10 @@ import type {
   TElement,
 } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
+
 import type { ListStyleType } from '../types';
 
-import { INDENT_LIST_KEYS } from '../BaseListPlugin';
 import { type GetListSiblingsOptions, getListSiblings } from './index';
 
 /**
@@ -36,7 +37,7 @@ export const getSiblingListStyleType = <E extends SlateEditor>(
 
   return (
     siblings.length > 0
-      ? siblings[0][0][INDENT_LIST_KEYS.listStyleType]
-      : entry[0][INDENT_LIST_KEYS.listStyleType]
+      ? siblings[0][0][KEYS.listType]
+      : entry[0][KEYS.listType]
   ) as ListStyleType;
 };

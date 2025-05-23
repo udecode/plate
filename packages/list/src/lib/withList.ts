@@ -4,10 +4,12 @@ import {
   type Path,
   type TElement,
   type TNode,
+  KEYS,
   PathApi,
 } from '@udecode/plate';
 
-import { type BaseListConfig, INDENT_LIST_KEYS } from './BaseListPlugin';
+import type { BaseListConfig } from './BaseListPlugin';
+
 import { withDeleteBackwardList, withInsertBreakList } from './normalizers';
 import { normalizeListStart } from './normalizers/normalizeListStart';
 import { getNextList } from './queries/getNextList';
@@ -36,7 +38,7 @@ export const withList: OverrideEditor<BaseListConfig> = (ctx) => {
          * overlaps with lower-alpha and upper-alpha.
          */
         if (operation.type === 'insert_node') {
-          const listStyleType = operation.node[INDENT_LIST_KEYS.listStyleType];
+          const listStyleType = operation.node[KEYS.listType];
 
           if (
             listStyleType &&
@@ -55,21 +57,18 @@ export const withList: OverrideEditor<BaseListConfig> = (ctx) => {
             );
 
             if (prevNodeEntry) {
-              const prevListStyleType =
-                prevNodeEntry[0][INDENT_LIST_KEYS.listStyleType];
+              const prevListStyleType = prevNodeEntry[0][KEYS.listType];
 
               if (
                 prevListStyleType === ListStyleType.LowerAlpha &&
                 listStyleType === ListStyleType.LowerRoman
               ) {
-                operation.node[INDENT_LIST_KEYS.listStyleType] =
-                  ListStyleType.LowerAlpha;
+                operation.node[KEYS.listType] = ListStyleType.LowerAlpha;
               } else if (
                 prevListStyleType === ListStyleType.UpperAlpha &&
                 listStyleType === ListStyleType.UpperRoman
               ) {
-                operation.node[INDENT_LIST_KEYS.listStyleType] =
-                  ListStyleType.UpperAlpha;
+                operation.node[KEYS.listType] = ListStyleType.UpperAlpha;
               }
             }
           }
@@ -81,12 +80,10 @@ export const withList: OverrideEditor<BaseListConfig> = (ctx) => {
          */
         if (
           operation.type === 'split_node' &&
-          (operation.properties as any)[INDENT_LIST_KEYS.listStyleType]
+          (operation.properties as any)[KEYS.listType]
         ) {
-          (operation.properties as any)[INDENT_LIST_KEYS.listRestart] =
-            undefined;
-          (operation.properties as any)[INDENT_LIST_KEYS.listRestartPolite] =
-            undefined;
+          (operation.properties as any)[KEYS.listRestart] = undefined;
+          (operation.properties as any)[KEYS.listRestartPolite] = undefined;
         }
 
         apply(operation);
@@ -115,8 +112,7 @@ export const withList: OverrideEditor<BaseListConfig> = (ctx) => {
           }
         }
 
-        const isListItem = (node: TNode) =>
-          INDENT_LIST_KEYS.listStyleType in node;
+        const isListItem = (node: TNode) => KEYS.listType in node;
 
         affectedPaths.forEach((affectedPath) => {
           let entry = editor.api.node(affectedPath);

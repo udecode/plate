@@ -1,6 +1,9 @@
-import { type OverrideEditor, type TElement, isDefined } from '@udecode/plate';
-
-import { INDENT_LIST_KEYS } from '../BaseListPlugin';
+import {
+  type OverrideEditor,
+  type TElement,
+  isDefined,
+  KEYS,
+} from '@udecode/plate';
 
 export const shouldMergeNodesRemovePrevNodeList: OverrideEditor = ({
   api: { shouldMergeNodesRemovePrevNode },
@@ -11,8 +14,8 @@ export const shouldMergeNodesRemovePrevNodeList: OverrideEditor = ({
       const curNode = curNodeEntry[0] as TElement;
 
       if (
-        isDefined(curNode[INDENT_LIST_KEYS.listStyleType]) ||
-        isDefined(prevNode[INDENT_LIST_KEYS.listStyleType])
+        isDefined(curNode[KEYS.listType]) ||
+        isDefined(prevNode[KEYS.listType])
       ) {
         return false;
       }

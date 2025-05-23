@@ -2,11 +2,13 @@ import {
   type NodeEntry,
   type PathRef,
   type SlateEditor,
+  KEYS,
   NodeApi,
   RangeApi,
 } from '@udecode/plate';
 
-import { type TTableCellElement, BaseTableRowPlugin } from '..';
+import type { TTableCellElement } from '..';
+
 import { getTableGridAbove } from '../queries';
 
 export const deleteColumnWhenExpanded = (
@@ -22,12 +24,12 @@ export const deleteColumnWhenExpanded = (
 
   const firstSelectionRow = editor.api.above({
     at: start,
-    match: (n) => n.type === BaseTableRowPlugin.key,
+    match: (n) => n.type === KEYS.tr,
   });
 
   const lastSelectionRow = editor.api.above({
     at: end,
-    match: (n) => n.type === BaseTableRowPlugin.key,
+    match: (n) => n.type === KEYS.tr,
   });
 
   if (!firstSelectionRow || !lastSelectionRow) return;

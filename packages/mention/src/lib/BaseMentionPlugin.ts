@@ -39,7 +39,7 @@ export const BaseMentionPlugin = createTSlatePlugin<MentionConfig>({
     createComboboxInput: (trigger) => ({
       children: [{ text: '' }],
       trigger,
-      type: BaseMentionInputPlugin.key,
+      type: KEYS.mentionInput,
     }),
   },
   plugins: [BaseMentionInputPlugin],

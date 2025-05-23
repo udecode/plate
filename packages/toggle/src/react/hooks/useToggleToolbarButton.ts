@@ -1,7 +1,7 @@
+import { KEYS } from '@udecode/plate';
 import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 import { someToggle } from '../../lib';
-import { TogglePlugin } from '../TogglePlugin';
 import { openNextToggles } from '../transforms';
 
 export const useToggleToolbarButtonState = () => {
@@ -22,7 +22,7 @@ export const useToggleToolbarButton = ({
       pressed,
       onClick: () => {
         openNextToggles(editor);
-        editor.tf.toggleBlock(TogglePlugin.key);
+        editor.tf.toggleBlock(KEYS.toggle);
         editor.tf.collapse();
         editor.tf.focus();
       },

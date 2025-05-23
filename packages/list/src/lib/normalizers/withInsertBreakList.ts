@@ -1,6 +1,11 @@
-import { type OverrideEditor, type TElement, isDefined } from '@udecode/plate';
+import {
+  type OverrideEditor,
+  type TElement,
+  isDefined,
+  KEYS,
+} from '@udecode/plate';
 
-import { type BaseListConfig, INDENT_LIST_KEYS } from '../BaseListPlugin';
+import type { BaseListConfig } from '../BaseListPlugin';
 
 export const withInsertBreakList: OverrideEditor<BaseListConfig> = ({
   editor,
@@ -16,8 +21,8 @@ export const withInsertBreakList: OverrideEditor<BaseListConfig> = ({
         const [node, path] = nodeEntry;
 
         if (
-          !isDefined(node[INDENT_LIST_KEYS.listStyleType]) ||
-          node[INDENT_LIST_KEYS.listStyleType] !== INDENT_LIST_KEYS.todo ||
+          !isDefined(node[KEYS.listType]) ||
+          node[KEYS.listType] !== KEYS.listTodo ||
           editor.api.isExpanded() ||
           !editor.api.isEnd(editor.selection?.focus, path)
         ) {

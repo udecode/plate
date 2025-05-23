@@ -1,6 +1,7 @@
-import { type OverrideEditor, isDefined, NodeApi } from '@udecode/plate';
+import { type OverrideEditor, isDefined, KEYS, NodeApi } from '@udecode/plate';
 
-import { type BaseListConfig, INDENT_LIST_KEYS } from '../BaseListPlugin';
+import type { BaseListConfig } from '../BaseListPlugin';
+
 import { outdentList } from '../transforms';
 
 export const withDeleteBackwardList: OverrideEditor<BaseListConfig> = ({
@@ -18,7 +19,7 @@ export const withDeleteBackwardList: OverrideEditor<BaseListConfig> = ({
 
         if (editor.api.isCollapsed() && NodeApi.string(listNode))
           return deleteBackward(unit);
-        if (isDefined(listNode[INDENT_LIST_KEYS.listStyleType])) {
+        if (isDefined(listNode[KEYS.listType])) {
           return outdentList(editor);
         }
 

@@ -2,6 +2,7 @@ import {
   type ExtendConfig,
   type InsertNodesOptions,
   bindFirst,
+  KEYS,
   NodeApi,
 } from '@udecode/plate';
 import { toTPlatePlugin } from '@udecode/plate/react';
@@ -10,7 +11,6 @@ import type { AllowedFileType } from './internal/mimes';
 import type { MediaItemConfig, UploadError } from './type';
 
 import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
-import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
 import { insertMedia } from './transforms/insertMedia';
 import { isHistoryMarking } from './utils/history';
 
@@ -52,37 +52,37 @@ export const PlaceholderPlugin = toTPlatePlugin<
       audio: {
         maxFileCount: 1,
         maxFileSize: '8MB',
-        mediaType: AudioPlugin.key,
+        mediaType: KEYS.audio,
         minFileCount: 1,
       },
       blob: {
         maxFileCount: 1,
         maxFileSize: '8MB',
-        mediaType: FilePlugin.key,
+        mediaType: KEYS.file,
         minFileCount: 1,
       },
       image: {
         maxFileCount: 3,
         maxFileSize: '4MB',
-        mediaType: ImagePlugin.key,
+        mediaType: KEYS.img,
         minFileCount: 1,
       },
       pdf: {
         maxFileCount: 1,
         maxFileSize: '4MB',
-        mediaType: FilePlugin.key,
+        mediaType: KEYS.file,
         minFileCount: 1,
       },
       text: {
         maxFileCount: 1,
         maxFileSize: '64KB',
-        mediaType: FilePlugin.key,
+        mediaType: KEYS.file,
         minFileCount: 1,
       },
       video: {
         maxFileCount: 1,
         maxFileSize: '16MB',
-        mediaType: VideoPlugin.key,
+        mediaType: KEYS.video,
         minFileCount: 1,
       },
     },
@@ -95,7 +95,7 @@ export const PlaceholderPlugin = toTPlatePlugin<
         if (isHistoryMarking(editor)) {
           const newBatch = {
             ...batch,
-            [PlaceholderPlugin.key]: true,
+            [KEYS.placeholder]: true,
           };
 
           writeHistory(stack, newBatch);

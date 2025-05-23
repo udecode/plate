@@ -1,10 +1,10 @@
+import { KEYS } from '@udecode/plate';
 import { createPlateEditor } from '@udecode/plate/react';
 
 import {
   HeadingPlugin,
   HeadingPlugin as ReactHeadingPlugin,
 } from '../react/HeadingPlugin';
-import { HEADING_LEVELS } from './constants';
 
 describe('HeadingPlugin', () => {
   describe('when using default options', () => {
@@ -16,7 +16,7 @@ describe('HeadingPlugin', () => {
       const headingPlugin = editor.getPlugin(HeadingPlugin);
       expect(headingPlugin.plugins).toHaveLength(6);
 
-      HEADING_LEVELS.forEach((level, index) => {
+      KEYS.heading.forEach((level, index) => {
         const plugin = headingPlugin.plugins[index];
         expect(plugin.key).toBe(level);
         expect(plugin.node.isElement).toBe(true);
@@ -110,7 +110,7 @@ describe('HeadingPluginReact', () => {
       const headingPlugin = editor.getPlugin(ReactHeadingPlugin);
       expect(headingPlugin.plugins).toHaveLength(6);
 
-      HEADING_LEVELS.forEach((level, index) => {
+      KEYS.heading.forEach((level, index) => {
         const plugin = headingPlugin.plugins[index];
         expect(plugin.key).toBe(level);
         expect(plugin.node.isElement).toBe(true);

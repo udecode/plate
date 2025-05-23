@@ -9,8 +9,6 @@ import {
   KEYS,
 } from '@udecode/plate';
 
-import { INDENT_LIST_KEYS } from '../BaseListPlugin';
-
 export interface GetSiblingListOptions<
   N extends ElementOf<E>,
   E extends Editor = Editor,
@@ -69,10 +67,10 @@ export const getSiblingList = <
     if (breakQuery?.(nextNode, node)) return;
     if (!isDefined(nextIndent)) return;
     if (breakOnListRestart) {
-      if (getPreviousEntry && (node as any)[INDENT_LIST_KEYS.listRestart]) {
+      if (getPreviousEntry && (node as any)[KEYS.listRestart]) {
         return;
       }
-      if (getNextEntry && (nextNode as any)[INDENT_LIST_KEYS.listRestart]) {
+      if (getNextEntry && (nextNode as any)[KEYS.listRestart]) {
         return;
       }
     }
@@ -80,8 +78,7 @@ export const getSiblingList = <
     if (
       breakOnEqIndentNeqListStyleType &&
       nextIndent === indent &&
-      (nextNode as any)[INDENT_LIST_KEYS.listStyleType] !==
-        (node as any)[INDENT_LIST_KEYS.listStyleType]
+      (nextNode as any)[KEYS.listType] !== (node as any)[KEYS.listType]
     )
       return;
 

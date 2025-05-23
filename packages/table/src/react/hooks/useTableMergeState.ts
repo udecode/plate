@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+import { KEYS } from '@udecode/plate';
 import {
   useEditorPlugin,
   useEditorSelector,
@@ -22,7 +23,7 @@ export const useTableMergeState = () => {
 
   const readOnly = useReadOnly();
   const someTable = useEditorSelector(
-    (editor) => editor.api.some({ match: { type: TablePlugin.key } }),
+    (editor) => editor.api.some({ match: { type: KEYS.table } }),
     []
   );
   const selectionExpanded = useEditorSelector(

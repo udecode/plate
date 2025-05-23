@@ -4,7 +4,6 @@ import { KEYS } from '@udecode/plate';
 
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 
-import { INDENT_LIST_KEYS } from '../BaseListPlugin';
 import { getListSiblings } from '../queries/getListSiblings';
 import { ListStyleType } from '../types';
 import { setIndentTodoNode, setListNode } from './setListNode';
@@ -28,15 +27,15 @@ export const setListSiblingNodes = <
     const siblings = getListSiblings(editor, entry, getSiblingListOptions);
 
     siblings.forEach(([node, path]) => {
-      if (listStyleType === INDENT_LIST_KEYS.todo) {
-        editor.tf.unsetNodes(INDENT_LIST_KEYS.listStyleType, { at: path });
+      if (listStyleType === KEYS.listTodo) {
+        editor.tf.unsetNodes(KEYS.listType, { at: path });
         setIndentTodoNode(editor, {
           at: path,
           indent: node[KEYS.indent] as number,
           listStyleType,
         });
       } else {
-        editor.tf.unsetNodes(INDENT_LIST_KEYS.checked, { at: path });
+        editor.tf.unsetNodes(KEYS.listChecked, { at: path });
         setListNode(editor, {
           at: path,
           indent: node[KEYS.indent] as number,

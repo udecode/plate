@@ -1,6 +1,7 @@
 import type { NodeEntry, SlateEditor, TElement, Text } from '@udecode/plate';
 
-import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { KEYS } from '@udecode/plate';
+
 import { findSuggestionProps } from '../queries';
 
 export const removeNodesSuggestion = (
@@ -17,7 +18,7 @@ export const removeNodesSuggestion = (
   nodes.forEach(([, blockPath]) => {
     editor.tf.setNodes(
       {
-        [BaseSuggestionPlugin.key]: {
+        [KEYS.suggestion]: {
           id,
           createdAt,
           type: 'remove',

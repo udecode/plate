@@ -28,15 +28,6 @@ import { withList } from './withList';
  * ignored, although it is not removed and may take effect in the future.
  */
 
-export const INDENT_LIST_KEYS = {
-  checked: 'checked',
-  listRestart: 'listRestart',
-  listRestartPolite: 'listRestartPolite',
-  listStart: 'listStart',
-  listStyleType: 'listStyleType',
-  todo: 'todo',
-} as const;
-
 export type BaseListConfig = PluginConfig<
   'list',
   {

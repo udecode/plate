@@ -17,10 +17,6 @@ export type BaseToggleConfig = PluginConfig<
   }
 >;
 
-export type TToggleElement = {
-  type: typeof BaseTogglePlugin.key;
-};
-
 export const BaseTogglePlugin = createTSlatePlugin<BaseToggleConfig>({
   key: KEYS.toggle,
   node: { isElement: true },

@@ -1,6 +1,7 @@
 import type { Editor, NodeEntry } from '@udecode/plate';
 
-import { INDENT_LIST_KEYS } from '../BaseListPlugin';
+import { KEYS } from '@udecode/plate';
+
 import { ListStyleType } from '../types';
 import { outdentList } from './outdentList';
 
@@ -15,16 +16,16 @@ export const toggleListUnset = (
   }
 ) => {
   if (
-    listStyleType === INDENT_LIST_KEYS.todo &&
-    node.hasOwnProperty(INDENT_LIST_KEYS.checked)
+    listStyleType === KEYS.listTodo &&
+    node.hasOwnProperty(KEYS.listChecked)
   ) {
-    editor.tf.unsetNodes(INDENT_LIST_KEYS.checked, { at: path });
+    editor.tf.unsetNodes(KEYS.listChecked, { at: path });
     outdentList(editor as any, { listStyleType });
 
     return true;
   }
-  if (listStyleType === node[INDENT_LIST_KEYS.listStyleType]) {
-    editor.tf.unsetNodes([INDENT_LIST_KEYS.listStyleType], {
+  if (listStyleType === node[KEYS.listType]) {
+    editor.tf.unsetNodes([KEYS.listType], {
       at: path,
     });
 

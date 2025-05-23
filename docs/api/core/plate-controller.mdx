@@ -110,12 +110,14 @@ There are two ways to determine if you're working with a fallback editor or a re
 When using hooks like **`useEditorRef`** inside a **`PlateController`**, you should code defensively to ensure that fallback editors are handled appropriately should they arise. For example, you can disable toolbar buttons if **`useEditorMounted`** returns **`false`**, or ignore events if **`editor.isFallback`** is **`true`**.
 
 ```tsx
+import { KEYS } from '@udecode/plate';
+
 const App = withHoc(PlateController, () => {
   const activeEditor = useEditorRef();
   
   const toggleBold = () => {
     if (activeEditor.isFallback) return;
-    activeEditor.tf.toggleMark(BoldPlugin.key);
+    activeEditor.tf.toggleMark(KEYS.bold);
   };
   
   return (
@@ -142,7 +144,7 @@ const App = withHoc(PlateController, () => {
   const isFallback = !useEditorMounted();
   
   const toggleBold = () => {
-    activeEditor.tf.toggleMark(BoldPlugin.key);
+    activeEditor.tf.toggleMark(KEYS.bold);
   };
   
   return (

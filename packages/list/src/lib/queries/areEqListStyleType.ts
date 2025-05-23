@@ -1,6 +1,7 @@
 import type { Editor, NodeEntry } from '@udecode/plate';
 
-import { INDENT_LIST_KEYS } from '../BaseListPlugin';
+import { KEYS } from '@udecode/plate';
+
 import { ListStyleType } from '../types';
 
 export const areEqListStyleType = (
@@ -17,8 +18,8 @@ export const areEqListStyleType = (
   for (const entry of entries) {
     const [block] = entry;
 
-    if (listStyleType === INDENT_LIST_KEYS.todo) {
-      if (!block.hasOwnProperty(INDENT_LIST_KEYS.checked)) {
+    if (listStyleType === KEYS.listTodo) {
+      if (!block.hasOwnProperty(KEYS.listChecked)) {
         eqListStyleType = false;
 
         break;
@@ -26,10 +27,7 @@ export const areEqListStyleType = (
 
       continue;
     }
-    if (
-      !block[INDENT_LIST_KEYS.listStyleType] ||
-      block[INDENT_LIST_KEYS.listStyleType] !== listStyleType
-    ) {
+    if (!block[KEYS.listType] || block[KEYS.listType] !== listStyleType) {
       eqListStyleType = false;
 
       break;

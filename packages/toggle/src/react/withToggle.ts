@@ -1,11 +1,10 @@
 import type { OverrideEditor } from '@udecode/plate/react';
 
-import { type SlateEditor, NodeApi } from '@udecode/plate';
+import { type SlateEditor, KEYS, NodeApi } from '@udecode/plate';
 import { type TIndentElement, indent } from '@udecode/plate-indent';
 
 import type { ToggleConfig } from './TogglePlugin';
 
-import { BaseTogglePlugin } from '../lib/BaseTogglePlugin';
 import { getLastEntryEnclosedInToggle, isInClosedToggle } from './queries';
 import {
   moveCurrentBlockAfterPreviousSelectable,
@@ -49,10 +48,7 @@ export const withToggle: OverrideEditor<ToggleConfig> = ({
     insertBreak() {
       const currentBlockEntry = editor.api.block<TIndentElement>();
 
-      if (
-        !currentBlockEntry ||
-        currentBlockEntry[0].type !== BaseTogglePlugin.key
-      ) {
+      if (!currentBlockEntry || currentBlockEntry[0].type !== KEYS.toggle) {
         return insertBreak();
       }
 
@@ -62,7 +58,7 @@ export const withToggle: OverrideEditor<ToggleConfig> = ({
       editor.tf.withoutNormalizing(() => {
         if (isOpen) {
           insertBreak();
-          editor.tf.toggleBlock(BaseTogglePlugin.key);
+          editor.tf.toggleBlock(KEYS.toggle);
           indent(editor);
         } else {
           const lastEntryEnclosedInToggle = getLastEntryEnclosedInToggle(

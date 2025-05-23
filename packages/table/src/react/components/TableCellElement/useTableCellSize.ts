@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { NodeEntry } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
 import {
   useEditorPlugin,
   useElement,
@@ -11,7 +12,7 @@ import {
 import type { TTableCellElement, TTableRowElement } from '../../../lib';
 
 import { useCellIndices } from '../../hooks/useCellIndices';
-import { TablePlugin, TableRowPlugin } from '../../TablePlugin';
+import { TablePlugin } from '../../TablePlugin';
 import { useTableColSizes } from '../TableElement';
 
 export function useTableCellSize({
@@ -28,7 +29,7 @@ export function useTableCellSize({
     ([node]: NodeEntry<TTableRowElement>) => node.size,
     [],
     {
-      key: TableRowPlugin.key,
+      key: KEYS.tr,
     }
   );
 

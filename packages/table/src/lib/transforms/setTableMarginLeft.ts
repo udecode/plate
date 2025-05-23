@@ -1,8 +1,8 @@
 import type { EditorAboveOptions, SlateEditor } from '@udecode/plate';
 
-import type { TTableElement } from '../types';
+import { KEYS } from '@udecode/plate';
 
-import { BaseTablePlugin } from '../BaseTablePlugin';
+import type { TTableElement } from '../types';
 
 export const setTableMarginLeft = (
   editor: SlateEditor,
@@ -10,7 +10,7 @@ export const setTableMarginLeft = (
   options: EditorAboveOptions = {}
 ) => {
   const table = editor.api.node<TTableElement>({
-    match: { type: BaseTablePlugin.key },
+    match: { type: KEYS.table },
     ...options,
   });
 

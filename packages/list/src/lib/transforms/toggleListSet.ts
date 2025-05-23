@@ -1,6 +1,7 @@
 import type { Editor, NodeEntry } from '@udecode/plate';
 
-import { INDENT_LIST_KEYS } from '../BaseListPlugin';
+import { KEYS } from '@udecode/plate';
+
 import { ListStyleType } from '../types';
 import { type ListOptions, indentList, indentTodo } from './indentList';
 
@@ -10,11 +11,7 @@ export const toggleListSet = (
   [node, _path]: NodeEntry,
   { listStyleType = ListStyleType.Disc, ...options }: ListOptions
 ) => {
-  if (
-    node.hasOwnProperty(INDENT_LIST_KEYS.checked) ||
-    node[INDENT_LIST_KEYS.listStyleType]
-  )
-    return;
+  if (node.hasOwnProperty(KEYS.listChecked) || node[KEYS.listType]) return;
   if (listStyleType === 'todo') {
     indentTodo(editor as any, {
       listStyleType,

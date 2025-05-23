@@ -4,9 +4,8 @@ import {
   type ElementOf,
   type NodeEntry,
   isDefined,
+  KEYS,
 } from '@udecode/plate';
-
-import { INDENT_LIST_KEYS } from '../BaseListPlugin';
 
 export const getListAbove = <N extends ElementOf<E>, E extends Editor = Editor>(
   editor: E,
@@ -14,6 +13,6 @@ export const getListAbove = <N extends ElementOf<E>, E extends Editor = Editor>(
 ): NodeEntry<N> | undefined => {
   return editor.api.above({
     ...options,
-    match: (node) => isDefined(node[INDENT_LIST_KEYS.listStyleType]),
+    match: (node) => isDefined(node[KEYS.listType]),
   });
 };

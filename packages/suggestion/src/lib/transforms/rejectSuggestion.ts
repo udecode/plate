@@ -2,6 +2,7 @@ import {
   type SlateEditor,
   type TText,
   ElementApi,
+  KEYS,
   PathApi,
   TextApi,
 } from '@udecode/plate';
@@ -41,7 +42,7 @@ export const rejectSuggestion = (
       editor.tf.mergeNodes({ at: PathApi.next(path) });
     });
 
-    editor.tf.unsetNodes([description.keyId, BaseSuggestionPlugin.key], {
+    editor.tf.unsetNodes([description.keyId, KEYS.suggestion], {
       at: [],
       mode: 'all',
       match: (n) => {

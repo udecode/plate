@@ -6,9 +6,10 @@ import type {
   TElement,
 } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
+
 import type { GetSiblingListOptions } from './getSiblingList';
 
-import { INDENT_LIST_KEYS } from '../BaseListPlugin';
 import { getNextList } from './getNextList';
 import { getPreviousList } from './getPreviousList';
 
@@ -38,10 +39,7 @@ export const getListSiblings = <
 
   const node = entry[0] as TElement;
 
-  if (
-    !node[INDENT_LIST_KEYS.listStyleType] &&
-    !node.hasOwnProperty(INDENT_LIST_KEYS.checked)
-  ) {
+  if (!node[KEYS.listType] && !node.hasOwnProperty(KEYS.listChecked)) {
     return siblings;
   }
 

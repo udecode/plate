@@ -175,7 +175,7 @@ export type TableConfig = PluginConfig<
 /** Enables support for tables. */
 export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   key: KEYS.table,
-  // dependencies: [NodeIdPlugin.key],
+  // dependencies: [KEYS.nodeId],
   node: {
     isElement: true,
   },

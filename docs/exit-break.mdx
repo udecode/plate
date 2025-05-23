@@ -15,8 +15,8 @@ title: Exit Break
 ## Usage
 
 ```tsx
+import { KEYS } from '@udecode/plate';
 import { ExitBreakPlugin } from '@udecode/plate/react';
-import { HEADING_LEVELS } from '@udecode/plate-heading';
 
 const plugins = [
   // ...otherPlugins,
@@ -35,7 +35,7 @@ const plugins = [
           query: {
             start: true,
             end: true,
-            allow: HEADING_LEVELS,
+            allow: KEYS.heading,
           },
           relative: true,
           level: 1,

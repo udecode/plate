@@ -1,8 +1,7 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
+import { type SlateEditor, getEditorPlugin, KEYS } from '@udecode/plate';
 
+import type { MentionConfig } from './BaseMentionPlugin';
 import type { TMentionItemBase } from './types';
-
-import { type MentionConfig, BaseMentionPlugin } from './BaseMentionPlugin';
 
 export type MentionOnSelectItem<
   TItem extends TMentionItemBase = TMentionItemBase,
@@ -10,7 +9,7 @@ export type MentionOnSelectItem<
 
 export const getMentionOnSelectItem =
   <TItem extends TMentionItemBase = TMentionItemBase>({
-    key = BaseMentionPlugin.key,
+    key = KEYS.mention,
   }: { key?: string } = {}): MentionOnSelectItem<TItem> =>
   (editor, item, search = '') => {
     const { getOptions, tf } = getEditorPlugin<MentionConfig>(editor, {

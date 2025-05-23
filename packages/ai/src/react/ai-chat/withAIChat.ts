@@ -1,6 +1,6 @@
 import type { OverrideEditor } from '@udecode/plate/react';
 
-import { ElementApi } from '@udecode/plate';
+import { ElementApi, KEYS } from '@udecode/plate';
 
 import { AIPlugin } from '../ai/AIPlugin';
 import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
@@ -67,7 +67,7 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
       normalizeNode(entry) {
         const [node, path] = entry;
 
-        if (node[AIPlugin.key] && !getOptions().open) {
+        if (node[KEYS.ai] && !getOptions().open) {
           tf.ai.removeMarks({ at: path });
 
           return;

@@ -49,8 +49,8 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import { BaseParagraphPlugin, createSlateEditor } from '@udecode/plate';
-import { BaseHeadingPlugin, HEADING_LEVELS } from '@udecode/plate-heading';
+import { BaseParagraphPlugin, createSlateEditor, KEYS } from '@udecode/plate';
+import { BaseHeadingPlugin } from '@udecode/plate-heading';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseListPlugin } from '@udecode/plate-list';
 import { BaseLinkPlugin } from '@udecode/plate-link';
@@ -78,10 +78,10 @@ export const createAIEditor = () => {
       BaseListPlugin.extend({
         inject: {
           targetPlugins: [
-            BaseParagraphPlugin.key,
-            ...HEADING_LEVELS,
-            BaseBlockquotePlugin.key,
-            BaseCodeBlockPlugin.key,
+            KEYS.p,
+            ...KEYS.heading,
+            KEYS.blockquote,
+            KEYS.codeBlock,
           ],
         },
         options: {

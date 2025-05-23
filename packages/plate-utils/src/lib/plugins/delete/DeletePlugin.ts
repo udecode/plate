@@ -1,8 +1,4 @@
-import {
-  type PluginConfig,
-  BaseParagraphPlugin,
-  createTSlatePlugin,
-} from '@udecode/plate-core';
+import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-core';
 import { type QueryNodeOptions, queryNode } from '@udecode/slate';
 
 import { KEYS } from '../../plate-keys';
@@ -19,7 +15,7 @@ export const DeletePlugin = createTSlatePlugin<DeleteConfig>({
   editOnly: true,
   options: {
     query: {
-      allow: [BaseParagraphPlugin.key],
+      allow: [KEYS.p],
     },
   },
 }).overrideEditor(({ editor, getOptions, tf: { deleteForward } }) => ({

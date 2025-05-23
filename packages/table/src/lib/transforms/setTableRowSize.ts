@@ -1,8 +1,8 @@
 import type { EditorAboveOptions, SlateEditor } from '@udecode/plate';
 
-import type { TTableElement, TTableRowElement } from '../types';
+import { KEYS } from '@udecode/plate';
 
-import { BaseTablePlugin } from '../BaseTablePlugin';
+import type { TTableElement, TTableRowElement } from '../types';
 
 export const setTableRowSize = (
   editor: SlateEditor,
@@ -10,7 +10,7 @@ export const setTableRowSize = (
   options: EditorAboveOptions = {}
 ) => {
   const table = editor.api.node<TTableElement>({
-    match: { type: BaseTablePlugin.key },
+    match: { type: KEYS.table },
     ...options,
   });
 

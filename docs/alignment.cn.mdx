@@ -24,7 +24,7 @@ npm install @udecode/plate-alignment
 ## 使用
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor, KEYS } from '@udecode/plate/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { ParagraphPlugin } from '@udecode/plate/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
@@ -35,8 +35,8 @@ const editor = createPlateEditor({
     AlignPlugin.configure({
       inject: {
         targetPlugins: [
-          ParagraphPlugin.key,
-          HeadingPlugin.key,
+          KEYS.p,
+          KEYS.h1,
         ],
       },
     }),

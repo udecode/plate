@@ -1,10 +1,10 @@
 import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { type TElement, isHotkey } from '@udecode/plate';
+import { type TElement, isHotkey, KEYS } from '@udecode/plate';
 
 import type { ListConfig } from './ListPlugin';
 
-import { INDENT_LIST_KEYS, outdentList } from '../lib';
+import { outdentList } from '../lib';
 
 export const onKeyDownList: KeyboardHandler<ListConfig> = ({
   editor,
@@ -19,9 +19,7 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
 
   const node = entry[0] as TElement;
 
-  const listStyleType = node[INDENT_LIST_KEYS.listStyleType] as
-    | string
-    | undefined;
+  const listStyleType = node[KEYS.listType] as string | undefined;
 
   if (!listStyleType) return;
   if (

@@ -6,9 +6,10 @@ import type {
   RenderStaticNodeWrapperProps,
 } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
 import { clsx } from 'clsx';
 
-import { type BaseListConfig, BaseListPlugin, INDENT_LIST_KEYS } from '.';
+import { type BaseListConfig, BaseListPlugin } from '.';
 import { ULIST_STYLE_TYPES } from './types';
 
 export const renderListBelowNodes: RenderStaticNodeWrapper = (
@@ -16,8 +17,8 @@ export const renderListBelowNodes: RenderStaticNodeWrapper = (
 ): RenderStaticNodeWrapperFunction => {
   const { element } = injectProps;
 
-  const listStyleType = element[INDENT_LIST_KEYS.listStyleType] as string;
-  const listStart = element[INDENT_LIST_KEYS.listStart] as number;
+  const listStyleType = element[KEYS.listType] as string;
+  const listStart = element[KEYS.listStart] as number;
 
   if (listStyleType) {
     let className = clsx(`slate-list-${listStyleType}`);

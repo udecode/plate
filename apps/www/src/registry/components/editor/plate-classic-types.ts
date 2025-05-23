@@ -13,7 +13,6 @@ import type {
   TMentionInputElement,
 } from '@udecode/plate-mention';
 import type { TTableElement } from '@udecode/plate-table';
-import type { TToggleElement } from '@udecode/plate-toggle';
 
 /** Text */
 
@@ -203,7 +202,7 @@ export interface MyTodoListElement
   type: typeof KEYS.listTodoClassic;
 }
 
-export interface MyToggleElement extends MyBlockElement, TToggleElement {
+export interface MyToggleElement extends MyBlockElement {
   children: MyInlineChildren;
   type: typeof KEYS.toggle;
 }

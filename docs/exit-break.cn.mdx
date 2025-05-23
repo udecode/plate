@@ -15,8 +15,8 @@ title: 退出段落
 ## 使用
 
 ```tsx
+import { KEYS } from '@udecode/plate';
 import { ExitBreakPlugin } from '@udecode/plate/react';
-import { HEADING_LEVELS } from '@udecode/plate-heading';
 
 const plugins = [
   // ...其他插件
@@ -35,7 +35,7 @@ const plugins = [
           query: {
             start: true,
             end: true,
-            allow: HEADING_LEVELS,
+            allow: KEYS.heading,
           },
           relative: true,
           level: 1,

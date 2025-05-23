@@ -21,7 +21,7 @@ export const useAIChatHooks = () => {
           editor.tf.insertNodes(
             {
               children: [{ text: '' }],
-              type: AIChatPlugin.key,
+              type: KEYS.aiChat,
             },
             {
               at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),

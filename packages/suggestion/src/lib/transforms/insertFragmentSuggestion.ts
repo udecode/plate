@@ -1,4 +1,9 @@
-import { type Descendant, type SlateEditor, TextApi } from '@udecode/plate';
+import {
+  type Descendant,
+  type SlateEditor,
+  KEYS,
+  TextApi,
+} from '@udecode/plate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries';
@@ -24,9 +29,9 @@ export const insertFragmentSuggestion = (
 
     fragment.forEach((n) => {
       if (TextApi.isText(n)) {
-        if (!n[BaseSuggestionPlugin.key]) {
+        if (!n[KEYS.suggestion]) {
           // Add suggestion mark
-          n[BaseSuggestionPlugin.key] = true;
+          n[KEYS.suggestion] = true;
         }
 
         // remove the other suggestion data
@@ -42,7 +47,7 @@ export const insertFragmentSuggestion = (
           userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
         };
       } else {
-        n[BaseSuggestionPlugin.key] = {
+        n[KEYS.suggestion] = {
           id,
           createdAt,
           type: 'insert',

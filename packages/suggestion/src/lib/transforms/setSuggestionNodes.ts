@@ -3,6 +3,7 @@ import {
   type SlateEditor,
   ElementApi,
   getAt,
+  KEYS,
   nanoid,
 } from '@udecode/plate';
 
@@ -41,8 +42,8 @@ export const setSuggestionNodes = (
     };
 
     const props = {
-      [BaseSuggestionPlugin.key]: true,
       [getSuggestionKey(suggestionId)]: data,
+      [KEYS.suggestion]: true,
     };
 
     editor.tf.setNodes(props, {

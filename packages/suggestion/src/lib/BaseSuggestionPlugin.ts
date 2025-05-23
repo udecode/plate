@@ -61,7 +61,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
       dataList: (node: TSuggestionText): TInlineSuggestionData[] => {
         return Object.keys(node)
           .filter((key) => {
-            return key.startsWith(`${BaseSuggestionPlugin.key}_`);
+            return key.startsWith(`${KEYS.suggestion}_`);
           })
           .map((key) => node[key] as TInlineSuggestionData);
       },

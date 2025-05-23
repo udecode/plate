@@ -14,11 +14,7 @@ import {
   BaseUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-  BaseCodeSyntaxPlugin,
-} from '@udecode/plate-code-block';
+import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
@@ -26,11 +22,7 @@ import {
   BaseFontColorPlugin,
   BaseFontSizePlugin,
 } from '@udecode/plate-font';
-import {
-  BaseHeadingPlugin,
-  BaseTocPlugin,
-  HEADING_LEVELS,
-} from '@udecode/plate-heading';
+import { BaseHeadingPlugin, BaseTocPlugin } from '@udecode/plate-heading';
 import { BaseHighlightPlugin } from '@udecode/plate-highlight';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
@@ -52,7 +44,6 @@ import {
 } from '@udecode/plate-media';
 import { BaseMentionPlugin } from '@udecode/plate-mention';
 import {
-  BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
