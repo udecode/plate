@@ -5,14 +5,11 @@ import * as React from 'react';
 import type { TPlaceholderElement } from '@udecode/plate-media';
 import type { PlateElementProps } from '@udecode/plate/react';
 
+import { KEYS } from '@udecode/plate';
 import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
   PlaceholderPlugin,
   PlaceholderProvider,
   updateUploadHistory,
-  VideoPlugin,
 } from '@udecode/plate-media/react';
 import { PlateElement, useEditorPlugin, withHOC } from '@udecode/plate/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
@@ -29,22 +26,22 @@ const CONTENT: Record<
     icon: React.ReactNode;
   }
 > = {
-  [AudioPlugin.key]: {
+  [KEYS.audio]: {
     accept: ['audio/*'],
     content: 'Add an audio file',
     icon: <AudioLines />,
   },
-  [FilePlugin.key]: {
+  [KEYS.file]: {
     accept: ['*'],
     content: 'Add a file',
     icon: <FileUp />,
   },
-  [ImagePlugin.key]: {
+  [KEYS.img]: {
     accept: ['image/*'],
     content: 'Add an image',
     icon: <ImageIcon />,
   },
-  [VideoPlugin.key]: {
+  [KEYS.video]: {
     accept: ['video/*'],
     content: 'Add a video',
     icon: <Film />,
@@ -65,7 +62,7 @@ export const PlaceholderElement = withHOC(
 
     const currentContent = CONTENT[element.mediaType];
 
-    const isImage = element.mediaType === ImagePlugin.key;
+    const isImage = element.mediaType === KEYS.img;
 
     const imageRef = React.useRef<HTMLImageElement>(null);
 
@@ -105,7 +102,7 @@ export const PlaceholderElement = withHOC(
           initialHeight: imageRef.current?.height,
           initialWidth: imageRef.current?.width,
           isUpload: true,
-          name: element.mediaType === FilePlugin.key ? uploadedFile.name : '',
+          name: element.mediaType === KEYS.file ? uploadedFile.name : '',
           placeholderId: element.id as string,
           type: element.mediaType!,
           url: uploadedFile.url,

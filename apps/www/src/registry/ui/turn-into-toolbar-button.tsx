@@ -6,15 +6,8 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import type { TElement } from '@udecode/plate';
 
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-list';
-import { TogglePlugin } from '@udecode/plate-toggle/react';
-import {
-  ParagraphPlugin,
-  useEditorRef,
-  useSelectionFragmentProp,
-} from '@udecode/plate/react';
+import { KEYS } from '@udecode/plate';
+import { useEditorRef, useSelectionFragmentProp } from '@udecode/plate/react';
 import {
   CheckIcon,
   ChevronRightIcon,
@@ -49,7 +42,7 @@ const turnIntoItems = [
     icon: <PilcrowIcon />,
     keywords: ['paragraph'],
     label: 'Text',
-    value: ParagraphPlugin.key,
+    value: KEYS.p,
   },
   {
     icon: <Heading1Icon />,
@@ -73,37 +66,37 @@ const turnIntoItems = [
     icon: <ListIcon />,
     keywords: ['unordered', 'ul', '-'],
     label: 'Bulleted list',
-    value: ListStyleType.Disc,
+    value: KEYS.ul,
   },
   {
     icon: <ListOrderedIcon />,
     keywords: ['ordered', 'ol', '1'],
     label: 'Numbered list',
-    value: ListStyleType.Decimal,
+    value: KEYS.ol,
   },
   {
     icon: <SquareIcon />,
     keywords: ['checklist', 'task', 'checkbox', '[]'],
     label: 'To-do list',
-    value: INDENT_LIST_KEYS.todo,
+    value: KEYS.listTodo,
   },
   {
     icon: <ChevronRightIcon />,
     keywords: ['collapsible', 'expandable'],
     label: 'Toggle list',
-    value: TogglePlugin.key,
+    value: KEYS.toggle,
   },
   {
     icon: <FileCodeIcon />,
     keywords: ['```'],
     label: 'Code',
-    value: CodeBlockPlugin.key,
+    value: KEYS.codeBlock,
   },
   {
     icon: <QuoteIcon />,
     keywords: ['citation', 'blockquote', '>'],
     label: 'Quote',
-    value: BlockquotePlugin.key,
+    value: KEYS.blockquote,
   },
   {
     icon: <Columns3Icon />,
@@ -117,15 +110,14 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
   const [open, setOpen] = React.useState(false);
 
   const value = useSelectionFragmentProp({
-    defaultValue: ParagraphPlugin.key,
+    defaultValue: KEYS.p,
     structuralTypes: STRUCTURAL_TYPES,
     getProp: (node) => getBlockType(node as TElement),
   });
   const selectedItem = React.useMemo(
     () =>
-      turnIntoItems.find(
-        (item) => item.value === (value ?? ParagraphPlugin.key)
-      ) ?? turnIntoItems[0],
+      turnIntoItems.find((item) => item.value === (value ?? KEYS.p)) ??
+      turnIntoItems[0],
     [value]
   );
 

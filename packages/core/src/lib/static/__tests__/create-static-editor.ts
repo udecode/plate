@@ -1,4 +1,4 @@
-import type { Value } from '@udecode/plate';
+import { KEYS, type Value } from '@udecode/plate';
 
 import { withProps } from '@udecode/cn';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
@@ -29,7 +29,6 @@ import {
 import {
   BaseHeadingPlugin,
   BaseTocPlugin,
-  HEADING_KEYS,
   HEADING_LEVELS,
 } from '@udecode/plate-heading';
 import { BaseHighlightPlugin } from '@udecode/plate-highlight';
@@ -131,20 +130,22 @@ export const createStaticEditor = (
       BaseIndentPlugin.extend({
         inject: {
           targetPlugins: [
-            BaseParagraphPlugin.key,
-            BaseBlockquotePlugin.key,
-            BaseCodeBlockPlugin.key,
+            KEYS.p,
+            ...KEYS.heading,
+            KEYS.blockquote,
+            KEYS.codeBlock,
+            KEYS.toggle,
           ],
         },
       }),
       BaseListPlugin.extend({
         inject: {
           targetPlugins: [
-            BaseParagraphPlugin.key,
-            ...HEADING_LEVELS,
-            BaseBlockquotePlugin.key,
-            BaseCodeBlockPlugin.key,
-            BaseTogglePlugin.key,
+            KEYS.p,
+            ...KEYS.heading,
+            KEYS.blockquote,
+            KEYS.codeBlock,
+            KEYS.toggle,
           ],
         },
         options: {
@@ -229,10 +230,10 @@ export const components = {
   [BaseTogglePlugin.key]: ToggleElementStatic,
   [BaseUnderlinePlugin.key]: withProps(SlateLeaf, { as: 'u' }),
   [BaseVideoPlugin.key]: VideoElementStatic,
-  h1: withProps(HeadingElementStatic, { variant: 'h1' }),
-  h2: withProps(HeadingElementStatic, { variant: 'h2' }),
-  h3: withProps(HeadingElementStatic, { variant: 'h3' }),
-  h4: withProps(HeadingElementStatic, { variant: 'h4' }),
-  h5: withProps(HeadingElementStatic, { variant: 'h5' }),
-  h6: withProps(HeadingElementStatic, { variant: 'h6' }),
+  [KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
+  [KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
+  [KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
+  [KEYS.h4]: withProps(HeadingElementStatic, { variant: 'h4' }),
+  [KEYS.h5]: withProps(HeadingElementStatic, { variant: 'h5' }),
+  [KEYS.h6]: withProps(HeadingElementStatic, { variant: 'h6' }),
 };

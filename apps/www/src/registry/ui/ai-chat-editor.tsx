@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import { withProps } from '@udecode/cn';
-import { BaseParagraphPlugin, SlateLeaf } from '@udecode/plate';
+import { BaseParagraphPlugin, KEYS, SlateLeaf } from '@udecode/plate';
 import { useAIChatEditor } from '@udecode/plate-ai/react';
 import {
   BaseBoldPlugin,
@@ -16,11 +16,7 @@ import {
 } from '@udecode/plate-basic-marks';
 import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
 import { BaseCalloutPlugin } from '@udecode/plate-callout';
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-  BaseCodeSyntaxPlugin,
-} from '@udecode/plate-code-block';
+import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,
@@ -41,19 +37,9 @@ import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
 } from '@udecode/plate-math';
-import {
-  BaseAudioPlugin,
-  BaseFilePlugin,
-  BaseImagePlugin,
-  BaseVideoPlugin,
-} from '@udecode/plate-media';
+import { BaseImagePlugin } from '@udecode/plate-media';
 import { BaseMentionPlugin } from '@udecode/plate-mention';
-import {
-  BaseTableCellHeaderPlugin,
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '@udecode/plate-table';
+import { BaseTablePlugin } from '@udecode/plate-table';
 import { usePlateEditor } from '@udecode/plate/react';
 import { all, createLowlight } from 'lowlight';
 
@@ -98,45 +84,45 @@ import {
 import { TocElementStatic } from './toc-node-static';
 
 const components = {
-  [BaseAudioPlugin.key]: AudioElementStatic,
-  [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
-  [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
-  [BaseCalloutPlugin.key]: CalloutElementStatic,
-  [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
-  [BaseCodeLinePlugin.key]: CodeLineElementStatic,
-  [BaseCodePlugin.key]: CodeLeafStatic,
-  [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
-  [BaseColumnItemPlugin.key]: ColumnElementStatic,
-  [BaseColumnPlugin.key]: ColumnGroupElementStatic,
-  [BaseDatePlugin.key]: DateElement,
-  [BaseEquationPlugin.key]: EquationElementStatic,
-  [BaseFilePlugin.key]: FileElementStatic,
-  [BaseHighlightPlugin.key]: HighlightLeafStatic,
-  [BaseHorizontalRulePlugin.key]: HrElementStatic,
-  [BaseImagePlugin.key]: ImageElementStatic,
-  [BaseInlineEquationPlugin.key]: InlineEquationElementStatic,
-  [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: 'em' }),
-  [BaseKbdPlugin.key]: KbdLeaf,
-  [BaseLinkPlugin.key]: LinkElementStatic,
-  [BaseMentionPlugin.key]: MentionElementStatic,
-  [BaseParagraphPlugin.key]: ParagraphElementStatic,
-  [BaseStrikethroughPlugin.key]: withProps(SlateLeaf, { as: 's' }),
-  [BaseSubscriptPlugin.key]: withProps(SlateLeaf, { as: 'sub' }),
-  [BaseSuperscriptPlugin.key]: withProps(SlateLeaf, { as: 'sup' }),
-  [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
-  [BaseTableCellPlugin.key]: TableCellElementStatic,
-  [BaseTablePlugin.key]: TableElementStatic,
-  [BaseTableRowPlugin.key]: TableRowElementStatic,
-  [BaseTocPlugin.key]: TocElementStatic,
-  [BaseUnderlinePlugin.key]: withProps(SlateLeaf, { as: 'u' }),
+  [KEYS.audio]: AudioElementStatic,
+  [KEYS.blockquote]: BlockquoteElementStatic,
+  [KEYS.bold]: withProps(SlateLeaf, { as: 'strong' }),
+  [KEYS.callout]: CalloutElementStatic,
+  [KEYS.code]: CodeLeafStatic,
+  [KEYS.codeBlock]: CodeBlockElementStatic,
+  [KEYS.codeLine]: CodeLineElementStatic,
+  [KEYS.codeSyntax]: CodeSyntaxLeafStatic,
+  [KEYS.column]: ColumnElementStatic,
+  [KEYS.columnGroup]: ColumnGroupElementStatic,
+  [KEYS.date]: DateElement,
+  [KEYS.equation]: EquationElementStatic,
+  [KEYS.file]: FileElementStatic,
+  [KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
+  [KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
+  [KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
+  [KEYS.highlight]: HighlightLeafStatic,
+  [KEYS.hr]: HrElementStatic,
+  [KEYS.img]: ImageElementStatic,
+  [KEYS.inlineEquation]: InlineEquationElementStatic,
+  [KEYS.italic]: withProps(SlateLeaf, { as: 'em' }),
+  [KEYS.kbd]: KbdLeaf,
+  [KEYS.link]: LinkElementStatic,
+  [KEYS.mention]: MentionElementStatic,
+  [KEYS.p]: ParagraphElementStatic,
+  [KEYS.strikethrough]: withProps(SlateLeaf, { as: 's' }),
+  [KEYS.sub]: withProps(SlateLeaf, { as: 'sub' }),
+  [KEYS.sup]: withProps(SlateLeaf, { as: 'sup' }),
+  [KEYS.table]: TableElementStatic,
+  [KEYS.td]: TableCellElementStatic,
+  [KEYS.th]: TableCellHeaderStaticElement,
 
-  [BaseVideoPlugin.key]: VideoElementStatic,
-  h1: withProps(HeadingElementStatic, { variant: 'h1' }),
-  h2: withProps(HeadingElementStatic, { variant: 'h2' }),
-  h3: withProps(HeadingElementStatic, { variant: 'h3' }),
+  [KEYS.toc]: TocElementStatic,
+  [KEYS.tr]: TableRowElementStatic,
+  [KEYS.underline]: withProps(SlateLeaf, { as: 'u' }),
+  [KEYS.video]: VideoElementStatic,
 
-  // [BaseCommentsPlugin.key]: CommentLeafStatic
-  // [BaseTogglePlugin.key]: ToggleElementStatic
+  // [KEYS.comment]: CommentLeafStatic
+  // [KEYS.toggle]: ToggleElementStatic
 };
 const lowlight = createLowlight(all);
 
@@ -173,12 +159,12 @@ const plugins = [
   BaseCalloutPlugin,
   BaseIndentPlugin.extend({
     inject: {
-      targetPlugins: [BaseParagraphPlugin.key],
+      targetPlugins: [KEYS.p],
     },
   }),
   BaseListPlugin.extend({
     inject: {
-      targetPlugins: [BaseParagraphPlugin.key],
+      targetPlugins: [KEYS.p],
     },
     options: {
       listStyleTypes: {

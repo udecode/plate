@@ -2,37 +2,17 @@
 
 import type React from 'react';
 
-import type { TElement, TText } from '@udecode/plate';
-import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import type {
-  CodeBlockPlugin,
-  CodeLinePlugin,
-} from '@udecode/plate-code-block/react';
+import type { KEYS, TElement, TText } from '@udecode/plate';
 import type { TCommentText } from '@udecode/plate-comments';
 import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
-import type { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
-import type { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import type { TLinkElement } from '@udecode/plate-link';
-import type { LinkPlugin } from '@udecode/plate-link/react';
 import type { TImageElement, TMediaEmbedElement } from '@udecode/plate-media';
-import type { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import type {
   TMentionElement,
   TMentionInputElement,
 } from '@udecode/plate-mention';
-import type {
-  MentionInputPlugin,
-  MentionPlugin,
-} from '@udecode/plate-mention/react';
 import type { TTableElement } from '@udecode/plate-table';
-import type {
-  TableCellPlugin,
-  TablePlugin,
-  TableRowPlugin,
-} from '@udecode/plate-table/react';
 import type { TToggleElement } from '@udecode/plate-toggle';
-import type { TogglePlugin } from '@udecode/plate-toggle/react';
-import type { ParagraphPlugin } from '@udecode/plate/react';
 
 /** Text */
 
@@ -55,24 +35,24 @@ export interface MyBlockElement
 
 export interface MyBlockquoteElement extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof BlockquotePlugin.key;
+  type: typeof KEYS.blockquote;
 }
 
 export interface MyCodeBlockElement extends MyBlockElement {
   children: MyCodeLineElement[];
-  type: typeof CodeBlockPlugin.key;
+  type: typeof KEYS.codeBlock;
 }
 
 export interface MyCodeLineElement extends TElement {
   children: PlainText[];
-  type: typeof CodeLinePlugin.key;
+  type: typeof KEYS.codeLine;
 }
 
 export interface MyExcalidrawElement
   extends MyBlockElement,
     TExcalidrawElement {
   children: [EmptyText];
-  type: typeof ExcalidrawPlugin.key;
+  type: typeof KEYS.excalidraw;
 }
 
 export interface MyH1Element extends MyBlockElement {
@@ -94,12 +74,12 @@ export interface MyH3Element extends MyBlockElement {
 
 export interface MyHrElement extends MyBlockElement {
   children: [EmptyText];
-  type: typeof HorizontalRulePlugin.key;
+  type: typeof KEYS.hr;
 }
 
 export interface MyImageElement extends MyBlockElement, TImageElement {
   children: [EmptyText];
-  type: typeof ImagePlugin.key;
+  type: typeof KEYS.img;
 }
 
 export interface MyListProps extends MyIndentProps {
@@ -129,31 +109,31 @@ export interface MyLineHeightProps {
 
 export interface MyLinkElement extends TLinkElement {
   children: RichText[];
-  type: typeof LinkPlugin.key;
+  type: typeof KEYS.link;
 }
 
 export interface MyMediaEmbedElement
   extends MyBlockElement,
     TMediaEmbedElement {
   children: [EmptyText];
-  type: typeof MediaEmbedPlugin.key;
+  type: typeof KEYS.mediaEmbed;
 }
 
 export interface MyMentionElement extends TMentionElement {
   children: [EmptyText];
-  type: typeof MentionPlugin.key;
+  type: typeof KEYS.mention;
 }
 
 export interface MyMentionInputElement extends TMentionInputElement {
   children: [PlainText];
-  type: typeof MentionInputPlugin.key;
+  type: typeof KEYS.mentionInput;
 }
 
 export type MyNestableBlock = MyParagraphElement;
 
 export interface MyParagraphElement extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ParagraphPlugin.key;
+  type: typeof KEYS.p;
 }
 
 export type MyRootBlock =
@@ -172,22 +152,22 @@ export type MyRootBlock =
 
 export interface MyTableCellElement extends TElement {
   children: MyNestableBlock[];
-  type: typeof TableCellPlugin.key;
+  type: typeof KEYS.td;
 }
 
 export interface MyTableElement extends MyBlockElement, TTableElement {
   children: MyTableRowElement[];
-  type: typeof TablePlugin.key;
+  type: typeof KEYS.table;
 }
 
 export interface MyTableRowElement extends TElement {
   children: MyTableCellElement[];
-  type: typeof TableRowPlugin.key;
+  type: typeof KEYS.tr;
 }
 
 export interface MyToggleElement extends MyBlockElement, TToggleElement {
   children: MyInlineChildren;
-  type: typeof TogglePlugin.key;
+  type: typeof KEYS.toggle;
 }
 
 export type MyValue = MyRootBlock[];

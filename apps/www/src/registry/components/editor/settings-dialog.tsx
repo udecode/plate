@@ -1,9 +1,11 @@
 'use client';
 
+/* DEMO ONLY, DO NOT USE IN PRODUCTION */
+
 import * as React from 'react';
 
 import { CopilotPlugin } from '@udecode/plate-ai/react';
-import { useEditorPlugin } from '@udecode/plate/react';
+import { useEditorRef } from '@udecode/plate/react';
 import {
   Check,
   ChevronsUpDown,
@@ -38,17 +40,11 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
 
 interface Model {
   label: string;
   value: string;
-}
-
-interface SettingsContextType {
-  keys: Record<string, string>;
-  model: Model;
-  setKey: (service: string, key: string) => void;
-  setModel: (model: Model) => void;
 }
 
 export const models: Model[] = [
@@ -60,68 +56,43 @@ export const models: Model[] = [
   { label: 'gpt-3.5-turbo-instruct', value: 'gpt-3.5-turbo-instruct' },
 ];
 
-const SettingsContext = React.createContext<SettingsContextType | undefined>(
-  undefined
-);
+export function SettingsDialog() {
+  const editor = useEditorRef();
 
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [keys, setKeys] = React.useState({
+  const [tempModel, setTempModel] = React.useState(models[0]);
+  const [tempKeys, setTempKeys] = React.useState<Record<string, string>>({
     openai: '',
     uploadthing: '',
   });
-  const [model, setModel] = React.useState<Model>(models[0]);
-
-  const setKey = (service: string, key: string) => {
-    setKeys((prev) => ({ ...prev, [service]: key }));
-  };
-
-  return (
-    <SettingsContext.Provider value={{ keys, model, setKey, setModel }}>
-      {children}
-    </SettingsContext.Provider>
-  );
-}
-
-export function useSettings() {
-  const context = React.useContext(SettingsContext);
-
-  return (
-    context ?? {
-      keys: {
-        openai: '',
-        uploadthing: '',
-      },
-      model: models[0],
-      setKey: () => {},
-      setModel: () => {},
-    }
-  );
-}
-
-export function SettingsDialog() {
-  const { keys, model, setKey, setModel } = useSettings();
-  const [tempKeys, setTempKeys] = React.useState(keys);
   const [showKey, setShowKey] = React.useState<Record<string, boolean>>({});
   const [open, setOpen] = React.useState(false);
   const [openModel, setOpenModel] = React.useState(false);
 
-  const { getOptions, setOption } = useEditorPlugin(CopilotPlugin);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    Object.entries(tempKeys).forEach(([service, key]) => {
-      setKey(service, key);
+
+    // Update AI chat options
+    const chatOptions = editor.getOptions(aiChatPlugin).chatOptions ?? {};
+    editor.setOption(aiChatPlugin, 'chatOptions', {
+      ...chatOptions,
+      body: {
+        ...chatOptions.body,
+        apiKey: tempKeys.openai,
+        model: tempModel.value,
+      },
     });
+
     setOpen(false);
 
-    // Update AI options if needed
-    const completeOptions = getOptions().completeOptions ?? {};
-    setOption('completeOptions', {
+    // Update AI complete options
+    const completeOptions =
+      editor.getOptions(CopilotPlugin).completeOptions ?? {};
+    editor.setOption(CopilotPlugin, 'completeOptions', {
       ...completeOptions,
       body: {
         ...completeOptions.body,
         apiKey: tempKeys.openai,
-        model: model.value,
+        model: tempModel.value,
       },
     });
   };
@@ -201,7 +172,7 @@ export function SettingsDialog() {
             'group fixed right-4 bottom-4 z-50 size-10 overflow-hidden',
             'rounded-full shadow-md hover:shadow-lg'
           )}
-          data-block-hide
+          // data-block-hide
         >
           <Settings className="size-4" />
         </Button>
@@ -243,7 +214,7 @@ export function SettingsDialog() {
                       aria-expanded={openModel}
                       role="combobox"
                     >
-                      <code>{model.label}</code>
+                      <code>{tempModel.label}</code>
                       <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
@@ -258,14 +229,14 @@ export function SettingsDialog() {
                               key={m.value}
                               value={m.value}
                               onSelect={() => {
-                                setModel(m);
+                                setTempModel(m);
                                 setOpenModel(false);
                               }}
                             >
                               <Check
                                 className={cn(
                                   'mr-2 size-4',
-                                  model.value === m.value
+                                  tempModel.value === m.value
                                     ? 'opacity-100'
                                     : 'opacity-0'
                                 )}

@@ -38,16 +38,13 @@ npm install @udecode/plate-indent
 
 ```tsx
 import { IndentPlugin } from '@udecode/plate-indent/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HeadingPlugin } from '@udecode/plate-heading/react';
-import { ParagraphPlugin } from '@udecode/plate/react';
+import { KEYS } from '@udecode/plate';
 
 const plugins = [
   // ...其他插件,
-  HeadingPlugin,
   IndentPlugin.configure({
     inject: {
-      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+      targetPlugins: [KEYS.p, KEYS.h1],
     },
   }),
 ];

@@ -3,8 +3,9 @@
 import * as React from 'react';
 
 import type { AIChatPluginConfig } from '@udecode/plate-ai/react';
+import type { UseChatOptions } from 'ai/react';
 
-import { PathApi } from '@udecode/plate';
+import { KEYS, PathApi } from '@udecode/plate';
 import { streamInsertChunk, withAIBatch } from '@udecode/plate-ai';
 import { AIChatPlugin, AIPlugin, useChatChunk } from '@udecode/plate-ai/react';
 import { usePluginOption } from '@udecode/plate/react';
@@ -15,81 +16,89 @@ import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
 
+export const aiChatPlugin = AIChatPlugin.configure({
+  options: {
+    promptTemplate: ({ isBlockSelecting, isSelecting }) => {
+      return isBlockSelecting
+        ? PROMPT_TEMPLATES.userBlockSelecting
+        : isSelecting
+          ? PROMPT_TEMPLATES.userSelecting
+          : PROMPT_TEMPLATES.userDefault;
+    },
+    systemTemplate: ({ isBlockSelecting, isSelecting }) => {
+      return isBlockSelecting
+        ? PROMPT_TEMPLATES.systemBlockSelecting
+        : isSelecting
+          ? PROMPT_TEMPLATES.systemSelecting
+          : PROMPT_TEMPLATES.systemDefault;
+    },
+  },
+  render: {
+    node: AIAnchorElement,
+    afterContainer: () => <AILoadingBar />,
+    afterEditable: () => <AIMenu />,
+  },
+}).extend({
+  options: {
+    chatOptions: {
+      api: '/api/ai/command',
+      body: {},
+    } as UseChatOptions,
+  },
+  useHooks: ({ editor, getOption }) => {
+    const mode = usePluginOption(
+      { key: 'aiChat' } as AIChatPluginConfig,
+      'mode'
+    );
+
+    useChatChunk({
+      onChunk: ({ chunk, isFirst, nodes }) => {
+        if (isFirst && mode == 'insert') {
+          editor.tf.withoutSaving(() => {
+            editor.tf.insertNodes(
+              {
+                children: [{ text: '' }],
+                type: KEYS.aiChat,
+              },
+              {
+                at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+              }
+            );
+          });
+          editor.setOption(AIChatPlugin, 'streaming', true);
+        }
+
+        if (mode === 'insert' && nodes.length > 0) {
+          withAIBatch(
+            editor,
+            () => {
+              if (!getOption('streaming')) return;
+              editor.tf.withScrolling(() => {
+                streamInsertChunk(editor, chunk, {
+                  textProps: {
+                    ai: true,
+                  },
+                });
+              });
+            },
+            { split: isFirst }
+          );
+        }
+      },
+      onFinish: () => {
+        editor.setOption(AIChatPlugin, 'streaming', false);
+        editor.setOption(AIChatPlugin, '_blockChunks', '');
+        editor.setOption(AIChatPlugin, '_blockPath', null);
+      },
+    });
+  },
+});
+
 export const AIKit = [
   ...CursorOverlayKit,
   ...MarkdownKit,
   AIPlugin.withComponent(AILeaf),
-  AIChatPlugin.configure({
-    options: {
-      promptTemplate: ({ isBlockSelecting, isSelecting }) => {
-        return isBlockSelecting
-          ? PROMPT_TEMPLATES.userBlockSelecting
-          : isSelecting
-            ? PROMPT_TEMPLATES.userSelecting
-            : PROMPT_TEMPLATES.userDefault;
-      },
-      systemTemplate: ({ isBlockSelecting, isSelecting }) => {
-        return isBlockSelecting
-          ? PROMPT_TEMPLATES.systemBlockSelecting
-          : isSelecting
-            ? PROMPT_TEMPLATES.systemSelecting
-            : PROMPT_TEMPLATES.systemDefault;
-      },
-    },
-    render: {
-      node: AIAnchorElement,
-      afterContainer: () => <AILoadingBar />,
-      afterEditable: () => <AIMenu />,
-    },
-  }).extend({
-    useHooks: ({ editor, getOption }) => {
-      const mode = usePluginOption(
-        { key: 'aiChat' } as AIChatPluginConfig,
-        'mode'
-      );
-
-      useChatChunk({
-        onChunk: ({ chunk, isFirst, nodes }) => {
-          if (isFirst && mode == 'insert') {
-            editor.tf.withoutSaving(() => {
-              editor.tf.insertNodes(
-                {
-                  children: [{ text: '' }],
-                  type: AIChatPlugin.key,
-                },
-                {
-                  at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
-                }
-              );
-            });
-            editor.setOption(AIChatPlugin, 'streaming', true);
-          }
-
-          if (mode === 'insert' && nodes.length > 0) {
-            withAIBatch(
-              editor,
-              () => {
-                if (!getOption('streaming')) return;
-                editor.tf.withScrolling(() => {
-                  streamInsertChunk(editor, chunk, {
-                    textProps: {
-                      ai: true,
-                    },
-                  });
-                });
-              },
-              { split: isFirst }
-            );
-          }
-        },
-        onFinish: () => {
-          editor.setOption(AIChatPlugin, 'streaming', false);
-          editor.setOption(AIChatPlugin, '_blockChunks', '');
-          editor.setOption(AIChatPlugin, '_blockPath', null);
-        },
-      });
-    },
-  }),
+  aiChatPlugin,
 ];
 
 const systemCommon = `\

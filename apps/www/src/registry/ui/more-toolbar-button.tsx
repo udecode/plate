@@ -4,11 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import {
-  SubscriptPlugin,
-  SuperscriptPlugin,
-} from '@udecode/plate-basic-marks/react';
-import { KbdPlugin } from '@udecode/plate-kbd/react';
+import { KEYS } from '@udecode/plate';
 import { useEditorRef } from '@udecode/plate/react';
 import {
   KeyboardIcon,
@@ -46,7 +42,7 @@ export function MoreToolbarButton(props: DropdownMenuProps) {
         <DropdownMenuGroup>
           <DropdownMenuItem
             onSelect={() => {
-              editor.tf.toggleMark(KbdPlugin.key);
+              editor.tf.toggleMark(KEYS.kbd);
               editor.tf.collapse({ edge: 'end' });
               editor.tf.focus();
             }}
@@ -57,8 +53,8 @@ export function MoreToolbarButton(props: DropdownMenuProps) {
 
           <DropdownMenuItem
             onSelect={() => {
-              editor.tf.toggleMark(SuperscriptPlugin.key, {
-                remove: SubscriptPlugin.key,
+              editor.tf.toggleMark(KEYS.sup, {
+                remove: KEYS.sub,
               });
               editor.tf.focus();
             }}
@@ -69,8 +65,8 @@ export function MoreToolbarButton(props: DropdownMenuProps) {
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {
-              editor.tf.toggleMark(SubscriptPlugin.key, {
-                remove: SuperscriptPlugin.key,
+              editor.tf.toggleMark(KEYS.sub, {
+                remove: KEYS.sup,
               });
               editor.tf.focus();
             }}

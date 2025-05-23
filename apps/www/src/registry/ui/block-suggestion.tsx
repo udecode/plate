@@ -13,25 +13,10 @@ import {
   type Path,
   type TElement,
   ElementApi,
+  KEYS,
   PathApi,
   TextApi,
 } from '@udecode/plate';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CalloutPlugin } from '@udecode/plate-callout/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { TocPlugin } from '@udecode/plate-heading/react';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { ColumnPlugin } from '@udecode/plate-layout/react';
-import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-list';
-import { ListPlugin } from '@udecode/plate-list/react';
-import { EquationPlugin } from '@udecode/plate-math/react';
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  MediaEmbedPlugin,
-  VideoPlugin,
-} from '@udecode/plate-media/react';
 import {
   acceptSuggestion,
   getSuggestionKey,
@@ -39,13 +24,7 @@ import {
   rejectSuggestion,
 } from '@udecode/plate-suggestion';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import { TablePlugin } from '@udecode/plate-table/react';
-import { TogglePlugin } from '@udecode/plate-toggle/react';
-import {
-  ParagraphPlugin,
-  useEditorPlugin,
-  usePluginOption,
-} from '@udecode/plate/react';
+import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 import { CheckIcon, XIcon } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -71,33 +50,33 @@ export interface ResolvedSuggestion extends TResolvedSuggestion {
 const BLOCK_SUGGESTION = '__block__';
 
 const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
-  [AudioPlugin.key]: () => 'Audio',
-  [BlockquotePlugin.key]: () => 'Blockquote',
-  [CalloutPlugin.key]: () => 'Callout',
-  [CodeBlockPlugin.key]: () => 'Code Block',
-  [ColumnPlugin.key]: () => 'Column',
-  [EquationPlugin.key]: () => 'Equation',
-  [FilePlugin.key]: () => 'File',
-  h1: () => `Heading 1`,
-  h2: () => `Heading 2`,
-  h3: () => `Heading 3`,
-  h4: () => `Heading 4`,
-  h5: () => `Heading 5`,
-  h6: () => `Heading 6`,
-  [HorizontalRulePlugin.key]: () => 'Horizontal Rule',
-  [ImagePlugin.key]: () => 'Image',
-  [MediaEmbedPlugin.key]: () => 'Media',
-  [ParagraphPlugin.key]: (node) => {
-    if (node?.[ListPlugin.key] === INDENT_LIST_KEYS.todo) return 'Todo List';
-    if (node?.[ListPlugin.key] === ListStyleType.Decimal) return 'Ordered List';
-    if (node?.[ListPlugin.key] === ListStyleType.Disc) return 'List';
+  [KEYS.audio]: () => 'Audio',
+  [KEYS.blockquote]: () => 'Blockquote',
+  [KEYS.callout]: () => 'Callout',
+  [KEYS.codeBlock]: () => 'Code Block',
+  [KEYS.column]: () => 'Column',
+  [KEYS.equation]: () => 'Equation',
+  [KEYS.file]: () => 'File',
+  [KEYS.h1]: () => `Heading 1`,
+  [KEYS.h2]: () => `Heading 2`,
+  [KEYS.h3]: () => `Heading 3`,
+  [KEYS.h4]: () => `Heading 4`,
+  [KEYS.h5]: () => `Heading 5`,
+  [KEYS.h6]: () => `Heading 6`,
+  [KEYS.hr]: () => 'Horizontal Rule',
+  [KEYS.img]: () => 'Image',
+  [KEYS.mediaEmbed]: () => 'Media',
+  [KEYS.p]: (node) => {
+    if (node?.[KEYS.listType] === KEYS.listTodo) return 'Todo List';
+    if (node?.[KEYS.listType] === KEYS.ol) return 'Ordered List';
+    if (node?.[KEYS.listType] === KEYS.ul) return 'List';
 
     return 'Paragraph';
   },
-  [TablePlugin.key]: () => 'Table',
-  [TocPlugin.key]: () => 'Table of Contents',
-  [TogglePlugin.key]: () => 'Toggle',
-  [VideoPlugin.key]: () => 'Video',
+  [KEYS.table]: () => 'Table',
+  [KEYS.toc]: () => 'Table of Contents',
+  [KEYS.toggle]: () => 'Toggle',
+  [KEYS.video]: () => 'Video',
 };
 
 export function BlockSuggestion({ element }: { element: TSuggestionElement }) {
@@ -379,7 +358,7 @@ export const useResolveSuggestion = (
           at: [],
           mode: 'all',
           match: (n) =>
-            (n[SuggestionPlugin.key] && n[getSuggestionKey(id)]) ||
+            (n[KEYS.suggestion] && n[getSuggestionKey(id)]) ||
             api.suggestion.nodeId(n as TElement) === id,
         }),
       ];

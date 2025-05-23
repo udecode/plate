@@ -4,26 +4,8 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { DatePlugin } from '@udecode/plate-date/react';
-import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
-import { TocPlugin } from '@udecode/plate-heading/react';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
-import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-list';
-import {
-  EquationPlugin,
-  InlineEquationPlugin,
-} from '@udecode/plate-math/react';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
-import { TablePlugin } from '@udecode/plate-table/react';
-import { TogglePlugin } from '@udecode/plate-toggle/react';
-import {
-  type PlateEditor,
-  ParagraphPlugin,
-  useEditorRef,
-} from '@udecode/plate/react';
+import { KEYS } from '@udecode/plate';
+import { type PlateEditor, useEditorRef } from '@udecode/plate/react';
 import {
   CalendarIcon,
   ChevronRightIcon,
@@ -81,7 +63,7 @@ const groups: Group[] = [
       {
         icon: <PilcrowIcon />,
         label: 'Paragraph',
-        value: ParagraphPlugin.key,
+        value: KEYS.p,
       },
       {
         icon: <Heading1Icon />,
@@ -101,22 +83,22 @@ const groups: Group[] = [
       {
         icon: <TableIcon />,
         label: 'Table',
-        value: TablePlugin.key,
+        value: KEYS.table,
       },
       {
         icon: <FileCodeIcon />,
         label: 'Code',
-        value: CodeBlockPlugin.key,
+        value: KEYS.codeBlock,
       },
       {
         icon: <QuoteIcon />,
         label: 'Quote',
-        value: BlockquotePlugin.key,
+        value: KEYS.blockquote,
       },
       {
         icon: <MinusIcon />,
         label: 'Divider',
-        value: HorizontalRulePlugin.key,
+        value: KEYS.hr,
       },
     ].map((item) => ({
       ...item,
@@ -131,22 +113,22 @@ const groups: Group[] = [
       {
         icon: <ListIcon />,
         label: 'Bulleted list',
-        value: ListStyleType.Disc,
+        value: KEYS.ul,
       },
       {
         icon: <ListOrderedIcon />,
         label: 'Numbered list',
-        value: ListStyleType.Decimal,
+        value: KEYS.ol,
       },
       {
         icon: <SquareIcon />,
         label: 'To-do list',
-        value: INDENT_LIST_KEYS.todo,
+        value: KEYS.listTodo,
       },
       {
         icon: <ChevronRightIcon />,
         label: 'Toggle list',
-        value: TogglePlugin.key,
+        value: KEYS.toggle,
       },
     ].map((item) => ({
       ...item,
@@ -161,17 +143,17 @@ const groups: Group[] = [
       {
         icon: <ImageIcon />,
         label: 'Image',
-        value: ImagePlugin.key,
+        value: KEYS.img,
       },
       {
         icon: <FilmIcon />,
         label: 'Embed',
-        value: MediaEmbedPlugin.key,
+        value: KEYS.mediaEmbed,
       },
       {
         icon: <PenToolIcon />,
         label: 'Excalidraw',
-        value: ExcalidrawPlugin.key,
+        value: KEYS.excalidraw,
       },
     ].map((item) => ({
       ...item,
@@ -186,7 +168,7 @@ const groups: Group[] = [
       {
         icon: <TableOfContentsIcon />,
         label: 'Table of contents',
-        value: TocPlugin.key,
+        value: KEYS.toc,
       },
       {
         icon: <Columns3Icon />,
@@ -197,7 +179,7 @@ const groups: Group[] = [
         focusEditor: false,
         icon: <RadicalIcon />,
         label: 'Equation',
-        value: EquationPlugin.key,
+        value: KEYS.equation,
       },
     ].map((item) => ({
       ...item,
@@ -212,19 +194,19 @@ const groups: Group[] = [
       {
         icon: <Link2Icon />,
         label: 'Link',
-        value: LinkPlugin.key,
+        value: KEYS.link,
       },
       {
         focusEditor: true,
         icon: <CalendarIcon />,
         label: 'Date',
-        value: DatePlugin.key,
+        value: KEYS.date,
       },
       {
         focusEditor: false,
         icon: <RadicalIcon />,
         label: 'Inline Equation',
-        value: InlineEquationPlugin.key,
+        value: KEYS.inlineEquation,
       },
     ].map((item) => ({
       ...item,

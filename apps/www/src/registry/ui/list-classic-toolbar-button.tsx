@@ -2,12 +2,12 @@
 
 import * as React from 'react';
 
+import { KEYS } from '@udecode/plate';
 import {
   indentListItems,
   unindentListItems,
 } from '@udecode/plate-list-classic';
 import {
-  BulletedListPlugin,
   useListToolbarButton,
   useListToolbarButtonState,
 } from '@udecode/plate-list-classic/react';
@@ -17,7 +17,7 @@ import { IndentIcon, List, ListOrdered, OutdentIcon } from 'lucide-react';
 import { ToolbarButton } from './toolbar';
 
 export function ListToolbarButton({
-  nodeType = BulletedListPlugin.key,
+  nodeType = KEYS.ulClassic,
   ...props
 }: React.ComponentProps<typeof ToolbarButton> & {
   nodeType?: string;
@@ -29,11 +29,9 @@ export function ListToolbarButton({
     <ToolbarButton
       {...props}
       {...buttonProps}
-      tooltip={
-        nodeType === BulletedListPlugin.key ? 'Bulleted List' : 'Numbered List'
-      }
+      tooltip={nodeType === KEYS.ulClassic ? 'Bulleted List' : 'Numbered List'}
     >
-      {nodeType === BulletedListPlugin.key ? <List /> : <ListOrdered />}
+      {nodeType === KEYS.ulClassic ? <List /> : <ListOrdered />}
     </ToolbarButton>
   );
 }

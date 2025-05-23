@@ -33,17 +33,16 @@ npm install @udecode/plate-indent @udecode/plate-node-id @udecode/plate-toggle
 ## 使用
 
 ```tsx
-import { ParagraphPlugin } from '@udecode/plate/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
+import { KEYS } from '@udecode/plate';
 
 const plugins = [
   // ...其他插件,
-  HeadingPlugin,
   IndentPlugin.configure({
     inject: {
-      targetPlugins: [TogglePlugin.key, ParagraphPlugin.key, HEADING_KEYS.h1],
+      targetPlugins: [KEYS.toggle, KEYS.p, KEYS.h1],
     },
   }),
   NodeIdPlugin,

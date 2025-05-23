@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
+import { KEYS } from '@udecode/plate';
 import { TablePlugin, useTableMergeState } from '@udecode/plate-table/react';
 import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
 import {
@@ -35,7 +36,7 @@ import { ToolbarButton } from './toolbar';
 
 export function TableToolbarButton(props: DropdownMenuProps) {
   const tableSelected = useEditorSelector(
-    (editor) => editor.api.some({ match: { type: TablePlugin.key } }),
+    (editor) => editor.api.some({ match: { type: KEYS.table } }),
     []
   );
 

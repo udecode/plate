@@ -15,16 +15,13 @@ export const registryKits: Registry['items'] = [
       'cursor-overlay-kit',
       'ai-menu',
       'ai-node',
+      'ai-toolbar-button',
       'ai-api',
     ],
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@udecode/plate-alignment',
-      '@udecode/plate-heading',
-      '@udecode/plate-media',
-    ],
+    dependencies: ['@udecode/plate-alignment'],
     files: [
       {
         path: 'components/editor/plugins/align-kit.tsx',
@@ -32,19 +29,14 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'align-kit',
+    registryDependencies: ['align-toolbar-button'],
     type: 'registry:component',
   },
   {
     dependencies: [
       '@udecode/plate-autoformat',
-      '@udecode/plate-basic-marks',
-      '@udecode/plate-block-quote',
       '@udecode/plate-code-block',
-      '@udecode/plate-heading',
-      '@udecode/plate-highlight',
-      '@udecode/plate-horizontal-rule',
       '@udecode/plate-list-classic',
-      '@udecode/plate-toggle',
     ],
     files: [
       {
@@ -53,19 +45,14 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'autoformat-classic-kit',
+    registryDependencies: ['list-classic-node', 'list-classic-toolbar-button'],
     type: 'registry:component',
   },
   {
     dependencies: [
       '@udecode/plate-autoformat',
-      '@udecode/plate-basic-marks',
-      '@udecode/plate-block-quote',
       '@udecode/plate-code-block',
-      '@udecode/plate-heading',
-      '@udecode/plate-highlight',
-      '@udecode/plate-horizontal-rule',
       '@udecode/plate-list',
-      '@udecode/plate-toggle',
     ],
     files: [
       {
@@ -110,6 +97,7 @@ export const registryKits: Registry['items'] = [
     name: 'basic-marks-kit',
     registryDependencies: [
       'code-node',
+      'mark-toolbar-button',
       // 'skip-mark-kit'
     ],
     type: 'registry:component',
@@ -194,7 +182,12 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'comment-kit',
-    registryDependencies: ['discussion-kit', 'skip-mark-kit'],
+    registryDependencies: [
+      'comment-node',
+      'comment-toolbar-button',
+      'discussion-kit',
+      'skip-mark-kit',
+    ],
     type: 'registry:component',
   },
   {
@@ -238,7 +231,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-horizontal-rule', '@udecode/plate-media'],
+    dependencies: [],
     files: [
       {
         path: 'components/editor/plugins/delete-kit.tsx',
@@ -261,7 +254,12 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-dnd', '@udecode/plate-media'],
+    dependencies: [
+      '@udecode/plate-dnd',
+      '@udecode/plate-media',
+      'react-dnd',
+      'react-dnd-html5-backend',
+    ],
     files: [
       {
         path: 'components/editor/plugins/dnd-kit.tsx',
@@ -358,7 +356,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-heading'],
+    dependencies: [],
     files: [
       {
         path: 'components/editor/plugins/exit-break-kit.tsx',
@@ -377,7 +375,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'fixed-toolbar-classic-kit',
-    registryDependencies: ['fixed-toolbar', 'fixed-toolbar-buttons'],
+    registryDependencies: ['fixed-toolbar', 'fixed-toolbar-classic-buttons'],
     type: 'registry:component',
   },
   {
@@ -456,7 +454,19 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-heading', '@udecode/plate-line-height'],
+    dependencies: ['@udecode/plate-indent'],
+    files: [
+      {
+        path: 'components/editor/plugins/indent-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'indent-kit',
+    registryDependencies: ['indent-toolbar-button'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-line-height'],
     files: [
       {
         path: 'components/editor/plugins/line-height-kit.tsx',
@@ -464,6 +474,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'line-height-kit',
+    registryDependencies: ['line-height-toolbar-button'],
     type: 'registry:component',
   },
   {
@@ -479,14 +490,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-code-block',
-      '@udecode/plate-heading',
-      '@udecode/plate-indent',
-      '@udecode/plate-list',
-      '@udecode/plate-toggle',
-    ],
+    dependencies: ['@udecode/plate-list'],
     files: [
       {
         path: 'components/editor/plugins/list-kit.tsx',
@@ -494,7 +498,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'list-kit',
-    registryDependencies: ['list-todo'],
+    registryDependencies: ['list-todo', 'list-toolbar-button', 'indent-kit'],
     type: 'registry:component',
   },
   {
@@ -523,6 +527,8 @@ export const registryKits: Registry['items'] = [
   },
   {
     dependencies: ['@udecode/plate-caption', '@udecode/plate-media'],
+    description:
+      'Media kit without API (see media-uploadthing-api for reference)',
     files: [
       {
         path: 'components/editor/plugins/media-kit.tsx',
@@ -537,6 +543,7 @@ export const registryKits: Registry['items'] = [
       'media-image-node',
       'media-placeholder-node',
       'media-preview-dialog',
+      'media-toolbar',
       'media-upload-toast',
       'media-video-node',
       'media-toolbar-button',
@@ -545,6 +552,7 @@ export const registryKits: Registry['items'] = [
   },
   {
     dependencies: [],
+    description: 'media-kit + media-uploadthing-api',
     files: [],
     name: 'media-uploadthing-kit',
     registryDependencies: ['media-kit', 'media-uploadthing-api'],
@@ -574,13 +582,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-callout',
-      '@udecode/plate-code-block',
-      '@udecode/plate-heading',
-      '@udecode/plate-list',
-    ],
+    dependencies: ['@udecode/plate-code-block'],
     files: [
       {
         path: 'components/editor/plugins/reset-block-type-kit.tsx',
@@ -591,7 +593,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-basic-marks'],
+    dependencies: [],
     files: [
       {
         path: 'components/editor/plugins/skip-mark-kit.tsx',
@@ -614,12 +616,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-callout',
-      '@udecode/plate-code-block',
-      '@udecode/plate-table',
-    ],
+    dependencies: [],
     files: [
       {
         path: 'components/editor/plugins/soft-break-kit.tsx',
@@ -646,15 +643,17 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'suggestion-kit',
-    registryDependencies: ['discussion-kit', 'skip-mark-kit'],
+    registryDependencies: [
+      'suggestion-node',
+      'suggestion-line-break',
+      'suggestion-toolbar-button',
+      'discussion-kit',
+      'skip-mark-kit',
+    ],
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@udecode/plate-code-block',
-      '@udecode/plate-tabbable',
-      '@udecode/plate-table',
-    ],
+    dependencies: ['@udecode/plate-tabbable'],
     files: [
       {
         path: 'components/editor/plugins/tabbable-kit.tsx',
@@ -697,7 +696,11 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'toggle-kit',
-    registryDependencies: ['toggle-node'],
+    registryDependencies: [
+      'node-id-kit',
+      'toggle-node',
+      'toggle-toolbar-button',
+    ],
     type: 'registry:component',
   },
 ];

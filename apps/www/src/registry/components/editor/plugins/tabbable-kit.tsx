@@ -1,8 +1,7 @@
 'use client';
 
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { KEYS } from '@udecode/plate';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
-import { TablePlugin } from '@udecode/plate-table/react';
 
 export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
   node: {
@@ -16,14 +15,14 @@ export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
       return !editor.api.some({
         match: (n) => {
           return !!(
-            n.type &&
-            ([
-              'action_item',
-              CodeBlockPlugin.key,
-              'li',
-              TablePlugin.key,
-            ].includes(n.type as string) ||
-              n.listStyleType)
+            (n.type &&
+              [
+                KEYS.codeBlock,
+                KEYS.liClassic,
+                KEYS.listTodoClassic,
+                KEYS.table,
+              ].includes(n.type as any)) ||
+            n.listStyleType
           );
         },
       });

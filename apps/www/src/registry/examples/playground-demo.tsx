@@ -2,79 +2,15 @@
 
 import * as React from 'react';
 
-import {
-  DeletePlugin,
-  NormalizeTypesPlugin,
-  SelectOnBackspacePlugin,
-  TrailingBlockPlugin,
-} from '@udecode/plate';
-import { AIChatPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
-import { AlignPlugin } from '@udecode/plate-alignment/react';
-import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
-import {
-  BoldPlugin,
-  CodePlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
-  UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CaptionPlugin } from '@udecode/plate-caption/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { DndPlugin } from '@udecode/plate-dnd';
-import { DocxPlugin } from '@udecode/plate-docx';
-import { EmojiPlugin } from '@udecode/plate-emoji/react';
-import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
-import {
-  FontBackgroundColorPlugin,
-  FontColorPlugin,
-  FontSizePlugin,
-} from '@udecode/plate-font/react';
-import { HeadingPlugin } from '@udecode/plate-heading/react';
-import { HighlightPlugin } from '@udecode/plate-highlight/react';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { JuicePlugin } from '@udecode/plate-juice';
-import { KbdPlugin } from '@udecode/plate-kbd/react';
-import { ColumnPlugin } from '@udecode/plate-layout/react';
-import { LineHeightPlugin } from '@udecode/plate-line-height/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
-import {
-  ListPlugin as ListClassicPlugin,
-  TodoListPlugin,
-} from '@udecode/plate-list-classic/react';
-import { ListPlugin } from '@udecode/plate-list/react';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
-import { MentionPlugin } from '@udecode/plate-mention/react';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { KEYS, NormalizeTypesPlugin } from '@udecode/plate';
 import { PlaywrightPlugin } from '@udecode/plate-playwright';
-import {
-  BlockSelectionPlugin,
-  CursorOverlayPlugin,
-} from '@udecode/plate-selection/react';
-import { TabbablePlugin } from '@udecode/plate-tabbable/react';
-import { TablePlugin } from '@udecode/plate-table/react';
-import { TogglePlugin } from '@udecode/plate-toggle/react';
-import {
-  ExitBreakPlugin,
-  ParagraphPlugin,
-  Plate,
-  ResetNodePlugin,
-  SingleLinePlugin,
-  SoftBreakPlugin,
-  usePlateEditor,
-  useStoreValue,
-} from '@udecode/plate/react';
+import { Plate, usePlateEditor, useStoreValue } from '@udecode/plate/react';
 
 import { SettingsStore } from '@/components/context/settings-store';
 import { useLocale } from '@/hooks/useLocale';
 import { getI18nValues } from '@/i18n/getI18nValues';
-import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
 import { EditorKit } from '@/registry/components/editor/editor-kit';
+import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export default function PlaygroundDemo({ className }: { className?: string }) {
@@ -120,61 +56,60 @@ function usePlaygroundEnabled(id?: string) {
 
   return React.useMemo(
     () => ({
-      [AIChatPlugin.key]: id === 'ai' || !!enabled[AIChatPlugin.key],
-      [AlignPlugin.key]: !!enabled.align,
-      [AutoformatPlugin.key]: !!enabled.autoformat,
-      [BlockquotePlugin.key]: !!enabled.blockquote,
-      [BlockSelectionPlugin.key]:
+      [KEYS.aiChat]: id === 'ai' || !!enabled[KEYS.aiChat],
+      [KEYS.align]: !!enabled.align,
+      [KEYS.autoformat]: !!enabled.autoformat,
+      [KEYS.backgroundColor]: !!enabled.backgroundColor,
+      [KEYS.blockquote]: !!enabled.blockquote,
+      [KEYS.blockSelection]:
         id === 'block-selection' || !!enabled.blockSelection,
-      [BoldPlugin.key]: !!enabled.bold,
-      [CaptionPlugin.key]: !!enabled.caption,
-      [CodeBlockPlugin.key]: !!enabled.code_block,
-      [CodePlugin.key]: !!enabled.code,
-      [ColumnPlugin.key]: !!enabled.column,
-      [CommentsPlugin.key]: !!enabled.comment,
-      [CopilotPlugin.key]: id === 'copilot' || !!enabled[CopilotPlugin.key],
-      [CursorOverlayPlugin.key]: !!enabled.cursorOverlay,
-      [DeletePlugin.key]: !!enabled.delete,
-      [DndPlugin.key]: !!enabled.dnd,
-      [DocxPlugin.key]: !!enabled.docx,
-      [EmojiPlugin.key]: !!enabled.emoji,
-      [ExcalidrawPlugin.key]: !!enabled.excalidraw,
-      [ExitBreakPlugin.key]: !!enabled.exitBreak,
-      [FontBackgroundColorPlugin.key]: !!enabled.backgroundColor,
-      [FontColorPlugin.key]: !!enabled.color,
-      [FontSizePlugin.key]: !!enabled.fontSize,
-      [HeadingPlugin.key]: !!enabled.heading,
-      [HighlightPlugin.key]: !!enabled.highlight,
-      [HorizontalRulePlugin.key]: !!enabled.hr,
-      [ImagePlugin.key]: !!enabled.img,
-      [IndentPlugin.key]: id !== 'listClassic' && !!enabled.indent,
-      [ItalicPlugin.key]: !!enabled.italic,
-      [JuicePlugin.key]: !!enabled.juice,
-      [KbdPlugin.key]: !!enabled.kbd,
-      [LineHeightPlugin.key]: !!enabled.lineHeight,
-      [LinkPlugin.key]: !!enabled.a,
-      [ListClassicPlugin.key]: id === 'listClassic' && !!enabled.listClassic,
-      [ListPlugin.key]: id === 'list' || !!enabled.list,
-      [MarkdownPlugin.key]: !!enabled.markdown,
-      [MediaEmbedPlugin.key]: !!enabled.media_embed,
-      [MentionPlugin.key]: !!enabled.mention,
-      [NodeIdPlugin.key]: !!enabled.nodeId,
-      [NormalizeTypesPlugin.key]: !!enabled.normalizeTypes,
-      [ParagraphPlugin.key]: !!enabled.p,
-      [ResetNodePlugin.key]: !!enabled.resetNode,
-      [SelectOnBackspacePlugin.key]: !!enabled.selectOnBackspace,
-      [SingleLinePlugin.key]: id === 'single-line' || !!enabled.singleLine,
-      [SoftBreakPlugin.key]: !!enabled.softBreak,
-      [StrikethroughPlugin.key]: !!enabled.strikethrough,
-      [SubscriptPlugin.key]: !!enabled.subscript,
-      [SuperscriptPlugin.key]: !!enabled.superscript,
-      [TabbablePlugin.key]: !!enabled.tabbable,
-      [TablePlugin.key]: !!enabled.table,
-      [TodoListPlugin.key]: !!enabled.action_item,
-      [TogglePlugin.key]: !!enabled.toggle,
-      [TrailingBlockPlugin.key]:
-        id !== 'single-line' && !!enabled.trailingBlock,
-      [UnderlinePlugin.key]: !!enabled.underline,
+      [KEYS.bold]: !!enabled.bold,
+      [KEYS.caption]: !!enabled.caption,
+      [KEYS.code]: !!enabled.code,
+      [KEYS.codeBlock]: !!enabled.code_block,
+      [KEYS.color]: !!enabled.color,
+      [KEYS.column]: !!enabled.column,
+      [KEYS.comment]: !!enabled.comment,
+      [KEYS.copilot]: id === 'copilot' || !!enabled[KEYS.copilot],
+      [KEYS.cursorOverlay]: !!enabled.cursorOverlay,
+      [KEYS.delete]: !!enabled.delete,
+      [KEYS.dnd]: !!enabled.dnd,
+      [KEYS.docx]: !!enabled.docx,
+      [KEYS.emoji]: !!enabled.emoji,
+      [KEYS.excalidraw]: !!enabled.excalidraw,
+      [KEYS.exitBreak]: !!enabled.exitBreak,
+      [KEYS.fontSize]: !!enabled.fontSize,
+      [KEYS.h1]: !!enabled.heading,
+      [KEYS.highlight]: !!enabled.highlight,
+      [KEYS.hr]: !!enabled.hr,
+      [KEYS.img]: !!enabled.img,
+      [KEYS.indent]: id !== 'listClassic' && !!enabled.indent,
+      [KEYS.italic]: !!enabled.italic,
+      [KEYS.juice]: !!enabled.juice,
+      [KEYS.kbd]: !!enabled.kbd,
+      [KEYS.lineHeight]: !!enabled.lineHeight,
+      [KEYS.link]: !!enabled.a,
+      [KEYS.list]: id === 'list' || !!enabled.list,
+      [KEYS.listClassic]: id === 'listClassic' && !!enabled.listClassic,
+      [KEYS.listTodoClassic]: !!enabled.action_item,
+      [KEYS.markdown]: !!enabled.markdown,
+      [KEYS.mediaEmbed]: !!enabled.media_embed,
+      [KEYS.mention]: !!enabled.mention,
+      [KEYS.nodeId]: !!enabled.nodeId,
+      [KEYS.normalizeTypes]: !!enabled.normalizeTypes,
+      [KEYS.p]: !!enabled.p,
+      [KEYS.resetNode]: !!enabled.resetNode,
+      [KEYS.selectOnBackspace]: !!enabled.selectOnBackspace,
+      [KEYS.singleLine]: id === 'single-line' || !!enabled.singleLine,
+      [KEYS.softBreak]: !!enabled.softBreak,
+      [KEYS.strikethrough]: !!enabled.strikethrough,
+      [KEYS.sub]: !!enabled.subscript,
+      [KEYS.sup]: !!enabled.superscript,
+      [KEYS.tabbable]: !!enabled.tabbable,
+      [KEYS.table]: !!enabled.table,
+      [KEYS.toggle]: !!enabled.toggle,
+      [KEYS.trailingBlock]: id !== 'single-line' && !!enabled.trailingBlock,
+      [KEYS.underline]: !!enabled.underline,
     }),
     [enabled, id]
   );

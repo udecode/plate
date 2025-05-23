@@ -16,6 +16,16 @@ Merging files, using a more consistent naming convention, and removing unused `e
 
 Components:
 
+- To improve decoupling, plugins are not imported anymore only for their keys. Import `KEYS` from `@udecode/plate` instead, as a unified source of keys.
+  - `ParagraphPlugin.key` -> `KEYS.p`
+  - `INDENT_LIST_KEYS.listStyleType` -> `KEYS.listType`
+  - `ListStyleType.Decimal` -> `KEYS.ol`
+  - `ListStyleType.Disc` -> `KEYS.ul`
+  - `list` (classic) -> `KEYS.listClassic`
+  - `ol` (classic) -> `KEYS.olClassic`
+  - `ul` (classic) -> `KEYS.ulClassic`
+  - `li` (classic) -> `KEYS.liClassic`
+  - `action_item` (classic) -> `KEYS.listTodoClassic`
 - Rename all `*-element`, `*-leaf` files to `*-node` (and static versions)
 - Removed `ai-anchor-element`, merged into `ai-node`
 - Removed `ai-loading-bar`, merged into `ai-menu`

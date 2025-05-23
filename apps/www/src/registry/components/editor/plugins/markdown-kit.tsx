@@ -1,18 +1,18 @@
 'use client';
 
+import { KEYS } from '@udecode/plate';
 import {
   MarkdownPlugin,
   remarkMdx,
   remarkMention,
 } from '@udecode/plate-markdown';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 export const MarkdownKit = [
   MarkdownPlugin.configure({
     options: {
-      disallowedNodes: [SuggestionPlugin.key],
+      disallowedNodes: [KEYS.suggestion],
       remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
     },
   }),

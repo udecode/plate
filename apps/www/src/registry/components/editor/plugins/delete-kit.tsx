@@ -1,26 +1,18 @@
 'use client';
 
-import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  MediaEmbedPlugin,
-  VideoPlugin,
-} from '@udecode/plate-media/react';
+import { DeletePlugin, KEYS, SelectOnBackspacePlugin } from '@udecode/plate';
 
 export const DeleteKit = [
   SelectOnBackspacePlugin.configure({
     options: {
       query: {
         allow: [
-          ImagePlugin.key,
-          VideoPlugin.key,
-          AudioPlugin.key,
-          FilePlugin.key,
-          MediaEmbedPlugin.key,
-          HorizontalRulePlugin.key,
+          KEYS.img,
+          KEYS.video,
+          KEYS.audio,
+          KEYS.file,
+          KEYS.mediaEmbed,
+          KEYS.hr,
         ],
       },
     },

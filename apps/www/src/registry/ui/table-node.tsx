@@ -10,7 +10,7 @@ import type {
 } from '@udecode/plate-table';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
-import { type TElement, PathApi } from '@udecode/plate';
+import { type TElement, KEYS, PathApi } from '@udecode/plate';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import {
   BlockSelectionPlugin,
@@ -20,7 +20,6 @@ import { setCellBackground } from '@udecode/plate-table';
 import {
   TablePlugin,
   TableProvider,
-  TableRowPlugin,
   useTableBordersDropdownMenuContentState,
   useTableCellElement,
   useTableCellElementResizable,
@@ -507,7 +506,7 @@ export function TableCellElement({
   const element = props.element;
 
   const rowId = useElementSelector(([node]) => node.id as string, [], {
-    key: TableRowPlugin.key,
+    key: KEYS.tr,
   });
   const isSelectingRow = useBlockSelected(rowId);
   const isSelectionAreaVisible = usePluginOption(

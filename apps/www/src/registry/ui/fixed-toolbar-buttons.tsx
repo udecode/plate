@@ -2,24 +2,7 @@
 
 import * as React from 'react';
 
-import {
-  BoldPlugin,
-  CodePlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
-import {
-  FontBackgroundColorPlugin,
-  FontColorPlugin,
-} from '@udecode/plate-font/react';
-import { HighlightPlugin } from '@udecode/plate-highlight/react';
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  VideoPlugin,
-} from '@udecode/plate-media/react';
+import { KEYS } from '@udecode/plate';
 import { useEditorReadOnly } from '@udecode/plate/react';
 import {
   ArrowUpToLineIcon,
@@ -97,44 +80,38 @@ export function FixedToolbarButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
+            <MarkToolbarButton nodeType={KEYS.bold} tooltip="Bold (⌘+B)">
               <BoldIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton
-              nodeType={ItalicPlugin.key}
-              tooltip="Italic (⌘+I)"
-            >
+            <MarkToolbarButton nodeType={KEYS.italic} tooltip="Italic (⌘+I)">
               <ItalicIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton
-              nodeType={UnderlinePlugin.key}
+              nodeType={KEYS.underline}
               tooltip="Underline (⌘+U)"
             >
               <UnderlineIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton
-              nodeType={StrikethroughPlugin.key}
+              nodeType={KEYS.strikethrough}
               tooltip="Strikethrough (⌘+⇧+M)"
             >
               <StrikethroughIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton nodeType={CodePlugin.key} tooltip="Code (⌘+E)">
+            <MarkToolbarButton nodeType={KEYS.code} tooltip="Code (⌘+E)">
               <Code2Icon />
             </MarkToolbarButton>
 
-            <FontColorToolbarButton
-              nodeType={FontColorPlugin.key}
-              tooltip="Text color"
-            >
+            <FontColorToolbarButton nodeType={KEYS.color} tooltip="Text color">
               <BaselineIcon />
             </FontColorToolbarButton>
 
             <FontColorToolbarButton
-              nodeType={FontBackgroundColorPlugin.key}
+              nodeType={KEYS.backgroundColor}
               tooltip="Background color"
             >
               <PaintBucketIcon />
@@ -157,10 +134,10 @@ export function FixedToolbarButtons() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <MediaToolbarButton nodeType={ImagePlugin.key} />
-            <MediaToolbarButton nodeType={VideoPlugin.key} />
-            <MediaToolbarButton nodeType={AudioPlugin.key} />
-            <MediaToolbarButton nodeType={FilePlugin.key} />
+            <MediaToolbarButton nodeType={KEYS.img} />
+            <MediaToolbarButton nodeType={KEYS.video} />
+            <MediaToolbarButton nodeType={KEYS.audio} />
+            <MediaToolbarButton nodeType={KEYS.file} />
           </ToolbarGroup>
 
           <ToolbarGroup>
@@ -178,7 +155,7 @@ export function FixedToolbarButtons() {
       <div className="grow" />
 
       <ToolbarGroup>
-        <MarkToolbarButton nodeType={HighlightPlugin.key} tooltip="Highlight">
+        <MarkToolbarButton nodeType={KEYS.highlight} tooltip="Highlight">
           <HighlighterIcon />
         </MarkToolbarButton>
         <CommentToolbarButton />

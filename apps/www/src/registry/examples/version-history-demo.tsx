@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { type Value, createSlatePlugin } from '@udecode/plate';
+import { type Value, createSlatePlugin, KEYS } from '@udecode/plate';
 import {
   type DiffOperation,
   type DiffUpdate,
@@ -11,7 +11,6 @@ import {
 } from '@udecode/plate-diff';
 import {
   createPlatePlugin,
-  ParagraphPlugin,
   toPlatePlugin,
   useSelected,
 } from '@udecode/plate/react';
@@ -197,7 +196,7 @@ function DiffLeaf({ children, ...props }: PlateLeafProps) {
 const initialValue: Value = [
   {
     children: [{ text: 'This is a version history demo.' }],
-    type: ParagraphPlugin.key,
+    type: KEYS.p,
   },
   {
     children: [
@@ -205,7 +204,7 @@ const initialValue: Value = [
       { bold: true, text: 'text and see what' },
       { text: ' happens.' },
     ],
-    type: ParagraphPlugin.key,
+    type: KEYS.p,
   },
   {
     children: [
@@ -213,7 +212,7 @@ const initialValue: Value = [
       { children: [{ text: '' }], type: InlineVoidPlugin.key },
       { text: '. Try removing it.' },
     ],
-    type: ParagraphPlugin.key,
+    type: KEYS.p,
   },
   {
     children: [
@@ -221,7 +220,7 @@ const initialValue: Value = [
       { children: [{ text: 'editable inline' }], type: InlinePlugin.key },
       { text: '. Try editing it.' },
     ],
-    type: ParagraphPlugin.key,
+    type: KEYS.p,
   },
 ];
 

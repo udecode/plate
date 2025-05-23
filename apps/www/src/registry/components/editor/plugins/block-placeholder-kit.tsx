@@ -1,6 +1,7 @@
 'use client';
 
-import { BlockPlaceholderPlugin, ParagraphPlugin } from '@udecode/plate/react';
+import { KEYS } from '@udecode/plate';
+import { BlockPlaceholderPlugin } from '@udecode/plate/react';
 
 export const BlockPlaceholderKit = [
   BlockPlaceholderPlugin.configure({
@@ -8,7 +9,7 @@ export const BlockPlaceholderKit = [
       className:
         'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
       placeholders: {
-        [ParagraphPlugin.key]: 'Type something...',
+        [KEYS.p]: 'Type something...',
       },
       query: ({ path }) => {
         return path.length === 1;

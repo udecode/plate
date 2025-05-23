@@ -2,6 +2,7 @@
 
 import type { AutoformatRule } from '@udecode/plate-autoformat';
 
+import { KEYS } from '@udecode/plate';
 import {
   autoformatArrow,
   autoformatLegal,
@@ -11,97 +12,80 @@ import {
   autoformatSmartQuotes,
 } from '@udecode/plate-autoformat';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
-import {
-  BoldPlugin,
-  CodePlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
-  UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { HighlightPlugin } from '@udecode/plate-highlight/react';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import {
-  INDENT_LIST_KEYS,
-  ListStyleType,
-  toggleList,
-} from '@udecode/plate-list';
-import { ParagraphPlugin } from '@udecode/plate/react';
+import { toggleList } from '@udecode/plate-list';
 
 const autoformatMarks: AutoformatRule[] = [
   {
     match: '***',
     mode: 'mark',
-    type: [BoldPlugin.key, ItalicPlugin.key],
+    type: [KEYS.bold, KEYS.italic],
   },
   {
     match: '__*',
     mode: 'mark',
-    type: [UnderlinePlugin.key, ItalicPlugin.key],
+    type: [KEYS.underline, KEYS.italic],
   },
   {
     match: '__**',
     mode: 'mark',
-    type: [UnderlinePlugin.key, BoldPlugin.key],
+    type: [KEYS.underline, KEYS.bold],
   },
   {
     match: '___***',
     mode: 'mark',
-    type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
+    type: [KEYS.underline, KEYS.bold, KEYS.italic],
   },
   {
     match: '**',
     mode: 'mark',
-    type: BoldPlugin.key,
+    type: KEYS.bold,
   },
   {
     match: '__',
     mode: 'mark',
-    type: UnderlinePlugin.key,
+    type: KEYS.underline,
   },
   {
     match: '*',
     mode: 'mark',
-    type: ItalicPlugin.key,
+    type: KEYS.italic,
   },
   {
     match: '_',
     mode: 'mark',
-    type: ItalicPlugin.key,
+    type: KEYS.italic,
   },
   {
     match: '~~',
     mode: 'mark',
-    type: StrikethroughPlugin.key,
+    type: KEYS.strikethrough,
   },
   {
     match: '^',
     mode: 'mark',
-    type: SuperscriptPlugin.key,
+    type: KEYS.sup,
   },
   {
     match: '~',
     mode: 'mark',
-    type: SubscriptPlugin.key,
+    type: KEYS.sub,
   },
   {
     match: '==',
     mode: 'mark',
-    type: HighlightPlugin.key,
+    type: KEYS.highlight,
   },
   {
     match: '≡',
     mode: 'mark',
-    type: HighlightPlugin.key,
+    type: KEYS.highlight,
   },
   {
     match: '`',
     mode: 'mark',
-    type: CodePlugin.key,
+    type: KEYS.code,
   },
 ];
 
@@ -109,45 +93,45 @@ const autoformatBlocks: AutoformatRule[] = [
   {
     match: '# ',
     mode: 'block',
-    type: 'h1',
+    type: KEYS.h1,
   },
   {
     match: '## ',
     mode: 'block',
-    type: 'h2',
+    type: KEYS.h2,
   },
   {
     match: '### ',
     mode: 'block',
-    type: 'h3',
+    type: KEYS.h3,
   },
   {
     match: '#### ',
     mode: 'block',
-    type: 'h4',
+    type: KEYS.h4,
   },
   {
     match: '##### ',
     mode: 'block',
-    type: 'h5',
+    type: KEYS.h5,
   },
   {
     match: '###### ',
     mode: 'block',
-    type: 'h6',
+    type: KEYS.h6,
   },
   {
     match: '> ',
     mode: 'block',
-    type: BlockquotePlugin.key,
+    type: KEYS.blockquote,
   },
   {
     match: '```',
     mode: 'block',
-    type: CodeBlockPlugin.key,
+    type: KEYS.codeBlock,
     format: (editor) => {
       insertEmptyCodeBlock(editor, {
-        defaultType: ParagraphPlugin.key,
+        defaultType: KEYS.p,
         insertNodesOptions: { select: true },
       });
     },
@@ -156,17 +140,17 @@ const autoformatBlocks: AutoformatRule[] = [
   //   match: '+ ',
   //   mode: 'block',
   //   preFormat: openNextToggles,
-  //   type: TogglePlugin.key,
+  //   type: KEYS.toggle,
   // },
   {
     match: ['---', '—-', '___ '],
     mode: 'block',
-    type: HorizontalRulePlugin.key,
+    type: KEYS.hr,
     format: (editor) => {
-      editor.tf.setNodes({ type: HorizontalRulePlugin.key });
+      editor.tf.setNodes({ type: KEYS.hr });
       editor.tf.insertNodes({
         children: [{ text: '' }],
-        type: ParagraphPlugin.key,
+        type: KEYS.p,
       });
     },
   },
@@ -179,7 +163,7 @@ const autoformatLists: AutoformatRule[] = [
     type: 'list',
     format: (editor) => {
       toggleList(editor, {
-        listStyleType: ListStyleType.Disc,
+        listStyleType: KEYS.ul,
       });
     },
   },
@@ -191,7 +175,7 @@ const autoformatLists: AutoformatRule[] = [
     format: (editor, { matchString }) => {
       toggleList(editor, {
         listRestartPolite: Number(matchString) || 1,
-        listStyleType: ListStyleType.Decimal,
+        listStyleType: KEYS.ol,
       });
     },
   },
@@ -201,11 +185,11 @@ const autoformatLists: AutoformatRule[] = [
     type: 'list',
     format: (editor) => {
       toggleList(editor, {
-        listStyleType: INDENT_LIST_KEYS.todo,
+        listStyleType: KEYS.listTodo,
       });
       editor.tf.setNodes({
         checked: false,
-        listStyleType: INDENT_LIST_KEYS.todo,
+        listStyleType: KEYS.listTodo,
       });
     },
   },
@@ -215,11 +199,11 @@ const autoformatLists: AutoformatRule[] = [
     type: 'list',
     format: (editor) => {
       toggleList(editor, {
-        listStyleType: INDENT_LIST_KEYS.todo,
+        listStyleType: KEYS.listTodo,
       });
       editor.tf.setNodes({
         checked: true,
-        listStyleType: INDENT_LIST_KEYS.todo,
+        listStyleType: KEYS.listTodo,
       });
     },
   },

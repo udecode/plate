@@ -163,6 +163,7 @@
     "remark-math": "6.0.0",
     "sass": "1.87.0",
     "shadcn": "2.5.0",
+    "shadcn-prose": "1.0.7",
     "sonner": "2.0.3",
     "stream-browserify": "3.0.0",
     "tailwind-merge": "3.2.0",
@@ -176,7 +177,6 @@
   "devDependencies": {
     "@shikijs/compat": "1.1.7",
     "@tailwindcss/cli": "4.1.4",
-    "@tailwindcss/typography": "0.5.16",
     "@types/react-syntax-highlighter": "15.5.13",
     "autoprefixer": "10.4.21",
     "concurrently": "9.1.2",

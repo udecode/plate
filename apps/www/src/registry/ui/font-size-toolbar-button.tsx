@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import type { TElement } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
 import { toUnitLess } from '@udecode/plate-font';
 import { FontSizePlugin } from '@udecode/plate-font/react';
 import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
@@ -49,7 +50,7 @@ export function FontSizeToolbarButton() {
   const { api, editor } = useEditorPlugin(FontSizePlugin);
 
   const cursorFontSize = useEditorSelector((editor) => {
-    const fontSize = editor.api.marks()?.[FontSizePlugin.key];
+    const fontSize = editor.api.marks()?.[KEYS.fontSize];
 
     if (fontSize) {
       return toUnitLess(fontSize as string);

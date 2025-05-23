@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { CreatePlateEditorOptions } from '@udecode/plate/react';
 
-import { type Value, nanoid, NodeApi } from '@udecode/plate';
+import { type Value, KEYS, nanoid, NodeApi } from '@udecode/plate';
 import { getCommentKey, getDraftCommentKey } from '@udecode/plate-comments';
 import { CommentsPlugin, useCommentId } from '@udecode/plate-comments/react';
 import {
@@ -426,7 +426,9 @@ export function CommentCreateForm({
   const [commentValue, setCommentValue] = React.useState<Value | undefined>();
   const commentContent = React.useMemo(
     () =>
-      commentValue ? NodeApi.string({ children: commentValue, type: 'p' }) : '',
+      commentValue
+        ? NodeApi.string({ children: commentValue, type: KEYS.p })
+        : '',
     [commentValue]
   );
   const commentEditor = useCommentEditor({}, []);

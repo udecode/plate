@@ -632,7 +632,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(HeadingElement, { variant: 'h6' })`,
       },
     ],
-    customImports: [`import { HEADING_KEYS } from '@udecode/plate-heading';`],
+    customImports: [`import { KEYS } from '@udecode/plate';`],
     label: 'Heading',
     npmPackage: '@udecode/plate-heading',
     pluginFactory: 'HeadingPlugin',

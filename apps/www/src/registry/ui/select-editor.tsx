@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
-import { isHotkey } from '@udecode/plate';
+import { isHotkey, KEYS } from '@udecode/plate';
 import { isEqualTags } from '@udecode/plate-tag';
 import {
   MultiSelectPlugin,
@@ -230,7 +230,7 @@ const createEditorValue = (value?: SelectItem[]) => [
       ...(value?.flatMap((item) => [
         {
           children: [{ text: '' }],
-          type: TagPlugin.key,
+          type: KEYS.tag,
           ...item,
         },
         {
@@ -238,7 +238,7 @@ const createEditorValue = (value?: SelectItem[]) => [
         },
       ]) ?? []),
     ],
-    type: 'p',
+    type: KEYS.p,
   },
 ];
 

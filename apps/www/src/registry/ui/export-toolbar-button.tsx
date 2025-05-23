@@ -8,6 +8,7 @@ import { withProps } from '@udecode/cn';
 import {
   BaseParagraphPlugin,
   createSlateEditor,
+  KEYS,
   serializeHtml,
   SlateLeaf,
 } from '@udecode/plate';
@@ -22,11 +23,7 @@ import {
   BaseUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-  BaseCodeSyntaxPlugin,
-} from '@udecode/plate-code-block';
+import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseCommentsPlugin } from '@udecode/plate-comments';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
@@ -34,11 +31,7 @@ import {
   BaseFontColorPlugin,
   BaseFontSizePlugin,
 } from '@udecode/plate-font';
-import {
-  BaseHeadingPlugin,
-  BaseTocPlugin,
-  HEADING_LEVELS,
-} from '@udecode/plate-heading';
+import { BaseHeadingPlugin, BaseTocPlugin } from '@udecode/plate-heading';
 import { BaseHighlightPlugin } from '@udecode/plate-highlight';
 import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
@@ -61,7 +54,6 @@ import {
 } from '@udecode/plate-media';
 import { BaseMentionPlugin } from '@udecode/plate-mention';
 import {
-  BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
@@ -196,46 +188,46 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
 
   const exportToHtml = async () => {
     const components = {
-      [BaseAudioPlugin.key]: AudioElementStatic,
-      [BaseBlockquotePlugin.key]: BlockquoteElementStatic,
-      [BaseBoldPlugin.key]: withProps(SlateLeaf, { as: 'strong' }),
-      [BaseCodeBlockPlugin.key]: CodeBlockElementStatic,
-      [BaseCodeLinePlugin.key]: CodeLineElementStatic,
-      [BaseCodePlugin.key]: CodeLeafStatic,
-      [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
-      [BaseColumnItemPlugin.key]: ColumnElementStatic,
-      [BaseColumnPlugin.key]: ColumnGroupElementStatic,
-      [BaseCommentsPlugin.key]: CommentLeafStatic,
-      [BaseDatePlugin.key]: DateElementStatic,
-      [BaseEquationPlugin.key]: EquationElementStatic,
-      [BaseFilePlugin.key]: FileElementStatic,
-      [BaseHighlightPlugin.key]: HighlightLeafStatic,
-      [BaseHorizontalRulePlugin.key]: HrElementStatic,
-      [BaseImagePlugin.key]: ImageElementStatic,
-      [BaseInlineEquationPlugin.key]: InlineEquationElementStatic,
-      [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: 'em' }),
-      [BaseKbdPlugin.key]: KbdLeafStatic,
-      [BaseLinkPlugin.key]: LinkElementStatic,
-      // [BaseMediaEmbedPlugin.key]: MediaEmbedElementStatic,
-      [BaseMentionPlugin.key]: MentionElementStatic,
-      [BaseParagraphPlugin.key]: ParagraphElementStatic,
-      [BaseStrikethroughPlugin.key]: withProps(SlateLeaf, { as: 'del' }),
-      [BaseSubscriptPlugin.key]: withProps(SlateLeaf, { as: 'sub' }),
-      [BaseSuperscriptPlugin.key]: withProps(SlateLeaf, { as: 'sup' }),
-      [BaseTableCellHeaderPlugin.key]: TableCellHeaderStaticElement,
-      [BaseTableCellPlugin.key]: TableCellElementStatic,
-      [BaseTablePlugin.key]: TableElementStatic,
-      [BaseTableRowPlugin.key]: TableRowElementStatic,
-      [BaseTocPlugin.key]: TocElementStatic,
-      [BaseTogglePlugin.key]: ToggleElementStatic,
-      [BaseUnderlinePlugin.key]: withProps(SlateLeaf, { as: 'u' }),
-      [BaseVideoPlugin.key]: VideoElementStatic,
-      h1: withProps(HeadingElementStatic, { variant: 'h1' }),
-      h2: withProps(HeadingElementStatic, { variant: 'h2' }),
-      h3: withProps(HeadingElementStatic, { variant: 'h3' }),
-      h4: withProps(HeadingElementStatic, { variant: 'h4' }),
-      h5: withProps(HeadingElementStatic, { variant: 'h5' }),
-      h6: withProps(HeadingElementStatic, { variant: 'h6' }),
+      [KEYS.audio]: AudioElementStatic,
+      [KEYS.blockquote]: BlockquoteElementStatic,
+      [KEYS.bold]: withProps(SlateLeaf, { as: 'strong' }),
+      [KEYS.code]: CodeLeafStatic,
+      [KEYS.codeBlock]: CodeBlockElementStatic,
+      [KEYS.codeLine]: CodeLineElementStatic,
+      [KEYS.codeSyntax]: CodeSyntaxLeafStatic,
+      [KEYS.column]: ColumnElementStatic,
+      [KEYS.columnGroup]: ColumnGroupElementStatic,
+      [KEYS.comment]: CommentLeafStatic,
+      [KEYS.date]: DateElementStatic,
+      [KEYS.equation]: EquationElementStatic,
+      [KEYS.file]: FileElementStatic,
+      [KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
+      [KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
+      [KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
+      [KEYS.h4]: withProps(HeadingElementStatic, { variant: 'h4' }),
+      [KEYS.h5]: withProps(HeadingElementStatic, { variant: 'h5' }),
+      [KEYS.h6]: withProps(HeadingElementStatic, { variant: 'h6' }),
+      [KEYS.highlight]: HighlightLeafStatic,
+      [KEYS.hr]: HrElementStatic,
+      [KEYS.img]: ImageElementStatic,
+      [KEYS.inlineEquation]: InlineEquationElementStatic,
+      [KEYS.italic]: withProps(SlateLeaf, { as: 'em' }),
+      [KEYS.kbd]: KbdLeafStatic,
+      [KEYS.link]: LinkElementStatic,
+      // [KEYS.mediaEmbed]: MediaEmbedElementStatic,
+      [KEYS.mention]: MentionElementStatic,
+      [KEYS.p]: ParagraphElementStatic,
+      [KEYS.strikethrough]: withProps(SlateLeaf, { as: 'del' }),
+      [KEYS.sub]: withProps(SlateLeaf, { as: 'sub' }),
+      [KEYS.sup]: withProps(SlateLeaf, { as: 'sup' }),
+      [KEYS.table]: TableElementStatic,
+      [KEYS.td]: TableCellElementStatic,
+      [KEYS.th]: TableCellHeaderStaticElement,
+      [KEYS.toc]: TocElementStatic,
+      [KEYS.toggle]: ToggleElementStatic,
+      [KEYS.tr]: TableRowElementStatic,
+      [KEYS.underline]: withProps(SlateLeaf, { as: 'u' }),
+      [KEYS.video]: VideoElementStatic,
     };
 
     const editorStatic = createSlateEditor({
@@ -266,21 +258,17 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
         }),
         BaseIndentPlugin.extend({
           inject: {
-            targetPlugins: [
-              BaseParagraphPlugin.key,
-              BaseBlockquotePlugin.key,
-              BaseCodeBlockPlugin.key,
-            ],
+            targetPlugins: [KEYS.p, KEYS.blockquote, KEYS.codeBlock],
           },
         }),
         BaseListPlugin.extend({
           inject: {
             targetPlugins: [
-              BaseParagraphPlugin.key,
-              ...HEADING_LEVELS,
-              BaseBlockquotePlugin.key,
-              BaseCodeBlockPlugin.key,
-              BaseTogglePlugin.key,
+              KEYS.p,
+              ...KEYS.heading,
+              KEYS.blockquote,
+              KEYS.codeBlock,
+              KEYS.toggle,
             ],
           },
           options: {
@@ -304,12 +292,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
         BaseKbdPlugin,
         BaseAlignPlugin.extend({
           inject: {
-            targetPlugins: [
-              BaseParagraphPlugin.key,
-              ...HEADING_LEVELS,
-              BaseImagePlugin.key,
-              BaseMediaEmbedPlugin.key,
-            ],
+            targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.video],
           },
         }),
         BaseLineHeightPlugin,

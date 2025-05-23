@@ -1,12 +1,6 @@
 'use client';
 
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CalloutPlugin } from '@udecode/plate-callout/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import {
-  TableCellHeaderPlugin,
-  TableCellPlugin,
-} from '@udecode/plate-table/react';
+import { KEYS } from '@udecode/plate';
 import { SoftBreakPlugin } from '@udecode/plate/react';
 
 export const SoftBreakKit = [
@@ -18,11 +12,11 @@ export const SoftBreakKit = [
           hotkey: 'enter',
           query: {
             allow: [
-              CodeBlockPlugin.key,
-              BlockquotePlugin.key,
-              TableCellPlugin.key,
-              TableCellHeaderPlugin.key,
-              CalloutPlugin.key,
+              KEYS.codeBlock,
+              KEYS.blockquote,
+              KEYS.td,
+              KEYS.th,
+              KEYS.callout,
             ],
           },
         },

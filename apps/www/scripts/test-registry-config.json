@@ -2,5 +2,5 @@
   "blocks": ["editor-basic", "editor-select"],
   "kits": false,
   "groups": [["editor-select", "basic-nodes-kit"]],
-  "scripts": ["pnpm build"]
+  "scripts": []
 }

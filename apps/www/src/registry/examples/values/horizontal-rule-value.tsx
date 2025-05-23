@@ -1,6 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { KEYS } from '@udecode/plate';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
@@ -12,7 +12,7 @@ export const horizontalRuleValue: any = (
       Add horizontal rules to visually separate sections and content within your
       document.
     </hp>
-    <element type={BaseHorizontalRulePlugin.key}>
+    <element type={KEYS.hr}>
       <htext />
     </element>
   </fragment>

@@ -2,13 +2,7 @@
 
 import * as React from 'react';
 
-import {
-  BoldPlugin,
-  CodePlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
+import { KEYS } from '@udecode/plate';
 import { useEditorReadOnly } from '@udecode/plate/react';
 import {
   BoldIcon,
@@ -46,32 +40,29 @@ export function FloatingToolbarButtons() {
           <ToolbarGroup>
             <TurnIntoToolbarButton />
 
-            <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
+            <MarkToolbarButton nodeType={KEYS.bold} tooltip="Bold (⌘+B)">
               <BoldIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton
-              nodeType={ItalicPlugin.key}
-              tooltip="Italic (⌘+I)"
-            >
+            <MarkToolbarButton nodeType={KEYS.italic} tooltip="Italic (⌘+I)">
               <ItalicIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton
-              nodeType={UnderlinePlugin.key}
+              nodeType={KEYS.underline}
               tooltip="Underline (⌘+U)"
             >
               <UnderlineIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton
-              nodeType={StrikethroughPlugin.key}
+              nodeType={KEYS.strikethrough}
               tooltip="Strikethrough (⌘+⇧+M)"
             >
               <StrikethroughIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton nodeType={CodePlugin.key} tooltip="Code (⌘+E)">
+            <MarkToolbarButton nodeType={KEYS.code} tooltip="Code (⌘+E)">
               <Code2Icon />
             </MarkToolbarButton>
 

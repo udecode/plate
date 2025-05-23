@@ -54,6 +54,7 @@ export const registryComponents: Registry['items'] = [
     ],
     name: 'settings-dialog',
     registryDependencies: [
+      'ai-kit',
       'shadcn/button',
       'shadcn/command',
       'shadcn/dialog',
@@ -69,19 +70,9 @@ export const registryComponents: Registry['items'] = [
         path: 'components/editor/use-chat.ts',
         type: 'registry:component',
       },
-      {
-        path: 'components/editor/settings-dialog.tsx',
-        type: 'registry:component',
-      },
     ],
     name: 'use-chat',
-    registryDependencies: [
-      'shadcn/button',
-      'shadcn/dialog',
-      'shadcn/input',
-      'shadcn/popover',
-      'shadcn/command',
-    ],
+    registryDependencies: ['ai-kit'],
     type: 'registry:component',
   },
   {
@@ -90,7 +81,6 @@ export const registryComponents: Registry['items'] = [
       '@udecode/plate-code-block',
       '@udecode/plate-date',
       '@udecode/plate-heading',
-      '@udecode/plate-list',
       '@udecode/plate-layout',
       '@udecode/plate-link',
       '@udecode/plate-math',
@@ -108,12 +98,8 @@ export const registryComponents: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-code-block',
       '@udecode/plate-comments',
       '@udecode/plate-excalidraw',
-      '@udecode/plate-heading',
-      '@udecode/plate-horizontal-rule',
       '@udecode/plate-link',
       '@udecode/plate-media',
       '@udecode/plate-mention',
@@ -131,12 +117,8 @@ export const registryComponents: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-code-block',
       '@udecode/plate-comments',
       '@udecode/plate-excalidraw',
-      '@udecode/plate-heading',
-      '@udecode/plate-horizontal-rule',
       '@udecode/plate-link',
       '@udecode/plate-list-classic',
       '@udecode/plate-media',

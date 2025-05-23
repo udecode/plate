@@ -27,30 +27,6 @@ npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-
 
 <Steps>
 
-### Wrap with DndProvider
-
-The drag and drop functionality relies on `react-dnd`. You need to wrap your editor component or a higher-level component with `DndProvider` from `react-dnd` and provide an HTML5 backend.
-
-```tsx title="components/plate-editor.tsx"
-import * as React from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-
-import { Plate } from '@udecode/plate/react';
-// ... other imports
-
-export function PlateEditor() {
-  // ... editor setup
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <Plate editor={editor}>
-        {/* ... your editor components ... */}
-      </Plate>
-    </DndProvider>
-  );
-}
-```
-
 ### Add Plugins
 
 Include `NodeIdPlugin` and `DndPlugin` in your Plate plugins array.
@@ -73,6 +49,7 @@ const plugins = [
 - `enableScroller: true` - Enables automatic scrolling when dragging blocks near the viewport edges
 - `onDropFiles` - Handles file drops by inserting them as media blocks at the target location
 - `render.aboveNodes` - Uses the `BlockDraggable` component to render drag handles and drop indicators above blocks
+- `render.aboveSlate` - Wraps the editor with `DndProvider` and `HTML5Backend`. Remove this if you already have `DndProvider` in your React tree.
 
 ### Add Draggable Component
 

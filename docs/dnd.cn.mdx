@@ -25,6 +25,12 @@ npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-
 
 ## 使用
 
+<Steps>
+
+### 添加插件
+
+在你的 Plate 插件数组中包含 `NodeIdPlugin` 和 `DndPlugin`。
+
 ```tsx
 import { DndPlugin } from '@udecode/plate-dnd';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
@@ -36,7 +42,24 @@ const plugins = [
 ];
 ```
 
-然后，将你的插件组件用 [Draggable](/docs/components/draggable) 包裹。
+### 配置 `DndPlugin`
+
+<ComponentSource name="dnd-kit" />
+
+`DndPlugin` 自动提供必要的 `react-dnd` 设置：
+
+- `enableScroller: true` - 在视口边缘附近拖拽块时启用自动滚动
+- `onDropFiles` - 通过在目标位置插入文件作为媒体块来处理文件拖放
+- `render.aboveNodes` - 使用 `BlockDraggable` 组件在块上方渲染拖拽手柄和放置指示器
+- `render.aboveSlate` - 使用 `DndProvider` 和 `HTML5Backend` 包装编辑器。如果你的 React 树中已经有 `DndProvider`，请移除此配置。
+
+### 添加可拖拽组件
+
+要在编辑器块上启用拖放功能，你需要实现可拖拽组件。这些组件使用 `useDraggable` 等钩子来处理拖拽交互并提供视觉反馈。
+
+你可以使用我们的 [BlockDraggable](/docs/components/block-draggable) 组件或使用下面的 API 实现你自己的组件。
+
+</Steps>
 
 ## 插件
 

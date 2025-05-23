@@ -3,7 +3,7 @@
 @import 'tw-animate-css';
 
 @plugin 'tailwind-scrollbar-hide';
-@plugin '@tailwindcss/typography';
+@import 'shadcn-prose';
 
 @custom-variant dark (&:is(.dark *));
 

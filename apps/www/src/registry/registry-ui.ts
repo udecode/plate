@@ -109,13 +109,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-ai',
-      '@udecode/plate-block-quote',
-      '@udecode/plate-heading',
-      '@udecode/plate-list',
-      '@udecode/plate-selection',
-    ],
+    dependencies: ['@udecode/plate-ai', '@udecode/plate-selection'],
     description: 'A context menu for block-level operations.',
     files: [{ path: 'ui/block-context-menu.tsx', type: 'registry:ui' }],
     meta: {
@@ -299,7 +293,17 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-comments', 'date-fns'],
+    dependencies: ['@udecode/plate-suggestion'],
+    name: 'block-suggestion',
+    title: 'Block Suggestion',
+    type: 'registry:ui',
+  },
+  {
+    dependencies: [
+      '@udecode/plate-comments',
+      'date-fns',
+      '@udecode/plate-suggestion',
+    ],
     description:
       'A popover interface for managing discussions: comments, replies, suggestions.',
     files: [
@@ -363,15 +367,8 @@ export const uiComponents: Registry['items'] = [
     dependencies: [
       '@udecode/plate-dnd',
       '@udecode/plate-selection',
-      '@udecode/plate-block-quote',
-      '@udecode/plate-excalidraw',
-      '@udecode/plate-heading',
       '@udecode/plate-layout',
       '@udecode/plate-table',
-      '@udecode/plate-toggle',
-      '@udecode/plate-media',
-      'react-dnd',
-      'react-dnd-html5-backend',
     ],
     description: 'A block wrapper with a drag handle for moving editor blocks.',
     files: [{ path: 'ui/block-draggable.tsx', type: 'registry:ui' }],
@@ -451,13 +448,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-basic-marks',
-      '@udecode/plate-font',
-      '@udecode/plate-list',
-      '@udecode/plate-media',
-      '@udecode/plate-highlight',
-    ],
+    dependencies: [],
     description: 'A set of commonly used formatting buttons.',
     files: [{ path: 'ui/fixed-toolbar-buttons.tsx', type: 'registry:ui' }],
     meta: {
@@ -492,12 +483,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-basic-marks',
-      '@udecode/plate-font',
-      '@udecode/plate-list-classic',
-      '@udecode/plate-media',
-    ],
+    dependencies: [],
     files: [
       {
         path: 'ui/fixed-toolbar-classic-buttons.tsx',
@@ -544,7 +530,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-basic-marks'],
+    dependencies: [],
     description: 'A set of formatting buttons for the floating toolbar.',
     files: [{ path: 'ui/floating-toolbar-buttons.tsx', type: 'registry:ui' }],
     meta: {
@@ -705,19 +691,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-code-block',
-      '@udecode/plate-date',
-      '@udecode/plate-excalidraw',
-      '@udecode/plate-heading',
-      '@udecode/plate-horizontal-rule',
-      '@udecode/plate-list',
-      '@udecode/plate-link',
-      '@udecode/plate-media',
-      '@udecode/plate-table',
-      '@udecode/plate-toggle',
-    ],
+    dependencies: [],
     description: 'A menu for inserting different types of blocks.',
     files: [{ path: 'ui/insert-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
@@ -878,7 +852,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-basic-marks', '@udecode/plate-kbd'],
+    dependencies: [],
     description: 'A menu for additional text formatting options.',
     files: [{ path: 'ui/more-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
@@ -940,13 +914,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-code-block',
-      '@udecode/plate-heading',
-      '@udecode/plate-list',
-      '@udecode/plate-toggle',
-    ],
+    dependencies: [],
     description: 'A menu for converting between different block types.',
     files: [{ path: 'ui/turn-into-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
@@ -1614,16 +1582,7 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-ai',
-      '@udecode/plate-block-quote',
-      '@udecode/plate-code-block',
-      '@udecode/plate-date',
-      '@udecode/plate-heading',
-      '@udecode/plate-list',
-      '@udecode/plate-table',
-      '@udecode/plate-toggle',
-    ],
+    dependencies: ['@udecode/plate-ai'],
     description: 'A command input component for inserting various elements.',
     files: [{ path: 'ui/slash-node.tsx', type: 'registry:ui' }],
     meta: {

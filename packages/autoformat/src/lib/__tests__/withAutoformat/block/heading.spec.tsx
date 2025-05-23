@@ -1,7 +1,6 @@
 /** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate';
-import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsxt } from '@udecode/plate-test-utils';
 import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
 

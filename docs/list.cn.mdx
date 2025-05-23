@@ -59,29 +59,26 @@ Plate 提供两种实现列表的方式：
 ## 安装
 
 ```bash
-npm install @udecode/plate-indent-list @udecode/plate-indent
+npm install @udecode/plate-list @udecode/plate-indent
 ```
 
 ## 使用方式
 
 ```tsx
 import { IndentPlugin } from '@udecode/plate-indent/react';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HeadingPlugin } from '@udecode/plate-heading/react';
-import { ParagraphPlugin } from '@udecode/plate/react';
+import { ListPlugin } from '@udecode/plate-list/react';
+import { KEYS } from '@udecode/plate';
 
 const plugins = [
   // ...其他插件
-  HeadingPlugin,
   IndentPlugin.configure({
     inject: {
-      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+      targetPlugins: [KEYS.p, KEYS.h1],
     }
   }),
-  IndentListPlugin.configure({
+  ListPlugin.configure({
     inject: {
-      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+      targetPlugins: [KEYS.p, KEYS.h1],
     }
   }),
 ];
@@ -89,9 +86,9 @@ const plugins = [
 
 ## 插件
 
-### `IndentListPlugin`
+### `ListPlugin`
 
-<API name="IndentListPlugin">
+<API name="ListPlugin">
 <APIOptions>
   <APIItem name="getSiblingIndentListOptions" type="GetSiblingIndentListOptions<TElement>" optional>
     用于确定兄弟元素缩进列表选项的函数。

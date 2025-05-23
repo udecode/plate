@@ -2,29 +2,15 @@
 
 import * as React from 'react';
 
-import { isType } from '@udecode/plate';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { isType, KEYS } from '@udecode/plate';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
-import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
-import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
-import {
-  ImagePlugin,
-  MediaEmbedPlugin,
-  PlaceholderPlugin,
-} from '@udecode/plate-media/react';
+import { ColumnPlugin } from '@udecode/plate-layout/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import {
-  TableCellPlugin,
-  TablePlugin,
-  TableRowPlugin,
-} from '@udecode/plate-table/react';
-import { TogglePlugin } from '@udecode/plate-toggle/react';
+import { TablePlugin } from '@udecode/plate-table/react';
 import {
   type PlateElementProps,
   type RenderNodeWrapper,
   MemoizedChildren,
-  ParagraphPlugin,
   useEditorRef,
   useElement,
   usePath,
@@ -42,11 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 import { STRUCTURAL_TYPES } from '@/registry/components/editor/transforms';
 
-const UNDRAGGABLE_KEYS = [
-  ColumnItemPlugin.key,
-  TableRowPlugin.key,
-  TableCellPlugin.key,
-];
+const UNDRAGGABLE_KEYS = [KEYS.column, KEYS.tr, KEYS.td];
 
 export const BlockDraggable: RenderNodeWrapper = (props) => {
   const { editor, element, path } = props;
@@ -119,8 +101,13 @@ export function Draggable(props: PlateElementProps) {
             className={cn(
               'slate-blockToolbarWrapper',
               'flex h-[1.5em]',
-              isType(editor, element, ['h1', 'h2', 'h3', 'h4', 'h5']) &&
-                'h-[1.3em]',
+              isType(editor, element, [
+                KEYS.h1,
+                KEYS.h2,
+                KEYS.h3,
+                KEYS.h4,
+                KEYS.h5,
+              ]) && 'h-[1.3em]',
               isInColumn && 'h-4'
             )}
           >
@@ -181,23 +168,22 @@ function Gutter({
           : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',
         !selected && 'opacity-0',
-        isNodeType('h1') && 'pb-1 text-[1.875em]',
-        isNodeType('h2') && 'pb-1 text-[1.5em]',
-        isNodeType('h3') && 'pt-[2px] pb-1 text-[1.25em]',
-        isNodeType(['h4', 'h5']) && 'pt-1 pb-0 text-[1.1em]',
-        isNodeType('h6') && 'pb-0',
-        isNodeType(ParagraphPlugin.key) && 'pt-1 pb-0',
-        isNodeType(['ul', 'ol']) && 'pb-0',
-        isNodeType(BlockquotePlugin.key) && 'pb-0',
-        isNodeType(CodeBlockPlugin.key) && 'pt-6 pb-0',
+        isNodeType(KEYS.h1) && 'pb-1 text-[1.875em]',
+        isNodeType(KEYS.h2) && 'pb-1 text-[1.5em]',
+        isNodeType(KEYS.h3) && 'pt-[2px] pb-1 text-[1.25em]',
+        isNodeType([KEYS.h4, KEYS.h5]) && 'pt-1 pb-0 text-[1.1em]',
+        isNodeType(KEYS.h6) && 'pb-0',
+        isNodeType(KEYS.p) && 'pt-1 pb-0',
+        isNodeType(KEYS.blockquote) && 'pb-0',
+        isNodeType(KEYS.codeBlock) && 'pt-6 pb-0',
         isNodeType([
-          ImagePlugin.key,
-          MediaEmbedPlugin.key,
-          ExcalidrawPlugin.key,
-          TogglePlugin.key,
-          ColumnPlugin.key,
+          KEYS.img,
+          KEYS.mediaEmbed,
+          KEYS.excalidraw,
+          KEYS.toggle,
+          KEYS.column,
         ]) && 'py-0',
-        isNodeType([PlaceholderPlugin.key, TablePlugin.key]) && 'pt-3 pb-0',
+        isNodeType([KEYS.placeholder, KEYS.table]) && 'pt-3 pb-0',
         isInColumn && 'mt-2 h-4 pt-0',
         className
       )}
