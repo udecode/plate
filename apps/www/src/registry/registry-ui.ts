@@ -364,12 +364,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-dnd',
-      '@udecode/plate-selection',
-      '@udecode/plate-layout',
-      '@udecode/plate-table',
-    ],
+    dependencies: ['@udecode/plate-dnd', '@udecode/plate-selection'],
     description: 'A block wrapper with a drag handle for moving editor blocks.',
     files: [{ path: 'ui/block-draggable.tsx', type: 'registry:ui' }],
     meta: {

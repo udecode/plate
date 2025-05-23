@@ -604,7 +604,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-slash-command', '@udecode/plate-code-block'],
+    dependencies: ['@udecode/plate-slash-command'],
     files: [
       {
         path: 'components/editor/plugins/slash-kit.tsx',

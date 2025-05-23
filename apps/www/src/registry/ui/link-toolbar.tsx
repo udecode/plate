@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 
+import { KEYS } from '@udecode/plate';
 import {
   type UseVirtualFloatingOptions,
   flip,
@@ -11,7 +12,6 @@ import { type TLinkElement, getLinkAttributes } from '@udecode/plate-link';
 import {
   type LinkFloatingToolbarState,
   FloatingLinkUrlInput,
-  LinkPlugin,
   useFloatingLinkEdit,
   useFloatingLinkEditState,
   useFloatingLinkInsert,
@@ -171,7 +171,7 @@ function LinkOpenButton() {
   const attributes = React.useMemo(
     () => {
       const entry = editor.api.node<TLinkElement>({
-        match: { type: editor.getType(LinkPlugin) },
+        match: { type: editor.getType(KEYS.link) },
       });
       if (!entry) {
         return {};

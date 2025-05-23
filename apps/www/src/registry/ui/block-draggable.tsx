@@ -4,9 +4,7 @@ import * as React from 'react';
 
 import { isType, KEYS } from '@udecode/plate';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
-import { ColumnPlugin } from '@udecode/plate-layout/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { TablePlugin } from '@udecode/plate-table/react';
 import {
   type PlateElementProps,
   type RenderNodeWrapper,
@@ -41,7 +39,7 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
       const block = editor.api.some({
         at: path,
         match: {
-          type: editor.getType(ColumnPlugin),
+          type: editor.getType(KEYS.column),
         },
       });
 
@@ -53,7 +51,7 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
       const block = editor.api.some({
         at: path,
         match: {
-          type: editor.getType(TablePlugin),
+          type: editor.getType(KEYS.table),
         },
       });
 

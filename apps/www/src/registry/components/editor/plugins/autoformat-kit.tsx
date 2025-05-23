@@ -13,7 +13,6 @@ import {
 } from '@udecode/plate-autoformat';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { toggleList } from '@udecode/plate-list';
 
 const autoformatMarks: AutoformatRule[] = [
@@ -228,7 +227,7 @@ export const AutoformatKit = [
           ...rule,
           query: (editor) =>
             !editor.api.some({
-              match: { type: editor.getType(CodeBlockPlugin) },
+              match: { type: editor.getType(KEYS.codeBlock) },
             }),
         })
       ),

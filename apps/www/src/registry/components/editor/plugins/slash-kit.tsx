@@ -1,6 +1,6 @@
 'use client';
 
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { KEYS } from '@udecode/plate';
 import {
   SlashInputPlugin,
   SlashPlugin,
@@ -11,11 +11,10 @@ import { SlashInputElement } from '@/registry/ui/slash-node';
 export const SlashKit = [
   SlashPlugin.extend({
     options: {
-      triggerQuery(editor) {
-        return !editor.api.some({
-          match: { type: editor.getType(CodeBlockPlugin) },
-        });
-      },
+      triggerQuery: (editor) =>
+        !editor.api.some({
+          match: { type: editor.getType(KEYS.codeBlock) },
+        }),
     },
   }),
   SlashInputPlugin.withComponent(SlashInputElement),
