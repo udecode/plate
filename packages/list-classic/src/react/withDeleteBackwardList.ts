@@ -1,20 +1,20 @@
 import {
   type NodeEntry,
   type TElement,
-  BaseParagraphPlugin,
+  BaseResetNodePlugin,
   deleteMerge,
+  KEYS,
   PathApi,
 } from '@udecode/plate';
-import { BaseResetNodePlugin } from '@udecode/plate';
-import { onKeyDownResetNode, SIMULATE_BACKSPACE } from '@udecode/plate/react';
-import { type OverrideEditor, getEditorPlugin } from '@udecode/plate/react';
+import {
+  type OverrideEditor,
+  getEditorPlugin,
+  onKeyDownResetNode,
+  SIMULATE_BACKSPACE,
+} from '@udecode/plate/react';
 
 import type { ListConfig } from '../lib/BaseListPlugin';
 
-import {
-  BaseListItemContentPlugin,
-  BaseListItemPlugin,
-} from '../lib/BaseListPlugin';
 import { isAcrossListItems, isListNested } from '../lib/queries';
 import { getListItemEntry } from '../lib/queries/getListItemEntry';
 import { unwrapList } from '../lib/transforms';
@@ -37,7 +37,7 @@ export const withDeleteBackwardList: OverrideEditor<ListConfig> = ({
           if (
             editor.api.isAt({
               start: true,
-              match: (node) => node.type === editor.getType(BaseListItemPlugin),
+              match: (node) => node.type === editor.getType(KEYS.li),
             })
           ) {
             editor.tf.withoutNormalizing(() => {
@@ -59,9 +59,9 @@ export const withDeleteBackwardList: OverrideEditor<ListConfig> = ({
                       options: {
                         rules: [
                           {
-                            defaultType: editor.getType(BaseParagraphPlugin),
+                            defaultType: editor.getType(KEYS.p),
                             hotkey: 'backspace',
-                            types: [editor.getType(BaseListItemPlugin)],
+                            types: [editor.getType(KEYS.li)],
                             predicate: () => editor.api.isAt({ start: true }),
                             onReset: (e) => unwrapList(e),
                           },
@@ -90,7 +90,7 @@ export const withDeleteBackwardList: OverrideEditor<ListConfig> = ({
                   focus: pointBeforeListItem,
                 })
               ) {
-                const licType = editor.getType(BaseListItemContentPlugin);
+                const licType = editor.getType(KEYS.lic);
                 const _licNodes = editor.api.nodes<TElement>({
                   at: listItem[1],
                   mode: 'lowest',

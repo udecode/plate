@@ -5,6 +5,8 @@ import {
 } from '@udecode/plate-core';
 import { type QueryNodeOptions, queryNode } from '@udecode/slate';
 
+import { KEYS } from '../../plate-keys';
+
 export type DeleteConfig = PluginConfig<
   'delete',
   {
@@ -13,7 +15,7 @@ export type DeleteConfig = PluginConfig<
 >;
 
 export const DeletePlugin = createTSlatePlugin<DeleteConfig>({
-  key: 'delete',
+  key: KEYS.delete,
   editOnly: true,
   options: {
     query: {

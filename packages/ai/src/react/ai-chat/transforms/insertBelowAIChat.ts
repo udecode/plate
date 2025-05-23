@@ -1,6 +1,6 @@
 import type { PlateEditor } from '@udecode/plate/react';
 
-import { type SlateEditor, PathApi, RangeApi } from '@udecode/plate';
+import { type SlateEditor, KEYS, PathApi, RangeApi } from '@udecode/plate';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -20,7 +20,7 @@ export const insertBelowAIChat = (
     'isSelectingSome'
   );
 
-  editor.getApi<AIChatPluginConfig>({ key: 'ai' }).aiChat.hide();
+  editor.getApi<AIChatPluginConfig>({ key: KEYS.ai }).aiChat.hide();
 
   const insertBlocksAndSelect =
     editor.getTransforms(BlockSelectionPlugin).blockSelection

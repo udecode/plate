@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { KEYS } from '@udecode/plate';
 import {
   useEditorRef,
   useElement,
@@ -10,8 +11,7 @@ import {
 
 import type { TMediaElement } from '../../lib/media/types';
 
-import { BaseVideoPlugin } from '../../lib';
-import { BaseMediaEmbedPlugin, VIDEO_PROVIDERS } from '../../lib/media-embed';
+import { VIDEO_PROVIDERS } from '../../lib/media-embed';
 import {
   type EmbedUrlParser,
   parseMediaUrl,
@@ -33,8 +33,8 @@ export const useMediaState = ({
   const embed = React.useMemo(() => {
     if (
       !urlParsers ||
-      (type !== editor.getType(BaseVideoPlugin) &&
-        type !== editor.getType(BaseMediaEmbedPlugin))
+      (type !== editor.getType(KEYS.video) &&
+        type !== editor.getType(KEYS.mediaEmbed))
     )
       return;
 

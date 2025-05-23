@@ -9,7 +9,7 @@ import type {
   TElement,
 } from '@udecode/plate';
 
-import { bindFirst } from '@udecode/plate';
+import { bindFirst, KEYS } from '@udecode/plate';
 import { createTPlatePlugin } from '@udecode/plate/react';
 
 import type { PartialSelectionOptions } from '../internal';
@@ -101,7 +101,7 @@ export type BlockSelectionConfig = PluginConfig<
 >;
 
 export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
-  key: 'blockSelection',
+  key: KEYS.blockSelection,
   editOnly: true,
   handlers: {
     onKeyDown: onKeyDownSelection,

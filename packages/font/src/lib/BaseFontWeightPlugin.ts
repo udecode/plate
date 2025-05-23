@@ -1,7 +1,7 @@
-import { createSlatePlugin } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from '@udecode/plate';
 
 export const BaseFontWeightPlugin = createSlatePlugin({
-  key: 'fontWeight',
+  key: KEYS.fontWeight,
   inject: {
     nodeProps: {
       nodeKey: 'fontWeight',

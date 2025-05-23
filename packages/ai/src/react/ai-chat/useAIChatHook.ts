@@ -1,4 +1,4 @@
-import { PathApi } from '@udecode/plate';
+import { KEYS, PathApi } from '@udecode/plate';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import { streamInsertChunk, withAIBatch } from '../../lib';
@@ -9,7 +9,10 @@ import { useChatChunk } from './hooks/useChatChunk';
 export const useAIChatHooks = () => {
   const { editor, getOption } = useEditorPlugin(AIChatPlugin);
 
-  const mode = usePluginOption({ key: 'aiChat' } as AIChatPluginConfig, 'mode');
+  const mode = usePluginOption(
+    { key: KEYS.aiChat } as AIChatPluginConfig,
+    'mode'
+  );
 
   useChatChunk({
     onChunk: ({ chunk, isFirst, nodes, text }) => {

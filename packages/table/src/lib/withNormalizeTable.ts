@@ -2,12 +2,13 @@ import {
   type OverrideEditor,
   type TElement,
   ElementApi,
+  KEYS,
   TextApi,
 } from '@udecode/plate';
 
+import type { TableConfig } from './BaseTablePlugin';
 import type { TTableCellElement, TTableElement } from './types';
 
-import { type TableConfig, BaseTableRowPlugin } from './BaseTablePlugin';
 import { getTableColumnCount } from './queries';
 import { computeCellIndices, getCellTypes } from './utils/index';
 
@@ -35,7 +36,7 @@ export const withNormalizeTable: OverrideEditor<TableConfig> = ({
             !node.children.some(
               (child) =>
                 ElementApi.isElement(child) &&
-                child.type === editor.getType(BaseTableRowPlugin)
+                child.type === editor.getType(KEYS.tr)
             )
           ) {
             editor.tf.removeNodes({ at: path });
@@ -94,7 +95,7 @@ export const withNormalizeTable: OverrideEditor<TableConfig> = ({
             }
           }
         }
-        if (n.type === editor.getType(BaseTableRowPlugin)) {
+        if (n.type === editor.getType(KEYS.tr)) {
           const parentEntry = editor.api.parent(path);
 
           if (parentEntry?.[0].type !== type) {
@@ -119,7 +120,7 @@ export const withNormalizeTable: OverrideEditor<TableConfig> = ({
           const { children } = node;
           const parentEntry = editor.api.parent(path);
 
-          if (parentEntry?.[0].type !== editor.getType(BaseTableRowPlugin)) {
+          if (parentEntry?.[0].type !== editor.getType(KEYS.tr)) {
             editor.tf.unwrapNodes({
               at: path,
             });

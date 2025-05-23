@@ -6,7 +6,7 @@ import {
   type TElement,
   createSlatePlugin,
   createTSlatePlugin,
-  HtmlPlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import type { TCodeBlockElement } from './types';
@@ -36,24 +36,24 @@ export type CodeBlockConfig = PluginConfig<
 >;
 
 export const BaseCodeLinePlugin = createTSlatePlugin({
-  key: 'code_line',
+  key: KEYS.codeLine,
   node: { isElement: true },
 });
 
 export const BaseCodeSyntaxPlugin = createSlatePlugin({
-  key: 'code_syntax',
+  key: KEYS.codeSyntax,
   node: { isLeaf: true },
 });
 
 export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
-  key: 'code_block',
+  key: KEYS.codeBlock,
   inject: {
     plugins: {
-      [HtmlPlugin.key]: {
+      [KEYS.html]: {
         parser: {
           query: ({ editor }) =>
             !editor.api.some({
-              match: { type: editor.getType(BaseCodeLinePlugin) },
+              match: { type: editor.getType(KEYS.codeLine) },
             }),
         },
       },
@@ -69,7 +69,7 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   decorate: ({ editor, entry: [node, path], getOptions, type }) => {
     if (!getOptions().lowlight) return [];
 
-    const codeLineType = editor.getType(BaseCodeLinePlugin);
+    const codeLineType = editor.getType(KEYS.codeLine);
 
     // Initialize decorations for the code block, we assume code line decorate will be called next.
     if (

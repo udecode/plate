@@ -2,11 +2,11 @@ import {
   type ElementEntry,
   type SlateEditor,
   type TElement,
+  KEYS,
   NodeApi,
   PathApi,
 } from '@udecode/plate';
 
-import { BaseListItemPlugin } from '../BaseListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
@@ -27,7 +27,7 @@ export const moveListItemUp = (
 
     const liParent = editor.api.above<TElement>({
       at: listPath,
-      match: { type: editor.getType(BaseListItemPlugin) },
+      match: { type: editor.getType(KEYS.li) },
     });
 
     if (!liParent) {

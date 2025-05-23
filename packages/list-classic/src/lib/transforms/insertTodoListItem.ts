@@ -1,6 +1,6 @@
-import { type SlateEditor, PathApi } from '@udecode/plate';
+import { type SlateEditor, KEYS, PathApi } from '@udecode/plate';
 
-import { type TodoListConfig, BaseTodoListPlugin } from '../BaseTodoListPlugin';
+import type { TodoListConfig } from '../BaseTodoListPlugin';
 
 /** Insert todo list item if selection in li>p. TODO: test */
 export const insertTodoListItem = (
@@ -10,7 +10,7 @@ export const insertTodoListItem = (
     inheritCheckStateOnLineStartBreak = false,
   }: TodoListConfig['options']
 ): boolean => {
-  const todoType = editor.getType(BaseTodoListPlugin);
+  const todoType = editor.getType(KEYS.listTodoClassic);
 
   if (!editor.selection) {
     return false;

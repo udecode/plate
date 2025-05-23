@@ -7,6 +7,7 @@ import {
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import type { TTableCellElement } from './types';
@@ -45,7 +46,7 @@ const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
 };
 
 export const BaseTableRowPlugin = createSlatePlugin({
-  key: 'tr',
+  key: KEYS.tr,
   node: { isElement: true },
   parsers: {
     html: {
@@ -57,7 +58,7 @@ export const BaseTableRowPlugin = createSlatePlugin({
 });
 
 export const BaseTableCellPlugin = createSlatePlugin({
-  key: 'td',
+  key: KEYS.td,
   node: {
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
     isElement: true,
@@ -78,7 +79,7 @@ export const BaseTableCellPlugin = createSlatePlugin({
 });
 
 export const BaseTableCellHeaderPlugin = createSlatePlugin({
-  key: 'th',
+  key: KEYS.th,
   node: {
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
     isElement: true,
@@ -173,7 +174,7 @@ export type TableConfig = PluginConfig<
 
 /** Enables support for tables. */
 export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
-  key: 'table',
+  key: KEYS.table,
   // dependencies: [NodeIdPlugin.key],
   node: {
     isElement: true,

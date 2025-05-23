@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { KEYS } from '@udecode/plate';
 import { useEditorRef } from '@udecode/plate/react';
 
 import type { UseContentController } from '../types';
@@ -68,7 +69,7 @@ export const useContentController = ({
     }
 
     editor
-      .getApi({ key: 'blockSelection' })
+      .getApi({ key: KEYS.blockSelection })
       .blockSelection?.addSelectedRow?.(id);
   };
 

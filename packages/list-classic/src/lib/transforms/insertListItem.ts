@@ -1,14 +1,9 @@
-import { type SlateEditor, type TElement, PathApi } from '@udecode/plate';
-
-import {
-  BaseListItemContentPlugin,
-  BaseListItemPlugin,
-} from '../BaseListPlugin';
+import { type SlateEditor, type TElement, KEYS, PathApi } from '@udecode/plate';
 
 /** Insert list item if selection in li>p. TODO: test */
 export const insertListItem = (editor: SlateEditor): boolean => {
-  const liType = editor.getType(BaseListItemPlugin);
-  const licType = editor.getType(BaseListItemContentPlugin);
+  const liType = editor.getType(KEYS.li);
+  const licType = editor.getType(KEYS.lic);
 
   if (!editor.selection) {
     return false;

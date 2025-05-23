@@ -1,12 +1,13 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
+import { type SlateEditor, getEditorPlugin, KEYS } from '@udecode/plate';
 
-import { type TableConfig, type TTableElement, BaseTableRowPlugin } from '..';
+import type { TableConfig, TTableElement } from '..';
+
 import { deleteRowWhenExpanded } from '../merge';
 import { deleteTableMergeRow } from '../merge/deleteRow';
 
 export const deleteRow = (editor: SlateEditor) => {
   const { getOptions, type } = getEditorPlugin<TableConfig>(editor, {
-    key: 'table',
+    key: KEYS.table,
   });
   const { disableMerge } = getOptions();
 
@@ -27,7 +28,7 @@ export const deleteRow = (editor: SlateEditor) => {
       return deleteRowWhenExpanded(editor, currentTableItem);
 
     const currentRowItem = editor.api.above({
-      match: { type: editor.getType(BaseTableRowPlugin) },
+      match: { type: editor.getType(KEYS.tr) },
     });
 
     if (

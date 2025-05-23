@@ -1,6 +1,6 @@
 import type { Editor, ElementEntryOf, ElementOf } from '@udecode/plate';
 
-import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { KEYS } from '@udecode/plate';
 
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 
@@ -32,14 +32,14 @@ export const setListSiblingNodes = <
         editor.tf.unsetNodes(INDENT_LIST_KEYS.listStyleType, { at: path });
         setIndentTodoNode(editor, {
           at: path,
-          indent: node[BaseIndentPlugin.key] as number,
+          indent: node[KEYS.indent] as number,
           listStyleType,
         });
       } else {
         editor.tf.unsetNodes(INDENT_LIST_KEYS.checked, { at: path });
         setListNode(editor, {
           at: path,
-          indent: node[BaseIndentPlugin.key] as number,
+          indent: node[KEYS.indent] as number,
           listStyleType,
         });
       }

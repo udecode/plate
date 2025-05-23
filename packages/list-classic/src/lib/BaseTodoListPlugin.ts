@@ -2,6 +2,7 @@ import {
   type PluginConfig,
   type TElement,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import { withTodoList } from './withTodoList';
@@ -19,6 +20,6 @@ export interface TTodoListItemElement extends TElement {
 }
 
 export const BaseTodoListPlugin = createTSlatePlugin<TodoListConfig>({
-  key: 'action_item',
+  key: KEYS.listTodoClassic,
   node: { isElement: true },
 }).overrideEditor(withTodoList);

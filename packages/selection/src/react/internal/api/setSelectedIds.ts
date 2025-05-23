@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
+import { type SlateEditor, getEditorPlugin, KEYS } from '@udecode/plate';
 
 import type { BlockSelectionConfig } from '../../BlockSelectionPlugin';
 
@@ -20,7 +20,7 @@ export const setSelectedIds = (
 ) => {
   const { getOptions, setOption } = getEditorPlugin<BlockSelectionConfig>(
     editor,
-    { key: 'blockSelection' }
+    { key: KEYS.blockSelection }
   );
 
   if (ids) {
@@ -50,7 +50,7 @@ export const addSelectedRow = (
 ) => {
   const { api, getOptions, setOption } = getEditorPlugin<BlockSelectionConfig>(
     editor,
-    { key: 'blockSelection' }
+    { key: KEYS.blockSelection }
   );
 
   const { clear = true, delay } = options;

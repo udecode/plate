@@ -1,9 +1,9 @@
 import type { SlateEditor, TText } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
+
 import type { TLinkElement } from '../types';
 import type { UpsertLinkOptions } from './upsertLink';
-
-import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
 /**
  * If the text is different than the link above text, replace link children by a
@@ -14,7 +14,7 @@ export const upsertLinkText = (
   { text }: UpsertLinkOptions
 ) => {
   const newLink = editor.api.above<TLinkElement>({
-    match: { type: editor.getType(BaseLinkPlugin) },
+    match: { type: editor.getType(KEYS.link) },
   });
 
   if (newLink) {

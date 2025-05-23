@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import { type TElement, PathApi } from '@udecode/plate';
+import { type TElement, KEYS, PathApi } from '@udecode/plate';
 import { useEditorPlugin, useElement, usePath } from '@udecode/plate/react';
 
 import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
@@ -10,7 +10,7 @@ export const useBlockSelectable = () => {
   const path = usePath();
   const { api, editor, getOption, getOptions, setOption } =
     useEditorPlugin<BlockSelectionConfig>({
-      key: 'blockSelection',
+      key: KEYS.blockSelection,
     });
 
   const id = element?.id as string | undefined;

@@ -1,7 +1,7 @@
-import { createSlatePlugin } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from '@udecode/plate';
 
 export const BaseHorizontalRulePlugin = createSlatePlugin({
-  key: 'hr',
+  key: KEYS.hr,
   node: { isElement: true, isVoid: true },
   parsers: {
     html: {

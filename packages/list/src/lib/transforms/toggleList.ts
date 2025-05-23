@@ -5,7 +5,7 @@ import type {
   TElement,
 } from '@udecode/plate';
 
-import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { KEYS } from '@udecode/plate';
 
 import type { ListOptions } from './indentList';
 
@@ -78,26 +78,20 @@ export const toggleList = <
           entries.forEach((entry) => {
             const [node, path] = entry;
 
-            const indent = node[BaseIndentPlugin.key] as number;
+            const indent = node[KEYS.indent] as number;
 
             editor.tf.unsetNodes(INDENT_LIST_KEYS.listStyleType, { at: path });
 
             if (indent > 1) {
-              editor.tf.setNodes(
-                { [BaseIndentPlugin.key]: indent - 1 },
-                { at: path }
-              );
+              editor.tf.setNodes({ [KEYS.indent]: indent - 1 }, { at: path });
             } else {
-              editor.tf.unsetNodes(
-                [BaseIndentPlugin.key, INDENT_LIST_KEYS.checked],
-                {
-                  at: path,
-                }
-              );
+              editor.tf.unsetNodes([KEYS.indent, INDENT_LIST_KEYS.checked], {
+                at: path,
+              });
             }
             // setListNode(editor, {
             //   listStyleType,
-            //   indent: node[BaseIndentPlugin.key],
+            //   indent: node[KEYS.indent],
             //   at: path,
             // });
           });

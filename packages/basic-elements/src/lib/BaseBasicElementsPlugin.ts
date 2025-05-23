@@ -4,7 +4,6 @@ import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseHeadingPlugin } from '@udecode/plate-heading';
 
 export const BaseBasicElementsPlugin = createSlatePlugin({
-  key: 'basicElements',
   plugins: [
     BaseBlockquotePlugin,
     BaseCodeBlockPlugin,

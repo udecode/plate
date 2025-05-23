@@ -1,4 +1,4 @@
-import type { TText } from '@udecode/plate';
+import { type TText, KEYS } from '@udecode/plate';
 
 import type {
   TListClassicElement,
@@ -281,7 +281,7 @@ export const defaultRules: TRules = {
 
       return {
         children: flattenedChildren,
-        type: 'p',
+        type: KEYS.p,
       };
     },
   },
@@ -484,7 +484,7 @@ export const defaultRules: TRules = {
           // Create list item from paragraph content
           const result = paragraph
             ? buildSlateNode(paragraph, deco, options)
-            : { children: [{ text: '' }], type: 'p' };
+            : { children: [{ text: '' }], type: KEYS.p };
 
           // Convert result to array if it's not already
           const itemNodes = Array.isArray(result) ? result : [result];
@@ -807,7 +807,7 @@ export const defaultRules: TRules = {
                     if (!child.type) {
                       return {
                         children: [child],
-                        type: 'p',
+                        type: KEYS.p,
                       };
                     }
 

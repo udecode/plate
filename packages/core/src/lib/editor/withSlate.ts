@@ -119,7 +119,7 @@ export const withSlate = <
   editor.getApi = () => editor.api as any;
   editor.getTransforms = () => editor.transforms as any;
   editor.getPlugin = (plugin) => getSlatePlugin(editor, plugin) as any;
-  editor.getType = (plugin) => getPluginType(editor, plugin);
+  editor.getType = (pluginKey) => getPluginType(editor, pluginKey);
   editor.getInjectProps = (plugin) => {
     return (
       editor.getPlugin<AnySlatePlugin>(plugin).inject?.nodeProps ?? ({} as any)

@@ -1,4 +1,4 @@
-import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
+import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
 
 import type { AutoformatRule } from './types';
 
@@ -15,7 +15,7 @@ export type AutoformatConfig = PluginConfig<
 
 /** @see {@link withAutoformat} */
 export const BaseAutoformatPlugin = createTSlatePlugin<AutoformatConfig>({
-  key: 'autoformat',
+  key: KEYS.autoformat,
   editOnly: true,
   options: {
     rules: [],

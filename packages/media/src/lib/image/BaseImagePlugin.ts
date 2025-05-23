@@ -2,6 +2,7 @@ import {
   type PluginConfig,
   bindFirst,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import type { MediaPluginOptions, TMediaElement } from '../media';
@@ -35,7 +36,7 @@ export interface TImageElement extends TMediaElement {
 
 /** Enables support for images. */
 export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
-  key: 'img',
+  key: KEYS.img,
   node: {
     dangerouslyAllowAttributes: ['alt', 'width', 'height'],
     isElement: true,

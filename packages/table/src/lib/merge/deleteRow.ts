@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
+import { type SlateEditor, getEditorPlugin, KEYS } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { TableConfig } from '../BaseTablePlugin';
@@ -16,7 +16,7 @@ import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
 
 export const deleteTableMergeRow = (editor: SlateEditor) => {
   const { api, tf, type } = getEditorPlugin<TableConfig>(editor, {
-    key: 'table',
+    key: KEYS.table,
   });
 
   if (

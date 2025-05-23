@@ -9,6 +9,7 @@ import {
   type PluginConfig,
   type TElement,
   bindFirst,
+  KEYS,
   NodeApi,
 } from '@udecode/plate';
 import { serializeMd } from '@udecode/plate-markdown';
@@ -104,7 +105,7 @@ type CompletionState = {
 };
 
 export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
-  key: 'copilot',
+  key: KEYS.copilot,
   handlers: {
     onBlur: ({ api }) => {
       api.copilot.reset();
@@ -127,7 +128,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     suggestionText: null,
     autoTriggerQuery: ({ editor }) => {
       if (
-        editor.getOptions<CopilotPluginConfig>({ key: 'copilot' })
+        editor.getOptions<CopilotPluginConfig>({ key: KEYS.copilot })
           .suggestionText
       ) {
         return false;

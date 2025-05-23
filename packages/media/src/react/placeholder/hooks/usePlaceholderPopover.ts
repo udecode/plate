@@ -1,3 +1,4 @@
+import { KEYS } from '@udecode/plate';
 import {
   useEditorRef,
   useEditorSelector,
@@ -7,7 +8,8 @@ import {
   useSelected,
 } from '@udecode/plate/react';
 
-import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
+import type { TPlaceholderElement } from '../../../lib';
+
 import { usePlaceholderSet, usePlaceholderValue } from '../placeholderStore';
 
 export const usePlaceholderPopoverState = () => {
@@ -21,7 +23,7 @@ export const usePlaceholderPopoverState = () => {
     []
   );
 
-  const element = useElement<TPlaceholderElement>(BasePlaceholderPlugin.key);
+  const element = useElement<TPlaceholderElement>(KEYS.placeholder);
   const { id, mediaType } = element;
 
   const setProgresses = usePlaceholderSet('progresses');

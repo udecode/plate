@@ -1,6 +1,8 @@
 import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-core';
 import { type Text, RangeApi, TextApi } from '@udecode/slate';
 
+import { KEYS } from '../../plate-keys';
+
 export type SkipMarkConfig = PluginConfig<
   'skip-mark',
   {
@@ -11,7 +13,7 @@ export type SkipMarkConfig = PluginConfig<
 >;
 
 export const BaseSkipMarkPlugin = createTSlatePlugin<SkipMarkConfig>({
-  key: 'skip-mark',
+  key: KEYS.skipMark,
   options: {
     query: {
       allow: [],

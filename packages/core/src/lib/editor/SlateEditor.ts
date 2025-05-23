@@ -93,7 +93,7 @@ export type BaseEditor = EditorBase & {
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => C extends { node: any } ? C : EditorPlugin<C>;
-  getType: (plugin: WithRequiredKey) => string;
+  getType: (pluginKey: string) => string;
   setOption: <C extends AnyPluginConfig, K extends keyof InferOptions<C>>(
     plugin: WithRequiredKey<C>,
     optionKey: K,

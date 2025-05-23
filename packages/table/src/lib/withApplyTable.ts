@@ -2,16 +2,17 @@ import {
   type OverrideEditor,
   type TElement,
   type TRange,
+  KEYS,
   RangeApi,
 } from '@udecode/plate';
 
+import type { TableConfig } from './BaseTablePlugin';
 import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
 } from './types';
 
-import { type TableConfig, BaseTableRowPlugin } from './BaseTablePlugin';
 import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
 import { computeCellIndices, getCellTypes } from './utils';
 
@@ -27,6 +28,7 @@ import { computeCellIndices, getCellTypes } from './utils';
  *   start of table
  */
 export const withApplyTable: OverrideEditor<TableConfig> = ({
+  api,
   editor,
   getOptions,
   tf: { apply },
@@ -101,11 +103,9 @@ export const withApplyTable: OverrideEditor<TableConfig> = ({
       const isTableOperation =
         (op.type === 'remove_node' || op.type === 'move_node') &&
         opType &&
-        [
-          editor.getType(BaseTableRowPlugin),
-          tableType,
-          ...getCellTypes(editor),
-        ].includes(opType as string);
+        [editor.getType(KEYS.tr), tableType, ...getCellTypes(editor)].includes(
+          opType as string
+        );
 
       // Cleanup cell indices when removing a table cell
       if (isTableOperation && op.type === 'remove_node') {

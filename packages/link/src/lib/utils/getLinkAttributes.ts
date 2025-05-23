@@ -1,11 +1,11 @@
-import { type SlateEditor, sanitizeUrl } from '@udecode/plate';
+import { type SlateEditor, KEYS, sanitizeUrl } from '@udecode/plate';
 
 import type { TLinkElement } from '../../lib/types';
 import type { BaseLinkConfig } from '../BaseLinkPlugin';
 
 export const getLinkAttributes = (editor: SlateEditor, link: TLinkElement) => {
   const { allowedSchemes, dangerouslySkipSanitization, defaultLinkAttributes } =
-    editor.getOptions<BaseLinkConfig>({ key: 'a' });
+    editor.getOptions<BaseLinkConfig>({ key: KEYS.link });
 
   const attributes = { ...defaultLinkAttributes };
 

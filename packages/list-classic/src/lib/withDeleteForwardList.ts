@@ -4,16 +4,13 @@ import {
   type OverrideEditor,
   type SlateEditor,
   type TElement,
+  KEYS,
   NodeApi,
   PathApi,
 } from '@udecode/plate';
 
 import type { ListConfig } from './BaseListPlugin';
 
-import {
-  BaseListItemContentPlugin,
-  BaseListItemPlugin,
-} from './BaseListPlugin';
 import {
   getListItemEntry,
   getListRoot,
@@ -73,7 +70,7 @@ const selectionIsInAListHandler = (
 
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
-    const liType = editor.getType(BaseListItemPlugin);
+    const liType = editor.getType(KEYS.li);
     const _nodes = editor.api.nodes({
       at: listItem[1],
       mode: 'lowest',
@@ -150,7 +147,7 @@ const selectionIsInAListHandler = (
     }
 
     // get closest lic ancestor of next selectable
-    const licType = editor.getType(BaseListItemContentPlugin);
+    const licType = editor.getType(KEYS.lic);
     const _licNodes = editor.api.nodes<TElement>({
       at: pointAfterListItem.path,
       mode: 'lowest',

@@ -1,13 +1,8 @@
 import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
-import { BaseAudioPlugin } from '../../BaseAudioPlugin';
-import { BaseFilePlugin } from '../../BaseFilePlugin';
-import { BaseVideoPlugin } from '../../BaseVideoPlugin';
-import { BaseImagePlugin } from '../../image';
-import {
-  type TPlaceholderElement,
-  BasePlaceholderPlugin,
-} from '../BasePlaceholderPlugin';
+import { KEYS } from '@udecode/plate';
+
+import type { TPlaceholderElement } from '../BasePlaceholderPlugin';
 
 export const insertPlaceholder = (
   editor: SlateEditor,
@@ -19,7 +14,7 @@ export const insertPlaceholder = (
       {
         children: [{ text: '' }],
         mediaType,
-        type: editor.getType(BasePlaceholderPlugin),
+        type: editor.getType(KEYS.placeholder),
       },
       options as any
     )
@@ -29,19 +24,19 @@ export const insertPlaceholder = (
 export const insertImagePlaceholder = (
   editor: SlateEditor,
   options?: InsertNodesOptions
-) => insertPlaceholder(editor, BaseImagePlugin.key, options);
+) => insertPlaceholder(editor, KEYS.img, options);
 
 export const insertVideoPlaceholder = (
   editor: SlateEditor,
   options?: InsertNodesOptions
-) => insertPlaceholder(editor, BaseVideoPlugin.key, options);
+) => insertPlaceholder(editor, KEYS.video, options);
 
 export const insertAudioPlaceholder = (
   editor: SlateEditor,
   options?: InsertNodesOptions
-) => insertPlaceholder(editor, BaseAudioPlugin.key, options);
+) => insertPlaceholder(editor, KEYS.audio, options);
 
 export const insertFilePlaceholder = (
   editor: SlateEditor,
   options?: InsertNodesOptions
-) => insertPlaceholder(editor, BaseFilePlugin.key, options);
+) => insertPlaceholder(editor, KEYS.file, options);

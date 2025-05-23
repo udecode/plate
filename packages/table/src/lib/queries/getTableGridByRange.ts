@@ -3,6 +3,7 @@ import {
   type SlateEditor,
   type TElement,
   type TRange,
+  KEYS,
   NodeApi,
 } from '@udecode/plate';
 
@@ -28,7 +29,7 @@ export const getTableGridByRange = (
   editor: SlateEditor,
   { at, format = 'table' }: GetTableGridByRangeOptions
 ): ElementEntry[] => {
-  const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
+  const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });
   const { disableMerge } = editor.getOptions(BaseTablePlugin);
 
   if (!disableMerge) {

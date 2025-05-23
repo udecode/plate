@@ -3,10 +3,10 @@ import {
   type Path,
   type PathRef,
   type SlateEditor,
+  KEYS,
   PathApi,
 } from '@udecode/plate';
 
-import { BaseListItemContentPlugin } from '../BaseListPlugin';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
@@ -29,7 +29,7 @@ export const moveListItems = (
   const _nodes = editor.api.nodes({
     at,
     match: {
-      type: editor.getType(BaseListItemContentPlugin),
+      type: editor.getType(KEYS.lic),
     },
   });
 

@@ -1,6 +1,6 @@
 import type { NodeEntry, SlateEditor } from '@udecode/plate';
 
-import { BaseFontBackgroundColorPlugin } from '../BaseFontBackgroundColorPlugin';
+import { KEYS } from '@udecode/plate';
 
 export const setBlockBackgroundColor = (
   editor: SlateEditor,
@@ -8,7 +8,7 @@ export const setBlockBackgroundColor = (
   backgroundColor: string
 ) => {
   editor.tf.setNodes(
-    { [BaseFontBackgroundColorPlugin.key]: backgroundColor },
+    { [KEYS.backgroundColor]: backgroundColor },
     { at: block[1] }
   );
 };

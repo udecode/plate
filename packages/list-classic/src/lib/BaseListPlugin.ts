@@ -4,7 +4,7 @@ import {
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
-  HtmlPlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import {
@@ -31,7 +31,7 @@ export type ListConfig = PluginConfig<
 >;
 
 export const BaseBulletedListPlugin = createSlatePlugin({
-  key: 'ul',
+  key: KEYS.ulClassic,
   node: { isElement: true },
   parsers: {
     html: {
@@ -47,16 +47,16 @@ export const BaseBulletedListPlugin = createSlatePlugin({
 });
 
 export const BaseNumberedListPlugin = createSlatePlugin({
-  key: 'ol',
+  key: KEYS.olClassic,
   node: { isElement: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'OL' }] } } },
 });
 
 export const BaseListItemPlugin = createSlatePlugin({
-  key: 'li',
+  key: KEYS.li,
   inject: {
     plugins: {
-      [HtmlPlugin.key]: {
+      [KEYS.html]: {
         parser: {
           preInsert: ({ editor, type }) => {
             return editor.api.some({ match: { type } });
@@ -70,13 +70,13 @@ export const BaseListItemPlugin = createSlatePlugin({
 });
 
 export const BaseListItemContentPlugin = createSlatePlugin({
-  key: 'lic',
+  key: KEYS.lic,
   node: { isElement: true },
 });
 
 /** Enables support for bulleted, numbered and to-do lists. */
 export const BaseListPlugin = createTSlatePlugin<ListConfig>({
-  key: 'listClassic',
+  key: KEYS.listClassic,
   // TODO react
   // extendEditor: withList,
   plugins: [

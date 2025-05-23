@@ -1,15 +1,14 @@
-import { type Editor, type NodeEntry, isDefined } from '@udecode/plate';
-import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { type Editor, type NodeEntry, isDefined, KEYS } from '@udecode/plate';
 
 import { INDENT_LIST_KEYS } from '../BaseListPlugin';
 
-/** Unset listStyle, listStart if BaseIndentPlugin.key is not defined. */
+/** Unset listStyle, listStart if KEYS.indent is not defined. */
 export const normalizeListNotIndented = (
   editor: Editor,
   [node, path]: NodeEntry
 ) => {
   if (
-    !isDefined(node[BaseIndentPlugin.key]) &&
+    !isDefined(node[KEYS.indent]) &&
     (node[INDENT_LIST_KEYS.listStyleType] || node[INDENT_LIST_KEYS.listStart])
   ) {
     editor.tf.unsetNodes(

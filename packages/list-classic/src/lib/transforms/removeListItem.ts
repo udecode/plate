@@ -3,13 +3,10 @@ import {
   type SlateEditor,
   type TElement,
   deleteMerge,
+  KEYS,
   PathApi,
 } from '@udecode/plate';
 
-import {
-  BaseListItemContentPlugin,
-  BaseListItemPlugin,
-} from '../BaseListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
@@ -59,10 +56,10 @@ export const removeListItem = (
           children: [
             {
               children: [{ text: '' }],
-              type: editor.getType(BaseListItemContentPlugin),
+              type: editor.getType(KEYS.lic),
             },
           ],
-          type: editor.getType(BaseListItemPlugin),
+          type: editor.getType(KEYS.li),
         },
         { at: tempLiPath }
       );

@@ -9,23 +9,21 @@ import {
   type TElement,
   type TText,
   ElementApi,
+  KEYS,
   NodeApi,
   PathApi,
 } from '@udecode/plate';
 
-import {
-  type ListConfig,
-  BaseListItemContentPlugin,
-  BaseListItemPlugin,
-} from './BaseListPlugin';
+import type { ListConfig } from './BaseListPlugin';
+
 import { isListRoot } from './queries';
 
 export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
   editor,
   tf: { insertFragment },
 }) => {
-  const listItemType = editor.getType(BaseListItemPlugin);
-  const listItemContentType = editor.getType(BaseListItemContentPlugin);
+  const listItemType = editor.getType(KEYS.li);
+  const listItemContentType = editor.getType(KEYS.lic);
 
   const getFirstAncestorOfType = (
     root: Descendant,

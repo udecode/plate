@@ -31,7 +31,7 @@ export const SlateExtensionPlugin = createSlatePlugin({
           create: {
             block: (node) => ({
               children: [{ text: '' }],
-              type: editor.getType(BaseParagraphPlugin),
+              type: editor.getType(BaseParagraphPlugin.key),
               ...node,
             }),
           },

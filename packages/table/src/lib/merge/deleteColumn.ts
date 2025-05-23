@@ -1,10 +1,14 @@
-import { type Path, type SlateEditor, getEditorPlugin } from '@udecode/plate';
+import {
+  type Path,
+  type SlateEditor,
+  getEditorPlugin,
+  KEYS,
+} from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
   type TTableCellElement,
   type TTableElement,
-  BaseTableRowPlugin,
   getCellIndices,
   getCellTypes,
 } from '..';
@@ -14,7 +18,7 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellPath } from './getCellPath';
 
 export const deleteTableMergeColumn = (editor: SlateEditor) => {
-  const type = editor.getType(BaseTablePlugin);
+  const type = editor.getType(KEYS.table);
   const tableEntry = editor.api.above<TTableElement>({
     match: { type },
   });
@@ -119,7 +123,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
     });
 
     const trEntry = editor.api.above({
-      match: { type: editor.getType(BaseTableRowPlugin) },
+      match: { type: editor.getType(KEYS.tr) },
     });
 
     /** Remove cells */

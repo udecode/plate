@@ -2,6 +2,7 @@ import type { Path } from '@udecode/slate';
 
 import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-core';
 
+import { KEYS } from '../../plate-keys';
 import { withNormalizeTypes } from './withNormalizeTypes';
 
 export type NormalizeTypesConfig = PluginConfig<
@@ -30,7 +31,7 @@ interface Rule {
 
 /** @see {@link withNormalizeTypes} */
 export const NormalizeTypesPlugin = createTSlatePlugin<NormalizeTypesConfig>({
-  key: 'normalizeTypes',
+  key: KEYS.normalizeTypes,
   options: {
     rules: [],
   },

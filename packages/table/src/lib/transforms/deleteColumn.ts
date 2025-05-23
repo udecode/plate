@@ -2,6 +2,7 @@ import {
   type SlateEditor,
   type TElement,
   getEditorPlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import type { TTableElement } from '../types';
@@ -13,7 +14,7 @@ import { getCellTypes } from '../utils';
 
 export const deleteColumn = (editor: SlateEditor) => {
   const { getOptions, type } = getEditorPlugin<TableConfig>(editor, {
-    key: 'table',
+    key: KEYS.table,
   });
   const { disableMerge } = getOptions();
 

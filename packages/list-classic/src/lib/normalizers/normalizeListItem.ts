@@ -5,17 +5,14 @@ import {
   type PathRef,
   type SlateEditor,
   type TElement,
+  KEYS,
   match,
   NodeApi,
   PathApi,
 } from '@udecode/plate';
 
-import {
-  type ListConfig,
-  BaseBulletedListPlugin,
-  BaseListItemContentPlugin,
-  BaseNumberedListPlugin,
-} from '../BaseListPlugin';
+import type { ListConfig } from '../BaseListPlugin';
+
 import { getListTypes } from '../queries/index';
 import { moveListItemUp } from '../transforms/index';
 
@@ -64,9 +61,9 @@ export const normalizeListItem = (
   let changed = false;
 
   const allValidLiChildrenTypes = new Set([
-    editor.getType(BaseBulletedListPlugin),
-    editor.getType(BaseListItemContentPlugin),
-    editor.getType(BaseNumberedListPlugin),
+    editor.getType(KEYS.lic),
+    editor.getType(KEYS.olClassic),
+    editor.getType(KEYS.ulClassic),
     ...validLiChildrenTypes,
   ]);
 
@@ -87,7 +84,7 @@ export const normalizeListItem = (
   if (!firstLiChild || !editor.api.isBlock(firstLiChildNode)) {
     editor.tf.insertNodes(
       editor.api.create.block({
-        type: editor.getType(BaseListItemContentPlugin),
+        type: editor.getType(KEYS.lic),
       }),
       {
         at: liPath.concat([0]),
@@ -100,7 +97,7 @@ export const normalizeListItem = (
   if (
     editor.api.isBlock(firstLiChildNode) &&
     !match(firstLiChildNode, [], {
-      type: editor.getType(BaseListItemContentPlugin),
+      type: editor.getType(KEYS.lic),
     })
   ) {
     if (
@@ -132,7 +129,7 @@ export const normalizeListItem = (
 
     editor.tf.setNodes(
       {
-        type: editor.getType(BaseListItemContentPlugin),
+        type: editor.getType(KEYS.lic),
       },
       {
         at: firstLiChildPath,

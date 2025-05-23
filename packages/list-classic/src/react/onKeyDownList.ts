@@ -1,8 +1,9 @@
 import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { Hotkeys, RangeApi } from '@udecode/plate';
+import { Hotkeys, KEYS, RangeApi } from '@udecode/plate';
 
-import { type ListConfig, BaseListItemPlugin } from '../lib';
+import type { ListConfig } from '../lib';
+
 import { moveListItems } from '../lib/transforms/index';
 
 export const onKeyDownList: KeyboardHandler<ListConfig> = ({
@@ -38,7 +39,7 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
 
     // check if we're in a list context.
     const listSelected = editor.api.some({
-      match: { type: editor.getType(BaseListItemPlugin) },
+      match: { type: editor.getType(KEYS.li) },
     });
 
     if (workRange && listSelected) {

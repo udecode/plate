@@ -1,5 +1,7 @@
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
+import { KEYS } from '@udecode/plate';
+
 import type { DeserializeMdOptions } from '../deserializeMd';
 import type { Decoration } from '../type';
 
@@ -65,7 +67,7 @@ export const customMdxDeserialize = (
             text: `\n</${tagName}>`,
           },
         ],
-        type: 'p',
+        type: KEYS.p,
       },
     ];
   }

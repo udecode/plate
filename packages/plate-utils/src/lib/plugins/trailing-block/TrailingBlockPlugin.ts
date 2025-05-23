@@ -1,11 +1,8 @@
 import type { QueryNodeOptions } from '@udecode/slate';
 
-import {
-  type PluginConfig,
-  BaseParagraphPlugin,
-  createTSlatePlugin,
-} from '@udecode/plate-core';
+import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-core';
 
+import { KEYS } from '../../plate-keys';
 import { withTrailingBlock } from './withTrailingBlock';
 
 export type TrailingBlockConfig = PluginConfig<
@@ -20,7 +17,7 @@ export type TrailingBlockConfig = PluginConfig<
 
 /** @see {@link withTrailingBlock} */
 export const TrailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
-  key: 'trailingBlock',
+  key: KEYS.trailingBlock,
   options: {
     level: 0,
   },
@@ -28,6 +25,6 @@ export const TrailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
   .overrideEditor(withTrailingBlock)
   .extend(({ editor }) => ({
     options: {
-      type: editor.getType(BaseParagraphPlugin),
+      type: editor.getType(KEYS.p),
     },
   }));

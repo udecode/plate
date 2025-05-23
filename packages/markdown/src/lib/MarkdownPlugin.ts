@@ -6,6 +6,7 @@ import {
   bindFirst,
   createTSlatePlugin,
   isUrl,
+  KEYS,
 } from '@udecode/plate';
 
 import type { TRules } from './rules';
@@ -79,7 +80,7 @@ export type MarkdownConfig = PluginConfig<
 export type NodesConfig = ((string & {}) | plateTypes)[] | null;
 
 export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
-  key: 'markdown',
+  key: KEYS.markdown,
   options: {
     allowedNodes: null,
     disallowedNodes: null,

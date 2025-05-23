@@ -1,8 +1,8 @@
 import type { SlateEditor, WrapNodesOptions } from '@udecode/plate';
 
-import type { TLinkElement } from '../types';
+import { KEYS } from '@udecode/plate';
 
-import { BaseLinkPlugin } from '../BaseLinkPlugin';
+import type { TLinkElement } from '../types';
 
 export interface WrapLinkOptions extends WrapNodesOptions {
   url: string;
@@ -18,7 +18,7 @@ export const wrapLink = (
     {
       children: [],
       target,
-      type: editor.getType(BaseLinkPlugin),
+      type: editor.getType(KEYS.link),
       url,
     },
     { split: true, ...options } as any

@@ -1,6 +1,8 @@
 import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
-import { type TImageElement, BaseImagePlugin } from '../BaseImagePlugin';
+import { KEYS } from '@udecode/plate';
+
+import type { TImageElement } from '../BaseImagePlugin';
 
 export const insertImage = (
   editor: SlateEditor,
@@ -10,7 +12,7 @@ export const insertImage = (
   const text = { text: '' };
   const image: TImageElement = {
     children: [text],
-    type: editor.getType(BaseImagePlugin),
+    type: editor.getType(KEYS.img),
     url: url as any,
   };
   editor.tf.insertNodes<TImageElement>(image, {

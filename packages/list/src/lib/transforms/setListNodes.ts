@@ -1,6 +1,6 @@
 import type { Editor, NodeEntry } from '@udecode/plate';
 
-import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { KEYS } from '@udecode/plate';
 
 import { INDENT_LIST_KEYS } from '../BaseListPlugin';
 import { ListStyleType } from '../types';
@@ -23,7 +23,7 @@ export const setListNodes = (
     entries.forEach((entry) => {
       const [node, path] = entry;
 
-      let indent = (node[BaseIndentPlugin.key] as number) ?? 0;
+      let indent = (node[KEYS.indent] as number) ?? 0;
       indent =
         node[INDENT_LIST_KEYS.listStyleType] ||
         node.hasOwnProperty(INDENT_LIST_KEYS.checked)

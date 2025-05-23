@@ -3,6 +3,8 @@ import { type TElement, NodeApi, PointApi, RangeApi } from '@udecode/slate';
 
 import type { ResetNodePluginRule } from './types';
 
+import { KEYS } from '../../plate-keys';
+
 export type ResetNodeConfig = PluginConfig<
   'resetNode',
   {
@@ -14,7 +16,7 @@ export type ResetNodeConfig = PluginConfig<
 
 /** Enables support for resetting block type from rules. */
 export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
-  key: 'resetNode',
+  key: KEYS.resetNode,
   editOnly: true,
   options: {
     rules: [],

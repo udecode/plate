@@ -1,13 +1,13 @@
 import {
   type InsertNodesOptions,
   type SlateEditor,
+  KEYS,
   PathApi,
 } from '@udecode/plate';
 
 import type { GetEmptyTableNodeOptions } from '../api/getEmptyTableNode';
+import type { TableConfig } from '../BaseTablePlugin';
 import type { TTableElement } from '../types';
-
-import { type TableConfig, BaseTablePlugin } from '../BaseTablePlugin';
 
 /**
  * Insert table. If selection in table and no 'at' specified, insert after
@@ -18,8 +18,8 @@ export const insertTable = (
   { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
   { select: shouldSelect, ...options }: InsertNodesOptions = {}
 ) => {
-  const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
-  const type = editor.getType(BaseTablePlugin);
+  const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });
+  const type = editor.getType(KEYS.table);
 
   editor.tf.withoutNormalizing(() => {
     const newTable = api.create.table({

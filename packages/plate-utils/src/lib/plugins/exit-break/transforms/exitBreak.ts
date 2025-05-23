@@ -1,15 +1,17 @@
-import { type SlateEditor, BaseParagraphPlugin } from '@udecode/plate-core';
+import type { SlateEditor } from '@udecode/plate-core';
+
 import { PathApi } from '@udecode/slate';
 
 import type { ExitBreakRule } from '../types';
 
+import { KEYS } from '../../../plate-keys';
 import { exitBreakAtEdges } from '../queries/exitBreakAtEdges';
 
 export const exitBreak = (
   editor: SlateEditor,
   {
     before,
-    defaultType = editor.getType(BaseParagraphPlugin),
+    defaultType = editor.getType(KEYS.p),
     level = 0,
     query = {},
     relative = false,

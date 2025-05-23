@@ -1,4 +1,4 @@
-import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
+import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
 
 import type { MediaPluginOptions, TMediaElement } from '../media/index';
 
@@ -13,7 +13,7 @@ export interface TMediaEmbedElement extends TMediaElement {}
  * Instagram posts and tweets or Google Maps.
  */
 export const BaseMediaEmbedPlugin = createTSlatePlugin<MediaEmbedConfig>({
-  key: 'media_embed',
+  key: KEYS.mediaEmbed,
   node: { isElement: true, isVoid: true },
   options: {
     transformUrl: parseIframeUrl,

@@ -1,5 +1,6 @@
 import type { TElement } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
 import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
 import { BaseLineHeightPlugin, setLineHeight } from '../../index';
@@ -15,7 +16,7 @@ export const useLineHeightDropdownMenuState = () => {
 
       if (entry) {
         return (
-          values.find((item) => item === entry[0][BaseLineHeightPlugin.key]) ??
+          values.find((item) => item === entry[0][KEYS.lineHeight]) ??
           defaultNodeValue
         );
       }

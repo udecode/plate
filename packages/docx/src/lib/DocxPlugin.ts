@@ -2,7 +2,7 @@ import {
   type HtmlDeserializer,
   type SlatePlugin,
   createSlatePlugin,
-  HtmlPlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import { cleanDocx } from './docx-cleaner/cleanDocx';
@@ -45,11 +45,11 @@ const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
 };
 
 export const DocxPlugin = createSlatePlugin({
-  key: 'docx',
+  key: KEYS.docx,
   editOnly: true,
   inject: {
     plugins: {
-      [HtmlPlugin.key]: {
+      [KEYS.html]: {
         parser: {
           transformData: ({ data, dataTransfer }) => {
             const rtf = dataTransfer.getData('text/rtf');

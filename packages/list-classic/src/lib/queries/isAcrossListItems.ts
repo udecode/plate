@@ -1,6 +1,4 @@
-import { type SlateEditor, type TRange, RangeApi } from '@udecode/plate';
-
-import { BaseListItemPlugin } from '../BaseListPlugin';
+import { type SlateEditor, type TRange, KEYS, RangeApi } from '@udecode/plate';
 
 /** Is selection across blocks with list items */
 export const isAcrossListItems = (
@@ -17,6 +15,6 @@ export const isAcrossListItems = (
 
   return editor.api.some({
     at,
-    match: { type: editor.getType(BaseListItemPlugin) },
+    match: { type: editor.getType(KEYS.li) },
   });
 };

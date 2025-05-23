@@ -3,6 +3,7 @@ import {
   type PluginConfig,
   type WithRequiredKey,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import { withCaption } from './withCaption';
@@ -28,7 +29,7 @@ export type CaptionConfig = PluginConfig<
 
 /** Enables support for caption. */
 export const BaseCaptionPlugin = createTSlatePlugin<CaptionConfig>({
-  key: 'caption',
+  key: KEYS.caption,
   options: {
     focusEndPath: null,
     focusStartPath: null,

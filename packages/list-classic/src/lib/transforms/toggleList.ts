@@ -1,19 +1,13 @@
 import {
   type SlateEditor,
   type TElement,
-  BaseParagraphPlugin,
   ElementApi,
+  KEYS,
   NodeApi,
   RangeApi,
 } from '@udecode/plate';
 
-import {
-  BaseBulletedListPlugin,
-  BaseListItemContentPlugin,
-  BaseListItemPlugin,
-  BaseListPlugin,
-  BaseNumberedListPlugin,
-} from '../BaseListPlugin';
+import { BaseListPlugin } from '../BaseListPlugin';
 import { getListItemEntry, getListTypes } from '../queries/index';
 import { unwrapList } from './unwrapList';
 
@@ -51,7 +45,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
         editor.tf.wrapNodes<TElement>(list);
 
         const _nodes = editor.api.nodes({
-          match: { type: editor.getType(BaseParagraphPlugin) },
+          match: { type: editor.getType(KEYS.p) },
         });
         const nodes = Array.from(_nodes);
 
@@ -61,13 +55,13 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
 
         if (!blockAbove) {
           editor.tf.setNodes({
-            type: editor.getType(BaseListItemContentPlugin),
+            type: editor.getType(KEYS.lic),
           });
         }
 
         const listItem = {
           children: [],
-          type: editor.getType(BaseListItemPlugin),
+          type: editor.getType(KEYS.li),
         };
 
         for (const [, path] of nodes) {
@@ -88,7 +82,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
 
       if (
         getListTypes(editor).includes(commonEntry[0].type) ||
-        (commonEntry[0] as TElement).type === editor.getType(BaseListItemPlugin)
+        (commonEntry[0] as TElement).type === editor.getType(KEYS.li)
       ) {
         if ((commonEntry[0] as TElement).type === type) {
           unwrapList(editor);
@@ -144,14 +138,14 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
           } else {
             if (!validLiChildrenTypes?.includes(n[0].type)) {
               editor.tf.setNodes(
-                { type: editor.getType(BaseListItemContentPlugin) },
+                { type: editor.getType(KEYS.lic) },
                 { at: n[1] }
               );
             }
 
             const listItem = {
               children: [],
-              type: editor.getType(BaseListItemPlugin),
+              type: editor.getType(KEYS.li),
             };
             editor.tf.wrapNodes<TElement>(listItem, {
               at: n[1],
@@ -166,7 +160,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
   });
 
 export const toggleBulletedList = (editor: SlateEditor) =>
-  toggleList(editor, { type: editor.getType(BaseBulletedListPlugin) });
+  toggleList(editor, { type: editor.getType(KEYS.ulClassic) });
 
 export const toggleNumberedList = (editor: SlateEditor) =>
-  toggleList(editor, { type: editor.getType(BaseNumberedListPlugin) });
+  toggleList(editor, { type: editor.getType(KEYS.olClassic) });

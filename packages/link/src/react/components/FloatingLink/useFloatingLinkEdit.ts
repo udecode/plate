@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { KEYS } from '@udecode/plate';
 import {
   getDOMSelectionBoundingClientRect,
   getRangeBoundingClientRect,
@@ -84,7 +85,7 @@ export const useFloatingLinkEdit = ({
     if (
       editor.selection &&
       editor.api.some({
-        match: { type: editor.getType(LinkPlugin) },
+        match: { type: editor.getType(KEYS.link) },
       })
     ) {
       api.floatingLink.show('edit', editor.id);

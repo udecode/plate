@@ -1,6 +1,6 @@
 import type { Editor, Path } from '@udecode/plate';
 
-import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { KEYS } from '@udecode/plate';
 
 import { INDENT_LIST_KEYS } from '../BaseListPlugin';
 import { ListStyleType } from '../types';
@@ -21,8 +21,8 @@ export const setListNode = (
 
   editor.tf.setNodes(
     {
-      [BaseIndentPlugin.key]: newIndent,
       [INDENT_LIST_KEYS.listStyleType]: listStyleType,
+      [KEYS.indent]: newIndent,
     },
     { at }
   );
@@ -44,9 +44,9 @@ export const setIndentTodoNode = (
 
   editor.tf.setNodes(
     {
-      [BaseIndentPlugin.key]: newIndent,
       [INDENT_LIST_KEYS.checked]: false,
       [INDENT_LIST_KEYS.listStyleType]: listStyleType,
+      [KEYS.indent]: newIndent,
     },
     { at }
   );

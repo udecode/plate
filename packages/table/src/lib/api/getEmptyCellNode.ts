@@ -1,11 +1,8 @@
 import type { SlateEditor, TElement } from '@udecode/plate';
 
-import type { CreateCellOptions } from '../types';
+import { KEYS } from '@udecode/plate';
 
-import {
-  BaseTableCellHeaderPlugin,
-  BaseTableCellPlugin,
-} from '../BaseTablePlugin';
+import type { CreateCellOptions } from '../types';
 
 export const getEmptyCellNode = (
   editor: SlateEditor,
@@ -15,14 +12,12 @@ export const getEmptyCellNode = (
     header ??
     (row
       ? (row as TElement).children.every(
-          (c) => c.type === editor.getType(BaseTableCellHeaderPlugin)
+          (c) => c.type === editor.getType(KEYS.th)
         )
       : false);
 
   return {
     children: children ?? [editor.api.create.block()],
-    type: header
-      ? editor.getType(BaseTableCellHeaderPlugin)
-      : editor.getType(BaseTableCellPlugin),
+    type: header ? editor.getType(KEYS.th) : editor.getType(KEYS.td),
   };
 };

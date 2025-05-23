@@ -3,17 +3,14 @@ import {
   type SlateEditor,
   type TElement,
   getEditorPlugin,
+  KEYS,
   NodeApi,
   PathApi,
 } from '@udecode/plate';
 
 import type { TTableElement } from '../types';
 
-import {
-  BaseTableCellHeaderPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '../BaseTablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { insertTableMergeRow } from '../merge/insertTableRow';
 import { getCellTypes } from '../utils/index';
 
@@ -46,7 +43,7 @@ export const insertTableRow = (
   if (at && !fromRow) {
     const table = NodeApi.get<TTableElement>(editor, at);
 
-    if (table?.type === editor.getType(BaseTablePlugin)) {
+    if (table?.type === editor.getType(KEYS.table)) {
       fromRow = NodeApi.lastChild(editor, at)![1];
       at = undefined;
     }
@@ -54,7 +51,7 @@ export const insertTableRow = (
 
   const trEntry = editor.api.block({
     at: fromRow,
-    match: { type: editor.getType(BaseTableRowPlugin) },
+    match: { type: editor.getType(KEYS.tr) },
   });
 
   if (!trEntry) return;
@@ -75,15 +72,14 @@ export const insertTableRow = (
       const isHeaderColumn =
         !hasSingleRow &&
         (tableEntry[0].children as TElement[]).every(
-          (n) =>
-            n.children[i].type === editor.getType(BaseTableCellHeaderPlugin)
+          (n) => n.children[i].type === editor.getType(KEYS.th)
         );
 
       return api.create.tableCell({
         header: header ?? isHeaderColumn,
       });
     }),
-    type: editor.getType(BaseTableRowPlugin),
+    type: editor.getType(KEYS.tr),
   });
 
   editor.tf.withoutNormalizing(() => {

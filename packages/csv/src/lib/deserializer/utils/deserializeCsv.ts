@@ -1,10 +1,6 @@
-import {
-  type Descendant,
-  type SlateEditor,
-  type TElement,
-  type TNode,
-  BaseParagraphPlugin,
-} from '@udecode/plate';
+import type { Descendant, SlateEditor, TElement, TNode } from '@udecode/plate';
+
+import { KEYS } from '@udecode/plate';
 import papaparse from 'papaparse';
 
 import { type CsvParseOptions, CsvPlugin } from '../../CsvPlugin';
@@ -57,11 +53,11 @@ export const deserializeCsv = (
     )
       return;
 
-    const paragraph = editor.getType(BaseParagraphPlugin);
-    const table = editor.getType({ key: 'table' });
-    const th = editor.getType({ key: 'th' });
-    const tr = editor.getType({ key: 'tr' });
-    const td = editor.getType({ key: 'td' });
+    const paragraph = editor.getType(KEYS.p);
+    const table = editor.getType(KEYS.table);
+    const th = editor.getType(KEYS.th);
+    const tr = editor.getType(KEYS.tr);
+    const td = editor.getType(KEYS.td);
 
     const ast: TNode = {
       children: [],

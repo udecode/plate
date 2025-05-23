@@ -2,6 +2,7 @@ import {
   type PluginConfig,
   type SlateEditor,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import type { Heading } from './types';
@@ -16,7 +17,7 @@ export type TocConfig = PluginConfig<
 >;
 
 export const BaseTocPlugin = createTSlatePlugin<TocConfig>({
-  key: 'toc',
+  key: KEYS.toc,
   node: { isElement: true, isVoid: true },
   options: {
     isScroll: true,

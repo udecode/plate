@@ -6,6 +6,7 @@ import {
   createTSlatePlugin,
   ElementApi,
   getAt,
+  KEYS,
   TextApi,
 } from '@udecode/plate';
 
@@ -47,7 +48,7 @@ export type BaseSuggestionConfig = PluginConfig<
 >;
 
 export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
-  key: 'suggestion',
+  key: KEYS.suggestion,
   node: { isLeaf: true },
   options: {
     currentUserId: 'alice',

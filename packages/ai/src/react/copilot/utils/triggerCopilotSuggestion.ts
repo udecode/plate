@@ -1,21 +1,22 @@
+import { KEYS } from '@udecode/plate';
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import type { CopilotPluginConfig } from '../CopilotPlugin';
 
-import { AIChatPlugin } from '../../ai-chat/AIChatPlugin';
 import { callCompletionApi } from './callCompletionApi';
 
 export const triggerCopilotSuggestion = async (editor: PlateEditor) => {
   const { api, getOptions, setOption } = getEditorPlugin<CopilotPluginConfig>(
     editor,
     {
-      key: 'copilot',
+      key: KEYS.copilot,
     }
   );
 
   const { completeOptions, getPrompt, isLoading, triggerQuery } = getOptions();
 
-  if (isLoading || editor.getOptions(AIChatPlugin).chat?.isLoading) return;
+  if (isLoading || editor.getOptions({ key: KEYS.aiChat }).chat?.isLoading)
+    return;
   if (!triggerQuery!({ editor })) return;
 
   // if (query && !queryEditor(editor, query)) return;

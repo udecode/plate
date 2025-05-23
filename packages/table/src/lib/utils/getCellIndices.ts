@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
+import { type SlateEditor, getEditorPlugin, KEYS } from '@udecode/plate';
 
 import type { TableConfig } from '../BaseTablePlugin';
 import type { TTableCellElement } from '../types';
@@ -15,7 +15,7 @@ export const getCellIndices = (
   element: TTableCellElement
 ): CellIndices => {
   const { getOption } = getEditorPlugin<TableConfig>(editor, {
-    key: 'table',
+    key: KEYS.table,
   });
 
   let indices = getOption('cellIndices', element.id!);

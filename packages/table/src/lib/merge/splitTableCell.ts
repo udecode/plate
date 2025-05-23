@@ -3,6 +3,7 @@ import {
   type Path,
   type SlateEditor,
   getEditorPlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import {
@@ -10,16 +11,12 @@ import {
   type TTableRowElement,
   getCellIndices,
 } from '..';
-import {
-  BaseTableCellHeaderPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '../BaseTablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 
 export const splitTableCell = (editor: SlateEditor) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);
-  const tableRowType = editor.getType(BaseTableRowPlugin);
+  const tableRowType = editor.getType(KEYS.tr);
 
   const cellEntries = getTableGridAbove(editor, { format: 'cell' });
   const [[cellElem, path]] = cellEntries;
@@ -30,7 +27,7 @@ export const splitTableCell = (editor: SlateEditor) => {
       return {
         ...api.create.tableCell({
           children,
-          header: cellElem.type === editor.getType(BaseTableCellHeaderPlugin),
+          header: cellElem.type === editor.getType(KEYS.th),
         }),
         colSpan: 1,
         rowSpan: 1,
@@ -131,7 +128,7 @@ export const splitTableCell = (editor: SlateEditor) => {
         editor.tf.insertNodes(
           {
             children: newRowChildren,
-            type: editor.getType(BaseTableRowPlugin),
+            type: editor.getType(KEYS.tr),
           },
           { at: _rowPath }
         );

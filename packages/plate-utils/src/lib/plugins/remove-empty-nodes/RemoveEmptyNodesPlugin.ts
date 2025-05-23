@@ -1,5 +1,6 @@
 import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-core';
 
+import { KEYS } from '../../plate-keys';
 import { withRemoveEmptyNodes } from './withRemoveEmptyNodes';
 
 export type RemoveEmptyNodesConfig = PluginConfig<
@@ -12,5 +13,5 @@ export type RemoveEmptyNodesConfig = PluginConfig<
 /** @see {@link withRemoveEmptyNodes} */
 export const RemoveEmptyNodesPlugin =
   createTSlatePlugin<RemoveEmptyNodesConfig>({
-    key: 'removeEmptyNodes',
+    key: KEYS.removeEmptyNodes,
   }).overrideEditor(withRemoveEmptyNodes);

@@ -2,6 +2,8 @@ import type { QueryNodeOptions } from '@udecode/slate';
 
 import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-core';
 
+import { KEYS } from '../../plate-keys';
+
 export type SoftBreakConfig = PluginConfig<
   'softBreak',
   {
@@ -21,7 +23,7 @@ export interface SoftBreakRule {
  * and query options.
  */
 export const BaseSoftBreakPlugin = createTSlatePlugin<SoftBreakConfig>({
-  key: 'softBreak',
+  key: KEYS.softBreak,
   editOnly: true,
   options: {
     rules: [{ hotkey: 'shift+enter' }],

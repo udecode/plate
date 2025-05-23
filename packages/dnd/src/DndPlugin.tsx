@@ -3,6 +3,7 @@ import React from 'react';
 import type { Path, PluginConfig } from '@udecode/plate';
 import type { DropTargetMonitor } from 'react-dnd';
 
+import { KEYS } from '@udecode/plate';
 import { type PlateEditor, createTPlatePlugin } from '@udecode/plate/react';
 
 import type {
@@ -38,7 +39,7 @@ export type DndConfig = PluginConfig<
 >;
 
 export const DndPlugin = createTPlatePlugin<DndConfig>({
-  key: 'dnd',
+  key: KEYS.dnd,
   editOnly: true,
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
@@ -64,7 +65,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       setTimeout(() => {
         id &&
           editor
-            .getApi({ key: 'blockSelection' })
+            .getApi({ key: KEYS.blockSelection })
             .blockSelection?.addSelectedRow?.(id);
       }, 0);
 

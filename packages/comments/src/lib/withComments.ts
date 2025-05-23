@@ -1,9 +1,10 @@
 import type { OverrideEditor } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
+
 import type { BaseCommentsConfig } from './BaseCommentsPlugin';
 import type { TCommentText } from './types';
 
-import { BaseCommentsPlugin } from './BaseCommentsPlugin';
 import { getCommentCount, getDraftCommentKey } from './utils';
 
 export const withComments: OverrideEditor<BaseCommentsConfig> = ({
@@ -15,11 +16,11 @@ export const withComments: OverrideEditor<BaseCommentsConfig> = ({
       const [node, path] = entry;
 
       if (
-        node[BaseCommentsPlugin.key] &&
+        node[KEYS.comment] &&
         !node[getDraftCommentKey()] &&
         getCommentCount(node as TCommentText) < 1
       ) {
-        editor.tf.unsetNodes(BaseCommentsPlugin.key, { at: path });
+        editor.tf.unsetNodes(KEYS.comment, { at: path });
 
         return;
       }

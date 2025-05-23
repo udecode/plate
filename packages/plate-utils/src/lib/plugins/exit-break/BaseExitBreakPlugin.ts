@@ -2,6 +2,8 @@ import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-core';
 
 import type { ExitBreakRule } from './types';
 
+import { KEYS } from '../../plate-keys';
+
 export type ExitBreakConfig = PluginConfig<
   'exitBreak',
   {
@@ -14,7 +16,7 @@ export type ExitBreakConfig = PluginConfig<
  * and query options.
  */
 export const BaseExitBreakPlugin = createTSlatePlugin<ExitBreakConfig>({
-  key: 'exitBreak',
+  key: KEYS.exitBreak,
   editOnly: true,
   options: {
     rules: [

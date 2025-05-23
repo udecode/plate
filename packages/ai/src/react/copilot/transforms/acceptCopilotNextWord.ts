@@ -1,3 +1,4 @@
+import { KEYS } from '@udecode/plate';
 import { deserializeInlineMd } from '@udecode/plate-markdown';
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
@@ -7,7 +8,7 @@ import { withoutAbort } from '../utils';
 
 export const acceptCopilotNextWord = (editor: PlateEditor) => {
   const { api, getOptions } = getEditorPlugin<CopilotPluginConfig>(editor, {
-    key: 'copilot',
+    key: KEYS.copilot,
   });
 
   const { getNextWord, suggestionText } = getOptions();

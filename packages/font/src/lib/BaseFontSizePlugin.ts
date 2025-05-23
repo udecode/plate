@@ -2,6 +2,7 @@ import {
   type PluginConfig,
   bindFirst,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import { setFontSize } from './transforms';
@@ -17,7 +18,7 @@ export type BaseFontSizeConfig = PluginConfig<
 >;
 
 export const BaseFontSizePlugin = createTSlatePlugin({
-  key: 'fontSize',
+  key: KEYS.fontSize,
   inject: {
     nodeProps: {
       nodeKey: 'fontSize',

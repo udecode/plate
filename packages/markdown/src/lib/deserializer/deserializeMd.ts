@@ -4,7 +4,7 @@ import type { Plugin } from 'unified';
 import {
   type Descendant,
   type SlateEditor,
-  BaseParagraphPlugin,
+  KEYS,
   TextApi,
 } from '@udecode/plate';
 import remarkParse from 'remark-parse';
@@ -96,7 +96,7 @@ export const deserializeMd = (
     TextApi.isText(item)
       ? {
           children: [item],
-          type: editor.getType(BaseParagraphPlugin),
+          type: editor.getType(KEYS.p),
         }
       : item
   );

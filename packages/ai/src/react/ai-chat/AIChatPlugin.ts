@@ -10,6 +10,7 @@ import {
   type SlateEditor,
   bindFirst,
   ElementApi,
+  KEYS,
 } from '@udecode/plate';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { createTPlatePlugin } from '@udecode/plate/react';
@@ -92,7 +93,7 @@ export type AIChatPluginConfig = PluginConfig<
 >;
 
 export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
-  key: 'aiChat',
+  key: KEYS.aiChat,
   dependencies: ['ai'],
   node: {
     isElement: true,

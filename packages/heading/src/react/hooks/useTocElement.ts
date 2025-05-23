@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { NodeApi } from '@udecode/plate';
+import { KEYS, NodeApi } from '@udecode/plate';
 import {
   useEditorPlugin,
   useEditorSelector,
@@ -36,7 +36,7 @@ export const useTocElementState = () => {
 
       setTimeout(() => {
         editor
-          .getApi({ key: 'blockSelection' })
+          .getApi({ key: KEYS.blockSelection })
           .blockSelection?.addSelectedRow?.(id);
       }, 0);
     },

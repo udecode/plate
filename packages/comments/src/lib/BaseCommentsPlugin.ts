@@ -4,6 +4,7 @@ import {
   type PluginConfig,
   type SetNodesOptions,
   createTSlatePlugin,
+  KEYS,
   TextApi,
 } from '@udecode/plate';
 
@@ -45,7 +46,7 @@ export type BaseCommentsConfig = PluginConfig<
 >;
 
 export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
-  key: 'comment',
+  key: KEYS.comment,
   node: { isLeaf: true },
 })
   .overrideEditor(withComments)
@@ -115,7 +116,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
             editor.tf.removeMark(key);
           });
 
-          editor.tf.removeMark(BaseCommentsPlugin.key);
+          editor.tf.removeMark(KEYS.comment);
         });
       },
       setDraft: (options = {}) => {
@@ -142,11 +143,7 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
           if (isOverlapping) {
             unsetKeys = [getDraftCommentKey(), getCommentKey(id)];
           } else {
-            unsetKeys = [
-              BaseCommentsPlugin.key,
-              getDraftCommentKey(),
-              getCommentKey(id),
-            ];
+            unsetKeys = [KEYS.comment, getDraftCommentKey(), getCommentKey(id)];
           }
 
           editor.tf.unsetNodes<TCommentText>(unsetKeys, {

@@ -2,10 +2,9 @@ import {
   type PluginConfig,
   type SlateRenderElementProps,
   type TElement,
-  BaseParagraphPlugin,
   createTSlatePlugin,
-  HtmlPlugin,
   isHtmlBlockElement,
+  KEYS,
   postCleanHtml,
   traverseHtmlElements,
 } from '@udecode/plate';
@@ -57,10 +56,10 @@ export type BaseListConfig = PluginConfig<
 >;
 
 export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
-  key: 'list',
+  key: KEYS.list,
   inject: {
     plugins: {
-      [HtmlPlugin.key]: {
+      [KEYS.html]: {
         parser: {
           transformData: ({ data }) => {
             const document = new DOMParser().parseFromString(data, 'text/html');
@@ -113,7 +112,7 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
             // gdoc uses aria-level attribute
             indent: Number(element.getAttribute('aria-level')),
             listStyleType: getOptions().getListStyleType?.(element),
-            type: editor.getType(BaseParagraphPlugin),
+            type: editor.getType(KEYS.p),
           };
         },
       },

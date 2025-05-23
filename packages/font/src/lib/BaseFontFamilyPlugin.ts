@@ -1,7 +1,7 @@
-import { createSlatePlugin } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from '@udecode/plate';
 
 export const BaseFontFamilyPlugin = createSlatePlugin({
-  key: 'fontFamily',
+  key: KEYS.fontFamily,
   inject: {
     nodeProps: {
       nodeKey: 'fontFamily',

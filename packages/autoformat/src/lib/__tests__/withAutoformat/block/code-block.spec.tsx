@@ -8,6 +8,7 @@ import {
 } from '@udecode/plate-code-block';
 import { jsxt } from '@udecode/plate-test-utils';
 import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
+import { KEYS } from '@udecode/plate';
 
 jsxt;
 
@@ -73,7 +74,7 @@ describe('when ``` at block start, but customising with query we get the most re
               {
                 format: (editor) => {
                   insertEmptyCodeBlock(editor, {
-                    defaultType: editor.getType(BaseParagraphPlugin),
+                    defaultType: editor.getType(KEYS.p),
                     insertNodesOptions: { select: true },
                   });
                 },

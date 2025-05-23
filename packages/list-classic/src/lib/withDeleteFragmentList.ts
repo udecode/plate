@@ -3,11 +3,13 @@ import {
   type SlateEditor,
   type TRange,
   deleteMerge,
+  KEYS,
 } from '@udecode/plate';
 
-import { type ListConfig, BaseListItemPlugin } from './BaseListPlugin';
+import type { ListConfig } from './BaseListPlugin';
+
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
-import { hasListChild } from './queries/hasListChild';
+import { hasListChild } from './queries/index';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 
 const getLiStart = (editor: SlateEditor) => {
@@ -15,7 +17,7 @@ const getLiStart = (editor: SlateEditor) => {
 
   return editor.api.above({
     at: start,
-    match: { type: editor.getType(BaseListItemPlugin) },
+    match: { type: editor.getType(KEYS.li) },
   });
 };
 
@@ -39,7 +41,7 @@ export const withDeleteFragmentList: OverrideEditor<ListConfig> = ({
           const end = editor.api.end(editor.selection as TRange);
           const liEnd = editor.api.above({
             at: end,
-            match: { type: editor.getType(BaseListItemPlugin) },
+            match: { type: editor.getType(KEYS.li) },
           });
           const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
           const liEndPathRef = liEndCanBeDeleted

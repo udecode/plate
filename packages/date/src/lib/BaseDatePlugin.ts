@@ -1,4 +1,9 @@
-import { type TElement, bindFirst, createSlatePlugin } from '@udecode/plate';
+import {
+  type TElement,
+  bindFirst,
+  createSlatePlugin,
+  KEYS,
+} from '@udecode/plate';
 
 import { isPointNextToNode } from './queries';
 import { insertDate } from './transforms';
@@ -8,7 +13,7 @@ export interface TDateElement extends TElement {
 }
 
 export const BaseDatePlugin = createSlatePlugin({
-  key: 'date',
+  key: KEYS.date,
   handlers: {},
   node: {
     isElement: true,

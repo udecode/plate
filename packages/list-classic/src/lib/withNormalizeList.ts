@@ -1,18 +1,15 @@
 import {
   type OverrideEditor,
   type TElement,
-  BaseParagraphPlugin,
   ElementApi,
+  KEYS,
   match,
   NodeApi,
   PathApi,
 } from '@udecode/plate';
 
-import {
-  type ListConfig,
-  BaseListItemContentPlugin,
-  BaseListItemPlugin,
-} from './BaseListPlugin';
+import type { ListConfig } from './BaseListPlugin';
+
 import { normalizeListItem } from './normalizers/normalizeListItem';
 import { normalizeNestedList } from './normalizers/normalizeNestedList';
 import { getListTypes, isListRoot } from './queries';
@@ -26,9 +23,9 @@ export const withNormalizeList: OverrideEditor<ListConfig> = ({
 }) => ({
   transforms: {
     normalizeNode([node, path]) {
-      const liType = editor.getType(BaseListItemPlugin);
-      const licType = editor.getType(BaseListItemContentPlugin);
-      const defaultType = editor.getType(BaseParagraphPlugin);
+      const liType = editor.getType(KEYS.li);
+      const licType = editor.getType(KEYS.lic);
+      const defaultType = editor.getType(KEYS.p);
 
       if (!ElementApi.isElement(node)) {
         return normalizeNode([node, path]);
@@ -81,7 +78,7 @@ export const withNormalizeList: OverrideEditor<ListConfig> = ({
         }
       }
       if (
-        node.type === editor.getType(BaseListItemPlugin) &&
+        node.type === editor.getType(KEYS.li) &&
         normalizeListItem(editor, {
           listItem: [node, path],
           validLiChildrenTypes: getOptions().validLiChildrenTypes,

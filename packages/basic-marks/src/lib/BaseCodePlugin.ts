@@ -1,8 +1,8 @@
-import { createSlatePlugin, findHtmlParentElement } from '@udecode/plate';
+import { createSlatePlugin, findHtmlParentElement, KEYS } from '@udecode/plate';
 
 /** Enables support for code formatting */
 export const BaseCodePlugin = createSlatePlugin({
-  key: 'code',
+  key: KEYS.code,
   node: { isLeaf: true },
   parsers: {
     html: {

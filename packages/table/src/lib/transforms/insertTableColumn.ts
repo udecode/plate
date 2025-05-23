@@ -40,7 +40,7 @@ export const insertTableColumn = (
   if (at && !fromCell) {
     const table = NodeApi.get<TTableElement>(editor, at);
 
-    if (table?.type === editor.getType(BaseTablePlugin)) {
+    if (table?.type === editor.getType(KEYS.table)) {
       fromCell = NodeApi.lastChild(editor, at.concat([0]))![1];
       at = undefined;
     }

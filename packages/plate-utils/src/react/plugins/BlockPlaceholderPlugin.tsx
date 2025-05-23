@@ -14,6 +14,8 @@ import {
   usePluginOption,
 } from '@udecode/plate-core/react';
 
+import { KEYS } from '../../lib';
+
 export type BlockPlaceholderConfig = PluginConfig<
   'blockPlaceholder',
   {
@@ -31,7 +33,7 @@ export type BlockPlaceholderConfig = PluginConfig<
 
 export const BlockPlaceholderPlugin =
   createTPlatePlugin<BlockPlaceholderConfig>({
-    key: 'blockPlaceholder',
+    key: KEYS.blockPlaceholder,
     editOnly: true,
     options: {
       _target: null,
@@ -72,7 +74,7 @@ export const BlockPlaceholderPlugin =
         const [element, path] = entry;
 
         const placeholder = Object.keys(placeholders).find(
-          (type) => editor.getType({ key: type }) === element.type
+          (key) => editor.getType(key) === element.type
         );
 
         if (

@@ -1,15 +1,15 @@
+import { KEYS } from '@udecode/plate';
 import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
-import { BaseBulletedListPlugin } from '../../lib/index';
 import { ListPlugin } from '../ListPlugin';
 
 export const useListToolbarButtonState = ({
-  nodeType = BaseBulletedListPlugin.key as string,
+  nodeType = KEYS.ulClassic as string,
 } = {}) => {
   const pressed = useEditorSelector(
     (editor) =>
       !!editor.selection &&
-      editor.api.some({ match: { type: editor.getType({ key: nodeType }) } }),
+      editor.api.some({ match: { type: editor.getType(nodeType) } }),
     [nodeType]
   );
 

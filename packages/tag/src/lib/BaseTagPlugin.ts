@@ -3,6 +3,7 @@ import {
   type TElement,
   type UnknownObject,
   createSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 
 export type TagLike = { value: string } & UnknownObject;
@@ -10,7 +11,7 @@ export type TagLike = { value: string } & UnknownObject;
 export type TTagElement = TElement & TagLike;
 
 export const BaseTagPlugin = createSlatePlugin({
-  key: 'tag',
+  key: KEYS.tag,
   node: {
     isElement: true,
     isInline: true,

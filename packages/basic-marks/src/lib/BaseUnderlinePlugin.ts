@@ -1,8 +1,8 @@
-import { createSlatePlugin, someHtmlElement } from '@udecode/plate';
+import { createSlatePlugin, KEYS, someHtmlElement } from '@udecode/plate';
 
 /** Enables support for underline formatting. */
 export const BaseUnderlinePlugin = createSlatePlugin({
-  key: 'underline',
+  key: KEYS.underline,
   node: { isLeaf: true },
   parsers: {
     html: {

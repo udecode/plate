@@ -4,6 +4,7 @@ import {
   createTSlatePlugin,
   getEditorPlugin,
   isUrl,
+  KEYS,
   RemoveEmptyNodesPlugin,
   withRemoveEmptyNodes,
 } from '@udecode/plate';
@@ -88,7 +89,7 @@ export type BaseLinkConfig = PluginConfig<
 
 /** Enables support for hyperlinks. */
 export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
-  key: 'a',
+  key: KEYS.link,
   node: {
     dangerouslyAllowAttributes: ['target'],
     isElement: true,

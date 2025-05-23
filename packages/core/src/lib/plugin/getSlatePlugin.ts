@@ -32,17 +32,12 @@ export function getSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
 }
 
 /** Get editor plugin type by key or plugin object. */
-export function getPluginType(
-  editor: SlateEditor,
-  plugin: WithRequiredKey
-): string {
-  const p = editor.getPlugin<AnySlatePlugin>(plugin);
+export function getPluginType(editor: SlateEditor, key: string): string {
+  const p = editor.getPlugin<AnySlatePlugin>({ key });
 
   return p.node.type ?? p.key ?? '';
 }
 
 /** Get editor plugin types by key. */
-export const getPluginTypes = (
-  editor: SlateEditor,
-  plugins: WithRequiredKey[]
-) => plugins.map((plugin) => editor.getType(plugin));
+export const getPluginTypes = (editor: SlateEditor, keys: string[]) =>
+  keys.map((key) => editor.getType(key));

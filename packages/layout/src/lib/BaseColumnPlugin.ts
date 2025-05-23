@@ -1,14 +1,14 @@
-import { createSlatePlugin } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from '@udecode/plate';
 
 import { withColumn } from './withColumn';
 
 export const BaseColumnItemPlugin = createSlatePlugin({
-  key: 'column',
+  key: KEYS.column,
   node: { isElement: true },
 }).overrideEditor(withColumn);
 
 export const BaseColumnPlugin = createSlatePlugin({
-  key: 'column_group',
+  key: KEYS.columnGroup,
   node: { isElement: true },
   plugins: [BaseColumnItemPlugin],
 });

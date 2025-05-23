@@ -4,6 +4,7 @@ import {
   type QueryNodeOptions,
   createTSlatePlugin,
   ElementApi,
+  KEYS,
   nanoid,
   queryNode,
 } from '@udecode/plate';
@@ -63,7 +64,7 @@ export type NodeIdConfig = PluginConfig<
 
 /** @see {@link withNodeId} */
 export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
-  key: 'nodeId',
+  key: KEYS.nodeId,
   options: {
     filterInline: true,
     filterText: true,

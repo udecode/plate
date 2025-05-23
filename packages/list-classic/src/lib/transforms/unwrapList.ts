@@ -2,14 +2,10 @@ import {
   type Path,
   type SlateEditor,
   ElementApi,
+  KEYS,
   NodeApi,
 } from '@udecode/plate';
 
-import {
-  BaseBulletedListPlugin,
-  BaseListItemPlugin,
-  BaseNumberedListPlugin,
-} from '../BaseListPlugin';
 import { getListTypes } from '../queries/index';
 
 export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
@@ -53,7 +49,7 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
 
       editor.tf.unwrapNodes({
         at,
-        match: { type: editor.getType(BaseListItemPlugin) },
+        match: { type: editor.getType(KEYS.li) },
         split: true,
       });
 
@@ -61,8 +57,8 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
         at,
         match: {
           type: [
-            editor.getType(BaseBulletedListPlugin),
-            editor.getType(BaseNumberedListPlugin),
+            editor.getType(KEYS.ulClassic),
+            editor.getType(KEYS.olClassic),
           ],
         },
         split: true,

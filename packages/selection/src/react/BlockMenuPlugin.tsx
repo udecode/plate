@@ -1,5 +1,6 @@
 import type { PluginConfig } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
 import { createTPlatePlugin } from '@udecode/plate/react';
 
 import type { BlockSelectionConfig } from './BlockSelectionPlugin';
@@ -30,7 +31,7 @@ export type BlockMenuConfig = PluginConfig<
 type OpenId = (string & {}) | typeof BLOCK_CONTEXT_MENU_ID;
 
 export const BlockMenuPlugin = createTPlatePlugin<BlockMenuConfig>({
-  key: 'blockMenu',
+  key: KEYS.blockMenu,
   editOnly: true,
   options: {
     openId: null,
@@ -67,7 +68,7 @@ export const BlockMenuPlugin = createTPlatePlugin<BlockMenuConfig>({
     ({ api, editor }) => ({
       showContextMenu: (blockId, position) => {
         editor
-          .getApi<BlockSelectionConfig>({ key: 'blockSelection' })
+          .getApi<BlockSelectionConfig>({ key: KEYS.blockSelection })
           .blockSelection?.set(blockId);
         api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, position);
       },

@@ -3,6 +3,7 @@ import {
   type TElement,
   bindFirst,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import {
@@ -30,7 +31,7 @@ export interface TPlaceholderElement extends TElement {
 }
 
 export const BasePlaceholderPlugin = createTSlatePlugin<PlaceholderConfig>({
-  key: 'placeholder',
+  key: KEYS.placeholder,
   node: { isElement: true, isVoid: true },
 }).extendEditorTransforms(({ editor }) => ({
   insert: {

@@ -7,10 +7,7 @@ import type {
   TRange,
 } from '@udecode/plate';
 
-import {
-  BaseBulletedListPlugin,
-  BaseNumberedListPlugin,
-} from '../BaseListPlugin';
+import { KEYS } from '@udecode/plate';
 
 /** Searches upward for the root list element */
 export const getListRoot = (
@@ -22,10 +19,7 @@ export const getListRoot = (
   const parentList = editor.api.above<TElement>({
     at,
     match: {
-      type: [
-        editor.getType(BaseBulletedListPlugin),
-        editor.getType(BaseNumberedListPlugin),
-      ],
+      type: [editor.getType(KEYS.olClassic), editor.getType(KEYS.ulClassic)],
     },
   });
 

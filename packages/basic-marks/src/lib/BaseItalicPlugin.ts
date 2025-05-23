@@ -1,8 +1,8 @@
-import { createSlatePlugin, someHtmlElement } from '@udecode/plate';
+import { createSlatePlugin, KEYS, someHtmlElement } from '@udecode/plate';
 
 /** Enables support for italic formatting. */
 export const BaseItalicPlugin = createSlatePlugin({
-  key: 'italic',
+  key: KEYS.italic,
   node: { isLeaf: true },
   parsers: {
     html: {

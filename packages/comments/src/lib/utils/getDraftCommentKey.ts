@@ -1,3 +1,3 @@
-import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
+import { KEYS } from '@udecode/plate';
 
-export const getDraftCommentKey = () => `${BaseCommentsPlugin.key}_draft`;
+export const getDraftCommentKey = () => `${KEYS.comment}_draft`;

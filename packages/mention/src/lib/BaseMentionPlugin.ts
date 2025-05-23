@@ -2,6 +2,7 @@ import {
   type PluginConfig,
   createSlatePlugin,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 import {
   type TriggerComboboxPluginOptions,
@@ -24,13 +25,13 @@ export type MentionConfig = PluginConfig<
 >;
 
 export const BaseMentionInputPlugin = createSlatePlugin({
-  key: 'mention_input',
+  key: KEYS.mentionInput,
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
 /** Enables support for autocompleting @mentions. */
 export const BaseMentionPlugin = createTSlatePlugin<MentionConfig>({
-  key: 'mention',
+  key: KEYS.mention,
   node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
   options: {
     trigger: '@',

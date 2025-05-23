@@ -1,7 +1,7 @@
+import { KEYS } from '@udecode/plate';
 import { Key, toPlatePlugin } from '@udecode/plate/react';
 
 import { BaseSubscriptPlugin } from '../lib/BaseSubscriptPlugin';
-import { SuperscriptPlugin } from './SuperscriptPlugin';
 
 export const SubscriptPlugin = toPlatePlugin(
   BaseSubscriptPlugin,
@@ -12,7 +12,7 @@ export const SubscriptPlugin = toPlatePlugin(
         preventDefault: true,
         handler: () => {
           editor.tf.toggleMark(type, {
-            remove: editor.getType(SuperscriptPlugin),
+            remove: editor.getType(KEYS.sup),
           });
         },
       },
