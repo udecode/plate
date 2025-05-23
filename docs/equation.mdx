@@ -41,10 +41,12 @@ const plugins = [
 ```
 
 ```tsx
+import { KEYS } from '@udecode/plate';
+
 const components = {
   // ...otherComponents,
-  [EquationPlugin.key]: EquationElement,
-  [InlineEquationPlugin.key]: InlineEquationElement,
+  [KEYS.equation]: EquationElement,
+  [KEYS.inlineEquation]: InlineEquationElement,
 }
 ```
 

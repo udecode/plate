@@ -246,11 +246,11 @@ const MyCustomCodeBlockPlugin = CodeBlockPlugin.extend({
           const lines = textContent.split('\n');
 
           return {
-            type: CodeBlockPlugin.key, // 或 editor.getType(CodeBlockPlugin)
+            type: CodeBlockPlugin.key, // 或 editor.getType(KEYS.codeBlock)
             lang: language,
             code: textContent, // 示例：存储完整代码字符串
             children: lines.map((line) => ({
-              type: editor.getType(CodeLinePlugin), // 用 editor.getType 更安全
+              type: editor.getType(KEYS.codeLine), // 用 editor.getType 更安全
               children: [{ text: line }],
             })),
           };

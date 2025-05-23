@@ -140,7 +140,7 @@ tf.insert.tableRow(); // 类型安全的转换方法
 
 ```ts
 const paragraphPlugin = editor.getPlugin(ParagraphPlugin);
-const headingPlugin = editor.getPlugin({ key: 'heading' });
+const headingPlugin = editor.getPlugin({ key: KEYS.heading });
 ```
 
 ### getType
@@ -148,7 +148,7 @@ const headingPlugin = editor.getPlugin({ key: 'heading' });
 获取与插件关联的节点类型：
 
 ```ts
-const paragraphType = editor.getType(ParagraphPlugin);
+const paragraphType = editor.getType(KEYS.p);
 ```
 
 ## 选项方法

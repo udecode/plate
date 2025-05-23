@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 import { useComposedRef } from '@udecode/cn';
+import { KEYS } from '@udecode/plate';
 import {
   type FloatingToolbarState,
   flip,
@@ -30,8 +31,8 @@ export function FloatingToolbar({
 }) {
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorValue('focus');
-  const isFloatingLinkOpen = !!usePluginOption({ key: 'a' }, 'mode');
-  const isAIChatOpen = usePluginOption({ key: 'aiChat' }, 'open');
+  const isFloatingLinkOpen = !!usePluginOption({ key: KEYS.link }, 'mode');
+  const isAIChatOpen = usePluginOption({ key: KEYS.aiChat }, 'open');
 
   const floatingToolbarState = useFloatingToolbarState({
     editorId,

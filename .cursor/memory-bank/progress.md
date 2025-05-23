@@ -1,463 +1,444 @@
-# KEYS Migration Progress - Plate.js Registry
+## Migration Task: Update editor.getType() usage
 
-## ⚠️ CRITICAL REMINDER: REGISTRY DEPENDENCY CLEANUP
+**BREAKING CHANGE**: `editor.getType()` now takes a `pluginKey: string` instead of a `plugin: PlatePlugin`.
 
-**🚨 AFTER EACH COMPONENT MIGRATION - ALWAYS CHECK AND UPDATE REGISTRY:**
+**Requirements:**
 
-1. Search for the component in `registry-ui.ts`
-2. Check if any dependencies are no longer imported after KEYS migration
-3. Remove unused plugin dependencies from the registry
-4. Update progress log with registry changes
+- Use KEYS from @plate-keys.ts wherever possible
+- Change `editor.getType(SomePlugin)` to `editor.getType(KEYS.someKey)` or `editor.getType('someKey')`
+- Mark each batch with ✅ when completed
 
-**This step is MANDATORY and must be done immediately after each component migration!**
+---
 
-## Overview
+✅ /Users/zbeyens/GitHub/udecode/plate/apps/www/src/registry/components/editor/plugins/autoformat-classic-kit.tsx
+249,28: match: { type: editor.getType(CodeBlockPlugin) },
 
-Migrating Plate.js registry components from individual plugin imports to centralized `KEYS` from `@udecode/plate` to reduce dependencies and improve maintainability.
+✅ /Users/zbeyens/GitHub/udecode/plate/apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx
+231,30: match: { type: editor.getType(CodeBlockPlugin) },
 
-## Phase 1: Registry Dependencies Review ✅
+✅ /Users/zbeyens/GitHub/udecode/plate/apps/www/src/registry/components/editor/plugins/slash-kit.tsx
+16,26: match: { type: editor.getType(CodeBlockPlugin) },
 
-- **Task**: Review and add missing dependencies
-- **Completed**:
-  - Added missing `indent-kit`, `basic-marks-kit`, `discussion-kit` dependencies to `editor-ai` block
-  - Systematically added missing UI dependencies to multiple kits (ai-kit, align-kit, basic-marks-kit, media-kit, autoformat-classic-kit, highlight-kit, list-kit, etc.)
+✅ /Users/zbeyens/GitHub/udecode/plate/apps/www/src/registry/ui/block-draggable.tsx
+44,17: type: editor.getType(ColumnPlugin),
+56,17: type: editor.getType(TablePlugin),
 
-## Phase 2: Indent Kit Extraction ✅
+✅ /Users/zbeyens/GitHub/udecode/plate/apps/www/src/registry/ui/link-toolbar.tsx
+174,24: match: { type: editor.getType(LinkPlugin) },
 
-- **Task**: Extract IndentPlugin as separate kit
-- **Completed**:
-  - Created `indent-kit.tsx` with IndentPlugin
-  - Added `indent-kit` to `registry-kits.ts`
-  - Updated `list-kit.tsx` to use IndentKit
-  - Updated editor blocks to include indent-kit
+✅ /Users/zbeyens/GitHub/udecode/plate/docs/editor-methods.cn.mdx
+151,23: const paragraphType = editor.getType(ParagraphPlugin);
 
-## Phase 3: KEYS Migration for Kits ✅
+✅ /Users/zbeyens/GitHub/udecode/plate/docs/editor-methods.mdx
+151,23: const paragraphType = editor.getType(ParagraphPlugin);
 
-- **Task**: Migrate kits to use KEYS instead of individual plugin imports
-- **Completed**: Migrated all kits to use centralized KEYS
+✅ /Users/zbeyens/GitHub/udecode/plate/docs/exit-break.cn.mdx
+112,17: - **默认值:** `editor.getType(ParagraphPlugin)`
 
-## Phase 4: UI Components KEYS Migration (In Progress)
+✅ /Users/zbeyens/GitHub/udecode/plate/docs/exit-break.mdx
+112,21: - **Default:** `editor.getType(ParagraphPlugin)`
 
-### ✅ Completed Components:
+✅ /Users/zbeyens/GitHub/udecode/plate/docs/html.cn.mdx
+249,45: type: CodeBlockPlugin.key, // 或 editor.getType(CodeBlockPlugin)
+253,21: type: editor.getType(CodeLinePlugin), // 用 editor.getType 更安全
+253,58: type: editor.getType(CodeLinePlugin), // 用 editor.getType 更安全
 
-#### Batch 1:
+✅ /Users/zbeyens/GitHub/udecode/plate/docs/html.mdx
+248,46: type: CodeBlockPlugin.key, // Or editor.getType(CodeBlockPlugin)
+252,21: type: editor.getType(CodeLinePlugin), // Use editor.getType for safety
+252,60: type: editor.getType(CodeLinePlugin), // Use editor.getType for safety
 
-1. **`list-classic-toolbar-button.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/docs/plugin.cn.mdx
+145,22: node[editor.getType(plugin)] = element.style.textAlign;
 
-   - Migrated to use `KEYS` from `@udecode/plate`
-   - Registry: No dependency changes (still needs `@udecode/plate-list-classic` for functions)
+✅ /Users/zbeyens/GitHub/udecode/plate/docs/plugin.mdx
+146,22: node[editor.getType(plugin)] = element.style.textAlign;
 
-2. **`floating-toolbar-buttons.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/docs/trailing-block.cn.mdx
+112,17: - **默认值:** `editor.getType(ParagraphPlugin)`
 
-   - Migrated to use `KEYS.bold`, `KEYS.italic`, `KEYS.underline`, `KEYS.strikethrough`, `KEYS.code`
-   - Registry: ✅ Removed `@udecode/plate-basic-marks` dependency
+✅ /Users/zbeyens/GitHub/udecode/plate/docs/trailing-block.mdx
+47,21: - **Default:** `editor.getType(ParagraphPlugin)`
 
-3. **`font-size-toolbar-button.tsx`**
+**PACKAGES MIGRATION IN PROGRESS:**
 
-   - Already using `KEYS` correctly
-   - Registry: No changes (still needs `@udecode/plate-font` for FontSizePlugin)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/ai/src/lib/streaming/utils/isSameNode.ts
+18,20: node1.type !== editor.getType(BaseParagraphPlugin) ||
+19,20: node2.type !== editor.getType(BaseParagraphPlugin)
 
-4. **`insert-toolbar-button.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/alignment/src/lib/BaseAlignPlugin.ts
+21,22: node[editor.getType(plugin)] = element.style.textAlign;
 
-   - Migrated to use `KEYS` for all plugin keys
-   - Registry: ✅ Removed 11 plugin dependencies (massive cleanup!)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/autoformat/src/lib/**tests**/withAutoformat/block/code-block.spec.tsx
+76,34: defaultType: editor.getType(BaseParagraphPlugin),
 
-5. **`turn-into-toolbar-button.tsx`**
-   - Migrated to use `KEYS` for all plugin keys
-   - Registry: ✅ Removed 5 plugin dependencies
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/basic-marks/src/react/SubscriptPlugin.tsx
+15,21: remove: editor.getType(SuperscriptPlugin),
 
-#### Batch 2:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/basic-marks/src/react/SuperscriptPlugin.tsx
+15,21: remove: editor.getType(SubscriptPlugin),
 
-6. **`more-toolbar-button.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/callout/src/lib/transforms/insertCallout.ts
+22,13: type: editor.getType(BaseCalloutPlugin),
 
-   - Migrated to use `KEYS.kbd`, `KEYS.sup`, `KEYS.sub`
-   - Registry: ✅ Removed `@udecode/plate-basic-marks` and `@udecode/plate-kbd` dependencies
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/lib/queries/getCodeLineEntry.ts
+21,22: match: { type: editor.getType(BaseCodeLinePlugin) },
+33,24: match: { type: editor.getType(BaseCodeLinePlugin) },
+42,29: codeLineNode.type !== editor.getType(BaseCodeLinePlugin)
 
-7. **`table-toolbar-button.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/lib/transforms/insertCodeBlock.ts
+19,19: node.type === editor.getType(BaseCodeBlockPlugin) ||
+20,19: node.type === editor.getType(BaseCodeLinePlugin);
+36,13: type: editor.getType(BaseCodeLinePlugin),
+44,13: type: editor.getType(BaseCodeBlockPlugin),
 
-   - Partially migrated to use `KEYS.table`
-   - Registry: No changes (still needs `@udecode/plate-table` for TablePlugin functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/lib/transforms/insertCodeLine.ts
+12,13: type: editor.getType(BaseCodeLinePlugin),
 
-8. **`slash-node.tsx`**
-   - Migrated to use `KEYS` for all plugin key references
-   - Registry: ✅ Removed 7 plugin dependencies, kept only `@udecode/plate-ai`
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/lib/transforms/insertEmptyCodeBlock.ts
+21,19: defaultType = editor.getType(BaseParagraphPlugin),
 
-#### Batch 3:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/lib/transforms/toggleCodeBlock.ts
+12,25: const codeBlockType = editor.getType(BaseCodeBlockPlugin);
+13,24: const codeLineType = editor.getType(BaseCodeLinePlugin);
 
-9. **`fixed-toolbar-buttons.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/lib/transforms/unwrapCodeBlock.ts
+13,25: const codeBlockType = editor.getType(BaseCodeBlockPlugin);
+14,23: const defaultType = editor.getType(BaseParagraphPlugin);
 
-   - Migrated to use `KEYS` for all plugin key references (bold, italic, underline, strikethrough, code, color, backgroundColor, img, video, audio, file, highlight)
-   - Registry: ✅ Removed 5 plugin dependencies (`@udecode/plate-basic-marks`, `@udecode/plate-font`, `@udecode/plate-list`, `@udecode/plate-media`, `@udecode/plate-highlight`)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/lib/BaseCodeBlockPlugin.ts
+56,30: match: { type: editor.getType(BaseCodeLinePlugin) },
+72,26: const codeLineType = editor.getType(BaseCodeLinePlugin);
 
-10. **`media-toolbar-button.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/lib/withInsertDataCodeBlock.ts
+14,28: const codeLineType = editor.getType(BaseCodeLinePlugin);
 
-- Migrated to use `KEYS` for MEDIA_CONFIG object and FilePlugin.key reference
-- Registry: No changes (still needs `@udecode/plate-media` for PlaceholderPlugin functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/lib/withInsertFragmentCodeBlock.ts
+17,28: const codeLineType = editor.getType(BaseCodeLinePlugin);
 
-#### Batch 4:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/lib/withNormalizeCodeBlock.tsx
+18,29: const codeBlockType = editor.getType(BaseCodeBlockPlugin);
+19,28: const codeLineType = editor.getType(BaseCodeLinePlugin);
 
-11. **`table-node.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/react/CodeBlockPlugin.tsx
+26,31: editor.tf.toggleBlock(editor.getType(plugin));
 
-- Migrated to use `KEYS.tr` instead of `TableRowPlugin.key`
-- Registry: No changes (still needs `@udecode/plate-table` for TablePlugin functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/code-block/src/react/onKeyDownCodeBlock.ts
+22,22: match: { type: editor.getType(BaseCodeLinePlugin) },
 
-12. **`block-draggable.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/core/src/lib/editor/withSlate.ts
+122,3: editor.getType = (pluginKey) => getPluginType(editor, pluginKey);
 
-- Migrated to use `KEYS` for UNDRAGGABLE_KEYS array and isNodeType checks
-- Replaced multiple Plugin.key references with KEYS equivalents (including PlaceholderPlugin.key → KEYS.placeholder)
-- Registry: ✅ Removed 5 plugin dependencies (`@udecode/plate-block-quote`, `@udecode/plate-excalidraw`, `@udecode/plate-heading`, `@udecode/plate-toggle`, `@udecode/plate-media`)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/core/src/lib/plugin/getSlatePlugin.ts
+43,21: keys.map((key) => editor.getType(key));
 
-#### Batch 5:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.ts
+34,21: type: editor.getType(BaseParagraphPlugin.key),
 
-13. **`block-suggestion.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/core/src/lib/utils/isType.ts
+14,37: keys.forEach((\_key) => types.push(editor.getType(\_key)));
 
-- Migrated TYPE_TEXT_MAP object to use KEYS instead of Plugin.key references (AudioPlugin.key → KEYS.audio, BlockquotePlugin.key → KEYS.blockquote, etc.)
-- Registry: No changes (part of block-discussion component, only had `@udecode/plate-comments` and `date-fns` dependencies)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/core/src/lib/utils/normalizeDescendantsToDocumentFragment.ts
+127,23: const defaultType = editor.getType(defaultElementPlugin.key);
 
-14. **`select-editor.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/csv/src/lib/deserializer/utils/deserializeCsv.ts
+/Users/zbeyens/GitHub/udecode/plate/packages/csv/src/lib/deserializer/utils/deserializeCsv.ts
+60,23: const paragraph = editor.getType(BaseParagraphPlugin);
+61,19: const table = editor.getType({ key: 'table' });
+62,16: const th = editor.getType({ key: 'th' });
+63,16: const tr = editor.getType({ key: 'tr' });
+64,16: const td = editor.getType({ key: 'td' });
 
-- Added missing `tag` key to `packages/plate-utils/src/lib/plate-keys.ts`
-- Migrated createEditorValue function to use KEYS.tag instead of TagPlugin.key
-- Registry: No changes (still needs `@udecode/plate-tag` for TagPlugin functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/date/src/lib/transforms/insertDate.ts
+14,15: type: editor.getType(BaseDatePlugin),
 
-15. **`media-placeholder-node.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/excalidraw/src/lib/transforms/insertExcalidraw.ts
+28,13: type: editor.getType(BaseExcalidrawPlugin),
 
-- Migrated CONTENT object to use KEYS instead of Plugin.key references (AudioPlugin.key → KEYS.audio, ImagePlugin.key → KEYS.img, etc.)
-- Registry: No changes (still needs `@udecode/plate-media` for PlaceholderPlugin functionality, migration only removed individual media plugin imports)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/heading/src/lib/transforms/insertToc.ts
+12,13: type: editor.getType(BaseTocPlugin),
 
-#### Batch 6:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/heading/src/react/HeadingPlugin.tsx
+21,37: editor.tf.toggleBlock(editor.getType(plugin));
 
-16. **`ai-chat-editor.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/layout/src/lib/transforms/insertColumnGroup.ts
+35,24: match: { type: editor.getType(BaseColumnPlugin) },
 
-- Migrated large components object to use KEYS instead of BasePlugin.key references (25+ plugin mappings)
-- Complete migration of component mapping system while preserving plugin functionality in plugins array
-- Registry: No changes (static editor component, no dependencies in registry)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/layout/src/lib/transforms/setColumns.ts
+56,15: type: editor.getType(BaseColumnItemPlugin),
 
-17. **`export-toolbar-button.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/layout/src/lib/transforms/toggleColumnGroup.ts
+26,20: match: { type: editor.getType(BaseColumnPlugin) },
 
-- Migrated large components object to use KEYS instead of BasePlugin.key references (25+ plugin mappings)
-- Note: Encountered TypeScript resolution issue with KEYS import during migration, but conceptually valid
-- Registry: No changes (standalone toolbar component, no dependencies in registry)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/layout/src/lib/withColumn.ts
+43,30: child.type === editor.getType(BaseColumnItemPlugin)
 
-18. **`block-context-menu.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/line-height/src/lib/BaseLineHeightPlugin.ts
+23,20: [editor.getType(plugin)]: element.style.lineHeight,
 
-- Migrated ParagraphPlugin.key → KEYS.p and BlockquotePlugin.key → KEYS.blockquote in context menu handlers
-- Registry: ✅ Removed `@udecode/plate-block-quote` dependency (no longer imported after KEYS migration)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/link/src/lib/transforms/unwrapLink.ts
+20,24: match: { type: editor.getType(BaseLinkPlugin) },
+29,24: n.type === editor.getType(BaseLinkPlugin),
+40,24: match: { type: editor.getType(BaseLinkPlugin) },
+49,24: n.type === editor.getType(BaseLinkPlugin),
+60,22: match: { type: editor.getType(BaseLinkPlugin) },
 
-#### Batch 7:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/link/src/lib/transforms/upsertLink.ts
+53,20: match: { type: editor.getType(BaseLinkPlugin) },
+86,20: match: { type: editor.getType(BaseLinkPlugin) },
 
-19. **`export-toolbar-button.tsx`** (additional .key references)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/link/src/lib/transforms/upsertLinkText.ts
+17,20: match: { type: editor.getType(BaseLinkPlugin) },
 
-- Migrated remaining Plugin.key references in BaseIndentPlugin and BaseListPlugin configurations to use KEYS
-- Replaced BaseParagraphPlugin.key → KEYS.p, BaseBlockquotePlugin.key → KEYS.blockquote, etc. in targetPlugins arrays
-- Registry: No changes (still needs all plugin dependencies for static editor functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/link/src/lib/transforms/wrapLink.ts
+21,13: type: editor.getType(BaseLinkPlugin),
 
-20. **`toc-node-static.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/link/src/lib/utils/createLinkNode.ts
+18,16: const type = editor.getType(BaseLinkPlugin);
+
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/link/src/react/components/FloatingLink/LinkOpenButton.tsx
+22,24: match: { type: editor.getType(LinkPlugin) },
 
-- Migrated headingDepth object to use KEYS instead of hardcoded heading type strings (h1 → KEYS.h1, h2 → KEYS.h2, etc.)
-- Registry: No changes (still needs `@udecode/plate-heading` for BaseTocPlugin and isHeading functionality)
+/Users/zbeyens/GitHub/udecode/plate/packages/link/src/react/components/FloatingLink/useFloatingLinkEdit.ts
+87,24: match: { type: editor.getType(LinkPlugin) },
 
-21. **`select-editor.tsx`** (additional hardcoded type)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/link/src/react/components/useLinkToolbarButton.ts
+10,24: match: { type: editor.getType(LinkPlugin) },
 
-- Migrated hardcoded 'p' type to KEYS.p in createEditorValue function
-- Registry: No changes (still needs `@udecode/plate-tag` for TagPlugin functionality)
+/Users/zbeyens/GitHub/udecode/plate/packages/link/src/react/utils/triggerFloatingLinkEdit.ts
+11,20: match: { type: editor.getType(LinkPlugin) },
+
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list/src/lib/BaseListPlugin.ts
+116,19: type: editor.getType(BaseParagraphPlugin),
 
-22. **`slash-node.tsx`** (hardcoded heading values)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/normalizers/normalizeListItem.ts
+67,5: editor.getType(BaseBulletedListPlugin),
+68,5: editor.getType(BaseListItemContentPlugin),
+69,5: editor.getType(BaseNumberedListPlugin),
+90,15: type: editor.getType(BaseListItemContentPlugin),
+103,13: type: editor.getType(BaseListItemContentPlugin),
+135,15: type: editor.getType(BaseListItemContentPlugin),
 
-- Migrated hardcoded heading values to use KEYS (h1 → KEYS.h1, h2 → KEYS.h2, h3 → KEYS.h3) in slash command items
-- Registry: No changes (still needs `@udecode/plate-ai` for AIChatPlugin functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/queries/getHighestEmptyList.ts
+37,24: match: { type: editor.getType(BaseListItemPlugin) },
 
-#### Batch 8:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/queries/getListItemEntry.ts
+21,18: const liType = editor.getType(BaseListItemPlugin);
+
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/queries/getListRoot.ts
+26,9: editor.getType(BaseBulletedListPlugin),
+27,9: editor.getType(BaseNumberedListPlugin),
+
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/queries/getListTypes.ts
+10,5: editor.getType(BaseNumberedListPlugin),
+11,5: editor.getType(BaseBulletedListPlugin),
+
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/queries/getTodoListItemEntry.ts
+21,20: const todoType = editor.getType(BaseTodoListPlugin);
+
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/queries/isAcrossListItems.ts
+20,20: match: { type: editor.getType(BaseListItemPlugin) },
 
-23. **`fixed-toolbar-classic-buttons.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/queries/isListNested.ts
+9,35: return listParentNode?.type === editor.getType(BaseListItemPlugin);
 
-- Migrated all Plugin.key references to KEYS (BoldPlugin.key → KEYS.bold, ItalicPlugin.key → KEYS.italic, FontColorPlugin.key → KEYS.color, etc.)
-- Updated 10+ toolbar button nodeType props to use KEYS instead of Plugin.key references
-- Registry: ✅ Removed ALL 4 plugin dependencies (`@udecode/plate-basic-marks`, `@udecode/plate-font`, `@udecode/plate-list-classic`, `@udecode/plate-media`) - **MASSIVE CLEANUP!**
+/Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/queries/isListNested.ts
+9,35: return listParentNode?.type === editor.getType(BaseListItemPlugin);
 
-24. **`ai-chat-editor.tsx`** (additional Plugin.key references)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/transforms/insertListItem.ts
+10,18: const liType = editor.getType(BaseListItemPlugin);
+11,19: const licType = editor.getType(BaseListItemContentPlugin);
 
-- Migrated remaining BaseParagraphPlugin.key references in BaseIndentPlugin and BaseListPlugin targetPlugins arrays to use KEYS.p
-- Registry: No changes (static editor component still needs all plugin dependencies for functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/transforms/insertTodoListItem.ts
+13,20: const todoType = editor.getType(BaseTodoListPlugin);
 
-25. **`block-draggable.tsx`** (hardcoded heading/list strings)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/transforms/moveListItems.ts
+32,13: type: editor.getType(BaseListItemContentPlugin),
 
-- Migrated hardcoded heading strings to KEYS in isType and isNodeType calls (h1 → KEYS.h1, h2 → KEYS.h2, etc.)
-- Migrated hardcoded list strings (ul → KEYS.ul, ol → KEYS.ol) in styling conditions
-- Registry: No changes (still needs all plugin dependencies for dnd, selection, layout, table functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/transforms/moveListItemUp.ts
+30,22: match: { type: editor.getType(BaseListItemPlugin) },
 
-#### Batch 9:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/transforms/removeListItem.ts
+62,21: type: editor.getType(BaseListItemContentPlugin),
+65,17: type: editor.getType(BaseListItemPlugin),
 
-26. **`comment.tsx`**
+/Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/transforms/toggleList.spec.tsx
+43,13: type: editor.getType(BulletedListPlugin),
+85,13: type: editor.getType(BulletedListPlugin),
+123,13: type: editor.getType(BulletedListPlugin),
+165,13: type: editor.getType(BulletedListPlugin),
+225,13: type: editor.getType(BulletedListPlugin),
+281,13: type: editor.getType(BulletedListPlugin),
+337,13: type: editor.getType(BulletedListPlugin),
+388,13: type: editor.getType(BulletedListPlugin),
+447,13: type: editor.getType(BulletedListPlugin),
+489,13: type: editor.getType(BulletedListPlugin),
+553,13: type: editor.getType(BulletedListPlugin),
+590,32: toggleList(editor, { type: editor.getType(NumberedListPlugin) });
+635,32: toggleList(editor, { type: editor.getType(NumberedListPlugin) });
+682,32: toggleList(editor, { type: editor.getType(NumberedListPlugin) });
+733,32: toggleList(editor, { type: editor.getType(NumberedListPlugin) });
 
-- Migrated hardcoded `'p'` type to `KEYS.p` in NodeApi.string call for comment content processing
-- Registry: No changes (part of block-discussion component, only migrated type reference, still needs plugin dependencies)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/transforms/toggleList.ts
+54,26: match: { type: editor.getType(BaseParagraphPlugin) },
+64,19: type: editor.getType(BaseListItemContentPlugin),
+70,17: type: editor.getType(BaseListItemPlugin),
+91,47: (commonEntry[0] as TElement).type === editor.getType(BaseListItemPlugin)
+147,25: { type: editor.getType(BaseListItemContentPlugin) },
+154,21: type: editor.getType(BaseListItemPlugin),
+169,30: toggleList(editor, { type: editor.getType(BaseBulletedListPlugin) });
+172,30: toggleList(editor, { type: editor.getType(BaseNumberedListPlugin) });
 
-27. **`block-context-menu.tsx`** (additional hardcoded heading strings)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/transforms/unwrapList.ts
+43,27: // match: { type: editor.getType(BaseListItemContentPlugin) },
+49,22: // { type: editor.getType(BaseParagraphPlugin) },
+56,24: match: { type: editor.getType(BaseListItemPlugin) },
+64,13: editor.getType(BaseBulletedListPlugin),
+65,13: editor.getType(BaseNumberedListPlugin),
 
-- Migrated hardcoded heading types ('h1', 'h2', 'h3') to KEYS equivalents (KEYS.h1, KEYS.h2, KEYS.h3) in context menu handlers
-- Registry: No changes (still needs `@udecode/plate-ai` and `@udecode/plate-selection` for plugin functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/withDeleteForwardList.ts
+76,20: const liType = editor.getType(BaseListItemPlugin);
+153,21: const licType = editor.getType(BaseListItemContentPlugin);
 
-28. **`block-suggestion.tsx`** (additional Plugin.key reference)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/withDeleteFragmentList.ts
+18,20: match: { type: editor.getType(BaseListItemPlugin) },
+42,28: match: { type: editor.getType(BaseListItemPlugin) },
 
-- Migrated `SuggestionPlugin.key` to `KEYS.suggestion` in node matching logic for suggestion processing
-- Registry: No changes (still needs `@udecode/plate-suggestion` for SuggestionPlugin functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/withInsertFragmentList.ts
+27,24: const listItemType = editor.getType(BaseListItemPlugin);
+28,31: const listItemContentType = editor.getType(BaseListItemContentPlugin);
 
-#### Batch 10:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/lib/withNormalizeList.ts
+29,22: const liType = editor.getType(BaseListItemPlugin);
+30,23: const licType = editor.getType(BaseListItemContentPlugin);
+31,27: const defaultType = editor.getType(BaseParagraphPlugin);
+84,23: node.type === editor.getType(BaseListItemPlugin) &&
 
-29. **`mention-node.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/react/hooks/useListToolbarButton.ts
+12,40: editor.api.some({ match: { type: editor.getType({ key: nodeType }) } }),
 
-- Migrated hardcoded property names ('bold', 'italic', 'underline') to KEYS equivalents (KEYS.bold, KEYS.italic, KEYS.underline) in element property checks
-- Registry: No changes (still needs `@udecode/plate-mention` for plugin functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/react/onKeyDownList.ts
+41,22: match: { type: editor.getType(BaseListItemPlugin) },
 
-30. **`mention-node-static.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/react/withDeleteBackwardList.ts
+40,46: match: (node) => node.type === editor.getType(BaseListItemPlugin),
+62,42: defaultType: editor.getType(BaseParagraphPlugin),
+64,37: types: [editor.getType(BaseListItemPlugin)],
+93,33: const licType = editor.getType(BaseListItemContentPlugin);
 
-- Migrated hardcoded property names ('bold', 'italic', 'underline') to KEYS equivalents (KEYS.bold, KEYS.italic, KEYS.underline) in element property checks
-- Registry: No changes (part of mention-node registry entry, static version)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/list-classic/src/react/withInsertBreakList.ts
+47,34: defaultType: editor.getType(BaseParagraphPlugin),
+48,29: types: [editor.getType(BaseListItemPlugin)],
 
-31. **`list-classic-node.tsx`**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/markdown/src/lib/deserializer/deserializeMd.ts
+99,17: type: editor.getType(BaseParagraphPlugin),
 
-- Migrated hardcoded variant values ('ul', 'ol') to KEYS equivalents (KEYS.ulClassic, KEYS.olClassic) in withProps configurations
-- Registry: No changes (still needs `@udecode/plate-list-classic` for plugin functionality)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/math/src/lib/transforms/insertEquation.ts
+16,13: type: editor.getType(BaseEquationPlugin),
 
-### 📊 Registry Dependency Reductions:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/math/src/lib/transforms/insertInlineEquation.ts
+16,13: type: editor.getType(BaseInlineEquationPlugin),
 
-- **Total plugin dependencies removed**: ~41 dependencies across 10 components (no new removals in Batch 10)
-- **Components with reduced dependencies**: 10/31 migrated components
-- **Pattern consistency**: All migrations in this batch were type/variant references without dependency removal
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/media/src/lib/image/transforms/insertImage.ts
+13,11: type: editor.getType(BaseImagePlugin),
 
-### 🎯 Impact Summary for Batch 10:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/media/src/lib/media/insertMedia.ts
+24,12: type = editor.getType(BaseImagePlugin),
+39,16: if (type === editor.getType(BaseImagePlugin)) {
 
-- **3 components migrated**: Focused on node components with hardcoded property/variant references
-- **6+ hardcoded references** migrated to KEYS (bold, italic, underline, ulClassic, olClassic)
-- **Type safety enhancement**: All hardcoded property names and variant values now use centralized KEYS
-- **Node component coverage**: Extended migration to include mention and list classic node components
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/media/src/lib/media-embed/transforms/insertMediaEmbed.ts
+23,13: type: editor.getType(BaseMediaEmbedPlugin),
 
-### 🔍 Migration Opportunities Remaining:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/media/src/lib/placeholder/transforms/insertPlaceholder.ts
+22,15: type: editor.getType(BasePlaceholderPlugin),
 
-The project has successfully migrated most major components. Remaining opportunities likely include:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/media/src/react/media/useMediaState.ts
+36,17: (type !== editor.getType(BaseVideoPlugin) &&
+37,18: type !== editor.getType(BaseMediaEmbedPlugin))
 
-- Any remaining node components with embedded type references
-- Utility components that might reference plugin keys
-- Edge cases in complex components
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/media/src/react/placeholder/transforms/insertMedia.ts
+83,17: type: editor.getType(BasePlaceholderPlugin),
 
-## Next Steps:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/plate-utils/src/lib/plugins/exit-break/transforms/exitBreak.ts
+12,19: defaultType = editor.getType(BaseParagraphPlugin),
 
-- Continue searching for any remaining Plugin.key references or hardcoded type strings
-- Consider reviewing less common components or utility files
-- Evaluate if the migration is reaching completion
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/plate-utils/src/lib/plugins/trailing-block/TrailingBlockPlugin.ts
+31,13: type: editor.getType(BaseParagraphPlugin),
 
-## Migration Pattern Solidified:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/plate-utils/src/react/plugins/BlockPlaceholderPlugin.tsx
+75,21: (type) => editor.getType({ key: type }) === element.type
 
-✅ **Type/variant migration**: Hardcoded strings → KEYS equivalents (no dependency impact)
-✅ **Key reference migration**: Plugin.key → KEYS.keyName (no dependency removal unless plugin unused)
-✅ **Full migration + cleanup**: Remove plugin dependencies only when plugin functionality completely unused
-❌ **Cannot migrate**: Components requiring specific plugin functionality
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/api/getEmptyCellNode.ts
+18,29: (c) => c.type === editor.getType(BaseTableCellHeaderPlugin)
+25,9: ? editor.getType(BaseTableCellHeaderPlugin)
+26,9: : editor.getType(BaseTableCellPlugin),
 
-### Established Best Practices:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/api/getEmptyRowNode.ts
+21,11: type: editor.getType(BaseTableRowPlugin),
 
-- Always verify plugin usage before removing dependencies
-- Distinguish between key references and functional plugin usage
-- Static/node components often can migrate keys without losing dependencies
-- Registry cleanup is component-specific, not automatic
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/api/getEmptyTableNode.ts
+35,11: type: editor.getType(BaseTablePlugin),
 
-## 📋 Complete Registry UI Components Status
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/merge/deleteColumn.ts
+17,16: const type = editor.getType(BaseTablePlugin);
+122,22: match: { type: editor.getType(BaseTableRowPlugin) },
 
-### UI Components (from registry-ui.ts):
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/merge/insertTableColumn.ts
+47,25: if (table?.type === editor.getType(BaseTablePlugin)) {
 
-#### **Toolbar Components:**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/merge/insertTableRow.ts
+46,25: if (table?.type === editor.getType(BaseTablePlugin)) {
+54,20: match: { type: editor.getType(BaseTableRowPlugin) },
+168,15: type: editor.getType(BaseTableRowPlugin),
 
-- ✅ `ai-toolbar-button` - **No migration needed** (already using generic hooks)
-- ✅ `align-toolbar-button` - **Cannot migrate** (needs @udecode/plate-alignment for functions)
-- ✅ `comment-toolbar-button` - **Cannot migrate** (needs @udecode/plate-comments for functions)
-- ✅ `emoji-toolbar-button` - **Cannot migrate** (needs @udecode/plate-emoji for functions)
-- ✅ `equation-toolbar-button` - **Cannot migrate** (needs @udecode/plate-math for functions)
-- ✅ `fixed-toolbar-buttons` - **Migrated** (Batch 3) - Registry cleaned up
-- ✅ `fixed-toolbar-classic-buttons` - **Migrated** (Batch 8) - Registry cleaned up
-- ✅ `floating-toolbar-buttons` - **Migrated** (Batch 1) - Registry cleaned up
-- ✅ `font-color-toolbar-button` - **Cannot migrate** (needs @udecode/plate-font for functions)
-- ✅ `font-size-toolbar-button` - **Already using KEYS** (Batch 1)
-- ✅ `history-toolbar-button` - **No migration needed** (no Plugin.key references)
-- ✅ `import-toolbar-button` - **Cannot migrate** (uses file picker functionality)
-- ✅ `indent-toolbar-button` - **Cannot migrate** (needs @udecode/plate-indent for functions)
-- ✅ `insert-toolbar-button` - **Migrated** (Batch 1) - Registry cleaned up
-- ✅ `line-height-toolbar-button` - **Cannot migrate** (needs @udecode/plate-line-height for functions)
-- ✅ `link-toolbar-button` - **Cannot migrate** (needs @udecode/plate-link for functions)
-- ✅ `list-classic-toolbar-button` - **Migrated** (Batch 1) - No registry changes
-- ✅ `list-toolbar-button` - **Cannot migrate** (needs @udecode/plate-list for functions)
-- ✅ `mark-toolbar-button` - **Already using generic hooks** (no migration needed)
-- ✅ `media-toolbar-button` - **Migrated** (Batch 3) - No registry changes
-- ✅ `mode-toolbar-button` - **No migration needed** (no Plugin.key references)
-- ✅ `more-toolbar-button` - **Migrated** (Batch 2) - Registry cleaned up
-- ✅ `suggestion-toolbar-button` - **Cannot migrate** (needs @udecode/plate-suggestion for functions)
-- ✅ `table-toolbar-button` - **Migrated** (Batch 2) - No registry changes
-- ✅ `toggle-toolbar-button` - **Cannot migrate** (needs @udecode/plate-toggle for functions)
-- ✅ `turn-into-toolbar-button` - **Migrated** (Batch 1) - Registry cleaned up
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/merge/mergeTableCells.ts
+93,38: cellEntries[0][0].type === editor.getType(BaseTableCellHeaderPlugin),
 
-#### **Editor & Layout Components:**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/merge/splitTableCell.ts
+22,24: const tableRowType = editor.getType(BaseTableRowPlugin);
+33,37: header: cellElem.type === editor.getType(BaseTableCellHeaderPlugin),
+134,19: type: editor.getType(BaseTableRowPlugin),
 
-- ✅ `ai-menu` - Contains `ai-chat-editor` which is **Migrated** (Batch 6)
-- ✅ `block-context-menu` - **Migrated** (Batch 6 + Batch 9) - Registry cleaned up
-- ✅ `block-discussion` - Contains `comment.tsx` which is **Migrated** (Batch 9)
-- ✅ `block-draggable` - **Migrated** (Batch 4 + Batch 8) - Registry cleaned up
-- ✅ `block-selection` - **No migration needed** (uses @udecode/plate-selection)
-- ✅ `block-suggestion` - **Migrated** (Batch 5 + Batch 9) - No registry changes
-- ✅ `caption` - **Cannot migrate** (needs @udecode/plate-caption for functions)
-- ✅ `cursor-overlay` - **No migration needed** (uses @udecode/plate-selection)
-- ✅ `editor` - **No migration needed** (container component)
-- ✅ `export-toolbar-button` - **Migrated** (Batch 6 + Batch 7) - No registry changes
-- ✅ `fixed-toolbar` - **No migration needed** (layout component)
-- ✅ `floating-toolbar` - **No migration needed** (layout component)
-- ✅ `ghost-text` - **Cannot migrate** (needs @udecode/plate-ai for functions)
-- ✅ `inline-combobox` - **Cannot migrate** (uses @udecode/plate-combobox)
-- ✅ `link-toolbar` - **Cannot migrate** (needs @udecode/plate-link for functions)
-- ✅ `list-emoji` - **Cannot migrate** (needs @udecode/plate-indent for functions)
-- ✅ `list-todo` - **Cannot migrate** (needs @udecode/plate-list for functions)
-- ✅ `media-toolbar` - **Cannot migrate** (needs @udecode/plate-media for functions)
-- ✅ `media-upload-toast` - **Cannot migrate** (needs @udecode/plate-media for functions)
-- ✅ `remote-cursor-overlay` - **Cannot migrate** (needs @slate-yjs/react)
-- ✅ `resize-handle` - **Cannot migrate** (needs @udecode/plate-resizable)
-- ✅ `select-editor` - **Migrated** (Batch 5 + Batch 7) - No registry changes
-- ✅ `toolbar` - **No migration needed** (base component)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/queries/getTableAbove.ts
+12,13: type: editor.getType(BaseTablePlugin),
 
-#### **Node Components:**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/queries/getTableEntries.ts
+29,20: match: { type: editor.getType(BaseTableRowPlugin) },
+38,20: match: { type: editor.getType(BaseTablePlugin) },
 
-- ✅ `ai-node` - **No migration needed** (text highlighter)
-- ✅ `blockquote-node` - **No migration needed** (basic element)
-- ✅ `callout-node` - **Cannot migrate** (needs @udecode/plate-callout for functions)
-- ✅ `code-block-node` - **Cannot migrate** (needs @udecode/plate-code-block + lowlight)
-- ✅ `code-node` - **No migration needed** (inline component)
-- ✅ `column-node` - **Cannot migrate** (needs @udecode/plate-layout for functions)
-- ✅ `comment-node` - **Cannot migrate** (needs @udecode/plate-comments for functions)
-- ✅ `date-node` - **Cannot migrate** (needs @udecode/plate-date for functions)
-- ✅ `emoji-node` - **Cannot migrate** (needs @udecode/plate-emoji for functions)
-- ✅ `equation-node` - **Cannot migrate** (needs @udecode/plate-math for functions)
-- ✅ `excalidraw-node` - **Cannot migrate** (needs @udecode/plate-excalidraw for functions)
-- ✅ `heading-node` - **No migration needed** (basic element)
-- ✅ `highlight-node` - **No migration needed** (text highlighter)
-- ✅ `hr-node` - **No migration needed** (basic element)
-- ✅ `kbd-node` - **No migration needed** (basic element)
-- ✅ `link-node` - **No migration needed** (basic element)
-- ❌ `list-classic-node` - **NOT MIGRATED** (user rejected changes) - Would migrate variant values to KEYS
-- ✅ `media-audio-node` - **Cannot migrate** (needs @udecode/plate-media for functions)
-- ✅ `media-embed-node` - **Cannot migrate** (needs @udecode/plate-media for functions)
-- ✅ `media-file-node` - **Cannot migrate** (needs @udecode/plate-media for functions)
-- ✅ `media-image-node` - **Cannot migrate** (needs @udecode/plate-media for functions)
-- ✅ `media-placeholder-node` - **Migrated** (Batch 5) - No registry changes
-- ✅ `media-preview-dialog` - **Cannot migrate** (needs @udecode/plate-media for functions)
-- ✅ `media-video-node` - **Cannot migrate** (needs @udecode/plate-media for functions)
-- ✅ `mention-node` - **Migrated** (Batch 10) - No registry changes
-- ✅ `paragraph-node` - **No migration needed** (basic element)
-- ✅ `search-highlight-node` - **No migration needed** (text highlighter)
-- ✅ `slash-node` - **Migrated** (Batch 2 + Batch 7) - Registry cleaned up
-- ✅ `suggestion-line-break` - **Cannot migrate** (needs @udecode/plate-suggestion for functions)
-- ✅ `suggestion-node` - **Cannot migrate** (needs @udecode/plate-suggestion for functions)
-- ✅ `table-node` - **Migrated** (Batch 4) - No registry changes
-- ✅ `tag-node` - **No migration needed** (basic element)
-- ✅ `toc-node` - Contains `toc-node-static` which is **Migrated** (Batch 7) - No registry changes
-- ✅ `toggle-node` - **Cannot migrate** (needs @udecode/plate-toggle for functions)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/transforms/deleteColumn.ts
+39,22: match: { type: editor.getType(BaseTableRowPlugin) },
 
-### 📊 Final Summary:
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/transforms/deleteRow.ts
+30,22: match: { type: editor.getType(BaseTableRowPlugin) },
 
-**Total UI Components in Registry: 67**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/transforms/deleteTable.ts
+7,22: match: { type: editor.getType(BaseTablePlugin) },
+11,22: match: { type: editor.getType(BaseTablePlugin) },
 
-**Migration Status:**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/transforms/insertTable.ts
+22,16: const type = editor.getType(BaseTablePlugin),
 
-- ✅ **Completed Migrations: 30** (Including individual files within components)
-- ✅ **Already Clean/No Migration Needed: 20**
-- ✅ **Cannot Migrate (Plugin Dependencies Required): 16**
-- ❌ **Not Migrated (User Rejected): 1** (`list-classic-node`)
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/transforms/insertTableColumn.ts
+42,25: if (table?.type === editor.getType(BaseTablePlugin)) {
+94,33: (c) => c.type === editor.getType(BaseTableCellHeaderPlugin)
 
-**Components with Registry Dependency Reductions: 10**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/transforms/insertTableRow.ts
+49,25: if (table?.type === editor.getType(BaseTablePlugin)) {
+57,20: match: { type: editor.getType(BaseTableRowPlugin) },
+79,36: n.children[i].type === editor.getType(BaseTableCellHeaderPlugin)
+86,11: type: editor.getType(BaseTableRowPlugin),
 
-- `floating-toolbar-buttons`, `insert-toolbar-button`, `turn-into-toolbar-button`, `more-toolbar-button`, `slash-node`, `fixed-toolbar-buttons`, `block-draggable`, `block-context-menu`, `fixed-toolbar-classic-buttons`
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/utils/computeCellIndices.ts
+34,22: match: { type: editor.getType(BaseTablePlugin) },
 
-**Total Plugin Dependencies Removed: ~41 dependencies**
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/withApplyTable.ts
+105,11: editor.getType(BaseTableRowPlugin),
 
-### 🎯 Migration Status: ~97% Complete
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/withNormalizeTable.ts
+38,32: child.type === editor.getType(BaseTableRowPlugin)
+97,24: if (n.type === editor.getType(BaseTableRowPlugin)) {
+122,41: if (parentEntry?.[0].type !== editor.getType(BaseTableRowPlugin)) {
 
-Only **1 component** remains that could potentially be migrated but was rejected by the user. The KEYS migration project has successfully achieved its goals of:
-
-1. ✅ **Centralizing plugin key references** - All major components now use KEYS
-2. ✅ **Reducing registry dependencies** - 41 plugin dependencies removed where possible
-3. ✅ **Improving type safety** - Hardcoded strings replaced with KEYS constants
-4. ✅ **Maintaining functionality** - All component functionality preserved
-
-### Established Best Practices:
-
-- Always verify plugin usage before removing dependencies
-- Distinguish between key references and functional plugin usage
-- Static/node components often can migrate keys without losing dependencies
-- Registry cleanup is component-specific, not automatic
-
-#### Batch 11: **Kit Files Migration**
-
-32. **`align-kit.tsx`**
-
-- Migrated `HEADING_LEVELS` to `KEYS.heading` array in targetPlugins configuration
-- Migrated `ParagraphPlugin.key` → `KEYS.p`, `ImagePlugin.key` → `KEYS.img`, `MediaEmbedPlugin.key` → `KEYS.mediaEmbed`
-- Registry: ✅ **MAJOR CLEANUP** - Removed `@udecode/plate-heading` and `@udecode/plate-media` dependencies (only needs `@udecode/plate-alignment` for AlignPlugin)
-
-33. **`block-placeholder-kit.tsx`**
-
-- Migrated `ParagraphPlugin.key` to `KEYS.p` in placeholders configuration
-- Registry: No changes (no dependencies, uses base placeholder functionality)
-
-34. **`delete-kit.tsx`**
-
-- Migrated all Plugin.key references to KEYS equivalents in SelectOnBackspacePlugin allow list
-- `ImagePlugin.key` → `KEYS.img`, `VideoPlugin.key` → `KEYS.video`, `AudioPlugin.key` → `KEYS.audio`, etc.
-- Registry: ✅ **MAJOR CLEANUP** - Removed ALL dependencies (`@udecode/plate-horizontal-rule`, `@udecode/plate-media`) since only uses core KEYS
-
-35. **`font-kit.tsx`**
-
-- Migrated `ParagraphPlugin.key` to `KEYS.p` in targetPlugins configuration
-- Registry: No changes (still needs `@udecode/plate-font` for FontColorPlugin, FontBackgroundColorPlugin, FontSizePlugin)
-
-36. **`line-height-kit.tsx`**
-
-- Migrated `HEADING_LEVELS` to `KEYS.heading` array and `ParagraphPlugin.key` to `KEYS.p` in targetPlugins
-- Registry: ✅ **CLEANUP** - Removed `@udecode/plate-heading` dependency (only needs `@udecode/plate-line-height` for LineHeightPlugin)
-
-37. **`markdown-kit.tsx`**
-
-- Migrated `SuggestionPlugin.key` to `KEYS.suggestion` in disallowedNodes configuration
-- Registry: No changes (still needs `@udecode/plate-markdown`, `remark-gfm`, `remark-math` for markdown processing)
-
-38. **`skip-mark-kit.tsx`**
-
-- Migrated all Plugin.key references to KEYS equivalents in SkipMarkPlugin allow list
-- `SuggestionPlugin.key` → `KEYS.suggestion`, `CodePlugin.key` → `KEYS.code`, `CommentsPlugin.key` → `KEYS.comment`
-- Registry: No changes (conservatively keeping `@udecode/plate-basic-marks` for plugin ecosystem compatibility)
-
-### 📊 Registry Dependency Reductions:
-
-- **Total plugin dependencies removed**: ~46 dependencies across 13 components (5 new removals in Batch 11)
-- **Components with reduced dependencies**: 13/38 migrated components
-- **Kit files migrated**: 7/7 identified kit files
-- **Kit files with registry cleanup**: 3/7 kit files
-
-### 🎯 Impact Summary for Batch 11:
-
-- **7 kit files migrated**: Extended KEYS migration to all editor plugin kits
-- **15+ Plugin.key references** migrated to KEYS in kit configurations
-- **HEADING_LEVELS migration**: Successfully migrated to `KEYS.heading` array in 2 components
-- **🚨 CRITICAL REGISTRY CLEANUP**: Removed 5 plugin dependencies from 3 kit files after KEYS migration
-- **Type safety enhancement**: All plugin key references in kits now use centralized KEYS
-- **Configuration consistency**: All targetPlugins and configuration arrays now use KEYS
-
-### 🔍 Kit Migration Patterns Established:
-
-✅ **targetPlugins arrays**: `ParagraphPlugin.key` → `KEYS.p`, `HEADING_LEVELS` → `KEYS.heading`
-✅ **Plugin configuration objects**: All Plugin.key references → KEYS equivalents
-✅ **Allow/disallow lists**: Plugin.key arrays → KEYS arrays
-✅ **Functional preservation**: All kit functionality maintained while using KEYS
-
-### Updated Migration Summary:
-
-**Total Components + Kits Migrated: 38**
-
-- **UI Components**: 31
-- **Kit Files**: 7
-
-The KEYS migration project has now extended beyond just UI components to include the entire editor kit system, ensuring consistent plugin key usage across the entire Plate.js registry.
+✅ /Users/zbeyens/GitHub/udecode/plate/packages/table/src/lib/withSetFragmentDataTable.ts
+63,26: row.type === editor.getType(BaseTableCellHeaderPlugin)

@@ -46,8 +46,8 @@ export const aiChatPlugin = AIChatPlugin.configure({
     } as UseChatOptions,
   },
   useHooks: ({ editor, getOption }) => {
-    const mode = usePluginOption(
-      { key: 'aiChat' } as AIChatPluginConfig,
+    const mode = usePluginOption<AIChatPluginConfig>(
+      { key: KEYS.aiChat },
       'mode'
     );
 
@@ -156,7 +156,6 @@ const userDefault = `<Reminder>
 CRITICAL: NEVER write <Block>.
 </Reminder>
 {prompt}`;
-
 const userSelecting = `<Reminder>
 If this is a question, provide a helpful and concise answer about <Selection>.
 If this is an instruction, provide ONLY the text to replace <Selection>. No explanations.

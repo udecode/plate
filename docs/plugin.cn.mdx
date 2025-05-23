@@ -142,7 +142,7 @@ const AlignPlugin = createPlatePlugin({
           deserializer: {
             parse: ({ element, node }) => {
               if (element.style.textAlign) {
-                node[editor.getType(plugin)] = element.style.textAlign;
+                node[editor.getType('align')] = element.style.textAlign;
               }
             },
           },

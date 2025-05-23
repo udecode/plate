@@ -42,8 +42,11 @@ export function LinkFloatingToolbar({
 }: {
   state?: LinkFloatingToolbarState;
 }) {
-  const activeCommentId = usePluginOption({ key: 'comment' }, 'activeId');
-  const activeSuggestionId = usePluginOption({ key: 'suggestion' }, 'activeId');
+  const activeCommentId = usePluginOption({ key: KEYS.comment }, 'activeId');
+  const activeSuggestionId = usePluginOption(
+    { key: KEYS.suggestion },
+    'activeId'
+  );
 
   const floatingOptions: UseVirtualFloatingOptions = React.useMemo(() => {
     return {

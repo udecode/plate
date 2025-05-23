@@ -35,7 +35,7 @@ const plugins = [
 
 <ComponentSource name="block-placeholder-kit" />
 
-- Setting `placeholders[ParagraphPlugin.key]` to `'Type something...'` shows this text in empty paragraph blocks
+- Setting `placeholders[KEYS.p]` to `'Type something...'` shows this text in empty paragraph blocks
 - Using `query: ({ path }) => path.length === 1` only shows placeholders in root-level blocks, hiding them in nested blocks
 - Adding a `className` lets you style the placeholder text appearance (e.g. using Tailwind)
 
@@ -44,13 +44,15 @@ const plugins = [
 You can configure different placeholders for different block types:
 
 ```tsx
+import { KEYS } from '@udecode/plate';
+
 BlockPlaceholderPlugin.configure({
   options: {
     placeholders: {
-      [ParagraphPlugin.key]: 'Type something...',
-      [HeadingPlugin.key]: 'Enter heading...',
-      [BlockquotePlugin.key]: 'Enter quote...',
-      [CodeBlockPlugin.key]: 'Enter code...',
+      [KEYS.p]: 'Type something...',
+      [KEYS.h1]: 'Enter heading...',
+      [KEYS.blockquote]: 'Enter quote...',
+      [KEYS.codeBlock]: 'Enter code...',
     },
   },
 })
@@ -74,7 +76,7 @@ The plugin shows placeholders when all of these conditions are met:
 <APIOptions>
   <APIItem name="placeholders" type="Record<string, string>">
     A map of plugin keys to placeholder text strings.
-    - **Default:** `{ [ParagraphPlugin.key]: 'Type something...' }`
+    - **Default:** `{ [KEYS.p]: 'Type something...' }`
   </APIItem>
   <APIItem name="query" type="(context: PlatePluginContext & { node: TElement; path: Path }) => boolean">
     A function that determines whether a block should show a placeholder.

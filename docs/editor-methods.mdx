@@ -140,7 +140,7 @@ Retrieve the editor plugin instance by its key or base plugin:
 
 ```ts
 const paragraphPlugin = editor.getPlugin(ParagraphPlugin);
-const headingPlugin = editor.getPlugin({ key: 'heading' });
+const headingPlugin = editor.getPlugin({ key: KEYS.heading });
 ```
 
 ### getType
@@ -148,7 +148,7 @@ const headingPlugin = editor.getPlugin({ key: 'heading' });
 Get the node type associated with a plugin:
 
 ```ts
-const paragraphType = editor.getType(ParagraphPlugin);
+const paragraphType = editor.getType(KEYS.p);
 ```
 
 ## Option Methods

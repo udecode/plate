@@ -8,6 +8,7 @@ import {
   BaseSoftBreakPlugin,
   createSlateEditor,
   DeletePlugin,
+  KEYS,
   SelectOnBackspacePlugin,
   TrailingBlockPlugin,
 } from '@udecode/plate';
@@ -133,48 +134,28 @@ export default function RSCPage() {
       // Block Style
       BaseAlignPlugin.extend({
         inject: {
-          targetPlugins: [
-            'p',
-            'h1',
-            'h2',
-            'h3',
-            'h4',
-            'h5',
-            'h6',
-            BaseImagePlugin.key,
-            BaseMediaEmbedPlugin.key,
-          ],
+          targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.mediaEmbed],
         },
       }),
       BaseIndentPlugin.extend({
         inject: {
           targetPlugins: [
-            'p',
-            'h1',
-            'h2',
-            'h3',
-            'h4',
-            'h5',
-            'h6',
-            BaseBlockquotePlugin.key,
-            BaseCodeBlockPlugin.key,
-            BaseTogglePlugin.key,
+            KEYS.p,
+            ...KEYS.heading,
+            KEYS.blockquote,
+            KEYS.codeBlock,
+            KEYS.toggle,
           ],
         },
       }),
       BaseListPlugin.extend({
         inject: {
           targetPlugins: [
-            'p',
-            'h1',
-            'h2',
-            'h3',
-            'h4',
-            'h5',
-            'h6',
-            BaseBlockquotePlugin.key,
-            BaseCodeBlockPlugin.key,
-            BaseTogglePlugin.key,
+            KEYS.p,
+            ...KEYS.heading,
+            KEYS.blockquote,
+            KEYS.codeBlock,
+            KEYS.toggle,
           ],
         },
         options: {
@@ -194,7 +175,7 @@ export default function RSCPage() {
             defaultNodeValue: 1.5,
             validNodeValues: [1, 1.2, 1.5, 2, 3],
           },
-          targetPlugins: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+          targetPlugins: [KEYS.p, ...KEYS.heading],
         },
       }),
 
@@ -207,7 +188,7 @@ export default function RSCPage() {
       SelectOnBackspacePlugin.configure({
         options: {
           query: {
-            allow: [BaseImagePlugin.key, BaseHorizontalRulePlugin.key],
+            allow: [KEYS.img, KEYS.hr],
           },
         },
       }),

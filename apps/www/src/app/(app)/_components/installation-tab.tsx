@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useMemo, useState } from 'react';
 
-import { DndPlugin } from '@udecode/plate-dnd';
+import { KEYS } from '@udecode/plate';
 import { useStoreValue } from '@udecode/plate/react';
 import { uniqBy } from 'lodash';
 
@@ -399,7 +399,7 @@ export default function InstallationTab() {
     '});',
   ].join('\n');
 
-  const hasDnd = plugins.some((plugin) => plugin.id === DndPlugin.key);
+  const hasDnd = plugins.some((plugin) => plugin.id === KEYS.dnd);
 
   let indentLevel = 0;
 

@@ -2,6 +2,7 @@
 '@udecode/plate-core': major
 ---
 
+- `editor.getType()` now takes a `pluginKey: string` instead of a `plugin: PlatePlugin`. For example, use `editor.getType(KEYS.p)` instead of `editor.getType(ParagraphPlugin)`.
 - Plugins without `key` will not be registered into the editor.
 - Passing `readOnly` prop to `PlateContent` will sync it to the store (`useEditorReadOnly`) and `editor.dom.readOnly`.
 - Passing `disabled: true` prop to `PlateContent` will set `readOnly` to `true`.

@@ -25,13 +25,13 @@ npm install @udecode/plate-excalidraw
 
 ```tsx
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
-import { SelectOnBackspace } from '@udecode/plate';
+import { SelectOnBackspace, KEYS } from '@udecode/plate';
 
 const plugins = [
   // ...其他插件
   ExcalidrawPlugin,
   SelectOnBackspace.configure({
-    options: { query: { allow: [ExcalidrawPlugin.key] } },
+    options: { query: { allow: [KEYS.excalidraw] } },
   }),
 ];
 ```

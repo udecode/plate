@@ -109,7 +109,7 @@ const plugins = [
   </APIItem>
   <APIItem name="defaultType" type="function" optional>
     退出时插入的默认节点类型。
-    - **默认值:** `editor.getType(ParagraphPlugin)`
+    - **默认值:** `editor.getType(KEYS.p)`
   </APIItem>
   <APIItem name="query" type="object" optional>
     退出段落的条件。
@@ -126,7 +126,7 @@ const plugins = [
 
 ### `exitBreakAtEdges`
 
-检查选择是否在其父段落的边缘，并在指定时执行“退出段落”操作。
+检查选择是否在其父段落的边缘，并在指定时执行"退出段落"操作。
 
 <API name="exitBreakAtEdges">
 <APIParameters>
