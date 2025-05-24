@@ -4,4 +4,6 @@
 
 export * from './DeletePlugin';
 export * from './SelectOnBackspacePlugin';
+export * from './UnselectablePlugin';
 export * from './withSelectOnBackspace';
+export * from './queries/index';

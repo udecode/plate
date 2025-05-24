@@ -154,3 +154,54 @@ Behavior:
 </editor>
 ```
 </API>
+
+### `UnselectablePlugin`
+
+Plugin that marks specific inline void nodes as unselectable and modifies cursor movement behavior around these nodes.
+
+<API name="UnselectablePlugin">
+<APIOptions>
+  <APIItem name="query" type="QueryNodeOptions" optional>
+    Query options to determine which nodes should be unselectable.
+    - **Default:** `null` (all nodes are selectable)
+  </APIItem>
+</APIOptions>
+
+Example:
+
+```tsx
+const plugins = [
+  UnselectablePlugin.configure({
+    options: {
+      // Make date and mention nodes unselectable
+      query: {
+        allow: ['date', 'mention'],
+      },
+    },
+  }),
+];
+```
+
+Behavior:
+1. Marks nodes matching the query as unselectable
+2. Modifies cursor movement behavior around unselectable nodes:
+   - Uses 'offset' unit instead of 'character' unit when moving cursor
+   - Allows stepping into and out of inline nodes without stepping over characters
+3. Provides `isSelectable` API to check if a node can be selected
+
+```tsx
+// Cursor movement around an unselectable date node
+<editor>
+  <p>
+    <text>Before </text>
+    <date>2024-03-20</date>
+    <text> after</text>
+  </p>
+</editor>
+
+// When cursor is next to date node, pressing arrow keys will:
+// - Use 'offset' unit for movement
+// - Allow stepping into/out of the date node
+// - Prevent selecting the date node content
+```
+</API>

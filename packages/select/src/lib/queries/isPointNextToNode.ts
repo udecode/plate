@@ -3,18 +3,20 @@ import {
   type Point,
   type SlateEditor,
   PathApi,
+  queryNode,
 } from '@udecode/plate';
+
+import { UnselectablePlugin } from '../UnselectablePlugin';
 
 export const isPointNextToNode = (
   editor: SlateEditor,
   options: {
-    nodeType: string;
     at?: Point;
     reverse?: boolean;
-  }
+  } = {}
 ): boolean => {
   // eslint-disable-next-line prefer-const
-  let { at, nodeType, reverse = false } = options;
+  let { at, reverse = false } = options;
 
   if (!at) {
     at = editor.selection?.anchor;
@@ -69,5 +71,7 @@ export const isPointNextToNode = (
 
   const nextNodeEntry = editor.api.node(adjacentPath) ?? null;
 
-  return !!(nextNodeEntry && nextNodeEntry[0].type === nodeType);
+  const query = editor.getOption(UnselectablePlugin, 'query');
+
+  return !!(nextNodeEntry && query && queryNode(nextNodeEntry, query));
 };
