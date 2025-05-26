@@ -4,38 +4,38 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { withProps } from '@udecode/cn';
 import {
   BaseParagraphPlugin,
   createSlateEditor,
   KEYS,
   serializeHtml,
-  SlateLeaf,
 } from '@udecode/plate';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import {
+  BaseBlockquotePlugin,
+  BaseHeadingPlugin,
+  BaseHorizontalRulePlugin,
+} from '@udecode/plate-basic-elements';
+import {
   BaseBoldPlugin,
   BaseCodePlugin,
+  BaseHighlightPlugin,
   BaseItalicPlugin,
+  BaseKbdPlugin,
   BaseStrikethroughPlugin,
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
-import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
-import { BaseCommentsPlugin } from '@udecode/plate-comments';
+import { BaseCommentPlugin } from '@udecode/plate-comments';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
   BaseFontSizePlugin,
 } from '@udecode/plate-font';
-import { BaseHeadingPlugin, BaseTocPlugin } from '@udecode/plate-heading';
-import { BaseHighlightPlugin } from '@udecode/plate-highlight';
-import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
-import { BaseKbdPlugin } from '@udecode/plate-kbd';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
@@ -58,6 +58,7 @@ import {
   BaseTablePlugin,
   BaseTableRowPlugin,
 } from '@udecode/plate-table';
+import { BaseTocPlugin } from '@udecode/plate-toc';
 import { BaseTogglePlugin } from '@udecode/plate-toggle';
 import { useEditorRef } from '@udecode/plate/react';
 import { all, createLowlight } from 'lowlight';
@@ -83,7 +84,11 @@ import {
 } from '@/registry/ui/column-node-static';
 import { CommentLeafStatic } from '@/registry/ui/comment-node-static';
 import { DateElementStatic } from '@/registry/ui/date-node-static';
-import { HeadingElementStatic } from '@/registry/ui/heading-node-static';
+import {
+  H1ElementStatic,
+  H2ElementStatic,
+  H3ElementStatic,
+} from '@/registry/ui/heading-node-static';
 import { HighlightLeafStatic } from '@/registry/ui/highlight-node-static';
 import { HrElementStatic } from '@/registry/ui/hr-node-static';
 import { KbdLeafStatic } from '@/registry/ui/kbd-node-static';
@@ -190,7 +195,6 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
     const components = {
       [KEYS.audio]: AudioElementStatic,
       [KEYS.blockquote]: BlockquoteElementStatic,
-      [KEYS.bold]: withProps(SlateLeaf, { as: 'strong' }),
       [KEYS.code]: CodeLeafStatic,
       [KEYS.codeBlock]: CodeBlockElementStatic,
       [KEYS.codeLine]: CodeLineElementStatic,
@@ -201,32 +205,24 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
       [KEYS.date]: DateElementStatic,
       [KEYS.equation]: EquationElementStatic,
       [KEYS.file]: FileElementStatic,
-      [KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
-      [KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
-      [KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
-      [KEYS.h4]: withProps(HeadingElementStatic, { variant: 'h4' }),
-      [KEYS.h5]: withProps(HeadingElementStatic, { variant: 'h5' }),
-      [KEYS.h6]: withProps(HeadingElementStatic, { variant: 'h6' }),
+      [KEYS.h1]: H1ElementStatic,
+      [KEYS.h2]: H2ElementStatic,
+      [KEYS.h3]: H3ElementStatic,
       [KEYS.highlight]: HighlightLeafStatic,
       [KEYS.hr]: HrElementStatic,
       [KEYS.img]: ImageElementStatic,
       [KEYS.inlineEquation]: InlineEquationElementStatic,
-      [KEYS.italic]: withProps(SlateLeaf, { as: 'em' }),
       [KEYS.kbd]: KbdLeafStatic,
       [KEYS.link]: LinkElementStatic,
       // [KEYS.mediaEmbed]: MediaEmbedElementStatic,
       [KEYS.mention]: MentionElementStatic,
       [KEYS.p]: ParagraphElementStatic,
-      [KEYS.strikethrough]: withProps(SlateLeaf, { as: 'del' }),
-      [KEYS.sub]: withProps(SlateLeaf, { as: 'sub' }),
-      [KEYS.sup]: withProps(SlateLeaf, { as: 'sup' }),
       [KEYS.table]: TableElementStatic,
       [KEYS.td]: TableCellElementStatic,
       [KEYS.th]: TableCellHeaderStaticElement,
       [KEYS.toc]: TocElementStatic,
       [KEYS.toggle]: ToggleElementStatic,
       [KEYS.tr]: TableRowElementStatic,
-      [KEYS.underline]: withProps(SlateLeaf, { as: 'u' }),
       [KEYS.video]: VideoElementStatic,
     };
 
@@ -300,7 +296,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
         BaseFilePlugin,
         BaseImagePlugin,
         BaseMentionPlugin,
-        BaseCommentsPlugin,
+        BaseCommentPlugin,
         BaseTogglePlugin,
       ],
       value: editor.children,

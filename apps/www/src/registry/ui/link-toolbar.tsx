@@ -2,13 +2,15 @@
 
 import * as React from 'react';
 
+import type { TLinkElement } from '@udecode/plate';
+
 import { KEYS } from '@udecode/plate';
 import {
   type UseVirtualFloatingOptions,
   flip,
   offset,
 } from '@udecode/plate-floating';
-import { type TLinkElement, getLinkAttributes } from '@udecode/plate-link';
+import { getLinkAttributes } from '@udecode/plate-link';
 import {
   type LinkFloatingToolbarState,
   FloatingLinkUrlInput,

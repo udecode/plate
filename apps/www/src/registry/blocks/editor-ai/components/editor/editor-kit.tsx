@@ -12,6 +12,7 @@ import { BasicMarksKit } from '@/registry/components/editor/plugins/basic-marks-
 import { BlockMenuKit } from '@/registry/components/editor/plugins/block-menu-kit';
 import { BlockPlaceholderKit } from '@/registry/components/editor/plugins/block-placeholder-kit';
 import { CalloutKit } from '@/registry/components/editor/plugins/callout-kit';
+import { CodeBlockKit } from '@/registry/components/editor/plugins/code-block-kit';
 import { ColumnKit } from '@/registry/components/editor/plugins/column-kit';
 import { CommentKit } from '@/registry/components/editor/plugins/comment-kit';
 import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
@@ -25,9 +26,6 @@ import { EmojiKit } from '@/registry/components/editor/plugins/emoji-kit';
 import { FixedToolbarKit } from '@/registry/components/editor/plugins/fixed-toolbar-kit';
 import { FloatingToolbarKit } from '@/registry/components/editor/plugins/floating-toolbar-kit';
 import { FontKit } from '@/registry/components/editor/plugins/font-kit';
-import { HighlightKit } from '@/registry/components/editor/plugins/highlight-kit';
-import { HorizontalRuleKit } from '@/registry/components/editor/plugins/hr-kit';
-import { KbdKit } from '@/registry/components/editor/plugins/kbd-kit';
 import { LineHeightKit } from '@/registry/components/editor/plugins/line-height-kit';
 import { LinkKit } from '@/registry/components/editor/plugins/link-kit';
 import { ListKit } from '@/registry/components/editor/plugins/list-kit';
@@ -47,7 +45,7 @@ export const EditorKit = [
 
   // Elements
   ...BasicElementsKit,
-  ...HorizontalRuleKit,
+  ...CodeBlockKit,
   ...TableKit,
   ...ToggleKit,
   ...TocKit,
@@ -62,8 +60,6 @@ export const EditorKit = [
   // Marks
   ...BasicMarksKit,
   ...FontKit,
-  ...HighlightKit,
-  ...KbdKit,
 
   // Block Style
   ...ListKit,

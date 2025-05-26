@@ -1,53 +1,36 @@
 'use client';
 
-import { withProps } from '@udecode/cn';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { HeadingPlugin } from '@udecode/plate-heading/react';
-import { Key, ParagraphPlugin } from '@udecode/plate/react';
-import { all, createLowlight } from 'lowlight';
+import {
+  BlockquotePlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  HorizontalRulePlugin,
+} from '@udecode/plate-basic-elements/react';
+import { ParagraphPlugin } from '@udecode/plate/react';
 
 import { BlockquoteElement } from '@/registry/ui/blockquote-node';
-import {
-  CodeBlockElement,
-  CodeLineElement,
-  CodeSyntaxLeaf,
-} from '@/registry/ui/code-block-node';
-import { HeadingElement } from '@/registry/ui/heading-node';
+import { H1Element, H2Element, H3Element } from '@/registry/ui/heading-node';
+import { HrElement } from '@/registry/ui/hr-node';
 import { ParagraphElement } from '@/registry/ui/paragraph-node';
-
-const lowlight = createLowlight(all);
 
 export const BasicElementsKit = [
   ParagraphPlugin.withComponent(ParagraphElement),
-  BlockquotePlugin.configure(() => ({
-    shortcuts: {
-      toggleBlockquote: {
-        keys: [[Key.Mod, Key.Shift, 'period']],
-      },
-    },
-  })).withComponent(BlockquoteElement),
-  HeadingPlugin.configure({
-    options: { levels: 3 },
-    override: {
-      components: {
-        h1: withProps(HeadingElement, { variant: 'h1' }),
-        h2: withProps(HeadingElement, { variant: 'h2' }),
-        h3: withProps(HeadingElement, { variant: 'h3' }),
-        h4: withProps(HeadingElement, { variant: 'h4' }),
-        h5: withProps(HeadingElement, { variant: 'h5' }),
-        h6: withProps(HeadingElement, { variant: 'h6' }),
-      },
-    },
+  H1Plugin.configure({
+    node: { component: H1Element },
+    shortcuts: { toggle: { keys: 'mod+alt+1' } },
   }),
-  CodeBlockPlugin.configure({
-    options: { lowlight },
-    override: {
-      components: {
-        code_block: CodeBlockElement,
-        code_line: CodeLineElement,
-        code_syntax: CodeSyntaxLeaf,
-      },
-    },
+  H2Plugin.configure({
+    node: { component: H2Element },
+    shortcuts: { toggle: { keys: 'mod+alt+2' } },
   }),
+  H3Plugin.configure({
+    node: { component: H3Element },
+    shortcuts: { toggle: { keys: 'mod+alt+3' } },
+  }),
+  BlockquotePlugin.configure({
+    node: { component: BlockquoteElement },
+    shortcuts: { toggle: { keys: 'mod+shift+period' } },
+  }),
+  HorizontalRulePlugin.withComponent(HrElement),
 ];

@@ -41,9 +41,11 @@ const plugins = [
 ```
 
 ```tsx
+import { KEYS } from '@udecode/plate';
+
 const components = {
   // ...otherComponents,
-  [SlashInputPlugin.key]: SlashInputElement,
+  [KEYS.slashInput]: SlashInputElement,
 };
 ```
 
@@ -83,13 +85,13 @@ Plugin for slash command functionality. Extends [TriggerComboboxPlugin](/docs/co
 
 <API name="SlashPlugin">
 <APIOptions type="SlashPluginOptions">
-  <APIItem name="createComboboxInput" type="() => TSlashInputElement" optional>
+  <APIItem name="createComboboxInput" type="() => TComboboxInputElement" optional>
     Function to create combobox input element.
     - **Default:** 
     ```tsx
     () => ({
       children: [{ text: '' }],
-      type: SlashInputPlugin.key,
+      type: KEYS.slashInput,
     });
     ```
   </APIItem>

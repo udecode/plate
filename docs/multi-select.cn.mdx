@@ -93,12 +93,12 @@ export default function MySelectEditor() {
 
 <API name="editor.tf.insert.tag">
 <APIParameters>
-  <APIItem name="props" type="TagLike">
+  <APIItem name="props" type="TTagProps">
     多选元素的属性。
   </APIItem>
 </APIParameters>
 
-<APIOptions type="TagLike">
+<APIOptions type="TTagProps">
   <APIItem name="value" type="string">
     多选元素的唯一值。
   </APIItem>
@@ -112,7 +112,7 @@ export default function MySelectEditor() {
 用于获取编辑器中当前选中的标签项目的钩子。
 
 <API name="useSelectedItems">
-<APIReturns type="TagLike[]">
+<APIReturns type="TTagProps[]">
   包含值和属性的选中标签项目数组。
 </APIReturns>
 </API>
@@ -122,7 +122,7 @@ export default function MySelectEditor() {
 获取编辑器中的所有标签项目。
 
 <API name="getSelectedItems">
-<APIReturns type="TagLike[]">
+<APIReturns type="TTagProps[]">
   编辑器中的标签项目数组。
 </APIReturns>
 </API>
@@ -133,7 +133,7 @@ export default function MySelectEditor() {
 
 <API name="isEqualTags">
 <APIParameters>
-  <APIItem name="newTags" type="TagLike[]" optional>
+  <APIItem name="newTags" type="TTagProps[]" optional>
     要与当前编辑器标签进行比较的新标签。
   </APIItem>
 </APIParameters>
@@ -185,7 +185,7 @@ export default function MySelectEditor() {
   <APIItem name="selectFirstItem" type="() => void">
     选择第一个组合框项目的函数。
   </APIItem>
-  <APIItem name="onValueChange" type="(items: TagLike[]) => void" optional>
+  <APIItem name="onValueChange" type="(items: TTagProps[]) => void" optional>
     选中项目发生变化时的回调。
   </APIItem>
 </APIOptions>
@@ -202,10 +202,10 @@ type TTagElement = TElement & {
 };
 ```
 
-### `TagLike`
+### `TTagProps`
 
 ```ts
-type TagLike = {
+type TTagProps = {
   value: string;
   [key: string]: unknown;
 };

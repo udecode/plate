@@ -8,12 +8,12 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/code-node",
-    "https://platejs.org/r/skip-mark-kit"
+    "https://platejs.org/r/mark-toolbar-button"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/basic-marks-kit.tsx",
-      "content": "'use client';\n\nimport { withProps } from '@udecode/cn';\nimport {\n  BoldPlugin,\n  CodePlugin,\n  ItalicPlugin,\n  StrikethroughPlugin,\n  SubscriptPlugin,\n  SuperscriptPlugin,\n  UnderlinePlugin,\n} from '@udecode/plate-basic-marks/react';\nimport { PlateLeaf } from '@udecode/plate/react';\n\nimport { CodeLeaf } from '@/registry/ui/code-node';\n\nimport { SkipMarkKit } from './skip-mark-kit';\n\nexport const BasicMarksKit = [\n  BoldPlugin.withComponent(withProps(PlateLeaf, { as: 'strong' })),\n  CodePlugin.withComponent(CodeLeaf),\n  ItalicPlugin.withComponent(withProps(PlateLeaf, { as: 'em' })),\n  StrikethroughPlugin.withComponent(withProps(PlateLeaf, { as: 's' })),\n  UnderlinePlugin.withComponent(withProps(PlateLeaf, { as: 'u' })),\n  SubscriptPlugin.withComponent(withProps(PlateLeaf, { as: 'sub' })),\n  SuperscriptPlugin.withComponent(withProps(PlateLeaf, { as: 'sup' })),\n  ...SkipMarkKit,\n];\n",
+      "content": "'use client';\n\nimport {\n  BoldPlugin,\n  CodePlugin,\n  HighlightPlugin,\n  ItalicPlugin,\n  KbdPlugin,\n  StrikethroughPlugin,\n  SubscriptPlugin,\n  SuperscriptPlugin,\n  UnderlinePlugin,\n} from '@udecode/plate-basic-marks/react';\n\nimport { CodeLeaf } from '@/registry/ui/code-node';\nimport { HighlightLeaf } from '@/registry/ui/highlight-node';\nimport { KbdLeaf } from '@/registry/ui/kbd-node';\n\nexport const BasicMarksKit = [\n  BoldPlugin,\n  CodePlugin.withComponent(CodeLeaf),\n  ItalicPlugin,\n  StrikethroughPlugin,\n  UnderlinePlugin,\n  SubscriptPlugin,\n  SuperscriptPlugin,\n  KbdPlugin.withComponent(KbdLeaf),\n  HighlightPlugin.withComponent(HighlightLeaf),\n];\n",
       "type": "registry:component"
     }
   ]

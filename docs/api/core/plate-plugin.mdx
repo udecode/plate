@@ -90,6 +90,11 @@ Indicates if this plugin's elements should be treated as inline.
 <APISubListItem parent="node" name="isLeaf" type="boolean" optional>
 Indicates if this plugin's nodes should be rendered as leaves.
 </APISubListItem>
+<APISubListItem parent="node" name="clearOnBoundary" type="boolean" optional>
+If true, enables automatically clearing the mark when typing at its boundary. Only applies when `isLeaf` is true.
+
+When enabled, typing at the start or end of a marked text range will automatically remove the mark from the new text, allowing users to "exit" the mark naturally.
+</APISubListItem>
 <APISubListItem parent="node" name="isMarkableVoid" type="boolean" optional>
 Indicates if this plugin's void elements should be markable.
 </APISubListItem>
@@ -187,6 +192,12 @@ Renders a component for:
 - Elements nodes if `isElement: true`
 - Below text nodes if `isLeaf: true` and `isDecoration: false`
 - Below leaf if `isLeaf: true` and `isDecoration: true`
+</APISubListItem>
+<APISubListItem parent="render" name="as" type="keyof HTMLElementTagNameMap" optional>
+Specifies the HTML tag name to use when rendering the node component. Only used when no custom `component` is provided for the plugin.
+
+- **Default:** `'div'` for elements, `'span'` for leaves
+
 </APISubListItem>
 </APISubList>
 </APIItem>

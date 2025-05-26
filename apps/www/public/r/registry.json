@@ -46,11 +46,8 @@
         "@udecode/plate-date",
         "@udecode/plate-font",
         "@udecode/plate-heading",
-        "@udecode/plate-highlight",
-        "@udecode/plate-horizontal-rule",
         "@udecode/plate-indent",
         "@udecode/plate-list",
-        "@udecode/plate-kbd",
         "@udecode/plate-layout",
         "@udecode/plate-link",
         "@udecode/plate-math",
@@ -192,9 +189,6 @@
       "description": "A context menu for block-level operations.",
       "dependencies": [
         "@udecode/plate-ai",
-        "@udecode/plate-block-quote",
-        "@udecode/plate-heading",
-        "@udecode/plate-list",
         "@udecode/plate-selection"
       ],
       "registryDependencies": [
@@ -290,7 +284,7 @@
       "title": "Export Toolbar Button",
       "description": "A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).",
       "dependencies": [
-        "@udecode/plate",
+        "@udecode/cn",
         "@udecode/plate-alignment",
         "@udecode/plate-basic-marks",
         "@udecode/plate-block-quote",
@@ -299,11 +293,8 @@
         "@udecode/plate-date",
         "@udecode/plate-font",
         "@udecode/plate-heading",
-        "@udecode/plate-highlight",
-        "@udecode/plate-horizontal-rule",
         "@udecode/plate-indent",
         "@udecode/plate-list",
-        "@udecode/plate-kbd",
         "@udecode/plate-layout",
         "@udecode/plate-line-height",
         "@udecode/plate-link",
@@ -402,6 +393,7 @@
       "title": "Font Color Toolbar Button",
       "description": "A color picker toolbar button with text and background color controls.",
       "dependencies": [
+        "@udecode/cn",
         "@udecode/plate-font"
       ],
       "registryDependencies": [
@@ -465,14 +457,22 @@
       }
     },
     {
+      "name": "block-suggestion",
+      "type": "registry:ui",
+      "title": "Block Suggestion",
+      "dependencies": [
+        "@udecode/plate-suggestion"
+      ]
+    },
+    {
       "name": "block-discussion",
       "type": "registry:ui",
       "title": "Block Discussion",
       "description": "A popover interface for managing discussions: comments, replies, suggestions.",
       "dependencies": [
-        "@udecode/cn",
         "@udecode/plate-comments",
-        "date-fns"
+        "date-fns",
+        "@udecode/plate-suggestion"
       ],
       "registryDependencies": [
         "button",
@@ -555,16 +555,7 @@
       "description": "A block wrapper with a drag handle for moving editor blocks.",
       "dependencies": [
         "@udecode/plate-dnd",
-        "@udecode/plate-selection",
-        "@udecode/plate-block-quote",
-        "@udecode/plate-excalidraw",
-        "@udecode/plate-heading",
-        "@udecode/plate-layout",
-        "@udecode/plate-table",
-        "@udecode/plate-toggle",
-        "@udecode/plate-media",
-        "react-dnd",
-        "react-dnd-html5-backend"
+        "@udecode/plate-selection"
       ],
       "registryDependencies": [
         "tooltip",
@@ -699,13 +690,7 @@
       "type": "registry:ui",
       "title": "Fixed Toolbar Buttons",
       "description": "A set of commonly used formatting buttons.",
-      "dependencies": [
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-font",
-        "@udecode/plate-list",
-        "@udecode/plate-media",
-        "@udecode/plate-highlight"
-      ],
+      "dependencies": [],
       "registryDependencies": [
         "https://platejs.org/r/toolbar",
         "https://platejs.org/r/ai-toolbar-button",
@@ -746,12 +731,7 @@
       "name": "fixed-toolbar-classic-buttons",
       "type": "registry:ui",
       "title": "Fixed Toolbar List Buttons",
-      "dependencies": [
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-font",
-        "@udecode/plate-list-classic",
-        "@udecode/plate-media"
-      ],
+      "dependencies": [],
       "registryDependencies": [
         "https://platejs.org/r/toolbar",
         "https://platejs.org/r/ai-toolbar-button",
@@ -806,9 +786,7 @@
       "type": "registry:ui",
       "title": "Floating Toolbar Buttons",
       "description": "A set of formatting buttons for the floating toolbar.",
-      "dependencies": [
-        "@udecode/plate-basic-marks"
-      ],
+      "dependencies": [],
       "registryDependencies": [
         "https://platejs.org/r/toolbar",
         "https://platejs.org/r/ai-toolbar-button",
@@ -1074,19 +1052,7 @@
       "type": "registry:ui",
       "title": "Insert Toolbar Button",
       "description": "A menu for inserting different types of blocks.",
-      "dependencies": [
-        "@udecode/plate-block-quote",
-        "@udecode/plate-code-block",
-        "@udecode/plate-date",
-        "@udecode/plate-excalidraw",
-        "@udecode/plate-heading",
-        "@udecode/plate-horizontal-rule",
-        "@udecode/plate-list",
-        "@udecode/plate-link",
-        "@udecode/plate-media",
-        "@udecode/plate-table",
-        "@udecode/plate-toggle"
-      ],
+      "dependencies": [],
       "registryDependencies": [
         "dropdown-menu",
         "https://platejs.org/r/toolbar",
@@ -1382,10 +1348,7 @@
       "type": "registry:ui",
       "title": "More Toolbar Button",
       "description": "A menu for additional text formatting options.",
-      "dependencies": [
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-kbd"
-      ],
+      "dependencies": [],
       "registryDependencies": [
         "dropdown-menu",
         "https://platejs.org/r/toolbar"
@@ -1504,13 +1467,7 @@
       "type": "registry:ui",
       "title": "Turn Into Toolbar Button",
       "description": "A menu for converting between different block types.",
-      "dependencies": [
-        "@udecode/plate-block-quote",
-        "@udecode/plate-code-block",
-        "@udecode/plate-heading",
-        "@udecode/plate-list",
-        "@udecode/plate-toggle"
-      ],
+      "dependencies": [],
       "registryDependencies": [
         "dropdown-menu",
         "https://platejs.org/r/toolbar",
@@ -1715,7 +1672,9 @@
         "lowlight"
       ],
       "registryDependencies": [
-        "command"
+        "command",
+        "popover",
+        "button"
       ],
       "files": [
         {
@@ -1778,6 +1737,7 @@
       "title": "Column Nodes",
       "description": "Resizable column components for layout.",
       "dependencies": [
+        "@udecode/cn",
         "@udecode/plate-layout"
       ],
       "registryDependencies": [
@@ -2143,7 +2103,7 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/highlight"
+            "route": "/docs/basic-marks"
           }
         ],
         "examples": [
@@ -2259,9 +2219,7 @@
       "type": "registry:ui",
       "title": "Keyboard Input Leaf",
       "description": "A component for styling keyboard shortcuts.",
-      "dependencies": [
-        "@udecode/plate-kbd"
-      ],
+      "dependencies": [],
       "registryDependencies": [],
       "files": [
         {
@@ -2276,12 +2234,12 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/kbd",
+            "route": "/docs/basic-marks",
             "title": "Keyboard Input"
           }
         ],
         "examples": [
-          "kbd-demo"
+          "basic-marks-demo"
         ]
       }
     },
@@ -2324,6 +2282,7 @@
       "title": "List Nodes",
       "description": "List (classic) nodes for ordered and unordered items.",
       "dependencies": [
+        "@udecode/cn",
         "@udecode/plate-list-classic"
       ],
       "registryDependencies": [
@@ -2621,7 +2580,7 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/highlight"
+            "route": "/docs/basic-marks"
           }
         ]
       }
@@ -2632,14 +2591,7 @@
       "title": "Slash Input Element",
       "description": "A command input component for inserting various elements.",
       "dependencies": [
-        "@udecode/plate-ai",
-        "@udecode/plate-block-quote",
-        "@udecode/plate-code-block",
-        "@udecode/plate-date",
-        "@udecode/plate-heading",
-        "@udecode/plate-list",
-        "@udecode/plate-table",
-        "@udecode/plate-toggle"
+        "@udecode/plate-ai"
       ],
       "registryDependencies": [
         "https://platejs.org/r/inline-combobox",
@@ -2804,64 +2756,6 @@
       }
     },
     {
-      "name": "node-id-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-node-id"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/node-id-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "editor-kit",
-      "type": "registry:component",
-      "registryDependencies": [
-        "https://platejs.org/r/editor",
-        "https://platejs.org/r/ai-kit",
-        "https://platejs.org/r/align-kit",
-        "https://platejs.org/r/autoformat-kit",
-        "https://platejs.org/r/basic-nodes-kit",
-        "https://platejs.org/r/block-menu-kit",
-        "https://platejs.org/r/callout-kit",
-        "https://platejs.org/r/column-kit",
-        "https://platejs.org/r/comment-kit",
-        "https://platejs.org/r/cursor-overlay-kit",
-        "https://platejs.org/r/date-kit",
-        "https://platejs.org/r/dnd-kit",
-        "https://platejs.org/r/docx-kit",
-        "https://platejs.org/r/editing-kit",
-        "https://platejs.org/r/emoji-kit",
-        "https://platejs.org/r/fixed-toolbar-kit",
-        "https://platejs.org/r/floating-toolbar-kit",
-        "https://platejs.org/r/font-kit",
-        "https://platejs.org/r/highlight-kit",
-        "https://platejs.org/r/hr-kit",
-        "https://platejs.org/r/kbd-kit",
-        "https://platejs.org/r/line-height-kit",
-        "https://platejs.org/r/link-kit",
-        "https://platejs.org/r/list-kit",
-        "https://platejs.org/r/markdown-kit",
-        "https://platejs.org/r/math-kit",
-        "https://platejs.org/r/media-kit",
-        "https://platejs.org/r/mention-kit",
-        "https://platejs.org/r/slash-kit",
-        "https://platejs.org/r/suggestion-kit",
-        "https://platejs.org/r/table-kit",
-        "https://platejs.org/r/toc-kit",
-        "https://platejs.org/r/toggle-kit"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/editor-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
       "name": "ai-kit",
       "type": "registry:component",
       "dependencies": [
@@ -2872,6 +2766,7 @@
         "https://platejs.org/r/cursor-overlay-kit",
         "https://platejs.org/r/ai-menu",
         "https://platejs.org/r/ai-node",
+        "https://platejs.org/r/ai-toolbar-button",
         "https://platejs.org/r/ai-api"
       ],
       "files": [
@@ -2885,9 +2780,10 @@
       "name": "align-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-alignment",
-        "@udecode/plate-heading",
-        "@udecode/plate-media"
+        "@udecode/plate-alignment"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/align-toolbar-button"
       ],
       "files": [
         {
@@ -2897,43 +2793,35 @@
       ]
     },
     {
-      "name": "autoformat-kit",
+      "name": "autoformat-classic-kit",
       "type": "registry:component",
       "dependencies": [
         "@udecode/plate-autoformat",
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-block-quote",
         "@udecode/plate-code-block",
-        "@udecode/plate-heading",
-        "@udecode/plate-highlight",
-        "@udecode/plate-horizontal-rule",
-        "@udecode/plate-list",
-        "@udecode/plate-toggle"
+        "@udecode/plate-list-classic"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/list-classic-node",
+        "https://platejs.org/r/list-classic-toolbar-button"
       ],
       "files": [
         {
-          "path": "src/registry/components/editor/plugins/autoformat-kit.tsx",
+          "path": "src/registry/components/editor/plugins/autoformat-classic-kit.tsx",
           "type": "registry:component"
         }
       ]
     },
     {
-      "name": "autoformat-classic-kit",
+      "name": "autoformat-kit",
       "type": "registry:component",
       "dependencies": [
         "@udecode/plate-autoformat",
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-block-quote",
         "@udecode/plate-code-block",
-        "@udecode/plate-heading",
-        "@udecode/plate-highlight",
-        "@udecode/plate-horizontal-rule",
-        "@udecode/plate-list-classic",
-        "@udecode/plate-toggle"
+        "@udecode/plate-list"
       ],
       "files": [
         {
-          "path": "src/registry/components/editor/plugins/autoformat-classic-kit.tsx",
+          "path": "src/registry/components/editor/plugins/autoformat-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -2962,6 +2850,24 @@
       ]
     },
     {
+      "name": "basic-marks-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/cn",
+        "@udecode/plate-basic-marks"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/code-node",
+        "https://platejs.org/r/mark-toolbar-button"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/basic-marks-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "basic-nodes-kit",
       "type": "registry:component",
       "registryDependencies": [
@@ -2976,19 +2882,18 @@
       ]
     },
     {
-      "name": "basic-marks-kit",
+      "name": "block-menu-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/cn",
-        "@udecode/plate-basic-marks"
+        "@udecode/plate-selection"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/code-node",
-        "https://platejs.org/r/skip-mark-kit"
+        "https://platejs.org/r/block-context-menu",
+        "https://platejs.org/r/block-selection-kit"
       ],
       "files": [
         {
-          "path": "src/registry/components/editor/plugins/basic-marks-kit.tsx",
+          "path": "src/registry/components/editor/plugins/block-menu-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3012,8 +2917,7 @@
         "@udecode/plate-selection"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/block-selection",
-        "https://platejs.org/r/node-id-kit"
+        "https://platejs.org/r/block-selection"
       ],
       "files": [
         {
@@ -3023,18 +2927,33 @@
       ]
     },
     {
-      "name": "block-menu-kit",
+      "name": "callout-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-selection"
+        "@udecode/plate-callout"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/block-context-menu",
-        "https://platejs.org/r/block-selection-kit"
+        "https://platejs.org/r/callout-node"
       ],
       "files": [
         {
-          "path": "src/registry/components/editor/plugins/block-menu-kit.tsx",
+          "path": "src/registry/components/editor/plugins/callout-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "column-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/plate-layout"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/column-node"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/column-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3046,66 +2965,13 @@
         "@udecode/plate-comments"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/discussion-kit",
-        "https://platejs.org/r/skip-mark-kit"
+        "https://platejs.org/r/comment-node",
+        "https://platejs.org/r/comment-toolbar-button",
+        "https://platejs.org/r/discussion-kit"
       ],
       "files": [
         {
           "path": "src/registry/components/editor/plugins/comment-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "skip-mark-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-basic-marks"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/skip-mark-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "suggestion-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-suggestion"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/discussion-kit",
-        "https://platejs.org/r/skip-mark-kit"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/suggestion-kit.tsx",
-          "type": "registry:component"
-        },
-        {
-          "path": "src/registry/ui/suggestion-line-break.tsx",
-          "type": "registry:ui"
-        },
-        {
-          "path": "src/registry/ui/suggestion-toolbar-button.tsx",
-          "type": "registry:ui"
-        }
-      ]
-    },
-    {
-      "name": "cursor-overlay-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-selection"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/cursor-overlay"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/cursor-overlay-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3130,15 +2996,58 @@
       ]
     },
     {
-      "name": "delete-kit",
+      "name": "cursor-overlay-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-horizontal-rule",
-        "@udecode/plate-media"
+        "@udecode/plate-selection"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/cursor-overlay"
       ],
       "files": [
         {
+          "path": "src/registry/components/editor/plugins/cursor-overlay-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "date-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/plate-date"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/date-node"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/date-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "delete-kit",
+      "type": "registry:component",
+      "dependencies": [],
+      "files": [
+        {
           "path": "src/registry/components/editor/plugins/delete-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "discussion-kit",
+      "type": "registry:component",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/block-discussion"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/discussion-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3148,15 +3057,89 @@
       "type": "registry:component",
       "dependencies": [
         "@udecode/plate-dnd",
-        "@udecode/plate-media"
+        "@udecode/plate-media",
+        "react-dnd",
+        "react-dnd-html5-backend"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/block-draggable",
-        "https://platejs.org/r/node-id-kit"
+        "https://platejs.org/r/block-draggable"
       ],
       "files": [
         {
           "path": "src/registry/components/editor/plugins/dnd-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "docx-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/plate-docx",
+        "@udecode/plate-juice"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/docx-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "editor-kit",
+      "type": "registry:component",
+      "registryDependencies": [
+        "https://platejs.org/r/editor",
+        "https://platejs.org/r/ai-kit",
+        "https://platejs.org/r/align-kit",
+        "https://platejs.org/r/autoformat-kit",
+        "https://platejs.org/r/basic-nodes-kit",
+        "https://platejs.org/r/block-menu-kit",
+        "https://platejs.org/r/callout-kit",
+        "https://platejs.org/r/column-kit",
+        "https://platejs.org/r/comment-kit",
+        "https://platejs.org/r/cursor-overlay-kit",
+        "https://platejs.org/r/date-kit",
+        "https://platejs.org/r/dnd-kit",
+        "https://platejs.org/r/docx-kit",
+        "https://platejs.org/r/editing-kit",
+        "https://platejs.org/r/emoji-kit",
+        "https://platejs.org/r/fixed-toolbar-kit",
+        "https://platejs.org/r/floating-toolbar-kit",
+        "https://platejs.org/r/font-kit",
+        "https://platejs.org/r/line-height-kit",
+        "https://platejs.org/r/link-kit",
+        "https://platejs.org/r/list-kit",
+        "https://platejs.org/r/markdown-kit",
+        "https://platejs.org/r/math-kit",
+        "https://platejs.org/r/media-kit",
+        "https://platejs.org/r/mention-kit",
+        "https://platejs.org/r/slash-kit",
+        "https://platejs.org/r/suggestion-kit",
+        "https://platejs.org/r/table-kit",
+        "https://platejs.org/r/toc-kit",
+        "https://platejs.org/r/toggle-kit"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/editor-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "editing-kit",
+      "type": "registry:component",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/delete-kit",
+        "https://platejs.org/r/exit-break-kit",
+        "https://platejs.org/r/reset-block-type-kit",
+        "https://platejs.org/r/soft-break-kit"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/editing-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3182,12 +3165,25 @@
     {
       "name": "exit-break-kit",
       "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-heading"
-      ],
+      "dependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/plugins/exit-break-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "fixed-toolbar-classic-kit",
+      "type": "registry:component",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/fixed-toolbar",
+        "https://platejs.org/r/fixed-toolbar-classic-buttons"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/fixed-toolbar-classic-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3208,21 +3204,6 @@
       ]
     },
     {
-      "name": "fixed-toolbar-classic-kit",
-      "type": "registry:component",
-      "dependencies": [],
-      "registryDependencies": [
-        "https://platejs.org/r/fixed-toolbar",
-        "https://platejs.org/r/fixed-toolbar-buttons"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/fixed-toolbar-classic-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
       "name": "floating-toolbar-kit",
       "type": "registry:component",
       "dependencies": [],
@@ -3238,22 +3219,34 @@
       ]
     },
     {
-      "name": "list-kit",
+      "name": "font-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-block-quote",
-        "@udecode/plate-code-block",
-        "@udecode/plate-heading",
-        "@udecode/plate-indent",
-        "@udecode/plate-list",
-        "@udecode/plate-toggle"
+        "@udecode/plate-font"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/list-todo"
+        "https://platejs.org/r/font-size-toolbar-button",
+        "https://platejs.org/r/font-color-toolbar-button"
       ],
       "files": [
         {
-          "path": "src/registry/components/editor/plugins/list-kit.tsx",
+          "path": "src/registry/components/editor/plugins/font-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "indent-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/plate-indent"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/indent-toolbar-button"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/indent-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3262,8 +3255,10 @@
       "name": "line-height-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-heading",
         "@udecode/plate-line-height"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/line-height-toolbar-button"
       ],
       "files": [
         {
@@ -3286,6 +3281,24 @@
       "files": [
         {
           "path": "src/registry/components/editor/plugins/link-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "list-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/plate-list"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/list-todo",
+        "https://platejs.org/r/list-toolbar-button",
+        "https://platejs.org/r/indent-kit"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/list-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3326,6 +3339,7 @@
     {
       "name": "media-kit",
       "type": "registry:component",
+      "description": "Media kit without API (see media-uploadthing-api for reference)",
       "dependencies": [
         "@udecode/plate-caption",
         "@udecode/plate-media"
@@ -3337,6 +3351,7 @@
         "https://platejs.org/r/media-image-node",
         "https://platejs.org/r/media-placeholder-node",
         "https://platejs.org/r/media-preview-dialog",
+        "https://platejs.org/r/media-toolbar",
         "https://platejs.org/r/media-upload-toast",
         "https://platejs.org/r/media-video-node",
         "https://platejs.org/r/media-toolbar-button"
@@ -3351,6 +3366,7 @@
     {
       "name": "media-uploadthing-kit",
       "type": "registry:component",
+      "description": "media-kit + media-uploadthing-api",
       "dependencies": [],
       "registryDependencies": [
         "https://platejs.org/r/media-kit",
@@ -3378,11 +3394,7 @@
       "name": "reset-block-type-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-block-quote",
-        "@udecode/plate-callout",
-        "@udecode/plate-code-block",
-        "@udecode/plate-heading",
-        "@udecode/plate-list"
+        "@udecode/plate-code-block"
       ],
       "files": [
         {
@@ -3392,14 +3404,25 @@
       ]
     },
     {
-      "name": "soft-break-kit",
+      "name": "slash-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-block-quote",
-        "@udecode/plate-callout",
-        "@udecode/plate-code-block",
-        "@udecode/plate-table"
+        "@udecode/plate-slash-command"
       ],
+      "registryDependencies": [
+        "https://platejs.org/r/slash-node"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/slash-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "soft-break-kit",
+      "type": "registry:component",
+      "dependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/plugins/soft-break-kit.tsx",
@@ -3408,12 +3431,37 @@
       ]
     },
     {
+      "name": "suggestion-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/plate-suggestion"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/suggestion-node",
+        "https://platejs.org/r/suggestion-line-break",
+        "https://platejs.org/r/suggestion-toolbar-button",
+        "https://platejs.org/r/discussion-kit"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/suggestion-kit.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/registry/ui/suggestion-line-break.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/registry/ui/suggestion-toolbar-button.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "tabbable-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-code-block",
-        "@udecode/plate-tabbable",
-        "@udecode/plate-table"
+        "@udecode/plate-tabbable"
       ],
       "files": [
         {
@@ -3429,7 +3477,6 @@
         "@udecode/plate-table"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/node-id-kit",
         "https://platejs.org/r/table-node",
         "https://platejs.org/r/table-toolbar-button"
       ],
@@ -3457,192 +3504,18 @@
       ]
     },
     {
-      "name": "discussion-kit",
-      "type": "registry:component",
-      "dependencies": [],
-      "registryDependencies": [
-        "https://platejs.org/r/block-discussion"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/discussion-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "callout-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-callout"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/callout-node"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/callout-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "date-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-date"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/date-node"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/date-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "highlight-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-highlight"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/highlight-node"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/highlight-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "kbd-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-kbd"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/kbd-node"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/kbd-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
       "name": "toggle-kit",
       "type": "registry:component",
       "dependencies": [
         "@udecode/plate-toggle"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toggle-node"
+        "https://platejs.org/r/toggle-node",
+        "https://platejs.org/r/toggle-toolbar-button"
       ],
       "files": [
         {
           "path": "src/registry/components/editor/plugins/toggle-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "column-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-layout"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/column-node"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/column-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "slash-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-slash-command",
-        "@udecode/plate-code-block"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/slash-node"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/slash-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "docx-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-docx",
-        "@udecode/plate-juice"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/docx-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "editing-kit",
-      "type": "registry:component",
-      "dependencies": [],
-      "registryDependencies": [
-        "https://platejs.org/r/delete-kit",
-        "https://platejs.org/r/exit-break-kit",
-        "https://platejs.org/r/reset-block-type-kit",
-        "https://platejs.org/r/soft-break-kit"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/editing-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "font-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-font"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/font-size-toolbar-button",
-        "https://platejs.org/r/font-color-toolbar-button"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/font-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "hr-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-horizontal-rule"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/hr-node"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/hr-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3688,6 +3561,27 @@
       ]
     },
     {
+      "name": "settings-dialog",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/plate-ai"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/ai-kit",
+        "button",
+        "command",
+        "dialog",
+        "input",
+        "popover"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/settings-dialog.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "use-chat",
       "type": "registry:component",
       "dependencies": [
@@ -3695,19 +3589,11 @@
         "@faker-js/faker"
       ],
       "registryDependencies": [
-        "button",
-        "dialog",
-        "input",
-        "popover",
-        "command"
+        "https://platejs.org/r/ai-kit"
       ],
       "files": [
         {
           "path": "src/registry/components/editor/use-chat.ts",
-          "type": "registry:component"
-        },
-        {
-          "path": "src/registry/components/editor/settings.tsx",
           "type": "registry:component"
         }
       ]
@@ -3720,7 +3606,6 @@
         "@udecode/plate-code-block",
         "@udecode/plate-date",
         "@udecode/plate-heading",
-        "@udecode/plate-list",
         "@udecode/plate-layout",
         "@udecode/plate-link",
         "@udecode/plate-math",
@@ -3738,12 +3623,8 @@
       "name": "plate-types",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-block-quote",
-        "@udecode/plate-code-block",
         "@udecode/plate-comments",
         "@udecode/plate-excalidraw",
-        "@udecode/plate-heading",
-        "@udecode/plate-horizontal-rule",
         "@udecode/plate-link",
         "@udecode/plate-media",
         "@udecode/plate-mention",
@@ -3758,58 +3639,10 @@
       ]
     },
     {
-      "name": "plate-classic-types",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-block-quote",
-        "@udecode/plate-code-block",
-        "@udecode/plate-comments",
-        "@udecode/plate-excalidraw",
-        "@udecode/plate-heading",
-        "@udecode/plate-horizontal-rule",
-        "@udecode/plate-link",
-        "@udecode/plate-list-classic",
-        "@udecode/plate-media",
-        "@udecode/plate-mention",
-        "@udecode/plate-table",
-        "@udecode/plate-toggle"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plate-classic-types.ts",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
       "name": "editor-ai",
       "type": "registry:block",
       "description": "An AI editor",
       "dependencies": [
-        "@udecode/cn",
-        "@udecode/plate-ai",
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-block-quote",
-        "@udecode/plate-code-block",
-        "@udecode/plate-comments",
-        "@udecode/plate-callout",
-        "@udecode/plate-suggestion",
-        "@udecode/plate",
-        "@udecode/plate-date",
-        "@udecode/plate-emoji",
-        "@emoji-mart/data@1.2.1",
-        "@udecode/plate-excalidraw",
-        "@udecode/plate-heading",
-        "@udecode/plate-highlight",
-        "@udecode/plate-horizontal-rule",
-        "@udecode/plate-kbd",
-        "@udecode/plate-layout",
-        "@udecode/plate-link",
-        "@udecode/plate-media",
-        "@udecode/plate-mention",
-        "@udecode/plate-slash-command",
-        "@udecode/plate-table",
-        "@udecode/plate-toggle",
         "sonner"
       ],
       "registryDependencies": [
@@ -3817,17 +3650,20 @@
         "https://platejs.org/r/copilot-kit",
         "https://platejs.org/r/media-uploadthing-api",
         "https://platejs.org/r/plate-types",
+        "https://platejs.org/r/settings-dialog",
         "https://platejs.org/r/editor",
         "https://platejs.org/r/ai-kit",
         "https://platejs.org/r/align-kit",
         "https://platejs.org/r/autoformat-kit",
-        "https://platejs.org/r/basic-nodes-kit",
+        "https://platejs.org/r/basic-marks-kit",
         "https://platejs.org/r/block-menu-kit",
+        "https://platejs.org/r/block-placeholder-kit",
         "https://platejs.org/r/callout-kit",
         "https://platejs.org/r/column-kit",
         "https://platejs.org/r/comment-kit",
         "https://platejs.org/r/cursor-overlay-kit",
         "https://platejs.org/r/date-kit",
+        "https://platejs.org/r/discussion-kit",
         "https://platejs.org/r/dnd-kit",
         "https://platejs.org/r/docx-kit",
         "https://platejs.org/r/editing-kit",
@@ -3835,9 +3671,6 @@
         "https://platejs.org/r/fixed-toolbar-kit",
         "https://platejs.org/r/floating-toolbar-kit",
         "https://platejs.org/r/font-kit",
-        "https://platejs.org/r/highlight-kit",
-        "https://platejs.org/r/hr-kit",
-        "https://platejs.org/r/kbd-kit",
         "https://platejs.org/r/line-height-kit",
         "https://platejs.org/r/link-kit",
         "https://platejs.org/r/list-kit",
@@ -3858,17 +3691,11 @@
           "target": "app/editor/page.tsx"
         },
         {
-          "path": "src/registry/components/editor/plate-editor-ai.tsx",
-          "type": "registry:component",
-          "target": "components/editor/plate-editor.tsx"
+          "path": "src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
+          "type": "registry:component"
         },
         {
-          "path": "src/registry/components/editor/editor-kit-ai.tsx",
-          "type": "registry:component",
-          "target": "components/editor/editor-kit.tsx"
-        },
-        {
-          "path": "src/registry/components/editor/settings.tsx",
+          "path": "src/registry/blocks/editor-ai/components/editor/editor-kit.tsx",
           "type": "registry:component"
         }
       ],
@@ -3880,9 +3707,7 @@
       "name": "editor-select",
       "type": "registry:block",
       "description": "A multi-select editor",
-      "dependencies": [
-        "@udecode/cn"
-      ],
+      "dependencies": [],
       "registryDependencies": [
         "https://platejs.org/r/plate-ui",
         "https://platejs.org/r/select-editor-demo"
@@ -3906,14 +3731,14 @@
       "type": "registry:block",
       "description": "A basic editor",
       "dependencies": [
-        "@udecode/cn",
         "@udecode/plate-basic-elements",
         "@udecode/plate-basic-marks"
       ],
       "registryDependencies": [
         "https://platejs.org/r/plate-ui",
         "https://platejs.org/r/editor",
-        "https://platejs.org/r/basic-nodes-kit"
+        "https://platejs.org/r/basic-nodes-kit",
+        "https://platejs.org/r/basic-marks-kit"
       ],
       "files": [
         {
@@ -3922,9 +3747,8 @@
           "target": "app/editor/page.tsx"
         },
         {
-          "path": "src/registry/components/editor/plate-editor-basic.tsx",
-          "type": "registry:component",
-          "target": "components/editor/plate-editor.tsx"
+          "path": "src/registry/blocks/editor-basic/components/editor/plate-editor.tsx",
+          "type": "registry:component"
         }
       ],
       "categories": [
@@ -4124,7 +3948,6 @@
       "type": "registry:example",
       "description": "Renders AI ghost text suggestions at the cursor position.",
       "dependencies": [
-        "@udecode/cn",
         "@udecode/plate-ai",
         "@udecode/plate-markdown"
       ],
@@ -4156,12 +3979,9 @@
       "type": "registry:example",
       "title": "Select Editor Form",
       "description": "A form with a select editor component for managing labels.",
-      "dependencies": [
-        "@udecode/cn"
-      ],
       "registryDependencies": [
         "form",
-        "https://platejs.org/r/button",
+        "button",
         "https://platejs.org/r/select-editor"
       ],
       "files": [
@@ -4181,9 +4001,6 @@
     {
       "name": "controlled-demo",
       "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
       "registryDependencies": [
         "https://platejs.org/r/editor",
         "button"
@@ -4199,7 +4016,6 @@
       "name": "hundreds-blocks-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn",
         "@udecode/plate-basic-elements",
         "@udecode/plate-basic-marks"
       ],
@@ -4220,9 +4036,6 @@
     {
       "name": "hundreds-editors-demo",
       "type": "registry:example",
-      "dependencies": [
-        "@udecode/cn"
-      ],
       "registryDependencies": [
         "https://platejs.org/r/editor"
       ],
@@ -4241,7 +4054,6 @@
       "name": "multiple-editors-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn",
         "@udecode/plate-basic-elements",
         "@udecode/plate-basic-marks",
         "@udecode/plate-media"
@@ -4277,7 +4089,6 @@
       "name": "version-history-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn",
         "@udecode/plate-basic-marks",
         "@udecode/plate-diff",
         "lodash"
@@ -4296,7 +4107,6 @@
       "name": "preview-markdown-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn",
         "prismjs"
       ],
       "registryDependencies": [
@@ -4318,7 +4128,6 @@
       "name": "markdown-to-slate-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn",
         "remark-emoji"
       ],
       "registryDependencies": [
@@ -4337,7 +4146,6 @@
       "type": "registry:example",
       "description": "Real-time collaboration with cursors and selections.",
       "dependencies": [
-        "@udecode/cn",
         "@udecode/plate-yjs",
         "nanoid"
       ],
@@ -4358,7 +4166,6 @@
       "name": "installation-next-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn",
         "@udecode/plate-basic-elements",
         "@udecode/plate-basic-marks"
       ],
@@ -4381,7 +4188,6 @@
       "name": "tabbable-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/cn",
         "@udecode/plate-tabbable"
       ],
       "registryDependencies": [
@@ -4437,6 +4243,7 @@
         "https://platejs.org/r/block-selection-docs",
         "https://platejs.org/r/callout-docs",
         "https://platejs.org/r/caption-docs",
+        "https://platejs.org/r/code-block-docs",
         "https://platejs.org/r/collaboration-docs",
         "https://platejs.org/r/column-docs",
         "https://platejs.org/r/combobox-docs",
@@ -4467,7 +4274,6 @@
         "https://platejs.org/r/font-docs",
         "https://platejs.org/r/forced-layout-docs",
         "https://platejs.org/r/form-docs",
-        "https://platejs.org/r/highlight-docs",
         "https://platejs.org/r/horizontal-rule-docs",
         "https://platejs.org/r/html-docs",
         "https://platejs.org/r/indent-docs",
@@ -4480,7 +4286,6 @@
         "https://platejs.org/r/installation-react-docs",
         "https://platejs.org/r/installation-rsc-docs",
         "https://platejs.org/r/installation-docs",
-        "https://platejs.org/r/kbd-docs",
         "https://platejs.org/r/line-height-docs",
         "https://platejs.org/r/link-docs",
         "https://platejs.org/r/list-classic-docs",
@@ -4491,7 +4296,6 @@
         "https://platejs.org/r/mention-docs",
         "https://platejs.org/r/migration-slate-to-plate-docs",
         "https://platejs.org/r/multi-select-docs",
-        "https://platejs.org/r/node-id-docs",
         "https://platejs.org/r/playwright-docs",
         "https://platejs.org/r/plugin-components-docs",
         "https://platejs.org/r/plugin-context-docs",
@@ -4995,6 +4799,19 @@
       "type": "registry:file"
     },
     {
+      "description": "Documentation for Code Block",
+      "files": [
+        {
+          "path": "../../docs/code-block.mdx",
+          "target": "content/docs/plate/plugins/code-block.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "code-block-docs",
+      "title": "Code Block",
+      "type": "registry:file"
+    },
+    {
       "description": "Real-time collaboration with Yjs",
       "files": [
         {
@@ -5385,19 +5202,6 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Highlight",
-      "files": [
-        {
-          "path": "../../docs/highlight.mdx",
-          "target": "content/docs/plate/plugins/highlight.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "highlight-docs",
-      "title": "Highlight",
-      "type": "registry:file"
-    },
-    {
       "description": "Documentation for Horizontal Rule",
       "files": [
         {
@@ -5554,19 +5358,6 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Keyboard Input",
-      "files": [
-        {
-          "path": "../../docs/kbd.mdx",
-          "target": "content/docs/plate/plugins/kbd.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "kbd-docs",
-      "title": "Keyboard Input",
-      "type": "registry:file"
-    },
-    {
       "description": "Documentation for Line Height",
       "files": [
         {
@@ -5694,19 +5485,6 @@
       ],
       "name": "multi-select-docs",
       "title": "Multi Select",
-      "type": "registry:file"
-    },
-    {
-      "description": "Documentation for Node ID",
-      "files": [
-        {
-          "path": "../../docs/node-id.mdx",
-          "target": "content/docs/plate/plugins/node-id.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "node-id-docs",
-      "title": "Node ID",
       "type": "registry:file"
     },
     {

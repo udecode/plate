@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TSuggestionData } from '@udecode/plate-suggestion';
+import type { TSuggestionData } from '@udecode/plate';
 
 import { type RenderNodeWrapper, usePluginOption } from '@udecode/plate/react';
 import { CornerDownLeftIcon } from 'lucide-react';

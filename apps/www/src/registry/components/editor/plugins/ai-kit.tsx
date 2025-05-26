@@ -46,8 +46,8 @@ export const aiChatPlugin = AIChatPlugin.configure({
     } as UseChatOptions,
   },
   useHooks: ({ editor, getOption }) => {
-    const mode = usePluginOption<AIChatPluginConfig>(
-      { key: KEYS.aiChat },
+    const mode = usePluginOption(
+      { key: KEYS.aiChat } as AIChatPluginConfig,
       'mode'
     );
 

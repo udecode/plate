@@ -10,12 +10,15 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## May 2025 #22
 
-### May 18 #22.7
+### May 25 #22.7
+
+**Plate 49**
 
 Merging files, using a more consistent naming convention, and removing unused `export` statements.
 
 Components:
 
+- Now that basic nodes have a default HTML element, you can remove `withProps(..., { as: '...' })` plugin components.
 - To improve decoupling, plugins are not imported anymore only for their keys. Import `KEYS` from `@udecode/plate` instead, as a unified source of keys.
   - `ParagraphPlugin.key` -> `KEYS.p`
   - `INDENT_LIST_KEYS.listStyleType` -> `KEYS.listType`

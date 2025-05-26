@@ -4,7 +4,6 @@
   "type": "registry:example",
   "description": "Real-time collaboration with cursors and selections.",
   "dependencies": [
-    "@udecode/cn",
     "@udecode/plate-yjs",
     "nanoid"
   ],

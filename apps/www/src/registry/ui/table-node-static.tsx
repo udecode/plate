@@ -1,7 +1,10 @@
 import * as React from 'react';
 
-import type { SlateElementProps } from '@udecode/plate';
-import type { TTableCellElement, TTableElement } from '@udecode/plate-table';
+import type {
+  SlateElementProps,
+  TTableCellElement,
+  TTableElement,
+} from '@udecode/plate';
 
 import { SlateElement } from '@udecode/plate';
 import { BaseTablePlugin } from '@udecode/plate-table';

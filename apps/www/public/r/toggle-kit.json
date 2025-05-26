@@ -6,7 +6,8 @@
     "@udecode/plate-toggle"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/toggle-node"
+    "https://platejs.org/r/toggle-node",
+    "https://platejs.org/r/toggle-toolbar-button"
   ],
   "files": [
     {

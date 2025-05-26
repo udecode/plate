@@ -3,14 +3,15 @@
   "name": "align-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-alignment",
-    "@udecode/plate-heading",
-    "@udecode/plate-media"
+    "@udecode/plate-alignment"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/align-toolbar-button"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/align-kit.tsx",
-      "content": "'use client';\n\nimport { AlignPlugin } from '@udecode/plate-alignment/react';\nimport { HEADING_LEVELS } from '@udecode/plate-heading';\nimport { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';\nimport { ParagraphPlugin } from '@udecode/plate/react';\n\nexport const AlignKit = [\n  AlignPlugin.extend({\n    inject: {\n      targetPlugins: [\n        ParagraphPlugin.key,\n        ...HEADING_LEVELS,\n        ImagePlugin.key,\n        MediaEmbedPlugin.key,\n      ],\n    },\n  }),\n];\n",
+      "content": "'use client';\n\nimport { KEYS } from '@udecode/plate';\nimport { AlignPlugin } from '@udecode/plate-alignment/react';\n\nexport const AlignKit = [\n  AlignPlugin.extend({\n    inject: {\n      targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.mediaEmbed],\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

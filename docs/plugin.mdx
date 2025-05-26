@@ -126,6 +126,8 @@ const ExamplePlugin = createPlatePlugin({
 You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with an `align` property.
 
 ```ts showLineNumbers
+import { KEYS } from '@udecode/plate';
+
 const AlignPlugin = createPlatePlugin({
   key: 'align',
   inject: {
@@ -135,7 +137,7 @@ const AlignPlugin = createPlatePlugin({
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
-    targetPlugins: [ParagraphPlugin.key],
+    targetPlugins: [KEYS.p],
     // This is injected into all `targetPlugins`. In this example, ParagraphPlugin will be able to deserialize `textAlign` style.
     targetPluginToInject: ({ editor, plugin }) => ({
       parsers: {

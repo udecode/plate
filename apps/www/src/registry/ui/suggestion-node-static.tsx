@@ -1,7 +1,6 @@
 import * as React from 'react';
 
-import type { SlateLeafProps } from '@udecode/plate';
-import type { TSuggestionText } from '@udecode/plate-suggestion';
+import type { SlateLeafProps, TSuggestionText } from '@udecode/plate';
 
 import { SlateLeaf } from '@udecode/plate';
 import { BaseSuggestionPlugin } from '@udecode/plate-suggestion';

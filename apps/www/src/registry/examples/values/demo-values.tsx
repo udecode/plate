@@ -8,6 +8,7 @@ import { basicMarksValue } from './basic-marks-value';
 import { basicNodesValue } from './basic-nodes-value';
 import { blockMenuValue } from './block-menu-value';
 import { blockSelectionValue } from './block-selection-value';
+import { codeBlockValue } from './code-block-value';
 import { columnValue } from './column-value';
 import { commentsValue } from './comments-value';
 import { copilotValue } from './copilot-value';
@@ -26,11 +27,8 @@ import { exitBreakValue } from './exit-break-value';
 import { findReplaceValue } from './find-replace-value';
 import { floatingToolbarValue } from './floating-toolbar-value';
 import { fontValue } from './font-value';
-import { highlightValue } from './highlight-value';
-import { horizontalRuleValue } from './horizontal-rule-value';
 import { iframeValue } from './iframe-value';
 import { indentValue } from './indent-value';
-import { kbdValue } from './kbd-value';
 import { lineHeightValue } from './line-height-value';
 import { linkValue } from './link-value';
 import { listValue as listClassicValue } from './list-classic-value';
@@ -59,6 +57,7 @@ const values = {
   'block-placeholder': blockPlaceholderValue,
   'block-selection': blockSelectionValue,
   // callout: calloutValue,
+  'code-block': codeBlockValue,
   column: columnValue,
   comments: commentsValue,
   copilot: copilotValue,
@@ -77,13 +76,10 @@ const values = {
   'find-replace': findReplaceValue,
   'floating-toolbar': floatingToolbarValue,
   font: fontValue,
-  highlight: highlightValue,
-  'horizontal-rule': horizontalRuleValue,
   html: deserializeHtmlValue,
   // 'huge-document': hugeDocumentValue,
   iframe: iframeValue,
   indent: indentValue,
-  kbd: kbdValue,
   'line-height': lineHeightValue,
   link: linkValue,
   list: listValue,

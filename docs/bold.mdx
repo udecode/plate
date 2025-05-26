@@ -1,0 +1,55 @@
+---
+title: Bold
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Apply bold formatting to emphasize important text
+- Keyboard shortcut support for quick formatting
+- Renders as `<strong>` HTML element by default
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-marks
+```
+
+## Usage
+
+```tsx
+import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+
+const plugins = [
+  // ...otherPlugins,
+  BoldPlugin,
+];
+```
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + B">
+    Toggle the bold formatting for the selected text.
+  </KeyTableItem>
+</KeyTable>
+
+## Plugins
+
+### `BoldPlugin`
+
+Plugin for bold text formatting. Renders as `<strong>` HTML element by default.
+
+## Transforms
+
+### `editor.tf.bold.toggle`
+
+Toggles the bold formatting for the selected text.

@@ -48,9 +48,6 @@ export const registryBlocks: Registry['items'] = [
       'fixed-toolbar-kit',
       'floating-toolbar-kit',
       'font-kit',
-      'highlight-kit',
-      'hr-kit',
-      'kbd-kit',
       'line-height-kit',
       'link-kit',
       'list-kit',
@@ -108,7 +105,7 @@ export const registryBlocks: Registry['items'] = [
   },
   {
     categories: ['Serializers'],
-    dependencies: ['@udecode/cn', 'next-themes'],
+    dependencies: ['next-themes'],
     files: [
       {
         path: 'blocks/slate-to-html/page.tsx',

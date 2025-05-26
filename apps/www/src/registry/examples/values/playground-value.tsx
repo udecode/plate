@@ -170,7 +170,7 @@ export const playgroundValue: Value = [
       {
         children: [{ text: 'headings' }],
         type: 'a',
-        url: '/docs/basic-elements',
+        url: '/docs/heading',
       },
       { text: ', ' },
       {
@@ -182,7 +182,7 @@ export const playgroundValue: Value = [
       {
         children: [{ text: 'quotes' }],
         type: 'a',
-        url: '/docs/basic-elements',
+        url: '/docs/blockquote',
       },
       { text: '. Apply ' },
       {

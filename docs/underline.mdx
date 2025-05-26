@@ -1,0 +1,55 @@
+---
+title: Underline
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Apply underline formatting to text
+- Keyboard shortcut support for quick formatting
+- Renders as `<u>` HTML element by default
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-marks
+```
+
+## Usage
+
+```tsx
+import { UnderlinePlugin } from '@udecode/plate-basic-marks/react';
+
+const plugins = [
+  // ...otherPlugins,
+  UnderlinePlugin,
+];
+```
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + U">
+    Toggle the underline formatting for the selected text.
+  </KeyTableItem>
+</KeyTable>
+
+## Plugins
+
+### `UnderlinePlugin`
+
+Plugin for underline text formatting. Renders as `<u>` HTML element by default.
+
+## Transforms
+
+### `editor.tf.underline.toggle`
+
+Toggles the underline formatting for the selected text.

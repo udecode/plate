@@ -125,6 +125,8 @@ const ExamplePlugin = createPlatePlugin({
 您可能希望将类名或 CSS 属性注入到具有特定属性的任何节点中。例如，以下插件在具有 `align` 属性的段落上设置 `textAlign` CSS 属性。
 
 ```ts showLineNumbers
+import { KEYS } from '@udecode/plate';
+
 const AlignPlugin = createPlatePlugin({
   key: 'align',
   inject: {
@@ -134,7 +136,7 @@ const AlignPlugin = createPlatePlugin({
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
-    targetPlugins: [ParagraphPlugin.key],
+    targetPlugins: [KEYS.p],
     // 这将注入到所有 `targetPlugins` 中。在此示例中，ParagraphPlugin 将能够反序列化 `textAlign` 样式。
     targetPluginToInject: ({ editor, plugin }) => ({
       parsers: {

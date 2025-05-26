@@ -22,6 +22,7 @@ npm install @udecode/plate-tabbable
 
 ```tsx
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
+import { KEYS } from '@udecode/plate';
 
 const plugins = [
   // ...其他插件
@@ -41,8 +42,8 @@ Tabbable 插件可能会与处理 `Tab` 键的其他插件产生冲突，例如�
 
 ```tsx
 query: (editor) => {
-  const inList = findNode(editor, { match: { type: ListItemPlugin.key } });
-  const inCodeBlock = findNode(editor, { match: { type: CodeBlockPlugin.key } });
+  const inList = findNode(editor, { match: { type: KEYS.lic } });
+  const inCodeBlock = findNode(editor, { match: { type: KEYS.codeBlock } });
   return !inList && !inCodeBlock;
 },
 ```

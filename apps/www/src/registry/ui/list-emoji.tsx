@@ -1,7 +1,6 @@
 import * as React from 'react';
 
-import type { SlateRenderElementProps } from '@udecode/plate';
-import type { TIndentElement } from '@udecode/plate-indent';
+import type { SlateRenderElementProps, TIndentElement } from '@udecode/plate';
 
 export const FireMarker = (
   props: Omit<SlateRenderElementProps, 'children'>

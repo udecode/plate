@@ -1,0 +1,49 @@
+---
+title: Subscript
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Format text as subscript for mathematical expressions or chemical formulas
+- Keyboard shortcut support for quick formatting
+- Renders as `<sub>` HTML element by default
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-marks
+```
+
+## Usage
+
+```tsx
+import { SubscriptPlugin } from '@udecode/plate-basic-marks/react';
+
+const plugins = [
+  // ...otherPlugins,
+  SubscriptPlugin.configure({
+    shortcuts: { toggle: { keys: 'mod+comma' } },
+  }),
+];
+```
+
+## Plugins
+
+### `SubscriptPlugin`
+
+Plugin for subscript text formatting. Renders as `<sub>` HTML element by default.
+
+## Transforms
+
+### `editor.tf.subscript.toggle`
+
+Toggles the subscript formatting for the selected text. 

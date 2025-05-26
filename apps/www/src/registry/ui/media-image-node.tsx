@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TImageElement } from '@udecode/plate-media';
+import type { TImageElement } from '@udecode/plate';
 import type { PlateElementProps } from '@udecode/plate/react';
 
 import { useDraggable } from '@udecode/plate-dnd';

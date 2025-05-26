@@ -2,14 +2,11 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "delete-kit",
   "type": "registry:component",
-  "dependencies": [
-    "@udecode/plate-horizontal-rule",
-    "@udecode/plate-media"
-  ],
+  "dependencies": [],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/delete-kit.tsx",
-      "content": "'use client';\n\nimport { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate';\nimport { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';\nimport {\n  AudioPlugin,\n  FilePlugin,\n  ImagePlugin,\n  MediaEmbedPlugin,\n  VideoPlugin,\n} from '@udecode/plate-media/react';\n\nexport const DeleteKit = [\n  SelectOnBackspacePlugin.configure({\n    options: {\n      query: {\n        allow: [\n          ImagePlugin.key,\n          VideoPlugin.key,\n          AudioPlugin.key,\n          FilePlugin.key,\n          MediaEmbedPlugin.key,\n          HorizontalRulePlugin.key,\n        ],\n      },\n    },\n  }),\n  DeletePlugin,\n];\n",
+      "content": "'use client';\n\nimport { DeletePlugin, KEYS, SelectOnBackspacePlugin } from '@udecode/plate';\n\nexport const DeleteKit = [\n  SelectOnBackspacePlugin.configure({\n    options: {\n      query: {\n        allow: [\n          KEYS.img,\n          KEYS.video,\n          KEYS.audio,\n          KEYS.file,\n          KEYS.mediaEmbed,\n          KEYS.hr,\n        ],\n      },\n    },\n  }),\n  DeletePlugin,\n];\n",
       "type": "registry:component"
     }
   ]

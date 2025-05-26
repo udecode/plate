@@ -14,10 +14,7 @@ import {
   TableRowElement,
 } from '@/registry/ui/table-node';
 
-import { NodeIdKit } from './node-id-kit';
-
 export const TableKit = [
-  ...NodeIdKit,
   TablePlugin.withComponent(TableElement),
   TableRowPlugin.withComponent(TableRowElement),
   TableCellPlugin.withComponent(TableCellElement),

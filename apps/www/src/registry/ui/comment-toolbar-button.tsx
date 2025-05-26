@@ -6,12 +6,12 @@ import { getDraftCommentKey } from '@udecode/plate-comments';
 import { useEditorPlugin } from '@udecode/plate/react';
 import { MessageSquareTextIcon } from 'lucide-react';
 
-import { commentsPlugin } from '@/registry/components/editor/plugins/comment-kit';
+import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';
 
 import { ToolbarButton } from './toolbar';
 
 export function CommentToolbarButton() {
-  const { editor, setOption, tf } = useEditorPlugin(commentsPlugin);
+  const { editor, setOption, tf } = useEditorPlugin(commentPlugin);
 
   const onCommentToolbarButton = React.useCallback(() => {
     if (!editor.selection) return;

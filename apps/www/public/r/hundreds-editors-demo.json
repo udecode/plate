@@ -2,9 +2,6 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "hundreds-editors-demo",
   "type": "registry:example",
-  "dependencies": [
-    "@udecode/cn"
-  ],
   "registryDependencies": [
     "https://platejs.org/r/editor"
   ],

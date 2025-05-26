@@ -1,5 +1,6 @@
 'use client';
 
+import { KEYS } from '@udecode/plate';
 import { CaptionPlugin } from '@udecode/plate-caption/react';
 import {
   AudioPlugin,
@@ -30,13 +31,9 @@ export const MediaKit = [
   FilePlugin.withComponent(FileElement),
   CaptionPlugin.configure({
     options: {
-      plugins: [
-        ImagePlugin,
-        VideoPlugin,
-        AudioPlugin,
-        FilePlugin,
-        MediaEmbedPlugin,
-      ],
+      query: {
+        allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
+      },
     },
   }),
   PlaceholderPlugin.configure({

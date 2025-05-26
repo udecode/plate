@@ -113,7 +113,7 @@ const editor = createPlateEditor({
 
 ## Advanced Configuration
 
-### Id
+### Editor ID
 
 Set a custom id for the editor:
 
@@ -125,6 +125,79 @@ const editor = createPlateEditor({
 ```
 
 If defined, you should always pass the `id` as the first argument in any editor retrieval methods.
+
+### Node ID
+
+Plate includes a built-in system for automatically assigning unique IDs to nodes, which is crucial for certain plugins and for data persistence strategies that rely on stable identifiers.
+
+This feature is enabled by default. You can customize its behavior or disable it entirely through the `nodeId` option.
+
+#### Configuration
+
+To configure Node ID behavior, pass an object to the `nodeId` property when creating your editor:
+
+```ts
+const editor = usePlateEditor({
+  // ... other plugins and options
+  nodeId: {
+    // Function to generate IDs (default: nanoid(10))
+    idCreator: () => uuidv4(),
+
+    // Exclude inline elements from getting IDs (default: true)
+    filterInline: true, 
+
+    // Exclude text nodes from getting IDs (default: true)
+    filterText: true,
+
+    // Reuse IDs on undo/redo and copy/paste if not in document (default: false)
+    // Set to true if IDs should be stable across such operations.
+    reuseId: false,
+
+    // Normalize all nodes in initial value (default: false - only checks first/last)
+    // Set to true to ensure all initial nodes get IDs if missing.
+    normalizeInitialValue: false, 
+    
+    // Prevent overriding IDs when inserting nodes with an existing id (default: false)
+    disableInsertOverrides: false,
+
+    // Only allow specific node types to receive IDs (default: all)
+    allow: ['p', 'h1'], 
+
+    // Exclude specific node types from receiving IDs (default: [])
+    exclude: ['code_block'],
+
+    // Custom filter function to determine if a node should get an ID
+    filter: ([node, path]) => {
+      // Example: Only ID on top-level blocks
+      return path.length === 1;
+    },
+  },
+});
+```
+
+<Callout type="note">
+  The `NodeIdPlugin` (which handles this) is part of the core plugins and is automatically included. You only need to specify the `nodeId` option if you want to customize its default behavior.
+</Callout>
+
+#### Disabling Node IDs
+
+If you don't need automatic node IDs, you can disable the feature:
+
+```ts
+const editor = usePlateEditor({
+  // ... other plugins and options
+  nodeId: false, // This will disable the NodeIdPlugin
+});
+```
+
+By disabling this, certain plugins that rely on node IDs will not function properly. The following plugins require block IDs to work:
+
+- **[Block Selection](/docs/block-selection)** - Needs IDs to track which blocks are selected
+- **[Block Menu](/docs/block-menu)** - Requires IDs to show context menus for specific blocks  
+- **[Drag & Drop](/docs/dnd)** - Uses IDs to identify blocks during drag operations
+- **[Table](/docs/table)** - Relies on IDs for cell selection
+- **[Table of Contents](/docs/toc)** - Needs heading IDs for navigation and scrolling
+- **[Toggle](/docs/toggle)** - Uses IDs to track which toggles are open/closed
 
 ### Normalization
 
@@ -301,11 +374,3 @@ const editorExplicit = createPlateEditor<MyValue, typeof TablePlugin | typeof Li
 });
 ```
 
-### Benefits
-
-We strongly recommend using typed editors for the following reasons:
-
-1. **Type Safety**: The editor enforces the structure of your document, preventing invalid operations.
-2. **Autocomplete**: Your IDE can provide better autocomplete suggestions based on your custom types.
-3. **Refactoring**: Changing types in one place will highlight necessary changes throughout your codebase.
-4. **Documentation**: Types serve as a form of self-documentation for your editor's structure and capabilities.

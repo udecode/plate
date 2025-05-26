@@ -93,12 +93,12 @@ Inserts new multi-select element at current selection.
 
 <API name="editor.tf.insert.tag">
 <APIParameters>
-  <APIItem name="props" type="TagLike">
+  <APIItem name="props" type="TTagProps">
     Properties for multi-select element.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="TagLike">
+<APIOptions type="TTagProps">
   <APIItem name="value" type="string">
     Unique value of multi-select element.
   </APIItem>
@@ -112,7 +112,7 @@ Inserts new multi-select element at current selection.
 Hook to get the currently selected tag items in the editor.
 
 <API name="useSelectedItems">
-<APIReturns type="TagLike[]">
+<APIReturns type="TTagProps[]">
   Array of selected tag items with values and properties.
 </APIReturns>
 </API>
@@ -122,7 +122,7 @@ Hook to get the currently selected tag items in the editor.
 Gets all tag items in the editor.
 
 <API name="getSelectedItems">
-<APIReturns type="TagLike[]">
+<APIReturns type="TTagProps[]">
   Array of tag items in editor.
 </APIReturns>
 </API>
@@ -133,7 +133,7 @@ Utility function to compare two sets of tags for equality, ignoring order.
 
 <API name="isEqualTags">
 <APIParameters>
-  <APIItem name="newTags" type="TagLike[]" optional>
+  <APIItem name="newTags" type="TTagProps[]" optional>
     New tags to compare against current editor tags.
   </APIItem>
 </APIParameters>
@@ -185,7 +185,7 @@ Hook to handle combobox behavior in the editor, including text cleanup and item 
   <APIItem name="selectFirstItem" type="() => void">
     Function to select first combobox item.
   </APIItem>
-  <APIItem name="onValueChange" type="(items: TagLike[]) => void" optional>
+  <APIItem name="onValueChange" type="(items: TTagProps[]) => void" optional>
     Callback when selected items change.
   </APIItem>
 </APIOptions>
@@ -202,10 +202,10 @@ type TTagElement = TElement & {
 };
 ```
 
-### `TagLike`
+### `TTagProps`
 
 ```ts
-type TagLike = {
+type TTagProps = {
   value: string;
   [key: string]: unknown;
 };

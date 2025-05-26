@@ -1,0 +1,49 @@
+---
+title: Strikethrough
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Apply strikethrough formatting to indicate deleted or outdated content
+- Keyboard shortcut support for quick formatting
+- Renders as `<s>` HTML element by default
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-marks
+```
+
+## Usage
+
+```tsx
+import { StrikethroughPlugin } from '@udecode/plate-basic-marks/react';
+
+const plugins = [
+  // ...otherPlugins,
+  StrikethroughPlugin.configure({
+    shortcuts: { toggle: { keys: 'mod+shift+x' } },
+  }),
+];
+```
+
+## Plugins
+
+### `StrikethroughPlugin`
+
+Plugin for strikethrough text formatting. Renders as `<s>` HTML element by default.
+
+## Transforms
+
+### `editor.tf.strikethrough.toggle`
+
+Toggles the strikethrough formatting for the selected text.

@@ -16,9 +16,7 @@ title: 软换行
 
 ```tsx
 import { SoftBreakPlugin } from '@udecode/plate/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { TablePlugin } from '@udecode/plate-table/react';
+import { KEYS } from '@udecode/plate';
 
 const plugins = [
   // ...其他插件,
@@ -29,7 +27,7 @@ const plugins = [
         {
           hotkey: 'enter',
           query: {
-            allow: [CodeBlockPlugin.key, BlockquotePlugin.key, TablePlugin.key],
+            allow: [KEYS.codeBlock, KEYS.blockquote, KEYS.table],
           },
         },
       ],

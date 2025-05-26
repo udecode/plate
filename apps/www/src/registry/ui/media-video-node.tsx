@@ -4,7 +4,7 @@ import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import ReactPlayer from 'react-player';
 
-import type { TVideoElement } from '@udecode/plate-media';
+import type { TResizableProps, TVideoElement } from '@udecode/plate';
 import type { PlateElementProps } from '@udecode/plate/react';
 
 import { useDraggable } from '@udecode/plate-dnd';
@@ -24,7 +24,9 @@ import {
 
 export const VideoElement = withHOC(
   ResizableProvider,
-  function VideoElement(props: PlateElementProps<TVideoElement>) {
+  function VideoElement(
+    props: PlateElementProps<TVideoElement & TResizableProps>
+  ) {
     const {
       align = 'center',
       embed,

@@ -18,7 +18,6 @@ import { SuggestionLineBreak } from '@/registry/ui/suggestion-line-break';
 import { SuggestionLeaf } from '@/registry/ui/suggestion-node';
 
 import { discussionPlugin } from './discussion-kit';
-import { SkipMarkKit } from './skip-mark-kit';
 
 export type SuggestionConfig = ExtendConfig<
   BaseSuggestionConfig,
@@ -99,5 +98,4 @@ const suggestionLineBreakPlugin = createPlatePlugin({
 export const SuggestionKit = [
   suggestionPlugin.withComponent(SuggestionLeaf),
   suggestionLineBreakPlugin,
-  ...SkipMarkKit,
 ];

@@ -20,7 +20,7 @@ docs:
 ## 安装
 
 ```bash
-npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-backend
+npm install @udecode/plate-dnd react-dnd react-dnd-html5-backend
 ```
 
 ## 使用
@@ -29,15 +29,13 @@ npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-
 
 ### 添加插件
 
-在你的 Plate 插件数组中包含 `NodeIdPlugin` 和 `DndPlugin`。
+在你的 Plate 插件数组中包含 `DndPlugin`。
 
 ```tsx
 import { DndPlugin } from '@udecode/plate-dnd';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
 
 const plugins = [
   // ...其他插件,
-  NodeIdPlugin,
   DndPlugin,
 ];
 ```

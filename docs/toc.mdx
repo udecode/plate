@@ -21,21 +21,21 @@ docs:
 ## Installation
 
 ```bash
-npm install @udecode/plate-heading @udecode/plate-node-id
+npm install @udecode/plate-basic-elements @udecode/plate-toc
 ```
 
 ## Usage
 
 ```tsx
-import { TocPlugin, HeadingPlugin } from '@udecode/plate-heading/react';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { TocPlugin } from '@udecode/plate-toc/react';
+import { HeadingPlugin } from '@udecode/plate-basic-elements/react';
+import { KEYS } from '@udecode/plate';
 ```
 
 ```tsx
 const plugins = [
   // ...otherPlugins,
   HeadingPlugin,
-  NodeIdPlugin,
   TocPlugin.configure({
     options: {
       topOffset: 80,
@@ -47,7 +47,7 @@ const plugins = [
 ```tsx
 const components = {
   // ...otherComponents,
-  [TocPlugin.key]: TocElement,
+  [KEYS.toc]: TocElement,
 };
 ```
 

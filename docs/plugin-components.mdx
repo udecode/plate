@@ -86,11 +86,13 @@ const ParagraphPlugin = BaseParagraphPlugin.withComponent(ParagraphElement)
 Alternatively, you can specify the component for each plugin key using the `components` option of `createPlateEditor`: 
 
 ```tsx showLineNumbers {5-6}
+import { KEYS } from '@udecode/plate';
+
 const editor = createPlateEditor({
   plugins: [ParagraphPlugin, LinkPlugin],
   components: {
-    [ParagraphPlugin.key]: ParagraphElement,
-    [LinkPlugin.key]: LinkElement,
+    [KEYS.p]: ParagraphElement,
+    [KEYS.link]: LinkElement,
     // ...other components
   },
 });

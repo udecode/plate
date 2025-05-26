@@ -2,10 +2,9 @@
 
 import * as React from 'react';
 
-import type { TSlashInputElement } from '@udecode/plate-slash-command';
 import type { PlateEditor, PlateElementProps } from '@udecode/plate/react';
 
-import { KEYS } from '@udecode/plate';
+import { type TComboboxInputElement, KEYS } from '@udecode/plate';
 import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { PlateElement } from '@udecode/plate/react';
 import {
@@ -207,7 +206,7 @@ const groups: Group[] = [
 ];
 
 export function SlashInputElement(
-  props: PlateElementProps<TSlashInputElement>
+  props: PlateElementProps<TComboboxInputElement>
 ) {
   const { editor, element } = props;
 

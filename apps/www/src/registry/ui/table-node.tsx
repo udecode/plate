@@ -3,14 +3,16 @@
 import * as React from 'react';
 
 import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '@udecode/plate-table';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
-import { type TElement, KEYS, PathApi } from '@udecode/plate';
+import {
+  type TElement,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
+  KEYS,
+  PathApi,
+} from '@udecode/plate';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import {
   BlockSelectionPlugin,

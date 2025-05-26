@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TColumnElement } from '@udecode/plate-layout';
+import type { TColumnElement } from '@udecode/plate';
 import type { PlateElementProps } from '@udecode/plate/react';
 
 import { useComposedRef } from '@udecode/cn';

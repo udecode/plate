@@ -3,7 +3,7 @@ import * as React from 'react';
 import type { SlateEditor, SlateElementProps, TElement } from '@udecode/plate';
 
 import { NodeApi, SlateElement } from '@udecode/plate';
-import { type Heading, BaseTocPlugin, isHeading } from '@udecode/plate-heading';
+import { type Heading, BaseTocPlugin, isHeading } from '@udecode/plate-toc';
 import { cva } from 'class-variance-authority';
 
 import { Button } from '@/components/ui/button';

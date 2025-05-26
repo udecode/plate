@@ -29,12 +29,90 @@ export const pluginsNavItems: SidebarNavItem[] = [
   {
     description: 'Enhance your editor with essential formatting elements.',
     href: '/docs/basic-elements',
-    label: 'Element',
+    items: [
+      {
+        description: 'Create blockquotes to emphasize important information.',
+        href: '/docs/blockquote',
+        label: 'Element',
+        title: 'Blockquote',
+      },
+      {
+        description: 'Create headings of various levels to structure content.',
+        href: '/docs/heading',
+        label: 'Element',
+        title: 'Heading',
+      },
+      {
+        description:
+          'Visually divide and organize content sections with a horizontal line.',
+        href: '/docs/horizontal-rule',
+        label: 'Element',
+        title: 'Horizontal Rule',
+      },
+    ],
     title: 'Basic Elements',
   },
   {
     description: 'Set of essential text formatting options.',
     href: '/docs/basic-marks',
+    items: [
+      {
+        description: 'Apply bold formatting to emphasize important text.',
+        href: '/docs/bold',
+        label: 'Leaf',
+        title: 'Bold',
+      },
+      {
+        description:
+          'Apply italic formatting for emphasis or stylistic purposes.',
+        href: '/docs/italic',
+        label: 'Leaf',
+        title: 'Italic',
+      },
+      {
+        description: 'Apply underline formatting to text.',
+        href: '/docs/underline',
+        label: 'Leaf',
+        title: 'Underline',
+      },
+      {
+        description:
+          'Apply strikethrough formatting to indicate deleted content.',
+        href: '/docs/strikethrough',
+        label: 'Leaf',
+        title: 'Strikethrough',
+      },
+      {
+        description: 'Format inline code snippets and technical terms.',
+        href: '/docs/code',
+        label: 'Leaf',
+        title: 'Code',
+      },
+      {
+        description: 'Format text as subscript for mathematical expressions.',
+        href: '/docs/subscript',
+        label: 'Leaf',
+        title: 'Subscript',
+      },
+      {
+        description: 'Format text as superscript for mathematical expressions.',
+        href: '/docs/superscript',
+        label: 'Leaf',
+        title: 'Superscript',
+      },
+      {
+        description: 'Display keyboard shortcuts and key combinations.',
+        href: '/docs/kbd',
+        label: 'Leaf',
+        title: 'Kbd',
+      },
+      {
+        description: 'Highlight important text with background colors.',
+        href: '/docs/highlight',
+        label: 'Leaf',
+        title: 'Highlight',
+      },
+    ],
     label: 'Leaf',
     title: 'Basic Marks',
   },
@@ -63,6 +141,12 @@ export const pluginsNavItems: SidebarNavItem[] = [
     description: 'Add captions to your blocks.',
     href: '/docs/caption',
     title: 'Caption',
+  },
+  {
+    description: 'Display code with syntax highlighting.',
+    href: '/docs/code-block',
+    label: 'Element',
+    title: 'Code Block',
   },
   {
     description: 'Collaborate with others in a single document.',
@@ -128,43 +212,14 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Excalidraw',
   },
   {
-    description: 'Exit a large block using a shortcut.',
-    href: '/docs/exit-break',
-    title: 'Exit Break',
-  },
-  {
     description: 'Provide extended formatting options for document content.',
     href: '/docs/font',
     title: 'Font',
   },
   {
-    description: 'Strict document structure.',
-    href: '/docs/forced-layout',
-    title: 'Forced Layout',
-  },
-  {
-    description: 'Mark and reference text for review.',
-    href: '/docs/highlight',
-    label: 'Leaf',
-    title: 'Highlight',
-  },
-  {
-    description:
-      'Visually divide and organize content sections with a horizontal line.',
-    href: '/docs/horizontal-rule',
-    label: 'Element',
-    title: 'Horizontal Rule',
-  },
-  {
     description: 'Customize text indentation.',
     href: '/docs/indent',
     title: 'Indent',
-  },
-  {
-    description: 'Keyboard input markup.',
-    href: '/docs/kbd',
-    label: 'Leaf',
-    title: 'Keyboard Input',
   },
   {
     description: 'Adjust the height between lines of text.',
@@ -207,23 +262,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Multi Select',
   },
   {
-    description: 'Automatically assign unique IDs to nodes in the document.',
-    href: '/docs/node-id',
-    title: 'Node ID',
-  },
-  {
-    description: 'Reset the block type using rules.',
-    href: '/docs/reset-node',
-    title: 'Reset Node',
-  },
-  {
-    description:
-      'Customize selection and deletion behavior for specific node types.',
-    href: '/docs/select',
-    label: 'New',
-    title: 'Select',
-  },
-  {
     description: 'Copy paste from CSV to Slate.',
     href: '/docs/csv',
     title: 'Serializing CSV',
@@ -240,21 +278,10 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Serializing Markdown',
   },
   {
-    description: 'Restrict the editor to a single block.',
-    href: '/docs/single-line',
-    title: 'Single Line',
-  },
-  {
     description:
       'Slash command menu for quick insertion of various content types.',
     href: '/docs/slash-command',
     title: 'Slash Command',
-  },
-  {
-    description:
-      'Insert line breaks within a block of text without starting a new block.',
-    href: '/docs/soft-break',
-    title: 'Soft Break',
   },
   {
     description: 'Maintain a consistent tab order for tabbable elements.',
@@ -281,9 +308,48 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'Toggle',
   },
   {
-    description: 'Ensure a trailing block is always present in the document.',
-    href: '/docs/trailing-block',
-    title: 'Trailing Block',
+    items: [
+      {
+        description: 'Exit a large block using a shortcut.',
+        href: '/docs/exit-break',
+        title: 'Exit Break',
+      },
+      {
+        description: 'Strict document structure.',
+        href: '/docs/forced-layout',
+        title: 'Forced Layout',
+      },
+      {
+        description: 'Reset the block type using rules.',
+        href: '/docs/reset-node',
+        title: 'Reset Node',
+      },
+      {
+        description:
+          'Customize selection and deletion behavior for specific node types.',
+        href: '/docs/select',
+        label: 'New',
+        title: 'Select',
+      },
+      {
+        description: 'Restrict the editor to a single block.',
+        href: '/docs/single-line',
+        title: 'Single Line',
+      },
+      {
+        description:
+          'Insert line breaks within a block of text without starting a new block.',
+        href: '/docs/soft-break',
+        title: 'Soft Break',
+      },
+      {
+        description:
+          'Ensure a trailing block is always present in the document.',
+        href: '/docs/trailing-block',
+        title: 'Trailing Block',
+      },
+    ],
+    title: 'Utilities',
   },
 ];
 

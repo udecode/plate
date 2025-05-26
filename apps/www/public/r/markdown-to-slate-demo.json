@@ -3,7 +3,6 @@
   "name": "markdown-to-slate-demo",
   "type": "registry:example",
   "dependencies": [
-    "@udecode/cn",
     "remark-emoji"
   ],
   "registryDependencies": [

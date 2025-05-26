@@ -164,7 +164,7 @@ export const playgroundValue: Value = [
       {
         children: [{ text: '标题' }],
         type: 'a',
-        url: '/docs/basic-elements',
+        url: '/docs/heading',
       },
       { text: '、' },
       {
@@ -176,7 +176,7 @@ export const playgroundValue: Value = [
       {
         children: [{ text: '引用' }],
         type: 'a',
-        url: '/docs/basic-elements',
+        url: '/docs/blockquote',
       },
       { text: ' 来组织您的内容。应用 ' },
       {

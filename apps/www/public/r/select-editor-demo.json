@@ -4,12 +4,9 @@
   "type": "registry:example",
   "title": "Select Editor Form",
   "description": "A form with a select editor component for managing labels.",
-  "dependencies": [
-    "@udecode/cn"
-  ],
   "registryDependencies": [
     "form",
-    "https://platejs.org/r/button",
+    "button",
     "https://platejs.org/r/select-editor"
   ],
   "files": [

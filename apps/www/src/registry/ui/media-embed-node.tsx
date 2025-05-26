@@ -4,7 +4,7 @@ import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
 
-import type { TMediaEmbedElement } from '@udecode/plate-media';
+import type { TMediaEmbedElement } from '@udecode/plate';
 import type { PlateElementProps } from '@udecode/plate/react';
 
 import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';

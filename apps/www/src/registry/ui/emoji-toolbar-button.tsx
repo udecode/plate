@@ -5,7 +5,6 @@ import * as React from 'react';
 import type { Emoji } from '@emoji-mart/data';
 
 import * as Popover from '@radix-ui/react-popover';
-import { cn } from '@/lib/utils';
 import {
   type EmojiCategoryList,
   type EmojiIconList,
@@ -38,6 +37,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 import { ToolbarButton } from '@/registry/ui/toolbar';
 
 export function EmojiToolbarButton({

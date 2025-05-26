@@ -33,6 +33,55 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   <APIItem name="maxLength" type="number" optional>
     Specifies the maximum number of characters allowed in the editor.
   </APIItem>
+  <APIItem name="nodeId" type="object | boolean" optional>
+    Configuration for automatic node ID generation and management.
+    <APISubList>
+      <APISubListItem parent="nodeId" name="disableInsertOverrides" type="boolean" optional>
+        Disable using existing IDs when inserting nodes.
+        - When `false`: Keeps existing IDs if they don't exist in document
+        - When `true`: Always generates new IDs
+        - **Default:** `false`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="filterInline" type="boolean" optional>
+        Filter inline Element nodes from receiving IDs.
+        - **Default:** `true`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="filterText" type="boolean" optional>
+        Filter Text nodes from receiving IDs.
+        - **Default:** `true`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="idCreator" type="() => any" optional>
+        Function to generate unique IDs.
+        - **Default:** `() => nanoid(10)`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="idKey" type="string" optional>
+        Property key used to store node IDs.
+        - **Default:** `'id'`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="normalizeInitialValue" type="boolean" optional>
+        Whether to normalize all nodes in initial value.
+        - When `false`: Only checks first and last nodes
+        - When `true`: Normalizes all nodes
+        - **Default:** `false`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="reuseId" type="boolean" optional>
+        Reuse IDs on undo/redo and copy/paste.
+        - When `true`: Keeps IDs if they don't exist in document
+        - When `false`: Always generates new IDs (safer across documents)
+        - **Default:** `false`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="allow" type="string[]" optional>
+        Node types that should receive IDs.
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="exclude" type="string[]" optional>
+        Node types that should not receive IDs.
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="filter" type="(node: NodeEntry) => boolean" optional>
+        Custom filter function for nodes that should receive IDs.
+        - **Default:** `() => true`
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
   <APIItem name="selection" type="TSelection" optional>
     Initial selection for the editor.
   </APIItem>

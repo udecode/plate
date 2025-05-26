@@ -12,7 +12,6 @@ import {
 import { insertCallout } from '@udecode/plate-callout';
 import { insertCodeBlock } from '@udecode/plate-code-block';
 import { insertDate } from '@udecode/plate-date';
-import { insertToc } from '@udecode/plate-heading';
 import { insertColumnGroup, toggleColumnGroup } from '@udecode/plate-layout';
 import { triggerFloatingLink } from '@udecode/plate-link/react';
 import { insertEquation, insertInlineEquation } from '@udecode/plate-math';
@@ -24,6 +23,7 @@ import {
 } from '@udecode/plate-media';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import { TablePlugin } from '@udecode/plate-table/react';
+import { insertToc } from '@udecode/plate-toc';
 
 export const STRUCTURAL_TYPES: string[] = [
   KEYS.column,

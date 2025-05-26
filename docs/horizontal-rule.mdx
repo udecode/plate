@@ -5,7 +5,7 @@ docs:
     title: Hr Element
 ---
 
-<ComponentPreview name="horizontal-rule-demo" />
+<ComponentPreview name="basic-elements-demo" />
 
 <PackageInfo>
 
@@ -13,22 +13,33 @@ docs:
 
 - Insert horizontal lines to separate content or indicate topic shifts
 - Type three dashes (`---`) at a new line start to transform into a horizontal rule
+- Renders as `<hr>` HTML element by default
 
 </PackageInfo>
 
 ## Installation
 
 ```bash
-npm install @udecode/plate-horizontal-rule
+npm install @udecode/plate-basic-elements
 ```
 
 ## Usage
 
 ```tsx
+import { HorizontalRulePlugin } from '@udecode/plate-basic-elements/react';
+
+const plugins = [
+  // ...otherPlugins,
+  HorizontalRulePlugin,
+];
+```
+
+### With Autoformat
+
+```tsx
 import { insertNodes, setNodes, KEYS } from '@udecode/plate';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
-import { ParagraphPlugin } from '@udecode/plate/react';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { HorizontalRulePlugin } from '@udecode/plate-basic-elements/react';
 import { SelectOnBackspacePlugin } from '@udecode/plate/react';
 
 const plugins = [
@@ -62,4 +73,4 @@ const plugins = [
 
 ### `HorizontalRulePlugin`
 
-Plugin for inserting horizontal rules to separate content.
+Plugin for inserting horizontal rules to separate content. Horizontal rules are void elements that render as `<hr>` tags by default.

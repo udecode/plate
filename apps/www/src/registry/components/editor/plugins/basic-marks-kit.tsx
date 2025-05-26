@@ -1,26 +1,41 @@
 'use client';
 
-import { withProps } from '@udecode/cn';
 import {
   BoldPlugin,
   CodePlugin,
+  HighlightPlugin,
   ItalicPlugin,
+  KbdPlugin,
   StrikethroughPlugin,
   SubscriptPlugin,
   SuperscriptPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { PlateLeaf } from '@udecode/plate/react';
 
 import { CodeLeaf } from '@/registry/ui/code-node';
+import { HighlightLeaf } from '@/registry/ui/highlight-node';
+import { KbdLeaf } from '@/registry/ui/kbd-node';
 
 export const BasicMarksKit = [
-  BoldPlugin.withComponent(withProps(PlateLeaf, { as: 'strong' })),
-  CodePlugin.withComponent(CodeLeaf),
-  ItalicPlugin.withComponent(withProps(PlateLeaf, { as: 'em' })),
-  StrikethroughPlugin.withComponent(withProps(PlateLeaf, { as: 's' })),
-  UnderlinePlugin.withComponent(withProps(PlateLeaf, { as: 'u' })),
-  SubscriptPlugin.withComponent(withProps(PlateLeaf, { as: 'sub' })),
-  SuperscriptPlugin.withComponent(withProps(PlateLeaf, { as: 'sup' })),
-  // ...SkipMarkKit,
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+  CodePlugin.configure({
+    node: { component: CodeLeaf },
+    shortcuts: { toggle: { keys: 'mod+e' } },
+  }),
+  StrikethroughPlugin.configure({
+    shortcuts: { toggle: { keys: 'mod+shift+x' } },
+  }),
+  SubscriptPlugin.configure({
+    shortcuts: { toggle: { keys: 'mod+comma' } },
+  }),
+  SuperscriptPlugin.configure({
+    shortcuts: { toggle: { keys: 'mod+period' } },
+  }),
+  HighlightPlugin.configure({
+    node: { component: HighlightLeaf },
+    shortcuts: { toggle: { keys: 'mod+shift+h' } },
+  }),
+  KbdPlugin.withComponent(KbdLeaf),
 ];

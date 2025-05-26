@@ -1,6 +1,6 @@
 'use client';
 
-import type { TDateElement } from '@udecode/plate-date';
+import type { TDateElement } from '@udecode/plate';
 import type { PlateElementProps } from '@udecode/plate/react';
 
 import { PlateElement, useReadOnly } from '@udecode/plate/react';

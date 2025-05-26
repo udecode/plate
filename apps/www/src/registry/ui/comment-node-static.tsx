@@ -1,7 +1,6 @@
 import * as React from 'react';
 
-import type { SlateLeafProps } from '@udecode/plate';
-import type { TCommentText } from '@udecode/plate-comments';
+import type { SlateLeafProps, TCommentText } from '@udecode/plate';
 
 import { SlateLeaf } from '@udecode/plate';
 

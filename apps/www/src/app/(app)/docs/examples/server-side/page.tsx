@@ -15,18 +15,24 @@ import {
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
+  BaseBlockquotePlugin,
+  BaseHeadingPlugin,
+  BaseHorizontalRulePlugin,
+} from '@udecode/plate-basic-elements';
+import {
   BaseBoldPlugin,
   BaseCodePlugin,
+  BaseHighlightPlugin,
   BaseItalicPlugin,
+  BaseKbdPlugin,
   BaseStrikethroughPlugin,
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
-import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
 import { BaseCaptionPlugin } from '@udecode/plate-caption';
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
-import { BaseCommentsPlugin } from '@udecode/plate-comments';
+import { BaseCommentPlugin } from '@udecode/plate-comments';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { BaseEmojiPlugin } from '@udecode/plate-emoji';
 import { BaseExcalidrawPlugin } from '@udecode/plate-excalidraw';
@@ -35,12 +41,8 @@ import {
   BaseFontColorPlugin,
   BaseFontSizePlugin,
 } from '@udecode/plate-font';
-import { BaseHeadingPlugin } from '@udecode/plate-heading';
-import { BaseHighlightPlugin } from '@udecode/plate-highlight';
-import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { JuicePlugin } from '@udecode/plate-juice';
-import { BaseKbdPlugin } from '@udecode/plate-kbd';
 import { BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
@@ -48,7 +50,6 @@ import { BaseListPlugin } from '@udecode/plate-list';
 import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
 import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@udecode/plate-media';
 import { BaseMentionPlugin } from '@udecode/plate-mention';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { BaseSlashPlugin } from '@udecode/plate-slash-command';
 import { BaseTabbablePlugin } from '@udecode/plate-tabbable';
 import { BaseTablePlugin } from '@udecode/plate-table';
@@ -107,7 +108,7 @@ export default function RSCPage() {
       BaseMediaEmbedPlugin,
       BaseCaptionPlugin.configure({
         options: {
-          plugins: [BaseImagePlugin, BaseMediaEmbedPlugin],
+          query: { allow: [KEYS.img, KEYS.mediaEmbed] },
         },
       }),
       BaseMentionPlugin,
@@ -183,7 +184,6 @@ export default function RSCPage() {
       BaseAutoformatPlugin,
       BaseEmojiPlugin,
       BaseExitBreakPlugin,
-      NodeIdPlugin,
       BaseResetNodePlugin,
       SelectOnBackspacePlugin.configure({
         options: {
@@ -198,7 +198,7 @@ export default function RSCPage() {
       TrailingBlockPlugin,
 
       // Collaboration
-      BaseCommentsPlugin,
+      BaseCommentPlugin,
 
       // Deserialization
       DocxPlugin,

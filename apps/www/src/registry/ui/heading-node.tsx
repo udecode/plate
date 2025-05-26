@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import type { PlateElementProps } from '@udecode/plate/react';
 
+import { withProps } from '@udecode/cn';
 import { PlateElement } from '@udecode/plate/react';
 import { type VariantProps, cva } from 'class-variance-authority';
 
@@ -34,3 +35,10 @@ export function HeadingElement({
     </PlateElement>
   );
 }
+
+export const H1Element = withProps(HeadingElement, { variant: 'h1' });
+export const H2Element = withProps(HeadingElement, { variant: 'h2' });
+export const H3Element = withProps(HeadingElement, { variant: 'h3' });
+export const H4Element = withProps(HeadingElement, { variant: 'h4' });
+export const H5Element = withProps(HeadingElement, { variant: 'h5' });
+export const H6Element = withProps(HeadingElement, { variant: 'h6' });

@@ -274,7 +274,7 @@ describe('当启用撤销时', () => {
     }) as any;
 
     // 调用处理程序
-    editor.plugins[AutoformatPlugin.key].handlers.onKeyDown({
+    editor.plugins[KEYS.autoformat].handlers.onKeyDown({
       ...getEditorPlugin(editor, AutoformatPlugin),
       event,
     });

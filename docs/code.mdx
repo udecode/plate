@@ -1,0 +1,49 @@
+---
+title: Code
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Format inline code snippets and technical terms
+- Keyboard shortcut support for quick formatting
+- Renders as `<code>` HTML element by default
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-marks
+```
+
+## Usage
+
+```tsx
+import { CodePlugin } from '@udecode/plate-basic-marks/react';
+
+const plugins = [
+  // ...otherPlugins,
+  CodePlugin.configure({
+    shortcuts: { toggle: { keys: 'mod+e' } },
+  }),
+];
+```
+
+## Plugins
+
+### `CodePlugin`
+
+Plugin for inline code text formatting. Renders as `<code>` HTML element by default.
+
+## Transforms
+
+### `editor.tf.code.toggle`
+
+Toggles the code formatting for the selected text. 

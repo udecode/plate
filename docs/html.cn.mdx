@@ -29,7 +29,7 @@ toc: true
 ```tsx title="lib/generate-html.ts"
 import { createSlateEditor, serializeHtml } from '@udecode/plate'; // 基础导入
 // 导入基础插件（不要从 /react 路径导入）
-import { BaseHeadingPlugin } from '@udecode/plate-heading';
+import { BaseHeadingPlugin } from '@udecode/plate-basic-elements';
 // 导入用于渲染的静态组件
 import { ParagraphElementStatic } from '@/components/ui/paragraph-element-static';
 import { HeadingElementStatic } from '@/components/ui/heading-element-static';
@@ -141,7 +141,7 @@ HTML 反序列化允许你将 HTML 内容（字符串或 DOM 元素）转换回 
 ```tsx title="components/my-html-importer.tsx"
 import { PlateEditor, usePlateEditor } from '@udecode/plate/react'; // 客户端专用导入
 // 导入所有需要解析 HTML 的 Plate 插件
-import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HeadingPlugin } from '@udecode/plate-basic-elements/react';
 // ... 以及 bold、italic、table、list 等等
 
 function MyHtmlImporter({ htmlString }: { htmlString: string }) {
@@ -172,22 +172,22 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 
 | HTML 元素 / 样式                                       | Plate 插件（典型）  | 说明                                                                    |
 | :--------------------------------------------------------- | :---------------------- | :----------------------------------------------------------------------- |
-| `<strong>`, `<b>`, `font-weight: 600,700,bold`          | [`BoldPlugin`](/docs/basic-marks)            | 转为 `bold: true` mark。                                           |
-| `<em>`, `<i>`, `font-style: italic`                      | [`ItalicPlugin`](/docs/basic-marks)          | 转为 `italic: true` mark。                                         |
-| `<u>`, `text-decoration: underline`                       | [`UnderlinePlugin`](/docs/basic-marks)       | 转为 `underline: true` mark。                                      |
-| `<s>`, `<del>`, `<strike>`, `text-decoration: line-through` | [`StrikethroughPlugin`](/docs/basic-marks)   | 转为 `strikethrough: true` mark。                                  |
-| `<sub>`, `vertical-align: sub`                            | [`SubscriptPlugin`](/docs/basic-marks)       | 转为 `subscript: true` mark。                                      |
-| `<sup>`, `vertical-align: super`                           | [`SuperscriptPlugin`](/docs/basic-marks)     | 转为 `superscript: true` mark。                                    |
-| `<code>` (非 `<pre>`), `font-family: Consolas`         | [`CodePlugin`](/docs/basic-marks)            | 转为 `code: true` mark（行内代码）。                             |
+| `<strong>`, `<b>`, `font-weight: 600,700,bold`          | [`BoldPlugin`](/docs/bold)            | 转为 `bold: true` mark。                                           |
+| `<em>`, `<i>`, `font-style: italic`                      | [`ItalicPlugin`](/docs/italic)          | 转为 `italic: true` mark。                                         |
+| `<u>`, `text-decoration: underline`                       | [`UnderlinePlugin`](/docs/underline)       | 转为 `underline: true` mark。                                      |
+| `<s>`, `<del>`, `<strike>`, `text-decoration: line-through` | [`StrikethroughPlugin`](/docs/strikethrough)   | 转为 `strikethrough: true` mark。                                  |
+| `<sub>`, `vertical-align: sub`                            | [`SubscriptPlugin`](/docs/subscript)       | 转为 `subscript: true` mark。                                      |
+| `<sup>`, `vertical-align: super`                           | [`SuperscriptPlugin`](/docs/superscript)     | 转为 `superscript: true` mark。                                    |
+| `<code>` (非 `<pre>`), `font-family: Consolas`         | [`CodePlugin`](/docs/code)            | 转为 `code: true` mark（行内代码）。                             |
 | `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | 转为 `kbd: true` mark。                                            |
 | `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-elements)       | 转为段落 element。                                           |
-| `<h1>` - `<h6>`                                            | [`HeadingPlugin`](/docs/basic-elements)         | 转为对应 heading element（`h1` - `h6`）。                |
+| `<h1>` - `<h6>`                                            | [`HeadingPlugin`](/docs/heading)         | 转为对应 heading element（`h1` - `h6`）。                |
 | `<ul>`                                                     | [`ListPlugin`](/docs/list-classic)            | 转为无序列表（`ul` 类型），子项为 `li`。               |
 | `<ol>`                                                     | [`ListPlugin`](/docs/list-classic)            | 转为有序列表（`ol` 类型），子项为 `li`。                 |
 | `<li>`（在 `<ul>` 或 `<ol>` 内）                           | [`ListPlugin`](/docs/list-classic)            | 转为列表项（`li` 类型），子节点为 `lic`。 |
 | `<li>`（带 `aria-level` 实现缩进）                      | [`IndentListPlugin`](/docs/list)      | 转为带 `indent` 和 `listStyleType` 的段落。           |
-| `<blockquote>`                                             | [`BlockquotePlugin`](/docs/basic-elements)      | 转为 blockquote element。                                          |
-| `<pre>`（通常内含 `<code>`）                       | [`CodeBlockPlugin`](/docs/basic-elements)       | 转为 `code_block` element，内容分为 `code_line`。        |
+| `<blockquote>`                                             | [`BlockquotePlugin`](/docs/blockquote)      | 转为 blockquote element。                                          |
+| `<pre>`（通常内含 `<code>`）                       | [`CodeBlockPlugin`](/docs/code-block)       | 转为 `code_block` element，内容分为 `code_line`。        |
 | `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | 转为水平线 element。                                     |
 | `<a>`                                                      | [`LinkPlugin`](/docs/link)            | 转为链接 element（`a` 类型），带 `url` 属性。                 |
 | `<img>`                                                    | [`ImagePlugin`](/docs/media)           | 转为图片 element（`img` 类型），带 `url` 属性。              |
@@ -246,11 +246,11 @@ const MyCustomCodeBlockPlugin = CodeBlockPlugin.extend({
           const lines = textContent.split('\n');
 
           return {
-            type: CodeBlockPlugin.key, // 或 editor.getType(KEYS.codeBlock)
+            type: CodeBlockPlugin.key, // 或 editor.getType(CodeBlockPlugin.key)
             lang: language,
             code: textContent, // 示例：存储完整代码字符串
             children: lines.map((line) => ({
-              type: editor.getType(KEYS.codeLine), // 用 editor.getType 更安全
+              type: editor.getType(CodeLinePlugin.key), // 用 editor.getType 更安全
               children: [{ text: line }],
             })),
           };

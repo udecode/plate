@@ -2,6 +2,16 @@
 '@udecode/plate-utils': major
 ---
 
+- All `T*Element`, `T*Text` node types have been moved to this package. Migration:
+
+```tsx
+// Before
+import { TImageElement } from '@udecode/plate-media';
+
+// After
+import { TImageElement } from '@udecode/plate';
+```
+
 - Remove [`createNodesHOC`, `createNodesWithHOC`](https://github.com/udecode/plate/blob/7afd88089f4a76c896f3edf928b03c7e9f2ab903/packages/plate-utils/src/react/createNodesHOC.tsx), [`createNodeHOC`](https://github.com/udecode/plate/blob/7afd88089f4a76c896f3edf928b03c7e9f2ab903/packages/plate-utils/src/react/createNodeHOC.tsx)
 - Remove `usePlaceholderState`. Migration: use `BlockPlaceholderPlugin` instead of `withPlaceholders`.
 

@@ -95,7 +95,7 @@ export const staticComponents = {
 ```tsx title="app/my-static-page/page.tsx (RSC 示例)"
 import { PlateStatic } from '@udecode/plate';
 import { createSlateEditor } from '@udecode/plate';
-// import { BaseHeadingPlugin, ... } from '@udecode/plate-heading'; // 等等
+// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-elements'; // 等等
 import { staticComponents } from '@/components/static-components';
 
 export default async function MyStaticPage() {
@@ -162,7 +162,7 @@ export default async function MyStaticPage() {
 import { PlateStatic } from '@udecode/plate';
 import { createSlateEditor } from '@udecode/plate';
 // 示例基础插件（确保非 /react 导入）
-// import { BaseHeadingPlugin } from '@udecode/plate-heading';
+// import { BaseHeadingPlugin } from '@udecode/plate-basic-elements';
 import { staticComponents } from '@/components/static-components'; // 你的静态组件映射
 
 export default async function Page() {
@@ -196,7 +196,7 @@ export default async function Page() {
 ```ts title="lib/html-serializer.ts"
 import { createSlateEditor, serializeHtml } from '@udecode/plate';
 import { staticComponents } from '@/components/static-components';
-// import { BaseHeadingPlugin, ... } from '@udecode/plate-heading';
+// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-elements';
 
 async function getDocumentAsHtml(value: any[]) {
   const editor = createSlateEditor({

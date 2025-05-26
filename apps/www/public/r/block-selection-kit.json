@@ -6,13 +6,12 @@
     "@udecode/plate-selection"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/block-selection",
-    "https://platejs.org/r/node-id-kit"
+    "https://platejs.org/r/block-selection"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/block-selection-kit.tsx",
-      "content": "'use client';\n\nimport { BlockSelectionPlugin } from '@udecode/plate-selection/react';\n\nimport { BlockSelection } from '@/registry/ui/block-selection';\n\nimport { NodeIdKit } from './node-id-kit';\n\nexport const BlockSelectionKit = [\n  ...NodeIdKit,\n  BlockSelectionPlugin.configure(({ editor }) => ({\n    options: {\n      enableContextMenu: true,\n      isSelectable: (element, path) => {\n        return (\n          !['code_line', 'column', 'td'].includes(element.type) &&\n          !editor.api.block({ above: true, at: path, match: { type: 'tr' } })\n        );\n      },\n    },\n    render: {\n      belowRootNodes: (props) => {\n        if (!props.attributes.className?.includes('slate-selectable'))\n          return null;\n\n        return <BlockSelection />;\n      },\n    },\n  })),\n];\n",
+      "content": "'use client';\n\nimport { BlockSelectionPlugin } from '@udecode/plate-selection/react';\n\nimport { BlockSelection } from '@/registry/ui/block-selection';\n\nexport const BlockSelectionKit = [\n  BlockSelectionPlugin.configure(({ editor }) => ({\n    options: {\n      enableContextMenu: true,\n      isSelectable: (element, path) => {\n        return (\n          !['code_line', 'column', 'td'].includes(element.type) &&\n          !editor.api.block({ above: true, at: path, match: { type: 'tr' } })\n        );\n      },\n    },\n    render: {\n      belowRootNodes: (props) => {\n        if (!props.attributes.className?.includes('slate-selectable'))\n          return null;\n\n        return <BlockSelection />;\n      },\n    },\n  })),\n];\n",
       "type": "registry:component"
     }
   ]

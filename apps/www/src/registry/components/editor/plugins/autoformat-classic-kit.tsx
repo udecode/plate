@@ -197,7 +197,7 @@ const autoformatLists: AutoformatRule[] = [
     match: ['* ', '- '],
     mode: 'block',
     preFormat,
-    type: KEYS.liClassic,
+    type: KEYS.li,
     format: (editor) => formatList(editor, KEYS.ulClassic),
   },
   {
@@ -205,7 +205,7 @@ const autoformatLists: AutoformatRule[] = [
     matchByRegex: true,
     mode: 'block',
     preFormat,
-    type: KEYS.liClassic,
+    type: KEYS.li,
     format: (editor) => formatList(editor, KEYS.olClassic),
   },
   {

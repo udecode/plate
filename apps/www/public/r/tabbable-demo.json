@@ -3,7 +3,6 @@
   "name": "tabbable-demo",
   "type": "registry:example",
   "dependencies": [
-    "@udecode/cn",
     "@udecode/plate-tabbable"
   ],
   "registryDependencies": [

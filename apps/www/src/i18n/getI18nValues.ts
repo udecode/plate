@@ -35,11 +35,8 @@ import {
 import { findReplaceValue as findReplaceValueCn } from '@/registry/examples/values/cn/find-replace-value';
 import { floatingToolbarValue as floatingToolbarValueCn } from '@/registry/examples/values/cn/floating-toolbar-value';
 import { fontValue as fontValueCn } from '@/registry/examples/values/cn/font-value';
-import { highlightValue as highlightValueCn } from '@/registry/examples/values/cn/highlight-value';
-import { horizontalRuleValue as horizontalRuleValueCn } from '@/registry/examples/values/cn/horizontal-rule-value';
 import { iframeValue as iframeValueCn } from '@/registry/examples/values/cn/iframe-value';
 import { indentValue as indentValueCn } from '@/registry/examples/values/cn/indent-value';
-import { kbdValue as kbdValueCn } from '@/registry/examples/values/cn/kbd-value';
 import { lineHeightValue as lineHeightValueCn } from '@/registry/examples/values/cn/line-height-value';
 import { linkValue as linkValueCn } from '@/registry/examples/values/cn/link-value';
 import {
@@ -81,11 +78,8 @@ import {
 import { findReplaceValue as findReplaceValueEn } from '@/registry/examples/values/find-replace-value';
 import { floatingToolbarValue as floatingToolbarValueEn } from '@/registry/examples/values/floating-toolbar-value';
 import { fontValue as fontValueEn } from '@/registry/examples/values/font-value';
-import { highlightValue as highlightValueEn } from '@/registry/examples/values/highlight-value';
-import { horizontalRuleValue as horizontalRuleValueEn } from '@/registry/examples/values/horizontal-rule-value';
 import { iframeValue as iframeValueEn } from '@/registry/examples/values/iframe-value';
 import { indentValue as indentValueEn } from '@/registry/examples/values/indent-value';
-import { kbdValue as kbdValueEn } from '@/registry/examples/values/kbd-value';
 import { lineHeightValue as lineHeightValueEn } from '@/registry/examples/values/line-height-value';
 import { linkValue as linkValueEn } from '@/registry/examples/values/link-value';
 import {
@@ -133,11 +127,8 @@ const i18n = {
     findReplace: findReplaceValueCn,
     floatingToolbar: floatingToolbarValueCn,
     font: fontValueCn,
-    highlight: highlightValueCn,
-    horizontalRule: horizontalRuleValueCn,
     iframe: iframeValueCn,
     indent: indentValueCn,
-    kbd: kbdValueCn,
     lineHeight: lineHeightValueCn,
     link: linkValueCn,
     list: listValueCn,
@@ -185,11 +176,8 @@ const i18n = {
     findReplace: findReplaceValueEn,
     floatingToolbar: floatingToolbarValueEn,
     font: fontValueEn,
-    highlight: highlightValueEn,
-    horizontalRule: horizontalRuleValueEn,
     iframe: iframeValueEn,
     indent: indentValueEn,
-    kbd: kbdValueEn,
     lineHeight: lineHeightValueEn,
     link: linkValueEn,
     list: listValueEn,

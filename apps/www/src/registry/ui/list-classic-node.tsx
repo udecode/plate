@@ -41,7 +41,6 @@ export function ListElement({
 
 export const BulletedListElement = withProps(ListElement, { variant: 'ul' });
 export const NumberedListElement = withProps(ListElement, { variant: 'ol' });
-export const ListItemElement = withProps(PlateElement, { as: 'li' });
 
 export function TodoListElement(
   props: PlateElementProps<TTodoListItemElement>

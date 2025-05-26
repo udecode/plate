@@ -6,18 +6,12 @@ import type { Value } from '@udecode/plate';
 
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import {
-  type PlateElementProps,
-  type PlateLeafProps,
-  Plate,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 
 import { BlockquoteElement } from '@/registry/ui/blockquote-node';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
-import { HeadingElement } from '@/registry/ui/heading-node';
+import { H1Element, H2Element, H3Element } from '@/registry/ui/heading-node';
 import { MarkToolbarButton } from '@/registry/ui/mark-toolbar-button';
 import { ParagraphElement } from '@/registry/ui/paragraph-node';
 import { ToolbarButton } from '@/registry/ui/toolbar';
@@ -45,25 +39,10 @@ export default function MyEditorPage() {
   const editor = usePlateEditor({
     components: {
       blockquote: BlockquoteElement,
+      h1: H1Element,
+      h2: H2Element,
+      h3: H3Element,
       p: ParagraphElement,
-      bold: function Bold(props: PlateLeafProps) {
-        return <PlateLeaf {...props} as="strong" />;
-      },
-      h1: function H1(props: PlateElementProps) {
-        return <HeadingElement {...props} variant="h1" />;
-      },
-      h2: function H2(props: PlateElementProps) {
-        return <HeadingElement {...props} variant="h2" />;
-      },
-      h3: function H3(props: PlateElementProps) {
-        return <HeadingElement {...props} variant="h3" />;
-      },
-      italic: function Italic(props: PlateLeafProps) {
-        return <PlateLeaf {...props} as="em" />;
-      },
-      underline: function Underline(props: PlateLeafProps) {
-        return <PlateLeaf {...props} as="u" />;
-      },
     },
     plugins: [BasicElementsPlugin, BasicMarksPlugin],
     value: initialValue,

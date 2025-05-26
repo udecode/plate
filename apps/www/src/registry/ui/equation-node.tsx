@@ -5,7 +5,7 @@ import TextareaAutosize, {
   type TextareaAutosizeProps,
 } from 'react-textarea-autosize';
 
-import type { TEquationElement } from '@udecode/plate-math';
+import type { TEquationElement } from '@udecode/plate';
 import type { PlateElementProps } from '@udecode/plate/react';
 
 import {

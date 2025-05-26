@@ -1,49 +1,49 @@
 ---
 title: Highlight
 docs:
-  - route: /docs/components/highlight-node
-    title: Highlight Leaf
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
 ---
 
-<ComponentPreview name="highlight-demo" />
+<ComponentPreview name="basic-marks-demo" />
 
 <PackageInfo>
 
 ## Features
 
-- Provides text marking tools for content review and referencing
-- Uses inline `<mark>` elements supporting markers (background color)
-- Enables support for highlights for reviewing and referencing content
+- Highlight important text with background colors
+- Keyboard shortcut support for quick formatting
+- Renders as `<mark>` HTML element by default
 
 </PackageInfo>
 
 ## Installation
 
 ```bash
-npm install @udecode/plate-highlight
+npm install @udecode/plate-basic-marks
 ```
 
 ## Usage
 
 ```tsx
-import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { HighlightPlugin } from '@udecode/plate-basic-marks/react';
 
 const plugins = [
   // ...otherPlugins,
-  HighlightPlugin,
+  HighlightPlugin.configure({
+    shortcuts: { toggle: { keys: 'mod+shift+h' } },
+  }),
 ];
 ```
-
-## Keyboard Shortcuts
-
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + Shift + H">
-    Apply a highlight to the selected text.
-  </KeyTableItem>
-</KeyTable>
 
 ## Plugins
 
 ### `HighlightPlugin`
 
-Plugin for adding highlight functionality to text.
+Plugin for highlight text formatting. Renders as `<mark>` HTML element by default.
+
+## Transforms
+
+### `editor.tf.highlight.toggle`
+
+Toggles the highlight formatting for the selected text. 

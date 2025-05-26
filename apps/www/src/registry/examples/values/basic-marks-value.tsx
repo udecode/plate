@@ -6,10 +6,9 @@ jsx;
 
 export const basicMarksValue: any = (
   <fragment>
-    <hh2>Marks</hh2>
+    <hh2>Text Formatting</hh2>
     <hp>
-      Add style and emphasis to your text using the mark plugins, which offers a
-      variety of formatting options.
+      Add style and emphasis to your text using various formatting options.
     </hp>
     <hp>
       Make text <htext bold>bold</htext>, <htext italic>italic</htext>,{' '}
@@ -17,15 +16,20 @@ export const basicMarksValue: any = (
       <htext bold italic underline>
         combination
       </htext>{' '}
-      of these styles for a visually striking effect.
+      of these styles for emphasis.
     </hp>
     <hp>
-      Add <htext strikethrough>strikethrough</htext> to indicate deleted or
-      outdated content.
+      Add <htext strikethrough>strikethrough</htext> to indicate deleted
+      content, use <htext code>inline code</htext> for technical terms, or{' '}
+      <htext highlight>highlight</htext> important information.
     </hp>
     <hp>
-      Write code snippets with inline <htext code>code</htext> formatting for
-      easy readability.
+      Format mathematical expressions with <htext subscript>subscript</htext>{' '}
+      and <htext superscript>superscript</htext> text.
+    </hp>
+    <hp>
+      Show keyboard shortcuts like <htext kbd>⌘ + B</htext> for bold or{' '}
+      <htext kbd>⌘ + I</htext> for italic formatting.
     </hp>
   </fragment>
 );

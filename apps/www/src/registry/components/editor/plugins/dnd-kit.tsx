@@ -8,10 +8,7 @@ import { PlaceholderPlugin } from '@udecode/plate-media/react';
 
 import { BlockDraggable } from '@/registry/ui/block-draggable';
 
-import { NodeIdKit } from './node-id-kit';
-
 export const DndKit = [
-  ...NodeIdKit,
   DndPlugin.configure({
     options: {
       enableScroller: true,

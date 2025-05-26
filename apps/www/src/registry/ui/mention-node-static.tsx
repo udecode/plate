@@ -1,7 +1,6 @@
 import * as React from 'react';
 
-import type { SlateElementProps } from '@udecode/plate';
-import type { TMentionElement } from '@udecode/plate-mention';
+import type { SlateElementProps, TMentionElement } from '@udecode/plate';
 
 import { IS_APPLE, KEYS, SlateElement } from '@udecode/plate';
 

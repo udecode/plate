@@ -23,11 +23,8 @@ import { exitBreakValue } from './exit-break-value';
 import { findReplaceValue } from './find-replace-value';
 import { floatingToolbarValue } from './floating-toolbar-value';
 import { fontValue } from './font-value';
-import { highlightValue } from './highlight-value';
-import { horizontalRuleValue } from './horizontal-rule-value';
 import { iframeValue } from './iframe-value';
 import { indentValue } from './indent-value';
-import { kbdValue } from './kbd-value';
 import { lineHeightValue } from './line-height-value';
 import { linkValue } from './link-value';
 import { listValue as listClassicValue } from './list-classic-value';
@@ -71,13 +68,10 @@ const values = {
   'find-replace': findReplaceValue,
   'floating-toolbar': floatingToolbarValue,
   font: fontValue,
-  highlight: highlightValue,
-  'horizontal-rule': horizontalRuleValue,
   html: deserializeHtmlValue,
   // 'huge-document': hugeDocumentValue,
   iframe: iframeValue,
   indent: indentValue,
-  kbd: kbdValue,
   'line-height': lineHeightValue,
   link: linkValue,
   list: listValue,

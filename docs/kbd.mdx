@@ -1,51 +1,47 @@
 ---
-title: Keyboard Input
+title: Kbd
 docs:
-  - route: /docs/components/kbd-node
-    title: Kbd Leaf
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
 ---
 
-<ComponentPreview name="kbd-demo" />
+<ComponentPreview name="basic-marks-demo" />
 
 <PackageInfo>
 
 ## Features
 
-- Adds support for keyboard input marks
+- Display keyboard shortcuts and key combinations
+- Keyboard shortcut support for quick formatting
+- Renders as `<kbd>` HTML element by default
 
 </PackageInfo>
 
 ## Installation
 
 ```bash
-npm install @udecode/plate-kbd
+npm install @udecode/plate-basic-marks
 ```
 
 ## Usage
 
 ```tsx
-import { KbdPlugin } from '@udecode/plate-kbd';
-```
+import { KbdPlugin } from '@udecode/plate-basic-marks/react';
 
-```tsx
 const plugins = [
   // ...otherPlugins,
   KbdPlugin,
 ];
 ```
 
-```tsx
-import { KEYS } from '@udecode/plate';
-
-const components = {
-  [KEYS.kbd]: KbdLeaf,
-}
-```
-
-See also: [KbdLeaf](/docs/components/kbd-node)
-
 ## Plugins
 
 ### `KbdPlugin`
 
-Plugin for keyboard input marks.
+Plugin for keyboard input text formatting. Renders as `<kbd>` HTML element by default.
+
+## Transforms
+
+### `editor.tf.kbd.toggle`
+
+Toggles the kbd formatting for the selected text. 

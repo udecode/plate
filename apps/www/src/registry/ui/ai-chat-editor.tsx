@@ -2,19 +2,24 @@
 
 import * as React from 'react';
 
-import { withProps } from '@udecode/cn';
-import { BaseParagraphPlugin, KEYS, SlateLeaf } from '@udecode/plate';
+import { BaseParagraphPlugin, KEYS } from '@udecode/plate';
 import { useAIChatEditor } from '@udecode/plate-ai/react';
+import {
+  BaseBlockquotePlugin,
+  BaseHeadingPlugin,
+  BaseHorizontalRulePlugin,
+} from '@udecode/plate-basic-elements';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
+  BaseHighlightPlugin,
   BaseItalicPlugin,
+  BaseKbdPlugin,
   BaseStrikethroughPlugin,
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
-import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
 import { BaseCalloutPlugin } from '@udecode/plate-callout';
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseDatePlugin } from '@udecode/plate-date';
@@ -25,11 +30,7 @@ import {
   BaseFontSizePlugin,
   BaseFontWeightPlugin,
 } from '@udecode/plate-font';
-import { BaseHeadingPlugin, BaseTocPlugin } from '@udecode/plate-heading';
-import { BaseHighlightPlugin } from '@udecode/plate-highlight';
-import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
-import { BaseKbdPlugin } from '@udecode/plate-kbd';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import { BaseListPlugin } from '@udecode/plate-list';
@@ -40,6 +41,7 @@ import {
 import { BaseImagePlugin } from '@udecode/plate-media';
 import { BaseMentionPlugin } from '@udecode/plate-mention';
 import { BaseTablePlugin } from '@udecode/plate-table';
+import { BaseTocPlugin } from '@udecode/plate-toc';
 import { usePlateEditor } from '@udecode/plate/react';
 import { all, createLowlight } from 'lowlight';
 
@@ -64,7 +66,11 @@ import {
   EquationElementStatic,
   InlineEquationElementStatic,
 } from './equation-node-static';
-import { HeadingElementStatic } from './heading-node-static';
+import {
+  H1ElementStatic,
+  H2ElementStatic,
+  H3ElementStatic,
+} from './heading-node-static';
 import { HighlightLeafStatic } from './highlight-node-static';
 import { HrElementStatic } from './hr-node-static';
 import { KbdLeaf } from './kbd-node';
@@ -86,7 +92,6 @@ import { TocElementStatic } from './toc-node-static';
 const components = {
   [KEYS.audio]: AudioElementStatic,
   [KEYS.blockquote]: BlockquoteElementStatic,
-  [KEYS.bold]: withProps(SlateLeaf, { as: 'strong' }),
   [KEYS.callout]: CalloutElementStatic,
   [KEYS.code]: CodeLeafStatic,
   [KEYS.codeBlock]: CodeBlockElementStatic,
@@ -97,28 +102,23 @@ const components = {
   [KEYS.date]: DateElement,
   [KEYS.equation]: EquationElementStatic,
   [KEYS.file]: FileElementStatic,
-  [KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
-  [KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
-  [KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
+  [KEYS.h1]: H1ElementStatic,
+  [KEYS.h2]: H2ElementStatic,
+  [KEYS.h3]: H3ElementStatic,
   [KEYS.highlight]: HighlightLeafStatic,
   [KEYS.hr]: HrElementStatic,
   [KEYS.img]: ImageElementStatic,
   [KEYS.inlineEquation]: InlineEquationElementStatic,
-  [KEYS.italic]: withProps(SlateLeaf, { as: 'em' }),
   [KEYS.kbd]: KbdLeaf,
   [KEYS.link]: LinkElementStatic,
   [KEYS.mention]: MentionElementStatic,
   [KEYS.p]: ParagraphElementStatic,
-  [KEYS.strikethrough]: withProps(SlateLeaf, { as: 's' }),
-  [KEYS.sub]: withProps(SlateLeaf, { as: 'sub' }),
-  [KEYS.sup]: withProps(SlateLeaf, { as: 'sup' }),
   [KEYS.table]: TableElementStatic,
   [KEYS.td]: TableCellElementStatic,
   [KEYS.th]: TableCellHeaderStaticElement,
 
   [KEYS.toc]: TocElementStatic,
   [KEYS.tr]: TableRowElementStatic,
-  [KEYS.underline]: withProps(SlateLeaf, { as: 'u' }),
   [KEYS.video]: VideoElementStatic,
 
   // [KEYS.comment]: CommentLeafStatic

@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import type { SlateElementProps } from '@udecode/plate';
 
+import { withProps } from '@udecode/cn';
 import { SlateElement } from '@udecode/plate';
 import { type VariantProps, cva } from 'class-variance-authority';
 
@@ -32,3 +33,22 @@ export function HeadingElementStatic({
     </SlateElement>
   );
 }
+
+export const H1ElementStatic = withProps(HeadingElementStatic, {
+  variant: 'h1',
+});
+export const H2ElementStatic = withProps(HeadingElementStatic, {
+  variant: 'h2',
+});
+export const H3ElementStatic = withProps(HeadingElementStatic, {
+  variant: 'h3',
+});
+export const H4ElementStatic = withProps(HeadingElementStatic, {
+  variant: 'h4',
+});
+export const H5ElementStatic = withProps(HeadingElementStatic, {
+  variant: 'h5',
+});
+export const H6ElementStatic = withProps(HeadingElementStatic, {
+  variant: 'h6',
+});

@@ -211,10 +211,10 @@ The core plugin configuration object. Use `MarkdownPlugin.configure({ options: {
 
 <API name="MarkdownPlugin">
 <APIOptions>
-  <APIItem name="allowedNodes" type="NodesConfig | null">
+  <APIItem name="allowedNodes" type="PlateType | null">
     Whitelist specific node types (Slate types and Markdown AST types like `strong`). Cannot be used with `disallowedNodes`. If set, only listed types are processed. Default: `null` (all allowed).
   </APIItem>
-  <APIItem name="disallowedNodes" type="NodesConfig | null">
+  <APIItem name="disallowedNodes" type="PlateType | null">
     Blacklist specific node types. Cannot be used with `allowedNodes`. Listed types are filtered out. Default: `null`.
   </APIItem>
   <APIItem name="allowNode" type="AllowNodeConfig">
@@ -223,7 +223,7 @@ The core plugin configuration object. Use `MarkdownPlugin.configure({ options: {
     - `serialize?: (slateNode: any) => boolean`: Filter for Slate → Markdown. Return `true` to keep.
     Default: `null`.
   </APIItem>
-  <APIItem name="rules" type="TRules | null">
+  <APIItem name="rules" type="MdRules | null">
     Custom conversion rules between Markdown AST and Slate elements. See [Round-Trip Serialization](#round-trip-serialization-with-custom-elements-mdx) and [Customizing Conversion Rules](#appendix-b-customizing-conversion-rules). For marks/leaves, ensure the rule object has `mark: true`. Default: `null` (uses internal `defaultRules`).
   </APIItem>
   <APIItem name="remarkPlugins" type="Plugin[]">
@@ -253,10 +253,10 @@ Converts a Markdown string into a Slate `Value` (`Descendant[]`).
   </APIItem>
 </APIParameters>
 <APIOptions type="DeserializeMdOptions">
-  <APIItem name="allowedNodes" type="NodesConfig" optional>
+  <APIItem name="allowedNodes" type="PlateType" optional>
     Override plugin `allowedNodes`.
   </APIItem>
-  <APIItem name="disallowedNodes" type="NodesConfig" optional>
+  <APIItem name="disallowedNodes" type="PlateType" optional>
     Override plugin `disallowedNodes`.
   </APIItem>
   <APIItem name="allowNode" type="AllowNodeConfig" optional>
@@ -265,7 +265,7 @@ Converts a Markdown string into a Slate `Value` (`Descendant[]`).
   <APIItem name="memoize" type="boolean" optional>
     Adds `_memo` property with raw Markdown to top-level blocks for memoization (e.g., with `PlateStatic`). Default: `false`.
   </APIItem>
-  <APIItem name="rules" type="TRules | null" optional>
+  <APIItem name="rules" type="MdRules | null" optional>
     Override plugin `rules`.
   </APIItem>
   <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
@@ -299,16 +299,16 @@ Converts a Slate `Value` (`Descendant[]`) into a Markdown string.
  <APIItem name="value" type="Descendant[]" optional>
     Slate nodes to serialize. Defaults to `editor.children`.
   </APIItem>
-  <APIItem name="allowedNodes" type="NodesConfig" optional>
+  <APIItem name="allowedNodes" type="PlateType" optional>
     Override plugin `allowedNodes`.
   </APIItem>
-  <APIItem name="disallowedNodes" type="NodesConfig" optional>
+  <APIItem name="disallowedNodes" type="PlateType" optional>
     Override plugin `disallowedNodes`.
   </APIItem>
   <APIItem name="allowNode" type="AllowNodeConfig" optional>
     Override plugin `allowNode`.
   </APIItem>
-  <APIItem name="rules" type="TRules | null" optional>
+  <APIItem name="rules" type="MdRules | null" optional>
     Override plugin `rules`.
   </APIItem>
   <APIItem name="remarkPlugins" type="Plugin[]" optional>
@@ -421,21 +421,18 @@ To change how code blocks appear, customize the component for the `code_block` p
 
 ```tsx title="components/my-editor.tsx"
 import { createPlateEditor } from '@udecode/plate/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react'; // Main plugin
+import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@udecode/plate-code-block/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { MyCustomCodeBlockElement } from './my-custom-code-block'; // Your custom component
 
 const editor = createPlateEditor({
   plugins: [
-    CodeBlockPlugin, // Base plugin for structure/logic
+    CodeBlockPlugin.withComponent(MyCustomCodeBlockElement), // Base plugin for structure/logic
+    CodeLinePlugin.withComponent(MyCustomCodeLineElement),
+    CodeSyntaxPlugin.withComponent(MyCustomCodeSyntaxElement),
     MarkdownPlugin,  // For Markdown conversion
     // ... other plugins
   ],
-  components: {
-    [CodeBlockPlugin.key]: MyCustomCodeBlockElement,
-    // You might also need to customize components for CodeLinePlugin.key and CodeSyntaxPlugin.key
-    // depending on your MyCustomCodeBlockElement implementation.
-  },
 });
 
 // MyCustomCodeBlockElement.tsx would then implement the desired rendering
@@ -458,7 +455,7 @@ MarkdownPlugin.configure({
       code: {
         deserialize: (mdastNode, deco, options) => {
           return {
-            type: CodeBlockPlugin.key, // Use Plate's type
+            type: KEYS.codeBlock, // Use Plate's type
             lang: mdastNode.lang ?? undefined,
             rawCode: mdastNode.value || '', // Store raw code directly
             children: [{ text: '' }], // Slate Element needs a dummy text child
@@ -467,7 +464,7 @@ MarkdownPlugin.configure({
       },
       // A custom `serialize` rule for `code_block` would also be needed
       // to convert `rawCode` back to an mdast 'code' node.
-      [CodeBlockPlugin.key]: { // Assuming CodeBlockPlugin.key is 'code_block'
+      [KEYS.codeBlock]: {
           serialize: (slateNode, options) => {
              return { // mdast 'code' node
                 type: 'code',
@@ -623,7 +620,7 @@ Migrating involves mapping `react-markdown` concepts to Plate's architecture.
 | `remarkPlugins`               | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] }})`              | Direct mapping; operates on mdast.                                                                                                                    |
 | `rehypePlugins`               | Usually **not needed**. Use `remarkPlugins` for syntax.                       | Plate components handle rendering. For raw HTML, use `rehype-raw` via `remarkPlugins`.                                                            |
 | `components={{ h1: MyH1 }}`   | `createPlateEditor({ components: { h1: MyH1 } })`         | Configures Plate rendering component. Key depends on `HeadingPlugin` config.                                                                        |
-| `components={{ code: MyCode }}` | 1. **Conversion**: `MarkdownPlugin > rules > code`. 2. **Rendering**: `components: { [CodeBlockPlugin.key]: MyCode }` | `rules` for mdast (`code`) to Slate (`code_block`). `components` for Slate rendering.                                                                 |
+| `components={{ code: MyCode }}` | 1. **Conversion**: `MarkdownPlugin > rules > code`. 2. **Rendering**: `components: { [KEYS.codeBlock]: MyCode }` | `rules` for mdast (`code`) to Slate (`code_block`). `components` for Slate rendering.                                                                 |
 | `allowedElements`             | `MarkdownPlugin.configure({ options: { allowedNodes: [...] }})`              | Filters nodes during conversion (mdast/Slate types).                                                                                                  |
 | `disallowedElements`          | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] }})`            | Filters nodes during conversion.                                                                                                                      |
 | `unwrapDisallowed`            | No direct equivalent. Filtering removes nodes.                                | Custom `rules` could implement unwrapping.                                                                                                          |
@@ -780,29 +777,23 @@ Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages
 
 ## Appendix C: Components for Rendering
 
-While `rules` handle MD ↔ Slate conversion, Plate uses React components to *render* Slate nodes. Configure these in `createPlateEditor` via the `components` option. This is analogous to `react-markdown`'s `components` prop but within Plate's ecosystem.
-
-Keys in `components` usually match Plate plugin keys (e.g., `ParagraphPlugin.key`, `CodeBlockPlugin.key`) or default Slate types (`p`, `h1`).
+While `rules` handle MD ↔ Slate conversion, Plate uses React components to *render* Slate nodes. Configure these in `createPlateEditor` via the `components` option or plugin `withComponent` method.
 
 **Example:**
 ```tsx title="components/my-editor.tsx"
-import { createPlateEditor, PlateLeaf, withProps } from '@udecode/plate/react';
+import { createPlateEditor, ParagraphPlugin, PlateLeaf } from '@udecode/plate/react';
 import { BoldPlugin } from '@udecode/plate-basic-marks/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { ParagraphElement } from '@/components/ui/paragraph-node'; // Example UI component
 import { CodeBlockElement } from '@/components/ui/code-block-node'; // Example UI component
-// For marks, you might use PlateLeaf or a custom leaf component
-// import { CodeLeaf } from '@/components/ui/code-node';
 
 const editor = createPlateEditor({
-  plugins: [BoldPlugin, CodeBlockPlugin /* ... */],
-  components: {
-    [ParagraphPlugin.key]: ParagraphElement,
-    [CodeBlockPlugin.key]: CodeBlockElement,
-    [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
-    // For code syntax highlighting within code blocks:
-    // [CodeBlockPlugin.keys.syntax]: CodeLeaf, // If CodeBlockPlugin provides such a key
-  },
+  plugins: [
+    ParagraphPlugin.withComponent(ParagraphElement),
+    CodeBlockPlugin.withComponent(CodeBlockElement),
+    BoldPlugin,
+    /* ... */
+  ],
 });
 ```
 Refer to [Plugin Components](/docs/plugin-components) for more on creating/registering components.
@@ -816,7 +807,7 @@ import React, { useEffect } from 'react';
 import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 // Import necessary Plate plugins for common Markdown features
-import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HeadingPlugin } from '@udecode/plate-basic-elements/react';
 // ... include other plugins like BlockquotePlugin, CodeBlockPlugin, ListPlugin, etc.
 // ... and mark plugins like BoldPlugin, ItalicPlugin, etc.
 

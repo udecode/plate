@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import type { TSuggestionText } from '@udecode/plate-suggestion';
 import type {
   PlateElementProps,
   RenderNodeWrapper,
@@ -12,12 +11,14 @@ import {
   type AnyPluginConfig,
   type NodeEntry,
   type Path,
+  type TCommentText,
   type TElement,
+  type TSuggestionText,
   PathApi,
   TextApi,
 } from '@udecode/plate';
-import { type TCommentText, getDraftCommentKey } from '@udecode/plate-comments';
-import { CommentsPlugin } from '@udecode/plate-comments/react';
+import { getDraftCommentKey } from '@udecode/plate-comments';
+import { CommentPlugin } from '@udecode/plate-comments/react';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import {
   useEditorPlugin,
@@ -37,7 +38,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { commentsPlugin } from '@/registry/components/editor/plugins/comment-kit';
+import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';
 import {
   type TDiscussion,
   discussionPlugin,
@@ -54,7 +55,7 @@ import { Comment, CommentCreateForm } from './comment';
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   const { editor, element } = props;
 
-  const commentsApi = editor.getApi(CommentsPlugin).comment;
+  const commentsApi = editor.getApi(CommentPlugin).comment;
   const blockPath = editor.api.findPath(element);
 
   // avoid duplicate in table or column
@@ -77,7 +78,7 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   }
 
   return (props) => (
-    <BlockCommentsContent
+    <BlockCommentContent
       blockPath={blockPath}
       commentNodes={commentNodes}
       draftCommentNode={draftCommentNode}
@@ -87,7 +88,7 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   );
 };
 
-const BlockCommentsContent = ({
+const BlockCommentContent = ({
   blockPath,
   children,
   commentNodes,
@@ -113,8 +114,8 @@ const BlockCommentsContent = ({
     activeSuggestionId &&
     resolvedSuggestions.find((s) => s.suggestionId === activeSuggestionId);
 
-  const commentingBlock = usePluginOption(commentsPlugin, 'commentingBlock');
-  const activeCommentId = usePluginOption(commentsPlugin, 'activeId');
+  const commentingBlock = usePluginOption(commentPlugin, 'commentingBlock');
+  const activeCommentId = usePluginOption(commentPlugin, 'activeId');
   const isCommenting = activeCommentId === getDraftCommentKey();
   const activeDiscussion =
     activeCommentId &&
@@ -160,7 +161,7 @@ const BlockCommentsContent = ({
       } else {
         activeNode = commentNodes.find(
           ([node]) =>
-            editor.getApi(commentsPlugin).comment.nodeId(node) ===
+            editor.getApi(commentPlugin).comment.nodeId(node) ===
             activeCommentId
         );
       }
@@ -322,7 +323,7 @@ const useResolvedDiscussion = (
   commentNodes: NodeEntry<TCommentText>[],
   blockPath: Path
 ) => {
-  const { api, getOption, setOption } = useEditorPlugin(commentsPlugin);
+  const { api, getOption, setOption } = useEditorPlugin(commentPlugin);
 
   const discussions = usePluginOption(discussionPlugin, 'discussions');
 

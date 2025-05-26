@@ -1,0 +1,49 @@
+---
+title: Blockquote
+docs:
+  - route: /docs/components/blockquote-node
+    title: Blockquote Element
+---
+
+<ComponentPreview name="basic-elements-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Create blockquotes to emphasize important information or highlight quotes from external sources
+- Keyboard shortcut support for quick formatting
+- Renders as `<blockquote>` HTML element by default
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-elements
+```
+
+## Usage
+
+```tsx
+import { BlockquotePlugin } from '@udecode/plate-basic-elements/react';
+
+const plugins = [
+  // ...otherPlugins,
+  BlockquotePlugin.configure({
+    shortcuts: { toggle: { keys: 'mod+shift+period' } },
+  }),
+];
+```
+
+## Plugins
+
+### `BlockquotePlugin`
+
+Plugin for blockquote elements. Renders as `<blockquote>` HTML element by default.
+
+## Transforms
+
+### `editor.tf.blockquote.toggle`
+
+Toggles the current block between the specified heading level and a paragraph.

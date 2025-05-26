@@ -29,7 +29,7 @@ Provide a server-side editor instance and a mapping of your Plate components to 
 ```tsx title="lib/generate-html.ts"
 import { createSlateEditor, serializeHtml } from '@udecode/plate'; // Base import
 // Import base plugins (NOT from /react paths)
-import { BaseHeadingPlugin } from '@udecode/plate-heading';
+import { BaseHeadingPlugin } from '@udecode/plate-basic-elements';
 // Import your STATIC components for rendering
 import { ParagraphElementStatic } from '@/components/ui/paragraph-node-static';
 import { HeadingElementStatic } from '@/components/ui/heading-node-static';
@@ -141,7 +141,7 @@ Use `editor.api.html.deserialize` within a client-side Plate editor context.
 ```tsx title="components/my-html-importer.tsx"
 import { PlateEditor, usePlateEditor } from '@udecode/plate/react'; // React-specific imports for client-side
 // Import ALL Plate plugins needed to represent the HTML content
-import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HeadingPlugin } from '@udecode/plate-basic-elements/react';
 // ... and so on for bold, italic, tables, lists, etc.
 
 function MyHtmlImporter({ htmlString }: { htmlString: string }) {
@@ -172,22 +172,22 @@ Each Plate plugin can define rules for how it interprets specific HTML tags, sty
 
 | HTML Element / Style                                       | Plate Plugin (Typical)  | Notes                                                                    |
 | :--------------------------------------------------------- | :---------------------- | :----------------------------------------------------------------------- |
-| `<strong>`, `<b>`, `font-weight: 600,700,bold`          | [`BoldPlugin`](/docs/basic-marks)            | Converts to `bold: true` mark.                                           |
-| `<em>`, `<i>`, `font-style: italic`                      | [`ItalicPlugin`](/docs/basic-marks)          | Converts to `italic: true` mark.                                         |
-| `<u>`, `text-decoration: underline`                       | [`UnderlinePlugin`](/docs/basic-marks)       | Converts to `underline: true` mark.                                      |
-| `<s>`, `<del>`, `<strike>`, `text-decoration: line-through` | [`StrikethroughPlugin`](/docs/basic-marks)   | Converts to `strikethrough: true` mark.                                  |
-| `<sub>`, `vertical-align: sub`                            | [`SubscriptPlugin`](/docs/basic-marks)       | Converts to `subscript: true` mark.                                      |
-| `<sup>`, `vertical-align: super`                           | [`SuperscriptPlugin`](/docs/basic-marks)     | Converts to `superscript: true` mark.                                    |
-| `<code>` (not in `<pre>`), `font-family: Consolas`         | [`CodePlugin`](/docs/basic-marks)            | Converts to `code: true` mark (inline code).                             |
+| `<strong>`, `<b>`, `font-weight: 600,700,bold`          | [`BoldPlugin`](/docs/bold)            | Converts to `bold: true` mark.                                           |
+| `<em>`, `<i>`, `font-style: italic`                      | [`ItalicPlugin`](/docs/italic)          | Converts to `italic: true` mark.                                         |
+| `<u>`, `text-decoration: underline`                       | [`UnderlinePlugin`](/docs/underline)       | Converts to `underline: true` mark.                                      |
+| `<s>`, `<del>`, `<strike>`, `text-decoration: line-through` | [`StrikethroughPlugin`](/docs/strikethrough)   | Converts to `strikethrough: true` mark.                                  |
+| `<sub>`, `vertical-align: sub`                            | [`SubscriptPlugin`](/docs/subscript)       | Converts to `subscript: true` mark.                                      |
+| `<sup>`, `vertical-align: super`                           | [`SuperscriptPlugin`](/docs/superscript)     | Converts to `superscript: true` mark.                                    |
+| `<code>` (not in `<pre>`), `font-family: Consolas`         | [`CodePlugin`](/docs/code)            | Converts to `code: true` mark (inline code).                             |
 | `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | Converts to `kbd: true` mark.                                            |
 | `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-elements)       | Converts to paragraph element.                                           |
-| `<h1>` - `<h6>`                                            | [`HeadingPlugin`](/docs/basic-elements)         | Converts to corresponding heading elements (`h1` - `h6`).                |
+| `<h1>` - `<h6>`                                            | [`HeadingPlugin`](/docs/heading)         | Converts to corresponding heading elements (`h1` - `h6`).                |
 | `<ul>`                                                     | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to unordered list (`ul` type). Items become `li`.               |
 | `<ol>`                                                     | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to ordered list (`ol` type). Items become `li`.                 |
 | `<li>` (within `<ul>` or `<ol>`)                           | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to list item (`li` type), with `lic` (list item content) child. |
 | `<li>` (with `aria-level` for indent)                      | [`ListPlugin`](/docs/list)      | Converts to paragraph with `indent` and `listStyleType` props.           |
-| `<blockquote>`                                             | [`BlockquotePlugin`](/docs/basic-elements)      | Converts to blockquote element.                                          |
-| `<pre>` (often with `<code>` inside)                       | [`CodeBlockPlugin`](/docs/basic-elements)       | Converts to `code_block` element. Content split into `code_line`.        |
+| `<blockquote>`                                             | [`BlockquotePlugin`](/docs/blockquote)      | Converts to blockquote element.                                          |
+| `<pre>` (often with `<code>` inside)                       | [`CodeBlockPlugin`](/docs/code-block)       | Converts to `code_block` element. Content split into `code_line`.        |
 | `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | Converts to horizontal rule element.                                     |
 | `<a>`                                                      | [`LinkPlugin`](/docs/link)            | Converts to link element (`a` type) with `url` property.                 |
 | `<img>`                                                    | [`ImagePlugin`](/docs/media)           | Converts to image element (`img` type) with `url` property.              |
@@ -245,11 +245,11 @@ const MyCustomCodeBlockPlugin = CodeBlockPlugin.extend({
           const lines = textContent.split('\n');
 
           return {
-            type: CodeBlockPlugin.key, // Or editor.getType(KEYS.codeBlock)
+            type: CodeBlockPlugin.key, // Or editor.getType(CodeBlockPlugin.key)
             lang: language,
             code: textContent, // Example: store full code string
             children: lines.map((line) => ({
-              type: editor.getType(KEYS.codeLine), // Use editor.getType for safety
+              type: editor.getType(CodeLinePlugin.key),
               children: [{ text: line }],
             })),
           };

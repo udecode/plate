@@ -18,7 +18,7 @@ export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
             (n.type &&
               [
                 KEYS.codeBlock,
-                KEYS.liClassic,
+                KEYS.li,
                 KEYS.listTodoClassic,
                 KEYS.table,
               ].includes(n.type as any)) ||

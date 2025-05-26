@@ -6,7 +6,7 @@ import type { CreatePlateEditorOptions } from '@udecode/plate/react';
 
 import { type Value, KEYS, nanoid, NodeApi } from '@udecode/plate';
 import { getCommentKey, getDraftCommentKey } from '@udecode/plate-comments';
-import { CommentsPlugin, useCommentId } from '@udecode/plate-comments/react';
+import { CommentPlugin, useCommentId } from '@udecode/plate-comments/react';
 import {
   Plate,
   useEditorPlugin,
@@ -128,7 +128,7 @@ export function Comment(props: {
     editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
   };
 
-  const { tf } = useEditorPlugin(CommentsPlugin);
+  const { tf } = useEditorPlugin(CommentPlugin);
 
   // Replace to your own backend or refer to potion
   const isMyComment = currentUserId === comment.userId;
@@ -500,7 +500,7 @@ export function CommentCreateForm({
     }
 
     const commentsNodeEntry = editor
-      .getApi(CommentsPlugin)
+      .getApi(CommentPlugin)
       .comment.nodes({ at: [], isDraft: true });
 
     if (commentsNodeEntry.length === 0) return;

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TSuggestionText } from '@udecode/plate-suggestion';
+import type { TSuggestionText } from '@udecode/plate';
 import type { PlateLeafProps } from '@udecode/plate/react';
 
 import {

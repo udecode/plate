@@ -14,12 +14,6 @@ export function PlateEditor() {
     value,
   });
 
-  const obj = {};
-  Object.keys(editor.plugins).forEach((key) => {
-    obj[key] = key;
-  });
-  console.log(obj);
-
   return (
     <Plate editor={editor}>
       <EditorContainer>
@@ -200,7 +194,7 @@ const value = [
       {
         children: [{ text: 'headings' }],
         type: 'a',
-        url: '/docs/basic-elements',
+        url: '/docs/heading',
       },
       { text: ', ' },
       {
@@ -212,7 +206,7 @@ const value = [
       {
         children: [{ text: 'quotes' }],
         type: 'a',
-        url: '/docs/basic-elements',
+        url: '/docs/blockquote',
       },
       { text: '. Apply ' },
       {

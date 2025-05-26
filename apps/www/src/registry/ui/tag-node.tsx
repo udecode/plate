@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TTagElement } from '@udecode/plate-tag';
+import type { TTagElement } from '@udecode/plate';
 import type { PlateElementProps } from '@udecode/plate/react';
 
 import {

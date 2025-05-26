@@ -95,6 +95,7 @@ export const guidesNavItems: SidebarNavItem[] = [
       },
       {
         href: '/docs/plugin-shortcuts',
+        label: 'Updated',
         title: 'Plugin Shortcuts',
       },
       {

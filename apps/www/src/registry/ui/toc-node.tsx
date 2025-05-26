@@ -4,10 +4,7 @@ import * as React from 'react';
 
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import {
-  useTocElement,
-  useTocElementState,
-} from '@udecode/plate-heading/react';
+import { useTocElement, useTocElementState } from '@udecode/plate-toc/react';
 import { PlateElement } from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
 

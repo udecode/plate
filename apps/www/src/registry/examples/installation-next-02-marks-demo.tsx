@@ -5,12 +5,7 @@ import * as React from 'react';
 import type { Value } from '@udecode/plate';
 
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import {
-  type PlateLeafProps,
-  Plate,
-  PlateLeaf,
-  usePlateEditor,
-} from '@udecode/plate/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
@@ -34,17 +29,6 @@ const initialValue: Value = [
 
 export default function MyEditorPage() {
   const editor = usePlateEditor({
-    components: {
-      bold: function Bold(props: PlateLeafProps) {
-        return <PlateLeaf {...props} as="strong" />;
-      },
-      italic: function Italic(props: PlateLeafProps) {
-        return <PlateLeaf {...props} as="em" />;
-      },
-      underline: function Underline(props: PlateLeafProps) {
-        return <PlateLeaf {...props} as="u" />;
-      },
-    },
     plugins: [BasicMarksPlugin],
     value: initialValue,
   });

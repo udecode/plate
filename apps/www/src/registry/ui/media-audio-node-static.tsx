@@ -1,7 +1,6 @@
 import * as React from 'react';
 
-import type { SlateElementProps } from '@udecode/plate';
-import type { TAudioElement } from '@udecode/plate-media';
+import type { SlateElementProps, TAudioElement } from '@udecode/plate';
 
 import { SlateElement } from '@udecode/plate';
 

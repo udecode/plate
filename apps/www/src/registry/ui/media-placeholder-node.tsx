@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TPlaceholderElement } from '@udecode/plate-media';
+import type { TPlaceholderElement } from '@udecode/plate';
 import type { PlateElementProps } from '@udecode/plate/react';
 
 import { KEYS } from '@udecode/plate';

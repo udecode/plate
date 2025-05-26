@@ -4,10 +4,7 @@ import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 import { BlockSelection } from '@/registry/ui/block-selection';
 
-import { NodeIdKit } from './node-id-kit';
-
 export const BlockSelectionKit = [
-  ...NodeIdKit,
   BlockSelectionPlugin.configure(({ editor }) => ({
     options: {
       enableContextMenu: true,

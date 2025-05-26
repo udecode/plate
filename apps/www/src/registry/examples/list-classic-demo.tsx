@@ -18,7 +18,6 @@ import { listValue } from '@/registry/examples/values/list-classic-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import {
   BulletedListElement,
-  ListItemElement,
   NumberedListElement,
   TodoListElement,
 } from '@/registry/ui/list-classic-node';
@@ -30,7 +29,7 @@ export default function ListClassicDemo() {
       ListPlugin,
       BulletedListPlugin.withComponent(BulletedListElement),
       NumberedListPlugin.withComponent(NumberedListElement),
-      ListItemPlugin.withComponent(ListItemElement),
+      ListItemPlugin,
       TodoListPlugin.withComponent(TodoListElement),
       ...FixedToolbarKit,
       ...AutoformatKit,

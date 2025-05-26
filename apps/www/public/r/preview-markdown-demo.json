@@ -3,7 +3,6 @@
   "name": "preview-markdown-demo",
   "type": "registry:example",
   "dependencies": [
-    "@udecode/cn",
     "prismjs"
   ],
   "registryDependencies": [

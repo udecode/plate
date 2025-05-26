@@ -5,7 +5,7 @@
   "dependencies": [],
   "registryDependencies": [
     "https://platejs.org/r/fixed-toolbar",
-    "https://platejs.org/r/fixed-toolbar-buttons"
+    "https://platejs.org/r/fixed-toolbar-classic-buttons"
   ],
   "files": [
     {

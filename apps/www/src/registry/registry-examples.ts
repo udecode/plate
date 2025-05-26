@@ -415,7 +415,6 @@ export const demoExamples: Registry['items'] = (
       registryDependencies: [
         'basic-elements-kit',
         'blockquote-node',
-        'code-block-node',
         'heading-node',
         'paragraph-node',
         'editor-kit',
@@ -441,7 +440,7 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'basic-marks-demo',
-      registryDependencies: ['basic-nodes-kit', 'code-node', 'editor-kit'],
+      registryDependencies: ['code-node', 'editor-kit'],
       type: 'registry:example',
     },
     {
@@ -527,6 +526,27 @@ export const demoExamples: Registry['items'] = (
       },
       name: 'column-demo',
       registryDependencies: ['column-node', 'editor-kit'],
+      type: 'registry:example',
+    },
+    {
+      description: 'Display code with syntax highlighting.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/code-block-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/code-block',
+            title: 'Code Block',
+          },
+        ],
+      },
+      name: 'code-block-demo',
+      registryDependencies: ['code-block-node', 'editor-kit'],
       type: 'registry:example',
     },
     {

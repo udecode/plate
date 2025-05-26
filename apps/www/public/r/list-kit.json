@@ -3,20 +3,17 @@
   "name": "list-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-block-quote",
-    "@udecode/plate-code-block",
-    "@udecode/plate-heading",
-    "@udecode/plate-indent",
-    "@udecode/plate-list",
-    "@udecode/plate-toggle"
+    "@udecode/plate-list"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/list-todo"
+    "https://platejs.org/r/list-todo",
+    "https://platejs.org/r/list-toolbar-button",
+    "https://platejs.org/r/indent-kit"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/list-kit.tsx",
-      "content": "'use client';\n\nimport { BlockquotePlugin } from '@udecode/plate-block-quote/react';\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport { HEADING_LEVELS } from '@udecode/plate-heading';\nimport { IndentPlugin } from '@udecode/plate-indent/react';\nimport { ListPlugin } from '@udecode/plate-list/react';\nimport { TogglePlugin } from '@udecode/plate-toggle/react';\nimport { ParagraphPlugin } from '@udecode/plate/react';\n\nimport { TodoLi, TodoMarker } from '@/registry/ui/list-todo';\n\nexport const ListKit = [\n  IndentPlugin.extend({\n    inject: {\n      targetPlugins: [\n        ParagraphPlugin.key,\n        ...HEADING_LEVELS,\n        BlockquotePlugin.key,\n        CodeBlockPlugin.key,\n        TogglePlugin.key,\n      ],\n    },\n  }),\n  ListPlugin.extend({\n    inject: {\n      targetPlugins: [\n        ParagraphPlugin.key,\n        ...HEADING_LEVELS,\n        BlockquotePlugin.key,\n        CodeBlockPlugin.key,\n        TogglePlugin.key,\n      ],\n    },\n    options: {\n      listStyleTypes: {\n        todo: {\n          liComponent: TodoLi,\n          markerComponent: TodoMarker,\n          type: 'todo',\n        },\n      },\n    },\n  }),\n];\n",
+      "content": "'use client';\n\nimport { KEYS } from '@udecode/plate';\nimport { ListPlugin } from '@udecode/plate-list/react';\n\nimport { IndentKit } from '@/registry/components/editor/plugins/indent-kit';\nimport { TodoLi, TodoMarker } from '@/registry/ui/list-todo';\n\nexport const ListKit = [\n  ...IndentKit,\n  ListPlugin.extend({\n    inject: {\n      targetPlugins: [\n        KEYS.p,\n        ...KEYS.heading,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n      ],\n    },\n    options: {\n      listStyleTypes: {\n        todo: {\n          liComponent: TodoLi,\n          markerComponent: TodoMarker,\n          type: 'todo',\n        },\n      },\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

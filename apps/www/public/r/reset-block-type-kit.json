@@ -3,16 +3,12 @@
   "name": "reset-block-type-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-block-quote",
-    "@udecode/plate-callout",
-    "@udecode/plate-code-block",
-    "@udecode/plate-heading",
-    "@udecode/plate-list"
+    "@udecode/plate-code-block"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/reset-block-type-kit.tsx",
-      "content": "'use client';\n\nimport { BlockquotePlugin } from '@udecode/plate-block-quote/react';\nimport { CalloutPlugin } from '@udecode/plate-callout/react';\nimport {\n  isCodeBlockEmpty,\n  isSelectionAtCodeBlockStart,\n  unwrapCodeBlock,\n} from '@udecode/plate-code-block';\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport { HEADING_LEVELS } from '@udecode/plate-heading';\nimport { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-list';\nimport { ParagraphPlugin, ResetNodePlugin } from '@udecode/plate/react';\n\nconst resetBlockTypesCommonRule = {\n  defaultType: ParagraphPlugin.key,\n  types: [\n    ...HEADING_LEVELS,\n    BlockquotePlugin.key,\n    INDENT_LIST_KEYS.todo,\n    ListStyleType.Disc,\n    ListStyleType.Decimal,\n    CalloutPlugin.key,\n  ],\n};\n\nconst resetBlockTypesCodeBlockRule = {\n  defaultType: ParagraphPlugin.key,\n  types: [CodeBlockPlugin.key],\n  onReset: unwrapCodeBlock,\n};\n\nexport const ResetBlockTypeKit = [\n  ResetNodePlugin.configure({\n    options: {\n      rules: [\n        {\n          ...resetBlockTypesCommonRule,\n          hotkey: 'Enter',\n          predicate: (editor) =>\n            editor.api.isEmpty(editor.selection, { block: true }),\n        },\n        {\n          ...resetBlockTypesCommonRule,\n          hotkey: 'Backspace',\n          predicate: (editor) => editor.api.isAt({ start: true }),\n        },\n        {\n          ...resetBlockTypesCodeBlockRule,\n          hotkey: 'Enter',\n          predicate: isCodeBlockEmpty,\n        },\n        {\n          ...resetBlockTypesCodeBlockRule,\n          hotkey: 'Backspace',\n          predicate: isSelectionAtCodeBlockStart,\n        },\n      ],\n    },\n  }),\n];\n",
+      "content": "'use client';\n\nimport { KEYS } from '@udecode/plate';\nimport {\n  isCodeBlockEmpty,\n  isSelectionAtCodeBlockStart,\n  unwrapCodeBlock,\n} from '@udecode/plate-code-block';\nimport { ResetNodePlugin } from '@udecode/plate/react';\n\nconst resetBlockTypesCommonRule = {\n  defaultType: KEYS.p,\n  types: [...KEYS.heading, KEYS.blockquote, KEYS.callout],\n};\n\nconst resetBlockTypesCodeBlockRule = {\n  defaultType: KEYS.p,\n  types: [KEYS.codeBlock],\n  onReset: unwrapCodeBlock,\n};\n\nexport const ResetBlockTypeKit = [\n  ResetNodePlugin.configure({\n    options: {\n      rules: [\n        {\n          ...resetBlockTypesCommonRule,\n          hotkey: 'Enter',\n          predicate: (editor) =>\n            editor.api.isEmpty(editor.selection, { block: true }),\n        },\n        {\n          ...resetBlockTypesCommonRule,\n          hotkey: 'Backspace',\n          predicate: (editor) => editor.api.isAt({ start: true }),\n        },\n        {\n          ...resetBlockTypesCodeBlockRule,\n          hotkey: 'Enter',\n          predicate: isCodeBlockEmpty,\n        },\n        {\n          ...resetBlockTypesCodeBlockRule,\n          hotkey: 'Backspace',\n          predicate: isSelectionAtCodeBlockStart,\n        },\n      ],\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

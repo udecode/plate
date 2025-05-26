@@ -2,16 +2,14 @@
 
 import * as React from 'react';
 
-import type {
-  TResolvedSuggestion,
-  TSuggestionElement,
-  TSuggestionText,
-} from '@udecode/plate-suggestion';
+import type { TResolvedSuggestion } from '@udecode/plate-suggestion';
 
 import {
   type NodeEntry,
   type Path,
   type TElement,
+  type TSuggestionElement,
+  type TSuggestionText,
   ElementApi,
   KEYS,
   PathApi,

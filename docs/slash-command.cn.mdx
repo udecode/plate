@@ -41,9 +41,11 @@ const plugins = [
 ```
 
 ```tsx
+import { KEYS } from '@udecode/plate';
+
 const components = {
   // ...其他组件
-  [SlashInputPlugin.key]: SlashInputElement,
+  [KEYS.slashInput]: SlashInputElement,
 };
 ```
 
@@ -83,13 +85,13 @@ const components = {
 
 <API name="SlashPlugin">
 <APIOptions type="SlashPluginOptions">
-  <APIItem name="createComboboxInput" type="() => TSlashInputElement" optional>
+  <APIItem name="createComboboxInput" type="() => TComboboxInputElement" optional>
     用于创建组合框输入元素的函数。
     - **默认值：** 
     ```tsx
     () => ({
       children: [{ text: '' }],
-      type: SlashInputPlugin.key,
+      type: KEYS.slashInput,
     });
     ```
   </APIItem>

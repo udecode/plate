@@ -4,8 +4,8 @@ import * as React from 'react';
 
 import { Plate, usePlateEditor } from '@udecode/plate/react';
 
-import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
 import { EditorKit } from '@/registry/components/editor/editor-kit';
+import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
 import { copilotValue } from '@/registry/examples/values/copilot-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 

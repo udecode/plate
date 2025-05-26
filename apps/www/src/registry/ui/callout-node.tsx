@@ -2,12 +2,12 @@
 
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import { useCalloutEmojiPicker } from '@udecode/plate-callout/react';
 import { useEmojiDropdownMenuState } from '@udecode/plate-emoji/react';
 import { PlateElement } from '@udecode/plate/react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 import { EmojiPicker, EmojiPopover } from './emoji-toolbar-button';
 

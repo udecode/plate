@@ -174,42 +174,87 @@ function DocsNavItems({
       )}
     >
       {items.map((item, index) =>
-        item.href && !item.disabled ? (
+        item.disabled ? (
+          <span
+            key={index}
+            className={cn(
+              'flex w-full items-center rounded-md p-2 text-muted-foreground hover:underline',
+              item.disabled && 'cursor-not-allowed opacity-60'
+            )}
+          >
+            {item.title}
+            {item.label && (
+              <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground no-underline group-hover:no-underline">
+                {item.label}
+              </span>
+            )}
+          </span>
+        ) : (
           <React.Fragment key={index}>
-            <Link
-              className={cn(
-                'group relative flex h-8 w-full items-center truncate rounded-lg px-2 whitespace-nowrap after:absolute after:inset-x-0 after:inset-y-[-2px] after:rounded-lg hover:bg-accent hover:text-accent-foreground',
-                item.disabled && 'cursor-not-allowed opacity-60',
-                normalizedPathname === item.href
-                  ? 'bg-accent font-medium text-accent-foreground'
-                  : 'font-normal text-foreground'
-              )}
-              href={hrefWithLocale(item.href, locale)}
-              rel={item.external ? 'noreferrer' : ''}
-              target={item.external ? '_blank' : ''}
-            >
-              {item.title}
-              {item.label && (
-                <div className="ml-2 flex gap-1">
-                  {castArray(item.label).map((label, labelIndex) => (
-                    <span
-                      key={labelIndex}
-                      className={cn(
-                        'rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
-                        label === 'Plus' &&
-                          'bg-primary text-background dark:text-background',
-                        label === 'New' && 'bg-[#adfa1d] dark:text-background'
-                      )}
-                    >
-                      {label}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {item.title?.toLowerCase().includes('leaf') && (
-                <Leaf className="ml-auto size-4 text-foreground/80" />
-              )}
-            </Link>
+            {item.href ? (
+              <Link
+                className={cn(
+                  'group relative flex h-8 w-full items-center truncate rounded-lg px-2 whitespace-nowrap after:absolute after:inset-x-0 after:inset-y-[-2px] after:rounded-lg hover:bg-accent hover:text-accent-foreground',
+                  item.disabled && 'cursor-not-allowed opacity-60',
+                  normalizedPathname === item.href
+                    ? 'bg-accent font-medium text-accent-foreground'
+                    : 'font-normal text-foreground'
+                )}
+                href={hrefWithLocale(item.href, locale)}
+                rel={item.external ? 'noreferrer' : ''}
+                target={item.external ? '_blank' : ''}
+              >
+                {item.title}
+                {item.label && (
+                  <div className="ml-2 flex gap-1">
+                    {castArray(item.label).map((label, labelIndex) => (
+                      <span
+                        key={labelIndex}
+                        className={cn(
+                          'rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
+                          label === 'Plus' &&
+                            'bg-primary text-background dark:text-background',
+                          label === 'New' && 'bg-[#adfa1d] dark:text-background'
+                        )}
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {item.title?.toLowerCase().includes('leaf') && (
+                  <Leaf className="ml-auto size-4 text-foreground/80" />
+                )}
+              </Link>
+            ) : (
+              <span
+                className={cn(
+                  'flex h-8 w-full items-center truncate rounded-lg px-2 font-normal text-foreground select-none'
+                )}
+              >
+                {item.title}
+                {item.label && (
+                  <div className="ml-2 flex gap-1">
+                    {castArray(item.label).map((label, labelIndex) => (
+                      <span
+                        key={labelIndex}
+                        className={cn(
+                          'rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
+                          label === 'Plus' &&
+                            'bg-primary text-background dark:text-background',
+                          label === 'New' && 'bg-[#adfa1d] dark:text-background'
+                        )}
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {item.title?.toLowerCase().includes('leaf') && (
+                  <Leaf className="ml-auto size-4 text-foreground/80" />
+                )}
+              </span>
+            )}
             {item.items?.map((subItem, subIndex) => (
               <Link
                 key={subIndex}
@@ -244,21 +289,6 @@ function DocsNavItems({
               </Link>
             ))}
           </React.Fragment>
-        ) : (
-          <span
-            key={index}
-            className={cn(
-              'flex w-full cursor-not-allowed items-center rounded-md p-2 text-muted-foreground hover:underline',
-              item.disabled && 'cursor-not-allowed opacity-60'
-            )}
-          >
-            {item.title}
-            {item.label && (
-              <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground no-underline group-hover:no-underline">
-                {item.label}
-              </span>
-            )}
-          </span>
         )
       )}
     </div>

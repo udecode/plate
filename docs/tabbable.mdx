@@ -22,6 +22,7 @@ npm install @udecode/plate-tabbable
 
 ```tsx
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
+import { KEYS } from '@udecode/plate';
 
 const plugins = [
   // ...otherPlugins,
@@ -41,8 +42,8 @@ Use the `query` option to disable the Tabbable plugin when the `Tab` key should 
 
 ```tsx
 query: (editor) => {
-  const inList = findNode(editor, { match: { type: ListItemPlugin.key } });
-  const inCodeBlock = findNode(editor, { match: { type: CodeBlockPlugin.key } });
+  const inList = findNode(editor, { match: { type: KEYS.lic } });
+  const inCodeBlock = findNode(editor, { match: { type: KEYS.codeBlock } });
   return !inList && !inCodeBlock;
 },
 ```

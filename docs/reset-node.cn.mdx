@@ -20,17 +20,18 @@ title: 重置节点
 import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
+  KEYS,
 } from '@udecode/plate';
 import { ResetNodePlugin } from '@udecode/plate/react';
 
 const resetBlockTypesCommonRule = {
-  types: [BlockquotePlugin.key, TodoListPlugin.key],
-  defaultType: ParagraphPlugin.key,
+  defaultType: KEYS.p,
+  types: [...KEYS.heading, KEYS.blockquote, KEYS.callout],
 };
 
 const resetBlockTypesCodeBlockRule = {
-  types: [CodeBlockPlugin.key],
-  defaultType: ParagraphPlugin.key,
+  defaultType: KEYS.p,
+  types: [KEYS.codeBlock],
   onReset: unwrapCodeBlock,
 };
 

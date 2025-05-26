@@ -4,17 +4,15 @@ import type { ExtendConfig, Path } from '@udecode/plate';
 
 import { isSlateString } from '@udecode/plate';
 import {
-  type BaseCommentsConfig,
-  BaseCommentsPlugin,
+  type BaseCommentConfig,
+  BaseCommentPlugin,
 } from '@udecode/plate-comments';
 import { toTPlatePlugin, useHotkeys } from '@udecode/plate/react';
 
 import { CommentLeaf } from '@/registry/ui/comment-node';
 
-import { SkipMarkKit } from './skip-mark-kit';
-
-export type CommentsConfig = ExtendConfig<
-  BaseCommentsConfig,
+export type CommentConfig = ExtendConfig<
+  BaseCommentConfig,
   {
     activeId: string | null;
     commentingBlock: Path | null;
@@ -24,70 +22,64 @@ export type CommentsConfig = ExtendConfig<
   }
 >;
 
-export const commentsPlugin = toTPlatePlugin<CommentsConfig>(
-  BaseCommentsPlugin,
-  {
-    handlers: {
-      onClick: ({ api, event, setOption, type }) => {
-        let leaf = event.target as HTMLElement;
-        let isSet = false;
+export const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {
+  handlers: {
+    onClick: ({ api, event, setOption, type }) => {
+      let leaf = event.target as HTMLElement;
+      let isSet = false;
 
-        const unsetActiveSuggestion = () => {
-          setOption('activeId', null);
-          isSet = true;
-        };
+      const unsetActiveSuggestion = () => {
+        setOption('activeId', null);
+        isSet = true;
+      };
 
-        if (!isSlateString(leaf)) unsetActiveSuggestion();
+      if (!isSlateString(leaf)) unsetActiveSuggestion();
 
-        while (leaf.parentElement) {
-          if (leaf.classList.contains(`slate-${type}`)) {
-            const commentsEntry = api.comment!.node();
+      while (leaf.parentElement) {
+        if (leaf.classList.contains(`slate-${type}`)) {
+          const commentsEntry = api.comment!.node();
 
-            if (!commentsEntry) {
-              unsetActiveSuggestion();
-
-              break;
-            }
-
-            const id = api.comment!.nodeId(commentsEntry[0]);
-
-            setOption('activeId', id ?? null);
-            isSet = true;
+          if (!commentsEntry) {
+            unsetActiveSuggestion();
 
             break;
           }
 
-          leaf = leaf.parentElement;
+          const id = api.comment!.nodeId(commentsEntry[0]);
+
+          setOption('activeId', id ?? null);
+          isSet = true;
+
+          break;
         }
 
-        if (!isSet) unsetActiveSuggestion();
+        leaf = leaf.parentElement;
+      }
+
+      if (!isSet) unsetActiveSuggestion();
+    },
+  },
+  options: {
+    activeId: null,
+    commentingBlock: null,
+    hoverId: null,
+    uniquePathMap: new Map(),
+  },
+  useHooks: ({ editor }) => {
+    useHotkeys(
+      ['meta+shift+m', 'ctrl+shift+m'],
+      (e) => {
+        if (!editor.selection) return;
+
+        e.preventDefault();
+
+        if (!editor.api.isExpanded()) return;
       },
-    },
-    options: {
-      activeId: null,
-      commentingBlock: null,
-      hoverId: null,
-      uniquePathMap: new Map(),
-    },
-    useHooks: ({ editor }) => {
-      useHotkeys(
-        ['meta+shift+m', 'ctrl+shift+m'],
-        (e) => {
-          if (!editor.selection) return;
+      {
+        enableOnContentEditable: true,
+      }
+    );
+  },
+});
 
-          e.preventDefault();
-
-          if (!editor.api.isExpanded()) return;
-        },
-        {
-          enableOnContentEditable: true,
-        }
-      );
-    },
-  }
-);
-
-export const CommentKit = [
-  commentsPlugin.withComponent(CommentLeaf),
-  ...SkipMarkKit,
-];
+export const CommentKit = [commentPlugin.withComponent(CommentLeaf)];

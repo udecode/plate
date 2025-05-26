@@ -80,7 +80,7 @@ export const registryComponents: Registry['items'] = [
       '@udecode/plate-callout',
       '@udecode/plate-code-block',
       '@udecode/plate-date',
-      '@udecode/plate-heading',
+      '@udecode/plate-toc',
       '@udecode/plate-layout',
       '@udecode/plate-link',
       '@udecode/plate-math',
@@ -113,26 +113,6 @@ export const registryComponents: Registry['items'] = [
       },
     ],
     name: 'plate-types',
-    type: 'registry:component',
-  },
-  {
-    dependencies: [
-      '@udecode/plate-comments',
-      '@udecode/plate-excalidraw',
-      '@udecode/plate-link',
-      '@udecode/plate-list-classic',
-      '@udecode/plate-media',
-      '@udecode/plate-mention',
-      '@udecode/plate-table',
-      '@udecode/plate-toggle',
-    ],
-    files: [
-      {
-        path: 'components/editor/plate-classic-types.ts',
-        type: 'registry:component',
-      },
-    ],
-    name: 'plate-classic-types',
     type: 'registry:component',
   },
 ];

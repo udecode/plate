@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TFileElement } from '@udecode/plate-media';
+import type { TFileElement } from '@udecode/plate';
 import type { PlateElementProps } from '@udecode/plate/react';
 
 import { useMediaState } from '@udecode/plate-media/react';

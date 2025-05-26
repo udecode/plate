@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TCommentText } from '@udecode/plate-comments';
+import type { TCommentText } from '@udecode/plate';
 import type { PlateLeafProps } from '@udecode/plate/react';
 
 import { getCommentCount } from '@udecode/plate-comments';
@@ -13,14 +13,14 @@ import {
 } from '@udecode/plate/react';
 
 import { cn } from '@/lib/utils';
-import { commentsPlugin } from '@/registry/components/editor/plugins/comment-kit';
+import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';
 
 export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
   const { children, leaf } = props;
 
-  const { api, setOption } = useEditorPlugin(commentsPlugin);
-  const hoverId = usePluginOption(commentsPlugin, 'hoverId');
-  const activeId = usePluginOption(commentsPlugin, 'activeId');
+  const { api, setOption } = useEditorPlugin(commentPlugin);
+  const hoverId = usePluginOption(commentPlugin, 'hoverId');
+  const activeId = usePluginOption(commentPlugin, 'activeId');
 
   const isOverlapping = getCommentCount(leaf) > 1;
   const currentId = api.comment.nodeId(leaf);

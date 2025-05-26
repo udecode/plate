@@ -3,7 +3,6 @@
   "name": "multiple-editors-demo",
   "type": "registry:example",
   "dependencies": [
-    "@udecode/cn",
     "@udecode/plate-basic-elements",
     "@udecode/plate-basic-marks",
     "@udecode/plate-media"

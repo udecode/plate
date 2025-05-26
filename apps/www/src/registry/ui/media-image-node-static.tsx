@@ -1,15 +1,18 @@
 import * as React from 'react';
 
-import type { SlateElementProps } from '@udecode/plate';
-import type { TCaptionElement } from '@udecode/plate-caption';
-import type { TImageElement } from '@udecode/plate-media';
+import type {
+  SlateElementProps,
+  TCaptionProps,
+  TImageElement,
+  TResizableProps,
+} from '@udecode/plate';
 
 import { NodeApi, SlateElement } from '@udecode/plate';
 
 import { cn } from '@/lib/utils';
 
 export function ImageElementStatic(
-  props: SlateElementProps<TImageElement & TCaptionElement & { width: number }>
+  props: SlateElementProps<TImageElement & TCaptionProps & TResizableProps>
 ) {
   const { align = 'center', caption, url, width } = props.element;
 

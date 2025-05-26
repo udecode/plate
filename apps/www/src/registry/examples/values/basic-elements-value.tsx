@@ -1,25 +1,41 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+import { KEYS } from '@udecode/plate';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 
 export const basicElementsValue: any = (
   <fragment>
-    <hh2>Blocks</hh2>
+    <hh1>Heading 1</hh1>
     <hp>
-      Easily create headings of various levels, from H1 to H6, to structure your
-      content and make it more organized.
+      This is a top-level heading, typically used for main titles and major
+      section headers.
+    </hp>
+    <hh2>Heading 2</hh2>
+    <hp>
+      Secondary headings help organize content into clear sections and
+      subsections.
+    </hp>
+    <hh3>Heading 3</hh3>
+    <hp>
+      Third-level headings provide further content structure and hierarchy.
     </hp>
     <hblockquote>
-      Create blockquotes to emphasize important information or highlight quotes
-      from external sources.
+      "Blockquotes are perfect for highlighting important information, quotes
+      from external sources, or emphasizing key points in your content."
     </hblockquote>
-    <hcodeblock lang="javascript">
-      <hcodeline>// Use code blocks to showcase code snippets</hcodeline>
-      <hcodeline>{`function greet() {`}</hcodeline>
-      <hcodeline>{`  console.info('Hello World!');`}</hcodeline>
-      <hcodeline>{`}`}</hcodeline>
-    </hcodeblock>
+    <hp>
+      Use headings to create a clear document structure that helps readers
+      navigate your content effectively. Combine them with blockquotes to
+      emphasize important information.
+    </hp>
+    <element type={KEYS.hr}>
+      <htext />
+    </element>
+    <hp>
+      Horizontal rules help visually separate different sections of your
+      content, creating clear breaks between topics or ideas.
+    </hp>
   </fragment>
 );

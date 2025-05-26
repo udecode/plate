@@ -82,7 +82,7 @@ import {
   PlaceholderPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
-import { SelectOnBackspacePlugin } from '@udecode/plate';
+import { SelectOnBackspacePlugin, KEYS } from '@udecode/plate';
 ```
 
 ```tsx
@@ -96,7 +96,7 @@ const plugins = [
   SelectOnBackspacePlugin.configure({
     options: {
       query: {
-        allow: [ImagePlugin.key, VideoPlugin.key, AudioPlugin.key, FilePlugin.key, MediaEmbedPlugin.key],
+        allow: [KEYS.image, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
       },
     },
   }),
@@ -110,12 +110,12 @@ const plugins = [
 ```tsx
 const components = {
   // ...其他组件,
-  [ImagePlugin.key]: ImageElement,
-  [VideoPlugin.key]: VideoElement,
-  [AudioPlugin.key]: AudioElement,
-  [FilePlugin.key]: FileElement,
-  [MediaEmbedPlugin.key]: MediaEmbedElement,
-  [PlaceholderPlugin.key]: MediaPlaceholderElement,
+  [KEYS.image]: ImageElement,
+  [KEYS.video]: VideoElement,
+  [KEYS.audio]: AudioElement,
+  [KEYS.file]: FileElement,
+  [KEYS.mediaEmbed]: MediaEmbedElement,
+  [KEYS.placeholder]: MediaPlaceholderElement,
 };
 ```
 
@@ -264,37 +264,37 @@ export function useUploadFile({
   audio: {
     maxFileCount: 1,
     maxFileSize: '8MB',
-    mediaType: AudioPlugin.key,
+    mediaType: KEYS.audio,
     minFileCount: 1,
   },
   blob: {
     maxFileCount: 1,
     maxFileSize: '8MB',
-    mediaType: FilePlugin.key,
+    mediaType: KEYS.file,
     minFileCount: 1,
   },
   image: {
     maxFileCount: 3,
     maxFileSize: '4MB',
-    mediaType: ImagePlugin.key,
+    mediaType: KEYS.image,
     minFileCount: 1,
   },
   pdf: {
     maxFileCount: 1,
     maxFileSize: '4MB',
-    mediaType: FilePlugin.key,
+    mediaType: KEYS.file,
     minFileCount: 1,
   },
   text: {
     maxFileCount: 1,
     maxFileSize: '64KB',
-    mediaType: FilePlugin.key,
+    mediaType: KEYS.file,
     minFileCount: 1,
   },
   video: {
     maxFileCount: 1,
     maxFileSize: '16MB',
-    mediaType: VideoPlugin.key,
+    mediaType: KEYS.video,
     minFileCount: 1,
   },
 }
@@ -648,7 +648,7 @@ enum UploadErrorCode {
   </APIItem>
   <APIItem name="key" type="string" optional>
     媒体嵌入元素的键。
-    - **默认值:** `MediaEmbedPlugin.key`
+    - **默认值:** `KEYS.mediaEmbed`
   </APIItem>
   <APIItem name="insertNodesOptions" type="InsertNodesOptions" optional>
     插入节点的附加选项。

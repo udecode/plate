@@ -427,14 +427,11 @@ import { MyCustomCodeBlockElement } from './my-custom-code-block'; // 你的自�
 
 const editor = createPlateEditor({
   plugins: [
-    CodeBlockPlugin, // 结构/逻辑基础插件
+    CodeBlockPlugin.withComponent(MyCustomCodeBlockElement), // 结构/逻辑基础插件
+    // 如需自定义 code_line、code_syntax 组件，需一并配置
     MarkdownPlugin,  // Markdown 转换
     // ...其他插件
   ],
-  components: {
-    [CodeBlockPlugin.key]: MyCustomCodeBlockElement,
-    // 如需自定义 code_line、code_syntax 组件，需一并配置
-  },
 });
 // MyCustomCodeBlockElement.tsx 负责自定义渲染（如用 react-syntax-highlighter），消费 PlateElement 的 props。
 ```
@@ -446,7 +443,7 @@ const editor = createPlateEditor({
 
 ```tsx title="lib/plate-editor.ts"
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { KEYS } from '@udecode/plate';
 
 MarkdownPlugin.configure({
   options: {
@@ -455,7 +452,7 @@ MarkdownPlugin.configure({
       code: {
         deserialize: (mdastNode, deco, options) => {
           return {
-            type: CodeBlockPlugin.key, // Plate 类型
+            type: KEYS.codeBlock, // Plate 类型
             lang: mdastNode.lang ?? undefined,
             rawCode: mdastNode.value || '', // 直接存储原始代码
             children: [{ text: '' }], // Slate Element 需有 text 子节点
@@ -463,7 +460,7 @@ MarkdownPlugin.configure({
         },
       },
       // 还需自定义 `serialize` 规则，将 `rawCode` 转回 mdast 'code' 节点
-      [CodeBlockPlugin.key]: { // 假设 key 为 'code_block'
+      [KEYS.codeBlock]: { // 假设 key 为 'code_block'
           serialize: (slateNode, options) => {
              return {
                 type: 'code',
@@ -616,7 +613,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 | `remarkPlugins`               | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] }})`              | 直接映射，作用于 mdast。                                                                                                                    |
 | `rehypePlugins`               | 通常**无需**。用 `remarkPlugins` 扩展语法。                       | Plate 组件负责渲染。如需处理原始 HTML，可通过 `rehype-raw` 加入 `remarkPlugins`。                                                            |
 | `components={{ h1: MyH1 }}`   | `createPlateEditor({ components: { h1: MyH1 } })`         | 配置 Plate 渲染组件。key 取决于 `HeadingPlugin` 配置。                                                                        |
-| `components={{ code: MyCode }}` | 1. **转换**：`MarkdownPlugin > rules > code`。 2. **渲染**：`components: { [CodeBlockPlugin.key]: MyCode }` | `rules` 控制 mdast（`code`）到 Slate（`code_block`）的转换。`components` 控制 Slate 渲染。                                                                 |
+| `components={{ code: MyCode }}` | 1. **转换**：`MarkdownPlugin > rules > code`。 2. **渲染**：`components: { [KEYS.codeBlock]: MyCode }` | `rules` 控制 mdast（`code`）到 Slate（`code_block`）的转换。`components` 控制 Slate 渲染。                                                                 |
 | `allowedElements`             | `MarkdownPlugin.configure({ options: { allowedNodes: [...] }})`              | 转换时过滤节点（mdast/Slate 类型）。                                                                                                  |
 | `disallowedElements`          | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] }})`            | 转换时过滤节点。                                                                                                                      |
 | `unwrapDisallowed`            | 无直接等价。过滤即移除节点。                                | 可用自定义 `rules` 实现 unwrap。                                                                                                          |
@@ -772,7 +769,7 @@ MarkdownPlugin.configure({
 
 `rules` 负责 MD ↔ Slate 转换，Plate 用 React 组件*渲染* Slate 节点。通过 `createPlateEditor` 的 `components` 选项配置。类似于 `react-markdown` 的 `components`，但在 Plate 生态内。
 
-`components` 的 key 通常为 Plate 插件 key（如 `ParagraphPlugin.key`、`CodeBlockPlugin.key`）或默认 Slate 类型（如 `p`、`h1`）。
+`components` 的 key 通常为 Plate 插件 key（如 `KEYS.p`、`KEYS.codeBlock`）或默认 Slate 类型（如 `p`、`h1`）。
 
 **示例：**
 ```tsx title="components/my-editor.tsx"
@@ -787,11 +784,9 @@ import { CodeBlockElement } from '@/components/ui/code-block-element';
 const editor = createPlateEditor({
   plugins: [BoldPlugin, CodeBlockPlugin /* ... */],
   components: {
-    [ParagraphPlugin.key]: ParagraphElement,
-    [CodeBlockPlugin.key]: CodeBlockElement,
-    [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
+    [KEYS.p]: ParagraphElement,
+    [KEYS.codeBlock]: CodeBlockElement,
     // 如需代码块内语法高亮：
-    // [CodeBlockPlugin.keys.syntax]: CodeLeaf, // 若 CodeBlockPlugin 提供该 key
   },
 });
 ```
@@ -806,7 +801,7 @@ import React, { useEffect } from 'react';
 import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 // 导入常用 Markdown 功能的 Plate 插件
-import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HeadingPlugin } from '@udecode/plate-basic-elements/react';
 // ...其他如 BlockquotePlugin、CodeBlockPlugin、ListPlugin、BoldPlugin、ItalicPlugin 等
 
 export interface PlateMarkdownProps {

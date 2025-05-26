@@ -2,12 +2,12 @@
 
 import * as React from 'react';
 
-import { NodeApi } from '@udecode/plate';
 import {
   type TCodeBlockElement,
-  formatCodeBlock,
-  isLangSupported,
-} from '@udecode/plate-code-block';
+  type TCodeSyntaxLeaf,
+  NodeApi,
+} from '@udecode/plate';
+import { formatCodeBlock, isLangSupported } from '@udecode/plate-code-block';
 import {
   type PlateElementProps,
   type PlateLeafProps,
@@ -194,7 +194,7 @@ export function CodeLineElement(props: PlateElementProps) {
   return <PlateElement {...props} />;
 }
 
-export function CodeSyntaxLeaf(props: PlateLeafProps) {
+export function CodeSyntaxLeaf(props: PlateLeafProps<TCodeSyntaxLeaf>) {
   const tokenClassName = props.leaf.className as string;
 
   return <PlateLeaf className={tokenClassName} {...props} />;

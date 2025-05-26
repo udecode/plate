@@ -4,9 +4,7 @@
   "type": "registry:ui",
   "title": "Keyboard Input Leaf",
   "description": "A component for styling keyboard shortcuts.",
-  "dependencies": [
-    "@udecode/plate-kbd"
-  ],
+  "dependencies": [],
   "registryDependencies": [],
   "files": [
     {
@@ -23,12 +21,12 @@
   "meta": {
     "docs": [
       {
-        "route": "/docs/kbd",
+        "route": "/docs/basic-marks",
         "title": "Keyboard Input"
       }
     ],
     "examples": [
-      "kbd-demo"
+      "basic-marks-demo"
     ]
   }
 }

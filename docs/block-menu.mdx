@@ -28,20 +28,18 @@ docs:
 ## Installation
 
 ```bash
-npm install @udecode/plate-selection @udecode/plate-node-id
+npm install @udecode/plate-selection
 ```
 
 ## Usage
 
 ```tsx
 import { BlockMenuPlugin } from '@udecode/plate-selection/react';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
 ```
 
 ```tsx
 const plugins = [
   // ...otherPlugins,
-  NodeIdPlugin,
   BlockSelectionPlugin.configure({
     options: {
       enableContextMenu: true,

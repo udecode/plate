@@ -1,10 +1,9 @@
 import * as React from 'react';
 
-import type { TCodeBlockElement } from '@udecode/plate-code-block';
-
 import {
   type SlateElementProps,
   type SlateLeafProps,
+  type TCodeBlockElement,
   SlateElement,
   SlateLeaf,
 } from '@udecode/plate';

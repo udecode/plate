@@ -2,10 +2,7 @@
 
 import * as React from 'react';
 
-import type {
-  TMentionElement,
-  TMentionInputElement,
-} from '@udecode/plate-mention';
+import type { TComboboxInputElement, TMentionElement } from '@udecode/plate';
 import type { PlateElementProps } from '@udecode/plate/react';
 
 import { IS_APPLE, KEYS } from '@udecode/plate';
@@ -80,7 +77,7 @@ export function MentionElement(
 const onSelectItem = getMentionOnSelectItem();
 
 export function MentionInputElement(
-  props: PlateElementProps<TMentionInputElement>
+  props: PlateElementProps<TComboboxInputElement>
 ) {
   const { editor, element } = props;
   const [search, setSearch] = React.useState('');

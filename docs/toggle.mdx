@@ -27,26 +27,25 @@ docs:
 ## Installation
 
 ```bash
-npm install @udecode/plate-indent @udecode/plate-node-id @udecode/plate-toggle
+npm install @udecode/plate-indent @udecode/plate-toggle
 ```
 
 ## Usage
 
 ```tsx
 import { ParagraphPlugin } from '@udecode/plate/react';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
+import { KEYS } from '@udecode/plate';
 
 const plugins = [
   // ...otherPlugins,
   HeadingPlugin,
   IndentPlugin.configure({
     inject: {
-      targetPlugins: ['p', 'h1', TogglePlugin.key],
+      targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.toggle],
     },
   }),
-  NodeIdPlugin,
   TogglePlugin,
 ];
 ```

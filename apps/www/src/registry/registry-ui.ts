@@ -3,26 +3,22 @@ import type { Registry } from 'shadcn/registry';
 export const uiComponents: Registry['items'] = [
   {
     dependencies: [
-      '@udecode/cn',
       '@udecode/plate-ai',
+      '@udecode/plate-basic-elements',
       '@udecode/plate-basic-marks',
-      '@udecode/plate-block-quote',
       '@udecode/plate-callout',
       '@udecode/plate-code-block',
       '@udecode/plate-date',
       '@udecode/plate-font',
-      '@udecode/plate-heading',
-      '@udecode/plate-highlight',
-      '@udecode/plate-horizontal-rule',
       '@udecode/plate-indent',
       '@udecode/plate-list',
-      '@udecode/plate-kbd',
       '@udecode/plate-layout',
       '@udecode/plate-link',
       '@udecode/plate-math',
       '@udecode/plate-media',
       '@udecode/plate-mention',
       '@udecode/plate-table',
+      '@udecode/plate-toc',
       '@udecode/plate-markdown',
       '@udecode/plate-selection',
       'ai',
@@ -160,20 +156,14 @@ export const uiComponents: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/cn',
       '@udecode/plate-alignment',
       '@udecode/plate-basic-marks',
-      '@udecode/plate-block-quote',
       '@udecode/plate-code-block',
       '@udecode/plate-comments',
       '@udecode/plate-date',
       '@udecode/plate-font',
-      '@udecode/plate-heading',
-      '@udecode/plate-highlight',
-      '@udecode/plate-horizontal-rule',
       '@udecode/plate-indent',
       '@udecode/plate-list',
-      '@udecode/plate-kbd',
       '@udecode/plate-layout',
       '@udecode/plate-line-height',
       '@udecode/plate-link',
@@ -183,6 +173,7 @@ export const uiComponents: Registry['items'] = [
       '@udecode/plate-mention',
       '@udecode/plate-table',
       '@udecode/plate-toggle',
+      '@udecode/plate-toc',
       'lowlight',
       'html2canvas-pro',
       'pdf-lib',
@@ -1005,7 +996,7 @@ export const uiNodes: Registry['items'] = [
     ],
     meta: {
       docs: [
-        { route: '/docs/basic-elements' },
+        { route: '/docs/blockquote' },
         { route: 'https://pro.platejs.org/docs/components/blockquote-node' },
       ],
       examples: ['basic-elements-demo', 'basic-nodes-pro'],
@@ -1025,10 +1016,10 @@ export const uiNodes: Registry['items'] = [
     ],
     meta: {
       docs: [
-        { route: '/docs/basic-elements' },
+        { route: '/docs/callout' },
         { route: 'https://pro.platejs.org/docs/components/callout-node' },
       ],
-      examples: ['basic-elements-demo'],
+      examples: ['callout-demo'],
     },
     name: 'callout-node',
     registryDependencies: ['emoji-toolbar-button'],
@@ -1047,10 +1038,10 @@ export const uiNodes: Registry['items'] = [
     ],
     meta: {
       docs: [
-        { route: '/docs/basic-elements' },
+        { route: '/docs/code-block' },
         { route: 'https://pro.platejs.org/docs/components/code-block-node' },
       ],
-      examples: ['basic-elements-demo'],
+      examples: ['code-block-demo'],
     },
     name: 'code-block-node',
     registryDependencies: ['shadcn/command', 'shadcn/popover', 'shadcn/button'],
@@ -1066,7 +1057,7 @@ export const uiNodes: Registry['items'] = [
     ],
     meta: {
       docs: [
-        { route: '/docs/basic-marks' },
+        { route: '/docs/code' },
         { route: 'https://pro.platejs.org/docs/components/code-node' },
       ],
       examples: ['basic-marks-demo'],
@@ -1267,7 +1258,7 @@ export const uiNodes: Registry['items'] = [
     ],
     meta: {
       docs: [
-        { route: '/docs/basic-elements' },
+        { route: '/docs/heading' },
         { route: 'https://pro.platejs.org/docs/components/heading-node' },
       ],
       examples: ['basic-elements-demo', 'basic-nodes-pro'],
@@ -1350,7 +1341,7 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-kbd'],
+    dependencies: [],
     description: 'A component for styling keyboard shortcuts.',
     files: [
       { path: 'ui/kbd-node.tsx', type: 'registry:ui' },
@@ -1358,7 +1349,7 @@ export const uiNodes: Registry['items'] = [
     ],
     meta: {
       docs: [{ route: '/docs/kbd', title: 'Keyboard Input' }],
-      examples: ['kbd-demo'],
+      examples: ['basic-marks-demo'],
     },
     name: 'kbd-node',
     registryDependencies: [],
@@ -1640,7 +1631,7 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-heading'],
+    dependencies: ['@udecode/plate-toc'],
     description:
       'A table of contents component with links to document headings.',
     files: [
@@ -1649,7 +1640,7 @@ export const uiNodes: Registry['items'] = [
     ],
     meta: {
       docs: [
-        { route: '/docs/basic-elements' },
+        { route: '/docs/toc' },
         { route: 'https://pro.platejs.org/docs/components/toc-node' },
       ],
       examples: ['toc-demo', 'toc-pro'],
