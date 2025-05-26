@@ -1,6 +1,9 @@
-import { type SlateEditor, KEYS } from '@udecode/plate';
-
-import type { TagLike, TTagElement } from './BaseTagPlugin';
+import {
+  type SlateEditor,
+  type TTagElement,
+  type TTagProps,
+  KEYS,
+} from '@udecode/plate';
 
 /**
  * Compares two sets of tags/labels for equality, ignoring order
@@ -9,7 +12,7 @@ import type { TagLike, TTagElement } from './BaseTagPlugin';
  * @param newTags New set of tags to compare against
  * @returns Boolean indicating if the sets contain the same values
  */
-export function isEqualTags<T extends TagLike>(
+export function isEqualTags<T extends TTagProps>(
   editor: SlateEditor,
   newTags?: T[]
 ): boolean {

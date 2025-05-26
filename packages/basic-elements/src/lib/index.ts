@@ -3,3 +3,6 @@
  */
 
 export * from './BaseBasicElementsPlugin';
+export * from './BaseBlockquotePlugin';
+export * from './BaseHeadingPlugin';
+export * from './BaseHorizontalRulePlugin';

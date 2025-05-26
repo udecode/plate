@@ -1,4 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+import type { TTableCellElement } from '@udecode/plate';
+
 import { KEYS } from '@udecode/plate';
 import {
   useEditorPlugin,
@@ -7,11 +9,7 @@ import {
   useReadOnly,
 } from '@udecode/plate/react';
 
-import {
-  type TTableCellElement,
-  getTableGridAbove,
-  isTableRectangular,
-} from '../../lib';
+import { getTableGridAbove, isTableRectangular } from '../../lib';
 import { TablePlugin } from '../TablePlugin';
 
 export const useTableMergeState = () => {

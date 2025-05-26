@@ -1,7 +1,6 @@
 /** @jsx jsxt */
 
 import { type Value, createSlateEditor } from '@udecode/plate';
-import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { type TableConfig, BaseTablePlugin } from './BaseTablePlugin';
@@ -23,7 +22,7 @@ export const getTestTablePlugins = (
     tablePlugin = override(tablePlugin);
   }
 
-  return [NodeIdPlugin, tablePlugin];
+  return [tablePlugin];
 };
 
 describe('withNormalizeTable', () => {
@@ -63,6 +62,7 @@ describe('withNormalizeTable', () => {
         ) as any as Value;
 
         const editor = createSlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           value: input,
         });
@@ -146,6 +146,7 @@ describe('withNormalizeTable', () => {
         ) as any as Value;
 
         const editor = createSlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
             initialTableWidth: 90,
@@ -232,6 +233,7 @@ describe('withNormalizeTable', () => {
         ) as any as Value;
 
         const editor = createSlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
             initialTableWidth: 90,
@@ -318,6 +320,7 @@ describe('withNormalizeTable', () => {
         ) as any as Value;
 
         const editor = createSlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
             initialTableWidth: 90,
@@ -375,6 +378,7 @@ describe('withNormalizeTable', () => {
         ) as any as Value;
 
         const editor = createSlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           value: input,
         });

@@ -28,7 +28,7 @@ export const withCaption: OverrideEditor<CaptionConfig> = ({
   return {
     transforms: {
       apply(operation) {
-        const { plugins } = getOptions();
+        const { query } = getOptions();
 
         if (operation.type === 'set_selection') {
           const newSelection = {
@@ -42,7 +42,7 @@ export const withCaption: OverrideEditor<CaptionConfig> = ({
             newSelection &&
             RangeApi.isCollapsed(newSelection)
           ) {
-            const types = getPluginTypes(editor, plugins!);
+            const types = getPluginTypes(editor, query.allow);
 
             const entry = editor.api.above({
               at: newSelection,

@@ -9,8 +9,9 @@ import {
   PathApi,
 } from '@udecode/slate';
 
-import { FirstBlockEffect } from '../../../internal/plugin/FirstBlockEffect';
 import { createAtomStore } from '../../libs/jotai';
+import { useComposing, useReadOnly } from '../../slate-react';
+import { useEditorRef, usePlateStore } from '../plate';
 import { usePath } from './usePath';
 
 export const SCOPE_ELEMENT = 'element';
@@ -36,9 +37,25 @@ export const { ElementProvider, elementStore, useElementStore } =
 function Effect() {
   const path = usePath();
 
-  if (PathApi.equals(path, [0])) {
+  if (path && PathApi.equals(path, [0])) {
     return <FirstBlockEffect />;
   }
+
+  return null;
+}
+
+function FirstBlockEffect() {
+  const editor = useEditorRef();
+  const store = usePlateStore();
+  const composing = useComposing();
+  const readOnly = useReadOnly();
+
+  editor.dom.readOnly = readOnly;
+  editor.dom.composing = composing;
+
+  React.useLayoutEffect(() => {
+    store.set('composing', composing);
+  }, [composing, store]);
 
   return null;
 }

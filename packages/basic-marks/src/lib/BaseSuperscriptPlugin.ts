@@ -14,4 +14,11 @@ export const BaseSuperscriptPlugin = createSlatePlugin({
       },
     },
   },
-});
+  render: { as: 'sup' },
+}).extendTransforms(({ editor, type }) => ({
+  toggle: () => {
+    editor.tf.toggleMark(type, {
+      remove: editor.getType(KEYS.sub),
+    });
+  },
+}));

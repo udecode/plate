@@ -1,9 +1,8 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor, TTableElement } from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
 
 import type { TableConfig } from '../BaseTablePlugin';
-import type { TTableElement } from '../types';
 import type { GetEmptyRowNodeOptions } from './getEmptyRowNode';
 
 export interface GetEmptyTableNodeOptions extends GetEmptyRowNodeOptions {

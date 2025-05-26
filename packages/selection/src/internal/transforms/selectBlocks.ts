@@ -1,4 +1,4 @@
-import type { Path, SlateEditor, TElement, TNode } from '@udecode/plate';
+import type { Path, SlateEditor, TIdElement, TNode } from '@udecode/plate';
 
 import { BlockSelectionPlugin } from '../../react';
 
@@ -7,7 +7,7 @@ export const selectBlocks = (editor: SlateEditor, at: Path | TNode) => {
     .getApi(BlockSelectionPlugin)
     .blockSelection.getNodes();
 
-  const entry = editor.api.node<TElement & { id: string }>(at);
+  const entry = editor.api.node<TIdElement>(at);
 
   if (!entry) return;
 

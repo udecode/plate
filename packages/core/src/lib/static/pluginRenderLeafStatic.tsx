@@ -23,7 +23,8 @@ export const pluginRenderLeafStatic = (
     const { children, leaf } = props;
 
     if (leaf[plugin.node.type ?? plugin.key]) {
-      const Leaf = plugin.render.leaf ?? components?.[plugin.key] ?? SlateLeaf;
+      const Component = (plugin.render.leaf ?? components?.[plugin.key]) as any;
+      const Leaf = Component ?? SlateLeaf;
 
       const ctxProps = getRenderNodeStaticProps({
         attributes: { ...(leaf.attributes as any) },
@@ -33,7 +34,11 @@ export const pluginRenderLeafStatic = (
         props: props as any,
       }) as any;
 
-      return <Leaf {...ctxProps}>{children}</Leaf>;
+      return (
+        <Leaf as={Component ? undefined : plugin.render.as} {...ctxProps}>
+          {children}
+        </Leaf>
+      );
     }
 
     return children;

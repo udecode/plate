@@ -1,7 +1,11 @@
-import { type At, type SlateEditor, NodeApi } from '@udecode/plate';
+import {
+  type At,
+  type SlateEditor,
+  type TColumnElement,
+  type TColumnGroupElement,
+  NodeApi,
+} from '@udecode/plate';
 import { KEYS } from '@udecode/plate';
-
-import type { TColumnElement, TColumnGroupElement } from '../types';
 
 import { columnsToWidths } from '../utils/columnsToWidths';
 

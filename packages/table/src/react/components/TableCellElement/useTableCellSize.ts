@@ -1,6 +1,10 @@
 import React from 'react';
 
-import type { NodeEntry } from '@udecode/plate';
+import type {
+  NodeEntry,
+  TTableCellElement,
+  TTableRowElement,
+} from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
 import {
@@ -8,8 +12,6 @@ import {
   useElement,
   useElementSelector,
 } from '@udecode/plate/react';
-
-import type { TTableCellElement, TTableRowElement } from '../../../lib';
 
 import { useCellIndices } from '../../hooks/useCellIndices';
 import { TablePlugin } from '../../TablePlugin';

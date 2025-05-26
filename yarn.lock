@@ -6411,9 +6411,6 @@ __metadata:
   resolution: "@udecode/plate-basic-elements@workspace:packages/basic-elements"
   dependencies:
     "@udecode/plate": "workspace:^"
-    "@udecode/plate-block-quote": "npm:48.0.0"
-    "@udecode/plate-code-block": "npm:48.0.0"
-    "@udecode/plate-heading": "npm:48.0.0"
   peerDependencies:
     "@udecode/plate": ">=48.0.5"
     react: ">=18.0.0"
@@ -6433,7 +6430,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-block-quote@npm:48.0.0, @udecode/plate-block-quote@workspace:^, @udecode/plate-block-quote@workspace:packages/block-quote":
+"@udecode/plate-block-quote@workspace:^, @udecode/plate-block-quote@workspace:packages/block-quote":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-block-quote@workspace:packages/block-quote"
   dependencies:
@@ -6482,7 +6479,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-code-block@npm:48.0.0, @udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
+"@udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-code-block@workspace:packages/code-block"
   dependencies:
@@ -6622,11 +6619,6 @@ __metadata:
   resolution: "@udecode/plate-docx@workspace:packages/docx"
   dependencies:
     "@udecode/plate": "workspace:^"
-    "@udecode/plate-heading": "npm:48.0.0"
-    "@udecode/plate-indent": "npm:48.0.0"
-    "@udecode/plate-list": "npm:48.0.0"
-    "@udecode/plate-media": "npm:48.0.0"
-    "@udecode/plate-table": "npm:48.0.0"
     validator: "npm:^13.15.0"
   peerDependencies:
     "@udecode/plate": ">=48.0.5"
@@ -6702,7 +6694,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-heading@npm:48.0.0, @udecode/plate-heading@workspace:^, @udecode/plate-heading@workspace:packages/heading":
+"@udecode/plate-heading@workspace:^, @udecode/plate-heading@workspace:packages/heading":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-heading@workspace:packages/heading"
   dependencies:
@@ -6714,7 +6706,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-highlight@workspace:^, @udecode/plate-highlight@workspace:packages/highlight":
+"@udecode/plate-highlight@workspace:packages/highlight":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-highlight@workspace:packages/highlight"
   dependencies:
@@ -6726,7 +6718,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-horizontal-rule@workspace:^, @udecode/plate-horizontal-rule@workspace:packages/horizontal-rule":
+"@udecode/plate-horizontal-rule@workspace:packages/horizontal-rule":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-horizontal-rule@workspace:packages/horizontal-rule"
   dependencies:
@@ -6778,7 +6770,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-kbd@workspace:^, @udecode/plate-kbd@workspace:packages/kbd":
+"@udecode/plate-kbd@workspace:packages/kbd":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-kbd@workspace:packages/kbd"
   dependencies:
@@ -6867,6 +6859,7 @@ __metadata:
     remark-mdx: "npm:^3.1.0"
     remark-parse: "npm:^11.0.0"
     remark-stringify: "npm:^11.0.0"
+    ts-essentials: "npm:10.0.4"
     unified: "npm:^11.0.5"
   peerDependencies:
     "@udecode/plate": ">=48.0.5"
@@ -6889,7 +6882,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-media@npm:48.0.0, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
+"@udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
@@ -6915,7 +6908,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-node-id@npm:48.0.0, @udecode/plate-node-id@workspace:^, @udecode/plate-node-id@workspace:packages/node-id":
+"@udecode/plate-node-id@workspace:packages/node-id":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-node-id@workspace:packages/node-id"
   dependencies:
@@ -7048,7 +7041,6 @@ __metadata:
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
     "@udecode/plate": "workspace:^"
-    "@udecode/plate-node-id": "npm:48.0.0"
     "@udecode/plate-resizable": "npm:48.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
@@ -7079,13 +7071,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-toc@workspace:packages/toc":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-toc@workspace:packages/toc"
+  dependencies:
+    "@udecode/plate": "workspace:^"
+  peerDependencies:
+    "@udecode/plate": ">=48.0.5"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-toggle@workspace:^, @udecode/plate-toggle@workspace:packages/toggle":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-toggle@workspace:packages/toggle"
   dependencies:
     "@udecode/plate": "workspace:^"
     "@udecode/plate-indent": "npm:48.0.0"
-    "@udecode/plate-node-id": "npm:48.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate": ">=48.0.5"
@@ -20795,6 +20798,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ts-essentials@npm:10.0.4":
+  version: 10.0.4
+  resolution: "ts-essentials@npm:10.0.4"
+  peerDependencies:
+    typescript: ">=4.5.0"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10c0/99a5dd3ae6ed885e0f6cdb9556c07ba5c9e00d447a58a3308440739d624bcd92d370f8bb060ae7a2992023b4a03acdf669ac8f1e0427b3fbc792a2857f85ab0d
+  languageName: node
+  linkType: hard
+
 "ts-interface-checker@npm:^0.1.9":
   version: 0.1.13
   resolution: "ts-interface-checker@npm:0.1.13"
@@ -22354,11 +22369,8 @@ __metadata:
     "@udecode/plate-floating": "workspace:^"
     "@udecode/plate-font": "workspace:^"
     "@udecode/plate-heading": "workspace:^"
-    "@udecode/plate-highlight": "workspace:^"
-    "@udecode/plate-horizontal-rule": "workspace:^"
     "@udecode/plate-indent": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
-    "@udecode/plate-kbd": "workspace:^"
     "@udecode/plate-layout": "workspace:^"
     "@udecode/plate-line-height": "workspace:^"
     "@udecode/plate-link": "workspace:^"
@@ -22368,7 +22380,6 @@ __metadata:
     "@udecode/plate-math": "workspace:^"
     "@udecode/plate-media": "workspace:^"
     "@udecode/plate-mention": "workspace:^"
-    "@udecode/plate-node-id": "workspace:^"
     "@udecode/plate-playwright": "workspace:^"
     "@udecode/plate-resizable": "workspace:^"
     "@udecode/plate-selection": "workspace:^"

@@ -2,12 +2,11 @@ import {
   type NodeEntry,
   type PathRef,
   type SlateEditor,
+  type TTableCellElement,
   KEYS,
   NodeApi,
   RangeApi,
 } from '@udecode/plate';
-
-import type { TTableCellElement } from '..';
 
 import { getTableGridAbove } from '../queries';
 

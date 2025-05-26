@@ -1,18 +1,15 @@
 import {
   type Path,
   type SlateEditor,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
   getEditorPlugin,
   KEYS,
   NodeApi,
   PathApi,
 } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
-
-import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';

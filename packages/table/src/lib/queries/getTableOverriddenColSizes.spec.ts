@@ -1,4 +1,4 @@
-import type { TTableElement } from '../types';
+import type { TTableElement } from '@udecode/plate';
 
 import { getTableOverriddenColSizes } from './getTableOverriddenColSizes';
 

@@ -440,7 +440,12 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         ) => React.ReactNode;
       }>;
       /** @see {@link Shortcuts} */
-      shortcuts: Shortcuts;
+      shortcuts: Partial<
+        Record<
+          (string & {}) | keyof InferTransforms<C>[C['key']],
+          Shortcut | null
+        >
+      >;
       useOptionsStore: TCreatedStoreType<
         C['options'],
         [['zustand/mutative-x', never]]
@@ -791,7 +796,7 @@ export type Serializer<C extends AnyPluginConfig = PluginConfig> =
   };
 
 export type Shortcut = HotkeysOptions & {
-  keys?: Keys;
+  keys?: Keys | null;
   priority?: number;
   handler?: (ctx: {
     editor: PlateEditor;

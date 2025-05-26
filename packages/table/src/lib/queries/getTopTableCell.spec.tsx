@@ -14,6 +14,7 @@ jsxt;
 
 const createEditorInstance = (input: any) => {
   return createSlateEditor({
+    nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
     value: input.children,

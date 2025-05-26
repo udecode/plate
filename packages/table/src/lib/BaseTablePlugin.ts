@@ -4,13 +4,13 @@ import {
   type OmitFirst,
   type PluginConfig,
   type TElement,
+  type TTableCellElement,
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
 } from '@udecode/plate';
 
-import type { TTableCellElement } from './types';
 import type { CellIndices } from './utils';
 
 import { getEmptyCellNode, getEmptyRowNode, getEmptyTableNode } from './api';

@@ -1,16 +1,14 @@
 import type { SlateEditor, TElement } from '@udecode/plate';
 
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-} from '../BaseCodeBlockPlugin';
+import { KEYS } from '@udecode/plate';
+
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
 export const toggleCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
-  const codeBlockType = editor.getType(BaseCodeBlockPlugin);
-  const codeLineType = editor.getType(BaseCodeLinePlugin);
+  const codeBlockType = editor.getType(KEYS.codeBlock);
+  const codeLineType = editor.getType(KEYS.codeLine);
 
   const isActive = editor.api.some({
     match: { type: codeBlockType },

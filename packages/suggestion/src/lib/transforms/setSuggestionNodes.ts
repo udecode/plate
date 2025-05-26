@@ -1,13 +1,13 @@
 import {
   type SetNodesOptions,
   type SlateEditor,
+  type TInlineSuggestionData,
+  type TSuggestionText,
   ElementApi,
   getAt,
   KEYS,
   nanoid,
 } from '@udecode/plate';
-
-import type { TInlineSuggestionData, TSuggestionText } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';

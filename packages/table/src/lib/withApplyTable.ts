@@ -2,16 +2,14 @@ import {
   type OverrideEditor,
   type TElement,
   type TRange,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
   KEYS,
   RangeApi,
 } from '@udecode/plate';
 
 import type { TableConfig } from './BaseTablePlugin';
-import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from './types';
 
 import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
 import { computeCellIndices, getCellTypes } from './utils';

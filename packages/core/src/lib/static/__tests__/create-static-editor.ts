@@ -13,21 +13,24 @@ import {
   BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
-import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
-import { BaseCommentsPlugin } from '@udecode/plate-comments';
+import { BaseCommentPlugin } from '@udecode/plate-comments';
 import { BaseDatePlugin } from '@udecode/plate-date';
 import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
   BaseFontSizePlugin,
 } from '@udecode/plate-font';
-import { BaseHeadingPlugin, BaseTocPlugin } from '@udecode/plate-heading';
-import { BaseHighlightPlugin } from '@udecode/plate-highlight';
-import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { BaseTocPlugin } from '@udecode/plate-toc';
+import { BaseHighlightPlugin } from '@udecode/plate-basic-marks';
+import {
+  BaseHorizontalRulePlugin,
+  BaseHeadingPlugin,
+  BaseBlockquotePlugin,
+} from '@udecode/plate-basic-elements';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseListPlugin } from '@udecode/plate-list';
-import { BaseKbdPlugin } from '@udecode/plate-kbd';
+import { BaseKbdPlugin } from '@udecode/plate-basic-marks';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';
@@ -66,7 +69,11 @@ import {
   EquationElementStatic,
   InlineEquationElementStatic,
 } from 'www/src/registry/ui/equation-node-static';
-import { HeadingElementStatic } from 'www/src/registry/ui/heading-node-static';
+import {
+  H1ElementStatic,
+  H2ElementStatic,
+  H3ElementStatic,
+} from 'www/src/registry/ui/heading-node-static';
 import { HrElementStatic } from 'www/src/registry/ui/hr-node-static';
 import { ImageElementStatic } from 'www/src/registry/ui/media-image-node-static';
 import { FireLiComponent, FireMarker } from 'www/src/registry/ui/list-emoji';
@@ -173,7 +180,7 @@ export const createStaticEditor = (
       BaseFilePlugin,
       BaseImagePlugin,
       BaseMentionPlugin,
-      BaseCommentsPlugin,
+      BaseCommentPlugin,
       BaseTogglePlugin,
       BaseEquationPlugin,
       BaseInlineEquationPlugin,
@@ -185,13 +192,12 @@ export const createStaticEditor = (
 export const components = {
   [KEYS.audio]: AudioElementStatic,
   [KEYS.blockquote]: BlockquoteElementStatic,
-  [KEYS.bold]: withProps(SlateLeaf, { as: 'strong' }),
   [KEYS.codeBlock]: CodeBlockElementStatic,
   [KEYS.codeLine]: CodeLineElementStatic,
   [KEYS.code]: CodeLeafStatic,
   [KEYS.codeSyntax]: CodeSyntaxLeafStatic,
   [KEYS.column]: ColumnElementStatic,
-  [KEYS.column]: ColumnGroupElementStatic,
+  [KEYS.columnGroup]: ColumnGroupElementStatic,
   [KEYS.comment]: CommentLeafStatic,
   [KEYS.date]: DateElementStatic,
   [KEYS.equation]: EquationElementStatic,
@@ -199,27 +205,19 @@ export const components = {
   [KEYS.hr]: HrElementStatic,
   [KEYS.img]: ImageElementStatic,
   [KEYS.inlineEquation]: InlineEquationElementStatic,
-  [KEYS.italic]: withProps(SlateLeaf, { as: 'em' }),
   [KEYS.kbd]: KbdLeafStatic,
   [KEYS.link]: LinkElementStatic,
   // [KEYS.mediaEmbed]: MediaEmbedElementStatic,
   [KEYS.mention]: MentionElementStatic,
   [KEYS.p]: ParagraphElementStatic,
-  [KEYS.strikethrough]: withProps(SlateLeaf, { as: 'del' }),
-  [KEYS.sub]: withProps(SlateLeaf, { as: 'sub' }),
-  [KEYS.sup]: withProps(SlateLeaf, { as: 'sup' }),
   [KEYS.th]: TableCellHeaderStaticElement,
   [KEYS.td]: TableCellElementStatic,
   [KEYS.table]: TableElementStatic,
   [KEYS.tr]: TableRowElementStatic,
   [KEYS.toc]: TocElementStatic,
   [KEYS.toggle]: ToggleElementStatic,
-  [KEYS.underline]: withProps(SlateLeaf, { as: 'u' }),
   [KEYS.video]: VideoElementStatic,
-  [KEYS.h1]: withProps(HeadingElementStatic, { variant: 'h1' }),
-  [KEYS.h2]: withProps(HeadingElementStatic, { variant: 'h2' }),
-  [KEYS.h3]: withProps(HeadingElementStatic, { variant: 'h3' }),
-  [KEYS.h4]: withProps(HeadingElementStatic, { variant: 'h4' }),
-  [KEYS.h5]: withProps(HeadingElementStatic, { variant: 'h5' }),
-  [KEYS.h6]: withProps(HeadingElementStatic, { variant: 'h6' }),
+  [KEYS.h1]: H1ElementStatic,
+  [KEYS.h2]: H2ElementStatic,
+  [KEYS.h3]: H3ElementStatic,
 };

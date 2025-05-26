@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
-import type { Value } from '@udecode/plate';
-import type { TIndentElement } from '@udecode/plate-indent';
+import type { TIndentElement, Value } from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
 import {

@@ -10,6 +10,7 @@ import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { DOMPlugin } from './dom';
 import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';
+import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
 import { SlateExtensionPlugin } from './slate-extension';
 
@@ -18,14 +19,23 @@ export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 export type GetCorePluginsOptions = {
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
+  /** Configure the node id plugin. */
+  nodeId?: NodeIdConfig['options'] | boolean;
   /** Override the core plugins using the same key. */
   plugins?: AnyPluginConfig[];
 };
 
 export const getCorePlugins = ({
   maxLength,
+  nodeId,
   plugins = [],
 }: GetCorePluginsOptions) => {
+  // Disable nodeId by default in test environment for deterministic tests
+  let resolvedNodeId: any = nodeId;
+  if (process.env.NODE_ENV === 'test' && nodeId === undefined) {
+    resolvedNodeId = false;
+  }
+
   let corePlugins = [
     DebugPlugin as SlatePlugin<DebugConfig>,
     SlateExtensionPlugin,
@@ -34,12 +44,14 @@ export const getCorePlugins = ({
     InlineVoidPlugin,
     ParserPlugin,
     maxLength
-      ? LengthPlugin.configure({
-          options: { maxLength },
-        })
+      ? LengthPlugin.configure({ options: { maxLength } })
       : LengthPlugin,
     HtmlPlugin,
     AstPlugin,
+    NodeIdPlugin.configure({
+      enabled: resolvedNodeId !== false,
+      options: resolvedNodeId === false ? undefined : resolvedNodeId,
+    }),
     BaseParagraphPlugin,
   ];
 

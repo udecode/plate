@@ -1,6 +1,7 @@
 import {
   type EditorBeforeOptions,
   type PluginConfig,
+  type TLinkElement,
   createTSlatePlugin,
   getEditorPlugin,
   isUrl,
@@ -8,8 +9,6 @@ import {
   RemoveEmptyNodesPlugin,
   withRemoveEmptyNodes,
 } from '@udecode/plate';
-
-import type { TLinkElement } from './types';
 
 import { getLinkAttributes } from './utils/getLinkAttributes';
 import { validateUrl } from './utils/index';

@@ -1,6 +1,6 @@
 import type { TText } from '@udecode/plate';
 
-import type { astMarks } from '../types';
+import type { MdMark } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
 
 import { getCustomMark } from './utils';
@@ -14,10 +14,10 @@ export const convertTextsSerialize = (
   slateTexts: readonly TText[],
   options: SerializeMdOptions,
   key?: string
-): astMarks[] => {
+): MdMark[] => {
   const customLeaf: string[] = getCustomMark(options);
 
-  const mdastTexts: astMarks[] = [];
+  const mdastTexts: MdMark[] = [];
 
   const starts: string[] = [];
   let ends: string[] = [];
@@ -79,7 +79,7 @@ export const convertTextsSerialize = (
           textTemp = textTemp.slice(0, -1);
         }
       }
-      let res: astMarks = {
+      let res: MdMark = {
         type: 'text',
         value: textTemp,
       };
@@ -112,7 +112,7 @@ export const convertTextsSerialize = (
                 currentRes.type !== 'text' &&
                 currentRes.type !== 'inlineCode'
               ) {
-                currentRes = currentRes.children[0] as astMarks;
+                currentRes = currentRes.children[0] as MdMark;
               }
               currentRes.type = 'inlineCode';
 
@@ -134,7 +134,7 @@ export const convertTextsSerialize = (
             }
           }
         });
-      const arr: astMarks[] = [];
+      const arr: MdMark[] = [];
       if (bef.length > 0) {
         arr.push({ type: 'text', value: bef });
       }
@@ -163,7 +163,7 @@ export const convertTextsSerialize = (
 
   const flattenedEmptyNodes = mergedTexts.map((node) => {
     if (!hasContent(node)) {
-      return { type: 'text', value: '' } as astMarks;
+      return { type: 'text', value: '' } as MdMark;
     }
     return node;
   });
@@ -171,7 +171,7 @@ export const convertTextsSerialize = (
   return flattenedEmptyNodes;
 };
 
-const hasContent = (node: astMarks): boolean => {
+const hasContent = (node: MdMark): boolean => {
   if (node.type === 'inlineCode') {
     // inline has no children - no deeper search needed
     return node.value !== '';
@@ -202,8 +202,8 @@ const hasContent = (node: astMarks): boolean => {
   return false;
 };
 
-const mergeTexts = (nodes: astMarks[]): astMarks[] => {
-  const res: astMarks[] = [];
+const mergeTexts = (nodes: MdMark[]): MdMark[] => {
+  const res: MdMark[] = [];
   for (const cur of nodes) {
     const last = res.at(-1);
     if (last && last.type === cur.type) {
@@ -213,7 +213,7 @@ const mergeTexts = (nodes: astMarks[]): astMarks[] => {
         last.value += (cur as typeof last).value;
       } else {
         last.children = mergeTexts(
-          last.children.concat((cur as typeof last).children) as astMarks[]
+          last.children.concat((cur as typeof last).children) as MdMark[]
         );
       }
     } else {

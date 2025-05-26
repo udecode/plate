@@ -1,13 +1,9 @@
-import {
-  type SlateEditor,
-  type TElement,
-  getEditorPlugin,
-  KEYS,
-} from '@udecode/plate';
+import type { SlateEditor, TElement, TTableElement } from '@udecode/plate';
 
-import type { TTableElement } from '../types';
+import { getEditorPlugin, KEYS } from '@udecode/plate';
 
-import { type TableConfig, BaseTableRowPlugin } from '../BaseTablePlugin';
+import type { TableConfig } from '../BaseTablePlugin';
+
 import { deleteTableMergeColumn } from '../merge/deleteColumn';
 import { deleteColumnWhenExpanded } from '../merge/deleteColumnWhenExpanded';
 import { getCellTypes } from '../utils';
@@ -37,7 +33,7 @@ export const deleteColumn = (editor: SlateEditor) => {
       match: { type: getCellTypes(editor) },
     });
     const trEntry = editor.api.above({
-      match: { type: editor.getType(BaseTableRowPlugin) },
+      match: { type: editor.getType(KEYS.tr) },
     });
 
     if (

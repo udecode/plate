@@ -1,4 +1,5 @@
-import type { TListElement } from '../internal/types';
+import type { TListElement } from '@udecode/plate';
+
 import type { MdList, MdListItem, MdParagraph } from '../mdast';
 import type { SerializeMdOptions } from './serializeMd';
 

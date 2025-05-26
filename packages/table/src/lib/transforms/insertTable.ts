@@ -1,13 +1,13 @@
 import {
   type InsertNodesOptions,
   type SlateEditor,
+  type TTableElement,
   KEYS,
   PathApi,
 } from '@udecode/plate';
 
 import type { GetEmptyTableNodeOptions } from '../api/getEmptyTableNode';
 import type { TableConfig } from '../BaseTablePlugin';
-import type { TTableElement } from '../types';
 
 /**
  * Insert table. If selection in table and no 'at' specified, insert after

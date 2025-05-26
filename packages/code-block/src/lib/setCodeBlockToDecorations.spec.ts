@@ -1,8 +1,6 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor, TCodeBlockElement } from '@udecode/plate';
 
 import { createPlateEditor } from '@udecode/plate/react';
-
-import type { TCodeBlockElement } from './types';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import { codeBlockToDecorations } from './setCodeBlockToDecorations';

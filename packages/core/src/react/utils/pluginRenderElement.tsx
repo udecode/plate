@@ -27,7 +27,8 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
 
   const { children: _children } = props;
   const key = plugin.key;
-  const Element = plugin.render?.node ?? (PlateElement as any);
+  const Component = plugin.render?.node;
+  const Element = Component ?? (PlateElement as any);
 
   const aboveNodes = editor.pluginList.flatMap((o) => {
     if (isEditOnly(readOnly, o, 'render')) return [];
@@ -56,7 +57,11 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
     }
   });
 
-  let component: React.ReactNode = <Element {...props}>{children}</Element>;
+  let component: React.ReactNode = (
+    <Element as={Component ? undefined : plugin.render?.as} {...props}>
+      {children}
+    </Element>
+  );
 
   aboveNodes.forEach((withHOC) => {
     const hoc = withHOC({ ...props, key } as any);

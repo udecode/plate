@@ -12,44 +12,50 @@ export const withSelectOnBackspace: OverrideEditor<SelectOnBackspaceConfig> = ({
 }) => ({
   transforms: {
     deleteBackward(unit) {
-      const { selection } = editor;
       const { query, removeNodeIfEmpty } = getOptions();
 
-      if (unit === 'character' && editor.api.isCollapsed()) {
-        const pointBefore = editor.api.before(selection!, {
-          unit: unit,
-        });
-
-        if (pointBefore) {
-          const [prevCell] = editor.api.nodes({
-            at: pointBefore,
-            match: (node) => queryNode([node, pointBefore.path], query),
+      const apply = () => {
+        if (
+          unit === 'character' &&
+          editor.selection &&
+          editor.api.isCollapsed()
+        ) {
+          const pointBefore = editor.api.before(editor.selection, {
+            unit: unit,
           });
 
-          if (!!prevCell && pointBefore) {
-            const point = editor.api.point(selection!)!;
-            const selectedNode = NodeApi.get(editor, point.path);
+          if (pointBefore) {
+            const prevNode = editor.api.node({
+              at: pointBefore,
+              match: (node) => queryNode([node, pointBefore.path], query),
+            });
 
-            if (
-              removeNodeIfEmpty &&
-              selectedNode &&
-              !NodeApi.string(selectedNode as any)
-            ) {
-              // remove node if empty
-              editor.tf.removeNodes();
+            if (prevNode) {
+              if (removeNodeIfEmpty) {
+                const selectedNode = NodeApi.get(
+                  editor,
+                  editor.api.point(editor.selection)!.path
+                );
+
+                if (selectedNode && editor.api.isEmpty(selectedNode)) {
+                  // remove node if empty
+                  editor.tf.removeNodes();
+                }
+              }
+
+              // Select previous block instead of deleting
+              editor.tf.select(pointBefore);
+              return true;
             }
-
-            // don't delete image, set selection there
-            editor.tf.select(pointBefore);
-          } else {
-            deleteBackward(unit);
           }
-        } else {
-          deleteBackward(unit);
         }
-      } else {
-        deleteBackward(unit);
+      };
+
+      if (apply()) {
+        return;
       }
+
+      deleteBackward(unit);
     },
   },
 });

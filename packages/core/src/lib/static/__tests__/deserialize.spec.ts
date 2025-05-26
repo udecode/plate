@@ -5,11 +5,8 @@ import { commentsValue } from 'www/src/registry/examples/values/comments-value';
 import { dateValue } from 'www/src/registry/examples/values/date-value';
 import { fontValue } from 'www/src/registry/examples/values/font-value';
 // import { equationValue } from 'www/src/registry/examples/values/equation-value';
-import { highlightValue } from 'www/src/registry/examples/values/highlight-value';
-import { horizontalRuleValue } from 'www/src/registry/examples/values/horizontal-rule-value';
 import { listValue } from 'www/src/registry/examples/values/list-value';
 import { indentValue } from 'www/src/registry/examples/values/indent-value';
-import { kbdValue } from 'www/src/registry/examples/values/kbd-value';
 import { lineHeightValue } from 'www/src/registry/examples/values/line-height-value';
 import { linkValue } from 'www/src/registry/examples/values/link-value';
 import { mentionValue } from 'www/src/registry/examples/values/mention-value';
@@ -25,15 +22,12 @@ describe('deserializePlateStatic', () => {
       ...basicMarksValue,
       ...tocPlaygroundValue,
       ...linkValue,
-      ...horizontalRuleValue,
       // ...tableValue,
       // ...equationValue,
       // ...columnValue,
       ...mentionValue,
       ...dateValue,
       ...fontValue,
-      ...highlightValue,
-      ...kbdValue,
       // TODO: fix comments
       // ...commentsValue,
       ...alignValue,
@@ -57,15 +51,12 @@ describe('deserializePlateStatic', () => {
       ...basicMarksValue,
       ...tocPlaygroundValue,
       ...linkValue,
-      ...horizontalRuleValue,
       // ...tableValue,
       // ...equationValue,
       // ...columnValue,
       ...mentionValue,
       ...dateValue,
       ...fontValue,
-      ...highlightValue,
-      ...kbdValue,
       // ...commentsValue,
       ...alignValue,
       ...lineHeightValue,

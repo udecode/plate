@@ -30,7 +30,8 @@ export const pluginRenderLeaf = (
     if (isEditOnly(readOnly, plugin, 'render')) return children;
 
     if (leaf[plugin.node.type ?? plugin.key]) {
-      const Leaf = leafComponent ?? node ?? PlateLeaf;
+      const Component = leafComponent ?? node;
+      const Leaf = Component ?? PlateLeaf;
 
       const ctxProps = getRenderNodeProps({
         attributes: leaf.attributes as any,
@@ -40,7 +41,11 @@ export const pluginRenderLeaf = (
         readOnly,
       }) as any;
 
-      return <Leaf {...ctxProps}>{children}</Leaf>;
+      return (
+        <Leaf as={Component ? undefined : plugin.render.as} {...ctxProps}>
+          {children}
+        </Leaf>
+      );
     }
 
     return children;

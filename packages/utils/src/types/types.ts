@@ -46,3 +46,8 @@ export type WithPartial<T, K extends keyof T> = Omit<T, K> & Partial<T>;
 
 export type WithRequired<T, K extends keyof T> = Omit<T, K> &
   Required<Pick<T, K>>;
+
+export type StrictExtract<Type, Union extends Partial<Type>> = Extract<
+  Type,
+  Union
+>;

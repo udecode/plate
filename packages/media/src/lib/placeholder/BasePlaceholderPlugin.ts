@@ -1,6 +1,5 @@
 import {
   type PluginConfig,
-  type TElement,
   bindFirst,
   createTSlatePlugin,
   KEYS,
@@ -23,10 +22,6 @@ export type PlaceholderConfig = PluginConfig<
 >;
 
 export interface PlaceholderRule {
-  mediaType: string;
-}
-
-export interface TPlaceholderElement extends TElement {
   mediaType: string;
 }
 

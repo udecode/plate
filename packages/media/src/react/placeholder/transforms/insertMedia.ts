@@ -3,12 +3,11 @@ import type { PlateEditor } from '@udecode/plate/react';
 import {
   type InsertNodesOptions,
   type Path,
+  type TPlaceholderElement,
   KEYS,
   nanoid,
   PathApi,
 } from '@udecode/plate';
-
-import type { TPlaceholderElement } from '../../../lib';
 
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
 import { UploadErrorCode } from '../type';

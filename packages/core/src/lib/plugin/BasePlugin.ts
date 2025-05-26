@@ -154,6 +154,13 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
      */
     aboveSlate?: React.FC<{ children: React.ReactNode }>;
     /**
+     * Specifies the HTML tag name to use when rendering the node component.
+     * Only used when no custom `component` is provided for the plugin.
+     *
+     * @default 'div' for elements, 'span' for leaves
+     */
+    as?: keyof HTMLElementTagNameMap;
+    /**
      * Renders a component below leaf nodes when `isLeaf: true` and
      * `isDecoration: false`. Use `render.node` instead when `isDecoration:
      * true`.
@@ -247,6 +254,17 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * @default plugin.key
    */
   type: string;
+  /**
+   * If true, enables automatically clearing the mark when typing at its
+   * boundary. Only applies when `isLeaf` is true.
+   *
+   * When enabled, typing at the end of a marked text segment (e.g., at the end
+   * of commented text) will not apply the mark to the newly typed characters,
+   * effectively "exiting" the mark's formatting.
+   *
+   * @default false
+   */
+  clearOnBoundary?: boolean;
   component?: NodeComponent | null;
   /**
    * Controls which (if any) attribute names in the `attributes` property of an

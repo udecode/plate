@@ -54,9 +54,9 @@ export type NodeIdConfig = PluginConfig<
      */
     reuseId?: boolean;
     /**
-     * ID factory, e.g. `uuid`
+     * A function that generates and returns a unique ID.
      *
-     * @default () => Date.now()
+     * @default () => nanoid(10)
      */
     idCreator?: () => any;
   } & QueryNodeOptions
@@ -126,10 +126,12 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
           return;
         }
 
-        editor.tf.setNodes(
-          { [idKey!]: getOptions().idCreator!() },
-          { at: path }
-        );
+        editor.tf.withoutSaving(() => {
+          editor.tf.setNodes(
+            { [idKey!]: getOptions().idCreator!() },
+            { at: path }
+          );
+        });
       }
 
       // Only traverse children if this is an Element node

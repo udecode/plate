@@ -3,14 +3,13 @@ import {
   type SlateEditor,
   type TElement,
   type TRange,
+  type TSuggestionElement,
   ElementApi,
   KEYS,
   PathApi,
   PointApi,
   TextApi,
 } from '@udecode/plate';
-
-import type { TSuggestionElement } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries/';

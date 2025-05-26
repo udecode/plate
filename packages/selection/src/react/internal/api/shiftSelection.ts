@@ -1,4 +1,4 @@
-import { type TElement, PathApi } from '@udecode/plate';
+import { type TIdElement, PathApi } from '@udecode/plate';
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
@@ -84,7 +84,7 @@ export const shiftSelection = (
     // SHIFT+UP
     if (anchorIsBottom) {
       // Expand up => add block above the top-most
-      const aboveEntry = editor.api.previous<TElement & { id: string }>({
+      const aboveEntry = editor.api.previous<TIdElement>({
         at: topPath,
         from: 'parent',
         match: api.blockSelection.isSelectable,

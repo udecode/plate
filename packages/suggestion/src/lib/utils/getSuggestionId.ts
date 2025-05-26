@@ -1,8 +1,6 @@
-import type { TText } from '@udecode/plate';
+import type { TInlineSuggestionData, TText } from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
-
-import type { TInlineSuggestionData } from '../types';
 
 // the last id is the active id
 export const getSuggestionKeyId = (node: TText) => {

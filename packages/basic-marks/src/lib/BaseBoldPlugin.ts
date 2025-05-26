@@ -23,4 +23,9 @@ export const BaseBoldPlugin = createSlatePlugin({
       },
     },
   },
-});
+  render: { as: 'strong' },
+}).extendTransforms(({ editor, type }) => ({
+  toggle: () => {
+    editor.tf.toggleMark(type);
+  },
+}));

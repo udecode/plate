@@ -3,13 +3,12 @@ import type { createLowlight } from 'lowlight';
 import {
   type NodeEntry,
   type PluginConfig,
+  type TCodeBlockElement,
   type TElement,
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
 } from '@udecode/plate';
-
-import type { TCodeBlockElement } from './types';
 
 import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBlock';
 import {
@@ -66,6 +65,7 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   },
   parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
   plugins: [BaseCodeLinePlugin, BaseCodeSyntaxPlugin],
+  render: { as: 'pre' },
   decorate: ({ editor, entry: [node, path], getOptions, type }) => {
     if (!getOptions().lowlight) return [];
 

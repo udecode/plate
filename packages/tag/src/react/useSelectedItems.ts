@@ -1,7 +1,5 @@
-import { type SlateEditor, KEYS } from '@udecode/plate';
+import { type SlateEditor, type TTagElement, KEYS } from '@udecode/plate';
 import { useEditorSelector } from '@udecode/plate/react';
-
-import type { TTagElement } from '../lib';
 
 export const getSelectedItems = (editor: SlateEditor) => {
   const options = editor.api.nodes<TTagElement>({

@@ -1,6 +1,8 @@
-import { type SlateEditor, getEditorPlugin, KEYS } from '@udecode/plate';
+import type { SlateEditor, TTableElement } from '@udecode/plate';
 
-import type { TableConfig, TTableElement } from '..';
+import { getEditorPlugin, KEYS } from '@udecode/plate';
+
+import type { TableConfig } from '..';
 
 import { deleteRowWhenExpanded } from '../merge';
 import { deleteTableMergeRow } from '../merge/deleteRow';

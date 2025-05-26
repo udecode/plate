@@ -9,6 +9,5 @@ export * from './remove-empty-nodes/index';
 export * from './reset-node/index';
 export * from './select-on-backspace/index';
 export * from './single-line/index';
-export * from './skip-mark/index';
 export * from './soft-break/index';
 export * from './trailing-block/index';

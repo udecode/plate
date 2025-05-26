@@ -1,6 +1,10 @@
-import { type OverrideEditor, KEYS, nanoid, TextApi } from '@udecode/plate';
-
-import type { TSuggestionElement } from './types';
+import {
+  type OverrideEditor,
+  type TSuggestionElement,
+  KEYS,
+  nanoid,
+  TextApi,
+} from '@udecode/plate';
 
 import {
   type BaseSuggestionConfig,

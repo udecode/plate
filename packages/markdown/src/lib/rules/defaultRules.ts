@@ -1,10 +1,11 @@
-import { type TText, KEYS } from '@udecode/plate';
+import {
+  type TElement,
+  type TListElement,
+  type TMentionElement,
+  type TText,
+  KEYS,
+} from '@udecode/plate';
 
-import type {
-  TListClassicElement,
-  TListElement,
-  TMentionElement,
-} from '../internal/types';
 import type {
   MdHeading,
   MdImage,
@@ -19,7 +20,7 @@ import type {
   MdTableRow,
 } from '../mdast';
 import type { MentionNode } from '../plugins/remarkMention';
-import type { TRules } from './types';
+import type { MdRules } from '../types';
 
 import {
   buildSlateNode,
@@ -27,7 +28,7 @@ import {
   convertTextsDeserialize,
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
-import { getPlateNodeType } from '../utils';
+import { mdastToPlate } from '../types';
 import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
@@ -42,7 +43,7 @@ function isBoolean(value: any) {
   );
 }
 
-export const defaultRules: TRules = {
+export const defaultRules: MdRules = {
   a: {
     deserialize: (mdastNode, deco, options) => {
       return {
@@ -425,7 +426,7 @@ export const defaultRules: TRules = {
       mdastNode: MdList,
       deco,
       options
-    ): TListClassicElement | TListElement[] => {
+    ): ({ type: 'ol' | 'ul' } & TElement) | TListElement[] => {
       // Handle standard list
       const isListClassic = !options.editor?.pluginList.some(
         (p) => p.key === 'list'
@@ -548,7 +549,7 @@ export const defaultRules: TRules = {
       const startIndex = (mdastNode as any).start || 1;
       return parseListItems(mdastNode, 1, startIndex);
     },
-    serialize: (node: TListClassicElement, options): MdList => {
+    serialize: (node: { type: 'ol' | 'ul' } & TElement, options): MdList => {
       const isOrdered = node.type === 'ol';
 
       const serializeListItems = (children: any[]): any[] => {
@@ -639,7 +640,7 @@ export const defaultRules: TRules = {
     deserialize: (node, deco, options) => {
       const isKeepLineBreak = options.splitLineBreaks;
       const children = convertChildrenDeserialize(node.children, deco, options);
-      const paragraphType = getPlateNodeType('paragraph');
+      const paragraphType = mdastToPlate('paragraph');
       const splitBlockTypes = new Set(['img']);
 
       const elements: any[] = [];

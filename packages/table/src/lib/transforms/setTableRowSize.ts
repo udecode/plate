@@ -1,8 +1,11 @@
-import type { EditorAboveOptions, SlateEditor } from '@udecode/plate';
+import type {
+  EditorAboveOptions,
+  SlateEditor,
+  TTableElement,
+  TTableRowElement,
+} from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
-
-import type { TTableElement, TTableRowElement } from '../types';
 
 export const setTableRowSize = (
   editor: SlateEditor,

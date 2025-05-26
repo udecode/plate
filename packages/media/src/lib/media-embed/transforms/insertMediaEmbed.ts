@@ -1,8 +1,10 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TMediaEmbedElement,
+} from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
-
-import type { TMediaEmbedElement } from '../BaseMediaEmbedPlugin';
 
 export const insertMediaEmbed = (
   editor: SlateEditor,

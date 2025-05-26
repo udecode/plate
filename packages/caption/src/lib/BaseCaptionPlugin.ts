@@ -1,7 +1,6 @@
 import {
   type Path,
   type PluginConfig,
-  type WithRequiredKey,
   createTSlatePlugin,
   KEYS,
 } from '@udecode/plate';
@@ -16,8 +15,10 @@ export type CaptionConfig = PluginConfig<
     /** When defined, focus start of caption textarea with the same path. */
     focusStartPath: Path | null;
     // isVisible?: (elementId: string) => boolean;
-    /** Plugins to enable caption. */
-    plugins: WithRequiredKey[];
+    query: {
+      /** Plugin keys to enable caption. */
+      allow: string[];
+    };
     visibleId: string | null;
   },
   {},
@@ -33,7 +34,7 @@ export const BaseCaptionPlugin = createTSlatePlugin<CaptionConfig>({
   options: {
     focusEndPath: null,
     focusStartPath: null,
-    plugins: [],
+    query: { allow: [] },
     visibleId: null,
   },
 })

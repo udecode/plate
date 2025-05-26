@@ -44,12 +44,14 @@ export const BaseBulletedListPlugin = createSlatePlugin({
       },
     },
   },
+  render: { as: 'ul' },
 });
 
 export const BaseNumberedListPlugin = createSlatePlugin({
   key: KEYS.olClassic,
   node: { isElement: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'OL' }] } } },
+  render: { as: 'ol' },
 });
 
 export const BaseListItemPlugin = createSlatePlugin({
@@ -67,6 +69,7 @@ export const BaseListItemPlugin = createSlatePlugin({
   },
   node: { isElement: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
+  render: { as: 'li' },
 });
 
 export const BaseListItemContentPlugin = createSlatePlugin({

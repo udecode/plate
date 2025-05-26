@@ -1,5 +1,6 @@
 import {
   type PluginConfig,
+  type TMentionElement,
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
@@ -8,8 +9,6 @@ import {
   type TriggerComboboxPluginOptions,
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
-
-import type { TMentionElement } from './types';
 
 export type MentionConfig = PluginConfig<
   'mention',

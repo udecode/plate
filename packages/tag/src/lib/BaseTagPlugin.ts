@@ -1,14 +1,9 @@
 import {
   type InsertNodesOptions,
-  type TElement,
-  type UnknownObject,
+  type TTagProps,
   createSlatePlugin,
   KEYS,
 } from '@udecode/plate';
-
-export type TagLike = { value: string } & UnknownObject;
-
-export type TTagElement = TElement & TagLike;
 
 export const BaseTagPlugin = createSlatePlugin({
   key: KEYS.tag,
@@ -19,7 +14,7 @@ export const BaseTagPlugin = createSlatePlugin({
   },
 }).extendEditorTransforms(({ editor, type }) => ({
   insert: {
-    tag: (props: TagLike, options?: InsertNodesOptions) => {
+    tag: (props: TTagProps, options?: InsertNodesOptions) => {
       editor.tf.insertNodes(
         [
           {

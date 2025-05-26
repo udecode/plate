@@ -2,6 +2,10 @@
 
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import {
+  BlockquotePlugin,
+  HeadingPlugin,
+} from '@udecode/plate-basic-elements/react';
+import {
   BoldPlugin,
   CodePlugin,
   ItalicPlugin,
@@ -10,13 +14,10 @@ import {
   SuperscriptPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { HighlightPlugin, KbdPlugin } from '@udecode/plate-basic-marks/react';
 import { SoftBreakPlugin } from '@udecode/plate-break/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
-import { HeadingPlugin } from '@udecode/plate-heading/react';
-import { HighlightPlugin } from '@udecode/plate-highlight/react';
-import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ListPlugin } from '@udecode/plate-list-classic/react';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';

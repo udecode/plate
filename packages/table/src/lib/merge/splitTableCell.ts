@@ -1,16 +1,14 @@
-import {
-  type Descendant,
-  type Path,
-  type SlateEditor,
-  getEditorPlugin,
-  KEYS,
+import type {
+  Descendant,
+  Path,
+  SlateEditor,
+  TTableCellElement,
+  TTableRowElement,
 } from '@udecode/plate';
 
-import {
-  type TTableCellElement,
-  type TTableRowElement,
-  getCellIndices,
-} from '..';
+import { getEditorPlugin, KEYS } from '@udecode/plate';
+
+import { getCellIndices } from '..';
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 

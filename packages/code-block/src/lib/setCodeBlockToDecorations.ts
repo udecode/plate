@@ -2,12 +2,11 @@ import {
   type DecoratedRange,
   type NodeEntry,
   type SlateEditor,
+  type TCodeBlockElement,
   type TElement,
   KEYS,
   NodeApi,
 } from '@udecode/plate';
-
-import type { TCodeBlockElement } from './types';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 

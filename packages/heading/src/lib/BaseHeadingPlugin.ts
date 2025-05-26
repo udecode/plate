@@ -48,6 +48,7 @@ export const BaseHeadingPlugin = createTSlatePlugin<HeadingConfig>({
           },
         },
       },
+      render: { as: `h${level}` as any },
     });
 
     plugins.push(plugin);

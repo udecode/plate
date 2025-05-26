@@ -1,8 +1,8 @@
-import type { OverrideEditor } from '@udecode/plate';
+import type { OverrideEditor, TIndentElement } from '@udecode/plate';
 
 import { getInjectMatch } from '@udecode/plate';
 
-import type { IndentConfig, TIndentElement } from './BaseIndentPlugin';
+import type { IndentConfig } from './BaseIndentPlugin';
 
 /**
  * - `node.indent` can not exceed `indentMax`

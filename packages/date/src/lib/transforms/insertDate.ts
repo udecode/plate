@@ -1,8 +1,10 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TDateElement,
+} from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
-
-import type { TDateElement } from '../BaseDatePlugin';
 
 export const insertDate = (
   editor: SlateEditor,

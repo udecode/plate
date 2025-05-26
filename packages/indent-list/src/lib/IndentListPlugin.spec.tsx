@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
+import { KEYS } from '@udecode/plate';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { HorizontalRulePlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { DocxPlugin } from '@udecode/plate-docx';
-import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { LineHeightPlugin } from '@udecode/plate-line-height/react';
@@ -22,12 +22,7 @@ jsxt;
 
 const injectConfig = {
   inject: {
-    targetPlugins: [
-      ParagraphPlugin.key,
-      HEADING_KEYS.h1,
-      HEADING_KEYS.h2,
-      HEADING_KEYS.h3,
-    ],
+    targetPlugins: [ParagraphPlugin.key, KEYS.h1, KEYS.h2, KEYS.h3],
   },
 };
 

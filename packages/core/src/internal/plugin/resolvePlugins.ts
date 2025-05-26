@@ -7,13 +7,9 @@ import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 import { createZustandStore } from 'zustand-x';
 
-import type { SlateEditor } from '../../lib/editor';
+import type { SlateEditor, SlatePlugin, SlatePlugins } from '../../lib';
 
-import {
-  type SlatePlugin,
-  type SlatePlugins,
-  getEditorPlugin,
-} from '../../lib/plugin';
+import { getEditorPlugin } from '../../lib/plugin';
 import { mergePlugins } from '../utils/mergePlugins';
 import { resolvePlugin } from './resolvePlugin';
 
@@ -28,7 +24,7 @@ export const resolvePlugins = (
 ) => {
   editor.pluginList = [];
   editor.plugins = {};
-  editor.shortcuts = {} as any;
+  editor.shortcuts = {} as Record<string, SlatePlugin['shortcuts'][string]>;
 
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
 
@@ -150,49 +146,48 @@ const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
 };
 
 const resolvePluginShortcuts = (editor: SlateEditor) => {
-  const shortcutsByPriority: any[] = [];
+  editor.shortcuts = {} as Record<string, SlatePlugin['shortcuts'][string]>; // Initialize with a more specific type
 
   editor.pluginList.forEach((plugin) => {
-    // Merge shortcuts
-    Object.entries(plugin.shortcuts).forEach(([key, hotkey]) => {
+    Object.entries(plugin.shortcuts).forEach(([originalKey, hotkey]) => {
+      const namespacedKey = `${plugin.key}.${originalKey}`;
+
       if (hotkey === null) {
-        // Remove any existing hotkey with this key
-        const index = shortcutsByPriority.findIndex((item) => item.key === key);
+        // If hotkey is null, remove the namespaced shortcut
+        delete (
+          editor.shortcuts as Record<string, SlatePlugin['shortcuts'][string]>
+        )[namespacedKey];
+      } else if (hotkey && typeof hotkey === 'object') {
+        const resolvedHotkey = { ...hotkey } as NonNullable<
+          SlatePlugin['shortcuts'][string]
+        >;
 
-        if (index !== -1) {
-          shortcutsByPriority.splice(index, 1);
+        // Set preventDefault to true by default if not explicitly set
+        if (resolvedHotkey.preventDefault === undefined) {
+          resolvedHotkey.preventDefault = true;
         }
-      } else {
-        const priority = (hotkey as any).priority ?? plugin.priority;
-        const existingIndex = shortcutsByPriority.findIndex(
-          (item) => item.key === key
-        );
 
-        if (
-          existingIndex === -1 ||
-          priority >= shortcutsByPriority[existingIndex].priority
-        ) {
-          if (existingIndex !== -1) {
-            shortcutsByPriority.splice(existingIndex, 1);
+        // If no custom handler is provided, try to use plugin transform method as handler
+        if (!resolvedHotkey.handler) {
+          const pluginSpecificTransforms = (plugin.transforms as any)?.[
+            plugin.key
+          ];
+          if (pluginSpecificTransforms?.[originalKey]) {
+            resolvedHotkey.handler = () => {
+              pluginSpecificTransforms[originalKey]();
+            };
           }
-
-          shortcutsByPriority.push({ key, hotkey, priority });
         }
+
+        // Set shortcut priority, falling back to plugin priority
+        resolvedHotkey.priority = resolvedHotkey.priority ?? plugin.priority;
+
+        (editor.shortcuts as Record<string, SlatePlugin['shortcuts'][string]>)[
+          namespacedKey
+        ] = resolvedHotkey;
       }
     });
   });
-
-  // Sort shortcuts by priority (descending)
-  shortcutsByPriority.sort((a, b) => b.hotkey.priority - a.hotkey.priority);
-
-  // After processing all plugins, set the final shortcuts on the editor
-  editor.shortcuts = Object.fromEntries(
-    shortcutsByPriority.map(({ key, hotkey }) => {
-      const { priority, ...hotkeyWithoutPriority } = hotkey;
-
-      return [key, hotkeyWithoutPriority];
-    })
-  );
 };
 
 const flattenAndResolvePlugins = (

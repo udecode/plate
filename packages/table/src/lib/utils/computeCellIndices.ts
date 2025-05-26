@@ -1,11 +1,13 @@
-import { type SlateEditor, getEditorPlugin, KEYS } from '@udecode/plate';
+import {
+  type SlateEditor,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
+  getEditorPlugin,
+  KEYS,
+} from '@udecode/plate';
 
 import type { BaseTablePlugin } from '../BaseTablePlugin';
-import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
 
 export function computeCellIndices(
   editor: SlateEditor,

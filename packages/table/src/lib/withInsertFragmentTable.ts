@@ -2,18 +2,15 @@ import {
   type OverrideEditor,
   type Path,
   type TElement,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
   KEYS,
   NodeApi,
 } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import {
-  type TableConfig,
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
-  getTableAbove,
-} from '.';
+import { type TableConfig, getTableAbove } from '.';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /**

@@ -1,4 +1,4 @@
-import type { TTableCellElement } from '../types';
+import type { TTableCellElement } from '@udecode/plate';
 
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';

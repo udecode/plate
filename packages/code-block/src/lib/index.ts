@@ -4,7 +4,6 @@
 
 export * from './BaseCodeBlockPlugin';
 export * from './setCodeBlockToDecorations';
-export * from './types';
 export * from './withCodeBlock';
 export * from './withInsertDataCodeBlock';
 export * from './withInsertFragmentCodeBlock';

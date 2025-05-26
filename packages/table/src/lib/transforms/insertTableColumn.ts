@@ -1,15 +1,13 @@
-import {
-  type Path,
-  type SlateEditor,
-  type TElement,
-  getEditorPlugin,
-  NodeApi,
-  PathApi,
+import type {
+  Path,
+  SlateEditor,
+  TElement,
+  TTableElement,
 } from '@udecode/plate';
 
-import type { TTableElement } from '../types';
+import { getEditorPlugin, KEYS, NodeApi, PathApi } from '@udecode/plate';
 
-import { BaseTableCellHeaderPlugin, BaseTablePlugin } from '../BaseTablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { insertTableMergeColumn } from '../merge/insertTableColumn';
 import { getCellTypes } from '../utils/index';
 
@@ -92,7 +90,7 @@ export const insertTableColumn = (
       const isHeaderRow =
         header === undefined
           ? (row as TElement).children.every(
-              (c) => c.type === editor.getType(BaseTableCellHeaderPlugin)
+              (c) => c.type === editor.getType(KEYS.th)
             )
           : header;
 

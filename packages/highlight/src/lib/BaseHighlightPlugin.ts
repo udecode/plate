@@ -18,4 +18,5 @@ export const BaseHighlightPlugin = createSlatePlugin({
       },
     },
   },
+  render: { as: 'mark' },
 });

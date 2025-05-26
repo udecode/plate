@@ -1,5 +1,7 @@
 import React from 'react';
 
+import type { TTableElement } from '@udecode/plate';
+
 import { KEYS } from '@udecode/plate';
 import {
   type ResizeEvent,
@@ -15,7 +17,6 @@ import {
 import type { TableCellElementState } from './useTableCellElement';
 
 import {
-  type TTableElement,
   setTableColSize,
   setTableMarginLeft,
   setTableRowSize,

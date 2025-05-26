@@ -1,13 +1,14 @@
 import {
   type OverrideEditor,
   type TElement,
+  type TTableCellElement,
+  type TTableElement,
   ElementApi,
   KEYS,
   TextApi,
 } from '@udecode/plate';
 
 import type { TableConfig } from './BaseTablePlugin';
-import type { TTableCellElement, TTableElement } from './types';
 
 import { getTableColumnCount } from './queries';
 import { computeCellIndices, getCellTypes } from './utils/index';

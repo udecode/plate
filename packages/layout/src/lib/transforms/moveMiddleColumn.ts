@@ -1,11 +1,10 @@
 import {
   type NodeEntry,
   type SlateEditor,
+  type TColumnElement,
   type TNode,
   NodeApi,
 } from '@udecode/plate';
-
-import type { TColumnElement } from '../types';
 
 /**
  * Move the middle column to the left if direction is 'left', or to the right if

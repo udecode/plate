@@ -1,4 +1,6 @@
-import type { TableStoreSizeOverrides, TTableElement } from '../types';
+import type { TTableElement } from '@udecode/plate';
+
+import type { TableStoreSizeOverrides } from '../types';
 
 import { getTableColumnCount } from './index';
 

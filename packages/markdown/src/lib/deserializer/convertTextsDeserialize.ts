@@ -1,20 +1,20 @@
 import type { MdDelete, MdEmphasis, MdStrong } from '../mdast';
+import type { MdDecoration } from '../types';
 import type { DeserializeMdOptions } from './deserializeMd';
-import type { Decoration } from './type';
 
-import { getPlateNodeType } from '../utils';
+import { mdastToPlate } from '../types';
 import { buildSlateNode } from './convertNodesDeserialize';
 
 export const convertTextsDeserialize = (
   mdastNode: MdDelete | MdEmphasis | MdStrong,
-  deco: Decoration,
+  deco: MdDecoration,
   options: DeserializeMdOptions
 ) => {
   return mdastNode.children.reduce((acc: any, n: any) => {
     acc.push(
       ...buildSlateNode(
         n,
-        { ...deco, [getPlateNodeType(mdastNode.type)]: true },
+        { ...deco, [mdastToPlate(mdastNode.type)]: true },
         options
       )
     );

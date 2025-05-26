@@ -23,7 +23,8 @@ export const pluginRenderTextStatic = (
     const { children, text } = nodeProps;
 
     if (text[plugin.node.type ?? plugin.key]) {
-      const Text = components?.[plugin.key] ?? SlateText;
+      const Component = components?.[plugin.key] as any;
+      const Text = Component ?? SlateText;
 
       // const dataAttributes = getPluginDataAttributes(editor, plugin, text);
 
@@ -35,7 +36,11 @@ export const pluginRenderTextStatic = (
         props: nodeProps as any,
       }) as any;
 
-      return <Text {...ctxProps}>{children}</Text>;
+      return (
+        <Text as={Component ? undefined : plugin.render.as} {...ctxProps}>
+          {children}
+        </Text>
+      );
     }
 
     return children;

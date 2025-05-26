@@ -1,8 +1,10 @@
-import type { EditorAboveOptions, SlateEditor } from '@udecode/plate';
+import type {
+  EditorAboveOptions,
+  SlateEditor,
+  TTableElement,
+} from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
-
-import type { TTableElement } from '../types';
 
 import { getTableColumnCount } from '../queries/getTableColumnCount';
 

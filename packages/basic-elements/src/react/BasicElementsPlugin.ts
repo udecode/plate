@@ -1,7 +1,8 @@
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { HeadingPlugin } from '@udecode/plate-heading/react';
-import { createPlatePlugin, ParagraphPlugin } from '@udecode/plate/react';
+import { createPlatePlugin } from '@udecode/plate/react';
+
+import { BlockquotePlugin } from './BlockquotePlugin';
+import { HeadingPlugin } from './HeadingPlugin';
+import { HorizontalRulePlugin } from './HorizontalRulePlugin';
 
 /**
  * Enables support for basic elements:
@@ -12,5 +13,5 @@ import { createPlatePlugin, ParagraphPlugin } from '@udecode/plate/react';
  * - Paragraph
  */
 export const BasicElementsPlugin = createPlatePlugin({
-  plugins: [BlockquotePlugin, CodeBlockPlugin, HeadingPlugin, ParagraphPlugin],
+  plugins: [BlockquotePlugin, HeadingPlugin, HorizontalRulePlugin],
 });

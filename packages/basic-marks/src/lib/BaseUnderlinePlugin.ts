@@ -19,4 +19,9 @@ export const BaseUnderlinePlugin = createSlatePlugin({
       },
     },
   },
-});
+  render: { as: 'u' },
+}).extendTransforms(({ editor, type }) => ({
+  toggle: () => {
+    editor.tf.toggleMark(type);
+  },
+}));

@@ -46,11 +46,6 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-heading": "48.0.0",
-    "@udecode/plate-indent": "48.0.0",
-    "@udecode/plate-list": "48.0.0",
-    "@udecode/plate-media": "48.0.0",
-    "@udecode/plate-table": "48.0.0",
     "validator": "^13.15.0"
   },
   "devDependencies": {

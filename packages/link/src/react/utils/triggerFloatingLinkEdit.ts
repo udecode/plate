@@ -1,6 +1,9 @@
-import { type SlateEditor, getEditorPlugin, KEYS } from '@udecode/plate';
-
-import type { TLinkElement } from '../../lib';
+import {
+  type SlateEditor,
+  type TLinkElement,
+  getEditorPlugin,
+  KEYS,
+} from '@udecode/plate';
 
 import { LinkPlugin } from '../LinkPlugin';
 

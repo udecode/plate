@@ -1,12 +1,10 @@
 import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
 
-import type { MediaPluginOptions, TMediaElement } from '../media/index';
+import type { MediaPluginOptions } from '../media/index';
 
 import { parseIframeUrl } from './parseIframeUrl';
 
 export type MediaEmbedConfig = PluginConfig<'media_embed', MediaPluginOptions>;
-
-export interface TMediaEmbedElement extends TMediaElement {}
 
 /**
  * Enables support for embeddable media such as YouTube or Vimeo videos,

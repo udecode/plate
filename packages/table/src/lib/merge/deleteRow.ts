@@ -1,12 +1,16 @@
-import { type SlateEditor, getEditorPlugin, KEYS } from '@udecode/plate';
+import type {
+  SlateEditor,
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '@udecode/plate';
+
+import { getEditorPlugin, KEYS } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { TableConfig } from '../BaseTablePlugin';
 
 import {
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
   findCellByIndexes,
   getCellIndices,
   getCellTypes,

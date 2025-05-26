@@ -87,7 +87,7 @@ describe('serializePlateStatic marks', () => {
       stripClassNames: true,
     });
     expect(html).toContain(
-      '<span data-slate-leaf="true" data-slate-strikethrough="true"><del><span data-slate-string="true">strikethrough</span></del></span>'
+      '<span data-slate-leaf="true" data-slate-strikethrough="true"><s><span data-slate-string="true">strikethrough</span></s></span>'
     );
   });
 

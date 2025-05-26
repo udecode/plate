@@ -1,11 +1,15 @@
-import { type SlateEditor, getEditorPlugin, KEYS } from '@udecode/plate';
+import type {
+  SlateEditor,
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '@udecode/plate';
+
+import { getEditorPlugin, KEYS } from '@udecode/plate';
 
 import {
   type CellIndices,
   type TableConfig,
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
   getCellIndices,
   getTableOverriddenColSizes,
 } from '..';

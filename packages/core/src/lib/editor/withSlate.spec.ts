@@ -55,7 +55,7 @@ describe('withPlate', () => {
       ).toBeDefined();
 
       expect(editor.tf.toggleBlock).toBeDefined();
-      expect(editor.prevSelection).toBeNull();
+      expect(editor.dom.prevSelection).toBeNull();
     });
   });
 

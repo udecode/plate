@@ -22,7 +22,8 @@ export const pluginRenderElementStatic = (
       const element = nodeProps.element;
 
       const key = plugin.key;
-      const Element: any = components?.[plugin.key] ?? SlateElement;
+      const Component = components?.[plugin.key] as any;
+      const Element = Component ?? SlateElement;
 
       let { children } = nodeProps;
 
@@ -55,7 +56,9 @@ export const pluginRenderElementStatic = (
       });
 
       let component: React.ReactNode = (
-        <Element {...nodeProps}>{children}</Element>
+        <Element as={Component ? undefined : plugin.render?.as} {...nodeProps}>
+          {children}
+        </Element>
       );
 
       aboveNodes.forEach((withHOC) => {

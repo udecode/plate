@@ -1,8 +1,13 @@
-import type { OverrideEditor, TElement } from '@udecode/plate';
+import type {
+  OverrideEditor,
+  TElement,
+  TTableCellElement,
+  TTableElement,
+} from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
 
-import type { TableConfig, TTableCellElement, TTableElement } from '.';
+import type { TableConfig } from './BaseTablePlugin';
 
 import { getTableGridAbove } from './queries';
 

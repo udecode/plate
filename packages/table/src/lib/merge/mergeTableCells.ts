@@ -1,13 +1,14 @@
-import {
-  type Descendant,
-  type NodeEntry,
-  type SlateEditor,
-  getEditorPlugin,
-  KEYS,
+import type {
+  Descendant,
+  NodeEntry,
+  SlateEditor,
+  TTableCellElement,
 } from '@udecode/plate';
+
+import { getEditorPlugin, KEYS } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import { type TTableCellElement, getCellIndices } from '..';
+import { getCellIndices } from '..';
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 

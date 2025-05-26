@@ -2,7 +2,7 @@
 
 import type { SlateEditor } from '@udecode/plate';
 
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { BlockquotePlugin } from '@udecode/plate-basic-elements/react';
 import {
   BaseCodeBlockPlugin,
   isCodeBlockEmpty,

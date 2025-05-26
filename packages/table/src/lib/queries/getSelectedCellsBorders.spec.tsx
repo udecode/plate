@@ -114,9 +114,7 @@ describe('getSelectedCellsBorders', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    editor = createPlateEditor({
-      value: mockEditor.children,
-    });
+    editor = createPlateEditor({ nodeId: true, value: mockEditor.children });
   });
 
   describe('when no cells are selected', () => {

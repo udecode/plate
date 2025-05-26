@@ -1,13 +1,12 @@
-import type { OverrideEditor } from '@udecode/plate';
+import type { OverrideEditor, TCommentText } from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
 
-import type { BaseCommentsConfig } from './BaseCommentsPlugin';
-import type { TCommentText } from './types';
+import type { BaseCommentConfig } from './BaseCommentPlugin';
 
 import { getCommentCount, getDraftCommentKey } from './utils';
 
-export const withComments: OverrideEditor<BaseCommentsConfig> = ({
+export const withComment: OverrideEditor<BaseCommentConfig> = ({
   editor,
   tf: { normalizeNode },
 }) => ({

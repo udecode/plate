@@ -2,13 +2,12 @@ import {
   type Path,
   type SlateEditor,
   type TElement,
+  type TTableElement,
   getEditorPlugin,
   KEYS,
   NodeApi,
   PathApi,
 } from '@udecode/plate';
-
-import type { TTableElement } from '../types';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { insertTableMergeRow } from '../merge/insertTableRow';

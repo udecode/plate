@@ -1,6 +1,7 @@
 import {
   type InsertNodesOptions,
   type SlateEditor,
+  type TLinkElement,
   type UnwrapNodesOptions,
   type WrapNodesOptions,
   isDefined,
@@ -8,8 +9,6 @@ import {
   RangeApi,
 } from '@udecode/plate';
 import { KEYS } from '@udecode/plate';
-
-import type { TLinkElement } from '../types';
 
 import { type CreateLinkNodeOptions, validateUrl } from '../utils';
 import { insertLink } from './insertLink';

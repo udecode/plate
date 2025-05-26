@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, BaseParagraphPlugin } from '@udecode/plate';
+import { type SlateEditor, BaseParagraphPlugin, KEYS } from '@udecode/plate';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsxt } from '@udecode/plate-test-utils';
 import { createPlateEditor } from '@udecode/plate/react';
 
-import { BaseListPlugin, INDENT_LIST_KEYS } from '../BaseListPlugin';
+import { BaseListPlugin } from '../BaseListPlugin';
 
 jsxt;
 
@@ -13,7 +13,7 @@ describe('withInsertBreakList', () => {
   it('should insert a new todo list line with the same formatting', () => {
     const input = (
       <editor>
-        <hp checked={false} indent={1} listStyleType={INDENT_LIST_KEYS.todo}>
+        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
           Todo item
           <cursor />
         </hp>
@@ -22,14 +22,14 @@ describe('withInsertBreakList', () => {
 
     const output = (
       <editor>
-        <hp checked={false} indent={1} listStyleType={INDENT_LIST_KEYS.todo}>
+        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
           Todo item
         </hp>
         <hp
           checked={false}
           indent={1}
           listStart={2}
-          listStyleType={INDENT_LIST_KEYS.todo}
+          listStyleType={KEYS.listTodo}
         >
           <cursor />
         </hp>
@@ -82,7 +82,7 @@ describe('withInsertBreakList', () => {
   it('should behave like a normal break if selection is expanded', () => {
     const input = (
       <editor>
-        <hp checked={false} indent={1} listStyleType={INDENT_LIST_KEYS.todo}>
+        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
           Todo <anchor />
           item
           <focus />
@@ -92,14 +92,14 @@ describe('withInsertBreakList', () => {
 
     const output = (
       <editor>
-        <hp checked={false} indent={1} listStyleType={INDENT_LIST_KEYS.todo}>
+        <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
           Todo <cursor />
         </hp>
         <hp
           checked={false}
           indent={1}
           listStart={2}
-          listStyleType={INDENT_LIST_KEYS.todo}
+          listStyleType={KEYS.listTodo}
         >
           <cursor />
         </hp>

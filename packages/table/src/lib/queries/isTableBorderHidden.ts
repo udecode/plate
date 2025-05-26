@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor, TTableCellElement } from '@udecode/plate';
 
-import type { BorderDirection, TTableCellElement } from '../types';
+import type { BorderDirection } from '../types';
 
 import { getCellTypes } from '../utils';
 import { getLeftTableCell } from './getLeftTableCell';

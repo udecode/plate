@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { HorizontalRulePlugin } from '@udecode/plate-basic-elements/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';

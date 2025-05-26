@@ -3,4 +3,5 @@
  */
 
 export * from './plate-keys';
+export * from './plate-types';
 export * from './plugins/index';

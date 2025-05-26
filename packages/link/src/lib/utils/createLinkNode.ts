@@ -1,8 +1,6 @@
-import type { SlateEditor, TText } from '@udecode/plate';
+import type { SlateEditor, TLinkElement, TText } from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
-
-import type { TLinkElement } from '../types';
 
 export interface CreateLinkNodeOptions {
   url: string;

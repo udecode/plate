@@ -1,8 +1,10 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TPlaceholderElement,
+} from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
-
-import type { TPlaceholderElement } from '../BasePlaceholderPlugin';
 
 export const insertPlaceholder = (
   editor: SlateEditor,

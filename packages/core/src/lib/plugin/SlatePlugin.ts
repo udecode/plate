@@ -339,7 +339,15 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         /** Renders a component before the `Editable` component. */
         beforeEditable?: () => React.ReactElement<any> | null;
       }>;
-      shortcuts: {};
+      shortcuts: Record<
+        string,
+        {
+          keys?: any;
+          preventDefault?: boolean;
+          priority?: number;
+          handler?: (ctx: { editor: SlateEditor }) => void;
+        } | null
+      >;
     };
 
 export type SlatePluginConfig<

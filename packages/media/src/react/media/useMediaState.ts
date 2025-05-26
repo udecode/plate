@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { KEYS } from '@udecode/plate';
+import {
+  type TMediaElement,
+  type TResizableElement,
+  KEYS,
+} from '@udecode/plate';
 import {
   useEditorRef,
   useElement,
@@ -8,8 +12,6 @@ import {
   useReadOnly,
   useSelected,
 } from '@udecode/plate/react';
-
-import type { TMediaElement } from '../../lib/media/types';
 
 import { VIDEO_PROVIDERS } from '../../lib/media-embed';
 import {
@@ -23,7 +25,7 @@ export const useMediaState = ({
   urlParsers?: EmbedUrlParser[];
 } = {}) => {
   const editor = useEditorRef();
-  const element = useElement<TMediaElement>();
+  const element = useElement<TMediaElement & TResizableElement>();
   const focused = useFocused();
   const selected = useSelected();
   const readOnly = useReadOnly();

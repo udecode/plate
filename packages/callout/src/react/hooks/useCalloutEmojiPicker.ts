@@ -1,10 +1,12 @@
+import type { TCalloutElement } from '@udecode/plate';
+
 import {
   useEditorReadOnly,
   useEditorRef,
   useElement,
 } from '@udecode/plate/react';
 
-import { type TCalloutElement, CALLOUT_STORAGE_KEY } from '../../lib';
+import { CALLOUT_STORAGE_KEY } from '../../lib';
 
 export interface UseCalloutEmojiPickerOptions {
   isOpen: boolean;

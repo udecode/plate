@@ -4,7 +4,8 @@ import { type SlatePlugin, createSlateEditor } from '@udecode/plate';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { HorizontalRulePlugin } from '@udecode/plate-basic-elements/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { LineHeightPlugin } from '@udecode/plate-line-height/react';
@@ -59,6 +60,7 @@ export const testDocxDeserializer = ({
         ...plugins,
         ImagePlugin,
         HorizontalRulePlugin,
+        CodeBlockPlugin,
         LinkPlugin,
         BasicElementsPlugin,
         BasicMarksPlugin,

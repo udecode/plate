@@ -1,8 +1,10 @@
-import type { EditorAboveOptions, SlateEditor } from '@udecode/plate';
+import type {
+  EditorAboveOptions,
+  SlateEditor,
+  TTableElement,
+} from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
-
-import type { TTableElement } from '../types';
 
 export const setTableMarginLeft = (
   editor: SlateEditor,

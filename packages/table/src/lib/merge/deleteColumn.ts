@@ -1,17 +1,14 @@
-import {
-  type Path,
-  type SlateEditor,
-  getEditorPlugin,
-  KEYS,
+import type {
+  Path,
+  SlateEditor,
+  TTableCellElement,
+  TTableElement,
 } from '@udecode/plate';
+
+import { getEditorPlugin, KEYS } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import {
-  type TTableCellElement,
-  type TTableElement,
-  getCellIndices,
-  getCellTypes,
-} from '..';
+import { getCellIndices, getCellTypes } from '..';
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
 import { findCellByIndexes } from './findCellByIndexes';

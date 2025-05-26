@@ -1,6 +1,5 @@
 import {
   type PluginConfig,
-  type TElement,
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
@@ -14,8 +13,6 @@ export type SlashConfig = PluginConfig<
   'slash_command',
   TriggerComboboxPluginOptions
 >;
-
-export interface TSlashInputElement extends TElement {}
 
 export const BaseSlashInputPlugin = createSlatePlugin({
   key: KEYS.slashInput,

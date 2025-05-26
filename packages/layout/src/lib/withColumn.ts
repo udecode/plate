@@ -1,7 +1,10 @@
-import { type OverrideEditor, ElementApi } from '@udecode/plate';
+import {
+  type OverrideEditor,
+  type TColumnElement,
+  type TColumnGroupElement,
+  ElementApi,
+} from '@udecode/plate';
 import { KEYS } from '@udecode/plate';
-
-import type { TColumnElement, TColumnGroupElement } from './types';
 
 export const withColumn: OverrideEditor = ({
   editor,

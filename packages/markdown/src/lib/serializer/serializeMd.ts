@@ -3,20 +3,19 @@ import type { Descendant, SlateEditor } from '@udecode/plate';
 import remarkStringify from 'remark-stringify';
 import { type Plugin, unified } from 'unified';
 
-import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
+import type { AllowNodeConfig } from '../MarkdownPlugin';
 import type { MdRoot } from '../mdast';
-import type { TRules } from '../rules';
+import type { MdRules, PlateType } from '../types';
 
 import { convertNodesSerialize } from './convertNodesSerialize';
 import { getMergedOptionsSerialize } from './utils/getMergedOptionsSerialize';
-
 export type SerializeMdOptions = {
-  allowedNodes?: NodesConfig;
+  allowedNodes?: PlateType[] | null;
   allowNode?: AllowNodeConfig;
-  disallowedNodes?: NodesConfig;
+  disallowedNodes?: PlateType[] | null;
   editor?: SlateEditor;
   remarkPlugins?: Plugin[];
-  rules?: TRules;
+  rules?: MdRules;
   value?: Descendant[];
 };
 

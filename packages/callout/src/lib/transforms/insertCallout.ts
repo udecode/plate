@@ -1,8 +1,10 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TCalloutElement,
+} from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
-
-import type { TCalloutElement } from '../BaseCalloutPlugin';
 
 export const CALLOUT_STORAGE_KEY = `plate-storage-callout`;
 

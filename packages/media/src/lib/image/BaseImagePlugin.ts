@@ -5,7 +5,7 @@ import {
   KEYS,
 } from '@udecode/plate';
 
-import type { MediaPluginOptions, TMediaElement } from '../media';
+import type { MediaPluginOptions } from '../media';
 
 import { insertImageFromFiles } from './transforms';
 import { withImageEmbed } from './withImageEmbed';
@@ -28,11 +28,6 @@ export type ImageConfig = PluginConfig<
     ) => ArrayBuffer | Promise<ArrayBuffer | string> | string;
   } & MediaPluginOptions
 >;
-
-export interface TImageElement extends TMediaElement {
-  initialHeight?: number;
-  initialWidth?: number;
-}
 
 /** Enables support for images. */
 export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
