@@ -11,21 +11,11 @@ export const BaseDatePlugin = createSlatePlugin({
   node: {
     isElement: true,
     isInline: true,
+    isSelectable: false,
     isVoid: true,
   },
-})
-  .extendEditorTransforms(({ editor }) => ({
-    insert: {
-      date: bindFirst(insertDate, editor),
-    },
-  }))
-  .overrideEditor(({ api: { isSelectable }, type }) => ({
-    api: {
-      isSelectable: (node) => {
-        if (node.type === type) {
-          return false;
-        }
-        return isSelectable(node);
-      },
-    },
-  }));
+}).extendEditorTransforms(({ editor }) => ({
+  insert: {
+    date: bindFirst(insertDate, editor),
+  },
+}));
