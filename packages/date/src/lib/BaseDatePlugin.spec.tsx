@@ -2,7 +2,6 @@
 
 import type { PlateEditor } from '@udecode/plate/react';
 
-import { UnselectablePlugin } from '@udecode/plate-select';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateTestEditor } from '../../../core/src/react/__tests__/createPlateTestEditor';
@@ -39,16 +38,7 @@ describe('On keydown', () => {
     ) as any as PlateEditor;
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-      plugins: [
-        BaseDatePlugin,
-        UnselectablePlugin.configure({
-          options: {
-            query: {
-              allow: ['date'],
-            },
-          },
-        }),
-      ],
+      plugins: [BaseDatePlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -86,16 +76,7 @@ describe('On keydown', () => {
     ) as any as PlateEditor;
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-      plugins: [
-        BaseDatePlugin,
-        UnselectablePlugin.configure({
-          options: {
-            query: {
-              allow: ['date'],
-            },
-          },
-        }),
-      ],
+      plugins: [BaseDatePlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -142,16 +123,7 @@ describe('On keydown', () => {
     ) as any as PlateEditor;
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-      plugins: [
-        BaseDatePlugin,
-        UnselectablePlugin.configure({
-          options: {
-            query: {
-              allow: ['date'],
-            },
-          },
-        }),
-      ],
+      plugins: [BaseDatePlugin],
       selection: input.selection,
       value: input.children,
     });

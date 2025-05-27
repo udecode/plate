@@ -48,14 +48,12 @@ import { softBreakPlugin } from './soft-break-plugin';
 import { suggestionPlugin } from './suggestion-plugin';
 import { tablePlugin } from './table-plugin';
 import { tocPlugin } from './toc-plugin';
-import { unselectablePlugin } from './unselectable-plugin';
 
 export const viewPlugins = [
   ...basicNodesPlugins,
   HorizontalRulePlugin,
   linkPlugin,
   DatePlugin,
-  unselectablePlugin,
   mentionPlugin,
   tablePlugin,
   TogglePlugin,

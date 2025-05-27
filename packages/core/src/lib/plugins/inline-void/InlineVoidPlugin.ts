@@ -1,4 +1,5 @@
-import { type OverrideEditor, createSlatePlugin } from '../plugin';
+import { type OverrideEditor, createSlatePlugin } from '../../plugin';
+import { isPointNextToNode } from './isPointNextToNode';
 
 /**
  * Merge and register all the inline types and void types from the plugins and
@@ -8,6 +9,7 @@ import { type OverrideEditor, createSlatePlugin } from '../plugin';
 export const withInlineVoid: OverrideEditor = ({
   api: { isInline, isSelectable, isVoid, markableVoid },
   editor,
+  tf: { move },
 }) => {
   const voidTypes: string[] = [];
   const inlineTypes: string[] = [];
@@ -48,6 +50,44 @@ export const withInlineVoid: OverrideEditor = ({
         return markableVoidTypes.includes(element.type)
           ? true
           : markableVoid(element);
+      },
+    },
+
+    transforms: {
+      // check if cursor is next to a date node. if it is set the unit:'offset'
+      // Default left/right behavior is unit:'character'.
+      // This fails to distinguish between two cursor positions, such as
+      // <inline>foo<cursor/></inline> vs <inline>foo</inline><cursor/>.
+      // Here we modify the behavior to unit:'offset'.
+      // This lets the user step into and out of the inline without stepping over characters.
+      // You may wish to customize this further to only use unit:'offset' in specific cases.
+      move: (options) => {
+        const {
+          distance = 1,
+          reverse = false,
+          unit = 'character',
+        } = options || {};
+
+        if (
+          unit === 'character' &&
+          distance === 1 &&
+          editor.selection &&
+          !editor.api.isExpanded()
+        ) {
+          // next to mention or date
+          const isNextToUnselectableNode = isPointNextToNode(editor, {
+            reverse,
+          });
+
+          if (isNextToUnselectableNode) {
+            return move({
+              ...options,
+              unit: 'offset',
+            });
+          }
+        }
+
+        return move(options);
       },
     },
   };

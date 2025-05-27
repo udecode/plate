@@ -1,17 +1,12 @@
-import {
-  type Path,
-  type Point,
-  type SlateEditor,
-  PathApi,
-  queryNode,
-} from '@udecode/plate';
+import { type Path, type Point, ElementApi, PathApi } from '@udecode/slate';
 
-import { UnselectablePlugin } from '../UnselectablePlugin';
+import type { SlateEditor } from '../..';
 
 export const isPointNextToNode = (
   editor: SlateEditor,
   options: {
     at?: Point;
+    nodeType?: string;
     reverse?: boolean;
   } = {}
 ): boolean => {
@@ -71,7 +66,10 @@ export const isPointNextToNode = (
 
   const nextNodeEntry = editor.api.node(adjacentPath) ?? null;
 
-  const query = editor.getOption(UnselectablePlugin, 'query');
-
-  return !!(nextNodeEntry && query && queryNode(nextNodeEntry, query));
+  return !!(
+    nextNodeEntry &&
+    ElementApi.isElement(nextNodeEntry[0]) &&
+    (!editor.api.isSelectable(nextNodeEntry[0]) ||
+      nextNodeEntry[0].type === options.nodeType)
+  );
 };

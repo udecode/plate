@@ -2,10 +2,10 @@
 
 import type { JSX } from 'react';
 
-import { createEditor, createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
+import { createEditor } from '@udecode/slate';
 
-import { UnselectablePlugin } from '../UnselectablePlugin';
+import { createSlateEditor } from '../..';
 import { isPointNextToNode } from './isPointNextToNode';
 
 jsxt;
@@ -14,15 +14,6 @@ describe('isPointNextToNode', () => {
   const createTestEditor = (input: JSX.Element) =>
     createSlateEditor({
       editor: createEditor(input as any),
-      plugins: [
-        UnselectablePlugin.configure({
-          options: {
-            query: {
-              allow: ['date'],
-            },
-          },
-        }),
-      ],
     });
 
   describe('when point is next to a node of specified type', () => {
@@ -39,7 +30,7 @@ describe('isPointNextToNode', () => {
         </editor>
       );
 
-      expect(isPointNextToNode(editor)).toBe(true);
+      expect(isPointNextToNode(editor, { nodeType: 'date' })).toBe(true);
     });
   });
 
@@ -58,7 +49,7 @@ describe('isPointNextToNode', () => {
         </editor>
       );
 
-      expect(isPointNextToNode(editor)).toBe(false);
+      expect(isPointNextToNode(editor, { nodeType: 'date' })).toBe(false);
     });
   });
 
@@ -76,7 +67,9 @@ describe('isPointNextToNode', () => {
         </editor>
       );
 
-      expect(isPointNextToNode(editor, { reverse: true })).toBe(true);
+      expect(
+        isPointNextToNode(editor, { nodeType: 'date', reverse: true })
+      ).toBe(true);
     });
   });
 
@@ -95,7 +88,9 @@ describe('isPointNextToNode', () => {
       );
 
       const at = { offset: 4, path: [0, 0] };
-      expect(isPointNextToNode(editor, { at, reverse: false })).toBe(true);
+      expect(
+        isPointNextToNode(editor, { at, nodeType: 'date', reverse: false })
+      ).toBe(true);
     });
   });
 });

@@ -4,7 +4,7 @@ import type { SlatePlugin } from '../plugin/SlatePlugin';
 
 import { AstPlugin } from './AstPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
-import { InlineVoidPlugin } from './InlineVoidPlugin';
+import { InlineVoidPlugin } from './inline-void';
 import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { DOMPlugin } from './dom';
