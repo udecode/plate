@@ -89,7 +89,6 @@ const plugins: Registry['items'] = [
       'soft-break-plugin',
       'table-plugin',
       'toc-plugin',
-      'unselectable-plugin',
     ],
     type: 'registry:component',
   },
@@ -520,17 +519,6 @@ const plugins: Registry['items'] = [
       },
     ],
     name: 'toc-plugin',
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['@udecode/plate-select'],
-    files: [
-      {
-        path: 'components/editor/plugins/unselectable-plugin.ts',
-        type: 'registry:component',
-      },
-    ],
-    name: 'unselectable-plugin',
     type: 'registry:component',
   },
   {

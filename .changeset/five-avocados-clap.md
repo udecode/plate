@@ -1,5 +1,6 @@
 ---
-'@udecode/plate-date': minor
+'@udecode/plate-date': patch
 ---
 
-Delete the behavior of unselectable use `UnselectablePlugin` instead.
+- Move `tf.move` functionality to core package for better reusability.
+- Move `isPointNextToNode.ts` to core package.

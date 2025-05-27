@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-select': patch
+'@udecode/plate-core': patch
 ---
 
-New plugin `UnselectablePlugin`.
+Improved cursor movement around unselectable inline void nodes by using 'offset' unit instead of 'character' unit.
