@@ -415,6 +415,8 @@ export interface GetInjectNodePropsReturnType extends AnyObject {
   style?: CSSStyleDeclaration;
 }
 
+export type InferKey<P> = P extends PluginConfig ? P['key'] : never;
+
 export type InferApi<P> = P extends PluginConfig ? P['api'] : never;
 
 export type InferOptions<P> = P extends PluginConfig ? P['options'] : never;

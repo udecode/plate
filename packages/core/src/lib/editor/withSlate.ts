@@ -1,3 +1,5 @@
+import type { UnionToIntersection } from '@udecode/utils';
+
 import {
   type Editor,
   type TSelection,
@@ -16,6 +18,8 @@ import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
 
+type A = UnionToIntersection<CorePlugin['key']>;
+
 export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   /**
    * Unique identifier for the editor instance.
@@ -33,6 +37,10 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * - `'start'`: Select the start of the editor
    */
   autoSelect?: boolean | 'end' | 'start';
+  /** Specifies the component for each plugin key. */
+  // components?: Partial<
+  //   Record<KeyofNodePlugins<InferPlugins<P[]>>, NodeComponent | null>
+  // >;
   /**
    * Specifies the maximum number of characters allowed in the editor. When the
    * limit is reached, further input will be prevented.
@@ -52,6 +60,11 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * @default { idKey: 'id', filterInline: true, filterText: true, idCreator: () => nanoid(10) }
    */
   nodeId?: NodeIdConfig['options'] | boolean;
+  // override?: {
+  //   components?: Partial<
+  //     Record<KeyofNodePlugins<InferPlugins<P[]>>, NodeComponent | null>
+  //   >;
+  // };
   /**
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
@@ -105,6 +118,16 @@ export type WithSlateOptions<
     | 'override'
     | 'transforms'
   > & {
+    // override?: {
+    //   /** Enable or disable plugins */
+    //   enabled?: Partial<Record<KeyofPlugins<InferPlugins<P[]>>, boolean>>;
+    //   plugins?: Partial<
+    //     Record<
+    //       KeyofPlugins<InferPlugins<P[]>>,
+    //       PartialEditorPlugin<AnyPluginConfig>
+    //     >
+    //   >;
+    // };
     /**
      * Initial content for the editor.
      *

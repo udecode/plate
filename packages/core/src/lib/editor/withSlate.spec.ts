@@ -40,7 +40,9 @@ const coreKeys = [
 describe('withPlate', () => {
   describe('when default plugins', () => {
     it('should have core plugins', () => {
-      const editor = withPlate(createEditor(), { id: '1' });
+      const editor = withPlate(createEditor(), {
+        id: '1',
+      });
 
       expect(editor.id).toBe('1');
       expect(editor.history).toBeDefined();
@@ -64,6 +66,10 @@ describe('withPlate', () => {
       const customPlugin = createSlatePlugin({ key: 'custom' });
       const editor = withPlate(createEditor(), {
         id: '1',
+        override: {
+          components: {},
+          enabled: {},
+        },
         plugins: [customPlugin],
       });
 

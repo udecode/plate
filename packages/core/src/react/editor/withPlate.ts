@@ -1,7 +1,7 @@
 import { type Editor, type Value, createEditor } from '@udecode/slate';
 
 import type { AnyPlatePlugin } from '../plugin';
-import type { SlateReactExtensionPlugin } from '../plugins';
+import type { EventEditorPlugin, SlateReactExtensionPlugin } from '../plugins';
 import type { PlateEditor, TPlateEditor } from './PlateEditor';
 
 import {
@@ -13,7 +13,10 @@ import {
 } from '../../lib';
 import { getPlateCorePlugins } from './getPlateCorePlugins';
 
-export type PlateCorePlugin = CorePlugin | typeof SlateReactExtensionPlugin;
+export type PlateCorePlugin =
+  | CorePlugin
+  | typeof EventEditorPlugin
+  | typeof SlateReactExtensionPlugin;
 
 export type WithPlateOptions<
   V extends Value = Value,
@@ -47,6 +50,16 @@ export type WithPlateOptions<
      *   });
      */
     components?: AnyPlatePlugin['override']['components'];
+    // override?: {
+    //   /** Enable or disable plugins */
+    //   enabled?: Partial<Record<KeyofPlugins<InferPlugins<P[]>>, boolean>>;
+    //   plugins?: Partial<
+    //     Record<
+    //       KeyofPlugins<InferPlugins<P[]>>,
+    //       Partial<EditorPlatePlugin<AnyPluginConfig>>
+    //     >
+    //   >;
+    // };
     value?: ((editor: PlateEditor) => V) | V | string;
     rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
   };

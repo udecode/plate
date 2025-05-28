@@ -5,6 +5,7 @@ import type {
   AnyPluginConfig,
   BaseEditor,
   InferApi,
+  InferKey,
   InferTransforms,
   PluginConfig,
   WithRequiredKey,
@@ -56,3 +57,7 @@ export type TPlateEditor<
     plugin?: WithRequiredKey<C>
   ) => TPlateEditor<V>['tf'] & InferTransforms<C>;
 };
+
+export type KeyofPlugins<T extends AnyPluginConfig> =
+  | (string & {})
+  | InferKey<PlateCorePlugin | T>;

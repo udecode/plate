@@ -13,6 +13,7 @@ import type { TStateApi } from 'zustand-x';
 import type {
   AnyPluginConfig,
   InferApi,
+  InferKey,
   InferOptions,
   InferSelectors,
   InferTransforms,
@@ -24,7 +25,7 @@ import type {
   EditorPlugin,
   InjectNodeProps,
 } from '../plugin/SlatePlugin';
-import type { CorePlugin } from '../plugins';
+import type { BaseParagraphPlugin, CorePlugin } from '../plugins';
 
 export type BaseEditor = EditorBase & {
   key: any;
@@ -102,6 +103,14 @@ export type BaseEditor = EditorBase & {
 };
 
 export type InferPlugins<T extends AnyPluginConfig[]> = T[number];
+
+export type KeyofPlugins<T extends AnyPluginConfig> =
+  | (string & {})
+  | InferKey<CorePlugin | T>;
+
+export type KeyofNodePlugins<T extends AnyPluginConfig> =
+  | (string & {})
+  | InferKey<T | typeof BaseParagraphPlugin>;
 
 export type SlateEditor = BaseEditor & {
   api: EditorApi & UnionToIntersection<InferApi<CorePlugin>>;
