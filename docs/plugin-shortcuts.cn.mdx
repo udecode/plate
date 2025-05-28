@@ -1,125 +1,143 @@
 ---
 title: 插件快捷键
-description: 了解如何在 Plate 插件中配置和使用键盘快捷键。
+description: 了解如何配置键盘快捷键。
 ---
 
-本指南介绍了如何在 Plate 插件中配置和使用键盘快捷键，允许你为各种编辑器操作创建自定义热键。
+键盘快捷键对于高效的编辑工作流程至关重要。Plate 允许你轻松为编辑器插件定义和自定义快捷键。
 
-## 插件快捷键
+## 定义快捷键
 
-Plate 提供了一组默认的快捷键，用于常见操作。
+你可以在创建或配置插件时为任何插件添加或修改快捷键（例如，使用 `createPlatePlugin().extend({...})` 或 `ExistingPlugin.configure({...})`）。快捷键在插件配置的 `shortcuts` 字段中定义。
 
-### 文本格式化
+定义快捷键的主要方式有两种：
 
-- **BoldPlugin**
-  - `toggleBold`: `Mod+B`
+### 1. 关联到插件方法（推荐）
 
-- **ItalicPlugin**
-  - `toggleItalic`: `Mod+I`
+最直接的方式是将快捷键关联到插件中的现有方法。这可以是 [transform 方法](/docs/plugin-methods#extendtransforms) 或 [API 方法](/docs/plugin-methods#extendapi)。Transform 是修改编辑器状态的函数（如切换 mark、插入元素），而 API 方法则提供其他功能。
 
-- **UnderlinePlugin**
-  - `toggleUnderline`: `Mod+U`
+操作步骤：
+1.  确保在 `shortcuts` 配置对象中快捷键的名称与方法名称一致（例如，名为 `toggle` 的快捷键会查找名为 `toggle` 的 transform，如果没有则查找同名的 API 方法）。
+2.  为快捷键提供 `keys`（按键组合）。
 
-- **StrikethroughPlugin**
-  - `toggleStrikethrough`: `Mod+Shift+X`
+当按下指定按键时，Plate 会自动查找并调用对应的方法。
 
-- **CodePlugin**
-  - `toggleCode`: `Mod+E`
+```tsx title="plugins/my-document-plugin.ts"
+import { createPlatePlugin, Key } from '@udecode/plate/react';
 
-- **SubscriptPlugin**
-  - `toggleSubscript`: `Mod+,`
-
-- **SuperscriptPlugin**
-  - `toggleSuperscript`: `Mod+.`
-
-- **HighlightPlugin**
-  - `toggleHighlight`: `Mod+Shift+H`
-
-## 块格式化
-
-- **ParagraphPlugin**
-  - `toggleParagraph`: `Mod+Alt+0` 或 `Mod+Shift+0`
-
-- **BlockquotePlugin**
-  - `toggleBlockquote`: `Mod+Shift+.`
-
-- **HeadingPlugin**
-  - `toggleHeading1`: `Mod+Alt+1` 或 `Mod+Shift+1`
-  - `toggleHeading2`: `Mod+Alt+2` 或 `Mod+Shift+2`
-  - `toggleHeading3`: `Mod+Alt+3` 或 `Mod+Shift+3`
-
-- **CodeBlockPlugin**
-  - `toggleCodeBlock`: `Mod+Alt+8`
-
-## 列表
-
-- **ListPlugin**
-  - `toggleBulletedList`: `Mod+Alt+5`
-  - `toggleNumberedList`: `Mod+Alt+6`
-
-- **TodoListPlugin**
-  - `toggleTodoList`: `Mod+Alt+4` 或 `Mod+Shift+4`
-
-## 评论
-
-- **CommentPlugin**
-  - `toggleComment`: `Mod+Shift+M`
-
-### 注意事项
-
-- `Mod` 在 macOS 上代表 `Cmd`，在 Windows/Linux 上代表 `Ctrl`。
-- 快捷键可以根据需要在你的 Plate 配置中进行自定义或扩展。
-
-## 为插件添加快捷键
-
-你可以使用 `shortcuts` 选项为插件添加快捷键。每个快捷键都使用唯一的键和一个包含处理程序、键和其他可选属性的对象来定义。
-
-以下是一个基本示例：
-
-```ts
-const ParagraphPlugin = createPlatePlugin({
-  key: 'p',
+// 示例：包含 transforms 和 API 的简化插件
+export const MyDocumentPlugin = createPlatePlugin({
+  key: 'doc',
+})
+// 定义 editor.tf.doc.format()
+.extendTransforms(({ editor, type }) => ({
+  format: () => {
+    editor.tf.normalize({ force: true });
+  },
+}))
+// 定义 editor.api.doc.format()
+.extendApi(({ editor, type }) => ({
+  save: async () => {
+    // 保存文档
+    // await fetch(...);
+  },
+}))
+.extend({ // 或 .configure() 如果扩展现有插件
   shortcuts: {
-    toggleParagraph: {
-      handler: ({ editor }) => {
-        editor.toggleBlock({ type: 'p' });
-      },
-      keys: ['mod+opt+0', 'mod+shift+0'],
+    // 这将调用 editor.tf.doc.format()
+    format: {
+      keys: [[Key.Mod, Key.Shift, 'f']], // 例如 Cmd/Ctrl + Shift + F
+    },
+    // 这将调用 editor.api.doc.save()
+    save: {
+      keys: [[Key.Mod, 's']], // 例如 Cmd/Ctrl + S
     },
   },
 });
 ```
 
-在这个示例中，按下 `Cmd+Option+0` 或 `Cmd+Shift+0`（在 Mac 上）或 `Ctrl+Alt+0` 或 `Ctrl+Shift+0`（在 Windows/Linux 上）将切换段落块。
+<Callout type="info">
+  快捷键的名称（如示例中的 `toggle`）非常重要，因为 Plate 会用它来定位插件上的对应方法。它会先查找 transform 方法，如果没有则查找同名的 API 方法。
+</Callout>
 
-## 快捷键属性
+### 2. 使用自定义处理函数
 
-每个快捷键可以具有以下属性：
+对于需要更复杂逻辑、依赖于键盘事件，或没有与现有 transform 名称一一对应的操作，可以提供自定义 `handler` 函数。当快捷键被激活时，该函数会被执行。
 
-- `handler`: 当快捷键触发时调用的函数。
-- `keys`: 表示键组合的字符串或字符串数组。
-- `priority`: （可选）表示快捷键优先级的数字。
-- `preventDefault`: （可选）布尔值，用于阻止浏览器的默认操作。
+```tsx title="plugins/custom-logger-plugin.ts"
+import { createPlatePlugin, Key } from '@udecode/plate/react';
 
-## 多个快捷键
-
-你可以为单个插件定义多个快捷键：
-
-```ts
-const FormattingPlugin = createPlatePlugin({
-  key: 'formatting',
+export const CustomLoggerPlugin = createPlatePlugin({
+  key: 'customLogger',
+}).extend({
   shortcuts: {
-    toggleBold: {
-      handler: ({ editor }) => {
-        editor.tf.toggleMark('bold');
+    logEditorState: {
+      keys: [[Key.Mod, Key.Alt, 's']], // 例如 Cmd/Ctrl + Alt + S
+      handler: ({ editor, event, eventDetails }) => {
+        // 'editor' 是 PlateEditor 实例
+        // 'event' 是原始 KeyboardEvent
+        // 'eventDetails' 提供更多热键库上下文
+        console.log('当前编辑器内容:', editor.children);
+        console.log('按下的按键:', eventDetails.keys);
+        // 你可以阻止其他操作或浏览器默认行为
+        // event.preventDefault();
       },
-      keys: 'mod+b',
     },
-    toggleItalic: {
-      handler: ({ editor }) => {
-        editor.tf.toggleMark('italic');
-      },
-      keys: 'mod+i',
+  },
+});
+```
+
+## 快捷键配置属性
+
+定义或配置快捷键时，可以在配置对象中使用以下属性：
+
+-   `keys`: **必需。** 触发快捷键的按键组合。
+    -   可以是类似 `'mod+b'` 的字符串，或使用 `Key` 枚举的数组以获得更明确的控制（如 `[[Key.Mod, Key.Shift, 'x']]`）。
+    -   `Key.Mod` 是指定 macOS 上的 `Cmd` 和其他操作系统上的 `Ctrl` 的便捷方式。
+-   `handler`: （可选）当快捷键被激活时调用的函数。签名为：
+    `({ editor: PlateEditor; event: KeyboardEvent; eventDetails: HotkeysEvent; }) => void;`
+    如果省略 `handler`，Plate 会尝试根据快捷键名称调用对应的 transform。
+    **注意**：如果 transform 或 handler 返回 `false`（即未处理），则不会调用 `preventDefault`，允许其他处理函数或浏览器默认行为接管。其他返回值将使用默认的 `preventDefault` 行为。
+-   `preventDefault`: （可选）布尔值。如果设置为 `true`，则阻止浏览器对该按键组合的默认操作（如 `Mod+B` 通常会在浏览器中加粗文本）。**默认为 `true`**。大多数编辑器快捷键适用。若需允许浏览器默认操作或其他处理函数处理事件，尤其是 handler 可能不会始终执行操作时（如缩进命令在当前上下文不适用），请设置为 `false`。
+-   `priority`: （可选）数字。如果多个插件为相同的 `keys` 定义了快捷键，优先级高的会被执行。用于解决冲突。
+-   *(其他选项)*: 还可以包含与底层 `@udecode/react-hotkeys` 库的 `useHotkeys` hook 兼容的其他选项，如 `enabled`、`enableOnContentEditable` 等，以微调行为。
+
+## Plate 插件的默认快捷键
+
+许多官方 Plate 插件为常用操作预设了快捷键。这些默认值通常关联到插件的内部 transform 方法。目前，以下基础 mark 插件包含默认快捷键：
+
+-   **BoldPlugin**: `Mod+B`
+-   **ItalicPlugin**: `Mod+I`
+-   **UnderlinePlugin**: `Mod+U`
+
+其他插件如 `CodePlugin`、`StrikethroughPlugin` 等，提供可轻松关联快捷键的 transform（如 `toggle` 快捷键会关联到 `editor.tf.<pluginKey>.toggle()`），但你需要为它们显式定义快捷键 `keys`。
+
+<Callout type="note">
+  Bold、Italic 和 Underline 的默认按键组合在各自插件的默认配置中定义。你可以随时覆盖这些默认值，或为其他插件定义快捷键（见下文"覆盖和禁用快捷键"）。
+</Callout>
+
+## 管理多个快捷键
+
+单个插件不限于一个快捷键；你可以根据需要定义多个：
+
+```tsx title="plugins/my-formatting-tools.ts"
+import { createPlatePlugin, Key } from '@udecode/plate/react';
+
+export const MyFormattingTools = createPlatePlugin({
+  key: 'myFormatting',
+  // 假设存在 editor.tf.myFormatting.applyHeader 和 editor.tf.myFormatting.applyCodeStyle
+})
+.extend({
+  shortcuts: {
+    applyHeader: {
+      keys: [[Key.Mod, Key.Alt, '1']],
+    },
+    applyCodeStyle: {
+      keys: [[Key.Mod, Key.Alt, 'c']],
+    },
+    // 带自定义 handler 的快捷键
+    logSomething: {
+      keys: [[Key.Mod, 'l']],
+      handler: () => console.log('来自 MyFormattingTools 的日志!'),
     },
   },
 });
@@ -127,81 +145,108 @@ const FormattingPlugin = createPlatePlugin({
 
 ## 快捷键优先级
 
-当多个插件定义了相同键组合的快捷键时，你可以使用 `priority` 属性来确定哪个快捷键优先：
+如果多个快捷键（可能来自不同插件）配置了相同的按键组合（如 `Mod+Shift+P`），则由快捷键配置对象上的 `priority` 属性决定哪个被执行。
 
-```ts
-const HighPriorityPlugin = createPlatePlugin({
-  key: 'highPriority',
+数字越大，优先级越高。如果快捷键未显式设置 `priority`，则使用其父插件的 `priority` 作为后备。这允许你精细控制当按键组合重叠时哪个操作优先。
+
+```tsx
+const PluginA = createPlatePlugin({ key: 'pluginA', priority: 10 }).extend({
   shortcuts: {
-    myShortcut: {
-      handler: () => console.info('高优先级'),
-      keys: 'mod+k',
-      priority: 100,
-    },
-  },
+    doSomethingImportant: {
+      keys: 'mod+shift+p',
+      handler: () => console.log('Plugin A: Important action on Mod+Shift+P!'),
+      priority: 100, // 该快捷键显式高优先级
+    }
+  }
 });
 
-const LowPriorityPlugin = createPlatePlugin({
-  key: 'lowPriority',
+const PluginB = createPlatePlugin({ key: 'pluginB', priority: 20 }).extend({
   shortcuts: {
-    myShortcut: {
-      handler: () => console.info('低优先级'),
-      keys: 'mod+k',
-      priority: 50,
+    doSomethingLessImportant: {
+      keys: 'mod+shift+p', // 与 PluginA 的快捷键相同
+      handler: () => console.log('Plugin B: Less important action on Mod+Shift+P.'),
+      // 未显式设置快捷键优先级，将使用 PluginB 的优先级（20）
+    }
+  }
+});
+
+// 如果两个插件都激活，按下 Mod+Shift+P 会执行 PluginA 的 handler
+// 因为它的快捷键优先级更高（100 vs 20）。
+```
+
+## 覆盖和禁用快捷键
+
+你可以在配置插件时更改或禁用快捷键。
+
+**更改插件快捷键：**
+配置插件时（如 `BoldPlugin.configure({ ... })`），可以通过名称（如 `toggle`）定义快捷键。如果插件已有同名快捷键（如默认值），你的新配置会覆盖原有快捷键。你可以更改其 `keys`，提供新的 `handler`，或调整其他属性。
+
+```tsx
+import { BoldPlugin, Key } from '@udecode/plate-basic-nodes/react';
+
+// BoldPlugin 默认有名为 'toggle' 的快捷键（通常为 Mod+B）。
+// 这里将其组合改为 Mod+Shift+B。
+const MyCustomBoldPlugin = BoldPlugin.configure({
+  shortcuts: {
+    toggle: { // 重新配置 BoldPlugin 的 'toggle' 快捷键
+      keys: [[Key.Mod, Key.Shift, 'b']], // 新组合
+      // 原 handler（关联到 'toggle' transform）通常会保留
+      // 除非这里指定了新的 'handler'。
     },
   },
 });
 ```
 
-在这种情况下，按下 `Cmd+K`（Mac）或 `Ctrl+K`（Windows/Linux）时将触发 `HighPriorityPlugin` 的快捷键。
+**禁用插件快捷键：**
+将快捷键配置设置为 `null` 即可禁用该快捷键（如 ItalicPlugin 的 `toggle`）。
 
-## 禁用快捷键
+```tsx
+import { ItalicPlugin } from '@udecode/plate-basic-nodes/react';
 
-你可以通过将快捷键的值设置为 `null` 来禁用它：
-
-```ts
-const MyPlugin = ParagraphPlugin.configure({
+// 示例：禁用 ItalicPlugin 的 'toggle' 快捷键
+const MyCustomItalicPlugin = ItalicPlugin.configure({
   shortcuts: {
-    myShortcut: null,
+    toggle: null, // 移除/禁用 ItalicPlugin 的 'toggle' 快捷键
   },
 });
 ```
 
-## 扩展快捷键
+## 全局快捷键（编辑器级）
 
-你可以使用 `extend` 方法扩展或覆盖快捷键：
+除了插件快捷键外，还可以在创建编辑器实例时直接定义全局快捷键。这些快捷键行为与插件快捷键类似。
 
-```ts
-const ExtendedPlugin = BasePlugin.extend({
-  shortcuts: {
-    newShortcut: {
-      handler: () => console.info('新快捷键'),
-      keys: 'mod+shift+n',
-    },
-  },
-});
-```
+```tsx title="editor-config.ts"
+import { createPlateEditor, Key } from '@udecode/plate/react';
 
-## 根插件快捷键
-
-你还可以在创建编辑器时在根级别定义快捷键：
-
-```ts
 const editor = createPlateEditor({
-  plugins: [/* 你的插件 */],
+  plugins: [/* ...你的插件数组... */],
   shortcuts: {
-    globalShortcut: {
-      handler: () => console.info('全局快捷键触发'),
-      keys: 'mod+g',
+    // 全局快捷键，例如保存文档
+    saveDocument: {
+      keys: [[Key.Mod, 's']],
+      handler: ({ editor, event }) => {
+        console.log('尝试保存文档内容:', editor.children);
+        // 因为 preventDefault 为 false，浏览器默认的保存对话框会弹出。
+        // 如果你想有条件地阻止浏览器默认行为
+        // （例如仅在满足某些条件时阻止保存），
+        // 可以在 handler 内调用 event.preventDefault()：
+        // if (shouldPrevent) event.preventDefault();
+      },
+      preventDefault: false,
     },
+    anotherGlobalAction: {
+      keys: [[Key.Ctrl, Key.Alt, 'g']],
+      handler: () => alert('全局操作已触发!'),
+    }
   },
 });
 ```
-
-根级别的快捷键默认具有最高优先级。
+编辑器级快捷键通常具有较高的默认优先级，但如果存在冲突，仍可被单个插件快捷键的 `priority` 设置影响。
 
 ## 最佳实践
 
-- 考虑使用 `preventDefault` 选项来防止与浏览器默认操作冲突的快捷键。
-- 注意应用程序中现有的快捷键，以避免冲突。
-- 当你需要精细控制哪个快捷键被触发时，使用 `priority` 属性。
+-   **关联到 Transform**：为清晰和保持代码 DRY，建议通过名称匹配将快捷键关联到现有 transform 方法。
+-   **`preventDefault`**：大多数编辑器快捷键应阻止浏览器默认操作。Plate 默认将 `preventDefault` 设为 `true`，通常无需显式设置。但如果 handler 只在特定条件下执行（如缩进命令仅在某些上下文适用），且希望其他 handler 或浏览器默认行为接管，则为该快捷键设置 `preventDefault: false`。
+-   **保持一致性**：尽量使用直观且一致的按键组合。参考主流编辑器的标准快捷键，或根据应用场景选择合适组合。
+-   **优先级管理冲突**：如预期或遇到多个插件尝试处理同一按键组合，使用 `priority` 属性明确指定哪个快捷键优先。
+-   **为用户提供反馈**：对于快捷键触发但无明显界面的操作（如"保存"），建议提供如 [toast](https://ui.shadcn.com/docs/components/sonner) 通知等用户反馈。

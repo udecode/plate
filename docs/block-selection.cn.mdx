@@ -232,7 +232,7 @@ render: {
 
 ## API
 
-### `editor.api.blockSelection.add`
+### `api.blockSelection.add`
 
 将一个或多个块添加到选择中。
 
@@ -244,11 +244,11 @@ render: {
 </APIParameters>
 </API>
 
-### `editor.api.blockSelection.clear`
+### `api.blockSelection.clear`
 
 将选中的 ID 集合重置为空集。
 
-### `editor.api.blockSelection.delete`
+### `api.blockSelection.delete`
 
 从选择中移除一个或多个块。
 
@@ -260,15 +260,15 @@ render: {
 </APIParameters>
 </API>
 
-### `editor.api.blockSelection.deselect`
+### `api.blockSelection.deselect`
 
 取消选择所有块并将 `isSelecting` 标志设置为 false。
 
-### `editor.api.blockSelection.focus`
+### `api.blockSelection.focus`
 
 将焦点设置在块选择的阴影输入上。此输入处理所选块的复制、删除和粘贴事件。
 
-### `editor.api.blockSelection.getNodes`
+### `api.blockSelection.getNodes`
 
 获取编辑器中的选中块。
 
@@ -278,7 +278,7 @@ render: {
 </APIReturns>
 </API>
 
-### `editor.api.blockSelection.has`
+### `api.blockSelection.has`
 
 检查一个或多个块是否被选中。
 
@@ -296,11 +296,11 @@ render: {
 </APIReturns>
 </API>
 
-### `editor.api.blockSelection.selectAll`
+### `api.blockSelection.selectAll`
 
 选择编辑器中的所有可选择块。
 
-### `editor.api.blockSelection.set`
+### `api.blockSelection.set`
 
 将选择设置为一个或多个块，清除任何现有选择。
 
@@ -314,19 +314,19 @@ render: {
 
 ## 转换
 
-### `editor.tf.blockSelection.duplicate`
+### `tf.blockSelection.duplicate`
 
 复制选中的块。
 
-### `editor.tf.blockSelection.removeNodes`
+### `tf.blockSelection.removeNodes`
 
 从编辑器中移除选中的节点。
 
-### `editor.tf.blockSelection.select`
+### `tf.blockSelection.select`
 
 选择 `getNodes()` 返回的节点并重置选中的 ID。
 
-### `editor.tf.blockSelection.setNodes`
+### `tf.blockSelection.setNodes`
 
 设置选中节点的属性。
 
@@ -341,7 +341,7 @@ render: {
 </APIParameters>
 </API>
 
-### `editor.tf.blockSelection.setTexts`
+### `tf.blockSelection.setTexts`
 
 设置选中节点的文本属性。
 
@@ -419,7 +419,7 @@ render: {
 
 初始化和管理选择区域功能。
 
-### `editor.api.blockSelection.isSelectable`
+### `api.blockSelection.isSelectable`
 
 <API name="isSelectable">
 <APIParameters>
@@ -436,7 +436,7 @@ render: {
 </APIReturns>
 </API>
 
-### `editor.api.blockSelection.moveSelection`
+### `api.blockSelection.moveSelection`
 
 将选择向上或向下移动到下一个可选择的块。
 
@@ -457,7 +457,7 @@ render: {
 </APIParameters>
 </API>
 
-### `editor.api.blockSelection.shiftSelection`
+### `api.blockSelection.shiftSelection`
 
 根据锚块扩展或缩小选择。
 

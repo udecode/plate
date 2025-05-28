@@ -3,8 +3,8 @@
   "name": "multiple-editors-demo",
   "type": "registry:example",
   "dependencies": [
-    "@udecode/plate-basic-elements",
-    "@udecode/plate-basic-marks",
+    "@udecode/plate-basic-nodes",
+    "@udecode/plate-basic-nodes",
     "@udecode/plate-media"
   ],
   "registryDependencies": [
@@ -23,12 +23,12 @@
     },
     {
       "path": "src/registry/examples/values/basic-elements-value.tsx",
-      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const basicElementsValue: any = (\n  <fragment>\n    <hh2>Blocks</hh2>\n    <hp>\n      Easily create headings of various levels, from H1 to H6, to structure your\n      content and make it more organized.\n    </hp>\n    <hblockquote>\n      Create blockquotes to emphasize important information or highlight quotes\n      from external sources.\n    </hblockquote>\n    <hcodeblock lang=\"javascript\">\n      <hcodeline>// Use code blocks to showcase code snippets</hcodeline>\n      <hcodeline>{`function greet() {`}</hcodeline>\n      <hcodeline>{`  console.info('Hello World!');`}</hcodeline>\n      <hcodeline>{`}`}</hcodeline>\n    </hcodeblock>\n  </fragment>\n);\n",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { KEYS } from '@udecode/plate';\nimport { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const basicElementsValue: any = (\n  <fragment>\n    <hh1>Heading 1</hh1>\n    <hp>\n      This is a top-level heading, typically used for main titles and major\n      section headers.\n    </hp>\n    <hh2>Heading 2</hh2>\n    <hp>\n      Secondary headings help organize content into clear sections and\n      subsections.\n    </hp>\n    <hh3>Heading 3</hh3>\n    <hp>\n      Third-level headings provide further content structure and hierarchy.\n    </hp>\n    <hblockquote>\n      \"Blockquotes are perfect for highlighting important information, quotes\n      from external sources, or emphasizing key points in your content.\"\n    </hblockquote>\n    <hp>\n      Use headings to create a clear document structure that helps readers\n      navigate your content effectively. Combine them with blockquotes to\n      emphasize important information.\n    </hp>\n    <element type={KEYS.hr}>\n      <htext />\n    </element>\n    <hp>\n      Horizontal rules help visually separate different sections of your\n      content, creating clear breaks between topics or ideas.\n    </hp>\n  </fragment>\n);\n",
       "type": "registry:example"
     },
     {
       "path": "src/registry/examples/values/basic-marks-value.tsx",
-      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const basicMarksValue: any = (\n  <fragment>\n    <hh2>Marks</hh2>\n    <hp>\n      Add style and emphasis to your text using the mark plugins, which offers a\n      variety of formatting options.\n    </hp>\n    <hp>\n      Make text <htext bold>bold</htext>, <htext italic>italic</htext>,{' '}\n      <htext underline>underlined</htext>, or apply a{' '}\n      <htext bold italic underline>\n        combination\n      </htext>{' '}\n      of these styles for a visually striking effect.\n    </hp>\n    <hp>\n      Add <htext strikethrough>strikethrough</htext> to indicate deleted or\n      outdated content.\n    </hp>\n    <hp>\n      Write code snippets with inline <htext code>code</htext> formatting for\n      easy readability.\n    </hp>\n  </fragment>\n);\n",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@udecode/plate-test-utils';\n\njsx;\n\nexport const basicMarksValue: any = (\n  <fragment>\n    <hh2>Text Formatting</hh2>\n    <hp>\n      Add style and emphasis to your text using various formatting options.\n    </hp>\n    <hp>\n      Make text <htext bold>bold</htext>, <htext italic>italic</htext>,{' '}\n      <htext underline>underlined</htext>, or apply a{' '}\n      <htext bold italic underline>\n        combination\n      </htext>{' '}\n      of these styles for emphasis.\n    </hp>\n    <hp>\n      Add <htext strikethrough>strikethrough</htext> to indicate deleted\n      content, use <htext code>inline code</htext> for technical terms, or{' '}\n      <htext highlight>highlight</htext> important information.\n    </hp>\n    <hp>\n      Format mathematical expressions with <htext subscript>subscript</htext>{' '}\n      and <htext superscript>superscript</htext> text.\n    </hp>\n    <hp>\n      Show keyboard shortcuts like <htext kbd>⌘ + B</htext> for bold or{' '}\n      <htext kbd>⌘ + I</htext> for italic formatting.\n    </hp>\n  </fragment>\n);\n",
       "type": "registry:example"
     },
     {

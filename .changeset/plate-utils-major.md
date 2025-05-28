@@ -2,30 +2,40 @@
 '@udecode/plate-utils': major
 ---
 
-- All `T*Element`, `T*Text` node types have been moved to this package. Migration:
+- Node type definitions (e.g., `TImageElement`, `TParagraphElement`) previously co-located with their respective plugin packages (like `@udecode/plate-media`) have been centralized into `@udecode/plate-utils`. These are typically re-exported via the main `@udecode/plate` package.
 
-```tsx
-// Before
-import { TImageElement } from '@udecode/plate-media';
+  - Migration: Update imports for these types to pull from `@udecode/plate`.
 
-// After
-import { TImageElement } from '@udecode/plate';
-```
+    ```tsx
+    // Before
+    // import { TImageElement } from '@udecode/plate-media';
 
-- Remove [`createNodesHOC`, `createNodesWithHOC`](https://github.com/udecode/plate/blob/7afd88089f4a76c896f3edf928b03c7e9f2ab903/packages/plate-utils/src/react/createNodesHOC.tsx), [`createNodeHOC`](https://github.com/udecode/plate/blob/7afd88089f4a76c896f3edf928b03c7e9f2ab903/packages/plate-utils/src/react/createNodeHOC.tsx)
-- Remove `usePlaceholderState`. Migration: use `BlockPlaceholderPlugin` instead of `withPlaceholders`.
+    // After
+    import { TImageElement } from '@udecode/plate'; // Or from '@udecode/plate-utils' directly
+    ```
 
-```ts
-BlockPlaceholderPlugin.configure({
-  options: {
-    className:
-      'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
-    placeholders: {
-      [ParagraphPlugin.key]: 'Type something...',
-    },
-    query: ({ path }) => {
-      return path.length === 1;
-    },
-  },
-});
-```
+- Removed:
+  - `createNodesHOC`
+  - `createNodesWithHOC`
+  - `createNodeHOC`
+- Removed `usePlaceholderState` hook.
+  - Migration: Use the `BlockPlaceholderPlugin` (typically from `@udecode/plate`) instead of the `withPlaceholders` HOC and `usePlaceholderState`. Configure placeholders directly within the `BlockPlaceholderPlugin` options.
+    ```ts
+    // Example BlockPlaceholderPlugin configuration
+    BlockPlaceholderPlugin.configure({
+      options: {
+        className:
+          'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
+        placeholders: {
+          [ParagraphPlugin.key]: 'Type something...',
+          // ...other placeholders
+        },
+        query: ({ editor, path }) => {
+          // Example query: only show for top-level empty blocks
+          return (
+            path.length === 1 && editor.api.isEmpty(editor.children[path[0]])
+          );
+        },
+      },
+    });
+    ```

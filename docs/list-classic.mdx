@@ -22,6 +22,7 @@ docs:
      - More like Word/Google Docs behavior
      - Any block can be indented to create list-like structures
      - Used in the [AI editor](/editors#editor-ai)
+     - Supports nested todo lists
      - Better for free-form content organization
 
   Choose based on your needs:
@@ -44,7 +45,6 @@ docs:
 - **List types**:
   - Unordered (bulleted) lists
   - Ordered (numbered) lists
-  - Todo lists with checkboxes
   - Nested sublists
 
 - **Drag & drop**:
@@ -72,20 +72,23 @@ npm install @udecode/plate-list-classic
 ## Usage
 
 ```tsx
-import { ListPlugin } from '@udecode/plate-list-classic/react';
+import { Key } from '@udecode/plate/react';
+import { ListPlugin, BulletedListPlugin, NumberedListPlugin } from '@udecode/plate-list-classic/react';
+import { BulletedListElement, NumberedListElement } from '@/components/editor/list-classic-node';
 
 const plugins = [
-  // ...otherPlugins,
   ListPlugin,
-];
+  BulletedListPlugin.configure({
+    node: { component: BulletedListElement },
+    shortcuts: { toggle: { keys: 'mod+alt+5' } },
+  }),
+  NumberedListPlugin.configure({
+    node: { component: NumberedListElement },
+    shortcuts: { toggle: { keys: 'mod+alt+6' } },
+  }),
+  ListItemPlugin,
+]
 ```
-
-## Keyboard Shortcuts
-
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + Opt + 4">Insert a numbered list.</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Shift + 4">Insert a numbered list.</KeyTableItem>
-</KeyTable>
 
 ## Plugins
 
@@ -124,19 +127,21 @@ Plugin for list items.
 
 Plugin for list item content.
 
+## Transforms
+
+### `tf.ul.toggle()`
+
+Toggles a bulleted list (ul).
+
+Example Shortcut: `Mod+Alt+5`
+
+### `tf.ol.toggle()`
+
+Toggles an ordered list (ol).
+
+Example Shortcut: `Mod+Alt+6`
+
 ## API
-
-### `editor.tf.toggle.list`
-
-Toggles a list in the editor.
-
-<API name="toggle.list">
-<APIOptions type="object">
-  <APIItem name="type" type="string">
-    Type of list to toggle.
-  </APIItem>
-</APIOptions>
-</API>
 
 ### `getHighestEmptyList`
 
@@ -329,57 +334,6 @@ A behavior hook for a list toolbar button.
     </APISubListItem>
     <APISubListItem parent="props" name="onClick" type="function">
       Handler to toggle list and focus editor.
-    </APISubListItem>
-  </APISubList>
-</APIReturns>
-</API>
-
-## Todo List API
-
-### `getTodoListItemEntry`
-
-Gets nearest todo list and item entries.
-
-<API name="getTodoListItemEntry">
-<APIOptions type="options">
-  <APIItem name="at" type="Location | null" optional>
-    Location to search from.
-    - **Default:** `editor.selection`
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="{ list: ElementEntry, listItem: ElementEntry } | undefined">
-  Todo list and item entries if found.
-</APIReturns>
-</API>
-
-### `useTodoListElement`
-
-A behavior hook a todo list item element.
-
-<API name="useTodoListElement">
-<APIState>
-  <APIItem name="checked" type="boolean">
-    Todo item checked state.
-  </APIItem>
-  <APIItem name="readOnly" type="boolean">
-    Whether item is read-only.
-  </APIItem>
-  <APIItem name="element" type="TElement">
-    Todo list item element.
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="checkboxProps" type="object">
-    Props for checkbox.
-  </APIItem>
-  <APISubList>
-    <APISubListItem parent="checkboxProps" name="checked" type="boolean">
-      Checkbox checked state.
-    </APISubListItem>
-    <APISubListItem parent="checkboxProps" name="onCheckedChange" type="function">
-      Handler for checkbox state changes.
     </APISubListItem>
   </APISubList>
 </APIReturns>

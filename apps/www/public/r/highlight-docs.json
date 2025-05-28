@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "highlight-docs",
+  "type": "registry:file",
+  "title": "Highlight",
+  "description": "Documentation for Highlight",
+  "files": [
+    {
+      "path": "../../docs/highlight.mdx",
+      "content": "---\ntitle: Highlight\ndocs:\n  - route: /docs/components/mark-toolbar-button\n    title: Mark Toolbar Button\n---\n\n<ComponentPreview name=\"basic-marks-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Highlight important text with background colors\n- Keyboard shortcut support for quick formatting\n- Renders as `<mark>` HTML element by default\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-basic-nodes\n```\n\n## Usage\n\n```tsx\nimport { HighlightPlugin } from '@udecode/plate-basic-nodes/react';\n\nconst plugins = [\n  // ...otherPlugins,\n  HighlightPlugin.configure({\n    shortcuts: { toggle: { keys: 'mod+shift+h' } },\n  }),\n];\n```\n\n## Plugins\n\n### `HighlightPlugin`\n\nPlugin for highlight text formatting. Renders as `<mark>` HTML element by default.\n\n## Transforms\n\n### `tf.highlight.toggle`\n\nToggles the highlight formatting for the selected text. ",
+      "type": "registry:file",
+      "target": "content/docs/plate/plugins/basic-marks/highlight.mdx"
+    }
+  ]
+}

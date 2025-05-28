@@ -11,43 +11,52 @@ You can add or modify shortcuts for any plugin when you create or configure it (
 
 There are two primary ways to define what a shortcut does:
 
-### 1. Linking to Plugin Transforms (Recommended)
+### 1. Linking to Plugin Methods (Recommended)
 
-The most straightforward way to create a shortcut is by linking it to an existing [transform method](/docs/plugin-methods#extendtransforms) within your plugin. Transforms are functions that modify the editor's state (e.g., toggling a mark, inserting an element).
+The most straightforward way to create a shortcut is by linking it to an existing method within your plugin. This can be either a [transform method](/docs/plugin-methods#extendtransforms) or an [API method](/docs/plugin-methods#extendapi). Transforms are functions that modify the editor's state (e.g., toggling a mark, inserting an element), while API methods provide other functionality.
 
 To do this:
-1.  Ensure the name of your shortcut in the `shortcuts` configuration object matches the name of the transform method (e.g., a shortcut named `toggle` will look for a transform named `toggle`).
+1.  Ensure the name of your shortcut in the `shortcuts` configuration object matches the name of the method (e.g., a shortcut named `toggle` will look for a transform named `toggle`, or if no transform exists, an API method named `toggle`).
 2.  Provide the `keys` (the key combination) for the shortcut.
 
-Plate will automatically find and call the corresponding transform method (e.g., `editor.tf.code.toggle()`) when the specified keys are pressed.
+Plate will automatically find and call the corresponding method when the specified keys are pressed.
 
-```tsx title="plugins/my-code-plugin.ts"
+```tsx title="plugins/my-document-plugin.ts"
 import { createPlatePlugin, Key } from '@udecode/plate/react';
 
-// Example: A simplified CodePlugin
-export const MyCodePlugin = createPlatePlugin({
-  key: 'code',
+// Example: A simplified plugin with both transforms and API
+export const MyDocumentPlugin = createPlatePlugin({
+  key: 'doc',
 })
-// Define editor.tf.code.toggle()
+// Define editor.tf.doc.format()
 .extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleMark(type);
+  format: () => {
+    editor.tf.normalize({ force: true });
+  },
+}))
+// Define editor.api.doc.format()
+.extendApi(({ editor, type }) => ({
+  save: async () => {
+    // Save the document
+    // await fetch(...);
   },
 }))
 .extend({ // Or .configure() if extending an existing plugin
   shortcuts: {
-    // The shortcut is named 'toggle'.
-    // Plate will attempt to call a transform named 'toggle' in
-    // associated with this plugin (e.g., editor.tf.code.toggle()).
-    toggle: {
-      keys: [[Key.Mod, 'e']], // e.g., Cmd/Ctrl + E
+    // This will call editor.tf.doc.format()
+    format: {
+      keys: [[Key.Mod, Key.Shift, 'f']], // e.g., Cmd/Ctrl + Shift + F
+    },
+    // This will call editor.api.doc.save()
+    save: {
+      keys: [[Key.Mod, 's']], // e.g., Cmd/Ctrl + S
     },
   },
 });
 ```
 
 <Callout type="info">
-  The name of the shortcut (e.g., `toggle` in the example) is crucial as Plate uses it to locate the matching transform method on the plugin or editor.
+  The name of the shortcut (e.g., `toggle` in the example) is crucial as Plate uses it to locate the matching method on the plugin. It first looks for a transform method, then falls back to an API method if no transform exists with that name.
 </Callout>
 
 ### 2. Using a Custom Handler
@@ -87,6 +96,7 @@ When defining or configuring a shortcut, you can use the following properties in
 -   `handler`: (Optional) A function that is called when the shortcut is activated. Its signature is:
     `({ editor: PlateEditor; event: KeyboardEvent; eventDetails: HotkeysEvent; }) => void;`
     If you omit the `handler`, Plate will attempt to call a matching transform based on the shortcut's name.
+    **Note**: If your transform or handler returns `false` (e.g. not handled), `preventDefault` will NOT be called, allowing other handlers or browser defaults to take over. Any other return value will use the default `preventDefault` behavior.
 -   `preventDefault`: (Optional) A boolean. If set to `true`, it prevents the browser's default action for that key combination (e.g., `Mod+B` typically bolds text in the browser itself). **Defaults to `true`**. This is suitable for most editor-specific shortcuts. Set to `false` if you need to allow the browser's default action or enable other handlers to process the event, especially if your handler might not always perform an action (e.g., an indent command that doesn't apply in the current context).
 -   `priority`: (Optional) A number. If multiple plugins define shortcuts for the exact same `keys`, the shortcut with the higher `priority` number will take precedence. This is useful for resolving conflicts.
 -   *(Other options)*: You can also include other options compatible with the underlying `useHotkeys` hook from the `@udecode/react-hotkeys` library, such as `enabled`, `enableOnContentEditable`, etc., to fine-tune behavior.
@@ -173,7 +183,7 @@ You can change or disable shortcuts for a specific plugin when you configure it.
 When you configure a plugin (e.g., `BoldPlugin.configure({ ... })`), you can define a shortcut by its name (like `toggle`). If the plugin already has a shortcut with that name (perhaps a default one), your new configuration for `toggle` will be used for that plugin. You can change its `keys`, provide a new `handler`, or adjust other properties.
 
 ```tsx
-import { BoldPlugin, Key } from '@udecode/plate-basic-marks/react';
+import { BoldPlugin, Key } from '@udecode/plate-basic-nodes/react';
 
 // BoldPlugin has a default shortcut named 'toggle' (typically Mod+B).
 // Let's change its key combination to Mod+Shift+B for BoldPlugin.
@@ -192,7 +202,7 @@ const MyCustomBoldPlugin = BoldPlugin.configure({
 Set the shortcut's configuration to `null` in that plugin's `shortcuts` object. This will remove that specific shortcut (e.g., `toggle` for `ItalicPlugin`).
 
 ```tsx
-import { ItalicPlugin } from '@udecode/plate-basic-marks/react';
+import { ItalicPlugin } from '@udecode/plate-basic-nodes/react';
 
 // Example: Disable the 'toggle' shortcut for the ItalicPlugin
 const MyCustomItalicPlugin = ItalicPlugin.configure({

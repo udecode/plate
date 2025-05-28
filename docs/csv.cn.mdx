@@ -57,7 +57,7 @@ const plugins = [
 
 ## API
 
-### `editor.api.csv.deserialize`
+### `api.csv.deserialize`
 
 接收一个 CSV（逗号分隔值）字符串并将其转换为 Slate 兼容的格式。此函数使用 `papaparse` 库来解析 CSV 数据。
 
@@ -85,4 +85,4 @@ const plugins = [
 创建 CSV 数据的表格表示：
 - 标题（如果存在）成为第一行
 - 每个 CSV 行成为表格的一行
-- 使用插件：`ParagraphPlugin`、`TablePlugin`、`TableCellHeaderPlugin`、`TableRowPlugin` 和 `TableCellPlugin`
+- 使用插件：`TablePlugin`、`TableCellHeaderPlugin`、`TableRowPlugin` 和 `TableCellPlugin`

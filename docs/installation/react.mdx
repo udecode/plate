@@ -47,24 +47,30 @@ export default function App() {
 
 ### Adding Basic Marks
 
-Enhance your editor with text formatting. Add the [FixedToolbar](/docs/components/fixed-toolbar) and [MarkToolbarButton](/docs/components/mark-toolbar-button) components:
+Enhance your editor with text formatting. Add the **Basic Nodes Kit**, [FixedToolbar](/docs/components/fixed-toolbar) and [MarkToolbarButton](/docs/components/mark-toolbar-button) components:
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/fixed-toolbar https://platejs.org/r/mark-toolbar-button
+npx shadcn@latest add https://platejs.org/r/basic-nodes-kit https://platejs.org/r/fixed-toolbar https://platejs.org/r/mark-toolbar-button
 ```
 
-Update your `src/App.tsx` to include these components and the `BasicMarksPlugin`.
+<Callout type="info">
+  The `basic-nodes-kit` includes all the basic plugins (bold, italic, underline, headings, blockquotes, etc.) and their components that we'll use in the following steps.
+</Callout>
+
+Update your `src/App.tsx` to include these components and the basic mark plugins.
 This example adds bold, italic, and underline functionality.
 
-```tsx showLineNumbers title="src/App.tsx" {2,4,6,8,13-14,16-29,33-39,44-48}
+```tsx showLineNumbers title="src/App.tsx" {2,4-8,15-16,18-31,35-36,41-45}
 import * as React from 'react';
 import type { Value } from '@udecode/plate';
 
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import {
-  type PlateLeafProps,
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-nodes/react';
+import {
   Plate,
-  PlateLeaf,
   usePlateEditor,
 } from '@udecode/plate/react';
 
@@ -89,13 +95,8 @@ const initialValue: Value = [
 
 export default function App() {
   const editor = usePlateEditor({
-    plugins: [BasicMarksPlugin], // Add the marks plugin
+    plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin], // Add the mark plugins
     value: initialValue,         // Set initial content
-    components: {                // Map mark keys to components
-      bold: (props: PlateLeafProps) => <PlateLeaf {...props} as="strong" />,
-      italic: (props: PlateLeafProps) => <PlateLeaf {...props} as="em" />,
-      underline: (props: PlateLeafProps) => <PlateLeaf {...props} as="u" />,
-    },
   });
 
   return (
@@ -117,75 +118,74 @@ export default function App() {
 
 ### Adding Basic Elements
 
-Introduce block-level elements like headings and paragraphs. Add the [HeadingElement](/docs/components/heading-node) and [ParagraphElement](/docs/components/paragraph-node) components:
+Introduce block-level elements like headings and blockquotes with custom components.
 
-```bash
-npx shadcn@latest add https://platejs.org/r/heading-node https://platejs.org/r/paragraph-node https://platejs.org/r/blockquote-node
-```
-
-Update your `src/App.tsx` to include `BasicElementsPlugin` and the element components.
-
-```tsx showLineNumbers title="src/App.tsx" {4,7,14,17,19-20,23-24,37,41-45,56-60}
+```tsx showLineNumbers title="src/App.tsx" {5,7-9,18,21,23,26-33,50-53,61-65}
 import * as React from 'react';
 import type { Value } from '@udecode/plate';
 
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import {
-  type PlateElementProps,
-  type PlateLeafProps,
+  BlockquotePlugin,
+  BoldPlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-nodes/react';
+import {
   Plate,
-  PlateLeaf,
   usePlateEditor,
 } from '@udecode/plate/react';
 
 import { BlockquoteElement } from '@/components/ui/blockquote-node';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 import { FixedToolbar } from '@/components/ui/fixed-toolbar';
-import { HeadingElement } from '@/components/ui/heading-node';
+import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
-import { ParagraphElement } from '@/components/ui/paragraph-node';
 import { ToolbarButton } from '@/components/ui/toolbar'; // Generic toolbar button
 
 const initialValue: Value = [
-  { type: 'h3', children: [{ text: 'Title' }] },
-  { type: 'blockquote', children: [{ text: 'This is a quote.' }] },
   {
-    type: 'p',
+    children: [{ text: 'Title' }],
+    type: 'h3',
+  },
+  {
+    children: [{ text: 'This is a quote.' }],
+    type: 'blockquote',
+  },
+  {
     children: [
       { text: 'With some ' },
-      { text: 'bold', bold: true },
+      { bold: true, text: 'bold' },
       { text: ' text for emphasis!' },
     ],
+    type: 'p',
   },
 ];
 
 export default function App() {
   const editor = usePlateEditor({
-    plugins: [BasicElementsPlugin, BasicMarksPlugin], // Add plugins
+    plugins: [
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      H1Plugin.withComponent(H1Element),
+      H2Plugin.withComponent(H2Element),
+      H3Plugin.withComponent(H3Element),
+      BlockquotePlugin.withComponent(BlockquoteElement),
+    ],
     value: initialValue,
-    components: {
-      // Element components
-      blockquote: BlockquoteElement,
-      p: ParagraphElement,
-      h1: (props: PlateElementProps) => <HeadingElement {...props} variant="h1" />,
-      h2: (props: PlateElementProps) => <HeadingElement {...props} variant="h2" />,
-      h3: (props: PlateElementProps) => <HeadingElement {...props} variant="h3" />,
-      // Mark components (from previous step)
-      bold: (props: PlateLeafProps) => <PlateLeaf {...props} as="strong" />,
-      italic: (props: PlateLeafProps) => <PlateLeaf {...props} as="em" />,
-      underline: (props: PlateLeafProps) => <PlateLeaf {...props} as="u" />,
-    },
   });
 
   return (
     <Plate editor={editor}>
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
         {/* Element Toolbar Buttons */}
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('h1')}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('h2')}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('h3')}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('blockquote')}>Quote</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>Quote</ToolbarButton>
         {/* Mark Toolbar Buttons */}
         <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
         <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
@@ -201,8 +201,8 @@ export default function App() {
 
 <ComponentPreview name="installation-next-03-elements-demo" height="200px" />
 
-<Callout type="info" title="Component Mapping is Key">
-  When adding plugins for new element or mark types, you **must** map their `type` or plugin `key` (e.g., `'h1'`, `'p'`, `'bold'`) to your React components in the `components` option of `usePlateEditor`. This tells Plate how to render them.
+<Callout type="info" title="Component Registration">
+  Notice how we use `Plugin.withComponent(Component)` to register components with their respective plugins. This is the recommended approach for associating React components with Plate plugins.
 
   For a quicker start with common plugins and components pre-configured, use the `editor-basic` block:
   ```bash
@@ -215,54 +215,61 @@ export default function App() {
 
 To make the editor content persistent, let's integrate `localStorage` to save and load the editor's value.
 
-```tsx showLineNumbers title="src/App.tsx" {48-54,60-62,72-78}
+```tsx showLineNumbers title="src/App.tsx" {55-61,67-69,79-85}
 import * as React from 'react';
 import type { Value } from '@udecode/plate';
 
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import {
-  type PlateElementProps,
-  type PlateLeafProps,
+  BlockquotePlugin,
+  BoldPlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-nodes/react';
+import {
   Plate,
-  PlateLeaf,
   usePlateEditor,
 } from '@udecode/plate/react';
 
 import { BlockquoteElement } from '@/components/ui/blockquote-node';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 import { FixedToolbar } from '@/components/ui/fixed-toolbar';
-import { HeadingElement } from '@/components/ui/heading-node';
+import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
-import { ParagraphElement } from '@/components/ui/paragraph-node';
 import { ToolbarButton } from '@/components/ui/toolbar';
 
 const initialValue: Value = [
-  { type: 'h3', children: [{ text: 'Title' }] },
-  { type: 'blockquote', children: [{ text: 'This is a quote.' }] },
   {
-    type: 'p',
+    children: [{ text: 'Title' }],
+    type: 'h3',
+  },
+  {
+    children: [{ text: 'This is a quote.' }],
+    type: 'blockquote',
+  },
+  {
     children: [
       { text: 'With some ' },
-      { text: 'bold', bold: true },
+      { bold: true, text: 'bold' },
       { text: ' text for emphasis!' },
     ],
+    type: 'p',
   },
 ];
 
 export default function App() {
   const editor = usePlateEditor({
-    plugins: [BasicElementsPlugin, BasicMarksPlugin],
-    components: {
-      blockquote: BlockquoteElement,
-      p: ParagraphElement,
-      h1: (props: PlateElementProps) => <HeadingElement {...props} variant="h1" />,
-      h2: (props: PlateElementProps) => <HeadingElement {...props} variant="h2" />,
-      h3: (props: PlateElementProps) => <HeadingElement {...props} variant="h3" />,
-      bold: (props: PlateLeafProps) => <PlateLeaf {...props} as="strong" />,
-      italic: (props: PlateLeafProps) => <PlateLeaf {...props} as="em" />,
-      underline: (props: PlateLeafProps) => <PlateLeaf {...props} as="u" />,
-    },
+    plugins: [
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      H1Plugin.withComponent(H1Element),
+      H2Plugin.withComponent(H2Element),
+      H3Plugin.withComponent(H3Element),
+      BlockquotePlugin.withComponent(BlockquoteElement),
+    ],
     value: () => {
       const savedValue = localStorage.getItem('installation-react-demo');
       if (savedValue) {
@@ -280,10 +287,10 @@ export default function App() {
       }}
     >
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('h1')}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('h2')}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('h3')}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('blockquote')}>Quote</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>Quote</ToolbarButton>
         <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
         <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
         <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
@@ -304,10 +311,6 @@ export default function App() {
 ```
 
 <ComponentPreview name="installation-next-demo" />
-
-<Callout type="note">
-  `usePlateEditor` includes several core plugins by default (e.g., for paragraphs, history, React integration). For more advanced features like tables or mentions, you'll need to add the specific plugins and their associated components.
-</Callout>
 
 ### Next Steps
 

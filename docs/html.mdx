@@ -15,7 +15,7 @@ Convert Plate editor content (Slate nodes) into an HTML string. This is often do
 [View Server-Side Example](/docs/examples/slate-to-html)
 
 <Callout type="warning" title="Key Server-Side Constraint">
-  When using `serializeHtml` or other Plate utilities in a server environment (Node.js, RSC), you **must not** import from `/react` subpaths of any `@udecode/plate*` package. Always use the base imports (e.g., `@udecode/plate-basic-elements` instead of `@udecode/plate-basic-elements/react`).
+  When using `serializeHtml` or other Plate utilities in a server environment (Node.js, RSC), you **must not** import from `/react` subpaths of any `@udecode/plate*` package. Always use the base imports (e.g., `@udecode/plate-basic-nodes` instead of `@udecode/plate-basic-nodes/react`).
 
   This means you should use `createSlateEditor` from `@udecode/plate` for server-side editor instances, not `usePlateEditor` or `createPlateEditor` from `@udecode/plate/react`.
 </Callout>
@@ -29,7 +29,7 @@ Provide a server-side editor instance and a mapping of your Plate components to 
 ```tsx title="lib/generate-html.ts"
 import { createSlateEditor, serializeHtml } from '@udecode/plate'; // Base import
 // Import base plugins (NOT from /react paths)
-import { BaseHeadingPlugin } from '@udecode/plate-basic-elements';
+import { BaseHeadingPlugin } from '@udecode/plate-basic-nodes';
 // Import your STATIC components for rendering
 import { ParagraphElementStatic } from '@/components/ui/paragraph-node-static';
 import { HeadingElementStatic } from '@/components/ui/heading-node-static';
@@ -141,7 +141,7 @@ Use `editor.api.html.deserialize` within a client-side Plate editor context.
 ```tsx title="components/my-html-importer.tsx"
 import { PlateEditor, usePlateEditor } from '@udecode/plate/react'; // React-specific imports for client-side
 // Import ALL Plate plugins needed to represent the HTML content
-import { HeadingPlugin } from '@udecode/plate-basic-elements/react';
+import { HeadingPlugin } from '@udecode/plate-basic-nodes/react';
 // ... and so on for bold, italic, tables, lists, etc.
 
 function MyHtmlImporter({ htmlString }: { htmlString: string }) {
@@ -350,7 +350,7 @@ Converts Slate nodes from `editor.children` (or a provided `value`) into an HTML
 
 ---
 
-### `editor.api.html.deserialize(options)`
+### `api.html.deserialize(options)`
 
 Parses an HTML string or `HTMLElement` into a Slate `Value` (an array of `Descendant` nodes). This is typically used on the client-side with a fully configured Plate editor.
 

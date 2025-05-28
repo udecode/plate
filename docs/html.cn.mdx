@@ -15,7 +15,7 @@ toc: true
 [查看服务端示例](/docs/examples/slate-to-html)
 
 <Callout type="warning" title="服务端关键限制">
-  在服务端环境（Node.js、RSC）使用 `serializeHtml` 或其他 Plate 工具时，**绝不能**从任何 `@udecode/plate*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@udecode/plate-basic-elements`，而不是 `@udecode/plate-basic-elements/react`）。
+  在服务端环境（Node.js、RSC）使用 `serializeHtml` 或其他 Plate 工具时，**绝不能**从任何 `@udecode/plate*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@udecode/plate-basic-nodes`，而不是 `@udecode/plate-basic-nodes/react`）。
 
   这意味着服务端编辑器实例应使用 `@udecode/plate` 的 `createSlateEditor`，而不是 `@udecode/plate/react` 的 `usePlateEditor` 或 `createPlateEditor`。
 </Callout>
@@ -29,7 +29,7 @@ toc: true
 ```tsx title="lib/generate-html.ts"
 import { createSlateEditor, serializeHtml } from '@udecode/plate'; // 基础导入
 // 导入基础插件（不要从 /react 路径导入）
-import { BaseHeadingPlugin } from '@udecode/plate-basic-elements';
+import { BaseHeadingPlugin } from '@udecode/plate-basic-nodes';
 // 导入用于渲染的静态组件
 import { ParagraphElementStatic } from '@/components/ui/paragraph-element-static';
 import { HeadingElementStatic } from '@/components/ui/heading-element-static';
@@ -141,7 +141,7 @@ HTML 反序列化允许你将 HTML 内容（字符串或 DOM 元素）转换回 
 ```tsx title="components/my-html-importer.tsx"
 import { PlateEditor, usePlateEditor } from '@udecode/plate/react'; // 客户端专用导入
 // 导入所有需要解析 HTML 的 Plate 插件
-import { HeadingPlugin } from '@udecode/plate-basic-elements/react';
+import { HeadingPlugin } from '@udecode/plate-basic-nodes/react';
 // ... 以及 bold、italic、table、list 等等
 
 function MyHtmlImporter({ htmlString }: { htmlString: string }) {
@@ -351,7 +351,7 @@ export const IndentListPluginConfig = {
 
 ---
 
-### `editor.api.html.deserialize(options)`
+### `api.html.deserialize(options)`
 
 将 HTML 字符串或 `HTMLElement` 解析为 Slate `Value`（`Descendant` 节点数组）。通常在客户端、已配置好 Plate 编辑器时使用。
 

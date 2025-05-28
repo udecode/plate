@@ -4,7 +4,11 @@ import * as React from 'react';
 
 import type { Value } from '@udecode/plate';
 
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import {
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-nodes/react';
 import { Plate, usePlateEditor } from '@udecode/plate/react';
 
 import { Editor, EditorContainer } from '@/registry/ui/editor';
@@ -29,7 +33,7 @@ const initialValue: Value = [
 
 export default function MyEditorPage() {
   const editor = usePlateEditor({
-    plugins: [BasicMarksPlugin],
+    plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin],
     value: initialValue,
   });
 

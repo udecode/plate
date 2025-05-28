@@ -129,14 +129,6 @@ export function AIMenu() {
     },
   });
 
-  useHotkeys(
-    'meta+j',
-    () => {
-      api.aiChat.show();
-    },
-    { enableOnContentEditable: true, enableOnFormTags: true }
-  );
-
   useHotkeys('esc', () => {
     api.aiChat.stop();
 

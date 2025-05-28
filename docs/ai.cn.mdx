@@ -27,7 +27,7 @@ docs:
 ## 安装
 
 ```bash
-npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-marks
+npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-nodes
 ```
 
 ## 使用指南
@@ -42,14 +42,14 @@ import {
   BaseItalicPlugin,
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+  BaseHorizontalRulePlugin, BaseHeadingPlugin, BaseBlockquotePlugin
+} from '@udecode/plate-basic-nodes';
 import {
   BaseCodeBlockPlugin,
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@udecode/plate-code-block';
-import { BaseParagraphPlugin, createSlateEditor, KEYS } from '@udecode/plate';
-import { BaseHorizontalRulePlugin, BaseHeadingPlugin, BaseBlockquotePlugin } from '@udecode/plate-basic-elements';
+import { createSlateEditor, KEYS } from '@udecode/plate';
 import { BaseListPlugin } from '@udecode/plate-list';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
@@ -72,7 +72,6 @@ export const createAIEditor = () => {
       BaseHeadingPlugin,
       BaseHorizontalRulePlugin,
       BaseLinkPlugin,
-      BaseParagraphPlugin,
       BaseListPlugin.extend({
         inject: {
           targetPlugins: [

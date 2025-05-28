@@ -4,8 +4,15 @@ import * as React from 'react';
 
 import type { Value } from '@udecode/plate';
 
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import {
+  BlockquotePlugin,
+  BoldPlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-nodes/react';
 import { Plate, usePlateEditor } from '@udecode/plate/react';
 
 import { BlockquoteElement } from '@/registry/ui/blockquote-node';
@@ -13,7 +20,6 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
 import { H1Element, H2Element, H3Element } from '@/registry/ui/heading-node';
 import { MarkToolbarButton } from '@/registry/ui/mark-toolbar-button';
-import { ParagraphElement } from '@/registry/ui/paragraph-node';
 import { ToolbarButton } from '@/registry/ui/toolbar';
 
 const initialValue: Value = [
@@ -37,14 +43,15 @@ const initialValue: Value = [
 
 export default function MyEditorPage() {
   const editor = usePlateEditor({
-    components: {
-      blockquote: BlockquoteElement,
-      h1: H1Element,
-      h2: H2Element,
-      h3: H3Element,
-      p: ParagraphElement,
-    },
-    plugins: [BasicElementsPlugin, BasicMarksPlugin],
+    plugins: [
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      H1Plugin.withComponent(H1Element),
+      H2Plugin.withComponent(H2Element),
+      H3Plugin.withComponent(H3Element),
+      BlockquotePlugin.withComponent(BlockquoteElement),
+    ],
     value: () => {
       const savedValue = localStorage.getItem(
         `nextjs-plate-value-demo-${new Date().toISOString().split('T')[0]}`
@@ -71,17 +78,11 @@ export default function MyEditorPage() {
       editor={editor}
     >
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('h1')}>
-          H1
-        </ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('h2')}>
-          H2
-        </ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('h3')}>
-          H3
-        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
 
-        <ToolbarButton onClick={() => editor.tf.toggleBlock('blockquote')}>
+        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>
           Quote
         </ToolbarButton>
 

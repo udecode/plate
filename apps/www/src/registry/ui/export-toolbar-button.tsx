@@ -4,29 +4,22 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import {
-  BaseParagraphPlugin,
-  createSlateEditor,
-  KEYS,
-  serializeHtml,
-} from '@udecode/plate';
+import { createSlateEditor, KEYS, serializeHtml } from '@udecode/plate';
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import {
   BaseBlockquotePlugin,
-  BaseHeadingPlugin,
-  BaseHorizontalRulePlugin,
-} from '@udecode/plate-basic-elements';
-import {
   BaseBoldPlugin,
   BaseCodePlugin,
+  BaseHeadingPlugin,
   BaseHighlightPlugin,
+  BaseHorizontalRulePlugin,
   BaseItalicPlugin,
   BaseKbdPlugin,
   BaseStrikethroughPlugin,
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+} from '@udecode/plate-basic-nodes';
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseCommentPlugin } from '@udecode/plate-comments';
 import { BaseDatePlugin } from '@udecode/plate-date';
@@ -233,7 +226,6 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
         BaseTocPlugin,
         BaseVideoPlugin,
         BaseAudioPlugin,
-        BaseParagraphPlugin,
         BaseHeadingPlugin,
         BaseMediaEmbedPlugin,
         BaseBoldPlugin,

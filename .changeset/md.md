@@ -2,4 +2,4 @@
 '@udecode/plate-markdown': major
 ---
 
-- Rename `indentListToMdastTree` to `listToMdastTree`
+- Function `indentListToMdastTree` has been renamed to `listToMdastTree` to align with the list plugin renames (`IndentListPlugin` -> `ListPlugin`).

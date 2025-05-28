@@ -16,20 +16,18 @@ import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
   BaseBlockquotePlugin,
-  BaseHeadingPlugin,
-  BaseHorizontalRulePlugin,
-} from '@udecode/plate-basic-elements';
-import {
   BaseBoldPlugin,
   BaseCodePlugin,
+  BaseHeadingPlugin,
   BaseHighlightPlugin,
+  BaseHorizontalRulePlugin,
   BaseItalicPlugin,
   BaseKbdPlugin,
   BaseStrikethroughPlugin,
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+} from '@udecode/plate-basic-nodes';
 import { BaseCaptionPlugin } from '@udecode/plate-caption';
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseCommentPlugin } from '@udecode/plate-comments';

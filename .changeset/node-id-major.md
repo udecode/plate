@@ -2,14 +2,30 @@
 '@udecode/plate-node-id': major
 ---
 
-Deprecated package: moved to `@udecode/plate-core` as a core plugin. Migration:
+- Package `@udecode/plate-node-id` has been deprecated.
+- `NodeIdPlugin` functionality is now part of `@udecode/plate-core` and is **enabled by default**.
+- Migration:
 
-- If not configured, just remove `NodeIdPlugin` from your plugins.
-- If configured, replace `NodeIdPlugin.configure(options)` with:
+  - Remove `NodeIdPlugin` from your explicit plugin list if it was added manually.
+  - Remove `@udecode/plate-node-id` from your dependencies.
+  - If you had `NodeIdPlugin` configured with options, move these options to the `nodeId` field in your main editor configuration (`createPlateEditor` or `usePlateEditor` options).
+    Example:
 
-```ts
-usePlateEditor({
-  // ...other options
-  nodeId: options,
-});
-```
+    ```ts
+    // Before
+    // const editor = usePlateEditor({
+    //   plugins: [
+    //     NodeIdPlugin.configure({ /* ...your options... */ }),
+    //   ],
+    // });
+
+    // After
+    const editor = usePlateEditor({
+      nodeId: {
+        /* ...your options... */
+      },
+      // ...other editor options
+    });
+    ```
+
+  - If you want to disable automatic node ID generation (to replicate behavior if you weren't using `NodeIdPlugin` before), set `nodeId: false` in your editor configuration.

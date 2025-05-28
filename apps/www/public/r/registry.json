@@ -37,15 +37,13 @@
       "title": "AI Menu",
       "description": "A menu for AI-powered content generation and insertion.",
       "dependencies": [
-        "@udecode/cn",
         "@udecode/plate-ai",
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-block-quote",
+        "@udecode/plate-basic-nodes",
+        "@udecode/plate-basic-nodes",
         "@udecode/plate-callout",
         "@udecode/plate-code-block",
         "@udecode/plate-date",
         "@udecode/plate-font",
-        "@udecode/plate-heading",
         "@udecode/plate-indent",
         "@udecode/plate-list",
         "@udecode/plate-layout",
@@ -54,6 +52,7 @@
         "@udecode/plate-media",
         "@udecode/plate-mention",
         "@udecode/plate-table",
+        "@udecode/plate-toc",
         "@udecode/plate-markdown",
         "@udecode/plate-selection",
         "ai",
@@ -284,15 +283,12 @@
       "title": "Export Toolbar Button",
       "description": "A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).",
       "dependencies": [
-        "@udecode/cn",
         "@udecode/plate-alignment",
-        "@udecode/plate-basic-marks",
-        "@udecode/plate-block-quote",
+        "@udecode/plate-basic-nodes",
         "@udecode/plate-code-block",
         "@udecode/plate-comments",
         "@udecode/plate-date",
         "@udecode/plate-font",
-        "@udecode/plate-heading",
         "@udecode/plate-indent",
         "@udecode/plate-list",
         "@udecode/plate-layout",
@@ -304,6 +300,7 @@
         "@udecode/plate-mention",
         "@udecode/plate-table",
         "@udecode/plate-toggle",
+        "@udecode/plate-toc",
         "lowlight",
         "html2canvas-pro",
         "pdf-lib",
@@ -1204,7 +1201,7 @@
       "title": "Mark Toolbar Button",
       "description": "A toolbar control for basic text formatting.",
       "dependencies": [
-        "@udecode/plate-basic-marks"
+        "@udecode/plate-basic-nodes"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toolbar"
@@ -1616,7 +1613,7 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/basic-elements"
+            "route": "/docs/blockquote"
           },
           {
             "route": "https://pro.platejs.org/docs/components/blockquote-node"
@@ -1651,14 +1648,14 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/basic-elements"
+            "route": "/docs/callout"
           },
           {
             "route": "https://pro.platejs.org/docs/components/callout-node"
           }
         ],
         "examples": [
-          "basic-elements-demo"
+          "callout-demo"
         ]
       }
     },
@@ -1689,14 +1686,14 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/basic-elements"
+            "route": "/docs/code-block"
           },
           {
             "route": "https://pro.platejs.org/docs/components/code-block-node"
           }
         ],
         "examples": [
-          "basic-elements-demo"
+          "code-block-demo"
         ]
       }
     },
@@ -1720,7 +1717,7 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/basic-marks"
+            "route": "/docs/code"
           },
           {
             "route": "https://pro.platejs.org/docs/components/code-node"
@@ -2069,7 +2066,7 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/basic-elements"
+            "route": "/docs/heading"
           },
           {
             "route": "https://pro.platejs.org/docs/components/heading-node"
@@ -2103,11 +2100,11 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/basic-marks"
+            "route": "/docs/highlight"
           }
         ],
         "examples": [
-          "highlight-demo"
+          "basic-marks-demo"
         ]
       }
     },
@@ -2138,7 +2135,7 @@
           }
         ],
         "examples": [
-          "horizontal-rule-demo"
+          "basic-elements-demo"
         ]
       }
     },
@@ -2234,7 +2231,7 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/basic-marks",
+            "route": "/docs/kbd",
             "title": "Keyboard Input"
           }
         ],
@@ -2580,7 +2577,7 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/basic-marks"
+            "route": "/docs/highlight"
           }
         ]
       }
@@ -2695,7 +2692,7 @@
       "title": "TOC Element",
       "description": "A table of contents component with links to document headings.",
       "dependencies": [
-        "@udecode/plate-heading"
+        "@udecode/plate-toc"
       ],
       "registryDependencies": [],
       "files": [
@@ -2711,7 +2708,7 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/basic-elements"
+            "route": "/docs/toc"
           },
           {
             "route": "https://pro.platejs.org/docs/components/toc-node"
@@ -2829,17 +2826,11 @@
     {
       "name": "basic-elements-kit",
       "type": "registry:component",
-      "dependencies": [
-        "@udecode/cn",
-        "@udecode/plate-block-quote",
-        "@udecode/plate-code-block",
-        "@udecode/plate-heading",
-        "lowlight"
-      ],
+      "dependencies": [],
       "registryDependencies": [
         "https://platejs.org/r/blockquote-node",
-        "https://platejs.org/r/code-block-node",
         "https://platejs.org/r/heading-node",
+        "https://platejs.org/r/hr-node",
         "https://platejs.org/r/paragraph-node"
       ],
       "files": [
@@ -2853,11 +2844,12 @@
       "name": "basic-marks-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/cn",
-        "@udecode/plate-basic-marks"
+        "@udecode/plate-basic-nodes"
       ],
       "registryDependencies": [
         "https://platejs.org/r/code-node",
+        "https://platejs.org/r/highlight-node",
+        "https://platejs.org/r/kbd-node",
         "https://platejs.org/r/mark-toolbar-button"
       ],
       "files": [
@@ -2938,6 +2930,23 @@
       "files": [
         {
           "path": "src/registry/components/editor/plugins/callout-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "code-block-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/plate-code-block",
+        "lowlight"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/code-block-node"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/code-block-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3096,6 +3105,7 @@
         "https://platejs.org/r/basic-nodes-kit",
         "https://platejs.org/r/block-menu-kit",
         "https://platejs.org/r/callout-kit",
+        "https://platejs.org/r/code-block-kit",
         "https://platejs.org/r/column-kit",
         "https://platejs.org/r/comment-kit",
         "https://platejs.org/r/cursor-overlay-kit",
@@ -3281,6 +3291,24 @@
       "files": [
         {
           "path": "src/registry/components/editor/plugins/link-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "list-classic-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@udecode/plate-list-classic"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/list-classic-node",
+        "https://platejs.org/r/list-classic-toolbar-button",
+        "https://platejs.org/r/autoformat-classic-kit"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/list-classic-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -3491,7 +3519,7 @@
       "name": "toc-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-heading"
+        "@udecode/plate-toc"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toc-node"
@@ -3605,7 +3633,7 @@
         "@udecode/plate-callout",
         "@udecode/plate-code-block",
         "@udecode/plate-date",
-        "@udecode/plate-heading",
+        "@udecode/plate-toc",
         "@udecode/plate-layout",
         "@udecode/plate-link",
         "@udecode/plate-math",
@@ -3731,8 +3759,8 @@
       "type": "registry:block",
       "description": "A basic editor",
       "dependencies": [
-        "@udecode/plate-basic-elements",
-        "@udecode/plate-basic-marks"
+        "@udecode/plate-basic-nodes",
+        "@udecode/plate-basic-nodes"
       ],
       "registryDependencies": [
         "https://platejs.org/r/plate-ui",
@@ -3759,7 +3787,6 @@
       "name": "slate-to-html",
       "type": "registry:block",
       "dependencies": [
-        "@udecode/cn",
         "next-themes"
       ],
       "registryDependencies": [
@@ -3814,19 +3841,7 @@
           "type": "registry:example"
         },
         {
-          "path": "src/registry/examples/values/highlight-value.tsx",
-          "type": "registry:example"
-        },
-        {
-          "path": "src/registry/examples/values/horizontal-rule-value.tsx",
-          "type": "registry:example"
-        },
-        {
           "path": "src/registry/examples/values/indent-value.tsx",
-          "type": "registry:example"
-        },
-        {
-          "path": "src/registry/examples/values/kbd-value.tsx",
           "type": "registry:example"
         },
         {
@@ -4016,8 +4031,8 @@
       "name": "hundreds-blocks-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/plate-basic-elements",
-        "@udecode/plate-basic-marks"
+        "@udecode/plate-basic-nodes",
+        "@udecode/plate-basic-nodes"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor"
@@ -4054,8 +4069,8 @@
       "name": "multiple-editors-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/plate-basic-elements",
-        "@udecode/plate-basic-marks",
+        "@udecode/plate-basic-nodes",
+        "@udecode/plate-basic-nodes",
         "@udecode/plate-media"
       ],
       "registryDependencies": [
@@ -4089,7 +4104,7 @@
       "name": "version-history-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/plate-basic-marks",
+        "@udecode/plate-basic-nodes",
         "@udecode/plate-diff",
         "lodash"
       ],
@@ -4166,8 +4181,8 @@
       "name": "installation-next-demo",
       "type": "registry:example",
       "dependencies": [
-        "@udecode/plate-basic-elements",
-        "@udecode/plate-basic-marks"
+        "@udecode/plate-basic-nodes",
+        "@udecode/plate-basic-nodes"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor",
@@ -4241,9 +4256,12 @@
         "https://platejs.org/r/block-menu-docs",
         "https://platejs.org/r/block-placeholder-docs",
         "https://platejs.org/r/block-selection-docs",
+        "https://platejs.org/r/blockquote-docs",
+        "https://platejs.org/r/bold-docs",
         "https://platejs.org/r/callout-docs",
         "https://platejs.org/r/caption-docs",
         "https://platejs.org/r/code-block-docs",
+        "https://platejs.org/r/code-docs",
         "https://platejs.org/r/collaboration-docs",
         "https://platejs.org/r/column-docs",
         "https://platejs.org/r/combobox-docs",
@@ -4274,6 +4292,8 @@
         "https://platejs.org/r/font-docs",
         "https://platejs.org/r/forced-layout-docs",
         "https://platejs.org/r/form-docs",
+        "https://platejs.org/r/heading-docs",
+        "https://platejs.org/r/highlight-docs",
         "https://platejs.org/r/horizontal-rule-docs",
         "https://platejs.org/r/html-docs",
         "https://platejs.org/r/indent-docs",
@@ -4286,6 +4306,8 @@
         "https://platejs.org/r/installation-react-docs",
         "https://platejs.org/r/installation-rsc-docs",
         "https://platejs.org/r/installation-docs",
+        "https://platejs.org/r/italic-docs",
+        "https://platejs.org/r/kbd-docs",
         "https://platejs.org/r/line-height-docs",
         "https://platejs.org/r/link-docs",
         "https://platejs.org/r/list-classic-docs",
@@ -4308,7 +4330,10 @@
         "https://platejs.org/r/slash-command-docs",
         "https://platejs.org/r/soft-break-docs",
         "https://platejs.org/r/static-docs",
+        "https://platejs.org/r/strikethrough-docs",
+        "https://platejs.org/r/subscript-docs",
         "https://platejs.org/r/suggestion-docs",
+        "https://platejs.org/r/superscript-docs",
         "https://platejs.org/r/tabbable-docs",
         "https://platejs.org/r/table-docs",
         "https://platejs.org/r/toc-docs",
@@ -4316,6 +4341,7 @@
         "https://platejs.org/r/trailing-block-docs",
         "https://platejs.org/r/troubleshooting-docs",
         "https://platejs.org/r/typescript-docs",
+        "https://platejs.org/r/underline-docs",
         "https://platejs.org/r/unit-testing-docs"
       ],
       "title": "Documentation",
@@ -4708,11 +4734,11 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Basic Elements",
+      "description": "Commonly used block elements.",
       "files": [
         {
           "path": "../../docs/basic-elements.mdx",
-          "target": "content/docs/plate/plugins/basic-elements.mdx",
+          "target": "content/docs/plate/plugins/basic-elements/index.mdx",
           "type": "registry:file"
         }
       ],
@@ -4721,11 +4747,11 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Basic Marks",
+      "description": "Commonly used text styling features.",
       "files": [
         {
           "path": "../../docs/basic-marks.mdx",
-          "target": "content/docs/plate/plugins/basic-marks.mdx",
+          "target": "content/docs/plate/plugins/basic-marks/index.mdx",
           "type": "registry:file"
         }
       ],
@@ -4773,6 +4799,32 @@
       "type": "registry:file"
     },
     {
+      "description": "Documentation for Blockquote",
+      "files": [
+        {
+          "path": "../../docs/blockquote.mdx",
+          "target": "content/docs/plate/plugins/basic-elements/blockquote.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "blockquote-docs",
+      "title": "Blockquote",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Bold",
+      "files": [
+        {
+          "path": "../../docs/bold.mdx",
+          "target": "content/docs/plate/plugins/basic-marks/bold.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "bold-docs",
+      "title": "Bold",
+      "type": "registry:file"
+    },
+    {
       "description": "Documentation for Callout",
       "files": [
         {
@@ -4809,6 +4861,19 @@
       ],
       "name": "code-block-docs",
       "title": "Code Block",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Code",
+      "files": [
+        {
+          "path": "../../docs/code.mdx",
+          "target": "content/docs/plate/plugins/basic-marks/code.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "code-docs",
+      "title": "Code",
       "type": "registry:file"
     },
     {
@@ -5141,7 +5206,7 @@
       "files": [
         {
           "path": "../../docs/exit-break.mdx",
-          "target": "content/docs/plate/plugins/exit-break.mdx",
+          "target": "content/docs/plate/exit-break.mdx",
           "type": "registry:file"
         }
       ],
@@ -5180,7 +5245,7 @@
       "files": [
         {
           "path": "../../docs/forced-layout.mdx",
-          "target": "content/docs/plate/plugins/forced-layout.mdx",
+          "target": "content/docs/plate/forced-layout.mdx",
           "type": "registry:file"
         }
       ],
@@ -5202,11 +5267,37 @@
       "type": "registry:file"
     },
     {
+      "description": "Documentation for Heading",
+      "files": [
+        {
+          "path": "../../docs/heading.mdx",
+          "target": "content/docs/plate/plugins/basic-elements/heading.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "heading-docs",
+      "title": "Heading",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Highlight",
+      "files": [
+        {
+          "path": "../../docs/highlight.mdx",
+          "target": "content/docs/plate/plugins/basic-marks/highlight.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "highlight-docs",
+      "title": "Highlight",
+      "type": "registry:file"
+    },
+    {
       "description": "Documentation for Horizontal Rule",
       "files": [
         {
           "path": "../../docs/horizontal-rule.mdx",
-          "target": "content/docs/plate/plugins/horizontal-rule.mdx",
+          "target": "content/docs/plate/plugins/basic-elements/horizontal-rule.mdx",
           "type": "registry:file"
         }
       ],
@@ -5355,6 +5446,32 @@
       ],
       "name": "installation-docs",
       "title": "Getting Started",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Italic",
+      "files": [
+        {
+          "path": "../../docs/italic.mdx",
+          "target": "content/docs/plate/plugins/basic-marks/italic.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "italic-docs",
+      "title": "Italic",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Kbd",
+      "files": [
+        {
+          "path": "../../docs/kbd.mdx",
+          "target": "content/docs/plate/plugins/basic-marks/kbd.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "kbd-docs",
+      "title": "Kbd",
       "type": "registry:file"
     },
     {
@@ -5540,7 +5657,7 @@
       "type": "registry:file"
     },
     {
-      "description": "Learn how to configure and use keyboard shortcuts in Plate plugins.",
+      "description": "Learn how to configure keyboard shortcuts.",
       "files": [
         {
           "path": "../../docs/plugin-shortcuts.mdx",
@@ -5570,7 +5687,7 @@
       "files": [
         {
           "path": "../../docs/reset-node.mdx",
-          "target": "content/docs/plate/plugins/reset-node.mdx",
+          "target": "content/docs/plate/reset-node.mdx",
           "type": "registry:file"
         }
       ],
@@ -5583,7 +5700,7 @@
       "files": [
         {
           "path": "../../docs/select.mdx",
-          "target": "content/docs/plate/plugins/select.mdx",
+          "target": "content/docs/plate/select.mdx",
           "type": "registry:file"
         }
       ],
@@ -5596,7 +5713,7 @@
       "files": [
         {
           "path": "../../docs/single-line.mdx",
-          "target": "content/docs/plate/plugins/single-line.mdx",
+          "target": "content/docs/plate/single-line.mdx",
           "type": "registry:file"
         }
       ],
@@ -5622,7 +5739,7 @@
       "files": [
         {
           "path": "../../docs/soft-break.mdx",
-          "target": "content/docs/plate/plugins/soft-break.mdx",
+          "target": "content/docs/plate/soft-break.mdx",
           "type": "registry:file"
         }
       ],
@@ -5644,6 +5761,32 @@
       "type": "registry:file"
     },
     {
+      "description": "Documentation for Strikethrough",
+      "files": [
+        {
+          "path": "../../docs/strikethrough.mdx",
+          "target": "content/docs/plate/plugins/basic-marks/strikethrough.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "strikethrough-docs",
+      "title": "Strikethrough",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Subscript",
+      "files": [
+        {
+          "path": "../../docs/subscript.mdx",
+          "target": "content/docs/plate/plugins/basic-marks/subscript.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "subscript-docs",
+      "title": "Subscript",
+      "type": "registry:file"
+    },
+    {
       "description": "Documentation for Suggestion",
       "files": [
         {
@@ -5654,6 +5797,19 @@
       ],
       "name": "suggestion-docs",
       "title": "Suggestion",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Superscript",
+      "files": [
+        {
+          "path": "../../docs/superscript.mdx",
+          "target": "content/docs/plate/plugins/basic-marks/superscript.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "superscript-docs",
+      "title": "Superscript",
       "type": "registry:file"
     },
     {
@@ -5713,7 +5869,7 @@
       "files": [
         {
           "path": "../../docs/trailing-block.mdx",
-          "target": "content/docs/plate/plugins/trailing-block.mdx",
+          "target": "content/docs/plate/trailing-block.mdx",
           "type": "registry:file"
         }
       ],
@@ -5745,6 +5901,19 @@
       ],
       "name": "typescript-docs",
       "title": "TypeScript",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Underline",
+      "files": [
+        {
+          "path": "../../docs/underline.mdx",
+          "target": "content/docs/plate/plugins/basic-marks/underline.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "underline-docs",
+      "title": "Underline",
       "type": "registry:file"
     },
     {

@@ -95,7 +95,7 @@ Use the `<PlateStatic>` component, providing the `editor` instance and your `com
 ```tsx title="app/my-static-page/page.tsx (RSC Example)"
 import { PlateStatic } from '@udecode/plate';
 import { createSlateEditor } from '@udecode/plate';
-// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-elements'; // etc.
+// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-nodes'; // etc.
 import { staticComponents } from '@/components/static-components';
 
 export default async function MyStaticPage() {
@@ -162,7 +162,7 @@ In a Next.js App Router (or similar RSC environment), `<PlateStatic>` can be use
 import { PlateStatic } from '@udecode/plate';
 import { createSlateEditor } from '@udecode/plate';
 // Example base plugins (ensure non-/react imports)
-// import { BaseHeadingPlugin } from '@udecode/plate-basic-elements';
+// import { BaseHeadingPlugin } from '@udecode/plate-basic-nodes';
 import { staticComponents } from '@/components/static-components'; // Your static components mapping
 
 export default async function Page() {
@@ -196,7 +196,7 @@ For generating a complete HTML string (e.g., for emails, PDFs, or external syste
 ```ts title="lib/html-serializer.ts"
 import { createSlateEditor, serializeHtml } from '@udecode/plate';
 import { staticComponents } from '@/components/static-components';
-// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-elements';
+// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-nodes';
 
 async function getDocumentAsHtml(value: any[]) {
   const editor = createSlateEditor({

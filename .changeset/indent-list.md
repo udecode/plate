@@ -2,8 +2,7 @@
 '@udecode/plate-indent-list': major
 ---
 
-Deprecated package name, moving from `@udecode/plate-indent-list` to `@udecode/plate-list`. **Migration**:
-
-- Rename all `@udecode/plate-indent-list` to `@udecode/plate-list`.
-- Remove `@udecode/plate-indent-list` from your `package.json`.
-- Add `@udecode/plate-list` to your `package.json`.
+- Package `@udecode/plate-indent-list` has been renamed to `@udecode/plate-list`.
+- **Migration**:
+  - Rename all import paths from `@udecode/plate-indent-list` to `@udecode/plate-list`.
+  - Update your `package.json`: remove `@udecode/plate-indent-list` and add `@udecode/plate-list`.

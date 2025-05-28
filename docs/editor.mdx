@@ -13,7 +13,7 @@ To create a basic Plate editor, you can use the `createPlateEditor` function, or
 import { createPlateEditor } from '@udecode/plate/react';
 
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin],
+  plugins: [HeadingPlugin],
 });
 ```
 
@@ -23,7 +23,6 @@ Set the initial content of the editor:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin],
   value: [
     {
       type: 'p',
@@ -54,7 +53,6 @@ function AsyncEditor() {
   const [loading, setLoading] = React.useState(true);
   const editor = usePlateEditor({
     skipInitialization: true,
-    plugins: [ParagraphPlugin],
   });
 
   React.useEffect(() => {
@@ -96,7 +94,7 @@ You can add plugins to your editor by including them in the `plugins` array:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin, ListPlugin],
+  plugins: [HeadingPlugin, ListPlugin],
 });
 ```
 
@@ -106,7 +104,6 @@ Set the maximum length of the editor:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin],
   maxLength: 100,
 });
 ```
@@ -119,7 +116,6 @@ Set a custom id for the editor:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin],
   id: 'my-custom-editor-id',
 });
 ```
@@ -205,7 +201,6 @@ Control whether the editor should normalize its content on initialization:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin],
   shouldNormalizeEditor: true,
 });
 ```
@@ -218,7 +213,6 @@ Configure the editor to automatically select a range:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin],
   autoSelect: 'end', // or 'start', or true
 });
 ```
@@ -231,7 +225,7 @@ Override default components for plugins:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin],
+  plugins: [HeadingPlugin],
   components: {
     [ParagraphPlugin.key]: CustomParagraphComponent,
     [HeadingPlugin.key]: CustomHeadingComponent,
@@ -245,7 +239,7 @@ Override specific plugin configurations:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin],
+  plugins: [HeadingPlugin],
   override: {
     plugins: {
       [ParagraphPlugin.key]: {
@@ -264,7 +258,7 @@ Disable specific plugins:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin, ListPlugin],
+  plugins: [HeadingPlugin, ListPlugin],
   override: {
     enabled: {
       [HistoryPlugin.key]: false,
@@ -284,7 +278,7 @@ const CustomParagraphPlugin = createPlatePlugin({
 });
 
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, CustomParagraphPlugin],
+  plugins: [CustomParagraphPlugin],
 });
 ```
 
@@ -294,7 +288,7 @@ From the root plugin, you can configure any plugin:
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin],
+  plugins: [HeadingPlugin],
   rootPlugin: (plugin) =>
     plugin.configurePlugin(LengthPlugin, {
     options: {

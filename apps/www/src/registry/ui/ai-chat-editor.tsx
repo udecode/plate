@@ -2,24 +2,22 @@
 
 import * as React from 'react';
 
-import { BaseParagraphPlugin, KEYS } from '@udecode/plate';
+import { KEYS } from '@udecode/plate';
 import { useAIChatEditor } from '@udecode/plate-ai/react';
 import {
   BaseBlockquotePlugin,
-  BaseHeadingPlugin,
-  BaseHorizontalRulePlugin,
-} from '@udecode/plate-basic-elements';
-import {
   BaseBoldPlugin,
   BaseCodePlugin,
+  BaseHeadingPlugin,
   BaseHighlightPlugin,
+  BaseHorizontalRulePlugin,
   BaseItalicPlugin,
   BaseKbdPlugin,
   BaseStrikethroughPlugin,
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+} from '@udecode/plate-basic-nodes';
 import { BaseCalloutPlugin } from '@udecode/plate-callout';
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseDatePlugin } from '@udecode/plate-date';
@@ -155,7 +153,6 @@ const plugins = [
   BaseHighlightPlugin,
   BaseLinkPlugin,
   BaseMentionPlugin,
-  BaseParagraphPlugin,
   BaseCalloutPlugin,
   BaseIndentPlugin.extend({
     inject: {

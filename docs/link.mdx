@@ -46,7 +46,7 @@ const plugins = [
 
 ## Plugin Transforms
 
-### `editor.tf.insert.link`
+### `tf.insert.link`
 
 Inserts a link node into the editor.
 
@@ -68,15 +68,15 @@ Inserts a link node into the editor.
 
 ## Plugin API
 
-### `editor.api.floatingLink.hide`
+### `api.floatingLink.hide`
 
 Hides the floating link and resets its state.
 
-### `editor.api.floatingLink.reset`
+### `api.floatingLink.reset`
 
 Resets the floating link state without changing the openEditorId.
 
-### `editor.api.floatingLink.show`
+### `api.floatingLink.show`
 
 Shows the floating link for the specified mode and editor ID.
 
@@ -91,7 +91,7 @@ The ID of the editor where the floating link should be shown.
 </APIParameters>
 </API>
 
-### `editor.api.link.getAttributes`
+### `api.link.getAttributes`
 
 Gets the attributes for a link element.
 
@@ -107,7 +107,7 @@ The HTML attributes for the link element.
 </APIReturns>
 </API>
 
-### `editor.api.link.submitFloatingLink`
+### `api.link.submitFloatingLink`
 
 Inserts a link if the URL is valid, closes the floating link, and focuses the editor.
 

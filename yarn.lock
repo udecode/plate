@@ -6406,7 +6406,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-basic-elements@workspace:^, @udecode/plate-basic-elements@workspace:packages/basic-elements":
+"@udecode/plate-basic-elements@workspace:packages/basic-elements":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-basic-elements@workspace:packages/basic-elements"
   dependencies:
@@ -6418,7 +6418,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-basic-marks@workspace:^, @udecode/plate-basic-marks@workspace:packages/basic-marks":
+"@udecode/plate-basic-marks@workspace:packages/basic-marks":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-basic-marks@workspace:packages/basic-marks"
   dependencies:
@@ -6430,7 +6430,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-block-quote@workspace:^, @udecode/plate-block-quote@workspace:packages/block-quote":
+"@udecode/plate-basic-nodes@workspace:^, @udecode/plate-basic-nodes@workspace:packages/basic-nodes":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-basic-nodes@workspace:packages/basic-nodes"
+  dependencies:
+    "@udecode/plate": "workspace:^"
+  peerDependencies:
+    "@udecode/plate": ">=48.0.5"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-block-quote@workspace:packages/block-quote":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-block-quote@workspace:packages/block-quote"
   dependencies:
@@ -6694,7 +6706,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-heading@workspace:^, @udecode/plate-heading@workspace:packages/heading":
+"@udecode/plate-heading@workspace:packages/heading":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-heading@workspace:packages/heading"
   dependencies:
@@ -7071,7 +7083,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-toc@workspace:packages/toc":
+"@udecode/plate-toc@workspace:^, @udecode/plate-toc@workspace:packages/toc":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-toc@workspace:packages/toc"
   dependencies:
@@ -22350,9 +22362,7 @@ __metadata:
     "@udecode/plate-ai": "workspace:^"
     "@udecode/plate-alignment": "workspace:^"
     "@udecode/plate-autoformat": "workspace:^"
-    "@udecode/plate-basic-elements": "workspace:^"
-    "@udecode/plate-basic-marks": "workspace:^"
-    "@udecode/plate-block-quote": "workspace:^"
+    "@udecode/plate-basic-nodes": "workspace:^"
     "@udecode/plate-callout": "workspace:^"
     "@udecode/plate-caption": "workspace:^"
     "@udecode/plate-code-block": "workspace:^"
@@ -22368,7 +22378,6 @@ __metadata:
     "@udecode/plate-find-replace": "workspace:^"
     "@udecode/plate-floating": "workspace:^"
     "@udecode/plate-font": "workspace:^"
-    "@udecode/plate-heading": "workspace:^"
     "@udecode/plate-indent": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
     "@udecode/plate-layout": "workspace:^"
@@ -22389,6 +22398,7 @@ __metadata:
     "@udecode/plate-table": "workspace:^"
     "@udecode/plate-tag": "workspace:^"
     "@udecode/plate-test-utils": "workspace:^"
+    "@udecode/plate-toc": "workspace:^"
     "@udecode/plate-toggle": "workspace:^"
     "@uploadthing/react": "npm:7.3.1"
     ai: "npm:4.3.11"

@@ -81,7 +81,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-basic-marks'],
+    dependencies: ['@udecode/plate-basic-nodes'],
     files: [
       {
         path: 'components/editor/plugins/basic-marks-kit.tsx',
@@ -455,6 +455,22 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'link-kit',
     registryDependencies: ['link-node', 'link-toolbar', 'link-toolbar-button'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-list-classic'],
+    files: [
+      {
+        path: 'components/editor/plugins/list-classic-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'list-classic-kit',
+    registryDependencies: [
+      'list-classic-node',
+      'list-classic-toolbar-button',
+      'autoformat-classic-kit',
+    ],
     type: 'registry:component',
   },
   {

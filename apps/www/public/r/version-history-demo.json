@@ -3,7 +3,7 @@
   "name": "version-history-demo",
   "type": "registry:example",
   "dependencies": [
-    "@udecode/plate-basic-marks",
+    "@udecode/plate-basic-nodes",
     "@udecode/plate-diff",
     "lodash"
   ],

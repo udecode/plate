@@ -20,27 +20,19 @@ docs:
 ## Installation
 
 ```bash
-npm install @udecode/plate-basic-marks
+npm install @udecode/plate-basic-nodes
 ```
 
 ## Usage
 
 ```tsx
-import { UnderlinePlugin } from '@udecode/plate-basic-marks/react';
+import { UnderlinePlugin } from '@udecode/plate-basic-nodes/react';
 
 const plugins = [
   // ...otherPlugins,
   UnderlinePlugin,
 ];
 ```
-
-## Keyboard Shortcuts
-
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + U">
-    Toggle the underline formatting for the selected text.
-  </KeyTableItem>
-</KeyTable>
 
 ## Plugins
 
@@ -50,6 +42,8 @@ Plugin for underline text formatting. Renders as `<u>` HTML element by default.
 
 ## Transforms
 
-### `editor.tf.underline.toggle`
+### `tf.underline.toggle`
 
 Toggles the underline formatting for the selected text.
+
+Default Shortcut: `Cmd + U`

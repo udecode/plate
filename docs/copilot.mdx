@@ -15,7 +15,7 @@ docs:
 
 - Renders ghost text suggestions as you type
 - Two trigger modes:
-  - Shortcut (`Ctrl+Space`). Press again for alternative suggestions.
+  - Shortcut (e.g. `Ctrl+Space`). Press again for alternative suggestions.
   - Debounce mode: automatically triggers after a space at paragraph ends
 - Accept suggestions with Tab or word-by-word with `Cmd+→`
 - Built-in support for Vercel AI SDK completion API
@@ -31,12 +31,14 @@ npm install @udecode/plate-ai @udecode/plate-markdown
 ## Usage
 
 ```tsx
+import { faker } from '@faker-js/faker';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
-import {
-  MarkdownPlugin,
-  serializeMdNodes,
-  stripMarkdown,
+import { 
+  MarkdownPlugin, 
+  serializeMd, 
+  stripMarkdown 
 } from '@udecode/plate-markdown';
+import { Key } from '@udecode/plate/react';
 ```
 
 ```tsx
@@ -49,10 +51,11 @@ const plugins = [
   }), 
   CopilotPlugin.configure(({ api }) => ({
     options: {
-    completeOptions: {
-      api: '/api/your-api-endpoint',
-      body: {
-        system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
+      completeOptions: {
+        // Your API endpoint
+        api: '/api/ai/copilot',
+        body: {
+          system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
 
 Rules:
 - Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).
@@ -67,28 +70,48 @@ Rules:
       onFinish: (_, completion) => {
         if (completion === '0') return;
 
-        api.copilot.setBlockSuggestion({
-          //stripMarkdownBlocks in plus GhostText
-          text: stripMarkdown(completion),
-        });
+          api.copilot.setBlockSuggestion({
+            text: stripMarkdown(completion),
+          });
+        },
       },
-    },
-    debounceDelay: 500,
-    getPrompt: ({ editor }) => {
-      const contextEntry = getAncestorNode(editor);
+      debounceDelay: 500,
+      renderGhostText: GhostText,
+      getPrompt: ({ editor }) => {
+        const contextEntry = editor.api.block({ highest: true });
 
-      if (!contextEntry) return '';
+        if (!contextEntry) return '';
 
-      const prompt = serializeMdNodes([contextEntry[0] as TElement]);
+        const prompt = serializeMd(editor, {
+          value: [contextEntry[0] as TElement],
+        });
 
-      return `Continue the text up to the next punctuation mark:
+        return `Continue the text up to the next punctuation mark:
 """
 ${prompt}
 """`;
+      },
     },
-    renderGhostText: GhostText,
-  },
-}));
+    shortcuts: {
+      accept: {
+        // Tab to accept suggestion
+        keys: 'tab',
+      },
+      acceptNextWord: {
+        // Cmd + → to accept next word
+        keys: 'mod+right',
+      },
+      reject: {
+        // Escape to reject suggestion
+        keys: 'escape',
+      },
+      triggerSuggestion: {
+        // Ctrl + Space to request suggestion
+        keys: 'ctrl+space',
+      },
+    },
+  })),
+];
 ```
 
 - [GhostText](/docs/components/ghost-text)
@@ -116,19 +139,6 @@ Refer to the preview above.
 ### Plate Plus
 
 <ComponentPreviewPro name="copilot-pro" />
-
-## Keyboard Shortcuts
-
-<KeyTable>
-  <KeyTableItem hotkey="Ctrl + Space">
-    Trigger suggestion. Press again for alternative suggestions.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Tab">Accept the entire suggestion.</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + →">
-    Accept the next word of the suggestion.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Escape">Dismiss the current suggestion.</KeyTableItem>
-</KeyTable>
 
 ## Plugins
 
@@ -171,25 +181,34 @@ Plugin for AI-powered text completion suggestions.
 </APIOptions>
 </API>
 
-## API
+## Transforms
 
-### `editor.api.copilot.accept()`
+### `tf.copilot.accept()`
 
 Accepts the current suggestion and applies it to the editor content.
 
-### `editor.api.copilot.acceptNextWord()`
+Default Shortcut: `Tab`
+
+### `tf.copilot.acceptNextWord()`
 
 Accepts only the next word of the current suggestion, allowing for granular acceptance of suggestions.
 
-### `editor.api.copilot.reset()`
+Example Shortcut: `Cmd + →`
+
+## API
+
+### `api.copilot.reject()`
 
 Resets the plugin state to its initial condition:
+Default Shortcut: `Escape`
 
-- Aborts any ongoing API request
-- Clears the current completion
-- Clears suggestion node ID and text
+### `api.copilot.triggerSuggestion()`
 
-### `editor.api.copilot.setBlockSuggestion()`
+Triggers a new suggestion request. The request may be debounced based on the plugin configuration.
+
+Example Shortcut: `Ctrl + Space`
+
+### `api.copilot.setBlockSuggestion()`
 
 Sets suggestion text for a block.
 
@@ -211,14 +230,10 @@ Sets suggestion text for a block.
 </APIOptions>
 </API>
 
-### `editor.api.copilot.stop()`
+### `api.copilot.stop()`
 
 Stops ongoing suggestion requests and cleans up:
 
 - Cancels debounced trigger calls
 - Aborts current API request
 - Resets abort controller
-
-### `editor.api.copilot.triggerSuggestion()`
-
-Triggers a new suggestion request. The request may be debounced based on the plugin configuration.

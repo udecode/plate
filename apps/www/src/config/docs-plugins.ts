@@ -299,6 +299,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
     description:
       'Renders a table of contents element with clickable links to headings in the document.',
     href: '/docs/toc',
+    label: 'Element',
     title: 'Table of Contents',
   },
   {

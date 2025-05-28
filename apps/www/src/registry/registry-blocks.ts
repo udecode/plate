@@ -83,10 +83,7 @@ export const registryBlocks: Registry['items'] = [
   },
   {
     categories: ['Editors'],
-    dependencies: [
-      '@udecode/plate-basic-elements',
-      '@udecode/plate-basic-marks',
-    ],
+    dependencies: ['@udecode/plate-basic-nodes', '@udecode/plate-basic-nodes'],
     description: 'A basic editor',
     files: [
       {
@@ -153,19 +150,7 @@ export const registryBlocks: Registry['items'] = [
         type: 'registry:example',
       },
       {
-        path: 'examples/values/highlight-value.tsx',
-        type: 'registry:example',
-      },
-      {
-        path: 'examples/values/horizontal-rule-value.tsx',
-        type: 'registry:example',
-      },
-      {
         path: 'examples/values/indent-value.tsx',
-        type: 'registry:example',
-      },
-      {
-        path: 'examples/values/kbd-value.tsx',
         type: 'registry:example',
       },
       {

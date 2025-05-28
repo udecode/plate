@@ -239,7 +239,7 @@ MarkdownPlugin.configure({
 
 ---
 
-### `editor.api.markdown.deserialize`
+### `api.markdown.deserialize`
 
 将 Markdown 字符串转换为 Slate `Value`（`Descendant[]`）。
 
@@ -285,7 +285,7 @@ MarkdownPlugin.configure({
 
 ---
 
-### `editor.api.markdown.serialize`
+### `api.markdown.serialize`
 
 将 Slate `Value`（`Descendant[]`）转换为 Markdown 字符串。
 
@@ -364,7 +364,7 @@ import remarkGfm from 'remark-gfm';
 // 导入 GFM 元素的 Plate 插件
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TodoListPlugin } from '@udecode/plate-list/react'; // 任务列表插件
-import { StrikethroughPlugin } from '@udecode/plate-basic-marks/react';
+import { StrikethroughPlugin } from '@udecode/plate-basic-nodes/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 
 const editor = createPlateEditor({
@@ -774,7 +774,7 @@ MarkdownPlugin.configure({
 **示例：**
 ```tsx title="components/my-editor.tsx"
 import { createPlateEditor, PlateLeaf, withProps } from '@udecode/plate/react';
-import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { ParagraphElement } from '@/components/ui/paragraph-element';
 import { CodeBlockElement } from '@/components/ui/code-block-element';
@@ -801,7 +801,7 @@ import React, { useEffect } from 'react';
 import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 // 导入常用 Markdown 功能的 Plate 插件
-import { HeadingPlugin } from '@udecode/plate-basic-elements/react';
+import { HeadingPlugin } from '@udecode/plate-basic-nodes/react';
 // ...其他如 BlockquotePlugin、CodeBlockPlugin、ListPlugin、BoldPlugin、ItalicPlugin 等
 
 export interface PlateMarkdownProps {

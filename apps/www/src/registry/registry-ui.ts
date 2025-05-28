@@ -4,8 +4,8 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: [
       '@udecode/plate-ai',
-      '@udecode/plate-basic-elements',
-      '@udecode/plate-basic-marks',
+      '@udecode/plate-basic-nodes',
+      '@udecode/plate-basic-nodes',
       '@udecode/plate-callout',
       '@udecode/plate-code-block',
       '@udecode/plate-date',
@@ -157,7 +157,7 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: [
       '@udecode/plate-alignment',
-      '@udecode/plate-basic-marks',
+      '@udecode/plate-basic-nodes',
       '@udecode/plate-code-block',
       '@udecode/plate-comments',
       '@udecode/plate-date',
@@ -764,7 +764,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-basic-marks'],
+    dependencies: ['@udecode/plate-basic-nodes'],
     description: 'A toolbar control for basic text formatting.',
     files: [{ path: 'ui/mark-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
@@ -1277,7 +1277,7 @@ export const uiNodes: Registry['items'] = [
     ],
     meta: {
       docs: [{ route: '/docs/highlight' }],
-      examples: ['highlight-demo'],
+      examples: ['basic-marks-demo'],
     },
     name: 'highlight-node',
     registryDependencies: ['highlight-style'],
@@ -1296,7 +1296,7 @@ export const uiNodes: Registry['items'] = [
         { route: '/docs/horizontal-rule' },
         { route: 'https://pro.platejs.org/docs/components/hr-node' },
       ],
-      examples: ['horizontal-rule-demo'],
+      examples: ['basic-elements-demo'],
     },
     name: 'hr-node',
     registryDependencies: [],

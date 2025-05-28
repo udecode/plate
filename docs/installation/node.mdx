@@ -6,7 +6,7 @@ description: Install and configure Plate for Node.js
 This guide demonstrates how to use Plate in a Node.js environment. This is useful for backend tasks such as data processing, content migration, validation, or any scenario where you need to interact with Plate editor content without a browser or a full React frontend.
 
 <Callout type="warning" title="Key Node.js Constraint">
-  When using Plate in a Node.js environment, you **must not** import from `/react` subpaths of any `@udecode/plate*` package. Always use the base imports (e.g., `@udecode/plate-basic-elements` instead of `@udecode/plate-basic-elements/react`).
+  When using Plate in a Node.js environment, you **must not** import from `/react` subpaths of any `@udecode/plate*` package. Always use the base imports (e.g., `@udecode/plate-basic-nodes` instead of `@udecode/plate-basic-nodes/react`).
 
   This means you cannot use `createPlateEditor` from `@udecode/plate/react`. Instead, use `createSlateEditor` from `@udecode/plate`.
 </Callout>
@@ -18,8 +18,11 @@ This guide demonstrates how to use Plate in a Node.js environment. This is usefu
 Install the core Plate package and any specific plugin packages required for your data processing needs.
 
 ```bash
-npm add @udecode/plate
+npm add @udecode/plate @udecode/plate-basic-nodes
 ```
+
+-   `@udecode/plate`: The core Plate engine and Slate editor functionality.
+-   `@udecode/plate-basic-nodes`: Plugin for basic nodes like headings, bold, italic, underline, etc.
 
 ### Create an Editor Instance
 
@@ -27,68 +30,138 @@ In your Node.js script, use `createSlateEditor` from `@udecode/plate` to initial
 
 ```typescript title="scripts/process-content.ts"
 import { createSlateEditor } from '@udecode/plate';
-import { BaseHeadingPlugin } from '@udecode/plate-basic-elements';
-import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
-import remarkGfm from 'remark-gfm';
-// ... import other base plugins (NOT from /react paths)
+import {
+  BaseBoldPlugin,
+  BaseItalicPlugin,
+  BaseUnderlinePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseBlockquotePlugin,
+} from '@udecode/plate-basic-nodes';
 
-async function processDocument(value: any[]) {
-  const editor = createSlateEditor({
-    plugins: [
-      BaseHeadingPlugin,
-      MarkdownPlugin.configure({
-        options: {
-          remarkPlugins: [remarkGfm, remarkMdx],
-        },
-      }),
-      // ... add other base plugins relevant to your content structure
+const initialValue = [
+  {
+    type: 'h3',
+    children: [{ text: 'Document Title' }],
+  },
+  {
+    type: 'blockquote',
+    children: [{ text: 'This is a quote.' }],
+  },
+  {
+    type: 'p',
+    children: [
+      { text: 'With some ' },
+      { text: 'bold', bold: true },
+      { text: ' text for emphasis!' },
     ],
-    value, // Assign the Slate content to the editor
-  });
-
-  // Perform operations using editor.api or editor.tf
-  const textContent = editor.api.string([]);
-  console.log('Extracted Text:', textContent);
-
-  const markdownContent = editor.api.markdown.serialize();
-  console.log('Serialized Markdown:', markdownContent);
-
-  // Example: Transform all H1s to H2s
-  editor.tf.setNodes(
-    { type: 'h2' },
-    { at: [], match: (n) => n.type === 'h1' }
-  );
-  console.log('Transformed Value:', editor.children);
-
-  return { textContent, markdownContent, transformedValue: editor.children };
-}
-
-// Example usage:
-const mySlateValue = [
-  { type: 'h1', children: [{ text: 'Original Document Title' }] },
-  { type: 'p', children: [{ text: 'Some paragraph content.' }] },
+  },
 ];
 
-processDocument(mySlateValue).then(result => {
-  console.log('Processing complete.', result);
+const editor = createSlateEditor({
+  plugins: [
+    BaseBoldPlugin,
+    BaseItalicPlugin,
+    BaseUnderlinePlugin,
+    BaseH1Plugin,
+    BaseH2Plugin,
+    BaseH3Plugin,
+    BaseBlockquotePlugin,
+  ],
+  value: initialValue,
 });
+
+// You can now use editor.children, editor.api, editor.tf, etc.
+console.log('Editor content:', editor.children);
 ```
+
+<Callout type="info">
+  `createSlateEditor` creates a raw Slate editor instance suitable for server-side logic, data transformation, or preparing content for static rendering. It provides the same API as the React version but without browser dependencies.
+</Callout>
 
 ### Content Manipulation
 
 The primary use case for Plate in Node.js is programmatic content manipulation:
 
--   **[`editor.api`](/docs/api/slate/editor-api)**: Access various utility functions for querying the editor state. For example:
-    -   `editor.api.nodes({ at: [], match })`: Find specific nodes.
-    -   `editor.api.string([])`: Extract text content.
+```typescript title="scripts/transform-content.ts"
+import { createSlateEditor } from '@udecode/plate';
+import {
+  BaseBoldPlugin,
+  BaseItalicPlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseBlockquotePlugin,
+} from '@udecode/plate-basic-nodes';
+
+async function processDocument(value: any[]) {
+  const editor = createSlateEditor({
+    plugins: [
+      BaseBoldPlugin,
+      BaseItalicPlugin,
+      BaseH1Plugin,
+      BaseH2Plugin,
+      BaseH3Plugin,
+      BaseBlockquotePlugin,
+    ],
+    value,
+  });
+
+  // Extract text content
+  const textContent = editor.api.string([]);
+  console.log('Extracted Text:', textContent);
+
+  // Transform all H1s to H2s
+  editor.tf.setNodes(
+    { type: 'h2' },
+    { at: [], match: (n) => n.type === 'h1' }
+  );
+
+  // Add a new paragraph at the end
+  editor.tf.insertNodes(
+    [{ type: 'p', children: [{ text: 'Added by Node.js script!' }] }],
+    { at: [editor.children.length] }
+  );
+
+  return {
+    textContent,
+    transformedValue: editor.children,
+  };
+}
+
+// Example usage
+const mySlateValue = [
+  { type: 'h1', children: [{ text: 'Original Document Title' }] },
+  { type: 'p', children: [{ text: 'Some paragraph content.' }] },
+  {
+    type: 'p',
+    children: [
+      { text: 'Text with ' },
+      { text: 'bold', bold: true },
+      { text: ' formatting.' },
+    ],
+  },
+];
+
+processDocument(mySlateValue).then(result => {
+  console.log('Processing complete:', result);
+});
+```
+
+### Available APIs
+
+-   **[`editor.api`](/docs/api/slate/editor-api)**: Access various utility functions for querying the editor state:
+    -   `editor.api.nodes({ at: [], match })`: Find specific nodes
+    -   `editor.api.string([])`: Extract text content
     -   [HTML Serialization](/docs/html)
     -   [Markdown Serialization](/docs/markdown)
 
--   **[`editor.tf`](/docs/api/slate/editor-transforms)**: Use transform functions to modify the editor content. For example:
-    -   `editor.tf.insertNodes(nodes, opts)`: Insert new nodes.
-    -   `editor.tf.removeNodes(opts)`: Delete nodes.
-    -   `editor.tf.setNodes(props, opts)`: Update properties of existing nodes.
-    -   `editor.tf.normalize({ force: true })`: Normalize the editor.
+-   **[`editor.tf`](/docs/api/slate/editor-transforms)**: Use transform functions to modify the editor content:
+    -   `editor.tf.insertNodes(nodes, opts)`: Insert new nodes
+    -   `editor.tf.removeNodes(opts)`: Delete nodes
+    -   `editor.tf.setNodes(props, opts)`: Update properties of existing nodes
+    -   `editor.tf.normalize({ force: true })`: Normalize the editor
 
 </Steps>
 
@@ -96,8 +169,8 @@ The primary use case for Plate in Node.js is programmatic content manipulation:
 
 With Plate configured in your Node.js environment, you can now:
 
-*   Build scripts for migrating content from other systems into Plate format.
-*   Perform bulk updates or transformations on your existing Plate documents.
-*   Validate content structure or extract specific data from your documents.
-*   Integrate with other backend services for content processing pipelines.
-*   Explore [Markdown Serialization](/docs/markdown), [HTML Serialization](/docs/html), and [`PlateStatic`](/docs/plate-static) if you need to generate static content.
+*   **Build Content Pipelines:** Create scripts for migrating content from other systems into Plate format
+*   **Bulk Operations:** Perform bulk updates or transformations on your existing Plate documents
+*   **Data Extraction:** Validate content structure or extract specific data from your documents
+*   **Backend Integration:** Integrate with other backend services for content processing pipelines
+*   **Static Generation:** Explore [Markdown Serialization](/docs/markdown), [HTML Serialization](/docs/html), and [`PlateStatic`](/docs/plate-static) for generating static content

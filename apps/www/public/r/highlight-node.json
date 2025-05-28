@@ -23,11 +23,11 @@
   "meta": {
     "docs": [
       {
-        "route": "/docs/basic-marks"
+        "route": "/docs/highlight"
       }
     ],
     "examples": [
-      "highlight-demo"
+      "basic-marks-demo"
     ]
   }
 }

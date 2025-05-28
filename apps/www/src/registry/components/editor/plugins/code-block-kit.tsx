@@ -1,6 +1,10 @@
 'use client';
 
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import {
+  CodeBlockPlugin,
+  CodeLinePlugin,
+  CodeSyntaxPlugin,
+} from '@udecode/plate-code-block/react';
 import { all, createLowlight } from 'lowlight';
 
 import {
@@ -13,13 +17,9 @@ const lowlight = createLowlight(all);
 
 export const CodeBlockKit = [
   CodeBlockPlugin.configure({
+    node: { component: CodeBlockElement },
     options: { lowlight },
-    override: {
-      components: {
-        code_block: CodeBlockElement,
-        code_line: CodeLineElement,
-        code_syntax: CodeSyntaxLeaf,
-      },
-    },
   }),
+  CodeLinePlugin.withComponent(CodeLineElement),
+  CodeSyntaxPlugin.withComponent(CodeSyntaxLeaf),
 ];

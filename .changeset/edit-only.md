@@ -11,4 +11,4 @@
 '@udecode/plate-docx': major
 ---
 
-Plugins has now `editOnly: true` by default. Breaking behavior only if you were using those plugins on read-only.
+- The following plugins now default to `editOnly: true`. This means their core functionalities (handlers, rendering injections, etc.) will be disabled when the editor is in read-only mode. To override this behavior for a specific plugin, configure its `editOnly` field. For example, `SomePlugin.configure({ editOnly: false })`.

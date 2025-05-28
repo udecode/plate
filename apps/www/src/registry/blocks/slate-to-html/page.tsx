@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import {
   type Value,
-  BaseParagraphPlugin,
   createSlateEditor,
   KEYS,
   serializeHtml,
@@ -10,20 +9,18 @@ import {
 import { BaseAlignPlugin } from '@udecode/plate-alignment';
 import {
   BaseBlockquotePlugin,
-  BaseHeadingPlugin,
-  BaseHorizontalRulePlugin,
-} from '@udecode/plate-basic-elements';
-import {
   BaseBoldPlugin,
   BaseCodePlugin,
+  BaseHeadingPlugin,
   BaseHighlightPlugin,
+  BaseHorizontalRulePlugin,
   BaseItalicPlugin,
   BaseKbdPlugin,
   BaseStrikethroughPlugin,
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+} from '@udecode/plate-basic-nodes';
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseCommentPlugin } from '@udecode/plate-comments';
 import { BaseDatePlugin } from '@udecode/plate-date';
@@ -197,7 +194,6 @@ export default async function SlateToHtmlBlock() {
       BaseTocPlugin,
       BaseVideoPlugin,
       BaseAudioPlugin,
-      BaseParagraphPlugin,
       BaseHeadingPlugin,
       BaseMediaEmbedPlugin,
       BaseBoldPlugin,

@@ -57,7 +57,7 @@ const plugins = [
 
 ## API
 
-### `editor.api.csv.deserialize`
+### `api.csv.deserialize`
 
 Takes a CSV (Comma Separated Values) string and converts it into a Slate compatible format. This function uses the `papaparse` library to parse the CSV data.
 
@@ -85,4 +85,4 @@ Takes a CSV (Comma Separated Values) string and converts it into a Slate compati
 Creates a table representation of the CSV data:
 - Headers (if present) become the first row
 - Each CSV row becomes a table row
-- Uses plugins: `ParagraphPlugin`, `TablePlugin`, `TableCellHeaderPlugin`, `TableRowPlugin`, and `TableCellPlugin`
+- Uses plugins: `TablePlugin`, `TableCellHeaderPlugin`, `TableRowPlugin`, and `TableCellPlugin`

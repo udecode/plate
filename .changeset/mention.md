@@ -2,4 +2,5 @@
 '@udecode/plate-mention': major
 ---
 
-- Type `TMentionInputElement` removed, use instead `TComboboxInputElement`
+- The type `TMentionInputElement` has been removed.
+- Use `TComboboxInputElement` from `@udecode/plate` instead for input elements, as mention functionality is built upon the combobox.

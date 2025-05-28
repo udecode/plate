@@ -20,27 +20,19 @@ docs:
 ## Installation
 
 ```bash
-npm install @udecode/plate-basic-marks
+npm install @udecode/plate-basic-nodes
 ```
 
 ## Usage
 
 ```tsx
-import { ItalicPlugin } from '@udecode/plate-basic-marks/react';
+import { ItalicPlugin } from '@udecode/plate-basic-nodes/react';
 
 const plugins = [
   // ...otherPlugins,
   ItalicPlugin,
 ];
 ```
-
-## Keyboard Shortcuts
-
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + I">
-    Toggle the italic formatting for the selected text.
-  </KeyTableItem>
-</KeyTable>
 
 ## Plugins
 
@@ -50,6 +42,8 @@ Plugin for italic text formatting. Renders as `<em>` HTML element by default.
 
 ## Transforms
 
-### `editor.tf.italic.toggle`
+### `tf.italic.toggle`
 
 Toggles the italic formatting for the selected text.
+
+Default Shortcut: `Cmd + I`

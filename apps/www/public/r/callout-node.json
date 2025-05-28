@@ -24,14 +24,14 @@
   "meta": {
     "docs": [
       {
-        "route": "/docs/basic-elements"
+        "route": "/docs/callout"
       },
       {
         "route": "https://pro.platejs.org/docs/components/callout-node"
       }
     ],
     "examples": [
-      "basic-elements-demo"
+      "callout-demo"
     ]
   }
 }

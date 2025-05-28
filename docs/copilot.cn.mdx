@@ -173,15 +173,15 @@ const plugins = [
 
 ## API
 
-### `editor.api.copilot.accept()`
+### `api.copilot.accept()`
 
 接受当前建议并将其应用到编辑器内容中。
 
-### `editor.api.copilot.acceptNextWord()`
+### `api.copilot.acceptNextWord()`
 
 仅接受当前建议的下一个单词，允许逐步接受建议。
 
-### `editor.api.copilot.reset()`
+### `api.copilot.reset()`
 
 将插件状态重置为初始条件：
 
@@ -189,7 +189,7 @@ const plugins = [
 - 清除当前补全
 - 清除建议节点ID和文本
 
-### `editor.api.copilot.setBlockSuggestion()`
+### `api.copilot.setBlockSuggestion()`
 
 为块设置建议文本。
 
@@ -211,7 +211,7 @@ const plugins = [
 </APIOptions>
 </API>
 
-### `editor.api.copilot.stop()`
+### `api.copilot.stop()`
 
 停止进行中的建议请求并进行清理：
 
@@ -219,6 +219,6 @@ const plugins = [
 - 中止当前API请求
 - 重置中止控制器
 
-### `editor.api.copilot.triggerSuggestion()`
+### `api.copilot.triggerSuggestion()`
 
 触发新的建议请求。根据插件配置，请求可能会被防抖处理。

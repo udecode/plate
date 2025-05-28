@@ -6,7 +6,7 @@ description: Install and configure Plate for React Server Components
 This guide demonstrates how to use Plate in React Server Components (RSC) for tasks like static content generation or server-side data processing. Plate's core is designed to be server-safe, allowing you to work with editor content without a browser environment.
 
 <Callout type="warning" title="Key RSC Constraint">
-  When using Plate in RSC, you **must not** import from `/react` subpaths of any `@udecode/plate*` package. Always use the base imports (e.g., `@udecode/plate-basic-elements` instead of `@udecode/plate-basic-elements/react`).
+  When using Plate in RSC, you **must not** import from `/react` subpaths of any `@udecode/plate*` package. Always use the base imports (e.g., `@udecode/plate-basic-nodes` instead of `@udecode/plate-basic-nodes/react`).
 
   This means you cannot use `createPlateEditor` from `@udecode/plate/react`. Instead, use `createSlateEditor` from `@udecode/plate`.
 </Callout>
@@ -18,7 +18,7 @@ This guide demonstrates how to use Plate in React Server Components (RSC) for ta
 Install the core Plate package and any specific plugin packages you need.
 
 ```bash
-npm add @udecode/plate
+npm add @udecode/plate @udecode/plate-basic-nodes
 ```
 
 ### Create an Editor Instance
@@ -35,10 +35,11 @@ import {
   BaseBoldPlugin,
   BaseCodePlugin,
   BaseItalicPlugin,
-  // ... other basic mark plugins
-} from '@udecode/plate-basic-marks';
-// ... import many other base plugins (NOT from /react paths)
-import { BaseBlockquotePlugin, BaseHeadingPlugin } from '@udecode/plate-basic-elements';
+  BaseBlockquotePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+} from '@udecode/plate-basic-nodes';
 import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -47,14 +48,17 @@ import remarkMath from 'remark-math';
 const initialValue = [
   { type: 'h1', children: [{ text: 'Server-Generated Document' }] },
   { type: 'p', children: [{ text: 'This content was processed on the server.' }] },
+  { type: 'blockquote', children: [{ text: 'This is a quote.' }] },
   { type: 'p', children: [{ text: 'And this is bold.', bold: true }] },
 ];
 
 // Create the editor instance
 const editor = createSlateEditor({
   plugins: [
-    // Element plugins
-    BaseHeadingPlugin,
+    // Block plugins
+    BaseH1Plugin,
+    BaseH2Plugin,
+    BaseH3Plugin,
     BaseBlockquotePlugin,
     BaseAlignPlugin,
     // ... add more element plugins as needed

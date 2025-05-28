@@ -4,8 +4,8 @@
   "type": "registry:block",
   "description": "A basic editor",
   "dependencies": [
-    "@udecode/plate-basic-elements",
-    "@udecode/plate-basic-marks"
+    "@udecode/plate-basic-nodes",
+    "@udecode/plate-basic-nodes"
   ],
   "registryDependencies": [
     "https://platejs.org/r/plate-ui",

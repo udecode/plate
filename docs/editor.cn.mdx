@@ -13,7 +13,7 @@ description: 学习如何配置和自定义 Plate 编辑器。
 import { createPlateEditor } from '@udecode/plate/react';
 
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin],
+  plugins: [HeadingPlugin],
 });
 ```
 
@@ -23,7 +23,6 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin],
   value: [
     {
       type: 'p',
@@ -50,7 +49,7 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin, ListPlugin],
+  plugins: [HeadingPlugin, ListPlugin],
 });
 ```
 
@@ -60,7 +59,6 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin],
   maxLength: 100,
 });
 ```
@@ -73,7 +71,6 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin],
   id: 'my-custom-editor-id',
 });
 ```
@@ -86,7 +83,6 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin],
   shouldNormalizeEditor: true,
 });
 ```
@@ -99,7 +95,6 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin],
   autoSelect: 'end', // 或 'start'，或 true
 });
 ```
@@ -112,7 +107,7 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin],
+  plugins: [HeadingPlugin],
   override: {
     components: {
       [ParagraphPlugin.key]: CustomParagraphComponent,
@@ -128,7 +123,7 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin],
+  plugins: [HeadingPlugin],
   override: {
     plugins: {
       [ParagraphPlugin.key]: {
@@ -147,7 +142,7 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin, ListPlugin],
+  plugins: [HeadingPlugin, ListPlugin],
   override: {
     enabled: {
       [HistoryPlugin.key]: false,
@@ -167,7 +162,7 @@ const CustomParagraphPlugin = createPlatePlugin({
 });
 
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, CustomParagraphPlugin],
+  plugins: [CustomParagraphPlugin],
 });
 ```
 
@@ -177,7 +172,7 @@ const editor = createPlateEditor({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, HeadingPlugin],
+  plugins: [HeadingPlugin],
   rootPlugin: (plugin) =>
     plugin.configurePlugin(LengthPlugin, {
     options: {

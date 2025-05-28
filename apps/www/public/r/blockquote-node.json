@@ -21,7 +21,7 @@
   "meta": {
     "docs": [
       {
-        "route": "/docs/basic-elements"
+        "route": "/docs/blockquote"
       },
       {
         "route": "https://pro.platejs.org/docs/components/blockquote-node"

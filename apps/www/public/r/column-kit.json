@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/column-kit.tsx",
-      "content": "'use client';\n\nimport { ColumnPlugin } from '@udecode/plate-layout/react';\n\nimport { ColumnElement, ColumnGroupElement } from '@/registry/ui/column-node';\n\nexport const ColumnKit = [\n  ColumnPlugin.configure({\n    override: {\n      components: {\n        column: ColumnElement,\n        column_group: ColumnGroupElement,\n      },\n    },\n  }),\n];\n",
+      "content": "'use client';\n\nimport { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';\n\nimport { ColumnElement, ColumnGroupElement } from '@/registry/ui/column-node';\n\nexport const ColumnKit = [\n  ColumnPlugin.withComponent(ColumnGroupElement),\n  ColumnItemPlugin.withComponent(ColumnElement),\n];\n",
       "type": "registry:component"
     }
   ]

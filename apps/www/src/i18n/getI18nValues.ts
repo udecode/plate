@@ -42,7 +42,6 @@ import { linkValue as linkValueCn } from '@/registry/examples/values/cn/link-val
 import {
   listValue as listClassicValueCn,
   listValue as listValueCn,
-  todoListValue as todoListValueCn,
 } from '@/registry/examples/values/cn/list-classic-value';
 import { mediaValue as mediaValueCn } from '@/registry/examples/values/cn/media-value';
 import { mentionValue as mentionValueCn } from '@/registry/examples/values/cn/mention-value';
@@ -82,10 +81,7 @@ import { iframeValue as iframeValueEn } from '@/registry/examples/values/iframe-
 import { indentValue as indentValueEn } from '@/registry/examples/values/indent-value';
 import { lineHeightValue as lineHeightValueEn } from '@/registry/examples/values/line-height-value';
 import { linkValue as linkValueEn } from '@/registry/examples/values/link-value';
-import {
-  listValue as listValueEn,
-  todoListValue as todoListValueEn,
-} from '@/registry/examples/values/list-classic-value';
+import { listValue as listValueEn } from '@/registry/examples/values/list-classic-value';
 import { mediaValue as mediaValueEn } from '@/registry/examples/values/media-value';
 import { mentionValue as mentionValueEn } from '@/registry/examples/values/mention-value';
 import { blockPlaceholderValue as placeholderValueEn } from '@/registry/examples/values/placeholder-value';
@@ -145,7 +141,6 @@ const i18n = {
     tabbable: tabbableValueCn,
     table: tableValueCn,
     toc: tocValueCn,
-    todoList: todoListValueCn,
     toggle: toggleValueCn,
     trailingBlock: trailingBlockValueCn,
   },
@@ -192,7 +187,6 @@ const i18n = {
     tabbable: tabbableValueEn,
     table: tableValueEn,
     toc: tocValueEn,
-    todoList: todoListValueEn,
     toggle: toggleValueEn,
     trailingBlock: trailingBlockValueEn,
   },

@@ -66,18 +66,3 @@ export const listValue: any = (
     </hol>
   </fragment>
 );
-
-export const todoListValue: any = (
-  <fragment>
-    <hp>Each block is a React component in which you can manage the state:</hp>
-    <hp checked={true} indent={1} listStyleType="todo">
-      Create a "banana language" translation plugin
-    </hp>
-    <hp checked={true} indent={1} listStyleType="todo">
-      Create a "detect sarcasm" plugin (good luck with that)
-    </hp>
-    <hp checked={false} indent={1} listStyleType="todo">
-      Create an AI auto-complete plugin
-    </hp>
-  </fragment>
-);

@@ -2,19 +2,19 @@
 '@udecode/plate-core': minor
 ---
 
-- Added new editor DOM state fields under `editor.dom`:
-  - `editor.dom.composing` - Whether the editor is composing text
-  - `editor.dom.focused` - Whether the editor has focus
-  - `editor.dom.readOnly` - Whether the editor is read-only. Passing `readOnly` prop to `PlateContent` will sync it to the store (`useEditorReadOnly`) and `editor.dom.readOnly`.
-- Added `useEditorComposing` hook to subscribe to the editor's composing state outside `PlateContent`.
-- `createPlateEditor`/`usePlateEditor` now accepts `readOnly` option to
-  initialize the editor in read-only mode. For dynamic value, keep using
-  `Plate.readOnly` prop.
-- New plugin field: `editOnly?: boolean | object`. When a plugin is edit-only, Plate will disable some behaviors on read-only, and will enable again if it ever becomes editable:
-  - Can be a boolean or object configuration
-  - Object properties (`render`, `handlers`, `inject`, `normalizeInitialValue`) can be individually configured
-  - All properties default to edit-only (true) except `normalizeInitialValue` which defaults to always active (false)
-  - Example: `editOnly: { render: false, normalizeInitialValue: true }`
-- New plugin field: `node.clearOnBoundary?: boolean`. When enabled for mark plugins (`node.isLeaf: true`), automatically clears the mark when typing at its boundary, allowing users to naturally "exit" the mark. Used by suggestion and comment marks.
-- New plugin field: `render.as?: keyof HTMLElementTagNameMap`. Specifies the HTML tag name to use when rendering the node component. Only used when no custom `component` is provided for the plugin. Used by `PlateElement` for element nodes (default: 'div') and `PlateLeaf` for leaf nodes (default: 'span'). Example: `render: { as: 'h1' }` to render as an h1 tag.
-- Plugin shortcuts can now automatically leverage existing plugin transforms, besides custom handlers.
+- New editor DOM state fields available under `editor.dom`:
+  - `editor.dom.composing`: Boolean, true if the editor is currently composing text (e.g., during IME input).
+  - `editor.dom.focused`: Boolean, true if the editor currently has focus.
+  - `editor.dom.readOnly`: Boolean, true if the editor is in read-only mode. Passing the `readOnly` prop to `PlateContent` will sync its value to this state and to the `useEditorReadOnly` hook.
+- New hook `useEditorComposing`: Allows subscription to the editor's composing state (`editor.dom.composing`) outside of `PlateContent`.
+- `createPlateEditor` and `usePlateEditor` now accept a `readOnly` option to initialize the editor in a read-only state. For dynamic read-only changes after initialization, continue to use the `readOnly` prop on the `<Plate>` or `<PlateContent>` component.
+- New plugin field: `editOnly` (boolean or object).
+  - When `true` or when specific properties are true in the object, Plate will disable certain plugin behaviors (handlers, rendering, injections) in read-only mode and re-enable them if the editor becomes editable.
+  - By default, `render`, `handlers`, and `inject` are considered edit-only (`true`). `normalizeInitialValue` defaults to always active (`false`).
+  - Example: `editOnly: { render: false, normalizeInitialValue: true }` would make rendering active always, but normalization only in edit mode.
+- New plugin field: `node.clearOnBoundary` (boolean).
+  - When enabled for mark plugins (`node.isLeaf: true`), this feature automatically clears the mark when the user types at the boundary of the marked text. This provides a natural way to "exit" a mark. This is utilized by suggestion and comment marks.
+- New plugin field: `render.as` (`keyof HTMLElementTagNameMap`).
+  - Specifies the default HTML tag name to be used by `PlateElement` (default: `'div'`) or `PlateLeaf` (default: `'span'`) when rendering the node, but only if no custom `node.component` is provided for the plugin.
+  - Example: `render: { as: 'h1' }` would make the plugin render its node as an `<h1>` tag by default without the need to provide a custom component.
+- Plugin shortcuts can now automatically leverage existing plugin transforms by specifying the transform name, in addition to custom handlers.

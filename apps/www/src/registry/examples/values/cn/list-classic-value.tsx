@@ -66,18 +66,3 @@ export const listValue: any = (
     </hol>
   </fragment>
 );
-
-export const todoListValue: any = (
-  <fragment>
-    <hp>每个块都是一个 React 组件，您可以在其中管理状态：</hp>
-    <hp checked={true} indent={1} listStyleType="todo">
-      创建一个"香蕉语言"翻译插件
-    </hp>
-    <hp checked={true} indent={1} listStyleType="todo">
-      创建一个"检测讽刺"插件（祝你好运）
-    </hp>
-    <hp checked={false} indent={1} listStyleType="todo">
-      创建一个 AI 自动完成插件
-    </hp>
-  </fragment>
-);

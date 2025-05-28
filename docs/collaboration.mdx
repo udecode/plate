@@ -238,7 +238,7 @@ Configure the Yjs plugin using `YjsPlugin.configure({ options: { ... } })`.
 </APIAttributes>
 </API>
 
-### `editor.api.yjs.init`
+### `api.yjs.init`
 
 Initializes the Yjs connection, binds it to the editor, sets up providers based on plugin configuration, potentially populates the Y.Doc with initial content, and connects providers. **Must be called after the editor is mounted.**
 
@@ -272,11 +272,11 @@ Initializes the Yjs connection, binds it to the editor, sets up providers based 
 </APIReturns>
 </API>
 
-### `editor.api.yjs.destroy`
+### `api.yjs.destroy`
 
 Disconnects all providers, cleans up Yjs bindings (detaches editor from Y.Doc), and destroys the awareness instance. **Must be called when the editor component unmounts** to prevent memory leaks and stale connections.
 
-### `editor.api.yjs.connect`
+### `api.yjs.connect`
 
 Manually connects to providers. Useful if `autoConnect: false` was used during `init`.
 
@@ -288,7 +288,7 @@ Manually connects to providers. Useful if `autoConnect: false` was used during `
 </APIParameters>
 </API>
 
-### `editor.api.yjs.disconnect`
+### `api.yjs.disconnect`
 
 Manually disconnects from providers.
 

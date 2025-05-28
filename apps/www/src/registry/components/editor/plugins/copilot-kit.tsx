@@ -60,5 +60,19 @@ export const CopilotKit = [
   """`;
       },
     },
+    shortcuts: {
+      accept: {
+        keys: 'tab',
+      },
+      acceptNextWord: {
+        keys: 'mod+right',
+      },
+      reject: {
+        keys: 'escape',
+      },
+      triggerSuggestion: {
+        keys: 'ctrl+space',
+      },
+    },
   })),
 ];

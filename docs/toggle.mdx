@@ -20,7 +20,6 @@ docs:
 ## Plugin dependencies
 
 - [Indent](/docs/indent)
-- [Node Id](/docs/node-id)
 
 </PackageInfo>
 
@@ -33,14 +32,12 @@ npm install @udecode/plate-indent @udecode/plate-toggle
 ## Usage
 
 ```tsx
-import { ParagraphPlugin } from '@udecode/plate/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { KEYS } from '@udecode/plate';
 
 const plugins = [
   // ...otherPlugins,
-  HeadingPlugin,
   IndentPlugin.configure({
     inject: {
       targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.toggle],
@@ -75,7 +72,7 @@ Plugin for managing toggle functionality.
 
 ## API
 
-### `editor.api.toggle.toggleIds`
+### `api.toggle.toggleIds`
 
 Toggles the open state of specified toggles.
 

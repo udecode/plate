@@ -55,10 +55,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: [
-      '@udecode/plate-basic-elements',
-      '@udecode/plate-basic-marks',
-    ],
+    dependencies: ['@udecode/plate-basic-nodes', '@udecode/plate-basic-nodes'],
     files: [
       {
         path: 'examples/hundreds-blocks-demo.tsx',
@@ -90,8 +87,8 @@ export const examples: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate-basic-elements',
-      '@udecode/plate-basic-marks',
+      '@udecode/plate-basic-nodes',
+      '@udecode/plate-basic-nodes',
       '@udecode/plate-media',
     ],
     files: [
@@ -125,7 +122,7 @@ export const examples: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate-basic-marks',
+      '@udecode/plate-basic-nodes',
       '@udecode/plate-diff',
       'lodash',
     ],
@@ -186,10 +183,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: [
-      '@udecode/plate-basic-elements',
-      '@udecode/plate-basic-marks',
-    ],
+    dependencies: ['@udecode/plate-basic-nodes', '@udecode/plate-basic-nodes'],
     files: [
       {
         path: 'examples/installation-next-04-value-demo.tsx',
@@ -307,12 +301,11 @@ export const demoExamples: Registry['items'] = (
       ],
       name: 'list-classic-demo',
       registryDependencies: [
-        // 'editor-kit',
+        'editor-kit',
         'autoformat-classic-kit',
         'fixed-toolbar-classic-kit',
+        'list-classic-kit',
         'editor',
-        'list-classic-node',
-        'editor-kit',
       ],
       type: 'registry:example',
     },
@@ -744,40 +737,6 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      description: 'Text highlighting with customizable colors.',
-      files: [
-        { path: 'examples/demo.tsx', type: 'registry:example' },
-        {
-          path: 'examples/values/highlight-value.tsx',
-          type: 'registry:example',
-        },
-      ],
-      name: 'highlight-demo',
-      registryDependencies: ['highlight-node', 'editor-kit'],
-      type: 'registry:example',
-    },
-    {
-      description: 'Horizontal lines for visually separating content sections.',
-      files: [
-        { path: 'examples/demo.tsx', type: 'registry:example' },
-        {
-          path: 'examples/values/horizontal-rule-value.tsx',
-          type: 'registry:example',
-        },
-      ],
-      meta: {
-        docs: [
-          {
-            route: '/docs/horizontal-rule',
-            title: 'Horizontal Rule',
-          },
-        ],
-      },
-      name: 'horizontal-rule-demo',
-      registryDependencies: ['hr-node', 'editor-kit'],
-      type: 'registry:example',
-    },
-    {
       //
       //   description: 'Customize text indentation.',
       //   docs: [
@@ -821,18 +780,6 @@ export const demoExamples: Registry['items'] = (
       },
       name: 'list-demo',
       registryDependencies: ['list-kit', 'editor-kit'],
-      type: 'registry:example',
-    },
-    {
-      files: [
-        { path: 'examples/demo.tsx', type: 'registry:example' },
-        {
-          path: 'examples/values/kbd-value.tsx',
-          type: 'registry:example',
-        },
-      ],
-      name: 'kbd-demo',
-      registryDependencies: ['kbd-node', 'editor-kit'],
       type: 'registry:example',
     },
     {
@@ -1116,7 +1063,7 @@ export const internalExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      dependencies: ['@udecode/plate-basic-marks'],
+      dependencies: ['@udecode/plate-basic-nodes'],
       files: [
         {
           path: 'examples/installation-next-02-marks-demo.tsx',
@@ -1129,8 +1076,8 @@ export const internalExamples: Registry['items'] = (
     },
     {
       dependencies: [
-        '@udecode/plate-basic-elements',
-        '@udecode/plate-basic-marks',
+        '@udecode/plate-basic-nodes',
+        '@udecode/plate-basic-nodes',
       ],
       files: [
         {

@@ -43,14 +43,6 @@ const editor = createPlateEditor({
 
 The comments plugin works in conjunction with the discussion plugin to provide a complete discussion system. The discussion plugin provides the UI layer for managing discussions and users. Source code of both plugins is available in the example.
 
-## Keyboard Shortcuts
-
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + Shift + M">
-    Add a comment on the selected text.
-  </KeyTableItem>
-</KeyTable>
-
 ## Examples
 
 ### Plate UI
@@ -65,17 +57,19 @@ Refer to the preview above.
 
 ### `CommentPlugin`
 
-## API
+## Transforms
 
-### `editor.tf.comment.removeMark`
-
-Removes the comment mark from the editor.
-
-### `editor.tf.comment.setDraft`
+### `tf.comment.setDraft`
 
 Sets a draft comment mark at the current selection.
 
-### `editor.tf.comment.unsetMark`
+Example Shortcut: `Cmd + Shift + M`
+
+### `tf.comment.removeMark`
+
+Removes the comment mark from the editor.
+
+### `tf.comment.unsetMark`
 
 Unsets comment nodes with the specified ID from the editor.
 
@@ -87,7 +81,9 @@ Unsets comment nodes with the specified ID from the editor.
 </APIParameters>
 </API>
 
-### `editor.api.comment.has`
+## API
+
+### `api.comment.has`
 
 Checks if a comment with the given ID exists.
 
@@ -102,7 +98,7 @@ Checks if a comment with the given ID exists.
 </APIReturns>
 </API>
 
-### `editor.api.comment.node`
+### `api.comment.node`
 
 Gets a comment node entry.
 
@@ -115,7 +111,7 @@ Gets a comment node entry.
 </APIReturns>
 </API>
 
-### `editor.api.comment.nodeId`
+### `api.comment.nodeId`
 
 Gets the ID of a comment from a leaf node.
 
@@ -130,7 +126,7 @@ Gets the ID of a comment from a leaf node.
 </APIReturns>
 </API>
 
-### `editor.api.comment.nodes`
+### `api.comment.nodes`
 
 Gets all comment node entries matching the options.
 

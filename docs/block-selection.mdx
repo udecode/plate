@@ -232,7 +232,7 @@ Plugin for block selection functionality.
 
 ## API
 
-### `editor.api.blockSelection.add`
+### `api.blockSelection.add`
 
 Adds one or more blocks to the selection.
 
@@ -244,11 +244,11 @@ Adds one or more blocks to the selection.
 </APIParameters>
 </API>
 
-### `editor.api.blockSelection.clear`
+### `api.blockSelection.clear`
 
 Resets the set of selected IDs to an empty set.
 
-### `editor.api.blockSelection.delete`
+### `api.blockSelection.delete`
 
 Removes one or more blocks from the selection.
 
@@ -260,15 +260,15 @@ Removes one or more blocks from the selection.
 </APIParameters>
 </API>
 
-### `editor.api.blockSelection.deselect`
+### `api.blockSelection.deselect`
 
 Deselects all blocks and sets the `isSelecting` flag to false.
 
-### `editor.api.blockSelection.focus`
+### `api.blockSelection.focus`
 
 Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
 
-### `editor.api.blockSelection.getNodes`
+### `api.blockSelection.getNodes`
 
 Gets the selected blocks in the editor.
 
@@ -278,7 +278,7 @@ Gets the selected blocks in the editor.
 </APIReturns>
 </API>
 
-### `editor.api.blockSelection.has`
+### `api.blockSelection.has`
 
 Checks if one or more blocks are selected.
 
@@ -296,11 +296,11 @@ Checks if one or more blocks are selected.
 </APIReturns>
 </API>
 
-### `editor.api.blockSelection.selectAll`
+### `api.blockSelection.selectAll`
 
 Selects all selectable blocks in the editor.
 
-### `editor.api.blockSelection.set`
+### `api.blockSelection.set`
 
 Sets the selection to one or more blocks, clearing any existing selection.
 
@@ -314,19 +314,19 @@ Sets the selection to one or more blocks, clearing any existing selection.
 
 ## Transforms
 
-### `editor.tf.blockSelection.duplicate`
+### `tf.blockSelection.duplicate`
 
 Duplicate the selected blocks.
 
-### `editor.tf.blockSelection.removeNodes`
+### `tf.blockSelection.removeNodes`
 
 Remove the selected nodes from the editor.
 
-### `editor.tf.blockSelection.select`
+### `tf.blockSelection.select`
 
 Select the nodes returned by `getNodes()` and reset selected IDs.
 
-### `editor.tf.blockSelection.setNodes`
+### `tf.blockSelection.setNodes`
 
 Sets properties on the selected nodes.
 
@@ -341,7 +341,7 @@ Sets properties on the selected nodes.
 </APIParameters>
 </API>
 
-### `editor.tf.blockSelection.setTexts`
+### `tf.blockSelection.setTexts`
 
 Sets text properties on the selected nodes.
 
@@ -419,7 +419,7 @@ A hook that provides props for making a block element selectable, including cont
 
 Initialize and manage selection area functionality.
 
-### `editor.api.blockSelection.isSelectable`
+### `api.blockSelection.isSelectable`
 
 <API name="isSelectable">
 <APIParameters>
@@ -436,7 +436,7 @@ Initialize and manage selection area functionality.
 </APIReturns>
 </API>
 
-### `editor.api.blockSelection.moveSelection`
+### `api.blockSelection.moveSelection`
 
 Moves the selection up or down to the next selectable block.
 
@@ -457,7 +457,7 @@ When moving down:
 </APIParameters>
 </API>
 
-### `editor.api.blockSelection.shiftSelection`
+### `api.blockSelection.shiftSelection`
 
 Expands or shrinks the selection based on the anchor block.
 

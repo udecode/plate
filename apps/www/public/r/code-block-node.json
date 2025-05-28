@@ -28,14 +28,14 @@
   "meta": {
     "docs": [
       {
-        "route": "/docs/basic-elements"
+        "route": "/docs/code-block"
       },
       {
         "route": "https://pro.platejs.org/docs/components/code-block-node"
       }
     ],
     "examples": [
-      "basic-elements-demo"
+      "code-block-demo"
     ]
   }
 }

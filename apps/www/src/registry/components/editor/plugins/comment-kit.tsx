@@ -6,12 +6,13 @@ import { isSlateString } from '@udecode/plate';
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
+  getDraftCommentKey,
 } from '@udecode/plate-comments';
-import { toTPlatePlugin, useHotkeys } from '@udecode/plate/react';
+import { toTPlatePlugin } from '@udecode/plate/react';
 
 import { CommentLeaf } from '@/registry/ui/comment-node';
 
-export type CommentConfig = ExtendConfig<
+type CommentConfig = ExtendConfig<
   BaseCommentConfig,
   {
     activeId: string | null;
@@ -65,21 +66,33 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {
     hoverId: null,
     uniquePathMap: new Map(),
   },
-  useHooks: ({ editor }) => {
-    useHotkeys(
-      ['meta+shift+m', 'ctrl+shift+m'],
-      (e) => {
-        if (!editor.selection) return;
-
-        e.preventDefault();
-
-        if (!editor.api.isExpanded()) return;
+})
+  .extendTransforms(
+    ({
+      editor,
+      setOption,
+      tf: {
+        comment: { setDraft },
       },
-      {
-        enableOnContentEditable: true,
-      }
-    );
-  },
-});
+    }) => ({
+      setDraft: () => {
+        if (editor.api.isCollapsed()) {
+          editor.tf.select(editor.api.block()![1]);
+        }
+
+        setDraft();
+
+        editor.tf.collapse();
+        setOption('activeId', getDraftCommentKey());
+        setOption('commentingBlock', editor.selection!.focus.path.slice(0, 1));
+      },
+    })
+  )
+  .configure({
+    node: { component: CommentLeaf },
+    shortcuts: {
+      setDraft: { keys: 'mod+shift+m' },
+    },
+  });
 
 export const CommentKit = [commentPlugin.withComponent(CommentLeaf)];

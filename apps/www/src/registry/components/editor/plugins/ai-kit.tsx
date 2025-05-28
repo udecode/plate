@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import type { AIChatPluginConfig } from '@udecode/plate-ai/react';
 import type { UseChatOptions } from 'ai/react';
 
@@ -16,7 +14,14 @@ import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
 
-export const aiChatPlugin = AIChatPlugin.configure({
+export const aiChatPlugin = AIChatPlugin.extend({
+  options: {
+    chatOptions: {
+      api: '/api/ai/command',
+      body: {},
+    } as UseChatOptions,
+  },
+}).configure({
   options: {
     promptTemplate: ({ isBlockSelecting, isSelecting }) => {
       return isBlockSelecting
@@ -34,17 +39,11 @@ export const aiChatPlugin = AIChatPlugin.configure({
     },
   },
   render: {
+    afterContainer: AILoadingBar,
+    afterEditable: AIMenu,
     node: AIAnchorElement,
-    afterContainer: () => <AILoadingBar />,
-    afterEditable: () => <AIMenu />,
   },
-}).extend({
-  options: {
-    chatOptions: {
-      api: '/api/ai/command',
-      body: {},
-    } as UseChatOptions,
-  },
+  shortcuts: { show: { keys: 'mod+j' } },
   useHooks: ({ editor, getOption }) => {
     const mode = usePluginOption(
       { key: KEYS.aiChat } as AIChatPluginConfig,
