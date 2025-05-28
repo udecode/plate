@@ -40,8 +40,10 @@ export const pluginRenderText = (
         readOnly,
       }) as any;
 
+      const defaultProps = node ? {} : { as: plugin.render?.as };
+
       return (
-        <Text as={node ? undefined : plugin.render.as} {...ctxProps}>
+        <Text {...defaultProps} {...ctxProps}>
           {children}
         </Text>
       );

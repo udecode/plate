@@ -15,15 +15,16 @@ export const triggerCopilotSuggestion = async (editor: PlateEditor) => {
 
   const { completeOptions, getPrompt, isLoading, triggerQuery } = getOptions();
 
-  if (isLoading || editor.getOptions({ key: KEYS.aiChat }).chat?.isLoading)
-    return;
-  if (!triggerQuery!({ editor })) return;
+  if (isLoading || editor.getOptions({ key: KEYS.aiChat }).chat?.isLoading) {
+    return false;
+  }
+  if (!triggerQuery!({ editor })) return false;
 
   // if (query && !queryEditor(editor, query)) return;
 
   const prompt = getPrompt!({ editor });
 
-  if (prompt.length === 0) return;
+  if (prompt.length === 0) return false;
 
   api.copilot.stop();
 

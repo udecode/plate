@@ -34,8 +34,10 @@ export const pluginRenderLeafStatic = (
         props: props as any,
       }) as any;
 
+      const defaultProps = Component ? {} : { as: plugin.render?.as };
+
       return (
-        <Leaf as={Component ? undefined : plugin.render.as} {...ctxProps}>
+        <Leaf {...defaultProps} {...ctxProps}>
           {children}
         </Leaf>
       );

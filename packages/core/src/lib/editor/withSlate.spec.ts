@@ -1,5 +1,5 @@
 /* eslint-disable jest/no-conditional-expect */
-import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
 import { type Value, createEditor } from '@udecode/slate';
 
 import { ParagraphPlugin, ReactPlugin } from '../../react';

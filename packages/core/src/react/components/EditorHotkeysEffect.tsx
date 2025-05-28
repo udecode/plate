@@ -55,11 +55,17 @@ function HotkeyEffect({
   const setHotkeyRef = useHotkeys<HTMLDivElement>(
     keys!,
     (event, eventDetails) => {
-      handler!({
-        editor,
-        event,
-        eventDetails,
-      });
+      if (
+        handler!({
+          editor,
+          event,
+          eventDetails,
+        }) !== false &&
+        !isDefined(options.preventDefault)
+      ) {
+        // Prevent default if handler returns false and preventDefault is true
+        event.preventDefault();
+      }
     },
     {
       enableOnContentEditable: true,

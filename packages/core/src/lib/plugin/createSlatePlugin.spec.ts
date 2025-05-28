@@ -1,4 +1,4 @@
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicElementsPlugin } from '@udecode/plate-basic-nodes/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 
 import {

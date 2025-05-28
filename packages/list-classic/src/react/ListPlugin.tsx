@@ -1,4 +1,4 @@
-import { Key, toPlatePlugin } from '@udecode/plate/react';
+import { toPlatePlugin } from '@udecode/plate/react';
 
 import {
   BaseBulletedListPlugin,
@@ -10,17 +10,9 @@ import {
 import { onKeyDownList } from './onKeyDownList';
 import { withList } from './withList';
 
-export const BulletedListPlugin = toPlatePlugin(BaseBulletedListPlugin, {
-  handlers: {
-    onKeyDown: onKeyDownList,
-  },
-});
+export const BulletedListPlugin = toPlatePlugin(BaseBulletedListPlugin);
 
-export const NumberedListPlugin = toPlatePlugin(BaseNumberedListPlugin, {
-  handlers: {
-    onKeyDown: onKeyDownList,
-  },
-});
+export const NumberedListPlugin = toPlatePlugin(BaseNumberedListPlugin);
 
 export const ListItemContentPlugin = toPlatePlugin(BaseListItemContentPlugin);
 
@@ -31,29 +23,13 @@ export const ListItemPlugin = toPlatePlugin(BaseListItemPlugin);
  * features.
  */
 export const ListPlugin = toPlatePlugin(BaseListPlugin, {
+  handlers: {
+    onKeyDown: onKeyDownList,
+  },
   plugins: [
     BulletedListPlugin,
     NumberedListPlugin,
     ListItemPlugin,
     ListItemContentPlugin,
   ],
-})
-  .overrideEditor(withList)
-  .extend(({ editor }) => ({
-    shortcuts: {
-      toggleBulletedList: {
-        keys: [[Key.Mod, Key.Alt, '5']],
-        preventDefault: true,
-        handler: () => {
-          editor.getTransforms(ListPlugin).toggle.bulletedList();
-        },
-      },
-      toggleNumberedList: {
-        keys: [[Key.Mod, Key.Alt, '6']],
-        preventDefault: true,
-        handler: () => {
-          editor.getTransforms(ListPlugin).toggle.numberedList();
-        },
-      },
-    },
-  }));
+}).overrideEditor(withList);

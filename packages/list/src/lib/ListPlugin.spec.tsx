@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
 import { AlignPlugin } from '@udecode/plate-alignment/react';
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { HorizontalRulePlugin } from '@udecode/plate-basic-elements/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import { BasicElementsPlugin } from '@udecode/plate-basic-nodes/react';
+import { HorizontalRulePlugin } from '@udecode/plate-basic-nodes/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';

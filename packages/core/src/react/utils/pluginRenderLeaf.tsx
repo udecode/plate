@@ -41,8 +41,10 @@ export const pluginRenderLeaf = (
         readOnly,
       }) as any;
 
+      const defaultProps = Component ? {} : { as: plugin.render?.as };
+
       return (
-        <Leaf as={Component ? undefined : plugin.render.as} {...ctxProps}>
+        <Leaf {...defaultProps} {...ctxProps}>
           {children}
         </Leaf>
       );

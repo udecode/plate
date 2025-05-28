@@ -442,7 +442,12 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       /** @see {@link Shortcuts} */
       shortcuts: Partial<
         Record<
-          (string & {}) | keyof InferTransforms<C>[C['key']],
+          | (string & {})
+          | Exclude<
+              keyof InferApi<C>[C['key']],
+              keyof InferTransforms<C>[C['key']]
+            >
+          | keyof InferTransforms<C>[C['key']],
           Shortcut | null
         >
       >;
@@ -802,7 +807,7 @@ export type Shortcut = HotkeysOptions & {
     editor: PlateEditor;
     event: KeyboardEvent;
     eventDetails: HotkeysEvent;
-  }) => void;
+  }) => boolean | void;
 };
 
 export type Shortcuts = Record<string, Shortcut | null>;

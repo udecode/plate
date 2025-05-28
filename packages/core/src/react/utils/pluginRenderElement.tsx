@@ -57,8 +57,10 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
     }
   });
 
+  const defaultProps = Component ? {} : { as: plugin.render?.as };
+
   let component: React.ReactNode = (
-    <Element as={Component ? undefined : plugin.render?.as} {...props}>
+    <Element {...defaultProps} {...props}>
       {children}
     </Element>
   );

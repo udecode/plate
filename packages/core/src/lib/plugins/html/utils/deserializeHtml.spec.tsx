@@ -4,7 +4,7 @@ import { AlignPlugin } from '@udecode/plate-alignment/react';
 import {
   BlockquotePlugin,
   HeadingPlugin,
-} from '@udecode/plate-basic-elements/react';
+} from '@udecode/plate-basic-nodes/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -13,8 +13,8 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
-import { HighlightPlugin, KbdPlugin } from '@udecode/plate-basic-marks/react';
+} from '@udecode/plate-basic-nodes/react';
+import { HighlightPlugin, KbdPlugin } from '@udecode/plate-basic-nodes/react';
 import { SoftBreakPlugin } from '@udecode/plate-break/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';

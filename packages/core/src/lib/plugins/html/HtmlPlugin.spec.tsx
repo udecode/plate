@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { HeadingPlugin } from '@udecode/plate-basic-elements/react';
-import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { HeadingPlugin } from '@udecode/plate-basic-nodes/react';
+import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { jsxt } from '@udecode/plate-test-utils';

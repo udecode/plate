@@ -55,8 +55,10 @@ export const pluginRenderElementStatic = (
         }
       });
 
+      const defaultProps = Component ? {} : { as: plugin.render?.as };
+
       let component: React.ReactNode = (
-        <Element as={Component ? undefined : plugin.render?.as} {...nodeProps}>
+        <Element {...defaultProps} {...nodeProps}>
           {children}
         </Element>
       );

@@ -36,8 +36,10 @@ export const pluginRenderTextStatic = (
         props: nodeProps as any,
       }) as any;
 
+      const defaultProps = Component ? {} : { as: plugin.render?.as };
+
       return (
-        <Text as={Component ? undefined : plugin.render.as} {...ctxProps}>
+        <Text {...defaultProps} {...ctxProps}>
           {children}
         </Text>
       );

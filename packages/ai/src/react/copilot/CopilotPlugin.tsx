@@ -13,11 +13,7 @@ import {
   NodeApi,
 } from '@udecode/plate';
 import { serializeMd } from '@udecode/plate-markdown';
-import {
-  type PlateEditor,
-  createTPlatePlugin,
-  Key,
-} from '@udecode/plate/react';
+import { type PlateEditor, createTPlatePlugin } from '@udecode/plate/react';
 import debounce from 'lodash/debounce.js';
 
 import type { CompleteOptions } from './utils/callCompletionApi';
@@ -78,17 +74,20 @@ export type CopilotPluginConfig = PluginConfig<
   },
   {
     copilot: {
-      accept: OmitFirst<typeof acceptCopilot>;
-      acceptNextWord: OmitFirst<typeof acceptCopilotNextWord>;
       triggerSuggestion: OmitFirst<typeof triggerCopilotSuggestion>;
-      // Function to abort the current API request and reset the completion state.
-      reset: () => void;
+      // Function to abort the current API request and reject the completion state.
+      reject: () => false | undefined;
       setBlockSuggestion: (options: { text: string; id?: string }) => void;
       // Function to abort the current API request.
       stop: () => void;
     };
   },
-  {},
+  {
+    copilot: {
+      accept: OmitFirst<typeof acceptCopilot>;
+      acceptNextWord: OmitFirst<typeof acceptCopilotNextWord>;
+    };
+  },
   {
     isSuggested?: (id: string) => boolean;
   }
@@ -108,10 +107,10 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
   key: KEYS.copilot,
   handlers: {
     onBlur: ({ api }) => {
-      api.copilot.reset();
+      api.copilot.reject();
     },
     onMouseDown: ({ api }) => {
-      api.copilot.reset();
+      api.copilot.reject();
     },
   },
   options: {
@@ -170,7 +169,11 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
   .extendSelectors<CopilotPluginConfig['selectors']>(({ getOptions }) => ({
     isSuggested: (id) => getOptions().suggestionNodeId === id,
   }))
-  .extendApi<Omit<CopilotPluginConfig['api']['copilot'], 'reset'>>(
+  .extendTransforms(({ editor }) => ({
+    accept: bindFirst(acceptCopilot, editor),
+    acceptNextWord: bindFirst(acceptCopilotNextWord, editor),
+  }))
+  .extendApi<Omit<CopilotPluginConfig['api']['copilot'], 'reject'>>(
     ({ api, editor, getOptions, setOption, setOptions }) => {
       const debounceDelay = getOptions().debounceDelay;
 
@@ -184,8 +187,6 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
       }
 
       return {
-        accept: bindFirst(acceptCopilot, editor),
-        acceptNextWord: bindFirst(acceptCopilotNextWord, editor),
         triggerSuggestion,
         setBlockSuggestion: ({ id = getOptions().suggestionNodeId, text }) => {
           if (!id) {
@@ -210,8 +211,10 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
       };
     }
   )
-  .extendApi(({ api, setOptions }) => ({
-    reset: () => {
+  .extendApi(({ api, getOptions, setOptions }) => ({
+    reject: () => {
+      if (!getOptions().suggestionText?.length) return false;
+
       api.copilot.stop();
 
       setOptions({
@@ -225,44 +228,12 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     render: {
       belowNodes: renderCopilotBelowNodes,
     },
-  })
-  .extend(({ api, getOptions }) => {
-    return {
-      shortcuts: {
-        acceptCopilot: {
-          keys: [[Key.Tab]],
-          handler: ({ event }) => {
-            if (!getOptions().suggestionText?.length) return;
-
-            event.preventDefault();
-            api.copilot.accept();
-          },
-        },
-        acceptCopilotNextWord: {
-          keys: [[Key.Meta, Key.ArrowRight]],
-          handler: ({ event }) => {
-            if (!getOptions().suggestionText?.length) return;
-
-            event.preventDefault();
-            api.copilot.acceptNextWord();
-          },
-        },
-        hideCopilot: {
-          keys: [[Key.Escape]],
-          handler: ({ event }) => {
-            if (!getOptions().suggestionText?.length) return;
-
-            event.preventDefault();
-            api.copilot.reset();
-          },
-        },
-        triggerCopilot: {
-          keys: [[Key.Control, 'space']],
-          preventDefault: true,
-          handler: () => {
-            void api.copilot.triggerSuggestion();
-          },
-        },
+    shortcuts: {
+      accept: {
+        keys: 'tab',
       },
-    };
+      reject: {
+        keys: 'escape',
+      },
+    },
   });

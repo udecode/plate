@@ -45,14 +45,22 @@ export const BaseBulletedListPlugin = createSlatePlugin({
     },
   },
   render: { as: 'ul' },
-});
+}).extendTransforms(({ editor }) => ({
+  toggle: () => {
+    toggleBulletedList(editor);
+  },
+}));
 
 export const BaseNumberedListPlugin = createSlatePlugin({
   key: KEYS.olClassic,
   node: { isElement: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'OL' }] } } },
   render: { as: 'ol' },
-});
+}).extendTransforms(({ editor }) => ({
+  toggle: () => {
+    toggleNumberedList(editor);
+  },
+}));
 
 export const BaseListItemPlugin = createSlatePlugin({
   key: KEYS.li,

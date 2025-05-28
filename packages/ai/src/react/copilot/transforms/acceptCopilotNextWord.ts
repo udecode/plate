@@ -13,15 +13,17 @@ export const acceptCopilotNextWord = (editor: PlateEditor) => {
 
   const { getNextWord, suggestionText } = getOptions();
 
-  if (suggestionText?.length) {
-    const { firstWord, remainingText } = getNextWord!({ text: suggestionText });
-
-    api.copilot.setBlockSuggestion({
-      text: remainingText,
-    });
-
-    withoutAbort(editor, () => {
-      editor.tf.insertFragment(deserializeInlineMd(editor, firstWord));
-    });
+  if (!suggestionText?.length) {
+    return false;
   }
+
+  const { firstWord, remainingText } = getNextWord!({ text: suggestionText });
+
+  api.copilot.setBlockSuggestion({
+    text: remainingText,
+  });
+
+  withoutAbort(editor, () => {
+    editor.tf.insertFragment(deserializeInlineMd(editor, firstWord));
+  });
 };

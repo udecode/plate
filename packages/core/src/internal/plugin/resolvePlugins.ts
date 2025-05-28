@@ -162,19 +162,20 @@ const resolvePluginShortcuts = (editor: SlateEditor) => {
           SlatePlugin['shortcuts'][string]
         >;
 
-        // Set preventDefault to true by default if not explicitly set
-        if (resolvedHotkey.preventDefault === undefined) {
-          resolvedHotkey.preventDefault = true;
-        }
-
         // If no custom handler is provided, try to use plugin transform method as handler
         if (!resolvedHotkey.handler) {
           const pluginSpecificTransforms = (plugin.transforms as any)?.[
             plugin.key
           ];
+          const pluginSpecificApi = (plugin.api as any)?.[plugin.key];
+
           if (pluginSpecificTransforms?.[originalKey]) {
             resolvedHotkey.handler = () => {
-              pluginSpecificTransforms[originalKey]();
+              return pluginSpecificTransforms[originalKey]();
+            };
+          } else if (pluginSpecificApi?.[originalKey]) {
+            resolvedHotkey.handler = () => {
+              return pluginSpecificApi[originalKey]();
             };
           }
         }

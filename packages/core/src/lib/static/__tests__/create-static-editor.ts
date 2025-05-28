@@ -6,13 +6,13 @@ import {
   BaseBoldPlugin,
   BaseCodePlugin,
   BaseStrikethroughPlugin,
-} from '@udecode/plate-basic-marks';
-import { BaseItalicPlugin } from '@udecode/plate-basic-marks';
+} from '@udecode/plate-basic-nodes';
+import { BaseItalicPlugin } from '@udecode/plate-basic-nodes';
 import {
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+} from '@udecode/plate-basic-nodes';
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
 import { BaseCommentPlugin } from '@udecode/plate-comments';
 import { BaseDatePlugin } from '@udecode/plate-date';
@@ -22,15 +22,15 @@ import {
   BaseFontSizePlugin,
 } from '@udecode/plate-font';
 import { BaseTocPlugin } from '@udecode/plate-toc';
-import { BaseHighlightPlugin } from '@udecode/plate-basic-marks';
+import { BaseHighlightPlugin } from '@udecode/plate-basic-nodes';
 import {
   BaseHorizontalRulePlugin,
   BaseHeadingPlugin,
   BaseBlockquotePlugin,
-} from '@udecode/plate-basic-elements';
+} from '@udecode/plate-basic-nodes';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseListPlugin } from '@udecode/plate-list';
-import { BaseKbdPlugin } from '@udecode/plate-basic-marks';
+import { BaseKbdPlugin } from '@udecode/plate-basic-nodes';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
 import { BaseLinkPlugin } from '@udecode/plate-link';

@@ -1,5 +1,5 @@
 import { createSlateEditor } from '@udecode/plate';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
 import { MarkdownKit } from '../../../../../apps/www/src/registry/components/editor/plugins/markdown-kit';
 import { BaseSuggestionPlugin } from '@udecode/plate-suggestion';
 
