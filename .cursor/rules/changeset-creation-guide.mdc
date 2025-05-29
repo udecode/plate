@@ -1,0 +1,128 @@
+---
+description: 
+globs: .changeset/**
+alwaysApply: false
+---
+# How to Create a Plate Project Changeset
+
+This guide outlines the structure and writing style for creating changeset files in the Plate project, aiming for clarity and conciseness similar to the Radix UI changelog style.
+
+## File Naming Convention
+
+Changeset files should be named descriptively, indicating the affected package/area and the nature of the change.
+
+`[package-or-feature]-[change-type].md`
+
+Examples:
+- `alignment-api-major.md`
+- `core-editor-state-minor.md`
+- `new-hook-patch.md`
+
+## Changeset File Structure
+
+Each changeset `.md` file must consist of two main parts:
+
+1.  **YAML Frontmatter**: Specifies the package(s) affected and the type of change (`major`, `minor`, `patch`).
+2.  **Markdown Description**: Details the changes.
+
+### 1. YAML Frontmatter
+
+The frontmatter is enclosed by `---` lines. It lists each affected package and its corresponding change type.
+
+**Syntax:**
+
+```yaml
+---
+'@udecode/package-name': <change-type>
+'@another/package': <change-type>
+# ... more packages if applicable
+---
+```
+
+-   `<change-type>` **MUST** be:
+    -   `major`: For **breaking changes**. A change is breaking if users of the package need to change their code to upgrade (e.g., API renaming, function signature changes, removal of features, behavior changes that require user adaptation).
+    -   `minor`: For **new features** or significant enhancements that are backward-compatible.
+    *   `patch`: For **bug fixes** or very minor, backward-compatible changes.
+
+**CRITICAL: If there is any doubt, err on the side of `major` for any API modification or removal.**
+
+**Example:**
+
+```yaml
+---
+'@udecode/plate-core': major
+'@udecode/plate-utils': patch
+---
+```
+
+### 2. Markdown Description
+
+This section explains **what changed for the user** and **how they should adapt**. The style should be direct and action-oriented.
+
+**General Guidelines:**
+
+*   **Focus on Public API & User Impact:** Only document changes that affect the public API or require users to take action. **DO NOT** document internal refactorings.
+*   **Always use bullet points (`-`)** to list out individual changes.
+*   **Start Directly with a Verb:** Each bullet point should begin with a past tense verb describing the change (e.g., "Renamed...", "Added...", "Fixed...", "Removed..."). **DO NOT** use prefixes like "Breaking Change:", "New Feature:", "Enhancement:". The `major`/`minor`/`patch` designation in the frontmatter already conveys this.
+*   **Be Direct and Concise:**
+    *   Get straight to the point. Avoid verbose explanations or justifications.
+    *   If a code snippet clearly shows the "before" and "after," **let the code snippet speak for itself.** Minimize or eliminate redundant introductory text for code blocks.
+    *   Aim for a single, clear bullet point for each distinct change.
+*   Use **bold text (`**text**`)** for emphasis on:
+    *   Package names (e.g., `**@udecode/plate-core**`)
+    *   Plugin names (e.g., `**BlockquotePlugin**`)
+    *   Important function, option, or property names being changed.
+*   Use **code blocks** (```ts` or ` ```tsx`) for:
+    *   Illustrating API changes (using "Before" / "After" comments inside the block). Snippets should be minimal and focused.
+    *   Showing configuration snippets.
+    *   Displaying relevant parts of type definitions.
+*   **Migration Guidance:** If a change requires user action, provide clear, concise migration steps, often as sub-bullets or directly within the "After" part of a code snippet.
+
+**Specific Content Types (Structure within bullet points):**
+
+*   **API Changes (Breaking or Not):**
+    *   - Renamed `EditorFragmentOptions.structuralTypes` to `EditorFragmentOptions.containerTypes` in `**@udecode/slate**`.
+        ```ts
+        // Before
+        editor.api.fragment(editor.selection, { structuralTypes: ['table'] });
+
+        // After
+        editor.api.fragment(editor.selection, { containerTypes: ['table'] });
+        ```
+    *   - Removed `oldOption` from `PluginName` options. Use `newOption` instead.
+        ```ts
+        // Before
+        createMyPlugin({ oldOption: true });
+
+        // After
+        createMyPlugin({ newOption: true });
+        ```
+
+*   **Deprecations:**
+    *   - Deprecated `**@udecode/plate-old-package**`. Use `**@udecode/plate-new-package**` instead.
+    *   - To migrate:
+        - Replace `**@udecode/plate-old-package**` with `**@udecode/plate-new-package**` in your `package.json`.
+        - Update import paths:
+          ```diff
+          - import { SomeFeature } from '@udecode/plate-old-package';
+          + import { SomeFeature } from '@udecode/plate-new-package';
+          ```
+
+*   **New Features / Enhancements:**
+    *   - Added `useNewHook()` for managing X.
+        ```ts
+        const value = useNewHook(editor);
+        ```
+    *   - Added `newOption` to `PluginName` options for Y.
+
+*   **Removals:**
+    *   - Removed `obsoleteFunction()` from `**PackageName**`. There is no direct replacement.
+    *   - Removed default shortcuts for `**SomePlugin**`. Configure them via `editor.configure(SomePlugin, { shortcuts: { ... } })` if needed.
+
+**Writing Style:**
+
+*   **Clarity and Precision:** Be unambiguous.
+*   **Action-Oriented:** Use past tense verbs to describe changes. Use imperative mood for migration steps (e.g., "- Replace...", "- Update...").
+*   **User-Focused:** Prioritize information crucial for developers integrating the changes.
+
+By strictly following these guidelines, we will maintain a high-quality, accurate, and developer-friendly changelog.
