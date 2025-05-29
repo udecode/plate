@@ -1,7 +1,7 @@
 import { KEYS, type Value } from '@udecode/plate';
 
 import { withProps } from '@udecode/cn';
-import { BaseAlignPlugin } from '@udecode/plate-alignment';
+import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -170,7 +170,7 @@ export const createStaticEditor = (
       BaseFontBackgroundColorPlugin,
       BaseFontSizePlugin,
       BaseKbdPlugin,
-      BaseAlignPlugin.extend({
+      BaseTextAlignPlugin.extend({
         inject: {
           targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.mediaEmbed],
         },

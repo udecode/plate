@@ -23,6 +23,11 @@ export type EditorBase<V extends Value = Value> = {
   history: History;
   /** Marks that are currently applied to the editor. */
   marks: EditorMarks | null;
+  /** Editor metadata. */
+  meta: UnknownObject & {
+    /** Array of container node types. */
+    containerTypes: string[];
+  };
   /** Operations that have been applied to the editor. */
   operations: Operation<DescendantIn<V>>[];
   /** The current selection of the editor. */

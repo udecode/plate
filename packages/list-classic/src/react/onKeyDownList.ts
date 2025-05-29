@@ -11,8 +11,6 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
   event,
   getOptions,
 }) => {
-  console.log(event.defaultPrevented);
-
   if (event.defaultPrevented) return;
 
   const isTab = Hotkeys.isTab(editor, event);

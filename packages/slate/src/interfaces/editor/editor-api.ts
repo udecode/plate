@@ -559,8 +559,8 @@ export type EditorFragmentDeletionOptions = {
 };
 
 export type EditorFragmentOptions = {
-  /** Types of structural nodes to unwrap */
-  structuralTypes?: string[];
+  /** Types of container nodes to unwrap */
+  containerTypes?: string[];
 };
 
 export type EditorIsSelectedOptions = {

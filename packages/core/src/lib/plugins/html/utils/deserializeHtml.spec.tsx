@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { AlignPlugin } from '@udecode/plate-alignment/react';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
 import {
   BlockquotePlugin,
   HeadingPlugin,
@@ -212,7 +212,7 @@ describe('when deserializing all plugins', () => {
             MediaEmbedPlugin,
             FindReplacePlugin,
             SoftBreakPlugin,
-            AlignPlugin,
+            TextAlignPlugin,
             BoldPlugin,
             HighlightPlugin,
             CodePlugin,

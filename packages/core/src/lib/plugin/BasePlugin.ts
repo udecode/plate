@@ -297,6 +297,16 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   dangerouslyAllowAttributes?: string[];
   /**
+   * Indicates if this plugin's elements are primarily containers for other
+   * content. Container elements are typically unwrapped when querying
+   * fragments.
+   *
+   * Examples: table, tr, td, column, column_group
+   *
+   * @default false
+   */
+  isContainer?: boolean;
+  /**
    * Indicates if this plugin's nodes can be rendered as decorated leaf. Set to
    * false to render node component only once per text node.
    *

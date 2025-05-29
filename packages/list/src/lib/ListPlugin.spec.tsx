@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { AlignPlugin } from '@udecode/plate-alignment/react';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-nodes/react';
 import { HorizontalRulePlugin } from '@udecode/plate-basic-nodes/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
@@ -48,7 +48,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         BasicMarksPlugin,
         TablePlugin,
         LineHeightPlugin.extend(injectConfig),
-        AlignPlugin.extend(injectConfig),
+        TextAlignPlugin.extend(injectConfig),
         IndentPlugin.extend(injectConfig),
         BaseListPlugin,
         DocxPlugin,

@@ -45,6 +45,10 @@ export const resolvePlugins = (
 
     // Sync overridden plugin methods to legacy editor methods
     resolvePluginMethods(editor, plugin);
+
+    if (plugin.node?.isContainer) {
+      editor.meta.containerTypes.push(plugin.node.type);
+    }
   });
 
   resolvePluginShortcuts(editor);
@@ -361,6 +365,8 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
         plugins: applyOverrides(plugin.plugins || []),
       }));
   };
+
+  applyPluginsToEditor;
 
   editor.pluginList = applyOverrides(editor.pluginList as any);
   editor.plugins = Object.fromEntries(

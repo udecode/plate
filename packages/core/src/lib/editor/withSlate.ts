@@ -1,5 +1,3 @@
-import type { UnionToIntersection } from '@udecode/utils';
-
 import {
   type Editor,
   type TSelection,
@@ -17,8 +15,6 @@ import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
 import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
-
-type A = UnionToIntersection<CorePlugin['key']>;
 
 export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   /**

@@ -32,7 +32,7 @@ export type ListConfig = PluginConfig<
 
 export const BaseBulletedListPlugin = createSlatePlugin({
   key: KEYS.ulClassic,
-  node: { isElement: true },
+  node: { isContainer: true, isElement: true },
   parsers: {
     html: {
       deserializer: {
@@ -53,7 +53,7 @@ export const BaseBulletedListPlugin = createSlatePlugin({
 
 export const BaseNumberedListPlugin = createSlatePlugin({
   key: KEYS.olClassic,
-  node: { isElement: true },
+  node: { isContainer: true, isElement: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'OL' }] } } },
   render: { as: 'ol' },
 }).extendTransforms(({ editor }) => ({
@@ -75,7 +75,7 @@ export const BaseListItemPlugin = createSlatePlugin({
       },
     },
   },
-  node: { isElement: true },
+  node: { isContainer: true, isElement: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
   render: { as: 'li' },
 });

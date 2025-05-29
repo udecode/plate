@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { type SlatePlugin, createSlateEditor } from '@udecode/plate';
-import { AlignPlugin } from '@udecode/plate-alignment/react';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-nodes/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
 import { HorizontalRulePlugin } from '@udecode/plate-basic-nodes/react';
@@ -66,7 +66,7 @@ export const testDocxDeserializer = ({
         BasicMarksPlugin,
         TablePlugin,
         LineHeightPlugin.extend(() => injectConfig),
-        AlignPlugin.extend(() => injectConfig),
+        TextAlignPlugin.extend(() => injectConfig),
         IndentPlugin.extend(() => injectConfig),
         DocxPlugin,
         JuicePlugin,

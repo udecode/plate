@@ -1,8 +1,10 @@
-import { createSlatePlugin, KEYS } from '@udecode/plate';
+import { bindFirst, createSlatePlugin, KEYS } from '@udecode/plate';
+
+import { setAlign } from './transforms';
 
 /** Creates a plugin that adds alignment functionality to the editor. */
-export const BaseAlignPlugin = createSlatePlugin({
-  key: KEYS.align,
+export const BaseTextAlignPlugin = createSlatePlugin({
+  key: KEYS.textAlign,
   inject: {
     isBlock: true,
     nodeProps: {
@@ -12,13 +14,13 @@ export const BaseAlignPlugin = createSlatePlugin({
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
     targetPlugins: [KEYS.p],
-    targetPluginToInject: ({ editor, plugin }) => ({
+    targetPluginToInject: ({ editor }) => ({
       parsers: {
         html: {
           deserializer: {
             parse: ({ element, node }) => {
               if (element.style.textAlign) {
-                node[editor.getType(KEYS.align)] = element.style.textAlign;
+                node[editor.getType(KEYS.textAlign)] = element.style.textAlign;
               }
             },
           },
@@ -26,4 +28,6 @@ export const BaseAlignPlugin = createSlatePlugin({
       },
     }),
   },
-});
+}).extendTransforms(({ editor }) => ({
+  set: bindFirst(setAlign, editor),
+}));

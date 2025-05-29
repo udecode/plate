@@ -58,7 +58,6 @@ export const NODES = {
 } as const;
 
 export const STYLE_KEYS = {
-  align: 'align',
   backgroundColor: 'backgroundColor',
   color: 'color',
   fontFamily: 'fontFamily',
@@ -67,6 +66,7 @@ export const STYLE_KEYS = {
   indent: 'indent',
   lineHeight: 'lineHeight',
   listType: 'listStyleType',
+  textAlign: 'textAlign',
   textIndent: 'textIndent',
 } as const;
 
