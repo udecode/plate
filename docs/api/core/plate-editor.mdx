@@ -46,6 +46,14 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
   <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
     A record of plugins indexed by their keys.
   </APIItem>
+  <APIItem name="meta" type="object">
+    An object containing editor metadata, often derived from plugins or editor configuration.
+    <APISubList>
+      <APISubListItem parent="meta" name="containerTypes" type="string[]">
+        Array of container node types derived from plugins that have `plugin.node.isContainer = true`.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
 </APIAttributes>
 </API>
 ## API Methods

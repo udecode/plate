@@ -6,7 +6,7 @@ import type { DocsConfig } from '@/config/docs';
 import type { SidebarNavItem } from '@/types/nav';
 
 import { castArray } from 'lodash';
-import { Leaf, X } from 'lucide-react';
+import { ChevronDown, Leaf, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -59,24 +59,80 @@ export function DocsNav({ config }: { config: DocsConfig }) {
       .filter((section) => section.items && section.items.length > 0);
   }, [sidebarNav, filter]);
 
+  // Helper function to recursively check if any nested item is active
+  const hasActiveNestedItem = React.useCallback(
+    (items: SidebarNavItem[], pathname: string): boolean => {
+      return items.some((item) => {
+        if (item.href === pathname) return true;
+        if (item.items?.length) {
+          return hasActiveNestedItem(item.items, pathname);
+        }
+        return false;
+      });
+    },
+    []
+  );
+
   // Update active section when pathname changes
   React.useEffect(() => {
     if (!normalizedPathname) return;
 
     const newActiveIndex = filteredNav.findIndex((section) =>
-      section.items?.some((item) => {
-        const isItemActive = item.href === normalizedPathname;
-        const hasActiveChild = item.items?.some(
-          (subItem) => subItem.href === normalizedPathname
-        );
-        return isItemActive || hasActiveChild;
-      })
+      section.items
+        ? hasActiveNestedItem(section.items, normalizedPathname)
+        : false
     );
 
     setActiveSection(
       newActiveIndex === -1 ? undefined : `item-${newActiveIndex}`
     );
-  }, [normalizedPathname, filteredNav]);
+  }, [normalizedPathname, filteredNav, hasActiveNestedItem]);
+
+  // Auto-scroll to active item only on mount. To be improved.
+  React.useEffect(() => {
+    if (!normalizedPathname) return;
+
+    // Scroll to active item after a short delay to ensure accordion is open
+    const scrollToActiveItem = () => {
+      const activeElement = document.querySelector(
+        `[data-href="${normalizedPathname}"]`
+      ) as HTMLElement;
+
+      if (activeElement) {
+        // Find the accordion item with data-state="open" that contains this element
+        const openAccordionItem = activeElement.closest(
+          '[data-state="open"][data-slot="accordion-item"]'
+        ) as HTMLElement;
+
+        if (openAccordionItem) {
+          // Find the scrollable div inside the open accordion item
+          const scrollableDiv = openAccordionItem.querySelector(
+            'div[class*="overflow-y-auto"]'
+          ) as HTMLElement;
+
+          if (scrollableDiv) {
+            const containerRect = scrollableDiv.getBoundingClientRect();
+            const elementRect = activeElement.getBoundingClientRect();
+            const relativeTop = elementRect.top - containerRect.top;
+            const scrollTop = scrollableDiv.scrollTop;
+
+            // Calculate the position to scroll to (position item at top with offset)
+            const targetScrollTop = scrollTop + relativeTop - 32;
+
+            scrollableDiv.scrollTo({
+              top: Math.max(0, targetScrollTop),
+            });
+          }
+        }
+      }
+    };
+
+    // Delay to ensure accordion animation completes. Not always working well.
+    const timeoutId = setTimeout(scrollToActiveItem, 500);
+
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only runs on mount
 
   return sidebarNav.length > 0 ? (
     <div className="relative w-[calc(100%-1rem)]">
@@ -103,6 +159,7 @@ export function DocsNav({ config }: { config: DocsConfig }) {
       </div>
 
       <Accordion
+        className="flex max-h-[calc(100vh-8rem)] flex-col overflow-y-hidden"
         value={activeSection}
         onValueChange={setActiveSection}
         type="single"
@@ -110,8 +167,12 @@ export function DocsNav({ config }: { config: DocsConfig }) {
       >
         {filteredNav.map((item, index) => {
           return (
-            <AccordionItem key={index} value={`item-${index}`}>
-              <AccordionTrigger className="h-9 items-center px-2 py-1 text-sm outline-none">
+            <AccordionItem
+              key={index}
+              className="flex flex-col overflow-y-hidden data-[state=closed]:shrink-0 data-[state=open]:grow"
+              value={`item-${index}`}
+            >
+              <AccordionTrigger className="h-9 shrink-0 items-center px-2 py-1 text-sm outline-none">
                 <div className="flex items-center">
                   {item.title}
                   {item.label && (
@@ -135,14 +196,14 @@ export function DocsNav({ config }: { config: DocsConfig }) {
                 </div>
               </AccordionTrigger>
               <Suspense fallback={null}>
-                <AccordionContent className="pt-0 pb-2">
+                <ScrollableAccordionContent>
                   {item?.items?.length && (
                     <DocsNavItems
                       items={item.items}
                       pathname={normalizedPathname}
                     />
                   )}
-                </AccordionContent>
+                </ScrollableAccordionContent>
               </Suspense>
             </AccordionItem>
           );
@@ -154,12 +215,14 @@ export function DocsNav({ config }: { config: DocsConfig }) {
 
 function DocsNavItems({
   className,
+  depth = 0,
   items,
   pathname,
 }: {
   items: SidebarNavItem[];
   pathname: string | null;
   className?: string;
+  depth?: number;
 }) {
   const locale = useLocale();
 
@@ -200,6 +263,7 @@ function DocsNavItems({
                     ? 'bg-accent font-medium text-accent-foreground'
                     : 'font-normal text-foreground'
                 )}
+                data-href={item.href}
                 href={hrefWithLocale(item.href, locale)}
                 rel={item.external ? 'noreferrer' : ''}
                 target={item.external ? '_blank' : ''}
@@ -229,7 +293,7 @@ function DocsNavItems({
             ) : (
               <span
                 className={cn(
-                  'flex h-8 w-full items-center truncate rounded-lg px-2 font-normal text-foreground select-none'
+                  'flex h-8 w-full items-center truncate rounded-lg px-2 font-medium text-foreground select-none'
                 )}
               >
                 {item.title}
@@ -255,42 +319,99 @@ function DocsNavItems({
                 )}
               </span>
             )}
-            {item.items?.map((subItem, subIndex) => (
-              <Link
-                key={subIndex}
+            {item.items?.length && (
+              <div
                 className={cn(
-                  'group flex h-8 w-full items-center truncate rounded-lg px-6 font-normal text-foreground underline-offset-2 hover:bg-accent hover:text-accent-foreground',
-                  subItem.disabled && 'cursor-not-allowed opacity-60',
-                  normalizedPathname === subItem.href &&
-                    'bg-accent font-medium text-accent-foreground'
+                  'mb-1 ml-2 border-l border-border/60 pl-2',
+                  depth > 0 && 'ml-2'
                 )}
-                href={hrefWithLocale(subItem.href!, locale)}
-                rel={subItem.external ? 'noreferrer' : ''}
-                target={subItem.external ? '_blank' : ''}
               >
-                {subItem.title}
-                {subItem.label && (
-                  <div className="ml-2 flex gap-1">
-                    {castArray(subItem.label).map((label, labelIndex) => (
-                      <span
-                        key={labelIndex}
-                        className={cn(
-                          'rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none font-medium text-foreground',
-                          label === 'Plus' &&
-                            'bg-primary text-background dark:text-background',
-                          label === 'New' && 'bg-[#adfa1d] dark:text-background'
-                        )}
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </Link>
-            ))}
+                <DocsNavItems
+                  depth={depth + 1}
+                  items={item.items}
+                  pathname={normalizedPathname}
+                />
+              </div>
+            )}
           </React.Fragment>
         )
       )}
     </div>
   ) : null;
+}
+
+function ScrollableAccordionContent({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<typeof AccordionContent>) {
+  const [showTopIndicator, setShowTopIndicator] = useState(false);
+  const [showBottomIndicator, setShowBottomIndicator] = useState(false);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const accordionRef = React.useRef<HTMLDivElement>(null);
+
+  const handleScroll = React.useCallback(() => {
+    const element = contentRef.current;
+    if (!element) return;
+
+    const { clientHeight, scrollHeight, scrollTop } = element;
+    setShowTopIndicator(scrollTop > 5);
+    setShowBottomIndicator(scrollTop < scrollHeight - clientHeight - 5);
+  }, []);
+
+  const checkScrollState = React.useCallback(() => {
+    const element = contentRef.current;
+    if (!element) return;
+
+    const { clientHeight, scrollHeight, scrollTop } = element;
+    setShowTopIndicator(scrollTop > 5);
+    setShowBottomIndicator(scrollTop < scrollHeight - clientHeight - 5);
+  }, []);
+
+  React.useEffect(() => {
+    const element = contentRef.current;
+    if (!element) return;
+
+    // Check initial state
+    checkScrollState();
+
+    // Watch for content size changes to update scroll indicators
+    const resizeObserver = new ResizeObserver(() => {
+      checkScrollState();
+    });
+    resizeObserver.observe(element);
+
+    element.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', checkScrollState);
+
+    return () => {
+      resizeObserver.disconnect();
+      element.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', checkScrollState);
+    };
+  }, [handleScroll, checkScrollState, children]);
+
+  return (
+    <div className="relative flex grow flex-col overflow-y-hidden">
+      <div ref={contentRef} className="grow overflow-y-auto">
+        <AccordionContent ref={accordionRef} className="pb-0" {...props}>
+          {children}
+        </AccordionContent>
+      </div>
+
+      {/* Top scroll indicator */}
+      {showTopIndicator && (
+        <div className="pointer-events-none absolute top-0 right-0 left-0 z-10 flex h-8 items-start justify-center bg-gradient-to-b from-background via-background/60 to-transparent pt-1">
+          <ChevronDown className="size-3.5 rotate-180 text-muted-foreground" />
+        </div>
+      )}
+
+      {/* Bottom scroll indicator */}
+      {showBottomIndicator && (
+        <div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 flex h-8 items-end justify-center bg-gradient-to-t from-background via-background/60 to-transparent pb-1">
+          <ChevronDown className="size-3.5 text-muted-foreground" />
+        </div>
+      )}
+    </div>
+  );
 }

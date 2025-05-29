@@ -14,6 +14,7 @@
     import { TImageElement } from '@udecode/plate'; // Or from '@udecode/plate-utils' directly
     ```
 
+- Removed `structuralTypes` option from `useSelectionFragment` and `useSelectionFragmentProp`. These hooks now automatically use `editor.meta.containerTypes` from enabled plugins.
 - Removed:
   - `createNodesHOC`
   - `createNodesWithHOC`

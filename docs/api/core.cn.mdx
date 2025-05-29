@@ -401,12 +401,6 @@ description: \@udecode/plate-core 的 API 参考。
 返回当前选择的片段，可选择解构结构节点。
 
 <API name="useSelectionFragment">
-<APIOptions type="GetSelectionFragmentOptions">
-  <APIItem name="structuralTypes" type="string[]" optional>
-    要从片段中解构的结构类型数组。
-  </APIItem>
-</APIOptions>
-
 <APIReturns type="TElement[]">
   当前选择的片段。如果选择未展开或未找到片段，则返回空数组。
 </APIReturns>
@@ -418,9 +412,6 @@ description: \@udecode/plate-core 的 API 参考。
     
 <API name="useSelectionFragmentProp">
 <APIOptions type="GetSelectionFragmentOptions & GetFragmentPropOptions" optional>
-<APIItem name="structuralTypes" type="string[]" optional>
-要从片段中解构的结构类型数组。
-</APIItem>
 <APIItem name="key" type="string" optional>
 要从每个节点提取的属性的键。
 </APIItem>

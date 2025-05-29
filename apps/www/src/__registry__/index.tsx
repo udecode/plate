@@ -66,7 +66,7 @@ export const Index: Record<string, any> = {
     name: "align-toolbar-button",
     description: "A dropdown menu for text alignment controls.",
     type: "registry:ui",
-    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar","https://platejs.org/r/transforms"],
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar"],
     files: [{
       path: "src/registry/ui/align-toolbar-button.tsx",
       type: "registry:ui",
@@ -77,7 +77,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/alignment"}],"examples":["align-demo"]},
+    meta: {"docs":[{"route":"/docs/text-align"}],"examples":["align-demo"]},
   },
   "block-context-menu": {
     name: "block-context-menu",
@@ -244,7 +244,7 @@ export const Index: Record<string, any> = {
     name: "block-draggable",
     description: "A block wrapper with a drag handle for moving editor blocks.",
     type: "registry:ui",
-    registryDependencies: ["tooltip","https://platejs.org/r/use-mounted","https://platejs.org/r/transforms"],
+    registryDependencies: ["tooltip","https://platejs.org/r/use-mounted"],
     files: [{
       path: "src/registry/ui/block-draggable.tsx",
       type: "registry:ui",
@@ -794,7 +794,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/collaboration"}],"examples":[]},
+    meta: {"docs":[{"route":"/docs/yjs"}],"examples":[]},
   },
   "toolbar": {
     name: "toolbar",

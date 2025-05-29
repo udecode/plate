@@ -98,7 +98,6 @@ import { toggleValue as toggleValueEn } from '@/registry/examples/values/toggle-
 const i18n = {
   cn: {
     ai: aiValueCn,
-    align: alignValueCn,
     autoformat: autoformatValueCn,
     basicElements: basicElementsValueCn,
     basicMarks: basicMarksValueCn,
@@ -140,13 +139,13 @@ const i18n = {
     suggestion: suggestionValueCn,
     tabbable: tabbableValueCn,
     table: tableValueCn,
+    'text-align': alignValueCn,
     toc: tocValueCn,
     toggle: toggleValueCn,
     trailingBlock: trailingBlockValueCn,
   },
   en: {
     ai: aiValueEn,
-    align: alignValueEn,
     autoformat: autoformatValueEn,
     basicElements: basicElementsValueEn,
     basicMarks: basicMarksValueEn,
@@ -186,6 +185,7 @@ const i18n = {
     softBreak: softBreakValueEn,
     tabbable: tabbableValueEn,
     table: tableValueEn,
+    'text-align': alignValueEn,
     toc: tocValueEn,
     toggle: toggleValueEn,
     trailingBlock: trailingBlockValueEn,

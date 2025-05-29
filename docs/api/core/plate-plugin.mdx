@@ -90,6 +90,9 @@ Indicates if this plugin's elements should be treated as inline.
 <APISubListItem parent="node" name="isLeaf" type="boolean" optional>
 Indicates if this plugin's nodes should be rendered as leaves.
 </APISubListItem>
+<APISubListItem parent="node" name="isContainer" type="boolean" optional>
+When `true`, indicates that the plugin's elements are primarily containers for other content. This property is typically used by fragment queries to unwrap the container nodes.
+</APISubListItem>
 <APISubListItem parent="node" name="clearOnBoundary" type="boolean" optional>
 If true, enables automatically clearing the mark when typing at its boundary. Only applies when `isLeaf` is true.
 

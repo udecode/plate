@@ -21,7 +21,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-alignment'],
+    dependencies: ['@udecode/plate-basic-styles'],
     files: [
       {
         path: 'components/editor/plugins/align-kit.tsx',

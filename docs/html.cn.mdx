@@ -202,7 +202,7 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 | `style="font-size: ..."`                                 | [`FontSizePlugin`](/docs/font)        | 转为 `fontSize` mark。                                             |
 | `style="font-weight: ..."`（非标准 bold 值）      | [`FontWeightPlugin`](/docs/font)      | 转为 `fontWeight` mark。              |
 | `<mark>`                                                   | [`HighlightPlugin`](/docs/highlight)       | 转为 `highlight: true` mark。                                      |
-| `style="text-align: ..."`                                | [`AlignPlugin`](/docs/alignment)           | 设置块元素的 `align` 属性。                                 |
+| `style="text-align: ..."`                                | [`TextAlignPlugin`](/docs/text-align)           | 设置块元素的 `align` 属性。                                 |
 | `style="line-height: ..."`                               | [`LineHeightPlugin`](/docs/line-height)      | 设置块元素的 `lineHeight` 属性。                            |
 
 <Callout type="note" title="插件配置">

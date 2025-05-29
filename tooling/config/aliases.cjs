@@ -1,9 +1,9 @@
 module.exports = {
   '@udecode/cn': 'cn',
   '@udecode/plate': 'plate',
-  '@udecode/plate-alignment': 'alignment',
   '@udecode/plate-autoformat': 'autoformat',
   '@udecode/plate-basic-nodes': 'basic-nodes',
+  '@udecode/plate-basic-styles': 'basic-styles',
   '@udecode/plate-code-block': 'code-block',
   '@udecode/plate-combobox': 'combobox',
   '@udecode/plate-comments': 'comments',

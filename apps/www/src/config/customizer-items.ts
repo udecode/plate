@@ -5,7 +5,6 @@ import {
   TrailingBlockPlugin,
 } from '@udecode/plate';
 import { AIChatPlugin, AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
-import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
   BlockquotePlugin,
@@ -20,6 +19,7 @@ import {
   SuperscriptPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-nodes/react';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
 import { CaptionPlugin } from '@udecode/plate-caption/react';
 import {
   CodeBlockPlugin,
@@ -166,15 +166,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-ai',
     pluginFactory: 'AIPlugin',
     route: getPluginNavItem('ai').href,
-  },
-  [AlignPlugin.key]: {
-    id: AlignPlugin.key,
-    badges: [customizerBadges.style],
-    label: 'Align',
-    npmPackage: '@udecode/plate-alignment',
-    pluginFactory: 'AlignPlugin',
-    pluginOptions: [`inject: { targetPlugins: ['p', 'h1', 'h2', 'h3'] },`],
-    route: getPluginNavItem('alignment').href,
   },
   [AutoformatPlugin.key]: {
     id: AutoformatPlugin.key,
@@ -815,7 +806,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
     route: getPluginNavItem('list').href,
   },
-
   [MarkdownPlugin.key]: {
     id: MarkdownPlugin.key,
     badges: [customizerBadges.handler],
@@ -824,6 +814,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'MarkdownPlugin',
     route: getPluginNavItem('markdown').href,
   },
+
   media_placeholder: {
     id: 'media_placeholder',
     label: 'MediaPlaceholder',
@@ -904,7 +895,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     // npmPackage: '@udecode/plate',
     pluginFactory: 'ParagraphPlugin',
     reactImport: true,
-    // route: getPluginNavItem('basic-nodes').href,
   },
   [ResetNodePlugin.key]: {
     id: ResetNodePlugin.key,
@@ -1060,6 +1050,15 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
     route: getPluginNavItem('table').href,
   },
+  [TextAlignPlugin.key]: {
+    id: TextAlignPlugin.key,
+    badges: [customizerBadges.style],
+    label: 'Align',
+    npmPackage: '@udecode/plate-basic-styles',
+    pluginFactory: 'TextAlignPlugin',
+    pluginOptions: [`inject: { targetPlugins: ['p', 'h1', 'h2', 'h3'] },`],
+    route: getPluginNavItem('textAlign').href,
+  },
   [TocPlugin.key]: {
     id: TocPlugin.key,
     badges: [customizerBadges.handler],
@@ -1164,7 +1163,7 @@ export const customizerList = [
   {
     id: 'style',
     children: [
-      customizerItems[AlignPlugin.key],
+      customizerItems[TextAlignPlugin.key],
       customizerItems[IndentPlugin.key],
       customizerItems[ListPlugin.key],
       customizerItems[LineHeightPlugin.key],
@@ -1240,7 +1239,7 @@ export const orderedPluginKeys = [
   KbdPlugin.key,
 
   // Block Style
-  AlignPlugin.key,
+  TextAlignPlugin.key,
   IndentPlugin.key,
   ListPlugin.key,
   LineHeightPlugin.key,

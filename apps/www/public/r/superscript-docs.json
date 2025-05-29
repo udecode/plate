@@ -9,7 +9,7 @@
       "path": "../../docs/superscript.mdx",
       "content": "---\ntitle: Superscript\ndocs:\n  - route: /docs/components/mark-toolbar-button\n    title: Mark Toolbar Button\n---\n\n<ComponentPreview name=\"basic-marks-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Format text as superscript for mathematical expressions or footnotes\n- Keyboard shortcut support for quick formatting\n- Renders as `<sup>` HTML element by default\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-basic-nodes\n```\n\n## Usage\n\n```tsx\nimport { SuperscriptPlugin } from '@udecode/plate-basic-nodes/react';\n\nconst plugins = [\n  // ...otherPlugins,\n  SuperscriptPlugin.configure({\n    shortcuts: { toggle: { keys: 'mod+period' } },\n  }),\n];\n```\n\n## Plugins\n\n### `SuperscriptPlugin`\n\nPlugin for superscript text formatting. Renders as `<sup>` HTML element by default.\n\n## Transforms\n\n### `tf.superscript.toggle`\n\nToggles the superscript formatting for the selected text. ",
       "type": "registry:file",
-      "target": "content/docs/plate/plugins/basic-marks/superscript.mdx"
+      "target": "content/docs/plate/plugins/marks/superscript.mdx"
     }
   ]
 }

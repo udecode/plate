@@ -92,15 +92,15 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-alignment'],
+    dependencies: ['@udecode/plate-basic-styles'],
     description: 'A dropdown menu for text alignment controls.',
     files: [{ path: 'ui/align-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
-      docs: [{ route: '/docs/alignment' }],
+      docs: [{ route: '/docs/text-align' }],
       examples: ['align-demo'],
     },
     name: 'align-toolbar-button',
-    registryDependencies: ['shadcn/dropdown-menu', 'toolbar', 'transforms'],
+    registryDependencies: ['shadcn/dropdown-menu', 'toolbar'],
     title: 'Align Toolbar Button',
     type: 'registry:ui',
   },
@@ -156,7 +156,7 @@ export const uiComponents: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate-alignment',
+      '@udecode/plate-basic-styles',
       '@udecode/plate-basic-nodes',
       '@udecode/plate-code-block',
       '@udecode/plate-comments',
@@ -374,7 +374,7 @@ export const uiComponents: Registry['items'] = [
       // Click the plus button next to the drag button to insert blocks
     },
     name: 'block-draggable',
-    registryDependencies: ['shadcn/tooltip', 'use-mounted', 'transforms'],
+    registryDependencies: ['shadcn/tooltip', 'use-mounted'],
     title: 'Block Draggable',
     type: 'registry:ui',
   },
@@ -923,7 +923,7 @@ export const uiComponents: Registry['items'] = [
       'A cursor overlay to display multiplayer cursors in the yjs plugin.',
     files: [{ path: 'ui/remote-cursor-overlay.tsx', type: 'registry:ui' }],
     meta: {
-      docs: [{ route: '/docs/collaboration' }],
+      docs: [{ route: '/docs/yjs' }],
       examples: [],
     },
     name: 'remote-cursor-overlay',

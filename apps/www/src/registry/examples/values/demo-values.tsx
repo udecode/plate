@@ -47,7 +47,6 @@ import { toggleValue } from './toggle-value';
 
 const values = {
   ai: aiValue,
-  align: alignValue,
   autoformat: autoformatValue,
   'basic-elements': basicElementsValue,
   'basic-marks': basicMarksValue,
@@ -96,6 +95,7 @@ const values = {
   'soft-break': softBreakValue,
   tabbable: tabbableValue,
   table: tableValue,
+  'text-align': alignValue,
   toc: tocValue,
   toggle: toggleValue,
 };

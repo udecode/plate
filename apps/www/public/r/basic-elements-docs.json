@@ -9,7 +9,7 @@
       "path": "../../docs/basic-elements.mdx",
       "content": "---\ntitle: Basic Elements\ndescription: Commonly used block elements.\n---\n\n<Cards>\n\n<Card icon=\"blockquote\" title=\"Blockquote\" href=\"/docs/blockquote\">\nEmphasize important information with styled quotes.\n</Card>\n\n<Card icon=\"heading\" title=\"Heading\" href=\"/docs/heading\">\nCreate headings of various levels to structure content.\n</Card>\n\n<Card icon=\"horizontal-rule\" title=\"Horizontal Rule\" href=\"/docs/horizontal-rule\">\nInsert horizontal lines to separate content.\n</Card>\n\n</Cards>\n\n\n<ComponentPreview name=\"basic-elements-demo\" />\n\n## Installation\n\n```bash\nnpm install @udecode/plate-basic-nodes\n```\n\n## Usage\n\n```tsx\nimport { BasicElementsPlugin } from '@udecode/plate-basic-nodes/react';\n\nconst plugins = [\n  // ...otherPlugins,\n  BasicElementsPlugin,\n];\n```\n",
       "type": "registry:file",
-      "target": "content/docs/plate/plugins/basic-elements/index.mdx"
+      "target": "content/docs/plate/basic-elements.mdx"
     }
   ]
 }

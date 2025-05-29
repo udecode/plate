@@ -29,7 +29,7 @@ npm add @udecode/plate @udecode/plate-basic-nodes
 
 ```tsx title="app/api/generate-doc/route.ts"
 import { createSlateEditor } from '@udecode/plate';
-import { BaseAlignPlugin } from '@udecode/plate-alignment';
+import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
 import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
   BaseBoldPlugin,
@@ -60,7 +60,7 @@ const editor = createSlateEditor({
     BaseH2Plugin,
     BaseH3Plugin,
     BaseBlockquotePlugin,
-    BaseAlignPlugin,
+    BaseTextAlignPlugin,
     // ... 根据需要添加更多 element 插件
 
     // Mark 插件

@@ -6,7 +6,6 @@
   "description": "All documentation files for plate",
   "registryDependencies": [
     "https://platejs.org/r/ai-docs",
-    "https://platejs.org/r/alignment-docs",
     "https://platejs.org/r/api-cn-docs",
     "https://platejs.org/r/api-core-plate-components-docs",
     "https://platejs.org/r/api-core-plate-controller-docs",
@@ -117,6 +116,7 @@
     "https://platejs.org/r/superscript-docs",
     "https://platejs.org/r/tabbable-docs",
     "https://platejs.org/r/table-docs",
+    "https://platejs.org/r/text-align-docs",
     "https://platejs.org/r/toc-docs",
     "https://platejs.org/r/toggle-docs",
     "https://platejs.org/r/trailing-block-docs",

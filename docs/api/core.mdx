@@ -467,12 +467,6 @@ Whether the current selection spans across multiple blocks.
 Returns the fragment of the current selection, optionally unwrapping structural nodes.
 
 <API name="useSelectionFragment">
-<APIOptions type="GetSelectionFragmentOptions">
-  <APIItem name="structuralTypes" type="string[]" optional>
-    Array of structural types to unwrap from the fragment.
-  </APIItem>
-</APIOptions>
-
 <APIReturns type="TElement[]">
   The fragment of the current selection. Returns an empty array if the selection is not expanded or if no fragment is found.
 </APIReturns>
@@ -484,9 +478,6 @@ Returns a prop value derived from the current selection fragment.
     
 <API name="useSelectionFragmentProp">
 <APIOptions type="GetSelectionFragmentOptions & GetFragmentPropOptions" optional>
-<APIItem name="structuralTypes" type="string[]" optional>
-Array of structural types to unwrap from the fragment.
-</APIItem>
 <APIItem name="key" type="string" optional>
 The key of the property to extract from each node.
 </APIItem>

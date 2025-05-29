@@ -18,7 +18,7 @@ docs:
 ## Installation
 
 ```bash
-npm install @udecode/plate-alignment
+npm install @udecode/plate-basic-styles
 ```
 
 ## Usage
@@ -26,11 +26,11 @@ npm install @udecode/plate-alignment
 ```tsx
 import { KEYS } from '@udecode/plate';
 import { createPlateEditor } from '@udecode/plate/react';
-import { AlignPlugin } from '@udecode/plate-alignment/react';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
 
 const editor = createPlateEditor({
   plugins: [
-    AlignPlugin.configure({
+    TextAlignPlugin.configure({
       inject: {
         targetPlugins: [
           KEYS.p,
@@ -44,13 +44,13 @@ const editor = createPlateEditor({
 
 ## Plugins
 
-### `AlignPlugin`
+### `TextAlignPlugin`
 
 Plugin for aligning text within block elements.
 
-## API
+## Transforms
 
-### `setAlign`
+### `tf.textAlign.set`
 
 Sets the alignment for the specified block elements in the editor.
 
@@ -63,7 +63,7 @@ The editor instance.
 <APISubListItem parent="options" name="value" type="Alignment" optional>
 The alignment value.
 </APISubListItem>
-<APISubListItem parent="options" name="setNodesOptions" type="SetNodesOptions" optional>
+<APISubListItem parent="...options" name="setNodesOptions" type="SetNodesOptions" optional>
 Options for the `setNodes` function.
 </APISubListItem>
 

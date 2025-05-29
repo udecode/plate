@@ -157,12 +157,11 @@
       "title": "Align Toolbar Button",
       "description": "A dropdown menu for text alignment controls.",
       "dependencies": [
-        "@udecode/plate-alignment"
+        "@udecode/plate-basic-styles"
       ],
       "registryDependencies": [
         "dropdown-menu",
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/transforms"
+        "https://platejs.org/r/toolbar"
       ],
       "files": [
         {
@@ -173,7 +172,7 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/alignment"
+            "route": "/docs/text-align"
           }
         ],
         "examples": [
@@ -283,7 +282,7 @@
       "title": "Export Toolbar Button",
       "description": "A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).",
       "dependencies": [
-        "@udecode/plate-alignment",
+        "@udecode/plate-basic-styles",
         "@udecode/plate-basic-nodes",
         "@udecode/plate-code-block",
         "@udecode/plate-comments",
@@ -556,8 +555,7 @@
       ],
       "registryDependencies": [
         "tooltip",
-        "https://platejs.org/r/use-mounted",
-        "https://platejs.org/r/transforms"
+        "https://platejs.org/r/use-mounted"
       ],
       "files": [
         {
@@ -1506,7 +1504,7 @@
       "meta": {
         "docs": [
           {
-            "route": "/docs/collaboration"
+            "route": "/docs/yjs"
           }
         ],
         "examples": []
@@ -2777,7 +2775,7 @@
       "name": "align-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-alignment"
+        "@udecode/plate-basic-styles"
       ],
       "registryDependencies": [
         "https://platejs.org/r/align-toolbar-button"
@@ -4225,7 +4223,6 @@
       "name": "docs",
       "registryDependencies": [
         "https://platejs.org/r/ai-docs",
-        "https://platejs.org/r/alignment-docs",
         "https://platejs.org/r/api-cn-docs",
         "https://platejs.org/r/api-core-plate-components-docs",
         "https://platejs.org/r/api-core-plate-controller-docs",
@@ -4336,6 +4333,7 @@
         "https://platejs.org/r/superscript-docs",
         "https://platejs.org/r/tabbable-docs",
         "https://platejs.org/r/table-docs",
+        "https://platejs.org/r/text-align-docs",
         "https://platejs.org/r/toc-docs",
         "https://platejs.org/r/toggle-docs",
         "https://platejs.org/r/trailing-block-docs",
@@ -4387,25 +4385,12 @@
       "files": [
         {
           "path": "../../docs/ai.mdx",
-          "target": "content/docs/plate/plugins/ai.mdx",
+          "target": "content/docs/plate/ai.mdx",
           "type": "registry:file"
         }
       ],
       "name": "ai-docs",
       "title": "AI",
-      "type": "registry:file"
-    },
-    {
-      "description": "Documentation for Alignment",
-      "files": [
-        {
-          "path": "../../docs/alignment.mdx",
-          "target": "content/docs/plate/plugins/alignment.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "alignment-docs",
-      "title": "Alignment",
       "type": "registry:file"
     },
     {
@@ -4725,7 +4710,7 @@
       "files": [
         {
           "path": "../../docs/autoformat.mdx",
-          "target": "content/docs/plate/plugins/autoformat.mdx",
+          "target": "content/docs/plate/autoformat.mdx",
           "type": "registry:file"
         }
       ],
@@ -4738,7 +4723,7 @@
       "files": [
         {
           "path": "../../docs/basic-elements.mdx",
-          "target": "content/docs/plate/plugins/basic-elements/index.mdx",
+          "target": "content/docs/plate/basic-elements.mdx",
           "type": "registry:file"
         }
       ],
@@ -4751,7 +4736,7 @@
       "files": [
         {
           "path": "../../docs/basic-marks.mdx",
-          "target": "content/docs/plate/plugins/basic-marks/index.mdx",
+          "target": "content/docs/plate/plugins/marks/basic-marks.mdx",
           "type": "registry:file"
         }
       ],
@@ -4764,7 +4749,7 @@
       "files": [
         {
           "path": "../../docs/block-menu.mdx",
-          "target": "content/docs/plate/plugins/block-menu.mdx",
+          "target": "content/docs/plate/block-menu.mdx",
           "type": "registry:file"
         }
       ],
@@ -4777,7 +4762,7 @@
       "files": [
         {
           "path": "../../docs/block-placeholder.mdx",
-          "target": "content/docs/plate/plugins/block-placeholder.mdx",
+          "target": "content/docs/plate/block-placeholder.mdx",
           "type": "registry:file"
         }
       ],
@@ -4790,7 +4775,7 @@
       "files": [
         {
           "path": "../../docs/block-selection.mdx",
-          "target": "content/docs/plate/plugins/block-selection.mdx",
+          "target": "content/docs/plate/block-selection.mdx",
           "type": "registry:file"
         }
       ],
@@ -4803,7 +4788,7 @@
       "files": [
         {
           "path": "../../docs/blockquote.mdx",
-          "target": "content/docs/plate/plugins/basic-elements/blockquote.mdx",
+          "target": "content/docs/plate/blockquote.mdx",
           "type": "registry:file"
         }
       ],
@@ -4816,7 +4801,7 @@
       "files": [
         {
           "path": "../../docs/bold.mdx",
-          "target": "content/docs/plate/plugins/basic-marks/bold.mdx",
+          "target": "content/docs/plate/plugins/marks/bold.mdx",
           "type": "registry:file"
         }
       ],
@@ -4829,7 +4814,7 @@
       "files": [
         {
           "path": "../../docs/callout.mdx",
-          "target": "content/docs/plate/plugins/callout.mdx",
+          "target": "content/docs/plate/callout.mdx",
           "type": "registry:file"
         }
       ],
@@ -4842,7 +4827,7 @@
       "files": [
         {
           "path": "../../docs/caption.mdx",
-          "target": "content/docs/plate/plugins/caption.mdx",
+          "target": "content/docs/plate/caption.mdx",
           "type": "registry:file"
         }
       ],
@@ -4855,7 +4840,7 @@
       "files": [
         {
           "path": "../../docs/code-block.mdx",
-          "target": "content/docs/plate/plugins/code-block.mdx",
+          "target": "content/docs/plate/code-block.mdx",
           "type": "registry:file"
         }
       ],
@@ -4868,7 +4853,7 @@
       "files": [
         {
           "path": "../../docs/code.mdx",
-          "target": "content/docs/plate/plugins/basic-marks/code.mdx",
+          "target": "content/docs/plate/plugins/marks/code.mdx",
           "type": "registry:file"
         }
       ],
@@ -4881,7 +4866,7 @@
       "files": [
         {
           "path": "../../docs/collaboration.mdx",
-          "target": "content/docs/plate/plugins/collaboration.mdx",
+          "target": "content/docs/plate/collaboration.mdx",
           "type": "registry:file"
         }
       ],
@@ -4894,7 +4879,7 @@
       "files": [
         {
           "path": "../../docs/column.mdx",
-          "target": "content/docs/plate/plugins/column.mdx",
+          "target": "content/docs/plate/column.mdx",
           "type": "registry:file"
         }
       ],
@@ -4907,7 +4892,7 @@
       "files": [
         {
           "path": "../../docs/combobox.mdx",
-          "target": "content/docs/plate/plugins/combobox.mdx",
+          "target": "content/docs/plate/combobox.mdx",
           "type": "registry:file"
         }
       ],
@@ -4920,7 +4905,7 @@
       "files": [
         {
           "path": "../../docs/comments.mdx",
-          "target": "content/docs/plate/plugins/comments.mdx",
+          "target": "content/docs/plate/comments.mdx",
           "type": "registry:file"
         }
       ],
@@ -4959,7 +4944,7 @@
       "files": [
         {
           "path": "../../docs/copilot.mdx",
-          "target": "content/docs/plate/plugins/copilot.mdx",
+          "target": "content/docs/plate/copilot.mdx",
           "type": "registry:file"
         }
       ],
@@ -4972,7 +4957,7 @@
       "files": [
         {
           "path": "../../docs/csv.mdx",
-          "target": "content/docs/plate/plugins/csv.mdx",
+          "target": "content/docs/plate/csv.mdx",
           "type": "registry:file"
         }
       ],
@@ -4985,7 +4970,7 @@
       "files": [
         {
           "path": "../../docs/cursor-overlay.mdx",
-          "target": "content/docs/plate/plugins/cursor-overlay.mdx",
+          "target": "content/docs/plate/cursor-overlay.mdx",
           "type": "registry:file"
         }
       ],
@@ -4998,7 +4983,7 @@
       "files": [
         {
           "path": "../../docs/date.mdx",
-          "target": "content/docs/plate/plugins/date.mdx",
+          "target": "content/docs/plate/date.mdx",
           "type": "registry:file"
         }
       ],
@@ -5024,7 +5009,7 @@
       "files": [
         {
           "path": "../../docs/dnd.mdx",
-          "target": "content/docs/plate/plugins/dnd.mdx",
+          "target": "content/docs/plate/dnd.mdx",
           "type": "registry:file"
         }
       ],
@@ -5037,7 +5022,7 @@
       "files": [
         {
           "path": "../../docs/docx.mdx",
-          "target": "content/docs/plate/plugins/docx.mdx",
+          "target": "content/docs/plate/docx.mdx",
           "type": "registry:file"
         }
       ],
@@ -5076,7 +5061,7 @@
       "files": [
         {
           "path": "../../docs/emoji.mdx",
-          "target": "content/docs/plate/plugins/emoji.mdx",
+          "target": "content/docs/plate/emoji.mdx",
           "type": "registry:file"
         }
       ],
@@ -5089,7 +5074,7 @@
       "files": [
         {
           "path": "../../docs/equation.mdx",
-          "target": "content/docs/plate/plugins/equation.mdx",
+          "target": "content/docs/plate/equation.mdx",
           "type": "registry:file"
         }
       ],
@@ -5193,7 +5178,7 @@
       "files": [
         {
           "path": "../../docs/excalidraw.mdx",
-          "target": "content/docs/plate/plugins/excalidraw.mdx",
+          "target": "content/docs/plate/excalidraw.mdx",
           "type": "registry:file"
         }
       ],
@@ -5232,7 +5217,7 @@
       "files": [
         {
           "path": "../../docs/font.mdx",
-          "target": "content/docs/plate/plugins/font.mdx",
+          "target": "content/docs/plate/font.mdx",
           "type": "registry:file"
         }
       ],
@@ -5271,7 +5256,7 @@
       "files": [
         {
           "path": "../../docs/heading.mdx",
-          "target": "content/docs/plate/plugins/basic-elements/heading.mdx",
+          "target": "content/docs/plate/heading.mdx",
           "type": "registry:file"
         }
       ],
@@ -5284,7 +5269,7 @@
       "files": [
         {
           "path": "../../docs/highlight.mdx",
-          "target": "content/docs/plate/plugins/basic-marks/highlight.mdx",
+          "target": "content/docs/plate/plugins/marks/highlight.mdx",
           "type": "registry:file"
         }
       ],
@@ -5297,7 +5282,7 @@
       "files": [
         {
           "path": "../../docs/horizontal-rule.mdx",
-          "target": "content/docs/plate/plugins/basic-elements/horizontal-rule.mdx",
+          "target": "content/docs/plate/horizontal-rule.mdx",
           "type": "registry:file"
         }
       ],
@@ -5323,7 +5308,7 @@
       "files": [
         {
           "path": "../../docs/indent.mdx",
-          "target": "content/docs/plate/plugins/indent.mdx",
+          "target": "content/docs/plate/indent.mdx",
           "type": "registry:file"
         }
       ],
@@ -5453,7 +5438,7 @@
       "files": [
         {
           "path": "../../docs/italic.mdx",
-          "target": "content/docs/plate/plugins/basic-marks/italic.mdx",
+          "target": "content/docs/plate/plugins/marks/italic.mdx",
           "type": "registry:file"
         }
       ],
@@ -5466,7 +5451,7 @@
       "files": [
         {
           "path": "../../docs/kbd.mdx",
-          "target": "content/docs/plate/plugins/basic-marks/kbd.mdx",
+          "target": "content/docs/plate/plugins/marks/kbd.mdx",
           "type": "registry:file"
         }
       ],
@@ -5479,7 +5464,7 @@
       "files": [
         {
           "path": "../../docs/line-height.mdx",
-          "target": "content/docs/plate/plugins/line-height.mdx",
+          "target": "content/docs/plate/line-height.mdx",
           "type": "registry:file"
         }
       ],
@@ -5492,7 +5477,7 @@
       "files": [
         {
           "path": "../../docs/link.mdx",
-          "target": "content/docs/plate/plugins/link.mdx",
+          "target": "content/docs/plate/link.mdx",
           "type": "registry:file"
         }
       ],
@@ -5505,7 +5490,7 @@
       "files": [
         {
           "path": "../../docs/list-classic.mdx",
-          "target": "content/docs/plate/plugins/list-classic.mdx",
+          "target": "content/docs/plate/list-classic.mdx",
           "type": "registry:file"
         }
       ],
@@ -5518,7 +5503,7 @@
       "files": [
         {
           "path": "../../docs/list.mdx",
-          "target": "content/docs/plate/plugins/list.mdx",
+          "target": "content/docs/plate/list.mdx",
           "type": "registry:file"
         }
       ],
@@ -5531,7 +5516,7 @@
       "files": [
         {
           "path": "../../docs/markdown.mdx",
-          "target": "content/docs/plate/plugins/markdown.mdx",
+          "target": "content/docs/plate/guides/markdown.mdx",
           "type": "registry:file"
         }
       ],
@@ -5557,7 +5542,7 @@
       "files": [
         {
           "path": "../../docs/media.mdx",
-          "target": "content/docs/plate/plugins/media.mdx",
+          "target": "content/docs/plate/media.mdx",
           "type": "registry:file"
         }
       ],
@@ -5570,7 +5555,7 @@
       "files": [
         {
           "path": "../../docs/mention.mdx",
-          "target": "content/docs/plate/plugins/mention.mdx",
+          "target": "content/docs/plate/mention.mdx",
           "type": "registry:file"
         }
       ],
@@ -5596,7 +5581,7 @@
       "files": [
         {
           "path": "../../docs/multi-select.mdx",
-          "target": "content/docs/plate/plugins/multi-select.mdx",
+          "target": "content/docs/plate/multi-select.mdx",
           "type": "registry:file"
         }
       ],
@@ -5726,7 +5711,7 @@
       "files": [
         {
           "path": "../../docs/slash-command.mdx",
-          "target": "content/docs/plate/plugins/slash-command.mdx",
+          "target": "content/docs/plate/slash-command.mdx",
           "type": "registry:file"
         }
       ],
@@ -5765,7 +5750,7 @@
       "files": [
         {
           "path": "../../docs/strikethrough.mdx",
-          "target": "content/docs/plate/plugins/basic-marks/strikethrough.mdx",
+          "target": "content/docs/plate/plugins/marks/strikethrough.mdx",
           "type": "registry:file"
         }
       ],
@@ -5778,7 +5763,7 @@
       "files": [
         {
           "path": "../../docs/subscript.mdx",
-          "target": "content/docs/plate/plugins/basic-marks/subscript.mdx",
+          "target": "content/docs/plate/plugins/marks/subscript.mdx",
           "type": "registry:file"
         }
       ],
@@ -5791,7 +5776,7 @@
       "files": [
         {
           "path": "../../docs/suggestion.mdx",
-          "target": "content/docs/plate/plugins/suggestion.mdx",
+          "target": "content/docs/plate/suggestion.mdx",
           "type": "registry:file"
         }
       ],
@@ -5804,7 +5789,7 @@
       "files": [
         {
           "path": "../../docs/superscript.mdx",
-          "target": "content/docs/plate/plugins/basic-marks/superscript.mdx",
+          "target": "content/docs/plate/plugins/marks/superscript.mdx",
           "type": "registry:file"
         }
       ],
@@ -5817,7 +5802,7 @@
       "files": [
         {
           "path": "../../docs/tabbable.mdx",
-          "target": "content/docs/plate/plugins/tabbable.mdx",
+          "target": "content/docs/plate/tabbable.mdx",
           "type": "registry:file"
         }
       ],
@@ -5830,7 +5815,7 @@
       "files": [
         {
           "path": "../../docs/table.mdx",
-          "target": "content/docs/plate/plugins/table.mdx",
+          "target": "content/docs/plate/table.mdx",
           "type": "registry:file"
         }
       ],
@@ -5839,11 +5824,24 @@
       "type": "registry:file"
     },
     {
+      "description": "Documentation for Alignment",
+      "files": [
+        {
+          "path": "../../docs/text-align.mdx",
+          "target": "content/docs/plate/text-align.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "text-align-docs",
+      "title": "Alignment",
+      "type": "registry:file"
+    },
+    {
       "description": "Documentation for Table of Contents",
       "files": [
         {
           "path": "../../docs/toc.mdx",
-          "target": "content/docs/plate/plugins/toc.mdx",
+          "target": "content/docs/plate/toc.mdx",
           "type": "registry:file"
         }
       ],
@@ -5856,7 +5854,7 @@
       "files": [
         {
           "path": "../../docs/toggle.mdx",
-          "target": "content/docs/plate/plugins/toggle.mdx",
+          "target": "content/docs/plate/toggle.mdx",
           "type": "registry:file"
         }
       ],
@@ -5908,7 +5906,7 @@
       "files": [
         {
           "path": "../../docs/underline.mdx",
-          "target": "content/docs/plate/plugins/basic-marks/underline.mdx",
+          "target": "content/docs/plate/plugins/marks/underline.mdx",
           "type": "registry:file"
         }
       ],

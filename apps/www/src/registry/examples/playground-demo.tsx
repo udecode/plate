@@ -57,7 +57,6 @@ function usePlaygroundEnabled(id?: string) {
   return React.useMemo(
     () => ({
       [KEYS.aiChat]: id === 'ai' || !!enabled[KEYS.aiChat],
-      [KEYS.align]: !!enabled.align,
       [KEYS.autoformat]: !!enabled.autoformat,
       [KEYS.backgroundColor]: !!enabled.backgroundColor,
       [KEYS.blockquote]: !!enabled.blockquote,
@@ -95,7 +94,6 @@ function usePlaygroundEnabled(id?: string) {
       [KEYS.markdown]: !!enabled.markdown,
       [KEYS.mediaEmbed]: !!enabled.media_embed,
       [KEYS.mention]: !!enabled.mention,
-      [KEYS.nodeId]: !!enabled.nodeId,
       [KEYS.normalizeTypes]: !!enabled.normalizeTypes,
       [KEYS.p]: !!enabled.p,
       [KEYS.resetNode]: !!enabled.resetNode,
@@ -107,6 +105,7 @@ function usePlaygroundEnabled(id?: string) {
       [KEYS.sup]: !!enabled.superscript,
       [KEYS.tabbable]: !!enabled.tabbable,
       [KEYS.table]: !!enabled.table,
+      [KEYS.textAlign]: !!enabled.textAlign,
       [KEYS.toggle]: !!enabled.toggle,
       [KEYS.trailingBlock]: id !== 'single-line' && !!enabled.trailingBlock,
       [KEYS.underline]: !!enabled.underline,

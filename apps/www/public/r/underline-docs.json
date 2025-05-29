@@ -9,7 +9,7 @@
       "path": "../../docs/underline.mdx",
       "content": "---\ntitle: Underline\ndocs:\n  - route: /docs/components/mark-toolbar-button\n    title: Mark Toolbar Button\n---\n\n<ComponentPreview name=\"basic-marks-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Apply underline formatting to text\n- Keyboard shortcut support for quick formatting\n- Renders as `<u>` HTML element by default\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-basic-nodes\n```\n\n## Usage\n\n```tsx\nimport { UnderlinePlugin } from '@udecode/plate-basic-nodes/react';\n\nconst plugins = [\n  // ...otherPlugins,\n  UnderlinePlugin,\n];\n```\n\n## Plugins\n\n### `UnderlinePlugin`\n\nPlugin for underline text formatting. Renders as `<u>` HTML element by default.\n\n## Transforms\n\n### `tf.underline.toggle`\n\nToggles the underline formatting for the selected text.\n\nDefault Shortcut: `Cmd + U`",
       "type": "registry:file",
-      "target": "content/docs/plate/plugins/basic-marks/underline.mdx"
+      "target": "content/docs/plate/plugins/marks/underline.mdx"
     }
   ]
 }

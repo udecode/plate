@@ -25,14 +25,6 @@ import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { insertToc } from '@udecode/plate-toc';
 
-export const STRUCTURAL_TYPES: string[] = [
-  KEYS.column,
-  KEYS.columnGroup,
-  KEYS.table,
-  KEYS.tr,
-  KEYS.td,
-];
-
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 
 const insertList = (editor: PlateEditor, type: string) => {

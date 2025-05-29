@@ -12,7 +12,7 @@ import {
   SelectOnBackspacePlugin,
   TrailingBlockPlugin,
 } from '@udecode/plate';
-import { BaseAlignPlugin } from '@udecode/plate-alignment';
+import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
 import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
   BaseBlockquotePlugin,
@@ -131,7 +131,7 @@ export default function RSCPage() {
       BaseKbdPlugin,
 
       // Block Style
-      BaseAlignPlugin.extend({
+      BaseTextAlignPlugin.extend({
         inject: {
           targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.mediaEmbed],
         },

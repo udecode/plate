@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { createSlateEditor, KEYS, serializeHtml } from '@udecode/plate';
-import { BaseAlignPlugin } from '@udecode/plate-alignment';
+import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
 import {
   BaseBlockquotePlugin,
   BaseBoldPlugin,
@@ -278,7 +278,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
         BaseFontBackgroundColorPlugin,
         BaseFontSizePlugin,
         BaseKbdPlugin,
-        BaseAlignPlugin.extend({
+        BaseTextAlignPlugin.extend({
           inject: {
             targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.video],
           },

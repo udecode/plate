@@ -9,7 +9,7 @@
       "path": "../../docs/subscript.mdx",
       "content": "---\ntitle: Subscript\ndocs:\n  - route: /docs/components/mark-toolbar-button\n    title: Mark Toolbar Button\n---\n\n<ComponentPreview name=\"basic-marks-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Format text as subscript for mathematical expressions or chemical formulas\n- Keyboard shortcut support for quick formatting\n- Renders as `<sub>` HTML element by default\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-basic-nodes\n```\n\n## Usage\n\n```tsx\nimport { SubscriptPlugin } from '@udecode/plate-basic-nodes/react';\n\nconst plugins = [\n  // ...otherPlugins,\n  SubscriptPlugin.configure({\n    shortcuts: { toggle: { keys: 'mod+comma' } },\n  }),\n];\n```\n\n## Plugins\n\n### `SubscriptPlugin`\n\nPlugin for subscript text formatting. Renders as `<sub>` HTML element by default.\n\n## Transforms\n\n### `tf.subscript.toggle`\n\nToggles the subscript formatting for the selected text. ",
       "type": "registry:file",
-      "target": "content/docs/plate/plugins/basic-marks/subscript.mdx"
+      "target": "content/docs/plate/plugins/marks/subscript.mdx"
     }
   ]
 }

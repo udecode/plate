@@ -29,7 +29,7 @@ Here's an example demonstrating how to set up an editor with various plugins, si
 
 ```tsx title="app/api/generate-doc/route.ts"
 import { createSlateEditor } from '@udecode/plate';
-import { BaseAlignPlugin } from '@udecode/plate-alignment';
+import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
 import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
   BaseBoldPlugin,
@@ -60,7 +60,7 @@ const editor = createSlateEditor({
     BaseH2Plugin,
     BaseH3Plugin,
     BaseBlockquotePlugin,
-    BaseAlignPlugin,
+    BaseTextAlignPlugin,
     // ... add more element plugins as needed
 
     // Mark plugins

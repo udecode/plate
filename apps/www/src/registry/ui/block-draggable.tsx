@@ -24,7 +24,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { STRUCTURAL_TYPES } from '@/registry/components/editor/transforms';
 
 const UNDRAGGABLE_KEYS = [KEYS.column, KEYS.tr, KEYS.td];
 
@@ -90,7 +89,9 @@ export function Draggable(props: PlateElementProps) {
       className={cn(
         'relative',
         isDragging && 'opacity-50',
-        STRUCTURAL_TYPES.includes(element.type) ? 'group/structural' : 'group'
+        editor.meta.containerTypes.includes(element.type)
+          ? 'group/container'
+          : 'group'
       )}
     >
       {!isInTable && (
@@ -161,8 +162,8 @@ function Gutter({
       className={cn(
         'slate-gutterLeft',
         'absolute top-0 z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
-        STRUCTURAL_TYPES.includes(element.type)
-          ? 'group-hover/structural:opacity-100'
+        editor.meta.containerTypes.includes(element.type)
+          ? 'group-hover/container:opacity-100'
           : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',
         !selected && 'opacity-0',

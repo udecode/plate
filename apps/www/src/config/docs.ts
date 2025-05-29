@@ -265,5 +265,5 @@ export const getComponentNavItem = (id: string) => {
 };
 
 export const getPluginNavItem = (id: string) => {
-  return pluginNavMap['/docs/' + id];
+  return pluginNavMap['/docs/' + id] ?? {};
 };

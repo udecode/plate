@@ -17,4 +17,6 @@
 - New plugin field: `render.as` (`keyof HTMLElementTagNameMap`).
   - Specifies the default HTML tag name to be used by `PlateElement` (default: `'div'`) or `PlateLeaf` (default: `'span'`) when rendering the node, but only if no custom `node.component` is provided for the plugin.
   - Example: `render: { as: 'h1' }` would make the plugin render its node as an `<h1>` tag by default without the need to provide a custom component.
+- New plugin field: `node.isContainer` (boolean).
+  - When `true`, indicates that the plugin's elements are primarily containers for other content.
 - Plugin shortcuts can now automatically leverage existing plugin transforms by specifying the transform name, in addition to custom handlers.

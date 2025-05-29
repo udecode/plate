@@ -1,10 +1,10 @@
 'use client';
 
 import { KEYS } from '@udecode/plate';
-import { AlignPlugin } from '@udecode/plate-alignment/react';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
 
 export const AlignKit = [
-  AlignPlugin.extend({
+  TextAlignPlugin.extend({
     inject: {
       targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.mediaEmbed],
     },

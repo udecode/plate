@@ -32,7 +32,6 @@ import {
 import {
   getBlockType,
   setBlockType,
-  STRUCTURAL_TYPES,
 } from '@/registry/components/editor/transforms';
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
@@ -111,7 +110,6 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
 
   const value = useSelectionFragmentProp({
     defaultValue: KEYS.p,
-    structuralTypes: STRUCTURAL_TYPES,
     getProp: (node) => getBlockType(node as TElement),
   });
   const selectedItem = React.useMemo(

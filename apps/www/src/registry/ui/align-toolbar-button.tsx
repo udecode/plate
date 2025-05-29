@@ -3,8 +3,9 @@
 import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+import type { Alignment } from '@udecode/plate-basic-styles';
 
-import { type Alignment, setAlign } from '@udecode/plate-alignment';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
 import { useEditorRef, useSelectionFragmentProp } from '@udecode/plate/react';
 import {
   AlignCenterIcon,
@@ -20,7 +21,6 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { STRUCTURAL_TYPES } from '@/registry/components/editor/transforms';
 
 import { ToolbarButton } from './toolbar';
 
@@ -45,11 +45,11 @@ const items = [
 
 export function AlignToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
-  const value = useSelectionFragmentProp({
-    defaultValue: 'start',
-    structuralTypes: STRUCTURAL_TYPES,
-    getProp: (node) => node.align,
-  });
+  const value =
+    useSelectionFragmentProp({
+      defaultValue: 'start',
+      getProp: (node) => node.align,
+    }) ?? 'left';
 
   const [open, setOpen] = React.useState(false);
   const IconValue =
@@ -67,14 +67,16 @@ export function AlignToolbarButton(props: DropdownMenuProps) {
         <DropdownMenuRadioGroup
           value={value}
           onValueChange={(value) => {
-            setAlign(editor, { value: value as Alignment });
+            editor
+              .getTransforms(TextAlignPlugin)
+              .textAlign.set({ value: value as Alignment });
             editor.tf.focus();
           }}
         >
           {items.map(({ icon: Icon, value: itemValue }) => (
             <DropdownMenuRadioItem
               key={itemValue}
-              className="pl-2 *:first:[span]:hidden"
+              className="pl-2 data-[state=checked]:bg-accent *:first:[span]:hidden"
               value={itemValue}
             >
               <Icon />
