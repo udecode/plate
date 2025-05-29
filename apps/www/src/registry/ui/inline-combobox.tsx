@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { PointRef, TElement } from '@udecode/plate';
+import type { Point, TElement } from '@udecode/plate';
 
 import {
   type ComboboxItemProps,
@@ -104,7 +104,7 @@ const InlineCombobox = ({
    * Track the point just before the input element so we know where to
    * insertText if the combobox closes due to a selection change.
    */
-  const [insertPoint, setInsertPoint] = React.useState<PointRef | null>(null);
+  const insertPoint = React.useRef<Point | null>(null);
 
   React.useEffect(() => {
     const path = editor.api.findPath(element);
@@ -116,7 +116,7 @@ const InlineCombobox = ({
     if (!point) return;
 
     const pointRef = editor.api.pointRef(point);
-    setInsertPoint(pointRef);
+    insertPoint.current = pointRef.current;
 
     return () => {
       pointRef.unref();
