@@ -2,11 +2,11 @@
 '@udecode/plate-list': major
 ---
 
-- The previous `@udecode/plate-list` (classic list implementation) has been moved to `@udecode/plate-list-classic`.
+- The previous `@udecode/plate-list` (classic list implementation) has been moved to `@platejs/list-classic`.
   - **Migration for users of the classic list**:
-    - Rename all import paths from `@udecode/plate-list` to `@udecode/plate-list-classic`.
-    - Update your `package.json`: remove the old `@udecode/plate-list` (if it was a direct dependency) and add `@udecode/plate-list-classic`.
-- This package, `@udecode/plate-list`, now contains the functionality previously in `@udecode/plate-indent-list` (indent-based list system).
+    - Rename all import paths from `@udecode/plate-list` to `@platejs/list-classic`.
+    - Update your `package.json`: remove the old `@udecode/plate-list` (if it was a direct dependency) and add `@platejs/list-classic`.
+- This package, `@platejs/list`, now contains the functionality previously in `@udecode/plate-indent-list` (indent-based list system).
   - Plugin names have been generalized: `IndentListPlugin` is now `ListPlugin`, `BaseIndentListPlugin` is `BaseListPlugin`, etc. (`*IndentList*` -> `*List*`).
   - The primary plugin key is now `list` (e.g., `ListPlugin.key`) instead of `listStyleType`.
   - Constants for list keys previously in `INDENT_LIST_KEYS` are now available under `KEYS` from `@udecode/plate`.

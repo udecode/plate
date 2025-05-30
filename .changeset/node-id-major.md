@@ -3,7 +3,7 @@
 ---
 
 - Package `@udecode/plate-node-id` has been deprecated.
-- `NodeIdPlugin` functionality is now part of `@udecode/plate-core` and is **enabled by default**.
+- `NodeIdPlugin` functionality is now part of `@platejs/core` and is **enabled by default**.
 - Migration:
 
   - Remove `NodeIdPlugin` from your explicit plugin list if it was added manually.

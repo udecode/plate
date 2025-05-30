@@ -5,6 +5,7 @@
   "workspaces": [
     "apps/*",
     "packages/*",
+    "packages/udecode/*",
     "tooling/eslint"
   ],
   "scripts": {

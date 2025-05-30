@@ -3,12 +3,12 @@
 ---
 
 - Package `@udecode/plate-line-height` has been deprecated.
-- `LineHeightPlugin` has been moved to the `@udecode/plate-basic-styles` package.
+- `LineHeightPlugin` has been moved to the `@platejs/basic-styles` package.
 - Migration:
 
   - Remove `@udecode/plate-line-height` from your dependencies.
-  - Add `@udecode/plate-basic-styles` to your dependencies if not already present.
-  - Import `LineHeightPlugin` from `@udecode/plate-basic-styles/react`.
+  - Add `@platejs/basic-styles` to your dependencies if not already present.
+  - Import `LineHeightPlugin` from `@platejs/basic-styles/react`.
 
 - `setLineHeight` signature change:
 

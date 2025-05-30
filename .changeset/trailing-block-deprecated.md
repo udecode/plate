@@ -3,8 +3,8 @@
 ---
 
 - Package `@udecode/plate-trailing-block` has been deprecated.
-- Its functionality (e.g., `TrailingBlockPlugin`) has been moved to `@udecode/plate-utils` (which is re-exported via `@udecode/plate`).
+- Its functionality (e.g., `TrailingBlockPlugin`) has been moved to `@platejs/utils` (which is re-exported via `platejs`).
 - Migration:
   - Remove `@udecode/plate-trailing-block` from your dependencies.
-  - Ensure `@udecode/plate` (or `@udecode/plate-utils`) is a dependency.
-  - Update import paths to use `@udecode/plate` (e.g., `import { TrailingBlockPlugin } from '@udecode/plate';`).
+  - Ensure `platejs` (or `@platejs/utils`) is a dependency.
+  - Update import paths to use `platejs` (e.g., `import { TrailingBlockPlugin } from 'platejs';`).

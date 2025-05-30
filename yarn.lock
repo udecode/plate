@@ -6705,7 +6705,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-font@workspace:^, @udecode/plate-font@workspace:packages/font":
+"@udecode/plate-font@workspace:packages/font":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-font@workspace:packages/font"
   dependencies:
@@ -6818,7 +6818,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-line-height@workspace:^, @udecode/plate-line-height@workspace:packages/line-height":
+"@udecode/plate-line-height@workspace:packages/line-height":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-line-height@workspace:packages/line-height"
   dependencies:
@@ -7215,9 +7215,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/utils@npm:47.2.7, @udecode/utils@workspace:packages/utils":
+"@udecode/utils@npm:47.2.7":
+  version: 47.2.7
+  resolution: "@udecode/utils@npm:47.2.7"
+  checksum: 10c0/69947b6461cdfebcabbb3d8168844b4d028122b41c628e52715ea66bf0032b1cd6ca213bdf0853da013851fab43b2966f8e7e7f5c8f3ca908fba5bbc76ed73fd
+  languageName: node
+  linkType: hard
+
+"@udecode/utils@workspace:packages/udecode/utils":
   version: 0.0.0-use.local
-  resolution: "@udecode/utils@workspace:packages/utils"
+  resolution: "@udecode/utils@workspace:packages/udecode/utils"
   languageName: unknown
   linkType: soft
 
@@ -17471,6 +17478,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"platejs@workspace:packages/platejs":
+  version: 0.0.0-use.local
+  resolution: "platejs@workspace:packages/platejs"
+  dependencies:
+    "@udecode/plate-core": "npm:48.0.5"
+    "@udecode/plate-utils": "npm:48.0.5"
+    "@udecode/react-hotkeys": "npm:37.0.0"
+    "@udecode/react-utils": "npm:47.3.1"
+    "@udecode/slate": "npm:48.0.1"
+    "@udecode/utils": "npm:47.2.7"
+  peerDependencies:
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
+  languageName: unknown
+  linkType: soft
+
 "playwright-core@npm:1.52.0":
   version: 1.52.0
   resolution: "playwright-core@npm:1.52.0"
@@ -22389,11 +22412,9 @@ __metadata:
     "@udecode/plate-excalidraw": "workspace:^"
     "@udecode/plate-find-replace": "workspace:^"
     "@udecode/plate-floating": "workspace:^"
-    "@udecode/plate-font": "workspace:^"
     "@udecode/plate-indent": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
     "@udecode/plate-layout": "workspace:^"
-    "@udecode/plate-line-height": "workspace:^"
     "@udecode/plate-link": "workspace:^"
     "@udecode/plate-list": "workspace:^"
     "@udecode/plate-list-classic": "workspace:^"

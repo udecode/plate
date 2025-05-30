@@ -3,12 +3,12 @@
 ---
 
 - Package `@udecode/plate-alignment` has been deprecated.
-- `TextAlignPlugin` (formerly `AlignPlugin`) has been moved to the `@udecode/plate-basic-styles` package.
+- `TextAlignPlugin` (formerly `AlignPlugin`) has been moved to the `@platejs/basic-styles` package.
 - Migration:
 
   - Remove `@udecode/plate-alignment` from your dependencies.
-  - Add `@udecode/plate-basic-styles` to your dependencies if not already present.
-  - Import `TextAlignPlugin` from `@udecode/plate-basic-styles/react`.
+  - Add `@platejs/basic-styles` to your dependencies if not already present.
+  - Import `TextAlignPlugin` from `@platejs/basic-styles/react`.
 
 - Renamed `AlignPlugin` to `TextAlignPlugin` and changed plugin key from `'align'` to `'textAlign'`.
 
@@ -17,7 +17,7 @@
   import { AlignPlugin } from '@udecode/plate-alignment/react';
 
   // After
-  import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
+  import { TextAlignPlugin } from '@platejs/basic-styles/react';
   ```
 
 - `setAlign` signature change:
