@@ -18,13 +18,13 @@ docs:
 ## Installation
 
 ```bash
-npm install @udecode/plate-line-height
+npm install @udecode/plate-basic-styles
 ```
 
 ## Usage
 
 ```tsx
-import { LineHeightPlugin } from '@udecode/plate-line-height/react';
+import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -38,47 +38,19 @@ const plugins = [
 
 Plugin for setting line height on blocks.
 
-## API
+## Transforms
 
-### `setLineHeight`
+### `tf.lineHeight.setNodes`
 
 Sets the line height for selected nodes in the editor.
 
-<API name="setLineHeight">
-<APIOptions type="SetLineHeightOptions">
-  <APIItem name="value" type="number">
-    Line height value to set.
-  </APIItem>
-  <APIItem name="setNodesOptions" type="SetNodesOptions">
-    Additional options for setting nodes.
-  </APIItem>
-</APIOptions>
-</API>
-
-## Hooks
-
-### `useLineHeightDropdownMenu`
-
-The behavior hook for the line height dropdown menu.
-
-<API name="useLineHeightDropdownMenu">
-<APIState>
-  <APIItem name="value" type="number">
-    Current line height value.
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="radioGroupProps" type="object">
-    Props for the radio group.
-  <APISubList>
-    <APISubListItem parent="radioGroupProps" name="value" type="string">
-      Current line height value.
-    </APISubListItem>
-    <APISubListItem parent="radioGroupProps" name="onValueChange" type="function">
-      Handler to update line height value.
-    </APISubListItem>
-  </APISubList>
-  </APIItem>
-</APIReturns>
+<API name="tf.lineHeight.setNodes">
+<APIParameters>
+<APIItem name="value" type="number">
+The line height value.
+</APIItem>
+<APIItem name="options" type="SetNodesOptions" optional>
+Options for the `setNodes` function.
+</APIItem>
+</APIParameters>
 </API>

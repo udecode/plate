@@ -407,7 +407,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-font'],
+    dependencies: ['@udecode/plate-basic-styles'],
     files: [
       {
         path: 'components/editor/plugins/font-kit.tsx',
@@ -434,7 +434,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-line-height'],
+    dependencies: ['@udecode/plate-basic-styles'],
     files: [
       {
         path: 'components/editor/plugins/line-height-kit.tsx',

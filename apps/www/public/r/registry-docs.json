@@ -43,7 +43,6 @@
         "https://platejs.org/r/caption-docs",
         "https://platejs.org/r/code-block-docs",
         "https://platejs.org/r/code-docs",
-        "https://platejs.org/r/collaboration-docs",
         "https://platejs.org/r/column-docs",
         "https://platejs.org/r/combobox-docs",
         "https://platejs.org/r/comments-docs",
@@ -124,7 +123,8 @@
         "https://platejs.org/r/troubleshooting-docs",
         "https://platejs.org/r/typescript-docs",
         "https://platejs.org/r/underline-docs",
-        "https://platejs.org/r/unit-testing-docs"
+        "https://platejs.org/r/unit-testing-docs",
+        "https://platejs.org/r/yjs-docs"
       ],
       "title": "Documentation",
       "type": "registry:file"
@@ -643,19 +643,6 @@
       ],
       "name": "code-docs",
       "title": "Code",
-      "type": "registry:file"
-    },
-    {
-      "description": "Real-time collaboration with Yjs",
-      "files": [
-        {
-          "path": "../../docs/collaboration.mdx",
-          "target": "content/docs/plate/collaboration.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "collaboration-docs",
-      "title": "Collaboration",
       "type": "registry:file"
     },
     {
@@ -1709,6 +1696,19 @@
       ],
       "name": "unit-testing-docs",
       "title": "Unit Testing Plate",
+      "type": "registry:file"
+    },
+    {
+      "description": "Real-time collaboration with Yjs",
+      "files": [
+        {
+          "path": "../../docs/yjs.mdx",
+          "target": "content/docs/plate/yjs.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "yjs-docs",
+      "title": "Collaboration",
       "type": "registry:file"
     }
   ],

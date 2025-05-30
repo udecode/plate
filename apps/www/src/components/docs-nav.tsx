@@ -33,6 +33,42 @@ export function DocsNav({ config }: { config: DocsConfig }) {
 
   const sidebarNav = config.sidebarNav;
 
+  // Recursive function to filter items including nested ones
+  const filterItems = React.useCallback(
+    (items: SidebarNavItem[], filter: string): SidebarNavItem[] => {
+      return items.reduce<SidebarNavItem[]>((acc, item) => {
+        const { keywords = [], ...itemWithoutKeywords } = item;
+        const itemMatches =
+          item.title?.toLowerCase().includes(filter) ||
+          [...keywords, ...castArray(item.label)].some((label) =>
+            label?.toLowerCase().includes(filter)
+          );
+
+        // If the parent item matches, include ALL its children without filtering
+        // Otherwise, recursively filter nested items
+        const filteredNestedItems = item.items
+          ? itemMatches
+            ? item.items // Show all children if parent matches
+            : filterItems(item.items, filter) // Filter children if parent doesn't match
+          : undefined;
+
+        // Include the item if it matches OR has matching nested items
+        if (
+          itemMatches ||
+          (filteredNestedItems && filteredNestedItems.length > 0)
+        ) {
+          acc.push({
+            ...itemWithoutKeywords,
+            ...(filteredNestedItems && { items: filteredNestedItems }),
+          });
+        }
+
+        return acc;
+      }, []);
+    },
+    []
+  );
+
   const filteredNav = React.useMemo(() => {
     const lowercasedFilter = filter?.toLowerCase();
 
@@ -46,18 +82,13 @@ export function DocsNav({ config }: { config: DocsConfig }) {
           ...section,
           items: sectionMatches
             ? section.items
-            : section.items?.filter(({ keywords = [], ...item }) => {
-                return (
-                  item.title?.toLowerCase().includes(lowercasedFilter) ||
-                  [...keywords, ...castArray(item.label)].some((label) =>
-                    label?.toLowerCase().includes(lowercasedFilter)
-                  )
-                );
-              }),
+            : section.items
+              ? filterItems(section.items, lowercasedFilter)
+              : undefined,
         };
       })
       .filter((section) => section.items && section.items.length > 0);
-  }, [sidebarNav, filter]);
+  }, [sidebarNav, filter, filterItems]);
 
   // Helper function to recursively check if any nested item is active
   const hasActiveNestedItem = React.useCallback(
@@ -136,7 +167,7 @@ export function DocsNav({ config }: { config: DocsConfig }) {
 
   return sidebarNav.length > 0 ? (
     <div className="relative w-[calc(100%-1rem)]">
-      <div className="sticky top-0 z-10 flex w-full items-center bg-background/95 px-2 pb-3 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
+      <div className="sticky top-0 z-10 flex w-full items-center bg-background/95 px-2 pb-1 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
         <div className="relative mt-3 flex w-full items-center">
           <Input
             className={cn(
@@ -159,7 +190,7 @@ export function DocsNav({ config }: { config: DocsConfig }) {
       </div>
 
       <Accordion
-        className="flex max-h-[calc(100vh-8rem)] flex-col overflow-y-hidden"
+        className="flex max-h-[calc(100vh-7.5rem)] flex-col overflow-y-hidden"
         value={activeSection}
         onValueChange={setActiveSection}
         type="single"
@@ -319,7 +350,7 @@ function DocsNavItems({
                 )}
               </span>
             )}
-            {item.items?.length && (
+            {!!item.items?.length && (
               <div
                 className={cn(
                   'mb-1 ml-2 border-l border-border/60 pl-2',

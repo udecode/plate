@@ -5,10 +5,8 @@ import * as React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
-import {
-  useLineHeightDropdownMenu,
-  useLineHeightDropdownMenuState,
-} from '@udecode/plate-line-height/react';
+import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
+import { useEditorRef, useSelectionFragmentProp } from '@udecode/plate/react';
 import { CheckIcon, WrapText } from 'lucide-react';
 
 import {
@@ -21,10 +19,17 @@ import {
 
 import { ToolbarButton } from './toolbar';
 
-export function LineHeightToolbarButton({ ...props }: DropdownMenuProps) {
+export function LineHeightToolbarButton(props: DropdownMenuProps) {
+  const editor = useEditorRef();
+  const { defaultNodeValue, validNodeValues: values = [] } =
+    editor.getInjectProps(LineHeightPlugin);
+
+  const value = useSelectionFragmentProp({
+    defaultValue: defaultNodeValue,
+    getProp: (node) => node.lineHeight,
+  });
+
   const [open, setOpen] = React.useState(false);
-  const state = useLineHeightDropdownMenuState();
-  const { radioGroupProps } = useLineHeightDropdownMenu(state);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
@@ -35,19 +40,27 @@ export function LineHeightToolbarButton({ ...props }: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="min-w-0" align="start">
-        <DropdownMenuRadioGroup {...radioGroupProps}>
-          {state.values.map((_value) => (
+        <DropdownMenuRadioGroup
+          value={value}
+          onValueChange={(newValue) => {
+            editor
+              .getTransforms(LineHeightPlugin)
+              .lineHeight.setNodes(Number(newValue));
+            editor.tf.focus();
+          }}
+        >
+          {values.map((value) => (
             <DropdownMenuRadioItem
-              key={_value}
+              key={value}
               className="min-w-[180px] pl-2 *:first:[span]:hidden"
-              value={_value}
+              value={value}
             >
               <span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center">
                 <DropdownMenuItemIndicator>
                   <CheckIcon />
                 </DropdownMenuItemIndicator>
               </span>
-              {_value}
+              {value}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

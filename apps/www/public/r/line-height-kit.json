@@ -3,7 +3,7 @@
   "name": "line-height-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-line-height"
+    "@udecode/plate-basic-styles"
   ],
   "registryDependencies": [
     "https://platejs.org/r/line-height-toolbar-button"
@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/line-height-kit.tsx",
-      "content": "'use client';\n\nimport { KEYS } from '@udecode/plate';\nimport { LineHeightPlugin } from '@udecode/plate-line-height/react';\n\nexport const LineHeightKit = [\n  LineHeightPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 1.5,\n        validNodeValues: [1, 1.2, 1.5, 2, 3],\n      },\n      targetPlugins: [KEYS.p, ...KEYS.heading],\n    },\n  }),\n];\n",
+      "content": "'use client';\n\nimport { KEYS } from '@udecode/plate';\nimport { LineHeightPlugin } from '@udecode/plate-basic-styles/react';\n\nexport const LineHeightKit = [\n  LineHeightPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 1.5,\n        validNodeValues: [1, 1.2, 1.5, 2, 3],\n      },\n      targetPlugins: [KEYS.p, ...KEYS.heading],\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

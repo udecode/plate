@@ -56,7 +56,7 @@
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"basic-elements\",\n    \"code-block\",\n    \"column\",\n    \"date\",\n    \"equation\",\n    \"excalidraw\",\n    \"link\",\n    \"list-classic\",\n    \"media\",\n    \"mention\",\n    \"table\",\n    \"toc\",\n    \"toggle\"\n  ],\n  \"title\": \"Elements\"\n}",
+      "content": "{\n  \"pages\": [\n    \"basic-elements\",\n    \"callout\",\n    \"code-block\",\n    \"column\",\n    \"date\",\n    \"equation\",\n    \"excalidraw\",\n    \"link\",\n    \"list-classic\",\n    \"media\",\n    \"mention\",\n    \"table\",\n    \"toc\",\n    \"toggle\"\n  ],\n  \"title\": \"Elements\"\n}",
       "path": "content/docs/plate/plugins/elements/meta.json",
       "target": "content/docs/plate/plugins/elements/meta.json",
       "type": "registry:file"

@@ -7,7 +7,7 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontSizePlugin,
-} from '@udecode/plate-font/react';
+} from '@udecode/plate-basic-styles/react';
 
 const options: PlatePluginConfig = {
   inject: {

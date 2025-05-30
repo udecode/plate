@@ -9,7 +9,7 @@ export const uiComponents: Registry['items'] = [
       '@udecode/plate-callout',
       '@udecode/plate-code-block',
       '@udecode/plate-date',
-      '@udecode/plate-font',
+      '@udecode/plate-basic-styles',
       '@udecode/plate-indent',
       '@udecode/plate-list',
       '@udecode/plate-layout',
@@ -161,11 +161,11 @@ export const uiComponents: Registry['items'] = [
       '@udecode/plate-code-block',
       '@udecode/plate-comments',
       '@udecode/plate-date',
-      '@udecode/plate-font',
+      '@udecode/plate-basic-styles',
       '@udecode/plate-indent',
       '@udecode/plate-list',
       '@udecode/plate-layout',
-      '@udecode/plate-line-height',
+      '@udecode/plate-basic-styles',
       '@udecode/plate-link',
       '@udecode/plate-markdown',
       '@udecode/plate-math',
@@ -239,7 +239,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/cn', '@udecode/plate-font'],
+    dependencies: ['@udecode/cn', '@udecode/plate-basic-styles'],
     description:
       'A color picker toolbar button with text and background color controls.',
     files: [{ path: 'ui/font-color-toolbar-button.tsx', type: 'registry:ui' }],
@@ -689,7 +689,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-line-height'],
+    dependencies: ['@udecode/plate-basic-styles'],
     description: 'A menu for controlling text line spacing.',
     files: [
       {
@@ -1237,7 +1237,7 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-font'],
+    dependencies: ['@udecode/plate-basic-styles'],
     description: 'A toolbar control for adjusting font size.',
     files: [{ path: 'ui/font-size-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {

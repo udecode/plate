@@ -9,6 +9,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
         description:
           'AI menu with commands, streaming responses in a preview or directly into the editor.',
         href: '/docs/ai',
+        keywords: ['chat'],
         title: 'Stream',
       },
       {
@@ -16,7 +17,10 @@ export const pluginsNavItems: SidebarNavItem[] = [
         href: '/docs/copilot',
         title: 'Copilot',
       },
-    ],
+    ].map((item) => ({
+      ...item,
+      keywords: ['ai'],
+    })),
     label: 'New',
     title: 'AI',
   },
@@ -25,12 +29,13 @@ export const pluginsNavItems: SidebarNavItem[] = [
       {
         description: 'Add comments to text as marks.',
         href: '/docs/comments',
-        label: 'Leaf',
+        keywords: ['leaf'],
         title: 'Comments',
       },
       {
         description: 'Add suggestions to text as marks.',
         href: '/docs/suggestion',
+        keywords: ['leaf'],
         label: 'Experimental',
         title: 'Suggestion',
       },
@@ -67,8 +72,11 @@ export const pluginsNavItems: SidebarNavItem[] = [
             href: '/docs/horizontal-rule',
             title: 'Horizontal Rule',
           },
-        ],
-        title: 'Basic',
+        ].map((item) => ({
+          ...item,
+          keywords: ['element'],
+        })),
+        title: 'Basic Blocks',
       },
       {
         description: 'Highlight important information or add special notes.',
@@ -138,7 +146,10 @@ export const pluginsNavItems: SidebarNavItem[] = [
         href: '/docs/toggle',
         title: 'Toggle',
       },
-    ],
+    ].map((item) => ({
+      ...item,
+      keywords: ['element'],
+    })),
     title: 'Elements',
   },
   {
@@ -192,7 +203,10 @@ export const pluginsNavItems: SidebarNavItem[] = [
         href: '/docs/superscript',
         title: 'Superscript',
       },
-    ],
+    ].map((item) => ({
+      ...item,
+      keywords: ['leaf'],
+    })),
     title: 'Marks',
   },
   {
@@ -215,7 +229,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
             title: 'Text Align',
           },
         ],
-        title: 'Basic',
+        title: 'Basic Styles',
       },
       {
         description: 'Customize text indentation.',

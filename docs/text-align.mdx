@@ -50,23 +50,17 @@ Plugin for aligning text within block elements.
 
 ## Transforms
 
-### `tf.textAlign.set`
+### `tf.textAlign.setNodes`
 
 Sets the alignment for the specified block elements in the editor.
 
+<API name="tf.textAlign.setNodes">
 <APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-<APIItem name="options" type="object" optional>
-<APISubList>
-<APISubListItem parent="options" name="value" type="Alignment" optional>
+<APIItem name="value" type="Alignment">
 The alignment value.
-</APISubListItem>
-<APISubListItem parent="...options" name="setNodesOptions" type="SetNodesOptions" optional>
+</APIItem>
+<APIItem name="options" type="SetNodesOptions" optional>
 Options for the `setNodes` function.
-</APISubListItem>
-
-</APISubList>
 </APIItem>
 </APIParameters>
+</API>

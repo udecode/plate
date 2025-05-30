@@ -69,7 +69,7 @@ export function AlignToolbarButton(props: DropdownMenuProps) {
           onValueChange={(value) => {
             editor
               .getTransforms(TextAlignPlugin)
-              .textAlign.set({ value: value as Alignment });
+              .textAlign.setNodes({ value: value as Alignment });
             editor.tf.focus();
           }}
         >

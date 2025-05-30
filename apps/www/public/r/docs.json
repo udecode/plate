@@ -42,7 +42,6 @@
     "https://platejs.org/r/caption-docs",
     "https://platejs.org/r/code-block-docs",
     "https://platejs.org/r/code-docs",
-    "https://platejs.org/r/collaboration-docs",
     "https://platejs.org/r/column-docs",
     "https://platejs.org/r/combobox-docs",
     "https://platejs.org/r/comments-docs",
@@ -123,7 +122,8 @@
     "https://platejs.org/r/troubleshooting-docs",
     "https://platejs.org/r/typescript-docs",
     "https://platejs.org/r/underline-docs",
-    "https://platejs.org/r/unit-testing-docs"
+    "https://platejs.org/r/unit-testing-docs",
+    "https://platejs.org/r/yjs-docs"
   ],
   "files": []
 }

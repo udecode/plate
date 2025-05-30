@@ -27,7 +27,7 @@ docs:
 ## 安装
 
 ```bash
-npm install @udecode/plate-font
+npm install @udecode/plate-basic-styles
 ```
 
 ## 使用
@@ -37,7 +37,7 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontSizePlugin,
-} from '@udecode/plate-font/react';
+} from '@udecode/plate-basic-styles/react';
 
 const plugins = [
   // ...其他插件
@@ -101,101 +101,3 @@ const plugins = [
 
 用于字体粗细格式化的插件。
 
-## 钩子
-
-### `useColorDropdownMenu`
-
-用于颜色下拉菜单组件的行为钩子。
-
-<API name="useColorDropdownMenu">
-<APIState>
-  <APIItem name="open" type="boolean">
-    下拉菜单是否打开。
-  </APIItem>
-  <APIItem name="onToggle" type="function">
-    切换打开状态的回调函数。
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="menuProps" type="object">
-    菜单组件的属性。
-    <APISubList>
-      <APISubListItem parent="menuProps" name="open" type="boolean">
-        下拉菜单是否打开。
-      </APISubListItem>
-      <APISubListItem parent="menuProps" name="onOpenChange" type="function">
-        切换打开状态的回调函数。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="buttonProps" type="object">
-    按钮组件的属性。
-    <APISubList>
-      <APISubListItem parent="buttonProps" name="pressed" type="boolean">
-        下拉菜单是否打开。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useColorInput`
-
-用于颜色输入组件的行为钩子。
-
-<API name="useColorInput">
-<APIReturns type="object">
-  <APIItem name="inputRef" type="React.Ref<HTMLInputElement>">
-    颜色输入元素的引用。
-  </APIItem>
-  <APIItem name="childProps" type="object">
-    触发颜色选择器的子组件的属性。
-    <APISubList>
-      <APISubListItem parent="childProps" name="onClick" type="function">
-        处理子组件点击事件的回调函数。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### `useColorsCustom`
-
-用于颜色选择器中自定义颜色的行为钩子。
-
-<API name="useColorsCustom">
-<APIState>
-  <APIItem name="updateCustomColor" type="function">
-    更新自定义颜色的回调函数。
-  </APIItem>
-  <APIItem name="value" type="string">
-    当前颜色输入值。
-  </APIItem>
-  <APIItem name="setValue" type="function">
-    更新颜色值的回调函数。
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="inputProps" type="object">
-    颜色输入元素的属性。
-    <APISubList>
-      <APISubListItem parent="inputProps" name="value" type="string">
-        颜色输入的当前值。
-      </APISubListItem>
-      <APISubListItem parent="inputProps" name="onChange" type="function">
-        处理颜色输入变化事件的回调函数。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="menuItemProps" type="object">
-    菜单项元素的属性。
-     <APISubList>
-      <APISubListItem parent="menuItemProps" name="onSelect" type="function">
-        处理菜单项选择事件的回调函数。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>

@@ -5,8 +5,8 @@ import * as React from 'react';
 import type { TElement } from '@udecode/plate';
 
 import { KEYS } from '@udecode/plate';
-import { toUnitLess } from '@udecode/plate-font';
-import { FontSizePlugin } from '@udecode/plate-font/react';
+import { toUnitLess } from '@udecode/plate-basic-styles';
+import { FontSizePlugin } from '@udecode/plate-basic-styles/react';
 import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
 import { Minus, Plus } from 'lucide-react';
 
@@ -74,7 +74,7 @@ export function FontSizeToolbarButton() {
       return;
     }
     if (newSize !== toUnitLess(cursorFontSize)) {
-      api.fontSize.setMark(`${newSize}px`);
+      api.fontSize.addMark(`${newSize}px`);
     }
 
     editor.tf.focus();
@@ -82,7 +82,7 @@ export function FontSizeToolbarButton() {
 
   const handleFontSizeChange = (delta: number) => {
     const newSize = Number(displayValue) + delta;
-    api.fontSize.setMark(`${newSize}px`);
+    api.fontSize.addMark(`${newSize}px`);
     editor.tf.focus();
   };
 
@@ -131,7 +131,7 @@ export function FontSizeToolbarButton() {
                 'flex h-8 w-full items-center justify-center text-sm hover:bg-accent data-[highlighted=true]:bg-accent'
               )}
               onClick={() => {
-                api.fontSize.setMark(`${size}px`);
+                api.fontSize.addMark(`${size}px`);
                 setIsFocused(false);
               }}
               data-highlighted={size === displayValue}

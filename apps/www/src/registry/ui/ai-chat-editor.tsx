@@ -27,7 +27,7 @@ import {
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
   BaseFontWeightPlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-basic-styles';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
 import { BaseLinkPlugin } from '@udecode/plate-link';

@@ -27,10 +27,10 @@ import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
   BaseFontSizePlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-basic-styles';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
-import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
+import { BaseLineHeightPlugin } from '@udecode/plate-basic-styles';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import { BaseListPlugin } from '@udecode/plate-list';
 import { MarkdownPlugin } from '@udecode/plate-markdown';

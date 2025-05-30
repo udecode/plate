@@ -8,13 +8,8 @@ import type {
 } from '@radix-ui/react-dropdown-menu';
 
 import { useComposedRef } from '@udecode/cn';
-import {
-  useColorDropdownMenu,
-  useColorDropdownMenuState,
-  useColorInput,
-  useColorsCustom,
-  useColorsCustomState,
-} from '@udecode/plate-font/react';
+import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
+import debounce from 'lodash/debounce.js';
 import { EraserIcon, PlusIcon } from 'lucide-react';
 
 import { buttonVariants } from '@/components/ui/button';
@@ -42,31 +37,91 @@ export function FontColorToolbarButton({
   nodeType: string;
   tooltip?: string;
 } & DropdownMenuProps) {
-  const state = useColorDropdownMenuState({
-    closeOnSelect: true,
-    colors: DEFAULT_COLORS,
-    customColors: DEFAULT_CUSTOM_COLORS,
-    nodeType,
-  });
+  const editor = useEditorRef();
 
-  const { buttonProps, menuProps } = useColorDropdownMenu(state);
+  const selectionDefined = useEditorSelector(
+    (editor) => !!editor.selection,
+    []
+  );
+
+  const color = useEditorSelector(
+    (editor) => editor.api.mark(nodeType) as string,
+    [nodeType]
+  );
+
+  const [selectedColor, setSelectedColor] = React.useState<string>();
+  const [open, setOpen] = React.useState(false);
+
+  const onToggle = React.useCallback(
+    (value = !open) => {
+      setOpen(value);
+    },
+    [open, setOpen]
+  );
+
+  const updateColor = React.useCallback(
+    (value: string) => {
+      if (editor.selection) {
+        setSelectedColor(value);
+
+        editor.tf.select(editor.selection);
+        editor.tf.focus();
+
+        editor.tf.addMarks({ [nodeType]: value });
+      }
+    },
+    [editor, nodeType]
+  );
+
+  const updateColorAndClose = React.useCallback(
+    (value: string) => {
+      updateColor(value);
+      onToggle();
+    },
+    [onToggle, updateColor]
+  );
+
+  const clearColor = React.useCallback(() => {
+    if (editor.selection) {
+      editor.tf.select(editor.selection);
+      editor.tf.focus();
+
+      if (selectedColor) {
+        editor.tf.removeMarks(nodeType);
+      }
+
+      onToggle();
+    }
+  }, [editor, selectedColor, onToggle, nodeType]);
+
+  React.useEffect(() => {
+    if (selectionDefined) {
+      setSelectedColor(color);
+    }
+  }, [color, selectionDefined]);
 
   return (
-    <DropdownMenu modal={false} {...menuProps}>
+    <DropdownMenu
+      open={open}
+      onOpenChange={(value) => {
+        setOpen(value);
+      }}
+      modal={false}
+    >
       <DropdownMenuTrigger asChild>
-        <ToolbarButton tooltip={tooltip} {...buttonProps}>
+        <ToolbarButton pressed={open} tooltip={tooltip}>
           {children}
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="start">
         <ColorPicker
-          color={state.selectedColor || state.color}
-          clearColor={state.clearColor}
-          colors={state.colors}
-          customColors={state.customColors}
-          updateColor={state.updateColorAndClose}
-          updateCustomColor={state.updateColor}
+          color={selectedColor || color}
+          clearColor={clearColor}
+          colors={DEFAULT_COLORS}
+          customColors={DEFAULT_CUSTOM_COLORS}
+          updateColor={updateColorAndClose}
+          updateCustomColor={updateColor}
         />
       </DropdownMenuContent>
     </DropdownMenu>
@@ -145,22 +200,56 @@ function ColorCustom({
   updateCustomColor: (color: string) => void;
   color?: string;
 } & React.ComponentPropsWithoutRef<'div'>) {
-  const state = useColorsCustomState({
-    color,
-    colors,
-    customColors,
-    updateCustomColor,
-  });
-  const { inputProps, menuItemProps } = useColorsCustom(state);
+  const [customColor, setCustomColor] = React.useState<string>();
+  const [value, setValue] = React.useState<string>(color || '#000000');
+
+  React.useEffect(() => {
+    if (
+      !color ||
+      customColors.some((c) => c.value === color) ||
+      colors.some((c) => c.value === color)
+    ) {
+      return;
+    }
+
+    setCustomColor(color);
+  }, [color, colors, customColors]);
+
+  const computedColors = React.useMemo(
+    () =>
+      customColor
+        ? [
+            ...customColors,
+            {
+              isBrightColor: false,
+              name: '',
+              value: customColor,
+            },
+          ]
+        : customColors,
+    [customColor, customColors]
+  );
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const updateCustomColorDebounced = React.useCallback(
+    debounce(updateCustomColor, 100),
+    [updateCustomColor]
+  );
 
   return (
     <div className={cn('relative flex flex-col gap-4', className)} {...props}>
       <ColorDropdownMenuItems
         color={color}
-        colors={state.computedColors}
+        colors={computedColors}
         updateColor={updateColor}
       >
-        <ColorInput {...inputProps}>
+        <ColorInput
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+            updateCustomColorDebounced(e.target.value);
+          }}
+        >
           <DropdownMenuItem
             className={cn(
               buttonVariants({
@@ -169,7 +258,9 @@ function ColorCustom({
               }),
               'absolute top-1 right-2 bottom-2 flex size-8 items-center justify-center rounded-full'
             )}
-            {...menuItemProps}
+            onSelect={(e) => {
+              e.preventDefault();
+            }}
           >
             <span className="sr-only">Custom</span>
             <PlusIcon />
@@ -186,14 +277,21 @@ function ColorInput({
   value = '#000000',
   ...props
 }: React.ComponentProps<'input'>) {
-  const { childProps, inputRef } = useColorInput();
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
 
   return (
     <div className="flex flex-col items-center">
       {React.Children.map(children, (child) => {
         if (!child) return child;
 
-        return React.cloneElement(child as React.ReactElement, childProps);
+        return React.cloneElement(
+          child as React.ReactElement<{
+            onClick: () => void;
+          }>,
+          {
+            onClick: () => inputRef.current?.click(),
+          }
+        );
       })}
       <input
         {...props}

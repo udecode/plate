@@ -18,13 +18,13 @@ docs:
 ## 安装
 
 ```bash
-npm install @udecode/plate-line-height
+npm install @udecode/plate-basic-styles
 ```
 
 ## 使用
 
 ```tsx
-import { LineHeightPlugin } from '@udecode/plate-line-height/react';
+import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
 
 const plugins = [
   // ...其他插件,
@@ -53,32 +53,4 @@ const plugins = [
     设置节点的额外选项。
   </APIItem>
 </APIOptions>
-</API>
-
-## 钩子
-
-### `useLineHeightDropdownMenu`
-
-行高下拉菜单的行为钩子。
-
-<API name="useLineHeightDropdownMenu">
-<APIState>
-  <APIItem name="value" type="number">
-    当前行高值。
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="radioGroupProps" type="object">
-    单选组的属性。
-  <APISubList>
-    <APISubListItem parent="radioGroupProps" name="value" type="string">
-      当前行高值。
-    </APISubListItem>
-    <APISubListItem parent="radioGroupProps" name="onValueChange" type="function">
-      更新行高值的处理函数。
-    </APISubListItem>
-  </APISubList>
-  </APIItem>
-</APIReturns>
 </API>

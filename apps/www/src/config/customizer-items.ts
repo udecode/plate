@@ -19,7 +19,10 @@ import {
   SuperscriptPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-nodes/react';
-import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
+import {
+  LineHeightPlugin,
+  TextAlignPlugin,
+} from '@udecode/plate-basic-styles/react';
 import { CaptionPlugin } from '@udecode/plate-caption/react';
 import {
   CodeBlockPlugin,
@@ -37,10 +40,9 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontSizePlugin,
-} from '@udecode/plate-font/react';
+} from '@udecode/plate-basic-styles/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
-import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ListPlugin as ListClassicPlugin } from '@udecode/plate-list-classic/react';
 import { ListPlugin } from '@udecode/plate-list/react';
@@ -524,7 +526,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: FontBackgroundColorPlugin.key,
     badges: [customizerBadges.style],
     label: 'Font Background',
-    npmPackage: '@udecode/plate-font',
+    npmPackage: '@udecode/plate-basic-styles',
     pluginFactory: 'FontBackgroundColorPlugin',
     route: getPluginNavItem('font').href,
   },
@@ -532,7 +534,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: FontColorPlugin.key,
     badges: [customizerBadges.style],
     label: 'Font Color',
-    npmPackage: '@udecode/plate-font',
+    npmPackage: '@udecode/plate-basic-styles',
     pluginFactory: 'FontColorPlugin',
     route: getPluginNavItem('font').href,
   },
@@ -540,7 +542,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: FontSizePlugin.key,
     badges: [customizerBadges.style],
     label: 'Font Size',
-    npmPackage: '@udecode/plate-font',
+    npmPackage: '@udecode/plate-basic-styles',
     pluginFactory: 'FontSizePlugin',
     route: getPluginNavItem('font').href,
   },
@@ -719,7 +721,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: LineHeightPlugin.key,
     badges: [customizerBadges.style],
     label: 'Line Height',
-    npmPackage: '@udecode/plate-line-height',
+    npmPackage: '@udecode/plate-basic-styles',
     pluginFactory: 'LineHeightPlugin',
     pluginOptions: [
       `inject: {`,

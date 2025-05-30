@@ -26,8 +26,8 @@
 // Before
 setAlign(editor, { value: 'center', setNodesOptions });
 
-// After (with new options)
-setAlign(editor, { value: 'center', ...setNodesOptions });
+// After
+setAlign(editor, 'center', setNodesOptions);
 ```
 
 - Removed `useAlignDropdownMenu` and `useAlignDropdownMenuState`. Use it in your own codebase, for example:
@@ -42,7 +42,7 @@ export function AlignToolbarButton() {
   });
 
   const onValueChange = (newValue: string) => {
-    setAlign(editor, { value: newValue as Alignment });
+    editor.tf.textAlign.setNodes(newValue as Alignment);
     editor.tf.focus();
   };
 

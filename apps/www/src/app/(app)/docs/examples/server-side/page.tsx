@@ -38,11 +38,11 @@ import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
   BaseFontSizePlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-basic-styles';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { BaseColumnPlugin } from '@udecode/plate-layout';
-import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
+import { BaseLineHeightPlugin } from '@udecode/plate-basic-styles';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import { BaseListPlugin } from '@udecode/plate-list';
 import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';

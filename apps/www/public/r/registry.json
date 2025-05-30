@@ -43,7 +43,7 @@
         "@udecode/plate-callout",
         "@udecode/plate-code-block",
         "@udecode/plate-date",
-        "@udecode/plate-font",
+        "@udecode/plate-basic-styles",
         "@udecode/plate-indent",
         "@udecode/plate-list",
         "@udecode/plate-layout",
@@ -287,11 +287,11 @@
         "@udecode/plate-code-block",
         "@udecode/plate-comments",
         "@udecode/plate-date",
-        "@udecode/plate-font",
+        "@udecode/plate-basic-styles",
         "@udecode/plate-indent",
         "@udecode/plate-list",
         "@udecode/plate-layout",
-        "@udecode/plate-line-height",
+        "@udecode/plate-basic-styles",
         "@udecode/plate-link",
         "@udecode/plate-markdown",
         "@udecode/plate-math",
@@ -390,7 +390,7 @@
       "description": "A color picker toolbar button with text and background color controls.",
       "dependencies": [
         "@udecode/cn",
-        "@udecode/plate-font"
+        "@udecode/plate-basic-styles"
       ],
       "registryDependencies": [
         "dropdown-menu",
@@ -1071,7 +1071,7 @@
       "title": "Line Height Toolbar Button",
       "description": "A menu for controlling text line spacing.",
       "dependencies": [
-        "@udecode/plate-line-height"
+        "@udecode/plate-basic-styles"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toolbar",
@@ -2021,7 +2021,7 @@
       "title": "Font Size Toolbar Button",
       "description": "A toolbar control for adjusting font size.",
       "dependencies": [
-        "@udecode/plate-font"
+        "@udecode/plate-basic-styles"
       ],
       "registryDependencies": [
         "popover",
@@ -3230,7 +3230,7 @@
       "name": "font-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-font"
+        "@udecode/plate-basic-styles"
       ],
       "registryDependencies": [
         "https://platejs.org/r/font-size-toolbar-button",
@@ -3263,7 +3263,7 @@
       "name": "line-height-kit",
       "type": "registry:component",
       "dependencies": [
-        "@udecode/plate-line-height"
+        "@udecode/plate-basic-styles"
       ],
       "registryDependencies": [
         "https://platejs.org/r/line-height-toolbar-button"
@@ -4259,7 +4259,6 @@
         "https://platejs.org/r/caption-docs",
         "https://platejs.org/r/code-block-docs",
         "https://platejs.org/r/code-docs",
-        "https://platejs.org/r/collaboration-docs",
         "https://platejs.org/r/column-docs",
         "https://platejs.org/r/combobox-docs",
         "https://platejs.org/r/comments-docs",
@@ -4340,7 +4339,8 @@
         "https://platejs.org/r/troubleshooting-docs",
         "https://platejs.org/r/typescript-docs",
         "https://platejs.org/r/underline-docs",
-        "https://platejs.org/r/unit-testing-docs"
+        "https://platejs.org/r/unit-testing-docs",
+        "https://platejs.org/r/yjs-docs"
       ],
       "title": "Documentation",
       "type": "registry:file"
@@ -4859,19 +4859,6 @@
       ],
       "name": "code-docs",
       "title": "Code",
-      "type": "registry:file"
-    },
-    {
-      "description": "Real-time collaboration with Yjs",
-      "files": [
-        {
-          "path": "../../docs/collaboration.mdx",
-          "target": "content/docs/plate/collaboration.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "collaboration-docs",
-      "title": "Collaboration",
       "type": "registry:file"
     },
     {
@@ -5925,6 +5912,19 @@
       ],
       "name": "unit-testing-docs",
       "title": "Unit Testing Plate",
+      "type": "registry:file"
+    },
+    {
+      "description": "Real-time collaboration with Yjs",
+      "files": [
+        {
+          "path": "../../docs/yjs.mdx",
+          "target": "content/docs/plate/yjs.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "yjs-docs",
+      "title": "Collaboration",
       "type": "registry:file"
     }
   ]
