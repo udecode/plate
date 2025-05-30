@@ -21,9 +21,8 @@ export const setMarkBoundaryAffinity = (
   if (affinity === 'backward') {
     const [backwardLeafEntry] = markBoundary;
     if (backwardLeafEntry === null) return setMarks({});
-    // TODO check type assertion
-    const endOfBackward = editor.api.end(backwardLeafEntry[1])!;
-    selectPoint(endOfBackward);
+    const endOfBackward = editor.api.end(backwardLeafEntry[1]);
+    endOfBackward && selectPoint(endOfBackward);
     setMarks(null);
     return;
   }

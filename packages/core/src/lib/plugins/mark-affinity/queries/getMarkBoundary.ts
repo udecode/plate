@@ -1,4 +1,3 @@
-
 import { type TText, TextApi } from '@udecode/slate';
 import { type NodeEntry, Path } from 'slate';
 
@@ -10,11 +9,11 @@ export const getMarkBoundary = (editor: SlateEditor): MarkBoundary | null => {
   if (!selection || editor.api.isExpanded()) return null;
   const point = selection.anchor;
 
-  // TODO check type assertion
-  const selectedLeafRange = editor.api.range(point.path)!;
-
+  const selectedLeafRange = editor.api.range(point.path);
 
   const direction = (() => {
+    if (!selectedLeafRange) return null;
+
     if (editor.api.isStart(point, selectedLeafRange)) {
       return 'backward';
     }
