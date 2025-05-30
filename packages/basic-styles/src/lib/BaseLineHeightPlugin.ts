@@ -32,5 +32,5 @@ export const BaseLineHeightPlugin = createSlatePlugin({
     }),
   },
 }).extendTransforms(({ editor }) => ({
-  setNodes: bindFirst(setLineHeight, editor),
+  set: bindFirst(setLineHeight, editor),
 }));

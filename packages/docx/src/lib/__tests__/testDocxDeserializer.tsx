@@ -8,7 +8,7 @@ import { HorizontalRulePlugin } from '@udecode/plate-basic-nodes/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
-import { LineHeightPlugin } from '@udecode/plate-line-height/react';
+import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';

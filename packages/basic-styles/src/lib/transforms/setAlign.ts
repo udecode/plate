@@ -17,12 +17,8 @@ export type Alignment =
 
 export const setAlign = (
   editor: SlateEditor,
-  {
-    value,
-    ...setNodesOptions
-  }: {
-    value: Alignment;
-  } & SetNodesOptions
+  value: Alignment,
+  setNodesOptions?: SetNodesOptions
 ) => {
   const { defaultNodeValue, nodeKey } =
     editor.getInjectProps(BaseTextAlignPlugin);

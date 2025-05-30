@@ -37,7 +37,7 @@ describe('center', () => {
       value: input.children,
     });
 
-    setAlign(editor, { value: 'center' });
+    setAlign(editor, 'center');
 
     expect(editor.children).toEqual(output.children);
   });
@@ -68,7 +68,7 @@ describe('left', () => {
       value: input.children,
     });
 
-    setAlign(editor, { value: 'start' });
+    setAlign(editor, 'start');
 
     expect(editor.children).toEqual(output.children);
   });
@@ -98,7 +98,7 @@ describe('no-type', () => {
         value: input.children,
       });
 
-      setAlign(editor, { value: 'center' });
+      setAlign(editor, 'center');
 
       expect(editor.children).toEqual(output.children);
     });

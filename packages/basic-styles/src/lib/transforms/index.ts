@@ -3,3 +3,4 @@
  */
 
 export * from './setAlign';
+export * from './setLineHeight';

@@ -20,7 +20,7 @@ import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
   BaseFontSizePlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-basic-styles';
 import { BaseTocPlugin } from '@udecode/plate-toc';
 import { BaseHighlightPlugin } from '@udecode/plate-basic-nodes';
 import {
@@ -32,7 +32,7 @@ import { BaseIndentPlugin } from '@udecode/plate-indent';
 import { BaseListPlugin } from '@udecode/plate-list';
 import { BaseKbdPlugin } from '@udecode/plate-basic-nodes';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
-import { BaseLineHeightPlugin } from '@udecode/plate-line-height';
+import { BaseLineHeightPlugin } from '@udecode/plate-basic-styles';
 import { BaseLinkPlugin } from '@udecode/plate-link';
 import {
   BaseEquationPlugin,
