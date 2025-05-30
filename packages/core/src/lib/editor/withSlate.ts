@@ -33,6 +33,24 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * - `'start'`: Select the start of the editor
    */
   autoSelect?: boolean | 'end' | 'start';
+  /**
+   * Determines which mark to apply at boundaries between different marks, based
+   * on cursor movement using the left/right arrow keys.
+   *
+   * Example: <text bold>Bold</text><cursor><text italic>Italic</text>
+   *
+   * If the cursor moved here from the left (via → key), typing applies
+   * **bold**.
+   *
+   * If the cursor moved here from the right (via ← key), typing applies
+   * _italic_.
+   *
+   * Without mark affinity, the preceding mark (**bold**) is always applied
+   * regardless of direction.
+   *
+   * @default true
+   */
+  markAffinity?: boolean;
   /** Specifies the component for each plugin key. */
   // components?: Partial<
   //   Record<KeyofNodePlugins<InferPlugins<P[]>>, NodeComponent | null>
@@ -160,6 +178,7 @@ export const withSlate = <
   {
     id,
     autoSelect,
+    markAffinity = true,
     maxLength,
     nodeId,
     plugins = [],
@@ -249,6 +268,7 @@ export const withSlate = <
 
   // Plugin initialization code
   const corePlugins = getCorePlugins({
+    markAffinity,
     maxLength,
     nodeId,
     plugins,

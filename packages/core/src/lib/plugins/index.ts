@@ -11,6 +11,7 @@ export * from './debug/index';
 export * from './dom/index';
 export * from './html/index';
 export * from './length/index';
+export * from './mark-affinity/index';
 export * from './node-id/index';
 export * from './paragraph/index';
 export * from './slate-extension/index';

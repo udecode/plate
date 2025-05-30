@@ -319,6 +319,12 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   isElement?: boolean;
   /**
+   * Whether the node is a hard edge.
+   *
+   * @default false
+   */
+  isHardEdge?: boolean;
+  /**
    * Indicates if this plugin's elements should be treated as inline. Used by
    * the inlineVoid core plugin.
    */

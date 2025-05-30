@@ -10,6 +10,7 @@ import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { DOMPlugin } from './dom';
 import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';
+import { MarkAffinityPlugin } from './mark-affinity';
 import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
 import { SlateExtensionPlugin } from './slate-extension';
@@ -17,6 +18,8 @@ import { SlateExtensionPlugin } from './slate-extension';
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 
 export type GetCorePluginsOptions = {
+  /** Enable mark affinity. */
+  markAffinity?: boolean;
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
   /** Configure the node id plugin. */
@@ -26,6 +29,7 @@ export type GetCorePluginsOptions = {
 };
 
 export const getCorePlugins = ({
+  markAffinity,
   maxLength,
   nodeId,
   plugins = [],
@@ -53,6 +57,7 @@ export const getCorePlugins = ({
       options: resolvedNodeId === false ? undefined : resolvedNodeId,
     }),
     BaseParagraphPlugin,
+    MarkAffinityPlugin.configure({ enabled: markAffinity }),
   ];
 
   // Create a map for quick lookup of custom plugins

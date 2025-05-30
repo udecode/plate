@@ -161,7 +161,9 @@ export const PlateText = React.forwardRef<
 export type PlateLeafProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-> = PlateNodeProps<C> & RenderLeafProps<N> & DeprecatedNodeProps;
+> = PlateNodeProps<C> &
+  RenderLeafProps<N> &
+  DeprecatedNodeProps & { hardEdge?: boolean };
 
 export type StyledPlateLeafProps<
   N extends TText = TText,
@@ -170,13 +172,29 @@ export type StyledPlateLeafProps<
 > = Omit<PlateLeafProps<N, C>, keyof DeprecatedNodeProps> &
   PlateHTMLProps<C, T>;
 
+const NonBreakingSpace = ({ children }: { children: React.ReactNode }) => (
+  <>
+    <span style={{ fontSize: 0 }} contentEditable={false}>
+      {String.fromCodePoint(160) /* Non-breaking space */}
+    </span>
+    {children}
+    <span style={{ fontSize: 0 }} contentEditable={false}>
+      {String.fromCodePoint(160) /* Non-breaking space */}
+    </span>
+  </>
+);
+
 export const PlateLeaf = React.forwardRef<
   HTMLSpanElement,
   StyledPlateLeafProps
->(({ as: Tag = 'span', children, ...props }, ref) => {
+>(({ as: Tag = 'span', children, hardEdge = false, ...props }, ref) => {
   const attributes = useNodeAttributes(props, ref);
 
-  return <Tag {...attributes}>{children}</Tag>;
+  return (
+    <Tag {...attributes}>
+      {hardEdge ? <NonBreakingSpace>{children}</NonBreakingSpace> : children}
+    </Tag>
+  );
 }) as <
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
