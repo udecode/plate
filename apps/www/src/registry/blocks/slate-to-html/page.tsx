@@ -1,63 +1,11 @@
 import * as React from 'react';
 
-import {
-  type Value,
-  createSlateEditor,
-  KEYS,
-  serializeHtml,
-} from '@udecode/plate';
-import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
-import {
-  BaseBlockquotePlugin,
-  BaseBoldPlugin,
-  BaseCodePlugin,
-  BaseHeadingPlugin,
-  BaseHighlightPlugin,
-  BaseHorizontalRulePlugin,
-  BaseItalicPlugin,
-  BaseKbdPlugin,
-  BaseStrikethroughPlugin,
-  BaseSubscriptPlugin,
-  BaseSuperscriptPlugin,
-  BaseUnderlinePlugin,
-} from '@udecode/plate-basic-nodes';
-import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
-import { BaseCommentPlugin } from '@udecode/plate-comments';
-import { BaseDatePlugin } from '@udecode/plate-date';
-import {
-  BaseFontBackgroundColorPlugin,
-  BaseFontColorPlugin,
-  BaseFontSizePlugin,
-} from '@udecode/plate-basic-styles';
-import { BaseIndentPlugin } from '@udecode/plate-indent';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
-import { BaseLineHeightPlugin } from '@udecode/plate-basic-styles';
-import { BaseLinkPlugin } from '@udecode/plate-link';
-import { BaseListPlugin } from '@udecode/plate-list';
-import {
-  BaseEquationPlugin,
-  BaseInlineEquationPlugin,
-} from '@udecode/plate-math';
-import {
-  BaseAudioPlugin,
-  BaseFilePlugin,
-  BaseImagePlugin,
-  BaseMediaEmbedPlugin,
-  BaseVideoPlugin,
-} from '@udecode/plate-media';
-import { BaseMentionPlugin } from '@udecode/plate-mention';
-import {
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '@udecode/plate-table';
-import { BaseTocPlugin } from '@udecode/plate-toc';
-import { BaseTogglePlugin } from '@udecode/plate-toggle';
+import { type Value, createSlateEditor, serializeHtml } from '@udecode/plate';
 import { cva } from 'class-variance-authority';
-import { all, createLowlight } from 'lowlight';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import {
   EditorClient,
   ExportHtmlButton,
@@ -80,48 +28,7 @@ import { mentionValue } from '@/registry/examples/values/mention-value';
 import { tableValue } from '@/registry/examples/values/table-value';
 import { tocPlaygroundValue } from '@/registry/examples/values/toc-value';
 import { createHtmlDocument } from '@/registry/lib/create-html-document';
-import { BlockquoteElementStatic } from '@/registry/ui/blockquote-node-static';
-import {
-  CodeBlockElementStatic,
-  CodeLineElementStatic,
-  CodeSyntaxLeafStatic,
-} from '@/registry/ui/code-block-node-static';
-import { CodeLeafStatic } from '@/registry/ui/code-node-static';
-import {
-  ColumnElementStatic,
-  ColumnGroupElementStatic,
-} from '@/registry/ui/column-node-static';
-import { CommentLeafStatic } from '@/registry/ui/comment-node-static';
-import { DateElementStatic } from '@/registry/ui/date-node-static';
 import { EditorStatic } from '@/registry/ui/editor-static';
-import {
-  EquationElementStatic,
-  InlineEquationElementStatic,
-} from '@/registry/ui/equation-node-static';
-import {
-  H1ElementStatic,
-  H2ElementStatic,
-  H3ElementStatic,
-} from '@/registry/ui/heading-node-static';
-import { HighlightLeafStatic } from '@/registry/ui/highlight-node-static';
-import { HrElementStatic } from '@/registry/ui/hr-node-static';
-import { KbdLeafStatic } from '@/registry/ui/kbd-node-static';
-import { LinkElementStatic } from '@/registry/ui/link-node-static';
-import { TodoLiStatic, TodoMarkerStatic } from '@/registry/ui/list-todo-static';
-import { AudioElementStatic } from '@/registry/ui/media-audio-node-static';
-import { FileElementStatic } from '@/registry/ui/media-file-node-static';
-import { ImageElementStatic } from '@/registry/ui/media-image-node-static';
-import { VideoElementStatic } from '@/registry/ui/media-video-node-static';
-import { MentionElementStatic } from '@/registry/ui/mention-node-static';
-import { ParagraphElementStatic } from '@/registry/ui/paragraph-node-static';
-import {
-  TableCellElementStatic,
-  TableCellHeaderStaticElement,
-  TableElementStatic,
-  TableRowElementStatic,
-} from '@/registry/ui/table-node-static';
-import { TocElementStatic } from '@/registry/ui/toc-node-static';
-import { ToggleElementStatic } from '@/registry/ui/toggle-node-static';
 
 const getCachedTailwindCss = React.cache(async () => {
   const cssPath = path.join(process.cwd(), 'public', 'tailwind.css');
@@ -129,43 +36,7 @@ const getCachedTailwindCss = React.cache(async () => {
   return await fs.readFile(cssPath, 'utf8');
 });
 
-const lowlight = createLowlight(all);
-
 export default async function SlateToHtmlBlock() {
-  const components = {
-    [KEYS.audio]: AudioElementStatic,
-    [KEYS.blockquote]: BlockquoteElementStatic,
-    [KEYS.code]: CodeLeafStatic,
-    [KEYS.codeBlock]: CodeBlockElementStatic,
-    [KEYS.codeLine]: CodeLineElementStatic,
-    [KEYS.codeSyntax]: CodeSyntaxLeafStatic,
-    [KEYS.column]: ColumnElementStatic,
-    [KEYS.columnGroup]: ColumnGroupElementStatic,
-    [KEYS.comment]: CommentLeafStatic,
-    [KEYS.date]: DateElementStatic,
-    [KEYS.equation]: EquationElementStatic,
-    [KEYS.file]: FileElementStatic,
-    [KEYS.h1]: H1ElementStatic,
-    [KEYS.h2]: H2ElementStatic,
-    [KEYS.h3]: H3ElementStatic,
-    [KEYS.highlight]: HighlightLeafStatic,
-    [KEYS.hr]: HrElementStatic,
-    [KEYS.img]: ImageElementStatic,
-    [KEYS.inlineEquation]: InlineEquationElementStatic,
-    [KEYS.kbd]: KbdLeafStatic,
-    [KEYS.link]: LinkElementStatic,
-    // [KEYS.mediaEmbed]: MediaEmbedElementStatic,
-    [KEYS.mention]: MentionElementStatic,
-    [KEYS.p]: ParagraphElementStatic,
-    [KEYS.table]: TableElementStatic,
-    [KEYS.td]: TableCellElementStatic,
-    [KEYS.th]: TableCellHeaderStaticElement,
-    [KEYS.toc]: TocElementStatic,
-    [KEYS.toggle]: ToggleElementStatic,
-    [KEYS.tr]: TableRowElementStatic,
-    [KEYS.video]: VideoElementStatic,
-  };
-
   const createValue = (): Value => [
     ...basicElementsValue,
     ...basicMarksValue,
@@ -186,77 +57,7 @@ export default async function SlateToHtmlBlock() {
   ];
 
   const editor = createSlateEditor({
-    plugins: [
-      BaseEquationPlugin,
-      BaseInlineEquationPlugin,
-      BaseColumnPlugin,
-      BaseColumnItemPlugin,
-      BaseTocPlugin,
-      BaseVideoPlugin,
-      BaseAudioPlugin,
-      BaseHeadingPlugin,
-      BaseMediaEmbedPlugin,
-      BaseBoldPlugin,
-      BaseCodePlugin,
-      BaseItalicPlugin,
-      BaseStrikethroughPlugin,
-      BaseSubscriptPlugin,
-      BaseSuperscriptPlugin,
-      BaseUnderlinePlugin,
-      BaseBlockquotePlugin,
-      BaseDatePlugin,
-      BaseCodeBlockPlugin.configure({
-        options: {
-          lowlight,
-        },
-      }),
-      BaseIndentPlugin.extend({
-        inject: {
-          targetPlugins: [KEYS.p, KEYS.blockquote, KEYS.codeBlock],
-        },
-      }),
-      BaseListPlugin.extend({
-        inject: {
-          targetPlugins: [
-            KEYS.p,
-            ...KEYS.heading,
-            KEYS.blockquote,
-            KEYS.codeBlock,
-            KEYS.toggle,
-          ],
-        },
-        options: {
-          listStyleTypes: {
-            todo: {
-              liComponent: TodoLiStatic,
-              markerComponent: TodoMarkerStatic,
-              type: 'todo',
-            },
-          },
-        },
-      }),
-      BaseLinkPlugin,
-      BaseTableRowPlugin,
-      BaseTablePlugin,
-      BaseTableCellPlugin,
-      BaseHorizontalRulePlugin,
-      BaseFontColorPlugin,
-      BaseFontBackgroundColorPlugin,
-      BaseFontSizePlugin,
-      BaseKbdPlugin,
-      BaseTextAlignPlugin.extend({
-        inject: {
-          targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.mediaEmbed],
-        },
-      }),
-      BaseLineHeightPlugin,
-      BaseHighlightPlugin,
-      BaseFilePlugin,
-      BaseImagePlugin,
-      BaseMentionPlugin,
-      BaseCommentPlugin,
-      BaseTogglePlugin,
-    ],
+    plugins: BaseEditorKit,
     value: createValue(),
   });
 
@@ -269,7 +70,6 @@ export default async function SlateToHtmlBlock() {
 
   // Get the editor content HTML using EditorStatic
   const editorHtml = await serializeHtml(editor, {
-    components,
     editorComponent: EditorStatic,
     props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
   });
@@ -291,7 +91,7 @@ export default async function SlateToHtmlBlock() {
 
       <div className="p-2">
         <h3 className={headingVariants()}>EditorStatic</h3>
-        <EditorStatic components={components} editor={editor} />
+        <EditorStatic editor={editor} />
       </div>
 
       <div className="relative p-2">

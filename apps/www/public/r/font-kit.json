@@ -6,13 +6,14 @@
     "@udecode/plate-basic-styles"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/font-base-kit",
     "https://platejs.org/r/font-size-toolbar-button",
     "https://platejs.org/r/font-color-toolbar-button"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/font-kit.tsx",
-      "content": "'use client';\n\nimport type { PlatePluginConfig } from '@udecode/plate/react';\n\nimport { KEYS } from '@udecode/plate';\nimport {\n  FontBackgroundColorPlugin,\n  FontColorPlugin,\n  FontSizePlugin,\n} from '@udecode/plate-basic-styles/react';\n\nconst options: PlatePluginConfig = {\n  inject: {\n    targetPlugins: [KEYS.p],\n  },\n};\n\nexport const FontKit = [\n  FontColorPlugin.configure(options),\n  FontBackgroundColorPlugin.configure(options),\n  FontSizePlugin.configure(options),\n];\n",
+      "content": "'use client';\n\nimport type { PlatePluginConfig } from '@udecode/plate/react';\n\nimport { KEYS } from '@udecode/plate';\nimport {\n  FontBackgroundColorPlugin,\n  FontColorPlugin,\n  FontFamilyPlugin,\n  FontSizePlugin,\n} from '@udecode/plate-basic-styles/react';\n\nconst options = {\n  inject: { targetPlugins: [KEYS.p] },\n} satisfies PlatePluginConfig;\n\nexport const FontKit = [\n  FontColorPlugin.configure(options),\n  FontBackgroundColorPlugin.configure(options),\n  FontSizePlugin.configure(options),\n  FontFamilyPlugin.configure(options),\n];\n",
       "type": "registry:component"
     }
   ]

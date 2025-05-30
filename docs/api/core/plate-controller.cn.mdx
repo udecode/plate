@@ -105,9 +105,9 @@ const App = withHoc(PlateController, () => {
 有两种方法可以确定你正在使用的是备用编辑器还是真实编辑器：
 
 - **`useEditorMounted`** 如果没有找到挂载的编辑器，则返回 **`false`**
-- **`editor.isFallback`** 对于备用编辑器为 **`true`**
+- **`editor.meta.isFallback`** 对于备用编辑器为 **`true`**
 
-在 **`PlateController`** 内部使用 **`useEditorRef`** 等钩子时，你应该编写防御性代码，以确保在出现备用编辑器时能够正确处理。例如，如果 **`useEditorMounted`** 返回 **`false`**，你可以禁用工具栏按钮，或者如果 **`editor.isFallback`** 为 **`true`**，则忽略事件。
+在 **`PlateController`** 内部使用 **`useEditorRef`** 等钩子时，你应该编写防御性代码，以确保在出现备用编辑器时能够正确处理。例如，如果 **`useEditorMounted`** 返回 **`false`**，你可以禁用工具栏按钮，或者如果 **`editor.meta.isFallback`** 为 **`true`**，则忽略事件。
 
 ```tsx
 import { KEYS } from '@udecode/plate';

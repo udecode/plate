@@ -6,6 +6,7 @@
     "@udecode/plate-basic-nodes"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/basic-marks-base-kit",
     "https://platejs.org/r/code-node",
     "https://platejs.org/r/highlight-node",
     "https://platejs.org/r/kbd-node",

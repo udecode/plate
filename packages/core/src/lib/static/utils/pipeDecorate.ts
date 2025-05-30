@@ -3,7 +3,7 @@ import type { NodeEntry, TRange } from '@udecode/slate';
 import type { SlateEditor } from '../../editor';
 import type { EditableProps } from '../../types/EditableProps';
 
-import { getEditorPlugin } from '../../plugin';
+import { type SlatePlugin, getEditorPlugin } from '../../plugin';
 
 /**
  * @see {@link Decorate} .
@@ -15,9 +15,7 @@ export const pipeDecorate = (
     | ((ctx: { editor: SlateEditor; entry: NodeEntry }) => TRange[] | undefined)
     | null
 ): EditableProps['decorate'] => {
-  const relevantPlugins = editor.pluginList.filter((plugin) => plugin.decorate);
-
-  if (relevantPlugins.length === 0 && !decorateProp) return;
+  if (editor.meta.pluginKeys.decorate.length === 0 && !decorateProp) return;
 
   return (entry: NodeEntry) => {
     let ranges: TRange[] = [];
@@ -26,7 +24,8 @@ export const pipeDecorate = (
       if (newRanges?.length) ranges = [...ranges, ...newRanges];
     };
 
-    relevantPlugins.forEach((plugin) => {
+    editor.meta.pluginKeys.decorate.forEach((key) => {
+      const plugin = editor.plugins[key] as SlatePlugin;
       addRanges(
         plugin.decorate!({
           ...(getEditorPlugin(editor, plugin) as any),

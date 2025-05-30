@@ -72,8 +72,8 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.shortcuts['testPlugin.bold']).toBeDefined();
-    expect(editor.shortcuts['testPlugin.italic']).toBeDefined();
+    expect(editor.meta.shortcuts['testPlugin.bold']).toBeDefined();
+    expect(editor.meta.shortcuts['testPlugin.italic']).toBeDefined();
   });
 
   it('should override existing shortcuts in a plugin', () => {
@@ -101,7 +101,7 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    editor.shortcuts['testPlugin.bold']?.handler?.({
+    editor.meta.shortcuts['testPlugin.bold']?.handler?.({
       editor,
       event: {} as KeyboardEvent,
       handler: {} as any,
@@ -135,7 +135,7 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.shortcuts['testPlugin.bold']?.keys).toBe('mod+bb');
+    expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+bb');
   });
 
   it('should allow removing shortcuts by setting them to null', () => {
@@ -161,8 +161,8 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.shortcuts['testPlugin.bold']).toBeUndefined();
-    expect(editor.shortcuts['testPlugin.italic']).toBeDefined();
+    expect(editor.meta.shortcuts['testPlugin.bold']).toBeUndefined();
+    expect(editor.meta.shortcuts['testPlugin.italic']).toBeDefined();
   });
 
   // it('should allow extending shortcuts using a function', () => {
@@ -188,8 +188,8 @@ describe('extend method with shortcuts', () => {
   //     plugins: [testPlugin],
   //   });
 
-  //   expect(editor.shortcuts['testPlugin.bold']).toBeUndefined();
-  //   expect(editor.shortcuts['testPlugin.italic']?.keys).toBe('mod+b');
+  //   expect(editor.meta.shortcuts['testPlugin.bold']).toBeUndefined();
+  //   expect(editor.meta.shortcuts['testPlugin.italic']?.keys).toBe('mod+b');
   // });
 
   // it('should respect hotkey priority when resolving conflicting shortcuts', () => {
@@ -244,8 +244,8 @@ describe('extend method with shortcuts', () => {
   //     ],
   //   });
 
-  //   expect(editor.shortcuts['testPlugin.bold']?.keys).toBe('mod+shift+b');
-  //   expect(editor.shortcuts['testPlugin.italic']?.keys).toBe('mod+alt+i');
+  //   expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+shift+b');
+  //   expect(editor.meta.shortcuts['testPlugin.italic']?.keys).toBe('mod+alt+i');
   // });
 
   // it('should use the last defined hotkey when priorities are equal', () => {
@@ -275,7 +275,7 @@ describe('extend method with shortcuts', () => {
   //     plugins: [firstPlugin, secondPlugin],
   //   });
 
-  //   expect(editor.shortcuts['testPlugin.bold']?.keys).toBe('mod+shift+b');
+  //   expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+shift+b');
   // });
 
   // it('should prioritize root plugin shortcuts over other plugins', () => {
@@ -299,7 +299,7 @@ describe('extend method with shortcuts', () => {
   //     },
   //   });
 
-  //   expect(editor.shortcuts['testPlugin.bold']?.keys).toBe('mod+alt+b');
+  //   expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+alt+b');
   // });
 });
 
@@ -333,7 +333,7 @@ describe('extend method with shortcuts', () => {
 //       plugins: [lowPriorityPlugin, highPriorityPlugin],
 //     });
 
-//     expect(editor.shortcuts['testPlugin.bold']?.keys).toBe('mod+b');
+//     expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+b');
 //   });
 
 //   it('should use plugin priority when shortcut priority is not specified', () => {
@@ -365,7 +365,7 @@ describe('extend method with shortcuts', () => {
 //       plugins: [lowPriorityPlugin, highPriorityPlugin],
 //     });
 
-//     expect(editor.shortcuts['testPlugin.italic']?.keys).toBe('mod+shift+i');
+//     expect(editor.meta.shortcuts['testPlugin.italic']?.keys).toBe('mod+shift+i');
 //   });
 
 //   it('should handle multiple shortcuts with different priorities', () => {
@@ -417,9 +417,9 @@ describe('extend method with shortcuts', () => {
 //       plugins: [testPlugin, overridePlugin],
 //     });
 
-//     expect(editor.shortcuts['testPlugin.bold']?.keys).toBe('mod+b');
-//     expect(editor.shortcuts['testPlugin.italic']?.keys).toBe('mod+shift+i');
-//     expect(editor.shortcuts.underline?.keys).toBe('mod+shift+u');
+//     expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+b');
+//     expect(editor.meta.shortcuts['testPlugin.italic']?.keys).toBe('mod+shift+i');
+//     expect(editor.meta.shortcuts.underline?.keys).toBe('mod+shift+u');
 //   });
 
 //   it('should handle root plugin shortcuts with different priorities', () => {
@@ -459,8 +459,8 @@ describe('extend method with shortcuts', () => {
 //       },
 //     });
 
-//     expect(editor.shortcuts['testPlugin.bold']?.keys).toBe('mod+b');
-//     expect(editor.shortcuts['testPlugin.italic']?.keys).toBe('mod+shift+i');
-//     expect(editor.shortcuts.underline?.keys).toBe('mod+u');
+//     expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+b');
+//     expect(editor.meta.shortcuts['testPlugin.italic']?.keys).toBe('mod+shift+i');
+//     expect(editor.meta.shortcuts.underline?.keys).toBe('mod+u');
 //   });
 // });

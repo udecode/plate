@@ -1,16 +1,6 @@
-import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from '@udecode/plate';
 
-export type BaseFontSizeConfig = PluginConfig<
-  'fontSize',
-  {},
-  {
-    fontSize: {
-      setMark: (fontSize: string) => void;
-    };
-  }
->;
-
-export const BaseFontSizePlugin = createTSlatePlugin({
+export const BaseFontSizePlugin = createSlatePlugin({
   key: KEYS.fontSize,
   inject: {
     nodeProps: {

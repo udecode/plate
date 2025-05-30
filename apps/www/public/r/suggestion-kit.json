@@ -6,6 +6,7 @@
     "@udecode/plate-suggestion"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/suggestion-base-kit",
     "https://platejs.org/r/suggestion-node",
     "https://platejs.org/r/suggestion-line-break",
     "https://platejs.org/r/suggestion-toolbar-button",

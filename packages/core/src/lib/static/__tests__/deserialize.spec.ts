@@ -1,7 +1,6 @@
 import { alignValue } from 'www/src/registry/examples/values/align-value';
 import { basicElementsValue } from 'www/src/registry/examples/values/basic-elements-value';
 import { basicMarksValue } from 'www/src/registry/examples/values/basic-marks-value';
-import { commentsValue } from 'www/src/registry/examples/values/comments-value';
 import { dateValue } from 'www/src/registry/examples/values/date-value';
 import { fontValue } from 'www/src/registry/examples/values/font-value';
 // import { equationValue } from 'www/src/registry/examples/values/equation-value';
@@ -13,7 +12,7 @@ import { mentionValue } from 'www/src/registry/examples/values/mention-value';
 import { tocPlaygroundValue } from 'www/src/registry/examples/values/toc-value';
 
 import { serializeHtml } from '../serializeHtml';
-import { components, createStaticEditor } from './create-static-editor';
+import { createStaticEditor } from './create-static-editor';
 
 describe('deserializePlateStatic', () => {
   it('should deserialize nodes', async () => {
@@ -37,9 +36,7 @@ describe('deserializePlateStatic', () => {
       // ...mediaValue,
     ]);
 
-    const html = await serializeHtml(editor, {
-      components: components,
-    });
+    const html = await serializeHtml(editor);
 
     const nodes = editor.api.html.deserialize({
       collapseWhiteSpace: false,

@@ -6,6 +6,7 @@
     "@udecode/plate-link"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/link-base-kit",
     "https://platejs.org/r/link-node",
     "https://platejs.org/r/link-toolbar",
     "https://platejs.org/r/link-toolbar-button"

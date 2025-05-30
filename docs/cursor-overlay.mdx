@@ -54,7 +54,7 @@ export const EditorContainer = (props: React.HTMLAttributes<HTMLDivElement>) => 
   const editor = useEditorRef();
   const containerRef = useEditorContainerRef();
 
-  return <div id={editor.uid} ref={containerRef} {...props} />;
+  return <div id={editor.meta.uid} ref={containerRef} {...props} />;
 };
 ```
 

@@ -6,6 +6,7 @@
     "@udecode/plate-layout"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/column-base-kit",
     "https://platejs.org/r/column-node"
   ],
   "files": [

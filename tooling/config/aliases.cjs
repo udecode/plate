@@ -1,5 +1,5 @@
 module.exports = {
-  '@udecode/cn': 'cn',
+  '@udecode/cn': 'udecode/cn',
   '@udecode/plate': 'plate',
   '@udecode/plate-autoformat': 'autoformat',
   '@udecode/plate-basic-nodes': 'basic-nodes',
@@ -31,9 +31,9 @@ module.exports = {
   '@udecode/plate-test-utils': 'test-utils',
   '@udecode/plate-toc': 'toc',
   '@udecode/plate-toggle': 'toggle',
-  '@udecode/plate-utils': 'plate-utils',
-  '@udecode/react-hotkeys': 'react-hotkeys',
-  '@udecode/react-utils': 'react-utils',
+  '@udecode/plate-utils': 'utils',
+  '@udecode/react-hotkeys': 'udecode/react-hotkeys',
+  '@udecode/react-utils': 'udecode/react-utils',
   '@udecode/slate': 'slate',
-  '@udecode/utils': 'utils',
+  '@udecode/utils': 'udecode/utils',
 };

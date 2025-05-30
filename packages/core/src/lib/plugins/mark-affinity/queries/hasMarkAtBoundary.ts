@@ -1,12 +1,13 @@
-import { type NodeEntry, NodeApi } from '@udecode/slate';
+import { type TText, NodeApi } from '@udecode/slate';
 
 import type { SlateEditor } from '../../../editor';
 import type { MarkBoundary } from '../types';
-const hasMarkProperties = (editor: SlateEditor, entry: NodeEntry) =>
-  Object.keys(NodeApi.extractProps(entry[0])).some((key) =>
-    editor.pluginList.some(
-      (plugin) =>
-        plugin.key === key && plugin.node.isLeaf && !plugin.node.isHardEdge
+
+const isSoftLeaf = (editor: SlateEditor, node: TText) =>
+  Object.keys(NodeApi.extractProps(node)).some((mark) =>
+    editor.meta.pluginKeys.node.isLeaf.some(
+      (key) =>
+        editor.getType(key) === mark && !editor.plugins[key].node.isHardEdge
     )
   );
 
@@ -17,7 +18,7 @@ export const hasMarkAtBoundary = (
   const [backwardLeafEntry, forwardLeafEntry] = beforeMarkBoundary;
 
   return (
-    (backwardLeafEntry && hasMarkProperties(editor, backwardLeafEntry)) ||
-    (forwardLeafEntry && hasMarkProperties(editor, forwardLeafEntry))
+    (backwardLeafEntry && isSoftLeaf(editor, backwardLeafEntry[0])) ||
+    (forwardLeafEntry && isSoftLeaf(editor, forwardLeafEntry[0]))
   );
 };

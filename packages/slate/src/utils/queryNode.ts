@@ -47,14 +47,22 @@ export const queryNode = <N extends TNode>(
   if (allow) {
     const allows = castArray(allow);
 
-    if (allows.length > 0 && !allows.includes(node.type as any)) {
+    if (
+      allows.length > 0 &&
+      node.type &&
+      !allows.includes(node.type as string)
+    ) {
       return false;
     }
   }
   if (exclude) {
     const excludes = castArray(exclude);
 
-    if (excludes.length > 0 && excludes.includes(node.type as any)) {
+    if (
+      excludes.length > 0 &&
+      node.type &&
+      !excludes.includes(node.type as string)
+    ) {
       return false;
     }
   }

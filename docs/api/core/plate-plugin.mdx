@@ -185,7 +185,7 @@ Renders a component before the Editable component.
 Create a function that generates a React node below all other plugins' node React node, but above their children.
 </APISubListItem>
 <APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<TElement, C>) => React.ReactNode" optional>
-Renders a component after the direct children of the root element. This differs from `belowNodes` in that it's the direct child of `PlateElement` rather than wrapping the children that could be nested. This is useful when you need components relative to the root element. Note: this is not used in Plate Core but in `PlateElement`. If you're not using `PlateElement`, you'll need to use this plugin field on your own.
+Renders a component after the direct children of the root element. This differs from `belowNodes` in that it's the direct child of `PlateElement` rather than wrapping the children that could be nested. This is useful when you need components relative to the root element.
 </APISubListItem>
 <APISubListItem parent="render" name="leaf" type="NodeComponent" optional>
 Renders a component below leaf nodes when `isLeaf: true` and `isDecoration: false`. Use `render.node` instead when `isDecoration: true`.

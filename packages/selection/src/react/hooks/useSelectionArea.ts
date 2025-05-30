@@ -31,10 +31,10 @@ export const useSelectionArea = () => {
 
   React.useEffect(() => {
     const selection = new SelectionArea({
-      boundaries: `#${editor.uid}`,
-      container: `#${editor.uid}`,
+      boundaries: `#${editor.meta.uid}`,
+      container: `#${editor.meta.uid}`,
       document: window.document,
-      selectables: `#${editor.uid} .slate-selectable`,
+      selectables: `#${editor.meta.uid} .slate-selectable`,
       selectionAreaClass: 'slate-selection-area',
       ...areaOptions,
     })

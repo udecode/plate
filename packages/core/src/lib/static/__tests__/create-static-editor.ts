@@ -92,7 +92,7 @@ import {
   TableElementStatic,
   TableRowElementStatic,
   TableCellElementStatic,
-  TableCellHeaderStaticElement,
+  TableCellHeaderElementStatic,
 } from 'www/src/registry/ui/table-node-static';
 import { TocElementStatic } from 'www/src/registry/ui/toc-node-static';
 import { ToggleElementStatic } from 'www/src/registry/ui/toggle-node-static';
@@ -106,6 +106,7 @@ export const createStaticEditor = (
 ) => {
   return createSlateEditor({
     ...options,
+    components,
     plugins: [
       BaseColumnPlugin,
       BaseColumnItemPlugin,
@@ -210,7 +211,7 @@ export const components = {
   // [KEYS.mediaEmbed]: MediaEmbedElementStatic,
   [KEYS.mention]: MentionElementStatic,
   [KEYS.p]: ParagraphElementStatic,
-  [KEYS.th]: TableCellHeaderStaticElement,
+  [KEYS.th]: TableCellHeaderElementStatic,
   [KEYS.td]: TableCellElementStatic,
   [KEYS.table]: TableElementStatic,
   [KEYS.tr]: TableRowElementStatic,

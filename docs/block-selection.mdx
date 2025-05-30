@@ -65,11 +65,11 @@ BlockSelectionPlugin.configure({
 
 If you're using `EditorContainer` from [Editor](/docs/components/editor), you can skip this section.
 
-To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #${editor.uid}`, which are used with `document.querySelector()`.
+To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #${editor.meta.uid}`, which are used with `document.querySelector()`.
 
 For this to work effectively:
 
-1. Add an `id` or `className` to your scroll container. If you're not sure about the container, you can add it to the `<Editor />` component. We recommend using `id={editor.uid}`.
+1. Add an `id` or `className` to your scroll container. If you're not sure about the container, you can add it to the `<Editor />` component. We recommend using `id={editor.meta.uid}`.
 2. Use the appropriate selector in your configuration.
 3. Don't forget to set `position: relative` to the container.
 
@@ -79,9 +79,9 @@ Default configuration:
 BlockSelectionPlugin.configure({
   options: {
     areaOptions: {
-      boundaries: `#${editor.uid}`,
-      container: `#${editor.uid}`,
-      selectables: `#${editor.uid} .slate-selectable`,
+      boundaries: `#${editor.meta.uid}`,
+      container: `#${editor.meta.uid}`,
+      selectables: `#${editor.meta.uid} .slate-selectable`,
     },
   },
 });
@@ -193,9 +193,9 @@ Plugin for block selection functionality.
 
 ```ts
 {
-    boundaries: [`#${editor.uid}`],
-    container: [`#${editor.uid}`],
-    selectables: [`#${editor.uid} .slate-selectable`],
+    boundaries: [`#${editor.meta.uid}`],
+    container: [`#${editor.meta.uid}`],
+    selectables: [`#${editor.meta.uid} .slate-selectable`],
     selectionAreaClass: 'slate-selection-area',
 }
 ```

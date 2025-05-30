@@ -29,7 +29,7 @@ describe('resolvePlugins', () => {
 
     resolvePlugins(editor, plugins);
 
-    expect(editor.pluginList.map((p) => p.key)).toEqual(['b', 'c', 'a']);
+    expect(editor.meta.pluginList.map((p) => p.key)).toEqual(['b', 'c', 'a']);
   });
 
   it('should handle nested plugins', () => {
@@ -45,9 +45,9 @@ describe('resolvePlugins', () => {
 
     resolvePlugins(editor, plugins);
 
-    expect(editor.pluginList.map((p) => p.key)).toContain('parent');
-    expect(editor.pluginList.map((p) => p.key)).toContain('child1');
-    expect(editor.pluginList.map((p) => p.key)).toContain('child2');
+    expect(editor.meta.pluginList.map((p) => p.key)).toContain('parent');
+    expect(editor.meta.pluginList.map((p) => p.key)).toContain('child1');
+    expect(editor.meta.pluginList.map((p) => p.key)).toContain('child2');
   });
 
   it('should not include disabled plugins', () => {
@@ -58,8 +58,8 @@ describe('resolvePlugins', () => {
 
     resolvePlugins(editor, plugins);
 
-    expect(editor.pluginList.map((p) => p.key)).toContain('enabled');
-    expect(editor.pluginList.map((p) => p.key)).not.toContain('disabled');
+    expect(editor.meta.pluginList.map((p) => p.key)).toContain('enabled');
+    expect(editor.meta.pluginList.map((p) => p.key)).not.toContain('disabled');
   });
 
   it('should apply overrides correctly', () => {
@@ -246,7 +246,7 @@ describe('applyPluginsToEditor', () => {
 
     applyPluginsToEditor(editor, plugins);
 
-    expect(editor.pluginList).toHaveLength(2);
+    expect(editor.meta.pluginList).toHaveLength(2);
     expect(editor.plugins.a.node.type).toBe('typeA');
     expect(editor.plugins.b.node.type).toBe('typeB');
   });
@@ -262,7 +262,7 @@ describe('applyPluginsToEditor', () => {
 
     applyPluginsToEditor(editor, plugins);
 
-    expect(editor.pluginList).toHaveLength(1);
+    expect(editor.meta.pluginList).toHaveLength(1);
     expect(editor.plugins.a.node.type).toBe('newType');
   });
 });
@@ -666,9 +666,11 @@ describe('resolvePlugins with keyless plugins', () => {
 
     resolvePlugins(editor, plugins);
 
-    expect(editor.pluginList.map((p) => p.key)).not.toContain('');
+    expect(editor.meta.pluginList.map((p) => p.key)).not.toContain('');
     expect(editor.plugins.keyedPlugin).toBeDefined();
-    expect(editor.pluginList.some((p) => p.key === 'keyedPlugin')).toBe(true);
+    expect(editor.meta.pluginList.some((p) => p.key === 'keyedPlugin')).toBe(
+      true
+    );
     // Exact count depends on core plugins, but it should contain keyedPlugin and not the keyless one.
   });
 
@@ -704,7 +706,7 @@ describe('resolvePlugins with keyless plugins', () => {
     expect(editor.plugins.childKey2).toBeDefined();
     expect(editor.plugins.anotherPlugin).toBeDefined();
 
-    const pluginKeys = editor.pluginList.map((p) => p.key);
+    const pluginKeys = editor.meta.pluginList.map((p) => p.key);
     expect(pluginKeys).toContain('childKey1');
     expect(pluginKeys).toContain('childKey2');
     expect(pluginKeys).toContain('anotherPlugin');

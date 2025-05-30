@@ -17,6 +17,7 @@ import type {
   InferOptions,
   InferSelectors,
   InferTransforms,
+  NodeComponents,
   PluginConfig,
   WithRequiredKey,
 } from '../plugin/BasePlugin';
@@ -28,7 +29,6 @@ import type {
 import type { BaseParagraphPlugin, CorePlugin } from '../plugins';
 
 export type BaseEditor = EditorBase & {
-  key: any;
   /** DOM state */
   dom: {
     /** Whether the editor is composing text. */
@@ -42,14 +42,56 @@ export type BaseEditor = EditorBase & {
     /** Whether the editor is read-only. */
     readOnly: boolean;
   };
-  /**
-   * Whether the editor is a fallback editor.
-   *
-   * @default false
-   * @see {@link createPlateFallbackEditor}
-   */
-  isFallback: boolean;
-  pluginList: any[];
+  meta: EditorBase['meta'] & {
+    /**
+     * A key that can be used to uniquely identify the editor. For RSC usage,
+     * use `uid` instead.
+     */
+    key: any;
+    /** A record of plugin components. */
+    components: NodeComponents;
+    /** Whether the editor is a fallback editor. */
+    isFallback: boolean;
+    pluginKeys: {
+      decorate: string[];
+      handlers: {
+        onChange: string[];
+      };
+      inject: {
+        nodeProps: string[];
+      };
+      node: {
+        clearOnBoundary: string[];
+        isElement: string[];
+        isHardEdge: string[];
+        isInline: string[];
+        isLeaf: string[];
+        isMarkableVoid: string[];
+        isNotSelectable: string[];
+        isVoid: string[];
+      };
+      normalizeInitialValue: string[];
+      render: {
+        aboveEditable: string[];
+        aboveNodes: string[];
+        aboveSlate: string[];
+        afterContainer: string[];
+        afterEditable: string[];
+        beforeContainer: string[];
+        beforeEditable: string[];
+        belowNodes: string[];
+        belowRootNodes: string[];
+      };
+      useHooks: string[];
+    };
+    /** All plugins. */
+    pluginList: any[];
+    /**
+     * A stable unique identifier that remains constant from Plate RSC to client
+     * hydration.
+     */
+    uid?: string;
+  };
   plugins: Record<string, any>;
   setOptions: {
     <C extends AnyPluginConfig>(
@@ -114,7 +156,11 @@ export type KeyofNodePlugins<T extends AnyPluginConfig> =
 
 export type SlateEditor = BaseEditor & {
   api: EditorApi & UnionToIntersection<InferApi<CorePlugin>>;
-  pluginList: AnyEditorPlugin[];
+  meta: BaseEditor['meta'] & {
+    /** An array of plugins that are currently being used by the editor. */
+    pluginList: AnyEditorPlugin[];
+    shortcuts: any;
+  };
   plugins: Record<string, AnyEditorPlugin>;
   // Alias for transforms
   tf: EditorTransforms & UnionToIntersection<InferTransforms<CorePlugin>>;
@@ -134,7 +180,10 @@ export type TSlateEditor<
 > = SlateEditor & {
   api: EditorApi<V> & UnionToIntersection<InferApi<CorePlugin | P>>;
   children: V;
-  pluginList: P[];
+  meta: BaseEditor['meta'] & {
+    pluginList: P[];
+    shortcuts: any;
+  };
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
   tf: EditorTransforms<V> &
     UnionToIntersection<InferTransforms<CorePlugin | P>>;

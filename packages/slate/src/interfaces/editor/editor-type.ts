@@ -23,7 +23,10 @@ export type EditorBase<V extends Value = Value> = {
   history: History;
   /** Marks that are currently applied to the editor. */
   marks: EditorMarks | null;
-  /** Editor metadata. */
+  /**
+   * Editor metadata. Use this for custom fields instead of extending the editor
+   * directly.
+   */
   meta: UnknownObject & {
     /** Array of container node types. */
     containerTypes: string[];

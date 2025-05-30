@@ -4,15 +4,15 @@ import type { SlateLeafProps, TSuggestionText } from '@udecode/plate';
 
 import { SlateLeaf } from '@udecode/plate';
 import { BaseSuggestionPlugin } from '@udecode/plate-suggestion';
-import { useEditorPlugin } from '@udecode/plate/react';
 
 import { cn } from '@/lib/utils';
 
 export function SuggestionLeafStatic(props: SlateLeafProps<TSuggestionText>) {
-  const { api } = useEditorPlugin(BaseSuggestionPlugin);
-  const leaf = props.leaf;
+  const { editor, leaf } = props;
 
-  const dataList = api.suggestion.dataList(leaf);
+  const dataList = editor
+    .getApi(BaseSuggestionPlugin)
+    .suggestion.dataList(leaf);
   const hasRemove = dataList.some((data) => data.type === 'remove');
   const diffOperation = { type: hasRemove ? 'delete' : 'insert' } as const;
 

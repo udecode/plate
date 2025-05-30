@@ -6,6 +6,7 @@
     "@udecode/plate-list"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/list-base-kit",
     "https://platejs.org/r/list-todo",
     "https://platejs.org/r/list-toolbar-button",
     "https://platejs.org/r/indent-kit"

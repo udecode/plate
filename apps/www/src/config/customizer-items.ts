@@ -20,6 +20,9 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-nodes/react';
 import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  FontSizePlugin,
   LineHeightPlugin,
   TextAlignPlugin,
 } from '@udecode/plate-basic-styles/react';
@@ -36,11 +39,6 @@ import { DndPlugin } from '@udecode/plate-dnd';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
-import {
-  FontBackgroundColorPlugin,
-  FontColorPlugin,
-  FontSizePlugin,
-} from '@udecode/plate-basic-styles/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { LinkPlugin } from '@udecode/plate-link/react';

@@ -6,11 +6,10 @@ import { getMarkBoundary } from './queries/getMarkBoundary';
 import { getMarkBoundaryAffinity } from './queries/getMarkBoundaryAffinity';
 import { setMarkBoundaryAffinity } from './transforms/setMarkBoundaryAffinity';
 
-export type MarkAffinityConfig = PluginConfig<'mark-affinity'>;
+export type MarkAffinityConfig = PluginConfig<'markAffinity'>;
 
 export const MarkAffinityPlugin = createTSlatePlugin<MarkAffinityConfig>({
-  key: 'mark-affinity',
-  // options: { targetBoxMark: { allow: [] }, targetTextMark: { allow: [] } },
+  key: 'markAffinity',
 }).overrideEditor(({ editor, tf: { deleteBackward, move } }) => ({
   transforms: {
     /**
@@ -19,11 +18,7 @@ export const MarkAffinityPlugin = createTSlatePlugin<MarkAffinityConfig>({
      * character from the left mark, then the affinity should be backward.
      */
     deleteBackward: (unit) => {
-      if (
-        unit === 'character' &&
-        editor.selection &&
-        !editor.api.isExpanded()
-      ) {
+      if (unit === 'character' && editor.api.isCollapsed()) {
         const [leftMarkEntryBefore] = getMarkBoundary(editor) ?? [null];
         const removingFromLeftMark =
           leftMarkEntryBefore && leftMarkEntryBefore[0].text.length > 1;
@@ -51,12 +46,7 @@ export const MarkAffinityPlugin = createTSlatePlugin<MarkAffinityConfig>({
         unit = 'character',
       } = options || {};
 
-      if (
-        unit === 'character' &&
-        distance === 1 &&
-        editor.selection &&
-        !editor.api.isExpanded()
-      ) {
+      if (unit === 'character' && distance === 1 && editor.api.isCollapsed()) {
         const beforeMarkBoundary = getMarkBoundary(editor);
 
         if (

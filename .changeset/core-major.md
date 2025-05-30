@@ -9,6 +9,12 @@
 - Editor DOM state properties have been moved under `editor.dom` namespace:
   - `editor.currentKeyboardEvent` is now `editor.dom.currentKeyboardEvent`.
   - `editor.prevSelection` is now `editor.dom.prevSelection`.
+- Editor metadata properties have been moved under `editor.meta` namespace:
+  - `editor.isFallback` is now `editor.meta.isFallback`
+  - `editor.key` is now `editor.meta.key`
+  - `editor.pluginList` is now `editor.meta.pluginList`
+  - `editor.shortcuts` is now `editor.meta.shortcuts`
+  - `editor.uid` is now `editor.meta.uid`
 - `NodeIdPlugin` is now enabled by default as part of the core plugins. This automatically assigns unique IDs to block nodes.
   - Migration: If you were not previously using `NodeIdPlugin` and wish to maintain the old behavior (no automatic IDs), explicitly disable it in your editor configuration:
     ```ts
@@ -17,6 +23,8 @@
       nodeId: false, // Disables automatic node ID generation
     });
     ```
+- The `components` prop has been removed from `serializeHtml` and `PlateStatic`.
+  - Migration: Pass the `components` to `createSlateEditor({ components })` or the individual plugins instead.
 - Plugin Shortcuts System Changes:
   - Shortcut keys defined in `editor.shortcuts` are now namespaced by the plugin key (e.g., `code.toggle` for `CodePlugin`).
   - The `priority` property for shortcuts is used to resolve conflicts when multiple shortcuts share the exact same key combination, not for overriding shortcuts by name.

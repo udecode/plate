@@ -9,21 +9,13 @@ import { useNodePath } from '../hooks';
 import { useReadOnly } from '../slate-react';
 import { ElementProvider } from '../stores';
 import { getRenderNodeProps } from './getRenderNodeProps';
-import { type RenderElement, pluginRenderElement } from './pluginRenderElement';
+import { BelowRootNodes, pluginRenderElement } from './pluginRenderElement';
 
 /** @see {@link RenderElement} */
 export const pipeRenderElement = (
   editor: PlateEditor,
   renderElementProp?: EditableProps['renderElement']
 ): EditableProps['renderElement'] => {
-  const renderElements: RenderElement[] = [];
-
-  editor.pluginList.forEach((plugin) => {
-    if (plugin.node.isElement) {
-      renderElements.push(pluginRenderElement(editor, plugin));
-    }
-  });
-
   return function render(props) {
     let element;
 
@@ -31,8 +23,14 @@ export const pipeRenderElement = (
 
     const path = useNodePath(props.element)!;
 
-    renderElements.some((renderElement) => {
-      element = renderElement({ ...props, path } as any);
+    editor.meta.pluginKeys.node.isElement.some((key) => {
+      element = pluginRenderElement(
+        editor,
+        editor.plugins[key]
+      )({
+        ...props,
+        path,
+      } as any);
 
       return !!element;
     });
@@ -55,7 +53,11 @@ export const pipeRenderElement = (
         path={path}
         scope={ctxProps.element.type ?? 'default'}
       >
-        <PlateElement {...ctxProps}>{props.children}</PlateElement>
+        <PlateElement {...ctxProps}>
+          {props.children}
+
+          <BelowRootNodes {...ctxProps} />
+        </PlateElement>
       </ElementProvider>
     );
   };

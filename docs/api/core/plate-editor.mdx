@@ -12,9 +12,6 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
   <APIItem name="id" type="any">
     A unique identifier for the editor.
   </APIItem>
-  <APIItem name="key" type="any">
-    A key that can be used to uniquely identify the editor.
-  </APIItem>
   <APIItem name="dom" type="object">
     An object containing the DOM state of the editor.
     <APISubList>
@@ -35,22 +32,34 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="isFallback" type="boolean">
-    Whether the editor is a fallback editor.
-    
-    - **Default:** `false`
-  </APIItem>
-  <APIItem name="pluginList" type="AnyEditorPlatePlugin[]">
-    An array of plugins that are currently being used by the editor.
-  </APIItem>
   <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
     A record of plugins indexed by their keys.
   </APIItem>
   <APIItem name="meta" type="object">
     An object containing editor metadata, often derived from plugins or editor configuration.
     <APISubList>
+      <APISubListItem parent="meta" name="components" type="Record<string, React.FC<any>>">
+        Plugin components indexed by their keys.
+      </APISubListItem>
       <APISubListItem parent="meta" name="containerTypes" type="string[]">
         Array of container node types derived from plugins that have `plugin.node.isContainer = true`.
+      </APISubListItem>
+      <APISubListItem parent="meta" name="isFallback" type="boolean">
+        Whether the editor is a fallback editor.
+        
+        - **Default:** `false`
+      </APISubListItem>
+      <APISubListItem parent="meta" name="key" type="any">
+        A key that can be used to uniquely identify the editor.
+      </APISubListItem>
+      <APISubListItem parent="meta" name="pluginList" type="AnyEditorPlatePlugin[]">
+        An array of plugins that are currently being used by the editor.
+      </APISubListItem>
+      <APISubListItem parent="meta" name="shortcuts" type="Record<string, any>">
+        Editor shortcuts configuration indexed by shortcut names.
+      </APISubListItem>
+      <APISubListItem parent="meta" name="uid" type="any">
+        A stable unique identifier that remains consistent from RSC to client hydration.
       </APISubListItem>
     </APISubList>
   </APIItem>

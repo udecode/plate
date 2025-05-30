@@ -6,6 +6,7 @@
     "@udecode/plate-table"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/table-base-kit",
     "https://platejs.org/r/table-node",
     "https://platejs.org/r/table-toolbar-button"
   ],

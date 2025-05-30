@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "src/registry/ui/code-node.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateLeafProps } from '@udecode/plate/react';\n\nimport { PlateLeaf } from '@udecode/plate/react';\n\nexport function CodeLeaf(props: PlateLeafProps) {\n  return (\n    <PlateLeaf\n      {...props}\n      as=\"code\"\n      className=\"rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm whitespace-pre-wrap\"\n    >\n      {props.children}\n    </PlateLeaf>\n  );\n}\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateLeafProps } from '@udecode/plate/react';\n\nimport { PlateLeaf } from '@udecode/plate/react';\n\nexport function CodeLeaf(props: PlateLeafProps) {\n  return (\n    <PlateLeaf\n      {...props}\n      as=\"code\"\n      className=\"rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm whitespace-pre-wrap\"\n      hardEdge\n    >\n      {props.children}\n    </PlateLeaf>\n  );\n}\n",
       "type": "registry:ui"
     },
     {

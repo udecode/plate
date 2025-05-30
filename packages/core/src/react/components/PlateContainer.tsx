@@ -20,37 +20,37 @@ export const PlateContainer = ({
   let beforeContainer: React.ReactNode = null;
 
   const mainContainer = (
-    <div id={editor.uid} ref={containerRef} {...props}>
+    <div id={editor.meta.uid} ref={containerRef} {...props}>
       {children}
     </div>
   );
 
-  editor.pluginList.forEach((plugin) => {
+  editor.meta.pluginKeys.render.beforeContainer.forEach((key) => {
+    const plugin = editor.plugins[key];
     if (isEditOnly(readOnly, plugin, 'render')) return;
 
-    const {
-      render: {
-        afterContainer: AfterContainer,
-        beforeContainer: BeforeContainer,
-      } = {},
-    } = plugin;
+    const BeforeContainer = plugin.render.beforeContainer!;
 
-    if (AfterContainer) {
-      afterContainer = (
-        <>
-          {afterContainer}
-          <AfterContainer {...props} />
-        </>
-      );
-    }
-    if (BeforeContainer) {
-      beforeContainer = (
-        <>
-          {beforeContainer}
-          <BeforeContainer {...props} />
-        </>
-      );
-    }
+    beforeContainer = (
+      <>
+        {beforeContainer}
+        <BeforeContainer {...props} />
+      </>
+    );
+  });
+
+  editor.meta.pluginKeys.render.afterContainer.forEach((key) => {
+    const plugin = editor.plugins[key];
+    if (isEditOnly(readOnly, plugin, 'render')) return;
+
+    const AfterContainer = plugin.render.afterContainer!;
+
+    afterContainer = (
+      <>
+        {afterContainer}
+        <AfterContainer {...props} />
+      </>
+    );
   });
 
   return (

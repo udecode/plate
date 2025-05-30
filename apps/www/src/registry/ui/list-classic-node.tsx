@@ -5,7 +5,6 @@ import * as React from 'react';
 import type { TTodoListItemElement } from '@udecode/plate-list-classic';
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import { withProps } from '@udecode/cn';
 import {
   useTodoListElement,
   useTodoListElementState,
@@ -39,8 +38,13 @@ export function ListElement({
   );
 }
 
-export const BulletedListElement = withProps(ListElement, { variant: 'ul' });
-export const NumberedListElement = withProps(ListElement, { variant: 'ol' });
+export function BulletedListElement(props: PlateElementProps) {
+  return <ListElement variant="ul" {...props} />;
+}
+
+export function NumberedListElement(props: PlateElementProps) {
+  return <ListElement variant="ol" {...props} />;
+}
 
 export function TodoListElement(
   props: PlateElementProps<TTodoListItemElement>

@@ -12,54 +12,15 @@ import {
   SelectOnBackspacePlugin,
   TrailingBlockPlugin,
 } from '@udecode/plate';
-import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
 import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
-import {
-  BaseBlockquotePlugin,
-  BaseBoldPlugin,
-  BaseCodePlugin,
-  BaseHeadingPlugin,
-  BaseHighlightPlugin,
-  BaseHorizontalRulePlugin,
-  BaseItalicPlugin,
-  BaseKbdPlugin,
-  BaseStrikethroughPlugin,
-  BaseSubscriptPlugin,
-  BaseSuperscriptPlugin,
-  BaseUnderlinePlugin,
-} from '@udecode/plate-basic-nodes';
-import { BaseCaptionPlugin } from '@udecode/plate-caption';
-import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
-import { BaseCommentPlugin } from '@udecode/plate-comments';
 import { DocxPlugin } from '@udecode/plate-docx';
-import { BaseEmojiPlugin } from '@udecode/plate-emoji';
-import { BaseExcalidrawPlugin } from '@udecode/plate-excalidraw';
-import {
-  BaseFontBackgroundColorPlugin,
-  BaseFontColorPlugin,
-  BaseFontSizePlugin,
-} from '@udecode/plate-basic-styles';
-import { BaseIndentPlugin } from '@udecode/plate-indent';
-import { JuicePlugin } from '@udecode/plate-juice';
-import { BaseColumnPlugin } from '@udecode/plate-layout';
-import { BaseLineHeightPlugin } from '@udecode/plate-basic-styles';
-import { BaseLinkPlugin } from '@udecode/plate-link';
-import { BaseListPlugin } from '@udecode/plate-list';
-import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
-import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@udecode/plate-media';
-import { BaseMentionPlugin } from '@udecode/plate-mention';
-import { BaseSlashPlugin } from '@udecode/plate-slash-command';
-import { BaseTabbablePlugin } from '@udecode/plate-tabbable';
-import { BaseTablePlugin } from '@udecode/plate-table';
-import { BaseTogglePlugin } from '@udecode/plate-toggle';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { Code } from '@/components/code';
 import { Link } from '@/components/link';
 import { Markdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
+import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { basicElementsValue } from '@/registry/examples/values/basic-elements-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 
@@ -96,91 +57,10 @@ export default function RSCPage() {
 
   const editor = createSlateEditor({
     plugins: [
-      BaseHeadingPlugin,
-      BaseBlockquotePlugin,
-      BaseCodeBlockPlugin,
-      BaseHorizontalRulePlugin,
-      BaseLinkPlugin,
-      BaseListPlugin,
-      BaseImagePlugin,
-      BaseMediaEmbedPlugin,
-      BaseCaptionPlugin.configure({
-        options: {
-          query: { allow: [KEYS.img, KEYS.mediaEmbed] },
-        },
-      }),
-      BaseMentionPlugin,
-      BaseSlashPlugin,
-      BaseTablePlugin,
-      BaseTogglePlugin,
-      BaseExcalidrawPlugin,
-      BaseColumnPlugin,
-
-      // Marks
-      BaseBoldPlugin,
-      BaseItalicPlugin,
-      BaseUnderlinePlugin,
-      BaseStrikethroughPlugin,
-      BaseCodePlugin,
-      BaseSubscriptPlugin,
-      BaseSuperscriptPlugin,
-      BaseFontColorPlugin,
-      BaseFontBackgroundColorPlugin,
-      BaseFontSizePlugin,
-      BaseHighlightPlugin,
-      BaseKbdPlugin,
-
-      // Block Style
-      BaseTextAlignPlugin.extend({
-        inject: {
-          targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.mediaEmbed],
-        },
-      }),
-      BaseIndentPlugin.extend({
-        inject: {
-          targetPlugins: [
-            KEYS.p,
-            ...KEYS.heading,
-            KEYS.blockquote,
-            KEYS.codeBlock,
-            KEYS.toggle,
-          ],
-        },
-      }),
-      BaseListPlugin.extend({
-        inject: {
-          targetPlugins: [
-            KEYS.p,
-            ...KEYS.heading,
-            KEYS.blockquote,
-            KEYS.codeBlock,
-            KEYS.toggle,
-          ],
-        },
-        options: {
-          listStyleTypes: {
-            fire: {
-              type: 'fire',
-            },
-            todo: {
-              type: 'todo',
-            },
-          },
-        },
-      }),
-      BaseLineHeightPlugin.extend({
-        inject: {
-          nodeProps: {
-            defaultNodeValue: 1.5,
-            validNodeValues: [1, 1.2, 1.5, 2, 3],
-          },
-          targetPlugins: [KEYS.p, ...KEYS.heading],
-        },
-      }),
+      ...BaseEditorKit,
 
       // Functionality
       BaseAutoformatPlugin,
-      BaseEmojiPlugin,
       BaseExitBreakPlugin,
       BaseResetNodePlugin,
       SelectOnBackspacePlugin.configure({
@@ -192,20 +72,8 @@ export default function RSCPage() {
       }),
       DeletePlugin,
       BaseSoftBreakPlugin,
-      BaseTabbablePlugin,
       TrailingBlockPlugin,
-
-      // Collaboration
-      BaseCommentPlugin,
-
-      // Deserialization
       DocxPlugin,
-      MarkdownPlugin.configure({
-        options: {
-          remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
-        },
-      }),
-      JuicePlugin,
     ],
     value: [...basicElementsValue, ...basicMarksValue],
   });

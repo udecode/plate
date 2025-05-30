@@ -3,7 +3,7 @@ import React from 'react';
 import clsx from 'clsx';
 
 import type { SlateEditor } from '../editor';
-import type { NodeComponents, SlatePlugin } from '../plugin';
+import type { SlatePlugin } from '../plugin';
 import type { RenderTextProps } from '../types/RenderTextProps';
 
 import { SlateText } from './components';
@@ -16,14 +16,13 @@ export type SlateRenderText = (
 
 export const pluginRenderTextStatic = (
   editor: SlateEditor,
-  plugin: SlatePlugin,
-  components: NodeComponents
+  plugin: SlatePlugin
 ): SlateRenderText =>
   function render(nodeProps) {
     const { children, text } = nodeProps;
 
     if (text[plugin.node.type ?? plugin.key]) {
-      const Component = components?.[plugin.key] as any;
+      const Component = editor.meta.components?.[plugin.key] as any;
       const Text = Component ?? SlateText;
 
       // const dataAttributes = getPluginDataAttributes(editor, plugin, text);
@@ -51,17 +50,14 @@ export const pluginRenderTextStatic = (
 /** @see {@link RenderText} */
 export const pipeRenderTextStatic = (
   editor: SlateEditor,
-  {
-    components,
-    renderText: renderTextProp,
-  }: { components: NodeComponents; renderText?: SlateRenderText }
+  { renderText: renderTextProp }: { renderText?: SlateRenderText } = {}
 ): SlateRenderText => {
   const renderTexts: SlateRenderText[] = [];
   const textPropsPlugins: SlatePlugin[] = [];
 
-  editor.pluginList.forEach((plugin) => {
+  editor.meta.pluginList.forEach((plugin) => {
     if (plugin.node.isLeaf && plugin.node.isDecoration === false) {
-      renderTexts.push(pluginRenderTextStatic(editor, plugin, components));
+      renderTexts.push(pluginRenderTextStatic(editor, plugin));
     }
 
     if (plugin.node.textProps) {

@@ -6,6 +6,7 @@
     "@udecode/plate-math"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/math-base-kit",
     "https://platejs.org/r/equation-toolbar-button",
     "https://platejs.org/r/equation-node"
   ],

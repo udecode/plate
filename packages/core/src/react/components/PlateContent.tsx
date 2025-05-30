@@ -78,32 +78,32 @@ const PlateContent = React.forwardRef(
     let afterEditable: React.ReactNode = null;
     let beforeEditable: React.ReactNode = null;
 
-    editor.pluginList.forEach((plugin) => {
+    editor.meta.pluginKeys.render.beforeEditable.forEach((key) => {
+      const plugin = editor.plugins[key];
       if (isEditOnly(readOnly, plugin, 'render')) return;
 
-      const {
-        render: {
-          afterEditable: AfterEditable,
-          beforeEditable: BeforeEditable,
-        },
-      } = plugin;
+      const BeforeEditable = plugin.render.beforeEditable!;
 
-      if (AfterEditable) {
-        afterEditable = (
-          <>
-            {afterEditable}
-            <AfterEditable {...editableProps} />
-          </>
-        );
-      }
-      if (BeforeEditable) {
-        beforeEditable = (
-          <>
-            {beforeEditable}
-            <BeforeEditable {...editableProps} />
-          </>
-        );
-      }
+      beforeEditable = (
+        <>
+          {beforeEditable}
+          <BeforeEditable {...editableProps} />
+        </>
+      );
+    });
+
+    editor.meta.pluginKeys.render.afterEditable.forEach((key) => {
+      const plugin = editor.plugins[key];
+      if (isEditOnly(readOnly, plugin, 'render')) return;
+
+      const AfterEditable = plugin.render.afterEditable!;
+
+      afterEditable = (
+        <>
+          {afterEditable}
+          <AfterEditable {...editableProps} />
+        </>
+      );
     });
 
     let aboveEditable: React.ReactNode = (
@@ -117,15 +117,13 @@ const PlateContent = React.forwardRef(
       </>
     );
 
-    editor.pluginList.forEach((plugin) => {
+    editor.meta.pluginKeys.render.aboveEditable.forEach((key) => {
+      const plugin = editor.plugins[key];
       if (isEditOnly(readOnly, plugin, 'render')) return;
 
-      const {
-        render: { aboveEditable: AboveEditable },
-      } = plugin;
+      const AboveEditable = plugin.render.aboveEditable!;
 
-      if (AboveEditable)
-        aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
+      aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
     });
 
     return (

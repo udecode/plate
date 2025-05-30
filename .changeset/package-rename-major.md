@@ -1,4 +1,5 @@
 ---
+'@udecode/slate': major
 '@udecode/plate-ai': major
 '@udecode/plate-autoformat': major
 '@udecode/plate-callout': major

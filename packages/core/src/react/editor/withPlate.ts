@@ -38,18 +38,6 @@ export type WithPlateOptions<
     | 'transforms'
     | 'useHooks'
   > & {
-    /**
-     * Specifies the component for each plugin key.
-     *
-     * @example
-     *   const editor = createPlateEditor({
-     *     plugins: [
-     *       ParagraphPlugin.withComponent(ParagraphElement),
-     *       LinkPlugin.withComponent(LinkElement),
-     *     ],
-     *   });
-     */
-    components?: AnyPlatePlugin['override']['components'];
     // override?: {
     //   /** Enable or disable plugins */
     //   enabled?: Partial<Record<KeyofPlugins<InferPlugins<P[]>>, boolean>>;
@@ -83,13 +71,6 @@ export const withPlate = <
 ): TPlateEditor<V, InferPlugins<P[]>> => {
   const editor = withSlate<V, P>(e, {
     ...options,
-    override: {
-      ...options.override,
-      components: {
-        ...options.components,
-        ...options.override?.components,
-      },
-    },
     plugins: [...getPlateCorePlugins(), ...plugins],
   } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
 

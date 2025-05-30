@@ -99,13 +99,6 @@ export function toPlatePlugin<
     };
   });
 
-  plugin.withComponent = (component) => {
-    return plugin.extend({
-      node: { component },
-      render: { node: component },
-    }) as any;
-  };
-
   if (!extendConfig) return plugin as any;
 
   const extendedPlugin = plugin.extend(extendConfig as any);

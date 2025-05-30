@@ -87,10 +87,6 @@ export const SlateElement = React.forwardRef(function SlateElement(
 
   const block = !!props.element.id && !!props.editor.api.isBlock(props.element);
 
-  const belowRootComponents = props.editor.pluginList
-    .map((plugin) => plugin.render.belowRootNodes!)
-    .filter(Boolean);
-
   return (
     <Tag
       data-slate-node="element"
@@ -105,10 +101,6 @@ export const SlateElement = React.forwardRef(function SlateElement(
       }
     >
       {children}
-
-      {belowRootComponents?.map((Component, index) => (
-        <Component key={index} {...(props as any)} />
-      ))}
     </Tag>
   );
 }) as <

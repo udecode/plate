@@ -18,7 +18,7 @@ export function PlateTest({
 
   let editor = _editor;
 
-  if (editor && !editor.pluginList) {
+  if (editor && !editor.meta.pluginList) {
     editor = createPlateEditor({
       id,
       editor,

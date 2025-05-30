@@ -6,6 +6,7 @@
     "@udecode/plate-comments"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/comment-base-kit",
     "https://platejs.org/r/comment-node",
     "https://platejs.org/r/comment-toolbar-button",
     "https://platejs.org/r/discussion-kit"

@@ -5,7 +5,6 @@ import { insertDate } from './transforms';
 
 export const BaseDatePlugin = createSlatePlugin({
   key: KEYS.date,
-  handlers: {},
   node: {
     isElement: true,
     isInline: true,

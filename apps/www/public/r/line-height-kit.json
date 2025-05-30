@@ -6,6 +6,7 @@
     "@udecode/plate-basic-styles"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/line-height-base-kit",
     "https://platejs.org/r/line-height-toolbar-button"
   ],
   "files": [

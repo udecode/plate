@@ -6,7 +6,7 @@ import {
 } from '@udecode/slate';
 import { nanoid } from 'nanoid';
 
-import type { AnyPluginConfig } from '../plugin/BasePlugin';
+import type { AnyPluginConfig, NodeComponents } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
 import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
@@ -33,6 +33,8 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * - `'start'`: Select the start of the editor
    */
   autoSelect?: boolean | 'end' | 'start';
+  /** Specifies the component for each plugin key. */
+  components?: NodeComponents;
   /**
    * Determines which mark to apply at boundaries between different marks, based
    * on cursor movement using the left/right arrow keys.
@@ -194,8 +196,8 @@ export const withSlate = <
   const editor = e as SlateEditor;
 
   editor.id = id ?? editor.id ?? nanoid();
-  editor.key = editor.key ?? nanoid();
-  editor.isFallback = false;
+  editor.meta.key = editor.meta.key ?? nanoid();
+  editor.meta.isFallback = false;
   editor.dom = {
     composing: false,
     currentKeyboardEvent: null,
@@ -209,9 +211,13 @@ export const withSlate = <
   editor.getPlugin = (plugin) => getSlatePlugin(editor, plugin) as any;
   editor.getType = (pluginKey) => getPluginType(editor, pluginKey);
   editor.getInjectProps = (plugin) => {
-    return (
-      editor.getPlugin<AnySlatePlugin>(plugin).inject?.nodeProps ?? ({} as any)
-    );
+    const nodeProps =
+      editor.getPlugin<AnySlatePlugin>(plugin).inject?.nodeProps ?? ({} as any);
+
+    nodeProps.nodeKey = nodeProps.nodeKey ?? editor.getType(plugin.key);
+    nodeProps.styleKey = nodeProps.styleKey ?? nodeProps.nodeKey;
+
+    return nodeProps;
   };
   editor.getOptionsStore = (plugin) => {
     return editor.getPlugin(plugin).optionsStore;
@@ -278,6 +284,13 @@ export const withSlate = <
     key: 'root',
     priority: 10_000,
     ...pluginConfig,
+    override: {
+      ...pluginConfig.override,
+      components: {
+        ...pluginConfig.components,
+        ...pluginConfig.override?.components,
+      },
+    },
     plugins: [...corePlugins, ...plugins],
   });
 

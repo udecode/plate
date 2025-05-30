@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "indent-base-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-indent"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/indent-base-kit.tsx",
+      "content": "import { KEYS } from '@udecode/plate';\nimport { BaseIndentPlugin } from '@udecode/plate-indent';\n\nexport const BaseIndentKit = [\n  BaseIndentPlugin.extend({\n    inject: {\n      targetPlugins: [\n        KEYS.p,\n        ...KEYS.heading,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n      ],\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

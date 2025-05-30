@@ -15,7 +15,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -38,7 +37,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -60,7 +58,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -82,7 +79,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -104,7 +100,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -126,7 +121,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -148,7 +142,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -170,7 +163,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -192,7 +184,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });

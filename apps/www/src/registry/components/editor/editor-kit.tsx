@@ -4,7 +4,6 @@ import type { Value } from '@udecode/plate';
 
 import { type TPlateEditor, useEditorRef } from '@udecode/plate/react';
 
-import { AIKit } from './plugins/ai-kit';
 import { AlignKit } from './plugins/align-kit';
 import { AutoformatKit } from './plugins/autoformat-kit';
 import { BasicElementsKit } from './plugins/basic-elements-kit';
@@ -39,7 +38,7 @@ import { TocKit } from './plugins/toc-kit';
 import { ToggleKit } from './plugins/toggle-kit';
 
 export const EditorKit = [
-  ...AIKit,
+  // ...AIKit,
 
   // Elements
   ...BasicElementsKit,

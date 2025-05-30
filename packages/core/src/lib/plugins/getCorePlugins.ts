@@ -10,7 +10,6 @@ import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { DOMPlugin } from './dom';
 import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';
-import { MarkAffinityPlugin } from './mark-affinity';
 import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
 import { SlateExtensionPlugin } from './slate-extension';
@@ -56,8 +55,8 @@ export const getCorePlugins = ({
       enabled: resolvedNodeId !== false,
       options: resolvedNodeId === false ? undefined : resolvedNodeId,
     }),
+    // MarkAffinityPlugin.configure({ enabled: markAffinity }),
     BaseParagraphPlugin,
-    MarkAffinityPlugin.configure({ enabled: markAffinity }),
   ];
 
   // Create a map for quick lookup of custom plugins

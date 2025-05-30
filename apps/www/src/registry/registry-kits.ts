@@ -1,6 +1,293 @@
 import type { Registry } from 'shadcn/registry';
 
+export const registryBaseKits: Registry['items'] = [
+  {
+    dependencies: ['@udecode/plate-basic-styles'],
+    files: [
+      {
+        path: 'components/editor/plugins/align-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'align-base-kit',
+    registryDependencies: [],
+    type: 'registry:component',
+  },
+  {
+    dependencies: [],
+    files: [
+      {
+        path: 'components/editor/plugins/basic-elements-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'basic-elements-base-kit',
+    registryDependencies: [
+      'blockquote-node',
+      'heading-node',
+      'hr-node',
+      'paragraph-node',
+    ],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-basic-nodes'],
+    files: [
+      {
+        path: 'components/editor/plugins/basic-marks-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'basic-marks-base-kit',
+    registryDependencies: ['code-node', 'highlight-node', 'kbd-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-callout'],
+    files: [
+      {
+        path: 'components/editor/plugins/callout-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'callout-base-kit',
+    registryDependencies: ['callout-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-code-block', 'lowlight'],
+    files: [
+      {
+        path: 'components/editor/plugins/code-block-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-base-kit',
+    registryDependencies: ['code-block-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-layout'],
+    files: [
+      {
+        path: 'components/editor/plugins/column-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'column-base-kit',
+    registryDependencies: ['column-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-comments'],
+    files: [
+      {
+        path: 'components/editor/plugins/comment-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'comment-base-kit',
+    registryDependencies: ['comment-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-date'],
+    files: [
+      {
+        path: 'components/editor/plugins/date-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'date-base-kit',
+    registryDependencies: ['date-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-basic-styles'],
+    files: [
+      {
+        path: 'components/editor/plugins/font-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'font-base-kit',
+    registryDependencies: [],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-indent'],
+    files: [
+      {
+        path: 'components/editor/plugins/indent-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'indent-base-kit',
+    registryDependencies: [],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-basic-styles'],
+    files: [
+      {
+        path: 'components/editor/plugins/line-height-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'line-height-base-kit',
+    registryDependencies: [],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-link'],
+    files: [
+      {
+        path: 'components/editor/plugins/link-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'link-base-kit',
+    registryDependencies: ['link-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-list'],
+    files: [
+      {
+        path: 'components/editor/plugins/list-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'list-base-kit',
+    registryDependencies: ['list-todo', 'indent-base-kit'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-math'],
+    files: [
+      {
+        path: 'components/editor/plugins/math-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'math-base-kit',
+    registryDependencies: ['equation-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-media'],
+    files: [
+      {
+        path: 'components/editor/plugins/media-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'media-base-kit',
+    registryDependencies: [
+      'media-audio-node',
+      'media-file-node',
+      'media-image-node',
+      'media-video-node',
+    ],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-mention'],
+    files: [
+      {
+        path: 'components/editor/plugins/mention-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'mention-base-kit',
+    registryDependencies: ['mention-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-suggestion'],
+    files: [
+      {
+        path: 'components/editor/plugins/suggestion-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'suggestion-base-kit',
+    registryDependencies: ['suggestion-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-table'],
+    files: [
+      {
+        path: 'components/editor/plugins/table-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'table-base-kit',
+    registryDependencies: ['table-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-toc'],
+    files: [
+      {
+        path: 'components/editor/plugins/toc-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'toc-base-kit',
+    registryDependencies: ['toc-node'],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@udecode/plate-toggle'],
+    files: [
+      {
+        path: 'components/editor/plugins/toggle-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'toggle-base-kit',
+    registryDependencies: ['toggle-node'],
+    type: 'registry:component',
+  },
+  {
+    files: [
+      {
+        path: 'components/editor/editor-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'editor-base-kit',
+    registryDependencies: [
+      'editor',
+      'align-base-kit',
+      'basic-elements-base-kit',
+      'basic-marks-base-kit',
+      'callout-base-kit',
+      'code-block-base-kit',
+      'column-base-kit',
+      'comment-base-kit',
+      'date-base-kit',
+      'font-base-kit',
+      'line-height-base-kit',
+      'link-base-kit',
+      'list-base-kit',
+      'math-base-kit',
+      'media-base-kit',
+      'mention-base-kit',
+      'suggestion-base-kit',
+      'table-base-kit',
+      'toc-base-kit',
+      'toggle-base-kit',
+      'markdown-kit',
+    ],
+    type: 'registry:component',
+  },
+];
+
 export const registryKits: Registry['items'] = [
+  ...registryBaseKits,
   {
     dependencies: ['@udecode/plate-ai'],
     files: [
@@ -29,7 +316,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'align-kit',
-    registryDependencies: ['align-toolbar-button'],
+    registryDependencies: ['align-base-kit', 'align-toolbar-button'],
     type: 'registry:component',
   },
   {
@@ -73,6 +360,7 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'basic-elements-kit',
     registryDependencies: [
+      'basic-elements-base-kit',
       'blockquote-node',
       'heading-node',
       'hr-node',
@@ -90,6 +378,7 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'basic-marks-kit',
     registryDependencies: [
+      'basic-marks-base-kit',
       'code-node',
       'highlight-node',
       'kbd-node',
@@ -153,7 +442,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'callout-kit',
-    registryDependencies: ['callout-node'],
+    registryDependencies: ['callout-base-kit', 'callout-node'],
     type: 'registry:component',
   },
   {
@@ -165,7 +454,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'code-block-kit',
-    registryDependencies: ['code-block-node'],
+    registryDependencies: ['code-block-base-kit', 'code-block-node'],
     type: 'registry:component',
   },
   {
@@ -177,7 +466,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'column-kit',
-    registryDependencies: ['column-node'],
+    registryDependencies: ['column-base-kit', 'column-node'],
     type: 'registry:component',
   },
   {
@@ -190,6 +479,7 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'comment-kit',
     registryDependencies: [
+      'comment-base-kit',
       'comment-node',
       'comment-toolbar-button',
       'discussion-kit',
@@ -233,7 +523,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'date-kit',
-    registryDependencies: ['date-node'],
+    registryDependencies: ['date-base-kit', 'date-node'],
     type: 'registry:component',
   },
   {
@@ -296,7 +586,7 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'editor-kit',
     registryDependencies: [
-      'editor',
+      'editor-base-kit',
       'ai-kit',
       'align-kit',
       'autoformat-kit',
@@ -416,6 +706,7 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'font-kit',
     registryDependencies: [
+      'font-base-kit',
       'font-size-toolbar-button',
       'font-color-toolbar-button',
     ],
@@ -442,7 +733,10 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'line-height-kit',
-    registryDependencies: ['line-height-toolbar-button'],
+    registryDependencies: [
+      'line-height-base-kit',
+      'line-height-toolbar-button',
+    ],
     type: 'registry:component',
   },
   {
@@ -454,7 +748,12 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'link-kit',
-    registryDependencies: ['link-node', 'link-toolbar', 'link-toolbar-button'],
+    registryDependencies: [
+      'link-base-kit',
+      'link-node',
+      'link-toolbar',
+      'link-toolbar-button',
+    ],
     type: 'registry:component',
   },
   {
@@ -482,7 +781,12 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'list-kit',
-    registryDependencies: ['list-todo', 'list-toolbar-button', 'indent-kit'],
+    registryDependencies: [
+      'list-base-kit',
+      'list-todo',
+      'list-toolbar-button',
+      'indent-kit',
+    ],
     type: 'registry:component',
   },
   {
@@ -506,7 +810,11 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'math-kit',
-    registryDependencies: ['equation-toolbar-button', 'equation-node'],
+    registryDependencies: [
+      'math-base-kit',
+      'equation-toolbar-button',
+      'equation-node',
+    ],
     type: 'registry:component',
   },
   {
@@ -521,6 +829,7 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'media-kit',
     registryDependencies: [
+      'media-base-kit',
       'media-audio-node',
       'media-embed-node',
       'media-file-node',
@@ -551,7 +860,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'mention-kit',
-    registryDependencies: ['mention-node'],
+    registryDependencies: ['mention-base-kit', 'mention-node'],
     type: 'registry:component',
   },
   {
@@ -606,6 +915,7 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'suggestion-kit',
     registryDependencies: [
+      'suggestion-base-kit',
       'suggestion-node',
       'suggestion-line-break',
       'suggestion-toolbar-button',
@@ -633,7 +943,11 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'table-kit',
-    registryDependencies: ['table-node', 'table-toolbar-button'],
+    registryDependencies: [
+      'table-base-kit',
+      'table-node',
+      'table-toolbar-button',
+    ],
     type: 'registry:component',
   },
   {
@@ -645,7 +959,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'toc-kit',
-    registryDependencies: ['toc-node'],
+    registryDependencies: ['toc-base-kit', 'toc-node'],
     type: 'registry:component',
   },
   {
@@ -657,7 +971,12 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'toggle-kit',
-    registryDependencies: ['toggle-node', 'toggle-toolbar-button'],
+    registryDependencies: [
+      'toggle-base-kit',
+      'indent-kit',
+      'toggle-node',
+      'toggle-toolbar-button',
+    ],
     type: 'registry:component',
   },
 ];

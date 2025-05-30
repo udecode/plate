@@ -95,14 +95,6 @@ export const PlateElement = React.forwardRef(function PlateElement(
     [props.element, props.editor, mounted]
   );
 
-  const belowRootComponents = React.useMemo(
-    () =>
-      props.editor?.pluginList
-        .map((plugin) => plugin.render.belowRootNodes!)
-        .filter(Boolean),
-    [props.editor?.pluginList]
-  );
-
   return (
     <Tag
       data-slate-node="element"
@@ -117,10 +109,6 @@ export const PlateElement = React.forwardRef(function PlateElement(
       }
     >
       {children}
-
-      {belowRootComponents?.map((Component, index) => (
-        <Component key={index} {...(props as any)} />
-      ))}
     </Tag>
   );
 }) as <

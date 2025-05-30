@@ -4,7 +4,6 @@ import {
   type TText,
   type Value,
   NodeApi,
-  RangeApi,
 } from '@udecode/slate';
 
 import type { CreateSlateEditorOptions } from '../../editor';
@@ -33,10 +32,10 @@ export const SlateExtensionPlugin = createSlatePlugin({
         }
       };
 
-      const clearOnBoundaryKeys: string[] = editor.pluginList
-        .filter((p) => p.node.clearOnBoundary && p.node.isLeaf)
-        .map((p) => p.key);
-      const clearOnBoundaryMarks = getPluginTypes(editor, clearOnBoundaryKeys);
+      const clearOnBoundaryMarks = getPluginTypes(
+        editor,
+        editor.meta.pluginKeys.node.clearOnBoundary
+      );
 
       return {
         api: {
@@ -76,9 +75,9 @@ export const SlateExtensionPlugin = createSlatePlugin({
           insertText(text, options) {
             const apply = () => {
               if (
-                clearOnBoundaryKeys.length === 0 ||
+                editor.meta.pluginKeys.node.clearOnBoundary.length === 0 ||
                 !editor.selection ||
-                RangeApi.isExpanded(editor.selection)
+                editor.api.isExpanded()
               ) {
                 return;
               }

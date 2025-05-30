@@ -4,6 +4,7 @@
   "type": "registry:component",
   "dependencies": [],
   "registryDependencies": [
+    "https://platejs.org/r/basic-elements-base-kit",
     "https://platejs.org/r/blockquote-node",
     "https://platejs.org/r/heading-node",
     "https://platejs.org/r/hr-node",

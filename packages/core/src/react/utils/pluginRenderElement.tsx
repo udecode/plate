@@ -1,12 +1,12 @@
 import React from 'react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
-import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
+import type { AnyEditorPlatePlugin, PlatePlugin } from '../plugin/PlatePlugin';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { type PlateElementProps, PlateElement } from '../components';
 import { useReadOnly } from '../slate-react';
-import { useElement } from '../stores';
+import { useEditorRef, useElement } from '../stores';
 import { ElementProvider } from '../stores/element/useElementStore';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
@@ -30,11 +30,11 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
   const Component = plugin.render?.node;
   const Element = Component ?? (PlateElement as any);
 
-  const aboveNodes = editor.pluginList.flatMap((o) => {
+  const aboveNodes = editor.meta.pluginList.flatMap((o) => {
     if (isEditOnly(readOnly, o, 'render')) return [];
     return o.render?.aboveNodes ?? [];
   });
-  const belowNodes = editor.pluginList.flatMap((o) => {
+  const belowNodes = editor.meta.pluginList.flatMap((o) => {
     if (isEditOnly(readOnly, o, 'render')) return [];
     return o.render?.belowNodes ?? [];
   });
@@ -62,6 +62,8 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
   let component: React.ReactNode = (
     <Element {...defaultProps} {...props}>
       {children}
+
+      <BelowRootNodes {...defaultProps} {...props} />
     </Element>
   );
 
@@ -74,6 +76,25 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
   });
 
   return component;
+}
+
+export function BelowRootNodes(props: any) {
+  const editor = useEditorRef();
+  const readOnly = useReadOnly();
+
+  return (
+    <>
+      {editor.meta.pluginKeys.render.belowRootNodes.map((key) => {
+        const plugin = editor.plugins[key] as PlatePlugin;
+
+        if (isEditOnly(readOnly, plugin, 'render')) return null;
+
+        const Component = plugin.render.belowRootNodes!;
+
+        return <Component key={key} {...props} />;
+      })}
+    </>
+  );
 }
 
 /**

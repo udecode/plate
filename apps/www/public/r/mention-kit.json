@@ -6,6 +6,7 @@
     "@udecode/plate-mention"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/mention-base-kit",
     "https://platejs.org/r/mention-node"
   ],
   "files": [

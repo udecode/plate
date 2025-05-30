@@ -428,9 +428,7 @@ export const defaultRules: MdRules = {
       options
     ): ({ type: 'ol' | 'ul' } & TElement) | TListElement[] => {
       // Handle standard list
-      const isListClassic = !options.editor?.pluginList.some(
-        (p) => p.key === 'list'
-      );
+      const isListClassic = !!options.editor?.plugins.listClassic;
 
       if (isListClassic) {
         // For standard lists, we need to ensure each list item is properly structured

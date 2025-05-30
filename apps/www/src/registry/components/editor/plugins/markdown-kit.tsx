@@ -1,5 +1,3 @@
-'use client';
-
 import { KEYS } from '@udecode/plate';
 import {
   MarkdownPlugin,

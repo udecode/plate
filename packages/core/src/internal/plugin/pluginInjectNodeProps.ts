@@ -43,7 +43,7 @@ export const pluginInjectNodeProps = (
   const {
     classNames,
     defaultNodeValue,
-    nodeKey = key,
+    nodeKey = editor.getType(key),
     query,
     styleKey = nodeKey as any,
     transformClassName,

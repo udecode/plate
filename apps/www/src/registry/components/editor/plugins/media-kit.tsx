@@ -23,12 +23,16 @@ import { VideoElement } from '@/registry/ui/media-video-node';
 export const MediaKit = [
   ImagePlugin.extend({
     options: { disableUploadInsert: true },
-    render: { afterEditable: MediaPreviewDialog },
-  }).withComponent(ImageElement),
+    render: { afterEditable: MediaPreviewDialog, node: ImageElement },
+  }),
   MediaEmbedPlugin.withComponent(MediaEmbedElement),
   VideoPlugin.withComponent(VideoElement),
   AudioPlugin.withComponent(AudioElement),
   FilePlugin.withComponent(FileElement),
+  PlaceholderPlugin.configure({
+    options: { disableEmptyPlaceholder: true },
+    render: { afterEditable: MediaUploadToast, node: PlaceholderElement },
+  }),
   CaptionPlugin.configure({
     options: {
       query: {
@@ -36,8 +40,4 @@ export const MediaKit = [
       },
     },
   }),
-  PlaceholderPlugin.configure({
-    options: { disableEmptyPlaceholder: true },
-    render: { afterEditable: MediaUploadToast },
-  }).withComponent(PlaceholderElement),
 ];

@@ -1,13 +1,13 @@
 /** @jsx jsxt */
 
-import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-nodes/react';
 import { HorizontalRulePlugin } from '@udecode/plate-basic-nodes/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
+import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
-import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';

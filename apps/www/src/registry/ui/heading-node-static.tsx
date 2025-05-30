@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import type { SlateElementProps } from '@udecode/plate';
 
-import { withProps } from '@udecode/cn';
 import { SlateElement } from '@udecode/plate';
 import { type VariantProps, cva } from 'class-variance-authority';
 
@@ -34,21 +33,36 @@ export function HeadingElementStatic({
   );
 }
 
-export const H1ElementStatic = withProps(HeadingElementStatic, {
-  variant: 'h1',
-});
-export const H2ElementStatic = withProps(HeadingElementStatic, {
-  variant: 'h2',
-});
-export const H3ElementStatic = withProps(HeadingElementStatic, {
-  variant: 'h3',
-});
-export const H4ElementStatic = withProps(HeadingElementStatic, {
-  variant: 'h4',
-});
-export const H5ElementStatic = withProps(HeadingElementStatic, {
-  variant: 'h5',
-});
-export const H6ElementStatic = withProps(HeadingElementStatic, {
-  variant: 'h6',
-});
+export function H1ElementStatic(props: SlateElementProps) {
+  return <HeadingElementStatic variant="h1" {...props} />;
+}
+
+export function H2ElementStatic(
+  props: React.ComponentProps<typeof HeadingElementStatic>
+) {
+  return <HeadingElementStatic variant="h2" {...props} />;
+}
+
+export function H3ElementStatic(
+  props: React.ComponentProps<typeof HeadingElementStatic>
+) {
+  return <HeadingElementStatic variant="h3" {...props} />;
+}
+
+export function H4ElementStatic(
+  props: React.ComponentProps<typeof HeadingElementStatic>
+) {
+  return <HeadingElementStatic variant="h4" {...props} />;
+}
+
+export function H5ElementStatic(
+  props: React.ComponentProps<typeof HeadingElementStatic>
+) {
+  return <HeadingElementStatic variant="h5" {...props} />;
+}
+
+export function H6ElementStatic(
+  props: React.ComponentProps<typeof HeadingElementStatic>
+) {
+  return <HeadingElementStatic variant="h6" {...props} />;
+}

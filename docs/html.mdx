@@ -24,7 +24,7 @@ Convert Plate editor content (Slate nodes) into an HTML string. This is often do
 
 ### Basic Usage
 
-Provide a server-side editor instance and a mapping of your Plate components to their static HTML rendering counterparts.
+Provide a server-side editor instance and configure your Plate components during editor creation.
 
 ```tsx title="lib/generate-html.ts"
 import { createSlateEditor, serializeHtml } from '@udecode/plate'; // Base import
@@ -36,20 +36,21 @@ import { HeadingElementStatic } from '@/components/ui/heading-node-static';
 // For a styled static output, you might use a wrapper like EditorStatic
 import { EditorStatic } from '@/components/ui/editor-static';
 
-// Create a server-side editor instance
-const editor = createSlateEditor({
-  plugins: [
-    BaseHeadingPlugin,   // Base plugin for headings
-    // ... add all other base plugins relevant to your content
-  ],
-});
-
 // Map plugin keys to their STATIC rendering components
 const components = {
   p: ParagraphElementStatic, // 'p' is the default key for paragraphs
   h1: HeadingElementStatic,
   // ... add mappings for all your elements and marks
 };
+
+// Create a server-side editor instance with components
+const editor = createSlateEditor({
+  plugins: [
+    BaseHeadingPlugin,   // Base plugin for headings
+    // ... add all other base plugins relevant to your content
+  ],
+  components,
+});
 
 async function getMyHtml() {
   // Example: set some content on the server-side editor
@@ -59,7 +60,6 @@ async function getMyHtml() {
   ];
 
   const html = await serializeHtml(editor, {
-    components,
     // Optional: Use a custom wrapper like EditorStatic for styling
     // editorComponent: EditorStatic,
     // props: { variant: 'none', className: 'p-4 m-4 border' },
@@ -311,19 +311,16 @@ Converts Slate nodes from `editor.children` (or a provided `value`) into an HTML
 <API name="serializeHtml">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    A server-side Plate editor instance, created via `createSlateEditor`.
+    A server-side Plate editor instance, created via `createSlateEditor` with components configured.
   </APIItem>
   <APIItem name="options" type="SerializeHtmlOptions">
     Options for serialization.
   </APIItem>
 </APIParameters>
 <APIOptions type="SerializeHtmlOptions<P = PlateStaticProps>">
-  <APIItem name="components" type="Record<string, PlatePluginComponent>">
-    A mapping of plugin keys (or node types) to their **static** React components for HTML rendering.
-  </APIItem>
   <APIItem name="editorComponent" type="React.ComponentType<P>" optional>
     A React component to wrap the entire editor content during static rendering. Defaults to `PlateStatic`.
-    The component receives `editor`, `components`, `value`, and any `props` passed here.
+    The component receives `editor`, `value`, and any `props` passed here.
   </APIItem>
   <APIItem name="props" type="Partial<P>" optional>
     Props to pass to the `editorComponent`. `P` defaults to `PlateStaticProps`.

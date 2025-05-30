@@ -9,7 +9,6 @@ export const BaseTextAlignPlugin = createSlatePlugin({
     isBlock: true,
     nodeProps: {
       defaultNodeValue: 'start',
-      nodeKey: 'align',
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
@@ -28,6 +27,7 @@ export const BaseTextAlignPlugin = createSlatePlugin({
       },
     }),
   },
+  node: { type: 'align' },
 }).extendTransforms(({ editor }) => ({
-  set: bindFirst(setAlign, editor),
+  setNodes: bindFirst(setAlign, editor),
 }));

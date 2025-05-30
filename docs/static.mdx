@@ -33,7 +33,7 @@ It's a core part of [`serializeHtml`](/docs/api/core/plate-plugin#serializehtml)
 
 ### Create a Slate Editor
 
-Initialize a Slate editor instance using `createSlateEditor` with your required plugins. This is analogous to using `usePlateEditor` for the interactive `<Plate>` component.
+Initialize a Slate editor instance using `createSlateEditor` with your required plugins and components. This is analogous to using `usePlateEditor` for the interactive `<Plate>` component.
 
 ```tsx title="lib/plate-static-editor.ts"
 import { createSlateEditor } from '@udecode/plate';
@@ -74,7 +74,7 @@ Create similar static components for headings, images, links, etc.
 
 ### Map Plugin Keys to Static Components
 
-Create an object that maps plugin keys or node types to their corresponding static React components.
+Create an object that maps plugin keys or node types to their corresponding static React components, then pass it to the editor.
 
 ```ts title="components/static-components.ts"
 import { ParagraphElementStatic } from './ui/paragraph-node-static';
@@ -90,7 +90,7 @@ export const staticComponents = {
 
 ### Render `<PlateStatic>`
 
-Use the `<PlateStatic>` component, providing the `editor` instance and your `components` mapping.
+Use the `<PlateStatic>` component, providing the `editor` instance configured with your components.
 
 ```tsx title="app/my-static-page/page.tsx (RSC Example)"
 import { PlateStatic } from '@udecode/plate';
@@ -107,13 +107,13 @@ export default async function MyStaticPage() {
 
   const editor = createSlateEditor({
     plugins: [/* your base plugins */],
+    components: staticComponents,
     value: initialValue,
   });
 
   return (
     <PlateStatic
       editor={editor}
-      components={staticComponents}
       style={{ padding: 16 }}
       className="my-plate-static-content"
     />
@@ -126,7 +126,6 @@ export default async function MyStaticPage() {
   ```tsx
   <PlateStatic
     editor={editor}
-    components={staticComponents}
     value={[
       { type: 'p', children: [{ text: 'Overridden content.' }] }
     ]}
@@ -175,13 +174,13 @@ export default async function Page() {
   const editor = createSlateEditor({
     // plugins: [BaseHeadingPlugin, /* ...other base plugins */],
     plugins: [], // Add your base plugins
+    components: staticComponents,
     value: serverContent,
   });
 
   return (
     <PlateStatic
       editor={editor}
-      components={staticComponents}
       className="my-static-preview-container"
     />
   );
@@ -201,11 +200,11 @@ import { staticComponents } from '@/components/static-components';
 async function getDocumentAsHtml(value: any[]) {
   const editor = createSlateEditor({
     plugins: [/* ...your base plugins... */],
+    components: staticComponents,
     value,
   });
 
   const html = await serializeHtml(editor, {
-    components: staticComponents,
     // editorComponent: PlateStatic, // Optional: Defaults to PlateStatic
     props: { className: 'prose max-w-none' }, // Example: Pass props to the root div
   });
@@ -226,20 +225,14 @@ For more details, see the [HTML Serialization guide](/docs/html).
 ```ts
 import type React from 'react';
 import type { Descendant } from 'slate';
-import type { PlateEditor, PlatePluginComponent } from '@udecode/plate/core'; // Adjust imports as per your setup
+import type { PlateEditor } from '@udecode/plate/core'; // Adjust imports as per your setup
 
 interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * The Slate editor instance, created via `createSlateEditor`.
-   * Must include plugins relevant to the content being rendered.
+   * Must include plugins and components relevant to the content being rendered.
    */
   editor: PlateEditor;
-
-  /**
-   * A record mapping plugin keys (or node types like 'p', 'h1')
-   * to their corresponding static React components.
-   */
-  components: Record<string, PlatePluginComponent>;
 
   /**
    * Optional Slate `Value` (array of `Descendant` nodes).
@@ -254,8 +247,7 @@ interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 ```
 
--   **`editor`**: An instance of `PlateEditor` created with `createSlateEditor`.
--   **`components`**: Maps node types (e.g., `'p'`, `'h1'`) or plugin keys to your static React components.
+-   **`editor`**: An instance of `PlateEditor` created with `createSlateEditor`, including components configuration.
 -   **`value`**: Optional. If provided, this array of `Descendant` nodes will be rendered, overriding the content currently in `editor.children`.
 
 ## Next Steps

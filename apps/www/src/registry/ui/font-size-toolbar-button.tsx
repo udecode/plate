@@ -47,7 +47,7 @@ const FONT_SIZES = [
 export function FontSizeToolbarButton() {
   const [inputValue, setInputValue] = React.useState(DEFAULT_FONT_SIZE);
   const [isFocused, setIsFocused] = React.useState(false);
-  const { api, editor } = useEditorPlugin(FontSizePlugin);
+  const { editor, tf } = useEditorPlugin(FontSizePlugin);
 
   const cursorFontSize = useEditorSelector((editor) => {
     const fontSize = editor.api.marks()?.[KEYS.fontSize];
@@ -74,7 +74,7 @@ export function FontSizeToolbarButton() {
       return;
     }
     if (newSize !== toUnitLess(cursorFontSize)) {
-      api.fontSize.addMark(`${newSize}px`);
+      tf.fontSize.addMark(`${newSize}px`);
     }
 
     editor.tf.focus();
@@ -82,7 +82,7 @@ export function FontSizeToolbarButton() {
 
   const handleFontSizeChange = (delta: number) => {
     const newSize = Number(displayValue) + delta;
-    api.fontSize.addMark(`${newSize}px`);
+    tf.fontSize.addMark(`${newSize}px`);
     editor.tf.focus();
   };
 
@@ -131,7 +131,7 @@ export function FontSizeToolbarButton() {
                 'flex h-8 w-full items-center justify-center text-sm hover:bg-accent data-[highlighted=true]:bg-accent'
               )}
               onClick={() => {
-                api.fontSize.addMark(`${size}px`);
+                tf.fontSize.addMark(`${size}px`);
                 setIsFocused(false);
               }}
               data-highlighted={size === displayValue}

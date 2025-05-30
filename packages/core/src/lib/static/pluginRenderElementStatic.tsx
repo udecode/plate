@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type { SlateEditor } from '../editor';
-import type { AnyEditorPlugin, NodeComponents } from '../plugin';
+import type { AnyEditorPlugin } from '../plugin';
 import type { RenderElementProps } from '../types/RenderElementProps';
 
 import { SlateElement } from './components/slate-nodes';
@@ -14,25 +14,16 @@ export type SlateRenderElement = (
 
 export const pluginRenderElementStatic = (
   editor: SlateEditor,
-  plugin: AnyEditorPlugin,
-  components?: NodeComponents
+  plugin: AnyEditorPlugin
 ): SlateRenderElement =>
   function render(nodeProps) {
     if (nodeProps.element.type === plugin.node.type) {
       const element = nodeProps.element;
 
-      const key = plugin.key;
-      const Component = components?.[plugin.key] as any;
+      const Component = editor.meta.components?.[plugin.key] as any;
       const Element = Component ?? SlateElement;
 
       let { children } = nodeProps;
-
-      const aboveNodes = editor.pluginList.flatMap(
-        (o) => o.render?.aboveNodes ?? []
-      );
-      const belowNodes = editor.pluginList.flatMap(
-        (o) => o.render?.belowNodes ?? []
-      );
 
       const dataAttributes = getPluginDataAttributes(editor, plugin, element);
 
@@ -47,8 +38,11 @@ export const pluginRenderElementStatic = (
         props: nodeProps as any,
       }) as any;
 
-      belowNodes.forEach((withHOC) => {
-        const hoc = withHOC({ ...nodeProps, key } as any);
+      editor.meta.pluginKeys.render.belowNodes.forEach((key) => {
+        const hoc = editor.plugins[key].render.belowNodes!({
+          ...nodeProps,
+          key,
+        } as any);
 
         if (hoc) {
           children = hoc({ ...nodeProps, children } as any);
@@ -60,11 +54,21 @@ export const pluginRenderElementStatic = (
       let component: React.ReactNode = (
         <Element {...defaultProps} {...nodeProps}>
           {children}
+
+          {editor.meta.pluginKeys.render.belowRootNodes.map((key) => {
+            const plugin = editor.plugins[key];
+            const Component = plugin.render.belowRootNodes;
+
+            return <Component key={key} {...defaultProps} {...nodeProps} />;
+          })}
         </Element>
       );
 
-      aboveNodes.forEach((withHOC) => {
-        const hoc = withHOC({ ...nodeProps, key } as any);
+      editor.meta.pluginKeys.render.aboveNodes.forEach((key) => {
+        const hoc = editor.plugins[key].render.aboveNodes!({
+          ...nodeProps,
+          key,
+        } as any);
 
         if (hoc) {
           component = hoc({ ...nodeProps, children: component } as any);

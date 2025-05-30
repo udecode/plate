@@ -6,6 +6,8 @@
   - `editor.dom.composing`: Boolean, true if the editor is currently composing text (e.g., during IME input).
   - `editor.dom.focused`: Boolean, true if the editor currently has focus.
   - `editor.dom.readOnly`: Boolean, true if the editor is in read-only mode. Passing the `readOnly` prop to `PlateContent` will sync its value to this state and to the `useEditorReadOnly` hook.
+- New editor metadata fields:
+  - `editor.meta.components` - stores the plugin components by key
 - New hook `useEditorComposing`: Allows subscription to the editor's composing state (`editor.dom.composing`) outside of `PlateContent`.
 - `createPlateEditor` and `usePlateEditor` now accept a `readOnly` option to initialize the editor in a read-only state. For dynamic read-only changes after initialization, continue to use the `readOnly` prop on the `<Plate>` or `<PlateContent>` component.
 - New plugin field: `editOnly` (boolean or object).

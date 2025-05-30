@@ -14,35 +14,35 @@ export const pipeInjectNodeProps = (
   getElementPath: (node: TElement | TText) => Path,
   readOnly = false
 ) => {
-  editor.pluginList.forEach((plugin) => {
-    if (plugin.inject.nodeProps) {
-      const newAttributes = pluginInjectNodeProps(
-        editor,
-        plugin,
-        nodeProps,
-        getElementPath
-      );
+  editor.meta.pluginKeys.inject.nodeProps.forEach((key) => {
+    const plugin = editor.plugins[key];
 
-      // Since `inject.nodeProps` can have hooks, we can't return early.
-      if (isEditOnly(readOnly, plugin, 'inject')) {
-        return;
-      }
+    const newAttributes = pluginInjectNodeProps(
+      editor,
+      plugin,
+      nodeProps,
+      getElementPath
+    );
 
-      if (!newAttributes) return;
-
-      const attributes = nodeProps.attributes;
-
-      nodeProps.attributes = {
-        ...attributes,
-        ...newAttributes,
-        className:
-          clsx(attributes?.className, newAttributes.className) || undefined,
-        style: {
-          ...attributes?.style,
-          ...newAttributes.style,
-        },
-      };
+    // Since `inject.nodeProps` can have hooks, we can't return early.
+    if (isEditOnly(readOnly, plugin, 'inject')) {
+      return;
     }
+
+    if (!newAttributes) return;
+
+    const attributes = nodeProps.attributes;
+
+    nodeProps.attributes = {
+      ...attributes,
+      ...newAttributes,
+      className:
+        clsx(attributes?.className, newAttributes.className) || undefined,
+      style: {
+        ...attributes?.style,
+        ...newAttributes.style,
+      },
+    };
   });
 
   return nodeProps;

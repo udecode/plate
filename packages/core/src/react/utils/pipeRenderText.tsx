@@ -19,7 +19,7 @@ export const pipeRenderText = (
   const renderTexts: RenderText[] = [];
   const textPropsPlugins: AnyEditorPlatePlugin[] = [];
 
-  editor.pluginList.forEach((plugin) => {
+  editor.meta.pluginList.forEach((plugin) => {
     if (plugin.node.isLeaf && plugin.node.isDecoration === false) {
       renderTexts.push(pluginRenderText(editor, plugin));
     }

@@ -6,6 +6,7 @@
     "@udecode/plate-basic-styles"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/align-base-kit",
     "https://platejs.org/r/align-toolbar-button"
   ],
   "files": [

@@ -82,7 +82,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
     event: any
   ) => boolean | void;
 
-  const relevantPlugins = editor.pluginList.filter(
+  const relevantPlugins = editor.meta.pluginList.filter(
     (plugin) => plugin.handlers?.[handlerKey]
   );
 

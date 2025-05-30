@@ -6,6 +6,7 @@
     "@udecode/plate-date"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/date-base-kit",
     "https://platejs.org/r/date-node"
   ],
   "files": [

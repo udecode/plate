@@ -4,57 +4,9 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { createSlateEditor, KEYS, serializeHtml } from '@udecode/plate';
-import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
-import {
-  BaseBlockquotePlugin,
-  BaseBoldPlugin,
-  BaseCodePlugin,
-  BaseHeadingPlugin,
-  BaseHighlightPlugin,
-  BaseHorizontalRulePlugin,
-  BaseItalicPlugin,
-  BaseKbdPlugin,
-  BaseStrikethroughPlugin,
-  BaseSubscriptPlugin,
-  BaseSuperscriptPlugin,
-  BaseUnderlinePlugin,
-} from '@udecode/plate-basic-nodes';
-import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
-import { BaseCommentPlugin } from '@udecode/plate-comments';
-import { BaseDatePlugin } from '@udecode/plate-date';
-import {
-  BaseFontBackgroundColorPlugin,
-  BaseFontColorPlugin,
-  BaseFontSizePlugin,
-} from '@udecode/plate-basic-styles';
-import { BaseIndentPlugin } from '@udecode/plate-indent';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
-import { BaseLineHeightPlugin } from '@udecode/plate-basic-styles';
-import { BaseLinkPlugin } from '@udecode/plate-link';
-import { BaseListPlugin } from '@udecode/plate-list';
+import { createSlateEditor, serializeHtml } from '@udecode/plate';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import {
-  BaseEquationPlugin,
-  BaseInlineEquationPlugin,
-} from '@udecode/plate-math';
-import {
-  BaseAudioPlugin,
-  BaseFilePlugin,
-  BaseImagePlugin,
-  BaseMediaEmbedPlugin,
-  BaseVideoPlugin,
-} from '@udecode/plate-media';
-import { BaseMentionPlugin } from '@udecode/plate-mention';
-import {
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '@udecode/plate-table';
-import { BaseTocPlugin } from '@udecode/plate-toc';
-import { BaseTogglePlugin } from '@udecode/plate-toggle';
 import { useEditorRef } from '@udecode/plate/react';
-import { all, createLowlight } from 'lowlight';
 import { ArrowDownToLineIcon } from 'lucide-react';
 
 import {
@@ -64,53 +16,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { BlockquoteElementStatic } from '@/registry/ui/blockquote-node-static';
-import {
-  CodeBlockElementStatic,
-  CodeLineElementStatic,
-  CodeSyntaxLeafStatic,
-} from '@/registry/ui/code-block-node-static';
-import { CodeLeafStatic } from '@/registry/ui/code-node-static';
-import {
-  ColumnElementStatic,
-  ColumnGroupElementStatic,
-} from '@/registry/ui/column-node-static';
-import { CommentLeafStatic } from '@/registry/ui/comment-node-static';
-import { DateElementStatic } from '@/registry/ui/date-node-static';
-import {
-  H1ElementStatic,
-  H2ElementStatic,
-  H3ElementStatic,
-} from '@/registry/ui/heading-node-static';
-import { HighlightLeafStatic } from '@/registry/ui/highlight-node-static';
-import { HrElementStatic } from '@/registry/ui/hr-node-static';
-import { KbdLeafStatic } from '@/registry/ui/kbd-node-static';
-import { LinkElementStatic } from '@/registry/ui/link-node-static';
-import { TodoLiStatic, TodoMarkerStatic } from '@/registry/ui/list-todo-static';
-import { AudioElementStatic } from '@/registry/ui/media-audio-node-static';
-import { FileElementStatic } from '@/registry/ui/media-file-node-static';
-import { ImageElementStatic } from '@/registry/ui/media-image-node-static';
-import { VideoElementStatic } from '@/registry/ui/media-video-node-static';
-import { MentionElementStatic } from '@/registry/ui/mention-node-static';
-import { ParagraphElementStatic } from '@/registry/ui/paragraph-node-static';
-import {
-  TableCellElementStatic,
-  TableCellHeaderStaticElement,
-  TableElementStatic,
-  TableRowElementStatic,
-} from '@/registry/ui/table-node-static';
-import { TocElementStatic } from '@/registry/ui/toc-node-static';
-import { ToggleElementStatic } from '@/registry/ui/toggle-node-static';
+import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
 import { EditorStatic } from './editor-static';
-import {
-  EquationElementStatic,
-  InlineEquationElementStatic,
-} from './equation-node-static';
 import { ToolbarButton } from './toolbar';
 
 const siteUrl = 'https://platejs.org';
-const lowlight = createLowlight(all);
 
 export function ExportToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
@@ -185,117 +96,12 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToHtml = async () => {
-    const components = {
-      [KEYS.audio]: AudioElementStatic,
-      [KEYS.blockquote]: BlockquoteElementStatic,
-      [KEYS.code]: CodeLeafStatic,
-      [KEYS.codeBlock]: CodeBlockElementStatic,
-      [KEYS.codeLine]: CodeLineElementStatic,
-      [KEYS.codeSyntax]: CodeSyntaxLeafStatic,
-      [KEYS.column]: ColumnElementStatic,
-      [KEYS.columnGroup]: ColumnGroupElementStatic,
-      [KEYS.comment]: CommentLeafStatic,
-      [KEYS.date]: DateElementStatic,
-      [KEYS.equation]: EquationElementStatic,
-      [KEYS.file]: FileElementStatic,
-      [KEYS.h1]: H1ElementStatic,
-      [KEYS.h2]: H2ElementStatic,
-      [KEYS.h3]: H3ElementStatic,
-      [KEYS.highlight]: HighlightLeafStatic,
-      [KEYS.hr]: HrElementStatic,
-      [KEYS.img]: ImageElementStatic,
-      [KEYS.inlineEquation]: InlineEquationElementStatic,
-      [KEYS.kbd]: KbdLeafStatic,
-      [KEYS.link]: LinkElementStatic,
-      // [KEYS.mediaEmbed]: MediaEmbedElementStatic,
-      [KEYS.mention]: MentionElementStatic,
-      [KEYS.p]: ParagraphElementStatic,
-      [KEYS.table]: TableElementStatic,
-      [KEYS.td]: TableCellElementStatic,
-      [KEYS.th]: TableCellHeaderStaticElement,
-      [KEYS.toc]: TocElementStatic,
-      [KEYS.toggle]: ToggleElementStatic,
-      [KEYS.tr]: TableRowElementStatic,
-      [KEYS.video]: VideoElementStatic,
-    };
-
     const editorStatic = createSlateEditor({
-      plugins: [
-        BaseColumnPlugin,
-        BaseColumnItemPlugin,
-        BaseTocPlugin,
-        BaseVideoPlugin,
-        BaseAudioPlugin,
-        BaseHeadingPlugin,
-        BaseMediaEmbedPlugin,
-        BaseBoldPlugin,
-        BaseCodePlugin,
-        BaseItalicPlugin,
-        BaseStrikethroughPlugin,
-        BaseSubscriptPlugin,
-        BaseSuperscriptPlugin,
-        BaseUnderlinePlugin,
-        BaseBlockquotePlugin,
-        BaseDatePlugin,
-        BaseEquationPlugin,
-        BaseInlineEquationPlugin,
-        BaseCodeBlockPlugin.configure({
-          options: {
-            lowlight,
-          },
-        }),
-        BaseIndentPlugin.extend({
-          inject: {
-            targetPlugins: [KEYS.p, KEYS.blockquote, KEYS.codeBlock],
-          },
-        }),
-        BaseListPlugin.extend({
-          inject: {
-            targetPlugins: [
-              KEYS.p,
-              ...KEYS.heading,
-              KEYS.blockquote,
-              KEYS.codeBlock,
-              KEYS.toggle,
-            ],
-          },
-          options: {
-            listStyleTypes: {
-              todo: {
-                liComponent: TodoLiStatic,
-                markerComponent: TodoMarkerStatic,
-                type: 'todo',
-              },
-            },
-          },
-        }),
-        BaseLinkPlugin,
-        BaseTableRowPlugin,
-        BaseTablePlugin,
-        BaseTableCellPlugin,
-        BaseHorizontalRulePlugin,
-        BaseFontColorPlugin,
-        BaseFontBackgroundColorPlugin,
-        BaseFontSizePlugin,
-        BaseKbdPlugin,
-        BaseTextAlignPlugin.extend({
-          inject: {
-            targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.video],
-          },
-        }),
-        BaseLineHeightPlugin,
-        BaseHighlightPlugin,
-        BaseFilePlugin,
-        BaseImagePlugin,
-        BaseMentionPlugin,
-        BaseCommentPlugin,
-        BaseTogglePlugin,
-      ],
+      plugins: BaseEditorKit,
       value: editor.children,
     });
 
     const editorHtml = await serializeHtml(editorStatic, {
-      components,
       editorComponent: EditorStatic,
       props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
     });

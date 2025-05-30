@@ -19,7 +19,7 @@ export const pipeRenderLeaf = (
   const renderLeafs: RenderLeaf[] = [];
   const leafPropsPlugins: AnyEditorPlatePlugin[] = [];
 
-  editor.pluginList.forEach((plugin) => {
+  editor.meta.pluginList.forEach((plugin) => {
     if (
       plugin.node.isLeaf &&
       (plugin.node.isDecoration === true || plugin.render.leaf)

@@ -3,7 +3,6 @@ import React from 'react';
 import { decode } from 'html-entities';
 
 import type { SlateEditor } from '../editor';
-import type { NodeComponents } from '../plugin';
 import type { PlateStaticProps } from './components/PlateStatic';
 
 import { PlateStatic } from './components/PlateStatic';
@@ -29,8 +28,6 @@ const renderComponentToHtml = <P extends {}>(
 export type SerializeHtmlOptions<
   T extends PlateStaticProps = PlateStaticProps,
 > = {
-  /** Node components to render the HTML */
-  components: NodeComponents;
   /** The component used to render the editor content */
   editorComponent?: React.ComponentType<T>;
   /** List of className prefixes to preserve from being stripped out */
@@ -53,18 +50,16 @@ export const serializeHtml = async <
 >(
   editor: SlateEditor,
   {
-    components,
     editorComponent: EditorComponent = PlateStatic,
     preserveClassNames,
     props = {},
     stripClassNames = false,
     stripDataAttributes = false,
-  }: SerializeHtmlOptions<T>
+  }: SerializeHtmlOptions<T> = {}
 ): Promise<string> => {
   const ReactDOMServer = await getReactDOMServer();
 
   let htmlString = renderComponentToHtml(ReactDOMServer, EditorComponent, {
-    components,
     editor,
     ...props,
   } as T);

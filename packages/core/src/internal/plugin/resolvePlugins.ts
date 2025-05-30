@@ -22,9 +22,45 @@ export const resolvePlugins = (
   editor: SlateEditor,
   plugins: SlatePlugins = []
 ) => {
-  editor.pluginList = [];
   editor.plugins = {};
-  editor.shortcuts = {} as Record<string, SlatePlugin['shortcuts'][string]>;
+  editor.meta.pluginList = [];
+  editor.meta.shortcuts = {} as Record<
+    string,
+    SlatePlugin['shortcuts'][string]
+  >;
+  editor.meta.components = {};
+  editor.meta.pluginKeys = {
+    decorate: [],
+    handlers: {
+      onChange: [],
+    },
+    inject: {
+      nodeProps: [],
+    },
+    node: {
+      clearOnBoundary: [],
+      isElement: [],
+      isHardEdge: [],
+      isInline: [],
+      isLeaf: [],
+      isMarkableVoid: [],
+      isNotSelectable: [],
+      isVoid: [],
+    },
+    normalizeInitialValue: [],
+    render: {
+      aboveEditable: [],
+      aboveNodes: [],
+      aboveSlate: [],
+      afterContainer: [],
+      afterEditable: [],
+      beforeContainer: [],
+      beforeEditable: [],
+      belowNodes: [],
+      belowRootNodes: [],
+    },
+    useHooks: [],
+  };
 
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
 
@@ -34,8 +70,8 @@ export const resolvePlugins = (
 
   resolvePluginStores(editor);
 
-  // extendEditor
-  editor.pluginList.forEach((plugin) => {
+  // Last pass
+  editor.meta.pluginList.forEach((plugin: SlatePlugin) => {
     if (plugin.extendEditor) {
       editor = plugin.extendEditor(getEditorPlugin(editor, plugin) as any);
 
@@ -49,6 +85,98 @@ export const resolvePlugins = (
     if (plugin.node?.isContainer) {
       editor.meta.containerTypes.push(plugin.node.type);
     }
+
+    if (plugin.inject?.nodeProps) {
+      editor.meta.pluginKeys.inject.nodeProps.push(plugin.key);
+    }
+
+    if (plugin.render?.node) {
+      editor.meta.components[plugin.key] = plugin.render.node;
+    }
+
+    if (plugin.node?.isHardEdge) {
+      editor.meta.pluginKeys.node.isHardEdge.push(plugin.key);
+    }
+
+    if (plugin.node?.isLeaf) {
+      editor.meta.pluginKeys.node.isLeaf.push(plugin.key);
+    }
+
+    if (plugin.node?.isElement) {
+      editor.meta.pluginKeys.node.isElement.push(plugin.key);
+    }
+
+    if (plugin.node?.clearOnBoundary && plugin.node.isLeaf) {
+      editor.meta.pluginKeys.node.clearOnBoundary.push(plugin.key);
+    }
+
+    if (plugin.node?.isInline) {
+      editor.meta.pluginKeys.node.isInline.push(plugin.key);
+    }
+
+    if (plugin.node?.isVoid) {
+      editor.meta.pluginKeys.node.isVoid.push(plugin.key);
+    }
+
+    if (plugin.node?.isMarkableVoid) {
+      editor.meta.pluginKeys.node.isMarkableVoid.push(plugin.key);
+    }
+
+    if (plugin.node?.isSelectable === false) {
+      editor.meta.pluginKeys.node.isNotSelectable.push(plugin.key);
+    }
+
+    if (plugin.render.aboveEditable) {
+      editor.meta.pluginKeys.render.aboveEditable.push(plugin.key);
+    }
+
+    if (plugin.render.aboveSlate) {
+      editor.meta.pluginKeys.render.aboveSlate.push(plugin.key);
+    }
+
+    if (plugin.render.afterEditable) {
+      editor.meta.pluginKeys.render.afterEditable.push(plugin.key);
+    }
+
+    if (plugin.render.beforeEditable) {
+      editor.meta.pluginKeys.render.beforeEditable.push(plugin.key);
+    }
+
+    if (plugin.render.afterContainer) {
+      editor.meta.pluginKeys.render.afterContainer.push(plugin.key);
+    }
+
+    if (plugin.render.beforeContainer) {
+      editor.meta.pluginKeys.render.beforeContainer.push(plugin.key);
+    }
+
+    if (plugin.render.belowRootNodes) {
+      editor.meta.pluginKeys.render.belowRootNodes.push(plugin.key);
+    }
+
+    if (plugin.normalizeInitialValue) {
+      editor.meta.pluginKeys.normalizeInitialValue.push(plugin.key);
+    }
+
+    if (plugin.decorate) {
+      editor.meta.pluginKeys.decorate.push(plugin.key);
+    }
+
+    if (plugin.render.aboveNodes) {
+      editor.meta.pluginKeys.render.aboveNodes.push(plugin.key);
+    }
+
+    if (plugin.render.belowNodes) {
+      editor.meta.pluginKeys.render.belowNodes.push(plugin.key);
+    }
+
+    if ((plugin as any).useHooks) {
+      editor.meta.pluginKeys.useHooks.push(plugin.key);
+    }
+
+    if ((plugin as any).handlers?.onChange) {
+      editor.meta.pluginKeys.handlers.onChange.push(plugin.key);
+    }
   });
 
   resolvePluginShortcuts(editor);
@@ -58,7 +186,7 @@ export const resolvePlugins = (
 
 const resolvePluginStores = (editor: SlateEditor) => {
   // Create zustand stores for each plugin
-  editor.pluginList.forEach((plugin) => {
+  editor.meta.pluginList.forEach((plugin) => {
     let store = createZustandStore(plugin.options, {
       mutative: true,
       name: plugin.key,
@@ -150,16 +278,22 @@ const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
 };
 
 const resolvePluginShortcuts = (editor: SlateEditor) => {
-  editor.shortcuts = {} as Record<string, SlatePlugin['shortcuts'][string]>; // Initialize with a more specific type
+  editor.meta.shortcuts = {} as Record<
+    string,
+    SlatePlugin['shortcuts'][string]
+  >; // Initialize with a more specific type
 
-  editor.pluginList.forEach((plugin) => {
+  editor.meta.pluginList.forEach((plugin) => {
     Object.entries(plugin.shortcuts).forEach(([originalKey, hotkey]) => {
       const namespacedKey = `${plugin.key}.${originalKey}`;
 
       if (hotkey === null) {
         // If hotkey is null, remove the namespaced shortcut
         delete (
-          editor.shortcuts as Record<string, SlatePlugin['shortcuts'][string]>
+          editor.meta.shortcuts as Record<
+            string,
+            SlatePlugin['shortcuts'][string]
+          >
         )[namespacedKey];
       } else if (hotkey && typeof hotkey === 'object') {
         const resolvedHotkey = { ...hotkey } as NonNullable<
@@ -187,9 +321,12 @@ const resolvePluginShortcuts = (editor: SlateEditor) => {
         // Set shortcut priority, falling back to plugin priority
         resolvedHotkey.priority = resolvedHotkey.priority ?? plugin.priority;
 
-        (editor.shortcuts as Record<string, SlatePlugin['shortcuts'][string]>)[
-          namespacedKey
-        ] = resolvedHotkey;
+        (
+          editor.meta.shortcuts as Record<
+            string,
+            SlatePlugin['shortcuts'][string]
+          >
+        )[namespacedKey] = resolvedHotkey;
       }
     });
   });
@@ -278,7 +415,7 @@ export const applyPluginsToEditor = (
   editor: SlateEditor,
   plugins: SlatePlugins
 ) => {
-  editor.pluginList = plugins;
+  editor.meta.pluginList = plugins;
   editor.plugins = Object.fromEntries(
     plugins.map((plugin) => [plugin.key, plugin])
   );
@@ -368,8 +505,8 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
 
   applyPluginsToEditor;
 
-  editor.pluginList = applyOverrides(editor.pluginList as any);
+  editor.meta.pluginList = applyOverrides(editor.meta.pluginList as any);
   editor.plugins = Object.fromEntries(
-    editor.pluginList.map((plugin) => [plugin.key, plugin])
+    editor.meta.pluginList.map((plugin) => [plugin.key, plugin])
   );
 };

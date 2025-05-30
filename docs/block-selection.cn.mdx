@@ -65,11 +65,11 @@ BlockSelectionPlugin.configure({
 
 如果你使用的是 [Editor](/docs/components/editor) 中的 `EditorContainer`，可以跳过此部分。
 
-要控制可滚动容器，请在 `areaOptions` 中配置 `boundaries` 和 `container` 选项。这些选项接受 CSS 选择器，例如 `#selection-demo #${editor.uid}`，它们与 `document.querySelector()` 一起使用。
+要控制可滚动容器，请在 `areaOptions` 中配置 `boundaries` 和 `container` 选项。这些选项接受 CSS 选择器，例如 `#selection-demo #${editor.meta.uid}`，它们与 `document.querySelector()` 一起使用。
 
 为了使此功能有效：
 
-1. 为你的滚动容器添加 `id` 或 `className`。如果你不确定容器，可以将其添加到 `<Editor />` 组件中。我们建议使用 `id={editor.uid}`。
+1. 为你的滚动容器添加 `id` 或 `className`。如果你不确定容器，可以将其添加到 `<Editor />` 组件中。我们建议使用 `id={editor.meta.uid}`。
 2. 在配置中使用适当的选择器。
 3. 不要忘记为容器设置 `position: relative`。
 
@@ -79,9 +79,9 @@ BlockSelectionPlugin.configure({
 BlockSelectionPlugin.configure({
   options: {
     areaOptions: {
-      boundaries: `#${editor.uid}`,
-      container: `#${editor.uid}`,
-      selectables: `#${editor.uid} .slate-selectable`,
+      boundaries: `#${editor.meta.uid}`,
+      container: `#${editor.meta.uid}`,
+      selectables: `#${editor.meta.uid} .slate-selectable`,
     },
   },
 });
@@ -193,9 +193,9 @@ render: {
 
 ```ts
 {
-    boundaries: [`#${editor.uid}`],
-    container: [`#${editor.uid}`],
-    selectables: [`#${editor.uid} .slate-selectable`],
+    boundaries: [`#${editor.meta.uid}`],
+    container: [`#${editor.meta.uid}`],
+    selectables: [`#${editor.meta.uid} .slate-selectable`],
     selectionAreaClass: 'slate-selection-area',
 }
 ```

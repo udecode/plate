@@ -11,7 +11,7 @@ export const getInjectedPlugins = (
 ): Partial<AnyEditorPlugin>[] => {
   const injectedPlugins: SlatePlugins = [];
 
-  [...editor.pluginList].reverse().forEach((p) => {
+  [...editor.meta.pluginList].reverse().forEach((p) => {
     const injectedPlugin = p.inject.plugins?.[plugin.key];
 
     if (injectedPlugin) injectedPlugins.push(injectedPlugin as any);

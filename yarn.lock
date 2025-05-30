@@ -6337,9 +6337,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@udecode/cmdk@workspace:^, @udecode/cmdk@workspace:packages/cmdk":
+"@udecode/cmdk@workspace:^, @udecode/cmdk@workspace:packages/udecode/cmdk":
   version: 0.0.0-use.local
-  resolution: "@udecode/cmdk@workspace:packages/cmdk"
+  resolution: "@udecode/cmdk@workspace:packages/udecode/cmdk"
   dependencies:
     "@radix-ui/react-dialog": "npm:^1.1.11"
     "@radix-ui/react-id": "npm:^1.1.1"
@@ -6352,9 +6352,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/cn@workspace:^, @udecode/cn@workspace:packages/cn":
+"@udecode/cn@workspace:^, @udecode/cn@workspace:packages/udecode/cn":
   version: 0.0.0-use.local
-  resolution: "@udecode/cn@workspace:packages/cn"
+  resolution: "@udecode/cn@workspace:packages/udecode/cn"
   dependencies:
     "@udecode/react-utils": "npm:47.3.1"
   peerDependencies:
@@ -7133,9 +7133,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-utils@npm:48.0.5, @udecode/plate-utils@workspace:packages/plate-utils":
+"@udecode/plate-utils@npm:48.0.5, @udecode/plate-utils@workspace:packages/utils":
   version: 0.0.0-use.local
-  resolution: "@udecode/plate-utils@workspace:packages/plate-utils"
+  resolution: "@udecode/plate-utils@workspace:packages/utils"
   dependencies:
     "@udecode/plate-core": "npm:48.0.5"
     "@udecode/react-utils": "npm:47.3.1"
@@ -7181,18 +7181,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/react-hotkeys@npm:37.0.0, @udecode/react-hotkeys@workspace:packages/react-hotkeys":
+"@udecode/react-hotkeys@npm:37.0.0, @udecode/react-hotkeys@workspace:packages/udecode/react-hotkeys":
   version: 0.0.0-use.local
-  resolution: "@udecode/react-hotkeys@workspace:packages/react-hotkeys"
+  resolution: "@udecode/react-hotkeys@workspace:packages/udecode/react-hotkeys"
   peerDependencies:
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
-"@udecode/react-utils@npm:47.3.1, @udecode/react-utils@workspace:packages/react-utils":
+"@udecode/react-utils@npm:47.3.1, @udecode/react-utils@workspace:packages/udecode/react-utils":
   version: 0.0.0-use.local
-  resolution: "@udecode/react-utils@workspace:packages/react-utils"
+  resolution: "@udecode/react-utils@workspace:packages/udecode/react-utils"
   dependencies:
     "@radix-ui/react-slot": "npm:^1.2.0"
     "@udecode/utils": "npm:47.2.7"
@@ -9476,9 +9476,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"depset@workspace:packages/depset":
+"depset@workspace:packages/udecode/depset":
   version: 0.0.0-use.local
-  resolution: "depset@workspace:packages/depset"
+  resolution: "depset@workspace:packages/udecode/depset"
   dependencies:
     "@antfu/ni": "npm:24.3.0"
     "@types/prompts": "npm:2.4.9"
