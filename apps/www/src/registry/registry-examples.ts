@@ -97,7 +97,7 @@ export const examples: Registry['items'] = [
         type: 'registry:example',
       },
       {
-        path: 'examples/values/basic-elements-value.tsx',
+        path: 'examples/values/basic-blocks-value.tsx',
         type: 'registry:example',
       },
       {
@@ -392,21 +392,21 @@ export const demoExamples: Registry['items'] = (
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
         {
-          path: 'examples/values/basic-elements-value.tsx',
+          path: 'examples/values/basic-blocks-value.tsx',
           type: 'registry:example',
         },
       ],
       meta: {
         docs: [
           {
-            route: '/docs/basic-elements',
+            route: '/docs/basic-blocks',
             title: 'Basic Elements',
           },
         ],
       },
-      name: 'basic-elements-demo',
+      name: 'basic-blocks-demo',
       registryDependencies: [
-        'basic-elements-kit',
+        'basic-blocks-kit',
         'blockquote-node',
         'heading-node',
         'paragraph-node',
@@ -445,7 +445,7 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
         {
-          path: 'examples/values/basic-elements-value.tsx',
+          path: 'examples/values/basic-blocks-value.tsx',
           type: 'registry:example',
         },
         {
@@ -456,7 +456,7 @@ export const demoExamples: Registry['items'] = (
       meta: {
         docs: [
           {
-            route: '/docs/basic-elements',
+            route: '/docs/basic-blocks',
             title: 'Basic Elements',
           },
         ],

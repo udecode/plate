@@ -209,7 +209,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-basic-nodes',
     pluginFactory: 'BlockquotePlugin',
     reactImport: true,
-    route: getPluginNavItem('basic-elements').href,
+    route: getPluginNavItem('basic-blocks').href,
   },
   [BlockSelectionPlugin.key]: {
     id: BlockSelectionPlugin.key,
@@ -263,7 +263,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-code-block',
     pluginFactory: 'CodeBlockPlugin',
     reactImport: true,
-    route: getPluginNavItem('basic-elements').href,
+    route: getPluginNavItem('basic-blocks').href,
   },
   [CodeLinePlugin.key]: {
     id: CodeLinePlugin.key,
@@ -614,7 +614,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-basic-nodes',
     pluginFactory: 'HeadingPlugin',
     reactImport: true,
-    route: getPluginNavItem('basic-elements').href,
+    route: getPluginNavItem('basic-blocks').href,
   },
   [HighlightPlugin.key]: {
     id: HighlightPlugin.key,

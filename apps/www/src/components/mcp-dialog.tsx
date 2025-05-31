@@ -21,7 +21,7 @@ import { siteConfig } from '@/config/site';
 export function SetupMCPDialog() {
   const [open, setOpen] = useState(false);
 
-  const initCommand = `npx shadcn@canary add ${siteConfig.registryUrl}editor-basic`;
+  const initCommand = `npx shadcn@latest add ${siteConfig.registryUrl}editor-basic`;
   const cursorConfig = `{
   "mcpServers": {
     "plate": {
@@ -50,7 +50,7 @@ export function SetupMCPDialog() {
             <DialogTitle className="text-xl font-bold">Setup MCP</DialogTitle>
           </div>
           <p className="mt-2 text-muted-foreground">
-            <Link onClick={() => setOpen(false)} href="/docs/mcp">
+            <Link onClick={() => setOpen(false)} href="/docs/installation/mcp">
               Learn more about our MCP registry
             </Link>
           </p>

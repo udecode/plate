@@ -2,15 +2,15 @@ import * as React from 'react';
 
 import type { Metadata } from 'next';
 
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-import HomeTabs from '@/app/(app)/_components/home-tabs';
+import CustomizerDrawer from '@/components/customizer-drawer';
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
+import { PlaygroundPreview } from '@/components/playground-preview';
 import { SiteFooter } from '@/components/site-footer';
 import { ThemesButton } from '@/components/themes-button';
 import { Button } from '@/components/ui/button';
@@ -18,16 +18,6 @@ import { siteConfig } from '@/config/site';
 
 import { AnnouncementButton } from './_components/announcement-button';
 import { PotionLazyBlock } from './_components/potion-lazy-block';
-
-// import '../../../public/r/themes.css';
-
-const CustomizerDrawer = dynamic(
-  () => import('@/components/customizer-drawer')
-);
-
-const BlockDisplay = dynamic(() =>
-  import('@/components/block-display').then((mod) => mod.BlockDisplay)
-);
 
 const i18n = {
   cn: {
@@ -126,9 +116,7 @@ export default async function IndexPage({
 
         <div className="container py-6">
           <section className="relative">
-            <React.Suspense fallback={null}>
-              <HomeTabs />
-            </React.Suspense>
+            <PlaygroundPreview />
 
             <CustomizerDrawer />
           </section>

@@ -63,13 +63,13 @@ export function EditableVoidElement({
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="editable-void-basic-elements">
+          <Label htmlFor="editable-void-basic-blocks">
             Tell us about yourself:
           </Label>
 
           <Plate
             editor={editor}
-            // initialValue={basicElementsValue}
+            // initialValue={basicBlocksValue}
           >
             <EditorContainer>
               <Editor />

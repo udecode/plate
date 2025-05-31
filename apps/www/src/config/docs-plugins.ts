@@ -52,7 +52,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
     items: [
       {
         description: 'Enhance your editor with essential formatting elements.',
-        href: '/docs/basic-elements',
+        href: '/docs/basic-blocks',
         items: [
           {
             description:
@@ -104,11 +104,12 @@ export const pluginsNavItems: SidebarNavItem[] = [
         href: '/docs/equation',
         title: 'Equation',
       },
-      {
-        description: 'Create drawings and diagrams as block nodes.',
-        href: '/docs/excalidraw',
-        title: 'Excalidraw',
-      },
+      // Broken
+      // {
+      //   description: 'Create drawings and diagrams as block nodes.',
+      //   href: '/docs/excalidraw',
+      //   title: 'Excalidraw',
+      // },
       {
         description: 'Insert and manage hyperlinks.',
         href: '/docs/link',

@@ -12,7 +12,7 @@ import {
   HtmlIframe,
 } from '@/registry/components/editor/slate-to-html';
 import { alignValue } from '@/registry/examples/values/align-value';
-import { basicElementsValue } from '@/registry/examples/values/basic-elements-value';
+import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 import { columnValue } from '@/registry/examples/values/column-value';
 import { commentsValue } from '@/registry/examples/values/comments-value';
@@ -38,7 +38,7 @@ const getCachedTailwindCss = React.cache(async () => {
 
 export default async function SlateToHtmlBlock() {
   const createValue = (): Value => [
-    ...basicElementsValue,
+    ...basicBlocksValue,
     ...basicMarksValue,
     ...tocPlaygroundValue,
     ...linkValue,

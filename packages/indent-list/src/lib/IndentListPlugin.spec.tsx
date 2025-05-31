@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { KEYS } from '@udecode/plate';
-import { BasicElementsPlugin } from '@udecode/plate-basic-nodes/react';
+import { BasicBlocksPlugin } from '@udecode/plate-basic-nodes/react';
 import { HorizontalRulePlugin } from '@udecode/plate-basic-nodes/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
 import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
@@ -46,7 +46,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         HorizontalRulePlugin,
         LinkPlugin,
         TablePlugin,
-        BasicElementsPlugin,
+        BasicBlocksPlugin,
         BasicMarksPlugin,
         TablePlugin,
         LineHeightPlugin.extend(injectConfig),

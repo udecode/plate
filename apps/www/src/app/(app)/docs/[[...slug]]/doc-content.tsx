@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import type { TableOfContents } from '@/lib/toc';
@@ -11,12 +11,11 @@ import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { DocBreadcrumb } from '@/app/(app)/docs/[[...slug]]/doc-breadcrumb';
+import { DocsTableOfContents } from '@/components/docs-toc';
 import { OpenInPlus } from '@/components/open-in-plus';
 import { DocsPager } from '@/components/pager';
-import { DashboardTableOfContents } from '@/components/toc';
 import { badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
 import { cn } from '@/lib/utils';
@@ -154,20 +153,35 @@ export function DocContent({
       </div>
 
       {hasToc && (
-        <div className="hidden text-sm lg:block">
-          <div className="sticky top-20 -mt-6 flex h-[calc(100vh-100px)] flex-col pt-4">
-            <ScrollArea className="grow pb-2">
-              <div className="sticky top-0 flex w-[230px] flex-col">
-                <DashboardTableOfContents toc={toc} />
-              </div>
-            </ScrollArea>
-            <div className="mt-2 shrink-0">
-              <Suspense fallback={null}>
-                <OpenInPlus />
-              </Suspense>
+        <div className="sticky top-[calc(var(--header-height)+1px)] z-30 ml-auto hidden h-[calc(100svh-var(--header-height)-var(--footer-height))] w-72 flex-col gap-4 overflow-hidden overscroll-none pb-8 xl:flex">
+          <div className="h-(--top-spacing) shrink-0" />
+          {/* @ts-expect-error - revisit fumadocs types. */}
+          {doc.toc?.length ? (
+            <div className="no-scrollbar overflow-y-auto px-8">
+              {/* @ts-expect-error - revisit fumadocs types. */}
+              <DocsTableOfContents toc={doc.toc} />
+              <div className="h-12" />
             </div>
+          ) : null}
+          <div className="flex flex-1 flex-col gap-12 px-6">
+            <OpenInPlus />
           </div>
         </div>
+
+        // <div className="hidden text-sm lg:block">
+        //   <div className="sticky top-20 -mt-6 flex h-[calc(100vh-100px)] flex-col pt-4">
+        //     <ScrollArea className="grow pb-2">
+        //       <div className="sticky top-0 flex w-[230px] flex-col">
+        //         <DashboardTableOfContents toc={toc} />
+        //       </div>
+        //     </ScrollArea>
+        //     <div className="mt-2 shrink-0">
+        //       <Suspense fallback={null}>
+        //         <OpenInPlus />
+        //       </Suspense>
+        //     </div>
+        //   </div>
+        // </div>
       )}
     </main>
   );

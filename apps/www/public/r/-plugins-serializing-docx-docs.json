@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "-plugins-serializing-docx-docs",
+  "type": "registry:file",
+  "title": "Serializing Docx",
+  "description": "Documentation for Serializing Docx",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(serializing)/docx.mdx",
+      "content": "---\ntitle: Serializing Docx\n---\n\n<ComponentPreview name=\"docx-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Convert DOCX content to a Slate value.\n\n<Callout className=\"my-4\" type=\"note\">\n  Converting a Slate value to DOCX is not yet supported.\n</Callout>\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-docx @udecode/plate-juice\n```\n\n## Usage\n\n### DOCX -> Slate\n\n```tsx\nimport { JuicePlugin } from '@udecode/plate-juice';\nimport { DocxPlugin } from '@udecode/plate-docx';\n\nconst plugins = [\n  // ...otherPlugins,\n  DocxPlugin,\n  JuicePlugin,\n];\n```\n\nGiven pasted HTML, `@udecode/plate-juice` is used to inline CSS properties into the `style` attribute.\n\n## Plugins\n\n### DocxPlugin\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(serializing)/docx.mdx"
+    }
+  ]
+}

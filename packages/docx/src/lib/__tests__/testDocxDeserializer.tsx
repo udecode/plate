@@ -2,7 +2,7 @@
 
 import { type SlatePlugin, createSlateEditor } from '@udecode/plate';
 import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
-import { BasicElementsPlugin } from '@udecode/plate-basic-nodes/react';
+import { BasicBlocksPlugin } from '@udecode/plate-basic-nodes/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
 import { HorizontalRulePlugin } from '@udecode/plate-basic-nodes/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
@@ -62,7 +62,7 @@ export const testDocxDeserializer = ({
         HorizontalRulePlugin,
         CodeBlockPlugin,
         LinkPlugin,
-        BasicElementsPlugin,
+        BasicBlocksPlugin,
         BasicMarksPlugin,
         TablePlugin,
         LineHeightPlugin.extend(() => injectConfig),

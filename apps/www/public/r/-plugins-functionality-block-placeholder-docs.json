@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "-plugins-functionality-block-placeholder-docs",
+  "type": "registry:file",
+  "title": "Block Placeholder",
+  "description": "Show placeholder when a block is empty.",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(functionality)/block-placeholder.mdx",
+      "content": "---\ntitle: Block Placeholder\ndescription: Show placeholder when a block is empty.\n---\n\n<ComponentPreview name=\"block-placeholder-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Add customizable placeholder text to empty blocks\n- Show placeholders based on block type\n\n</PackageInfo>\n\n## Usage\n\n<Steps>\n\n### Add Plugin\n\nInclude `BlockPlaceholderPlugin` in your Plate plugins array.\n\n```tsx\nimport { BlockPlaceholderPlugin } from '@udecode/plate/react';\n\nconst plugins = [\n  // ...otherPlugins,\n  BlockPlaceholderPlugin,\n];\n```\n\n### Configure Plugin\n\n<ComponentSource name=\"block-placeholder-kit\" />\n\n- Setting `placeholders[KEYS.p]` to `'Type something...'` shows this text in empty paragraph blocks\n- Using `query: ({ path }) => path.length === 1` only shows placeholders in root-level blocks, hiding them in nested blocks\n- Adding a `className` lets you style the placeholder text appearance (e.g. using Tailwind)\n\n### Customize Placeholders\n\nYou can configure different placeholders for different block types:\n\n```tsx\nimport { KEYS } from '@udecode/plate';\n\nBlockPlaceholderPlugin.configure({\n  options: {\n    placeholders: {\n      [KEYS.p]: 'Type something...',\n      [KEYS.h1]: 'Enter heading...',\n      [KEYS.blockquote]: 'Enter quote...',\n      [KEYS.codeBlock]: 'Enter code...',\n    },\n  },\n})\n```\n\n</Steps>\n\n## Plugins\n\n### `BlockPlaceholderPlugin`\n\nThe plugin shows placeholders when all of these conditions are met:\n\n1. The block is empty (contains no content)\n2. The editor is not empty (has other content)\n3. The editor is focused\n4. The block matches the query function\n5. The block type matches a key in the placeholders map\n\n<API name=\"BlockPlaceholderPlugin\">\n<APIOptions>\n  <APIItem name=\"placeholders\" type=\"Record<string, string>\">\n    A map of plugin keys to placeholder text strings.\n    - **Default:** `{ [KEYS.p]: 'Type something...' }`\n  </APIItem>\n  <APIItem name=\"query\" type=\"(context: PlatePluginContext & { node: TElement; path: Path }) => boolean\">\n    A function that determines whether a block should show a placeholder.\n    - **Default:** Returns true for root-level blocks (`path.length === 1`)\n  </APIItem>\n  <APIItem name=\"className\" type=\"string\" optional>\n    Class to apply to blocks with placeholders.\n  </APIItem>\n</APIOptions>\n</API>\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(functionality)/block-placeholder.mdx"
+    }
+  ]
+}

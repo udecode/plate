@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "-plugins-marks-basic-marks-docs",
+  "type": "registry:file",
+  "title": "Basic Marks",
+  "description": "Commonly used text styling features.",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(marks)/basic-marks.mdx",
+      "content": "---\ntitle: Basic Marks\ndescription: Commonly used text styling features.\ndocs:\n  - route: /docs/components/mark-toolbar-button\n    title: Mark Toolbar Button\n---\n\n<Cards>\n\n<Card icon=\"bold\" title=\"Bold\" href=\"/docs/bold\">\nApply bold formatting to emphasize important text.\n</Card>\n\n<Card icon=\"italic\" title=\"Italic\" href=\"/docs/italic\">\nApply italic formatting for emphasis or stylistic purposes.\n</Card>\n\n<Card icon=\"underline\" title=\"Underline\" href=\"/docs/underline\">\nApply underline formatting to text.\n</Card>\n\n<Card icon=\"strikethrough\" title=\"Strikethrough\" href=\"/docs/strikethrough\">\nApply strikethrough formatting to indicate deleted content.\n</Card>\n\n<Card icon=\"code\" title=\"Code\" href=\"/docs/code\">\nFormat inline code snippets and technical terms.\n</Card>\n\n<Card icon=\"subscript\" title=\"Subscript\" href=\"/docs/subscript\">\nFormat text as subscript for mathematical expressions.\n</Card>\n\n<Card icon=\"superscript\" title=\"Superscript\" href=\"/docs/superscript\">\nFormat text as superscript for mathematical expressions.\n</Card>\n\n<Card icon=\"kbd\" title=\"Kbd\" href=\"/docs/kbd\">\nDisplay keyboard shortcuts and key combinations.\n</Card>\n\n<Card icon=\"highlight\" title=\"Highlight\" href=\"/docs/highlight\">\nHighlight important text with background colors.\n</Card>\n\n</Cards>\n\n<ComponentPreview name=\"basic-marks-demo\" />\n\n## Installation\n\n```bash\nnpm install @udecode/plate-basic-nodes\n```\n\n## Usage\n\n```tsx\nimport { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';\n\nconst plugins = [\n  // ...otherPlugins,\n  BasicMarksPlugin,\n];\n```\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(marks)/basic-marks.mdx"
+    }
+  ]
+}

@@ -17,11 +17,11 @@ export const registryBaseKits: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'components/editor/plugins/basic-elements-base-kit.tsx',
+        path: 'components/editor/plugins/basic-blocks-base-kit.tsx',
         type: 'registry:component',
       },
     ],
-    name: 'basic-elements-base-kit',
+    name: 'basic-blocks-base-kit',
     registryDependencies: [
       'blockquote-node',
       'heading-node',
@@ -262,7 +262,7 @@ export const registryBaseKits: Registry['items'] = [
     registryDependencies: [
       'editor',
       'align-base-kit',
-      'basic-elements-base-kit',
+      'basic-blocks-base-kit',
       'basic-marks-base-kit',
       'callout-base-kit',
       'code-block-base-kit',
@@ -354,13 +354,13 @@ export const registryKits: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'components/editor/plugins/basic-elements-kit.tsx',
+        path: 'components/editor/plugins/basic-blocks-kit.tsx',
         type: 'registry:component',
       },
     ],
-    name: 'basic-elements-kit',
+    name: 'basic-blocks-kit',
     registryDependencies: [
-      'basic-elements-base-kit',
+      'basic-blocks-base-kit',
       'blockquote-node',
       'heading-node',
       'hr-node',
@@ -394,7 +394,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'basic-nodes-kit',
-    registryDependencies: ['basic-elements-kit', 'basic-marks-kit'],
+    registryDependencies: ['basic-blocks-kit', 'basic-marks-kit'],
     type: 'registry:component',
   },
   {

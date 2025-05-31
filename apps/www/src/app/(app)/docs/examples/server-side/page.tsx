@@ -21,7 +21,7 @@ import { Link } from '@/components/link';
 import { Markdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
-import { basicElementsValue } from '@/registry/examples/values/basic-elements-value';
+import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 
 const title = 'Server-Side Example';
@@ -75,7 +75,7 @@ export default function RSCPage() {
       TrailingBlockPlugin,
       DocxPlugin,
     ],
-    value: [...basicElementsValue, ...basicMarksValue],
+    value: [...basicBlocksValue, ...basicMarksValue],
   });
 
   const md = editor.api.markdown.serialize();

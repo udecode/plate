@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { RenderElementProps, TElement, Value } from '@udecode/plate';
 
 import {
-  BasicElementsPlugin,
+  BasicBlocksPlugin,
   BasicMarksPlugin,
 } from '@udecode/plate-basic-nodes/react';
 import {
@@ -24,7 +24,7 @@ const value = createHugeDocumentValue();
 
 function WithPlate() {
   const editor = usePlateEditor({
-    plugins: [BasicElementsPlugin, BasicMarksPlugin],
+    plugins: [BasicBlocksPlugin, BasicMarksPlugin],
     value,
   });
 

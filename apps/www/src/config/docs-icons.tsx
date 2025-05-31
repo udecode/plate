@@ -112,7 +112,7 @@ export const DocIcons = {
   'basic-editor-handler': HandIcon,
   'basic-editor-styling': PaletteIcon,
   'basic-editor-value': FilesIcon,
-  'basic-elements': Heading1Icon,
+  'basic-blocks': Heading1Icon,
   'basic-marks': BoldIcon,
   'basic-nodes': Heading1Icon,
   'basic-plugins-components': MonitorIcon,

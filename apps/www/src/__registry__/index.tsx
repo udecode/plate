@@ -255,7 +255,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/dnd","title":"Drag & Drop"},{"route":"https://pro.platejs.org/docs/components/draggable"}],"examples":["dnd-demo","dnd-pro"],"usage":["DndPlugin.configure({\n  render: {\n    aboveNodes: BlockDraggable,\n  },\n})"]},
+    meta: {"docs":[{"route":"/docs/dnd","title":"Drag & Drop"},{"route":"https://pro.platejs.org/docs/components/block-draggable"}],"examples":["dnd-demo","dnd-pro"],"usage":["DndPlugin.configure({\n  render: {\n    aboveNodes: BlockDraggable,\n  },\n})"]},
   },
   "editor": {
     name: "editor",
@@ -866,7 +866,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/blockquote"},{"route":"https://pro.platejs.org/docs/components/blockquote-node"}],"examples":["basic-elements-demo","basic-nodes-pro"]},
+    meta: {"docs":[{"route":"/docs/blockquote"},{"route":"https://pro.platejs.org/docs/components/blockquote-node"}],"examples":["basic-blocks-demo","basic-nodes-pro"]},
   },
   "callout-node": {
     name: "callout-node",
@@ -1140,7 +1140,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/heading"},{"route":"https://pro.platejs.org/docs/components/heading-node"}],"examples":["basic-elements-demo","basic-nodes-pro"]},
+    meta: {"docs":[{"route":"/docs/heading"},{"route":"https://pro.platejs.org/docs/components/heading-node"}],"examples":["basic-blocks-demo","basic-nodes-pro"]},
   },
   "highlight-node": {
     name: "highlight-node",
@@ -1182,7 +1182,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/horizontal-rule"},{"route":"https://pro.platejs.org/docs/components/hr-node"}],"examples":["basic-elements-demo"]},
+    meta: {"docs":[{"route":"/docs/horizontal-rule"},{"route":"https://pro.platejs.org/docs/components/hr-node"}],"examples":["basic-blocks-demo"]},
   },
   "media-image-node": {
     name: "media-image-node",
@@ -1418,7 +1418,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/basic-elements"},{"route":"https://pro.platejs.org/docs/components/paragraph-node"}],"examples":["basic-elements-demo","basic-nodes-pro"]},
+    meta: {"docs":[{"route":"/docs/basic-blocks"},{"route":"https://pro.platejs.org/docs/components/paragraph-node"}],"examples":["basic-blocks-demo","basic-nodes-pro"]},
   },
   "search-highlight-node": {
     name: "search-highlight-node",
@@ -1555,18 +1555,18 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
-  "basic-elements-base-kit": {
-    name: "basic-elements-base-kit",
+  "basic-blocks-base-kit": {
+    name: "basic-blocks-base-kit",
     description: "",
     type: "registry:component",
     registryDependencies: ["https://platejs.org/r/blockquote-node","https://platejs.org/r/heading-node","https://platejs.org/r/hr-node","https://platejs.org/r/paragraph-node"],
     files: [{
-      path: "src/registry/components/editor/plugins/basic-elements-base-kit.tsx",
+      path: "src/registry/components/editor/plugins/basic-blocks-base-kit.tsx",
       type: "registry:component",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/components/editor/plugins/basic-elements-base-kit.tsx")
+      const mod = await import("@/registry/components/editor/plugins/basic-blocks-base-kit.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -1882,7 +1882,7 @@ export const Index: Record<string, any> = {
     name: "editor-base-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor","https://platejs.org/r/align-base-kit","https://platejs.org/r/basic-elements-base-kit","https://platejs.org/r/basic-marks-base-kit","https://platejs.org/r/callout-base-kit","https://platejs.org/r/code-block-base-kit","https://platejs.org/r/column-base-kit","https://platejs.org/r/comment-base-kit","https://platejs.org/r/date-base-kit","https://platejs.org/r/font-base-kit","https://platejs.org/r/line-height-base-kit","https://platejs.org/r/link-base-kit","https://platejs.org/r/list-base-kit","https://platejs.org/r/math-base-kit","https://platejs.org/r/media-base-kit","https://platejs.org/r/mention-base-kit","https://platejs.org/r/suggestion-base-kit","https://platejs.org/r/table-base-kit","https://platejs.org/r/toc-base-kit","https://platejs.org/r/toggle-base-kit","https://platejs.org/r/markdown-kit"],
+    registryDependencies: ["https://platejs.org/r/editor","https://platejs.org/r/align-base-kit","https://platejs.org/r/basic-blocks-base-kit","https://platejs.org/r/basic-marks-base-kit","https://platejs.org/r/callout-base-kit","https://platejs.org/r/code-block-base-kit","https://platejs.org/r/column-base-kit","https://platejs.org/r/comment-base-kit","https://platejs.org/r/date-base-kit","https://platejs.org/r/font-base-kit","https://platejs.org/r/line-height-base-kit","https://platejs.org/r/link-base-kit","https://platejs.org/r/list-base-kit","https://platejs.org/r/math-base-kit","https://platejs.org/r/media-base-kit","https://platejs.org/r/mention-base-kit","https://platejs.org/r/suggestion-base-kit","https://platejs.org/r/table-base-kit","https://platejs.org/r/toc-base-kit","https://platejs.org/r/toggle-base-kit","https://platejs.org/r/markdown-kit"],
     files: [{
       path: "src/registry/components/editor/editor-base-kit.tsx",
       type: "registry:component",
@@ -1963,18 +1963,18 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
-  "basic-elements-kit": {
-    name: "basic-elements-kit",
+  "basic-blocks-kit": {
+    name: "basic-blocks-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/basic-elements-base-kit","https://platejs.org/r/blockquote-node","https://platejs.org/r/heading-node","https://platejs.org/r/hr-node","https://platejs.org/r/paragraph-node"],
+    registryDependencies: ["https://platejs.org/r/basic-blocks-base-kit","https://platejs.org/r/blockquote-node","https://platejs.org/r/heading-node","https://platejs.org/r/hr-node","https://platejs.org/r/paragraph-node"],
     files: [{
-      path: "src/registry/components/editor/plugins/basic-elements-kit.tsx",
+      path: "src/registry/components/editor/plugins/basic-blocks-kit.tsx",
       type: "registry:component",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/components/editor/plugins/basic-elements-kit.tsx")
+      const mod = await import("@/registry/components/editor/plugins/basic-blocks-kit.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -2001,7 +2001,7 @@ export const Index: Record<string, any> = {
     name: "basic-nodes-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/basic-elements-kit","https://platejs.org/r/basic-marks-kit"],
+    registryDependencies: ["https://platejs.org/r/basic-blocks-kit","https://platejs.org/r/basic-marks-kit"],
     files: [{
       path: "src/registry/components/editor/plugins/basic-nodes-kit.tsx",
       type: "registry:component",
@@ -2885,7 +2885,7 @@ export const Index: Record<string, any> = {
       type: "registry:example",
       target: ""
     },{
-      path: "src/registry/examples/values/basic-elements-value.tsx",
+      path: "src/registry/examples/values/basic-blocks-value.tsx",
       type: "registry:example",
       target: ""
     },{
@@ -3145,7 +3145,7 @@ export const Index: Record<string, any> = {
       type: "registry:example",
       target: ""
     },{
-      path: "src/registry/examples/values/basic-elements-value.tsx",
+      path: "src/registry/examples/values/basic-blocks-value.tsx",
       type: "registry:example",
       target: ""
     },{
@@ -3467,17 +3467,17 @@ export const Index: Record<string, any> = {
     }),
     meta: {"registry":false},
   },
-  "basic-elements-demo": {
-    name: "basic-elements-demo",
+  "basic-blocks-demo": {
+    name: "basic-blocks-demo",
     description: "Basic block elements like headings, quotes, and code blocks.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/basic-elements-kit","https://platejs.org/r/blockquote-node","https://platejs.org/r/heading-node","https://platejs.org/r/paragraph-node","https://platejs.org/r/editor-kit"],
+    registryDependencies: ["https://platejs.org/r/basic-blocks-kit","https://platejs.org/r/blockquote-node","https://platejs.org/r/heading-node","https://platejs.org/r/paragraph-node","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
       target: ""
     },{
-      path: "src/registry/examples/values/basic-elements-value.tsx",
+      path: "src/registry/examples/values/basic-blocks-value.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3486,7 +3486,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/basic-elements","title":"Basic Elements"}],"registry":false},
+    meta: {"docs":[{"route":"/docs/basic-blocks","title":"Basic Elements"}],"registry":false},
   },
   "basic-marks-demo": {
     name: "basic-marks-demo",
@@ -3523,7 +3523,7 @@ export const Index: Record<string, any> = {
       type: "registry:example",
       target: ""
     },{
-      path: "src/registry/examples/values/basic-elements-value.tsx",
+      path: "src/registry/examples/values/basic-blocks-value.tsx",
       type: "registry:example",
       target: ""
     },{
@@ -3536,7 +3536,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/basic-elements","title":"Basic Elements"}],"keywords":["element","leaf"],"registry":false},
+    meta: {"docs":[{"route":"/docs/basic-blocks","title":"Basic Elements"}],"keywords":["element","leaf"],"registry":false},
   },
   "block-menu-demo": {
     name: "block-menu-demo",

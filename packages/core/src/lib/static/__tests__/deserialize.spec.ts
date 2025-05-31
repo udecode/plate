@@ -1,5 +1,5 @@
 import { alignValue } from 'www/src/registry/examples/values/align-value';
-import { basicElementsValue } from 'www/src/registry/examples/values/basic-elements-value';
+import { basicBlocksValue } from 'www/src/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from 'www/src/registry/examples/values/basic-marks-value';
 import { dateValue } from 'www/src/registry/examples/values/date-value';
 import { fontValue } from 'www/src/registry/examples/values/font-value';
@@ -17,7 +17,7 @@ import { createStaticEditor } from './create-static-editor';
 describe('deserializePlateStatic', () => {
   it('should deserialize nodes', async () => {
     const editor = createStaticEditor([
-      ...basicElementsValue,
+      ...basicBlocksValue,
       ...basicMarksValue,
       ...tocPlaygroundValue,
       ...linkValue,
@@ -44,7 +44,7 @@ describe('deserializePlateStatic', () => {
     });
 
     expect(nodes).toEqual([
-      ...basicElementsValue,
+      ...basicBlocksValue,
       ...basicMarksValue,
       ...tocPlaygroundValue,
       ...linkValue,

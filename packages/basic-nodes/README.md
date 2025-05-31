@@ -10,7 +10,7 @@ This package implements the basic elements in a single plugin:
 ## Documentation
 
 Check out
-[Basic Elements](https://platejs.org/docs/basic-elements).
+[Basic Elements](https://platejs.org/docs/basic-blocks).
 
 ## License
 

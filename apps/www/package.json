@@ -72,6 +72,7 @@
     "@radix-ui/react-toolbar": "1.1.7",
     "@radix-ui/react-tooltip": "1.2.4",
     "@slate-yjs/react": "1.1.0",
+    "@tabler/icons-react": "3.33.0",
     "@udecode/cmdk": "workspace:^",
     "@udecode/cn": "workspace:^",
     "@udecode/plate": "workspace:^",

@@ -1,6 +1,6 @@
 'use client';
 
-import { BasicElementsKit } from './basic-elements-kit';
+import { BasicBlocksKit } from './basic-blocks-kit';
 import { BasicMarksKit } from './basic-marks-kit';
 
-export const BasicNodesKit = [...BasicElementsKit, ...BasicMarksKit];
+export const BasicNodesKit = [...BasicBlocksKit, ...BasicMarksKit];

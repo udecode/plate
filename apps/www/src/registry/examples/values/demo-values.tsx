@@ -3,7 +3,7 @@ import { playgroundValue } from '@/registry/examples/values/playground-value';
 import { aiValue } from './ai-value';
 import { alignValue } from './align-value';
 import { autoformatValue } from './autoformat-value';
-import { basicElementsValue } from './basic-elements-value';
+import { basicBlocksValue } from './basic-blocks-value';
 import { basicMarksValue } from './basic-marks-value';
 import { basicNodesValue } from './basic-nodes-value';
 import { blockMenuValue } from './block-menu-value';
@@ -48,7 +48,7 @@ import { toggleValue } from './toggle-value';
 const values = {
   ai: aiValue,
   autoformat: autoformatValue,
-  'basic-elements': basicElementsValue,
+  'basic-blocks': basicBlocksValue,
   'basic-marks': basicMarksValue,
   'basic-nodes': basicNodesValue,
   'block-menu': blockMenuValue,
@@ -89,7 +89,7 @@ const values = {
   mention: mentionValue,
   playground: playgroundValue,
   'preview-markdown': previewMdValue,
-  'reset-node': basicElementsValue,
+  'reset-node': basicBlocksValue,
   'single-line': singleLineValue,
   'slash-command': slashCommandValue,
   'soft-break': softBreakValue,

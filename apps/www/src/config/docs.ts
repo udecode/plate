@@ -79,7 +79,7 @@ export const installationNavItems: SidebarNavItem[] = [
     title: 'Local Docs',
   },
   {
-    href: '/docs/mcp',
+    href: '/docs/installation/mcp',
     label: 'New',
     title: 'MCP',
   },
@@ -162,6 +162,7 @@ export const guidesNavItems: SidebarNavItem[] = [
   },
   {
     href: '/docs/troubleshooting',
+    keywords: ['depset'],
     title: 'Troubleshooting',
   },
 ];

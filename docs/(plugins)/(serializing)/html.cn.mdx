@@ -180,7 +180,7 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 | `<sup>`, `vertical-align: super`                           | [`SuperscriptPlugin`](/docs/superscript)     | 转为 `superscript: true` mark。                                    |
 | `<code>` (非 `<pre>`), `font-family: Consolas`         | [`CodePlugin`](/docs/code)            | 转为 `code: true` mark（行内代码）。                             |
 | `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | 转为 `kbd: true` mark。                                            |
-| `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-elements)       | 转为段落 element。                                           |
+| `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-blocks)       | 转为段落 element。                                           |
 | `<h1>` - `<h6>`                                            | [`HeadingPlugin`](/docs/heading)         | 转为对应 heading element（`h1` - `h6`）。                |
 | `<ul>`                                                     | [`ListPlugin`](/docs/list-classic)            | 转为无序列表（`ul` 类型），子项为 `li`。               |
 | `<ol>`                                                     | [`ListPlugin`](/docs/list-classic)            | 转为有序列表（`ol` 类型），子项为 `li`。                 |

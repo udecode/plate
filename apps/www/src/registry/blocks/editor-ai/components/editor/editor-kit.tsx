@@ -7,7 +7,7 @@ import { type TPlateEditor, useEditorRef } from '@udecode/plate/react';
 import { AIKit } from '@/registry/components/editor/plugins/ai-kit';
 import { AlignKit } from '@/registry/components/editor/plugins/align-kit';
 import { AutoformatKit } from '@/registry/components/editor/plugins/autoformat-kit';
-import { BasicElementsKit } from '@/registry/components/editor/plugins/basic-elements-kit';
+import { BasicBlocksKit } from '@/registry/components/editor/plugins/basic-blocks-kit';
 import { BasicMarksKit } from '@/registry/components/editor/plugins/basic-marks-kit';
 import { BlockMenuKit } from '@/registry/components/editor/plugins/block-menu-kit';
 import { BlockPlaceholderKit } from '@/registry/components/editor/plugins/block-placeholder-kit';
@@ -44,7 +44,7 @@ export const EditorKit = [
   ...AIKit,
 
   // Elements
-  ...BasicElementsKit,
+  ...BasicBlocksKit,
   ...CodeBlockKit,
   ...TableKit,
   ...ToggleKit,

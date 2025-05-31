@@ -3,6 +3,7 @@
 ---
 
 - Package `@udecode/plate-basic-elements` has been deprecated.
+- `BasicElementsPlugin` has been renamed to `BasicBlocksPlugin`.
 - Its plugins have been moved to the new `@platejs/basic-nodes` package.
 - Migration:
   - Replace `@udecode/plate-basic-elements` with `@platejs/basic-nodes` in your dependencies.

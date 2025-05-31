@@ -7,7 +7,7 @@ import { Plate, usePlateEditor } from '@udecode/plate/react';
 import { Separator } from '@/components/ui/separator';
 import { BasicNodesKit } from '@/registry/components/editor/plugins/basic-nodes-kit';
 import { MediaKit } from '@/registry/components/editor/plugins/media-kit';
-import { basicElementsValue } from '@/registry/examples/values/basic-elements-value';
+import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 import { imageValue } from '@/registry/examples/values/media-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
@@ -18,7 +18,7 @@ export default function MultipleEditorsDemo() {
   const editor = usePlateEditor({
     id: 'editor1',
     plugins: BasicNodesKit,
-    value: basicElementsValue,
+    value: basicBlocksValue,
   });
 
   const editorMarks = usePlateEditor({

@@ -1,5 +1,5 @@
 import { BaseAlignKit } from './plugins/align-base-kit';
-import { BaseBasicElementsKit } from './plugins/basic-elements-base-kit';
+import { BaseBasicBlocksKit } from './plugins/basic-blocks-base-kit';
 import { BaseBasicMarksKit } from './plugins/basic-marks-base-kit';
 import { BaseCalloutKit } from './plugins/callout-base-kit';
 import { BaseCodeBlockKit } from './plugins/code-block-base-kit';
@@ -20,7 +20,7 @@ import { BaseTocKit } from './plugins/toc-base-kit';
 import { BaseToggleKit } from './plugins/toggle-base-kit';
 
 export const BaseEditorKit = [
-  ...BaseBasicElementsKit,
+  ...BaseBasicBlocksKit,
   ...BaseCodeBlockKit,
   ...BaseTableKit,
   ...BaseToggleKit,

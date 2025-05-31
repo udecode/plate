@@ -64,14 +64,14 @@ export function ComponentSource({
               className={cn('flex h-7 px-1.5 shadow-none xl:w-auto')}
               onClick={() => {
                 copyToClipboard(
-                  `npx shadcn@canary add ${siteConfig.registryUrl}${name}`
+                  `npx shadcn@latest add ${siteConfig.registryUrl}${name}`
                 );
               }}
             >
               {isCopied ? <Check /> : <Terminal />}
 
               <span className="hidden xl:inline">
-                npx shadcn@canary add {name}
+                npx shadcn@latest add {name}
               </span>
             </Button>
           </div>

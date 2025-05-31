@@ -1,7 +1,7 @@
 import { aiValue as aiValueEn } from '@/registry/examples/values/ai-value';
 import { alignValue as alignValueEn } from '@/registry/examples/values/align-value';
 import { autoformatValue as autoformatValueEn } from '@/registry/examples/values/autoformat-value';
-import { basicElementsValue as basicElementsValueEn } from '@/registry/examples/values/basic-elements-value';
+import { basicBlocksValue as basicBlocksValueEn } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue as basicMarksValueEn } from '@/registry/examples/values/basic-marks-value';
 import { basicNodesValue as basicNodesValueEn } from '@/registry/examples/values/basic-nodes-value';
 import { blockMenuValue as blockMenuValueEn } from '@/registry/examples/values/block-menu-value';
@@ -9,7 +9,7 @@ import { blockSelectionValue as blockSelectionValueEn } from '@/registry/example
 import { aiValue as aiValueCn } from '@/registry/examples/values/cn/ai-value';
 import { alignValue as alignValueCn } from '@/registry/examples/values/cn/align-value';
 import { autoformatValue as autoformatValueCn } from '@/registry/examples/values/cn/autoformat-value';
-import { basicElementsValue as basicElementsValueCn } from '@/registry/examples/values/cn/basic-elements-value';
+import { basicBlocksValue as basicBlocksValueCn } from '@/registry/examples/values/cn/basic-blocks-value';
 import { basicMarksValue as basicMarksValueCn } from '@/registry/examples/values/cn/basic-marks-value';
 import { basicNodesValue as basicNodesValueCn } from '@/registry/examples/values/cn/basic-nodes-value';
 import { blockMenuValue as blockMenuValueCn } from '@/registry/examples/values/cn/block-menu-value';
@@ -99,7 +99,7 @@ const i18n = {
   cn: {
     ai: aiValueCn,
     autoformat: autoformatValueCn,
-    basicElements: basicElementsValueCn,
+    basicBlocks: basicBlocksValueCn,
     basicMarks: basicMarksValueCn,
     basicNodes: basicNodesValueCn,
     blockMenu: blockMenuValueCn,
@@ -147,7 +147,7 @@ const i18n = {
   en: {
     ai: aiValueEn,
     autoformat: autoformatValueEn,
-    basicElements: basicElementsValueEn,
+    basicBlocks: basicBlocksValueEn,
     basicMarks: basicMarksValueEn,
     basicNodes: basicNodesValueEn,
     blockMenu: blockMenuValueEn,

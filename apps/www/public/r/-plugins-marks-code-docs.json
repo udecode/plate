@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "-plugins-marks-code-docs",
+  "type": "registry:file",
+  "title": "Code",
+  "description": "Documentation for Code",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(marks)/code.mdx",
+      "content": "---\ntitle: Code\ndocs:\n  - route: /docs/components/mark-toolbar-button\n    title: Mark Toolbar Button\n---\n\n<ComponentPreview name=\"basic-marks-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Format inline code snippets and technical terms\n- Keyboard shortcut support for quick formatting\n- Renders as `<code>` HTML element by default\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-basic-nodes\n```\n\n## Usage\n\n```tsx\nimport { CodePlugin } from '@udecode/plate-basic-nodes/react';\n\nconst plugins = [\n  // ...otherPlugins,\n  CodePlugin.configure({\n    shortcuts: { toggle: { keys: 'mod+e' } },\n  }),\n];\n```\n\n## Plugins\n\n### `CodePlugin`\n\nPlugin for inline code text formatting. Renders as `<code>` HTML element by default.\n\n## Transforms\n\n### `tf.code.toggle`\n\nToggles the code formatting for the selected text. ",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(marks)/code.mdx"
+    }
+  ]
+}

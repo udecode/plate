@@ -21,14 +21,14 @@
   "meta": {
     "docs": [
       {
-        "route": "/docs/basic-elements"
+        "route": "/docs/basic-blocks"
       },
       {
         "route": "https://pro.platejs.org/docs/components/paragraph-node"
       }
     ],
     "examples": [
-      "basic-elements-demo",
+      "basic-blocks-demo",
       "basic-nodes-pro"
     ]
   }

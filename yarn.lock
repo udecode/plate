@@ -5275,6 +5275,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tabler/icons-react@npm:3.33.0":
+  version: 3.33.0
+  resolution: "@tabler/icons-react@npm:3.33.0"
+  dependencies:
+    "@tabler/icons": "npm:3.33.0"
+  peerDependencies:
+    react: ">= 16"
+  checksum: 10c0/1b3eac2a5029ed1509f521c17eb35ce7c0b125a76b7eb58a50d123ae6a888e0538a179f192ae38ed9988fc1b775334482bfb4722976e2208d97ae8bbb689ddf7
+  languageName: node
+  linkType: hard
+
+"@tabler/icons@npm:3.33.0":
+  version: 3.33.0
+  resolution: "@tabler/icons@npm:3.33.0"
+  checksum: 10c0/c31a1eb5a018b81b540715635a556bf7324fe71c2ec2c09dd4f2e9655e2339060865eb2672deb9c05ee1898b79a21116a76194b6c6156df7bf54682323b613ac
+  languageName: node
+  linkType: hard
+
 "@tailwindcss/cli@npm:4.1.4":
   version: 4.1.4
   resolution: "@tailwindcss/cli@npm:4.1.4"
@@ -22389,6 +22407,7 @@ __metadata:
     "@radix-ui/react-tooltip": "npm:1.2.4"
     "@shikijs/compat": "npm:1.1.7"
     "@slate-yjs/react": "npm:1.1.0"
+    "@tabler/icons-react": "npm:3.33.0"
     "@tailwindcss/cli": "npm:4.1.4"
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@udecode/cmdk": "workspace:^"

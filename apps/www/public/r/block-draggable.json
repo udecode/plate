@@ -26,7 +26,7 @@
         "title": "Drag & Drop"
       },
       {
-        "route": "https://pro.platejs.org/docs/components/draggable"
+        "route": "https://pro.platejs.org/docs/components/block-draggable"
       }
     ],
     "examples": [

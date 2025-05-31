@@ -122,7 +122,7 @@ export const registryBlocks: Registry['items'] = [
         type: 'registry:example',
       },
       {
-        path: 'examples/values/basic-elements-value.tsx',
+        path: 'examples/values/basic-blocks-value.tsx',
         type: 'registry:example',
       },
       {

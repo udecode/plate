@@ -269,7 +269,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
                 )}
                 onClick={() => {
                   copyToClipboard(
-                    `npx shadcn@canary add ${siteConfig.registryUrl}${item.name}`
+                    `npx shadcn@latest add ${siteConfig.registryUrl}${item.name}`
                   );
                 }}
               >
@@ -277,7 +277,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
 
                 {block && (
                   <span className="hidden lg:inline">
-                    npx shadcn@canary add {item.name}
+                    npx shadcn@latest add {item.name}
                   </span>
                 )}
               </Button>
