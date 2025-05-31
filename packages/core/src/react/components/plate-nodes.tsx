@@ -160,16 +160,10 @@ export type StyledPlateLeafProps<
 > = Omit<PlateLeafProps<N, C>, keyof DeprecatedNodeProps> &
   PlateHTMLProps<C, T>;
 
-const NonBreakingSpace = ({ children }: { children: React.ReactNode }) => (
-  <>
-    <span style={{ fontSize: 0 }} contentEditable={false}>
-      {String.fromCodePoint(160) /* Non-breaking space */}
-    </span>
-    {children}
-    <span style={{ fontSize: 0 }} contentEditable={false}>
-      {String.fromCodePoint(160) /* Non-breaking space */}
-    </span>
-  </>
+const NonBreakingSpace = () => (
+  <span style={{ fontSize: 0 }} contentEditable={false}>
+    {String.fromCodePoint(160)}
+  </span>
 );
 
 export const PlateLeaf = React.forwardRef<
@@ -179,15 +173,27 @@ export const PlateLeaf = React.forwardRef<
   const attributes = useNodeAttributes(props, ref);
 
   const inset = insetProp ?? props.plugin?.node.inset;
+
   if (inset) {
-    console.log('inset', props);
+    return (
+      <>
+        <NonBreakingSpace />
+        <Tag {...attributes}>
+          {children}
+
+          <NonBreakingSpace />
+        </Tag>
+      </>
+    );
   }
 
-  return (
-    <Tag {...attributes}>
-      {inset ? <NonBreakingSpace>{children}</NonBreakingSpace> : children}
-    </Tag>
-  );
+  return <Tag {...attributes}>{children}</Tag>;
+
+  // return (
+  //   <Tag {...attributes}>
+  //     {inset ? <NonBreakingSpace>{children}</NonBreakingSpace> : children}
+  //   </Tag>
+  // );
 }) as <
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
