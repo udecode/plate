@@ -283,7 +283,7 @@ export const uiComponents: Registry['items'] = [
     meta: {
       docs: [
         { route: '/docs/dnd', title: 'Drag & Drop' },
-        { route: 'https://pro.platejs.org/docs/components/draggable' },
+        { route: 'https://pro.platejs.org/docs/components/block-draggable' },
       ],
       examples: ['dnd-demo', 'dnd-pro'],
       usage: [

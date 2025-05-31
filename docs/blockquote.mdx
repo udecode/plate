@@ -11,9 +11,8 @@ docs:
 
 ## Features
 
-- Create blockquotes to emphasize important information or highlight quotes from external sources
-- Keyboard shortcut support for quick formatting
-- Renders as `<blockquote>` HTML element by default
+- Create blockquotes to emphasize important information or highlight quotes from external sources.
+- Renders as `<blockquote>` HTML element by default.
 
 </PackageInfo>
 
@@ -25,16 +24,70 @@ npm install @udecode/plate-basic-nodes
 
 ## Usage
 
+<Steps>
+
+### Add Plugin
+
+Include `BlockquotePlugin` in your Plate plugins array when creating the editor.
+
 ```tsx
 import { BlockquotePlugin } from '@udecode/plate-basic-nodes/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
-const plugins = [
-  // ...otherPlugins,
-  BlockquotePlugin.configure({
-    shortcuts: { toggle: { keys: 'mod+shift+period' } },
-  }),
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    BlockquotePlugin,
+  ],
+});
 ```
+
+### Configure `BlockquotePlugin`
+
+You can configure the `BlockquotePlugin` with options such as a specific rendering component or custom keyboard shortcuts.
+
+```tsx
+import { BlockquotePlugin } from '@udecode/plate-basic-nodes/react';
+import { createPlateEditor } from '@udecode/plate/react';
+import { BlockquoteElement } from '@/registry/ui/blockquote-node'; // Example path
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    BlockquotePlugin.configure({
+      // node.component: Assigns a custom component to render blockquote elements.
+      // See: https://platejs.org/docs/plugin-components
+      node: { component: BlockquoteElement },
+      // shortcuts.toggle: Defines a keyboard shortcut to toggle blockquote formatting.
+      shortcuts: { toggle: 'mod+shift+.' },
+    }),
+  ],
+});
+```
+
+### Example: Using with `BasicElementsKit`
+
+The `BlockquotePlugin` is included in the `BasicElementsKit`, which provides a quick way to set up blockquotes along with other fundamental elements like paragraphs and headings, all pre-configured with their respective UI components.
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { BasicElementsKit } from '@/registry/components/editor/plugins/basic-elements-kit'; // Adjust path if necessary
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicElementsKit, // Includes a pre-configured BlockquotePlugin
+  ],
+});
+```
+
+<ComponentSource name="basic-elements-kit" />
+
+### Related UI Components
+
+The `BlockquotePlugin` renders blockquote elements. An example UI component for this is [`BlockquoteElement`](/docs/components/blockquote-node). This component is used by default in the `BasicElementsKit`, and you can also assign it directly using `BlockquotePlugin.configure({ node: { component: BlockquoteElement }})` or create your own custom component.
+
+</Steps>
 
 ## Plugins
 

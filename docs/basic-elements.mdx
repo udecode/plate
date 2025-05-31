@@ -1,16 +1,16 @@
 ---
 title: Basic Elements
-description: Commonly used block elements.
+description: Commonly used block elements for structuring content.
 ---
 
 <Cards>
 
-<Card icon="blockquote" title="Blockquote" href="/docs/blockquote">
-Emphasize important information with styled quotes.
-</Card>
-
 <Card icon="heading" title="Heading" href="/docs/heading">
 Create headings of various levels to structure content.
+</Card>
+
+<Card icon="blockquote" title="Blockquote" href="/docs/blockquote">
+Emphasize important information with styled quotes.
 </Card>
 
 <Card icon="horizontal-rule" title="Horizontal Rule" href="/docs/horizontal-rule">
@@ -19,22 +19,50 @@ Insert horizontal lines to separate content.
 
 </Cards>
 
-
 <ComponentPreview name="basic-elements-demo" />
 
+## Overview
+
+Basic elements are fundamental building blocks for any rich-text editor, allowing users to structure and organize their content effectively. Plate provides a suite of plugins for common elements like paragraphs, headings (H1-H6), blockquotes, and horizontal rules.
+
+While each of these elements can be configured and used individually, Plate also offers the `BasicElementsKit` as a convenient way to include a pre-configured set of these common block elements along with their recommended UI components.
+
 ## Installation
+
+To use the basic element plugins, install the basic nodes package:
 
 ```bash
 npm install @udecode/plate-basic-nodes
 ```
 
+For a quick start with pre-configured UI components and plugins, you can add the `basic-elements-kit` using the Plate UI CLI:
+
+```bash
+npx shadcn@latest add https://platejs.org/r/basic-elements-kit
+```
+
 ## Usage
 
-```tsx
-import { BasicElementsPlugin } from '@udecode/plate-basic-nodes/react';
+<Steps>
 
-const plugins = [
-  // ...otherPlugins,
-  BasicElementsPlugin,
-];
+### Using the `BasicElementsKit`
+
+The `BasicElementsKit` bundles plugins for Paragraphs, Headings (H1, H2, H3), Blockquotes, and Horizontal Rules, along with their respective UI components from Plate UI.
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { BasicElementsKit } from '@/components/editor/plugins/basic-elements-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicElementsKit,
+  ],
+});
 ```
+
+This is the quickest way to get started with a full set of basic block elements.
+
+<ComponentSource name="basic-elements-kit" />
+
+</Steps>
