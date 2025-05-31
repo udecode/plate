@@ -3,7 +3,7 @@ import { createSlatePlugin, KEYS } from '@udecode/plate';
 /** Enables support for code formatting */
 export const BaseKbdPlugin = createSlatePlugin({
   key: KEYS.kbd,
-  node: { isHardEdge: true, isLeaf: true },
+  node: { inset: true, isHardEdge: true, isLeaf: true },
   parsers: {
     html: {
       deserializer: {

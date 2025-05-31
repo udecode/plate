@@ -297,6 +297,12 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   dangerouslyAllowAttributes?: string[];
   /**
+   * Whether the node has non-breaking space on both sides.
+   *
+   * @default false
+   */
+  inset?: boolean;
+  /**
    * Indicates if this plugin's elements are primarily containers for other
    * content. Container elements are typically unwrapped when querying
    * fragments.
@@ -319,7 +325,8 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   isElement?: boolean;
   /**
-   * Whether the node is a hard edge.
+   * Whether the inline node is a hard edge. When true, allows precise cursor
+   * positioning at the exact start or end of the node.
    *
    * @default false
    */

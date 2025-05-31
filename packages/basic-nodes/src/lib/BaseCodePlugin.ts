@@ -3,7 +3,7 @@ import { createSlatePlugin, findHtmlParentElement, KEYS } from '@udecode/plate';
 /** Enables support for code formatting */
 export const BaseCodePlugin = createSlatePlugin({
   key: KEYS.code,
-  node: { isHardEdge: true, isLeaf: true },
+  node: { inset: true, isHardEdge: true, isLeaf: true },
   parsers: {
     html: {
       deserializer: {

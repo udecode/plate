@@ -84,6 +84,11 @@ Indicates if this plugin's nodes can be rendered as decorated leaf. Set to false
 <APISubListItem parent="node" name="isElement" type="boolean" optional>
 Indicates if this plugin's nodes should be rendered as elements.
 </APISubListItem>
+<APISubListItem parent="node" name="isHardEdge" type="boolean" optional>
+Whether the inline node is a hard edge. When true, allows precise cursor positioning at the exact start or end of the node. This is useful for marks or inline elements that need precise cursor control, such as code spans.
+
+- **Default:** `false`
+</APISubListItem>
 <APISubListItem parent="node" name="isInline" type="boolean" optional>
 Indicates if this plugin's elements should be treated as inline.
 </APISubListItem>

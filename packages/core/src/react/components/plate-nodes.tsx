@@ -151,7 +151,7 @@ export type PlateLeafProps<
   C extends AnyPluginConfig = PluginConfig,
 > = PlateNodeProps<C> &
   RenderLeafProps<N> &
-  DeprecatedNodeProps & { hardEdge?: boolean };
+  DeprecatedNodeProps & { inset?: boolean };
 
 export type StyledPlateLeafProps<
   N extends TText = TText,
@@ -175,12 +175,17 @@ const NonBreakingSpace = ({ children }: { children: React.ReactNode }) => (
 export const PlateLeaf = React.forwardRef<
   HTMLSpanElement,
   StyledPlateLeafProps
->(({ as: Tag = 'span', children, hardEdge = false, ...props }, ref) => {
+>(({ as: Tag = 'span', children, inset: insetProp, ...props }, ref) => {
   const attributes = useNodeAttributes(props, ref);
+
+  const inset = insetProp ?? props.plugin?.node.inset;
+  if (inset) {
+    console.log('inset', props);
+  }
 
   return (
     <Tag {...attributes}>
-      {hardEdge ? <NonBreakingSpace>{children}</NonBreakingSpace> : children}
+      {inset ? <NonBreakingSpace>{children}</NonBreakingSpace> : children}
     </Tag>
   );
 }) as <
