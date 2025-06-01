@@ -1,4 +1,4 @@
-import { type Path, type TElement, TextApi } from '@udecode/slate';
+import { type Path, type TElement, NodeApi, TextApi } from '@udecode/slate';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';
 
@@ -7,7 +7,8 @@ import {
   getBoundary,
   hasHardEdgeAtBoundary,
   hasMarkAtBoundary,
- isFocusBoundaryEdge } from './queries';
+  isFocusBoundaryEdge,
+} from './queries';
 import { getMarkBoundaryAffinity } from './queries/getMarkBoundaryAffinity';
 import { setMarkBoundaryAffinity } from './transforms/setMarkBoundaryAffinity';
 
@@ -44,10 +45,13 @@ export const AffinityPlugin = createTSlatePlugin<MarkAffinityConfig>({
         if (unit === 'character' && editor.api.isCollapsed()) {
           const [leftMarkEntryBefore] = getBoundary(editor) ?? [null];
 
-          if (!leftMarkEntryBefore || !TextApi.isText(leftMarkEntryBefore[0]))
-            return deleteBackward(unit);
+          if (!leftMarkEntryBefore) return deleteBackward(unit);
 
-          const removingFromLeftMark = leftMarkEntryBefore[0].text.length > 1;
+          const string = TextApi.isText(leftMarkEntryBefore[0])
+            ? leftMarkEntryBefore[0].text
+            : NodeApi.string(leftMarkEntryBefore[0]);
+
+          const removingFromLeftMark = string.length > 1;
 
           deleteBackward(unit);
 
