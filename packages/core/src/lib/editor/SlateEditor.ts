@@ -62,6 +62,7 @@ export type BaseEditor = EditorBase & {
       };
       node: {
         clearOnBoundary: string[];
+        isAffinity: string[];
         isElement: string[];
         isHardEdge: string[];
         isInline: string[];

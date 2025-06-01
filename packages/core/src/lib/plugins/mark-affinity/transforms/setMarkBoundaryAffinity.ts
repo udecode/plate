@@ -1,18 +1,28 @@
 import type { Point } from 'slate';
 
-import { NodeApi } from '@udecode/slate';
+import { ElementApi, NodeApi } from '@udecode/slate';
 
 import type { SlateEditor } from '../../../editor';
-import type { MarkBoundary } from '../types';
+import type { Boundary } from '../types';
+
+import {
+  type ElementAffinity,
+  AffinityPlugin,
+} from '../AffinityPlugin';
 
 export const setMarkBoundaryAffinity = (
   editor: SlateEditor,
-  markBoundary: MarkBoundary,
+  markBoundary: Boundary,
   affinity: 'backward' | 'forward'
 ) => {
   const setMarks = (marks: typeof editor.marks) => {
+    setElement(null);
     editor.marks = marks;
     editor.api.onChange();
+  };
+
+  const setElement = (elementAffinity: ElementAffinity | null) => {
+    editor.setOption(AffinityPlugin, 'elementAffinity', elementAffinity);
   };
 
   const selectPoint = (point: Point) => {
@@ -20,19 +30,47 @@ export const setMarkBoundaryAffinity = (
   };
   if (affinity === 'backward') {
     const [backwardLeafEntry] = markBoundary;
-    if (backwardLeafEntry === null) return setMarks({});
+
+    if (backwardLeafEntry === null) {
+      setMarks({});
+      return;
+    }
+
     const endOfBackward = editor.api.end(backwardLeafEntry[1]);
     endOfBackward && selectPoint(endOfBackward);
-    setMarks(null);
+
+    ElementApi.isElement(backwardLeafEntry[0])
+      ? setElement({
+          affinity,
+          at: backwardLeafEntry[1],
+          type: backwardLeafEntry[0].type,
+        })
+      : setMarks(null);
+
     return;
   }
 
   const [backwardLeafEntry, forwardLeafEntry] = markBoundary;
-  if (backwardLeafEntry === null) return setMarks(null);
-  if (forwardLeafEntry === null) return setMarks({});
+  if (backwardLeafEntry === null) {
+    setMarks(null);
+    setElement(null);
+    return;
+  }
+
+  if (forwardLeafEntry === null) {
+    setMarks({});
+    setElement(null);
+    return;
+  }
 
   const endOfBackward = editor.api.end(backwardLeafEntry[1])!;
   selectPoint(endOfBackward);
 
-  setMarks(NodeApi.extractProps(forwardLeafEntry[0]));
+  ElementApi.isElement(forwardLeafEntry[0])
+    ? setElement({
+        affinity,
+        at: forwardLeafEntry[1],
+        type: forwardLeafEntry[0].type,
+      })
+    : setMarks(NodeApi.extractProps(forwardLeafEntry[0]));
 };

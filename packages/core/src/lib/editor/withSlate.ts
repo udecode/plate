@@ -24,20 +24,8 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    */
   id?: string;
   /**
-   * Select the editor after initialization.
-   *
-   * @default false
-   *
-   * - `true` | 'end': Select the end of the editor
-   * - `false`: Do not select anything
-   * - `'start'`: Select the start of the editor
-   */
-  autoSelect?: boolean | 'end' | 'start';
-  /** Specifies the component for each plugin key. */
-  components?: NodeComponents;
-  /**
-   * Determines which mark to apply at boundaries between different marks, based
-   * on cursor movement using the left/right arrow keys.
+   * Determines which mark/element to apply at boundaries between different
+   * marks, based on cursor movement using the left/right arrow keys.
    *
    * Example: <text bold>Bold</text><cursor><text italic>Italic</text>
    *
@@ -52,7 +40,19 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    *
    * @default true
    */
-  markAffinity?: boolean;
+  affinity?: boolean;
+  /**
+   * Select the editor after initialization.
+   *
+   * @default false
+   *
+   * - `true` | 'end': Select the end of the editor
+   * - `false`: Do not select anything
+   * - `'start'`: Select the start of the editor
+   */
+  autoSelect?: boolean | 'end' | 'start';
+  /** Specifies the component for each plugin key. */
+  components?: NodeComponents;
   /** Specifies the component for each plugin key. */
   // components?: Partial<
   //   Record<KeyofNodePlugins<InferPlugins<P[]>>, NodeComponent | null>
@@ -179,8 +179,8 @@ export const withSlate = <
   e: Editor,
   {
     id,
+    affinity = true,
     autoSelect,
-    markAffinity = true,
     maxLength,
     nodeId,
     plugins = [],
@@ -274,7 +274,7 @@ export const withSlate = <
 
   // Plugin initialization code
   const corePlugins = getCorePlugins({
-    markAffinity,
+    affinity,
     maxLength,
     nodeId,
     plugins,

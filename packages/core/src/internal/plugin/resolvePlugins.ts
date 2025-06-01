@@ -39,6 +39,7 @@ export const resolvePlugins = (
     },
     node: {
       clearOnBoundary: [],
+      isAffinity: [],
       isElement: [],
       isHardEdge: [],
       isInline: [],
@@ -100,6 +101,10 @@ export const resolvePlugins = (
 
     if (plugin.node?.isLeaf) {
       editor.meta.pluginKeys.node.isLeaf.push(plugin.key);
+    }
+
+    if (plugin.node?.isAffinity) {
+      editor.meta.pluginKeys.node.isAffinity.push(plugin.key);
     }
 
     if (plugin.node?.isElement) {

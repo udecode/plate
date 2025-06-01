@@ -1,9 +1,9 @@
-import { type TText, NodeApi } from '@udecode/slate';
+import { type TElement, type TText, NodeApi } from '@udecode/slate';
 
 import type { SlateEditor } from '../../../editor';
-import type { MarkBoundary } from '../types';
+import type { Boundary } from '../types';
 
-const isHardEdge = (editor: SlateEditor, node: TText) => {
+const isHardEdge = (editor: SlateEditor, node: TElement | TText) => {
   return Object.keys(NodeApi.extractProps(node)).some((mark) =>
     editor.meta.pluginKeys.node.isHardEdge.some(
       (key) => editor.getType(key) === mark
@@ -13,7 +13,7 @@ const isHardEdge = (editor: SlateEditor, node: TText) => {
 
 export const hasHardEdgeAtBoundary = (
   editor: SlateEditor,
-  beforeMarkBoundary: MarkBoundary
+  beforeMarkBoundary: Boundary
 ) => {
   const [backwardLeafEntry, forwardLeafEntry] = beforeMarkBoundary;
 

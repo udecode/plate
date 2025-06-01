@@ -9,6 +9,7 @@ import { getPlugin } from '../../react/plugin/getPlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
 import {
   type SlatePlugin,
+  AffinityPlugin,
   AstPlugin,
   createSlatePlugin,
   DebugPlugin,
@@ -17,7 +18,6 @@ import {
   HtmlPlugin,
   InlineVoidPlugin,
   LengthPlugin,
-  MarkAffinityPlugin,
   ParserPlugin,
   SlateExtensionPlugin,
   withSlate,
@@ -34,7 +34,7 @@ const coreKeys = [
   LengthPlugin.key,
   HtmlPlugin.key,
   AstPlugin.key,
-  MarkAffinityPlugin.key,
+  AffinityPlugin.key,
   ParagraphPlugin.key,
   EventEditorPlugin.key,
 ];

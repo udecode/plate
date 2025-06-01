@@ -91,6 +91,7 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
   key: KEYS.link,
   node: {
     dangerouslyAllowAttributes: ['target'],
+    isAffinity: true,
     isElement: true,
     isInline: true,
     props: ({ editor, element }) =>

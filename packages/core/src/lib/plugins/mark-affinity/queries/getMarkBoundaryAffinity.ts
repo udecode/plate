@@ -1,19 +1,19 @@
-import type { TText } from '@udecode/slate';
+import type { TElement, TText } from '@udecode/slate';
 
 import { IS_FIREFOX, NodeApi } from '@udecode/slate';
 import isEqual from 'lodash/isEqual';
 
 import type { SlateEditor } from '../../../editor';
-import type { MarkBoundary } from '../types';
+import type { Boundary } from '../types';
 
 export const getMarkBoundaryAffinity = (
   editor: SlateEditor,
-  markBoundary: MarkBoundary
+  markBoundary: Boundary
 ): 'backward' | 'forward' | 'new-mark' => {
   const { marks, selection } = editor;
   if (!selection) return 'new-mark';
 
-  const marksMatchLeaf = (leaf: TText) => {
+  const marksMatchLeaf = (leaf: TElement | TText) => {
     return (
       marks &&
       isEqual(NodeApi.extractProps(leaf), marks) &&

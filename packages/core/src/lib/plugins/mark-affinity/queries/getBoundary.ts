@@ -1,10 +1,11 @@
-import { type TText, TextApi } from '@udecode/slate';
+import type { TText } from '@udecode/slate';
+
 import { type NodeEntry, Path } from 'slate';
 
 import type { SlateEditor } from '../../../editor';
-import type { MarkBoundary } from '../types';
+import type { Boundary } from '../types';
 
-export const getMarkBoundary = (editor: SlateEditor): MarkBoundary | null => {
+export const getBoundary = (editor: SlateEditor): Boundary | null => {
   const { selection } = editor;
   if (!selection || editor.api.isExpanded()) return null;
   const point = selection.anchor;
@@ -36,10 +37,9 @@ export const getMarkBoundary = (editor: SlateEditor): MarkBoundary | null => {
   const adjacentPath = adjacentPathFn(point.path);
   const adjacentNode = editor.api.node(adjacentPath) ?? null;
 
-  const adjacentLeafEntry =
-    adjacentNode && TextApi.isText(adjacentNode[0])
-      ? (adjacentNode as NodeEntry<TText>)
-      : null;
+  const adjacentLeafEntry = adjacentNode
+    ? (adjacentNode as NodeEntry<TText>)
+    : null;
 
   return direction === 'forward'
     ? [currentLeafEntry, adjacentLeafEntry]

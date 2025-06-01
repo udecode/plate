@@ -303,6 +303,11 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   inset?: boolean;
   /**
+   * Indicates if this plugin's nodes should be treated as affinity. Used by the
+   * affinity core plugin.
+   */
+  isAffinity?: boolean;
+  /**
    * Indicates if this plugin's elements are primarily containers for other
    * content. Container elements are typically unwrapped when querying
    * fragments.
