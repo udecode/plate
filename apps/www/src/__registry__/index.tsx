@@ -414,23 +414,6 @@ export const Index: Record<string, any> = {
     }),
     meta: {"docs":[{"route":"/docs/copilot"},{"route":"https://pro.platejs.org/docs/components/ghost-text"}],"examples":["copilot-demo","copilot-pro"]},
   },
-  "list-emoji": {
-    name: "list-emoji",
-    description: "",
-    type: "registry:ui",
-    registryDependencies: undefined,
-    files: [{
-      path: "src/registry/ui/list-emoji.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/list-emoji.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
   "history-toolbar-button": {
     name: "history-toolbar-button",
     description: "Toolbar buttons for undo and redo operations.",
@@ -464,27 +447,6 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"docs":[{"route":"/docs/list"}],"examples":["list-demo"]},
-  },
-  "list-todo": {
-    name: "list-todo",
-    description: "A checkbox marker for interactive todo lists.",
-    type: "registry:ui",
-    registryDependencies: ["checkbox"],
-    files: [{
-      path: "src/registry/ui/list-todo.tsx",
-      type: "registry:ui",
-      target: ""
-    },{
-      path: "src/registry/ui/list-todo-static.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/list-todo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"docs":[{"route":"/docs/list"},{"route":"https://pro.platejs.org/docs/components/list-todo"}],"examples":["list-demo"]},
   },
   "indent-toolbar-button": {
     name: "indent-toolbar-button",
@@ -846,6 +808,27 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"docs":[{"route":"/docs/ai","title":"AI"},{"route":"https://pro.platejs.org/docs/components/ai-node","title":"AI Leaf"}],"examples":["ai-demo","ai-pro"],"label":"New"},
+  },
+  "block-list": {
+    name: "block-list",
+    description: "List components.",
+    type: "registry:ui",
+    registryDependencies: ["checkbox"],
+    files: [{
+      path: "src/registry/ui/block-list.tsx",
+      type: "registry:ui",
+      target: ""
+    },{
+      path: "src/registry/ui/block-list-static.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/ui/block-list.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/list"}],"examples":["list-demo"]},
   },
   "blockquote-node": {
     name: "blockquote-node",
@@ -1746,7 +1729,7 @@ export const Index: Record<string, any> = {
     name: "list-base-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/list-todo","https://platejs.org/r/indent-base-kit"],
+    registryDependencies: ["https://platejs.org/r/block-list","https://platejs.org/r/indent-base-kit"],
     files: [{
       path: "src/registry/components/editor/plugins/list-base-kit.tsx",
       type: "registry:component",
@@ -2460,7 +2443,7 @@ export const Index: Record<string, any> = {
     name: "list-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/list-base-kit","https://platejs.org/r/list-todo","https://platejs.org/r/list-toolbar-button","https://platejs.org/r/indent-kit"],
+    registryDependencies: ["https://platejs.org/r/list-base-kit","https://platejs.org/r/block-list","https://platejs.org/r/list-toolbar-button","https://platejs.org/r/indent-kit"],
     files: [{
       path: "src/registry/components/editor/plugins/list-kit.tsx",
       type: "registry:component",

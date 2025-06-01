@@ -1,7 +1,10 @@
+import React from 'react';
+
 import {
   type PluginConfig,
   type SlateRenderElementProps,
   type TElement,
+  type TListElement,
   createTSlatePlugin,
   isHtmlBlockElement,
   KEYS,
@@ -12,7 +15,7 @@ import {
 import type { GetSiblingListOptions } from './queries/getSiblingList';
 import type { ListStyleType } from './types';
 
-import { renderListBelowNodes } from './renderListBelowNodes';
+import { isOrderedList } from './queries';
 import { withList } from './withList';
 
 /**
@@ -110,6 +113,24 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
     },
   },
   render: {
-    belowNodes: renderListBelowNodes,
+    belowNodes: (props) => {
+      if (!props.element.listStyleType) return;
+
+      return (props) => <List {...props} />;
+    },
   },
 }).overrideEditor(withList);
+
+function List(props: SlateRenderElementProps) {
+  const { listStart, listStyleType } = props.element as TListElement;
+  const List = isOrderedList(props.element) ? 'ol' : 'ul';
+
+  return (
+    <List
+      style={{ listStyleType, margin: 0, padding: 0, position: 'relative' }}
+      start={listStart}
+    >
+      <li>{props.children}</li>
+    </List>
+  );
+}

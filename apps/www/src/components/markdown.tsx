@@ -71,9 +71,7 @@ function PureMarkdown({
             );
           },
           ul({ children }) {
-            return (
-              <Typography.UL className="ml-0 pl-6">{children}</Typography.UL>
-            );
+            return <Typography.UL className="ml-0">{children}</Typography.UL>;
           },
         }}
         remarkPlugins={[remarkGfm]}

@@ -8,7 +8,6 @@ import { BaseImagePlugin } from '@udecode/plate-media';
 import { createSlateEditor } from '../../editor';
 import { BaseParagraphPlugin } from '../../plugins';
 import { serializeHtml } from '../serializeHtml';
-import { components } from './create-static-editor';
 
 const plugins = [
   BaseParagraphPlugin,

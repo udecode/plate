@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/align-base-kit.tsx",
-      "content": "import { KEYS } from '@udecode/plate';\nimport { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';\n\nexport const BaseAlignKit = [\n  BaseTextAlignPlugin.extend({\n    inject: {\n      targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.mediaEmbed],\n    },\n  }),\n];\n",
+      "content": "import { KEYS } from '@udecode/plate';\nimport { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';\n\nexport const BaseAlignKit = [\n  BaseTextAlignPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 'start',\n        nodeKey: 'align',\n        styleKey: 'textAlign',\n        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],\n      },\n      targetPlugins: [...KEYS.heading, KEYS.p, KEYS.img, KEYS.mediaEmbed],\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

@@ -6,13 +6,13 @@
     "@udecode/plate-list"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/list-todo",
+    "https://platejs.org/r/block-list",
     "https://platejs.org/r/indent-base-kit"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/list-base-kit.tsx",
-      "content": "import { KEYS } from '@udecode/plate';\nimport { BaseListPlugin } from '@udecode/plate-list';\n\nimport { BaseIndentKit } from '@/registry/components/editor/plugins/indent-base-kit';\nimport { TodoLiStatic, TodoMarkerStatic } from '@/registry/ui/list-todo-static';\n\nexport const BaseListKit = [\n  ...BaseIndentKit,\n  BaseListPlugin.extend({\n    inject: {\n      targetPlugins: [\n        KEYS.p,\n        ...KEYS.heading,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n      ],\n    },\n    options: {\n      listStyleTypes: {\n        todo: {\n          liComponent: TodoLiStatic,\n          markerComponent: TodoMarkerStatic,\n          type: 'todo',\n        },\n      },\n    },\n  }),\n];\n",
+      "content": "import { KEYS } from '@udecode/plate';\nimport { BaseListPlugin } from '@udecode/plate-list';\n\nimport { BaseIndentKit } from '@/registry/components/editor/plugins/indent-base-kit';\nimport {\n  TodoLiStatic,\n  TodoMarkerStatic,\n} from '@/registry/ui/block-list-static';\n\nexport const BaseListKit = [\n  ...BaseIndentKit,\n  BaseListPlugin.configure({\n    inject: {\n      targetPlugins: [\n        ...KEYS.heading,\n        KEYS.p,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n      ],\n    },\n    options: {\n      listStyleTypes: {\n        todo: {\n          liComponent: TodoLiStatic,\n          markerComponent: TodoMarkerStatic,\n          type: 'todo',\n        },\n      },\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

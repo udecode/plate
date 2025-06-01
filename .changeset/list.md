@@ -15,4 +15,6 @@
       - `INDENT_LIST_KEYS.todo` -> `KEYS.listTodo`
       - `INDENT_LIST_KEYS.checked` -> `KEYS.listChecked`
       - Other `INDENT_LIST_KEYS.*` map to `KEYS.*` accordingly.
+  - Removed `listStyleTypes` option from `ListPlugin`. You should control list rendering via `render.belowNodes` instead.
+  - Removed `renderListBelowNodes`.
 - For changelogs of the indent-based list system (now in this package) version `<=48` (when it was `@udecode/plate-indent-list`), refer to its [archived changelog](https://github.com/udecode/plate/blob/7afd88089f4a76c896f3edf928b03c7e9f2ab903/packages/indent-list/CHANGELOG.md).

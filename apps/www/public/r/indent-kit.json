@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/indent-kit.tsx",
-      "content": "'use client';\n\nimport { KEYS } from '@udecode/plate';\nimport { IndentPlugin } from '@udecode/plate-indent/react';\n\nexport const IndentKit = [\n  IndentPlugin.extend({\n    inject: {\n      targetPlugins: [\n        KEYS.p,\n        ...KEYS.heading,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n      ],\n    },\n  }),\n];\n",
+      "content": "'use client';\n\nimport { KEYS } from '@udecode/plate';\nimport { IndentPlugin } from '@udecode/plate-indent/react';\n\nexport const IndentKit = [\n  IndentPlugin.configure({\n    inject: {\n      targetPlugins: [\n        ...KEYS.heading,\n        KEYS.p,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n      ],\n    },\n    options: {\n      offset: 24,\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

@@ -76,11 +76,6 @@ import {
 } from 'www/src/registry/ui/heading-node-static';
 import { HrElementStatic } from 'www/src/registry/ui/hr-node-static';
 import { ImageElementStatic } from 'www/src/registry/ui/media-image-node-static';
-import { FireLiComponent, FireMarker } from 'www/src/registry/ui/list-emoji';
-import {
-  TodoLiStatic,
-  TodoMarkerStatic,
-} from 'www/src/registry/ui/list-todo-static';
 import { KbdLeafStatic } from 'www/src/registry/ui/kbd-node-static';
 import { LinkElementStatic } from 'www/src/registry/ui/link-node-static';
 import { AudioElementStatic } from 'www/src/registry/ui/media-audio-node-static';
@@ -96,6 +91,7 @@ import {
 } from 'www/src/registry/ui/table-node-static';
 import { TocElementStatic } from 'www/src/registry/ui/toc-node-static';
 import { ToggleElementStatic } from 'www/src/registry/ui/toggle-node-static';
+import { BaseEditorKit } from 'www/src/registry/components/editor/editor-base-kit';
 
 import { BaseParagraphPlugin, SlateLeaf } from '../..';
 import { createSlateEditor, CreateSlateEditorOptions } from '../../editor';
@@ -106,119 +102,7 @@ export const createStaticEditor = (
 ) => {
   return createSlateEditor({
     ...options,
-    components,
-    plugins: [
-      BaseColumnPlugin,
-      BaseColumnItemPlugin,
-      BaseTocPlugin,
-      BaseVideoPlugin,
-      BaseAudioPlugin,
-      BaseParagraphPlugin,
-      BaseHeadingPlugin,
-      BaseMediaEmbedPlugin,
-      BaseBoldPlugin,
-      BaseCodePlugin,
-      BaseItalicPlugin,
-      BaseStrikethroughPlugin,
-      BaseSubscriptPlugin,
-      BaseSuperscriptPlugin,
-      BaseUnderlinePlugin,
-      BaseBlockquotePlugin,
-      BaseDatePlugin,
-      BaseCodeBlockPlugin,
-      BaseIndentPlugin.extend({
-        inject: {
-          targetPlugins: [
-            KEYS.p,
-            ...KEYS.heading,
-            KEYS.blockquote,
-            KEYS.codeBlock,
-            KEYS.toggle,
-          ],
-        },
-      }),
-      BaseListPlugin.extend({
-        inject: {
-          targetPlugins: [
-            KEYS.p,
-            ...KEYS.heading,
-            KEYS.blockquote,
-            KEYS.codeBlock,
-            KEYS.toggle,
-          ],
-        },
-        options: {
-          listStyleTypes: {
-            fire: {
-              liComponent: FireLiComponent,
-              markerComponent: FireMarker,
-              type: 'fire',
-            },
-            todo: {
-              liComponent: TodoLiStatic,
-              markerComponent: TodoMarkerStatic,
-              type: 'todo',
-            },
-          },
-        },
-      }),
-      BaseLinkPlugin,
-      BaseTableRowPlugin,
-      BaseTablePlugin,
-      BaseTableCellPlugin,
-      BaseHorizontalRulePlugin,
-      BaseFontColorPlugin,
-      BaseFontBackgroundColorPlugin,
-      BaseFontSizePlugin,
-      BaseKbdPlugin,
-      BaseTextAlignPlugin.extend({
-        inject: {
-          targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.mediaEmbed],
-        },
-      }),
-      BaseLineHeightPlugin,
-      BaseHighlightPlugin,
-      BaseFilePlugin,
-      BaseImagePlugin,
-      BaseMentionPlugin,
-      BaseCommentPlugin,
-      BaseTogglePlugin,
-      BaseEquationPlugin,
-      BaseInlineEquationPlugin,
-    ],
+    plugins: BaseEditorKit,
     value,
   });
-};
-
-export const components = {
-  [KEYS.audio]: AudioElementStatic,
-  [KEYS.blockquote]: BlockquoteElementStatic,
-  [KEYS.codeBlock]: CodeBlockElementStatic,
-  [KEYS.codeLine]: CodeLineElementStatic,
-  [KEYS.code]: CodeLeafStatic,
-  [KEYS.codeSyntax]: CodeSyntaxLeafStatic,
-  [KEYS.column]: ColumnElementStatic,
-  [KEYS.columnGroup]: ColumnGroupElementStatic,
-  [KEYS.comment]: CommentLeafStatic,
-  [KEYS.date]: DateElementStatic,
-  [KEYS.equation]: EquationElementStatic,
-  [KEYS.file]: FileElementStatic,
-  [KEYS.hr]: HrElementStatic,
-  [KEYS.img]: ImageElementStatic,
-  [KEYS.inlineEquation]: InlineEquationElementStatic,
-  [KEYS.kbd]: KbdLeafStatic,
-  [KEYS.link]: LinkElementStatic,
-  // [KEYS.mediaEmbed]: MediaEmbedElementStatic,
-  [KEYS.mention]: MentionElementStatic,
-  [KEYS.p]: ParagraphElementStatic,
-  [KEYS.th]: TableCellHeaderElementStatic,
-  [KEYS.td]: TableCellElementStatic,
-  [KEYS.table]: TableElementStatic,
-  [KEYS.tr]: TableRowElementStatic,
-  [KEYS.toc]: TocElementStatic,
-  [KEYS.toggle]: ToggleElementStatic,
-  [KEYS.video]: VideoElementStatic,
-  [KEYS.h1]: H1ElementStatic,
-  [KEYS.h2]: H2ElementStatic,
-  [KEYS.h3]: H3ElementStatic,
 };

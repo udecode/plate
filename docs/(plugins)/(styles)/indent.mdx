@@ -11,58 +11,137 @@ docs:
 
 ## Features
 
-- **Core Functionality**:
-  - Indent/outdent any block element
-  - Tab/Shift+Tab keyboard shortcuts
-  - Clean DOM structure
-
-- **Customization**:
-  - Define target block types
-  - Set indentation size and units
-  - Control maximum depth
-  - Custom CSS styling
-
-For list-specific features, see the [List plugin](/docs/list).
+- Add indentation to block elements using Tab/Shift+Tab keyboard shortcuts.
+- Apply consistent indentation with customizable offset and units.
+- Injects an `indent` prop into targeted block elements.
+- Support for maximum indentation depth control.
 
 </PackageInfo>
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add indent functionality is with the `IndentKit`, which includes pre-configured `IndentPlugin` targeting paragraph, heading, blockquote, code block, and toggle elements.
+
+<ComponentSource name="indent-kit" />
+
+- Configures `Paragraph`, `Heading`, `Blockquote`, `CodeBlock`, and `Toggle` elements to support the `indent` property.
+- Sets a custom offset of `24px` for indentation spacing.
+- Provides Tab/Shift+Tab keyboard shortcuts for indenting and outdenting.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { IndentKit } from '@/components/editor/plugins/indent-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...IndentKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @udecode/plate-indent
 ```
 
-## Usage
+### Add Plugin
+
+Include `IndentPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+You can configure the `IndentPlugin` to target specific elements and customize indentation behavior.
 
 ```tsx
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { KEYS } from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate/react';
 
-const plugins = [
-  // ...otherPlugins,
-  IndentPlugin.configure({
-    inject: {
-      targetPlugins: [KEYS.p, KEYS.h1],
-    },
-  }),
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin.configure({
+      inject: {
+        nodeProps: {
+          styleKey: 'marginLeft',
+        },
+        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote],
+      },
+      options: {
+        offset: 24,
+        unit: 'px',
+        indentMax: 10,
+      },
+    }),
+  ],
+});
 ```
+
+- `inject.nodeProps.styleKey`: Maps the injected prop to the CSS `marginLeft` property.
+- `inject.targetPlugins`: An array of plugin keys indicating which element types can be indented.
+- `options.offset`: Indentation offset in pixels (default: `24`).
+- `options.unit`: Unit for indentation values (default: `'px'`).
+- `options.indentMax`: Maximum number of indentations allowed.
+
+</Steps>
 
 ## Plugins
 
 ### `IndentPlugin`
 
+Plugin for indenting block elements. It injects an `indent` prop into the elements specified by `inject.targetPlugins` and applies `marginLeft` styling.
+
 <API name="IndentPlugin">
-<APIOptions>
-  <APIItem name="offset" type="number" optional>
-    Indentation offset used in `(offset * element.indent) + unit`.
-    - **Default:** `40`
+<APIOptions type="object">
+  <APIItem name="inject.nodeProps.nodeKey" type="string" optional>
+    The property name injected into target elements.
+    - **Default:** `'indent'`
   </APIItem>
-  <APIItem name="unit" type="string" optional>
+  <APIItem name="inject.nodeProps.styleKey" type="string" optional>
+    CSS property name for styling.
+    - **Default:** `'marginLeft'`
+  </APIItem>
+  <APIItem name="inject.targetPlugins" type="string[]" optional>
+    Array of plugin keys to target for indent injection.
+    - **Default:** `['p']`
+  </APIItem>
+  <APIItem name="options.offset" type="number" optional>
+    Indentation offset used in `(offset * element.indent) + unit`.
+    - **Default:** `24`
+  </APIItem>
+  <APIItem name="options.unit" type="string" optional>
     Indentation unit used in `(offset * element.indent) + unit`.
     - **Default:** `'px'`
   </APIItem>
-  <APIItem name="indentMax" type="number" optional>
+  <APIItem name="options.indentMax" type="number" optional>
     Maximum number of indentations allowed.
   </APIItem>
 </APIOptions>

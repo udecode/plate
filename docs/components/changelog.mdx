@@ -57,7 +57,8 @@ Components:
 - Renamed `indent-list-toolbar-button` to `list-toolbar-button`
   - Renamed `BulletedIndentListToolbarButton` to `BulletedListToolbarButton`
   - Renamed `NumberedIndentListToolbarButton` to `NumberedListToolbarButton`
-- Renamed `indent-todo-marker` to `list-todo`, `indent-fire-marker` to `list-emoji`
+- Renamed `indent-todo-marker` to `block-list`
+- Removed `indent-fire-marker`
 - Removed `indent-todo-toolbar-button`, merged into `list-toolbar-button`
 - Renamed `IndentTodoToolbarButton` into `TodoListToolbarButton`
 - Removed `inline-equation-element` and `equation-popover`, merged into `equation-node` (and static version)
@@ -92,6 +93,7 @@ Plugins:
   - Renamed `editor-plugins` to `editor-kit`
   - Renamed `equation-plugins` to `math-kit`, `equationPlugins` to `MathKit`
   - Renamed `indent-list-plugins` to `list-kit`, `indentListPlugins` to `ListKit`
+  - Added `BlockList` component to `block-list`, used in `list-kit`
   - Removed `use-create-editor`, use `usePlateEditor` instead
 - `ai-kit`: add `show` shortcut. Remove `useHotkeys('mod+j')` from `ai-menu`
 - `comment-kit`: add `setDraft` transform, shortcut

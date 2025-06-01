@@ -15,7 +15,14 @@ const options = {
 } satisfies PlatePluginConfig;
 
 export const FontKit = [
-  FontColorPlugin.configure(options),
+  FontColorPlugin.configure({
+    inject: {
+      ...options.inject,
+      nodeProps: {
+        defaultNodeValue: 'black',
+      },
+    },
+  }),
   FontBackgroundColorPlugin.configure(options),
   FontSizePlugin.configure(options),
   FontFamilyPlugin.configure(options),

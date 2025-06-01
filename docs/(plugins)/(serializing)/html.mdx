@@ -233,7 +233,7 @@ You can extend a plugin to modify its HTML parsing logic. This is useful for sup
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { CodeLinePlugin } from '@udecode/plate-code-block'; // Base if needed
 
-const MyCustomCodeBlockPlugin = CodeBlockPlugin.extend({
+const MyCustomCodeBlockPlugin = CodeBlockPlugin.configure({
   parsers: {
     html: {
       deserializer: {

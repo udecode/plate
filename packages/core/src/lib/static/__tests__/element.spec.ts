@@ -1,7 +1,7 @@
 import { decode } from 'html-entities';
 
 import { serializeHtml } from '../serializeHtml';
-import { components, createStaticEditor } from './create-static-editor';
+import { createStaticEditor } from './create-static-editor';
 
 describe('serializePlateStatic', () => {
   it('should serialize paragraph to html', async () => {

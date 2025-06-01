@@ -6,20 +6,6 @@ alwaysApply: false
 
 # Plugin Documentation Guide
 
-This guide outlines the standards for writing plugin documentation for the Plate project, ensuring consistency, clarity, and adherence to the project's headless philosophy.
-
-**Core Directive: Understand the Source First**
-
-Before writing or updating any plugin documentation, the **first and most crucial step** is to thoroughly review the relevant source files. This includes:
-
-- The plugin's own source code in `packages/<name>/src`
-- Any associated Feature Kit(s) (e.g., `BasicBlocksKit` from `apps/www/src/registry/components/editor/plugins/editor-kit.tsx`).
-- Related UI component files (e.g., `blockquote-node.tsx` from `apps/www/src/registry/ui/blockquote-node.tsx`).
-- The plugin's registration and usage in example editors or demo components if available.
-- If needed for deeper understanding of concepts or APIs the plugin utilizes, consult relevant guides such as [Plugin Components](/docs/plugin-components), [Plugin Methods](/docs/plugin-methods), [Editor Configuration](/docs/editor), or [Editor Methods](/docs/editor-methods).
-
-This contextual understanding is paramount to accurately document plugin behavior, options, API, and transforms. **Never invent or assume functionality.**
-
 ## General Principles
 
 1.  **Writing Style**:
@@ -32,12 +18,14 @@ This contextual understanding is paramount to accurately document plugin behavio
     - Plugin documentation is **headless**. Do **not** assume users are using Plate UI files or components directly.
     - Focus on documenting core editor/plugin usage, APIs, and transforms based **only** on actual plugin capabilities confirmed from the source code.
     - When mentioning UI components, refer to them as examples of how a plugin's functionality can be rendered. Link to their Plate UI registry entries or component documentation pages if available (e.g., `/docs/components/component-name`).
+    - **Note for Style Plugins**: Some plugins, particularly "Style" plugins (e.g., for line height, font color), primarily function by injecting props into existing elements (like paragraphs or headings) rather than defining entirely new, distinct UI components. Their documentation in "Kit Usage" and "Manual Usage" sections will reflect this emphasis on configuration and prop injection. See documentation in `/docs/(guides)/plugin.mdx` if needed.
 
 3.  **Structure and Formatting**:
     - Use `<Steps>` for procedural instructions (e.g., installation, usage steps).
     - Use `###` for sub-headings within `<Steps>`.
     - Refer to [`dnd.mdx`](<mdc:docs/(plugins)/(functionality)/dnd.mdx>) as a primary example for structure and formatting.
     - Employ `<API name="ApiName">`, `<APIOptions>`, `<APIParameters>`, and `<APIReturns>` for documenting plugin options, API methods, and transforms. Ensure all documented options and behaviors are accurate and sourced from the code.
+    - **Important**: When updating existing documentation, **preserve existing API formatting**. Do not change `<APIOptions>` to `<APIParameters>` or vice versa if they already exist and are working correctly.
 
 ## Standard Section Order
 
@@ -103,6 +91,9 @@ Plugin documentation should generally follow this order:
     - **### Configure Plugin** (or **Configure Plugins** if documenting multiple plugins in this step):
 
       - Detail essential configuration options for the specific plugin using code examples, based on what is available in the plugin's source.
+
+      **For Element Plugins (with components):**
+
       - **Prioritize `withComponent`** when only assigning a component without other options:
 
         ```tsx
@@ -142,6 +133,33 @@ Plugin documentation should generally follow this order:
         - `node.component`: Assigns [`SpecificElement`](/docs/components/specific-node) to render the plugin's elements.
         - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle the feature.
         - (Explain other demonstrated options based on their actual function in the plugin)
+
+      **For Style Plugins (without distinct components):**
+
+      - Focus on configuration options like `inject.nodeProps`, default values, and target elements:
+
+        ```tsx
+        import { SpecificPlugin } from '@udecode/plate-specific-package/react';
+        import { createPlateEditor } from '@udecode/plate/react';
+
+        const editor = createPlateEditor({
+          plugins: [
+            // ...otherPlugins,
+            SpecificPlugin.configure({
+              inject: {
+                nodeProps: {
+                  defaultNodeValue: 'defaultValue',
+                  // ...other nodeProps options
+                },
+                targetPlugins: ['p', 'h1', 'h2'],
+              },
+            }),
+          ],
+        });
+        ```
+
+        - `inject.nodeProps.defaultNodeValue`: Sets the default value for the styling property.
+        - `inject.targetPlugins`: Specifies which element types receive the styling.
 
 5.  **## Plugins**:
     - **### `PluginName`**: Document each relevant plugin with a simple description (e.g., "Plugin for H1 heading elements").

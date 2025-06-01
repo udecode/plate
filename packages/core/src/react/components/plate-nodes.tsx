@@ -188,12 +188,6 @@ export const PlateLeaf = React.forwardRef<
   }
 
   return <Tag {...attributes}>{children}</Tag>;
-
-  // return (
-  //   <Tag {...attributes}>
-  //     {inset ? <NonBreakingSpace>{children}</NonBreakingSpace> : children}
-  //   </Tag>
-  // );
 }) as <
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,

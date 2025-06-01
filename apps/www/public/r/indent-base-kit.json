@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/indent-base-kit.tsx",
-      "content": "import { KEYS } from '@udecode/plate';\nimport { BaseIndentPlugin } from '@udecode/plate-indent';\n\nexport const BaseIndentKit = [\n  BaseIndentPlugin.extend({\n    inject: {\n      targetPlugins: [\n        KEYS.p,\n        ...KEYS.heading,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n      ],\n    },\n  }),\n];\n",
+      "content": "import { KEYS } from '@udecode/plate';\nimport { BaseIndentPlugin } from '@udecode/plate-indent';\n\nexport const BaseIndentKit = [\n  BaseIndentPlugin.configure({\n    inject: {\n      targetPlugins: [\n        ...KEYS.heading,\n        KEYS.p,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n      ],\n    },\n    options: {\n      offset: 24,\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

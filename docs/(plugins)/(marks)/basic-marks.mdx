@@ -48,19 +48,42 @@ Highlight important text with background colors.
 
 <ComponentPreview name="basic-marks-demo" />
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The `BasicMarksKit` bundles plugins for Bold, Italic, Underline, Strikethrough, Code, Subscript, Superscript, Highlight, and Kbd marks, along with their respective UI components from [Plate UI](/docs/installation/plate-ui).
+
+<ComponentSource name="basic-marks-kit" />
+
+- [`CodeLeaf`](/docs/components/code-node): Renders inline code elements.
+- [`HighlightLeaf`](/docs/components/highlight-node): Renders highlighted text elements.
+- [`KbdLeaf`](/docs/components/kbd-node): Renders keyboard shortcut elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicMarksKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
 
 ```bash
 npm install @udecode/plate-basic-nodes
 ```
 
-## Usage
-
-```tsx
-import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
-
-const plugins = [
-  // ...otherPlugins,
-  BasicMarksPlugin,
-];
-```
+For individual plugin setup and configuration, see the specific plugin documentation pages linked above.

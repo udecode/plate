@@ -3,7 +3,6 @@
  */
 
 export * from './BaseListPlugin';
-export * from './renderListBelowNodes';
 export * from './types';
 export * from './withList';
 export * from './withNormalizeList';

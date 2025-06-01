@@ -14,38 +14,97 @@ docs:
 ## Features
 
 - Add toggles to your document
-  - Toggles are closed by default, and can be opened to reveal the content inside
-- Refer to the [Indent documentation](/docs/indent) for more information
-
-## Plugin dependencies
-
-- [Indent](/docs/indent)
+- Toggles are closed by default, and can be opened to reveal the content inside
 
 </PackageInfo>
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add toggle functionality is with the `ToggleKit`, which includes pre-configured `TogglePlugin` with indent support and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="toggle-kit" />
+
+- [`IndentKit`](/docs/indent): Provides indent support for toggle elements.
+- [`ToggleElement`](/docs/components/toggle-node): Renders toggle elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { ToggleKit } from '@/components/editor/plugins/toggle-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...ToggleKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @udecode/plate-indent @udecode/plate-toggle
 ```
 
-## Usage
+### Add Plugins
+
+Include `TogglePlugin` and `IndentPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin,
+    TogglePlugin,
+  ],
+});
+```
+
+### Configure Plugins
+
+Configure the `IndentPlugin` and `TogglePlugin` with proper targeting and component assignment.
+
+```tsx
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
+import { createPlateEditor } from '@udecode/plate/react';
+import { ToggleElement } from '@/components/ui/toggle-node';
 import { KEYS } from '@udecode/plate';
 
-const plugins = [
-  // ...otherPlugins,
-  IndentPlugin.configure({
-    inject: {
-      targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.toggle],
-    },
-  }),
-  TogglePlugin,
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin.configure({
+      inject: {
+        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.toggle],
+      },
+    }),
+    TogglePlugin.withComponent(ToggleElement),
+  ],
+});
 ```
+
+- `withComponent`: Assigns [`ToggleElement`](/docs/components/toggle-node) to render toggle elements.
+- `IndentPlugin.inject.targetPlugins`: Configures which element types support indentation, including toggles.
+
+</Steps>
 
 ## Plugins
 

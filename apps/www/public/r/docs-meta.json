@@ -20,7 +20,7 @@
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"plugin\",\n    \"editor\",\n    \"static\",\n    \"html\",\n    \"markdown\",\n    \"form\",\n    \"typescript\",\n    \"debugging\",\n    \"unit-testing\",\n    \"playwright\",\n    \"troubleshooting\"\n  ],\n  \"title\": \"Guides\"\n}",
+      "content": "{\n  \"pages\": [\n    \"feature-kits\",\n    \"plugin\",\n    \"editor\",\n    \"static\",\n    \"html\",\n    \"markdown\",\n    \"form\",\n    \"typescript\",\n    \"debugging\",\n    \"unit-testing\",\n    \"playwright\",\n    \"troubleshooting\"\n  ],\n  \"title\": \"Guides\"\n}",
       "path": "content/docs/plate/guides/meta.json",
       "target": "content/docs/plate/guides/meta.json",
       "type": "registry:file"
@@ -56,7 +56,7 @@
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"basic-blocks\",\n    \"callout\",\n    \"code-block\",\n    \"column\",\n    \"date\",\n    \"equation\",\n    \"excalidraw\",\n    \"link\",\n    \"list-classic\",\n    \"media\",\n    \"mention\",\n    \"table\",\n    \"toc\",\n    \"toggle\"\n  ],\n  \"title\": \"Elements\"\n}",
+      "content": "{\n  \"pages\": [\n    \"basic-blocks\",\n    \"callout\",\n    \"code-block\",\n    \"column\",\n    \"date\",\n    \"equation\",\n    \"link\",\n    \"list-classic\",\n    \"media\",\n    \"mention\",\n    \"table\",\n    \"toc\",\n    \"toggle\"\n  ],\n  \"title\": \"Elements\"\n}",
       "path": "content/docs/plate/plugins/elements/meta.json",
       "target": "content/docs/plate/plugins/elements/meta.json",
       "type": "registry:file"
@@ -92,13 +92,13 @@
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"ai-menu\",\n    \"ai-toolbar-button\",\n    \"align-toolbar-button\",\n    \"block-context-menu\",\n    \"block-selection\",\n    \"import-toolbar-button\",\n    \"export-toolbar-button\",\n    \"caption\",\n    \"font-color-toolbar-button\",\n    \"comment-toolbar-button\",\n    \"block-discussion\",\n    \"cursor-overlay\",\n    \"block-draggable\",\n    \"editor\",\n    \"select-editor\",\n    \"emoji-toolbar-button\",\n    \"fixed-toolbar-buttons\",\n    \"fixed-toolbar-classic-buttons\",\n    \"fixed-toolbar\",\n    \"floating-toolbar-buttons\",\n    \"floating-toolbar\",\n    \"ghost-text\",\n    \"history-toolbar-button\",\n    \"list-toolbar-button\",\n    \"list-todo\",\n    \"indent-toolbar-button\",\n    \"inline-combobox\",\n    \"insert-toolbar-button\",\n    \"line-height-toolbar-button\",\n    \"link-toolbar\",\n    \"link-toolbar-button\",\n    \"list-classic-toolbar-button\",\n    \"mark-toolbar-button\",\n    \"media-toolbar\",\n    \"media-toolbar-button\",\n    \"media-upload-toast\",\n    \"mode-toolbar-button\",\n    \"more-toolbar-button\",\n    \"resize-handle\",\n    \"table-toolbar-button\",\n    \"toggle-toolbar-button\",\n    \"turn-into-toolbar-button\",\n    \"remote-cursor-overlay\",\n    \"toolbar\",\n    \"suggestion-toolbar-button\"\n  ],\n  \"title\": \"Components\"\n}",
+      "content": "{\n  \"pages\": [\n    \"ai-menu\",\n    \"ai-toolbar-button\",\n    \"align-toolbar-button\",\n    \"block-context-menu\",\n    \"block-selection\",\n    \"import-toolbar-button\",\n    \"export-toolbar-button\",\n    \"caption\",\n    \"font-color-toolbar-button\",\n    \"comment-toolbar-button\",\n    \"block-discussion\",\n    \"cursor-overlay\",\n    \"block-draggable\",\n    \"editor\",\n    \"select-editor\",\n    \"emoji-toolbar-button\",\n    \"fixed-toolbar-buttons\",\n    \"fixed-toolbar-classic-buttons\",\n    \"fixed-toolbar\",\n    \"floating-toolbar-buttons\",\n    \"floating-toolbar\",\n    \"ghost-text\",\n    \"history-toolbar-button\",\n    \"list-toolbar-button\",\n    \"indent-toolbar-button\",\n    \"inline-combobox\",\n    \"insert-toolbar-button\",\n    \"line-height-toolbar-button\",\n    \"link-toolbar\",\n    \"link-toolbar-button\",\n    \"list-classic-toolbar-button\",\n    \"mark-toolbar-button\",\n    \"media-toolbar\",\n    \"media-toolbar-button\",\n    \"media-upload-toast\",\n    \"mode-toolbar-button\",\n    \"more-toolbar-button\",\n    \"resize-handle\",\n    \"table-toolbar-button\",\n    \"toggle-toolbar-button\",\n    \"turn-into-toolbar-button\",\n    \"remote-cursor-overlay\",\n    \"toolbar\",\n    \"suggestion-toolbar-button\"\n  ],\n  \"title\": \"Components\"\n}",
       "path": "content/docs/plate/components/components/meta.json",
       "target": "content/docs/plate/components/components/meta.json",
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"ai-node\",\n    \"blockquote-node\",\n    \"callout-node\",\n    \"code-block-node\",\n    \"code-node\",\n    \"column-node\",\n    \"comment-node\",\n    \"suggestion-node\",\n    \"suggestion-line-break\",\n    \"date-node\",\n    \"equation-node\",\n    \"equation-toolbar-button\",\n    \"emoji-node\",\n    \"excalidraw-node\",\n    \"font-size-toolbar-button\",\n    \"heading-node\",\n    \"highlight-node\",\n    \"hr-node\",\n    \"media-image-node\",\n    \"media-preview-dialog\",\n    \"kbd-node\",\n    \"link-node\",\n    \"list-classic-node\",\n    \"media-audio-node\",\n    \"media-embed-node\",\n    \"media-file-node\",\n    \"media-placeholder-node\",\n    \"media-video-node\",\n    \"mention-node\",\n    \"paragraph-node\",\n    \"search-highlight-node\",\n    \"slash-node\",\n    \"table-node\",\n    \"tag-node\",\n    \"toc-node\",\n    \"toggle-node\"\n  ],\n  \"title\": \"Node Components\"\n}",
+      "content": "{\n  \"pages\": [\n    \"ai-node\",\n    \"block-list\",\n    \"blockquote-node\",\n    \"callout-node\",\n    \"code-block-node\",\n    \"code-node\",\n    \"column-node\",\n    \"comment-node\",\n    \"suggestion-node\",\n    \"suggestion-line-break\",\n    \"date-node\",\n    \"equation-node\",\n    \"equation-toolbar-button\",\n    \"emoji-node\",\n    \"excalidraw-node\",\n    \"font-size-toolbar-button\",\n    \"heading-node\",\n    \"highlight-node\",\n    \"hr-node\",\n    \"media-image-node\",\n    \"media-preview-dialog\",\n    \"kbd-node\",\n    \"link-node\",\n    \"list-classic-node\",\n    \"media-audio-node\",\n    \"media-embed-node\",\n    \"media-file-node\",\n    \"media-placeholder-node\",\n    \"media-video-node\",\n    \"mention-node\",\n    \"paragraph-node\",\n    \"search-highlight-node\",\n    \"slash-node\",\n    \"table-node\",\n    \"tag-node\",\n    \"toc-node\",\n    \"toggle-node\"\n  ],\n  \"title\": \"Node Components\"\n}",
       "path": "content/docs/plate/components/node-components/meta.json",
       "target": "content/docs/plate/components/node-components/meta.json",
       "type": "registry:file"

@@ -159,7 +159,7 @@ export const registryBaseKits: Registry['items'] = [
       },
     ],
     name: 'list-base-kit',
-    registryDependencies: ['list-todo', 'indent-base-kit'],
+    registryDependencies: ['block-list', 'indent-base-kit'],
     type: 'registry:component',
   },
   {
@@ -783,7 +783,7 @@ export const registryKits: Registry['items'] = [
     name: 'list-kit',
     registryDependencies: [
       'list-base-kit',
-      'list-todo',
+      'block-list',
       'list-toolbar-button',
       'indent-kit',
     ],

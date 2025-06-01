@@ -9,5 +9,6 @@ export * from './getNextList';
 export * from './getPreviousList';
 export * from './getSiblingList';
 export * from './getSiblingListStyleType';
+export * from './isOrderedList';
 export * from './someList';
 export * from './someTodoList';

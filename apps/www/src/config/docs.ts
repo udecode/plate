@@ -87,6 +87,12 @@ export const installationNavItems: SidebarNavItem[] = [
 
 export const guidesNavItems: SidebarNavItem[] = [
   {
+    href: '/docs/feature-kits',
+    label: 'New',
+    title: 'Feature Kits',
+  },
+
+  {
     href: '/docs/plugin',
     items: [
       {

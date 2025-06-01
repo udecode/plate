@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "block-list",
+  "type": "registry:ui",
+  "title": "List",
+  "description": "List components.",
+  "dependencies": [
+    "@udecode/plate-list"
+  ],
+  "registryDependencies": [
+    "checkbox"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/block-list.tsx",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { TListElement } from '@udecode/plate';\n\nimport { isOrderedList } from '@udecode/plate-list';\nimport {\n  useTodoListElement,\n  useTodoListElementState,\n} from '@udecode/plate-list/react';\nimport {\n  type PlateElementProps,\n  type RenderNodeWrapper,\n  useReadOnly,\n} from '@udecode/plate/react';\n\nimport { Checkbox } from '@/components/ui/checkbox';\nimport { cn } from '@/lib/utils';\n\nconst config: Record<\n  string,\n  {\n    Li: React.FC<PlateElementProps>;\n    Marker: React.FC<PlateElementProps>;\n  }\n> = {\n  todo: {\n    Li: TodoLi,\n    Marker: TodoMarker,\n  },\n};\n\nexport const BlockList: RenderNodeWrapper = (props) => {\n  if (!props.element.listStyleType) return;\n\n  return (props) => <List {...props} />;\n};\n\nfunction List(props: PlateElementProps) {\n  const { listStart, listStyleType } = props.element as TListElement;\n  const { Li, Marker } = config[listStyleType] ?? {};\n  const List = isOrderedList(props.element) ? 'ol' : 'ul';\n\n  return (\n    <List\n      className=\"relative m-0 p-0\"\n      style={{ listStyleType }}\n      start={listStart}\n    >\n      {Marker && <Marker {...props} />}\n      {Li ? <Li {...props} /> : <li>{props.children}</li>}\n    </List>\n  );\n}\n\nfunction TodoMarker(props: PlateElementProps) {\n  const state = useTodoListElementState({ element: props.element });\n  const { checkboxProps } = useTodoListElement(state);\n  const readOnly = useReadOnly();\n\n  return (\n    <div contentEditable={false}>\n      <Checkbox\n        className={cn(\n          'absolute top-1 -left-6',\n          readOnly && 'pointer-events-none'\n        )}\n        {...checkboxProps}\n      />\n    </div>\n  );\n}\n\nfunction TodoLi(props: PlateElementProps) {\n  return (\n    <li\n      className={cn(\n        'list-none',\n        (props.element.checked as boolean) &&\n          'text-muted-foreground line-through'\n      )}\n    >\n      {props.children}\n    </li>\n  );\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/block-list-static.tsx",
+      "content": "import React from 'react';\n\nimport type {\n  PlateElementProps,\n  RenderNodeWrapper,\n} from '@udecode/plate/react';\n\nimport { type SlateRenderElementProps, KEYS } from '@udecode/plate';\nimport { clsx } from 'clsx';\nimport { CheckIcon } from 'lucide-react';\n\nimport { cn } from '@/lib/utils';\n\nconst ULIST_STYLE_TYPES = ['circle', 'disc', 'square'] as const;\n\nexport const BlockList: RenderNodeWrapper = (props) => {\n  const { element } = props;\n  const listStyleType = element[KEYS.listType] as string;\n\n  if (!listStyleType) return;\n\n  return (props) => <ListWrapper {...props} />;\n};\n\nexport function ListWrapper({ children, element }: PlateElementProps) {\n  const listStyleType = element[KEYS.listType] as string;\n  const listStart = element[KEYS.listStart] as number;\n\n  let className = clsx(`slate-list-${listStyleType}`);\n  const style: React.CSSProperties = {\n    listStyleType,\n    margin: 0,\n    padding: 0,\n    position: 'relative',\n  };\n\n  const isOrdered = !ULIST_STYLE_TYPES.includes(listStyleType as any);\n\n  className = isOrdered\n    ? clsx(className, 'slate-ol')\n    : clsx(className, 'slate-ul');\n\n  const List = isOrdered ? 'ol' : 'ul';\n\n  return (\n    <List className={className} style={style} start={listStart}>\n      <li>{children}</li>\n    </List>\n  );\n}\n\nexport function TodoMarkerStatic(\n  props: Omit<SlateRenderElementProps, 'children'>\n) {\n  const checked = props.element.checked as boolean;\n\n  return (\n    <div contentEditable={false}>\n      <button\n        className={cn(\n          'peer pointer-events-none absolute top-1 -left-6 size-4 shrink-0 rounded-sm border border-primary bg-background ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',\n          props.className\n        )}\n        data-state={checked ? 'checked' : 'unchecked'}\n        type=\"button\"\n      >\n        <div className={cn('flex items-center justify-center text-current')}>\n          {checked && <CheckIcon className=\"size-4\" />}\n        </div>\n      </button>\n    </div>\n  );\n}\n\nexport function TodoLiStatic(props: SlateRenderElementProps) {\n  return (\n    <li\n      className={cn(\n        'list-none',\n        (props.element.checked as boolean) &&\n          'text-muted-foreground line-through'\n      )}\n    >\n      {props.children}\n    </li>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/list"
+      }
+    ],
+    "examples": [
+      "list-demo"
+    ]
+  }
+}

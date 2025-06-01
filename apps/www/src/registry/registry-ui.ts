@@ -505,13 +505,6 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-indent'],
-    files: [{ path: 'ui/list-emoji.tsx', type: 'registry:ui' }],
-    name: 'list-emoji',
-    title: 'Indent Fire Marker',
-    type: 'registry:ui',
-  },
-  {
     dependencies: [],
     description: 'Toolbar buttons for undo and redo operations.',
     files: [{ path: 'ui/history-toolbar-button.tsx', type: 'registry:ui' }],
@@ -545,28 +538,6 @@ export const uiComponents: Registry['items'] = [
     name: 'list-toolbar-button',
     registryDependencies: ['toolbar'],
     title: 'List Toolbar Button',
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@udecode/plate-list'],
-    description: 'A checkbox marker for interactive todo lists.',
-    files: [
-      { path: 'ui/list-todo.tsx', type: 'registry:ui' },
-      {
-        path: 'ui/list-todo-static.tsx',
-        type: 'registry:ui',
-      },
-    ],
-    meta: {
-      docs: [
-        { route: '/docs/list' },
-        { route: 'https://pro.platejs.org/docs/components/list-todo' },
-      ],
-      examples: ['list-demo'],
-    },
-    name: 'list-todo',
-    registryDependencies: ['shadcn/checkbox'],
-    title: 'List Todo',
     type: 'registry:ui',
   },
   {
@@ -904,6 +875,25 @@ export const uiNodes: Registry['items'] = [
     name: 'ai-node',
     registryDependencies: [],
     title: 'AI Leaf',
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-list'],
+    description: 'List components.',
+    files: [
+      { path: 'ui/block-list.tsx', type: 'registry:ui' },
+      {
+        path: 'ui/block-list-static.tsx',
+        type: 'registry:ui',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/list' }],
+      examples: ['list-demo'],
+    },
+    name: 'block-list',
+    registryDependencies: ['shadcn/checkbox'],
+    title: 'List',
     type: 'registry:ui',
   },
   {

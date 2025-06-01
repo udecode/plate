@@ -3,10 +3,8 @@ import React from 'react';
 import { createSlateEditor } from '../../editor';
 import { createTSlatePlugin } from '../../plugin';
 import { serializeHtml } from '../serializeHtml';
-import {
-  components as components,
-  createStaticEditor,
-} from './create-static-editor';
+import { createStaticEditor } from './create-static-editor';
+import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
 describe('serializePlateStatic nodes', () => {
   it('should serialize render below nodes', async () => {
@@ -14,8 +12,6 @@ describe('serializePlateStatic nodes', () => {
       key: 'test-list',
       render: {
         belowNodes: (injectProps: any) => {
-          const { element } = injectProps;
-
           return function Component({
             children,
           }: {
@@ -32,14 +28,13 @@ describe('serializePlateStatic nodes', () => {
     });
 
     const editor = createSlateEditor({
-      plugins: [renderBelowPlugin],
+      plugins: [...BaseEditorKit, renderBelowPlugin],
       value: [
         {
           children: [{ text: 'test render below' }],
           type: 'p',
         },
       ],
-      components,
     });
 
     const html = await serializeHtml(editor, {
@@ -91,6 +86,9 @@ describe('serializePlateStatic nodes', () => {
         isLeaf: true,
       },
       render: {
+        node: ({ children }) => (
+          <span data-slate-test="node-wrapper">{children}</span>
+        ),
         leaf: ({ children }) => (
           <span data-slate-test="leaf-wrapper">{children}</span>
         ),
@@ -98,7 +96,7 @@ describe('serializePlateStatic nodes', () => {
     });
 
     const editor = createSlateEditor({
-      plugins: [testPlugin],
+      plugins: [...BaseEditorKit, testPlugin],
       value: [
         {
           children: [
@@ -110,12 +108,6 @@ describe('serializePlateStatic nodes', () => {
           type: 'p',
         },
       ],
-      components: {
-        ...components,
-        test: ({ children }) => (
-          <span data-slate-test="node-wrapper">{children}</span>
-        ),
-      },
     });
 
     const html = await serializeHtml(editor, {
@@ -138,7 +130,11 @@ describe('serializePlateStatic nodes', () => {
     });
 
     const editor = createSlateEditor({
-      plugins: [testPlugin],
+      plugins: [
+        testPlugin.withComponent(({ children }) => (
+          <span data-slate-test="node-wrapper">{children}</span>
+        )),
+      ],
       value: [
         {
           children: [
@@ -150,12 +146,6 @@ describe('serializePlateStatic nodes', () => {
           type: 'p',
         },
       ],
-      components: {
-        ...components,
-        test: ({ children }) => (
-          <span data-slate-test="leaf-wrapper">{children}</span>
-        ),
-      },
     });
 
     const html = await serializeHtml(editor, {
@@ -164,7 +154,7 @@ describe('serializePlateStatic nodes', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-node="text"><span data-slate-leaf="true" data-slate-test="true"><span data-slate-test="leaf-wrapper"><span data-slate-string="true">test content</span></span></span></span>'
+      '<span data-slate-node="text"><span data-slate-leaf="true" data-slate-test="true"><span data-slate-test="node-wrapper"><span data-slate-string="true">test content</span></span></span></span>'
     );
   });
 
@@ -178,7 +168,11 @@ describe('serializePlateStatic nodes', () => {
     });
 
     const editor = createSlateEditor({
-      plugins: [testPlugin],
+      plugins: [
+        testPlugin.withComponent(({ children }) => (
+          <span data-slate-test="node-wrapper">{children}</span>
+        )),
+      ],
       value: [
         {
           children: [
@@ -190,12 +184,6 @@ describe('serializePlateStatic nodes', () => {
           type: 'p',
         },
       ],
-      components: {
-        ...components,
-        test: ({ children }) => (
-          <span data-slate-test="node-wrapper">{children}</span>
-        ),
-      },
     });
 
     const html = await serializeHtml(editor, {

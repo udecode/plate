@@ -21,7 +21,7 @@ import { MediaUploadToast } from '@/registry/ui/media-upload-toast';
 import { VideoElement } from '@/registry/ui/media-video-node';
 
 export const MediaKit = [
-  ImagePlugin.extend({
+  ImagePlugin.configure({
     options: { disableUploadInsert: true },
     render: { afterEditable: MediaPreviewDialog, node: ImageElement },
   }),

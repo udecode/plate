@@ -9,7 +9,7 @@ import {
 import { SlashInputElement } from '@/registry/ui/slash-node';
 
 export const SlashKit = [
-  SlashPlugin.extend({
+  SlashPlugin.configure({
     options: {
       triggerQuery: (editor) =>
         !editor.api.some({

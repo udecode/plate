@@ -24,6 +24,7 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
   if (!listStyleType) return;
   if (
     isHotkey('Enter', event) &&
+    !event.getModifierState?.('Shift') &&
     editor.api.isEmpty(editor.selection, { block: true }) &&
     node.indent
   ) {

@@ -23,31 +23,113 @@ docs:
 
 </PackageInfo>
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add table functionality is with the `TableKit`, which includes pre-configured `TablePlugin`, `TableRowPlugin`, `TableCellPlugin`, and `TableCellHeaderPlugin` with their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="table-kit" />
+
+- [`TableElement`](/docs/components/table-node): Renders table containers.
+- [`TableRowElement`](/docs/components/table-node): Renders table rows.
+- [`TableCellElement`](/docs/components/table-node): Renders table cells.
+- [`TableCellHeaderElement`](/docs/components/table-node): Renders table header cells.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { TableKit } from '@/components/editor/plugins/table-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...TableKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @udecode/plate-table
 ```
 
-## Usage
+### Add Plugin
+
+Include `TablePlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-// ...
 import { TablePlugin } from '@udecode/plate-table/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
-const plugins = [
-  // ...otherPlugins,
-  TablePlugin.configure({
-    options: {
-      initialTableWidth: 600,
-    },
-  }),
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    TablePlugin,
+  ],
+});
 ```
 
-### Disable merging
+### Configure Plugins
+
+Configure the table plugins with custom components and options.
+
+```tsx
+import {
+  TableCellHeaderPlugin,
+  TableCellPlugin,
+  TablePlugin,
+  TableRowPlugin,
+} from '@udecode/plate-table/react';
+import { createPlateEditor } from '@udecode/plate/react';
+import {
+  TableCellElement,
+  TableCellHeaderElement,
+  TableElement,
+  TableRowElement,
+} from '@/components/ui/table-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    TablePlugin.configure({
+      node: { component: TableElement },
+      options: {
+        initialTableWidth: 600,
+        disableMerge: false,
+        minColumnWidth: 48,
+      },
+    }),
+    TableRowPlugin.withComponent(TableRowElement),
+    TableCellPlugin.withComponent(TableCellElement),
+    TableCellHeaderPlugin.withComponent(TableCellHeaderElement),
+  ],
+});
+```
+
+- `node.component`: Assigns [`TableElement`](/docs/components/table-node) to render table containers.
+- `withComponent`: Assigns components for table rows, cells, and header cells.
+- `options.initialTableWidth`: Sets the initial width for new tables.
+- `options.disableMerge`: Disables cell merging functionality.
+- `options.minColumnWidth`: Sets the minimum width for table columns.
+
+### Disable Merging Example
 
 <ComponentPreview name="table-nomerge-demo" />
+
+</Steps>
 
 ## Plugins
 
@@ -540,9 +622,9 @@ Checks if the border of a table cell or the table itself is hidden based on the 
 </APIReturns>
 </API>
 
-## API Transforms
+## Transforms
 
-### editor.tf.insert.table
+### `tf.insert.table`
 
 Inserts a table at the current selection if there is no existing table in the editor. Selects the start of the inserted table.
 
@@ -576,7 +658,7 @@ The options for inserting the table nodes.
 </APIParameters>
 </API>
 
-### editor.tf.insert.tableColumn
+### `tf.insert.tableColumn`
 
 Inserts a column into the table at the current selection or a specified cell path.
 
@@ -601,7 +683,7 @@ If true, the inserted column will be selected after insertion.
 </APIOptions>
 </API>
 
-### editor.tf.insert.tableRow
+### `tf.insert.tableRow`
 
 Inserts a row into the table at the current selection or a specified row path.
 
@@ -626,19 +708,19 @@ If true, the inserted row will be selected after insertion.
 </APIOptions>
 </API>
 
-### editor.tf.remove.tableColumn
+### `tf.remove.tableColumn`
 
 Deletes the column containing the selected cell in a table.
 
-### editor.tf.remove.tableRow
+### `tf.remove.tableRow`
 
 Deletes the row containing the selected cell in a table.
 
-### editor.tf.remove.table
+### `tf.remove.table`
 
 Deletes the entire table.
 
-### editor.tf.table.merge
+### `tf.table.merge`
 
 Merges multiple selected cells into one.
 
@@ -648,7 +730,7 @@ The merged cell will:
 - Contain the combined content of all merged cells (non-empty cells only)
 - Inherit the header status from the first selected cell
 
-### editor.tf.table.split
+### `tf.table.split`
 
 Splits a merged cell back into individual cells.
 
@@ -658,7 +740,7 @@ The split operation will:
 - Place the original cell's content in the first cell
 - Create empty cells for the remaining spaces
 
-### moveSelectionFromCell
+### `tf.moveSelectionFromCell`
 
 Moves the selection by cell unit within a table.
 
@@ -680,7 +762,7 @@ Set to `true` to move the selection from only one selected cell.
 </APIOptions>
 </API>
 
-### setBorderSize
+### `tf.setBorderSize`
 
 Sets the size of the specified border in a table cell.
 
@@ -707,7 +789,7 @@ The border direction to set the size.
 </APIOptions>
 </API>
 
-### setTableColSize
+### `tf.setTableColSize`
 
 Sets the width of a specific column in a table.
 
@@ -725,7 +807,7 @@ Additional options for finding the table node.
 </APIOptions>
 </API>
 
-### setTableMarginLeft
+### `tf.setTableMarginLeft`
 
 Sets the margin left of a table.
 
@@ -740,7 +822,7 @@ Additional options for finding the table node.
 </APIOptions>
 </API>
 
-### setTableRowSize
+### `tf.setTableRowSize`
 
 Sets the size (height) of a table row.
 
@@ -758,9 +840,9 @@ Additional options for finding the table node.
 </APIOptions>
 </API>
 
-## API Plugin
+## Plugin Extensions
 
-### onKeyDownTable
+### `onKeyDownTable`
 
 Handles the keyboard events for tables.
 
@@ -778,29 +860,28 @@ Handles the keyboard events for tables.
 </APIReturns>
 </API>
 
-### withDeleteTable
+### `withDeleteTable`
 
 Prevents the deletion of cells in tables.
 
-
-### withGetFragmentTable
+### `withGetFragmentTable`
 
 If the selection is inside a table, it retrieves the subtable above the selection as the fragment. This is useful when copying and pasting table cells.
 
-### withInsertFragmentTable
+### `withInsertFragmentTable`
 
 If inserting a table:
 
 - If the block above the anchor of the selection is a table, replace each cell above with the inserted table until out of bounds. Select the inserted cells.
 - If there is no table above the anchor, check if the selection is inside a table. If it is, find the cell at the anchor position and replace its children with the inserted fragment.
 
-### withInsertTextTable
+### `withInsertTextTable`
 
 If the selection is expanded:
 
 - Check if the selection is inside a table. If it is, collapse the selection to the focus edge.
 
-### withNormalizeTable
+### `withNormalizeTable`
 
 Normalize table structure by performing the following actions:
 
@@ -808,7 +889,7 @@ Normalize table structure by performing the following actions:
 - Unwrap nodes that are not valid table elements.
 - Set initial column sizes for tables if specified.
 
-### withSelectionTable
+### `withSelectionTable`
 
 Handle table selections by performing the following actions:
 
@@ -816,7 +897,7 @@ Handle table selections by performing the following actions:
 - Adjust the focus of the selection when the focus is inside a table and the anchor is in a block before or after the table.
 - Override the selection from a cell if the previous and new selections are in different cells.
 
-### withSetFragmentDataTable
+### `withSetFragmentDataTable`
 
 Handle setting data to the clipboard when copying or cutting table data by performing the following actions:
 
@@ -825,7 +906,7 @@ Handle setting data to the clipboard when copying or cutting table data by perfo
 - Create a table structure with the selected cells' content.
 - Set the text, HTML, CSV, TSV, and Slate fragment data to the clipboard.
 
-### withTable
+### `withTable`
 
 Enhance the editor instance with table-related functionality by applying the following higher-order functions:
 
@@ -837,9 +918,9 @@ Enhance the editor instance with table-related functionality by applying the fol
 - `withSelectionTable`: Handle adjusting the selection within a table.
 - `withSetFragmentDataTable`: Handle setting the fragment data when copying or cutting table data.
 
-## API Hooks
+## Hooks
 
-### useTableCellElementResizable
+### `useTableCellElementResizable`
 
 A hook that provides resizing functionality for table cell elements.
 
@@ -885,7 +966,7 @@ Step size for vertical resizing.
 </API>
   
 
-### useTableStore
+### `useTableStore`
 
 The table store stores the state of the table plugin.
 
@@ -908,7 +989,8 @@ The table store stores the state of the table plugin.
   </APIItem>
 </APIAttributes>
 </API>
-### useIsCellSelected
+
+### `useIsCellSelected`
 
 Custom hook that checks if a table cell is selected.
 
@@ -920,13 +1002,13 @@ Custom hook that checks if a table cell is selected.
 </APIParameters>
 </API>
 
-### useSelectedCells
+### `useSelectedCells`
 
 A hook that manages the selection of cells in a table.
 
 It keeps track of the currently selected cells and updates them based on changes in editor selection.
 
-### useTableBordersDropdownMenuContentState
+### `useTableBordersDropdownMenuContentState`
 
 A state hook for the table borders dropdown menu content.
 
@@ -965,7 +1047,7 @@ specific border type.
 </APIReturns>
 </API>
 
-### useTableColSizes
+### `useTableColSizes`
 
 Custom hook that returns the column sizes of a table with overrides applied. If the `colCount` of the table updates to 1 and the `enableUnsetSingleColSize` option is enabled, it unsets the `colSizes` node.
 
@@ -984,7 +1066,7 @@ If `true`, disables applying overrides to the column sizes.
 </APIReturns>
 </API>
 
-### useTableElement
+### `useTableElement`
 
 A hook for a table element that handles cell selection and margin left calculations.
 
@@ -1007,7 +1089,7 @@ A hook for a table element that handles cell selection and margin left calculati
 </APIReturns>
 </API>
   
-### useTableCellElement
+### `useTableCellElement`
 
 A hook for a table cell element that provides state and functionality for table cells.
 
@@ -1040,7 +1122,7 @@ A hook for a table cell element that provides state and functionality for table 
 </APIReturns>
 </API>
 
-### useTableCellBorders
+### `useTableCellBorders`
 
 A hook that returns the border styles for a table cell.
 
@@ -1066,7 +1148,7 @@ A hook that returns the border styles for a table cell.
 </APIReturns>
 </API>
 
-### useTableCellSize
+### `useTableCellSize`
 
 A hook that returns the size (width and minimum height) of a table cell.
 

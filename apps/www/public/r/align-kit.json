@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/align-kit.tsx",
-      "content": "'use client';\n\nimport { KEYS } from '@udecode/plate';\nimport { TextAlignPlugin } from '@udecode/plate-basic-styles/react';\n\nexport const AlignKit = [\n  TextAlignPlugin.extend({\n    inject: {\n      targetPlugins: [KEYS.p, ...KEYS.heading, KEYS.img, KEYS.mediaEmbed],\n    },\n  }),\n];\n",
+      "content": "'use client';\n\nimport { KEYS } from '@udecode/plate';\nimport { TextAlignPlugin } from '@udecode/plate-basic-styles/react';\n\nexport const AlignKit = [\n  TextAlignPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 'start',\n        nodeKey: 'align',\n        styleKey: 'textAlign',\n        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],\n      },\n      targetPlugins: [...KEYS.heading, KEYS.p, KEYS.img, KEYS.mediaEmbed],\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

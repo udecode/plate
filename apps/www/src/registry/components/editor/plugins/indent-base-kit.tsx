@@ -2,15 +2,18 @@ import { KEYS } from '@udecode/plate';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 export const BaseIndentKit = [
-  BaseIndentPlugin.extend({
+  BaseIndentPlugin.configure({
     inject: {
       targetPlugins: [
-        KEYS.p,
         ...KEYS.heading,
+        KEYS.p,
         KEYS.blockquote,
         KEYS.codeBlock,
         KEYS.toggle,
       ],
+    },
+    options: {
+      offset: 24,
     },
   }),
 ];

@@ -89,15 +89,18 @@ import { LinkFloatingToolbar } from '@/components/ui/link-toolbar';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    LinkPlugin.extend({
-      render: { afterEditable: () => <LinkFloatingToolbar /> },
-    }).withComponent(LinkElement),
+    LinkPlugin.configure({
+      render: {
+        node: LinkElement,
+        afterEditable: () => <LinkFloatingToolbar />,
+      },
+    }),
   ],
 });
 ```
 
 - `render.afterEditable`: Renders [`LinkFloatingToolbar`](/docs/components/link-toolbar) after the editable area for link editing.
-- `withComponent`: Assigns [`LinkElement`](/docs/components/link-node) to render link elements.
+- `render.node`: Assigns [`LinkElement`](/docs/components/link-node) to render link elements.
 
 </Steps>
 
