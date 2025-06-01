@@ -1,6 +1,7 @@
 import type { KeyboardHandler } from '@udecode/plate/react';
 
 import { type TElement, isHotkey } from '@udecode/plate';
+import { IS_IOS } from 'slate-dom';
 
 import { outdentList } from '../lib';
 import { type IndentListConfig, IndentListPlugin } from './IndentListPlugin';
@@ -21,8 +22,12 @@ export const onKeyDownIndentList: KeyboardHandler<IndentListConfig> = ({
   const listStyleType = node[IndentListPlugin.key] as string | undefined;
 
   if (!listStyleType) return;
+
+  const enterKeyPressed = IS_IOS
+    ? event.key === 'Enter'
+    : isHotkey('Enter', event);
   if (
-    isHotkey('Enter', event) &&
+    enterKeyPressed &&
     editor.api.isEmpty(editor.selection, { block: true }) &&
     node.indent
   ) {
