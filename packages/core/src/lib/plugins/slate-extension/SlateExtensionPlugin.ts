@@ -32,11 +32,6 @@ export const SlateExtensionPlugin = createSlatePlugin({
         }
       };
 
-      const clearOnBoundaryMarks = getPluginTypes(
-        editor,
-        editor.meta.pluginKeys.node.clearOnBoundary
-      );
-
       return {
         api: {
           create: {
@@ -74,6 +69,11 @@ export const SlateExtensionPlugin = createSlatePlugin({
           },
           insertText(text, options) {
             const apply = () => {
+              const clearOnBoundaryMarks = getPluginTypes(
+                editor,
+                editor.meta.pluginKeys.node.clearOnBoundary
+              );
+
               if (
                 editor.meta.pluginKeys.node.clearOnBoundary.length === 0 ||
                 !editor.selection ||
