@@ -1,17 +1,15 @@
 import {
   type SlateEditor,
   type TLocation,
-  BaseParagraphPlugin,
+  KEYS,
   NodeApi,
 } from '@udecode/plate';
-
-import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 
 export const unwrapCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
-  const codeBlockType = editor.getType(BaseCodeBlockPlugin);
-  const defaultType = editor.getType(BaseParagraphPlugin);
+  const codeBlockType = editor.getType(KEYS.codeBlock);
+  const defaultType = editor.getType(KEYS.p);
 
   editor.tf.withoutNormalizing(() => {
     const codeBlockEntries = editor.api.nodes({

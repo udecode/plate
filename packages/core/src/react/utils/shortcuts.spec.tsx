@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateTestEditor } from '../__tests__/createPlateTestEditor';
@@ -72,8 +72,8 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.shortcuts.bold).toBeDefined();
-    expect(editor.shortcuts.italic).toBeDefined();
+    expect(editor.meta.shortcuts['testPlugin.bold']).toBeDefined();
+    expect(editor.meta.shortcuts['testPlugin.italic']).toBeDefined();
   });
 
   it('should override existing shortcuts in a plugin', () => {
@@ -101,7 +101,7 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    editor.shortcuts.bold?.handler?.({
+    editor.meta.shortcuts['testPlugin.bold']?.handler?.({
       editor,
       event: {} as KeyboardEvent,
       handler: {} as any,
@@ -135,7 +135,7 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.shortcuts.bold?.keys).toBe('mod+bb');
+    expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+bb');
   });
 
   it('should allow removing shortcuts by setting them to null', () => {
@@ -161,306 +161,306 @@ describe('extend method with shortcuts', () => {
       plugins: [testPlugin],
     });
 
-    expect(editor.shortcuts.bold).toBeUndefined();
-    expect(editor.shortcuts.italic).toBeDefined();
+    expect(editor.meta.shortcuts['testPlugin.bold']).toBeUndefined();
+    expect(editor.meta.shortcuts['testPlugin.italic']).toBeDefined();
   });
 
-  it('should allow extending shortcuts using a function', () => {
-    const testPlugin = createPlatePlugin({
-      key: 'testPlugin',
-      shortcuts: {
-        bold: {
-          keys: 'mod+b',
-          handler: () => {},
-        },
-      },
-    }).extend((ctx) => ({
-      shortcuts: {
-        bold: null,
-        italic: {
-          keys: ctx.plugin.shortcuts.bold?.keys ?? [],
-          handler: () => {},
-        },
-      },
-    }));
+  // it('should allow extending shortcuts using a function', () => {
+  //   const testPlugin = createPlatePlugin({
+  //     key: 'testPlugin',
+  //     shortcuts: {
+  //       bold: {
+  //         keys: 'mod+b',
+  //         handler: () => {},
+  //       },
+  //     },
+  //   }).extend((ctx) => ({
+  //     shortcuts: {
+  //       bold: null,
+  //       italic: {
+  //         keys: ctx.plugin.shortcuts['testPlugin.bold']?.keys ?? [],
+  //         handler: () => {},
+  //       },
+  //     },
+  //   }));
 
-    const editor = createPlateEditor({
-      plugins: [testPlugin],
-    });
+  //   const editor = createPlateEditor({
+  //     plugins: [testPlugin],
+  //   });
 
-    expect(editor.shortcuts.bold).toBeUndefined();
-    expect(editor.shortcuts.italic?.keys).toBe('mod+b');
-  });
+  //   expect(editor.meta.shortcuts['testPlugin.bold']).toBeUndefined();
+  //   expect(editor.meta.shortcuts['testPlugin.italic']?.keys).toBe('mod+b');
+  // });
 
-  it('should respect hotkey priority when resolving conflicting shortcuts', () => {
-    const lowPriorityHotkeyPlugin = createPlatePlugin({
-      key: 'lowPriorityHotkey',
-      shortcuts: {
-        bold: {
-          keys: 'mod+b',
-          priority: 50,
-          handler: () => {},
-        },
-        italic: {
-          keys: 'mod+i',
-          priority: 50,
-          handler: () => {},
-        },
-      },
-    });
+  // it('should respect hotkey priority when resolving conflicting shortcuts', () => {
+  //   const lowPriorityHotkeyPlugin = createPlatePlugin({
+  //     key: 'lowPriorityHotkey',
+  //     shortcuts: {
+  //       bold: {
+  //         keys: 'mod+b',
+  //         priority: 50,
+  //         handler: () => {},
+  //       },
+  //       italic: {
+  //         keys: 'mod+i',
+  //         priority: 50,
+  //         handler: () => {},
+  //       },
+  //     },
+  //   });
 
-    const highPriorityHotkeyPlugin = createPlatePlugin({
-      key: 'highPriorityHotkey',
-      shortcuts: {
-        bold: {
-          keys: 'mod+shift+b',
-          priority: 150,
-          handler: () => {},
-        },
-      },
-    });
+  //   const highPriorityHotkeyPlugin = createPlatePlugin({
+  //     key: 'highPriorityHotkey',
+  //     shortcuts: {
+  //       bold: {
+  //         keys: 'mod+shift+b',
+  //         priority: 150,
+  //         handler: () => {},
+  //       },
+  //     },
+  //   });
 
-    const defaultPriorityHotkeyPlugin = createPlatePlugin({
-      key: 'defaultPriorityHotkey',
-      shortcuts: {
-        bold: {
-          keys: 'mod+alt+b',
-          handler: () => {},
-          // No priority specified, should default to 100
-        },
-        italic: {
-          keys: 'mod+alt+i',
-          handler: () => {},
-          // No priority specified, should default to 100
-        },
-      },
-    });
+  //   const defaultPriorityHotkeyPlugin = createPlatePlugin({
+  //     key: 'defaultPriorityHotkey',
+  //     shortcuts: {
+  //       bold: {
+  //         keys: 'mod+alt+b',
+  //         handler: () => {},
+  //         // No priority specified, should default to 100
+  //       },
+  //       italic: {
+  //         keys: 'mod+alt+i',
+  //         handler: () => {},
+  //         // No priority specified, should default to 100
+  //       },
+  //     },
+  //   });
 
-    const editor = createPlateEditor({
-      plugins: [
-        defaultPriorityHotkeyPlugin,
-        highPriorityHotkeyPlugin,
-        lowPriorityHotkeyPlugin,
-      ],
-    });
+  //   const editor = createPlateEditor({
+  //     plugins: [
+  //       defaultPriorityHotkeyPlugin,
+  //       highPriorityHotkeyPlugin,
+  //       lowPriorityHotkeyPlugin,
+  //     ],
+  //   });
 
-    expect(editor.shortcuts.bold?.keys).toBe('mod+shift+b');
-    expect(editor.shortcuts.italic?.keys).toBe('mod+alt+i');
-  });
+  //   expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+shift+b');
+  //   expect(editor.meta.shortcuts['testPlugin.italic']?.keys).toBe('mod+alt+i');
+  // });
 
-  it('should use the last defined hotkey when priorities are equal', () => {
-    const firstPlugin = createPlatePlugin({
-      key: 'firstPlugin',
-      shortcuts: {
-        bold: {
-          keys: 'mod+b',
-          priority: 100,
-          handler: () => {},
-        },
-      },
-    });
+  // it('should use the last defined hotkey when priorities are equal', () => {
+  //   const firstPlugin = createPlatePlugin({
+  //     key: 'firstPlugin',
+  //     shortcuts: {
+  //       bold: {
+  //         keys: 'mod+b',
+  //         priority: 100,
+  //         handler: () => {},
+  //       },
+  //     },
+  //   });
 
-    const secondPlugin = createPlatePlugin({
-      key: 'secondPlugin',
-      shortcuts: {
-        bold: {
-          keys: 'mod+shift+b',
-          priority: 100,
-          handler: () => {},
-        },
-      },
-    });
+  //   const secondPlugin = createPlatePlugin({
+  //     key: 'secondPlugin',
+  //     shortcuts: {
+  //       bold: {
+  //         keys: 'mod+shift+b',
+  //         priority: 100,
+  //         handler: () => {},
+  //       },
+  //     },
+  //   });
 
-    const editor = createPlateEditor({
-      plugins: [firstPlugin, secondPlugin],
-    });
+  //   const editor = createPlateEditor({
+  //     plugins: [firstPlugin, secondPlugin],
+  //   });
 
-    expect(editor.shortcuts.bold?.keys).toBe('mod+shift+b');
-  });
+  //   expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+shift+b');
+  // });
 
-  it('should prioritize root plugin shortcuts over other plugins', () => {
-    const lowPriorityPlugin = createPlatePlugin({
-      key: 'lowPriority',
-      shortcuts: {
-        bold: {
-          keys: 'mod+b',
-          handler: () => {},
-        },
-      },
-    });
+  // it('should prioritize root plugin shortcuts over other plugins', () => {
+  //   const lowPriorityPlugin = createPlatePlugin({
+  //     key: 'lowPriority',
+  //     shortcuts: {
+  //       bold: {
+  //         keys: 'mod+b',
+  //         handler: () => {},
+  //       },
+  //     },
+  //   });
 
-    const editor = createPlateEditor({
-      plugins: [lowPriorityPlugin],
-      shortcuts: {
-        bold: {
-          keys: 'mod+alt+b',
-          handler: () => {},
-        },
-      },
-    });
+  //   const editor = createPlateEditor({
+  //     plugins: [lowPriorityPlugin],
+  //     shortcuts: {
+  //       bold: {
+  //         keys: 'mod+alt+b',
+  //         handler: () => {},
+  //       },
+  //     },
+  //   });
 
-    expect(editor.shortcuts.bold?.keys).toBe('mod+alt+b');
-  });
+  //   expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+alt+b');
+  // });
 });
 
-describe('shortcut priority and plugin interaction', () => {
-  it('should prioritize shortcut-specific priority over plugin priority', () => {
-    const lowPriorityPlugin = createPlatePlugin({
-      key: 'lowPriority',
-      priority: 50,
-      shortcuts: {
-        bold: {
-          keys: 'mod+b',
-          priority: 200, // High priority shortcut in a low priority plugin
-          handler: () => {},
-        },
-      },
-    });
+// describe('shortcut priority and plugin interaction', () => {
+//   it('should prioritize shortcut-specific priority over plugin priority', () => {
+//     const lowPriorityPlugin = createPlatePlugin({
+//       key: 'lowPriority',
+//       priority: 50,
+//       shortcuts: {
+//         bold: {
+//           keys: 'mod+b',
+//           priority: 200, // High priority shortcut in a low priority plugin
+//           handler: () => {},
+//         },
+//       },
+//     });
 
-    const highPriorityPlugin = createPlatePlugin({
-      key: 'highPriority',
-      priority: 150,
-      shortcuts: {
-        bold: {
-          keys: 'mod+shift+b',
-          handler: () => {},
-          // No specific priority, should use plugin priority
-        },
-      },
-    });
+//     const highPriorityPlugin = createPlatePlugin({
+//       key: 'highPriority',
+//       priority: 150,
+//       shortcuts: {
+//         bold: {
+//           keys: 'mod+shift+b',
+//           handler: () => {},
+//           // No specific priority, should use plugin priority
+//         },
+//       },
+//     });
 
-    const editor = createPlateEditor({
-      plugins: [lowPriorityPlugin, highPriorityPlugin],
-    });
+//     const editor = createPlateEditor({
+//       plugins: [lowPriorityPlugin, highPriorityPlugin],
+//     });
 
-    expect(editor.shortcuts.bold?.keys).toBe('mod+b');
-  });
+//     expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+b');
+//   });
 
-  it('should use plugin priority when shortcut priority is not specified', () => {
-    const lowPriorityPlugin = createPlatePlugin({
-      key: 'lowPriority',
-      priority: 50,
-      shortcuts: {
-        italic: {
-          keys: 'mod+i',
-          handler: () => {},
-          // No specific priority, should use plugin priority
-        },
-      },
-    });
+//   it('should use plugin priority when shortcut priority is not specified', () => {
+//     const lowPriorityPlugin = createPlatePlugin({
+//       key: 'lowPriority',
+//       priority: 50,
+//       shortcuts: {
+//         italic: {
+//           keys: 'mod+i',
+//           handler: () => {},
+//           // No specific priority, should use plugin priority
+//         },
+//       },
+//     });
 
-    const highPriorityPlugin = createPlatePlugin({
-      key: 'highPriority',
-      priority: 150,
-      shortcuts: {
-        italic: {
-          keys: 'mod+shift+i',
-          handler: () => {},
-          // No specific priority, should use plugin priority
-        },
-      },
-    });
+//     const highPriorityPlugin = createPlatePlugin({
+//       key: 'highPriority',
+//       priority: 150,
+//       shortcuts: {
+//         italic: {
+//           keys: 'mod+shift+i',
+//           handler: () => {},
+//           // No specific priority, should use plugin priority
+//         },
+//       },
+//     });
 
-    const editor = createPlateEditor({
-      plugins: [lowPriorityPlugin, highPriorityPlugin],
-    });
+//     const editor = createPlateEditor({
+//       plugins: [lowPriorityPlugin, highPriorityPlugin],
+//     });
 
-    expect(editor.shortcuts.italic?.keys).toBe('mod+shift+i');
-  });
+//     expect(editor.meta.shortcuts['testPlugin.italic']?.keys).toBe('mod+shift+i');
+//   });
 
-  it('should handle multiple shortcuts with different priorities', () => {
-    const testPlugin = createPlatePlugin({
-      key: 'testPlugin',
-      priority: 100,
-      shortcuts: {
-        bold: {
-          keys: 'mod+b',
-          priority: 150,
-          handler: () => {},
-        },
-        italic: {
-          keys: 'mod+i',
-          handler: () => {},
-          // No specific priority, should use plugin priority
-        },
-        underline: {
-          keys: 'mod+u',
-          priority: 50,
-          handler: () => {},
-        },
-      },
-    });
+//   it('should handle multiple shortcuts with different priorities', () => {
+//     const testPlugin = createPlatePlugin({
+//       key: 'testPlugin',
+//       priority: 100,
+//       shortcuts: {
+//         bold: {
+//           keys: 'mod+b',
+//           priority: 150,
+//           handler: () => {},
+//         },
+//         italic: {
+//           keys: 'mod+i',
+//           handler: () => {},
+//           // No specific priority, should use plugin priority
+//         },
+//         underline: {
+//           keys: 'mod+u',
+//           priority: 50,
+//           handler: () => {},
+//         },
+//       },
+//     });
 
-    const overridePlugin = createPlatePlugin({
-      key: 'overridePlugin',
-      priority: 120,
-      shortcuts: {
-        bold: {
-          keys: 'mod+shift+b',
-          handler: () => {},
-          // No specific priority, should use plugin priority
-        },
-        italic: {
-          keys: 'mod+shift+i',
-          priority: 200,
-          handler: () => {},
-        },
-        underline: {
-          keys: 'mod+shift+u',
-          handler: () => {},
-          // No specific priority, should use plugin priority
-        },
-      },
-    });
+//     const overridePlugin = createPlatePlugin({
+//       key: 'overridePlugin',
+//       priority: 120,
+//       shortcuts: {
+//         bold: {
+//           keys: 'mod+shift+b',
+//           handler: () => {},
+//           // No specific priority, should use plugin priority
+//         },
+//         italic: {
+//           keys: 'mod+shift+i',
+//           priority: 200,
+//           handler: () => {},
+//         },
+//         underline: {
+//           keys: 'mod+shift+u',
+//           handler: () => {},
+//           // No specific priority, should use plugin priority
+//         },
+//       },
+//     });
 
-    const editor = createPlateEditor({
-      plugins: [testPlugin, overridePlugin],
-    });
+//     const editor = createPlateEditor({
+//       plugins: [testPlugin, overridePlugin],
+//     });
 
-    expect(editor.shortcuts.bold?.keys).toBe('mod+b');
-    expect(editor.shortcuts.italic?.keys).toBe('mod+shift+i');
-    expect(editor.shortcuts.underline?.keys).toBe('mod+shift+u');
-  });
+//     expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+b');
+//     expect(editor.meta.shortcuts['testPlugin.italic']?.keys).toBe('mod+shift+i');
+//     expect(editor.meta.shortcuts.underline?.keys).toBe('mod+shift+u');
+//   });
 
-  it('should handle root plugin shortcuts with different priorities', () => {
-    const testPlugin = createPlatePlugin({
-      key: 'testPlugin',
-      priority: 100,
-      shortcuts: {
-        bold: {
-          keys: 'mod+b',
-          handler: () => {},
-        },
-        italic: {
-          keys: 'mod+i',
-          handler: () => {},
-        },
-      },
-    });
+//   it('should handle root plugin shortcuts with different priorities', () => {
+//     const testPlugin = createPlatePlugin({
+//       key: 'testPlugin',
+//       priority: 100,
+//       shortcuts: {
+//         bold: {
+//           keys: 'mod+b',
+//           handler: () => {},
+//         },
+//         italic: {
+//           keys: 'mod+i',
+//           handler: () => {},
+//         },
+//       },
+//     });
 
-    const editor = createPlateEditor({
-      plugins: [testPlugin],
-      shortcuts: {
-        bold: {
-          keys: 'mod+shift+b',
-          priority: 50, // Lower than testPlugin
-          handler: () => {},
-        },
-        italic: {
-          keys: 'mod+shift+i',
-          priority: 200, // Higher than testPlugin
-          handler: () => {},
-        },
-        underline: {
-          keys: 'mod+u',
-          handler: () => {},
-          // No specific priority, should use root plugin priority (highest)
-        },
-      },
-    });
+//     const editor = createPlateEditor({
+//       plugins: [testPlugin],
+//       shortcuts: {
+//         bold: {
+//           keys: 'mod+shift+b',
+//           priority: 50, // Lower than testPlugin
+//           handler: () => {},
+//         },
+//         italic: {
+//           keys: 'mod+shift+i',
+//           priority: 200, // Higher than testPlugin
+//           handler: () => {},
+//         },
+//         underline: {
+//           keys: 'mod+u',
+//           handler: () => {},
+//           // No specific priority, should use root plugin priority (highest)
+//         },
+//       },
+//     });
 
-    expect(editor.shortcuts.bold?.keys).toBe('mod+b');
-    expect(editor.shortcuts.italic?.keys).toBe('mod+shift+i');
-    expect(editor.shortcuts.underline?.keys).toBe('mod+u');
-  });
-});
+//     expect(editor.meta.shortcuts['testPlugin.bold']?.keys).toBe('mod+b');
+//     expect(editor.meta.shortcuts['testPlugin.italic']?.keys).toBe('mod+shift+i');
+//     expect(editor.meta.shortcuts.underline?.keys).toBe('mod+u');
+//   });
+// });

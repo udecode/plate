@@ -1,16 +1,15 @@
 import {
   type InsertNodesOptions,
   type SlateEditor,
+  type TLinkElement,
   type UnwrapNodesOptions,
   type WrapNodesOptions,
   isDefined,
   NodeApi,
   RangeApi,
 } from '@udecode/plate';
+import { KEYS } from '@udecode/plate';
 
-import type { TLinkElement } from '../types';
-
-import { BaseLinkPlugin } from '../BaseLinkPlugin';
 import { type CreateLinkNodeOptions, validateUrl } from '../utils';
 import { insertLink } from './insertLink';
 import { unwrapLink } from './unwrapLink';
@@ -50,7 +49,7 @@ export const upsertLink = (
 
   const linkAbove = editor.api.above<TLinkElement>({
     at,
-    match: { type: editor.getType(BaseLinkPlugin) },
+    match: { type: editor.getType(KEYS.link) },
   });
 
   // anchor and focus in link -> insert text
@@ -83,7 +82,7 @@ export const upsertLink = (
   // selection contains at one edge edge or between the edges
   const linkEntry = editor.api.node<TLinkElement>({
     at,
-    match: { type: editor.getType(BaseLinkPlugin) },
+    match: { type: editor.getType(KEYS.link) },
   });
 
   const [linkNode, linkPath] = linkEntry ?? [];

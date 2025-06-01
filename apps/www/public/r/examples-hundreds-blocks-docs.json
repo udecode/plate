@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "examples-hundreds-blocks-docs",
+  "type": "registry:file",
+  "title": "Hundreds Blocks",
+  "description": "Documentation for Hundreds Blocks",
+  "files": [
+    {
+      "path": "../../docs/examples/hundreds-blocks.mdx",
+      "content": "---\ntitle: Hundreds Blocks\n---\n\n<ComponentPreview name=\"hundreds-blocks-demo\" />\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/examples/hundreds-blocks.mdx"
+    }
+  ]
+}

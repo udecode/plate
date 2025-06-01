@@ -1,4 +1,4 @@
-import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
+import { KEYS } from '@udecode/plate';
 
 export const getCommentKeyId = (key: string) =>
-  key.replace(`${BaseCommentsPlugin.key}_`, '');
+  key.replace(`${KEYS.comment}_`, '');

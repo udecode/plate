@@ -100,9 +100,7 @@ describe('getSelectedCellsBoundingBox', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    editor = createPlateEditor({
-      value: mockEditor.children,
-    });
+    editor = createPlateEditor({ nodeId: true, value: mockEditor.children });
   });
 
   it('should return correct bounding box for single cell', () => {

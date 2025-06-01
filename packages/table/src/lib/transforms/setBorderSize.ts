@@ -1,11 +1,14 @@
-import {
-  type Path,
-  type SetNodesOptions,
-  type SlateEditor,
-  ElementApi,
+import type {
+  Path,
+  SetNodesOptions,
+  SlateEditor,
+  TTableCellBorder,
+  TTableCellElement,
 } from '@udecode/plate';
 
-import type { BorderDirection, BorderStyle, TTableCellElement } from '../types';
+import { ElementApi } from '@udecode/plate';
+
+import type { BorderDirection } from '../types';
 
 import { getLeftTableCell } from '../queries/getLeftTableCell';
 import { getTopTableCell } from '../queries/getTopTableCell';
@@ -35,7 +38,7 @@ export const setBorderSize = (
   const rowIndex = cellPath.at(-2);
 
   // Default hidden border style
-  const borderStyle: BorderStyle = {
+  const borderStyle: TTableCellBorder = {
     size,
   };
 

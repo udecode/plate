@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { WithRequiredKey } from '@udecode/plate';
+import type { TMediaElement, WithRequiredKey } from '@udecode/plate';
 
 import {
   createPrimitiveComponent,
@@ -8,8 +8,6 @@ import {
   useElement,
   useHotkeys,
 } from '@udecode/plate/react';
-
-import type { TMediaElement } from '../../../lib/media/types';
 
 import { FloatingMediaStore } from './FloatingMediaStore';
 import { submitFloatingMedia } from './submitFloatingMedia';

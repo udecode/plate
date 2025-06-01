@@ -95,14 +95,6 @@ export const PlateElement = React.forwardRef(function PlateElement(
     [props.element, props.editor, mounted]
   );
 
-  const belowRootComponents = React.useMemo(
-    () =>
-      props.editor?.pluginList
-        .map((plugin) => plugin.render.belowRootNodes!)
-        .filter(Boolean),
-    [props.editor?.pluginList]
-  );
-
   return (
     <Tag
       data-slate-node="element"
@@ -117,10 +109,6 @@ export const PlateElement = React.forwardRef(function PlateElement(
       }
     >
       {children}
-
-      {belowRootComponents?.map((Component, index) => (
-        <Component key={index} {...(props as any)} />
-      ))}
     </Tag>
   );
 }) as <
@@ -161,7 +149,9 @@ export const PlateText = React.forwardRef<
 export type PlateLeafProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-> = PlateNodeProps<C> & RenderLeafProps<N> & DeprecatedNodeProps;
+> = PlateNodeProps<C> &
+  RenderLeafProps<N> &
+  DeprecatedNodeProps & { inset?: boolean };
 
 export type StyledPlateLeafProps<
   N extends TText = TText,
@@ -170,13 +160,40 @@ export type StyledPlateLeafProps<
 > = Omit<PlateLeafProps<N, C>, keyof DeprecatedNodeProps> &
   PlateHTMLProps<C, T>;
 
+const NonBreakingSpace = () => (
+  <span style={{ fontSize: 0 }} contentEditable={false}>
+    {String.fromCodePoint(160)}
+  </span>
+);
+
 export const PlateLeaf = React.forwardRef<
   HTMLSpanElement,
   StyledPlateLeafProps
->(({ as: Tag = 'span', children, ...props }, ref) => {
+>(({ as: Tag = 'span', children, inset: insetProp, ...props }, ref) => {
   const attributes = useNodeAttributes(props, ref);
 
+  const inset = insetProp ?? props.plugin?.node.inset;
+
+  if (inset) {
+    return (
+      <>
+        <NonBreakingSpace />
+        <Tag {...attributes}>
+          {children}
+
+          <NonBreakingSpace />
+        </Tag>
+      </>
+    );
+  }
+
   return <Tag {...attributes}>{children}</Tag>;
+
+  // return (
+  //   <Tag {...attributes}>
+  //     {inset ? <NonBreakingSpace>{children}</NonBreakingSpace> : children}
+  //   </Tag>
+  // );
 }) as <
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,

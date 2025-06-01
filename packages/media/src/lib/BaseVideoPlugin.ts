@@ -1,11 +1,7 @@
-import { createSlatePlugin } from '@udecode/plate';
-
-import type { TMediaElement } from '..';
-
-export interface TVideoElement extends TMediaElement {}
+import { createSlatePlugin, KEYS } from '@udecode/plate';
 
 export const BaseVideoPlugin = createSlatePlugin({
-  key: 'video',
+  key: KEYS.video,
   node: {
     dangerouslyAllowAttributes: ['width', 'height'],
     isElement: true,

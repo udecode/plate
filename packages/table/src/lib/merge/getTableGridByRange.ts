@@ -3,14 +3,11 @@ import {
   type SlateEditor,
   type TElement,
   type TRange,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
   getEditorPlugin,
 } from '@udecode/plate';
-
-import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';

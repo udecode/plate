@@ -1,7 +1,7 @@
 import type { TElement } from '@udecode/plate';
 import type { PlateEditor } from '@udecode/plate/react';
 
-import { PlaceholderPlugin } from '../PlaceholderPlugin';
+import { KEYS } from '@udecode/plate';
 
 const historyMarks = new WeakMap<PlateEditor, boolean>();
 
@@ -19,7 +19,7 @@ export const isHistoryMarking = (editor: PlateEditor): boolean => {
 export const updateUploadHistory = (editor: PlateEditor, node: TElement) => {
   const index = editor.history.undos.findLastIndex(
     (batch: any) =>
-      batch[PlaceholderPlugin.key] &&
+      batch[KEYS.placeholder] &&
       batch.operations.some(
         (operation: any) =>
           operation.type === 'insert_node' &&

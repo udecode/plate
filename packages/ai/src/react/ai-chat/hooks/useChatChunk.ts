@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import type { TText } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
 import { usePluginOption } from '@udecode/plate/react';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
@@ -21,7 +22,7 @@ export const useChatChunk = ({
   onFinish?: ({ content }: { content: string }) => void;
 }) => {
   const { isLoading } = usePluginOption(
-    { key: 'aiChat' } as AIChatPluginConfig,
+    { key: KEYS.aiChat } as AIChatPluginConfig,
     'chat'
   );
   const content = useLastAssistantMessage()?.content;

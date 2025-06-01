@@ -3,4 +3,3 @@
  */
 
 export * from './FontPlugin';
-export * from './hooks/index';

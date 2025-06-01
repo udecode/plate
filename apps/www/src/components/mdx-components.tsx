@@ -9,6 +9,7 @@ import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 import { useMDXComponent } from 'next-contentlayer2/hooks';
 import Image from 'next/image';
 
+import { Card, Cards } from '@/components/cards';
 import { CodeTabs } from '@/components/code-tabs';
 import { ComponentInstallation } from '@/components/component-installation';
 import { packageInfoAtom } from '@/hooks/use-package-info';
@@ -89,6 +90,8 @@ const components = {
   BadgePopover,
   blockquote: Typography.Blockquote,
   Callout,
+  Card,
+  Cards,
   code: Code,
   CodeTabs,
   ComponentExample,

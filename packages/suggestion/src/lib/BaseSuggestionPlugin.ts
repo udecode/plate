@@ -3,17 +3,15 @@ import {
   type NodeEntry,
   type PluginConfig,
   type TElement,
+  type TInlineSuggestionData,
+  type TSuggestionElement,
+  type TSuggestionText,
   createTSlatePlugin,
   ElementApi,
   getAt,
+  KEYS,
   TextApi,
 } from '@udecode/plate';
-
-import type {
-  TInlineSuggestionData,
-  TSuggestionElement,
-  TSuggestionText,
-} from './types';
 
 import { getSuggestionKey, getSuggestionKeyId } from './utils';
 import { withSuggestion } from './withSuggestion';
@@ -47,8 +45,8 @@ export type BaseSuggestionConfig = PluginConfig<
 >;
 
 export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
-  key: 'suggestion',
-  node: { isLeaf: true },
+  key: KEYS.suggestion,
+  node: { clearOnBoundary: true, isLeaf: true },
   options: {
     currentUserId: 'alice',
     isSuggesting: false,
@@ -60,7 +58,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
       dataList: (node: TSuggestionText): TInlineSuggestionData[] => {
         return Object.keys(node)
           .filter((key) => {
-            return key.startsWith(`${BaseSuggestionPlugin.key}_`);
+            return key.startsWith(`${KEYS.suggestion}_`);
           })
           .map((key) => node[key] as TInlineSuggestionData);
       },

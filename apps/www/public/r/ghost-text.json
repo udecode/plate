@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/ui/ghost-text.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { CopilotPlugin } from '@udecode/plate-ai/react';\nimport { useElement, usePluginOption } from '@udecode/plate/react';\n\nexport const GhostText = () => {\n  const element = useElement();\n\n  const isSuggested = usePluginOption(\n    CopilotPlugin,\n    'isSuggested',\n    element.id as string\n  );\n\n  if (!isSuggested) return null;\n\n  return <GhostTextContent />;\n};\n\nexport function GhostTextContent() {\n  const suggestionText = usePluginOption(CopilotPlugin, 'suggestionText');\n\n  return (\n    <span\n      className=\"pointer-events-none text-muted-foreground/70 max-sm:hidden\"\n      contentEditable={false}\n    >\n      {suggestionText && suggestionText}\n    </span>\n  );\n}\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { CopilotPlugin } from '@udecode/plate-ai/react';\nimport { useElement, usePluginOption } from '@udecode/plate/react';\n\nexport function GhostText() {\n  const element = useElement();\n\n  const isSuggested = usePluginOption(\n    CopilotPlugin,\n    'isSuggested',\n    element.id as string\n  );\n\n  if (!isSuggested) return null;\n\n  return <GhostTextContent />;\n}\n\nfunction GhostTextContent() {\n  const suggestionText = usePluginOption(CopilotPlugin, 'suggestionText');\n\n  return (\n    <span\n      className=\"pointer-events-none text-muted-foreground/70 max-sm:hidden\"\n      contentEditable={false}\n    >\n      {suggestionText && suggestionText}\n    </span>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

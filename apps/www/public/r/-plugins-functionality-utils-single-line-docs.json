@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "-plugins-functionality-utils-single-line-docs",
+  "type": "registry:file",
+  "title": "Single Line",
+  "description": "Documentation for Single Line",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(functionality)/(utils)/single-line.mdx",
+      "content": "---\ntitle: Single Line\n---\n\n<ComponentPreview name=\"single-line-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Limits editor to one block of text\n- Suitable for brief content or titles\n\n</PackageInfo>\n\n## Usage\n\n```tsx\nimport { SingleLinePlugin } from '@udecode/plate/react';\n\nconst plugins = [\n  // ...otherPlugins\n  SingleLinePlugin,\n];\n```\n\n## Plugins\n\n### `SingleLinePlugin`\n\nPlugin that restricts editor content to a single block of text.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(functionality)/(utils)/single-line.mdx"
+    }
+  ]
+}

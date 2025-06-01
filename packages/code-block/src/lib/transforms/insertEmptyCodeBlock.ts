@@ -1,7 +1,7 @@
 import {
   type InsertNodesOptions,
   type SlateEditor,
-  BaseParagraphPlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import { insertCodeBlock } from './insertCodeBlock';
@@ -18,7 +18,7 @@ export interface CodeBlockInsertOptions {
 export const insertEmptyCodeBlock = (
   editor: SlateEditor,
   {
-    defaultType = editor.getType(BaseParagraphPlugin),
+    defaultType = editor.getType(KEYS.p),
     insertNodesOptions,
   }: CodeBlockInsertOptions = {}
 ) => {

@@ -1,22 +1,24 @@
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
-import type { DeserializeMdOptions } from '../deserializeMd';
-import type { Decoration } from '../type';
+import { KEYS } from '@udecode/plate';
 
-import { getPlateNodeType } from '../../utils';
+import type { MdDecoration } from '../../types';
+import type { DeserializeMdOptions } from '../deserializeMd';
+
+import { mdastToPlate } from '../../types';
 import { convertChildrenDeserialize } from '../convertChildrenDeserialize';
 import { getDeserializerByKey } from './getDeserializerByKey';
 
 export const customMdxDeserialize = (
   mdastNode: MdxJsxFlowElement | MdxJsxTextElement,
-  deco: Decoration,
+  deco: MdDecoration,
   options: DeserializeMdOptions
 ) => {
   const customJsxElementKey = mdastNode.name;
 
   if (customJsxElementKey) {
     const nodeParserDeserialize = getDeserializerByKey(
-      getPlateNodeType(customJsxElementKey as any),
+      mdastToPlate(customJsxElementKey as any),
       options
     );
 
@@ -65,7 +67,7 @@ export const customMdxDeserialize = (
             text: `\n</${tagName}>`,
           },
         ],
-        type: 'p',
+        type: KEYS.p,
       },
     ];
   }

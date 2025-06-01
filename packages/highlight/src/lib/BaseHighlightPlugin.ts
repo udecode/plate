@@ -1,11 +1,11 @@
-import { createSlatePlugin } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from '@udecode/plate';
 
 /**
  * Enables support for highlights, useful when reviewing content or highlighting
  * it for future reference.
  */
 export const BaseHighlightPlugin = createSlatePlugin({
-  key: 'highlight',
+  key: KEYS.highlight,
   node: { isLeaf: true },
   parsers: {
     html: {
@@ -18,4 +18,5 @@ export const BaseHighlightPlugin = createSlatePlugin({
       },
     },
   },
+  render: { as: 'mark' },
 });

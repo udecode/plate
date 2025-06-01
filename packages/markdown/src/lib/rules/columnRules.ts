@@ -1,10 +1,10 @@
-import type { TRules } from './types';
+import type { MdRules } from '../types';
 
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
 import { convertNodesSerialize } from '../serializer';
 import { parseAttributes, propsToAttributes } from './utils';
 
-export const columnRules: TRules = {
+export const columnRules: MdRules = {
   column: {
     deserialize: (mdastNode, deco, options) => {
       const props = parseAttributes(mdastNode.attributes);

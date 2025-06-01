@@ -1,5 +1,5 @@
 /* eslint-disable jest/no-conditional-expect */
-import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
 import { type Value, createEditor } from '@udecode/slate';
 
 import { ParagraphPlugin, ReactPlugin } from '../../react';
@@ -9,6 +9,7 @@ import { getPlugin } from '../../react/plugin/getPlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
 import {
   type SlatePlugin,
+  AffinityPlugin,
   AstPlugin,
   createSlatePlugin,
   DebugPlugin,
@@ -33,6 +34,7 @@ const coreKeys = [
   LengthPlugin.key,
   HtmlPlugin.key,
   AstPlugin.key,
+  AffinityPlugin.key,
   ParagraphPlugin.key,
   EventEditorPlugin.key,
 ];
@@ -40,13 +42,17 @@ const coreKeys = [
 describe('withPlate', () => {
   describe('when default plugins', () => {
     it('should have core plugins', () => {
-      const editor = withPlate(createEditor(), { id: '1' });
+      const editor = withPlate(createEditor(), {
+        id: '1',
+      });
 
       expect(editor.id).toBe('1');
       expect(editor.history).toBeDefined();
-      expect(editor.key).toBeDefined();
-      expect(editor.pluginList.map((plugin) => plugin.key)).toEqual(coreKeys);
-      expect(editor.pluginList.map((plugin) => plugin.node.type)).toEqual(
+      expect(editor.meta.key).toBeDefined();
+      expect(editor.meta.pluginList.map((plugin) => plugin.key)).toEqual(
+        coreKeys
+      );
+      expect(editor.meta.pluginList.map((plugin) => plugin.node.type)).toEqual(
         coreKeys
       );
       expect(Object.keys(editor.plugins)).toEqual(coreKeys);
@@ -55,7 +61,7 @@ describe('withPlate', () => {
       ).toBeDefined();
 
       expect(editor.tf.toggleBlock).toBeDefined();
-      expect(editor.prevSelection).toBeNull();
+      expect(editor.dom.prevSelection).toBeNull();
     });
   });
 
@@ -64,10 +70,14 @@ describe('withPlate', () => {
       const customPlugin = createSlatePlugin({ key: 'custom' });
       const editor = withPlate(createEditor(), {
         id: '1',
+        override: {
+          components: {},
+          enabled: {},
+        },
         plugins: [customPlugin],
       });
 
-      expect(editor.pluginList.map((plugin) => plugin.key)).toEqual([
+      expect(editor.meta.pluginList.map((plugin) => plugin.key)).toEqual([
         ...coreKeys,
         'custom',
       ]);
@@ -82,7 +92,9 @@ describe('withPlate', () => {
         plugins: [],
       });
 
-      expect(editor.pluginList.map((plugin) => plugin.key)).toEqual(coreKeys);
+      expect(editor.meta.pluginList.map((plugin) => plugin.key)).toEqual(
+        coreKeys
+      );
     });
   });
 
@@ -220,8 +232,10 @@ describe('withPlate', () => {
         plugins: [ParagraphPlugin, ReactPlugin, additionalPlugin],
       });
 
-      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
-      const pluginTypes = editor.pluginList.map((plugin) => plugin.node.type);
+      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
+      const pluginTypes = editor.meta.pluginList.map(
+        (plugin) => plugin.node.type
+      );
 
       // Check if ReactPlugin replaced DOMPlugin
       expect(pluginKeys).toContain(ReactPlugin.key);
@@ -252,7 +266,7 @@ describe('withPlate', () => {
       // 2. Number of replacing plugins (ReactPlugin, ParagraphPlugin)
       // 3. Number of additional plugins (additionalPlugin)
       // Minus the number of replaced plugins (DOMPlugin)
-      const expectedPluginCount = editor.pluginList.length;
+      const expectedPluginCount = editor.meta.pluginList.length;
       expect(pluginKeys).toHaveLength(expectedPluginCount);
     });
   });
@@ -267,7 +281,7 @@ describe('withPlate', () => {
 
       const editor = withPlate(existingEditor, { id: '1' });
 
-      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
+      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
       expect(pluginKeys.filter((key) => key === 'dom')).toHaveLength(1);
       expect(pluginKeys.filter((key) => key === 'history')).toHaveLength(1);
     });
@@ -281,7 +295,7 @@ describe('withPlate', () => {
 
       const editor = withPlate(existingEditor, { id: '1' });
 
-      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
+      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
       coreKeys.forEach((key) => {
         expect(pluginKeys).toContain(key);
       });
@@ -298,7 +312,7 @@ describe('withPlate', () => {
 
       const editor = withPlate(existingEditor, { id: '1' });
 
-      expect(editor.pluginList.map((plugin) => plugin.key)).not.toContain(
+      expect(editor.meta.pluginList.map((plugin) => plugin.key)).not.toContain(
         'custom'
       );
     });
@@ -316,7 +330,7 @@ describe('withPlate', () => {
         },
       });
 
-      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
+      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
       expect(pluginKeys).not.toContain('history');
       expect(pluginKeys).not.toContain('eventEditor');
       expect(pluginKeys).toHaveLength(coreKeys.length - 2);
@@ -336,7 +350,7 @@ describe('withPlate', () => {
         plugins: [customPlugin1, customPlugin2],
       });
 
-      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
+      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
       expect(pluginKeys).not.toContain('custom1');
       expect(pluginKeys).toContain('custom2');
     });
@@ -351,7 +365,7 @@ describe('withPlate', () => {
         },
       });
 
-      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
+      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
       coreKeys.forEach((key) => {
         if (key !== 'history') {
           expect(pluginKeys).toContain(key);

@@ -1,0 +1,153 @@
+---
+title: Font
+description: Provide extended formatting options for document content.
+docs:
+  - route: /docs/components/font-color-toolbar-button
+    title: Font Color Toolbar Button
+  - route: /docs/components/font-size-toolbar-button
+    title: Font Size Toolbar Button
+---
+
+<ComponentPreview name="font-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Font size, family, color, background color, and weight.
+
+## Plugins
+
+- `FontBackgroundColorPlugin`: Control background color with `background-color` style
+- `FontColorPlugin`: Control font color with `color` style
+- `FontFamilyPlugin`: Change font family using inline elements with `font-family` style
+- `FontSizePlugin`: Control font size with CSS class or `font-size` style
+- `FontWeightPlugin`: Control font weight with `font-weight` style
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-styles
+```
+
+## Usage
+
+```tsx
+import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  FontSizePlugin,
+} from '@udecode/plate-basic-styles/react';
+
+const plugins = [
+  // ...otherPlugins,
+  FontColorPlugin,
+  FontBackgroundColorPlugin,
+  FontSizePlugin,
+];
+```
+
+## Plugins
+
+### `FontBackgroundColorPlugin`
+
+Plugin for font background color formatting.
+
+### `FontColorPlugin`
+
+Plugin for font color formatting.
+
+### `FontFamilyPlugin`
+
+Plugin for font family formatting.
+
+### `FontSizePlugin`
+
+Plugin for font size formatting.
+
+### `FontWeightPlugin`
+
+Plugin for font weight formatting.
+
+## Transforms
+
+### `tf.backgroundColor.addMark`
+
+Set the font background color mark.
+
+<API name="tf.backgroundColor.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    The background color value to set.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.color.addMark`
+
+Set the font color mark.
+
+<API name="tf.color.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    The color value to set.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.fontFamily.addMark`
+
+Set the font family mark.
+
+<API name="tf.fontFamily.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    The font family value to set.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.fontSize.addMark`
+
+Set the font size mark.
+
+<API name="tf.fontSize.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    The font size value to set.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.fontWeight.addMark`
+
+Set the font weight mark.
+
+<API name="tf.fontWeight.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    The font weight value to set.
+  </APIItem>
+</APIParameters>
+</API>
+
+## API
+
+### `toUnitLess`
+
+Convert a font size value to a unitless value.
+
+<API name="toUnitLess">
+<APIParameters>
+  <APIItem name="fontSize" type="string">
+    The font size value to convert.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="string">
+  The font size value without units.
+</APIReturns>
+</API>
+

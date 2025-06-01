@@ -18,7 +18,7 @@ import { pipeRenderText } from '../utils/pipeRenderText';
 
 export const useEditableProps = ({
   disabled,
-  readOnly: readOnlyProp,
+  readOnly,
   ...editableProps
 }: Omit<EditableProps, 'decorate'> &
   Pick<PlateProps, 'decorate'> = {}): EditableProps => {
@@ -27,7 +27,6 @@ export const useEditableProps = ({
   const editor = useEditorRef(id);
   const store = usePlateStore(id);
   const versionDecorate = useAtomStoreValue(store, 'versionDecorate');
-  const storeReadOnly = useAtomStoreValue(store, 'readOnly');
   const storeDecorate = useAtomStoreValue(store, 'decorate');
   const storeRenderLeaf = useAtomStoreValue(store, 'renderLeaf');
   const storeRenderElement = useAtomStoreValue(store, 'renderElement');
@@ -80,8 +79,6 @@ export const useEditableProps = ({
     return _props;
   }, [decorate, editableProps, renderElement, renderLeaf, renderText]);
 
-  const readOnly = storeReadOnly || readOnlyProp || disabled;
-
   return useDeepCompareMemo(
     () => ({
       ...omit(editableProps, [
@@ -98,7 +95,7 @@ export const useEditableProps = ({
         'ignore-click-outside/toolbar',
         editableProps.className
       ),
-      'data-readonly': readOnly,
+      'data-readonly': readOnly ? 'true' : undefined,
       readOnly,
     }),
     [editableProps, props, readOnly]

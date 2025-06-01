@@ -1,0 +1,66 @@
+---
+title: Alignment
+docs:
+  - route: /docs/components/align-toolbar-button
+    title: Align Toolbar Button
+---
+
+<ComponentPreview name="align-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Provides text alignment options: left, right, center, or justify.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-styles
+```
+
+## Usage
+
+```tsx
+import { KEYS } from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate/react';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    TextAlignPlugin.configure({
+      inject: {
+        targetPlugins: [
+          KEYS.p,
+          ...KEYS.heading,
+        ],
+      },
+    }),
+  ],
+});
+```
+
+## Plugins
+
+### `TextAlignPlugin`
+
+Plugin for aligning text within block elements.
+
+## Transforms
+
+### `tf.textAlign.setNodes`
+
+Sets the alignment for the specified block elements in the editor.
+
+<API name="tf.textAlign.setNodes">
+<APIParameters>
+<APIItem name="value" type="Alignment">
+The alignment value.
+</APIItem>
+<APIItem name="options" type="SetNodesOptions" optional>
+Options for the `setNodes` function.
+</APIItem>
+</APIParameters>
+</API>

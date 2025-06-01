@@ -1,6 +1,8 @@
-import type { SlateEditor } from '@udecode/plate';
-
-import type { TTableCellElement, TTableElement } from '../types';
+import type {
+  SlateEditor,
+  TTableCellElement,
+  TTableElement,
+} from '@udecode/plate';
 
 import { getCellIndices } from '../utils/getCellIndices';
 import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';

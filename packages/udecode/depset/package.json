@@ -1,0 +1,60 @@
+{
+  "name": "depset",
+  "version": "0.1.1",
+  "description": "Synchronize dependencies in package.json",
+  "keywords": [
+    "dependencies",
+    "package.json",
+    "sync",
+    "upgrade",
+    "version",
+    "yarn",
+    "pnpm",
+    "npm",
+    "bun"
+  ],
+  "homepage": "https://github.com/udecode/plate/packages/udecode/depset/README.md",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/udecode/depset"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": "./dist/index.js",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "yarn tsup",
+    "build:watch": "yarn tsup --watch",
+    "clean": "yarn p:clean",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@antfu/ni": "24.3.0",
+    "commander": "13.1.0",
+    "kleur": "4.1.5",
+    "ora": "8.2.0",
+    "prompts": "2.4.2",
+    "zod": "3.24.4"
+  },
+  "devDependencies": {
+    "@types/prompts": "2.4.9",
+    "tsup": "8.4.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

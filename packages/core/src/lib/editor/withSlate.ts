@@ -6,8 +6,9 @@ import {
 } from '@udecode/slate';
 import { nanoid } from 'nanoid';
 
-import type { AnyPluginConfig } from '../plugin/BasePlugin';
+import type { AnyPluginConfig, NodeComponents } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
+import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
 import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
@@ -16,7 +17,30 @@ import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
 
 export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
+  /**
+   * Unique identifier for the editor instance.
+   *
+   * @default nanoid()
+   */
   id?: string;
+  /**
+   * Determines which mark/element to apply at boundaries between different
+   * marks, based on cursor movement using the left/right arrow keys.
+   *
+   * Example: <text bold>Bold</text><cursor><text italic>Italic</text>
+   *
+   * If the cursor moved here from the left (via → key), typing applies
+   * **bold**.
+   *
+   * If the cursor moved here from the right (via ← key), typing applies
+   * _italic_.
+   *
+   * Without mark affinity, the preceding mark (**bold**) is always applied
+   * regardless of direction.
+   *
+   * @default true
+   */
+  affinity?: boolean;
   /**
    * Select the editor after initialization.
    *
@@ -27,21 +51,68 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * - `'start'`: Select the start of the editor
    */
   autoSelect?: boolean | 'end' | 'start';
-  /** Specifies the maximum number of characters allowed in the editor. */
+  /** Specifies the component for each plugin key. */
+  components?: NodeComponents;
+  /** Specifies the component for each plugin key. */
+  // components?: Partial<
+  //   Record<KeyofNodePlugins<InferPlugins<P[]>>, NodeComponent | null>
+  // >;
+  /**
+   * Specifies the maximum number of characters allowed in the editor. When the
+   * limit is reached, further input will be prevented.
+   */
   maxLength?: number;
+  /**
+   * Configuration for automatic node ID generation and management.
+   *
+   * Unless set to `false`, the editor automatically adds unique IDs to nodes
+   * through the core NodeIdPlugin:
+   *
+   * - Normalizes the initial value for missing IDs
+   * - Adds IDs to new nodes during insertion
+   * - Preserves or reuses IDs on undo/redo and copy/paste operations
+   * - Handles ID conflicts and duplicates
+   *
+   * @default { idKey: 'id', filterInline: true, filterText: true, idCreator: () => nanoid(10) }
+   */
+  nodeId?: NodeIdConfig['options'] | boolean;
+  // override?: {
+  //   components?: Partial<
+  //     Record<KeyofNodePlugins<InferPlugins<P[]>>, NodeComponent | null>
+  //   >;
+  // };
+  /**
+   * Array of plugins to be loaded into the editor. Plugins extend the editor's
+   * functionality and define custom behavior.
+   */
   plugins?: P[];
+  /**
+   * Editor read-only initial state. For dynamic read-only control, use the
+   * `Plate.readOnly` prop instead.
+   *
+   * @default false
+   */
+  readOnly?: boolean;
+  /**
+   * Initial selection state for the editor. Defines where the cursor should be
+   * positioned when the editor loads.
+   */
   selection?: TSelection;
   /**
-   * When `true`, it will normalize the initial `value` passed to the `editor`.
-   * This is useful when adding normalization rules on already existing
-   * content.
+   * When `true`, normalizes the initial `value` passed to the editor. This is
+   * useful when adding normalization rules to already existing content or when
+   * the initial value might not conform to the current schema.
+   *
+   * Note: Normalization may take time for large documents.
    *
    * @default false
    */
   shouldNormalizeEditor?: boolean;
   /**
-   * When `true`, skip the initial value, selection, and normalization logic.
-   * Useful when the editor state is managed externally (e.g., Yjs).
+   * When `true`, skips the initial value, selection, and normalization logic.
+   * Useful when the editor state is managed externally (e.g., with Yjs
+   * collaboration) or when you want to manually control the initialization
+   * process.
    *
    * @default false
    */
@@ -63,6 +134,28 @@ export type WithSlateOptions<
     | 'override'
     | 'transforms'
   > & {
+    // override?: {
+    //   /** Enable or disable plugins */
+    //   enabled?: Partial<Record<KeyofPlugins<InferPlugins<P[]>>, boolean>>;
+    //   plugins?: Partial<
+    //     Record<
+    //       KeyofPlugins<InferPlugins<P[]>>,
+    //       PartialEditorPlugin<AnyPluginConfig>
+    //     >
+    //   >;
+    // };
+    /**
+     * Initial content for the editor.
+     *
+     * Can be:
+     *
+     * - A static value (array of nodes)
+     * - An HTML string that will be deserialized
+     * - A function that returns a value or Promise<value>
+     * - `null` for an empty editor
+     *
+     * @default [{ type: 'p'; children: [{ text: '' }] }]
+     */
     value?: ((editor: SlateEditor) => Promise<V> | V) | V | string | null;
     /** Function to configure the root plugin */
     rootPlugin?: (plugin: AnySlatePlugin) => AnySlatePlugin;
@@ -72,11 +165,11 @@ export type WithSlateOptions<
  * Applies Plate enhancements to an editor instance (non-React version).
  *
  * @remarks
- *   This function supports server-side usage as it doesn't include the
- *   ReactPlugin.
+ *   This function supports server-side usage as it doesn't include React-specific
+ *   features like component rendering or hooks integration.
  * @see {@link createSlateEditor} for a higher-level non-React editor creation function.
- * @see {@link createPlateEditor} for a higher-level React editor creation function.
- * @see {@link usePlateEditor} for a React memoized version.
+ * @see {@link createPlateEditor} for a React-specific version of editor creation.
+ * @see {@link usePlateEditor} for a memoized React version.
  * @see {@link withPlate} for the React-specific enhancement function.
  */
 export const withSlate = <
@@ -86,9 +179,12 @@ export const withSlate = <
   e: Editor,
   {
     id,
+    affinity = true,
     autoSelect,
     maxLength,
+    nodeId,
     plugins = [],
+    readOnly = false,
     rootPlugin,
     selection,
     shouldNormalizeEditor,
@@ -100,19 +196,28 @@ export const withSlate = <
   const editor = e as SlateEditor;
 
   editor.id = id ?? editor.id ?? nanoid();
-  editor.key = editor.key ?? nanoid();
-  editor.isFallback = false;
-  editor.prevSelection = null;
-  editor.currentKeyboardEvent = null;
+  editor.meta.key = editor.meta.key ?? nanoid();
+  editor.meta.isFallback = false;
+  editor.dom = {
+    composing: false,
+    currentKeyboardEvent: null,
+    focused: false,
+    prevSelection: null,
+    readOnly,
+  };
 
   editor.getApi = () => editor.api as any;
   editor.getTransforms = () => editor.transforms as any;
   editor.getPlugin = (plugin) => getSlatePlugin(editor, plugin) as any;
-  editor.getType = (plugin) => getPluginType(editor, plugin);
+  editor.getType = (pluginKey) => getPluginType(editor, pluginKey);
   editor.getInjectProps = (plugin) => {
-    return (
-      editor.getPlugin<AnySlatePlugin>(plugin).inject?.nodeProps ?? ({} as any)
-    );
+    const nodeProps =
+      editor.getPlugin<AnySlatePlugin>(plugin).inject?.nodeProps ?? ({} as any);
+
+    nodeProps.nodeKey = nodeProps.nodeKey ?? editor.getType(plugin.key);
+    nodeProps.styleKey = nodeProps.styleKey ?? nodeProps.nodeKey;
+
+    return nodeProps;
   };
   editor.getOptionsStore = (plugin) => {
     return editor.getPlugin(plugin).optionsStore;
@@ -169,7 +274,9 @@ export const withSlate = <
 
   // Plugin initialization code
   const corePlugins = getCorePlugins({
+    affinity,
     maxLength,
+    nodeId,
     plugins,
   });
 
@@ -177,6 +284,13 @@ export const withSlate = <
     key: 'root',
     priority: 10_000,
     ...pluginConfig,
+    override: {
+      ...pluginConfig.override,
+      components: {
+        ...pluginConfig.components,
+        ...pluginConfig.override?.components,
+      },
+    },
     plugins: [...corePlugins, ...plugins],
   });
 
@@ -215,7 +329,7 @@ export type CreateSlateEditorOptions<
   P extends AnyPluginConfig = CorePlugin,
 > = WithSlateOptions<V, P> & {
   /**
-   * Initial editor to be extended with `withPlate`.
+   * Initial editor to be extended with `withSlate`.
    *
    * @default createEditor()
    */
@@ -223,7 +337,35 @@ export type CreateSlateEditorOptions<
 };
 
 /**
- * Creates a Slate editor without React-specific enhancements.
+ * Creates a Slate editor (non-React version).
+ *
+ * This function creates a fully configured Plate editor instance that can be
+ * used in non-React environments or server-side contexts. It applies all the
+ * specified plugins and configurations to create a functional editor.
+ *
+ * Examples:
+ *
+ * ```ts
+ * const editor = createSlateEditor({
+ *   plugins: [ParagraphPlugin, HeadingPlugin],
+ *   value: [{ type: 'p', children: [{ text: 'Hello world!' }] }],
+ * });
+ *
+ * // Editor with custom configuration
+ * const editor = createSlateEditor({
+ *   plugins: [ParagraphPlugin],
+ *   maxLength: 1000,
+ *   nodeId: { idCreator: () => uuidv4() },
+ *   autoSelect: 'end',
+ * });
+ *
+ * // Server-side editor
+ * const editor = createSlateEditor({
+ *   plugins: [ParagraphPlugin],
+ *   value: '<p>HTML content</p>',
+ *   skipInitialization: true,
+ * });
+ * ```
  *
  * @see {@link createPlateEditor} for a React-specific version of editor creation.
  * @see {@link usePlateEditor} for a memoized React version.

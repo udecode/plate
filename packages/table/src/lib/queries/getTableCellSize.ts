@@ -1,11 +1,15 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
+import type {
+  SlateEditor,
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '@udecode/plate';
+
+import { getEditorPlugin, KEYS } from '@udecode/plate';
 
 import {
   type CellIndices,
   type TableConfig,
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
   getCellIndices,
   getTableOverriddenColSizes,
 } from '..';
@@ -26,7 +30,7 @@ export const getTableCellSize = (
   }
 ) => {
   const { api } = getEditorPlugin<TableConfig>(editor, {
-    key: 'table',
+    key: KEYS.table,
   });
   const path = editor.api.findPath(element)!;
 

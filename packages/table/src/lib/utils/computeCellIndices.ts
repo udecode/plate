@@ -1,12 +1,13 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
+import {
+  type SlateEditor,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
+  getEditorPlugin,
+  KEYS,
+} from '@udecode/plate';
 
-import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
-
-import { BaseTablePlugin } from '../BaseTablePlugin';
+import type { BaseTablePlugin } from '../BaseTablePlugin';
 
 export function computeCellIndices(
   editor: SlateEditor,
@@ -23,7 +24,7 @@ export function computeCellIndices(
   const { api, getOptions, setOption } = getEditorPlugin<
     typeof BaseTablePlugin
   >(editor, {
-    key: 'table',
+    key: KEYS.table,
   });
 
   if (!tableNode) {
@@ -31,7 +32,7 @@ export function computeCellIndices(
 
     tableNode = editor.api.above<TTableElement>({
       at: cellNode,
-      match: { type: editor.getType(BaseTablePlugin) },
+      match: { type: editor.getType(KEYS.table) },
     })?.[0];
 
     if (!tableNode) return;

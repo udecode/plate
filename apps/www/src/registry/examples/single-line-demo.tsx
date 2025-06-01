@@ -2,17 +2,15 @@
 
 import * as React from 'react';
 
-import { SingleLinePlugin } from '@udecode/plate-break/react';
-import { Plate } from '@udecode/plate/react';
+import { Plate, SingleLinePlugin, usePlateEditor } from '@udecode/plate/react';
 
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { singleLineValue } from '@/registry/examples/values/single-line-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export default function SingleLineDemo() {
-  const editor = useCreateEditor({
-    plugins: [...editorPlugins, SingleLinePlugin],
+  const editor = usePlateEditor({
+    plugins: [...EditorKit, SingleLinePlugin],
     value: singleLineValue,
   });
 

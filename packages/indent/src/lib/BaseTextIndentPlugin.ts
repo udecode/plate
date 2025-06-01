@@ -1,8 +1,4 @@
-import {
-  type PluginConfig,
-  BaseParagraphPlugin,
-  createTSlatePlugin,
-} from '@udecode/plate';
+import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
 
 import type { IndentConfig } from './BaseIndentPlugin';
 
@@ -12,7 +8,7 @@ export type TextIndentConfig = PluginConfig<
 >;
 
 export const BaseTextIndentPlugin = createTSlatePlugin<TextIndentConfig>({
-  key: 'textIndent',
+  key: KEYS.textIndent,
   inject: {
     isBlock: true,
     nodeProps: {
@@ -24,7 +20,7 @@ export const BaseTextIndentPlugin = createTSlatePlugin<TextIndentConfig>({
         return nodeValue * offset! + unit!;
       },
     },
-    targetPlugins: [BaseParagraphPlugin.key],
+    targetPlugins: [KEYS.p],
   },
   options: {
     offset: 24,

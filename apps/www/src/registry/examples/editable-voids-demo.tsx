@@ -4,13 +4,12 @@ import * as React from 'react';
 
 import type { PlateElementProps } from '@udecode/plate/react';
 
-import { createPlatePlugin, Plate } from '@udecode/plate/react';
+import { createPlatePlugin, Plate, usePlateEditor } from '@udecode/plate/react';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { editableVoidsValue } from '@/registry/examples/values/editable-voids-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
@@ -29,8 +28,8 @@ export function EditableVoidElement({
 }: PlateElementProps) {
   const [inputValue, setInputValue] = React.useState('');
 
-  const editor = useCreateEditor({
-    plugins: editorPlugins,
+  const editor = usePlateEditor({
+    plugins: EditorKit,
   });
 
   return (
@@ -64,13 +63,13 @@ export function EditableVoidElement({
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="editable-void-basic-elements">
+          <Label htmlFor="editable-void-basic-blocks">
             Tell us about yourself:
           </Label>
 
           <Plate
             editor={editor}
-            // initialValue={basicElementsValue}
+            // initialValue={basicBlocksValue}
           >
             <EditorContainer>
               <Editor />
@@ -84,8 +83,8 @@ export function EditableVoidElement({
 }
 
 export default function EditableVoidsDemo() {
-  const editor = useCreateEditor({
-    plugins: [...editorPlugins, EditableVoidPlugin],
+  const editor = usePlateEditor({
+    plugins: [...EditorKit, EditableVoidPlugin],
     value: editableVoidsValue,
   });
 

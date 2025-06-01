@@ -1,3 +1,4 @@
+import { KEYS } from '@udecode/plate';
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
 import { withAIBatch } from '../../../lib';
@@ -6,7 +7,7 @@ import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
 
 export const acceptAIChat = (editor: PlateEditor) => {
   const { tf } = getEditorPlugin(editor, AIPlugin);
-  const api = editor.getApi<AIChatPluginConfig>({ key: 'ai' });
+  const api = editor.getApi<AIChatPluginConfig>({ key: KEYS.ai });
 
   const lastAINodePath = api.aiChat.node({ at: [], reverse: true })![1];
 

@@ -1,6 +1,6 @@
 import type { SlateEditor } from '@udecode/plate';
 
-import { BaseCodeLinePlugin } from '../BaseCodeBlockPlugin';
+import { KEYS } from '@udecode/plate';
 
 /** Insert a code line starting with indentation. */
 export const insertCodeLine = (editor: SlateEditor, indentDepth = 0) => {
@@ -9,7 +9,7 @@ export const insertCodeLine = (editor: SlateEditor, indentDepth = 0) => {
 
     editor.tf.insertNodes({
       children: [{ text: indent }],
-      type: editor.getType(BaseCodeLinePlugin),
+      type: editor.getType(KEYS.codeLine),
     });
   }
 };

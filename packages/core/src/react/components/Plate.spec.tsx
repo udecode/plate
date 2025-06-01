@@ -135,13 +135,13 @@ describe('Plate', () => {
           <Plate editor={editor}>{children}</Plate>
         );
         const { rerender, result } = renderHook(
-          () => useEditorRef().pluginList,
+          () => useEditorRef().meta.pluginList,
           { initialProps: { editor }, wrapper }
         );
 
         expect(result.current.at(-1)!.key).toBe('test');
 
-        editor.pluginList = [createPlatePlugin({ key: 'test2' }) as any];
+        editor.meta.pluginList = [createPlatePlugin({ key: 'test2' }) as any];
 
         rerender({ editor });
 
@@ -157,7 +157,7 @@ describe('Plate', () => {
         <Plate editor={editor}>{children}</Plate>
       );
 
-      const { result } = renderHook(() => useEditorRef().pluginList, {
+      const { result } = renderHook(() => useEditorRef().meta.pluginList, {
         wrapper,
       });
 
@@ -176,7 +176,7 @@ describe('Plate', () => {
         <Plate editor={editor}>{children}</Plate>
       );
       const { rerender, result } = renderHook(
-        ({ editor }) => useEditorRef(editor.id).pluginList,
+        ({ editor }) => useEditorRef(editor.id).meta.pluginList,
         { initialProps: { editor: editor1 }, wrapper }
       );
 
@@ -254,7 +254,8 @@ describe('Plate', () => {
       }).result.current;
 
     const getIsFallback = (wrapper: any) =>
-      renderHook(() => useEditorRef().isFallback, { wrapper }).result.current;
+      renderHook(() => useEditorRef().meta.isFallback, { wrapper }).result
+        .current;
 
     describe('when Plate exists', () => {
       describe('when editor is defined', () => {
@@ -406,7 +407,7 @@ describe('Plate', () => {
       const TestComponent = ({ dep }: { dep: number }) => {
         const editor = usePlateEditor({ id: 'test' }, [dep]);
 
-        editor.key = dep;
+        editor.meta.key = dep;
 
         return (
           <Plate editor={editor}>

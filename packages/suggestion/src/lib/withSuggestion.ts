@@ -1,7 +1,10 @@
-import { type OverrideEditor, nanoid, TextApi } from '@udecode/plate';
-import { ParagraphPlugin } from '@udecode/plate/react';
-
-import type { TSuggestionElement } from './types';
+import {
+  type OverrideEditor,
+  type TSuggestionElement,
+  KEYS,
+  nanoid,
+  TextApi,
+} from '@udecode/plate';
 
 import {
   type BaseSuggestionConfig,
@@ -54,10 +57,7 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
       if (getOptions().isSuggesting) {
         const node = editor.api.above<TSuggestionElement>();
         // without set suggestion when delete backward in block suggestion
-        if (
-          node?.[0][BaseSuggestionPlugin.key] &&
-          !node?.[0].suggestion.isLineBreak
-        ) {
+        if (node?.[0][KEYS.suggestion] && !node?.[0].suggestion.isLineBreak) {
           return deleteBackward(unit);
         }
 
@@ -79,7 +79,7 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
           });
 
           if (isCrossBlock) {
-            editor.tf.unsetNodes([BaseSuggestionPlugin.key], {
+            editor.tf.unsetNodes([KEYS.suggestion], {
               at: pointTarget,
             });
           }
@@ -120,7 +120,7 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
       if (getOptions().isSuggesting) {
         const [node, path] = editor.api.above()!;
 
-        if (path.length > 1 || node.type !== ParagraphPlugin.key) {
+        if (path.length > 1 || node.type !== editor.getType(KEYS.p)) {
           return insertTextSuggestion(editor, '\n');
         }
 
@@ -134,7 +134,7 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
         editor.tf.withoutMerging(() => {
           editor.tf.setNodes(
             {
-              [BaseSuggestionPlugin.key]: {
+              [KEYS.suggestion]: {
                 id,
                 createdAt,
                 isLineBreak: true,
@@ -178,7 +178,7 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
         const suggestionNodes = nodesArray.map((node) => {
           return {
             ...node,
-            [BaseSuggestionPlugin.key]: {
+            [KEYS.suggestion]: {
               id: nanoid(),
               createdAt: Date.now(),
               type: 'insert',
@@ -197,10 +197,7 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
       if (getOptions().isSuggesting) {
         const node = editor.api.above<TSuggestionElement>();
 
-        if (
-          node?.[0][BaseSuggestionPlugin.key] &&
-          !node?.[0].suggestion.isLineBreak
-        ) {
+        if (node?.[0][KEYS.suggestion] && !node?.[0].suggestion.isLineBreak) {
           return insertText(text, options);
         }
 
@@ -217,11 +214,11 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
         const [node, path] = entry;
 
         if (
-          node[BaseSuggestionPlugin.key] && // Unset suggestion when there is no suggestion id
+          node[KEYS.suggestion] && // Unset suggestion when there is no suggestion id
           TextApi.isText(node) &&
           !getSuggestionKeyId(node)
         ) {
-          editor.tf.unsetNodes([BaseSuggestionPlugin.key, 'suggestionData'], {
+          editor.tf.unsetNodes([KEYS.suggestion, 'suggestionData'], {
             at: path,
           });
 
@@ -229,18 +226,15 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
         }
         // Unset suggestion when there is no suggestion user id
         if (
-          node[BaseSuggestionPlugin.key] &&
+          node[KEYS.suggestion] &&
           TextApi.isText(node) &&
           !getInlineSuggestionData(node)?.userId
         ) {
           if (getInlineSuggestionData(node)?.type === 'remove') {
             // Unset deletions
-            editor.tf.unsetNodes(
-              [BaseSuggestionPlugin.key, getSuggestionKeyId(node)!],
-              {
-                at: path,
-              }
-            );
+            editor.tf.unsetNodes([KEYS.suggestion, getSuggestionKeyId(node)!], {
+              at: path,
+            });
           } else {
             // Remove additions
             editor.tf.removeNodes({ at: path });

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-react-utils-docs",
+  "type": "registry:file",
+  "title": "React Utils",
+  "description": "API reference for @udecode/react-utils.",
+  "files": [
+    {
+      "path": "../../docs/api/react-utils.mdx",
+      "content": "---\ntitle: React Utils\ndescription: API reference for @udecode/react-utils.\n---\n\n`@udecode/react-utils` contains utility functions for React.\n\n## Components\n\n### `<PortalBody>`\n\nRenders a React component in the `document.body` using a portal.\n\n### `<Text>`\n\nGeneric component for rendering a span.\n\n### `<Box>`\n\nGeneric component for rendering a div.\n\n## API\n\n### `createPrimitiveComponent`\n\nCreates a primitive component factory which utilizes hooks for managing state, props, and forwards references to child components.\n\n<API name=\"createPrimitiveComponent\">\n<APIParameters>\n  <APIItem name=\"element\" type=\"React.ElementType\">\n    The base component or native HTML element.\n  </APIItem>\n</APIParameters>\n\n<APIReturns type=\"Function\">\n  A function returning a primitive component with hooks for state and props management.\n</APIReturns>\n</API>\n\n### `createPrimitiveElement`\n\nCreates a component from an element type.\n\n<API name=\"createPrimitiveElement\">\n<APIParameters>\n  <APIItem name=\"element\" type=\"React.ElementType\">\n    The native HTML element.\n  </APIItem>\n</APIParameters>\n\n<APIReturns type=\"React.FC\">\n  A function component that renders the specified element.\n</APIReturns>\n</API>\n\n### `createSlotComponent`\n\nCreates a Slot component, which is useful when you want a component to behave as its child.\n\n<API name=\"createSlotComponent\">\n<APIParameters>\n  <APIItem name=\"element\" type=\"React.ElementType\">\n    The base component or native HTML element.\n  </APIItem>\n</APIParameters>\n\n<APIReturns type=\"Function\">\n  A function returning a Slot component.\n</APIReturns>\n</API>\n\n### `withProviders`\n\nA function that wraps a component in multiple providers.\n\n<API name=\"withProviders\">\n<APIParameters>\n  <APIItem name=\"providers\" type=\"any[]\">\n    Providers with which to wrap the component. If there are any props that you want a provider to receive, simply pass an array.\n  </APIItem>\n  <APIItem name=\"WrappedComponent\" type=\"FunctionComponent<T>\">\n    The component to be wrapped.\n  </APIItem>\n  <APIItem name=\"props\" type=\"T\">\n    The props to be passed to the wrapped component.\n  </APIItem>\n</APIParameters>\n\n<APIReturns type=\"FunctionComponent<T>\">\n  A new component that is wrapped by the specified providers.\n</APIReturns>\n</API>\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/react-utils.mdx"
+    }
+  ]
+}

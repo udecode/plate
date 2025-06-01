@@ -36,7 +36,6 @@ describe('serializePlateStatic with attributes', () => {
     );
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });

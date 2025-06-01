@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "examples-collaboration-example-docs",
+  "type": "registry:file",
+  "title": "Collaboration Demo",
+  "description": "Documentation for Collaboration Demo",
+  "files": [
+    {
+      "path": "../../docs/examples/collaboration-example.mdx",
+      "content": "---\ntitle: Collaboration Demo\n---\n\n<ComponentPreview name=\"collaboration-demo\" />\n\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/examples/collaboration-example.mdx"
+    }
+  ]
+}

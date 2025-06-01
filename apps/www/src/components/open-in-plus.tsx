@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';
@@ -26,25 +24,25 @@ export function OpenInPlus({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'group relative flex flex-col gap-2 rounded-lg border bg-card p-4 text-sm',
+        'bg-surface text-surface-foreground group relative flex flex-col gap-2 rounded-lg p-6 text-sm',
         className
       )}
     >
-      <div className="text-lg leading-tight font-semibold text-balance group-hover:underline">
+      <div className="text-balance text-base font-semibold leading-tight group-hover:underline">
         {content.buildYourEditor}
       </div>
-      <div>{content.productionReady}</div>
-      <Button size="sm" className="mt-2 w-fit shrink-0">
+      <div className="text-muted-foreground">{content.productionReady}</div>
+      <Button size="sm" className="mt-2 w-fit">
         {content.getAccess}
       </Button>
-      <Link
+      <a
         className="absolute inset-0"
         href={`${siteConfig.links.platePro}`}
         rel="noreferrer"
         target="_blank"
       >
         <span className="sr-only">{content.getAccess}</span>
-      </Link>
+      </a>
     </div>
   );
 }

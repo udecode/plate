@@ -36,9 +36,10 @@ export function EditorRefEffect({ id }: { id?: string }) {
 
   return (
     <>
-      {editor.pluginList.map((plugin) => (
-        <EditorRefPluginEffect id={id} key={plugin.key} plugin={plugin} />
-      ))}
+      {editor.meta.pluginKeys.useHooks.map((key) => {
+        const plugin = editor.plugins[key];
+        return <EditorRefPluginEffect id={id} key={key} plugin={plugin} />;
+      })}
     </>
   );
 }

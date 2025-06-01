@@ -4,7 +4,7 @@ This package implements the yjs plugin for Plate with support for both Hocuspocu
 
 ## Documentation
 
-Check out [Collaboration](https://platejs.org/docs/collaboration) for the main documentation.
+Check out [Collaboration](https://platejs.org/docs/yjs) for the main documentation.
 
 ### Installation
 

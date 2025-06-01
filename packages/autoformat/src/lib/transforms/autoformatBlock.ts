@@ -1,8 +1,8 @@
 import {
   type SlateEditor,
   type TRange,
-  BaseParagraphPlugin,
   ElementApi,
+  KEYS,
 } from '@udecode/plate';
 import castArray from 'lodash/castArray.js';
 
@@ -25,7 +25,7 @@ export const autoformatBlock = (
     text,
     trigger,
     triggerAtBlockStart = true,
-    type = BaseParagraphPlugin.key,
+    type = KEYS.p,
   }: AutoformatBlockOptions
 ) => {
   const matches = castArray(_match as string[] | string);

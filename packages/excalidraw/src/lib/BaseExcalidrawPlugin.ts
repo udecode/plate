@@ -1,4 +1,4 @@
-import { type TElement, createSlatePlugin } from '@udecode/plate';
+import { type TElement, createSlatePlugin, KEYS } from '@udecode/plate';
 
 import type { ExcalidrawDataState } from './types';
 
@@ -11,6 +11,6 @@ export interface TExcalidrawElement extends TElement {
 
 /** Enables support for Excalidraw drawing tool within a Slate document */
 export const BaseExcalidrawPlugin = createSlatePlugin({
-  key: 'excalidraw',
+  key: KEYS.excalidraw,
   node: { isElement: true, isVoid: true },
 });

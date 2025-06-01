@@ -1,5 +1,6 @@
-import type { Descendant } from '@udecode/plate';
 import type { Root } from 'mdast';
+
+import { type Descendant, KEYS } from '@udecode/plate';
 
 import type { MdRoot } from '../mdast';
 import type { DeserializeMdOptions } from './deserializeMd';
@@ -39,7 +40,7 @@ const buildSlateRoot = (
       results.push(
         ...Array.from({ length: count }).map(() => ({
           children: [{ text: '' }],
-          type: 'p',
+          type: KEYS.p,
         }))
       );
     }

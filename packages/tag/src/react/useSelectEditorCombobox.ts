@@ -1,9 +1,7 @@
 import React from 'react';
 
-import { isDefined } from '@udecode/plate';
+import { type TTagProps, isDefined } from '@udecode/plate';
 import { useEditorRef, useEditorString } from '@udecode/plate/react';
-
-import type { TagLike } from '../lib';
 
 import { useSelectedItems } from './useSelectedItems';
 
@@ -18,7 +16,7 @@ export const useSelectEditorCombobox = ({
 }: {
   open: boolean;
   selectFirstItem: () => void;
-  onValueChange?: (items: TagLike[]) => void;
+  onValueChange?: (items: TTagProps[]) => void;
 }) => {
   const editor = useEditorRef();
   const search = useEditorString();

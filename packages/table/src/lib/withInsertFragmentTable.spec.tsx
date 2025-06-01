@@ -84,6 +84,7 @@ describe('withInsertFragmentTable', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,
@@ -164,6 +165,7 @@ describe('withInsertFragmentTable', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,
@@ -249,6 +251,7 @@ describe('withInsertFragmentTable', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,
@@ -336,6 +339,7 @@ describe('withInsertFragmentTable', () => {
       ) as any as SlateEditor;
 
       const editor = createSlateEditor({
+        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         value: input.children,
@@ -480,6 +484,7 @@ describe('withInsertFragmentTable', () => {
         );
 
         const editor = createSlateEditor({
+          nodeId: true,
           plugins,
           selection: input.selection,
           value: input.children,
@@ -572,6 +577,7 @@ describe('withInsertFragmentTable', () => {
       ) as any as SlateEditor;
 
       const editor = createSlateEditor({
+        nodeId: true,
         plugins: getTestTablePlugins({
           disableExpandOnInsert: true,
         }),
@@ -642,6 +648,7 @@ describe('withInsertFragmentTable', () => {
       ) as any as SlateEditor;
 
       const editor = createSlateEditor({
+        nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         value: input.children,
@@ -704,6 +711,7 @@ describe('withInsertFragmentTable', () => {
         ) as any as SlateEditor;
 
         const editor = createSlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,

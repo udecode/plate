@@ -3,10 +3,10 @@ import {
   type Point,
   type SlateEditor,
   type TLocation,
+  type TSuggestionElement,
+  type TSuggestionText,
   nanoid,
 } from '@udecode/plate';
-
-import type { TSuggestionElement, TSuggestionText } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData, isCurrentUserSuggestion } from '../utils';

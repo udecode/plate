@@ -1,8 +1,14 @@
-import type { OverrideEditor, TElement } from '@udecode/plate';
+import type {
+  OverrideEditor,
+  TElement,
+  TTableCellElement,
+  TTableElement,
+} from '@udecode/plate';
 
-import type { TableConfig, TTableCellElement, TTableElement } from '.';
+import { KEYS } from '@udecode/plate';
 
-import { BaseTableCellHeaderPlugin, BaseTablePlugin } from './BaseTablePlugin';
+import type { TableConfig } from './BaseTablePlugin';
+
 import { getTableGridAbove } from './queries';
 
 export const withSetFragmentDataTable: OverrideEditor<TableConfig> = ({
@@ -60,7 +66,7 @@ export const withSetFragmentDataTable: OverrideEditor<TableConfig> = ({
           const rowCells = row.children as TTableCellElement[];
           const cellStrings: string[] = [];
           const rowElement =
-            row.type === editor.getType(BaseTableCellHeaderPlugin)
+            row.type === editor.getType(KEYS.th)
               ? document.createElement('th')
               : document.createElement('tr');
 
@@ -101,7 +107,7 @@ export const withSetFragmentDataTable: OverrideEditor<TableConfig> = ({
 
         const _tableEntry = editor.api.node<TTableElement>({
           at: tablePath,
-          match: { type: BaseTablePlugin.key },
+          match: { type: KEYS.table },
         });
 
         if (_tableEntry != null && _tableEntry.length > 0) {

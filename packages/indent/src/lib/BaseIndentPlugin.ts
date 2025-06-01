@@ -1,9 +1,4 @@
-import {
-  type PluginConfig,
-  type TElement,
-  BaseParagraphPlugin,
-  createTSlatePlugin,
-} from '@udecode/plate';
+import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
 
 import { withIndent } from './withIndent';
 
@@ -27,12 +22,8 @@ export type IndentConfig = PluginConfig<
   }
 >;
 
-export interface TIndentElement extends TElement {
-  indent: number;
-}
-
 export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
-  key: 'indent',
+  key: KEYS.indent,
   inject: {
     isBlock: true,
     nodeProps: {
@@ -44,7 +35,7 @@ export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
         return nodeValue * offset! + unit!;
       },
     },
-    targetPlugins: [BaseParagraphPlugin.key],
+    targetPlugins: [KEYS.p],
   },
   options: {
     offset: 24,

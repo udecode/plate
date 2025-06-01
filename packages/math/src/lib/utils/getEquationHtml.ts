@@ -1,6 +1,6 @@
-import katex, { type KatexOptions } from 'katex';
+import type { TEquationElement } from '@udecode/plate';
 
-import type { TEquationElement } from '../../lib';
+import katex, { type KatexOptions } from 'katex';
 
 export const getEquationHtml = ({
   element,

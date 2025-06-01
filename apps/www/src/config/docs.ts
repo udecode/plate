@@ -79,7 +79,7 @@ export const installationNavItems: SidebarNavItem[] = [
     title: 'Local Docs',
   },
   {
-    href: '/docs/mcp',
+    href: '/docs/installation/mcp',
     label: 'New',
     title: 'MCP',
   },
@@ -95,6 +95,7 @@ export const guidesNavItems: SidebarNavItem[] = [
       },
       {
         href: '/docs/plugin-shortcuts',
+        label: 'Updated',
         title: 'Plugin Shortcuts',
       },
       {
@@ -161,6 +162,7 @@ export const guidesNavItems: SidebarNavItem[] = [
   },
   {
     href: '/docs/troubleshooting',
+    keywords: ['depset'],
     title: 'Troubleshooting',
   },
 ];
@@ -264,5 +266,5 @@ export const getComponentNavItem = (id: string) => {
 };
 
 export const getPluginNavItem = (id: string) => {
-  return pluginNavMap['/docs/' + id];
+  return pluginNavMap['/docs/' + id] ?? {};
 };

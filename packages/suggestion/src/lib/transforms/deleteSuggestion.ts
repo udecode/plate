@@ -3,13 +3,13 @@ import {
   type SlateEditor,
   type TElement,
   type TRange,
+  type TSuggestionElement,
   ElementApi,
+  KEYS,
   PathApi,
   PointApi,
   TextApi,
 } from '@udecode/plate';
-
-import type { TSuggestionElement } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries/';
@@ -100,7 +100,7 @@ export const deleteSuggestion = (
         at: pointCurrent,
         block: true,
         match: (n) =>
-          n[BaseSuggestionPlugin.key] &&
+          n[KEYS.suggestion] &&
           TextApi.isText(n) &&
           getInlineSuggestionData(n)?.type === 'insert' &&
           isCurrentUserSuggestion(editor, n),
@@ -133,7 +133,7 @@ export const deleteSuggestion = (
               editor
                 .getApi(BaseSuggestionPlugin)
                 .suggestion.withoutSuggestions(() => {
-                  editor.tf.unsetNodes([BaseSuggestionPlugin.key], {
+                  editor.tf.unsetNodes([KEYS.suggestion], {
                     at: previousAboveNode[1],
                   });
                   editor.tf.mergeNodes({
@@ -153,7 +153,7 @@ export const deleteSuggestion = (
           if (!isBlockSuggestion) {
             editor.tf.setNodes(
               {
-                [BaseSuggestionPlugin.key]: {
+                [KEYS.suggestion]: {
                   id,
                   createdAt,
                   type: 'remove',

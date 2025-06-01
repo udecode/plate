@@ -2,6 +2,7 @@ import {
   type EditorAboveOptions,
   type ElementEntry,
   type SlateEditor,
+  KEYS,
   PathApi,
 } from '@udecode/plate';
 
@@ -21,7 +22,7 @@ export const getTableGridAbove = (
   editor: SlateEditor,
   { format = 'table', ...options }: GetTableGridAboveOptions = {}
 ): ElementEntry[] => {
-  const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
+  const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });
 
   const edges = editor.api.edgeBlocks({
     match: {

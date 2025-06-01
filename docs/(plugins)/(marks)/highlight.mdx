@@ -1,0 +1,49 @@
+---
+title: Highlight
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Highlight important text with background colors
+- Keyboard shortcut support for quick formatting
+- Renders as `<mark>` HTML element by default
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-nodes
+```
+
+## Usage
+
+```tsx
+import { HighlightPlugin } from '@udecode/plate-basic-nodes/react';
+
+const plugins = [
+  // ...otherPlugins,
+  HighlightPlugin.configure({
+    shortcuts: { toggle: { keys: 'mod+shift+h' } },
+  }),
+];
+```
+
+## Plugins
+
+### `HighlightPlugin`
+
+Plugin for highlight text formatting. Renders as `<mark>` HTML element by default.
+
+## Transforms
+
+### `tf.highlight.toggle`
+
+Toggles the highlight formatting for the selected text. 

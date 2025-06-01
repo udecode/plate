@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
+import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-nodes/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createEditor } from '../..';

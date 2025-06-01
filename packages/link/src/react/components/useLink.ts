@@ -1,6 +1,8 @@
+import type { TLinkElement } from '@udecode/plate';
+
 import { useEditorRef } from '@udecode/plate/react';
 
-import { type TLinkElement, getLinkAttributes } from '../../lib';
+import { getLinkAttributes } from '../../lib';
 
 export const useLink = ({ element }: { element: TLinkElement }) => {
   const editor = useEditorRef();

@@ -1,6 +1,9 @@
 /** @jsx jsxt */
 
-import { AlignPlugin } from '@udecode/plate-alignment/react';
+import {
+  BlockquotePlugin,
+  HeadingPlugin,
+} from '@udecode/plate-basic-nodes/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -9,16 +12,14 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+} from '@udecode/plate-basic-nodes/react';
+import { HighlightPlugin, KbdPlugin } from '@udecode/plate-basic-nodes/react';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
 import { SoftBreakPlugin } from '@udecode/plate-break/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
-import { HeadingPlugin } from '@udecode/plate-heading/react';
-import { HighlightPlugin } from '@udecode/plate-highlight/react';
-import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { ListPlugin } from '@udecode/plate-list/react';
+import { ListPlugin } from '@udecode/plate-list-classic/react';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { getHtmlDocument, jsxt } from '@udecode/plate-test-utils';
@@ -211,7 +212,7 @@ describe('when deserializing all plugins', () => {
             MediaEmbedPlugin,
             FindReplacePlugin,
             SoftBreakPlugin,
-            AlignPlugin,
+            TextAlignPlugin,
             BoldPlugin,
             HighlightPlugin,
             CodePlugin,

@@ -2,7 +2,7 @@
 
 import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'www/src/registry/components/editor/plugins/autoformat-plugin';
+import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
 
 jsxt;
 
@@ -29,7 +29,7 @@ describe('when --space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -60,7 +60,7 @@ describe('when --space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -91,7 +91,7 @@ describe('when --space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -124,7 +124,7 @@ describe('when (tm)', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -157,7 +157,7 @@ describe('when &sect', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -190,7 +190,7 @@ describe('when //', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -233,7 +233,7 @@ describe('when typing %%%', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -266,7 +266,7 @@ describe('when using quotes', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        autoformatPlugin.configure({
+        AutoformatKit[0].configure({
           options: {
             rules: [
               {

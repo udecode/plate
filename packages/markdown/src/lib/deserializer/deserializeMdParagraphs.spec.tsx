@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { createSlateEditor } from '@udecode/plate';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
 import { BaseSuggestionPlugin } from '@udecode/plate-suggestion';
 import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
 import { jsxt } from '@udecode/plate-test-utils';

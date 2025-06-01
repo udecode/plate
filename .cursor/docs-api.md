@@ -198,7 +198,7 @@ export function APIItem({
                 href={`#${id}`}
               >
                 <div className="absolute -left-5 top-2 pr-1 leading-none">
-                  <Icons.pragma className="size-4 text-muted-foreground" />
+                  <Icons.pragma className="text-muted-foreground size-4" />
                 </div>
               </a>
             )}
@@ -211,7 +211,7 @@ export function APIItem({
                 REQUIRED
               </span>
             )}
-            <span className="text-left font-mono text-sm font-medium leading-none text-muted-foreground">
+            <span className="text-muted-foreground text-left font-mono text-sm font-medium leading-none">
               {!required && optional && ' optional'} {type}
             </span>
           </h4>
@@ -304,7 +304,7 @@ export function APIList({
     <APIContext.Provider value={{ listType, name }}>
       <section className="flex w-full flex-col items-center">
         <div className="w-full">
-          <div className="mt-10 pb-3 ">
+          <div className="mt-10 pb-3">
             <div className="mt-5 flex items-center justify-between pb-4">
               <h3
                 id={id}
@@ -319,7 +319,7 @@ export function APIList({
                     href={`#${id}`}
                   >
                     <div className="absolute -left-5 top-0 pr-1 leading-none">
-                      <Icons.pragma className="size-4 text-muted-foreground" />
+                      <Icons.pragma className="text-muted-foreground size-4" />
                     </div>
                   </a>
                 )}
@@ -332,7 +332,7 @@ export function APIList({
                 {listType === 'options' && 'Options'}
 
                 {type && (
-                  <span className="ml-2 font-mono text-sm font-medium text-muted-foreground">
+                  <span className="text-muted-foreground ml-2 font-mono text-sm font-medium">
                     {type}
                   </span>
                 )}
@@ -340,7 +340,7 @@ export function APIList({
 
               {hasItems && (
                 <div
-                  className="cursor-pointer select-none text-sm text-muted-foreground"
+                  className="text-muted-foreground cursor-pointer select-none text-sm"
                   onClick={() => {
                     values.length === childCount
                       ? setValues([])
@@ -373,7 +373,7 @@ export function APIList({
               ) : childCount > 0 ? (
                 children
               ) : (
-                <div className="py-4 text-sm text-muted-foreground">
+                <div className="text-muted-foreground py-4 text-sm">
                   No parameters.
                 </div>
               )}
@@ -410,7 +410,7 @@ export function APISubListItem({
     : undefined;
 
   return (
-    <div className="border-t border-t-border p-3">
+    <div className="border-t-border border-t p-3">
       <h4 className="relative py-2 font-mono font-semibold tracking-tight">
         {id && (
           <a
@@ -421,11 +421,11 @@ export function APISubListItem({
             href={`#${id}`}
           >
             <div className="absolute -left-5 top-2 pr-1 leading-none">
-              <Icons.pragma className="size-4 text-muted-foreground" />
+              <Icons.pragma className="text-muted-foreground size-4" />
             </div>
           </a>
         )}
-        <span className="font-semibold leading-none text-muted-foreground">
+        <span className="text-muted-foreground font-semibold leading-none">
           {parent}.
         </span>
         <span className="font-semibold leading-none">{name}</span>
@@ -435,7 +435,7 @@ export function APISubListItem({
             REQUIRED
           </span>
         )}
-        <span className="text-left font-mono text-sm font-medium leading-none text-muted-foreground group-hover:no-underline">
+        <span className="text-muted-foreground text-left font-mono text-sm font-medium leading-none group-hover:no-underline">
           {!required && optional && ' optional'} {type}
         </span>
       </h4>

@@ -2,7 +2,7 @@
 
 import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'www/src/registry/components/editor/plugins/autoformat-plugin';
+import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
 
 jsxt;
 
@@ -28,7 +28,7 @@ const output = (
 
 it('should autoformat', () => {
   const editor = createSlateEditor({
-    plugins: [autoformatPlugin],
+    plugins: AutoformatKit,
     value: input,
   });
 

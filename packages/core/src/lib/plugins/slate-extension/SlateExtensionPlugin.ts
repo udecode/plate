@@ -1,9 +1,15 @@
-import type { Descendant, TRange, Value } from '@udecode/slate';
+import {
+  type Descendant,
+  type TRange,
+  type TText,
+  type Value,
+  NodeApi,
+} from '@udecode/slate';
 
 import type { CreateSlateEditorOptions } from '../../editor';
 
 import { pipeNormalizeInitialValue } from '../../../internal/plugin/pipeNormalizeInitialValue';
-import { createSlatePlugin } from '../../plugin';
+import { createSlatePlugin, getPluginTypes } from '../../plugin';
 import { BaseParagraphPlugin } from '../paragraph';
 
 export type InitOptions = Pick<
@@ -18,7 +24,7 @@ export const SlateExtensionPlugin = createSlatePlugin({
   .overrideEditor(
     ({
       editor,
-      tf: { apply, deleteBackward, deleteForward, deleteFragment },
+      tf: { apply, deleteBackward, deleteForward, deleteFragment, insertText },
     }) => {
       const resetMarks = () => {
         if (editor.api.isAt({ start: true })) {
@@ -26,12 +32,17 @@ export const SlateExtensionPlugin = createSlatePlugin({
         }
       };
 
+      const clearOnBoundaryMarks = getPluginTypes(
+        editor,
+        editor.meta.pluginKeys.node.clearOnBoundary
+      );
+
       return {
         api: {
           create: {
             block: (node) => ({
               children: [{ text: '' }],
-              type: editor.getType(BaseParagraphPlugin),
+              type: editor.getType(BaseParagraphPlugin.key),
               ...node,
             }),
           },
@@ -40,9 +51,9 @@ export const SlateExtensionPlugin = createSlatePlugin({
           apply(operation) {
             if (operation.type === 'set_selection') {
               const { properties } = operation;
-              editor.prevSelection = properties as TRange | null;
+              editor.dom.prevSelection = properties as TRange | null;
               apply(operation);
-              editor.currentKeyboardEvent = null;
+              editor.dom.currentKeyboardEvent = null;
 
               return;
             }
@@ -60,6 +71,72 @@ export const SlateExtensionPlugin = createSlatePlugin({
           deleteFragment(options) {
             deleteFragment(options);
             resetMarks();
+          },
+          insertText(text, options) {
+            const apply = () => {
+              if (
+                editor.meta.pluginKeys.node.clearOnBoundary.length === 0 ||
+                !editor.selection ||
+                editor.api.isExpanded()
+              ) {
+                return;
+              }
+
+              const textPath = editor.selection.focus.path;
+              const textNode = NodeApi.get<TText>(editor, textPath);
+
+              if (!textNode) {
+                return;
+              }
+
+              const isMarked = clearOnBoundaryMarks.some(
+                (key) => !!textNode[key]
+              );
+
+              if (
+                !isMarked ||
+                !editor.api.isEnd(editor.selection.focus, textPath)
+              ) {
+                return;
+              }
+
+              const nextPoint = editor.api.start(textPath, { next: true });
+              const marksToRemove: string[] = [];
+
+              // Get next text node once outside the loop
+              let nextTextNode: TText | null = null;
+              if (nextPoint) {
+                const nextTextPath = nextPoint.path;
+                nextTextNode = NodeApi.get<TText>(editor, nextTextPath) || null;
+              }
+
+              // Check each mark individually
+              for (const markKey of clearOnBoundaryMarks) {
+                if (!textNode[markKey]) {
+                  continue; // Skip marks not present on current node
+                }
+
+                const isBetweenSameMarks =
+                  nextTextNode && nextTextNode[markKey];
+
+                if (!isBetweenSameMarks) {
+                  marksToRemove.push(markKey);
+                }
+              }
+
+              if (marksToRemove.length > 0) {
+                editor.tf.removeMarks(marksToRemove);
+                insertText(text, options);
+
+                return true;
+              }
+            };
+
+            if (apply()) {
+              return;
+            }
+
+            return insertText(text, options);
           },
         },
       };

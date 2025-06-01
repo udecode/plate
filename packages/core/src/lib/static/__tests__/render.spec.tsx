@@ -39,10 +39,10 @@ describe('serializePlateStatic nodes', () => {
           type: 'p',
         },
       ],
+      components,
     });
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
       stripDataAttributes: true,
@@ -70,7 +70,6 @@ describe('serializePlateStatic nodes', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
       // stripDataAttributes: true,
@@ -111,15 +110,15 @@ describe('serializePlateStatic nodes', () => {
           type: 'p',
         },
       ],
-    });
-
-    const html = await serializeHtml(editor, {
       components: {
         ...components,
         test: ({ children }) => (
           <span data-slate-test="node-wrapper">{children}</span>
         ),
       },
+    });
+
+    const html = await serializeHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -151,15 +150,15 @@ describe('serializePlateStatic nodes', () => {
           type: 'p',
         },
       ],
-    });
-
-    const html = await serializeHtml(editor, {
       components: {
         ...components,
         test: ({ children }) => (
           <span data-slate-test="leaf-wrapper">{children}</span>
         ),
       },
+    });
+
+    const html = await serializeHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -191,15 +190,15 @@ describe('serializePlateStatic nodes', () => {
           type: 'p',
         },
       ],
-    });
-
-    const html = await serializeHtml(editor, {
       components: {
         ...components,
         test: ({ children }) => (
           <span data-slate-test="node-wrapper">{children}</span>
         ),
       },
+    });
+
+    const html = await serializeHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
     });

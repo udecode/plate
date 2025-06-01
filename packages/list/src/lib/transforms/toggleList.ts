@@ -1,172 +1,134 @@
-import {
-  type SlateEditor,
-  type TElement,
-  BaseParagraphPlugin,
-  ElementApi,
-  NodeApi,
-  RangeApi,
+import type {
+  ElementEntryOf,
+  ElementOf,
+  SlateEditor,
+  TElement,
 } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
+
+import type { ListOptions } from './indentList';
+
+import { BaseListPlugin } from '../BaseListPlugin';
 import {
-  BaseBulletedListPlugin,
-  BaseListItemContentPlugin,
-  BaseListItemPlugin,
-  BaseListPlugin,
-  BaseNumberedListPlugin,
-} from '../BaseListPlugin';
-import { getListItemEntry, getListTypes } from '../queries/index';
-import { unwrapList } from './unwrapList';
+  type GetSiblingListOptions,
+  getListAbove,
+  getPreviousList,
+} from '../queries';
+import { areEqListStyleType } from '../queries/areEqListStyleType';
+import { setListNodes } from './setListNodes';
+import { setListSiblingNodes } from './setListSiblingNodes';
+import { toggleListSet } from './toggleListSet';
+import { toggleListUnset } from './toggleListUnset';
 
-export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
-  editor.tf.withoutNormalizing(() => {
-    if (!editor.selection) {
-      return;
+/** Toggle indent list. */
+export const toggleList = <
+  N extends ElementOf<E>,
+  E extends SlateEditor = SlateEditor,
+>(
+  editor: E,
+  options: ListOptions,
+  getSiblingListOptions?: GetSiblingListOptions<N, E>
+) => {
+  const { listRestart, listRestartPolite, listStyleType } = options;
+
+  /**
+   * True - One or more blocks were converted to lists or changed such that they
+   * remain lists.
+   *
+   * False - One or more list blocks were unset.
+   *
+   * Null - No action was taken.
+   */
+  const setList = ((): boolean | null => {
+    const { getSiblingListOptions: _getSiblingListOptions } =
+      editor.getOptions(BaseListPlugin);
+
+    if (editor.api.isCollapsed()) {
+      const entry = editor.api.block<TElement>();
+
+      if (!entry) return null;
+      if (toggleListSet(editor, entry, options)) {
+        return true;
+      }
+      if (toggleListUnset(editor, entry, { listStyleType })) {
+        return false;
+      }
+
+      setListSiblingNodes(editor, entry as ElementEntryOf<E>, {
+        getSiblingListOptions: {
+          ..._getSiblingListOptions,
+          ...getSiblingListOptions,
+        } as GetSiblingListOptions<ElementOf<E>, E>,
+        listStyleType,
+      });
+
+      return true;
+    }
+    if (editor.api.isExpanded()) {
+      const _entries = editor.api.nodes<TElement>({ block: true });
+      const entries = [..._entries];
+
+      const eqListStyleType = areEqListStyleType(editor, entries, {
+        listStyleType,
+      });
+
+      if (eqListStyleType) {
+        editor.tf.withoutNormalizing(() => {
+          entries.forEach((entry) => {
+            const [node, path] = entry;
+
+            const indent = node[KEYS.indent] as number;
+
+            editor.tf.unsetNodes(KEYS.listType, { at: path });
+
+            if (indent > 1) {
+              editor.tf.setNodes({ [KEYS.indent]: indent - 1 }, { at: path });
+            } else {
+              editor.tf.unsetNodes([KEYS.indent, KEYS.listChecked], {
+                at: path,
+              });
+            }
+            // setListNode(editor, {
+            //   listStyleType,
+            //   indent: node[KEYS.indent],
+            //   at: path,
+            // });
+          });
+        });
+
+        return false;
+      }
+
+      setListNodes(editor, entries, { listStyleType });
+      return true;
     }
 
-    const { validLiChildrenTypes } = editor.getOptions(BaseListPlugin);
+    return null;
+  })();
 
-    if (editor.api.isCollapsed() || !editor.api.isAt({ blocks: true })) {
-      // selection is collapsed
-      const res = getListItemEntry(editor);
+  // Apply listRestart or listRestartPolite if applicable
+  const restartValue = listRestart || listRestartPolite;
+  const isRestart = !!listRestart;
 
-      if (res) {
-        const { list } = res;
+  if (setList && restartValue) {
+    const atStart = editor.api.start(editor.selection!);
+    const entry = getListAbove(editor, { at: atStart });
+    if (!entry) return;
 
-        if (list[0].type === type) {
-          unwrapList(editor);
-        } else {
-          editor.tf.setNodes(
-            { type },
-            {
-              at: editor.selection,
-              mode: 'lowest',
-              match: (n) =>
-                ElementApi.isElement(n) &&
-                getListTypes(editor).includes(n.type),
-            }
-          );
-        }
-      } else {
-        const list = { children: [], type };
-        editor.tf.wrapNodes<TElement>(list);
+    const isFirst = !getPreviousList(editor, entry);
 
-        const _nodes = editor.api.nodes({
-          match: { type: editor.getType(BaseParagraphPlugin) },
-        });
-        const nodes = Array.from(_nodes);
+    /**
+     * Only apply listRestartPolite if this is the first item and restartValue >
+     * 1.
+     */
+    if (!isRestart && (!isFirst || restartValue <= 0)) return;
 
-        const blockAbove = editor.api.block({
-          match: { type: validLiChildrenTypes },
-        });
+    // If restartValue is 1, only apply listRestart if this is not the first
+    if (isRestart && restartValue === 1 && isFirst) return;
 
-        if (!blockAbove) {
-          editor.tf.setNodes({
-            type: editor.getType(BaseListItemContentPlugin),
-          });
-        }
+    const prop = isRestart ? KEYS.listRestart : KEYS.listRestartPolite;
 
-        const listItem = {
-          children: [],
-          type: editor.getType(BaseListItemPlugin),
-        };
-
-        for (const [, path] of nodes) {
-          editor.tf.wrapNodes<TElement>(listItem, {
-            at: path,
-          });
-        }
-      }
-    } else {
-      // selection is a range
-
-      const [startPoint, endPoint] = RangeApi.edges(editor.selection!);
-      const commonEntry = NodeApi.common<TElement>(
-        editor,
-        startPoint.path,
-        endPoint.path
-      )!;
-
-      if (
-        getListTypes(editor).includes(commonEntry[0].type) ||
-        (commonEntry[0] as TElement).type === editor.getType(BaseListItemPlugin)
-      ) {
-        if ((commonEntry[0] as TElement).type === type) {
-          unwrapList(editor);
-        } else {
-          const startList = editor.api.node({
-            at: RangeApi.start(editor.selection),
-            match: { type: getListTypes(editor) },
-            mode: 'lowest',
-          });
-          const endList = editor.api.node({
-            at: RangeApi.end(editor.selection),
-            match: { type: getListTypes(editor) },
-            mode: 'lowest',
-          });
-          const rangeLength = Math.min(
-            startList![1].length,
-            endList![1].length
-          );
-
-          editor.tf.setNodes(
-            { type },
-            {
-              at: editor.selection,
-              mode: 'all',
-              match: (n, path) =>
-                ElementApi.isElement(n) &&
-                getListTypes(editor).includes(n.type) &&
-                path.length >= rangeLength,
-            }
-          );
-        }
-      } else {
-        const rootPathLength = commonEntry[1].length;
-        const _nodes = editor.api.nodes<TElement>({
-          mode: 'all',
-        });
-        const nodes = Array.from(_nodes).filter(
-          ([, path]) => path.length === rootPathLength + 1
-        );
-
-        nodes.forEach((n) => {
-          if (getListTypes(editor).includes(n[0].type)) {
-            editor.tf.setNodes(
-              { type },
-              {
-                at: n[1],
-                mode: 'all',
-                match: (_n) =>
-                  ElementApi.isElement(_n) &&
-                  getListTypes(editor).includes(_n.type),
-              }
-            );
-          } else {
-            if (!validLiChildrenTypes?.includes(n[0].type)) {
-              editor.tf.setNodes(
-                { type: editor.getType(BaseListItemContentPlugin) },
-                { at: n[1] }
-              );
-            }
-
-            const listItem = {
-              children: [],
-              type: editor.getType(BaseListItemPlugin),
-            };
-            editor.tf.wrapNodes<TElement>(listItem, {
-              at: n[1],
-            });
-
-            const list = { children: [], type };
-            editor.tf.wrapNodes<TElement>(list, { at: n[1] });
-          }
-        });
-      }
-    }
-  });
-
-export const toggleBulletedList = (editor: SlateEditor) =>
-  toggleList(editor, { type: editor.getType(BaseBulletedListPlugin) });
-
-export const toggleNumberedList = (editor: SlateEditor) =>
-  toggleList(editor, { type: editor.getType(BaseNumberedListPlugin) });
+    editor.tf.setNodes({ [prop]: restartValue }, { at: entry[1] });
+  }
+};

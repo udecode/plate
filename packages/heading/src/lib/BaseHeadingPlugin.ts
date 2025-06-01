@@ -3,9 +3,8 @@ import {
   type SlatePlugin,
   createSlatePlugin,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
-
-import { HEADING_LEVELS } from './constants';
 
 export type HeadingConfig = PluginConfig<
   'heading',
@@ -36,7 +35,7 @@ export const BaseHeadingPlugin = createTSlatePlugin<HeadingConfig>({
 
   headingLevels.forEach((level) => {
     const plugin: SlatePlugin = createSlatePlugin({
-      key: HEADING_LEVELS[level - 1],
+      key: KEYS.heading[level - 1],
       node: { isElement: true },
       parsers: {
         html: {
@@ -49,6 +48,7 @@ export const BaseHeadingPlugin = createTSlatePlugin<HeadingConfig>({
           },
         },
       },
+      render: { as: `h${level}` as any },
     });
 
     plugins.push(plugin);

@@ -1,4 +1,4 @@
-import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
 
 import { createPlateEditor } from '../../../../react/editor/withPlate';
 import { type HtmlDeserializer, createSlatePlugin } from '../../../plugin';

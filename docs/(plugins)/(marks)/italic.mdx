@@ -1,0 +1,49 @@
+---
+title: Italic
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Apply italic formatting for emphasis or stylistic purposes
+- Keyboard shortcut support for quick formatting
+- Renders as `<em>` HTML element by default
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-nodes
+```
+
+## Usage
+
+```tsx
+import { ItalicPlugin } from '@udecode/plate-basic-nodes/react';
+
+const plugins = [
+  // ...otherPlugins,
+  ItalicPlugin,
+];
+```
+
+## Plugins
+
+### `ItalicPlugin`
+
+Plugin for italic text formatting. Renders as `<em>` HTML element by default.
+
+## Transforms
+
+### `tf.italic.toggle`
+
+Toggles the italic formatting for the selected text.
+
+Default Shortcut: `Cmd + I`

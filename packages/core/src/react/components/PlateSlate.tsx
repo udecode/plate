@@ -25,12 +25,11 @@ export function PlateSlate({
     <Slate {...(slateProps as any)}>{children}</Slate>
   );
 
-  editor.pluginList?.forEach((plugin) => {
-    const {
-      render: { aboveSlate: AboveSlate },
-    } = plugin;
+  editor.meta.pluginKeys.render.aboveSlate.forEach((key) => {
+    const plugin = editor.plugins[key];
+    const AboveSlate = plugin.render.aboveSlate!;
 
-    if (AboveSlate) aboveSlate = <AboveSlate>{aboveSlate}</AboveSlate>;
+    aboveSlate = <AboveSlate>{aboveSlate}</AboveSlate>;
   });
 
   return aboveSlate;

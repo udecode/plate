@@ -1,0 +1,73 @@
+---
+title: 基础元素
+docs:
+  - route: /docs/components/blockquote-element
+    title: 引用块元素
+  - route: /docs/components/heading-element
+    title: 标题元素
+---
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 包含常用的块元素：引用块、代码块和标题。
+
+</PackageInfo>
+
+## 插件
+
+- `BlockquotePlugin` 用于 `blockquote` 元素
+- `HeadingPlugin` 用于 `h1`, `h2`,... 元素
+
+## 安装
+
+```bash
+npm install @udecode/plate-basic-nodes
+```
+
+## 使用
+
+### 基本设置
+
+```tsx
+import { BasicBlocksPlugin } from '@udecode/plate-basic-nodes/react';
+
+const plugins = [
+  // ...其他插件
+  BasicBlocksPlugin
+];
+```
+
+## 快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Opt + 1">切换为一级标题。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 2">切换为二级标题。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Opt + 3">切换为三级标题。</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + .">
+    切换选中文本的引用块格式。
+  </KeyTableItem>
+</KeyTable>
+
+## 插件
+
+### `BasicBlocksPlugin`
+
+包含所有基础元素插件的插件。
+
+### `BlockquotePlugin`
+
+用于引用块元素的插件。
+
+### `HeadingPlugin`
+
+<API name="HeadingPlugin">
+<APIOptions>
+  <APIItem name="levels" type="number" optional>
+    指定支持的标题级别，范围从 1 到指定级别。
+  </APIItem>
+</APIOptions>
+</API>

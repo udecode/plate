@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "examples-editable-voids-docs",
+  "type": "registry:file",
+  "title": "Editable Voids",
+  "description": "Documentation for Editable Voids",
+  "files": [
+    {
+      "path": "../../docs/examples/editable-voids.mdx",
+      "content": "---\ntitle: Editable Voids\n---\n\n<ComponentPreview name=\"editable-voids-demo\" />\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/examples/editable-voids.mdx"
+    }
+  ]
+}

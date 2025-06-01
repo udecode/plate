@@ -49,11 +49,6 @@
     "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
-  "dependencies": {
-    "@udecode/plate-block-quote": "48.0.0",
-    "@udecode/plate-code-block": "48.0.0",
-    "@udecode/plate-heading": "48.0.0"
-  },
   "devDependencies": {
     "@udecode/plate": "workspace:^"
   },

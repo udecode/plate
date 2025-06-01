@@ -1,9 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
-import { isHotkey } from '@udecode/plate';
+import { type TEquationElement, isHotkey } from '@udecode/plate';
 import { useEditorRef, useElement } from '@udecode/plate/react';
-
-import type { TEquationElement } from '../../lib';
 
 export const useEquationInput = ({
   isInline,

@@ -2,7 +2,7 @@
 
 import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
-import { autoformatPlugin } from 'www/src/registry/components/editor/plugins/autoformat-plugin';
+import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
 
 import type { AutoformatBlockRule } from '../../../types';
 
@@ -12,6 +12,8 @@ import {
 } from '../../../BaseAutoformatPlugin';
 
 jsxt;
+
+const autoformatPlugin = AutoformatKit[0];
 
 describe('when -space', () => {
   it('should format to ul', () => {
@@ -36,7 +38,7 @@ describe('when -space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -69,7 +71,7 @@ describe('when 1.space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -98,7 +100,7 @@ describe('when [].space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 
@@ -127,7 +129,7 @@ describe('when [x].space', () => {
     ) as any;
 
     const editor = createSlateEditor({
-      plugins: [autoformatPlugin],
+      plugins: AutoformatKit,
       value: input,
     });
 

@@ -2,7 +2,11 @@ import { exec } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { rimraf } from 'rimraf';
-import { registryItemSchema, type Registry } from 'shadcn/registry';
+import {
+  RegistryItem,
+  registryItemSchema,
+  type Registry,
+} from 'shadcn/registry';
 import { z } from 'zod';
 
 import { registryBlocks } from '@/registry/registry-blocks';
@@ -20,6 +24,7 @@ const NAME = 'plate';
 const BASE_URL = 'src/';
 
 const isDev = process.env.NODE_ENV === 'development';
+const MERGE_DOCS = true;
 const REGISTRY_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
 const TARGET = isDev ? 'public/rd/registry.json' : 'public/r/registry.json';
 
@@ -31,7 +36,13 @@ const registry: Registry = {
       ...registryInit,
       ...registryUI,
       ...registryComponents,
-      ...registryBlocks,
+      ...registryBlocks.map((block) => ({
+        ...block,
+        registryDependencies: [
+          'plate-ui',
+          ...(block.registryDependencies ?? []),
+        ],
+      })),
       ...registryLib,
       ...registryStyles,
       ...registryHooks,
@@ -108,7 +119,7 @@ export const Index: Record<string, any> = {`;
   );
 }
 
-function sanitizeRegistry(registry: Registry) {
+function sanitizeRegistry(registry: Registry): Registry {
   return {
     ...registry,
     items: registry.items
@@ -130,23 +141,26 @@ function sanitizeRegistry(registry: Registry) {
   };
 }
 
-async function buildRegistryJsonFile() {
+async function buildRegistryJsonFile(items: RegistryItem[] = []) {
   // 1. Fix the path for registry items.
   const fixedRegistry = sanitizeRegistry(registry);
 
-  if (!isDev) {
-    // 2. Clean up the entire public/r directory first
-    rimraf.sync(path.join(process.cwd(), 'public/r'));
-  }
-
   // 3. Write the content of the registry to `registry.json` and public folder
-  const registryJson = JSON.stringify(fixedRegistry, null, 2);
+  let registryJson = fixedRegistry;
+
+  registryJson = {
+    ...fixedRegistry,
+    items: [...fixedRegistry.items, ...items],
+  };
 
   // Create directories if they don't exist
   const publicTargetDir = path.dirname(path.join(process.cwd(), TARGET));
 
   await fs.mkdir(publicTargetDir, { recursive: true });
-  await fs.writeFile(path.join(process.cwd(), TARGET), registryJson);
+  await fs.writeFile(
+    path.join(process.cwd(), TARGET),
+    JSON.stringify(registryJson, null, 2)
+  );
 }
 
 async function buildRegistry() {
@@ -169,13 +183,21 @@ try {
   if (!isDev) {
     console.info('🗂️ Building registry/__index__.tsx...');
     await buildRegistryIndex();
+
+    // Clean up the entire public/r directory first
+    rimraf.sync(path.join(process.cwd(), 'public/r'));
   }
 
-  console.info('💅 Building registry.json...');
-  await buildRegistryJsonFile();
+  console.info('📖 Building registry-docs.json...');
+  const docsItems = await buildDocsRegistry();
 
-  console.info('📖 Building docs.json...');
-  await buildDocsRegistry();
+  console.info('💅 Building registry.json...');
+  if (MERGE_DOCS) {
+    console.info('🔄 Merging docs into registry.json');
+    await buildRegistryJsonFile(docsItems);
+  } else {
+    await buildRegistryJsonFile();
+  }
 
   console.info(`🏗️ Building ${TARGET.replace('/registry.json', '')}...`);
   await buildRegistry();

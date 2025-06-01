@@ -1,12 +1,14 @@
 import React from 'react';
 
+import type { TTableCellElement } from '@udecode/plate';
+
 import {
   useEditorPlugin,
   useElement,
   usePluginOption,
 } from '@udecode/plate/react';
 
-import type { BorderStylesDefault, TTableCellElement } from '../../../lib';
+import type { BorderStylesDefault } from '../../../lib';
 
 import { useCellIndices } from '../../hooks/useCellIndices';
 import { useTableValue } from '../../stores';

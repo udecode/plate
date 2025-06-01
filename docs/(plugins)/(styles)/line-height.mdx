@@ -1,0 +1,56 @@
+---
+title: Line Height
+docs:
+  - route: /docs/components/line-height-toolbar-button
+    title: Line Height Toolbar Button
+---
+
+<ComponentPreview name="line-height-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Set line height for selected blocks.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-basic-styles
+```
+
+## Usage
+
+```tsx
+import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
+
+const plugins = [
+  // ...otherPlugins,
+  LineHeightPlugin,
+];
+```
+
+## Plugins
+
+### `LineHeightPlugin`
+
+Plugin for setting line height on blocks.
+
+## Transforms
+
+### `tf.lineHeight.setNodes`
+
+Sets the line height for selected nodes in the editor.
+
+<API name="tf.lineHeight.setNodes">
+<APIParameters>
+<APIItem name="value" type="number">
+The line height value.
+</APIItem>
+<APIItem name="options" type="SetNodesOptions" optional>
+Options for the `setNodes` function.
+</APIItem>
+</APIParameters>
+</API>

@@ -11,6 +11,7 @@ export type PlateChangeKey =
   | 'versionValue';
 
 export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
+  composing: boolean;
   decorate: NonNullable<(options: { editor: E; entry: NodeEntry }) => TRange[]>;
   /** Whether `Editable` is rendered so slate DOM is resolvable. */
   isMounted: boolean;

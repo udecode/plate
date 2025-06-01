@@ -1,6 +1,11 @@
 import React from 'react';
 
 import {
+  type TMediaElement,
+  type TResizableElement,
+  KEYS,
+} from '@udecode/plate';
+import {
   useEditorRef,
   useElement,
   useFocused,
@@ -8,10 +13,7 @@ import {
   useSelected,
 } from '@udecode/plate/react';
 
-import type { TMediaElement } from '../../lib/media/types';
-
-import { BaseVideoPlugin } from '../../lib';
-import { BaseMediaEmbedPlugin, VIDEO_PROVIDERS } from '../../lib/media-embed';
+import { VIDEO_PROVIDERS } from '../../lib/media-embed';
 import {
   type EmbedUrlParser,
   parseMediaUrl,
@@ -23,7 +25,7 @@ export const useMediaState = ({
   urlParsers?: EmbedUrlParser[];
 } = {}) => {
   const editor = useEditorRef();
-  const element = useElement<TMediaElement>();
+  const element = useElement<TMediaElement & TResizableElement>();
   const focused = useFocused();
   const selected = useSelected();
   const readOnly = useReadOnly();
@@ -33,8 +35,8 @@ export const useMediaState = ({
   const embed = React.useMemo(() => {
     if (
       !urlParsers ||
-      (type !== editor.getType(BaseVideoPlugin) &&
-        type !== editor.getType(BaseMediaEmbedPlugin))
+      (type !== editor.getType(KEYS.video) &&
+        type !== editor.getType(KEYS.mediaEmbed))
     )
       return;
 

@@ -2,7 +2,13 @@ import React, { useCallback, useState } from 'react';
 
 import type { TextareaAutosizeProps } from 'react-textarea-autosize';
 
-import { type TElement, isHotkey, NodeApi, PathApi } from '@udecode/plate';
+import {
+  type TCaptionElement,
+  type TElement,
+  isHotkey,
+  NodeApi,
+  PathApi,
+} from '@udecode/plate';
 import {
   createPrimitiveComponent,
   useEditorRef,
@@ -10,8 +16,6 @@ import {
   usePluginOption,
   useReadOnly,
 } from '@udecode/plate/react';
-
-import type { TCaptionElement } from '../../lib';
 
 import { CaptionPlugin } from '../CaptionPlugin';
 import { TextareaAutosize } from './TextareaAutosize';

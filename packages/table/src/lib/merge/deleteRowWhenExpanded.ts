@@ -1,12 +1,13 @@
-import {
-  type NodeEntry,
-  type PathRef,
-  type SlateEditor,
-  getEditorPlugin,
+import type {
+  NodeEntry,
+  PathRef,
+  SlateEditor,
+  TTableCellElement,
 } from '@udecode/plate';
 
+import { getEditorPlugin } from '@udecode/plate';
+
 import {
-  type TTableCellElement,
   BaseTablePlugin,
   getCellRowIndexByPath,
   getTableMergedColumnCount,

@@ -2,10 +2,13 @@
 
 import { type SlateEditor, createSlateEditor } from '@udecode/plate';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { BulletedListPlugin, ListItemPlugin } from '@udecode/plate-list/react';
 import { jsxt } from '@udecode/plate-test-utils';
 import { ParagraphPlugin } from '@udecode/plate/react';
 
+import {
+  BulletedListPlugin,
+  ListItemPlugin,
+} from '../../../list-classic/dist/react';
 import { NodeIdPlugin } from './NodeIdPlugin';
 
 jsxt;

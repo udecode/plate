@@ -1,8 +1,10 @@
-import { type OverrideEditor, ElementApi } from '@udecode/plate';
-
-import type { TColumnElement, TColumnGroupElement } from './types';
-
-import { BaseColumnItemPlugin, BaseColumnPlugin } from './BaseColumnPlugin';
+import {
+  type OverrideEditor,
+  type TColumnElement,
+  type TColumnGroupElement,
+  ElementApi,
+} from '@udecode/plate';
+import { KEYS } from '@udecode/plate';
 
 export const withColumn: OverrideEditor = ({
   editor,
@@ -12,8 +14,7 @@ export const withColumn: OverrideEditor = ({
     deleteBackward(unit) {
       if (editor.api.isCollapsed()) {
         const entry = editor.api.above({
-          match: (n) =>
-            ElementApi.isElement(n) && n.type === BaseColumnItemPlugin.key,
+          match: (n) => ElementApi.isElement(n) && n.type === KEYS.column,
         });
 
         if (entry) {
@@ -32,7 +33,7 @@ export const withColumn: OverrideEditor = ({
 
     normalizeNode([n, path]) {
       // If it's a column group, ensure it has valid children
-      if (ElementApi.isElement(n) && n.type === BaseColumnPlugin.key) {
+      if (ElementApi.isElement(n) && n.type === KEYS.columnGroup) {
         const node = n as TColumnGroupElement;
 
         // If no columns found, unwrap the column group
@@ -40,7 +41,7 @@ export const withColumn: OverrideEditor = ({
           !node.children.some(
             (child) =>
               ElementApi.isElement(child) &&
-              child.type === editor.getType(BaseColumnItemPlugin)
+              child.type === editor.getType(KEYS.column)
           )
         ) {
           editor.tf.removeNodes({ at: path });
@@ -87,7 +88,7 @@ export const withColumn: OverrideEditor = ({
         });
       }
       // If it's a column, ensure it has at least one block (optional)
-      if (ElementApi.isElement(n) && n.type === BaseColumnItemPlugin.key) {
+      if (ElementApi.isElement(n) && n.type === KEYS.column) {
         const node = n as TColumnElement;
 
         if (node.children.length === 0) {

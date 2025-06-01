@@ -3,6 +3,7 @@ import {
   type PluginConfig,
   bindFirst,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import { removeAIMarks, undoAI } from './transforms';
@@ -23,7 +24,7 @@ export type BaseAIPluginConfig = PluginConfig<
 >;
 
 export const BaseAIPlugin = createTSlatePlugin({
-  key: 'ai',
+  key: KEYS.ai,
   node: { isDecoration: false, isLeaf: true },
 }).extendTransforms(({ editor }) => ({
   insertNodes: bindFirst(insertAINodes, editor),

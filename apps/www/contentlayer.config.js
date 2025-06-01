@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { getHighlighter } from '@shikijs/compat';
 import {
   defineDocumentType,
@@ -20,11 +21,13 @@ import 'dotenv/config';
 const computedFields = {
   slug: {
     type: 'string',
-    resolve: (doc) => `/docs/${doc._raw.flattenedPath}`,
+    resolve: (doc) =>
+      `/docs/${doc._raw.flattenedPath.replace(new RegExp('\\(([^)]*)\\\)\\/', 'g'), '')}`,
   },
   slugAsParams: {
     type: 'string',
-    resolve: (doc) => doc._raw.flattenedPath,
+    resolve: (doc) =>
+      doc._raw.flattenedPath.replace(new RegExp('\\(([^)]*)\\\)\\/', 'g'), ''),
   },
 };
 

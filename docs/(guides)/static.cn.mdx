@@ -1,0 +1,265 @@
+---
+title: 静态渲染
+description: Plate 的极简、memo 化、只读版本，支持 RSC/SSR。
+---
+
+`<PlateStatic>` 是一个**快速、只读**的 React 组件，用于渲染 Slate 内容，专为**服务端**或 **React Server Component** (RSC) 环境优化。它避免了客户端编辑逻辑，并通过节点 memo 提升性能，相比 [`<Plate>`](/docs/api/core/plate-components) 的只读模式更高效。
+
+它是 [`serializeHtml`](/docs/api/core/plate-plugin#serializehtml) 导出 HTML 的核心部分，非常适合任何需要非交互式、展示型 Plate 内容的服务端或 RSC 场景。
+
+## 主要优势
+
+-   **服务端安全：** 无浏览器 API 依赖，适用于 SSR/RSC。
+-   **无 Slate 编辑器开销：** 不包含选择、事件处理等交互特性。
+-   **Memo 化渲染：** 使用 `_memo` 和结构检查，仅重新渲染变更节点。
+-   **局部重渲染：** 文档某一部分变更不会导致全量重渲染。
+-   **轻量级：** 省略交互式编辑器代码，包体更小。
+
+## 何时使用 `<PlateStatic>`
+
+-   使用 [HTML 序列化](/docs/html) 生成 HTML。
+-   在 Next.js（尤其是 RSC）中展示服务端渲染预览。
+-   构建只读 Plate 内容的静态站点。
+-   优化性能敏感的只读视图。
+-   渲染 AI 流式内容。
+
+<Callout type="info" title="交互式 vs. 静态">
+  如需交互式只读特性（如评论弹窗、选择），请在浏览器中使用标准 `<Plate>` 组件。若仅需服务端渲染、非交互内容，推荐用 `<PlateStatic>`。
+</Callout>
+
+## 用法
+
+<Steps>
+
+### 创建 Slate 编辑器
+
+使用 `createSlateEditor` 和所需插件初始化 Slate 编辑器实例。这类似于交互式 `<Plate>` 组件的 `usePlateEditor`。
+
+```tsx title="lib/plate-static-editor.ts"
+import { createSlateEditor } from '@udecode/plate';
+// 导入你需要的基础插件（如 BaseHeadingPlugin、MarkdownPlugin）
+// 服务端环境请勿从 /react 子路径导入。
+
+const editor = createSlateEditor({
+  plugins: [
+    // 在此添加你的基础插件列表
+    // 示例：BaseHeadingPlugin, MarkdownPlugin.configure({...})
+  ],
+  value: [ // 示例初始值
+    {
+      type: 'p',
+      children: [{ text: 'Hello from a static Plate editor!' }],
+    },
+  ],
+});
+```
+
+### 定义静态节点组件
+
+如果你的交互式编辑器用到了客户端组件（如 `use client` 或事件处理），**必须**创建静态、服务端安全的等价组件。这些组件应只渲染纯 HTML，无浏览器相关逻辑。
+
+```tsx title="components/ui/paragraph-element-static.tsx"
+import React from 'react';
+import type { SlateElementProps } from '@udecode/plate';
+
+export function ParagraphElementStatic(props: SlateElementProps) {
+  return (
+    <SlateElement {...props}>
+      {props.children}
+    </SlateElement>
+  );
+}
+```
+为标题、图片、链接等也创建类似的静态组件。
+
+### 映射插件 key 到静态组件
+
+创建一个对象，将插件 key 或节点类型映射到对应的静态 React 组件。
+
+```ts title="components/static-components.ts"
+import { ParagraphElementStatic } from './ui/paragraph-element-static';
+import { HeadingElementStatic } from './ui/heading-element-static';
+// ... 导入其他静态组件
+
+export const staticComponents = {
+  p: ParagraphElementStatic,
+  h1: HeadingElementStatic,
+  // ... 为所有 element 和 leaf 类型添加映射
+};
+```
+
+### 渲染 `<PlateStatic>`
+
+使用 `<PlateStatic>` 组件，传入 `editor` 实例和你的 `components` 映射。
+
+```tsx title="app/my-static-page/page.tsx (RSC 示例)"
+import { PlateStatic } from '@udecode/plate';
+import { createSlateEditor } from '@udecode/plate';
+// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-nodes'; // 等等
+import { staticComponents } from '@/components/static-components';
+
+export default async function MyStaticPage() {
+  // 示例：获取或定义编辑器内容
+  const initialValue = [
+    { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
+    { type: 'p', children: [{ text: 'Content rendered statically.' }] },
+  ];
+
+  const editor = createSlateEditor({
+    plugins: [/* 你的基础插件 */],
+    value: initialValue,
+  });
+
+  return (
+    <PlateStatic
+      editor={editor}
+      components={staticComponents}
+      style={{ padding: 16 }}
+      className="my-plate-static-content"
+    />
+  );
+}
+```
+
+<Callout type="note" title="Value 覆盖">
+  如果你直接给 `<PlateStatic>` 传递 `value` 属性，会覆盖 `editor.children`。
+  ```tsx
+  <PlateStatic
+    editor={editor}
+    components={staticComponents}
+    value={[
+      { type: 'p', children: [{ text: 'Overridden content.' }] }
+    ]}
+  />
+  ```
+</Callout>
+
+### Memo 化细节
+
+`<PlateStatic>` 通过 memo 化提升性能：
+-   每个 `<ElementStatic>` 和 `<LeafStatic>` 都用 `React.memo` 包裹。
+-   **引用相等性：** 节点引用未变则不会重渲染。
+-   **`_memo` 字段：** 在 element 或 leaf 上设置 `node._memo = true`（或任意稳定值）可让 Plate 跳过该节点的重渲染，即使内容变了。这有助于精细控制更新。
+
+</Steps>
+
+## `PlateStatic` vs. `Plate` + `readOnly`
+
+| 方面                | `<PlateStatic>`                                       | `<Plate>` + `readOnly`                                 |
+| --------------------- | ----------------------------------------------------- | ------------------------------------------------------ |
+| **交互性**     | 无（服务端安全）                                      | 某些交互特性可用（仅浏览器）       |
+| **浏览器 API**      | 不使用，SSR/RSC 安全                            | 极少用，需客户端上下文            |
+| **性能**       | 针对静态渲染优化，极低开销      | 更重，包含更多编辑器内部                |
+| **局部重渲染** | 子树 memo 化高效更新              | 支持局部重渲染，但有客户端开销  |
+| **适用场景**         | 服务端渲染、HTML 序列化、静态预览 | 浏览器只读、需交互特性的场景 |
+| **推荐**    | SSR/RSC 无编辑或复杂交互     | 客户端只读且需交互    |
+
+## RSC/SSR 示例
+
+在 Next.js App Router（或类似 RSC 环境）中，`<PlateStatic>` 可直接用于 Server Components：
+
+```tsx title="app/preview/page.tsx (RSC)"
+import { PlateStatic } from '@udecode/plate';
+import { createSlateEditor } from '@udecode/plate';
+// 示例基础插件（确保非 /react 导入）
+// import { BaseHeadingPlugin } from '@udecode/plate-basic-nodes';
+import { staticComponents } from '@/components/static-components'; // 你的静态组件映射
+
+export default async function Page() {
+  // 服务端获取或定义内容
+  const serverContent = [
+    { type: 'h1', children: [{ text: 'Rendered on the Server! 🎉' }] },
+    { type: 'p', children: [{ text: 'This content is static and server-rendered.' }] },
+  ];
+
+  const editor = createSlateEditor({
+    // plugins: [BaseHeadingPlugin, /* ...other base plugins */],
+    plugins: [], // 添加你的基础插件
+    value: serverContent,
+  });
+
+  return (
+    <PlateStatic
+      editor={editor}
+      components={staticComponents}
+      className="my-static-preview-container"
+    />
+  );
+}
+```
+这样可在服务端将内容渲染为 HTML，无需为 `PlateStatic` 本身加载客户端 JS 包。
+
+## 搭配 `serializeHtml`
+
+如需生成完整 HTML 字符串（如用于邮件、PDF、外部系统），请用 `serializeHtml`。它内部会用 `<PlateStatic>`。
+
+```ts title="lib/html-serializer.ts"
+import { createSlateEditor, serializeHtml } from '@udecode/plate';
+import { staticComponents } from '@/components/static-components';
+// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-nodes';
+
+async function getDocumentAsHtml(value: any[]) {
+  const editor = createSlateEditor({
+    plugins: [/* ...你的基础插件... */],
+    value,
+  });
+
+  const html = await serializeHtml(editor, {
+    components: staticComponents,
+    // editorComponent: PlateStatic, // 可选，默认就是 PlateStatic
+    props: { className: 'prose max-w-none' }, // 示例：传递给根 div 的 props
+  });
+
+  return html;
+}
+
+// 示例用法：
+// const mySlateValue = [ { type: 'h1', children: [{ text: 'My Document' }] } ];
+// getDocumentAsHtml(mySlateValue).then(console.log);
+```
+更多细节见 [HTML 序列化指南](/docs/html)。
+
+## API 参考
+
+### `<PlateStatic>` Props
+
+```ts
+import type React from 'react';
+import type { Descendant } from 'slate';
+import type { PlateEditor, PlatePluginComponent } from '@udecode/plate/core'; // 按你的项目调整导入
+
+interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * 由 `createSlateEditor` 创建的 Slate 编辑器实例。
+   * 必须包含与内容相关的插件。
+   */
+  editor: PlateEditor;
+
+  /**
+   * 一个对象，将插件 key（或节点类型如 'p'、'h1'）
+   * 映射到对应的静态 React 组件。
+   */
+  components: Record<string, PlatePluginComponent>;
+
+  /**
+   * 可选的 Slate `Value`（`Descendant` 节点数组）。
+   * 如传入，则渲染该值，覆盖 `editor.children`。
+   */
+  value?: Descendant[];
+
+  /** 根 `div` 元素的内联 CSS 样式。 */
+  style?: React.CSSProperties;
+
+  // 也支持其他 HTMLDivElement 属性，如 `className`、`id` 等。
+}
+```
+
+-   **`editor`**：用 `createSlateEditor` 创建的 `PlateEditor` 实例。
+-   **`components`**：将节点类型（如 `'p'`、`'h1'`）或插件 key 映射到你的静态 React 组件。
+-   **`value`**：可选。如果传入，该 `Descendant` 节点数组会被渲染，覆盖当前 `editor.children`。
+
+## 下一步
+
+-   了解 [HTML 序列化](/docs/html) 以导出内容。
+-   学习在 [React Server Components](/docs/installation/rsc) 中使用 Plate。
+-   参考各插件文档，了解其基础（非 React）导入方式。

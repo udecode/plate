@@ -2,7 +2,7 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-} from '../types';
+} from '@udecode/plate';
 
 import { getColSpan } from '../queries';
 import { getRowSpan } from '../queries/getRowSpan';

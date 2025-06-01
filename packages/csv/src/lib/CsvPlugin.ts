@@ -1,7 +1,7 @@
 import type { OmitFirst, PluginConfig } from '@udecode/plate';
 import type { ParseConfig } from 'papaparse';
 
-import { bindFirst, createTSlatePlugin } from '@udecode/plate';
+import { bindFirst, createTSlatePlugin, KEYS } from '@udecode/plate';
 
 import { deserializeCsv } from './deserializer/utils';
 
@@ -35,7 +35,7 @@ export type CsvParseOptions = ParseConfig;
 
 /** Enables support for deserializing content from CSV format to Slate format. */
 export const CsvPlugin = createTSlatePlugin<CsvConfig>({
-  key: 'csv',
+  key: KEYS.csv,
   options: {
     errorTolerance: 0.25,
     parseOptions: {

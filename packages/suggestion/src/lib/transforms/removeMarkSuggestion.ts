@@ -1,4 +1,10 @@
-import { type SlateEditor, type TNode, nanoid, TextApi } from '@udecode/plate';
+import {
+  type SlateEditor,
+  type TNode,
+  KEYS,
+  nanoid,
+  TextApi,
+} from '@udecode/plate';
 
 import { getInlineSuggestionData, getSuggestionKey } from '../..';
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
@@ -20,7 +26,7 @@ export const removeMarkSuggestion = (editor: SlateEditor, key: string) => {
     const match = (n: TNode) => {
       if (!TextApi.isText(n)) return false;
       // if the node is already marked as a suggestion, we don't want to remove it unless it's a removeMark suggestion
-      if (n[BaseSuggestionPlugin.key]) {
+      if (n[KEYS.suggestion]) {
         const data = getInlineSuggestionData(n);
 
         if (data?.type === 'update') {
@@ -39,7 +45,6 @@ export const removeMarkSuggestion = (editor: SlateEditor, key: string) => {
 
     editor.tf.setNodes(
       {
-        [BaseSuggestionPlugin.key]: true,
         [getSuggestionKey(id)]: {
           id: id,
           createdAt: createdAt,
@@ -49,6 +54,7 @@ export const removeMarkSuggestion = (editor: SlateEditor, key: string) => {
           type: 'update',
           userId: editor.getOptions(BaseSuggestionPlugin).currentUserId,
         },
+        [KEYS.suggestion]: true,
       },
       {
         match,

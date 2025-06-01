@@ -1,12 +1,14 @@
 import React from 'react';
 
+import type { TTableCellElement } from '@udecode/plate';
+
 import {
   useEditorPlugin,
   useElement,
   usePluginOption,
 } from '@udecode/plate/react';
 
-import { type TTableCellElement, computeCellIndices } from '../../lib';
+import { computeCellIndices } from '../../lib';
 import { TablePlugin } from '../TablePlugin';
 
 export const useCellIndices = () => {
