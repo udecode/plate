@@ -14,7 +14,9 @@ export const hasAffinity = (editor: SlateEditor, edgeNodes: EdgeNodes) => {
     return keys.some((mark) => {
       return editor.meta.pluginKeys.node.isAffinity.some((key) => {
         return (
-          editor.getType(key) === mark && !editor.plugins[key].node.isHardEdge
+          editor.getType(key) === mark &&
+          !editor.plugins[key].node.isHardEdge &&
+          !editor.plugins[key].node.clearOnEdge
         );
       });
     });

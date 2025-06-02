@@ -1,6 +1,6 @@
 import type { Point } from 'slate';
 
-import { ElementApi } from '@udecode/slate';
+import { ElementApi, NodeApi } from '@udecode/slate';
 
 import type { SlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
@@ -64,7 +64,7 @@ export const setAffinitySelection = (
     return;
   }
 
-  const beforeEnd = editor.api.start(after[1])!;
+  const beforeEnd = editor.api.end(before[1])!;
   select(beforeEnd);
 
   if (ElementApi.isElement(after[0])) {
@@ -74,6 +74,6 @@ export const setAffinitySelection = (
       type: after[0].type,
     });
   } else {
-    setMarks(null);
+    setMarks(NodeApi.extractProps(after[0]));
   }
 };

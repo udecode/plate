@@ -6,7 +6,7 @@ import type { EdgeNodes } from '../types';
 const isHardEdge = (editor: SlateEditor, node: TElement | TText) => {
   return Object.keys(NodeApi.extractProps(node)).some((mark) =>
     editor.meta.pluginKeys.node.isHardEdge.some(
-      (key) => editor.getType(key) === mark
+      (key) => editor.getType(key) === mark && !editor.plugins[key].node.clearOnEdge
     )
   );
 };
