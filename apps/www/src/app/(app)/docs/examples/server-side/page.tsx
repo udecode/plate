@@ -81,7 +81,7 @@ export default function RSCPage() {
   const md = editor.api.markdown.serialize();
 
   return (
-    <DocContent category="example" doc={mockDoc} toc={{}}>
+    <DocContent category="example" doc={mockDoc} toc={[]}>
       <H2>Using Plate in a Server Environment</H2>
       <P>
         Plate can be utilized in server-side environments, enabling operations

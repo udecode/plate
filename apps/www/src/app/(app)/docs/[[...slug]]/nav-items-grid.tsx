@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react';
 
 import type { SidebarNavItem } from '@/types/nav';
 
+import { CircleDashedIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { DocBreadcrumb } from '@/app/(app)/docs/[[...slug]]/doc-breadcrumb';
@@ -13,9 +14,62 @@ import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { getDocIcon } from '@/config/docs-icons';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
+import { useDedupeNavItems } from '@/hooks/use-dedupe-nav-items';
 import { useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
+
+// Recursive function to flatten nested items
+const flattenItems = (items: SidebarNavItem[]): SidebarNavItem[] => {
+  const result: SidebarNavItem[] = [];
+
+  for (const item of items) {
+    if (item.href) {
+      // Add the item itself if it has an href
+      result.push(item);
+    }
+
+    // Recursively flatten nested items
+    if (item.items?.length) {
+      result.push(...flattenItems(item.items));
+    }
+  }
+
+  return result;
+};
+
+// Recursive function to filter items including nested ones
+const filterItems = (
+  items: SidebarNavItem[],
+  filter: string
+): SidebarNavItem[] => {
+  return items.reduce<SidebarNavItem[]>((acc, item) => {
+    const itemMatches =
+      item.title?.toLowerCase().includes(filter) ||
+      item.description?.toLowerCase().includes(filter);
+
+    // If the parent item matches, include ALL its children without filtering
+    // Otherwise, recursively filter nested items
+    const filteredNestedItems = item.items
+      ? itemMatches
+        ? item.items // Show all children if parent matches
+        : filterItems(item.items, filter) // Filter children if parent doesn't match
+      : undefined;
+
+    // Include the item if it matches OR has matching nested items
+    if (
+      itemMatches ||
+      (filteredNestedItems && filteredNestedItems.length > 0)
+    ) {
+      acc.push({
+        ...item,
+        ...(filteredNestedItems && { items: filteredNestedItems }),
+      });
+    }
+
+    return acc;
+  }, []);
+};
 
 export function NavItemCard({
   category,
@@ -25,8 +79,7 @@ export function NavItemCard({
   item: SidebarNavItem;
 }) {
   const locale = useLocale();
-  const Icon = getDocIcon(item, category);
-
+  const Icon = getDocIcon(item, category) ?? CircleDashedIcon;
   return (
     <Link
       key={item.href}
@@ -36,11 +89,7 @@ export function NavItemCard({
       <Card className="h-full bg-muted/30 p-0 transition-shadow duration-200 hover:shadow-md">
         <CardContent className="flex gap-2 p-2">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-white">
-            {Icon ? (
-              <Icon className="size-5 text-neutral-800" />
-            ) : (
-              <div className="size-5" />
-            )}
+            <Icon className="size-5 text-neutral-800" />
           </div>
           <div className="space-y-0">
             <CardTitle className="mt-0.5 line-clamp-1 text-base font-medium">
@@ -66,17 +115,15 @@ export function NavItemsGrid({
   showFilter?: boolean;
 }) {
   const [filter, setFilter] = useState('');
-  const items: SidebarNavItem[] = (categoryNavGroups as any)[category];
+  const items = useDedupeNavItems((categoryNavGroups as any)[category]);
 
   const filteredItems = showFilter
     ? items
         .map((group) => ({
           ...group,
-          items: group.items?.filter(
-            (item) =>
-              item.title?.toLowerCase().includes(filter.toLowerCase()) ||
-              item.description?.toLowerCase().includes(filter.toLowerCase())
-          ),
+          items: group.items
+            ? filterItems(group.items, filter.toLowerCase())
+            : undefined,
         }))
         .filter((group) => group.items && group.items?.length > 0)
     : items;
@@ -128,13 +175,14 @@ export function NavItemsGrid({
             )}
             <Suspense fallback={null}>
               <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-                {group.items?.map((item) => (
-                  <NavItemCard
-                    key={item.href}
-                    category={category}
-                    item={item}
-                  />
-                ))}
+                {group.items &&
+                  flattenItems(group.items).map((item) => (
+                    <NavItemCard
+                      key={item.href}
+                      category={category}
+                      item={item}
+                    />
+                  ))}
               </div>
             </Suspense>
           </div>

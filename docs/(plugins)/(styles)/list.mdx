@@ -30,9 +30,9 @@ The fastest way to add list functionality is with the `ListKit`, which includes 
 
 <ComponentSource name="list-kit" />
 
+- [`BlockList`](/docs/components/block-list): Renders list wrapper elements with support for todo lists.
 - Includes [`IndentKit`](/docs/indent) for the underlying indentation system.
 - Configures `Paragraph`, `Heading`, `Blockquote`, `CodeBlock`, and `Toggle` elements to support list functionality.
-- Provides todo list support with custom [`TodoLi`](/docs/components/block-list) and [`TodoMarker`](/docs/components/block-list) components.
 
 ### Add Kit
 
@@ -89,27 +89,22 @@ import { IndentPlugin } from '@udecode/plate-indent/react';
 import { ListPlugin } from '@udecode/plate-list/react';
 import { KEYS } from '@udecode/plate';
 import { createPlateEditor } from '@udecode/plate/react';
+import { BlockList } from '@/components/ui/block-list';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     IndentPlugin.configure({
       inject: {
-        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote],
+        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote, KEYS.codeBlock],
       },
     }),
     ListPlugin.configure({
       inject: {
-        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote],
+        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote, KEYS.codeBlock],
       },
-      options: {
-        listStyleTypes: {
-          todo: {
-            type: 'todo',
-            liComponent: TodoLi,
-            markerComponent: TodoMarker,
-          },
-        },
+      render: {
+        belowNodes: BlockList,
       },
     }),
   ],
@@ -117,7 +112,7 @@ const editor = createPlateEditor({
 ```
 
 - `inject.targetPlugins`: An array of plugin keys indicating which element types can become list items.
-- `options.listStyleTypes`: Additional list styles with their configuration.
+- `render.belowNodes`: Assigns [`BlockList`](/docs/components/block-list) to render list wrapper elements.
 
 </Steps>
 

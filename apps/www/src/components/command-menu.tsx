@@ -44,6 +44,39 @@ export function CommandItems({
   const router = useRouter();
   const itemKey = `${parentKey}-${item.href ?? item.title}-${idx}`;
 
+  // Invisible characters to make items unique across groups
+  const invisibleSuffixes: Record<string, string> = {
+    'group-API': '\uFEFF', // Zero Width No-Break Space
+    'group-Examples': '\u2060', // Word Joiner
+    'group-Getting Started': '\u200B', // Zero Width Space
+    'group-Guides': '\u061C', // Arabic Letter Mark
+    'group-Installation': '\u200C', // Zero Width Non-Joiner
+    'group-Migration': '\u180E', // Mongolian Vowel Separator
+    'group-Plugins': '\u200D', // Zero Width Joiner
+  };
+
+  // Dirty hack to make items unique across groups, fallback to combining different characters
+  const getInvisibleSuffix = (key: string) => {
+    if (invisibleSuffixes[key]) return invisibleSuffixes[key];
+    // Generate a unique invisible character combination for unknown groups
+    const hash = key
+      .split('')
+      .reduce((a, b) => Math.trunc((a << 5) - a + (b.codePointAt(0) ?? 0)), 0);
+    const suffixIndex = Math.abs(hash) % 7;
+    const fallbackSuffixes = [
+      '\u200B',
+      '\u200C',
+      '\u200D',
+      '\u2060',
+      '\uFEFF',
+      '\u061C',
+      '\u180E',
+    ];
+    return fallbackSuffixes[suffixIndex];
+  };
+
+  const invisibleSuffix = getInvisibleSuffix(parentKey);
+
   // Extract keywords from the item, including labels and parent title
   const { keywords = [], ...itemWithoutKeywords } = item;
   const allKeywords = [
@@ -65,6 +98,7 @@ export function CommandItems({
             <Circle className="size-3" />
           </div>
           {item.title}
+          {invisibleSuffix}
         </CommandItem>
       )}
       {item.headings?.map((heading, headingIdx) => (
@@ -85,6 +119,7 @@ export function CommandItems({
             <Circle className="size-3" />
           </div>
           {item.title} – {heading}
+          {invisibleSuffix}
         </CommandItem>
       ))}
       {item.items?.map((child, childIdx) => (

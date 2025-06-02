@@ -124,6 +124,7 @@
     "date-fns": "4.1.0",
     "dotenv": "16.5.0",
     "framer-motion": "12.9.2",
+    "fumadocs-core": "15.5.0",
     "fzf": "0.5.2",
     "html2canvas-pro": "1.5.10",
     "jotai": "2.8.4",

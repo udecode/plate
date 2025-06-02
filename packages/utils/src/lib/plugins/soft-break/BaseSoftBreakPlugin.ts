@@ -26,6 +26,6 @@ export const BaseSoftBreakPlugin = createTSlatePlugin<SoftBreakConfig>({
   key: KEYS.softBreak,
   editOnly: true,
   options: {
-    rules: [{ hotkey: 'shift+enter' }],
+    rules: [],
   },
 });

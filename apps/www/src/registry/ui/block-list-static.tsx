@@ -1,57 +1,53 @@
-import React from 'react';
+import * as React from 'react';
 
 import type {
-  PlateElementProps,
-  RenderNodeWrapper,
-} from '@udecode/plate/react';
+  RenderStaticNodeWrapper,
+  SlateRenderElementProps,
+  TListElement,
+} from '@udecode/plate';
 
-import { type SlateRenderElementProps, KEYS } from '@udecode/plate';
-import { clsx } from 'clsx';
+import { isOrderedList } from '@udecode/plate-list';
 import { CheckIcon } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
-const ULIST_STYLE_TYPES = ['circle', 'disc', 'square'] as const;
-
-export const BlockList: RenderNodeWrapper = (props) => {
-  const { element } = props;
-  const listStyleType = element[KEYS.listType] as string;
-
-  if (!listStyleType) return;
-
-  return (props) => <ListWrapper {...props} />;
+const config: Record<
+  string,
+  {
+    Li: React.FC<SlateRenderElementProps>;
+    Marker: React.FC<SlateRenderElementProps>;
+  }
+> = {
+  todo: {
+    Li: TodoLiStatic,
+    Marker: TodoMarkerStatic,
+  },
 };
 
-export function ListWrapper({ children, element }: PlateElementProps) {
-  const listStyleType = element[KEYS.listType] as string;
-  const listStart = element[KEYS.listStart] as number;
+export const BlockListStatic: RenderStaticNodeWrapper = (props) => {
+  if (!props.element.listStyleType) return;
 
-  let className = clsx(`slate-list-${listStyleType}`);
-  const style: React.CSSProperties = {
-    listStyleType,
-    margin: 0,
-    padding: 0,
-    position: 'relative',
-  };
+  return (props) => <List {...props} />;
+};
 
-  const isOrdered = !ULIST_STYLE_TYPES.includes(listStyleType as any);
-
-  className = isOrdered
-    ? clsx(className, 'slate-ol')
-    : clsx(className, 'slate-ul');
-
-  const List = isOrdered ? 'ol' : 'ul';
+function List(props: SlateRenderElementProps) {
+  const { listStart, listStyleType } = props.element as TListElement;
+  const { Li, Marker } = config[listStyleType] ?? {};
+  const List = isOrderedList(props.element) ? 'ol' : 'ul';
 
   return (
-    <List className={className} style={style} start={listStart}>
-      <li>{children}</li>
+    <List
+      className="relative m-0 p-0"
+      style={{ listStyleType }}
+      start={listStart}
+    >
+      {Marker && <Marker {...props} />}
+      {Li ? <Li {...props} /> : <li>{props.children}</li>}
     </List>
   );
 }
 
-export function TodoMarkerStatic(
-  props: Omit<SlateRenderElementProps, 'children'>
-) {
+function TodoMarkerStatic(props: SlateRenderElementProps) {
   const checked = props.element.checked as boolean;
 
   return (
@@ -72,7 +68,7 @@ export function TodoMarkerStatic(
   );
 }
 
-export function TodoLiStatic(props: SlateRenderElementProps) {
+function TodoLiStatic(props: SlateRenderElementProps) {
   return (
     <li
       className={cn(

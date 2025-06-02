@@ -237,13 +237,13 @@
 @utility container-wrapper {
   /* @apply 3xl:fixed:max-w-[calc(var(--breakpoint-2xl)+2rem)] mx-auto w-full px-2; */
   
-  @apply mx-auto w-full border-border/30 min-[1800px]:max-w-[1536px] min-[1800px]:border-x dark:border-border
+  @apply px-2 mx-auto w-full max-w-[calc(var(--breakpoint-xl)+2rem)];
 }
 
 @utility container {
   /* @apply 3xl:max-w-screen-2xl mx-auto max-w-[1400px] px-4 lg:px-8; */
   
-  @apply mx-auto max-w-screen-2xl px-4 xl:px-6;
+  @apply mx-auto max-w-[calc(var(--breakpoint-xl)+2rem)] px-4 xl:px-6;
 }
 
 @utility no-scrollbar {

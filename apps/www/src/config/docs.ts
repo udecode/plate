@@ -193,11 +193,6 @@ export const docsConfig: DocsConfig = {
     },
     {
       external: true,
-      href: 'https://github.com/udecode/plate',
-      title: 'GitHub',
-    },
-    {
-      external: true,
       href: 'https://discord.gg/mAZRuBzGM3',
       title: 'Discord',
     },

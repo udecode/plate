@@ -35,15 +35,6 @@ export type BaseListConfig = PluginConfig<
   'list',
   {
     getSiblingListOptions?: GetSiblingListOptions<TElement>;
-    listStyleTypes?: Record<
-      string,
-      {
-        type: string;
-        isOrdered?: boolean;
-        liComponent?: React.FC<SlateRenderElementProps>;
-        markerComponent?: React.FC<Omit<SlateRenderElementProps, 'children'>>;
-      }
-    >;
     /** Map html element to list style type. */
     getListStyleType?: (element: HTMLElement) => ListStyleType;
   }

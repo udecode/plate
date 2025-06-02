@@ -166,9 +166,9 @@ export function DocsNav({ config }: { config: DocsConfig }) {
   }, []); // Empty dependency array - only runs on mount
 
   return sidebarNav.length > 0 ? (
-    <div className="relative w-[calc(100%-1rem)]">
+    <div className="relative w-[calc(100%-1rem)] pl-4">
       <div className="sticky top-0 z-10 flex w-full items-center bg-background/95 px-2 pb-1 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
-        <div className="relative mt-3 flex w-full items-center">
+        <div className="relative mt-1 flex w-full items-center">
           <Input
             className={cn(
               'h-8 w-full rounded-lg bg-muted/50 px-3 py-1 text-sm text-muted-foreground shadow-none focus-visible:ring-transparent'
@@ -190,7 +190,7 @@ export function DocsNav({ config }: { config: DocsConfig }) {
       </div>
 
       <Accordion
-        className="flex max-h-[calc(100vh-7.5rem)] flex-col overflow-y-hidden"
+        className="flex max-h-[calc(100vh-var(--header-height)-44px)] flex-col overflow-y-hidden"
         value={activeSection}
         onValueChange={setActiveSection}
         type="single"
