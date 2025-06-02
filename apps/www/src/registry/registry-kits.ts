@@ -633,7 +633,6 @@ export const registryKits: Registry['items'] = [
       'delete-kit',
       'exit-break-kit',
       'reset-block-type-kit',
-      'soft-break-kit',
     ],
     type: 'registry:component',
   },
@@ -884,17 +883,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'slash-kit',
     registryDependencies: ['slash-node'],
-    type: 'registry:component',
-  },
-  {
-    dependencies: [],
-    files: [
-      {
-        path: 'components/editor/plugins/soft-break-kit.tsx',
-        type: 'registry:component',
-      },
-    ],
-    name: 'soft-break-kit',
     type: 'registry:component',
   },
   {

@@ -6,13 +6,12 @@
   "registryDependencies": [
     "https://platejs.org/r/delete-kit",
     "https://platejs.org/r/exit-break-kit",
-    "https://platejs.org/r/reset-block-type-kit",
-    "https://platejs.org/r/soft-break-kit"
+    "https://platejs.org/r/reset-block-type-kit"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/editing-kit.tsx",
-      "content": "'use client';\n\nimport { TrailingBlockPlugin } from '@udecode/plate';\n\nimport { DeleteKit } from './delete-kit';\nimport { ExitBreakKit } from './exit-break-kit';\nimport { ResetBlockTypeKit } from './reset-block-type-kit';\nimport { SoftBreakKit } from './soft-break-kit';\n\nexport const EditingKit = [\n  ...ExitBreakKit,\n  ...ResetBlockTypeKit,\n  ...DeleteKit,\n  ...SoftBreakKit,\n  TrailingBlockPlugin,\n];\n",
+      "content": "'use client';\n\nimport { TrailingBlockPlugin } from '@udecode/plate';\n\nimport { DeleteKit } from './delete-kit';\nimport { ExitBreakKit } from './exit-break-kit';\nimport { ResetBlockTypeKit } from './reset-block-type-kit';\n\nexport const EditingKit = [\n  ...ExitBreakKit,\n  ...ResetBlockTypeKit,\n  ...DeleteKit,\n  TrailingBlockPlugin,\n];\n",
       "type": "registry:component"
     }
   ]

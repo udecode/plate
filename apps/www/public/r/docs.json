@@ -5,8 +5,6 @@
   "title": "Documentation",
   "description": "All documentation files for plate",
   "registryDependencies": [
-    "https://platejs.org/r/-get-started-index-docs",
-    "https://platejs.org/r/-get-started-installation-docs",
     "https://platejs.org/r/-guides-controlled-docs",
     "https://platejs.org/r/-guides-debugging-docs",
     "https://platejs.org/r/-guides-editor-methods-docs",
@@ -116,6 +114,7 @@
     "https://platejs.org/r/examples-hundreds-editors-docs",
     "https://platejs.org/r/examples-preview-markdown-docs",
     "https://platejs.org/r/examples-version-history-docs",
+    "https://platejs.org/r/index-docs",
     "https://platejs.org/r/installation-docs-docs",
     "https://platejs.org/r/installation-manual-docs",
     "https://platejs.org/r/installation-mcp-docs",
@@ -124,6 +123,7 @@
     "https://platejs.org/r/installation-plate-ui-docs",
     "https://platejs.org/r/installation-react-docs",
     "https://platejs.org/r/installation-rsc-docs",
+    "https://platejs.org/r/installation-docs",
     "https://platejs.org/r/migration-slate-to-plate-docs"
   ],
   "files": []

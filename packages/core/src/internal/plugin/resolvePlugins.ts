@@ -38,6 +38,10 @@ export const resolvePlugins = (
       nodeProps: [],
     },
     node: {
+      breakMode: {
+        lineBreak: [],
+        splitOnEmptyLine: [],
+      },
       clearOnEdge: [],
       isAffinity: [],
       isElement: [],
@@ -125,6 +129,14 @@ export const resolvePlugins = (
 
     if (plugin.node?.isMarkableVoid) {
       editor.meta.pluginKeys.node.isMarkableVoid.push(plugin.key);
+    }
+
+    if (plugin.node?.breakMode === 'lineBreak') {
+      editor.meta.pluginKeys.node.breakMode.lineBreak.push(plugin.key);
+    }
+
+    if (plugin.node?.breakMode === 'splitOnEmptyLine') {
+      editor.meta.pluginKeys.node.breakMode.splitOnEmptyLine.push(plugin.key);
     }
 
     if (plugin.node?.isSelectable === false) {

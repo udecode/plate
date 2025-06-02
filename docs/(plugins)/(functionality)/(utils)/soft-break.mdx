@@ -9,59 +9,71 @@ title: Soft Break
 ## Features
 
 - Allows insertion of line breaks within a text block without starting a new block
+- Configurable per plugin using the `breakMode` property
+- Multiple modes: `'lineBreak'`, `'splitOnEmptyLine'`, or `'split'` (default)
 
 </PackageInfo>
 
 ## Usage
 
+Enable soft break behavior for specific plugin types by setting `breakMode` in their node configuration:
+
 ```tsx
-import { SoftBreakPlugin } from '@udecode/plate/react';
-import { KEYS } from '@udecode/plate';
+import { BlockquotePlugin } from '@udecode/plate-blockquote/react';
 
 const plugins = [
   // ...otherPlugins,
-  SoftBreakPlugin.configure({
-    options: {
-      rules: [
-        { hotkey: 'shift+enter' },
-        {
-          hotkey: 'enter',
-          query: {
-            allow: [KEYS.codeBlock, KEYS.blockquote, KEYS.table],
-          },
-        },
-      ],
+  BlockquotePlugin.configure({
+    node: {
+      breakMode: 'lineBreak',
     },
   }),
 ];
 ```
-## Keyboard Shortcuts
 
-<KeyTable>
-  <KeyTableItem hotkey="Shift + Enter">
-    Insert a line break within a block of text without starting a new block
-  </KeyTableItem>
-</KeyTable>
+### Modes
 
-## Plugins
+- **`'lineBreak'`**: Always inserts a line break when Enter is pressed within this node type
+- **`'splitOnEmptyLine'`**: Inserts a line break normally, but splits the block when on an empty line (when the previous character is `\n`)
+- **`'split'`** or `undefined`: Standard behavior - splits the block (default)
 
-### `SoftBreakPlugin`
+```tsx
+// Always insert line breaks in blockquotes
+BlockquotePlugin.configure({
+  node: { breakMode: 'lineBreak' },
+});
 
-Plugin for inserting line breaks within text blocks.
+// Insert line breaks in code blocks, but split when on empty lines
+CodeBlockPlugin.configure({
+  node: { breakMode: 'splitOnEmptyLine' },
+});
+```
 
-<API name="SoftBreakPlugin">
-<APIOptions>
+## Customization
 
-<APIItem name="rules" type="object[]" optional>
-An array of rule objects specifying the hotkey to activate the soft break and an optional filter query.
-<APISubList>
-<APISubListItem parent="rules" name="hotkey" type="string">
-The key combination that activates the soft break.
-</APISubListItem>
-<APISubListItem parent="rules" name="query" type="QueryNodeOptions" optional>
-Filter options to determine the block types where the rule applies.
-</APISubListItem>
-</APISubList>
-</APIItem>
-</APIOptions>
-</API>
+For more complex break behavior, you can override the `insertBreak` transform:
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  MyPlugin.overrideEditor(
+    ({
+      editor,
+      tf: { insertBreak },
+    }) => ({
+      transforms: {
+        insertBreak: () => {
+          // Custom break logic here
+          if (/* your custom condition */) {
+            editor.tf.insertSoftBreak();
+            return;
+          }
+
+          // Default behavior
+          insertBreak();
+        },
+      },
+    })
+  ),
+];
+```

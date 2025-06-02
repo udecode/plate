@@ -1,9 +1,14 @@
-import type { Descendant, TRange, Value } from '@udecode/slate';
+import {
+  type Descendant,
+  type TRange,
+  type Value,
+  ElementApi,
+} from '@udecode/slate';
 
 import type { CreateSlateEditorOptions } from '../../editor';
 
 import { pipeNormalizeInitialValue } from '../../../internal/plugin/pipeNormalizeInitialValue';
-import { createSlatePlugin } from '../../plugin';
+import { createSlatePlugin, getPluginTypes } from '../../plugin';
 import { BaseParagraphPlugin } from '../paragraph';
 
 export type InitOptions = Pick<
@@ -18,7 +23,7 @@ export const SlateExtensionPlugin = createSlatePlugin({
   .overrideEditor(
     ({
       editor,
-      tf: { apply, deleteBackward, deleteForward, deleteFragment },
+      tf: { apply, deleteBackward, deleteForward, deleteFragment, insertBreak },
     }) => {
       const resetMarks = () => {
         if (editor.api.isAt({ start: true })) {
@@ -60,6 +65,54 @@ export const SlateExtensionPlugin = createSlatePlugin({
           deleteFragment(options) {
             deleteFragment(options);
             resetMarks();
+          },
+          insertBreak() {
+            const lineBreakPlugins = getPluginTypes(
+              editor,
+              editor.meta.pluginKeys.node.breakMode.lineBreak
+            );
+            const splitOnEmptyLinePlugins = getPluginTypes(
+              editor,
+              editor.meta.pluginKeys.node.breakMode.splitOnEmptyLine
+            );
+
+            if (lineBreakPlugins.length > 0) {
+              const block = editor.api.block({
+                match: (node) =>
+                  ElementApi.isElement(node) &&
+                  lineBreakPlugins.includes(node.type),
+              });
+
+              if (block) {
+                editor.tf.insertSoftBreak();
+                return;
+              }
+            }
+
+            if (splitOnEmptyLinePlugins.length > 0) {
+              const block = editor.api.block({
+                match: (node) =>
+                  ElementApi.isElement(node) &&
+                  splitOnEmptyLinePlugins.includes(node.type),
+              });
+
+              if (
+                block &&
+                editor.api.isCollapsed() &&
+                !editor.api.isAt({ start: true })
+              ) {
+                const range = editor.api.range('before', editor.selection!);
+                if (range) {
+                  const char = editor.api.string(range);
+                  if (char !== '\n') {
+                    editor.tf.insertSoftBreak();
+                    return;
+                  }
+                }
+              }
+            }
+
+            insertBreak();
           },
         },
       };

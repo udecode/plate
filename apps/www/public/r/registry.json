@@ -3407,8 +3407,7 @@
       "registryDependencies": [
         "https://platejs.org/r/delete-kit",
         "https://platejs.org/r/exit-break-kit",
-        "https://platejs.org/r/reset-block-type-kit",
-        "https://platejs.org/r/soft-break-kit"
+        "https://platejs.org/r/reset-block-type-kit"
       ],
       "files": [
         {
@@ -3713,17 +3712,6 @@
       "files": [
         {
           "path": "src/registry/components/editor/plugins/slash-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "soft-break-kit",
-      "type": "registry:component",
-      "dependencies": [],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/soft-break-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -4499,8 +4487,6 @@
       "files": [],
       "name": "docs",
       "registryDependencies": [
-        "https://platejs.org/r/-get-started-index-docs",
-        "https://platejs.org/r/-get-started-installation-docs",
         "https://platejs.org/r/-guides-controlled-docs",
         "https://platejs.org/r/-guides-debugging-docs",
         "https://platejs.org/r/-guides-editor-methods-docs",
@@ -4610,6 +4596,7 @@
         "https://platejs.org/r/examples-hundreds-editors-docs",
         "https://platejs.org/r/examples-preview-markdown-docs",
         "https://platejs.org/r/examples-version-history-docs",
+        "https://platejs.org/r/index-docs",
         "https://platejs.org/r/installation-docs-docs",
         "https://platejs.org/r/installation-manual-docs",
         "https://platejs.org/r/installation-mcp-docs",
@@ -4618,6 +4605,7 @@
         "https://platejs.org/r/installation-plate-ui-docs",
         "https://platejs.org/r/installation-react-docs",
         "https://platejs.org/r/installation-rsc-docs",
+        "https://platejs.org/r/installation-docs",
         "https://platejs.org/r/migration-slate-to-plate-docs"
       ],
       "title": "Documentation",
@@ -4656,32 +4644,6 @@
         "https://platejs.org/r/docs-meta"
       ],
       "title": "Fumadocs app",
-      "type": "registry:file"
-    },
-    {
-      "description": "Rich-text editor framework with AI, MCP, and shadcn/ui",
-      "files": [
-        {
-          "path": "../../docs/(get-started)/index.mdx",
-          "target": "content/docs/plate/(get-started)/index.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "-get-started-index-docs",
-      "title": "Introduction",
-      "type": "registry:file"
-    },
-    {
-      "description": "Choose your path to integrate the Plate rich-text editor framework into your React project.",
-      "files": [
-        {
-          "path": "../../docs/(get-started)/installation.mdx",
-          "target": "content/docs/plate/(get-started)/installation.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "-get-started-installation-docs",
-      "title": "Getting Started",
       "type": "registry:file"
     },
     {
@@ -4893,7 +4855,7 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for AI",
+      "description": "AI-powered writing assistance.",
       "files": [
         {
           "path": "../../docs/(plugins)/(ai)/ai.mdx",
@@ -4906,7 +4868,7 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Copilot",
+      "description": "AI-powered text completion suggestions.",
       "files": [
         {
           "path": "../../docs/(plugins)/(ai)/copilot.mdx",
@@ -6102,6 +6064,19 @@
       "type": "registry:file"
     },
     {
+      "description": "Rich-text editor framework with AI, MCP, and shadcn/ui",
+      "files": [
+        {
+          "path": "../../docs/index.mdx",
+          "target": "content/docs/plate/index.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "index-docs",
+      "title": "Introduction",
+      "type": "registry:file"
+    },
+    {
       "description": "Set up Plate's documentation locally for version-controlled, AI-enhanced development.",
       "files": [
         {
@@ -6203,6 +6178,19 @@
       ],
       "name": "installation-rsc-docs",
       "title": "RSC",
+      "type": "registry:file"
+    },
+    {
+      "description": "Choose your path to integrate the Plate rich-text editor framework into your React project.",
+      "files": [
+        {
+          "path": "../../docs/installation.mdx",
+          "target": "content/docs/plate/installation.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-docs",
+      "title": "Getting Started",
       "type": "registry:file"
     },
     {

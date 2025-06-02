@@ -61,6 +61,10 @@ export type BaseEditor = EditorBase & {
         nodeProps: string[];
       };
       node: {
+        breakMode: {
+          lineBreak: string[];
+          splitOnEmptyLine: string[];
+        };
         clearOnEdge: string[];
         isAffinity: string[];
         isElement: string[];

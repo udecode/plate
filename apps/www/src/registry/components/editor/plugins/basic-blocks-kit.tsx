@@ -29,7 +29,10 @@ export const BasicBlocksKit = [
     shortcuts: { toggle: { keys: 'mod+alt+3' } },
   }),
   BlockquotePlugin.configure({
-    node: { component: BlockquoteElement },
+    node: {
+      breakMode: 'splitOnEmptyLine',
+      component: BlockquoteElement,
+    },
     shortcuts: { toggle: { keys: 'mod+shift+period' } },
   }),
   HorizontalRulePlugin.withComponent(HrElement),

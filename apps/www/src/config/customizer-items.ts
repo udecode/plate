@@ -69,7 +69,6 @@ import {
   ParagraphPlugin,
   ResetNodePlugin,
   SingleLinePlugin,
-  SoftBreakPlugin,
 } from '@udecode/plate/react';
 
 import { getComponentNavItem, getPluginNavItem } from '@/config/docs';
@@ -948,28 +947,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'SlashPlugin',
     route: getPluginNavItem('slash-command').href,
   },
-  [SoftBreakPlugin.key]: {
-    id: SoftBreakPlugin.key,
-    badges: [customizerBadges.handler],
-    label: 'Soft Break',
-    npmPackage: '@udecode/plate',
-    pluginFactory: 'SoftBreakPlugin',
-    pluginOptions: [
-      `options: {`,
-      `  rules: [`,
-      `    { hotkey: 'shift+enter' },`,
-      `    {`,
-      `      hotkey: 'enter',`,
-      `      query: {`,
-      `        allow: ['code_block', 'blockquote', 'td', 'th'],`,
-      `      },`,
-      `    },`,
-      `  ],`,
-      `},`,
-    ],
-    reactImport: true,
-    route: getPluginNavItem('soft-break').href,
-  },
   [StrikethroughPlugin.key]: {
     id: StrikethroughPlugin.key,
     badges: [customizerBadges.leaf],
@@ -1189,7 +1166,6 @@ export const customizerList = [
       customizerItems[SelectOnBackspacePlugin.key],
       customizerItems[DeletePlugin.key],
       customizerItems[SingleLinePlugin.key],
-      customizerItems[SoftBreakPlugin.key],
       customizerItems[TabbablePlugin.key],
       customizerItems[TrailingBlockPlugin.key],
       customizerItems[SlashPlugin.key],
@@ -1255,7 +1231,6 @@ export const orderedPluginKeys = [
   SelectOnBackspacePlugin.key,
   DeletePlugin.key,
   SingleLinePlugin.key,
-  SoftBreakPlugin.key,
   TabbablePlugin.key,
   TrailingBlockPlugin.key,
   CursorOverlayPlugin.key,

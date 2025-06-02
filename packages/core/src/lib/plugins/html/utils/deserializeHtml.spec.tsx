@@ -15,7 +15,6 @@ import {
 } from '@udecode/plate-basic-nodes/react';
 import { HighlightPlugin, KbdPlugin } from '@udecode/plate-basic-nodes/react';
 import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
-import { SoftBreakPlugin } from '@udecode/plate-break/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 import { LinkPlugin } from '@udecode/plate-link/react';
@@ -211,7 +210,6 @@ describe('when deserializing all plugins', () => {
             TablePlugin,
             MediaEmbedPlugin,
             FindReplacePlugin,
-            SoftBreakPlugin,
             TextAlignPlugin,
             BoldPlugin,
             HighlightPlugin,

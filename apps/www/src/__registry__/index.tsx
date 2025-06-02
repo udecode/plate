@@ -2256,7 +2256,7 @@ export const Index: Record<string, any> = {
     name: "editing-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/delete-kit","https://platejs.org/r/exit-break-kit","https://platejs.org/r/reset-block-type-kit","https://platejs.org/r/soft-break-kit"],
+    registryDependencies: ["https://platejs.org/r/delete-kit","https://platejs.org/r/exit-break-kit","https://platejs.org/r/reset-block-type-kit"],
     files: [{
       path: "src/registry/components/editor/plugins/editing-kit.tsx",
       type: "registry:component",
@@ -2562,23 +2562,6 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/slash-kit.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
-  "soft-break-kit": {
-    name: "soft-break-kit",
-    description: "",
-    type: "registry:component",
-    registryDependencies: undefined,
-    files: [{
-      path: "src/registry/components/editor/plugins/soft-break-kit.tsx",
-      type: "registry:component",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/components/editor/plugins/soft-break-kit.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -4063,7 +4046,7 @@ export const Index: Record<string, any> = {
     name: "soft-break-demo",
     description: "Insert line breaks within a block of text without starting a new block.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/soft-break-kit","https://platejs.org/r/editor-kit"],
+    registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",

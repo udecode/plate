@@ -960,7 +960,7 @@ export const demoExamples: Registry['items'] = (
         },
       ],
       name: 'soft-break-demo',
-      registryDependencies: ['soft-break-kit', 'editor-kit'],
+      registryDependencies: ['editor-kit'],
       title: 'Soft Break',
       type: 'registry:example',
     },

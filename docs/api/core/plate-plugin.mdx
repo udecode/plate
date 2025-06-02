@@ -111,6 +111,12 @@ Indicates if this plugin's nodes should be selectable.
 
 - **Default:** `true`
 </APISubListItem>
+<APISubListItem parent="node" name="breakMode" type="'split' | 'lineBreak' | 'splitOnEmptyLine'" optional>
+Defines the behavior of the Enter key within this node type.
+- `'split'` (or `undefined`): Default behavior. Pressing Enter splits the block, creating a new block of the default type (hard break).
+- `'lineBreak'`: Always inserts a newline character (`\n`) within the current block (soft break).
+- `'splitOnEmptyLine'`: Inserts a `lineBreak` unless the cursor is on an empty line (empty block or previous character is `\n`), in which case it performs a `split` (hard break).
+</APISubListItem>
 <APISubListItem parent="node" name="isVoid" type="boolean" optional>
 Indicates if this plugin's elements should be treated as void.
 </APISubListItem>

@@ -4,7 +4,6 @@ import {
   createEditor as createSlateEditor,
   getDirtyPaths,
   hasPath,
-  insertSoftBreak,
   normalizeNode,
   setNormalizing,
   shouldMergeNodesRemovePrevNode,
@@ -116,6 +115,7 @@ import { deleteText } from './internal/transforms/deleteText';
 import { deselect } from './internal/transforms/deselect';
 import { insertFragment } from './internal/transforms/insertFragment';
 import { insertNodes } from './internal/transforms/insertNodes';
+import { insertSoftBreak } from './internal/transforms/insertSoftBreak';
 import { insertText } from './internal/transforms/insertText';
 import { liftNodes } from './internal/transforms/liftNodes';
 import { mergeNodes } from './internal/transforms/mergeNodes';

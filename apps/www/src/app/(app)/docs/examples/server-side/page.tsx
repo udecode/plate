@@ -5,7 +5,6 @@ import type { Metadata } from 'next';
 import {
   BaseExitBreakPlugin,
   BaseResetNodePlugin,
-  BaseSoftBreakPlugin,
   createSlateEditor,
   DeletePlugin,
   KEYS,
@@ -71,7 +70,6 @@ export default function RSCPage() {
         },
       }),
       DeletePlugin,
-      BaseSoftBreakPlugin,
       TrailingBlockPlugin,
       DocxPlugin,
     ],

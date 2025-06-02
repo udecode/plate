@@ -255,6 +255,20 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   type: string;
   /**
+   * Defines the behavior of the Enter key within this node type.
+   *
+   * - `'split': Pressing Enter splits the block, creating a new block of the
+   *   default type (hard break).
+   * - `'lineBreak'`: Always inserts a newline character (`\n`) within the current
+   *   block (soft break).
+   * - `'splitOnEmptyLine'`: Inserts a `lineBreak` unless the cursor is on an
+   *   empty line (empty block or previous character is `\n`), in which case it
+   *   performs a `split` (hard break).
+   *
+   * @default 'split'
+   */
+  breakMode?: 'lineBreak' | 'split' | 'splitOnEmptyLine';
+  /**
    * If true, enables automatically clearing the mark when typing at its
    * boundary. Only applies when `isLeaf` is true.
    *
