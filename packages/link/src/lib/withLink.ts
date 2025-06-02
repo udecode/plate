@@ -1,10 +1,4 @@
-import {
-  type OverrideEditor,
-  type Point,
-  type TRange,
-  PathApi,
-  RangeApi,
-} from '@udecode/plate';
+import type { OverrideEditor } from '@udecode/plate';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
 
@@ -21,7 +15,7 @@ import { upsertLink } from './transforms/index';
 export const withLink: OverrideEditor<BaseLinkConfig> = ({
   editor,
   getOptions,
-  tf: { apply, insertBreak, insertData, insertText, normalizeNode },
+  tf: { insertBreak, insertData, insertText },
   type,
 }) => {
   const wrapLink = () => {
@@ -71,40 +65,6 @@ export const withLink: OverrideEditor<BaseLinkConfig> = ({
 
   return {
     transforms: {
-      apply(operation) {
-        if (operation.type === 'set_selection') {
-          const range = operation.newProperties as TRange | null;
-
-          if (range?.focus && range.anchor && RangeApi.isCollapsed(range)) {
-            const entry = editor.api.above({
-              at: range,
-              match: { type },
-            });
-
-            if (entry) {
-              const [, path] = entry;
-
-              let newPoint: Point | undefined;
-
-              if (editor.api.isStart(range.focus, path)) {
-                newPoint = editor.api.end(path, { previous: true });
-              }
-              if (editor.api.isEnd(range.focus, path)) {
-                newPoint = editor.api.start(path, { next: true });
-              }
-              if (newPoint) {
-                operation.newProperties = {
-                  anchor: newPoint,
-                  focus: newPoint,
-                };
-              }
-            }
-          }
-        }
-
-        apply(operation);
-      },
-
       insertBreak() {
         if (!editor.api.isCollapsed()) return insertBreak();
 
@@ -138,32 +98,6 @@ export const withLink: OverrideEditor<BaseLinkConfig> = ({
         }
 
         insertText(text, options);
-      },
-
-      normalizeNode([node, path]) {
-        if (node.type === type) {
-          const range = editor.selection;
-
-          if (
-            range &&
-            editor.api.isCollapsed() &&
-            editor.api.isEnd(range.focus, path)
-          ) {
-            const nextPoint = editor.api.start(path, { next: true });
-
-            // select next text node if any
-            if (nextPoint) {
-              editor.tf.select(nextPoint);
-            } else {
-              // insert text node then select
-              const nextPath = PathApi.next(path);
-              editor.tf.insertNodes({ text: '' } as any, { at: nextPath });
-              editor.tf.select(nextPath);
-            }
-          }
-        }
-
-        normalizeNode([node, path]);
       },
     },
   };

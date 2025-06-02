@@ -6,4 +6,4 @@ export * from './getEdgeNodes';
 export * from './getMarkBoundaryAffinity';
 export * from './hasHardEdgeAtBoundary';
 export * from './hasMarkAtBoundary';
-export * from './isFocusBoundaryEdge';
+export * from './isOuterEdge';

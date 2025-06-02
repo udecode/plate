@@ -14,7 +14,7 @@ import {
   getEdgeNodes,
   hasAffinity,
   hasHardEdgeAtBoundary,
-  isFocusBoundaryEdge,
+  isOuterEdge,
 } from './queries';
 import { getMarkBoundaryAffinity } from './queries/getMarkBoundaryAffinity';
 import { setAffinitySelection } from './transforms/setAffinitySelection';
@@ -80,7 +80,7 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
       },
       insertText(text, options) {
         const applyElementAffinity = () => {
-          if (editor.api.isExpanded()) return;
+          if (!editor.api.isCollapsed()) return;
 
           const elementAffinity = editor.getOption(
             AffinityPlugin,
@@ -89,50 +89,57 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
 
           if (!elementAffinity) return;
 
-          if (!isFocusBoundaryEdge(editor, elementAffinity)) return;
+          if (!isOuterEdge(editor, elementAffinity)) return;
 
           const { affinity, at, type } = elementAffinity;
 
-          const inlineElement = editor.api.node<TElement>({
+          const entry = editor.api.node<TElement>({
             at,
             match: { type },
           });
 
-          if (!inlineElement) return;
+          if (!entry) return;
 
-          const [newElementNode, newElementPath] = inlineElement;
+          const [, path] = entry;
 
-          const elementText =
-            affinity === 'forward'
-              ? text + editor.api.string(newElementPath)
-              : editor.api.string(newElementPath) + text;
-
-          if (
-            elementText?.length &&
-            elementText !== editor.api.string(newElementPath)
-          ) {
-            const firstText = newElementNode.children[0];
-
-            // remove element children
-            editor.tf.replaceNodes(
-              { ...firstText, text: elementText },
-              {
-                at: newElementPath,
-                children: true,
-                select: affinity === 'backward',
-              }
-            );
-
-            if (affinity === 'forward') {
-              const { offset, path } = editor.api.start(newElementPath)!;
-
-              editor.tf.select({
-                offset: offset + 1,
-                path,
-              });
-            }
-            return true;
+          if (affinity === 'backward') {
+            editor.tf.select(editor.api.end(path));
+          } else {
+            editor.tf.select(editor.api.start(path));
           }
+
+          // TODO:
+          // const elementText =
+          //   affinity === 'forward'
+          //     ? text + editor.api.string(newElementPath)
+          //     : editor.api.string(newElementPath) + text;
+
+          // if (
+          //   elementText?.length &&
+          //   elementText !== editor.api.string(newElementPath)
+          // ) {
+          //   const firstText = newElementNode.children[0];
+
+          //   // remove element children
+          //   editor.tf.replaceNodes(
+          //     { ...firstText, text: elementText },
+          //     {
+          //       at: newElementPath,
+          //       children: true,
+          //       select: affinity === 'backward',
+          //     }
+          //   );
+
+          //   if (affinity === 'forward') {
+          //     const { offset, path } = editor.api.start(newElementPath)!;
+
+          //     editor.tf.select({
+          //       offset: offset + 1,
+          //       path,
+          //     });
+          //   }
+          //   return true;
+          // }
         };
 
         const applyClearOnEdge = () => {
@@ -190,17 +197,11 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
 
           if (marksToRemove.length > 0) {
             editor.tf.removeMarks(marksToRemove);
-            insertText(text, options);
-
-            return true;
           }
         };
 
-        if (applyElementAffinity() || applyClearOnEdge()) {
-          return;
-        }
-
-        console.log(editor.selection);
+        applyElementAffinity();
+        applyClearOnEdge();
 
         return insertText(text, options);
       },
