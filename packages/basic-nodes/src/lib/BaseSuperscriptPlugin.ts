@@ -3,7 +3,7 @@ import { createSlatePlugin, KEYS } from '@udecode/plate';
 /** Enables support for superscript formatting. */
 export const BaseSuperscriptPlugin = createSlatePlugin({
   key: KEYS.sup,
-  node: { isLeaf: true },
+  node: { isAffinity: true, isLeaf: true },
   parsers: {
     html: {
       deserializer: {

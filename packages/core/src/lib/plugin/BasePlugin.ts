@@ -264,7 +264,7 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    *
    * @default false
    */
-  clearOnBoundary?: boolean;
+  clearOnEdge?: boolean;
   component?: NodeComponent | null;
   /**
    * Controls which (if any) attribute names in the `attributes` property of an

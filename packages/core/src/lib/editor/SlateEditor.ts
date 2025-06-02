@@ -61,7 +61,7 @@ export type BaseEditor = EditorBase & {
         nodeProps: string[];
       };
       node: {
-        clearOnBoundary: string[];
+        clearOnEdge: string[];
         isAffinity: string[];
         isElement: string[];
         isHardEdge: string[];

@@ -34,11 +34,14 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full bg-background">
       <div className="container-wrapper px-6 3xl:fixed:px-0">
         <div className="flex h-(--header-height) items-center gap-2 **:data-[slot=separator]:!h-4 3xl:fixed:container">
+          {/* Mobile only */}
           <MobileNav
             className="flex md:hidden"
             items={docsConfig.mainNav}
             tree={docsConfig.sidebarNav}
           />
+
+          {/* Desktop only */}
           <Button
             asChild
             size="icon"
@@ -50,8 +53,9 @@ export function SiteHeader() {
               <span className="sr-only">{siteConfig.name}</span>
             </Link>
           </Button>
-
           <MainNav className="hidden md:flex" items={siteConfig.navItems} />
+
+          {/* Header end */}
           <div className="ml-auto flex items-center gap-2 md:flex-1 md:justify-end">
             <div className="hidden w-full flex-1 md:flex md:w-auto md:flex-none">
               <CommandMenu />

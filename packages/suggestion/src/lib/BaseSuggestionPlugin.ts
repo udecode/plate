@@ -46,7 +46,7 @@ export type BaseSuggestionConfig = PluginConfig<
 
 export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
   key: KEYS.suggestion,
-  node: { clearOnBoundary: true, isLeaf: true },
+  node: { clearOnEdge: true, isLeaf: true },
   options: {
     currentUserId: 'alice',
     isSuggesting: false,

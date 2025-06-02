@@ -14,7 +14,7 @@
   - When `true` or when specific properties are true in the object, Plate will disable certain plugin behaviors (handlers, rendering, injections) in read-only mode and re-enable them if the editor becomes editable.
   - By default, `render`, `handlers`, and `inject` are considered edit-only (`true`). `normalizeInitialValue` defaults to always active (`false`).
   - Example: `editOnly: { render: false, normalizeInitialValue: true }` would make rendering active always, but normalization only in edit mode.
-- New plugin field: `node.clearOnBoundary` (boolean).
+- New plugin field: `node.clearOnEdge` (boolean).
   - When enabled for mark plugins (`node.isLeaf: true`), this feature automatically clears the mark when the user types at the boundary of the marked text. This provides a natural way to "exit" a mark. This is utilized by suggestion and comment marks.
 - New plugin field: `render.as` (`keyof HTMLElementTagNameMap`).
   - Specifies the default HTML tag name to be used by `PlateElement` (default: `'div'`) or `PlateLeaf` (default: `'span'`) when rendering the node, but only if no custom `node.component` is provided for the plugin.

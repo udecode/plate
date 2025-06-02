@@ -1,14 +1,14 @@
 import type { TElement, TText } from '@udecode/slate';
 
 import { IS_FIREFOX, NodeApi } from '@udecode/slate';
-import isEqual from 'lodash/isEqual';
+import isEqual from 'lodash/isEqual.js';
 
 import type { SlateEditor } from '../../../editor';
-import type { Boundary } from '../types';
+import type { EdgeNodes } from '../types';
 
 export const getMarkBoundaryAffinity = (
   editor: SlateEditor,
-  markBoundary: Boundary
+  markBoundary: EdgeNodes
 ): 'backward' | 'forward' | 'new-mark' => {
   const { marks, selection } = editor;
   if (!selection) return 'new-mark';

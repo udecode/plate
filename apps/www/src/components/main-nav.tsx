@@ -53,10 +53,15 @@ export function MainNav({
         </Button>
       ))}
 
-      <Button asChild size="sm" variant="ghost">
+      <Button
+        asChild
+        size="sm"
+        variant="ghost"
+        className="relative gap-0.5 font-normal"
+      >
         <Link href={siteConfig.links.platePro}>
           {content.templates}
-          <Icons.arrowUpRight className="absolute top-0 -right-3 size-2.5 text-muted-foreground" />
+          <Icons.arrowUpRight className="-mt-2.5 size-2.5 text-muted-foreground" />
         </Link>
       </Button>
     </nav>

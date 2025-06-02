@@ -3,7 +3,7 @@ import { createSlatePlugin, KEYS, someHtmlElement } from '@udecode/plate';
 /** Enables support for strikethrough formatting. */
 export const BaseStrikethroughPlugin = createSlatePlugin({
   key: KEYS.strikethrough,
-  node: { isLeaf: true },
+  node: { isAffinity: true, isLeaf: true },
   parsers: {
     html: {
       deserializer: {

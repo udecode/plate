@@ -6,7 +6,7 @@ import { createSlatePlugin, KEYS } from '@udecode/plate';
  */
 export const BaseHighlightPlugin = createSlatePlugin({
   key: KEYS.highlight,
-  node: { isLeaf: true },
+  node: { isAffinity: true, isLeaf: true },
   parsers: {
     html: {
       deserializer: {

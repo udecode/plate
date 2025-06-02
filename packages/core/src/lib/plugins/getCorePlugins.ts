@@ -10,7 +10,7 @@ import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { DOMPlugin } from './dom';
 import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';
-import { AffinityPlugin } from './mark-affinity';
+import { AffinityPlugin } from './affinity';
 import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
 import { SlateExtensionPlugin } from './slate-extension';

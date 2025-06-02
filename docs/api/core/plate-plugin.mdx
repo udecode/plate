@@ -98,7 +98,7 @@ Indicates if this plugin's nodes should be rendered as leaves.
 <APISubListItem parent="node" name="isContainer" type="boolean" optional>
 When `true`, indicates that the plugin's elements are primarily containers for other content. This property is typically used by fragment queries to unwrap the container nodes.
 </APISubListItem>
-<APISubListItem parent="node" name="clearOnBoundary" type="boolean" optional>
+<APISubListItem parent="node" name="clearOnEdge" type="boolean" optional>
 If true, enables automatically clearing the mark when typing at its boundary. Only applies when `isLeaf` is true.
 
 When enabled, typing at the start or end of a marked text range will automatically remove the mark from the new text, allowing users to "exit" the mark naturally.

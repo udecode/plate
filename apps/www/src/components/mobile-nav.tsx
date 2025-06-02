@@ -63,7 +63,7 @@ export function MobileNav({
         align="start"
         alignOffset={-16}
         side="bottom"
-        sideOffset={14}
+        sideOffset={12}
       >
         <div className="flex flex-col gap-12 overflow-auto px-6 py-6">
           <div className="flex flex-col gap-4">
@@ -106,7 +106,7 @@ export function MobileNav({
                       if (shouldFlatten && _item.items?.length) {
                         return _item.items.map((nestedItem) => (
                           <React.Fragment
-                            key={nestedItem.href || nestedItem.title}
+                            key={(item.title ?? '') + nestedItem.title}
                           >
                             {!nestedItem.disabled && nestedItem.href && (
                               <MobileLink
@@ -126,7 +126,7 @@ export function MobileNav({
                       }
 
                       return (
-                        <React.Fragment key={_item.href || _item.title}>
+                        <React.Fragment key={(item.title ?? '') + _item.title}>
                           {!_item.disabled && (
                             <>
                               {_item.href ? (
