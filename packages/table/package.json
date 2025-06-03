@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-table",
-  "version": "48.0.0",
+  "version": "48.0.6",
   "description": "Table plugin for Plate",
   "keywords": [
     "plate",
@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-node-id": "48.0.0",
+    "@udecode/plate-node-id": "48.0.6",
     "@udecode/plate-resizable": "48.0.0",
     "lodash": "^4.17.21"
   },
