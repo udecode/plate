@@ -1,21 +1,10 @@
-import {
-  type Path,
-  type TElement,
-  type TText,
-  NodeApi,
-  TextApi,
-} from '@udecode/slate';
+import { type Path, type TText, NodeApi, TextApi } from '@udecode/slate';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';
 
 import { createTSlatePlugin } from '../../plugin/createSlatePlugin';
 import { getPluginTypes } from '../../plugin/getSlatePlugin';
-import {
-  getEdgeNodes,
-  hasAffinity,
-  hasHardEdgeAtBoundary,
-  isOuterEdge,
-} from './queries';
+import { getEdgeNodes, hasAffinity, hasHardEdgeAtBoundary } from './queries';
 import { getMarkBoundaryAffinity } from './queries/getMarkBoundaryAffinity';
 import { setAffinitySelection } from './transforms/setAffinitySelection';
 
@@ -41,10 +30,6 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
 }).overrideEditor(
   ({ editor, tf: { apply, deleteBackward, insertText, move } }) => ({
     transforms: {
-      apply: (options) => {
-        console.log(options);
-        return apply(options);
-      },
       /**
        * On backspace, if the deletion results in the cursor being at a mark
        * boundary, then the affinity should be forward. If the deletion removes
@@ -55,7 +40,6 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
           if (unit === 'character' && editor.api.isCollapsed()) {
             const [start] = getEdgeNodes(editor) ?? [null];
 
-            console.log(start);
             if (!start) return;
 
             const startText = TextApi.isText(start[0])
@@ -79,69 +63,6 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
         deleteBackward(unit);
       },
       insertText(text, options) {
-        const applyElementAffinity = () => {
-          if (!editor.api.isCollapsed()) return;
-
-          const elementAffinity = editor.getOption(
-            AffinityPlugin,
-            'elementAffinity'
-          );
-
-          if (!elementAffinity) return;
-
-          if (!isOuterEdge(editor, elementAffinity)) return;
-
-          const { affinity, at, type } = elementAffinity;
-
-          const entry = editor.api.node<TElement>({
-            at,
-            match: { type },
-          });
-
-          if (!entry) return;
-
-          const [, path] = entry;
-
-          if (affinity === 'backward') {
-            editor.tf.select(editor.api.end(path));
-          } else {
-            editor.tf.select(editor.api.start(path));
-          }
-
-          // TODO:
-          // const elementText =
-          //   affinity === 'forward'
-          //     ? text + editor.api.string(newElementPath)
-          //     : editor.api.string(newElementPath) + text;
-
-          // if (
-          //   elementText?.length &&
-          //   elementText !== editor.api.string(newElementPath)
-          // ) {
-          //   const firstText = newElementNode.children[0];
-
-          //   // remove element children
-          //   editor.tf.replaceNodes(
-          //     { ...firstText, text: elementText },
-          //     {
-          //       at: newElementPath,
-          //       children: true,
-          //       select: affinity === 'backward',
-          //     }
-          //   );
-
-          //   if (affinity === 'forward') {
-          //     const { offset, path } = editor.api.start(newElementPath)!;
-
-          //     editor.tf.select({
-          //       offset: offset + 1,
-          //       path,
-          //     });
-          //   }
-          //   return true;
-          // }
-        };
-
         const applyClearOnEdge = () => {
           if (
             editor.meta.pluginKeys.node.clearOnEdge.length === 0 ||
@@ -188,7 +109,7 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
               continue; // Skip marks not present on current node
             }
 
-            const isBetweenSameMarks = nextTextNode && nextTextNode[markKey];
+            const isBetweenSameMarks = nextTextNode?.[markKey];
 
             if (!isBetweenSameMarks) {
               marksToRemove.push(markKey);
@@ -200,7 +121,6 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
           }
         };
 
-        applyElementAffinity();
         applyClearOnEdge();
 
         return insertText(text, options);
@@ -256,17 +176,11 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
               );
             }
 
-            console.log(editor.selection);
-
             return true;
           }
         };
 
-        console.log('MOVE');
-
         if (apply()) return;
-
-        console.log(editor.selection);
 
         move(options);
       },

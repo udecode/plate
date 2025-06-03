@@ -78,10 +78,12 @@ export type StyledPlateElementProps<
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'div',
 > = Omit<PlateElementProps<N, C>, keyof DeprecatedNodeProps> &
-  PlateHTMLProps<C, T>;
+  PlateHTMLProps<C, T> & {
+    insetProp?: boolean;
+  };
 
 export const PlateElement = React.forwardRef(function PlateElement(
-  { as: Tag = 'div', children, ...props }: StyledPlateElementProps,
+  { as: Tag = 'div', children, insetProp, ...props }: StyledPlateElementProps,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
   const attributes = useNodeAttributes(props, ref);
@@ -95,21 +97,27 @@ export const PlateElement = React.forwardRef(function PlateElement(
     [props.element, props.editor, mounted]
   );
 
+  const inset = insetProp ?? props.plugin?.node.inset;
+
   return (
-    <Tag
-      data-slate-node="element"
-      data-slate-inline={attributes['data-slate-inline']}
-      data-block-id={block ? props.element.id : undefined}
-      {...attributes}
-      style={
-        {
-          position: 'relative',
-          ...attributes?.style,
-        } as React.CSSProperties
-      }
-    >
-      {children}
-    </Tag>
+    <>
+      {inset && <NonBreakingSpace />}
+      <Tag
+        data-slate-node="element"
+        data-slate-inline={attributes['data-slate-inline']}
+        data-block-id={block ? props.element.id : undefined}
+        {...attributes}
+        style={
+          {
+            position: 'relative',
+            ...attributes?.style,
+          } as React.CSSProperties
+        }
+      >
+        {children}
+        {inset && <NonBreakingSpace />}
+      </Tag>
+    </>
   );
 }) as <
   N extends TElement = TElement,

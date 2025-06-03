@@ -91,8 +91,10 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
   key: KEYS.link,
   node: {
     dangerouslyAllowAttributes: ['target'],
+    inset: true,
     isAffinity: true,
     isElement: true,
+    isHardEdge: true,
     isInline: true,
     props: ({ editor, element }) =>
       getLinkAttributes(editor, element as TLinkElement),
