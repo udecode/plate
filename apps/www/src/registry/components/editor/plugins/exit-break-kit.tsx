@@ -1,29 +1,12 @@
 'use client';
 
-import { ExitBreakPlugin } from '@udecode/plate/react';
+import { ExitBreakPlugin } from '@udecode/plate';
 
 export const ExitBreakKit = [
   ExitBreakPlugin.configure({
-    options: {
-      rules: [
-        {
-          hotkey: 'mod+enter',
-        },
-        {
-          before: true,
-          hotkey: 'mod+shift+enter',
-        },
-        // {
-        //   hotkey: 'enter',
-        //   level: 1,
-        //   query: {
-        //     allow: KEYS.heading,
-        //     end: true,
-        //     start: true,
-        //   },
-        //   relative: true,
-        // },
-      ],
+    shortcuts: {
+      insert: { keys: 'mod+enter' },
+      insertBefore: { keys: 'mod+shift+enter' },
     },
   }),
 ];

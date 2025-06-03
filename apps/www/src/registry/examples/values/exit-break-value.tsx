@@ -17,24 +17,28 @@ export const exitBreakValue: any = (
   <fragment>
     <hh2>Exit Break</hh2>
     <hp>
-      Configure how exit breaks (line breaks between blocks) behave using simple
-      rules:
+      Exit from nested block structures using keyboard shortcuts. The plugin
+      automatically determines the appropriate exit point:
     </hp>
 
     <hp indent={1} listStyleType="disc">
-      hotkey – Use hotkeys like ⌘⏎ to move the cursor to the next block
+      ⌘⏎ – Exit and insert a new block after the current structure
     </hp>
     <hp indent={1} listStyleType="disc">
-      query – Specify block types where exit breaks are allowed.
+      ⌘⇧⏎ – Exit and insert a new block before the current structure
     </hp>
     <hp indent={1} listStyleType="disc">
-      before – Choose whether the cursor exits to the next or previous block
+      Automatic – Finds the nearest ancestor that allows paragraph siblings
     </hp>
 
-    <hcodeblock>
-      <hcodeline>And in the middle ⌘⏎ of a block.</hcodeline>
-    </hcodeblock>
-    <hp>Exit breaks also work within nested blocks:</hp>
-    {createTable()}
+    <hp>Exit breaks work intelligently in nested structures like tables:</hp>
+    <hcolumngroup layout={[50, 50]}>
+      <hcolumn width="50%">{createTable()}</hcolumn>
+      <hcolumn width="50%">
+        <hcodeblock>
+          <hcodeline>Try ⌘⏎ to exit this code block.</hcodeline>
+        </hcodeblock>
+      </hcolumn>
+    </hcolumngroup>
   </fragment>
 );

@@ -75,7 +75,7 @@ export const BaseListItemPlugin = createSlatePlugin({
       },
     },
   },
-  node: { isContainer: true, isElement: true },
+  node: { isContainer: true, isElement: true, isStrictSiblings: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
   render: { as: 'li' },
 });

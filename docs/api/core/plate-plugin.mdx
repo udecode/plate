@@ -111,6 +111,13 @@ Indicates if this plugin's nodes should be selectable.
 
 - **Default:** `true`
 </APISubListItem>
+<APISubListItem parent="node" name="isStrictSiblings" type="boolean" optional>
+Indicates whether this element enforces strict sibling type constraints. Set to `true` when the element only allows specific siblings (e.g., `td` can only have `td` siblings, `column` can only have `column` siblings) and prevents standard text blocks like paragraphs from being inserted as siblings.
+
+Used by exit break functionality to determine appropriate exit points in nested structures.
+
+- **Default:** `false`
+</APISubListItem>
 <APISubListItem parent="node" name="breakMode" type="'split' | 'lineBreak' | 'splitOnEmptyLine'" optional>
 Defines the behavior of the Enter key within this node type.
 - `'split'` (or `undefined`): Default behavior. Pressing Enter splits the block, creating a new block of the default type (hard break).

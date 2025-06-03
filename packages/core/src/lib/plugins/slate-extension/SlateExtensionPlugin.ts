@@ -4,12 +4,14 @@ import {
   type Value,
   ElementApi,
 } from '@udecode/slate';
+import { bindFirst } from '@udecode/utils';
 
 import type { CreateSlateEditorOptions } from '../../editor';
 
 import { pipeNormalizeInitialValue } from '../../../internal/plugin/pipeNormalizeInitialValue';
 import { createSlatePlugin, getPluginTypes } from '../../plugin';
 import { BaseParagraphPlugin } from '../paragraph';
+import { insertExitBreak } from './transforms/insertExitBreak';
 
 export type InitOptions = Pick<
   CreateSlateEditorOptions,
@@ -119,6 +121,7 @@ export const SlateExtensionPlugin = createSlatePlugin({
     }
   )
   .extendEditorTransforms(({ editor }) => ({
+    insertExitBreak: bindFirst(insertExitBreak, editor),
     /**
      * Initialize the editor value, selection and normalization. Set `value` to
      * `null` to skip children initialization.

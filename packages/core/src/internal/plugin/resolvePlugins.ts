@@ -50,6 +50,8 @@ export const resolvePlugins = (
       isLeaf: [],
       isMarkableVoid: [],
       isNotSelectable: [],
+      isSplittable: [],
+      isStrictSiblings: [],
       isVoid: [],
     },
     normalizeInitialValue: [],
@@ -137,6 +139,14 @@ export const resolvePlugins = (
 
     if (plugin.node?.breakMode === 'splitOnEmptyLine') {
       editor.meta.pluginKeys.node.breakMode.splitOnEmptyLine.push(plugin.key);
+    }
+
+    if (plugin.node?.isSplittable) {
+      editor.meta.pluginKeys.node.isSplittable.push(plugin.key);
+    }
+
+    if (plugin.node?.isStrictSiblings) {
+      editor.meta.pluginKeys.node.isStrictSiblings.push(plugin.key);
     }
 
     if (plugin.node?.isSelectable === false) {

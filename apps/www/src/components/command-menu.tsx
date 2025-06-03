@@ -215,18 +215,18 @@ export function CommandMenu({ ...props }: DialogProps) {
         <DialogContent className="overflow-hidden p-0">
           <Command
             className="**:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
-            filter={(value, search, keywords) => {
-              const searchValue = search.toLowerCase();
-              if (
-                value.toLowerCase().startsWith(searchValue) ||
-                keywords?.some((keyword) =>
-                  keyword.toLowerCase().startsWith(searchValue)
-                )
-              ) {
-                return 1;
-              }
-              return 0;
-            }}
+            // filter={(value, search, keywords) => {
+            //   const searchValue = search.toLowerCase();
+            //   if (
+            //     value.toLowerCase().startsWith(searchValue) ||
+            //     keywords?.some((keyword) =>
+            //       keyword.toLowerCase().startsWith(searchValue)
+            //     )
+            //   ) {
+            //     return 1;
+            //   }
+            //   return 0;
+            // }}
           >
             <CommandInput placeholder="Type a command or search..." />
             <CommandEmpty>No results found.</CommandEmpty>

@@ -4,7 +4,7 @@ import { withColumn } from './withColumn';
 
 export const BaseColumnItemPlugin = createSlatePlugin({
   key: KEYS.column,
-  node: { isContainer: true, isElement: true },
+  node: { isContainer: true, isElement: true, isStrictSiblings: true },
 }).overrideEditor(withColumn);
 
 export const BaseColumnPlugin = createSlatePlugin({

@@ -21,4 +21,7 @@
   - Example: `render: { as: 'h1' }` would make the plugin render its node as an `<h1>` tag by default without the need to provide a custom component.
 - New plugin field: `node.isContainer` (boolean).
   - When `true`, indicates that the plugin's elements are primarily containers for other content.
+- New plugin field: `node.isStrictSiblings` (boolean).
+  - When `true`, indicates that the element enforces strict sibling type constraints and only allows specific siblings (e.g., `td` can only have `td` siblings, `column` can only have `column` siblings).
+  - Used by `editor.tf.insertExitBreak` functionality to determine appropriate exit points in nested structures.
 - Plugin shortcuts can now automatically leverage existing plugin transforms by specifying the transform name, in addition to custom handlers.

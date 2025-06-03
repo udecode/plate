@@ -437,7 +437,11 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
           props: PlateElementProps<TElement, C>
         ) => React.ReactNode;
       }>;
-      /** @see {@link Shortcuts} */
+      /**
+       * Keyboard shortcuts configuration mapping shortcut names to their key
+       * combinations and handlers. Each shortcut can link to a transform
+       * method, an API method, or use a custom handler function.
+       */
       shortcuts: Partial<
         Record<
           | (string & {})

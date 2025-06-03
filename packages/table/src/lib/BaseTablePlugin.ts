@@ -47,7 +47,7 @@ const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
 
 export const BaseTableRowPlugin = createSlatePlugin({
   key: KEYS.tr,
-  node: { isContainer: true, isElement: true },
+  node: { isContainer: true, isElement: true, isStrictSiblings: true },
   parsers: {
     html: {
       deserializer: {
@@ -63,6 +63,7 @@ export const BaseTableCellPlugin = createSlatePlugin({
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
     isContainer: true,
     isElement: true,
+    isStrictSiblings: true,
     props: ({ element }) => ({
       colSpan: (element?.attributes as any)?.colspan,
       rowSpan: (element?.attributes as any)?.rowspan,
@@ -85,6 +86,7 @@ export const BaseTableCellHeaderPlugin = createSlatePlugin({
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
     isContainer: true,
     isElement: true,
+    isStrictSiblings: true,
     props: ({ element }) => ({
       colSpan: (element?.attributes as any)?.colspan,
       rowSpan: (element?.attributes as any)?.rowspan,

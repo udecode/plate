@@ -358,14 +358,21 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
           props: SlateElementProps<TElement, AnySlatePlugin>
         ) => React.ReactNode;
       }>;
-      shortcuts: Record<
-        string,
-        {
-          keys?: any;
-          preventDefault?: boolean;
-          priority?: number;
-          handler?: (ctx: { editor: SlateEditor }) => void;
-        } | null
+      /**
+       * Keyboard shortcuts configuration mapping shortcut names to their key
+       * combinations and handlers. Each shortcut can link to a transform
+       * method, an API method, or use a custom handler function.
+       */
+      shortcuts: Partial<
+        Record<
+          | (string & {})
+          | Exclude<
+              keyof InferApi<C>[C['key']],
+              keyof InferTransforms<C>[C['key']]
+            >
+          | keyof InferTransforms<C>[C['key']],
+          SlateShortcut | null
+        >
       >;
     };
 
@@ -602,3 +609,32 @@ export type TextStaticProps<C extends AnyPluginConfig = PluginConfig> =
 
 export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =
   BaseTransformOptions & SlatePluginContext<C>;
+
+export type SlateShortcut = {
+  keys?: (({} & string)[][] | readonly string[] | string) | null;
+  delimiter?: string;
+  description?: string;
+  document?: Document;
+  enabled?: Trigger;
+  enableOnContentEditable?: boolean;
+  enableOnFormTags?: boolean;
+  ignoreEventWhenPrevented?: boolean;
+  ignoreModifiers?: boolean;
+  keydown?: boolean;
+  keyup?: boolean;
+  preventDefault?: Trigger;
+  priority?: number;
+  scopes?: readonly string[] | string;
+  splitKey?: string;
+  useKey?: boolean;
+  handler?: (ctx: {
+    editor: SlateEditor;
+    event: KeyboardEvent;
+    eventDetails: any;
+  }) => boolean | void;
+  ignoreEventWhen?: (e: KeyboardEvent) => boolean;
+};
+
+type Trigger =
+  | ((keyboardEvent: KeyboardEvent, hotkeysEvent: any) => boolean)
+  | boolean;

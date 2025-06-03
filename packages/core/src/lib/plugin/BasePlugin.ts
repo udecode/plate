@@ -371,6 +371,16 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * @default true
    */
   isSelectable?: boolean;
+  // TODO jsdoc
+  isSplittable?: boolean;
+  /**
+   * Indicates whether this element enforces strict sibling type constraints.
+   * Set to true `true` when the element only allows specific siblings (e.g.,
+   * `td` can only have `td` siblings, `column` can only have `column` siblings)
+   * and prevents standard text blocks like paragraphs from being inserted as
+   * siblings.
+   */
+  isStrictSiblings?: boolean;
   /**
    * Property used by `inlineVoid` core plugin to set elements of this `type` as
    * void.

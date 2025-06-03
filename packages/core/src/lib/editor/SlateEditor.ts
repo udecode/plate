@@ -73,6 +73,8 @@ export type BaseEditor = EditorBase & {
         isLeaf: string[];
         isMarkableVoid: string[];
         isNotSelectable: string[];
+        isSplittable: string[];
+        isStrictSiblings: string[];
         isVoid: string[];
       };
       normalizeInitialValue: string[];

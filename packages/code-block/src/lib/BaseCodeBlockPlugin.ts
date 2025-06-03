@@ -36,7 +36,7 @@ export type CodeBlockConfig = PluginConfig<
 
 export const BaseCodeLinePlugin = createTSlatePlugin({
   key: KEYS.codeLine,
-  node: { isElement: true },
+  node: { isElement: true, isStrictSiblings: true },
 });
 
 export const BaseCodeSyntaxPlugin = createSlatePlugin({

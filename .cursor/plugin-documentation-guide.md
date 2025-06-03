@@ -39,7 +39,7 @@ Plugin documentation should generally follow this order:
     - Enclose steps within `<Steps>`.
     - **### Installation**:
 
-      - Explain that this is the fastest way to add the plugin(s) via a Feature Kit that includes pre-configured plugins along with other related elements and their [Plate UI](/docs/installation/plate-ui) components.
+      - The fastest way to add the ... plugin is with the `...Kit`, which includes pre-configured `...Plugin` along with ... and their [Plate UI](/docs/installation/plate-ui) components.
       - Include `<ComponentSource name="relevant-kit-name" />`.
       - Immediately follow with a bullet list of UI components from the kit relevant to the documented plugin, with links:
         - Example:
