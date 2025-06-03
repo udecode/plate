@@ -30,7 +30,7 @@ function PureMarkdown({
   return (
     <div
       className={cn(
-        'prose max-w-none break-words prose-p:leading-relaxed prose-pre:p-0',
+        'prose prose-p:leading-relaxed prose-pre:p-0 max-w-none break-words',
         className
       )}
     >
@@ -71,9 +71,7 @@ function PureMarkdown({
             );
           },
           ul({ children }) {
-            return (
-              <Typography.UL className="ml-0 pl-6">{children}</Typography.UL>
-            );
+            return <Typography.UL className="ml-0">{children}</Typography.UL>;
           },
         }}
         remarkPlugins={[remarkGfm]}

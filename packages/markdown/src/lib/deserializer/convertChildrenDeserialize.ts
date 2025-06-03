@@ -1,14 +1,14 @@
 import type { Descendant } from '@udecode/plate';
 
 import type { MdRootContent } from '../mdast';
+import type { MdDecoration } from '../types';
 import type { DeserializeMdOptions } from './deserializeMd';
-import type { Decoration } from './type';
 
 import { convertNodesDeserialize } from './convertNodesDeserialize';
 
 export const convertChildrenDeserialize = (
   children: MdRootContent[],
-  deco: Decoration,
+  deco: MdDecoration,
   options: DeserializeMdOptions
 ): Descendant[] => {
   if (children.length === 0) {

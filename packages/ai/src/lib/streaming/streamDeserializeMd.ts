@@ -1,6 +1,6 @@
 import type { PlateEditor } from '@udecode/plate/react';
 
-import { type TElement, TextApi } from '@udecode/plate';
+import { type TElement, KEYS, TextApi } from '@udecode/plate';
 import {
   type DeserializeMdOptions,
   MarkdownPlugin,
@@ -77,14 +77,14 @@ export const streamDeserializeMd = (
   if (addNewLine && !isCodeBlockOrTable) {
     result.push({
       children: [{ text: '' }],
-      type: 'p',
+      type: KEYS.p,
     });
   }
 
   if (unshiftNewLine && !isCodeBlockOrTable) {
     result.unshift({
       children: [{ text: '' }],
-      type: 'p',
+      type: KEYS.p,
     });
   }
 

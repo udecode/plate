@@ -79,13 +79,19 @@ export const installationNavItems: SidebarNavItem[] = [
     title: 'Local Docs',
   },
   {
-    href: '/docs/mcp',
+    href: '/docs/installation/mcp',
     label: 'New',
     title: 'MCP',
   },
 ];
 
 export const guidesNavItems: SidebarNavItem[] = [
+  {
+    href: '/docs/feature-kits',
+    label: 'New',
+    title: 'Feature Kits',
+  },
+
   {
     href: '/docs/plugin',
     items: [
@@ -95,6 +101,7 @@ export const guidesNavItems: SidebarNavItem[] = [
       },
       {
         href: '/docs/plugin-shortcuts',
+        label: 'Updated',
         title: 'Plugin Shortcuts',
       },
       {
@@ -161,6 +168,7 @@ export const guidesNavItems: SidebarNavItem[] = [
   },
   {
     href: '/docs/troubleshooting',
+    keywords: ['depset'],
     title: 'Troubleshooting',
   },
 ];
@@ -182,11 +190,6 @@ export const docsConfig: DocsConfig = {
     {
       href: '/#potion',
       title: 'Potion',
-    },
-    {
-      external: true,
-      href: 'https://github.com/udecode/plate',
-      title: 'GitHub',
     },
     {
       external: true,
@@ -264,5 +267,5 @@ export const getComponentNavItem = (id: string) => {
 };
 
 export const getPluginNavItem = (id: string) => {
-  return pluginNavMap['/docs/' + id];
+  return pluginNavMap['/docs/' + id] ?? {};
 };

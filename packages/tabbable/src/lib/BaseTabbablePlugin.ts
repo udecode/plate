@@ -1,4 +1,4 @@
-import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
+import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
 
 import type { TabbableEntry } from './types';
 
@@ -36,7 +36,7 @@ export type TabblableConfig = PluginConfig<
 >;
 
 export const BaseTabbablePlugin = createTSlatePlugin<TabblableConfig>({
-  key: 'tabbable',
+  key: KEYS.tabbable,
   options: {
     globalEventListener: false,
     insertTabbableEntries: () => [],

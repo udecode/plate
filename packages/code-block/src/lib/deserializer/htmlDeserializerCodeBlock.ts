@@ -1,9 +1,6 @@
 import type { HtmlDeserializer } from '@udecode/plate';
 
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-} from '../BaseCodeBlockPlugin';
+import { KEYS } from '@udecode/plate';
 
 export const htmlDeserializerCodeBlock: HtmlDeserializer = {
   rules: [
@@ -34,12 +31,12 @@ export const htmlDeserializerCodeBlock: HtmlDeserializer = {
 
     const codeLines = lines.map((line) => ({
       children: [{ text: line }],
-      type: BaseCodeLinePlugin.key,
+      type: KEYS.codeLine,
     }));
 
     return {
       children: codeLines,
-      type: BaseCodeBlockPlugin.key,
+      type: KEYS.codeBlock,
     };
   },
 };

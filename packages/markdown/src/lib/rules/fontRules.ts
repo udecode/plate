@@ -1,7 +1,7 @@
 import kebabCase from 'lodash/kebabCase.js';
 
 import type { MdMdxJsxTextElement } from '../mdast';
-import type { TRules } from './types';
+import type { MdRules } from '../types';
 
 import { convertChildrenDeserialize, getStyleValue } from '../deserializer';
 
@@ -27,7 +27,7 @@ function createFontRule(propName: string) {
   };
 }
 
-export const fontRules: TRules = {
+export const fontRules: MdRules = {
   backgroundColor: createFontRule('backgroundColor'),
   color: createFontRule('color'),
   fontFamily: createFontRule('fontFamily'),

@@ -1,6 +1,6 @@
 import type { EditorAboveOptions, SlateEditor } from '@udecode/plate';
 
-import { BaseTablePlugin } from '../BaseTablePlugin';
+import { KEYS } from '@udecode/plate';
 
 export const getTableAbove = (
   editor: SlateEditor,
@@ -9,7 +9,7 @@ export const getTableAbove = (
   editor.api.block({
     above: true,
     match: {
-      type: editor.getType(BaseTablePlugin),
+      type: editor.getType(KEYS.table),
     },
     ...options,
   });

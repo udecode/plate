@@ -3,7 +3,7 @@
  */
 
 export * from './escapeInput';
-export * from './getIndentListNode';
+export * from './getListNode';
 export * from './isSameNode';
 export * from './nodesWithProps';
 export * from './utils';

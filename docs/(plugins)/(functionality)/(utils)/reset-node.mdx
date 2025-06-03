@@ -1,0 +1,100 @@
+---
+title: Reset Node
+---
+
+<ComponentPreview name="reset-node-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Enables quick reset of text block formatting to default on key events (e.g. `Enter`).
+- To test, press Enter in an empty or at the end of a block quote, or Backspace at the start of a block quote.
+
+</PackageInfo>
+
+## Usage
+
+```tsx
+// ...
+import {
+  isBlockAboveEmpty,
+  isSelectionAtBlockStart,
+  KEYS,
+} from '@udecode/plate';
+import { ResetNodePlugin } from '@udecode/plate/react';
+
+const resetBlockTypesCommonRule = {
+  defaultType: KEYS.p,
+  types: [...KEYS.heading, KEYS.blockquote, KEYS.callout],
+};
+
+const resetBlockTypesCodeBlockRule = {
+  defaultType: KEYS.p,
+  types: [KEYS.codeBlock],
+  onReset: unwrapCodeBlock,
+};
+
+const plugins = [
+  // ...otherPlugins,
+  ResetNodePlugin.configure({
+    options: {
+      rules: [
+        {
+          ...resetBlockTypesCommonRule,
+          hotkey: 'Enter',
+          predicate: (editor) =>
+            editor.api.isEmpty(editor.selection, { block: true }),
+        },
+        {
+          ...resetBlockTypesCommonRule,
+          hotkey: 'Backspace',
+          predicate: (editor) => editor.api.isAt({ start: true }),
+        },
+        {
+          ...resetBlockTypesCodeBlockRule,
+          hotkey: 'Enter',
+          predicate: isCodeBlockEmpty,
+        },
+        {
+          ...resetBlockTypesCodeBlockRule,
+          hotkey: 'Backspace',
+          predicate: isSelectionAtCodeBlockStart,
+        },
+      ],
+    },
+  }),
+];
+```
+
+## Plugins
+
+### `ResetNodePlugin`
+
+Plugin for resetting node types based on rules.
+
+<API name="ResetNodePlugin">
+<APIOptions type="rules">
+    <APIItem name="hotkey" type="string | string[]" optional>
+      Hotkey(s) that trigger the rule.
+    </APIItem>
+    <APIItem name="defaultType" type="string" optional>
+      Default type to reset node to.
+    </APIItem>
+    <APIItem name="types" type="string[]">
+      Node types where rule applies.
+    </APIItem>
+    <APIItem name="predicate" type="(editor: PlateEditor) => boolean">
+      Additional condition for rule.
+    </APIItem>
+    <APIItem name="onReset" type="(editor: PlateEditor) => void" optional>
+      Callback when reset occurs.
+    </APIItem>
+    <APIItem name="disableFirstBlockReset" type="boolean" optional>
+      Disable reset for first block in editor.
+    </APIItem>
+    <APIItem name="disableEditorReset" type="boolean" optional>
+      Disable reset for entire editor.
+  </APIItem>
+  </APIOptions>
+</API>

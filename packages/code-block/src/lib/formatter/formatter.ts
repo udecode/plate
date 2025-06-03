@@ -1,6 +1,4 @@
-import type { Editor } from '@udecode/plate';
-
-import type { TCodeBlockElement } from '../types';
+import type { Editor, TCodeBlockElement } from '@udecode/plate';
 
 import { formatJson, isValidJson } from './jsonFormatter';
 

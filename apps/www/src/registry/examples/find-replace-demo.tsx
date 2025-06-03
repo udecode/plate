@@ -3,15 +3,19 @@
 import * as React from 'react';
 
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
-import { Plate, useEditorPlugin, usePluginOption } from '@udecode/plate/react';
+import {
+  Plate,
+  useEditorPlugin,
+  usePlateEditor,
+  usePluginOption,
+} from '@udecode/plate/react';
 
 import { Input } from '@/components/ui/input';
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { findReplaceValue } from '@/registry/examples/values/find-replace-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
-import { SearchHighlightLeaf } from '@/registry/ui/search-highlight-leaf';
+import { SearchHighlightLeaf } from '@/registry/ui/search-highlight-node';
 
 export function FindToolbar() {
   const { editor, setOption } = useEditorPlugin(FindReplacePlugin);
@@ -35,14 +39,14 @@ export function FindToolbar() {
 }
 
 export default function FindReplaceDemo() {
-  const editor = useCreateEditor(
+  const editor = usePlateEditor(
     {
-      components: {
-        [FindReplacePlugin.key]: SearchHighlightLeaf,
-      },
       plugins: [
-        ...editorPlugins,
-        FindReplacePlugin.configure({ options: { search: 'text' } }),
+        ...EditorKit,
+        FindReplacePlugin.configure({
+          options: { search: 'text' },
+          render: { node: SearchHighlightLeaf },
+        }),
       ],
       value: findReplaceValue,
     },

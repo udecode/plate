@@ -3,4 +3,3 @@
  */
 
 export * from './getRemarkPluginsWithoutMdx';
-export * from './mapTypeUtils';

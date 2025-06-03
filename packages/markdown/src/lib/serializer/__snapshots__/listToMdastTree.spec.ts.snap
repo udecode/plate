@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`listToMdastTree should handle todo lists correctly 1`] = `
+{
+  "children": [
+    {
+      "checked": true,
+      "children": [
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "todo 1",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "type": "listItem",
+    },
+    {
+      "checked": false,
+      "children": [
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "todo 2",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "type": "listItem",
+    },
+  ],
+  "ordered": false,
+  "start": 1,
+  "type": "list",
+}
+`;

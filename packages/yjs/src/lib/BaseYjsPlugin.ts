@@ -3,6 +3,7 @@ import {
   type InitOptions,
   type Value,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 import { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
@@ -30,7 +31,7 @@ const isProviderConfig = (
 };
 
 export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
-  key: 'yjs',
+  key: KEYS.yjs,
   extendEditor: withPlateYjs,
   options: {
     _isConnected: false,

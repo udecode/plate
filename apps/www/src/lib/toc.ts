@@ -25,6 +25,34 @@ interface Items {
   items?: Item[];
 }
 
+// New flat structure compatible with docs-toc.tsx
+export interface FlatTocItem {
+  depth: number;
+  title: string;
+  url: string;
+}
+
+// Helper function to flatten nested items into flat structure with depth
+function flattenItems(items: Item[], depth = 2): FlatTocItem[] {
+  const flattened: FlatTocItem[] = [];
+
+  for (const item of items) {
+    if (item.title && item.url) {
+      flattened.push({
+        depth,
+        title: item.title,
+        url: item.url,
+      });
+    }
+
+    if (item.items) {
+      flattened.push(...flattenItems(item.items, depth + 1));
+    }
+  }
+
+  return flattened;
+}
+
 function getItems(node: any, current: any): Items {
   if (!node) {
     return {};
@@ -67,38 +95,19 @@ const getToc = () => (node: any, file: any) => {
   file.data = items;
 };
 
-export type TableOfContents = {
-  isAPI?: boolean;
-  items?: Item[];
+export type TocItem = {
+  depth: number;
+  url: string;
+  title?: React.ReactNode;
 };
 
-export async function getTableOfContents(
-  content: string
-): Promise<TableOfContents> {
+export async function getTableOfContents(content: string): Promise<TocItem[]> {
   const result = await remark().use(getToc).process(content);
+  const nestedResult = result.data as Items;
 
-  return result.data;
-}
-
-export const getAPITableOfContents = (content: string): TableOfContents => {
-  const categories = content.split(/name="([^"]*)"/).filter((_, i) => i > 0); // we ignore the first element because it's the part of the string before the first category
-
-  const result: TableOfContents = { isAPI: true, items: [] };
-
-  for (let i = 0; i < categories.length; i += 2) {
-    const category = categories[i];
-    const itemsStr = categories[i + 1];
-
-    const names = Array.from(itemsStr.matchAll(/name: '([^']*)'/g), (m) => ({
-      name: m[1],
-    }));
-
-    result.items!.push({
-      items: names.map((n) => ({ title: n.name, url: `#${n.name}` })),
-      title: category,
-      url: `#${category}`,
-    });
+  if (!nestedResult.items) {
+    return [];
   }
 
-  return result;
-};
+  return flattenItems(nestedResult.items);
+}

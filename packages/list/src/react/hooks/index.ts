@@ -4,3 +4,4 @@
 
 export * from './useListToolbarButton';
 export * from './useTodoListElement';
+export * from './useTodoListToolbarButton';

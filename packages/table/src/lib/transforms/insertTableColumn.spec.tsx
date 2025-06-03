@@ -65,6 +65,7 @@ describe('insertTableColumn', () => {
         });
 
         const editor = createPlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,
@@ -96,6 +97,7 @@ describe('insertTableColumn', () => {
         });
 
         const editor = createPlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,
@@ -128,6 +130,7 @@ describe('insertTableColumn', () => {
         });
 
         const editor = createPlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,
@@ -160,6 +163,7 @@ describe('insertTableColumn', () => {
         });
 
         const editor = createPlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,
@@ -197,6 +201,7 @@ describe('insertTableColumn', () => {
           });
 
           const editor = createPlateEditor({
+            nodeId: true,
             plugins: getTestTablePlugins({
               disableMerge,
               initialTableWidth: 100,
@@ -236,6 +241,7 @@ describe('insertTableColumn', () => {
           });
 
           const editor = createPlateEditor({
+            nodeId: true,
             plugins: getTestTablePlugins({
               disableMerge,
               initialTableWidth: 100,
@@ -273,6 +279,7 @@ describe('insertTableColumn', () => {
           });
 
           const editor = createPlateEditor({
+            nodeId: true,
             plugins: getTestTablePlugins({
               disableMerge,
               initialTableWidth: 100,
@@ -312,6 +319,7 @@ describe('insertTableColumn', () => {
           });
 
           const editor = createPlateEditor({
+            nodeId: true,
             plugins: getTestTablePlugins({
               disableMerge,
               initialTableWidth: 100,
@@ -349,6 +357,7 @@ describe('insertTableColumn', () => {
           });
 
           const editor = createPlateEditor({
+            nodeId: true,
             plugins: getTestTablePlugins({
               disableMerge,
               initialTableWidth: 100,
@@ -387,6 +396,7 @@ describe('insertTableColumn', () => {
         });
 
         const editor = createPlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
             initialTableWidth: 100,
@@ -434,6 +444,7 @@ describe('insertTableColumn', () => {
         ) as any as SlateEditor;
 
         const editor = createPlateEditor({
+          nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
           value: input.children,

@@ -1,9 +1,10 @@
 import React from 'react';
 
+import type { TResizableElement } from '@udecode/plate';
+
 import { useEditorRef, useElement, usePath } from '@udecode/plate/react';
 
 import type { ResizeEvent, ResizeLength } from '../types';
-import type { TResizableElement } from './TResizableElement';
 
 import { resizeLengthClamp } from '../utils';
 import { ResizeHandleProvider } from './ResizeHandle';

@@ -21,6 +21,7 @@ export type ResetNodeConfig = PluginConfig<
 /** Enables support for resetting block type from rules. */
 export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
   key: 'resetNode',
+  editOnly: true,
   options: {
     rules: [],
   },

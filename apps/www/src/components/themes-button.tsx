@@ -2,13 +2,22 @@
 
 import * as React from 'react';
 
+import { createZustandStore } from '@udecode/plate';
 import { Paintbrush } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { THEME_LIST } from '@/lib/themes';
 
-import { SettingsStore } from './context/settings-store';
 import { ThemesSwitcher } from './themes-selector-mini';
+
+export const SettingsStore = createZustandStore(
+  {
+    open: false,
+  },
+  {
+    name: 'settings',
+  }
+);
 
 export function ThemesButton() {
   return (
@@ -25,8 +34,7 @@ export function ThemesButton() {
         variant="outline"
         className="hidden h-9 md:flex"
         onClick={() => {
-          SettingsStore.set('customizerTab', 'themes');
-          SettingsStore.set('showSettings', true);
+          SettingsStore.set('open', true);
         }}
       >
         <Paintbrush />

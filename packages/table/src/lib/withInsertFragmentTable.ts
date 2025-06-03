@@ -2,18 +2,15 @@ import {
   type OverrideEditor,
   type Path,
   type TElement,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
+  KEYS,
   NodeApi,
 } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import {
-  type TableConfig,
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
-  getTableAbove,
-} from '.';
-import { BaseTablePlugin } from './BaseTablePlugin';
+import { type TableConfig, getTableAbove } from '.';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /**
@@ -153,10 +150,7 @@ export const withInsertFragmentTable: OverrideEditor<TableConfig> = ({
 
             return;
           }
-        } else if (
-          fragment.length === 1 &&
-          fragment[0].type === BaseTablePlugin.key
-        ) {
+        } else if (fragment.length === 1 && fragment[0].type === KEYS.table) {
           // needed to insert as node, otherwise it will be inserted as text
           editor.tf.insertNodes(fragment[0]);
 

@@ -1,12 +1,8 @@
+import type { TElement } from '@udecode/plate';
+
 import { useEditorRef, useReadOnly } from '@udecode/plate/react';
 
-import type { TTodoListItemElement } from '../../lib';
-
-export const useTodoListElementState = ({
-  element,
-}: {
-  element: TTodoListItemElement;
-}) => {
+export const useTodoListElementState = ({ element }: { element: TElement }) => {
   const editor = useEditorRef();
   const { checked } = element;
   const readOnly = useReadOnly();
@@ -22,8 +18,7 @@ export const useTodoListElementState = ({
 export const useTodoListElement = (
   state: ReturnType<typeof useTodoListElementState>
 ) => {
-  const { checked, element, readOnly } = state;
-  const editor = useEditorRef();
+  const { checked, editor, element, readOnly } = state;
 
   return {
     checkboxProps: {
@@ -31,10 +26,14 @@ export const useTodoListElement = (
       onCheckedChange: (value: boolean) => {
         if (readOnly) return;
 
-        editor.tf.setNodes<TTodoListItemElement>(
-          { checked: value },
-          { at: element }
-        );
+        const path = editor.api.findPath(element);
+
+        if (!path) return;
+
+        editor.tf.setNodes({ checked: value }, { at: path });
+      },
+      onMouseDown: (e: any) => {
+        e.preventDefault();
       },
     },
   };

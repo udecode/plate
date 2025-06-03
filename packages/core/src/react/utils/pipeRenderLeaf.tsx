@@ -7,6 +7,7 @@ import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin';
 
 import { PlateLeaf } from '../components';
+import { useReadOnly } from '../slate-react';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderLeaf, pluginRenderLeaf } from './pluginRenderLeaf';
 
@@ -18,7 +19,7 @@ export const pipeRenderLeaf = (
   const renderLeafs: RenderLeaf[] = [];
   const leafPropsPlugins: AnyEditorPlatePlugin[] = [];
 
-  editor.pluginList.forEach((plugin) => {
+  editor.meta.pluginList.forEach((plugin) => {
     if (
       plugin.node.isLeaf &&
       (plugin.node.isDecoration === true || plugin.render.leaf)
@@ -32,6 +33,9 @@ export const pipeRenderLeaf = (
   });
 
   return function render({ attributes, ...props }) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const readOnly = useReadOnly();
+
     renderLeafs.forEach((renderLeaf) => {
       const newChildren = renderLeaf(props as any);
 
@@ -68,6 +72,7 @@ export const pipeRenderLeaf = (
     const ctxProps = getRenderNodeProps({
       editor,
       props: { attributes, ...props } as any,
+      readOnly,
     }) as any;
 
     return <PlateLeaf {...ctxProps}>{props.children}</PlateLeaf>;

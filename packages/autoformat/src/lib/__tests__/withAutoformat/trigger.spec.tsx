@@ -5,7 +5,7 @@ import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
+} from '@udecode/plate-basic-nodes/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { onKeyDownAutoformat } from '../../../react/onKeyDownAutoformat';

@@ -1,11 +1,8 @@
 import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
 
-import {
-  BaseImagePlugin,
-  BaseMediaEmbedPlugin,
-  insertImage,
-  insertMediaEmbed,
-} from '../..';
+import { KEYS } from '@udecode/plate';
+
+import { insertImage, insertMediaEmbed } from '../..';
 
 export interface InsertMediaOptions extends InsertNodesOptions {
   /**
@@ -21,22 +18,18 @@ export const insertMedia = async <E extends SlateEditor>(
   editor: E,
   {
     getUrl,
-    type = editor.getType(BaseImagePlugin),
+    type = editor.getType(KEYS.img),
     ...options
   }: InsertMediaOptions = {}
 ) => {
   const url = getUrl
     ? await getUrl()
     : window.prompt(
-        `Enter the URL of the ${
-          type === BaseImagePlugin.key
-            ? BaseImagePlugin.key
-            : BaseMediaEmbedPlugin.key
-        }`
+        `Enter the URL of the ${type === KEYS.img ? KEYS.img : KEYS.mediaEmbed}`
       );
 
   if (!url) return;
-  if (type === editor.getType(BaseImagePlugin)) {
+  if (type === editor.getType(KEYS.img)) {
     insertImage(editor, url, options);
   } else {
     insertMediaEmbed(editor, { url }, options);

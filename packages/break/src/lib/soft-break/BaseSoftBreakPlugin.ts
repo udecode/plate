@@ -24,6 +24,7 @@ export interface SoftBreakRule {
  */
 export const BaseSoftBreakPlugin = createTSlatePlugin<SoftBreakConfig>({
   key: 'softBreak',
+  editOnly: true,
   options: {
     rules: [{ hotkey: 'shift+enter' }],
   },

@@ -1,6 +1,6 @@
-import type { TElement } from '@udecode/plate';
 import type { PlateEditor } from '@udecode/plate/react';
 
+import { type TElement, KEYS } from '@udecode/plate';
 import { serializeMd } from '@udecode/plate-markdown';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
@@ -32,7 +32,7 @@ export const getMarkdown = (
       const modifiedFragment = [
         {
           children: fragment[0].children,
-          type: 'p',
+          type: KEYS.p,
         },
       ];
 

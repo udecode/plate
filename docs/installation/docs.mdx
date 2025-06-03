@@ -40,12 +40,6 @@ pnpm create fumadocs-app
 Name your documentation directory. This guide will assume it's `docs`.
 For detailed Fumadocs setup, see the [Fumadocs UI documentation](https://fumadocs.dev/docs/ui).
 
-#### Navigate to `docs`
-
-```bash
-cd docs
-```
-
 #### Create `components.json`
 
 Create the configuration file:
@@ -55,7 +49,7 @@ echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "new-york
 ```
 
 <Callout type="note">
-  Alternatively, you can run `npx shadcn@latest init` to customize the configuration.
+  Alternatively, you can run `npx shadcn@latest init -c docs` to customize the configuration.
 </Callout>
 
 #### Add Plate Documentation
@@ -63,7 +57,7 @@ echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "new-york
 Use the shadcn CLI to fetch Plate documentation files and necessary MDX components.
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/fumadocs
+npx shadcn@latest add https://platejs.org/r/fumadocs -c docs
 ```
 
 <Callout type="warning" title="Version-Specific Documentation">
@@ -79,7 +73,7 @@ This populates `content/docs/plate` and installs the required MDX components.
 
 #### Run Fumadocs App
 
-Start the development server:
+Navigate to the docs directory, then start the development server:
 
 ```bash
 pnpm run dev
@@ -110,18 +104,18 @@ This will install only the MDX documentation files in your project. You can:
 
 ### MCP Integration
 
-Enable AI tools to work with your local documentation by adding the `plate-docs` server to your `.cursor/mcp.json` (or equivalent).
+Enable AI tools to work with your local documentation by adding the Plate server to your `.cursor/mcp.json` (or equivalent).
 
 ```json
 {
   "mcpServers": {
-    "plate-docs": {
-      "description": "Plate documentation",
+    "plate": {
+      "description": "Plate editors, plugins, components and documentation",
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "shadcn@canary", "registry:mcp"],
       "env": {
-        "REGISTRY_URL": "https://platejs.org/r/registry-docs.json"
+        "REGISTRY_URL": "https://platejs.org/r/registry.json"
       }
     }
   }
@@ -131,8 +125,10 @@ Enable AI tools to work with your local documentation by adding the `plate-docs`
 Your AI tools can then:
 *   Access documentation context for better code assistance
 *   Help manage and update documentation
+*   Generate code with proper imports and configurations
+*   Assist with editor setup and feature integration
 
-See the [MCP Guide](/docs/mcp) for more details.
+See the [MCP Guide](/docs/installation/mcp) for more details.
 
 <Callout>
   Once configured, try asking your AI:

@@ -7,8 +7,8 @@ import {
   type Descendant,
   type Operation,
   type TText,
-  BaseParagraphPlugin,
   createEditor,
+  KEYS,
   PathApi,
   TextApi,
 } from '@udecode/plate';
@@ -65,7 +65,7 @@ export function transformDiffTexts(
   const nextTexts = nextNodes.map((n) => inlineNodeCharMap.nodeToText(n));
 
   const nodesEditor = withChangeTracking(createEditor(), options);
-  nodesEditor.children = [{ children: texts, type: BaseParagraphPlugin.key }];
+  nodesEditor.children = [{ children: texts, type: KEYS.p }];
 
   nodesEditor.tf.withoutNormalizing(() => {
     // Start with the first node in the array, assuming all nodes are to be merged into one

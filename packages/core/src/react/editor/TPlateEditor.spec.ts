@@ -113,7 +113,7 @@ describe('TPlateEditor', () => {
         Value,
         InferPlugins<typeof plugins> | typeof TablePlugin
       >(editor1, {
-        plugins: [...editor1.pluginList, TablePlugin],
+        plugins: [...editor1.meta.pluginList, TablePlugin],
       });
 
       expect(editor.api.bold).toBeInstanceOf(Function);

@@ -9,25 +9,11 @@ export const withInlineVoid: OverrideEditor = ({
   api: { isInline, isSelectable, isVoid, markableVoid },
   editor,
 }) => {
-  const voidTypes: string[] = [];
-  const inlineTypes: string[] = [];
-  const markableVoidTypes: string[] = [];
-  const nonSelectableTypes: string[] = [];
-
-  editor.pluginList.forEach((plugin) => {
-    if (plugin.node.isInline) {
-      inlineTypes.push(plugin.node.type);
-    }
-    if (plugin.node.isVoid) {
-      voidTypes.push(plugin.node.type);
-    }
-    if (plugin.node.isMarkableVoid) {
-      markableVoidTypes.push(plugin.node.type);
-    }
-    if (plugin.node.isSelectable === false) {
-      nonSelectableTypes.push(plugin.node.type);
-    }
-  });
+  // Use pre-computed arrays from plugin resolution
+  const voidTypes = editor.meta.pluginKeys.node.isVoid;
+  const inlineTypes = editor.meta.pluginKeys.node.isInline;
+  const markableVoidTypes = editor.meta.pluginKeys.node.isMarkableVoid;
+  const notSelectableTypes = editor.meta.pluginKeys.node.isNotSelectable;
 
   return {
     api: {
@@ -37,7 +23,7 @@ export const withInlineVoid: OverrideEditor = ({
           : isInline(element);
       },
       isSelectable(element) {
-        return nonSelectableTypes.includes(element.type)
+        return notSelectableTypes.includes(element.type)
           ? false
           : isSelectable(element);
       },

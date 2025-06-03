@@ -7,9 +7,10 @@ import type {
   Path,
   PluginConfig,
   TElement,
+  TIdElement,
 } from '@udecode/plate';
 
-import { bindFirst } from '@udecode/plate';
+import { bindFirst, KEYS } from '@udecode/plate';
 import { createTPlatePlugin } from '@udecode/plate/react';
 
 import type { PartialSelectionOptions } from '../internal';
@@ -72,7 +73,7 @@ export type BlockSelectionConfig = PluginConfig<
       /** Focus block selection – that differs from the editor focus */
       focus: () => void;
       /** Get selected blocks */
-      getNodes: () => NodeEntry<TElement & { id: string }>[];
+      getNodes: () => NodeEntry<TIdElement>[];
       /** Check if a block is selected. */
       has: (id: string[] | string) => boolean;
       /** Check if a block is selectable. */
@@ -101,7 +102,8 @@ export type BlockSelectionConfig = PluginConfig<
 >;
 
 export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
-  key: 'blockSelection',
+  key: KEYS.blockSelection,
+  editOnly: true,
   handlers: {
     onKeyDown: onKeyDownSelection,
     onMouseDown: ({ api, editor, event, getOptions }) => {
@@ -152,9 +154,6 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     afterEditable: BlockSelectionAfterEditable,
   },
 })
-  .extend(() => ({
-    inject: {},
-  }))
   .extendSelectors<BlockSelectionConfig['selectors']>(({ getOptions }) => ({
     isSelected: (id) => !!id && getOptions().selectedIds!.has(id),
     isSelectingSome: () => getOptions().selectedIds!.size > 0,
@@ -203,7 +202,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       getNodes: () => {
         const selectedIds = getOption('selectedIds');
 
-        return editor.api.blocks<TElement & { id: string }>({
+        return editor.api.blocks<TIdElement>({
           at: [],
           match: (n) => !!n.id && selectedIds?.has(n.id as string),
         });

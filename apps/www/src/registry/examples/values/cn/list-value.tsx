@@ -6,78 +6,79 @@ jsx;
 
 export const listValue: any = (
   <fragment>
-    <hh2>✍️ 列表</hh2>
-    <hp>
-      <htext />
-    </hp>
-    <hul>
-      <hli>
-        <hlic>猫</hlic>
-      </hli>
-      <hli>
-        <hlic>狗</hlic>
-      </hli>
-      <hli>
-        <hlic>鸟</hlic>
-        <hul>
-          <hli>
-            <hlic>鹦鹉</hlic>
-          </hli>
-          <hli>
-            <hlic>猫头鹰</hlic>
-            <hul>
-              <hli>
-                <hlic>仓鸮</hlic>
-              </hli>
-              <hli>
-                <hlic>雪鸮</hlic>
-              </hli>
-            </hul>
-          </hli>
-        </hul>
-      </hli>
-    </hul>
-    <hol>
-      <hli>
-        <hlic>红色</hlic>
-      </hli>
-      <hli>
-        <hlic>蓝色</hlic>
-        <hul>
-          <hli>
-            <hlic>浅蓝色</hlic>
-          </hli>
-          <hli>
-            <hlic>深蓝色</hlic>
-            <hol>
-              <hli>
-                <hlic>海军蓝</hlic>
-              </hli>
-              <hli>
-                <hlic>青蓝色</hlic>
-              </hli>
-            </hol>
-          </hli>
-        </hul>
-      </hli>
-      <hli>
-        <hlic>绿色</hlic>
-      </hli>
-    </hol>
-  </fragment>
-);
+    <hh2>缩进列表</hh2>
 
-export const todoListValue: any = (
-  <fragment>
-    <hp>每个块都是一个 React 组件，您可以在其中管理状态：</hp>
+    <hp>创建具有多个缩进级别的列表，并为每个级别自定义列表样式类型。</hp>
     <hp checked={true} indent={1} listStyleType="todo">
-      创建一个"香蕉语言"翻译插件
+      待办事项 1
     </hp>
-    <hp checked={true} indent={1} listStyleType="todo">
-      创建一个"检测讽刺"插件（祝你好运）
+
+    <hp indent={1} listStyleType="disc">
+      1
     </hp>
-    <hp checked={false} indent={1} listStyleType="todo">
-      创建一个 AI 自动完成插件
+    <hp indent={2} listStyleType="disc">
+      2
+    </hp>
+    <hp checked={false} indent={3} listStyleType="todo">
+      待办事项 2
+    </hp>
+    <hp indent={1} listStyleType="upper-roman">
+      罗马数字 1
+    </hp>
+    <hp indent={2} listStyleType="decimal">
+      数字 11
+    </hp>
+    <hp indent={3} listStart={2} listStyleType="decimal">
+      数字 111
+    </hp>
+    <hp indent={3} listStart={2} listStyleType="decimal">
+      数字 112
+    </hp>
+
+    {/* <hp indent={3} listStyleType="lower-latin"> */}
+    {/*  7K-T */}
+    {/* </hp> */}
+    {/* <hp indent={3} listStyleType="lower-latin"> */}
+    {/*  7K-TM */}
+    {/* </hp> */}
+    <hp indent={2} listStart={2} listStyleType="decimal">
+      数字 12
+    </hp>
+    <hp indent={2} listStart={3} listStyleType="decimal">
+      数字 13
+    </hp>
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  联盟号 TMA (已退役) */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  联盟号 TMA-M (已退役) */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  联盟号 MS */}
+    {/* </hp> */}
+    <hp indent={1} listStart={2} listStyleType="upper-roman">
+      罗马数字 2
+    </hp>
+    <hp indent={2} listStyleType="decimal">
+      数字 11
+    </hp>
+    <hp indent={2} listStart={2} listStyleType="decimal">
+      数字 12
+    </hp>
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  发现号 */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  亚特兰蒂斯号 */}
+    {/* </hp> */}
+    {/* <hp indent={2} listStyleType="decimal"> */}
+    {/*  奋进号 */}
+    {/* </hp> */}
+    <hp indent={1} listStart={3} listStyleType="upper-roman">
+      罗马数字 3
+    </hp>
+    <hp indent={1} listStart={4} listStyleType="upper-roman">
+      罗马数字 4
     </hp>
   </fragment>
 );

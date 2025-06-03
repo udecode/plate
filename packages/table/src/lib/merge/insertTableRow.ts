@@ -1,19 +1,17 @@
 import {
   type Path,
   type SlateEditor,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
   getEditorPlugin,
+  KEYS,
   NodeApi,
   PathApi,
 } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import type {
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
-
-import { BaseTablePlugin, BaseTableRowPlugin } from '../BaseTablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableColumnCount } from '../queries';
 import { getCellTypes } from '../utils';
 import { getCellIndices } from '../utils/getCellIndices';
@@ -43,7 +41,7 @@ export const insertTableMergeRow = (
   if (at && !fromRow) {
     const table = NodeApi.get<TTableElement>(editor, at);
 
-    if (table?.type === editor.getType(BaseTablePlugin)) {
+    if (table?.type === editor.getType(KEYS.table)) {
       fromRow = NodeApi.lastChild(editor, at)![1];
       at = undefined;
     }
@@ -51,7 +49,7 @@ export const insertTableMergeRow = (
 
   const trEntry = editor.api.block({
     at: fromRow,
-    match: { type: editor.getType(BaseTableRowPlugin) },
+    match: { type: editor.getType(KEYS.tr) },
   });
 
   if (!trEntry) return;
@@ -165,7 +163,7 @@ export const insertTableMergeRow = (
     editor.tf.insertNodes(
       {
         children: newRowChildren,
-        type: editor.getType(BaseTableRowPlugin),
+        type: editor.getType(KEYS.tr),
       },
       {
         at: nextRowPath,

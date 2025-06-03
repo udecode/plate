@@ -72,12 +72,11 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
       )
     );
   }
-  // TODO React
-  if ((plugin as any).node?.component) {
-    (plugin as any).render.node = (plugin as any).node.component;
+  if (plugin.node?.component) {
+    plugin.render.node = plugin.node.component;
   }
-  if ((plugin as any).render?.node) {
-    (plugin as any).node.component = (plugin as any).render.node;
+  if (plugin.render?.node) {
+    plugin.node.component = plugin.render.node;
   }
 
   validatePlugin(editor, plugin);

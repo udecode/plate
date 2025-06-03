@@ -4,12 +4,13 @@ import {
   type OmitFirst,
   type PluginConfig,
   type TElement,
+  type TTableCellElement,
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 
-import type { TTableCellElement } from './types';
 import type { CellIndices } from './utils';
 
 import { getEmptyCellNode, getEmptyRowNode, getEmptyTableNode } from './api';
@@ -45,8 +46,8 @@ const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
 };
 
 export const BaseTableRowPlugin = createSlatePlugin({
-  key: 'tr',
-  node: { isElement: true },
+  key: KEYS.tr,
+  node: { isContainer: true, isElement: true },
   parsers: {
     html: {
       deserializer: {
@@ -57,9 +58,10 @@ export const BaseTableRowPlugin = createSlatePlugin({
 });
 
 export const BaseTableCellPlugin = createSlatePlugin({
-  key: 'td',
+  key: KEYS.td,
   node: {
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
+    isContainer: true,
     isElement: true,
     props: ({ element }) => ({
       colSpan: (element?.attributes as any)?.colspan,
@@ -78,9 +80,10 @@ export const BaseTableCellPlugin = createSlatePlugin({
 });
 
 export const BaseTableCellHeaderPlugin = createSlatePlugin({
-  key: 'th',
+  key: KEYS.th,
   node: {
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
+    isContainer: true,
     isElement: true,
     props: ({ element }) => ({
       colSpan: (element?.attributes as any)?.colspan,
@@ -173,9 +176,10 @@ export type TableConfig = PluginConfig<
 
 /** Enables support for tables. */
 export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
-  key: 'table',
-  // dependencies: [NodeIdPlugin.key],
+  key: KEYS.table,
+  // dependencies: [KEYS.nodeId],
   node: {
+    isContainer: true,
     isElement: true,
   },
   normalizeInitialValue: normalizeInitialValueTable,

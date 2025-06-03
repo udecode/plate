@@ -128,11 +128,6 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
     enabled?: Partial<Record<string, boolean>>;
   };
   /**
-   * Recursive plugin support to allow having multiple plugins in a single
-   * plugin. Plate eventually flattens all the plugins into the editor.
-   */
-  plugins: any[];
-  /**
    * Defines the order in which plugins are registered and executed.
    *
    * Plugins with higher priority values are registered and executed before
@@ -159,6 +154,13 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
      */
     aboveSlate?: React.FC<{ children: React.ReactNode }>;
     /**
+     * Specifies the HTML tag name to use when rendering the node component.
+     * Only used when no custom `component` is provided for the plugin.
+     *
+     * @default 'div' for elements, 'span' for leaves
+     */
+    as?: keyof HTMLElementTagNameMap;
+    /**
      * Renders a component below leaf nodes when `isLeaf: true` and
      * `isDecoration: false`. Use `render.node` instead when `isDecoration:
      * true`.
@@ -177,6 +179,25 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   selectors: InferSelectors<C>;
   /** Transforms (state-modifying operations) that can be applied to the editor. */
   transforms: InferTransforms<C>;
+  /**
+   * Configures edit-only behavior for various plugin functionalities.
+   *
+   * - If `true` (boolean):
+   *
+   *   - `render`, `handlers`, and `inject.nodeProps` are active only when the
+   *       editor is NOT read-only.
+   * - If an object ({@link EditOnlyConfig}): Allows fine-grained control:
+   *
+   *   - `render`: Edit-only by default (true if not specified). Set to `false` to
+   *       always be active.
+   *   - `handlers`: Edit-only by default (true if not specified). Set to `false` to
+   *       always be active.
+   *   - `inject` (for `inject.nodeProps`): Edit-only by default (true if not
+   *       specified). Set to `false` to always be active.
+   *   - `normalizeInitialValue`: NOT edit-only by default (false if not specified).
+   *       Set to `true` to make it edit-only.
+   */
+  editOnly?: EditOnlyConfig | boolean;
   /**
    * Enables or disables the plugin. Used by Plate to determine if the plugin
    * should be used.
@@ -233,6 +254,31 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * @default plugin.key
    */
   type: string;
+  /**
+   * Defines the behavior of the Enter key within this node type.
+   *
+   * - `'split': Pressing Enter splits the block, creating a new block of the
+   *   default type (hard break).
+   * - `'lineBreak'`: Always inserts a newline character (`\n`) within the current
+   *   block (soft break).
+   * - `'splitOnEmptyLine'`: Inserts a `lineBreak` unless the cursor is on an
+   *   empty line (empty block or previous character is `\n`), in which case it
+   *   performs a `split` (hard break).
+   *
+   * @default 'split'
+   */
+  breakMode?: 'lineBreak' | 'split' | 'splitOnEmptyLine';
+  /**
+   * If true, enables automatically clearing the mark when typing at its
+   * boundary. Only applies when `isLeaf` is true.
+   *
+   * When enabled, typing at the end of a marked text segment (e.g., at the end
+   * of commented text) will not apply the mark to the newly typed characters,
+   * effectively "exiting" the mark's formatting.
+   *
+   * @default false
+   */
+  clearOnEdge?: boolean;
   component?: NodeComponent | null;
   /**
    * Controls which (if any) attribute names in the `attributes` property of an
@@ -265,6 +311,27 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   dangerouslyAllowAttributes?: string[];
   /**
+   * Whether the node has non-breaking space on both sides.
+   *
+   * @default false
+   */
+  inset?: boolean;
+  /**
+   * Indicates if this plugin's nodes should be treated as affinity. Used by the
+   * affinity core plugin.
+   */
+  isAffinity?: boolean;
+  /**
+   * Indicates if this plugin's elements are primarily containers for other
+   * content. Container elements are typically unwrapped when querying
+   * fragments.
+   *
+   * Examples: table, tr, td, column, column_group
+   *
+   * @default false
+   */
+  isContainer?: boolean;
+  /**
    * Indicates if this plugin's nodes can be rendered as decorated leaf. Set to
    * false to render node component only once per text node.
    *
@@ -276,6 +343,13 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * Plate for {@link NodeComponent} rendering as elements.
    */
   isElement?: boolean;
+  /**
+   * Whether the inline node is a hard edge. When true, allows precise cursor
+   * positioning at the exact start or end of the node.
+   *
+   * @default false
+   */
+  isHardEdge?: boolean;
   /**
    * Indicates if this plugin's elements should be treated as inline. Used by
    * the inlineVoid core plugin.
@@ -320,6 +394,36 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 
 // -----------------------------------------------------------------------------
 
+export type EditOnlyConfig = {
+  /**
+   * If true, `handlers` are only active when the editor is not read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  handlers?: boolean;
+  /**
+   * If true, `inject.nodeProps` is only active when the editor is not
+   * read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  inject?: boolean;
+  /**
+   * If true, `normalizeInitialValue` is only called when the editor is not
+   * read-only.
+   *
+   * @default false (This is an exception. It's not edit-only by default, even if `editOnly` is true or an object, unless explicitly set to true here).
+   */
+  normalizeInitialValue?: boolean;
+  /**
+   * If true, `render` functions are only active when the editor is not
+   * read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  render?: boolean;
+};
+
 export type ExtendConfig<
   C extends PluginConfig,
   EO = {},
@@ -352,6 +456,8 @@ export interface GetInjectNodePropsReturnType extends AnyObject {
   className?: string;
   style?: CSSStyleDeclaration;
 }
+
+export type InferKey<P> = P extends PluginConfig ? P['key'] : never;
 
 export type InferApi<P> = P extends PluginConfig ? P['api'] : never;
 

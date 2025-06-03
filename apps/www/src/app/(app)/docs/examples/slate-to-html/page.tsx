@@ -7,7 +7,7 @@ export default function SlateToHtmlPage() {
     <DocContent
       category="example"
       doc={exampleNavMap['/docs/examples/slate-to-html']}
-      toc={{}}
+      toc={[]}
     >
       <BlockDisplay
         item={{

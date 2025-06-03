@@ -1,8 +1,7 @@
 import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { type TElement, Hotkeys, isHotkey } from '@udecode/plate';
+import { type TElement, Hotkeys, isHotkey, KEYS } from '@udecode/plate';
 
-import { BaseCodeLinePlugin } from '../lib';
 import { getCodeLineEntry } from '../lib/queries/getCodeLineEntry';
 import { indentCodeLine } from '../lib/transforms/indentCodeLine';
 import { outdentCodeLine } from '../lib/transforms/outdentCodeLine';
@@ -19,7 +18,7 @@ export const onKeyDownCodeBlock: KeyboardHandler = ({ editor, event }) => {
 
   if (isTab || isUntab) {
     const _codeLines = editor.api.nodes<TElement>({
-      match: { type: editor.getType(BaseCodeLinePlugin) },
+      match: { type: editor.getType(KEYS.codeLine) },
     });
     const codeLines = Array.from(_codeLines);
 

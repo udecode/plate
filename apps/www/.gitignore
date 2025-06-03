@@ -1,3 +1,5 @@
 .next
 .contentlayer
+.content-collections
+.source
 tsconfig.tsbuildinfo

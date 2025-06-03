@@ -2,38 +2,50 @@
 
 import * as React from 'react';
 
-import { MoonIcon, SunIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import { Button } from '@/components/ui/button';
-import { META_THEME_COLORS } from '@/config/site';
 import { useMetaColor } from '@/hooks/use-meta-color';
 
 export function ModeSwitcher() {
   const { resolvedTheme, setTheme } = useTheme();
-  const { setMetaColor } = useMetaColor();
+  const { metaColor, setMetaColor } = useMetaColor();
+
+  React.useEffect(() => {
+    setMetaColor(metaColor);
+  }, [metaColor, setMetaColor]);
+
   const toggleTheme = React.useCallback(() => {
-    const newTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-
-    // Set cookie when theme changes
-    document.cookie = `theme=${newTheme};path=/;max-age=31536000`; // 1 year
-
-    setMetaColor(
-      resolvedTheme === 'dark'
-        ? META_THEME_COLORS.light
-        : META_THEME_COLORS.dark
-    );
-  }, [resolvedTheme, setTheme, setMetaColor]);
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  }, [resolvedTheme, setTheme]);
 
   return (
     <Button
+      size="icon"
       variant="ghost"
-      className="group/toggle size-8 px-0"
+      className="group/toggle extend-touch-target size-8"
       onClick={toggleTheme}
+      title="Toggle theme"
     >
-      <SunIcon className="hidden [html.dark_&]:block" />
-      <MoonIcon className="hidden [html.light_&]:block" />
+      <svg
+        className="size-4.5"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M0 0h24v24H0z" fill="none" stroke="none" />
+        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+        <path d="M12 3l0 18" />
+        <path d="M12 9l4.65 -4.65" />
+        <path d="M12 14.3l7.37 -7.37" />
+        <path d="M12 19.6l8.85 -8.85" />
+      </svg>
       <span className="sr-only">Toggle theme</span>
     </Button>
   );

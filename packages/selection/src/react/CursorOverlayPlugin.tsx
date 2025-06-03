@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 
 import type { PluginConfig } from '@udecode/plate';
 
+import { KEYS } from '@udecode/plate';
 import {
   type DOMHandler,
   createTPlatePlugin,
@@ -35,7 +36,10 @@ const getRemoveCursorHandler =
   };
 
 export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
-  key: 'cursorOverlay',
+  key: KEYS.cursorOverlay,
+  editOnly: {
+    render: false,
+  },
   options: { cursors: {} },
 })
   .extendApi<CursorOverlayConfig['api']['cursorOverlay']>(
@@ -92,7 +96,7 @@ export const CursorOverlayPlugin = createTPlatePlugin<CursorOverlayConfig>({
       onDragOver: ({ api, editor, event }) => {
         if (
           !editor.plugins.dnd ||
-          editor.getOptions({ key: 'dnd' }).isDragging
+          editor.getOptions({ key: KEYS.dnd }).isDragging
         ) {
           return;
         }

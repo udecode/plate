@@ -12,6 +12,7 @@ import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type { SlateEditor } from '../editor';
 import type {
+  SlateElementProps,
   SlateRenderElementProps,
   SlateRenderLeafProps,
   SlateRenderTextProps,
@@ -31,6 +32,8 @@ import type {
   InferOptions,
   InferSelectors,
   InferTransforms,
+  NodeComponent,
+  NodeComponents,
   ParserOptions,
   PluginConfig,
   WithAnyKey,
@@ -287,6 +290,7 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         textProps?: TextStaticProps<WithAnyKey<C>>;
       };
       override: {
+        components?: NodeComponents;
         plugins?: Record<string, PartialEditorPlugin<AnyPluginConfig>>;
       };
       parser: Nullable<Parser<WithAnyKey<C>>>;
@@ -304,6 +308,11 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
               serializer?: HtmlSerializer<WithAnyKey<C>>;
             }>;
           };
+      /**
+       * Recursive plugin support to allow having multiple plugins in a single
+       * plugin. Plate eventually flattens all the plugins into the editor.
+       */
+      plugins: any[];
       render: Nullable<{
         /**
          * When other plugins' `node` components are rendered, this function can
@@ -326,15 +335,38 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * in the wrapper function. It is not equivalent to a React component.
          */
         belowNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
+        /** Renders a component above the main Slate component, as its sibling. */
+        aboveSlate?: () => React.ReactElement<any> | null;
+        /** Renders a component after the main editor container. */
+        afterContainer?: () => React.ReactElement<any> | null;
         /**
          * Renders a component after the `Editable` component. This is the last
          * render position within the editor structure.
          */
         afterEditable?: () => React.ReactElement<any> | null;
+        /** Renders a component before the main editor container. */
+        beforeContainer?: () => React.ReactElement<any> | null;
         /** Renders a component before the `Editable` component. */
         beforeEditable?: () => React.ReactElement<any> | null;
+        /**
+         * Function to render content below the root element but above its
+         * children. Similar to belowNodes but renders directly in the element
+         * rather than wrapping. Multiple plugins can provide this, and all
+         * their content will be rendered in sequence.
+         */
+        belowRootNodes?: (
+          props: SlateElementProps<TElement, AnySlatePlugin>
+        ) => React.ReactNode;
       }>;
-      shortcuts: {};
+      shortcuts: Record<
+        string,
+        {
+          keys?: any;
+          preventDefault?: boolean;
+          priority?: number;
+          handler?: (ctx: { editor: SlateEditor }) => void;
+        } | null
+      >;
     };
 
 export type SlatePluginConfig<
@@ -557,6 +589,8 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     >
   >;
   overrideEditor: (override: OverrideEditor<C>) => SlatePlugin<C>;
+  /** Returns a new instance of the plugin with the component. */
+  withComponent: (component: NodeComponent) => SlatePlugin<C>;
   __resolved?: boolean;
 };
 

@@ -10,6 +10,7 @@ import {
   type SlateEditor,
   bindFirst,
   ElementApi,
+  KEYS,
 } from '@udecode/plate';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { createTPlatePlugin } from '@udecode/plate/react';
@@ -21,7 +22,6 @@ import { removeAnchorAIChat } from './transforms';
 import { acceptAIChat } from './transforms/acceptAIChat';
 import { insertBelowAIChat } from './transforms/insertBelowAIChat';
 import { replaceSelectionAIChat } from './transforms/replaceSelectionAIChat';
-import { useAIChatHooks } from './useAIChatHook';
 import {
   type EditorPromptParams,
   getEditorPrompt,
@@ -92,7 +92,7 @@ export type AIChatPluginConfig = PluginConfig<
 >;
 
 export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
-  key: 'aiChat',
+  key: KEYS.aiChat,
   dependencies: ['ai'],
   node: {
     isElement: true,
@@ -111,7 +111,6 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     promptTemplate: () => '{prompt}',
     systemTemplate: () => {},
   },
-  useHooks: useAIChatHooks,
 })
   .overrideEditor(withAIChat)
   .extendApi<

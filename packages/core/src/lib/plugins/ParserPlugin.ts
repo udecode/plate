@@ -10,7 +10,7 @@ export const ParserPlugin = createSlatePlugin({
 }).overrideEditor(({ editor, tf: { insertData } }) => ({
   transforms: {
     insertData(dataTransfer: DataTransfer) {
-      const inserted = [...editor.pluginList].reverse().some((plugin) => {
+      const inserted = [...editor.meta.pluginList].reverse().some((plugin) => {
         const parser = plugin.parser;
 
         if (!parser) return false;

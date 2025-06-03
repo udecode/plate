@@ -62,7 +62,7 @@ export const useSlateProps = ({
 
   return React.useMemo(() => {
     return {
-      key: editor.key,
+      key: editor.meta.key,
       editor,
       initialValue: editor.children,
       value: editor.children,

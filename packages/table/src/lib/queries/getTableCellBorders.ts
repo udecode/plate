@@ -1,20 +1,20 @@
-import type { SlateEditor } from '@udecode/plate';
-
 import type {
-  BorderDirection,
-  BorderStyle,
+  SlateEditor,
+  TTableCellBorder,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-} from '../types';
+} from '@udecode/plate';
+
+import type { BorderDirection } from '../types';
 
 import { type CellIndices, getCellIndices } from '../utils/getCellIndices';
 
 export interface BorderStylesDefault {
-  bottom: BorderStyle;
-  right: BorderStyle;
-  left?: BorderStyle;
-  top?: BorderStyle;
+  bottom: TTableCellBorder;
+  right: TTableCellBorder;
+  left?: TTableCellBorder;
+  top?: TTableCellBorder;
 }
 
 export const getTableCellBorders = (
@@ -28,7 +28,7 @@ export const getTableCellBorders = (
   }: {
     element: TTableCellElement;
     cellIndices?: CellIndices;
-    defaultBorder?: BorderStyle;
+    defaultBorder?: TTableCellBorder;
   }
 ): BorderStylesDefault => {
   const cellPath = editor.api.findPath(element)!;

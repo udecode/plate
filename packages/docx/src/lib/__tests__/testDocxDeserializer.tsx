@@ -1,15 +1,14 @@
 /** @jsx jsx */
 
 import { type SlatePlugin, createSlateEditor } from '@udecode/plate';
-import { ParagraphPlugin } from '@udecode/plate/react';
-import { AlignPlugin } from '@udecode/plate-alignment/react';
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
+import { BasicBlocksPlugin } from '@udecode/plate-basic-nodes/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
+import { HorizontalRulePlugin } from '@udecode/plate-basic-nodes/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
-import { LineHeightPlugin } from '@udecode/plate-line-height/react';
+import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
@@ -22,12 +21,7 @@ jsx;
 
 const injectConfig = {
   inject: {
-    targetPlugins: [
-      ParagraphPlugin.key,
-      HEADING_KEYS.h1,
-      HEADING_KEYS.h2,
-      HEADING_KEYS.h3,
-    ],
+    targetPlugins: ['p', 'h1', 'h2', 'h3'],
   },
 };
 
@@ -66,12 +60,13 @@ export const testDocxDeserializer = ({
         ...plugins,
         ImagePlugin,
         HorizontalRulePlugin,
+        CodeBlockPlugin,
         LinkPlugin,
-        BasicElementsPlugin,
+        BasicBlocksPlugin,
         BasicMarksPlugin,
         TablePlugin,
         LineHeightPlugin.extend(() => injectConfig),
-        AlignPlugin.extend(() => injectConfig),
+        TextAlignPlugin.extend(() => injectConfig),
         IndentPlugin.extend(() => injectConfig),
         DocxPlugin,
         JuicePlugin,

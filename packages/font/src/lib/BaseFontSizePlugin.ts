@@ -1,10 +1,4 @@
-import {
-  type PluginConfig,
-  bindFirst,
-  createTSlatePlugin,
-} from '@udecode/plate';
-
-import { setFontSize } from './transforms';
+import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
 
 export type BaseFontSizeConfig = PluginConfig<
   'fontSize',
@@ -17,7 +11,7 @@ export type BaseFontSizeConfig = PluginConfig<
 >;
 
 export const BaseFontSizePlugin = createTSlatePlugin({
-  key: 'fontSize',
+  key: KEYS.fontSize,
   inject: {
     nodeProps: {
       nodeKey: 'fontSize',
@@ -38,6 +32,10 @@ export const BaseFontSizePlugin = createTSlatePlugin({
       },
     },
   },
-}).extendApi(({ editor }) => ({
-  setMark: bindFirst(setFontSize, editor),
+}).extendTransforms(({ editor }) => ({
+  addMark: (value: string) => {
+    editor.tf.addMarks({
+      [KEYS.fontSize]: value,
+    });
+  },
 }));

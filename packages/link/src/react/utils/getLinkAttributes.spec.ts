@@ -1,6 +1,6 @@
-import { createPlateEditor } from '@udecode/plate/react';
+import type { TLinkElement } from '@udecode/plate';
 
-import type { TLinkElement } from '../../lib/types';
+import { createPlateEditor } from '@udecode/plate/react';
 
 import { getLinkAttributes } from '../../lib';
 import { type LinkConfig, LinkPlugin } from '../LinkPlugin';

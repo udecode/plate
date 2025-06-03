@@ -5,6 +5,7 @@ import type {
   AnyPluginConfig,
   BaseEditor,
   InferApi,
+  InferKey,
   InferTransforms,
   PluginConfig,
   WithRequiredKey,
@@ -16,11 +17,13 @@ import type {
 } from '../plugin/PlatePlugin';
 import type { PlateCorePlugin } from './withPlate';
 
-export type PlateEditor = {
+export type PlateEditor = BaseEditor & {
   api: EditorApi & UnionToIntersection<InferApi<PlateCorePlugin>>;
-  pluginList: AnyEditorPlatePlugin[];
+  meta: BaseEditor['meta'] & {
+    pluginList: AnyEditorPlatePlugin[];
+    shortcuts: Shortcuts;
+  };
   plugins: Record<string, AnyEditorPlatePlugin>;
-  shortcuts: Shortcuts;
   // Alias for transforms
   tf: EditorTransforms & UnionToIntersection<InferTransforms<PlateCorePlugin>>;
   transforms: EditorTransforms &
@@ -35,7 +38,7 @@ export type PlateEditor = {
     plugin?: WithRequiredKey<C>
   ) => PlateEditor['tf'] & InferTransforms<C>;
   uid?: string;
-} & BaseEditor;
+};
 
 export type TPlateEditor<
   V extends Value = Value,
@@ -43,7 +46,10 @@ export type TPlateEditor<
 > = PlateEditor & {
   api: EditorApi<V> & UnionToIntersection<InferApi<P | PlateCorePlugin>>;
   children: V;
-  pluginList: P[];
+  meta: BaseEditor['meta'] & {
+    pluginList: P[];
+    shortcuts: Shortcuts;
+  };
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
   tf: EditorTransforms<V> &
     UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
@@ -56,3 +62,7 @@ export type TPlateEditor<
     plugin?: WithRequiredKey<C>
   ) => TPlateEditor<V>['tf'] & InferTransforms<C>;
 };
+
+export type KeyofPlugins<T extends AnyPluginConfig> =
+  | (string & {})
+  | InferKey<PlateCorePlugin | T>;

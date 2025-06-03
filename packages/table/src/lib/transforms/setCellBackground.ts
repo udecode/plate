@@ -1,6 +1,4 @@
-import type { SlateEditor, TElement } from '@udecode/plate';
-
-import type { TTableCellElement } from '../types';
+import type { SlateEditor, TElement, TTableCellElement } from '@udecode/plate';
 
 import { getCellTypes } from '../utils/getCellType';
 

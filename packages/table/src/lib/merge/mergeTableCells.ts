@@ -1,13 +1,15 @@
-import {
-  type Descendant,
-  type NodeEntry,
-  type SlateEditor,
-  getEditorPlugin,
+import type {
+  Descendant,
+  NodeEntry,
+  SlateEditor,
+  TTableCellElement,
 } from '@udecode/plate';
+
+import { getEditorPlugin, KEYS } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import { type TTableCellElement, getCellIndices } from '..';
-import { BaseTableCellHeaderPlugin, BaseTablePlugin } from '../BaseTablePlugin';
+import { getCellIndices } from '..';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 
 /** Merges multiple selected cells into one. */
@@ -89,8 +91,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
     const mergedCell = {
       ...api.create.tableCell({
         children: mergingCellChildren,
-        header:
-          cellEntries[0][0].type === editor.getType(BaseTableCellHeaderPlugin),
+        header: cellEntries[0][0].type === editor.getType(KEYS.th),
       }),
       colSpan,
       rowSpan,

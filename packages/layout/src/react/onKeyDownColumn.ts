@@ -1,8 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate/react';
 
-import { isHotkey, PathApi } from '@udecode/plate';
-
-import { ColumnPlugin } from './ColumnPlugin';
+import { isHotkey, KEYS, PathApi } from '@udecode/plate';
 
 export const onKeyDownColumn: KeyboardHandler = ({ editor, event }) => {
   if (event.defaultPrevented) return;
@@ -18,7 +16,7 @@ export const onKeyDownColumn: KeyboardHandler = ({ editor, event }) => {
 
     const [node] = ancestorNode;
 
-    if (node.type !== ColumnPlugin.key) return;
+    if (node.type !== KEYS.column) return;
 
     const [, abovePath] = aboveNode;
 

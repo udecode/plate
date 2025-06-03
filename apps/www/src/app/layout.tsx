@@ -93,10 +93,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
             `,
           }}
         />
+        <meta name="theme-color" content={META_THEME_COLORS.light} />
       </head>
       <body
         className={cn(
           'min-h-svh bg-background font-sans antialiased',
+          '[--footer-height:calc(var(--spacing)*14)] [--header-height:calc(var(--spacing)*14)] xl:[--footer-height:calc(var(--spacing)*24)]',
           fontSans.variable,
           fontMono.variable
         )}

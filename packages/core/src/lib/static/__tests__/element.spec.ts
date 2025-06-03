@@ -1,7 +1,7 @@
 import { decode } from 'html-entities';
 
 import { serializeHtml } from '../serializeHtml';
-import { components, createStaticEditor } from './create-static-editor';
+import { createStaticEditor } from './create-static-editor';
 
 describe('serializePlateStatic', () => {
   it('should serialize paragraph to html', async () => {
@@ -12,9 +12,7 @@ describe('serializePlateStatic', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
-      components: components,
-    });
+    const html = await serializeHtml(editor);
     expect(html).toContain('Some random paragraph here...');
   });
 
@@ -34,9 +32,7 @@ describe('serializePlateStatic', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
-      components: components,
-    });
+    const html = await serializeHtml(editor);
     expect(html).toContain('Heading 1');
     expect(html).toContain('Heading 2');
     expect(html).toContain('Heading 3');
@@ -50,9 +46,7 @@ describe('serializePlateStatic', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
-      components: components,
-    });
+    const html = await serializeHtml(editor);
     expect(html).toContain('Blockquoted text here...');
   });
 
@@ -67,9 +61,7 @@ describe('serializePlateStatic', () => {
       { children: [{ text: ' part.' }], type: 'p' },
     ]);
 
-    const html = await serializeHtml(editor, {
-      components: components,
-    });
+    const html = await serializeHtml(editor);
     expect(html).toContain(decode('href="https://example.com/"'));
     expect(html).toContain('slate-a');
   });
@@ -83,9 +75,7 @@ describe('serializePlateStatic', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
-      components: components,
-    });
+    const html = await serializeHtml(editor);
     expect(html).toContain('src="https://example.com/image.jpg"');
   });
 
@@ -105,9 +95,7 @@ describe('serializePlateStatic', () => {
       },
     ]);
 
-    const html = await serializeHtml(editor, {
-      components: components,
-    });
+    const html = await serializeHtml(editor);
     expect(html).toContain('Cell 1');
     expect(html).toContain('Cell 2');
   });

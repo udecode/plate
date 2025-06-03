@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "examples-hundreds-editors-docs",
+  "type": "registry:file",
+  "title": "Hundreds Editors",
+  "description": "Documentation for Hundreds Editors",
+  "files": [
+    {
+      "path": "../../docs/examples/hundreds-editors.mdx",
+      "content": "---\ntitle: Hundreds Editors\n---\n\n<ComponentPreview name=\"hundreds-editors-demo\" />\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/examples/hundreds-editors.mdx"
+    }
+  ]
+}

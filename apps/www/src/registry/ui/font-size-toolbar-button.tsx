@@ -4,9 +4,9 @@ import * as React from 'react';
 
 import type { TElement } from '@udecode/plate';
 
-import { toUnitLess } from '@udecode/plate-font';
-import { FontSizePlugin } from '@udecode/plate-font/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
+import { KEYS } from '@udecode/plate';
+import { toUnitLess } from '@udecode/plate-basic-styles';
+import { FontSizePlugin } from '@udecode/plate-basic-styles/react';
 import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
 import { Minus, Plus } from 'lucide-react';
 
@@ -22,9 +22,9 @@ import { ToolbarButton } from './toolbar';
 const DEFAULT_FONT_SIZE = '16';
 
 const FONT_SIZE_MAP = {
-  [HEADING_KEYS.h1]: '36',
-  [HEADING_KEYS.h2]: '24',
-  [HEADING_KEYS.h3]: '20',
+  h1: '36',
+  h2: '24',
+  h3: '20',
 } as const;
 
 const FONT_SIZES = [
@@ -47,10 +47,10 @@ const FONT_SIZES = [
 export function FontSizeToolbarButton() {
   const [inputValue, setInputValue] = React.useState(DEFAULT_FONT_SIZE);
   const [isFocused, setIsFocused] = React.useState(false);
-  const { api, editor } = useEditorPlugin(FontSizePlugin);
+  const { editor, tf } = useEditorPlugin(FontSizePlugin);
 
   const cursorFontSize = useEditorSelector((editor) => {
-    const fontSize = editor.api.marks()?.[FontSizePlugin.key];
+    const fontSize = editor.api.marks()?.[KEYS.fontSize];
 
     if (fontSize) {
       return toUnitLess(fontSize as string);
@@ -74,7 +74,7 @@ export function FontSizeToolbarButton() {
       return;
     }
     if (newSize !== toUnitLess(cursorFontSize)) {
-      api.fontSize.setMark(`${newSize}px`);
+      tf.fontSize.addMark(`${newSize}px`);
     }
 
     editor.tf.focus();
@@ -82,7 +82,7 @@ export function FontSizeToolbarButton() {
 
   const handleFontSizeChange = (delta: number) => {
     const newSize = Number(displayValue) + delta;
-    api.fontSize.setMark(`${newSize}px`);
+    tf.fontSize.addMark(`${newSize}px`);
     editor.tf.focus();
   };
 
@@ -131,7 +131,7 @@ export function FontSizeToolbarButton() {
                 'flex h-8 w-full items-center justify-center text-sm hover:bg-accent data-[highlighted=true]:bg-accent'
               )}
               onClick={() => {
-                api.fontSize.setMark(`${size}px`);
+                tf.fontSize.addMark(`${size}px`);
                 setIsFocused(false);
               }}
               data-highlighted={size === displayValue}

@@ -1,3 +1,4 @@
+import { KEYS } from '@udecode/plate';
 import { Key, toPlatePlugin } from '@udecode/plate/react';
 
 import {
@@ -17,14 +18,14 @@ export const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
     onKeyDown: onKeyDownCodeBlock,
   },
   plugins: [CodeLinePlugin, CodeSyntaxPlugin],
-}).extend(({ editor, plugin }) => ({
+}).extend({
   shortcuts: {
     toggleCodeBlock: {
       keys: [[Key.Mod, Key.Alt, '8']],
       preventDefault: true,
-      handler: () => {
-        editor.tf.toggleBlock(editor.getType(plugin));
+      handler: ({ editor }) => {
+        editor.tf.toggleBlock(editor.getType(KEYS.codeBlock));
       },
     },
   },
-}));
+});

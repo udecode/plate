@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { SidebarNavItem } from '@/types/nav';
 
-import { ChevronsUpDown } from 'lucide-react';
+import { ChevronsUpDown, CircleDashedIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,25 @@ import {
 } from '@/components/ui/popover';
 import { getDocIcon } from '@/config/docs-icons';
 import { cn } from '@/lib/utils';
+
+// Recursive function to flatten nested items
+const flattenItems = (items: SidebarNavItem[]): SidebarNavItem[] => {
+  const result: SidebarNavItem[] = [];
+
+  for (const item of items) {
+    if (item.href) {
+      // Add the item itself if it has an href
+      result.push(item);
+    }
+
+    // Recursively flatten nested items
+    if (item.items?.length) {
+      result.push(...flattenItems(item.items));
+    }
+  }
+
+  return result;
+};
 
 export function DocBreadcrumb({
   buttonClassName,
@@ -44,7 +63,11 @@ export function DocBreadcrumb({
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
 
-  const flatItems = React.useMemo(() => items.flatMap((g) => g.items), [items]);
+  const flatItems = React.useMemo(() => {
+    return items.flatMap((group) =>
+      group.items ? flattenItems(group.items) : []
+    );
+  }, [items]);
 
   const selectedItem = flatItems.find(
     (item) => (item?.value ?? item?.href) === value
@@ -87,42 +110,43 @@ export function DocBreadcrumb({
                 className="px-2"
                 heading={group.title}
               >
-                {group.items?.map((item) => {
-                  const Icon = getDocIcon(item, category);
+                {group.items &&
+                  flattenItems(group.items).map((item) => {
+                    const Icon = getDocIcon(item, category) ?? CircleDashedIcon;
 
-                  return (
-                    <CommandItem
-                      key={item.href}
-                      className="flex items-center gap-2"
-                      value={item.value ?? item.href}
-                      onSelect={() => {
-                        router.push(item.href!);
-                        setOpen(false);
-                      }}
-                    >
-                      {category && Icon && (
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-white">
-                          <Icon className="size-4 text-neutral-800" />
-                        </div>
-                      )}
-                      <div>
-                        <div
-                          className={cn(
-                            'line-clamp-1'
-                            // category && 'font-medium'
-                          )}
-                        >
-                          {item.title}
-                        </div>
-                        {category && item.description && (
-                          <div className="line-clamp-1 text-xs text-muted-foreground">
-                            {item.description}
+                    return (
+                      <CommandItem
+                        key={item.href}
+                        className="flex items-center gap-2"
+                        value={item.value ?? item.href}
+                        onSelect={() => {
+                          router.push(item.href!);
+                          setOpen(false);
+                        }}
+                      >
+                        {category && Icon && (
+                          <div className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-white">
+                            <Icon className="size-4 text-neutral-800" />
                           </div>
                         )}
-                      </div>
-                    </CommandItem>
-                  );
-                })}
+                        <div>
+                          <div
+                            className={cn(
+                              'line-clamp-1'
+                              // category && 'font-medium'
+                            )}
+                          >
+                            {item.title}
+                          </div>
+                          {category && item.description && (
+                            <div className="line-clamp-1 text-xs text-muted-foreground">
+                              {item.description}
+                            </div>
+                          )}
+                        </div>
+                      </CommandItem>
+                    );
+                  })}
               </CommandGroup>
             ))}
           </CommandList>

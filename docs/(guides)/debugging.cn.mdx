@@ -1,0 +1,212 @@
+---
+title: 调试
+description: 在 Plate 中进行调试。
+---
+
+## 使用 DebugPlugin
+
+当您创建 Plate 编辑器时，`DebugPlugin` 会自动包含其中。您可以通过编辑器的 API 访问其方法：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [/* 您的插件 */],
+});
+
+editor.api.debug.log('这是一条日志消息');
+editor.api.debug.info('这是一条信息消息');
+editor.api.debug.warn('这是一条警告');
+editor.api.debug.error('这是一个错误');
+```
+
+### 日志级别
+
+`DebugPlugin` 支持四种日志级别：
+
+1. `log`: 用于常规日志记录
+2. `info`: 用于信息性消息
+3. `warn`: 用于警告
+4. `error`: 用于错误
+
+您可以设置最低日志级别来控制显示哪些消息：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [
+    DebugPlugin.configure({
+      options: {
+        logLevel: 'warn', // 仅显示警告和错误
+      },
+    }),
+  ],
+});
+```
+
+### 配置选项
+
+`DebugPlugin` 可以使用以下选项进行配置：
+
+- `isProduction`: 设置为 `true` 可在生产环境中禁用日志记录。
+- `logLevel`: 设置最低日志级别（`'error'`、`'warn'`、`'info'` 或 `'log'`）。
+- `logger`: 为每个日志级别提供自定义日志记录函数。
+- `throwErrors`: 设置为 `true` 可抛出错误而不是记录它们（默认：`true`）。
+
+配置示例：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [
+    DebugPlugin.configure({
+      options: {
+        isProduction: process.env.NODE_ENV === 'production',
+        logLevel: 'info',
+        logger: {
+          error: (message, type, details) => {
+            // 自定义错误日志记录
+            console.error(`自定义错误: ${message}`, type, details);
+          },
+          // ... 其他级别的自定义日志记录器
+        },
+        throwErrors: false,
+      },
+    }),
+  ],
+});
+```
+
+### 错误处理
+
+默认情况下，`DebugPlugin` 在调用 `error` 时会抛出错误。您可以捕获这些错误并根据需要进行处理：
+
+```ts
+try {
+  editor.api.debug.error('发生错误', 'CUSTOM_ERROR', { details: '附加信息' });
+} catch (error) {
+  if (error instanceof PlateError) {
+    console.debug(error.type); // 'CUSTOM_ERROR'
+    console.debug(error.message); // '[CUSTOM_ERROR] 发生错误'
+  }
+}
+```
+
+要记录错误而不是抛出它们，请在配置中将 `throwErrors` 设置为 `false`。
+
+### 最佳实践
+
+1. 对不同类型的消息使用适当的日志级别。
+2. 在生产环境中，将 `isProduction` 设置为 `true` 以禁用非必要的日志记录。
+3. 使用自定义日志记录器与您首选的日志记录服务集成。
+4. 记录时包含相关详细信息以使调试更容易。
+5. 使用错误类型来分类和处理不同的错误场景。
+
+## 其他调试策略
+
+除了使用 DebugPlugin，还有其他有效的方法来调试您的 Plate 编辑器：
+
+### 1. 使用日志覆盖编辑器方法
+
+您可以使用 `extendEditor` 选项覆盖编辑器方法并添加日志记录：
+
+```ts
+const LoggingPlugin = createPlatePlugin({
+  key: 'logging',
+}).overrideEditor(({ editor, tf: { apply } }) => ({
+  transforms: {
+    apply(operation) {
+      console.debug('操作:', operation);
+      apply(operation);
+    },
+  },
+}));
+
+const editor = createPlateEditor({
+  plugins: [LoggingPlugin],
+});
+```
+
+这种方法允许您记录操作、选择或您想要检查的任何其他编辑器行为。
+
+### 2. 移除可疑插件
+
+如果您遇到问题，请尝试逐个移除插件以隔离问题：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [
+    // 注释掉或移除可疑插件
+    // HeadingPlugin,
+    // BoldPlugin,
+    // ...其他插件
+  ],
+});
+```
+
+逐步添加插件，直到找到导致问题的插件。
+
+### 3. 使用 React DevTools
+
+React DevTools 对于调试 Plate 组件非常有用：
+
+1. 安装 React DevTools 浏览器扩展。
+2. 打开您的应用和 DevTools。
+3. 导航到 Components 选项卡。
+4. 检查 Plate 组件、它们的 props 和 state。
+
+### 4. 使用浏览器 DevTools 断点
+
+使用浏览器 DevTools 在代码中设置断点：
+
+1. 在浏览器中打开您的应用并打开 DevTools。
+2. 导航到 Sources 选项卡。
+3. 找到您的源文件并单击要设置断点的行号。
+4. 与您的编辑器交互以触发断点。
+5. 检查变量并逐步执行代码。
+
+### 5. 创建最小可重现示例
+
+如果您遇到复杂问题：
+
+1. 选择一个[模板](/docs/installation)。
+2. 仅添加重现问题所需的基本插件和组件。
+3. 如果问题仍然存在，[在 GitHub 上提出问题](https://github.com/udecode/plate/issues/new?assignees=&labels=bug&projects=&template=bug.yml)或在 [Discord](https://discord.gg/mAZRuBzGM3) 上分享您的示例。
+
+### 6. 使用 Redux DevTools 进行 zustand 存储调试
+
+Zustand 以及 zustand-x 可以与 Redux DevTools 浏览器扩展一起使用。这对于跟踪 zustand 存储中的状态变化非常有用。
+
+按照 [zustand 文档](https://zustand.docs.pmnd.rs/middlewares/devtools) 开始使用 Redux DevTools 和 zustand。
+
+## 调试错误类型
+
+Plate 使用几种预定义的错误类型来帮助在开发过程中识别特定问题。以下是这些错误类型及其描述的列表：
+
+### DEFAULT
+
+一种不适用于其他特定类别的一般错误。当没有其他错误类型适用于该情况时使用。
+
+### OPTION_UNDEFINED
+
+当尝试访问未定义的插件选项时抛出。这发生在尝试使用未设置或未定义的插件选项时。
+
+### OVERRIDE_MISSING
+
+表示插件配置中缺少预期的覆盖。当插件期望提供某些覆盖但它们不在配置中时会发生这种情况。
+
+### PLUGIN_DEPENDENCY_MISSING
+
+当找不到所需的插件依赖项时发生。当插件依赖于另一个未注册或未包含在编辑器配置中的插件时，会抛出此错误。
+
+### PLUGIN_MISSING
+
+表示尝试使用未注册的插件。当尝试访问或使用不属于当前编辑器配置的插件时会发生这种情况。
+
+### USE_CREATE_PLUGIN
+
+当插件不是使用 `createSlatePlugin` 或 `createPlatePlugin` 函数创建时抛出。当插件在没有使用指定函数正确创建的情况下添加到编辑器时会发生此错误。
+
+### USE_ELEMENT_CONTEXT
+
+表示 `useElement` 钩子在适当的元素上下文之外使用。当尝试在正确的组件上下文之外访问特定于元素的数据或功能时会发生这种情况。
+
+### PLUGIN_NODE_TYPE
+
+当插件同时错误地配置为 element 和 leaf 时抛出。当插件的配置通过将 `isElement` 和 `isLeaf` 都设置为 true 来矛盾时会发生此错误。

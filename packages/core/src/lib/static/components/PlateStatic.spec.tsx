@@ -12,6 +12,11 @@ import { createSlatePlugin } from '../../plugin';
 import { PlateStatic } from './PlateStatic';
 import { SlateElement, SlateLeaf } from './slate-nodes';
 
+const components = {
+  bold: LeafStaticMock,
+  p: ElementStaticMock,
+};
+
 const createEditor = ({
   value = [
     {
@@ -25,6 +30,7 @@ const createEditor = ({
   ],
 } = {}) =>
   createSlateEditor({
+    components,
     plugins: [createSlatePlugin({ key: 'bold', node: { isLeaf: true } })],
     selection: {
       anchor: { offset: 0, path: [0, 0] },
@@ -50,14 +56,10 @@ const createEditorWithMultipleElements = ({
   ],
 } = {}) =>
   createSlateEditor({
+    components,
     plugins: [createSlatePlugin({ key: 'bold', node: { isLeaf: true } })],
     value,
   });
-
-const components = {
-  bold: LeafStaticMock,
-  p: ElementStaticMock,
-};
 
 let elementRenderCount = 0;
 
@@ -101,7 +103,7 @@ describe('PlateStatic Memoization', () => {
   it('should render elements/leaves initially', () => {
     const editor = createEditor();
 
-    render(<PlateStatic components={components} editor={editor} />);
+    render(<PlateStatic editor={editor} />);
 
     // We expect at least 1 element (the <p>...) and 1 leaf
     expect(getElementRenderCount()).toBe(1);
@@ -111,12 +113,10 @@ describe('PlateStatic Memoization', () => {
   it('should NOT re-render elements/leaves if the same `value` reference is passed', () => {
     const editor = createEditor();
 
-    const { rerender } = render(
-      <PlateStatic components={components} editor={editor} />
-    );
+    const { rerender } = render(<PlateStatic editor={editor} />);
 
     // Re-render with the **same** editor.children reference:
-    rerender(<PlateStatic components={components} editor={editor} />);
+    rerender(<PlateStatic editor={editor} />);
 
     // Expect no additional renders of elements/leaves
     expect(getElementRenderCount()).toEqual(1);
@@ -126,9 +126,7 @@ describe('PlateStatic Memoization', () => {
   it('should re-render elements/leaves if `value` changes by reference', () => {
     const editor = createEditor();
 
-    const { rerender } = render(
-      <PlateStatic components={components} editor={editor} />
-    );
+    const { rerender } = render(<PlateStatic editor={editor} />);
 
     // Create a new array reference with the same content (just to test reference changes)
     const newValueRef = [
@@ -139,13 +137,7 @@ describe('PlateStatic Memoization', () => {
     ];
 
     // Re-render with a new reference:
-    rerender(
-      <PlateStatic
-        value={newValueRef}
-        components={components}
-        editor={editor}
-      />
-    );
+    rerender(<PlateStatic value={newValueRef} editor={editor} />);
 
     // Now we expect re-renders because the array reference changed
     expect(getElementRenderCount()).toBe(2);
@@ -155,14 +147,14 @@ describe('PlateStatic Memoization', () => {
   it('should re-render if slate mutation', () => {
     const editor = createEditor();
 
-    render(<PlateStatic components={components} editor={editor} />);
+    render(<PlateStatic editor={editor} />);
 
     // This will mutate the text but also element reference
     editor.tf.insertText('+');
 
     // Re-render with the updated children
     // (the reference changed as well as the text)
-    render(<PlateStatic components={components} editor={editor} />);
+    render(<PlateStatic editor={editor} />);
 
     expect(getElementRenderCount()).toBe(2);
     expect(getLeafRenderCount()).toBe(2);
@@ -171,16 +163,14 @@ describe('PlateStatic Memoization', () => {
   it('should not re-render if only text changes since element is memoized', () => {
     const editor = createEditor();
 
-    const { rerender } = render(
-      <PlateStatic components={components} editor={editor} />
-    );
+    const { rerender } = render(<PlateStatic editor={editor} />);
 
     // This will mutate the text only
     editor.children[0].children[1].text = 'New text';
 
     // Re-render with the updated children
     // (the reference changed as well as the text)
-    rerender(<PlateStatic components={components} editor={editor} />);
+    rerender(<PlateStatic editor={editor} />);
 
     expect(getElementRenderCount()).toBe(1);
     expect(getLeafRenderCount()).toBe(1);
@@ -189,9 +179,7 @@ describe('PlateStatic Memoization', () => {
   it('should only re-render modified element and leaf when editing a single element', () => {
     const editor = createEditorWithMultipleElements();
 
-    const { rerender } = render(
-      <PlateStatic components={components} editor={editor} />
-    );
+    const { rerender } = render(<PlateStatic editor={editor} />);
 
     expect(getElementRenderCount()).toBe(2);
     expect(getLeafRenderCount()).toBe(2);
@@ -207,7 +195,7 @@ describe('PlateStatic Memoization', () => {
     };
 
     // Re-render with the modified editor
-    rerender(<PlateStatic components={components} editor={editor} />);
+    rerender(<PlateStatic editor={editor} />);
 
     // We expect only one element to re-render (the modified one)
     expect(getElementRenderCount()).toBe(3);
@@ -223,7 +211,7 @@ describe('PlateStatic Memoization', () => {
         { ...editor.children[1].children[2], text: 'Modified' },
       ],
     };
-    rerender(<PlateStatic components={components} editor={editor} />);
+    rerender(<PlateStatic editor={editor} />);
 
     expect(getElementRenderCount()).toBe(4);
     expect(getLeafRenderCount()).toBe(3);
@@ -232,9 +220,7 @@ describe('PlateStatic Memoization', () => {
   it('should preserve memoization when adding and removing new elements', () => {
     const editor = createEditorWithMultipleElements();
 
-    const { rerender } = render(
-      <PlateStatic components={components} editor={editor} />
-    );
+    const { rerender } = render(<PlateStatic editor={editor} />);
 
     // Add a new paragraph
     editor.children.push({
@@ -242,14 +228,14 @@ describe('PlateStatic Memoization', () => {
       type: 'p',
     });
 
-    rerender(<PlateStatic components={components} editor={editor} />);
+    rerender(<PlateStatic editor={editor} />);
 
     // We expect only the new element to render
     expect(getElementRenderCount()).toBe(3);
 
     editor.children.pop();
 
-    rerender(<PlateStatic components={components} editor={editor} />);
+    rerender(<PlateStatic editor={editor} />);
 
     expect(getElementRenderCount()).toBe(3);
   });
@@ -259,9 +245,7 @@ describe('PlateStatic Memoization', () => {
 
     editor.children[0]._memo = 'memo-value';
 
-    const { rerender } = render(
-      <PlateStatic components={components} editor={editor} />
-    );
+    const { rerender } = render(<PlateStatic editor={editor} />);
 
     // Modify element but keep same _memo
     editor.children[0] = {
@@ -273,7 +257,7 @@ describe('PlateStatic Memoization', () => {
       ],
     };
 
-    rerender(<PlateStatic components={components} editor={editor} />);
+    rerender(<PlateStatic editor={editor} />);
 
     // Should not re-render because _memo is the same
     expect(getElementRenderCount()).toBe(1);
@@ -284,9 +268,7 @@ describe('PlateStatic Memoization', () => {
 
     editor.children[0]._memo = 'memo-value';
 
-    const { rerender } = render(
-      <PlateStatic components={components} editor={editor} />
-    );
+    const { rerender } = render(<PlateStatic editor={editor} />);
 
     // Change _memo value
     editor.children[0] = {
@@ -294,7 +276,7 @@ describe('PlateStatic Memoization', () => {
       _memo: 'new-memo-value',
     };
 
-    rerender(<PlateStatic components={components} editor={editor} />);
+    rerender(<PlateStatic editor={editor} />);
 
     // Should re-render because _memo changed
     expect(getElementRenderCount()).toBe(2);
@@ -320,7 +302,7 @@ describe('PlateStatic Memoization', () => {
       // This assertion will fail if the bug exists, as render() will throw.
       // If the bug is fixed, render() should not throw.
       expect(() => {
-        render(<PlateStatic components={components} editor={editor} />);
+        render(<PlateStatic editor={editor} />);
       }).not.toThrow();
     });
   });

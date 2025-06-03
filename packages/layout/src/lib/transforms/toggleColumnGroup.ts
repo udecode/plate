@@ -4,7 +4,8 @@ import type {
   TElement,
 } from '@udecode/plate';
 
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
+import { KEYS } from '@udecode/plate';
+
 import { columnsToWidths } from '../utils/columnsToWidths';
 import { setColumns } from './setColumns';
 
@@ -23,7 +24,7 @@ export const toggleColumnGroup = (
   const columnGroupEntry = editor.api.block({
     above: true,
     at,
-    match: { type: editor.getType(BaseColumnPlugin) },
+    match: { type: editor.getType(KEYS.columnGroup) },
   });
 
   if (!entry) return;
@@ -41,10 +42,10 @@ export const toggleColumnGroup = (
     const nodes = {
       children: new Array(columns).fill(null).map((_, index) => ({
         children: [index === 0 ? node : editor.api.create.block()],
-        type: BaseColumnItemPlugin.key,
+        type: KEYS.column,
         width: columnWidths[index],
       })),
-      type: BaseColumnPlugin.key,
+      type: KEYS.columnGroup,
     } as TElement;
 
     editor.tf.replaceNodes(nodes, {

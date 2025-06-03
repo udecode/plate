@@ -103,7 +103,10 @@ export const UL = ({
   ...props
 }: React.HTMLAttributes<HTMLUListElement>) => (
   <ul
-    className={cn('group my-4 ml-6 list-disc group-data-list:my-2', className)}
+    className={cn(
+      'group not-prose my-4 !ml-6 list-disc group-data-list:my-2 first:!mt-0',
+      className
+    )}
     data-list
     {...props}
   />
@@ -115,7 +118,7 @@ export const OL = ({
 }: React.HTMLAttributes<HTMLOListElement>) => (
   <ol
     className={cn(
-      'group my-4 ml-6 list-decimal group-data-list:my-2',
+      'group my-4 ml-6 list-decimal group-data-list:my-2 first:!mt-0',
       className
     )}
     data-list
@@ -127,7 +130,7 @@ export const LI = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLElement>) => (
-  <li className={cn('mt-2 mb-0', className)} {...props} />
+  <li className={cn('mt-2 mb-0 *:[ul]:my-0', className)} {...props} />
 );
 
 export const Blockquote = ({

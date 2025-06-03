@@ -1,15 +1,13 @@
 import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
-import { BaseBulletedListPlugin } from '../../lib/index';
-import { ListPlugin } from '../ListPlugin';
+import { ListStyleType, toggleList } from '../../index';
+import { someList } from '../../lib/queries/someList';
 
 export const useListToolbarButtonState = ({
-  nodeType = BaseBulletedListPlugin.key as string,
-} = {}) => {
+  nodeType = ListStyleType.Disc,
+}: { nodeType?: string } = {}) => {
   const pressed = useEditorSelector(
-    (editor) =>
-      !!editor.selection &&
-      editor.api.some({ match: { type: editor.getType({ key: nodeType }) } }),
+    (editor) => someList(editor, nodeType),
     [nodeType]
   );
 
@@ -19,17 +17,19 @@ export const useListToolbarButtonState = ({
   };
 };
 
-export const useListToolbarButton = (
-  state: ReturnType<typeof useListToolbarButtonState>
-) => {
+export const useListToolbarButton = ({
+  nodeType,
+  pressed,
+}: ReturnType<typeof useListToolbarButtonState>) => {
   const editor = useEditorRef();
-  const tf = editor.getTransforms(ListPlugin);
 
   return {
     props: {
-      pressed: state.pressed,
+      pressed,
       onClick: () => {
-        tf.toggle.list({ type: state.nodeType });
+        toggleList(editor, {
+          listStyleType: nodeType,
+        });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

@@ -5,7 +5,7 @@
   "title": "Mark Toolbar Button",
   "description": "A toolbar control for basic text formatting.",
   "dependencies": [
-    "@udecode/plate-basic-marks"
+    "@udecode/plate-basic-nodes"
   ],
   "registryDependencies": [
     "https://platejs.org/r/toolbar"

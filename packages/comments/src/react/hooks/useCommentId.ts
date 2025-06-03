@@ -1,12 +1,12 @@
 import { useEditorSelector } from '@udecode/plate/react';
 
-import { BaseCommentsPlugin } from '../../lib';
+import { BaseCommentPlugin } from '../../lib';
 
 export const useCommentId = () => {
   return useEditorSelector((editor) => {
     if (!editor.selection) return;
     if (editor.api.isExpanded()) return;
-    const api = editor.getApi(BaseCommentsPlugin);
+    const api = editor.getApi(BaseCommentPlugin);
 
     const commentNode = api.comment.node();
 

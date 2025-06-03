@@ -47,7 +47,7 @@ export const withCopilot: OverrideEditor<CopilotPluginConfig> = ({
         const { shouldAbort } = getOptions();
 
         if (shouldAbort) {
-          api.copilot.reset();
+          api.copilot.reject();
         }
 
         apply(operation);

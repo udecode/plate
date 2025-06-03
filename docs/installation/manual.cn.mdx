@@ -21,15 +21,14 @@ npm create vite@latest
 
 ### 安装核心依赖
 
-首先安装必要的 Plate 包。这些包提供了核心编辑器功能、React 集成以及常用的 marks 和 elements 插件。
+首先安装必要的 Plate 包。这些包提供了核心编辑器功能、React 集成以及基础的 marks 和 elements 插件。
 
 ```bash
-npm add @udecode/plate @udecode/plate-basic-elements @udecode/plate-basic-marks
+npm add @udecode/plate @udecode/plate-basic-nodes
 ```
 
 -   `@udecode/plate`：Plate 核心引擎和 React 组件。
--   `@udecode/plate-basic-elements`：常见块级元素（如段落、标题）的插件。
--   `@udecode/plate-basic-marks`：基础文本格式（如加粗、斜体、下划线）的插件。
+-   `@udecode/plate-basic-nodes`：基础节点插件，如标题、粗体、斜体、下划线等。
 
 ### TypeScript 配置
 
@@ -86,13 +85,20 @@ export default function App() {
 
 让我们为加粗、斜体、下划线等基础文本格式添加支持。
 
-更新你的编辑器，加入 `BasicMarksPlugin` 并定义这些 marks 的渲染方式。
-
-```tsx showLineNumbers title="src/App.tsx" {3-4,11,13,15,24-31}
+```tsx showLineNumbers title="src/App.tsx" {4-8,32}
 import React from 'react';
 import type { Value } from '@udecode/plate';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react'; // 引入插件
-import { Plate, PlateContent, PlateLeaf, usePlateEditor, type PlateLeafProps } from '@udecode/plate/react';
+
+import {
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-nodes/react';
+import {
+  Plate,
+  PlateContent,
+  usePlateEditor,
+} from '@udecode/plate/react';
 
 const initialValue: Value = [
   {
@@ -111,15 +117,8 @@ const initialValue: Value = [
 
 export default function App() {
   const editor = usePlateEditor({
+    plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin],
     value: initialValue,
-    plugins: [BasicMarksPlugin], // 添加 marks 插件
-    components: {
-      // 定义每种 mark 类型的渲染方式
-      // 使用 PlateLeaf 并通过 'as' 属性指定语义化 HTML，或直接渲染。
-      bold: (props: PlateLeafProps) => <PlateLeaf {...props} as="strong" />, 
-      italic: (props: PlateLeafProps) => <PlateLeaf {...props} as="em" />, 
-      underline: (props: PlateLeafProps) => <PlateLeaf {...props} as="u" />, 
-    },
   });
 
   return (
@@ -131,67 +130,113 @@ export default function App() {
 }
 ```
 
-<Callout type="info" title="组件映射是关键">
-  当为新的 mark 类型（如 `bold`）添加插件时，**必须**在 `usePlateEditor` 的 `components` 选项中，将插件的 `key`（如 `'bold'`）映射到你的 React 组件。这告诉 Plate 如何渲染它们。`PlateLeaf` 是 `@udecode/plate/react` 提供的辅助组件，用于简化 leaf 节点的渲染。
+<Callout type="info" title="默认组件">
+  像 `BoldPlugin`、`ItalicPlugin` 和 `UnderlinePlugin` 这样的 mark 插件自带默认组件，分别渲染为 `<strong>`、`<em>` 和 `<u>` element。除非你想自定义外观，否则无需注册自定义组件。
 </Callout>
 
 <ComponentPreview name="installation-next-02-marks-demo" height="200px" />
 
-你需要实现自己的工具栏来应用这些 marks。例如，切换加粗：`editor.tf.toggleMark('bold')`。
+你需要实现自己的工具栏来应用这些 marks。例如，切换加粗：`editor.tf.bold.toggle()`。
 
 ### 添加基础 Elements
 
-现在，让我们为段落（通常为默认）、标题和引用等块级元素添加支持。
+现在，让我们为标题和引用等块级 element 添加支持。
 
-```tsx showLineNumbers title="src/App.tsx" {4-5,8-9,23,27-30}
+```tsx showLineNumbers title="src/App.tsx" {5,7-9,76-79}
 import React from 'react';
 import type { Value } from '@udecode/plate';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react'; // 引入插件
-import { Plate, PlateContent, PlateLeaf, PlateElement, usePlateEditor, type PlateLeafProps, type PlateElementProps } from '@udecode/plate/react';
+
+import {
+  BlockquotePlugin,
+  BoldPlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-nodes/react';
+import {
+  Plate,
+  PlateContent,
+  PlateElement,
+  usePlateEditor,
+  type PlateElementProps,
+} from '@udecode/plate/react';
 
 const initialValue: Value = [
-  { type: 'h3', children: [{ text: 'Title' }] },
-  { type: 'blockquote', children: [{ text: 'This is a quote.' }] },
   {
-    type: 'p',
+    children: [{ text: 'Title' }],
+    type: 'h3',
+  },
+  {
+    children: [{ text: 'This is a quote.' }],
+    type: 'blockquote',
+  },
+  {
     children: [
       { text: 'With some ' },
-      { text: 'bold', bold: true },
+      { bold: true, text: 'bold' },
       { text: ' text for emphasis!' },
     ],
+    type: 'p',
   },
 ];
 
+// 定义 element 组件
+function H1Element(props: PlateElementProps) {
+  return <PlateElement as="h1" {...props} />;
+}
+
+function H2Element(props: PlateElementProps) {
+  return <PlateElement as="h2" {...props} />;
+}
+
+function H3Element(props: PlateElementProps) {
+  return <PlateElement as="h3" {...props} />;
+}
+
+function BlockquoteElement(props: PlateElementProps) {
+  return (
+    <PlateElement
+      as="blockquote"
+      style={{
+        borderLeft: '2px solid #eee',
+        marginLeft: 0,
+        marginRight: 0,
+        paddingLeft: '24px',
+        color: '#666',
+        fontStyle: 'italic',
+      }}
+      {...props}
+    />
+  );
+}
+
 export default function App() {
   const editor = usePlateEditor({
+    plugins: [
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      H1Plugin.withComponent(H1Element),
+      H2Plugin.withComponent(H2Element),
+      H3Plugin.withComponent(H3Element),
+      BlockquotePlugin.withComponent(BlockquoteElement),
+    ],
     value: initialValue,
-    plugins: [BasicElementsPlugin, BasicMarksPlugin], // 添加 BasicElementsPlugin
-    components: {
-      // 定义每种 element 类型的渲染方式
-      // 使用 PlateElement 并通过 'as' 属性指定语义化 HTML，或直接渲染。
-      h1: (props: PlateElementProps) => <PlateElement {...props} as="h1" />, 
-      h2: (props: PlateElementProps) => <PlateElement {...props} as="h2" />, 
-      p: (props: PlateElementProps) => <PlateElement {...props} as="p" />, 
-      blockquote: (props: PlateElementProps) => <PlateElement {...props} as="blockquote" style={{ borderLeft: '2px solid #eee', marginLeft: 0, marginRight: 0, paddingLeft: '16px 64px', color: '#aaa' }} />, 
-      // 上一步的 marks
-      bold: (props: PlateLeafProps) => <PlateLeaf {...props} as="strong" />, 
-      italic: (props: PlateLeafProps) => <PlateLeaf {...props} as="em" />, 
-      underline: (props: PlateLeafProps) => <PlateLeaf {...props} as="u" />, 
-    },
   });
 
   return (
     <Plate editor={editor}>
-      {/* 工具栏在这里 */}
-      <PlateContent style={{ padding: '16px 64px', minHeight: '100px' }}/>
+      {/* 通常你会在这里添加工具栏以切换 element 和 marks */}
+      <PlateContent style={{ padding: '16px 64px', minHeight: '100px' }} />
     </Plate>
   );
 }
 ```
 
 <Callout type="note">
-  与 marks 类似，你需要将 element 的 `type`（如 `'h1'`、`'p'`）映射到组件。`PlateElement` 是用于渲染 element 节点的辅助组件。你需要实现 UI（如下拉菜单）来切换块类型，例如用 `editor.tf.toggleBlock('h1')`。
+  注意我们如何使用 `Plugin.withComponent(Component)` 将组件注册到标题和引用等块级 element 插件。当你需要自定义样式或行为时，这是将 React 组件与 Plate 插件关联的推荐方法。
 </Callout>
 
 <ComponentPreview name="installation-next-03-elements-demo" height="200px" />
@@ -200,42 +245,89 @@ export default function App() {
 
 为了让编辑器内容持久化，我们可以集成状态管理，实现内容的保存和加载。
 
-```tsx showLineNumbers title="src/App.tsx" {34-40,46-48,52-54}
-import React, { useCallback } from 'react';
+```tsx showLineNumbers title="src/App.tsx" {81-87,93-95}
+import React from 'react';
 import type { Value } from '@udecode/plate';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { Plate, PlateContent, PlateLeaf, PlateElement, usePlateEditor, type PlateLeafProps, type PlateElementProps } from '@udecode/plate/react';
+
+import {
+  BlockquotePlugin,
+  BoldPlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-nodes/react';
+import {
+  Plate,
+  PlateContent,
+  PlateElement,
+  usePlateEditor,
+  type PlateElementProps,
+} from '@udecode/plate/react';
 
 const initialValue: Value = [
-  { type: 'h3', children: [{ text: 'Title' }] },
-  { type: 'blockquote', children: [{ text: 'This is a quote.' }] },
   {
-    type: 'p',
+    children: [{ text: 'Title' }],
+    type: 'h3',
+  },
+  {
+    children: [{ text: 'This is a quote.' }],
+    type: 'blockquote',
+  },
+  {
     children: [
       { text: 'With some ' },
-      { text: 'bold', bold: true },
+      { bold: true, text: 'bold' },
       { text: ' text for emphasis!' },
     ],
+    type: 'p',
   },
 ];
 
+// 定义 element 组件
+function H1Element(props: PlateElementProps) {
+  return <PlateElement as="h1" {...props} />;
+}
+
+function H2Element(props: PlateElementProps) {
+  return <PlateElement as="h2" {...props} />;
+}
+
+function H3Element(props: PlateElementProps) {
+  return <PlateElement as="h3" {...props} />;
+}
+
+function BlockquoteElement(props: PlateElementProps) {
+  return (
+    <PlateElement
+      as="blockquote"
+      style={{
+        borderLeft: '2px solid #eee',
+        marginLeft: 0,
+        marginRight: 0,
+        paddingLeft: '24px',
+        color: '#666',
+        fontStyle: 'italic',
+      }}
+      {...props}
+    />
+  );
+}
+
 export default function App() {
   const editor = usePlateEditor({
-    plugins: [BasicElementsPlugin, BasicMarksPlugin],
-    components: {
-      h1: (props: PlateElementProps) => <PlateElement {...props} as="h1" />, 
-      h2: (props: PlateElementProps) => <PlateElement {...props} as="h2" />, 
-      p: (props: PlateElementProps) => <PlateElement {...props} as="p" />, 
-      blockquote: (props: PlateElementProps) => (
-        <PlateElement {...props} as="blockquote" style={{ borderLeft: '2px solid #eee', marginLeft: 0, marginRight: 0, paddingLeft: '16px 64px', color: '#aaa' }} />
-      ),
-      bold: (props: PlateLeafProps) => <PlateLeaf {...props} as="strong" />, 
-      italic: (props: PlateLeafProps) => <PlateLeaf {...props} as="em" />, 
-      underline: (props: PlateLeafProps) => <PlateLeaf {...props} as="u" />, 
-    },
+    plugins: [
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      H1Plugin.withComponent(H1Element),
+      H2Plugin.withComponent(H2Element),
+      H3Plugin.withComponent(H3Element),
+      BlockquotePlugin.withComponent(BlockquoteElement),
+    ],
     value: () => {
-      const savedValue = localStorage.getItem('plate-value-demo');
+      const savedValue = localStorage.getItem('plate-manual-demo');
       if (savedValue) {
         return JSON.parse(savedValue);
       }
@@ -244,20 +336,34 @@ export default function App() {
   });
 
   return (
-    <Plate 
+    <Plate
       editor={editor}
       onChange={({ value }) => {
-        localStorage.setItem('plate-value-demo', JSON.stringify(value));
+        localStorage.setItem('plate-manual-demo', JSON.stringify(value));
       }}
     >
-      {/* <FixedToolbar> */}
-      {/* ...buttons */}
-        <button onClick={() => editor.tf.setValue(initialValue)}>
+      {/* 工具栏在这里 */}
+      <div style={{ padding: '8px 0' }}>
+        <button
+          onClick={() => editor.tf.setValue(initialValue)}
+          style={{
+            padding: '4px 8px',
+            margin: '0 4px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
           Reset
         </button>
-      {/* </FixedToolbar> */}
-      <PlateContent 
-        style={{ padding: '16px 64px', minHeight: '100px' }} 
+      </div>
+      <PlateContent
+        style={{
+          padding: '16px 64px',
+          minHeight: '100px',
+          border: '1px solid #eee',
+          borderRadius: '4px',
+        }}
         placeholder="Type your amazing content here..."
       />
     </Plate>
@@ -283,9 +389,10 @@ export default function App() {
     *   想要快速体验预设组件，可考虑使用 [Plate UI](/docs/installation/plate-ui)
     *   或继续用 CSS、CSS-in-JS 库或你喜欢的样式方案手动美化
 *   **[添加插件](/docs/plugins)：** Plate 拥有丰富的插件生态，支持表格、提及、图片、列表等功能。安装相应包（如 `@udecode/plate-table`），并添加到 `plugins` 数组。
-*   **[构建工具栏](/docs/toolbar)：** 创建 React 组件作为工具栏按钮，利用 [Editor Transforms](/docs/transforms) 应用格式（如 `editor.tf.toggleMark('bold')`、`editor.tf.toggleBlock('h1')`）。你也可以通过 [Editor API](/docs/api) 获取编辑器状态。
-*   [编辑器配置](/docs/editor)
-*   [插件配置](/docs/plugin)
-*   [插件组件](/docs/plugin-components)
+*   **[构建工具栏](/docs/toolbar)：** 创建 React 组件作为工具栏按钮，利用 [Editor Transforms](/docs/transforms) 应用格式（如 `editor.tf.bold.toggle()`、`editor.tf.h1.toggle()`）。你也可以通过 [Editor API](/docs/api) 获取编辑器状态。
+*   **了解更多：**
+    *   [编辑器配置](/docs/editor)
+    *   [插件配置](/docs/plugin)
+    *   [插件组件](/docs/plugin-components)
 
 </Steps> 

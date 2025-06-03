@@ -1,16 +1,14 @@
 import {
   type EditorBeforeOptions,
   type PluginConfig,
+  type TLinkElement,
   createTSlatePlugin,
   getEditorPlugin,
   isUrl,
-} from '@udecode/plate';
-import {
+  KEYS,
   RemoveEmptyNodesPlugin,
   withRemoveEmptyNodes,
-} from '@udecode/plate-normalizers';
-
-import type { TLinkElement } from './types';
+} from '@udecode/plate';
 
 import { getLinkAttributes } from './utils/getLinkAttributes';
 import { validateUrl } from './utils/index';
@@ -90,10 +88,13 @@ export type BaseLinkConfig = PluginConfig<
 
 /** Enables support for hyperlinks. */
 export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
-  key: 'a',
+  key: KEYS.link,
   node: {
     dangerouslyAllowAttributes: ['target'],
+    inset: true,
+    isAffinity: true,
     isElement: true,
+    isHardEdge: true,
     isInline: true,
     props: ({ editor, element }) =>
       getLinkAttributes(editor, element as TLinkElement),

@@ -1,8 +1,8 @@
 import {
   type PluginConfig,
-  type TElement,
   createSlatePlugin,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 import {
   type TriggerComboboxPluginOptions,
@@ -14,21 +14,21 @@ export type SlashConfig = PluginConfig<
   TriggerComboboxPluginOptions
 >;
 
-export interface TSlashInputElement extends TElement {}
-
 export const BaseSlashInputPlugin = createSlatePlugin({
-  key: 'slash_input',
+  key: KEYS.slashInput,
+  editOnly: true,
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
 export const BaseSlashPlugin = createTSlatePlugin<SlashConfig>({
-  key: 'slash_command',
+  key: KEYS.slashCommand,
+  editOnly: true,
   options: {
     trigger: '/',
     triggerPreviousCharPattern: /^\s?$/,
     createComboboxInput: () => ({
       children: [{ text: '' }],
-      type: BaseSlashInputPlugin.key,
+      type: KEYS.slashInput,
     }),
   },
   plugins: [BaseSlashInputPlugin],

@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import PlaygroundDemo from '@/registry/examples/playground-demo';
 
 const title = 'Playground';
-const description = `npx shadcn@canary add ${siteConfig.registryUrl}editor-ai`;
+const description = `npx shadcn@latest add ${siteConfig.registryUrl}editor-ai`;
 
 export const metadata: Metadata = {
   description,

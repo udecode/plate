@@ -35,12 +35,11 @@ const editorContainerVariants = cva(
   }
 );
 
-export const EditorContainer = ({
+export function EditorContainer({
   className,
   variant,
   ...props
-}: React.ComponentProps<'div'> &
-  VariantProps<typeof editorContainerVariants>) => {
+}: React.ComponentProps<'div'> & VariantProps<typeof editorContainerVariants>) {
   return (
     <PlateContainer
       className={cn(
@@ -51,9 +50,7 @@ export const EditorContainer = ({
       {...props}
     />
   );
-};
-
-EditorContainer.displayName = 'EditorContainer';
+}
 
 const editorVariants = cva(
   cn(

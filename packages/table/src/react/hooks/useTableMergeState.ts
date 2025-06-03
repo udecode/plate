@@ -1,4 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+import type { TTableCellElement } from '@udecode/plate';
+
+import { KEYS } from '@udecode/plate';
 import {
   useEditorPlugin,
   useEditorSelector,
@@ -6,11 +9,7 @@ import {
   useReadOnly,
 } from '@udecode/plate/react';
 
-import {
-  type TTableCellElement,
-  getTableGridAbove,
-  isTableRectangular,
-} from '../../lib';
+import { getTableGridAbove, isTableRectangular } from '../../lib';
 import { TablePlugin } from '../TablePlugin';
 
 export const useTableMergeState = () => {
@@ -22,7 +21,7 @@ export const useTableMergeState = () => {
 
   const readOnly = useReadOnly();
   const someTable = useEditorSelector(
-    (editor) => editor.api.some({ match: { type: TablePlugin.key } }),
+    (editor) => editor.api.some({ match: { type: KEYS.table } }),
     []
   );
   const selectionExpanded = useEditorSelector(

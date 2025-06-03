@@ -1,0 +1,404 @@
+---
+title: List
+docs:
+  - route: /docs/components/list-classic-node
+    title: List Nodes
+  - route: /docs/components/list-classic-toolbar-button
+    title: List Toolbar Button
+---
+
+<ComponentPreview name="list-classic-demo" />
+
+<Callout type="info" title="Choose Your List Plugin">
+  Plate offers two approaches for implementing lists:
+
+  1. **This List Classic plugin** - Traditional HTML-spec lists with strict nesting rules:
+     - Follows standard HTML list structure (`ul`/`ol` > `li`)
+     - Maintains consistent list hierarchy
+     - Best for content that may be exported to HTML/markdown
+     - Highest complexity
+
+  2. The [**List plugin**](/docs/list) - Flexible indentation-based lists:
+     - More like Word/Google Docs behavior
+     - Any block can be indented to create list-like structures
+     - Used in the [AI editor](/editors#editor-ai)
+     - Supports nested todo lists
+     - Better for free-form content organization
+
+  Choose based on your needs:
+  - Use the **List Classic plugin** when you need standard HTML list compatibility
+  - Use the **List plugin** when you want more flexible indentation behavior
+
+</Callout>
+
+<PackageInfo>
+
+
+## Features
+
+- **HTML-compliant lists**:
+  - Standard `ul`/`ol` > `li` structure
+  - Proper nesting and hierarchy
+  - SEO-friendly markup
+  - Clean HTML/markdown export
+
+- **List types**:
+  - Unordered (bulleted) lists
+  - Ordered (numbered) lists
+  - Nested sublists
+
+- **Drag & drop**:
+  - Currently supports root-level list items only
+  - Sibling and nested items drag & drop not yet supported
+
+- **Shortcuts**:
+  - Combined with the autoformat plugin, use markdown shortcuts (**`-`**, **`*`**, **`1.`**) to create lists
+  - Tab/Shift+Tab for indentation control
+
+- **Limitations (use the [List plugin](/docs/list) for these features)**:
+  - Drag & drop only supports root-level lists
+  - List items cannot be aligned
+
+For a more flexible, Word-like approach, see the [List plugin](/docs/list).
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add list functionality is with the `ListKit`, which includes pre-configured list plugins with [Plate UI](/docs/installation/plate-ui) components and keyboard shortcuts.
+
+<ComponentSource name="list-classic-kit" />
+
+- [`BulletedListElement`](/docs/components/list-classic-node): Renders unordered list elements.
+- [`NumberedListElement`](/docs/components/list-classic-node): Renders ordered list elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { ListKit } from '@/components/editor/plugins/list-classic-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...ListKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @udecode/plate-list-classic
+```
+
+### Add Plugins
+
+Include the list plugins in your Plate plugins array when creating the editor.
+
+```tsx
+import { ListPlugin, BulletedListPlugin, NumberedListPlugin, ListItemPlugin } from '@udecode/plate-list-classic/react';
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ListPlugin,
+    BulletedListPlugin,
+    NumberedListPlugin,
+    ListItemPlugin,
+  ],
+});
+```
+
+### Configure Plugins
+
+Configure the plugins with custom components and keyboard shortcuts.
+
+```tsx
+import { ListPlugin, BulletedListPlugin, NumberedListPlugin, ListItemPlugin } from '@udecode/plate-list-classic/react';
+import { createPlateEditor } from '@udecode/plate/react';
+import { BulletedListElement, NumberedListElement } from '@/components/ui/list-classic-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ListPlugin,
+    BulletedListPlugin.configure({
+      node: { component: BulletedListElement },
+      shortcuts: { toggle: { keys: 'mod+alt+5' } },
+    }),
+    NumberedListPlugin.configure({
+      node: { component: NumberedListElement },
+      shortcuts: { toggle: { keys: 'mod+alt+6' } },
+    }),
+    ListItemPlugin,
+  ],
+});
+```
+
+- `node.component`: Assigns [`BulletedListElement`](/docs/components/list-classic-node) and [`NumberedListElement`](/docs/components/list-classic-node) to render list elements.
+- `shortcuts.toggle`: Defines keyboard [shortcuts](/docs/plugin-shortcuts) to toggle list types (`mod+alt+5` for bulleted, `mod+alt+6` for numbered).
+
+</Steps>
+
+## Plugins
+
+### `ListPlugin`
+
+<API name="ListPlugin">
+Contains the following element plugins:
+- `BulletedListPlugin`
+- `NumberedListPlugin`
+- `ListItemPlugin`
+- `ListItemContentPlugin`
+
+<APIOptions type="object">
+  <APIItem name="validLiChildrenTypes" type="string[]" optional>
+    Valid child node types for list items (besides `p` and `ul`).
+  </APIItem>
+  <APIItem name="enableResetOnShiftTab" type="boolean" optional>
+    Whether Shift+Tab should reset list indent level.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `BulletedListPlugin`
+
+Plugin for unordered (bulleted) lists.
+
+### `NumberedListPlugin`
+
+Plugin for ordered (numbered) lists.
+
+### `ListItemPlugin`
+
+Plugin for list items.
+
+### `ListItemContentPlugin`
+
+Plugin for list item content.
+
+## Transforms
+
+### `tf.ul.toggle()`
+
+Toggles a bulleted list (ul).
+
+Example Shortcut: `Mod+Alt+5`
+
+### `tf.ol.toggle()`
+
+Toggles an ordered list (ol).
+
+Example Shortcut: `Mod+Alt+6`
+
+## API
+
+### `getHighestEmptyList`
+
+Finds the highest end list that can be deleted. The path of the list should be different from `diffListPath`. If the highest end list has 2 or more items, returns `liPath`. It traverses up the parent lists until:
+- The list has less than 2 items
+- Its path is not equal to `diffListPath`
+
+<API name="getHighestEmptyList">
+<APIOptions type="object">
+  <APIItem name="liPath" type="Path">
+    Path of list item.
+  </APIItem>
+  <APIItem name="diffListPath" type="Path" optional>
+    Path of different list.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Path | undefined">
+  Path of highest deletable end list.
+</APIReturns>
+</API>
+
+### `getListItemEntry`
+
+Returns the nearest `li` and `ul`/`ol` wrapping node entries for a given path (`default = selection`).
+
+<API name="getListItemEntry">
+<APIOptions type="object">
+  <APIItem name="at" type="Location | null" optional>
+    Location to get entries from.
+    - **Default:** `editor.selection`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="ElementEntry | undefined">
+  Nearest `li` and `ul`/`ol` wrapping node entries.
+</APIReturns>
+</API>
+
+### `getListRoot`
+
+Searches upward for root list element.
+
+<API name="getListRoot">
+<APIParameters>
+  <APIItem name="at" type="Path | TRange | Point | null" optional>
+    Location to start search from.
+    - **Default:** `editor.selection`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="ElementEntry | undefined">
+  Root list element entry.
+</APIReturns>
+</API>
+
+### `getListTypes`
+
+Gets array of supported list types.
+
+<API name="getListTypes">
+<APIReturns type="string[]">
+  Array of supported list types.
+</APIReturns>
+</API>
+
+### `moveListSiblingsAfterCursor`
+
+Moves list siblings after cursor to specified path.
+
+<API name="moveListSiblingsAfterCursor">
+<APIOptions type="options">
+  <APIItem name="at" type="Path">
+    Cursor position path.
+  </APIItem>
+  <APIItem name="to" type="Path">
+    Destination path.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="number">
+  Number of siblings moved.
+</APIReturns>
+</API>
+
+### `removeFirstListItem`
+
+Removes first list item if not nested and not first child.
+
+<API name="removeFirstListItem">
+<APIOptions type="options">
+  <APIItem name="list" type="ElementEntry">
+    List entry containing item.
+  </APIItem>
+  <APIItem name="listItem" type="ElementEntry">
+    List item to remove.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  Whether item was removed.
+</APIReturns>
+</API>
+
+### `removeListItem`
+
+Removes list item and moves sublist to parent if any.
+
+<API name="removeListItem">
+<APIOptions type="RemoveListItemOptions">
+  <APIItem name="list" type="ElementEntry">
+    List entry containing item.
+  </APIItem>
+  <APIItem name="listItem" type="ElementEntry">
+    List item to remove.
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    Whether to reverse sublist items.
+    - **Default:** `true`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  Whether item was removed.
+</APIReturns>
+</API>
+
+### `someList`
+
+Checks if selection is inside list of specific type.
+
+<API name="someList">
+<APIParameters>
+  <APIItem name="type" type="string">
+    List type to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  Whether selection is in specified list type.
+</APIReturns>
+</API>
+
+### `unindentListItems`
+
+Decreases indentation level of list items.
+
+<API name="unindentListItems">
+<APIOptions type="UnindentListItemsOptions">
+    Target path for unindenting.
+</APIOptions>
+</API>
+
+### `unwrapList`
+
+Removes list formatting from selected items.
+
+<API name="unwrapList">
+<APIOptions type="options">
+  <APIItem name="at" type="Path" optional>
+    Target path for unwrapping.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Hooks
+
+### `useListToolbarButton`
+
+A behavior hook for a list toolbar button.
+
+<API name="useListToolbarButton">
+<APIState>
+  <APIItem name="pressed" type="boolean">
+    Button pressed state.
+  </APIItem>
+  <APIItem name="nodeType" type="string">
+    List node type.
+    - **Default:** `BulletedListPlugin.key`
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    Props for toolbar button.
+  </APIItem>
+  <APISubList>
+    <APISubListItem parent="props" name="pressed" type="boolean">
+      Button pressed state.
+    </APISubListItem>
+    <APISubListItem parent="props" name="onClick" type="function">
+      Handler to toggle list and focus editor.
+    </APISubListItem>
+  </APISubList>
+</APIReturns>
+</API>

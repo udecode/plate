@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TSuggestionData } from '@udecode/plate-suggestion';
+import type { TSuggestionData } from '@udecode/plate';
 
 import { type RenderNodeWrapper, usePluginOption } from '@udecode/plate/react';
 import { CornerDownLeftIcon } from 'lucide-react';
@@ -11,9 +11,9 @@ import { cn } from '@/lib/utils';
 import {
   type SuggestionConfig,
   suggestionPlugin,
-} from '@/registry/components/editor/plugins/suggestion-plugin';
+} from '@/registry/components/editor/plugins/suggestion-kit';
 
-export const SuggestionBelowNodes: RenderNodeWrapper<SuggestionConfig> = ({
+export const SuggestionLineBreak: RenderNodeWrapper<SuggestionConfig> = ({
   api,
   element,
 }) => {
@@ -27,13 +27,13 @@ export const SuggestionBelowNodes: RenderNodeWrapper<SuggestionConfig> = ({
     return (
       <React.Fragment>
         {children}
-        <SuggestionLineBreak suggestionData={suggestionData} />
+        <SuggestionLineBreakContent suggestionData={suggestionData} />
       </React.Fragment>
     );
   };
 };
 
-function SuggestionLineBreak({
+function SuggestionLineBreakContent({
   suggestionData,
 }: {
   suggestionData: TSuggestionData;

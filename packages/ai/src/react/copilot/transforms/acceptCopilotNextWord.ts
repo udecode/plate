@@ -1,3 +1,4 @@
+import { KEYS } from '@udecode/plate';
 import { deserializeInlineMd } from '@udecode/plate-markdown';
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
@@ -7,20 +8,22 @@ import { withoutAbort } from '../utils';
 
 export const acceptCopilotNextWord = (editor: PlateEditor) => {
   const { api, getOptions } = getEditorPlugin<CopilotPluginConfig>(editor, {
-    key: 'copilot',
+    key: KEYS.copilot,
   });
 
   const { getNextWord, suggestionText } = getOptions();
 
-  if (suggestionText?.length) {
-    const { firstWord, remainingText } = getNextWord!({ text: suggestionText });
-
-    api.copilot.setBlockSuggestion({
-      text: remainingText,
-    });
-
-    withoutAbort(editor, () => {
-      editor.tf.insertFragment(deserializeInlineMd(editor, firstWord));
-    });
+  if (!suggestionText?.length) {
+    return false;
   }
+
+  const { firstWord, remainingText } = getNextWord!({ text: suggestionText });
+
+  api.copilot.setBlockSuggestion({
+    text: remainingText,
+  });
+
+  withoutAbort(editor, () => {
+    editor.tf.insertFragment(deserializeInlineMd(editor, firstWord));
+  });
 };

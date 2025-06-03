@@ -1,6 +1,4 @@
-import type { SlateEditor } from '@udecode/plate';
-
-import type { TSuggestionText } from '../types';
+import type { SlateEditor, TSuggestionText } from '@udecode/plate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries';

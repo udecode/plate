@@ -1,10 +1,10 @@
-import type { NodeEntry, SlateEditor } from '@udecode/plate';
-
 import type {
+  NodeEntry,
+  SlateEditor,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-} from '../types';
+} from '@udecode/plate';
 
 import { getCellIndices } from '../utils/getCellIndices';
 
