@@ -1,4 +1,4 @@
-import { type TText, NodeApi } from '@udecode/slate';
+import { type TElement, type TText, NodeApi, PathApi } from '@udecode/slate';
 import { type NodeEntry, Path } from 'slate';
 
 import type { SlateEditor } from '../../../editor';
@@ -27,22 +27,35 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
 
   if (!edge) return null;
 
-  const textEntry: NodeEntry<TText> = [
-    NodeApi.get(editor, cursor.path)!,
-    cursor.path,
-  ];
+  const parent: TElement | null = (NodeApi.parent(editor, cursor.path) ??
+    null) as TElement | null;
 
-  if (edge === 'start' && cursor.path.at(-1) === 0) {
-    return [null, textEntry];
+  /** Link */
+  const isAffinityInlineElement =
+    parent &&
+    editor.meta.pluginKeys.node.isAffinity.some(
+      (key) => editor.getType(key) === parent.type
+    );
+
+  const nodeEntry: NodeEntry<TElement | TText> = isAffinityInlineElement
+    ? [parent, PathApi.parent(cursor.path)]
+    : [NodeApi.get(editor, cursor.path)!, cursor.path];
+
+  if (
+    edge === 'start' &&
+    cursor.path.at(-1) === 0 &&
+    !isAffinityInlineElement
+  ) {
+    return [null, nodeEntry];
   }
 
   const siblingPath =
-    edge === 'end' ? Path.next(cursor.path) : Path.previous(cursor.path);
+    edge === 'end' ? Path.next(nodeEntry[1]) : Path.previous(nodeEntry[1]);
   const siblingNode = NodeApi.get<TText>(editor, siblingPath);
 
   const siblingEntry: NodeEntry<TText> | null = siblingNode
     ? [siblingNode, siblingPath]
     : null;
 
-  return edge === 'end' ? [textEntry, siblingEntry] : [siblingEntry, textEntry];
+  return edge === 'end' ? [nodeEntry, siblingEntry] : [siblingEntry, nodeEntry];
 };
