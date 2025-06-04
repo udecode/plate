@@ -1,4 +1,4 @@
-import type { OverrideEditor } from '@udecode/plate';
+import { type OverrideEditor, PathApi } from '@udecode/plate';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
 
@@ -15,7 +15,7 @@ import { upsertLink } from './transforms/index';
 export const withLink: OverrideEditor<BaseLinkConfig> = ({
   editor,
   getOptions,
-  tf: { insertBreak, insertData, insertText },
+  tf: { insertBreak, insertData, insertText, normalizeNode },
   type,
 }) => {
   const wrapLink = () => {
@@ -98,6 +98,28 @@ export const withLink: OverrideEditor<BaseLinkConfig> = ({
         }
 
         insertText(text, options);
+      },
+      normalizeNode([node, path]) {
+        if (node.type === type) {
+          const range = editor.selection;
+
+          if (
+            range &&
+            editor.api.isCollapsed() &&
+            editor.api.isEnd(range.focus, path)
+          ) {
+            const nextPoint = editor.api.start(path, { next: true });
+
+            // select next text node if any
+            if (!nextPoint) {
+              const nextPath = PathApi.next(path);
+              editor.tf.insertNodes({ text: '' } as any, { at: nextPath });
+              editor.tf.select(nextPath);
+            }
+          }
+        }
+
+        normalizeNode([node, path]);
       },
     },
   };
