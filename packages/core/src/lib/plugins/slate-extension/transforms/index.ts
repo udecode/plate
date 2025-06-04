@@ -3,3 +3,4 @@
  */
 
 export * from './insertExitBreak';
+export * from './resetBlock';

@@ -30,8 +30,15 @@ export const BasicBlocksKit = [
   }),
   BlockquotePlugin.configure({
     node: {
-      breakMode: 'splitOnEmptyLine',
+      breakMode: {
+        default: 'lineBreak',
+        empty: 'reset',
+        emptyLineEnd: 'exit',
+      },
       component: BlockquoteElement,
+      deleteMode: {
+        start: 'reset',
+      },
     },
     shortcuts: { toggle: { keys: 'mod+shift+period' } },
   }),

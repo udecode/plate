@@ -3,10 +3,10 @@ import type { Doc } from 'contentlayer/generated';
 import type { Metadata } from 'next';
 
 import {
-  BaseExitBreakPlugin,
   BaseResetNodePlugin,
   createSlateEditor,
   DeletePlugin,
+  ExitBreakPlugin,
   KEYS,
   SelectOnBackspacePlugin,
   TrailingBlockPlugin,
@@ -60,7 +60,7 @@ export default function RSCPage() {
 
       // Functionality
       BaseAutoformatPlugin,
-      BaseExitBreakPlugin,
+      ExitBreakPlugin,
       BaseResetNodePlugin,
       SelectOnBackspacePlugin.configure({
         options: {

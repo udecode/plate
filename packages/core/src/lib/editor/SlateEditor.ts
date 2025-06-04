@@ -61,10 +61,6 @@ export type BaseEditor = EditorBase & {
         nodeProps: string[];
       };
       node: {
-        breakMode: {
-          lineBreak: string[];
-          splitOnEmptyLine: string[];
-        };
         clearOnEdge: string[];
         isAffinity: string[];
         isElement: string[];
@@ -76,6 +72,8 @@ export type BaseEditor = EditorBase & {
         isSplittable: string[];
         isStrictSiblings: string[];
         isVoid: string[];
+        /** Node types to plugin keys. */
+        types: Record<string, string>;
       };
       normalizeInitialValue: string[];
       render: {

@@ -8,93 +8,242 @@ title: Reset Node
 
 ## Features
 
-- Enables quick reset of text block formatting to default on key events (e.g. `Enter`).
-- To test, press Enter in an empty or at the end of a block quote, or Backspace at the start of a block quote.
+- Reset block formatting to paragraph on key events (Enter/Backspace).
+- Built into the core editor behavior - no separate plugin needed.
+- Configure reset behavior per node type using simple properties.
 
 </PackageInfo>
 
-## Usage
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+Reset node functionality is built into the core editor via `SlateExtensionPlugin`. No additional installation needed.
+
+### Configure Plugins
+
+Configure reset behavior on individual plugins using node properties:
 
 ```tsx
-// ...
-import {
-  isBlockAboveEmpty,
-  isSelectionAtBlockStart,
-  KEYS,
-} from '@udecode/plate';
-import { ResetNodePlugin } from '@udecode/plate/react';
+import { BlockquotePlugin, HeadingPlugin } from '@udecode/plate';
+import { createPlateEditor } from '@udecode/plate/react';
 
-const resetBlockTypesCommonRule = {
-  defaultType: KEYS.p,
-  types: [...KEYS.heading, KEYS.blockquote, KEYS.callout],
-};
-
-const resetBlockTypesCodeBlockRule = {
-  defaultType: KEYS.p,
-  types: [KEYS.codeBlock],
-  onReset: unwrapCodeBlock,
-};
-
-const plugins = [
-  // ...otherPlugins,
-  ResetNodePlugin.configure({
-    options: {
-      rules: [
-        {
-          ...resetBlockTypesCommonRule,
-          hotkey: 'Enter',
-          predicate: (editor) =>
-            editor.api.isEmpty(editor.selection, { block: true }),
-        },
-        {
-          ...resetBlockTypesCommonRule,
-          hotkey: 'Backspace',
-          predicate: (editor) => editor.api.isAt({ start: true }),
-        },
-        {
-          ...resetBlockTypesCodeBlockRule,
-          hotkey: 'Enter',
-          predicate: isCodeBlockEmpty,
-        },
-        {
-          ...resetBlockTypesCodeBlockRule,
-          hotkey: 'Backspace',
-          predicate: isSelectionAtCodeBlockStart,
-        },
-      ],
-    },
-  }),
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    BlockquotePlugin.configure({
+      node: {
+        resetOnEmpty: true, // Reset to paragraph when empty + Enter/Backspace
+        resetOnStart: true, // Reset when Backspace at start
+      },
+    }),
+    HeadingPlugin.configure({
+      node: {
+        resetOnEmpty: true,
+        resetOnStart: true,
+      },
+    }),
+  ],
+});
 ```
 
-## Plugins
+</Steps>
 
-### `ResetNodePlugin`
+## Manual Usage
 
-Plugin for resetting node types based on rules.
+<Steps>
 
-<API name="ResetNodePlugin">
-<APIOptions type="rules">
-    <APIItem name="hotkey" type="string | string[]" optional>
-      Hotkey(s) that trigger the rule.
-    </APIItem>
-    <APIItem name="defaultType" type="string" optional>
-      Default type to reset node to.
-    </APIItem>
-    <APIItem name="types" type="string[]">
-      Node types where rule applies.
-    </APIItem>
-    <APIItem name="predicate" type="(editor: PlateEditor) => boolean">
-      Additional condition for rule.
-    </APIItem>
-    <APIItem name="onReset" type="(editor: PlateEditor) => void" optional>
-      Callback when reset occurs.
-    </APIItem>
-    <APIItem name="disableFirstBlockReset" type="boolean" optional>
-      Disable reset for first block in editor.
-    </APIItem>
-    <APIItem name="disableEditorReset" type="boolean" optional>
-      Disable reset for entire editor.
+### Configure Node Properties
+
+Add reset behavior to custom plugins:
+
+```tsx
+import { createSlatePlugin } from '@udecode/plate';
+
+const CustomBlockPlugin = createSlatePlugin({
+  key: 'customBlock',
+  node: {
+    isElement: true,
+    resetOnEmpty: true, // Reset when block is empty and Enter/Backspace pressed
+    resetOnStart: true, // Reset when Backspace pressed at block start
+  },
+});
+```
+
+### Special Cases
+
+For complex reset logic, use `editor.api.shouldReset`:
+
+```tsx
+import { CodeBlockPlugin } from '@udecode/plate';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CodeBlockPlugin.extendApi(({ editor }) => ({
+      shouldReset: (trigger) => {
+        if (trigger === 'empty') {
+          return editor.api.isCodeBlockEmpty();
+        }
+        if (trigger === 'start') {
+          return editor.api.isSelectionAtCodeBlockStart();
+        }
+        return false;
+      },
+    })),
+  ],
+});
+```
+
+</Steps>
+
+## Node Properties
+
+Configure reset behavior using these node properties:
+
+### `resetOnEmpty`
+
+**Type:** `boolean`
+
+When `true`, pressing Enter or Backspace in an empty block will reset it to a paragraph.
+
+```tsx
+const BlockquotePlugin = createSlatePlugin({
+  key: 'blockquote',
+  node: {
+    isElement: true,
+    resetOnEmpty: true,
+  },
+});
+```
+
+### `resetOnStart`
+
+**Type:** `boolean`
+
+When `true`, pressing Backspace at the start of a block will reset it to a paragraph while preserving content.
+
+```tsx
+const HeadingPlugin = createSlatePlugin({
+  key: 'h1',
+  node: {
+    isElement: true,
+    resetOnStart: true,
+  },
+});
+```
+
+## API
+
+### `editor.api.shouldReset`
+
+Override reset behavior for complex cases.
+
+<API name="shouldReset">
+<APIOptions>
+  <APIItem name="trigger" type="'empty' | 'start'">
+    The trigger that initiated the reset check.
+    - `'empty'`: Triggered by Enter/Backspace in empty block
+    - `'start'`: Triggered by Backspace at block start
   </APIItem>
-  </APIOptions>
+</APIOptions>
+
+<APIReturns type="boolean">
+  Whether the block should be reset to paragraph.
+</APIReturns>
 </API>
+
+## Examples
+
+### Basic Configuration
+
+Most blocks can use simple boolean configuration:
+
+```tsx
+const editor = createPlateEditor({
+  plugins: [
+    // Reset headings when empty or at start
+    HeadingPlugin.configure({
+      node: { resetOnEmpty: true, resetOnStart: true },
+    }),
+    
+    // Reset blockquotes when empty or at start  
+    BlockquotePlugin.configure({
+      node: { resetOnEmpty: true, resetOnStart: true },
+    }),
+    
+    // Reset callouts when empty or at start
+    CalloutPlugin.configure({
+      node: { resetOnEmpty: true, resetOnStart: true },
+    }),
+  ],
+});
+```
+
+### Advanced Configuration
+
+For complex logic, extend the API:
+
+```tsx
+const CodeBlockPlugin = createSlatePlugin({
+  key: 'codeblock',
+  node: {
+    isElement: true,
+    // Don't use simple boolean - use custom logic instead
+  },
+})
+.extendApi(({ editor }) => ({
+  shouldReset: (trigger) => {
+    if (trigger === 'empty') {
+      // Custom logic for empty code blocks
+      return editor.api.isCodeBlockEmpty();
+    }
+    if (trigger === 'start') {
+      // Custom logic for code block start
+      return editor.api.isSelectionAtCodeBlockStart();
+    }
+    return false;
+  },
+}));
+```
+
+## Migration
+
+### From ResetNodePlugin
+
+**Before (old API):**
+```tsx
+ResetNodePlugin.configure({
+  options: {
+    rules: [
+      {
+        types: ['blockquote', 'h1', 'h2'],
+        defaultType: 'p',
+        hotkey: 'Enter',
+        predicate: (editor) => editor.api.isEmpty(editor.selection, { block: true }),
+      },
+      {
+        types: ['blockquote', 'h1', 'h2'], 
+        defaultType: 'p',
+        hotkey: 'Backspace',
+        predicate: (editor) => editor.api.isAt({ start: true }),
+      },
+    ],
+  },
+})
+```
+
+**After (new API):**
+```tsx
+// Configure each plugin individually
+BlockquotePlugin.configure({
+  node: { resetOnEmpty: true, resetOnStart: true },
+}),
+HeadingPlugin.configure({
+  node: { resetOnEmpty: true, resetOnStart: true },
+}),
+```
+
+The new approach is simpler and more maintainable - configure reset behavior directly on each plugin rather than centralized rules.

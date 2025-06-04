@@ -254,20 +254,8 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * @default plugin.key
    */
   type: string;
-  /**
-   * Defines the behavior of the Enter key within this node type.
-   *
-   * - `'split': Pressing Enter splits the block, creating a new block of the
-   *   default type (hard break).
-   * - `'lineBreak'`: Always inserts a newline character (`\n`) within the current
-   *   block (soft break).
-   * - `'splitOnEmptyLine'`: Inserts a `lineBreak` unless the cursor is on an
-   *   empty line (empty block or previous character is `\n`), in which case it
-   *   performs a `split` (hard break).
-   *
-   * @default 'split'
-   */
-  breakMode?: 'lineBreak' | 'split' | 'splitOnEmptyLine';
+  /** Defines actions on insert break based on block state. */
+  breakMode?: BreakMode;
   /**
    * If true, enables automatically clearing the mark when typing at its
    * boundary. Only applies when `isLeaf` is true.
@@ -310,6 +298,12 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * @default [ ]
    */
   dangerouslyAllowAttributes?: string[];
+  /**
+   * Defines actions on delete based on block state.
+   *
+   * @see DeleteMode
+   */
+  deleteMode?: DeleteMode;
   /**
    * Whether the node has non-breaking space on both sides.
    *
@@ -403,6 +397,45 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 };
 
 // -----------------------------------------------------------------------------
+
+export interface BreakMode {
+  /** Action when Enter is pressed in an empty block. */
+  empty?: 'default' | 'exit' | 'reset';
+  /**
+   * Action when Enter is pressed at the end of an empty line. This is typically
+   * used with `default: 'lineBreak'`.
+   *
+   * Example:
+   *
+   * ```tsx
+   *     <blockquote>
+   *     This is some text\n
+   *     |
+   *     </blockquote>
+   * ```
+   */
+  emptyLineEnd?: 'default' | 'exit';
+  /** Default action when Enter is pressed. Defaults to splitting the block. */
+  default?: 'default' | 'exit' | 'lineBreak';
+}
+
+export interface DeleteMode {
+  /**
+   * Action when Backspace is pressed at the start of the block. This applies
+   * whether the block is empty or not.
+   *
+   * Example:
+   *
+   * ```tsx
+   *     <blockquote>
+   *     |Text
+   *     </blockquote>
+   * ```
+   */
+  start?: 'default' | 'reset';
+  /** Action when Backspace is pressed and the block is empty. */
+  empty?: 'default' | 'reset';
+}
 
 export type EditOnlyConfig = {
   /**

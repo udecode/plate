@@ -4,7 +4,7 @@ import type { SlatePlugin } from '../plugin/SlatePlugin';
 
 import { AstPlugin } from './AstPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
-import { InlineVoidPlugin } from './InlineVoidPlugin';
+import { OverridePlugin } from './override/OverridePlugin';
 import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { DOMPlugin } from './dom';
@@ -45,7 +45,7 @@ export const getCorePlugins = ({
     SlateExtensionPlugin,
     DOMPlugin,
     HistoryPlugin,
-    InlineVoidPlugin,
+    OverridePlugin,
     ParserPlugin,
     maxLength
       ? LengthPlugin.configure({ options: { maxLength } })

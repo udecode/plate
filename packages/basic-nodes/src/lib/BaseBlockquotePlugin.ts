@@ -3,7 +3,9 @@ import { type TElement, createSlatePlugin, KEYS } from '@udecode/plate';
 /** Enables support for block quotes, useful for quotations and passages. */
 export const BaseBlockquotePlugin = createSlatePlugin({
   key: KEYS.blockquote,
-  node: { isElement: true },
+  node: {
+    isElement: true,
+  },
   parsers: {
     html: {
       deserializer: {

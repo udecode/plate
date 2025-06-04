@@ -1,11 +1,16 @@
-import { type OverrideEditor, createSlatePlugin } from '../plugin';
+import type { OverrideEditor } from '../../plugin';
+
+import { createSlatePlugin } from '../../plugin/createSlatePlugin';
+import { BaseParagraphPlugin } from '../paragraph';
+import { withBreakMode } from './withBreakMode';
+import { withDeleteMode } from './withDeleteMode';
 
 /**
  * Merge and register all the inline types and void types from the plugins and
  * options, using `editor.api.isInline`, `editor.api.markableVoid` and
  * `editor.api.isVoid`
  */
-export const withInlineVoid: OverrideEditor = ({
+export const withOverrides: OverrideEditor = ({
   api: { isInline, isSelectable, isVoid, markableVoid },
   editor,
 }) => {
@@ -17,6 +22,13 @@ export const withInlineVoid: OverrideEditor = ({
 
   return {
     api: {
+      create: {
+        block: (node) => ({
+          children: [{ text: '' }],
+          type: editor.getType(BaseParagraphPlugin.key),
+          ...node,
+        }),
+      },
       isInline(element) {
         return inlineTypes.includes(element.type as any)
           ? true
@@ -39,7 +51,10 @@ export const withInlineVoid: OverrideEditor = ({
   };
 };
 
-/** @see {@link withInlineVoid} */
-export const InlineVoidPlugin = createSlatePlugin({
-  key: 'inlineVoid',
-}).overrideEditor(withInlineVoid);
+/** Override the editor api and transforms based on the plugins. */
+export const OverridePlugin = createSlatePlugin({
+  key: 'override',
+})
+  .overrideEditor(withOverrides)
+  .overrideEditor(withBreakMode)
+  .overrideEditor(withDeleteMode);

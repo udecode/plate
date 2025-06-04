@@ -16,7 +16,7 @@ export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 export const BaseH1Plugin = createTSlatePlugin({
   key: 'h1',
-  node: { isElement: true },
+  node: { isElement: true, resetMode: 'start' },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H1' }] } } },
   render: { as: 'h1' },
 }).extendTransforms(({ editor, type }) => ({
