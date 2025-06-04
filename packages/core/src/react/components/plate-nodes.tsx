@@ -97,7 +97,8 @@ export const PlateElement = React.forwardRef(function PlateElement(
     [props.element, props.editor, mounted]
   );
 
-  const inset = insetProp ?? props.plugin?.node.inset;
+  const inset =
+    insetProp || props.plugin?.node.isAffinity || props.plugin?.node.inset;
 
   return (
     <>

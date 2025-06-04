@@ -1,4 +1,10 @@
-import { type TElement, type TText, NodeApi, PathApi } from '@udecode/slate';
+import {
+  type TElement,
+  type TText,
+  ElementApi,
+  NodeApi,
+  PathApi,
+} from '@udecode/slate';
 import { type NodeEntry, Path } from 'slate';
 
 import type { SlateEditor } from '../../../editor';
@@ -31,14 +37,25 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
     null) as TElement | null;
 
   /** Link */
-  const isAffinityInlineElement =
-    parent &&
-    editor.meta.pluginKeys.node.isAffinity.some(
+
+  const isAffinityInlineElement = (() => {
+    if (!parent) return false;
+
+    const parentIsHardEdge = editor.meta.pluginKeys.node.isHardEdge.some(
       (key) => editor.getType(key) === parent.type
     );
 
+    const parentIsAffinity = editor.meta.pluginKeys.node.isAffinity.some(
+      (key) => editor.getType(key) === parent.type
+    );
+
+    return (
+      (parentIsHardEdge || parentIsAffinity) && ElementApi.isElement(parent)
+    );
+  })();
+
   const nodeEntry: NodeEntry<TElement | TText> = isAffinityInlineElement
-    ? [parent, PathApi.parent(cursor.path)]
+    ? [parent!, PathApi.parent(cursor.path)]
     : [NodeApi.get(editor, cursor.path)!, cursor.path];
 
   if (

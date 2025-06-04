@@ -5,19 +5,12 @@ import { ElementApi, NodeApi } from '@udecode/slate';
 import type { SlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
 
-import { type ElementAffinity, AffinityPlugin } from '../AffinityPlugin';
-
 export const setAffinitySelection = (
   editor: SlateEditor,
   edgeNodes: EdgeNodes,
   affinity: 'backward' | 'forward'
 ) => {
-  const setElement = (elementAffinity: ElementAffinity | null) => {
-    editor.setOption(AffinityPlugin, 'elementAffinity', elementAffinity);
-  };
-
   const setMarks = (marks: typeof editor.marks) => {
-    setElement(null);
     editor.marks = marks;
     editor.api.onChange();
   };
@@ -39,28 +32,19 @@ export const setAffinitySelection = (
       select(beforeEnd);
     }
 
-    if (ElementApi.isElement(before[0])) {
-      setElement({
-        affinity,
-        at: before[1],
-        type: before[0].type,
-      });
-    } else {
-      setMarks(null);
-    }
+    if (ElementApi.isElement(before[0])) return;
+    setMarks(null);
 
     return;
   }
 
   if (before === null) {
     setMarks(null);
-    setElement(null);
     return;
   }
 
   if (after === null) {
     setMarks({});
-    setElement(null);
     return;
   }
 
@@ -68,11 +52,7 @@ export const setAffinitySelection = (
   select(beforeEnd);
 
   if (ElementApi.isElement(after[0])) {
-    setElement({
-      affinity,
-      at: after[1],
-      type: after[0].type,
-    });
+    return;
   } else {
     setMarks(NodeApi.extractProps(after[0]));
   }

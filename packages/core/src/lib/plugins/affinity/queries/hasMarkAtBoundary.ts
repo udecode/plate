@@ -24,3 +24,4 @@ export const hasAffinity = (editor: SlateEditor, edgeNodes: EdgeNodes) => {
 
   return (before && query(before[0])) || (after && query(after[0]));
 };
+

@@ -1,12 +1,17 @@
-import { type TElement, type TText, NodeApi } from '@udecode/slate';
+import { type TElement, type TText, ElementApi, NodeApi } from '@udecode/slate';
 
 import type { SlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
 
 const isHardEdge = (editor: SlateEditor, node: TElement | TText) => {
-  return Object.keys(NodeApi.extractProps(node)).some((mark) =>
+  const marks = Object.keys(NodeApi.extractProps(node));
+
+  const keys = ElementApi.isElement(node) ? [node.type] : marks;
+
+  return keys.some((mark) =>
     editor.meta.pluginKeys.node.isHardEdge.some(
-      (key) => editor.getType(key) === mark && !editor.plugins[key].node.clearOnEdge
+      (key) =>
+        editor.getType(key) === mark && !editor.plugins[key].node.clearOnEdge
     )
   );
 };
