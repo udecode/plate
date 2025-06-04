@@ -353,6 +353,13 @@ export const defaultRules: TRules = {
   },
   html: {
     deserialize: (mdastNode, deco, options) => {
+      if (mdastNode.value === '<p><br /></p>') {
+        const paragraphType = getPlateNodeType('paragraph');
+        return {
+          children: [{ text: '\n' } as TText],
+          type: paragraphType,
+        };
+      }
       return {
         text: (mdastNode.value || '').replaceAll('<br />', '\n'),
       };
@@ -697,16 +704,7 @@ export const defaultRules: TRules = {
             }
           });
         } else {
-          if (
-            child.text === '\n' &&
-            children.length > 1 &&
-            index === children.length - 1
-          ) {
-            // remove the last br of the paragraph if the previos element is not a br
-            // no op
-          } else {
-            inlineNodes.push(child);
-          }
+          inlineNodes.push(child);
         }
       });
 
@@ -717,12 +715,16 @@ export const defaultRules: TRules = {
     serialize: (node, options) => {
       let enrichedChildren = node.children;
 
-      enrichedChildren = enrichedChildren.map((child) => {
+      enrichedChildren = enrichedChildren.map((child, index, childNodes) => {
         if (child.text === '\n') {
           return {
             type: 'break',
           } as any;
+        } else if (typeof child.text === 'string') {
+          // mask soft breaks breaks
+          child.text = child.text.replaceAll('\n', `\\n`);
         }
+
         return child;
       });
 
@@ -731,18 +733,67 @@ export const defaultRules: TRules = {
         options
       ) as MdParagraph['children'];
 
-      if (
-        convertedNodes.length > 0 &&
+      if (convertedNodes.length === 0) {
+        // empty spaces paragraphs get represented as <br />
+        return {
+          type: 'html',
+          value: '<br />',
+        } as any;
+      } else if (
+        convertedNodes.length === 1 &&
         enrichedChildren.at(-1)!.type === 'break'
       ) {
-        // if the last child of the paragraph is a line break add an additional one
+        // paragraphs only containing one softbreak get represented as <p><br /></p>
+        return {
+          type: 'html',
+          value: '<p><br /></p>',
+        } as any;
+      } else if (enrichedChildren.at(-1)!.type === 'break') {
+        // if the last child of the paragraph is a line break replace it with a br tag
         convertedNodes.at(-1)!.type = 'html';
         // @ts-expect-error -- value is the right property here
         convertedNodes.at(-1)!.value = '\n<br />';
+      } else if (
+        convertedNodes.at(-1)!.type === 'text' &&
+        (convertedNodes.at(-1)!.value as string).endsWith(`\\n`)
+      ) {
+        // if the last child of the paragraph is a text node that ends with a line break replace it with a br tag
+
+        (convertedNodes.at(-1) as any)!.value = (
+          convertedNodes.at(-1)!.value as string
+        ).slice(0, -2);
+
+        convertedNodes.push({
+          type: 'html',
+          value: '<br />',
+        });
       }
 
+      const lineBreaksExtracted = [];
+
+      convertedNodes.forEach((child, index) => {
+        if (child.type === 'text') {
+          const textValue = (child as any).value as string;
+          textValue.split(`\\n`).forEach((part, partIndex, array) => {
+            lineBreaksExtracted.push({
+              ...child,
+              value: part,
+            });
+            if (partIndex !== array.length - 1) {
+              lineBreaksExtracted.push({
+                type: 'break',
+              });
+            }
+          });
+        } else {
+          lineBreaksExtracted.push(child);
+        }
+      });
+
+      // if the last child of the paragraph is a text node that ends with a line break replace it with a br tag
+
       return {
-        children: convertedNodes,
+        children: lineBreaksExtracted,
         type: 'paragraph',
       };
     },
