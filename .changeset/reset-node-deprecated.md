@@ -2,11 +2,11 @@
 '@udecode/plate-reset-node': major
 ---
 
-Package `@udecode/plate-reset-node` has been deprecated. Its functionality (e.g., `ResetNodePlugin`) is now exclusively configured using the `node.breakMode` and `node.deleteMode` options on plugin definitions. Migration:
+Package `@udecode/plate-reset-node` has been deprecated. Its functionality (e.g., `ResetNodePlugin`) is now exclusively configured using the `node.breakRules` and `node.deleteRules` options on plugin definitions. Migration:
 
 - Remove `@udecode/plate-reset-node` from your dependencies.
 - Remove any usage of `ResetNodePlugin` from your project.
-- Configure reset behaviors directly on the relevant plugins by defining `node.breakMode` and/or `node.deleteMode`.
+- Configure reset behaviors directly on the relevant plugins by defining `node.breakRules` and/or `node.deleteRules`.
 
 **Example: Resetting a Blockquote to a Paragraph**
 
@@ -28,8 +28,8 @@ ResetNodePlugin.configure({
 // After
 BlockquotePlugin.configure({
   node: {
-    breakMode: { empty: 'reset' },
-    deleteMode: { start: 'reset' },
+    breakRules: { empty: 'reset' },
+    deleteRules: { start: 'reset' },
   },
 });
 ```
@@ -55,7 +55,7 @@ ResetNodePlugin.configure({
 // After
 CodeBlockPlugin.configure({
   node: {
-    deleteMode: { empty: 'reset' },
+    deleteRules: { empty: 'reset' },
   },
 }).overrideEditor(({ editor, tf: { resetBlock } }) => ({
   transforms: {

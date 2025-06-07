@@ -25,7 +25,7 @@ export const PlateContainer = ({
     </div>
   );
 
-  editor.meta.pluginKeys.render.beforeContainer.forEach((key) => {
+  editor.meta.pluginCache.render.beforeContainer.forEach((key) => {
     const plugin = editor.plugins[key];
     if (isEditOnly(readOnly, plugin, 'render')) return;
 
@@ -39,7 +39,7 @@ export const PlateContainer = ({
     );
   });
 
-  editor.meta.pluginKeys.render.afterContainer.forEach((key) => {
+  editor.meta.pluginCache.render.afterContainer.forEach((key) => {
     const plugin = editor.plugins[key];
     if (isEditOnly(readOnly, plugin, 'render')) return;
 

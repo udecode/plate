@@ -1,17 +1,17 @@
 ---
-title: Plugin Modes
+title: Plugin Rules
 description: Configure common editing behaviors.
 ---
 
-Plugin Modes control how editor nodes respond to common user actions. Instead of overriding the editor methods, you can configure these behaviors directly on a plugin's `node` property.
+Plugin Rules control how editor nodes respond to common user actions. Instead of overriding the editor methods, you can configure these behaviors directly on a plugin's `node` property.
 
-This guide shows you how to use `breakMode`, `deleteMode`, `mergeMode`, and the `matchMode` override to create intuitive editing experiences.
+This guide shows you how to use `breakRules`, `deleteRules`, `mergeRules`, `normalizeRules`, and the `matchRules` override to create intuitive editing experiences.
 
-<ComponentPreview name="plugin-modes-demo" />
+<ComponentPreview name="plugin-rules-demo" />
 
 ## Actions
 
-Plugin modes use specific action names to define behavior:
+Plugin rules use specific action names to define behavior:
 
 - **`'default'`**: Default Slate behavior.
 - **`'reset'`**: Changes the current block to a default paragraph, keeping content.
@@ -21,7 +21,7 @@ Plugin modes use specific action names to define behavior:
 
 ### `default`
 
-Standard Slate behavior. For `breakMode`, splits the block. For `deleteMode`, merges with the previous block.
+Standard Slate behavior. For `breakRules`, splits the block. For `deleteRules`, merges with the previous block.
 
 ```tsx
 <p>
@@ -54,7 +54,7 @@ Converts the current block to a default paragraph while preserving content. Cust
 </h3>
 ```
 
-After pressing `Enter` with `breakMode: { empty: 'reset' }`:
+After pressing `Enter` with `breakRules: { empty: 'reset' }`:
 
 ```tsx
 <p>
@@ -72,7 +72,7 @@ Exits the current block structure by inserting a new paragraph after it.
 </blockquote>
 ```
 
-After pressing `Enter` with `breakMode: { empty: 'exit' }`:
+After pressing `Enter` with `breakRules: { empty: 'exit' }`:
 
 ```tsx
 <blockquote>
@@ -94,7 +94,7 @@ Deletes content then exits the block.
 </blockquote>
 ```
 
-After pressing `Enter` with `breakMode: { emptyLineEnd: 'deleteExit' }`:
+After pressing `Enter` with `breakRules: { emptyLineEnd: 'deleteExit' }`:
 
 ```tsx
 <blockquote>line1</blockquote>
@@ -113,7 +113,7 @@ Inserts a soft line break (`\n`) instead of splitting the block.
 </blockquote>
 ```
 
-After pressing `Enter` with `breakMode: { default: 'lineBreak' }`:
+After pressing `Enter` with `breakRules: { default: 'lineBreak' }`:
 
 ```tsx
 <blockquote>
@@ -122,7 +122,7 @@ After pressing `Enter` with `breakMode: { default: 'lineBreak' }`:
 </blockquote>
 ```
 
-## `breakMode`
+## `breakRules`
 
 Controls what happens when users press `Enter` within specific block types.
 
@@ -131,7 +131,7 @@ Controls what happens when users press `Enter` within specific block types.
 ```tsx
 BlockquotePlugin.configure({
   node: {
-    breakMode: {
+    breakRules: {
       // Action when Enter is pressed normally
       default: 'default' | 'lineBreak' | 'exit' | 'deleteExit',
       
@@ -175,7 +175,7 @@ const plugins = [
   // ...otherPlugins,
   BlockquotePlugin.configure({
     node: {
-      breakMode: {
+      breakRules: {
         default: 'lineBreak',
         empty: 'reset',
         emptyLineEnd: 'deleteExit',
@@ -209,9 +209,9 @@ const plugins = [
   // ...otherPlugins,
   CodeBlockPlugin.configure({
     node: {
-      deleteMode: { empty: 'reset' },
-      matchMode: ({ editor, mode }) => {
-        return mode === 'delete.empty' && isCodeBlockEmpty();
+      deleteRules: { empty: 'reset' },
+      matchRules: ({ editor, rule }) => {
+        return rule === 'delete.empty' && isCodeBlockEmpty();
       },
     },
   }),
@@ -234,7 +234,7 @@ After (reset):
 </p>
 ```
 
-## `deleteMode`
+## `deleteRules`
 
 Controls what happens when users press `Backspace` at specific positions.
 
@@ -243,7 +243,7 @@ Controls what happens when users press `Backspace` at specific positions.
 ```tsx
 HeadingPlugin.configure({
   node: {
-    deleteMode: {
+    deleteRules: {
       // Action when Backspace is pressed at block start
       start: 'default' | 'reset',
       
@@ -275,7 +275,7 @@ const plugins = [
   // ...otherPlugins,
   BlockquotePlugin.configure({
     node: {
-      deleteMode: { start: 'reset' },
+      deleteRules: { start: 'reset' },
     },
   }),
 ];
@@ -304,9 +304,9 @@ const plugins = [
   // ...otherPlugins,
   ListPlugin.configure({
     node: {
-      deleteMode: { start: 'reset' },
-      matchMode: ({ mode, node }) => {
-        return mode === 'delete.start' && Boolean(node.listStyleType);
+      deleteRules: { start: 'reset' },
+      matchRules: ({ rule, node }) => {
+        return rule === 'delete.start' && Boolean(node.listStyleType);
       },
     },
   }),
@@ -327,7 +327,7 @@ After (reset):
 </p>
 ```
 
-## `mergeMode`
+## `mergeRules`
 
 Controls how blocks behave when merging with previous blocks.
 
@@ -336,7 +336,7 @@ Controls how blocks behave when merging with previous blocks.
 ```tsx
 ParagraphPlugin.configure({
   node: {
-    mergeMode: {
+    mergeRules: {
       // Whether to remove empty previous blocks when merging
       removeEmpty: boolean,
     },
@@ -353,8 +353,8 @@ import { H1Plugin, ParagraphPlugin } from '@udecode/plate/react';
 
 const plugins = [
   // ...otherPlugins,
-  H1Plugin, // mergeMode: { removeEmpty: true } by default
-  ParagraphPlugin, // mergeMode: { removeEmpty: true } by default
+  H1Plugin, // mergeRules: { removeEmpty: true } by default
+  ParagraphPlugin, // mergeRules: { removeEmpty: true } by default
 ];
 ```
 
@@ -384,7 +384,7 @@ const plugins = [
   // ...otherPlugins,
   BlockquotePlugin.configure({
     node: {
-      mergeMode: { removeEmpty: false }, // Default
+      mergeRules: { removeEmpty: false }, // Default
     },
   }),
 ];
@@ -411,9 +411,60 @@ After (empty paragraph preserved):
 Slate's default is `true` since the default block (paragraph) is first-class, while Plate plugins are likely used to define other node behaviors that shouldn't automatically remove empty predecessors.
 </Callout>
 
-## `matchMode`
+## `normalizeRules`
 
-Applies modes conditionally based on node properties beyond just type. This is useful to override the behavior of another plugin.
+Controls how nodes are normalized during the normalization process.
+
+### Configuration
+
+```tsx
+LinkPlugin.configure({
+  node: {
+    normalizeRules: {
+      // Whether to remove nodes with empty text
+      removeEmpty: boolean,
+    },
+  },
+});
+```
+
+### Examples
+
+**Remove empty link nodes:**
+
+```tsx
+import { LinkPlugin } from '@udecode/plate-link/react';
+
+const plugins = [
+  // ...otherPlugins,
+  LinkPlugin.configure({
+    node: {
+      normalizeRules: { removeEmpty: true },
+    },
+  }),
+];
+```
+
+Before normalization:
+```tsx
+<p>
+  <a href="http://google.com">
+    <text />
+  </a>
+  <cursor />
+</p>
+```
+
+After normalization (empty link removed):
+```tsx
+<p>
+  <cursor />
+</p>
+```
+
+## `matchRules`
+
+Applies rules conditionally based on node properties beyond just type. This is useful to override the behavior of another plugin.
 
 ### Examples
 
@@ -426,10 +477,10 @@ const plugins = [
   // ...otherPlugins,
   ListPlugin.configure({
     node: {
-      breakMode: { empty: 'reset' },
-      deleteMode: { start: 'reset' },
-      mergeMode: { removeEmpty: false },
-      matchMode: ({ mode, node }) => {
+      breakRules: { empty: 'reset' },
+      deleteRules: { start: 'reset' },
+      mergeRules: { removeEmpty: false },
+      matchRules: ({ rule, node }) => {
         return Boolean(node.listStyleType);
       },
     },
@@ -437,7 +488,7 @@ const plugins = [
 ];
 ```
 
-Since the list plugin extends existing blocks that already have their own plugin configuration (e.g. `ParagraphPlugin`), using `matchMode` allows to override those behaviors.
+Since the list plugin extends existing blocks that already have their own plugin configuration (e.g. `ParagraphPlugin`), using `matchRules` allows you to override those behaviors.
 
 **Code block matching by emptiness:**
 
@@ -448,10 +499,10 @@ const plugins = [
   // ...otherPlugins,
   CodeBlockPlugin.configure({
     node: {
-      deleteMode: { empty: 'reset' },
-      matchMode: ({ editor, mode }) => {
+      deleteRules: { empty: 'reset' },
+      matchRules: ({ editor, rule }) => {
         return (
-          ['break.empty', 'delete.empty'].includes(mode) &&
+          ['break.empty', 'delete.empty'].includes(rule) &&
           isCodeBlockEmpty(editor)
         );
       },
@@ -509,9 +560,9 @@ const CodeBlockPlugin = createPlatePlugin({
 }));
 ```
 
-## Combining Modes
+## Combining Rules
 
-You can combine different modes for comprehensive block behavior:
+You can combine different rules for comprehensive block behavior:
 
 ```tsx
 import { BlockquotePlugin } from '@udecode/plate-basic-nodes/react';
@@ -520,12 +571,12 @@ const plugins = [
   // ...otherPlugins,
   BlockquotePlugin.configure({
     node: {
-      breakMode: {
+      breakRules: {
         default: 'lineBreak',
         empty: 'reset',
         emptyLineEnd: 'deleteExit',
       },
-      deleteMode: {
+      deleteRules: {
         start: 'reset',
       },
     },
@@ -578,7 +629,7 @@ After `Backspace`:
 
 ## Advanced
 
-For complex scenarios beyond simple modes, you can override editor transforms directly using [`.overrideEditor`](/docs/plugin-methods#overrideeditor). This gives you complete control over transforms like [`resetBlock`](/docs/plugin-methods#extendtransforms) and [`insertExitBreak`](/docs/plugin-methods#extendtransforms):
+For complex scenarios beyond simple rules, you can override editor transforms directly using [`.overrideEditor`](/docs/plugin-methods#overrideeditor). This gives you complete control over transforms like [`resetBlock`](/docs/plugin-methods#extendtransforms) and [`insertExitBreak`](/docs/plugin-methods#extendtransforms):
 
 ```tsx
 const CustomPlugin = createPlatePlugin({

@@ -1,31 +1,31 @@
 import type { OverrideEditor } from '../../plugin';
-import type { BreakMode } from '../../plugin/BasePlugin';
+import type { BreakRules } from '../../plugin/BasePlugin';
 
 import { getPluginByType } from '../../plugin/getSlatePlugin';
 
-export const withBreakMode: OverrideEditor = (ctx) => {
+export const withBreakRules: OverrideEditor = (ctx) => {
   const {
     editor,
     tf: { insertBreak },
   } = ctx;
-  const checkMatchModeOverride = (
-    mode: string,
+  const checkMatchRulesOverride = (
+    rule: string,
     blockNode: any,
     blockPath: any
-  ): BreakMode | null => {
-    const matchModeKeys = editor.meta.pluginKeys.node.matchMode;
-    for (const key of matchModeKeys) {
+  ): BreakRules | null => {
+    const matchRulesKeys = editor.meta.pluginCache.node.matchRules;
+    for (const key of matchRulesKeys) {
       const overridePlugin = editor.getPlugin({ key }).node;
       if (
-        overridePlugin.breakMode &&
-        overridePlugin.matchMode?.({
+        overridePlugin.breakRules &&
+        overridePlugin.matchRules?.({
           ...ctx,
-          mode: mode as any,
           node: blockNode,
           path: blockPath,
+          rule: rule as any,
         })
       ) {
-        return overridePlugin.breakMode;
+        return overridePlugin.breakRules;
       }
     }
     return null;
@@ -64,7 +64,7 @@ export const withBreakMode: OverrideEditor = (ctx) => {
             const [blockNode, blockPath] = block;
             const plugin = getPluginByType(editor, blockNode.type);
 
-            const breakMode = plugin?.node.breakMode;
+            const breakRules = plugin?.node.breakRules;
 
             // Handle 'empty' scenario
             if (
@@ -72,16 +72,16 @@ export const withBreakMode: OverrideEditor = (ctx) => {
                 block: true,
               })
             ) {
-              const overrideBreakMode = checkMatchModeOverride(
+              const overrideBreakRules = checkMatchRulesOverride(
                 'break.empty',
                 blockNode,
                 blockPath
               );
-              const effectiveBreakMode = overrideBreakMode || breakMode;
-              const emptyAction = effectiveBreakMode?.empty;
+              const effectiveBreakRules = overrideBreakRules || breakRules;
+              const emptyAction = effectiveBreakRules?.empty;
 
               if (executeBreakAction(emptyAction, blockPath)) return;
-              // if 'default', fall through to breakMode.default or standard behavior
+              // if 'default', fall through to breakRules.default or standard behavior
             }
 
             // Handle 'emptyLineEnd' scenario
@@ -95,13 +95,13 @@ export const withBreakMode: OverrideEditor = (ctx) => {
               if (range) {
                 const char = editor.api.string(range);
                 if (char === '\n') {
-                  const overrideBreakMode = checkMatchModeOverride(
+                  const overrideBreakRules = checkMatchRulesOverride(
                     'break.emptyLineEnd',
                     blockNode,
                     blockPath
                   );
-                  const effectiveBreakMode = overrideBreakMode || breakMode;
-                  const emptyLineEndAction = effectiveBreakMode?.emptyLineEnd;
+                  const effectiveBreakRules = overrideBreakRules || breakRules;
+                  const emptyLineEndAction = effectiveBreakRules?.emptyLineEnd;
 
                   if (executeBreakAction(emptyLineEndAction, blockPath)) return;
                 }
@@ -109,20 +109,20 @@ export const withBreakMode: OverrideEditor = (ctx) => {
             }
 
             // Handle 'default' scenario (or fallthrough from 'empty: default' or 'emptyLineEnd: default')
-            const overrideBreakMode = checkMatchModeOverride(
+            const overrideBreakRules = checkMatchRulesOverride(
               'break.default',
               blockNode,
               blockPath
             );
-            const effectiveBreakMode = overrideBreakMode || breakMode;
-            const defaultAction = effectiveBreakMode?.default;
+            const effectiveBreakRules = overrideBreakRules || breakRules;
+            const defaultAction = effectiveBreakRules?.default;
 
             if (executeBreakAction(defaultAction, blockPath)) return;
             // if 'default', fall through to standard Slate insertBreak
           }
         }
 
-        // Standard Slate insertBreak if no custom breakMode handled it
+        // Standard Slate insertBreak if no custom breakRules handled it
         insertBreak();
       },
     },

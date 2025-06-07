@@ -73,7 +73,7 @@ const editor = createSlateEditor({
 });
 
 // You can now use editor.children, editor.api, editor.tf, etc.
-console.log('Editor content:', editor.children);
+console.debug('Editor content:', editor.children);
 ```
 
 <Callout type="info">
@@ -110,7 +110,7 @@ async function processDocument(value: any[]) {
 
   // Extract text content
   const textContent = editor.api.string([]);
-  console.log('Extracted Text:', textContent);
+  console.debug('Extracted Text:', textContent);
 
   // Transform all H1s to H2s
   editor.tf.setNodes(
@@ -145,7 +145,7 @@ const mySlateValue = [
 ];
 
 processDocument(mySlateValue).then(result => {
-  console.log('Processing complete:', result);
+  console.debug('Processing complete:', result);
 });
 ```
 

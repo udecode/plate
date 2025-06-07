@@ -7,9 +7,9 @@ import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 
 jsxt;
 
-describe('withDeleteMode', () => {
-  describe('deleteMode: { empty: "reset" }', () => {
-    it('should reset on deleteBackward when block is empty', () => {
+describe('withBreakRules', () => {
+  describe('breakRules: { empty: "reset" }', () => {
+    it('should reset on insertBreak when block is empty', () => {
       const input = (
         <editor>
           <element type="blockquote">
@@ -31,7 +31,7 @@ describe('withDeleteMode', () => {
           createSlatePlugin({
             key: 'blockquote',
             node: {
-              deleteMode: { empty: 'reset' },
+              breakRules: { empty: 'reset' },
               isElement: true,
               type: 'blockquote',
             },
@@ -41,31 +41,28 @@ describe('withDeleteMode', () => {
         value: input.children,
       });
 
-      editor.tf.deleteBackward('character');
+      editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
 
-    it('should NOT reset on deleteBackward when at start with content', () => {
+    it('should NOT reset on insertBreak when block has content', () => {
       const input = (
         <editor>
-          <hp>
-            <htext />
-          </hp>
-          <hblockquote>
-            <cursor />
+          <element type="blockquote">
             some content
-          </hblockquote>
+            <cursor />
+          </element>
         </editor>
       ) as any;
 
       const output = (
         <editor>
-          <hblockquote>
+          <element type="blockquote">some content</element>
+          <element type="blockquote">
             <cursor />
-            some content
-          </hblockquote>
+          </element>
         </editor>
       ) as any;
 
@@ -74,7 +71,7 @@ describe('withDeleteMode', () => {
           createSlatePlugin({
             key: 'blockquote',
             node: {
-              deleteMode: { empty: 'reset' },
+              breakRules: { empty: 'reset' },
               isElement: true,
               type: 'blockquote',
             },
@@ -84,55 +81,15 @@ describe('withDeleteMode', () => {
         value: input.children,
       });
 
-      editor.tf.deleteBackward('character');
+      editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
   });
 
-  describe('deleteMode: { start: "reset" }', () => {
-    it('should reset on deleteBackward when at start with content', () => {
-      const input = (
-        <editor>
-          <element type="h1">
-            <cursor />
-            Heading content
-          </element>
-        </editor>
-      ) as any;
-
-      const output = (
-        <editor>
-          <hp>
-            <cursor />
-            Heading content
-          </hp>
-        </editor>
-      ) as any;
-
-      const editor = createSlateEditor({
-        plugins: [
-          createSlatePlugin({
-            key: 'h1',
-            node: {
-              deleteMode: { start: 'reset' },
-              isElement: true,
-              type: 'h1',
-            },
-          }),
-        ],
-        selection: input.selection,
-        value: input.children,
-      });
-
-      editor.tf.deleteBackward('character');
-
-      expect(editor.children).toEqual(output.children);
-      expect(editor.selection).toEqual(output.selection);
-    });
-
-    it('should reset on deleteBackward when block is empty', () => {
+  describe('breakRules: { empty: "reset" }', () => {
+    it('should reset on insertBreak when block is empty', () => {
       const input = (
         <editor>
           <element type="h1">
@@ -154,7 +111,7 @@ describe('withDeleteMode', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              deleteMode: { start: 'reset' },
+              breakRules: { empty: 'reset' },
               isElement: true,
               type: 'h1',
             },
@@ -164,29 +121,27 @@ describe('withDeleteMode', () => {
         value: input.children,
       });
 
-      editor.tf.deleteBackward('character');
+      editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
 
-    it('should NOT reset when not at start and has content', () => {
+    it('should NOT reset on insertBreak when block has content', () => {
       const input = (
         <editor>
           <element type="h1">
-            Head
+            Heading content
             <cursor />
-            ing
           </element>
         </editor>
       ) as any;
 
       const output = (
         <editor>
+          <element type="h1">Heading content</element>
           <element type="h1">
-            Hea
             <cursor />
-            ing
           </element>
         </editor>
       ) as any;
@@ -196,7 +151,7 @@ describe('withDeleteMode', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              deleteMode: { start: 'reset' },
+              breakRules: { empty: 'reset' },
               isElement: true,
               type: 'h1',
             },
@@ -206,32 +161,30 @@ describe('withDeleteMode', () => {
         value: input.children,
       });
 
-      editor.tf.deleteBackward('character');
+      editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
   });
 
-  describe('deleteMode: undefined (default)', () => {
-    it('should NOT reset on deleteBackward when at start', () => {
+  describe('breakRules: undefined (default)', () => {
+    it('should NOT reset on insertBreak when block is empty', () => {
       const input = (
         <editor>
-          <hp>
+          <element type="custom">
+            <cursor />
+          </element>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <element type="custom">
             <htext />
-          </hp>
-          <element type="custom">
-            <cursor />
-            content
           </element>
-        </editor>
-      ) as any;
-
-      const output = (
-        <editor>
           <element type="custom">
             <cursor />
-            content
           </element>
         </editor>
       ) as any;
@@ -250,7 +203,7 @@ describe('withDeleteMode', () => {
         value: input.children,
       });
 
-      editor.tf.deleteBackward('character');
+      editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
@@ -280,7 +233,7 @@ describe('withDeleteMode', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              deleteMode: { start: 'reset' },
+              breakRules: { empty: 'reset' },
               isElement: true,
               type: 'h1',
             },
@@ -290,126 +243,61 @@ describe('withDeleteMode', () => {
         value: input.children,
       });
 
-      editor.tf.deleteBackward('character');
+      editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
   });
 
-  describe('default reset behavior', () => {
-    describe('when delete from start to end of editor', () => {
-      it('should reset editor to default paragraph', () => {
-        const input = (
-          <editor>
-            <hp test="test">
-              <anchor />
-              test
-            </hp>
-            <hp>
-              test
-              <focus />
-            </hp>
-          </editor>
-        ) as any;
+  describe('breakRules: { empty: "deleteExit" }', () => {
+    it('should NOT delete and exit when block has content', () => {
+      const input = (
+        <editor>
+          <element type="blockquote">
+            some content
+            <cursor />
+          </element>
+        </editor>
+      ) as any;
 
-        const output = (
-          <editor>
-            <hp>
-              <htext />
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
+      const output = (
+        <editor>
+          <element type="blockquote">some content</element>
+          <element type="blockquote">
+            <cursor />
+          </element>
+        </editor>
+      ) as any;
 
-        const editor = createSlateEditor({
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteFragment();
-
-        expect(editor.children).toEqual(output.children);
+      const editor = createSlateEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'blockquote',
+            node: {
+              breakRules: { empty: 'deleteExit' },
+              isElement: true,
+              type: 'blockquote',
+            },
+          }),
+        ],
+        selection: input.selection,
+        value: input.children,
       });
-    });
 
-    describe('when delete from end to start of editor', () => {
-      it('should reset editor to default paragraph', () => {
-        const input = (
-          <editor>
-            <hp test="test">
-              <focus />
-              test
-            </hp>
-            <hp>
-              test
-              <anchor />
-            </hp>
-          </editor>
-        ) as any;
+      editor.tf.insertBreak();
 
-        const output = (
-          <editor>
-            <hp>
-              <htext />
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
-
-        const editor = createSlateEditor({
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteFragment();
-
-        expect(editor.children).toEqual(output.children);
-      });
-    });
-
-    describe('when delete at first block start', () => {
-      it('should reset first block to default paragraph', () => {
-        const input = (
-          <editor>
-            <hh1 test="test">
-              <cursor />
-              test
-            </hh1>
-          </editor>
-        ) as any;
-
-        const output = (
-          <editor>
-            <hp>
-              <cursor />
-              test
-            </hp>
-          </editor>
-        ) as any;
-
-        const editor = createSlateEditor({
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteBackward('character');
-
-        expect(editor.children).toEqual(output.children);
-      });
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
     });
   });
 
-  describe('deleteMode: undefined (default)', () => {
-    it('should use default behavior when deleteMode is undefined', () => {
+  describe('breakRules: undefined (default)', () => {
+    it('should use default behavior when breakRules is undefined', () => {
       const input = (
         <editor>
-          <hp>
-            <htext />
-          </hp>
           <element type="custom">
             <cursor />
-            content
           </element>
         </editor>
       ) as any;
@@ -417,8 +305,10 @@ describe('withDeleteMode', () => {
       const output = (
         <editor>
           <element type="custom">
+            <htext />
+          </element>
+          <element type="custom">
             <cursor />
-            content
           </element>
         </editor>
       ) as any;
@@ -430,7 +320,7 @@ describe('withDeleteMode', () => {
             node: {
               isElement: true,
               type: 'custom',
-              // deleteMode is undefined
+              // breakRules is undefined
             },
           }),
         ],
@@ -438,21 +328,17 @@ describe('withDeleteMode', () => {
         value: input.children,
       });
 
-      editor.tf.deleteBackward('character');
+      editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
 
-    it('should use default behavior when deleteMode is empty object', () => {
+    it('should use default behavior when breakRules is empty object', () => {
       const input = (
         <editor>
-          <hp>
-            <htext />
-          </hp>
           <element type="custom">
             <cursor />
-            content
           </element>
         </editor>
       ) as any;
@@ -460,8 +346,10 @@ describe('withDeleteMode', () => {
       const output = (
         <editor>
           <element type="custom">
+            <htext />
+          </element>
+          <element type="custom">
             <cursor />
-            content
           </element>
         </editor>
       ) as any;
@@ -471,7 +359,7 @@ describe('withDeleteMode', () => {
           createSlatePlugin({
             key: 'custom',
             node: {
-              deleteMode: {}, // empty object
+              breakRules: {}, // empty object
               isElement: true,
               type: 'custom',
             },
@@ -481,20 +369,19 @@ describe('withDeleteMode', () => {
         value: input.children,
       });
 
-      editor.tf.deleteBackward('character');
+      editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
   });
 
-  describe('matchMode override behavior', () => {
-    it('should use matchMode override instead of default plugin deleteMode for start scenario', () => {
+  describe('matchRules override behavior', () => {
+    it('should use matchRules override instead of default plugin breakRules', () => {
       const input = (
         <editor>
           <element customProperty="customValue" type="paragraph">
             <cursor />
-            some content
           </element>
         </editor>
       ) as any;
@@ -503,18 +390,17 @@ describe('withDeleteMode', () => {
         <editor>
           <hp>
             <cursor />
-            some content
           </hp>
         </editor>
       ) as any;
 
       const editor = createSlateEditor({
         plugins: [
-          // Base paragraph plugin with no delete behavior
+          // Base paragraph plugin with normal break behavior
           createSlatePlugin({
             key: 'paragraph',
             node: {
-              deleteMode: { start: 'default' }, // Default behavior
+              breakRules: { empty: 'default' }, // Default behavior
               isElement: true,
               type: 'paragraph',
             },
@@ -523,9 +409,9 @@ describe('withDeleteMode', () => {
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              deleteMode: { start: 'reset' }, // Override behavior
+              breakRules: { empty: 'reset' }, // Override behavior
               type: 'override',
-              matchMode: ({ node }) => Boolean(node.customProperty),
+              matchRules: ({ node }) => Boolean(node.customProperty),
             },
           }),
         ],
@@ -533,69 +419,16 @@ describe('withDeleteMode', () => {
         value: input.children,
       });
 
-      editor.tf.deleteBackward('character');
+      editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
 
-    it('should use default behavior when matchMode does not match', () => {
+    it('should use default behavior when matchRules does not match', () => {
       const input = (
         <editor>
-          <hp>
-            <htext />
-          </hp>
-          <hp>
-            <cursor />
-            some content
-          </hp>
-        </editor>
-      ) as any;
-
-      const output = (
-        <editor>
-          <hp>
-            <cursor />
-            some content
-          </hp>
-        </editor>
-      ) as any;
-
-      const editor = createSlateEditor({
-        plugins: [
-          // Base paragraph plugin with no delete behavior
-          createSlatePlugin({
-            key: 'p',
-            node: {
-              deleteMode: { start: 'default' }, // Default behavior
-              isElement: true,
-              type: 'p',
-            },
-          }),
-          // Override plugin that only matches nodes with customProperty
-          createSlatePlugin({
-            key: 'customOverride',
-            node: {
-              deleteMode: { start: 'reset' }, // Override behavior
-              type: 'override',
-              matchMode: ({ node }) => Boolean(node.customProperty), // Won't match
-            },
-          }),
-        ],
-        selection: input.selection,
-        value: input.children,
-      });
-
-      editor.tf.deleteBackward('character');
-
-      expect(editor.children).toEqual(output.children);
-      expect(editor.selection).toEqual(output.selection);
-    });
-
-    it('should handle matchMode override for empty scenario', () => {
-      const input = (
-        <editor>
-          <element customProperty="customValue" type="paragraph">
+          <element type="paragraph">
             <cursor />
           </element>
         </editor>
@@ -603,6 +436,61 @@ describe('withDeleteMode', () => {
 
       const output = (
         <editor>
+          <element type="paragraph">
+            <htext />
+          </element>
+          <element type="paragraph">
+            <cursor />
+          </element>
+        </editor>
+      ) as any;
+
+      const editor = createSlateEditor({
+        plugins: [
+          // Base paragraph plugin with normal break behavior
+          createSlatePlugin({
+            key: 'paragraph',
+            node: {
+              breakRules: { empty: 'default' }, // Default behavior
+              isElement: true,
+              type: 'paragraph',
+            },
+          }),
+          // Override plugin that only matches nodes with customProperty
+          createSlatePlugin({
+            key: 'customOverride',
+            node: {
+              breakRules: { empty: 'reset' }, // Override behavior
+              type: 'override',
+              matchRules: ({ node }) => Boolean(node.customProperty), // Won't match
+            },
+          }),
+        ],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.tf.insertBreak();
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('should handle matchRules override for emptyLineEnd scenario', () => {
+      const input = (
+        <editor>
+          <element customProperty="customValue" type="paragraph">
+            line1{'\n'}
+            <cursor />
+          </element>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <element customProperty="customValue" type="paragraph">
+            line1{'\n'}
+          </element>
           <hp>
             <cursor />
           </hp>
@@ -614,7 +502,7 @@ describe('withDeleteMode', () => {
           createSlatePlugin({
             key: 'paragraph',
             node: {
-              deleteMode: { empty: 'default' },
+              breakRules: { emptyLineEnd: 'default' },
               isElement: true,
               type: 'paragraph',
             },
@@ -622,9 +510,9 @@ describe('withDeleteMode', () => {
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              deleteMode: { empty: 'reset' },
+              breakRules: { emptyLineEnd: 'exit' },
               type: 'override',
-              matchMode: ({ node }) => Boolean(node.customProperty),
+              matchRules: ({ node }) => Boolean(node.customProperty),
             },
           }),
         ],
@@ -632,7 +520,7 @@ describe('withDeleteMode', () => {
         value: input.children,
       });
 
-      editor.tf.deleteBackward('character');
+      editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);

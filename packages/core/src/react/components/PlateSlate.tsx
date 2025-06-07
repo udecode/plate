@@ -25,7 +25,7 @@ export function PlateSlate({
     <Slate {...(slateProps as any)}>{children}</Slate>
   );
 
-  editor.meta.pluginKeys.render.aboveSlate.forEach((key) => {
+  editor.meta.pluginCache.render.aboveSlate.forEach((key) => {
     const plugin = editor.plugins[key];
     const AboveSlate = plugin.render.aboveSlate!;
 

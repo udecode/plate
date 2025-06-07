@@ -4,6 +4,5 @@
 
 export * from './normalizeIndentListNotIndented';
 export * from './normalizeIndentListStart';
-export * from './shouldMergeNodesRemovePrevNodeIndentList';
 export * from './withDeleteBackwardIndentList';
 export * from './withInsertBreakIndentList';

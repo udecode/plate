@@ -5,3 +5,4 @@
 export * from './FontPlugin';
 export * from './LineHeightPlugin';
 export * from './TextAlignPlugin';
+export * from './TextIndentPlugin';

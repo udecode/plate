@@ -3,11 +3,8 @@ import {
   type PluginConfig,
   type TLinkElement,
   createTSlatePlugin,
-  getEditorPlugin,
   isUrl,
   KEYS,
-  RemoveEmptyNodesPlugin,
-  withRemoveEmptyNodes,
 } from '@udecode/plate';
 
 import { getLinkAttributes } from './utils/getLinkAttributes';
@@ -94,6 +91,9 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
     isAffinity: true,
     isElement: true,
     isInline: true,
+    normalizeRules: {
+      removeEmpty: true,
+    },
     props: ({ editor, element }) =>
       getLinkAttributes(editor, element as TLinkElement),
   },
@@ -132,16 +132,4 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
       },
     },
   },
-})
-  .overrideEditor(withLink)
-  .overrideEditor(
-    ({ editor, type }) =>
-      withRemoveEmptyNodes(
-        getEditorPlugin(
-          editor,
-          RemoveEmptyNodesPlugin.configure({
-            options: { types: type },
-          })
-        )
-      ) as any
-  );
+}).overrideEditor(withLink);

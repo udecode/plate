@@ -12,7 +12,7 @@ export const hasAffinity = (editor: SlateEditor, edgeNodes: EdgeNodes) => {
     const keys = ElementApi.isElement(node) ? [node.type] : marks;
 
     return keys.some((mark) => {
-      return editor.meta.pluginKeys.node.isAffinity.some((key) => {
+      return editor.meta.pluginCache.node.isAffinity.some((key) => {
         return (
           editor.getType(key) === mark &&
           !editor.plugins[key].node.isHardEdge &&
@@ -24,4 +24,3 @@ export const hasAffinity = (editor: SlateEditor, edgeNodes: EdgeNodes) => {
 
   return (before && query(before[0])) || (after && query(after[0]));
 };
-

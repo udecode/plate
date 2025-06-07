@@ -4,6 +4,5 @@
 
 export * from './ExitBreakPlugin';
 export * from './normalize-types/index';
-export * from './remove-empty-nodes/index';
 export * from './single-block/index';
 export * from './trailing-block/index';

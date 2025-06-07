@@ -15,7 +15,7 @@ export const pipeDecorate = (
     | ((ctx: { editor: SlateEditor; entry: NodeEntry }) => TRange[] | undefined)
     | null
 ): EditableProps['decorate'] => {
-  if (editor.meta.pluginKeys.decorate.length === 0 && !decorateProp) return;
+  if (editor.meta.pluginCache.decorate.length === 0 && !decorateProp) return;
 
   return (entry: NodeEntry) => {
     let ranges: TRange[] = [];
@@ -24,7 +24,7 @@ export const pipeDecorate = (
       if (newRanges?.length) ranges = [...ranges, ...newRanges];
     };
 
-    editor.meta.pluginKeys.decorate.forEach((key) => {
+    editor.meta.pluginCache.decorate.forEach((key) => {
       const plugin = editor.plugins[key] as SlatePlugin;
       addRanges(
         plugin.decorate!({

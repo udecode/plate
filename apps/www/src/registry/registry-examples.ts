@@ -967,17 +967,17 @@ export const demoExamples: Registry['items'] = (
     },
     {
       description:
-        'Use plugin modes to customize the common editing behaviors.',
+        'Use plugin rules to customize the common editing behaviors.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
         {
-          path: 'examples/values/plugin-modes-value.tsx',
+          path: 'examples/values/plugin-rules-value.tsx',
           type: 'registry:example',
         },
       ],
-      name: 'plugin-modes-demo',
+      name: 'plugin-rules-demo',
       registryDependencies: ['editor-kit'],
-      title: 'Plugin Modes',
+      title: 'Plugin Rules',
       type: 'registry:example',
     },
     {

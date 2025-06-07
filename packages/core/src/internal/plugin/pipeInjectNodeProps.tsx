@@ -14,7 +14,7 @@ export const pipeInjectNodeProps = (
   getElementPath: (node: TElement | TText) => Path,
   readOnly = false
 ) => {
-  editor.meta.pluginKeys.inject.nodeProps.forEach((key) => {
+  editor.meta.pluginCache.inject.nodeProps.forEach((key) => {
     const plugin = editor.plugins[key];
 
     const newAttributes = pluginInjectNodeProps(

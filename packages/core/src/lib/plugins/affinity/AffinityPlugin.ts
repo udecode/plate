@@ -66,7 +66,7 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
     insertText(text, options) {
       const applyClearOnEdge = () => {
         if (
-          editor.meta.pluginKeys.node.clearOnEdge.length === 0 ||
+          editor.meta.pluginCache.node.clearOnEdge.length === 0 ||
           !editor.selection ||
           editor.api.isExpanded()
         ) {
@@ -82,7 +82,7 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
 
         const clearOnEdgeMarks = getPluginTypes(
           editor,
-          editor.meta.pluginKeys.node.clearOnEdge
+          editor.meta.pluginCache.node.clearOnEdge
         );
 
         const isMarked = clearOnEdgeMarks.some((key) => !!textNode[key]);

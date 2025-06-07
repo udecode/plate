@@ -16,7 +16,7 @@ export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 export const BaseH1Plugin = createTSlatePlugin({
   key: 'h1',
-  node: { isElement: true, mergeMode: { removeEmpty: true } },
+  node: { isElement: true, mergeRules: { removeEmpty: true } },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H1' }] } } },
   render: { as: 'h1' },
 }).extendTransforms(({ editor, type }) => ({
@@ -27,7 +27,7 @@ export const BaseH1Plugin = createTSlatePlugin({
 
 export const BaseH2Plugin = createTSlatePlugin({
   key: 'h2',
-  node: { isElement: true, mergeMode: { removeEmpty: true } },
+  node: { isElement: true, mergeRules: { removeEmpty: true } },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H2' }] } } },
   render: { as: 'h2' },
 }).extendTransforms(({ editor, type }) => ({
@@ -38,7 +38,7 @@ export const BaseH2Plugin = createTSlatePlugin({
 
 export const BaseH3Plugin = createTSlatePlugin({
   key: 'h3',
-  node: { isElement: true, mergeMode: { removeEmpty: true } },
+  node: { isElement: true, mergeRules: { removeEmpty: true } },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H3' }] } } },
   render: { as: 'h3' },
 }).extendTransforms(({ editor, type }) => ({
@@ -49,7 +49,7 @@ export const BaseH3Plugin = createTSlatePlugin({
 
 export const BaseH4Plugin = createTSlatePlugin({
   key: 'h4',
-  node: { isElement: true, mergeMode: { removeEmpty: true } },
+  node: { isElement: true, mergeRules: { removeEmpty: true } },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H4' }] } } },
   render: { as: 'h4' },
 }).extendTransforms(({ editor, type }) => ({
@@ -60,7 +60,7 @@ export const BaseH4Plugin = createTSlatePlugin({
 
 export const BaseH5Plugin = createTSlatePlugin({
   key: 'h5',
-  node: { isElement: true, mergeMode: { removeEmpty: true } },
+  node: { isElement: true, mergeRules: { removeEmpty: true } },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H5' }] } } },
   render: { as: 'h5' },
 }).extendTransforms(({ editor, type }) => ({
@@ -71,7 +71,7 @@ export const BaseH5Plugin = createTSlatePlugin({
 
 export const BaseH6Plugin = createTSlatePlugin({
   key: 'h6',
-  node: { isElement: true, mergeMode: { removeEmpty: true } },
+  node: { isElement: true, mergeRules: { removeEmpty: true } },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H6' }] } } },
   render: { as: 'h6' },
 }).extendTransforms(({ editor, type }) => ({

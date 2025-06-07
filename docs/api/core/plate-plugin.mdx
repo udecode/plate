@@ -118,58 +118,63 @@ Used by exit break functionality to determine appropriate exit points in nested 
 
 - **Default:** `false`
 </APISubListItem>
-<APISubListItem parent="node" name="breakMode.empty" type="'default' | 'deleteExit' | 'exit' | 'reset'" optional>
-Action when Enter is pressed in an empty block. See [Plugin Modes](/docs/plugin-modes).
+<APISubListItem parent="node" name="breakRules.empty" type="'default' | 'deleteExit' | 'exit' | 'reset'" optional>
+Action when Enter is pressed in an empty block. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior (split the block)
 - `'exit'`: Exit the current block
 - `'reset'`: Reset block to default paragraph type
 - `'deleteExit'`: Delete backward then exit
 </APISubListItem>
-<APISubListItem parent="node" name="breakMode.emptyLineEnd" type="'default' | 'deleteExit' | 'exit'" optional>
-Action when Enter is pressed at the end of an empty line. This is typically used with `breakMode.default: 'lineBreak'`. See [Plugin Modes](/docs/plugin-modes).
+<APISubListItem parent="node" name="breakRules.emptyLineEnd" type="'default' | 'deleteExit' | 'exit'" optional>
+Action when Enter is pressed at the end of an empty line. This is typically used with `breakRules.default: 'lineBreak'`. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior (split the block)
 - `'exit'`: Exit the current block
 - `'deleteExit'`: Delete backward then exit
 </APISubListItem>
-<APISubListItem parent="node" name="breakMode.default" type="'default' | 'deleteExit' | 'exit' | 'lineBreak'" optional>
-Default action when Enter is pressed. Defaults to splitting the block. See [Plugin Modes](/docs/plugin-modes).
+<APISubListItem parent="node" name="breakRules.default" type="'default' | 'deleteExit' | 'exit' | 'lineBreak'" optional>
+Default action when Enter is pressed. Defaults to splitting the block. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior (split the block)
 - `'exit'`: Exit the current block
 - `'lineBreak'`: Insert newline character
 - `'deleteExit'`: Delete backward then exit
 </APISubListItem>
-<APISubListItem parent="node" name="deleteMode.start" type="'default' | 'reset'" optional>
-Action when Backspace is pressed at the start of the block. This applies whether the block is empty or not. See [Plugin Modes](/docs/plugin-modes).
+<APISubListItem parent="node" name="deleteRules.start" type="'default' | 'reset'" optional>
+Action when Backspace is pressed at the start of the block. This applies whether the block is empty or not. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
 - `'reset'`: Reset block to default paragraph type
 </APISubListItem>
-<APISubListItem parent="node" name="deleteMode.empty" type="'default' | 'reset'" optional>
-Action when Backspace is pressed and the block is empty. See [Plugin Modes](/docs/plugin-modes).
+<APISubListItem parent="node" name="deleteRules.empty" type="'default' | 'reset'" optional>
+Action when Backspace is pressed and the block is empty. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
 - `'reset'`: Reset block to default paragraph type
 </APISubListItem>
-<APISubListItem parent="node" name="matchMode" type="MatchMode" optional>
-Function to determine if this plugin's modes should apply to a node. Used to override behavior based on node properties beyond just type matching. See [Plugin Modes](/docs/plugin-modes).
+<APISubListItem parent="node" name="matchRules" type="MatchRules" optional>
+Function to determine if this plugin's rules should apply to a node. Used to override behavior based on node properties beyond just type matching. See [Plugin Rules](/docs/plugin-rules).
 
 ```typescript
-type MatchMode = (option: {
-  mode: 'break.default' | 'break.empty' | 'break.emptyLineEnd' | 'delete.empty' | 'delete.start' | 'merge.removeEmpty';
+type MatchRules = (options: {
+  rule: 'break.default' | 'break.empty' | 'break.emptyLineEnd' | 'delete.empty' | 'delete.start' | 'merge.removeEmpty' | 'normalize.removeEmpty';
   node: TElement;
   path: Path;
 }) => boolean;
 ```
 
-Example: List plugin sets `matchMode: (mode) => !!mode.node.listStyleType` to override paragraph behavior when the paragraph is a list item.
+Example: List plugin sets `matchRules: ({ node }) => !!node.listStyleType` to override paragraph behavior when the paragraph is a list item.
 
 - **Default:** `block.type === plugin.node.type`
 </APISubListItem>
-<APISubListItem parent="node" name="mergeMode.removeEmpty" type="boolean" optional>
-Whether to remove the previous node when it's empty during merge operations. See [Plugin Modes](/docs/plugin-modes).
+<APISubListItem parent="node" name="mergeRules.removeEmpty" type="boolean" optional>
+Whether to remove the previous node when it's empty during merge operations. See [Plugin Rules](/docs/plugin-rules).
+
+- **Default:** `false`
+</APISubListItem>
+<APISubListItem parent="node" name="normalizeRules.removeEmpty" type="boolean" optional>
+Whether to remove nodes with empty text during normalization. See [Plugin Rules](/docs/plugin-rules).
 
 - **Default:** `false`
 </APISubListItem>

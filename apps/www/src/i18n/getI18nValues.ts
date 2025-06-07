@@ -84,7 +84,7 @@ import { mediaValue as mediaValueEn } from '@/registry/examples/values/media-val
 import { mentionValue as mentionValueEn } from '@/registry/examples/values/mention-value';
 import { blockPlaceholderValue as placeholderValueEn } from '@/registry/examples/values/placeholder-value';
 import { playgroundValue as playgroundValueEn } from '@/registry/examples/values/playground-value';
-import { pluginModesValue as pluginModesValueEn } from '@/registry/examples/values/plugin-modes-value';
+import { pluginRulesValue as pluginRulesValueEn } from '@/registry/examples/values/plugin-rules-value';
 import { previewMdValue as previewMdValueEn } from '@/registry/examples/values/preview-md-value';
 import { slashCommandValue as slashCommandValueEn } from '@/registry/examples/values/slash-command-value';
 import { tabbableValue as tabbableValueEn } from '@/registry/examples/values/tabbable-value';
@@ -174,7 +174,7 @@ const i18n = {
     mention: mentionValueEn,
     placeholder: placeholderValueEn,
     playground: playgroundValueEn,
-    pluginModes: pluginModesValueEn,
+    'plugin-rules': pluginRulesValueEn,
     previewMd: previewMdValueEn,
     slashCommand: slashCommandValueEn,
     tabbable: tabbableValueEn,

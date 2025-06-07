@@ -201,7 +201,7 @@ export function PlateStatic(props: PlateStaticProps) {
   let afterEditable: React.ReactNode = null;
   let beforeEditable: React.ReactNode = null;
 
-  editor.meta.pluginKeys.render.beforeEditable.forEach((key) => {
+  editor.meta.pluginCache.render.beforeEditable.forEach((key) => {
     const plugin = editor.plugins[key];
     const BeforeEditable = plugin.render.beforeEditable;
 
@@ -215,7 +215,7 @@ export function PlateStatic(props: PlateStaticProps) {
     }
   });
 
-  editor.meta.pluginKeys.render.afterEditable.forEach((key) => {
+  editor.meta.pluginCache.render.afterEditable.forEach((key) => {
     const plugin = editor.plugins[key];
     const AfterEditable = plugin.render.afterEditable;
 
@@ -251,7 +251,7 @@ export function PlateStatic(props: PlateStaticProps) {
   );
 
   // Use pre-computed arrays for aboveEditable components
-  editor.meta.pluginKeys.render.aboveEditable.forEach((key) => {
+  editor.meta.pluginCache.render.aboveEditable.forEach((key) => {
     const plugin = editor.plugins[key];
     const AboveEditable = plugin.render.aboveEditable;
 

@@ -82,17 +82,17 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
     },
   },
   node: {
-    breakMode: {
+    breakRules: {
       empty: 'reset',
     },
-    deleteMode: {
+    deleteRules: {
       start: 'reset',
     },
-    mergeMode: {
+    mergeRules: {
       removeEmpty: false,
     },
-    matchMode: (mode) => {
-      return isDefined(mode.node[KEYS.listType]);
+    matchRules: ({ node }) => {
+      return isDefined(node[KEYS.listType]);
     },
   },
   options: {

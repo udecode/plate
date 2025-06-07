@@ -4,22 +4,22 @@ import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 
-export const pluginModesValue: any = (
+export const pluginRulesValue: any = (
   <fragment>
-    <hh2>Plugin Modes</hh2>
+    <hh2>Plugin Rules</hh2>
     <hp>
-      Plugin modes control how blocks respond to Enter and Backspace. Try the
+      Plugin rules control how blocks respond to Enter and Backspace. Try the
       examples below:
     </hp>
 
-    <hh3>Break Modes</hh3>
+    <hh3>Break Rules</hh3>
 
     <hp>
       <htext bold>Blockquote with line breaks:</htext> Press Enter for line
       breaks, Enter on empty lines to reset to paragraph.
     </hp>
     <hblockquote>
-      This blockquote uses lineBreak mode. Try pressing Enter here to add line
+      This blockquote uses lineBreak rules. Try pressing Enter here to add line
       breaks instead of splitting blocks.
     </hblockquote>
     <hblockquote>
@@ -37,7 +37,7 @@ export const pluginModesValue: any = (
       </hcodeline>
     </hcodeblock>
 
-    <hh3>Delete Modes</hh3>
+    <hh3>Delete Rules</hh3>
 
     <hp>
       <htext bold>Headings with reset:</htext> Press Backspace at the start to
@@ -60,7 +60,7 @@ export const pluginModesValue: any = (
       Nested item - Backspace removes one level
     </hp>
 
-    <hh3>Merge Modes</hh3>
+    <hh3>Merge Rules</hh3>
 
     <hp>
       <htext bold>Empty paragraphs:</htext> These will be removed when merging
@@ -80,22 +80,22 @@ export const pluginModesValue: any = (
     </hp>
     <hblockquote>Try Backspace here - empty paragraph is preserved</hblockquote>
 
-    <hh3>Match Modes</hh3>
+    <hh3>Match Rules</hh3>
 
     <hp>
       <htext bold>Conditional list behavior:</htext> These paragraphs have list
-      styling but only apply list modes when they have the listStyleType
+      styling but only apply list rules when they have the listStyleType
       property.
     </hp>
     <hp indent={1} listStyleType="disc">
-      This has list styling - Enter/Backspace use list modes
+      This has list styling - Enter/Backspace use list rules
     </hp>
     <hp indent={1}>
-      This is indented but no listStyleType - uses paragraph modes
+      This is indented but no listStyleType - uses paragraph rules
     </hp>
 
     <hp>
-      <htext bold>Code blocks with emptiness detection:</htext> Special modes
+      <htext bold>Code blocks with emptiness detection:</htext> Special rules
       only apply when truly empty.
     </hp>
     <hcodeblock>
@@ -149,7 +149,7 @@ export const pluginModesValue: any = (
     </htable>
 
     <hp>
-      <htext bold>Experiment:</htext> Try these interactions to see plugin modes
+      <htext bold>Experiment:</htext> Try these interactions to see plugin rules
       in action:
     </hp>
     <hp indent={1} listStyleType="disc">

@@ -17,15 +17,15 @@ import { ParagraphElement } from '@/registry/ui/paragraph-node';
 export const BasicBlocksKit = [
   ParagraphPlugin.withComponent(ParagraphElement),
   H1Plugin.configure({
-    node: { breakMode: { empty: 'reset' }, component: H1Element },
+    node: { breakRules: { empty: 'reset' }, component: H1Element },
     shortcuts: { toggle: { keys: 'mod+alt+1' } },
   }),
   H2Plugin.configure({
-    node: { breakMode: { empty: 'reset' }, component: H2Element },
+    node: { breakRules: { empty: 'reset' }, component: H2Element },
     shortcuts: { toggle: { keys: 'mod+alt+2' } },
   }),
   H3Plugin.configure({
-    node: { breakMode: { empty: 'reset' }, component: H3Element },
+    node: { breakRules: { empty: 'reset' }, component: H3Element },
     shortcuts: { toggle: { keys: 'mod+alt+3' } },
   }),
   BlockquotePlugin.configure({

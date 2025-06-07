@@ -16,8 +16,8 @@ import {
   DOMPlugin,
   HistoryPlugin,
   HtmlPlugin,
-  OverridePlugin,
   LengthPlugin,
+  OverridePlugin,
   ParserPlugin,
   SlateExtensionPlugin,
   withSlate,
@@ -232,33 +232,33 @@ describe('withPlate', () => {
         plugins: [ParagraphPlugin, ReactPlugin, additionalPlugin],
       });
 
-      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
       const pluginTypes = editor.meta.pluginList.map(
         (plugin) => plugin.node.type
       );
 
       // Check if ReactPlugin replaced DOMPlugin
-      expect(pluginKeys).toContain(ReactPlugin.key);
+      expect(pluginCache).toContain(ReactPlugin.key);
       expect(pluginTypes).toContain(ReactPlugin.node.type);
 
       // Check if ParagraphPlugin is present
-      expect(pluginKeys).toContain(ParagraphPlugin.key);
+      expect(pluginCache).toContain(ParagraphPlugin.key);
       expect(pluginTypes).toContain(ParagraphPlugin.node.type);
 
       // Check if additional plugin is added
-      expect(pluginKeys).toContain('additional');
+      expect(pluginCache).toContain('additional');
       expect(pluginTypes).toContain('additional');
 
       // Check if the order is correct
-      const reactIndex = pluginKeys.indexOf(ReactPlugin.key);
-      const paragraphIndex = pluginKeys.indexOf(ParagraphPlugin.key);
-      const additionalIndex = pluginKeys.indexOf('additional');
+      const reactIndex = pluginCache.indexOf(ReactPlugin.key);
+      const paragraphIndex = pluginCache.indexOf(ParagraphPlugin.key);
+      const additionalIndex = pluginCache.indexOf('additional');
 
       expect(reactIndex).toBeLessThan(paragraphIndex);
       expect(paragraphIndex).toBeLessThan(additionalIndex);
 
       // Check if other core plugins are still present (e.g., HistoryPlugin)
-      expect(pluginKeys).toContain('history');
+      expect(pluginCache).toContain('history');
 
       // Ensure the total number of plugins is correct
       // This number should be the sum of:
@@ -267,7 +267,7 @@ describe('withPlate', () => {
       // 3. Number of additional plugins (additionalPlugin)
       // Minus the number of replaced plugins (DOMPlugin)
       const expectedPluginCount = editor.meta.pluginList.length;
-      expect(pluginKeys).toHaveLength(expectedPluginCount);
+      expect(pluginCache).toHaveLength(expectedPluginCount);
     });
   });
 
@@ -281,9 +281,9 @@ describe('withPlate', () => {
 
       const editor = withPlate(existingEditor, { id: '1' });
 
-      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
-      expect(pluginKeys.filter((key) => key === 'dom')).toHaveLength(1);
-      expect(pluginKeys.filter((key) => key === 'history')).toHaveLength(1);
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
+      expect(pluginCache.filter((key) => key === 'dom')).toHaveLength(1);
+      expect(pluginCache.filter((key) => key === 'history')).toHaveLength(1);
     });
 
     it('should add missing core plugins', () => {
@@ -295,9 +295,9 @@ describe('withPlate', () => {
 
       const editor = withPlate(existingEditor, { id: '1' });
 
-      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
       coreKeys.forEach((key) => {
-        expect(pluginKeys).toContain(key);
+        expect(pluginCache).toContain(key);
       });
     });
 
@@ -330,10 +330,10 @@ describe('withPlate', () => {
         },
       });
 
-      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
-      expect(pluginKeys).not.toContain('history');
-      expect(pluginKeys).not.toContain('eventEditor');
-      expect(pluginKeys).toHaveLength(coreKeys.length - 2);
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
+      expect(pluginCache).not.toContain('history');
+      expect(pluginCache).not.toContain('eventEditor');
+      expect(pluginCache).toHaveLength(coreKeys.length - 2);
     });
 
     it('should disable specified custom plugins', () => {
@@ -350,9 +350,9 @@ describe('withPlate', () => {
         plugins: [customPlugin1, customPlugin2],
       });
 
-      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
-      expect(pluginKeys).not.toContain('custom1');
-      expect(pluginKeys).toContain('custom2');
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
+      expect(pluginCache).not.toContain('custom1');
+      expect(pluginCache).toContain('custom2');
     });
 
     it('should not affect plugins not specified in override.enabled', () => {
@@ -365,10 +365,10 @@ describe('withPlate', () => {
         },
       });
 
-      const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
+      const pluginCache = editor.meta.pluginList.map((plugin) => plugin.key);
       coreKeys.forEach((key) => {
         if (key !== 'history') {
-          expect(pluginKeys).toContain(key);
+          expect(pluginCache).toContain(key);
         }
       });
     });

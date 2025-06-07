@@ -29,7 +29,7 @@ export const resolvePlugins = (
     SlatePlugin['shortcuts'][string]
   >;
   editor.meta.components = {};
-  editor.meta.pluginKeys = {
+  editor.meta.pluginCache = {
     decorate: [],
     handlers: {
       onChange: [],
@@ -40,6 +40,7 @@ export const resolvePlugins = (
     node: {
       clearOnEdge: [],
       isAffinity: [],
+      isContainer: [],
       isElement: [],
       isHardEdge: [],
       isInline: [],
@@ -49,7 +50,7 @@ export const resolvePlugins = (
       isSplittable: [],
       isStrictSiblings: [],
       isVoid: [],
-      matchMode: [],
+      matchRules: [],
       types: {},
     },
     normalizeInitialValue: [],
@@ -88,13 +89,13 @@ export const resolvePlugins = (
     resolvePluginMethods(editor, plugin);
 
     if (plugin.node?.isContainer) {
-      editor.meta.containerTypes.push(plugin.node.type);
+      editor.meta.pluginCache.node.isContainer.push(plugin.key);
     }
 
-    editor.meta.pluginKeys.node.types[plugin.node.type] = plugin.key;
+    editor.meta.pluginCache.node.types[plugin.node.type] = plugin.key;
 
     if (plugin.inject?.nodeProps) {
-      editor.meta.pluginKeys.inject.nodeProps.push(plugin.key);
+      editor.meta.pluginCache.inject.nodeProps.push(plugin.key);
     }
 
     if (plugin.render?.node) {
@@ -102,103 +103,103 @@ export const resolvePlugins = (
     }
 
     if (plugin.node?.isHardEdge) {
-      editor.meta.pluginKeys.node.isHardEdge.push(plugin.key);
+      editor.meta.pluginCache.node.isHardEdge.push(plugin.key);
     }
 
     if (plugin.node?.isLeaf) {
-      editor.meta.pluginKeys.node.isLeaf.push(plugin.key);
+      editor.meta.pluginCache.node.isLeaf.push(plugin.key);
     }
 
     if (plugin.node?.isAffinity) {
-      editor.meta.pluginKeys.node.isAffinity.push(plugin.key);
+      editor.meta.pluginCache.node.isAffinity.push(plugin.key);
     }
 
     if (plugin.node?.isElement) {
-      editor.meta.pluginKeys.node.isElement.push(plugin.key);
+      editor.meta.pluginCache.node.isElement.push(plugin.key);
     }
 
     if (plugin.node?.clearOnEdge && plugin.node.isLeaf) {
-      editor.meta.pluginKeys.node.clearOnEdge.push(plugin.key);
+      editor.meta.pluginCache.node.clearOnEdge.push(plugin.key);
     }
 
     if (plugin.node?.isInline) {
-      editor.meta.pluginKeys.node.isInline.push(plugin.key);
+      editor.meta.pluginCache.node.isInline.push(plugin.key);
     }
 
     if (plugin.node?.isVoid) {
-      editor.meta.pluginKeys.node.isVoid.push(plugin.key);
+      editor.meta.pluginCache.node.isVoid.push(plugin.key);
     }
 
     if (plugin.node?.isMarkableVoid) {
-      editor.meta.pluginKeys.node.isMarkableVoid.push(plugin.key);
+      editor.meta.pluginCache.node.isMarkableVoid.push(plugin.key);
     }
 
     if (plugin.node?.isSplittable) {
-      editor.meta.pluginKeys.node.isSplittable.push(plugin.key);
+      editor.meta.pluginCache.node.isSplittable.push(plugin.key);
     }
 
     if (plugin.node?.isStrictSiblings) {
-      editor.meta.pluginKeys.node.isStrictSiblings.push(plugin.key);
+      editor.meta.pluginCache.node.isStrictSiblings.push(plugin.key);
     }
 
     if (plugin.node?.isSelectable === false) {
-      editor.meta.pluginKeys.node.isNotSelectable.push(plugin.key);
+      editor.meta.pluginCache.node.isNotSelectable.push(plugin.key);
     }
 
     if (plugin.render.aboveEditable) {
-      editor.meta.pluginKeys.render.aboveEditable.push(plugin.key);
+      editor.meta.pluginCache.render.aboveEditable.push(plugin.key);
     }
 
     if (plugin.render.aboveSlate) {
-      editor.meta.pluginKeys.render.aboveSlate.push(plugin.key);
+      editor.meta.pluginCache.render.aboveSlate.push(plugin.key);
     }
 
     if (plugin.render.afterEditable) {
-      editor.meta.pluginKeys.render.afterEditable.push(plugin.key);
+      editor.meta.pluginCache.render.afterEditable.push(plugin.key);
     }
 
     if (plugin.render.beforeEditable) {
-      editor.meta.pluginKeys.render.beforeEditable.push(plugin.key);
+      editor.meta.pluginCache.render.beforeEditable.push(plugin.key);
     }
 
-    if (plugin.node.matchMode) {
-      editor.meta.pluginKeys.node.matchMode.push(plugin.key);
+    if (plugin.node.matchRules) {
+      editor.meta.pluginCache.node.matchRules.push(plugin.key);
     }
 
     if (plugin.render.afterContainer) {
-      editor.meta.pluginKeys.render.afterContainer.push(plugin.key);
+      editor.meta.pluginCache.render.afterContainer.push(plugin.key);
     }
 
     if (plugin.render.beforeContainer) {
-      editor.meta.pluginKeys.render.beforeContainer.push(plugin.key);
+      editor.meta.pluginCache.render.beforeContainer.push(plugin.key);
     }
 
     if (plugin.render.belowRootNodes) {
-      editor.meta.pluginKeys.render.belowRootNodes.push(plugin.key);
+      editor.meta.pluginCache.render.belowRootNodes.push(plugin.key);
     }
 
     if (plugin.normalizeInitialValue) {
-      editor.meta.pluginKeys.normalizeInitialValue.push(plugin.key);
+      editor.meta.pluginCache.normalizeInitialValue.push(plugin.key);
     }
 
     if (plugin.decorate) {
-      editor.meta.pluginKeys.decorate.push(plugin.key);
+      editor.meta.pluginCache.decorate.push(plugin.key);
     }
 
     if (plugin.render.aboveNodes) {
-      editor.meta.pluginKeys.render.aboveNodes.push(plugin.key);
+      editor.meta.pluginCache.render.aboveNodes.push(plugin.key);
     }
 
     if (plugin.render.belowNodes) {
-      editor.meta.pluginKeys.render.belowNodes.push(plugin.key);
+      editor.meta.pluginCache.render.belowNodes.push(plugin.key);
     }
 
     if ((plugin as any).useHooks) {
-      editor.meta.pluginKeys.useHooks.push(plugin.key);
+      editor.meta.pluginCache.useHooks.push(plugin.key);
     }
 
     if ((plugin as any).handlers?.onChange) {
-      editor.meta.pluginKeys.handlers.onChange.push(plugin.key);
+      editor.meta.pluginCache.handlers.onChange.push(plugin.key);
     }
   });
 

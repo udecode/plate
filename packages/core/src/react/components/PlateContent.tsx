@@ -78,7 +78,7 @@ const PlateContent = React.forwardRef(
     let afterEditable: React.ReactNode = null;
     let beforeEditable: React.ReactNode = null;
 
-    editor.meta.pluginKeys.render.beforeEditable.forEach((key) => {
+    editor.meta.pluginCache.render.beforeEditable.forEach((key) => {
       const plugin = editor.plugins[key];
       if (isEditOnly(readOnly, plugin, 'render')) return;
 
@@ -92,7 +92,7 @@ const PlateContent = React.forwardRef(
       );
     });
 
-    editor.meta.pluginKeys.render.afterEditable.forEach((key) => {
+    editor.meta.pluginCache.render.afterEditable.forEach((key) => {
       const plugin = editor.plugins[key];
       if (isEditOnly(readOnly, plugin, 'render')) return;
 
@@ -117,7 +117,7 @@ const PlateContent = React.forwardRef(
       </>
     );
 
-    editor.meta.pluginKeys.render.aboveEditable.forEach((key) => {
+    editor.meta.pluginCache.render.aboveEditable.forEach((key) => {
       const plugin = editor.plugins[key];
       if (isEditOnly(readOnly, plugin, 'render')) return;
 

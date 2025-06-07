@@ -1,10 +1,8 @@
 import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
 
-import type { IndentConfig } from './BaseIndentPlugin';
-
 export type TextIndentConfig = PluginConfig<
   'textIndent',
-  IndentConfig['options']
+  { offset: number; unit: string }
 >;
 
 export const BaseTextIndentPlugin = createTSlatePlugin<TextIndentConfig>({

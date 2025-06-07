@@ -22,6 +22,8 @@ export const withGetFragmentTable: OverrideEditor<TableConfig> = ({
       const fragment = getFragment();
       const newFragment: Descendant[] = [];
 
+      console.log('hey', fragment);
+
       fragment.forEach((node) => {
         if (node.type === type) {
           const rows = node.children as TTableRowElement[];

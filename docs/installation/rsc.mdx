@@ -84,11 +84,11 @@ const editor = createSlateEditor({
 // You can now use editor.children, editor.api, editor.tf, etc.
 // For example, to get the text content:
 const textContent = editor.api.string([]);
-// console.log('Text Content:', textContent);
+// console.debug('Text Content:', textContent);
 
 // Or to serialize to Markdown:
 const markdown = editor.api.markdown.serialize();
-// console.log('Markdown Output:', markdown);
+// console.debug('Markdown Output:', markdown);
 
 // The editor instance can be used for various server-side tasks.
 // For a complete example of using this in an RSC page for rendering,

@@ -3,6 +3,7 @@
  */
 
 export * from './OverridePlugin';
-export * from './withBreakMode';
-export * from './withDeleteMode';
-export * from './withMergeMode';
+export * from './withBreakRules';
+export * from './withDeleteRules';
+export * from './withMergeRules';
+export * from './withNormalizeRules';

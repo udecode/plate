@@ -3,6 +3,5 @@
  */
 
 export * from './BaseIndentPlugin';
-export * from './BaseTextIndentPlugin';
 export * from './withIndent';
 export * from './transforms/index';

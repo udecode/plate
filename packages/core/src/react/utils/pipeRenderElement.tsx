@@ -23,7 +23,7 @@ export const pipeRenderElement = (
 
     const path = useNodePath(props.element)!;
 
-    editor.meta.pluginKeys.node.isElement.some((key) => {
+    editor.meta.pluginCache.node.isElement.some((key) => {
       element = pluginRenderElement(
         editor,
         editor.plugins[key]

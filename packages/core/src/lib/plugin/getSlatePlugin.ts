@@ -45,11 +45,15 @@ export const getPluginTypes = (editor: SlateEditor, keys: string[]) =>
 export const getPluginKey = (
   editor: SlateEditor,
   type: string
-): string | undefined => editor.meta.pluginKeys.node.types[type];
+): string | undefined => editor.meta.pluginCache.node.types[type];
 
 export const getPluginByType = (editor: SlateEditor, type: string) => {
   const key = getPluginKey(editor, type);
   if (!key) return null;
 
   return editor.getPlugin({ key });
+};
+
+export const getContainerTypes = (editor: SlateEditor) => {
+  return getPluginTypes(editor, editor.meta.pluginCache.node.isContainer);
 };

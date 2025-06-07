@@ -49,7 +49,7 @@ export const insertExitBreak = (
           !!n.type &&
           !getPluginTypes(
             editor,
-            editor.meta.pluginKeys.node.isStrictSiblings
+            editor.meta.pluginCache.node.isStrictSiblings
           ).includes(n.type as string)),
       { match }
     ),

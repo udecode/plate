@@ -24,11 +24,11 @@ export function OpenInPlus({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'bg-surface text-surface-foreground group relative flex flex-col gap-2 rounded-lg p-6 text-sm',
+        'group relative flex flex-col gap-2 rounded-lg bg-surface p-6 text-sm text-surface-foreground',
         className
       )}
     >
-      <div className="text-balance text-base font-semibold leading-tight group-hover:underline">
+      <div className="text-base leading-tight font-semibold text-balance group-hover:underline">
         {content.buildYourEditor}
       </div>
       <div className="text-muted-foreground">{content.productionReady}</div>

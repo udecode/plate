@@ -37,7 +37,7 @@ import { listValue } from './list-value';
 import { mediaValue } from './media-value';
 import { mentionValue } from './mention-value';
 import { blockPlaceholderValue } from './placeholder-value';
-import { pluginModesValue } from './plugin-modes-value';
+import { pluginRulesValue } from './plugin-rules-value';
 import { previewMdValue } from './preview-md-value';
 import { slashCommandValue } from './slash-command-value';
 import { tabbableValue } from './tabbable-value';
@@ -88,7 +88,7 @@ const values = {
   // 'media-toolbar': mediaToolbarValue,
   mention: mentionValue,
   playground: playgroundValue,
-  'plugin-modes': pluginModesValue,
+  'plugin-rules': pluginRulesValue,
   'preview-markdown': previewMdValue,
   'slash-command': slashCommandValue,
   tabbable: tabbableValue,

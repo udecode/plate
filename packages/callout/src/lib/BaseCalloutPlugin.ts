@@ -5,12 +5,12 @@ import { insertCallout } from './transforms';
 export const BaseCalloutPlugin = createSlatePlugin({
   key: KEYS.callout,
   node: {
-    breakMode: {
+    breakRules: {
       default: 'lineBreak',
       empty: 'reset',
       emptyLineEnd: 'deleteExit',
     },
-    deleteMode: {
+    deleteRules: {
       start: 'reset',
     },
     isElement: true,

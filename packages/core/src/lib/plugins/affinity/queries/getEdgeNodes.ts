@@ -41,11 +41,11 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
   const isAffinityInlineElement = (() => {
     if (!parent) return false;
 
-    const parentIsHardEdge = editor.meta.pluginKeys.node.isHardEdge.some(
+    const parentIsHardEdge = editor.meta.pluginCache.node.isHardEdge.some(
       (key) => editor.getType(key) === parent.type
     );
 
-    const parentIsAffinity = editor.meta.pluginKeys.node.isAffinity.some(
+    const parentIsAffinity = editor.meta.pluginCache.node.isAffinity.some(
       (key) => editor.getType(key) === parent.type
     );
 

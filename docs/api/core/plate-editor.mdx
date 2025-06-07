@@ -41,8 +41,8 @@ A custom editor interface that extends the base **`Editor`** interface and inclu
       <APISubListItem parent="meta" name="components" type="Record<string, React.FC<any>>">
         Plugin components indexed by their keys.
       </APISubListItem>
-      <APISubListItem parent="meta" name="containerTypes" type="string[]">
-        Array of container node types derived from plugins that have `plugin.node.isContainer = true`.
+      <APISubListItem parent="meta" name="node.isContainer" type="string[]">
+        Plugin keys with `plugin.node.isContainer = true`.
       </APISubListItem>
       <APISubListItem parent="meta" name="isFallback" type="boolean">
         Whether the editor is a fallback editor.

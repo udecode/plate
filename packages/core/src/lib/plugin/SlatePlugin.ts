@@ -34,7 +34,7 @@ import type {
   InferOptions,
   InferSelectors,
   InferTransforms,
-  MatchMode,
+  MatchRules,
   NodeComponent,
   NodeComponents,
   ParserOptions,
@@ -292,21 +292,21 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         /** Override `data-slate-node="text"` element attributes */
         textProps?: TextStaticProps<WithAnyKey<C>>;
         /**
-         * Function to determine if this plugin's modes should apply to a node.
+         * Function to determine if this plugin's rules should apply to a node.
          * Used to override behavior based on node properties beyond just type
          * matching.
          *
-         * Example: List plugin sets `matchMode: (mode) =>
-         * !!mode.node.listStyleType` to override paragraph behavior when the
+         * Example: List plugin sets `matchRules: ({ node }) =>
+         * !!node.listStyleType` to override paragraph behavior when the
          * paragraph is a list item.
          *
          * @default type === node.type
          */
-        matchMode?: (
-          option: {
-            mode: MatchMode;
+        matchRules?: (
+          options: {
             node: TElement;
             path: Path;
+            rule: MatchRules;
           } & SlatePluginContext<C>
         ) => boolean;
       };

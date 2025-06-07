@@ -6,7 +6,7 @@ import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { getEditorPlugin } from '../plugin/getEditorPlugin';
 
 export const pipeOnChange = (editor: PlateEditor, value: Value) => {
-  return editor.meta.pluginKeys.handlers.onChange.some((key) => {
+  return editor.meta.pluginCache.handlers.onChange.some((key) => {
     const plugin = editor.plugins[key];
 
     if (isEditOnly(editor.dom.readOnly, plugin, 'handlers')) {

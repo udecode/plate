@@ -15,12 +15,12 @@
   editor.api.shouldMergeNodes(prev, current);
   ```
 
-- Removed `editor.api.fragment` option `structuralTypes` to `containerTypes`.
+- Replace `editor.api.fragment` option `structuralTypes` with `unwrap`.
 
   ```ts
   // Before
   editor.api.fragment(editor.selection, { structuralTypes: ['table'] });
 
   // After
-  editor.api.fragment(editor.selection, { containerTypes: ['table'] });
+  editor.api.fragment(editor.selection, { unwrap: ['table'] });
   ```

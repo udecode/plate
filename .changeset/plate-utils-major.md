@@ -14,7 +14,7 @@
     import { TImageElement } from 'platejs'; // Or from '@platejs/utils' directly
     ```
 
-- Removed `structuralTypes` option from `useSelectionFragment` and `useSelectionFragmentProp`. These hooks now automatically use `editor.meta.containerTypes` from enabled plugins.
+- Removed `structuralTypes` option from `useSelectionFragment` and `useSelectionFragmentProp`. These hooks now automatically use `plugin.node.isContainer` from enabled plugins.
 - Removed:
   - `createNodesHOC`
   - `createNodesWithHOC`

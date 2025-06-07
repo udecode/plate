@@ -52,7 +52,8 @@ export type BaseEditor = EditorBase & {
     components: NodeComponents;
     /** Whether the editor is a fallback editor. */
     isFallback: boolean;
-    pluginKeys: {
+    /** Plugin cache by feature. */
+    pluginCache: {
       decorate: string[];
       handlers: {
         onChange: string[];
@@ -63,6 +64,7 @@ export type BaseEditor = EditorBase & {
       node: {
         clearOnEdge: string[];
         isAffinity: string[];
+        isContainer: string[];
         isElement: string[];
         isHardEdge: string[];
         isInline: string[];
@@ -72,7 +74,7 @@ export type BaseEditor = EditorBase & {
         isSplittable: string[];
         isStrictSiblings: string[];
         isVoid: string[];
-        matchMode: string[];
+        matchRules: string[];
         /** Node types to plugin keys. */
         types: Record<string, string>;
       };

@@ -1,31 +1,31 @@
 import { type Path, type TElement, ElementApi, TextApi } from '@udecode/slate';
 
 import type { OverrideEditor } from '../../plugin';
-import type { MergeMode } from '../../plugin/BasePlugin';
+import type { MergeRules } from '../../plugin/BasePlugin';
 
 import { getPluginByType } from '../../plugin/getSlatePlugin';
 
-export const withMergeMode: OverrideEditor = (ctx) => {
+export const withMergeRules: OverrideEditor = (ctx) => {
   const { editor } = ctx;
 
-  const checkMatchModeOverride = (
-    mode: string,
+  const checkMatchRulesOverride = (
+    rule: string,
     blockNode: any,
     blockPath: any
-  ): MergeMode | null => {
-    const matchModeKeys = editor.meta.pluginKeys.node.matchMode;
-    for (const key of matchModeKeys) {
+  ): MergeRules | null => {
+    const matchRulesKeys = editor.meta.pluginCache.node.matchRules;
+    for (const key of matchRulesKeys) {
       const overridePlugin = editor.getPlugin({ key }).node;
       if (
-        overridePlugin.mergeMode &&
-        overridePlugin.matchMode?.({
+        overridePlugin.mergeRules &&
+        overridePlugin.matchRules?.({
           ...ctx,
-          mode: mode as any,
           node: blockNode,
           path: blockPath,
+          rule: rule as any,
         })
       ) {
-        return overridePlugin.mergeMode;
+        return overridePlugin.mergeRules;
       }
     }
     return null;
@@ -56,19 +56,19 @@ export const withMergeMode: OverrideEditor = (ctx) => {
             return true;
           }
 
-          const mergeMode = plugin.node.mergeMode;
-          if (!mergeMode?.removeEmpty) {
+          const mergeRules = plugin.node.mergeRules;
+          if (!mergeRules?.removeEmpty) {
             return false;
           }
 
-          // Check if any plugin with matchMode overrides the merge behavior
-          const overrideMergeMode = checkMatchModeOverride(
+          // Check if any plugin with matchRules overrides the merge behavior
+          const overrideMergeRules = checkMatchRulesOverride(
             'merge.removeEmpty',
             node,
             path
           );
 
-          if (overrideMergeMode?.removeEmpty === false) {
+          if (overrideMergeRules?.removeEmpty === false) {
             return false;
           }
 

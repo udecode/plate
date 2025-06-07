@@ -258,7 +258,7 @@ export const createEditor = <V extends Value>({
 
   Object.assign(editor, {
     history: { redos: [], undos: [] },
-    meta: { containerTypes: [] },
+    meta: {},
     redo: noop('redo'),
     undo: noop('undo'),
     writeHistory: noop('writeHistory'),

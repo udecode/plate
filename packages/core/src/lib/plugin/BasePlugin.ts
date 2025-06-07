@@ -265,7 +265,7 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * - `'lineBreak'`: Insert newline character
    * - `'deleteExit'`: Delete backward then exit
    */
-  breakMode?: BreakMode;
+  breakRules?: BreakRules;
   /**
    * If true, enables automatically clearing the mark when typing at its
    * boundary. Only applies when `isLeaf` is true.
@@ -314,7 +314,7 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * - `'default'`: Default behavior
    * - `'reset'`: Reset block to default paragraph type
    */
-  deleteMode?: DeleteMode;
+  deleteRules?: DeleteRules;
   /**
    * Whether the node has non-breaking space on both sides.
    *
@@ -392,7 +392,9 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   isVoid?: boolean;
   /** Defines the behavior of merging nodes. */
-  mergeMode?: MergeMode;
+  mergeRules?: MergeRules;
+  /** Defines the behavior of normalizing nodes. */
+  normalizeRules?: NormalizeRules;
   /**
    * Function that returns an object of data attributes to be added to the
    * element.
@@ -411,7 +413,7 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 
 // -----------------------------------------------------------------------------
 
-export interface BreakMode {
+export interface BreakRules {
   /** Action when Enter is pressed in an empty block. */
   empty?: 'default' | 'deleteExit' | 'exit' | 'reset';
   /**
@@ -432,12 +434,17 @@ export interface BreakMode {
   default?: 'default' | 'deleteExit' | 'exit' | 'lineBreak';
 }
 
-export interface MergeMode {
+export interface MergeRules {
   /** Whether to remove the previous node when it's empty. */
   removeEmpty?: boolean;
 }
 
-export interface DeleteMode {
+export interface NormalizeRules {
+  /** Whether to remove nodes with empty text. */
+  removeEmpty?: boolean;
+}
+
+export interface DeleteRules {
   /**
    * Action when Backspace is pressed at the start of the block. This applies
    * whether the block is empty or not.
@@ -455,13 +462,14 @@ export interface DeleteMode {
   empty?: 'default' | 'reset';
 }
 
-export type MatchMode =
+export type MatchRules =
   | 'break.default'
   | 'break.empty'
   | 'break.emptyLineEnd'
   | 'delete.empty'
   | 'delete.start'
-  | 'merge.removeEmpty';
+  | 'merge.removeEmpty'
+  | 'normalize.removeEmpty';
 export type EditOnlyConfig = {
   /**
    * If true, `handlers` are only active when the editor is not read-only.

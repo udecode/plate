@@ -36,7 +36,7 @@ export function EditorRefEffect({ id }: { id?: string }) {
 
   return (
     <>
-      {editor.meta.pluginKeys.useHooks.map((key) => {
+      {editor.meta.pluginCache.useHooks.map((key) => {
         const plugin = editor.plugins[key];
         return <EditorRefPluginEffect id={id} key={key} plugin={plugin} />;
       })}

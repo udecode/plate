@@ -2,10 +2,10 @@ import type { OverrideEditor } from '../../plugin';
 
 import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 import { BaseParagraphPlugin } from '../paragraph';
-import { withBreakMode } from './withBreakMode';
-import { withDeleteMode } from './withDeleteMode';
-import { withMergeMode } from './withMergeMode';
-import { withNormalizeMode } from './withNormalizeMode';
+import { withBreakRules } from './withBreakRules';
+import { withDeleteRules } from './withDeleteRules';
+import { withMergeRules } from './withMergeRules';
+import { withNormalizeRules } from './withNormalizeRules';
 
 /**
  * Merge and register all the inline types and void types from the plugins and
@@ -17,10 +17,10 @@ export const withOverrides: OverrideEditor = ({
   editor,
 }) => {
   // Use pre-computed arrays from plugin resolution
-  const voidTypes = editor.meta.pluginKeys.node.isVoid;
-  const inlineTypes = editor.meta.pluginKeys.node.isInline;
-  const markableVoidTypes = editor.meta.pluginKeys.node.isMarkableVoid;
-  const notSelectableTypes = editor.meta.pluginKeys.node.isNotSelectable;
+  const voidTypes = editor.meta.pluginCache.node.isVoid;
+  const inlineTypes = editor.meta.pluginCache.node.isInline;
+  const markableVoidTypes = editor.meta.pluginCache.node.isMarkableVoid;
+  const notSelectableTypes = editor.meta.pluginCache.node.isNotSelectable;
 
   return {
     api: {
@@ -58,7 +58,7 @@ export const OverridePlugin = createSlatePlugin({
   key: 'override',
 })
   .overrideEditor(withOverrides)
-  .overrideEditor(withBreakMode)
-  .overrideEditor(withDeleteMode)
-  .overrideEditor(withMergeMode)
-  .overrideEditor(withNormalizeMode);
+  .overrideEditor(withBreakRules)
+  .overrideEditor(withDeleteRules)
+  .overrideEditor(withMergeRules)
+  .overrideEditor(withNormalizeRules);

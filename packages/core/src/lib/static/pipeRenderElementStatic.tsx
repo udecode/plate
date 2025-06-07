@@ -20,7 +20,7 @@ export const pipeRenderElementStatic = (
   return function render(props) {
     let element;
 
-    editor.meta.pluginKeys.node.isElement.some((key) => {
+    editor.meta.pluginCache.node.isElement.some((key) => {
       const plugin = editor.plugins[key];
 
       element = pluginRenderElementStatic(editor, plugin)(props as any);
@@ -42,7 +42,7 @@ export const pipeRenderElementStatic = (
       <SlateElement {...ctxProps}>
         {props.children}
 
-        {editor.meta.pluginKeys.render.belowRootNodes.map((key) => {
+        {editor.meta.pluginCache.render.belowRootNodes.map((key) => {
           const plugin = editor.plugins[key];
           const Component = plugin.render.belowRootNodes;
 

@@ -4,12 +4,12 @@ import { createSlatePlugin, KEYS } from '@udecode/plate';
 export const BaseBlockquotePlugin = createSlatePlugin({
   key: KEYS.blockquote,
   node: {
-    breakMode: {
+    breakRules: {
       default: 'lineBreak',
       empty: 'reset',
       emptyLineEnd: 'deleteExit',
     },
-    deleteMode: {
+    deleteRules: {
       start: 'reset',
     },
     isElement: true,

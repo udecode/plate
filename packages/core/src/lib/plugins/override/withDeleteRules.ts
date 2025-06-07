@@ -1,11 +1,11 @@
 import { PointApi, RangeApi } from '@udecode/slate';
 
 import type { OverrideEditor } from '../../plugin';
-import type { DeleteMode } from '../../plugin/BasePlugin';
+import type { DeleteRules } from '../../plugin/BasePlugin';
 
 import { getPluginByType } from '../../plugin/getSlatePlugin';
 
-export const withDeleteMode: OverrideEditor = (ctx) => {
+export const withDeleteRules: OverrideEditor = (ctx) => {
   const {
     editor,
     tf: { deleteBackward, deleteForward, deleteFragment },
@@ -17,24 +17,24 @@ export const withDeleteMode: OverrideEditor = (ctx) => {
     }
   };
 
-  const checkMatchModeOverride = (
-    mode: string,
+  const checkMatchRulesOverride = (
+    rule: string,
     blockNode: any,
     blockPath: any
-  ): DeleteMode | null => {
-    const matchModeKeys = editor.meta.pluginKeys.node.matchMode;
-    for (const key of matchModeKeys) {
+  ): DeleteRules | null => {
+    const matchRulesKeys = editor.meta.pluginCache.node.matchRules;
+    for (const key of matchRulesKeys) {
       const overridePlugin = editor.getPlugin({ key }).node;
       if (
-        overridePlugin.deleteMode &&
-        overridePlugin.matchMode?.({
+        overridePlugin.deleteRules &&
+        overridePlugin.matchRules?.({
           ...ctx,
-          mode: mode as any,
           node: blockNode,
           path: blockPath,
+          rule: rule as any,
         })
       ) {
-        return overridePlugin.deleteMode;
+        return overridePlugin.deleteRules;
       }
     }
     return null;
@@ -60,17 +60,17 @@ export const withDeleteMode: OverrideEditor = (ctx) => {
             const [blockNode, blockPath] = block;
             const plugin = getPluginByType(editor, blockNode.type);
 
-            const deleteMode = plugin?.node.deleteMode;
+            const deleteRules = plugin?.node.deleteRules;
 
             // Handle 'start' scenario
             if (editor.api.isAt({ start: true })) {
-              const overrideDeleteMode = checkMatchModeOverride(
+              const overrideDeleteRules = checkMatchRulesOverride(
                 'delete.start',
                 blockNode,
                 blockPath
               );
-              const effectiveDeleteMode = overrideDeleteMode || deleteMode;
-              const startAction = effectiveDeleteMode?.start;
+              const effectiveDeleteRules = overrideDeleteRules || deleteRules;
+              const startAction = effectiveDeleteRules?.start;
 
               if (executeDeleteAction(startAction, blockPath)) {
                 return;
@@ -79,13 +79,13 @@ export const withDeleteMode: OverrideEditor = (ctx) => {
 
             // Handle 'empty' scenario
             if (editor.api.isEmpty(editor.selection, { block: true })) {
-              const overrideDeleteMode = checkMatchModeOverride(
+              const overrideDeleteRules = checkMatchRulesOverride(
                 'delete.empty',
                 blockNode,
                 blockPath
               );
-              const effectiveDeleteMode = overrideDeleteMode || deleteMode;
-              const emptyAction = effectiveDeleteMode?.empty;
+              const effectiveDeleteRules = overrideDeleteRules || deleteRules;
+              const emptyAction = effectiveDeleteRules?.empty;
 
               if (executeDeleteAction(emptyAction, blockPath)) return;
             }

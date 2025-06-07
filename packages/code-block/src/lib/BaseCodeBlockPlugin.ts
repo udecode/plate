@@ -61,13 +61,13 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
     },
   },
   node: {
-    deleteMode: {
+    deleteRules: {
       empty: 'reset',
     },
     isElement: true,
-    matchMode: ({ editor, mode }) => {
+    matchRules: ({ editor, rule }) => {
       return (
-        ['break.empty', 'delete.empty'].includes(mode) &&
+        ['break.empty', 'delete.empty'].includes(rule) &&
         isCodeBlockEmpty(editor)
       );
     },

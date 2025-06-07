@@ -84,7 +84,7 @@ export function BelowRootNodes(props: any) {
 
   return (
     <>
-      {editor.meta.pluginKeys.render.belowRootNodes.map((key) => {
+      {editor.meta.pluginCache.render.belowRootNodes.map((key) => {
         const plugin = editor.plugins[key] as PlatePlugin;
 
         if (isEditOnly(readOnly, plugin, 'render')) return null;

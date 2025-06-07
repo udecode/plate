@@ -9,7 +9,7 @@ const isHardEdge = (editor: SlateEditor, node: TElement | TText) => {
   const keys = ElementApi.isElement(node) ? [node.type] : marks;
 
   return keys.some((mark) =>
-    editor.meta.pluginKeys.node.isHardEdge.some(
+    editor.meta.pluginCache.node.isHardEdge.some(
       (key) =>
         editor.getType(key) === mark && !editor.plugins[key].node.clearOnEdge
     )

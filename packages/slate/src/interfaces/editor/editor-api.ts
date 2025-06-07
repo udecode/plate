@@ -560,7 +560,7 @@ export type EditorFragmentDeletionOptions = {
 
 export type EditorFragmentOptions = {
   /** Types of container nodes to unwrap */
-  containerTypes?: string[];
+  unwrap?: string[];
 };
 
 export type EditorIsSelectedOptions = {

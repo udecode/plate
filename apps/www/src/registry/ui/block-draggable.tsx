@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { isType, KEYS } from '@udecode/plate';
+import { getContainerTypes, isType, KEYS } from '@udecode/plate';
 import { useDraggable, useDropLine } from '@udecode/plate-dnd';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import {
@@ -89,7 +89,7 @@ export function Draggable(props: PlateElementProps) {
       className={cn(
         'relative',
         isDragging && 'opacity-50',
-        editor.meta.containerTypes.includes(element.type)
+        getContainerTypes(editor).includes(element.type)
           ? 'group/container'
           : 'group'
       )}
@@ -162,7 +162,7 @@ function Gutter({
       className={cn(
         'slate-gutterLeft',
         'absolute top-0 z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
-        editor.meta.containerTypes.includes(element.type)
+        getContainerTypes(editor).includes(element.type)
           ? 'group-hover/container:opacity-100'
           : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',

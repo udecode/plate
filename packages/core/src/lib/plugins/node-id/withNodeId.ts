@@ -59,8 +59,6 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
   return {
     transforms: {
       apply(operation) {
-        console.log(operation);
-
         const {
           allow,
           disableInsertOverrides,

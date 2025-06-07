@@ -428,9 +428,9 @@ export const defaultRules: MdRules = {
       options
     ): ({ type: 'ol' | 'ul' } & TElement) | TListElement[] => {
       // Handle standard list
-      const isListClassic = !!options.editor?.plugins.listClassic;
+      const isIndentList = !!options.editor?.plugins.list;
 
-      if (isListClassic) {
+      if (!isIndentList) {
         // For standard lists, we need to ensure each list item is properly structured
         const children = mdastNode.children.map((child) => {
           if (child.type === 'listItem') {

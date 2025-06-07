@@ -8,8 +8,8 @@ import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 
 jsxt;
 
-describe('withMergeMode', () => {
-  describe('mergeMode: { removeEmpty: true }', () => {
+describe('withMergeRules', () => {
+  describe('mergeRules: { removeEmpty: true }', () => {
     it('should remove empty previous node when merging', () => {
       const input = (
         <editor>
@@ -38,7 +38,7 @@ describe('withMergeMode', () => {
             key: 'p',
             node: {
               isElement: true,
-              mergeMode: { removeEmpty: true },
+              mergeRules: { removeEmpty: true },
               type: 'p',
             },
           }),
@@ -80,7 +80,7 @@ describe('withMergeMode', () => {
             key: 'p',
             node: {
               isElement: true,
-              mergeMode: { removeEmpty: true },
+              mergeRules: { removeEmpty: true },
               type: 'p',
             },
           }),
@@ -96,7 +96,7 @@ describe('withMergeMode', () => {
     });
   });
 
-  describe('mergeMode: { removeEmpty: false }', () => {
+  describe('mergeRules: { removeEmpty: false }', () => {
     it('should NOT remove empty previous node when merging', () => {
       const input = (
         <editor>
@@ -125,7 +125,7 @@ describe('withMergeMode', () => {
             key: 'custom',
             node: {
               isElement: true,
-              mergeMode: { removeEmpty: false },
+              mergeRules: { removeEmpty: false },
               type: 'custom',
             },
           }),
@@ -141,7 +141,7 @@ describe('withMergeMode', () => {
     });
   });
 
-  describe('mergeMode: undefined (default)', () => {
+  describe('mergeRules: undefined (default)', () => {
     it('should NOT remove empty previous node by default', () => {
       const input = (
         <editor>
@@ -185,8 +185,8 @@ describe('withMergeMode', () => {
     });
   });
 
-  describe('matchMode override behavior', () => {
-    it('should use matchMode override to prevent removal', () => {
+  describe('matchRules override behavior', () => {
+    it('should use matchRules override to prevent removal', () => {
       const input = (
         <editor>
           <hp customProperty="customValue">
@@ -215,7 +215,7 @@ describe('withMergeMode', () => {
             key: 'p',
             node: {
               isElement: true,
-              mergeMode: { removeEmpty: true },
+              mergeRules: { removeEmpty: true },
               type: 'p',
             },
           }),
@@ -223,9 +223,9 @@ describe('withMergeMode', () => {
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              mergeMode: { removeEmpty: false },
+              mergeRules: { removeEmpty: false },
               type: 'override',
-              matchMode: ({ node }) => Boolean(node.customProperty),
+              matchRules: ({ node }) => Boolean(node.customProperty),
             },
           }),
         ],
@@ -239,8 +239,8 @@ describe('withMergeMode', () => {
       expect(editor.selection).toEqual(output.selection);
     });
 
-    describe('matchMode override behavior (reverse)', () => {
-      it('should use matchMode override to prevent removal', () => {
+    describe('matchRules override behavior (reverse)', () => {
+      it('should use matchRules override to prevent removal', () => {
         const input = (
           <editor>
             <hp>
@@ -276,7 +276,7 @@ describe('withMergeMode', () => {
       });
     });
 
-    it('should use default behavior when matchMode does not match', () => {
+    it('should use default behavior when matchRules does not match', () => {
       const input = (
         <editor>
           <hp>
@@ -305,7 +305,7 @@ describe('withMergeMode', () => {
             key: 'p',
             node: {
               isElement: true,
-              mergeMode: { removeEmpty: true },
+              mergeRules: { removeEmpty: true },
               type: 'p',
             },
           }),
@@ -313,9 +313,9 @@ describe('withMergeMode', () => {
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              mergeMode: { removeEmpty: false },
+              mergeRules: { removeEmpty: false },
               type: 'override',
-              matchMode: ({ node }) => Boolean(node.customProperty),
+              matchRules: ({ node }) => Boolean(node.customProperty),
             },
           }),
         ],
