@@ -114,21 +114,70 @@ Indicates if this plugin's nodes should be selectable.
 <APISubListItem parent="node" name="isStrictSiblings" type="boolean" optional>
 Indicates whether this element enforces strict sibling type constraints. Set to `true` when the element only allows specific siblings (e.g., `td` can only have `td` siblings, `column` can only have `column` siblings) and prevents standard text blocks like paragraphs from being inserted as siblings.
 
-Used by exit break functionality to determine appropriate exit points in nested structures.
+Used by exit break functionality to determine appropriate exit points in nested structures. See [Exit Break](/docs/exit-break).
 
 - **Default:** `false`
 </APISubListItem>
-<APISubListItem parent="node" name="breakMode" type="'split' | 'lineBreak' | 'splitOnEmptyLine'" optional>
-Defines the behavior of the Enter key within this node type.
-- `'split'` (or `undefined`): Default behavior. Pressing Enter splits the block, creating a new block of the default type (hard break).
-- `'lineBreak'`: Always inserts a newline character (`\n`) within the current block (soft break).
-- `'splitOnEmptyLine'`: Inserts a `lineBreak` unless the cursor is on an empty line (empty block or previous character is `\n`), in which case it performs a `split` (hard break).
+<APISubListItem parent="node" name="breakMode.empty" type="'default' | 'deleteExit' | 'exit' | 'reset'" optional>
+Action when Enter is pressed in an empty block. See [Plugin Modes](/docs/plugin-modes).
+
+- `'default'`: Default behavior (split the block)
+- `'exit'`: Exit the current block
+- `'reset'`: Reset block to default paragraph type
+- `'deleteExit'`: Delete backward then exit
+</APISubListItem>
+<APISubListItem parent="node" name="breakMode.emptyLineEnd" type="'default' | 'deleteExit' | 'exit'" optional>
+Action when Enter is pressed at the end of an empty line. This is typically used with `breakMode.default: 'lineBreak'`. See [Plugin Modes](/docs/plugin-modes).
+
+- `'default'`: Default behavior (split the block)
+- `'exit'`: Exit the current block
+- `'deleteExit'`: Delete backward then exit
+</APISubListItem>
+<APISubListItem parent="node" name="breakMode.default" type="'default' | 'deleteExit' | 'exit' | 'lineBreak'" optional>
+Default action when Enter is pressed. Defaults to splitting the block. See [Plugin Modes](/docs/plugin-modes).
+
+- `'default'`: Default behavior (split the block)
+- `'exit'`: Exit the current block
+- `'lineBreak'`: Insert newline character
+- `'deleteExit'`: Delete backward then exit
+</APISubListItem>
+<APISubListItem parent="node" name="deleteMode.start" type="'default' | 'reset'" optional>
+Action when Backspace is pressed at the start of the block. This applies whether the block is empty or not. See [Plugin Modes](/docs/plugin-modes).
+
+- `'default'`: Default behavior
+- `'reset'`: Reset block to default paragraph type
+</APISubListItem>
+<APISubListItem parent="node" name="deleteMode.empty" type="'default' | 'reset'" optional>
+Action when Backspace is pressed and the block is empty. See [Plugin Modes](/docs/plugin-modes).
+
+- `'default'`: Default behavior
+- `'reset'`: Reset block to default paragraph type
+</APISubListItem>
+<APISubListItem parent="node" name="matchMode" type="MatchMode" optional>
+Function to determine if this plugin's modes should apply to a node. Used to override behavior based on node properties beyond just type matching. See [Plugin Modes](/docs/plugin-modes).
+
+```typescript
+type MatchMode = (option: {
+  mode: 'break.default' | 'break.empty' | 'break.emptyLineEnd' | 'delete.empty' | 'delete.start' | 'merge.removeEmpty';
+  node: TElement;
+  path: Path;
+}) => boolean;
+```
+
+Example: List plugin sets `matchMode: (mode) => !!mode.node.listStyleType` to override paragraph behavior when the paragraph is a list item.
+
+- **Default:** `block.type === plugin.node.type`
+</APISubListItem>
+<APISubListItem parent="node" name="mergeMode.removeEmpty" type="boolean" optional>
+Whether to remove the previous node when it's empty during merge operations. See [Plugin Modes](/docs/plugin-modes).
+
+- **Default:** `false`
 </APISubListItem>
 <APISubListItem parent="node" name="isVoid" type="boolean" optional>
 Indicates if this plugin's elements should be treated as void.
 </APISubListItem>
 <APISubListItem parent="node" name="type" type="string" optional>
-Specifies the type identifier for this plugin's nodes.
+Specifies the type identifier for this plugin's nodes. 
 
 - **Default:** `plugin.key`
 </APISubListItem>

@@ -33,9 +33,7 @@ import { mediaValue } from './media-value';
 import { mentionValue } from './mention-value';
 import { placeholderValue } from './placeholder-value';
 import { previewMdValue } from './preview-md-value';
-import { singleLineValue } from './single-line-value';
 import { slashCommandValue } from './slash-command-value';
-import { softBreakValue } from './soft-break-value';
 import { suggestionValue } from './suggestion-value';
 import { tabbableValue } from './tabbable-value';
 import { tableValue } from './table-value';
@@ -82,10 +80,7 @@ const values = {
   // 'multi-editors': multiEditorsValue,
   placeholder: placeholderValue,
   'preview-markdown': previewMdValue,
-  'reset-node': basicBlocksValue,
-  'single-line': singleLineValue,
   'slash-command': slashCommandValue,
-  'soft-break': softBreakValue,
   suggestion: suggestionValue,
   tabbable: tabbableValue,
   table: tableValue,

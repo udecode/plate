@@ -257,17 +257,17 @@ export const demoExamples: Registry['items'] = (
       description: 'Restrict the editor to a single block.',
       files: [
         {
-          path: 'examples/single-line-demo.tsx',
+          path: 'examples/single-block-demo.tsx',
           type: 'registry:example',
         },
         {
-          path: 'examples/values/single-line-value.tsx',
+          path: 'examples/values/single-block-value.tsx',
           type: 'registry:example',
         },
       ],
-      name: 'single-line-demo',
+      name: 'single-block-demo',
       registryDependencies: ['editor-kit'],
-      title: 'Single Line',
+      title: 'Single Block',
       type: 'registry:example',
     },
     {
@@ -540,6 +540,28 @@ export const demoExamples: Registry['items'] = (
       },
       name: 'code-block-demo',
       registryDependencies: ['code-block-node', 'editor-kit'],
+      type: 'registry:example',
+    },
+    {
+      description: 'Display callouts with different variants and icons.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/callout-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/callout',
+            title: 'Callout',
+          },
+        ],
+      },
+      name: 'callout-demo',
+      registryDependencies: ['callout-kit', 'editor-kit'],
+      title: 'Callout',
       type: 'registry:example',
     },
     {
@@ -866,12 +888,6 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      files: [{ path: 'examples/demo.tsx', type: 'registry:example' }],
-      name: 'reset-node-demo',
-      registryDependencies: ['reset-block-type-kit', 'editor-kit'],
-      type: 'registry:example',
-    },
-    {
       description: 'Copy paste from CSV to Slate.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
@@ -951,17 +967,17 @@ export const demoExamples: Registry['items'] = (
     },
     {
       description:
-        'Insert line breaks within a block of text without starting a new block.',
+        'Use plugin modes to customize the common editing behaviors.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
         {
-          path: 'examples/values/soft-break-value.tsx',
+          path: 'examples/values/plugin-modes-value.tsx',
           type: 'registry:example',
         },
       ],
-      name: 'soft-break-demo',
+      name: 'plugin-modes-demo',
       registryDependencies: ['editor-kit'],
-      title: 'Soft Break',
+      title: 'Plugin Modes',
       type: 'registry:example',
     },
     {

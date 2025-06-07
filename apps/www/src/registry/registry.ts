@@ -13,11 +13,6 @@ const url =
     ? 'http://localhost:3000'
     : 'https://platejs.org';
 
-const registryUrl =
-  process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000/r'
-    : 'https://platejs.org/r';
-
 export const registryInit: RegistryItem[] = [
   {
     dependencies: ['@udecode/plate'],

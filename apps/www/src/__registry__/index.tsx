@@ -2167,23 +2167,6 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
-  "delete-kit": {
-    name: "delete-kit",
-    description: "",
-    type: "registry:component",
-    registryDependencies: undefined,
-    files: [{
-      path: "src/registry/components/editor/plugins/delete-kit.tsx",
-      type: "registry:component",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/components/editor/plugins/delete-kit.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
   "discussion-kit": {
     name: "discussion-kit",
     description: "",
@@ -2256,7 +2239,7 @@ export const Index: Record<string, any> = {
     name: "editing-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/delete-kit","https://platejs.org/r/exit-break-kit","https://platejs.org/r/reset-block-type-kit"],
+    registryDependencies: ["https://platejs.org/r/exit-break-kit"],
     files: [{
       path: "src/registry/components/editor/plugins/editing-kit.tsx",
       type: "registry:component",
@@ -2528,23 +2511,6 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/mention-kit.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
-  },
-  "reset-block-type-kit": {
-    name: "reset-block-type-kit",
-    description: "",
-    type: "registry:component",
-    registryDependencies: undefined,
-    files: [{
-      path: "src/registry/components/editor/plugins/reset-block-type-kit.tsx",
-      type: "registry:component",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/components/editor/plugins/reset-block-type-kit.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -3282,22 +3248,22 @@ export const Index: Record<string, any> = {
     }),
     meta: {"registry":false},
   },
-  "single-line-demo": {
-    name: "single-line-demo",
+  "single-block-demo": {
+    name: "single-block-demo",
     description: "Restrict the editor to a single block.",
     type: "registry:example",
     registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
-      path: "src/registry/examples/single-line-demo.tsx",
+      path: "src/registry/examples/single-block-demo.tsx",
       type: "registry:example",
       target: ""
     },{
-      path: "src/registry/examples/values/single-line-value.tsx",
+      path: "src/registry/examples/values/single-block-value.tsx",
       type: "registry:example",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/single-line-demo.tsx")
+      const mod = await import("@/registry/examples/single-block-demo.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -3587,6 +3553,27 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"docs":[{"route":"/docs/code-block","title":"Code Block"}],"registry":false},
+  },
+  "callout-demo": {
+    name: "callout-demo",
+    description: "Display callouts with different variants and icons.",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/callout-kit","https://platejs.org/r/editor-kit"],
+    files: [{
+      path: "src/registry/examples/demo.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/callout-value.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/callout","title":"Callout"}],"registry":false},
   },
   "comments-demo": {
     name: "comments-demo",
@@ -3920,23 +3907,6 @@ export const Index: Record<string, any> = {
     }),
     meta: {"registry":false},
   },
-  "reset-node-demo": {
-    name: "reset-node-demo",
-    description: "",
-    type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/reset-block-type-kit","https://platejs.org/r/editor-kit"],
-    files: [{
-      path: "src/registry/examples/demo.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"registry":false},
-  },
   "csv-demo": {
     name: "csv-demo",
     description: "Copy paste from CSV to Slate.",
@@ -4042,9 +4012,9 @@ export const Index: Record<string, any> = {
     }),
     meta: {"docs":[{"route":"/docs/slash-command","title":"Slash Command"}],"registry":false},
   },
-  "soft-break-demo": {
-    name: "soft-break-demo",
-    description: "Insert line breaks within a block of text without starting a new block.",
+  "plugin-modes-demo": {
+    name: "plugin-modes-demo",
+    description: "Use plugin modes to customize the common editing behaviors.",
     type: "registry:example",
     registryDependencies: ["https://platejs.org/r/editor-kit"],
     files: [{
@@ -4052,7 +4022,7 @@ export const Index: Record<string, any> = {
       type: "registry:example",
       target: ""
     },{
-      path: "src/registry/examples/values/soft-break-value.tsx",
+      path: "src/registry/examples/values/plugin-modes-value.tsx",
       type: "registry:example",
       target: ""
     }],

@@ -120,7 +120,7 @@ const LEGACY_API = new Set([
   'rangeRefs',
   'selection',
   'setNormalizing',
-  'shouldMergeNodesRemovePrevNode',
+  'shouldMergeNodes',
   'shouldNormalize',
   'start',
   'string',

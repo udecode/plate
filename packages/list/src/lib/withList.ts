@@ -10,10 +10,11 @@ import {
 
 import type { BaseListConfig } from './BaseListPlugin';
 
-import { withDeleteBackwardList, withInsertBreakList } from './normalizers';
+import { withInsertBreakList } from './normalizers';
 import { normalizeListStart } from './normalizers/normalizeListStart';
 import { getNextList } from './queries/getNextList';
 import { getPreviousList } from './queries/getPreviousList';
+import { outdentList } from './transforms';
 import { ListStyleType } from './types';
 import { withNormalizeList } from './withNormalizeList';
 
@@ -21,13 +22,21 @@ export const withList: OverrideEditor<BaseListConfig> = (ctx) => {
   const {
     editor,
     getOptions,
-    tf: { apply },
+    tf: { apply, resetBlock },
   } = ctx;
 
   return {
     transforms: {
+      resetBlock(options) {
+        if (editor.api.block(options)?.[0]?.[KEYS.listType]) {
+          outdentList(editor);
+          return;
+        }
+
+        return resetBlock(options);
+      },
       ...withNormalizeList(ctx).transforms,
-      ...withDeleteBackwardList(ctx).transforms,
+      // ...withDeleteBackwardList(ctx).transforms,
       ...withInsertBreakList(ctx).transforms,
       apply(operation) {
         const { getSiblingListOptions } = getOptions();

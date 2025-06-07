@@ -48,9 +48,7 @@ import { mentionValue as mentionValueCn } from '@/registry/examples/values/cn/me
 import { placeholderValue as placeholderValueCn } from '@/registry/examples/values/cn/placeholder-value';
 import { playgroundValue as playgroundValueCn } from '@/registry/examples/values/cn/playground-value';
 import { previewMdValue as previewMdValueCn } from '@/registry/examples/values/cn/preview-md-value';
-import { singleLineValue as singleLineValueCn } from '@/registry/examples/values/cn/single-line-value';
 import { slashCommandValue as slashCommandValueCn } from '@/registry/examples/values/cn/slash-command-value';
-import { softBreakValue as softBreakValueCn } from '@/registry/examples/values/cn/soft-break-value';
 import { suggestionValue as suggestionValueCn } from '@/registry/examples/values/cn/suggestion-value';
 import { tabbableValue as tabbableValueCn } from '@/registry/examples/values/cn/tabbable-value';
 import { tableValue as tableValueCn } from '@/registry/examples/values/cn/table-value';
@@ -86,10 +84,9 @@ import { mediaValue as mediaValueEn } from '@/registry/examples/values/media-val
 import { mentionValue as mentionValueEn } from '@/registry/examples/values/mention-value';
 import { blockPlaceholderValue as placeholderValueEn } from '@/registry/examples/values/placeholder-value';
 import { playgroundValue as playgroundValueEn } from '@/registry/examples/values/playground-value';
+import { pluginModesValue as pluginModesValueEn } from '@/registry/examples/values/plugin-modes-value';
 import { previewMdValue as previewMdValueEn } from '@/registry/examples/values/preview-md-value';
-import { singleLineValue as singleLineValueEn } from '@/registry/examples/values/single-line-value';
 import { slashCommandValue as slashCommandValueEn } from '@/registry/examples/values/slash-command-value';
-import { softBreakValue as softBreakValueEn } from '@/registry/examples/values/soft-break-value';
 import { tabbableValue as tabbableValueEn } from '@/registry/examples/values/tabbable-value';
 import { tableValue as tableValueEn } from '@/registry/examples/values/table-value';
 import { tocValue as tocValueEn } from '@/registry/examples/values/toc-value';
@@ -133,9 +130,7 @@ const i18n = {
     placeholder: placeholderValueCn,
     playground: playgroundValueCn,
     previewMd: previewMdValueCn,
-    singleLine: singleLineValueCn,
     slashCommand: slashCommandValueCn,
-    softBreak: softBreakValueCn,
     suggestion: suggestionValueCn,
     tabbable: tabbableValueCn,
     table: tableValueCn,
@@ -179,10 +174,9 @@ const i18n = {
     mention: mentionValueEn,
     placeholder: placeholderValueEn,
     playground: playgroundValueEn,
+    pluginModes: pluginModesValueEn,
     previewMd: previewMdValueEn,
-    singleLine: singleLineValueEn,
     slashCommand: slashCommandValueEn,
-    softBreak: softBreakValueEn,
     tabbable: tabbableValueEn,
     table: tableValueEn,
     'text-align': alignValueEn,

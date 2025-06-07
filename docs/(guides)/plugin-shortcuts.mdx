@@ -76,8 +76,8 @@ export const CustomLoggerPlugin = createPlatePlugin({
         // 'editor' is the PlateEditor instance
         // 'event' is the raw KeyboardEvent
         // 'eventDetails' provides more context from the hotkey library
-        console.log('Current editor value:', editor.children);
-        console.log('Pressed keys:', eventDetails.keys);
+        console.info('Current editor value:', editor.children);
+        console.info('Pressed keys:', eventDetails.keys);
         // You might want to prevent other actions or browser defaults
         // event.preventDefault();
       },
@@ -138,7 +138,7 @@ export const MyFormattingTools = createPlatePlugin({
     // A shortcut with a custom handler
     logSomething: {
       keys: [[Key.Mod, 'l']],
-      handler: () => console.log('Logging from MyFormattingTools!'),
+      handler: () => console.info('Logging from MyFormattingTools!'),
     },
   },
 });
@@ -155,7 +155,7 @@ const PluginA = createPlatePlugin({ key: 'pluginA', priority: 10 }).extend({
   shortcuts: {
     doSomethingImportant: {
       keys: 'mod+shift+p',
-      handler: () => console.log('Plugin A: Important action on Mod+Shift+P!'),
+      handler: () => console.info('Plugin A: Important action on Mod+Shift+P!'),
       priority: 100, // Explicit, high priority for this specific shortcut
     }
   }
@@ -165,7 +165,7 @@ const PluginB = createPlatePlugin({ key: 'pluginB', priority: 20 }).extend({
   shortcuts: {
     doSomethingLessImportant: {
       keys: 'mod+shift+p', // Same key combination as PluginA's shortcut
-      handler: () => console.log('Plugin B: Less important action on Mod+Shift+P.'),
+      handler: () => console.info('Plugin B: Less important action on Mod+Shift+P.'),
       // No explicit shortcut priority, will use PluginB's priority (20)
     }
   }
@@ -226,7 +226,7 @@ const editor = createPlateEditor({
     saveDocument: {
       keys: [[Key.Mod, 's']],
       handler: ({ editor, event }) => {
-        console.log('Attempting to save document content:', editor.children);
+        console.info('Attempting to save document content:', editor.children);
         // Since preventDefault is set to false for this shortcut,
         // the browser's save dialog will appear by default.
         // If you want to conditionally prevent the default browser behavior

@@ -1,3 +1,4 @@
+import { calloutValue } from '@/registry/examples/values/callout-value';
 import { playgroundValue } from '@/registry/examples/values/playground-value';
 
 import { aiValue } from './ai-value';
@@ -36,10 +37,9 @@ import { listValue } from './list-value';
 import { mediaValue } from './media-value';
 import { mentionValue } from './mention-value';
 import { blockPlaceholderValue } from './placeholder-value';
+import { pluginModesValue } from './plugin-modes-value';
 import { previewMdValue } from './preview-md-value';
-import { singleLineValue } from './single-line-value';
 import { slashCommandValue } from './slash-command-value';
-import { softBreakValue } from './soft-break-value';
 import { tabbableValue } from './tabbable-value';
 import { tableValue } from './table-value';
 import { tocValue } from './toc-value';
@@ -55,7 +55,7 @@ const values = {
   // 'multi-editors': multiEditorsValue,
   'block-placeholder': blockPlaceholderValue,
   'block-selection': blockSelectionValue,
-  // callout: calloutValue,
+  callout: calloutValue,
   'code-block': codeBlockValue,
   column: columnValue,
   comments: commentsValue,
@@ -88,11 +88,9 @@ const values = {
   // 'media-toolbar': mediaToolbarValue,
   mention: mentionValue,
   playground: playgroundValue,
+  'plugin-modes': pluginModesValue,
   'preview-markdown': previewMdValue,
-  'reset-node': basicBlocksValue,
-  'single-line': singleLineValue,
   'slash-command': slashCommandValue,
-  'soft-break': softBreakValue,
   tabbable: tabbableValue,
   table: tableValue,
   'text-align': alignValue,

@@ -11,11 +11,13 @@ import {
 } from '@udecode/plate';
 
 import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBlock';
+import { isCodeBlockEmpty } from './queries';
 import {
   CODE_LINE_TO_DECORATIONS,
   resetCodeBlockDecorations,
   setCodeBlockToDecorations as setCodeBlockToDecorations,
 } from './setCodeBlockToDecorations';
+import { unwrapCodeBlock } from './transforms';
 import { withCodeBlock } from './withCodeBlock';
 
 export type CodeBlockConfig = PluginConfig<
@@ -58,7 +60,18 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
       },
     },
   },
-  node: { isElement: true },
+  node: {
+    deleteMode: {
+      empty: 'reset',
+    },
+    isElement: true,
+    matchMode: ({ editor, mode }) => {
+      return (
+        ['break.empty', 'delete.empty'].includes(mode) &&
+        isCodeBlockEmpty(editor)
+      );
+    },
+  },
   options: {
     defaultLanguage: null,
     lowlight: null,
@@ -87,7 +100,12 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   },
 })
   .overrideEditor(
-    ({ editor, getOptions, tf: { apply, normalizeNode }, type }) => ({
+    ({
+      editor,
+      getOptions,
+      tf: { apply, normalizeNode, resetBlock },
+      type,
+    }) => ({
       transforms: {
         apply(operation) {
           if (getOptions().lowlight && operation.type === 'set_node') {
@@ -113,6 +131,19 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
           }
 
           normalizeNode(entry, options);
+        },
+        resetBlock(options) {
+          if (
+            editor.api.block({
+              at: options?.at,
+              match: { type: editor.getType(KEYS.codeBlock) },
+            })
+          ) {
+            unwrapCodeBlock(editor);
+            return;
+          }
+
+          return resetBlock(options);
         },
       },
     })

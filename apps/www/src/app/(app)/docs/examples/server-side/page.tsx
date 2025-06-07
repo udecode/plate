@@ -3,12 +3,8 @@ import type { Doc } from 'contentlayer/generated';
 import type { Metadata } from 'next';
 
 import {
-  BaseResetNodePlugin,
   createSlateEditor,
-  DeletePlugin,
   ExitBreakPlugin,
-  KEYS,
-  SelectOnBackspacePlugin,
   TrailingBlockPlugin,
 } from '@udecode/plate';
 import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
@@ -61,15 +57,6 @@ export default function RSCPage() {
       // Functionality
       BaseAutoformatPlugin,
       ExitBreakPlugin,
-      BaseResetNodePlugin,
-      SelectOnBackspacePlugin.configure({
-        options: {
-          query: {
-            allow: [KEYS.img, KEYS.hr],
-          },
-        },
-      }),
-      DeletePlugin,
       TrailingBlockPlugin,
       DocxPlugin,
     ],

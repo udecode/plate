@@ -104,7 +104,7 @@ export const KEYS = {
   playwright: 'playwright',
   removeEmptyNodes: 'removeEmptyNodes',
   resetNode: 'resetNode',
-  selectOnBackspace: 'selectOnBackspace',
+  singleBlock: 'singleBlock',
   singleLine: 'singleLine',
   slashCommand: 'slash_command',
   softBreak: 'softBreak',

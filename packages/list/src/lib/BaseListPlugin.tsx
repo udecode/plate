@@ -6,6 +6,7 @@ import {
   type TElement,
   type TListElement,
   createTSlatePlugin,
+  isDefined,
   isHtmlBlockElement,
   KEYS,
   postCleanHtml,
@@ -78,6 +79,20 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
           },
         },
       },
+    },
+  },
+  node: {
+    breakMode: {
+      empty: 'reset',
+    },
+    deleteMode: {
+      start: 'reset',
+    },
+    mergeMode: {
+      removeEmpty: false,
+    },
+    matchMode: (mode) => {
+      return isDefined(mode.node[KEYS.listType]);
     },
   },
   options: {

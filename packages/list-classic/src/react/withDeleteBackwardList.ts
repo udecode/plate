@@ -1,23 +1,17 @@
+import type { OverrideEditor } from '@udecode/plate/react';
+
 import {
   type NodeEntry,
   type TElement,
-  BaseResetNodePlugin,
   deleteMerge,
   KEYS,
   PathApi,
 } from '@udecode/plate';
-import {
-  type OverrideEditor,
-  getEditorPlugin,
-  onKeyDownResetNode,
-  SIMULATE_BACKSPACE,
-} from '@udecode/plate/react';
 
 import type { ListConfig } from '../lib/BaseListPlugin';
 
 import { isAcrossListItems, isListNested } from '../lib/queries';
 import { getListItemEntry } from '../lib/queries/getListItemEntry';
-import { unwrapList } from '../lib/transforms';
 import { removeFirstListItem } from '../lib/transforms/removeFirstListItem';
 import { removeListItem } from '../lib/transforms/removeListItem';
 
@@ -52,25 +46,8 @@ export const withDeleteBackwardList: OverrideEditor<ListConfig> = ({
                 !PathApi.hasPrevious(listItem[1]) &&
                 !isListNested(editor, list[1])
               ) {
-                onKeyDownResetNode({
-                  ...getEditorPlugin(
-                    editor,
-                    BaseResetNodePlugin.configure({
-                      options: {
-                        rules: [
-                          {
-                            defaultType: editor.getType(KEYS.p),
-                            hotkey: 'backspace',
-                            types: [editor.getType(KEYS.li)],
-                            predicate: () => editor.api.isAt({ start: true }),
-                            onReset: (e) => unwrapList(e),
-                          },
-                        ],
-                      },
-                    })
-                  ),
-                  event: SIMULATE_BACKSPACE,
-                } as any);
+                editor.tf.resetBlock({ at: listItem[1] });
+
                 moved = true;
 
                 return;

@@ -160,3 +160,68 @@ describe('normalizeList', () => {
     });
   });
 });
+
+describe('keyboard handling', () => {
+  describe('when Enter on indented list and empty', () => {
+    it('should outdent', () => {
+      const input = (
+        <editor>
+          <hp indent={2} listStyleType="disc">
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp indent={1} listStyleType="disc">
+            <htext />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createPlateEditor({
+        plugins: [BaseListPlugin, IndentPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.tf.insertBreak();
+
+      expect(editor.children).toEqual(output.children);
+    });
+  });
+
+  describe('when Enter on indented and empty but not list', () => {
+    it('should not outdent', () => {
+      const input = (
+        <editor>
+          <hp indent={2}>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp indent={2}>
+            <htext />
+          </hp>
+          <hp indent={2}>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createPlateEditor({
+        plugins: [BaseListPlugin, IndentPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.tf.insertBreak();
+
+      expect(editor.children).toEqual(output.children);
+    });
+  });
+});

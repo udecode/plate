@@ -1,4 +1,4 @@
-import { type NodeEntry, type TElement, NodeApi } from '@udecode/slate';
+import { type Path, NodeApi } from '@udecode/slate';
 
 import type { SlateEditor } from '../../../editor';
 
@@ -8,14 +8,9 @@ import { BaseParagraphPlugin } from '../../paragraph';
  * Reset the current block to a paragraph, removing all properties except id and
  * type.
  */
-export const resetBlock = (
-  editor: SlateEditor,
-  entry?: NodeEntry<TElement>
-) => {
-  if (!entry) {
-    entry = editor.api.block();
-    if (!entry) return false;
-  }
+export const resetBlock = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
+  const entry = editor.api.block({ at });
+  if (!entry?.[0]) return;
 
   const [block, path] = entry;
 
@@ -34,8 +29,6 @@ export const resetBlock = (
       // Set the new type to paragraph
       editor.tf.setNodes({ type: paragraphType }, { at: path });
     }
-
-    console.log('resetBlock', block.type, paragraphType);
   });
 
   return true;

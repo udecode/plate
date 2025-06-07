@@ -4,6 +4,8 @@ import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 import { BaseParagraphPlugin } from '../paragraph';
 import { withBreakMode } from './withBreakMode';
 import { withDeleteMode } from './withDeleteMode';
+import { withMergeMode } from './withMergeMode';
+import { withNormalizeMode } from './withNormalizeMode';
 
 /**
  * Merge and register all the inline types and void types from the plugins and
@@ -57,4 +59,6 @@ export const OverridePlugin = createSlatePlugin({
 })
   .overrideEditor(withOverrides)
   .overrideEditor(withBreakMode)
-  .overrideEditor(withDeleteMode);
+  .overrideEditor(withDeleteMode)
+  .overrideEditor(withMergeMode)
+  .overrideEditor(withNormalizeMode);

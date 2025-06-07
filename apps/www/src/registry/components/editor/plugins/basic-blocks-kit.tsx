@@ -17,29 +17,19 @@ import { ParagraphElement } from '@/registry/ui/paragraph-node';
 export const BasicBlocksKit = [
   ParagraphPlugin.withComponent(ParagraphElement),
   H1Plugin.configure({
-    node: { component: H1Element },
+    node: { breakMode: { empty: 'reset' }, component: H1Element },
     shortcuts: { toggle: { keys: 'mod+alt+1' } },
   }),
   H2Plugin.configure({
-    node: { component: H2Element },
+    node: { breakMode: { empty: 'reset' }, component: H2Element },
     shortcuts: { toggle: { keys: 'mod+alt+2' } },
   }),
   H3Plugin.configure({
-    node: { component: H3Element },
+    node: { breakMode: { empty: 'reset' }, component: H3Element },
     shortcuts: { toggle: { keys: 'mod+alt+3' } },
   }),
   BlockquotePlugin.configure({
-    node: {
-      breakMode: {
-        default: 'lineBreak',
-        empty: 'reset',
-        emptyLineEnd: 'exit',
-      },
-      component: BlockquoteElement,
-      deleteMode: {
-        start: 'reset',
-      },
-    },
+    node: { component: BlockquoteElement },
     shortcuts: { toggle: { keys: 'mod+shift+period' } },
   }),
   HorizontalRulePlugin.withComponent(HrElement),

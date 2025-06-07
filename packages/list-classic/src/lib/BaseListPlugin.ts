@@ -82,7 +82,9 @@ export const BaseListItemPlugin = createSlatePlugin({
 
 export const BaseListItemContentPlugin = createSlatePlugin({
   key: KEYS.lic,
-  node: { isElement: true },
+  node: {
+    isElement: true,
+  },
 });
 
 /** Enables support for bulleted, numbered and to-do lists. */

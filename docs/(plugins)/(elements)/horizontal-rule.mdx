@@ -81,16 +81,12 @@ You can configure the `HorizontalRulePlugin` with autoformat rules to automatica
 import { insertNodes, setNodes, KEYS } from '@udecode/plate';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import { HorizontalRulePlugin } from '@udecode/plate-basic-nodes/react';
-import { SelectOnBackspacePlugin } from '@udecode/plate/react';
 import { createPlateEditor } from '@udecode/plate/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     HorizontalRulePlugin,
-    SelectOnBackspacePlugin.configure({
-      options: { query: { allow: [KEYS.hr] } },
-    }),
     AutoformatPlugin.configure({
       options: {
         rules: [
@@ -113,7 +109,6 @@ const editor = createPlateEditor({
 });
 ```
 
-- `SelectOnBackspacePlugin`: Allows selecting and deleting horizontal rules with backspace.
 - `AutoformatPlugin`: Automatically converts typed patterns (like `---`) into horizontal rules.
 
 </Steps>

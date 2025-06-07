@@ -111,7 +111,10 @@ export const DOMPlugin = createTSlatePlugin<DomConfig>({
           editor.dom.prevSelection = properties as TRange | null;
           apply(operation);
           editor.dom.currentKeyboardEvent = null;
+          return;
         }
+
+        apply(operation);
       },
     },
   }));

@@ -8,6 +8,8 @@ import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
 import type { TStateApi } from 'zustand-x';
 
+import type { CorePluginApi, CorePluginTransforms } from '../plugins';
+
 export type AnyPluginConfig = {
   key: any;
   api: any;
@@ -206,12 +208,12 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
 };
 
 export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
-  api: C['api'] & EditorApi;
+  api: C['api'] & EditorApi & CorePluginApi;
   setOptions: {
     (options: (state: Draft<Partial<InferOptions<C>>>) => void): void;
     (options: Partial<InferOptions<C>>): void;
   };
-  tf: C['transforms'] & EditorTransforms;
+  tf: C['transforms'] & EditorTransforms & CorePluginTransforms;
   type: string;
   getOption: <
     K extends keyof InferOptions<C> | keyof InferSelectors<C> | 'state',
@@ -254,7 +256,15 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * @default plugin.key
    */
   type: string;
-  /** Defines actions on insert break based on block state. */
+  /**
+   * Defines actions on insert break based on block state.
+   *
+   * - `'default'`: Default behavior
+   * - `'exit'`: Exit the current block
+   * - `'reset'`: Reset block to default paragraph type
+   * - `'lineBreak'`: Insert newline character
+   * - `'deleteExit'`: Delete backward then exit
+   */
   breakMode?: BreakMode;
   /**
    * If true, enables automatically clearing the mark when typing at its
@@ -301,7 +311,8 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
   /**
    * Defines actions on delete based on block state.
    *
-   * @see DeleteMode
+   * - `'default'`: Default behavior
+   * - `'reset'`: Reset block to default paragraph type
    */
   deleteMode?: DeleteMode;
   /**
@@ -380,6 +391,8 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * void.
    */
   isVoid?: boolean;
+  /** Defines the behavior of merging nodes. */
+  mergeMode?: MergeMode;
   /**
    * Function that returns an object of data attributes to be added to the
    * element.
@@ -400,7 +413,7 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 
 export interface BreakMode {
   /** Action when Enter is pressed in an empty block. */
-  empty?: 'default' | 'exit' | 'reset';
+  empty?: 'default' | 'deleteExit' | 'exit' | 'reset';
   /**
    * Action when Enter is pressed at the end of an empty line. This is typically
    * used with `default: 'lineBreak'`.
@@ -414,9 +427,14 @@ export interface BreakMode {
    *     </blockquote>
    * ```
    */
-  emptyLineEnd?: 'default' | 'exit';
+  emptyLineEnd?: 'default' | 'deleteExit' | 'exit';
   /** Default action when Enter is pressed. Defaults to splitting the block. */
-  default?: 'default' | 'exit' | 'lineBreak';
+  default?: 'default' | 'deleteExit' | 'exit' | 'lineBreak';
+}
+
+export interface MergeMode {
+  /** Whether to remove the previous node when it's empty. */
+  removeEmpty?: boolean;
 }
 
 export interface DeleteMode {
@@ -437,6 +455,13 @@ export interface DeleteMode {
   empty?: 'default' | 'reset';
 }
 
+export type MatchMode =
+  | 'break.default'
+  | 'break.empty'
+  | 'break.emptyLineEnd'
+  | 'delete.empty'
+  | 'delete.start'
+  | 'merge.removeEmpty';
 export type EditOnlyConfig = {
   /**
    * If true, `handlers` are only active when the editor is not read-only.

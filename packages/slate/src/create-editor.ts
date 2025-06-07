@@ -6,7 +6,6 @@ import {
   hasPath,
   normalizeNode,
   setNormalizing,
-  shouldMergeNodesRemovePrevNode,
   shouldNormalize,
 } from 'slate';
 
@@ -101,6 +100,7 @@ import { parent } from './internal/editor/parent';
 import { previous } from './internal/editor/previous';
 import { range } from './internal/editor/range';
 import { removeEditorMark } from './internal/editor/removeEditorMark';
+import { shouldMergeNodes } from './internal/editor/shouldMergeNodes';
 import { unhangRange } from './internal/editor/unhangRange';
 import { withoutNormalizing } from './internal/editor/withoutNormalizing';
 import { addMarks } from './internal/transforms-extension/addMarks';
@@ -244,10 +244,7 @@ export const createEditor = <V extends Value>({
     setNormalizing: bindFirst(setNormalizing, editor as any),
     setPoint: bindFirst(setPoint, editor),
     setSelection: bindFirst(setSelection, editor),
-    shouldMergeNodesRemovePrevNode: bindFirst(
-      shouldMergeNodesRemovePrevNode,
-      editor as any
-    ),
+    shouldMergeNodes: bindFirst(shouldMergeNodes, editor as any),
     splitNodes: bindFirst(splitNodes, editor),
     start: bindFirst(getStartPoint, editor),
     string: bindFirst(getEditorString, editor),

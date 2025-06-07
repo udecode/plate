@@ -72,6 +72,7 @@ export type BaseEditor = EditorBase & {
         isSplittable: string[];
         isStrictSiblings: string[];
         isVoid: string[];
+        matchMode: string[];
         /** Node types to plugin keys. */
         types: Record<string, string>;
       };

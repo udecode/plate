@@ -49,6 +49,7 @@ export const resolvePlugins = (
       isSplittable: [],
       isStrictSiblings: [],
       isVoid: [],
+      matchMode: [],
       types: {},
     },
     normalizeInitialValue: [],
@@ -158,6 +159,10 @@ export const resolvePlugins = (
 
     if (plugin.render.beforeEditable) {
       editor.meta.pluginKeys.render.beforeEditable.push(plugin.key);
+    }
+
+    if (plugin.node.matchMode) {
+      editor.meta.pluginKeys.node.matchMode.push(plugin.key);
     }
 
     if (plugin.render.afterContainer) {

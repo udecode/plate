@@ -26,7 +26,7 @@
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"plugin-methods\",\n    \"plugin-shortcuts\",\n    \"plugin-context\",\n    \"plugin-components\"\n  ],\n  \"title\": \"Plugin\"\n}",
+      "content": "{\n  \"pages\": [\n    \"plugin-methods\",\n    \"plugin-shortcuts\",\n    \"plugin-context\",\n    \"plugin-components\",\n    \"plugin-modes\"\n  ],\n  \"title\": \"Plugin\"\n}",
       "path": "content/docs/plate/guides/plugin/meta.json",
       "target": "content/docs/plate/guides/plugin/meta.json",
       "type": "registry:file"
@@ -104,7 +104,7 @@
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"index\",\n    \"slate-to-html\",\n    \"export\",\n    \"server-side\",\n    \"version-history\",\n    \"editable-voids\",\n    \"hundreds-blocks\",\n    \"hundreds-editors\",\n    \"preview-markdown\",\n    \"collaboration\",\n    \"table-nomerge\",\n    \"excalidraw\",\n    \"single-line\",\n    \"editable-voids\",\n    \"list-classic\",\n    \"find-replace\",\n    \"ai\",\n    \"align\",\n    \"autoformat\",\n    \"basic-nodes\",\n    \"block-menu\",\n    \"block-selection\",\n    \"column\",\n    \"code-block\",\n    \"comments\",\n    \"cursor-overlay\",\n    \"date\",\n    \"dnd\",\n    \"emoji\",\n    \"equation\",\n    \"exit-break\",\n    \"floating-toolbar\",\n    \"font\",\n    \"indent\",\n    \"list\",\n    \"line-height\",\n    \"link\",\n    \"media\",\n    \"mention\",\n    \"block-placeholder\",\n    \"reset-node\",\n    \"csv\",\n    \"docx\",\n    \"html\",\n    \"markdown\",\n    \"slash-command\",\n    \"soft-break\",\n    \"table\",\n    \"toc\",\n    \"toggle\"\n  ],\n  \"title\": \"Examples\"\n}",
+      "content": "{\n  \"pages\": [\n    \"index\",\n    \"slate-to-html\",\n    \"export\",\n    \"server-side\",\n    \"version-history\",\n    \"editable-voids\",\n    \"hundreds-blocks\",\n    \"hundreds-editors\",\n    \"preview-markdown\",\n    \"collaboration\",\n    \"table-nomerge\",\n    \"excalidraw\",\n    \"single-block\",\n    \"editable-voids\",\n    \"list-classic\",\n    \"find-replace\",\n    \"ai\",\n    \"align\",\n    \"autoformat\",\n    \"basic-nodes\",\n    \"block-menu\",\n    \"block-selection\",\n    \"column\",\n    \"code-block\",\n    \"callout\",\n    \"comments\",\n    \"cursor-overlay\",\n    \"date\",\n    \"dnd\",\n    \"emoji\",\n    \"equation\",\n    \"exit-break\",\n    \"floating-toolbar\",\n    \"font\",\n    \"indent\",\n    \"list\",\n    \"line-height\",\n    \"link\",\n    \"media\",\n    \"mention\",\n    \"block-placeholder\",\n    \"csv\",\n    \"docx\",\n    \"html\",\n    \"markdown\",\n    \"slash-command\",\n    \"plugin-modes\",\n    \"table\",\n    \"toc\",\n    \"toggle\"\n  ],\n  \"title\": \"Examples\"\n}",
       "path": "content/docs/plate/examples/meta.json",
       "target": "content/docs/plate/examples/meta.json",
       "type": "registry:file"

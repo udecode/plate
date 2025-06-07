@@ -3300,17 +3300,6 @@
       ]
     },
     {
-      "name": "delete-kit",
-      "type": "registry:component",
-      "dependencies": [],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/delete-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
       "name": "discussion-kit",
       "type": "registry:component",
       "dependencies": [],
@@ -3405,9 +3394,7 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/delete-kit",
-        "https://platejs.org/r/exit-break-kit",
-        "https://platejs.org/r/reset-block-type-kit"
+        "https://platejs.org/r/exit-break-kit"
       ],
       "files": [
         {
@@ -3683,19 +3670,6 @@
       "files": [
         {
           "path": "src/registry/components/editor/plugins/mention-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
-      "name": "reset-block-type-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@udecode/plate-code-block"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/reset-block-type-kit.tsx",
           "type": "registry:component"
         }
       ]
@@ -4497,6 +4471,7 @@
         "https://platejs.org/r/-guides-plugin-components-docs",
         "https://platejs.org/r/-guides-plugin-context-docs",
         "https://platejs.org/r/-guides-plugin-methods-docs",
+        "https://platejs.org/r/-guides-plugin-modes-docs",
         "https://platejs.org/r/-guides-plugin-shortcuts-docs",
         "https://platejs.org/r/-guides-plugin-docs",
         "https://platejs.org/r/-guides-static-docs",
@@ -4530,10 +4505,8 @@
         "https://platejs.org/r/-plugins-functionality-combobox-slash-command-docs",
         "https://platejs.org/r/-plugins-functionality-utils-exit-break-docs",
         "https://platejs.org/r/-plugins-functionality-utils-forced-layout-docs",
-        "https://platejs.org/r/-plugins-functionality-utils-reset-node-docs",
         "https://platejs.org/r/-plugins-functionality-utils-select-docs",
-        "https://platejs.org/r/-plugins-functionality-utils-single-line-docs",
-        "https://platejs.org/r/-plugins-functionality-utils-soft-break-docs",
+        "https://platejs.org/r/-plugins-functionality-utils-single-block-docs",
         "https://platejs.org/r/-plugins-functionality-utils-trailing-block-docs",
         "https://platejs.org/r/-plugins-functionality-autoformat-docs",
         "https://platejs.org/r/-plugins-functionality-block-menu-docs",
@@ -4774,6 +4747,19 @@
       ],
       "name": "-guides-plugin-methods-docs",
       "title": "Plugin Methods",
+      "type": "registry:file"
+    },
+    {
+      "description": "Configure common editing behaviors.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/plugin-modes.mdx",
+          "target": "content/docs/plate/(guides)/plugin-modes.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "-guides-plugin-modes-docs",
+      "title": "Plugin Modes",
       "type": "registry:file"
     },
     {
@@ -5206,19 +5192,6 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Reset Node",
-      "files": [
-        {
-          "path": "../../docs/(plugins)/(functionality)/(utils)/reset-node.mdx",
-          "target": "content/docs/plate/(plugins)/(functionality)/(utils)/reset-node.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "-plugins-functionality-utils-reset-node-docs",
-      "title": "Reset Node",
-      "type": "registry:file"
-    },
-    {
       "description": "Documentation for Select",
       "files": [
         {
@@ -5232,29 +5205,16 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Single Line",
+      "description": "Documentation for Single Block",
       "files": [
         {
-          "path": "../../docs/(plugins)/(functionality)/(utils)/single-line.mdx",
-          "target": "content/docs/plate/(plugins)/(functionality)/(utils)/single-line.mdx",
+          "path": "../../docs/(plugins)/(functionality)/(utils)/single-block.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/(utils)/single-block.mdx",
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-utils-single-line-docs",
-      "title": "Single Line",
-      "type": "registry:file"
-    },
-    {
-      "description": "Documentation for Soft Break",
-      "files": [
-        {
-          "path": "../../docs/(plugins)/(functionality)/(utils)/soft-break.mdx",
-          "target": "content/docs/plate/(plugins)/(functionality)/(utils)/soft-break.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "-plugins-functionality-utils-soft-break-docs",
-      "title": "Soft Break",
+      "name": "-plugins-functionality-utils-single-block-docs",
+      "title": "Single Block",
       "type": "registry:file"
     },
     {

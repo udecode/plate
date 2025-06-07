@@ -16,7 +16,7 @@ export const useBlockSelectable = () => {
   const id = element?.id as string | undefined;
 
   return {
-    props: api.blockSelection.isSelectable(element, path)
+    props: api.blockSelection?.isSelectable(element, path)
       ? {
           className: 'slate-selectable',
           onContextMenu: (

@@ -3,8 +3,6 @@
 '@udecode/plate-slash-command': major
 '@udecode/plate-autoformat': major
 '@udecode/plate-selection': major
-'@udecode/plate-break': major
-'@udecode/plate-reset-node': major
 '@udecode/plate-trailing-block': major
 '@udecode/plate-emoji': major
 '@udecode/plate-select': major

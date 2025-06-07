@@ -4,6 +4,7 @@ import type {
   EditorApi,
   EditorTransforms,
   NodeEntry,
+  Path,
   TElement,
   TText,
   Value,
@@ -11,6 +12,7 @@ import type {
 import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type { SlateEditor } from '../editor';
+import type { CorePluginApi, CorePluginTransforms } from '../plugins';
 import type {
   SlateElementProps,
   SlateRenderElementProps,
@@ -32,6 +34,7 @@ import type {
   InferOptions,
   InferSelectors,
   InferTransforms,
+  MatchMode,
   NodeComponent,
   NodeComponents,
   ParserOptions,
@@ -79,7 +82,7 @@ export type ExtendEditorApi<
   C extends AnyPluginConfig = PluginConfig,
   EA = {},
 > = (ctx: SlatePluginContext<C>) => EA &
-  Deep2Partial<EditorApi> & {
+  Deep2Partial<EditorApi & CorePluginApi> & {
     [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
       ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
       : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
@@ -95,7 +98,7 @@ export type ExtendEditorTransforms<
   C extends AnyPluginConfig = PluginConfig,
   EA = {},
 > = (ctx: SlatePluginContext<C>) => EA &
-  Deep2Partial<EditorTransforms> & {
+  Deep2Partial<EditorTransforms & CorePluginTransforms> & {
     [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
       ...args: any[]
     ) => any
@@ -192,7 +195,7 @@ export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
 export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
   ctx: SlatePluginContext<C>
 ) => {
-  api?: Deep2Partial<EditorApi> & {
+  api?: Deep2Partial<EditorApi & CorePluginApi> & {
     [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
       ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
       : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
@@ -203,7 +206,7 @@ export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
           }
         : never;
   };
-  transforms?: Deep2Partial<EditorTransforms> & {
+  transforms?: Deep2Partial<EditorTransforms & CorePluginTransforms> & {
     [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
       ...args: any[]
     ) => any
@@ -288,6 +291,24 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         props?: NodeStaticProps<WithAnyKey<C>>;
         /** Override `data-slate-node="text"` element attributes */
         textProps?: TextStaticProps<WithAnyKey<C>>;
+        /**
+         * Function to determine if this plugin's modes should apply to a node.
+         * Used to override behavior based on node properties beyond just type
+         * matching.
+         *
+         * Example: List plugin sets `matchMode: (mode) =>
+         * !!mode.node.listStyleType` to override paragraph behavior when the
+         * paragraph is a list item.
+         *
+         * @default type === node.type
+         */
+        matchMode?: (
+          option: {
+            mode: MatchMode;
+            node: TElement;
+            path: Path;
+          } & SlatePluginContext<C>
+        ) => boolean;
       };
       override: {
         components?: NodeComponents;

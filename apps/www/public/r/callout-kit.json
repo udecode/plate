@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/callout-kit.tsx",
-      "content": "'use client';\n\nimport { CalloutPlugin } from '@udecode/plate-callout/react';\n\nimport { CalloutElement } from '@/registry/ui/callout-node';\n\nexport const CalloutKit = [CalloutPlugin.withComponent(CalloutElement)];\n",
+      "content": "'use client';\n\nimport { CalloutPlugin } from '@udecode/plate-callout/react';\n\nimport { CalloutElement } from '@/registry/ui/callout-node';\n\nexport const CalloutKit = [\n  CalloutPlugin.configure({\n    node: {\n      component: CalloutElement,\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

@@ -164,7 +164,7 @@ import {
   PlaceholderPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
-import { SelectOnBackspacePlugin, KEYS } from '@udecode/plate';
+import { KEYS } from '@udecode/plate';
 import { createPlateEditor } from '@udecode/plate/react';
 import { 
   AudioElement, 
@@ -188,13 +188,6 @@ const editor = createPlateEditor({
       options: { disableEmptyPlaceholder: true },
       render: { afterEditable: MediaUploadToast, node: PlaceholderElement },
     }),
-    SelectOnBackspacePlugin.configure({
-      options: {
-        query: {
-          allow: [KEYS.image, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
-        },
-      },
-    }),
   ],
 });
 ```
@@ -202,7 +195,6 @@ const editor = createPlateEditor({
 - `withComponent`: Assigns custom components to render each media type.
 - `options.disableEmptyPlaceholder`: Prevents showing placeholder when no file is uploading.
 - `render.afterEditable`: Renders upload progress toast outside the editor.
-- `SelectOnBackspacePlugin`: Enables selecting media elements when pressing backspace.
 
 ### Caption Support
 

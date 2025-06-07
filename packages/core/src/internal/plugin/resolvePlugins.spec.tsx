@@ -43,7 +43,7 @@ describe('resolvePlugins', () => {
       }),
     ];
 
-    resolvePlugins(editor, plugins);
+    resolvePlugins(editor, plugins as any);
 
     expect(editor.meta.pluginList.map((p) => p.key)).toContain('parent');
     expect(editor.meta.pluginList.map((p) => p.key)).toContain('child1');
@@ -145,7 +145,7 @@ describe('resolveAndSortPlugins', () => {
       }),
     ];
 
-    const result = resolveAndSortPlugins(editor, plugins);
+    const result = resolveAndSortPlugins(editor, plugins as any);
 
     expect(result.map((p) => p.key)).toEqual(['parent', 'child1', 'child2']);
   });
@@ -228,7 +228,7 @@ describe('resolveAndSortPlugins', () => {
       }),
     ];
 
-    const result = resolveAndSortPlugins(editor, plugins);
+    const result = resolveAndSortPlugins(editor, plugins as any);
 
     const childIndices = result.map((p) => p.key).slice(1); // Exclude 'parent'
     expect(childIndices).toEqual(['child2', 'child1']);

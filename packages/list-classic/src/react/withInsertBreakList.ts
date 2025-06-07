@@ -1,17 +1,12 @@
-import { BaseResetNodePlugin, KEYS } from '@udecode/plate';
-import {
-  type OverrideEditor,
-  getEditorPlugin,
-  onKeyDownResetNode,
-  SIMULATE_BACKSPACE,
-} from '@udecode/plate/react';
+import type { OverrideEditor } from '@udecode/plate/react';
+
+import { KEYS } from '@udecode/plate';
 
 import type { ListConfig } from '../lib/BaseListPlugin';
 
 import { getListItemEntry } from '../lib/queries/getListItemEntry';
 import { insertListItem } from '../lib/transforms/insertListItem';
 import { moveListItemUp } from '../lib/transforms/moveListItemUp';
-import { unwrapList } from '../lib/transforms/unwrapList';
 
 export const withInsertBreakList: OverrideEditor<ListConfig> = ({
   editor,
@@ -40,28 +35,15 @@ export const withInsertBreakList: OverrideEditor<ListConfig> = ({
           }
         }
 
-        const didReset = onKeyDownResetNode({
-          ...getEditorPlugin(
-            editor,
-            BaseResetNodePlugin.configure({
-              options: {
-                rules: [
-                  {
-                    defaultType: editor.getType(KEYS.p),
-                    types: [editor.getType(KEYS.li)],
-                    predicate: () =>
-                      !moved &&
-                      editor.api.isEmpty(editor.selection, { block: true }),
-                    onReset: (editor) => unwrapList(editor),
-                  },
-                ],
-              },
-            })
-          ),
-          event: SIMULATE_BACKSPACE,
-        } as any);
+        const block = editor.api.block({
+          match: { type: editor.getType(KEYS.li) },
+        });
+        if (block && editor.api.isEmpty(editor.selection, { block: true })) {
+          const didReset = editor.tf.resetBlock({ at: block[1] });
 
-        if (didReset) return true;
+          if (didReset) return true;
+        }
+
         /** If selection is in li > p, insert li. */
         if (!moved) {
           const inserted = insertListItem(editor);

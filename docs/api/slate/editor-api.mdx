@@ -1669,25 +1669,6 @@ Manually control the editor's normalizing state.
 </APIOptions>
 </API>
 
-### `shouldMergeNodesRemovePrevNode`
-
-Determines whether to remove the previous node when merging nodes.
-
-<API name="shouldMergeNodesRemovePrevNode">
-<APIParameters>
-  <APIItem name="prevNodeEntry" type="NodeEntry">
-    A tuple containing the previous node and its path.
-  </APIItem>
-  <APIItem name="curNodeEntry" type="NodeEntry">
-    A tuple containing the current node and its path.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="boolean">
-  True if the previous node should be removed during merge, false if it should be kept.
-</APIReturns>
-</API>
-
 ### `shouldNormalize`
 
 Controls whether the editor should normalize after an operation. Override this method to prevent normalizing in certain situations.

@@ -4,3 +4,5 @@
 
 export * from './OverridePlugin';
 export * from './withBreakMode';
+export * from './withDeleteMode';
+export * from './withMergeMode';

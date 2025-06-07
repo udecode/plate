@@ -4,7 +4,17 @@ import { insertCallout } from './transforms';
 
 export const BaseCalloutPlugin = createSlatePlugin({
   key: KEYS.callout,
-  node: { isElement: true },
+  node: {
+    breakMode: {
+      default: 'lineBreak',
+      empty: 'reset',
+      emptyLineEnd: 'deleteExit',
+    },
+    deleteMode: {
+      start: 'reset',
+    },
+    isElement: true,
+  },
 }).extendEditorTransforms(({ editor }) => ({
   insert: { callout: bindFirst(insertCallout, editor) },
 }));

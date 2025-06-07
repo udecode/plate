@@ -20,6 +20,7 @@ export type TrailingBlockConfig = PluginConfig<
 /** @see {@link withTrailingBlock} */
 export const TrailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
   key: 'trailingBlock',
+  editOnly: true,
   options: {
     level: 0,
   },

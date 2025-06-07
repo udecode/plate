@@ -3,5 +3,4 @@
  */
 
 export * from './ListPlugin';
-export * from './onKeyDownList';
 export * from './hooks/index';

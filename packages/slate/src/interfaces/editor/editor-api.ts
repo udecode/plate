@@ -107,13 +107,13 @@ export type EditorApi<V extends Value = Value> = {
    * this incorrectly can leave the editor in an invalid state.
    */
   setNormalizing: (isNormalizing: boolean) => void;
-  /**
-   * Call a function, Determine whether or not remove the previous node when
-   * merge.
-   */
-  shouldMergeNodesRemovePrevNode: (
+  /** Whether nodes should be merged. */
+  shouldMergeNodes: (
     prevNodeEntry: NodeEntry,
-    curNodeEntry: NodeEntry
+    curNodeEntry: NodeEntry,
+    options?: {
+      reverse?: boolean;
+    }
   ) => boolean;
   /** Override this method to prevent normalizing the editor. */
   shouldNormalize: (options: {

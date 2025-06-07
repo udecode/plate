@@ -260,26 +260,9 @@ export const pluginsNavItems: SidebarNavItem[] = [
             title: 'Forced Layout',
           },
           {
-            description: 'Reset the block type using rules.',
-            href: '/docs/reset-node',
-            title: 'Reset Node',
-          },
-          {
-            description:
-              'Customize selection and deletion behavior for specific node types.',
-            href: '/docs/select',
-            title: 'Select',
-          },
-          {
             description: 'Restrict the editor to a single block.',
-            href: '/docs/single-line',
-            title: 'Single Line',
-          },
-          {
-            description:
-              'Insert line breaks within a block of text without starting a new block.',
-            href: '/docs/soft-break',
-            title: 'Soft Break',
+            href: '/docs/single-block',
+            title: 'Single Block',
           },
           {
             description:

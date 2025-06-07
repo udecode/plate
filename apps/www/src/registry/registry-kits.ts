@@ -530,17 +530,6 @@ export const registryKits: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'components/editor/plugins/delete-kit.tsx',
-        type: 'registry:component',
-      },
-    ],
-    name: 'delete-kit',
-    type: 'registry:component',
-  },
-  {
-    dependencies: [],
-    files: [
-      {
         path: 'components/editor/plugins/discussion-kit.tsx',
         type: 'registry:component',
       },
@@ -629,11 +618,7 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'editing-kit',
-    registryDependencies: [
-      'delete-kit',
-      'exit-break-kit',
-      'reset-block-type-kit',
-    ],
+    registryDependencies: ['exit-break-kit'],
     type: 'registry:component',
   },
   {
@@ -860,17 +845,6 @@ export const registryKits: Registry['items'] = [
     ],
     name: 'mention-kit',
     registryDependencies: ['mention-base-kit', 'mention-node'],
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['@udecode/plate-code-block'],
-    files: [
-      {
-        path: 'components/editor/plugins/reset-block-type-kit.tsx',
-        type: 'registry:component',
-      },
-    ],
-    name: 'reset-block-type-kit',
     type: 'registry:component',
   },
   {

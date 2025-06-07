@@ -3,10 +3,7 @@
  */
 
 export * from './ExitBreakPlugin';
-export * from './delete/index';
 export * from './normalize-types/index';
 export * from './remove-empty-nodes/index';
-export * from './reset-node/index';
-export * from './select-on-backspace/index';
-export * from './single-line/index';
+export * from './single-block/index';
 export * from './trailing-block/index';

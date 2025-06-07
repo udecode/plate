@@ -112,6 +112,11 @@ export const guidesNavItems: SidebarNavItem[] = [
         href: '/docs/plugin-components',
         title: 'Plugin Components',
       },
+      {
+        href: '/docs/plugin-modes',
+        label: 'New',
+        title: 'Plugin Modes',
+      },
     ],
     title: 'Plugin',
   },

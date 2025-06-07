@@ -6,7 +6,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/exit-break-kit.tsx",
-      "content": "'use client';\n\nimport { KEYS } from '@udecode/plate';\nimport { ExitBreakPlugin } from '@udecode/plate/react';\n\nexport const ExitBreakKit = [\n  ExitBreakPlugin.configure({\n    options: {\n      rules: [\n        {\n          hotkey: 'mod+enter',\n        },\n        {\n          before: true,\n          hotkey: 'mod+shift+enter',\n        },\n        {\n          hotkey: 'enter',\n          level: 1,\n          query: {\n            allow: KEYS.heading,\n            end: true,\n            start: true,\n          },\n          relative: true,\n        },\n      ],\n    },\n  }),\n];\n",
+      "content": "'use client';\n\nimport { ExitBreakPlugin } from '@udecode/plate';\n\nexport const ExitBreakKit = [\n  ExitBreakPlugin.configure({\n    shortcuts: {\n      insert: { keys: 'mod+enter' },\n      insertBefore: { keys: 'mod+shift+enter' },\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

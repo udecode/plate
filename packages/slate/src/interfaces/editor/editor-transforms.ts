@@ -438,11 +438,8 @@ export type LiftNodesOptions<V extends Value = Value> = QueryOptions<V> &
 
 export type MergeNodesOptions<V extends Value, E extends Editor = Editor> = {
   hanging?: boolean;
-  /**
-   * Default: if the node isn't already the next sibling of the previous node,
-   * move it so that it is before merging.
-   */
-  mergeNode?: (editor: E, options: { at: Path; to: Path }) => void;
+  /** Whether it's merging node from `deleteForward`. */
+  reverse?: boolean;
   /**
    * Default: if there was going to be an empty ancestor of the node that was
    * merged, we remove it from the tree.

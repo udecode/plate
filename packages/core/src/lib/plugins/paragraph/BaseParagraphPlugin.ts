@@ -6,6 +6,7 @@ export const BaseParagraphPlugin = createSlatePlugin({
   key: 'p',
   node: {
     isElement: true,
+    mergeMode: { removeEmpty: true },
   },
   parsers: {
     html: {

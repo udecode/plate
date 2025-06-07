@@ -3,5 +3,3 @@
  */
 
 export * from './BlockPlaceholderPlugin';
-export * from './reset-node/index';
-export * from './single-line/index';

@@ -13,7 +13,10 @@ import { LengthPlugin } from './length';
 import { AffinityPlugin } from './affinity';
 import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
-import { SlateExtensionPlugin } from './slate-extension';
+import {
+  type SlateExtensionConfig,
+  SlateExtensionPlugin,
+} from './slate-extension';
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 
@@ -85,6 +88,9 @@ export const getCorePlugins = ({
 
   return corePlugins;
 };
+
+export type CorePluginTransforms = SlateExtensionConfig['transforms'];
+export type CorePluginApi = SlateExtensionConfig['api'];
 
 export type DebugConfig = PluginConfig<
   'debug',

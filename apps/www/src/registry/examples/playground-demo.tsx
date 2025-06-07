@@ -31,8 +31,6 @@ export default function PlaygroundDemo({
           [KEYS.list]: id !== 'listClassic',
           [KEYS.listClassic]: id === 'listClassic',
           [KEYS.playwright]: process.env.NODE_ENV !== 'production',
-          [KEYS.singleLine]: id === 'single-line',
-          [KEYS.trailingBlock]: id !== 'single-line',
         },
       },
       plugins: [
