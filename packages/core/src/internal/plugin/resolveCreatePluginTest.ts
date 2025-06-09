@@ -15,7 +15,7 @@ export const resolvePluginTest = <P extends AnyPluginConfig>(p: P) => {
     key = resolvePlugin(editor, p as any).key;
   }
 
-  return editor.plugins[key];
+  return editor.getPlugin({ key });
 };
 
 export const resolveCreatePluginTest = ((plugin: AnyPluginConfig) => {
@@ -31,5 +31,5 @@ export const resolveCreatePluginTest = ((plugin: AnyPluginConfig) => {
     key = resolvePlugin(editor, p as any).key;
   }
 
-  return editor.plugins[key];
+  return editor.getPlugin({ key });
 }) as typeof createSlatePlugin;

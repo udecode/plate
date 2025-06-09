@@ -38,16 +38,12 @@ export const resolvePlugins = (
       nodeProps: [],
     },
     node: {
-      clearOnEdge: [],
-      isAffinity: [],
       isContainer: [],
       isElement: [],
-      isHardEdge: [],
       isInline: [],
       isLeaf: [],
       isMarkableVoid: [],
       isNotSelectable: [],
-      isSplittable: [],
       isStrictSiblings: [],
       isVoid: [],
       matchRules: [],
@@ -102,24 +98,12 @@ export const resolvePlugins = (
       editor.meta.components[plugin.key] = plugin.render.node;
     }
 
-    if (plugin.node?.isHardEdge) {
-      editor.meta.pluginCache.node.isHardEdge.push(plugin.key);
-    }
-
     if (plugin.node?.isLeaf) {
       editor.meta.pluginCache.node.isLeaf.push(plugin.key);
     }
 
-    if (plugin.node?.isAffinity) {
-      editor.meta.pluginCache.node.isAffinity.push(plugin.key);
-    }
-
     if (plugin.node?.isElement) {
       editor.meta.pluginCache.node.isElement.push(plugin.key);
-    }
-
-    if (plugin.node?.clearOnEdge && plugin.node.isLeaf) {
-      editor.meta.pluginCache.node.clearOnEdge.push(plugin.key);
     }
 
     if (plugin.node?.isInline) {
@@ -132,10 +116,6 @@ export const resolvePlugins = (
 
     if (plugin.node?.isMarkableVoid) {
       editor.meta.pluginCache.node.isMarkableVoid.push(plugin.key);
-    }
-
-    if (plugin.node?.isSplittable) {
-      editor.meta.pluginCache.node.isSplittable.push(plugin.key);
     }
 
     if (plugin.node?.isStrictSiblings) {

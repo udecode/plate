@@ -11,6 +11,7 @@ import { KEYS } from '../plate-keys';
  */
 export const ExitBreakPlugin = createSlatePlugin({
   key: KEYS.exitBreak,
+  editOnly: true,
 }).extendTransforms(({ editor }) => ({
   insert: (options: Omit<InsertExitBreakOptions, 'reverse'>) =>
     editor.tf.insertExitBreak(options),

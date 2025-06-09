@@ -15,7 +15,7 @@ export const pipeInjectNodeProps = (
   readOnly = false
 ) => {
   editor.meta.pluginCache.inject.nodeProps.forEach((key) => {
-    const plugin = editor.plugins[key];
+    const plugin = editor.getPlugin({ key });
 
     const newAttributes = pluginInjectNodeProps(
       editor,

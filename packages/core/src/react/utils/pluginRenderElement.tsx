@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
-import type { AnyEditorPlatePlugin, PlatePlugin } from '../plugin/PlatePlugin';
+import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { type PlateElementProps, PlateElement } from '../components';
@@ -85,7 +85,7 @@ export function BelowRootNodes(props: any) {
   return (
     <>
       {editor.meta.pluginCache.render.belowRootNodes.map((key) => {
-        const plugin = editor.plugins[key] as PlatePlugin;
+        const plugin = editor.getPlugin({ key });
 
         if (isEditOnly(readOnly, plugin, 'render')) return null;
 

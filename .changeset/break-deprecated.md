@@ -13,8 +13,7 @@
   - Migration:
 
     - Remove `@udecode/plate-break` from your dependencies.
-    - Ensure `@platejs/utils` (or `platejs`) is a dependency.
-    - Update import paths to use `@platejs/utils` (e.g., `import { ExitBreakPlugin } from '@platejs/utils/react';`).
+    - Replace `@udecode/plate-break` import with `platejs`.
     - **Important**: If not using Plate plugins, you must set `isStrictSiblings: true` on your custom node plugins that can't have paragraph siblings for exit break to work correctly.
     - Replace complex rule-based configuration with simple shortcuts:
 

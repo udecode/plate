@@ -1,7 +1,6 @@
 import type { createLowlight } from 'lowlight';
 
 import {
-  type NodeEntry,
   type PluginConfig,
   type TCodeBlockElement,
   type TElement,
@@ -14,10 +13,8 @@ import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBl
 import { isCodeBlockEmpty } from './queries';
 import {
   CODE_LINE_TO_DECORATIONS,
-  resetCodeBlockDecorations,
   setCodeBlockToDecorations as setCodeBlockToDecorations,
 } from './setCodeBlockToDecorations';
-import { unwrapCodeBlock } from './transforms';
 import { withCodeBlock } from './withCodeBlock';
 
 export type CodeBlockConfig = PluginConfig<
@@ -99,53 +96,9 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
     return [];
   },
 })
-  .overrideEditor(
-    ({
-      editor,
-      getOptions,
-      tf: { apply, normalizeNode, resetBlock },
-      type,
-    }) => ({
-      transforms: {
-        apply(operation) {
-          if (getOptions().lowlight && operation.type === 'set_node') {
-            const entry = editor.api.node(operation.path);
-
-            if (entry?.[0].type === type && operation.newProperties?.lang) {
-              // Clear decorations for all code lines in this block
-              resetCodeBlockDecorations(entry[0] as TCodeBlockElement);
-            }
-          }
-
-          apply(operation);
-        },
-        normalizeNode(entry, options) {
-          const [node] = entry;
-
-          // Decorate is called on selection change as well, so we prefer to only run this on code block changes.
-          if (getOptions().lowlight && node.type === type) {
-            setCodeBlockToDecorations(
-              editor,
-              entry as NodeEntry<TCodeBlockElement>
-            );
-          }
-
-          normalizeNode(entry, options);
-        },
-        resetBlock(options) {
-          if (
-            editor.api.block({
-              at: options?.at,
-              match: { type: editor.getType(KEYS.codeBlock) },
-            })
-          ) {
-            unwrapCodeBlock(editor);
-            return;
-          }
-
-          return resetBlock(options);
-        },
-      },
-    })
-  )
-  .overrideEditor(withCodeBlock);
+  .overrideEditor(withCodeBlock)
+  .extendTransforms(({ editor }) => ({
+    toggle: () => {
+      editor.tf.toggleBlock(editor.getType(KEYS.codeBlock));
+    },
+  }));

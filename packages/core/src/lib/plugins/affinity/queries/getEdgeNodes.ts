@@ -10,9 +10,11 @@ import { type NodeEntry, Path } from 'slate';
 import type { SlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
 
+import { getPluginByType } from '../../../plugin/getSlatePlugin';
+
 /**
- * When the cursor is at a mark edge, this function returns the current node and
- * the sibling node (if any). If the cursor is at the start of the text, then
+ * When the cursor is at a mark edge, this function returns the inward node and
+ * the outward node (if any). If the cursor is at the start of the text, then
  * the node before the text is returned. If the cursor is at the end of the
  * text, then the node after the text is returned. Otherwise, null is returned.
  */
@@ -36,22 +38,15 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
   const parent: TElement | null = (NodeApi.parent(editor, cursor.path) ??
     null) as TElement | null;
 
-  /** Link */
+  /** Inline elements */
 
   const isAffinityInlineElement = (() => {
-    if (!parent) return false;
+    if (!parent || !ElementApi.isElement(parent)) return false;
 
-    const parentIsHardEdge = editor.meta.pluginCache.node.isHardEdge.some(
-      (key) => editor.getType(key) === parent.type
-    );
+    const parentAffinity = getPluginByType(editor, parent.type)?.node
+      .selectionRules?.affinity;
 
-    const parentIsAffinity = editor.meta.pluginCache.node.isAffinity.some(
-      (key) => editor.getType(key) === parent.type
-    );
-
-    return (
-      (parentIsHardEdge || parentIsAffinity) && ElementApi.isElement(parent)
-    );
+    return parentAffinity === 'hard' || parentAffinity === 'directional';
   })();
 
   const nodeEntry: NodeEntry<TElement | TText> = isAffinityInlineElement

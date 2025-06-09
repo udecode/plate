@@ -1,9 +1,10 @@
 /** @jsx jsxt */
 
 import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
+import { BaseTablePlugin } from '@udecode/plate-table';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { createSlateEditor } from '../../editor';
+import { type SlateEditor, createSlateEditor } from '../../editor';
 import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 
 jsxt;
@@ -239,8 +240,8 @@ describe('withMergeRules', () => {
       expect(editor.selection).toEqual(output.selection);
     });
 
-    describe('matchRules override behavior (reverse)', () => {
-      it('should use matchRules override to prevent removal', () => {
+    describe('deleteForward empty -> codeblock', () => {
+      it('should merge', () => {
         const input = (
           <editor>
             <hp>
@@ -254,12 +255,10 @@ describe('withMergeRules', () => {
 
         const output = (
           <editor>
-            <hcodeblock>
-              <hcodeline>
-                <cursor />
-                content
-              </hcodeline>
-            </hcodeblock>
+            <hp>
+              <cursor />
+              content
+            </hp>
           </editor>
         ) as any;
 
@@ -327,6 +326,282 @@ describe('withMergeRules', () => {
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('table', () => {
+    // https://github.com/udecode/editor-protocol/issues/22
+    describe('Delete backward after a table', () => {
+      it('should select the last cell', () => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+            </htable>
+            <hp>
+              <cursor />a
+            </hp>
+          </editor>
+        ) as any as SlateEditor;
+
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    12
+                    <cursor />a
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
+
+        const editor = createSlateEditor({
+          nodeId: true,
+          plugins: [BaseTablePlugin],
+          selection: input.selection,
+          value: input.children,
+        });
+
+        editor.tf.deleteBackward();
+
+        expect(editor.children).toMatchObject(output.children);
+        expect(editor.selection).toEqual(output.selection);
+      });
+    });
+
+    describe('Delete backward after empty cell', () => {
+      it('should select the last cell', () => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+            <hp>
+              <cursor />a
+            </hp>
+          </editor>
+        ) as any as SlateEditor;
+
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    <cursor />a
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
+
+        const editor = createSlateEditor({
+          nodeId: true,
+          plugins: [BaseTablePlugin],
+          selection: input.selection,
+          value: input.children,
+        });
+
+        editor.tf.deleteBackward();
+
+        expect(editor.children).toMatchObject(output.children);
+        expect(editor.selection).toEqual(output.selection);
+      });
+    });
+
+    // https://github.com/udecode/editor-protocol/issues/23
+    describe('Delete forward before a table', () => {
+      it('should select its first cell', () => {
+        const input = (
+          <editor>
+            <hp>
+              a
+              <cursor />
+            </hp>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
+
+        const output = (
+          <editor>
+            <hp>
+              a<cursor />
+              11
+            </hp>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
+
+        const editor = createSlateEditor({
+          nodeId: true,
+          plugins: [BaseTablePlugin],
+          selection: input.selection,
+          value: input.children,
+        });
+
+        editor.tf.deleteForward();
+
+        expect(editor.children).toMatchObject(output.children);
+        expect(editor.selection).toEqual(output.selection);
+      });
+    });
+
+    describe('Delete forward from end of last cell', () => {
+      it('should merge with next element', () => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    12
+                    <cursor />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+            <hp>next content</hp>
+          </editor>
+        ) as any as SlateEditor;
+
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    12
+                    <cursor />
+                    next content
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
+
+        const editor = createSlateEditor({
+          nodeId: true,
+          plugins: [BaseTablePlugin],
+          selection: input.selection,
+          value: input.children,
+        });
+
+        editor.tf.deleteForward();
+
+        expect(editor.children).toMatchObject(output.children);
+        expect(editor.selection).toEqual(output.selection);
+      });
+    });
+
+    describe('Delete backward from start of first cell', () => {
+      it('should merge with previous element', () => {
+        const input = (
+          <editor>
+            <hp>previous content</hp>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <cursor />
+                    11
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
+
+        const output = (
+          <editor>
+            <hp>
+              previous content
+              <cursor />
+              11
+            </hp>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as any as SlateEditor;
+
+        const editor = createSlateEditor({
+          nodeId: true,
+          plugins: [BaseTablePlugin],
+          selection: input.selection,
+          value: input.children,
+        });
+
+        editor.tf.deleteBackward();
+
+        expect(editor.children).toMatchObject(output.children);
+        expect(editor.selection).toEqual(output.selection);
+      });
     });
   });
 });

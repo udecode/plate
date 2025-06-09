@@ -2,10 +2,10 @@
 
 import { type SlateEditor, createSlateEditor } from '@udecode/plate';
 import { KEYS } from '@udecode/plate';
-import { ImagePlugin } from '@udecode/plate-media/react';
+import { BaseImagePlugin } from '@udecode/plate-media';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { ListPlugin } from '../../react';
+import { BaseListPlugin } from '../BaseListPlugin';
 import { toggleList } from './toggleList';
 
 jsxt;
@@ -31,7 +31,7 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -68,9 +68,9 @@ describe('toggle on', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        ListPlugin.configure({
+        BaseListPlugin.configure({
           options: {
-            validLiChildrenTypes: [ImagePlugin.key],
+            validLiChildrenTypes: [BaseImagePlugin.key],
           },
         }),
       ],
@@ -111,7 +111,7 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -153,7 +153,7 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -208,9 +208,9 @@ describe('toggle on', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        ListPlugin.configure({
+        BaseListPlugin.configure({
           options: {
-            validLiChildrenTypes: [ImagePlugin.key],
+            validLiChildrenTypes: [BaseImagePlugin.key],
           },
         }),
       ],
@@ -269,7 +269,7 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -325,7 +325,7 @@ describe('toggle on', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -376,7 +376,7 @@ describe('toggle off', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -435,7 +435,7 @@ describe('toggle off', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -477,7 +477,7 @@ describe('toggle off', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -536,9 +536,9 @@ describe('toggle off', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        ListPlugin.configure({
+        BaseListPlugin.configure({
           options: {
-            validLiChildrenTypes: [ImagePlugin.key],
+            validLiChildrenTypes: [BaseImagePlugin.key],
           },
         }),
       ],
@@ -579,7 +579,7 @@ describe('toggle over', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -624,7 +624,7 @@ describe('toggle over', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -671,7 +671,7 @@ describe('toggle over', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -722,7 +722,7 @@ describe('toggle over', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });

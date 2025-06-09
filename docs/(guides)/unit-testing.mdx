@@ -274,7 +274,7 @@ describe('when undo is enabled', () => {
     }) as any;
 
     // Call the handler
-    editor.plugins[KEYS.autoformat].handlers.onKeyDown({
+    editor.getPlugin({key: KEYS.autoformat}).handlers.onKeyDown({
       ...getEditorPlugin(editor, AutoformatPlugin),
       event,
     });

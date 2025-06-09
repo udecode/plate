@@ -99,6 +99,7 @@ const editor = createPlateEditor({
     CodeBlockPlugin.configure({
       node: { component: CodeBlockElement },
       options: { lowlight },
+      shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
     CodeLinePlugin.withComponent(CodeLineElement),
     CodeSyntaxPlugin.withComponent(CodeSyntaxLeaf),
@@ -135,6 +136,7 @@ const editor = createPlateEditor({
         lowlight,
         defaultLanguage: 'js', // Set default language (optional)
       },
+      shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
     CodeLinePlugin.withComponent(CodeLineElement),
     CodeSyntaxPlugin.withComponent(CodeSyntaxLeaf),
@@ -145,6 +147,7 @@ const editor = createPlateEditor({
 - `node.component`: Assigns [`CodeBlockElement`](/docs/components/code-block-node) to render code block containers.
 - `options.lowlight`: Lowlight instance for syntax highlighting.
 - `options.defaultLanguage`: Default language when no language is specified.
+- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code blocks.
 - `withComponent`: Assigns components for code lines and syntax highlighting.
 
 </Steps>

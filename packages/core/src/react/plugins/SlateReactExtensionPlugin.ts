@@ -1,6 +1,6 @@
 import { isDefined } from '@udecode/utils';
 
-import { SlateExtensionPlugin } from '../../lib';
+import { Hotkeys, SlateExtensionPlugin } from '../../lib';
 import { toPlatePlugin } from '../plugin';
 
 export const SlateReactExtensionPlugin = toPlatePlugin(SlateExtensionPlugin, {
@@ -10,6 +10,29 @@ export const SlateReactExtensionPlugin = toPlatePlugin(SlateExtensionPlugin, {
       // https://reactjs.org/docs/legacy-event-pooling.html
       event.persist();
       editor.dom.currentKeyboardEvent = event;
+
+      if (Hotkeys.isMoveUpward(event)) {
+        if (editor.tf.moveLine({ reverse: true })) {
+          event.preventDefault();
+        }
+      } else if (Hotkeys.isMoveDownward(event)) {
+        if (editor.tf.moveLine({ reverse: false })) {
+          event.preventDefault();
+        }
+      } else if (
+        Hotkeys.isTab(editor, event) ||
+        Hotkeys.isUntab(editor, event)
+      ) {
+        if (editor.tf.tab({ reverse: Hotkeys.isUntab(editor, event) })) {
+          event.preventDefault();
+        }
+      } else if (Hotkeys.isSelectAll(event)) {
+        if (editor.tf.selectAll()) {
+          event.preventDefault();
+        }
+      } else if (Hotkeys.isEscape(event) && editor.tf.escape()) {
+        event.preventDefault();
+      }
     },
   },
 })
@@ -20,6 +43,17 @@ export const SlateReactExtensionPlugin = toPlatePlugin(SlateExtensionPlugin, {
           `This may cause unexpected behavior. Please ensure that all required editor methods are properly defined.`,
         'OVERRIDE_MISSING'
       );
+    },
+  }))
+  .extendEditorTransforms(({ editor, tf: { reset } }) => ({
+    reset(options) {
+      const isFocused = editor.api.isFocused();
+
+      reset(options);
+
+      if (isFocused) {
+        editor.tf.focus({ edge: 'startEditor' });
+      }
     },
   }))
   .overrideEditor(({ editor, tf: { normalizeNode } }) => ({

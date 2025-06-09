@@ -7,13 +7,13 @@ import {
 } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { ListPlugin } from '../react';
+import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
   const editor = createSlateEditor({
-    plugins: [ListPlugin],
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });

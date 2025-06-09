@@ -7,9 +7,9 @@ import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autofo
 import type { AutoformatBlockRule } from '../../../types';
 
 import {
-  BaseAutoformatPlugin,
+  AutoformatPlugin,
   type AutoformatConfig,
-} from '../../../BaseAutoformatPlugin';
+} from '../../../AutoformatPlugin';
 
 jsxt;
 
@@ -176,7 +176,7 @@ describe('when +space', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        BaseAutoformatPlugin.configure({
+        AutoformatPlugin.configure({
           options: autoformatPluginWitoutTogglePreformat,
         }),
       ],

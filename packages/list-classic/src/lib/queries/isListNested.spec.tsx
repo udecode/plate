@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
 import { createEditor } from '@udecode/plate';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
 
 import { isListNested } from './isListNested';
 
@@ -33,7 +33,7 @@ describe('when the list is nested', () => {
   );
 
   it('should be', () => {
-    const editor = createPlateEditor({ editor: input });
+    const editor = createSlateEditor({ editor: input });
 
     const list = editor.api.node({ id: '21' });
 
@@ -55,7 +55,7 @@ describe('when the list is not nested', () => {
   );
 
   it('should be', () => {
-    const editor = createPlateEditor({ editor: input });
+    const editor = createSlateEditor({ editor: input });
 
     const list = editor.api.node({ id: '1' });
 

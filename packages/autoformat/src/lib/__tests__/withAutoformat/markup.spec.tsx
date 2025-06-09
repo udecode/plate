@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-basic-nodes/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
+import { AutoformatPlugin } from '../../AutoformatPlugin';
 
 jsxt;
 
@@ -35,7 +35,7 @@ describe('when match is an array', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        BaseAutoformatPlugin.configure({
+        AutoformatPlugin.configure({
           options: {
             rules: [
               {
@@ -80,7 +80,7 @@ describe('when match is a string', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        BaseAutoformatPlugin.configure({
+        AutoformatPlugin.configure({
           options: {
             rules: [
               {

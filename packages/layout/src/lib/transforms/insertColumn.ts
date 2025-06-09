@@ -13,7 +13,7 @@ export const insertColumn = (
   editor.tf.insertNodes<TColumnElement>(
     {
       children: [editor.api.create.block()],
-      type: KEYS.column,
+      type: editor.getType(KEYS.column) as any,
       width,
     },
     options as any

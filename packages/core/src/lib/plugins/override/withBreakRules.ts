@@ -1,3 +1,5 @@
+import { PathApi } from '@udecode/slate';
+
 import type { OverrideEditor } from '../../plugin';
 import type { BreakRules } from '../../plugin/BasePlugin';
 
@@ -109,16 +111,35 @@ export const withBreakRules: OverrideEditor = (ctx) => {
             }
 
             // Handle 'default' scenario (or fallthrough from 'empty: default' or 'emptyLineEnd: default')
-            const overrideBreakRules = checkMatchRulesOverride(
+            const overrideDefaultBreakRules = checkMatchRulesOverride(
               'break.default',
               blockNode,
               blockPath
             );
-            const effectiveBreakRules = overrideBreakRules || breakRules;
-            const defaultAction = effectiveBreakRules?.default;
+            const defaultAction = (overrideDefaultBreakRules || breakRules)
+              ?.default;
 
             if (executeBreakAction(defaultAction, blockPath)) return;
-            // if 'default', fall through to standard Slate insertBreak
+
+            const overrideSplitResetBreakRules = checkMatchRulesOverride(
+              'break.splitReset',
+              blockNode,
+              blockPath
+            );
+            const splitReset =
+              overrideSplitResetBreakRules?.splitReset ??
+              breakRules?.splitReset;
+
+            if (splitReset) {
+              const isAtStart = editor.api.isAt({ start: true });
+
+              insertBreak();
+
+              editor.tf.resetBlock({
+                at: isAtStart ? blockPath : PathApi.next(blockPath),
+              });
+              return;
+            }
           }
         }
 

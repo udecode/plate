@@ -4,6 +4,8 @@ import { getInjectMatch } from '@udecode/plate';
 
 import type { IndentConfig } from './BaseIndentPlugin';
 
+import { indent, outdent } from './transforms/index';
+
 /**
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
@@ -12,7 +14,7 @@ export const withIndent: OverrideEditor<IndentConfig> = ({
   editor,
   getOptions,
   plugin,
-  tf: { normalizeNode },
+  tf: { normalizeNode, tab },
 }) => {
   return {
     transforms: {
@@ -39,6 +41,30 @@ export const withIndent: OverrideEditor<IndentConfig> = ({
         }
 
         return normalizeNode([node, path]);
+      },
+      tab: (options) => {
+        const apply = () => {
+          const match = getInjectMatch(editor, plugin);
+          const entry = editor.api.block();
+
+          if (!entry) return;
+
+          const [element, path] = entry;
+
+          if (!match(element, path)) return;
+
+          if (options.reverse) {
+            outdent(editor);
+          } else {
+            indent(editor);
+          }
+
+          return true;
+        };
+
+        if (apply()) return true;
+
+        return tab(options);
       },
     },
   };

@@ -2,10 +2,10 @@
 
 import type { SlateEditor } from '@udecode/plate';
 
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
 
-import { ListPlugin } from '../react';
+import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
 
@@ -34,8 +34,8 @@ describe('p (empty) + list when selection not in list', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [ListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -68,8 +68,8 @@ describe('p /w text + list when selection not in list', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [ListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -108,8 +108,8 @@ describe('p /w text + list when selection not in list', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [ListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -164,8 +164,8 @@ describe('p /w text + list when selection not in list', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [ListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -221,8 +221,8 @@ describe('list + list when selection is at the end of the first list', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [ListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -270,8 +270,8 @@ describe('list where second item has multiple children', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [ListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -331,8 +331,8 @@ describe('list + sublist where second item has multiple children', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [ListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });

@@ -337,6 +337,10 @@ export const createEditor = <V extends Value>({
     withNewBatch: bindFirst(HistoryApi.withNewBatch, editor as any),
     withoutMerging: bindFirst(HistoryApi.withoutMerging, editor as any),
     withoutSaving: bindFirst(HistoryApi.withoutSaving, editor as any),
+    escape: () => false,
+    moveLine: () => false,
+    selectAll: () => false,
+    tab: () => false,
   };
 
   editor.api = api as any;

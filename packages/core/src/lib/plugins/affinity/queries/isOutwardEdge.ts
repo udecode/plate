@@ -5,12 +5,12 @@ import type { SlateEditor } from '../../../editor';
 /**
  * Whether the cursor is at the outside edge of a node.
  *
- * - At the end of a node: <node>text</node><cursor/> returns true
- * - At the start of a node: <cursor/><node>text</node> returns true
+ * - Outward end: <node>text</node><cursor/> returns true
+ * - Outward start: <cursor/><node>text</node> returns true
  *
  * The cursor is inside a node: <node>te<cursor/>xt</node> returns false
  */
-export const isOuterEdge = (
+export const isOutwardEdge = (
   editor: SlateEditor,
   { affinity, at }: { affinity: 'backward' | 'forward'; at: Path }
 ) => {

@@ -6,6 +6,7 @@ import type { PlateEditor } from '../editor/PlateEditor';
 
 import { PlateElement } from '../components';
 import { useNodePath } from '../hooks';
+import { getPlugin } from '../plugin';
 import { useReadOnly } from '../slate-react';
 import { ElementProvider } from '../stores';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -26,7 +27,7 @@ export const pipeRenderElement = (
     editor.meta.pluginCache.node.isElement.some((key) => {
       element = pluginRenderElement(
         editor,
-        editor.plugins[key]
+        getPlugin(editor, { key })
       )({
         ...props,
         path,

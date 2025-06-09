@@ -12,6 +12,7 @@ import {
   toggleList,
   toggleNumberedList,
 } from './transforms';
+import { withList } from './withList';
 
 export type ListConfig = PluginConfig<
   'listClassic',
@@ -90,18 +91,18 @@ export const BaseListItemContentPlugin = createSlatePlugin({
 /** Enables support for bulleted, numbered and to-do lists. */
 export const BaseListPlugin = createTSlatePlugin<ListConfig>({
   key: KEYS.listClassic,
-  // TODO react
-  // extendEditor: withList,
   plugins: [
     BaseBulletedListPlugin,
     BaseNumberedListPlugin,
     BaseListItemPlugin,
     BaseListItemContentPlugin,
   ],
-}).extendEditorTransforms(({ editor }) => ({
-  toggle: {
-    bulletedList: bindFirst(toggleBulletedList, editor),
-    list: bindFirst(toggleList, editor),
-    numberedList: bindFirst(toggleNumberedList, editor),
-  },
-}));
+})
+  .overrideEditor(withList)
+  .extendEditorTransforms(({ editor }) => ({
+    toggle: {
+      bulletedList: bindFirst(toggleBulletedList, editor),
+      list: bindFirst(toggleList, editor),
+      numberedList: bindFirst(toggleNumberedList, editor),
+    },
+  }));

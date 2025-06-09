@@ -38,13 +38,7 @@ export const mergeNodes = <E extends Editor>(
 
   editor.tf.withoutNormalizing(() => {
     let { at = editor.selection!, match } = options;
-    const {
-      hanging = false,
-      mode = 'lowest',
-      // !PATCH
-      removeEmptyAncestor,
-      voids = false,
-    } = options;
+    const { hanging = false, mode = 'lowest', voids = false } = options;
 
     if (!at) {
       return;
@@ -147,16 +141,16 @@ export const mergeNodes = <E extends Editor>(
     if (!isPreviousSibling) {
       editor.tf.moveNodes({ at: path, to: newPath, voids });
     }
+
     // If there was going to be an empty ancestor of the node that was merged,
     // we remove it from the tree.
     if (emptyRef) {
-      // !PATCH if
-      if (removeEmptyAncestor) {
-        const emptyPath = emptyRef.current;
-        emptyPath && removeEmptyAncestor(editor as any, { at: emptyPath });
-      } else {
-        editor.tf.removeNodes({ at: emptyRef.current!, voids });
-      }
+      // !PATCH: event to override removeNodes
+      editor.tf.removeNodes({
+        at: emptyRef.current!,
+        event: { type: 'mergeNodes' },
+        voids,
+      });
     }
 
     // !PATCH: moved up for early return

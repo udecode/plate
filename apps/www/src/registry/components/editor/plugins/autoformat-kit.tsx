@@ -11,7 +11,7 @@ import {
   autoformatPunctuation,
   autoformatSmartQuotes,
 } from '@udecode/plate-autoformat';
-import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
+import { AutoformatPlugin } from '@udecode/plate-autoformat';
 import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
 import { toggleList } from '@udecode/plate-list';
 

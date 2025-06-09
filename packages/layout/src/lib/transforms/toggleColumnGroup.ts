@@ -42,10 +42,10 @@ export const toggleColumnGroup = (
     const nodes = {
       children: new Array(columns).fill(null).map((_, index) => ({
         children: [index === 0 ? node : editor.api.create.block()],
-        type: KEYS.column,
+        type: editor.getType(KEYS.column) as any,
         width: columnWidths[index],
       })),
-      type: KEYS.columnGroup,
+      type: editor.getType(KEYS.columnGroup) as any,
     } as TElement;
 
     editor.tf.replaceNodes(nodes, {

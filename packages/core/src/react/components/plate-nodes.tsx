@@ -98,7 +98,7 @@ export const PlateElement = React.forwardRef(function PlateElement(
   );
 
   const inset =
-    insetProp || props.plugin?.node.isAffinity || props.plugin?.node.inset;
+    insetProp ?? props.plugin?.node.selectionRules?.affinity === 'directional';
 
   return (
     <>

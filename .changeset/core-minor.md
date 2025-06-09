@@ -25,3 +25,8 @@
   - When `true`, indicates that the element enforces strict sibling type constraints and only allows specific siblings (e.g., `td` can only have `td` siblings, `column` can only have `column` siblings).
   - Used by `editor.tf.insertExitBreak` functionality to determine appropriate exit points in nested structures.
 - Plugin shortcuts can now automatically leverage existing plugin transforms by specifying the transform name, in addition to custom handlers.
+- New editor transform methods for keyboard handling:
+  - `editor.tf.escape`: Handle Escape key events. Returns `true` if the event is handled.
+  - `editor.tf.moveLine`: Handle ArrowDown and ArrowUp key events with `reverse` option for direction. Returns `true` if the event is handled.
+  - `editor.tf.selectAll`: Handle Ctrl/Cmd+A key events for selecting all content. Returns `true` if the event is handled.
+  - `editor.tf.tab`: Handle Tab and Shift+Tab key events with `reverse` option for Shift+Tab. Returns `true` if the event is handled.

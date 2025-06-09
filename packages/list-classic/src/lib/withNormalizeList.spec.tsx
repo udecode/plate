@@ -3,13 +3,13 @@
 import { type SlateEditor, createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { ListPlugin } from '../react';
+import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
 
 const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
   const editor = createSlateEditor({
-    plugins: [ListPlugin],
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });

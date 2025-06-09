@@ -4,9 +4,12 @@
 
 export * from './BaseListPlugin';
 export * from './BaseTodoListPlugin';
+export * from './withDeleteBackwardList';
 export * from './withDeleteForwardList';
 export * from './withDeleteFragmentList';
+export * from './withInsertBreakList';
 export * from './withInsertFragmentList';
+export * from './withList';
 export * from './withNormalizeList';
 export * from './normalizers/index';
 export * from './queries/index';

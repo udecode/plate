@@ -3,7 +3,7 @@
 import { type SlateEditor, createSlateEditor, NodeApi } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { ListPlugin } from '../../react';
+import { BaseListPlugin } from '../BaseListPlugin';
 
 jsxt;
 
@@ -34,7 +34,7 @@ describe('clean up list items', () => {
     ) as any as SlateEditor;
 
     const editor = createSlateEditor({
-      plugins: [ListPlugin],
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });

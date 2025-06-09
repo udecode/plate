@@ -23,7 +23,7 @@ import { type CaptionConfig, BaseCaptionPlugin } from './BaseCaptionPlugin';
 export const withCaption: OverrideEditor<CaptionConfig> = ({
   editor,
   getOptions,
-  tf: { apply },
+  tf: { apply, moveLine },
 }) => {
   return {
     transforms: {
@@ -65,6 +65,28 @@ export const withCaption: OverrideEditor<CaptionConfig> = ({
         }
 
         apply(operation);
+      },
+      moveLine: (options) => {
+        const apply = () => {
+          // focus caption from image on down arrow
+          if (!options.reverse) {
+            const types = getPluginTypes(editor, getOptions().query.allow);
+
+            const entry = editor.api.block({
+              match: { type: types },
+            });
+
+            if (!entry) return;
+
+            editor.setOption(BaseCaptionPlugin, 'focusEndPath', entry[1]);
+
+            return true;
+          }
+        };
+
+        if (apply()) return true;
+
+        return moveLine(options);
       },
     },
   };

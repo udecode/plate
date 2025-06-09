@@ -3,5 +3,4 @@
  */
 
 export * from './IndentPlugin';
-export * from './onKeyDownIndent';
 export * from './hooks/index';

@@ -7,7 +7,7 @@ import {
   ExitBreakPlugin,
   TrailingBlockPlugin,
 } from '@udecode/plate';
-import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
+import { AutoformatPlugin } from '@udecode/plate-autoformat';
 import { DocxPlugin } from '@udecode/plate-docx';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
@@ -55,7 +55,7 @@ export default function RSCPage() {
       ...BaseEditorKit,
 
       // Functionality
-      BaseAutoformatPlugin,
+      AutoformatPlugin,
       ExitBreakPlugin,
       TrailingBlockPlugin,
       DocxPlugin,

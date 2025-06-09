@@ -1,12 +1,10 @@
-import type { OverrideEditor } from '@udecode/plate/react';
+import { type OverrideEditor, KEYS } from '@udecode/plate';
 
-import { KEYS } from '@udecode/plate';
+import type { ListConfig } from './BaseListPlugin';
 
-import type { ListConfig } from '../lib/BaseListPlugin';
-
-import { getListItemEntry } from '../lib/queries/getListItemEntry';
-import { insertListItem } from '../lib/transforms/insertListItem';
-import { moveListItemUp } from '../lib/transforms/moveListItemUp';
+import { getListItemEntry } from './queries/getListItemEntry';
+import { insertListItem } from './transforms/insertListItem';
+import { moveListItemUp } from './transforms/moveListItemUp';
 
 export const withInsertBreakList: OverrideEditor<ListConfig> = ({
   editor,

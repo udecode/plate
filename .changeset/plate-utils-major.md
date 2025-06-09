@@ -11,7 +11,7 @@
     // import { TImageElement } from '@udecode/plate-media';
 
     // After
-    import { TImageElement } from 'platejs'; // Or from '@platejs/utils' directly
+    import { TImageElement } from 'platejs';
     ```
 
 - Removed `structuralTypes` option from `useSelectionFragment` and `useSelectionFragmentProp`. These hooks now automatically use `plugin.node.isContainer` from enabled plugins.

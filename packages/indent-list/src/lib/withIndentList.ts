@@ -12,10 +12,7 @@ import {
   BaseIndentListPlugin,
   INDENT_LIST_KEYS,
 } from './BaseIndentListPlugin';
-import {
-  withDeleteBackwardIndentList,
-  withInsertBreakIndentList,
-} from './normalizers';
+import { withInsertBreakIndentList } from './normalizers';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 import { getNextIndentList } from './queries/getNextIndentList';
 import { getPreviousIndentList } from './queries/getPreviousIndentList';
@@ -32,7 +29,6 @@ export const withIndentList: OverrideEditor<BaseIndentListConfig> = (ctx) => {
   return {
     transforms: {
       ...withNormalizeIndentList(ctx).transforms,
-      ...withDeleteBackwardIndentList(ctx).transforms,
       ...withInsertBreakIndentList(ctx).transforms,
       apply(operation) {
         const { getSiblingIndentListOptions } = getOptions();

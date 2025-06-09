@@ -2,10 +2,10 @@
 
 import type { SlateEditor } from '@udecode/plate';
 
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
 
-import { ListPlugin } from '../../react';
+import { BaseListPlugin } from '../BaseListPlugin';
 import { unwrapList } from './unwrapList';
 
 jsxt;
@@ -41,8 +41,8 @@ describe('li list unwrapping', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [ListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -81,8 +81,8 @@ describe('li list unwrapping', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [ListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -124,8 +124,8 @@ describe('li list unwrapping', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [ListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -173,8 +173,8 @@ describe('li list unwrapping', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [ListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });

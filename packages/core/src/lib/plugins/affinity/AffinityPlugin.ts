@@ -1,16 +1,19 @@
-import { type Path, type TText, NodeApi, TextApi } from '@udecode/slate';
+import {
+  type Path,
+  type TText,
+  ElementApi,
+  NodeApi,
+  TextApi,
+} from '@udecode/slate';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';
+import type { EdgeNodes } from './types';
 
 import { createTSlatePlugin } from '../../plugin/createSlatePlugin';
-import { getPluginTypes } from '../../plugin/getSlatePlugin';
-import {
-  getEdgeNodes,
-  hasAffinity,
-  hasElement,
-  hasHardEdgeAtBoundary,
-} from './queries';
+import { getPluginByType } from '../../plugin/getSlatePlugin';
+import { getEdgeNodes } from './queries';
 import { getMarkBoundaryAffinity } from './queries/getMarkBoundaryAffinity';
+import { isNodesAffinity } from './queries/isNodeAffinity';
 import { setAffinitySelection } from './transforms/setAffinitySelection';
 
 export type ElementAffinity = {
@@ -48,7 +51,7 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
 
           if (
             edgeNodes &&
-            hasAffinity(editor, edgeNodes) &&
+            isNodesAffinity(editor, edgeNodes, 'directional') &&
             !hasElement(edgeNodes)
           ) {
             const affinity =
@@ -64,30 +67,26 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
       deleteBackward(unit);
     },
     insertText(text, options) {
-      const applyClearOnEdge = () => {
-        if (
-          editor.meta.pluginCache.node.clearOnEdge.length === 0 ||
-          !editor.selection ||
-          editor.api.isExpanded()
-        ) {
+      const applyOutwardAffinity = () => {
+        if (!editor.selection || editor.api.isExpanded()) {
           return;
         }
 
         const textPath = editor.selection.focus.path;
         const textNode = NodeApi.get<TText>(editor, textPath);
 
-        if (!textNode) {
+        if (!textNode || !editor.api.isEnd(editor.selection.focus, textPath)) {
           return;
         }
 
-        const clearOnEdgeMarks = getPluginTypes(
-          editor,
-          editor.meta.pluginCache.node.clearOnEdge
+        const marks = Object.keys(NodeApi.extractProps(textNode));
+        const outwardMarks = marks.filter(
+          (type) =>
+            getPluginByType(editor, type)?.node.selectionRules?.affinity ===
+            'outward'
         );
 
-        const isMarked = clearOnEdgeMarks.some((key) => !!textNode[key]);
-
-        if (!isMarked || !editor.api.isEnd(editor.selection.focus, textPath)) {
+        if (!outwardMarks.length) {
           return;
         }
 
@@ -102,7 +101,7 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
         }
 
         // Check each mark individually
-        for (const markKey of clearOnEdgeMarks) {
+        for (const markKey of outwardMarks) {
           if (!textNode[markKey]) {
             continue; // Skip marks not present on current node
           }
@@ -119,7 +118,7 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
         }
       };
 
-      applyClearOnEdge();
+      applyOutwardAffinity();
 
       return insertText(text, options);
     },
@@ -138,7 +137,7 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
         ) {
           const preEdgeNodes = getEdgeNodes(editor);
 
-          if (preEdgeNodes && hasHardEdgeAtBoundary(editor, preEdgeNodes)) {
+          if (preEdgeNodes && isNodesAffinity(editor, preEdgeNodes, 'hard')) {
             if (
               preEdgeNodes &&
               preEdgeNodes[reverse ? 0 : 1] === null &&
@@ -168,7 +167,7 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
            */
           if (
             postEdgeNodes &&
-            hasAffinity(editor, postEdgeNodes) &&
+            isNodesAffinity(editor, postEdgeNodes, 'directional') &&
             !hasElement(postEdgeNodes)
           ) {
             setAffinitySelection(
@@ -188,3 +187,12 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
     },
   },
 }));
+
+const hasElement = (edgeNodes: EdgeNodes) => {
+  const [before, after] = edgeNodes;
+
+  return (
+    (before && ElementApi.isElement(before[0])) ||
+    (after && ElementApi.isElement(after[0]))
+  );
+};

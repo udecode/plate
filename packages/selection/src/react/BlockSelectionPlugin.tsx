@@ -22,7 +22,6 @@ import { useBlockSelectable } from './hooks/useBlockSelectable';
 import { moveSelection } from './internal/api/moveSelection';
 import { addSelectedRow, setSelectedIds } from './internal/api/setSelectedIds';
 import { shiftSelection } from './internal/api/shiftSelection';
-import { onKeyDownSelection } from './onKeyDownSelection';
 import { duplicateBlockSelectionNodes } from './transforms/duplicateBlockSelectionNodes';
 import { insertBlocksAndSelect } from './transforms/insertBlocksAndSelect';
 import { removeBlockSelectionNodes } from './transforms/removeBlockSelectionNodes';
@@ -105,7 +104,6 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   key: KEYS.blockSelection,
   editOnly: true,
   handlers: {
-    onKeyDown: onKeyDownSelection,
     onMouseDown: ({ api, editor, event, getOptions }) => {
       const target = event.target as HTMLElement;
 
@@ -273,17 +271,63 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     /** Set texts on selected blocks */
     setTexts: bindFirst(setBlockSelectionTexts, editor),
   }))
-  .overrideEditor(({ api, editor, getOptions, tf: { setSelection } }) => ({
-    transforms: {
-      setSelection(props) {
-        if (
-          getOptions().selectedIds!.size > 0 &&
-          !editor.getOption(BlockMenuPlugin, 'openId')
-        ) {
-          api.blockSelection.deselect();
-        }
+  .overrideEditor(
+    ({ api, editor, getOptions, tf: { escape, selectAll, setSelection } }) => ({
+      transforms: {
+        escape: () => {
+          const apply = () => {
+            const ancestorNode = editor.api.block({ highest: true });
 
-        setSelection(props);
+            if (!ancestorNode) return;
+
+            const id = ancestorNode[0].id as string;
+
+            if (!id) return;
+
+            api.blockSelection.set(id);
+
+            return true;
+          };
+
+          if (apply()) return true;
+
+          return escape();
+        },
+        selectAll: () => {
+          const apply = () => {
+            const ancestorNode = editor.api.block({ highest: true });
+
+            if (!ancestorNode) return;
+
+            const [, path] = ancestorNode;
+
+            if (editor.api.isAt({ block: true, end: true, start: true })) {
+              return api.blockSelection.selectAll();
+            }
+            // TODO： should select the blocks then selected all should exclude table and columns
+            if (!editor.api.isAt({ block: true })) {
+              return api.blockSelection.selectAll();
+            }
+
+            editor.tf.select(path);
+
+            return true;
+          };
+
+          if (apply()) return true;
+
+          return selectAll();
+        },
+        setSelection(props) {
+          if (
+            getOptions().selectedIds!.size > 0 &&
+            !editor.getOption(BlockMenuPlugin, 'openId')
+          ) {
+            api.blockSelection.deselect();
+          }
+
+          setSelection(props);
+        },
       },
-    },
-  }));
+    })
+  );

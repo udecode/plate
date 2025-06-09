@@ -3,37 +3,21 @@ import {
   type TColumnElement,
   type TColumnGroupElement,
   ElementApi,
+  KEYS,
+  PathApi,
 } from '@udecode/plate';
-import { KEYS } from '@udecode/plate';
 
 export const withColumn: OverrideEditor = ({
   editor,
-  tf: { deleteBackward, normalizeNode },
+  tf: { normalizeNode, selectAll },
 }) => ({
   transforms: {
-    deleteBackward(unit) {
-      if (editor.api.isCollapsed()) {
-        const entry = editor.api.above({
-          match: (n) => ElementApi.isElement(n) && n.type === KEYS.column,
-        });
-
-        if (entry) {
-          const [node, path] = entry;
-
-          if (node.children.length > 1) return deleteBackward(unit);
-
-          const isStart = editor.api.isStart(editor.selection?.anchor, path);
-
-          if (isStart) return;
-        }
-      }
-
-      deleteBackward(unit);
-    },
-
     normalizeNode([n, path]) {
       // If it's a column group, ensure it has valid children
-      if (ElementApi.isElement(n) && n.type === KEYS.columnGroup) {
+      if (
+        ElementApi.isElement(n) &&
+        n.type === editor.getType(KEYS.columnGroup)
+      ) {
         const node = n as TColumnGroupElement;
 
         // If no columns found, unwrap the column group
@@ -88,7 +72,7 @@ export const withColumn: OverrideEditor = ({
         });
       }
       // If it's a column, ensure it has at least one block (optional)
-      if (ElementApi.isElement(n) && n.type === KEYS.column) {
+      if (ElementApi.isElement(n) && n.type === editor.getType(KEYS.column)) {
         const node = n as TColumnElement;
 
         if (node.children.length === 0) {
@@ -99,6 +83,38 @@ export const withColumn: OverrideEditor = ({
       }
 
       return normalizeNode([n, path]);
+    },
+    selectAll: () => {
+      const apply = () => {
+        const at = editor.selection;
+
+        if (!at) return;
+
+        const column = editor.api.above({
+          match: { type: editor.getType(KEYS.column) },
+        });
+
+        if (!column) return;
+
+        let targetPath = column[1];
+
+        if (
+          editor.api.isStart(editor.api.start(at), targetPath) &&
+          editor.api.isEnd(editor.api.end(at), targetPath)
+        ) {
+          targetPath = PathApi.parent(targetPath);
+        }
+
+        if (targetPath.length === 0) return;
+
+        editor.tf.select(targetPath);
+
+        return true;
+      };
+
+      if (apply()) return true;
+
+      return selectAll();
     },
   },
 });

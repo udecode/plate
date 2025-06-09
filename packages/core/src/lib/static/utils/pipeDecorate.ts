@@ -3,7 +3,7 @@ import type { NodeEntry, TRange } from '@udecode/slate';
 import type { SlateEditor } from '../../editor';
 import type { EditableProps } from '../../types/EditableProps';
 
-import { type SlatePlugin, getEditorPlugin } from '../../plugin';
+import { getEditorPlugin } from '../../plugin';
 
 /**
  * @see {@link Decorate} .
@@ -25,7 +25,7 @@ export const pipeDecorate = (
     };
 
     editor.meta.pluginCache.decorate.forEach((key) => {
-      const plugin = editor.plugins[key] as SlatePlugin;
+      const plugin = editor.getPlugin({ key });
       addRanges(
         plugin.decorate!({
           ...(getEditorPlugin(editor, plugin) as any),

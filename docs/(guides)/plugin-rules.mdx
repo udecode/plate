@@ -140,6 +140,9 @@ BlockquotePlugin.configure({
       
       // Action when Enter is pressed at end of empty line
       emptyLineEnd: 'default' | 'exit' | 'deleteExit',
+
+      // If true, the new block after splitting will be reset
+      splitReset: boolean,
     },
   },
 });
@@ -164,7 +167,45 @@ Each property controls a specific scenario:
   - [`'exit'`](#exit)
   - [`'deleteExit'`](#deleteexit)
 
+- `splitReset`: If `true`, resets the new block to the default type after a split. This is useful for exiting a formatted block like a heading.
+
 ### Examples
+
+**Reset heading on break:**
+
+```tsx
+import { H1Plugin } from '@udecode/plate-heading/react';
+
+const plugins = [
+  // ...otherPlugins,
+  H1Plugin.configure({
+    node: {
+      breakRules: {
+        splitReset: true,
+      },
+    },
+  }),
+];
+```
+
+Before pressing `Enter`:
+
+```tsx
+<h1>
+  Heading|text
+</h1>
+```
+
+After (split and reset):
+
+```tsx
+<h1>
+  Heading
+</h1>
+<p>
+  |text
+</p>
+```
 
 **Blockquote with line breaks and smart exits:**
 
@@ -337,7 +378,7 @@ Controls how blocks behave when merging with previous blocks.
 ParagraphPlugin.configure({
   node: {
     mergeRules: {
-      // Whether to remove empty previous blocks when merging
+      // Whether to remove empty blocks when merging
       removeEmpty: boolean,
     },
   },
@@ -405,6 +446,53 @@ After (empty paragraph preserved):
 <p>
   |Code content
 </p>
+```
+
+**Table cells preserve structure during merge:**
+
+```tsx
+import { TablePlugin } from '@udecode/plate-table/react';
+
+const plugins = [
+  // ...otherPlugins,
+  TablePlugin, // Table cells have mergeRules: { removeEmpty: false }
+];
+```
+
+Before pressing `Delete` at end of paragraph:
+```tsx
+<p>
+  Content|
+</p>
+<table>
+  <tr>
+    <td>
+      <p>Cell data</p>
+    </td>
+    <td>
+      <p>More data</p>
+    </td>
+  </tr>
+</table>
+```
+
+After (cell content merged, structure preserved):
+```tsx
+<p>
+  Content|Cell data
+</p>
+<table>
+  <tr>
+    <td>
+      <p>
+        <text />
+      </p>
+    </td>
+    <td>
+      <p>More data</p>
+    </td>
+  </tr>
+</table>
 ```
 
 <Callout>
@@ -565,16 +653,15 @@ const CodeBlockPlugin = createPlatePlugin({
 You can combine different rules for comprehensive block behavior:
 
 ```tsx
-import { BlockquotePlugin } from '@udecode/plate-basic-nodes/react';
+import { H1Plugin } from '@udecode/plate-heading/react';
 
 const plugins = [
   // ...otherPlugins,
-  BlockquotePlugin.configure({
+  H1Plugin.configure({
     node: {
       breakRules: {
-        default: 'lineBreak',
         empty: 'reset',
-        emptyLineEnd: 'deleteExit',
+        splitReset: true,
       },
       deleteRules: {
         start: 'reset',
@@ -619,7 +706,6 @@ After `Enter`:
   |Quote content
 </blockquote>
 ```
-
 After `Backspace`:
 ```tsx
 <p>

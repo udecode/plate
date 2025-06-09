@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
 import { type SlateEditor, createEditor } from '@udecode/plate';
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
 
 import { removeListItem } from './removeListItem';
 
@@ -89,7 +89,7 @@ const output = (
 ) as any;
 
 it('should', () => {
-  const editor = createPlateEditor({ editor: input });
+  const editor = createSlateEditor({ editor: input });
 
   const list = input.api.node({ id: '1', at: [] }) as any;
   const listItem = input.api.node({ id: '13', at: [] }) as any;

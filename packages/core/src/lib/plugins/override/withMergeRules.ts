@@ -1,4 +1,10 @@
-import { type Path, type TElement, ElementApi, TextApi } from '@udecode/slate';
+import {
+  type Path,
+  type TElement,
+  ElementApi,
+  PathApi,
+  TextApi,
+} from '@udecode/slate';
 
 import type { OverrideEditor } from '../../plugin';
 import type { MergeRules } from '../../plugin/BasePlugin';
@@ -6,7 +12,10 @@ import type { MergeRules } from '../../plugin/BasePlugin';
 import { getPluginByType } from '../../plugin/getSlatePlugin';
 
 export const withMergeRules: OverrideEditor = (ctx) => {
-  const { editor } = ctx;
+  const {
+    editor,
+    tf: { removeNodes },
+  } = ctx;
 
   const checkMatchRulesOverride = (
     rule: string,
@@ -35,6 +44,7 @@ export const withMergeRules: OverrideEditor = (ctx) => {
     api: {
       shouldMergeNodes(prevNodeEntry, nextNodeEntry, { reverse } = {}) {
         const [prevNode, prevPath] = prevNodeEntry;
+        const [, nextPath] = nextNodeEntry;
         const [curNode, curPath] = reverse ? prevNodeEntry : nextNodeEntry;
         const [targetNode, targetPath] = reverse
           ? nextNodeEntry
@@ -91,10 +101,11 @@ export const withMergeRules: OverrideEditor = (ctx) => {
           return false;
         }
 
-        // Not void, remove prevNode if empty
+        // Not void, remove prevNode if sibling and empty
         if (
           ElementApi.isElement(prevNode) &&
           editor.api.isEmpty(prevNode) &&
+          PathApi.isSibling(prevPath, nextPath) &&
           shouldRemove(prevNode, prevPath)
         ) {
           editor.tf.removeNodes({ at: prevPath });
@@ -102,6 +113,42 @@ export const withMergeRules: OverrideEditor = (ctx) => {
         }
 
         return true;
+      },
+    },
+    transforms: {
+      removeNodes(options = {}) {
+        if (options.event?.type === 'mergeNodes' && options.at) {
+          const nodeEntry = editor.api.node(options.at);
+          if (nodeEntry) {
+            const [node, path] = nodeEntry;
+
+            if (ElementApi.isElement(node)) {
+              // Check if this node should be removed based on merge rules
+              const plugin = getPluginByType(editor, node.type);
+              if (plugin) {
+                const mergeRules = plugin.node.mergeRules;
+
+                // Check for override rules
+                const overrideMergeRules = checkMatchRulesOverride(
+                  'merge.removeEmpty',
+                  node,
+                  path
+                );
+
+                const shouldNotRemove =
+                  overrideMergeRules?.removeEmpty === false ||
+                  mergeRules?.removeEmpty === false;
+
+                if (shouldNotRemove) {
+                  // Don't remove the node, just return without calling removeNodes
+                  return;
+                }
+              }
+            }
+          }
+        }
+
+        removeNodes(options);
       },
     },
   };

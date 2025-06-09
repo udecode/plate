@@ -1,19 +1,18 @@
-import type { OverrideEditor } from '@udecode/plate/react';
-
 import {
   type NodeEntry,
+  type OverrideEditor,
   type TElement,
   deleteMerge,
   KEYS,
   PathApi,
 } from '@udecode/plate';
 
-import type { ListConfig } from '../lib/BaseListPlugin';
+import type { ListConfig } from './BaseListPlugin';
 
-import { isAcrossListItems, isListNested } from '../lib/queries';
-import { getListItemEntry } from '../lib/queries/getListItemEntry';
-import { removeFirstListItem } from '../lib/transforms/removeFirstListItem';
-import { removeListItem } from '../lib/transforms/removeListItem';
+import { isAcrossListItems, isListNested } from './queries';
+import { getListItemEntry } from './queries/getListItemEntry';
+import { removeFirstListItem } from './transforms/removeFirstListItem';
+import { removeListItem } from './transforms/removeListItem';
 
 export const withDeleteBackwardList: OverrideEditor<ListConfig> = ({
   editor,

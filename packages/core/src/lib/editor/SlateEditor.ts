@@ -62,16 +62,12 @@ export type BaseEditor = EditorBase & {
         nodeProps: string[];
       };
       node: {
-        clearOnEdge: string[];
-        isAffinity: string[];
         isContainer: string[];
         isElement: string[];
-        isHardEdge: string[];
         isInline: string[];
         isLeaf: string[];
         isMarkableVoid: string[];
         isNotSelectable: string[];
-        isSplittable: string[];
         isStrictSiblings: string[];
         isVoid: string[];
         matchRules: string[];
@@ -177,6 +173,9 @@ export type SlateEditor = BaseEditor & {
   getApi: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => SlateEditor['api'] & InferApi<C>;
+  getPlugin: <C extends AnyPluginConfig = PluginConfig>(
+    plugin: WithRequiredKey<C>
+  ) => C extends { node: any } ? C : EditorPlugin<C>;
   getTransforms: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => SlateEditor['tf'] & InferTransforms<C>;

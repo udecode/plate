@@ -12,10 +12,10 @@ import {
   autoformatLegal,
   autoformatLegalHtml,
   autoformatMath,
+  AutoformatPlugin,
   autoformatPunctuation,
   autoformatSmartQuotes,
 } from '@udecode/plate-autoformat';
-import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
 import { toggleList, unwrapList } from '@udecode/plate-list-classic';
 

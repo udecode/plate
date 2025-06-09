@@ -4,5 +4,4 @@
 
 export * from './normalizeListNotIndented';
 export * from './normalizeListStart';
-export * from './withDeleteBackwardList';
 export * from './withInsertBreakList';

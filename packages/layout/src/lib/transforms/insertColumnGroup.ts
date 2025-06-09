@@ -23,10 +23,10 @@ export const insertColumnGroup = (
       {
         children: new Array(columns).fill(null).map(() => ({
           children: [editor.api.create.block()],
-          type: KEYS.column,
+          type: editor.getType(KEYS.column) as any,
           width: `${width}%`,
         })),
-        type: KEYS.columnGroup,
+        type: editor.getType(KEYS.columnGroup) as any,
       },
       options
     );

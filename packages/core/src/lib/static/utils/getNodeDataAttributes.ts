@@ -19,7 +19,7 @@ export const getNodeDataAttributes = (
     if (isElement && key === 'children') return acc;
     if ((isLeaf || isText) && key === 'text') return acc;
 
-    const plugin = editor.plugins[key];
+    const plugin = editor.getPlugin({ key });
 
     if (isLeaf && plugin?.node.isLeaf && plugin?.node.isDecoration !== true) {
       return acc;

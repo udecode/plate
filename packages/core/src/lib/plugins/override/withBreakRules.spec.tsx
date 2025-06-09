@@ -1,5 +1,7 @@
 /** @jsx jsxt */
 
+import { BaseH1Plugin } from '@udecode/plate-basic-nodes';
+import { BaseListPlugin } from '@udecode/plate-list';
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createSlateEditor } from '../../editor';
@@ -516,6 +518,167 @@ describe('withBreakRules', () => {
             },
           }),
         ],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.tf.insertBreak();
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('breakRules: { splitReset: true }', () => {
+    it('should reset the new block after splitting', () => {
+      const input = (
+        <editor>
+          <element type="h1">
+            Heading <cursor />
+            content
+          </element>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <element type="h1">Heading </element>
+          <hp>
+            <cursor />
+            content
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createSlateEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'h1',
+            node: {
+              breakRules: { splitReset: true },
+              isElement: true,
+              type: 'h1',
+            },
+          }),
+        ],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.tf.insertBreak();
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('should reset on insertBreak when at the start of the block', () => {
+      const input = (
+        <editor>
+          <element type="h1">
+            <cursor />
+            Heading content
+          </element>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <htext />
+          </hp>
+          <element type="h1">
+            <cursor />
+            Heading content
+          </element>
+        </editor>
+      ) as any;
+
+      const editor = createSlateEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'h1',
+            node: {
+              breakRules: { splitReset: true },
+              isElement: true,
+              type: 'h1',
+            },
+          }),
+        ],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.tf.insertBreak();
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('should reset on insertBreak when at the end of the block', () => {
+      const input = (
+        <editor>
+          <element type="h1">
+            Heading content
+            <cursor />
+          </element>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <element type="h1">Heading content</element>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createSlateEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'h1',
+            node: {
+              breakRules: { splitReset: true },
+              isElement: true,
+              type: 'h1',
+            },
+          }),
+        ],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.tf.insertBreak();
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('should not reset when a heading is a list item', () => {
+      const input = (
+        <editor>
+          <element indent={1} listStyleType="disc" type="h1">
+            Heading
+            <cursor />
+            content
+          </element>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <element indent={1} listStyleType="disc" type="h1">
+            Heading
+          </element>
+          <element indent={1} listStart={2} listStyleType="disc" type="h1">
+            <cursor />
+            content
+          </element>
+        </editor>
+      ) as any;
+
+      const editor = createSlateEditor({
+        plugins: [BaseH1Plugin, BaseListPlugin],
         selection: input.selection,
         value: input.children,
       });

@@ -8,8 +8,7 @@ import {
 } from '@udecode/plate-basic-nodes/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { onKeyDownAutoformat } from '../../../react/onKeyDownAutoformat';
-import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
+import { AutoformatPlugin } from '../../AutoformatPlugin';
 
 jsxt;
 
@@ -36,7 +35,7 @@ describe('when trigger is defined', () => {
   it('should autoformat', () => {
     const editor = createPlateEditor({
       plugins: [
-        BaseAutoformatPlugin.configure({
+        AutoformatPlugin.configure({
           options: {
             rules: [
               {
@@ -81,7 +80,7 @@ describe('when undo is enabled', () => {
 
     const editor = createPlateEditor({
       plugins: [
-        BaseAutoformatPlugin.configure({
+        AutoformatPlugin.configure({
           options: {
             enableUndoOnDelete: true,
             rules: [
@@ -99,14 +98,7 @@ describe('when undo is enabled', () => {
 
     editor.tf.insertText('4'); // <-- this should triger the conversion
 
-    const event = new KeyboardEvent('keydown', {
-      key: 'backspace',
-    }) as any;
-
-    onKeyDownAutoformat({
-      ...getEditorPlugin(editor, BaseAutoformatPlugin),
-      event: event as any,
-    });
+    editor.tf.deleteBackward();
 
     expect(undoInput.children).toEqual(undoOutput.children);
   });
@@ -133,7 +125,7 @@ describe('when undo is disabled', () => {
 
     const editor = createPlateEditor({
       plugins: [
-        BaseAutoformatPlugin.configure({
+        AutoformatPlugin.configure({
           options: {
             rules: [
               {
@@ -150,15 +142,7 @@ describe('when undo is disabled', () => {
 
     editor.tf.insertText('4'); // <-- this should triger the conversion
 
-    const event = new KeyboardEvent('keydown', {
-      key: 'backspace',
-    }) as any;
-
-    onKeyDownAutoformat({
-      ...getEditorPlugin(editor, BaseAutoformatPlugin),
-      editor,
-      event: event as any,
-    });
+    editor.tf.deleteBackward();
 
     expect(undoInput.children).toEqual(undoOutput.children);
   });

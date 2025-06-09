@@ -39,7 +39,7 @@ export const pluginRenderElementStatic = (
       }) as any;
 
       editor.meta.pluginCache.render.belowNodes.forEach((key) => {
-        const hoc = editor.plugins[key].render.belowNodes!({
+        const hoc = editor.getPlugin({ key }).render.belowNodes!({
           ...nodeProps,
           key,
         } as any);
@@ -56,7 +56,7 @@ export const pluginRenderElementStatic = (
           {children}
 
           {editor.meta.pluginCache.render.belowRootNodes.map((key) => {
-            const plugin = editor.plugins[key];
+            const plugin = editor.getPlugin({ key }) as any;
             const Component = plugin.render.belowRootNodes;
 
             return <Component key={key} {...defaultProps} {...nodeProps} />;
@@ -65,7 +65,7 @@ export const pluginRenderElementStatic = (
       );
 
       editor.meta.pluginCache.render.aboveNodes.forEach((key) => {
-        const hoc = editor.plugins[key].render.aboveNodes!({
+        const hoc = editor.getPlugin({ key }).render.aboveNodes!({
           ...nodeProps,
           key,
         } as any);

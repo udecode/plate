@@ -100,7 +100,9 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { clearOnEdge: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'outward' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -137,7 +139,9 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { clearOnEdge: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'outward' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -173,7 +177,9 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { clearOnEdge: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'outward' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -211,7 +217,9 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { clearOnEdge: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'outward' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -246,7 +254,9 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { clearOnEdge: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'outward' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -281,7 +291,9 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { clearOnEdge: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'outward' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -322,7 +334,9 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { clearOnEdge: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'outward' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -360,8 +374,12 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { clearOnEdge: true } }),
-            BaseItalicPlugin.configure({ node: { clearOnEdge: false } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'outward' } } as any,
+            }),
+            BaseItalicPlugin.configure({
+              node: { selectionRules: {} } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -399,8 +417,12 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { clearOnEdge: true } }),
-            BaseItalicPlugin.configure({ node: { clearOnEdge: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'outward' } } as any,
+            }),
+            BaseItalicPlugin.configure({
+              node: { selectionRules: { affinity: 'outward' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -442,7 +464,9 @@ describe('AffinityPlugin', () => {
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { isAffinity: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'directional' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -484,7 +508,9 @@ describe('AffinityPlugin', () => {
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { isAffinity: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'directional' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -527,7 +553,9 @@ describe('AffinityPlugin', () => {
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { isAffinity: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'directional' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -570,7 +598,9 @@ describe('AffinityPlugin', () => {
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { isAffinity: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'directional' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -610,7 +640,9 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { isAffinity: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'directional' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -651,7 +683,9 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseBoldPlugin.configure({ node: { isAffinity: true } }),
+            BaseBoldPlugin.configure({
+              node: { selectionRules: { affinity: 'directional' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -784,7 +818,9 @@ describe('AffinityPlugin', () => {
         const [editor] = await createPlateTestEditor({
           plugins: [
             AffinityPlugin,
-            BaseLinkPlugin.configure({ node: { isAffinity: true } }),
+            BaseLinkPlugin.configure({
+              node: { selectionRules: { affinity: 'directional' } } as any,
+            }),
           ],
           selection: input.selection,
           value: input.children,
@@ -871,7 +907,11 @@ describe('AffinityPlugin', () => {
         ) as any as PlateEditor;
 
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-          plugins: [BaseCodePlugin],
+          plugins: [
+            BaseCodePlugin.configure({
+              node: { selectionRules: { affinity: 'hard' } } as any,
+            }),
+          ],
           selection: input.selection,
           value: input.children,
         });
@@ -911,7 +951,11 @@ describe('AffinityPlugin', () => {
         ) as any as PlateEditor;
 
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-          plugins: [BaseCodePlugin],
+          plugins: [
+            BaseCodePlugin.configure({
+              node: { selectionRules: { affinity: 'hard' } } as any,
+            }),
+          ],
           selection: input.selection,
           value: input.children,
         });
@@ -955,7 +999,11 @@ describe('AffinityPlugin', () => {
         ) as any as PlateEditor;
 
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-          plugins: [BaseCodePlugin],
+          plugins: [
+            BaseCodePlugin.configure({
+              node: { selectionRules: { affinity: 'hard' } } as any,
+            }),
+          ],
           selection: input.selection,
           value: input.children,
         });
@@ -995,7 +1043,11 @@ describe('AffinityPlugin', () => {
         ) as any as PlateEditor;
 
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-          plugins: [BaseCodePlugin],
+          plugins: [
+            BaseCodePlugin.configure({
+              node: { selectionRules: { affinity: 'hard' } } as any,
+            }),
+          ],
           selection: input.selection,
           value: input.children,
         });
@@ -1039,7 +1091,11 @@ describe('AffinityPlugin', () => {
         ) as any as PlateEditor;
 
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-          plugins: [BaseCodePlugin],
+          plugins: [
+            BaseCodePlugin.configure({
+              node: { selectionRules: { affinity: 'hard' } } as any,
+            }),
+          ],
           selection: input.selection,
           value: input.children,
         });
@@ -1077,7 +1133,12 @@ describe('AffinityPlugin', () => {
         ) as any as PlateEditor;
 
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-          plugins: [BaseCodePlugin, BaseBoldPlugin],
+          plugins: [
+            BaseCodePlugin.configure({
+              node: { selectionRules: { affinity: 'hard' } } as any,
+            }),
+            BaseBoldPlugin,
+          ],
           selection: input.selection,
           value: input.children,
         });
@@ -1116,7 +1177,11 @@ describe('AffinityPlugin', () => {
         ) as any as PlateEditor;
 
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
-          plugins: [BaseCodePlugin],
+          plugins: [
+            BaseCodePlugin.configure({
+              node: { selectionRules: { affinity: 'hard' } } as any,
+            }),
+          ],
           selection: input.selection,
           value: input.children,
         });

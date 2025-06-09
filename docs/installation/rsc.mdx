@@ -29,8 +29,8 @@ Here's an example demonstrating how to set up an editor with various plugins, si
 
 ```tsx title="app/api/generate-doc/route.ts"
 import { createSlateEditor } from '@udecode/plate';
+import { AutoformatPlugin } from '@udecode/plate-autoformat';
 import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
-import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -70,7 +70,7 @@ const editor = createSlateEditor({
     // ... add more mark plugins
 
     // Functionality plugins
-    BaseAutoformatPlugin,
+    AutoformatPlugin,
     MarkdownPlugin.configure({ // For serialization example
       options: {
         remarkPlugins: [remarkMath, remarkGfm, remarkMdx],

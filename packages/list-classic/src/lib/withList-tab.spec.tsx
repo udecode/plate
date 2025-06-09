@@ -1,11 +1,9 @@
 /** @jsx jsxt */
 
+import { createSlateEditor } from '@udecode/plate';
 import { jsxt } from '@udecode/plate-test-utils';
-import { getEditorPlugin } from '@udecode/plate/react';
-import { createPlateEditor } from '@udecode/plate/react';
 
-import { BulletedListPlugin, ListPlugin } from './ListPlugin';
-import { onKeyDownList } from './onKeyDownList';
+import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
 
@@ -53,17 +51,13 @@ it('should indent single list item (start of item)', () => {
     </editor>
   ) as any;
 
-  const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
-  const editor = createPlateEditor({
-    plugins: [ListPlugin],
+  const editor = createSlateEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: BulletedListPlugin.key }),
-    event,
-  });
+  editor.tf.tab({ reverse: false });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -111,17 +105,13 @@ it('should indent single list item (end of item)', () => {
     </editor>
   ) as any;
 
-  const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
-  const editor = createPlateEditor({
-    plugins: [ListPlugin],
+  const editor = createSlateEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: BulletedListPlugin.key }),
-    event,
-  });
+  editor.tf.tab({ reverse: false });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -183,17 +173,13 @@ it('should indent multiple list items (start/end)', () => {
     </editor>
   ) as any;
 
-  const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
-  const editor = createPlateEditor({
-    plugins: [ListPlugin],
+  const editor = createSlateEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: BulletedListPlugin.key }),
-    event,
-  });
+  editor.tf.tab({ reverse: false });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -255,20 +241,13 @@ it('should un-indent multiple list items (start/end)', () => {
     </editor>
   ) as any;
 
-  const event = new KeyboardEvent('keydown', {
-    key: 'Tab',
-    shiftKey: true,
-  }) as any;
-  const editor = createPlateEditor({
-    plugins: [ListPlugin],
+  const editor = createSlateEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: ListPlugin.key }),
-    event,
-  });
+  editor.tf.tab({ reverse: true });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -332,20 +311,13 @@ it('should un-indent multiple list items (start/out)', () => {
     </editor>
   ) as any;
 
-  const event = new KeyboardEvent('keydown', {
-    key: 'Tab',
-    shiftKey: true,
-  }) as any;
-  const editor = createPlateEditor({
-    plugins: [ListPlugin],
+  const editor = createSlateEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: ListPlugin.key }),
-    event,
-  });
+  editor.tf.tab({ reverse: true });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -402,19 +374,13 @@ it('should unhang before indentation', () => {
     </editor>
   ) as any;
 
-  const event = new KeyboardEvent('keydown', {
-    key: 'Tab',
-  }) as any;
-  const editor = createPlateEditor({
-    plugins: [ListPlugin],
+  const editor = createSlateEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: ListPlugin.key }),
-    event,
-  });
+  editor.tf.tab({ reverse: false });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -428,30 +394,19 @@ it('should NOT not adjust selection length when unhanging ranges', () => {
       </hp>
     </editor>
   ) as any;
-  const editor = createPlateEditor({
-    plugins: [ListPlugin],
+  const editor = createSlateEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
   const selectionBefore = editor.selection;
 
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: ListPlugin.key }),
-    event: new KeyboardEvent('keydown', {
-      key: 'Tab',
-    }) as any,
-  });
+  editor.tf.tab({ reverse: false });
   expect(editor.selection).toEqual(selectionBefore);
 
   // Do the same with shift tab.
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: ListPlugin.key }),
-    event: new KeyboardEvent('keydown', {
-      key: 'Tab',
-      shiftKey: true,
-    }) as any,
-  });
+  editor.tf.tab({ reverse: true });
   expect(editor.selection).toEqual(selectionBefore);
 });
 
@@ -493,22 +448,15 @@ it('should convert top-level list item into body upon unindent if enableResetOnS
     </editor>
   ) as any;
 
-  const event = new KeyboardEvent('keydown', {
-    key: 'Tab',
-    shiftKey: true,
-  }) as any;
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     plugins: [
-      ListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
+      BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
     selection: input.selection,
     value: input.children,
   });
 
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: ListPlugin.key }),
-    event,
-  });
+  editor.tf.tab({ reverse: true });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -548,22 +496,15 @@ it('should convert top-level (first) list item into body upon unindent if enable
     </editor>
   ) as any;
 
-  const event = new KeyboardEvent('keydown', {
-    key: 'Tab',
-    shiftKey: true,
-  }) as any;
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     plugins: [
-      ListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
+      BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
     selection: input.selection,
     value: input.children,
   });
 
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: ListPlugin.key }),
-    event,
-  });
+  editor.tf.tab({ reverse: true });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -603,22 +544,15 @@ it('should convert top-level (last) list item into body upon unindent if enableR
     </editor>
   ) as any;
 
-  const event = new KeyboardEvent('keydown', {
-    key: 'Tab',
-    shiftKey: true,
-  }) as any;
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     plugins: [
-      ListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
+      BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
     ],
     selection: input.selection,
     value: input.children,
   });
 
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: ListPlugin.key }),
-    event,
-  });
+  editor.tf.tab({ reverse: true });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -661,19 +595,12 @@ it('should NOT convert top-level list item into body upon unindent if enableRese
     </editor>
   ) as any;
 
-  const event = new KeyboardEvent('keydown', {
-    key: 'Tab',
-    shiftKey: true,
-  }) as any;
-  const editor = createPlateEditor({
-    plugins: [ListPlugin],
+  const editor = createSlateEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
 
-  onKeyDownList({
-    ...getEditorPlugin(editor, { key: ListPlugin.key }),
-    event,
-  });
+  editor.tf.tab({ reverse: true });
   expect(editor.children).toEqual(output.children);
 });

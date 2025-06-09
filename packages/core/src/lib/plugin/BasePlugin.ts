@@ -266,17 +266,6 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * - `'deleteExit'`: Delete backward then exit
    */
   breakRules?: BreakRules;
-  /**
-   * If true, enables automatically clearing the mark when typing at its
-   * boundary. Only applies when `isLeaf` is true.
-   *
-   * When enabled, typing at the end of a marked text segment (e.g., at the end
-   * of commented text) will not apply the mark to the newly typed characters,
-   * effectively "exiting" the mark's formatting.
-   *
-   * @default false
-   */
-  clearOnEdge?: boolean;
   component?: NodeComponent | null;
   /**
    * Controls which (if any) attribute names in the `attributes` property of an
@@ -322,11 +311,6 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   inset?: boolean;
   /**
-   * Indicates if this plugin's nodes should be treated as affinity. Used by the
-   * affinity core plugin.
-   */
-  isAffinity?: boolean;
-  /**
    * Indicates if this plugin's elements are primarily containers for other
    * content. Container elements are typically unwrapped when querying
    * fragments.
@@ -349,13 +333,6 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   isElement?: boolean;
   /**
-   * Whether the inline node is a hard edge. When true, allows precise cursor
-   * positioning at the exact start or end of the node.
-   *
-   * @default false
-   */
-  isHardEdge?: boolean;
-  /**
    * Indicates if this plugin's elements should be treated as inline. Used by
    * the inlineVoid core plugin.
    */
@@ -376,8 +353,6 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * @default true
    */
   isSelectable?: boolean;
-  // TODO jsdoc
-  isSplittable?: boolean;
   /**
    * Indicates whether this element enforces strict sibling type constraints.
    * Set to true `true` when the element only allows specific siblings (e.g.,
@@ -395,6 +370,8 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
   mergeRules?: MergeRules;
   /** Defines the behavior of normalizing nodes. */
   normalizeRules?: NormalizeRules;
+  /** Defines the behavior of selection. */
+  selectionRules?: SelectionRules;
   /**
    * Function that returns an object of data attributes to be added to the
    * element.
@@ -432,10 +409,12 @@ export interface BreakRules {
   emptyLineEnd?: 'default' | 'deleteExit' | 'exit';
   /** Default action when Enter is pressed. Defaults to splitting the block. */
   default?: 'default' | 'deleteExit' | 'exit' | 'lineBreak';
+  /** If true, the new block after splitting will be reset to the default type. */
+  splitReset?: boolean;
 }
 
 export interface MergeRules {
-  /** Whether to remove the previous node when it's empty. */
+  /** Whether to remove the node when it's empty. */
   removeEmpty?: boolean;
 }
 
@@ -462,14 +441,32 @@ export interface DeleteRules {
   empty?: 'default' | 'reset';
 }
 
+export interface SelectionRules {
+  /**
+   * Defines the selection behavior at the boundaries of nodes.
+   *
+   * - `directional`: Selection affinity is determined by the direction of cursor
+   *   movement. Maintains inward or outward affinity based on approach.
+   * - `outward`: Forces outward affinity. Typing at the edge of a mark will not
+   *   apply the mark to new text.
+   * - `hard`: Creates a 'hard' edge that requires two key presses to move across.
+   *   Uses offset-based navigation.
+   * - `default`: Uses Slate's default behavior.
+   */
+  affinity?: 'default' | 'directional' | 'hard' | 'outward';
+}
+
 export type MatchRules =
   | 'break.default'
   | 'break.empty'
   | 'break.emptyLineEnd'
+  | 'break.splitReset'
   | 'delete.empty'
   | 'delete.start'
   | 'merge.removeEmpty'
-  | 'normalize.removeEmpty';
+  | 'normalize.removeEmpty'
+  | 'selection.affinity';
+
 export type EditOnlyConfig = {
   /**
    * If true, `handlers` are only active when the editor is not read-only.

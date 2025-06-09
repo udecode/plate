@@ -2,21 +2,21 @@
 
 import type { SlateEditor } from '@udecode/plate';
 
-import { LinkPlugin } from '@udecode/plate-link/react';
+import { createSlateEditor } from '@udecode/plate';
+import { BaseLinkPlugin } from '@udecode/plate-link';
 import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor, ParagraphPlugin } from '@udecode/plate/react';
 
-import { ListPlugin } from './ListPlugin';
+import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
 
 const testInsertText = (
   input: any,
   expected: any,
-  listConfig: Parameters<typeof ListPlugin.configure>[0] = {}
+  listConfig: Parameters<typeof BaseListPlugin.configure>[0] = {}
 ) => {
-  const editor = createPlateEditor({
-    plugins: [ParagraphPlugin, ListPlugin.configure(listConfig), LinkPlugin],
+  const editor = createSlateEditor({
+    plugins: [BaseListPlugin.configure(listConfig), BaseLinkPlugin],
     selection: input.selection,
     value: input.children,
   });
@@ -27,8 +27,8 @@ const testInsertText = (
 };
 
 const testDeleteBackward = (input: any, expected: any) => {
-  const editor = createPlateEditor({
-    plugins: [ParagraphPlugin, ListPlugin],
+  const editor = createSlateEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });
@@ -39,8 +39,8 @@ const testDeleteBackward = (input: any, expected: any) => {
 };
 
 const testDeleteForward = (input: any, expected: any) => {
-  const editor = createPlateEditor({
-    plugins: [ParagraphPlugin, ListPlugin],
+  const editor = createSlateEditor({
+    plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
   });

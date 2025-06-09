@@ -84,6 +84,7 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
   node: {
     breakRules: {
       empty: 'reset',
+      splitReset: false,
     },
     deleteRules: {
       start: 'reset',

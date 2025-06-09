@@ -7,8 +7,6 @@ import {
   BaseListPlugin,
   BaseNumberedListPlugin,
 } from '../lib';
-import { onKeyDownList } from './onKeyDownList';
-import { withList } from './withList';
 
 export const BulletedListPlugin = toPlatePlugin(BaseBulletedListPlugin);
 
@@ -23,13 +21,10 @@ export const ListItemPlugin = toPlatePlugin(BaseListItemPlugin);
  * features.
  */
 export const ListPlugin = toPlatePlugin(BaseListPlugin, {
-  handlers: {
-    onKeyDown: onKeyDownList,
-  },
   plugins: [
     BulletedListPlugin,
     NumberedListPlugin,
     ListItemPlugin,
     ListItemContentPlugin,
   ],
-}).overrideEditor(withList);
+});

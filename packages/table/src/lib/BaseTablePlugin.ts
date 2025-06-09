@@ -64,6 +64,7 @@ export const BaseTableCellPlugin = createSlatePlugin({
     isContainer: true,
     isElement: true,
     isStrictSiblings: true,
+    mergeRules: { removeEmpty: false },
     props: ({ element }) => ({
       colSpan: (element?.attributes as any)?.colspan,
       rowSpan: (element?.attributes as any)?.rowspan,
@@ -87,6 +88,7 @@ export const BaseTableCellHeaderPlugin = createSlatePlugin({
     isContainer: true,
     isElement: true,
     isStrictSiblings: true,
+    mergeRules: { removeEmpty: false },
     props: ({ element }) => ({
       colSpan: (element?.attributes as any)?.colspan,
       rowSpan: (element?.attributes as any)?.rowspan,
@@ -179,7 +181,6 @@ export type TableConfig = PluginConfig<
 /** Enables support for tables. */
 export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   key: KEYS.table,
-  // dependencies: [KEYS.nodeId],
   node: {
     isContainer: true,
     isElement: true,

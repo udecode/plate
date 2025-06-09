@@ -15,4 +15,4 @@
     // Use: KEYS.p
     ```
 
-- Many node type definitions (e.g., `TParagraphElement`, `TLinkElement`) are also now exported from `@platejs/utils` (and re-exported by `platejs`), in addition to being available from their specific plugin packages if those still exist or from `@platejs/basic-nodes`.
+- Many node type definitions (e.g., `TParagraphElement`, `TLinkElement`) are also now exported from `platejs`, in addition to being available from their specific plugin packages if those still exist or from `@platejs/basic-nodes`.
