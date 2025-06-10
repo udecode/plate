@@ -6701,7 +6701,7 @@ __metadata:
   dependencies:
     "@types/papaparse": "npm:^5.3.15"
     "@udecode/plate": "workspace:^"
-    "@udecode/plate-table": "npm:48.0.0"
+    "@udecode/plate-table": "npm:48.0.6"
     papaparse: "npm:^5.5.2"
   peerDependencies:
     "@udecode/plate": ">=48.0.5"
@@ -7186,7 +7186,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-table@npm:48.0.0, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
+"@udecode/plate-table@npm:48.0.6, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
