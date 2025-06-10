@@ -6,82 +6,83 @@
       "files": [],
       "name": "docs",
       "registryDependencies": [
-        "https://platejs.org/r/-guides-controlled-docs",
-        "https://platejs.org/r/-guides-debugging-docs",
-        "https://platejs.org/r/-guides-editor-methods-docs",
-        "https://platejs.org/r/-guides-editor-docs",
-        "https://platejs.org/r/-guides-feature-kits-docs",
-        "https://platejs.org/r/-guides-form-docs",
-        "https://platejs.org/r/-guides-playwright-docs",
-        "https://platejs.org/r/-guides-plugin-components-docs",
-        "https://platejs.org/r/-guides-plugin-context-docs",
-        "https://platejs.org/r/-guides-plugin-methods-docs",
-        "https://platejs.org/r/-guides-plugin-rules-docs",
-        "https://platejs.org/r/-guides-plugin-shortcuts-docs",
-        "https://platejs.org/r/-guides-plugin-docs",
-        "https://platejs.org/r/-guides-static-docs",
-        "https://platejs.org/r/-guides-troubleshooting-docs",
-        "https://platejs.org/r/-guides-typescript-docs",
-        "https://platejs.org/r/-guides-unit-testing-docs",
-        "https://platejs.org/r/-plugins-ai-ai-docs",
-        "https://platejs.org/r/-plugins-ai-copilot-docs",
-        "https://platejs.org/r/-plugins-collaboration-comment-docs",
-        "https://platejs.org/r/-plugins-collaboration-discussion-docs",
-        "https://platejs.org/r/-plugins-collaboration-suggestion-docs",
-        "https://platejs.org/r/-plugins-collaboration-yjs-docs",
-        "https://platejs.org/r/-plugins-elements-basic-blocks-docs",
-        "https://platejs.org/r/-plugins-elements-blockquote-docs",
-        "https://platejs.org/r/-plugins-elements-callout-docs",
-        "https://platejs.org/r/-plugins-elements-code-block-docs",
-        "https://platejs.org/r/-plugins-elements-column-docs",
-        "https://platejs.org/r/-plugins-elements-date-docs",
-        "https://platejs.org/r/-plugins-elements-equation-docs",
-        "https://platejs.org/r/-plugins-elements-excalidraw-docs",
-        "https://platejs.org/r/-plugins-elements-heading-docs",
-        "https://platejs.org/r/-plugins-elements-horizontal-rule-docs",
-        "https://platejs.org/r/-plugins-elements-link-docs",
-        "https://platejs.org/r/-plugins-elements-list-classic-docs",
-        "https://platejs.org/r/-plugins-elements-media-docs",
-        "https://platejs.org/r/-plugins-elements-mention-docs",
-        "https://platejs.org/r/-plugins-elements-table-docs",
-        "https://platejs.org/r/-plugins-elements-toc-docs",
-        "https://platejs.org/r/-plugins-elements-toggle-docs",
-        "https://platejs.org/r/-plugins-functionality-combobox-combobox-docs",
-        "https://platejs.org/r/-plugins-functionality-combobox-emoji-docs",
-        "https://platejs.org/r/-plugins-functionality-combobox-slash-command-docs",
-        "https://platejs.org/r/-plugins-functionality-utils-exit-break-docs",
-        "https://platejs.org/r/-plugins-functionality-utils-forced-layout-docs",
-        "https://platejs.org/r/-plugins-functionality-utils-single-block-docs",
-        "https://platejs.org/r/-plugins-functionality-utils-trailing-block-docs",
-        "https://platejs.org/r/-plugins-functionality-autoformat-docs",
-        "https://platejs.org/r/-plugins-functionality-block-menu-docs",
-        "https://platejs.org/r/-plugins-functionality-block-placeholder-docs",
-        "https://platejs.org/r/-plugins-functionality-block-selection-docs",
-        "https://platejs.org/r/-plugins-functionality-caption-docs",
-        "https://platejs.org/r/-plugins-functionality-cursor-overlay-docs",
-        "https://platejs.org/r/-plugins-functionality-dnd-docs",
-        "https://platejs.org/r/-plugins-functionality-find-replace-docs",
-        "https://platejs.org/r/-plugins-functionality-multi-select-docs",
-        "https://platejs.org/r/-plugins-functionality-tabbable-docs",
-        "https://platejs.org/r/-plugins-marks-basic-marks-docs",
-        "https://platejs.org/r/-plugins-marks-bold-docs",
-        "https://platejs.org/r/-plugins-marks-code-docs",
-        "https://platejs.org/r/-plugins-marks-highlight-docs",
-        "https://platejs.org/r/-plugins-marks-italic-docs",
-        "https://platejs.org/r/-plugins-marks-kbd-docs",
-        "https://platejs.org/r/-plugins-marks-strikethrough-docs",
-        "https://platejs.org/r/-plugins-marks-subscript-docs",
-        "https://platejs.org/r/-plugins-marks-superscript-docs",
-        "https://platejs.org/r/-plugins-marks-underline-docs",
-        "https://platejs.org/r/-plugins-serializing-csv-docs",
-        "https://platejs.org/r/-plugins-serializing-docx-docs",
-        "https://platejs.org/r/-plugins-serializing-html-docs",
-        "https://platejs.org/r/-plugins-serializing-markdown-docs",
-        "https://platejs.org/r/-plugins-styles-font-docs",
-        "https://platejs.org/r/-plugins-styles-indent-docs",
-        "https://platejs.org/r/-plugins-styles-line-height-docs",
-        "https://platejs.org/r/-plugins-styles-list-docs",
-        "https://platejs.org/r/-plugins-styles-text-align-docs",
+        "https://platejs.org/r/controlled-docs",
+        "https://platejs.org/r/debugging-docs",
+        "https://platejs.org/r/editor-methods-docs",
+        "https://platejs.org/r/editor-docs",
+        "https://platejs.org/r/feature-kits-docs",
+        "https://platejs.org/r/form-docs",
+        "https://platejs.org/r/playwright-docs",
+        "https://platejs.org/r/plugin-components-docs",
+        "https://platejs.org/r/plugin-context-docs",
+        "https://platejs.org/r/plugin-methods-docs",
+        "https://platejs.org/r/plugin-rules-docs",
+        "https://platejs.org/r/plugin-shortcuts-docs",
+        "https://platejs.org/r/plugin-docs",
+        "https://platejs.org/r/static-docs",
+        "https://platejs.org/r/troubleshooting-docs",
+        "https://platejs.org/r/typescript-docs",
+        "https://platejs.org/r/unit-testing-docs",
+        "https://platejs.org/r/ai-docs",
+        "https://platejs.org/r/copilot-docs",
+        "https://platejs.org/r/comment-docs",
+        "https://platejs.org/r/discussion-docs",
+        "https://platejs.org/r/suggestion-docs",
+        "https://platejs.org/r/yjs-docs",
+        "https://platejs.org/r/basic-blocks-docs",
+        "https://platejs.org/r/blockquote-docs",
+        "https://platejs.org/r/callout-docs",
+        "https://platejs.org/r/code-block-docs",
+        "https://platejs.org/r/column-docs",
+        "https://platejs.org/r/date-docs",
+        "https://platejs.org/r/equation-docs",
+        "https://platejs.org/r/excalidraw-docs",
+        "https://platejs.org/r/heading-docs",
+        "https://platejs.org/r/horizontal-rule-docs",
+        "https://platejs.org/r/link-docs",
+        "https://platejs.org/r/list-classic-docs",
+        "https://platejs.org/r/media-docs",
+        "https://platejs.org/r/mention-docs",
+        "https://platejs.org/r/table-docs",
+        "https://platejs.org/r/toc-docs",
+        "https://platejs.org/r/toggle-docs",
+        "https://platejs.org/r/combobox-docs",
+        "https://platejs.org/r/emoji-docs",
+        "https://platejs.org/r/slash-command-docs",
+        "https://platejs.org/r/exit-break-docs",
+        "https://platejs.org/r/forced-layout-docs",
+        "https://platejs.org/r/single-block-docs",
+        "https://platejs.org/r/trailing-block-docs",
+        "https://platejs.org/r/autoformat-docs",
+        "https://platejs.org/r/block-menu-docs",
+        "https://platejs.org/r/block-placeholder-docs",
+        "https://platejs.org/r/block-selection-docs",
+        "https://platejs.org/r/caption-docs",
+        "https://platejs.org/r/cursor-overlay-docs",
+        "https://platejs.org/r/dnd-docs",
+        "https://platejs.org/r/find-replace-docs",
+        "https://platejs.org/r/multi-select-docs",
+        "https://platejs.org/r/tabbable-docs",
+        "https://platejs.org/r/toolbar-docs",
+        "https://platejs.org/r/basic-marks-docs",
+        "https://platejs.org/r/bold-docs",
+        "https://platejs.org/r/code-docs",
+        "https://platejs.org/r/highlight-docs",
+        "https://platejs.org/r/italic-docs",
+        "https://platejs.org/r/kbd-docs",
+        "https://platejs.org/r/strikethrough-docs",
+        "https://platejs.org/r/subscript-docs",
+        "https://platejs.org/r/superscript-docs",
+        "https://platejs.org/r/underline-docs",
+        "https://platejs.org/r/csv-docs",
+        "https://platejs.org/r/docx-docs",
+        "https://platejs.org/r/html-docs",
+        "https://platejs.org/r/markdown-docs",
+        "https://platejs.org/r/font-docs",
+        "https://platejs.org/r/indent-docs",
+        "https://platejs.org/r/line-height-docs",
+        "https://platejs.org/r/list-docs",
+        "https://platejs.org/r/text-align-docs",
         "https://platejs.org/r/api-cn-docs",
         "https://platejs.org/r/api-core-plate-components-docs",
         "https://platejs.org/r/api-core-plate-controller-docs",
@@ -158,8 +159,7 @@
       ],
       "name": "fumadocs",
       "registryDependencies": [
-        "https://platejs.org/r/docs",
-        "https://platejs.org/r/docs-meta"
+        "https://platejs.org/r/docs"
       ],
       "title": "Fumadocs app",
       "type": "registry:file"
@@ -173,7 +173,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-controlled-docs",
+      "name": "controlled-docs",
       "title": "Controlled Editor Value",
       "type": "registry:file"
     },
@@ -186,7 +186,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-debugging-docs",
+      "name": "debugging-docs",
       "title": "Debugging",
       "type": "registry:file"
     },
@@ -199,7 +199,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-editor-methods-docs",
+      "name": "editor-methods-docs",
       "title": "Editor Methods",
       "type": "registry:file"
     },
@@ -212,7 +212,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-editor-docs",
+      "name": "editor-docs",
       "title": "Editor Configuration",
       "type": "registry:file"
     },
@@ -225,7 +225,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-feature-kits-docs",
+      "name": "feature-kits-docs",
       "title": "Feature Kits",
       "type": "registry:file"
     },
@@ -238,7 +238,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-form-docs",
+      "name": "form-docs",
       "title": "Form",
       "type": "registry:file"
     },
@@ -251,7 +251,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-playwright-docs",
+      "name": "playwright-docs",
       "title": "Playwright Testing",
       "type": "registry:file"
     },
@@ -264,7 +264,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-plugin-components-docs",
+      "name": "plugin-components-docs",
       "title": "Plugin Components",
       "type": "registry:file"
     },
@@ -277,7 +277,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-plugin-context-docs",
+      "name": "plugin-context-docs",
       "title": "Plugin Context",
       "type": "registry:file"
     },
@@ -290,7 +290,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-plugin-methods-docs",
+      "name": "plugin-methods-docs",
       "title": "Plugin Methods",
       "type": "registry:file"
     },
@@ -303,7 +303,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-plugin-rules-docs",
+      "name": "plugin-rules-docs",
       "title": "Plugin Rules",
       "type": "registry:file"
     },
@@ -316,7 +316,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-plugin-shortcuts-docs",
+      "name": "plugin-shortcuts-docs",
       "title": "Plugin Shortcuts",
       "type": "registry:file"
     },
@@ -329,7 +329,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-plugin-docs",
+      "name": "plugin-docs",
       "title": "Plugin Configuration",
       "type": "registry:file"
     },
@@ -342,7 +342,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-static-docs",
+      "name": "static-docs",
       "title": "Static Rendering",
       "type": "registry:file"
     },
@@ -355,7 +355,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-troubleshooting-docs",
+      "name": "troubleshooting-docs",
       "title": "Troubleshooting",
       "type": "registry:file"
     },
@@ -368,7 +368,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-typescript-docs",
+      "name": "typescript-docs",
       "title": "TypeScript",
       "type": "registry:file"
     },
@@ -381,7 +381,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-guides-unit-testing-docs",
+      "name": "unit-testing-docs",
       "title": "Unit Testing Plate",
       "type": "registry:file"
     },
@@ -394,7 +394,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-ai-ai-docs",
+      "name": "ai-docs",
       "title": "AI",
       "type": "registry:file"
     },
@@ -407,7 +407,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-ai-copilot-docs",
+      "name": "copilot-docs",
       "title": "Copilot",
       "type": "registry:file"
     },
@@ -420,7 +420,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-collaboration-comment-docs",
+      "name": "comment-docs",
       "title": "Comment",
       "type": "registry:file"
     },
@@ -433,7 +433,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-collaboration-discussion-docs",
+      "name": "discussion-docs",
       "title": "Discussion",
       "type": "registry:file"
     },
@@ -446,7 +446,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-collaboration-suggestion-docs",
+      "name": "suggestion-docs",
       "title": "Suggestion",
       "type": "registry:file"
     },
@@ -459,7 +459,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-collaboration-yjs-docs",
+      "name": "yjs-docs",
       "title": "Collaboration",
       "type": "registry:file"
     },
@@ -472,7 +472,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-basic-blocks-docs",
+      "name": "basic-blocks-docs",
       "title": "Basic Elements",
       "type": "registry:file"
     },
@@ -485,7 +485,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-blockquote-docs",
+      "name": "blockquote-docs",
       "title": "Blockquote",
       "type": "registry:file"
     },
@@ -498,7 +498,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-callout-docs",
+      "name": "callout-docs",
       "title": "Callout",
       "type": "registry:file"
     },
@@ -511,7 +511,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-code-block-docs",
+      "name": "code-block-docs",
       "title": "Code Block",
       "type": "registry:file"
     },
@@ -524,7 +524,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-column-docs",
+      "name": "column-docs",
       "title": "Column",
       "type": "registry:file"
     },
@@ -537,7 +537,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-date-docs",
+      "name": "date-docs",
       "title": "Date",
       "type": "registry:file"
     },
@@ -550,7 +550,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-equation-docs",
+      "name": "equation-docs",
       "title": "Equation",
       "type": "registry:file"
     },
@@ -563,7 +563,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-excalidraw-docs",
+      "name": "excalidraw-docs",
       "title": "Excalidraw",
       "type": "registry:file"
     },
@@ -576,7 +576,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-heading-docs",
+      "name": "heading-docs",
       "title": "Heading",
       "type": "registry:file"
     },
@@ -589,7 +589,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-horizontal-rule-docs",
+      "name": "horizontal-rule-docs",
       "title": "Horizontal Rule",
       "type": "registry:file"
     },
@@ -602,7 +602,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-link-docs",
+      "name": "link-docs",
       "title": "Link",
       "type": "registry:file"
     },
@@ -615,7 +615,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-list-classic-docs",
+      "name": "list-classic-docs",
       "title": "List Classic",
       "type": "registry:file"
     },
@@ -628,7 +628,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-media-docs",
+      "name": "media-docs",
       "title": "Media",
       "type": "registry:file"
     },
@@ -641,7 +641,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-mention-docs",
+      "name": "mention-docs",
       "title": "Mention",
       "type": "registry:file"
     },
@@ -654,7 +654,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-table-docs",
+      "name": "table-docs",
       "title": "Table",
       "type": "registry:file"
     },
@@ -667,7 +667,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-toc-docs",
+      "name": "toc-docs",
       "title": "Table of Contents",
       "type": "registry:file"
     },
@@ -680,7 +680,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-elements-toggle-docs",
+      "name": "toggle-docs",
       "title": "Toggle",
       "type": "registry:file"
     },
@@ -693,7 +693,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-combobox-combobox-docs",
+      "name": "combobox-docs",
       "title": "Combobox",
       "type": "registry:file"
     },
@@ -706,7 +706,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-combobox-emoji-docs",
+      "name": "emoji-docs",
       "title": "Emoji",
       "type": "registry:file"
     },
@@ -719,7 +719,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-combobox-slash-command-docs",
+      "name": "slash-command-docs",
       "title": "Slash Command",
       "type": "registry:file"
     },
@@ -732,7 +732,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-utils-exit-break-docs",
+      "name": "exit-break-docs",
       "title": "Exit Break",
       "type": "registry:file"
     },
@@ -745,7 +745,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-utils-forced-layout-docs",
+      "name": "forced-layout-docs",
       "title": "Forced Layout",
       "type": "registry:file"
     },
@@ -758,7 +758,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-utils-single-block-docs",
+      "name": "single-block-docs",
       "title": "Single Block",
       "type": "registry:file"
     },
@@ -771,7 +771,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-utils-trailing-block-docs",
+      "name": "trailing-block-docs",
       "title": "Trailing Block",
       "type": "registry:file"
     },
@@ -784,7 +784,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-autoformat-docs",
+      "name": "autoformat-docs",
       "title": "Autoformat",
       "type": "registry:file"
     },
@@ -797,7 +797,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-block-menu-docs",
+      "name": "block-menu-docs",
       "title": "Block Menu",
       "type": "registry:file"
     },
@@ -810,7 +810,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-block-placeholder-docs",
+      "name": "block-placeholder-docs",
       "title": "Block Placeholder",
       "type": "registry:file"
     },
@@ -823,7 +823,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-block-selection-docs",
+      "name": "block-selection-docs",
       "title": "Block Selection",
       "type": "registry:file"
     },
@@ -836,7 +836,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-caption-docs",
+      "name": "caption-docs",
       "title": "Caption",
       "type": "registry:file"
     },
@@ -849,7 +849,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-cursor-overlay-docs",
+      "name": "cursor-overlay-docs",
       "title": "Cursor Overlay",
       "type": "registry:file"
     },
@@ -862,7 +862,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-dnd-docs",
+      "name": "dnd-docs",
       "title": "Drag & Drop",
       "type": "registry:file"
     },
@@ -875,7 +875,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-find-replace-docs",
+      "name": "find-replace-docs",
       "title": "Find",
       "type": "registry:file"
     },
@@ -888,7 +888,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-multi-select-docs",
+      "name": "multi-select-docs",
       "title": "Multi Select",
       "type": "registry:file"
     },
@@ -901,8 +901,21 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-functionality-tabbable-docs",
+      "name": "tabbable-docs",
       "title": "Tabbable",
+      "type": "registry:file"
+    },
+    {
+      "description": "Fixed and floating toolbars for your editor.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/toolbar.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/toolbar.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "toolbar-docs",
+      "title": "Toolbar",
       "type": "registry:file"
     },
     {
@@ -914,7 +927,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-marks-basic-marks-docs",
+      "name": "basic-marks-docs",
       "title": "Basic Marks",
       "type": "registry:file"
     },
@@ -927,7 +940,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-marks-bold-docs",
+      "name": "bold-docs",
       "title": "Bold",
       "type": "registry:file"
     },
@@ -940,7 +953,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-marks-code-docs",
+      "name": "code-docs",
       "title": "Code",
       "type": "registry:file"
     },
@@ -953,7 +966,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-marks-highlight-docs",
+      "name": "highlight-docs",
       "title": "Highlight",
       "type": "registry:file"
     },
@@ -966,7 +979,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-marks-italic-docs",
+      "name": "italic-docs",
       "title": "Italic",
       "type": "registry:file"
     },
@@ -979,7 +992,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-marks-kbd-docs",
+      "name": "kbd-docs",
       "title": "Kbd",
       "type": "registry:file"
     },
@@ -992,7 +1005,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-marks-strikethrough-docs",
+      "name": "strikethrough-docs",
       "title": "Strikethrough",
       "type": "registry:file"
     },
@@ -1005,7 +1018,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-marks-subscript-docs",
+      "name": "subscript-docs",
       "title": "Subscript",
       "type": "registry:file"
     },
@@ -1018,7 +1031,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-marks-superscript-docs",
+      "name": "superscript-docs",
       "title": "Superscript",
       "type": "registry:file"
     },
@@ -1031,7 +1044,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-marks-underline-docs",
+      "name": "underline-docs",
       "title": "Underline",
       "type": "registry:file"
     },
@@ -1044,7 +1057,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-serializing-csv-docs",
+      "name": "csv-docs",
       "title": "Serializing CSV",
       "type": "registry:file"
     },
@@ -1057,7 +1070,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-serializing-docx-docs",
+      "name": "docx-docs",
       "title": "Serializing Docx",
       "type": "registry:file"
     },
@@ -1070,7 +1083,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-serializing-html-docs",
+      "name": "html-docs",
       "title": "HTML",
       "type": "registry:file"
     },
@@ -1083,7 +1096,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-serializing-markdown-docs",
+      "name": "markdown-docs",
       "title": "Markdown",
       "type": "registry:file"
     },
@@ -1096,7 +1109,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-styles-font-docs",
+      "name": "font-docs",
       "title": "Font",
       "type": "registry:file"
     },
@@ -1109,7 +1122,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-styles-indent-docs",
+      "name": "indent-docs",
       "title": "Indent",
       "type": "registry:file"
     },
@@ -1122,7 +1135,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-styles-line-height-docs",
+      "name": "line-height-docs",
       "title": "Line Height",
       "type": "registry:file"
     },
@@ -1135,7 +1148,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-styles-list-docs",
+      "name": "list-docs",
       "title": "List",
       "type": "registry:file"
     },
@@ -1148,7 +1161,7 @@
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-styles-text-align-docs",
+      "name": "text-align-docs",
       "title": "Text Align",
       "type": "registry:file"
     },
@@ -1170,7 +1183,7 @@
       "files": [
         {
           "path": "../../docs/api/core/plate-components.mdx",
-          "target": "content/docs/plate/api/plate-core/plate-components.mdx",
+          "target": "content/docs/plate/api/core/plate-components.mdx",
           "type": "registry:file"
         }
       ],
@@ -1183,7 +1196,7 @@
       "files": [
         {
           "path": "../../docs/api/core/plate-controller.mdx",
-          "target": "content/docs/plate/api/plate-core/plate-controller.mdx",
+          "target": "content/docs/plate/api/core/plate-controller.mdx",
           "type": "registry:file"
         }
       ],
@@ -1196,7 +1209,7 @@
       "files": [
         {
           "path": "../../docs/api/core/plate-editor.mdx",
-          "target": "content/docs/plate/api/plate-core/plate-editor.mdx",
+          "target": "content/docs/plate/api/core/plate-editor.mdx",
           "type": "registry:file"
         }
       ],
@@ -1209,7 +1222,7 @@
       "files": [
         {
           "path": "../../docs/api/core/plate-plugin.mdx",
-          "target": "content/docs/plate/api/plate-core/plate-plugin.mdx",
+          "target": "content/docs/plate/api/core/plate-plugin.mdx",
           "type": "registry:file"
         }
       ],
@@ -1222,7 +1235,7 @@
       "files": [
         {
           "path": "../../docs/api/core/plate-store.mdx",
-          "target": "content/docs/plate/api/plate-core/plate-store.mdx",
+          "target": "content/docs/plate/api/core/plate-store.mdx",
           "type": "registry:file"
         }
       ],
@@ -1235,7 +1248,7 @@
       "files": [
         {
           "path": "../../docs/api/core.mdx",
-          "target": "content/docs/plate/api/plate-core/core.mdx",
+          "target": "content/docs/plate/api/core.mdx",
           "type": "registry:file"
         }
       ],
@@ -1443,7 +1456,7 @@
       "files": [
         {
           "path": "../../docs/api/slate.mdx",
-          "target": "content/docs/plate/api/slate/index.mdx",
+          "target": "content/docs/plate/api/slate.mdx",
           "type": "registry:file"
         }
       ],
@@ -1625,7 +1638,7 @@
       "files": [
         {
           "path": "../../docs/installation/next.mdx",
-          "target": "content/docs/plate/installation/plate-ui/next.mdx",
+          "target": "content/docs/plate/installation/next.mdx",
           "type": "registry:file"
         }
       ],
@@ -1651,7 +1664,7 @@
       "files": [
         {
           "path": "../../docs/installation/plate-ui.mdx",
-          "target": "content/docs/plate/installation/plate-ui/index.mdx",
+          "target": "content/docs/plate/installation/plate-ui.mdx",
           "type": "registry:file"
         }
       ],
@@ -1664,7 +1677,7 @@
       "files": [
         {
           "path": "../../docs/installation/react.mdx",
-          "target": "content/docs/plate/installation/plate-ui/react.mdx",
+          "target": "content/docs/plate/installation/react.mdx",
           "type": "registry:file"
         }
       ],
@@ -1703,7 +1716,7 @@
       "files": [
         {
           "path": "../../docs/migration/slate-to-plate.mdx",
-          "target": "content/docs/plate/migrations/slate-to-plate.mdx",
+          "target": "content/docs/plate/migration/slate-to-plate.mdx",
           "type": "registry:file"
         }
       ],

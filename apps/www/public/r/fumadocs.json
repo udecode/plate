@@ -13,8 +13,7 @@
     "clsx"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/docs",
-    "https://platejs.org/r/docs-meta"
+    "https://platejs.org/r/docs"
   ],
   "files": [
     {
