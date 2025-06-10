@@ -1,5 +1,11 @@
 # @udecode/plate-node-id
 
+## 48.0.6
+
+### Patch Changes
+
+- [#4331](https://github.com/udecode/plate/pull/4331) by [@nklhtv](https://github.com/nklhtv) – Fixes #4315
+
 ## 48.0.0
 
 ### Patch Changes
