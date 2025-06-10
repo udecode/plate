@@ -14,10 +14,12 @@ export const SlateReactExtensionPlugin = toPlatePlugin(SlateExtensionPlugin, {
       if (Hotkeys.isMoveUpward(event)) {
         if (editor.tf.moveLine({ reverse: true })) {
           event.preventDefault();
+          event.stopPropagation();
         }
       } else if (Hotkeys.isMoveDownward(event)) {
         if (editor.tf.moveLine({ reverse: false })) {
           event.preventDefault();
+          event.stopPropagation();
         }
       } else if (
         Hotkeys.isTab(editor, event) ||
@@ -25,13 +27,16 @@ export const SlateReactExtensionPlugin = toPlatePlugin(SlateExtensionPlugin, {
       ) {
         if (editor.tf.tab({ reverse: Hotkeys.isUntab(editor, event) })) {
           event.preventDefault();
+          event.stopPropagation();
         }
       } else if (Hotkeys.isSelectAll(event)) {
         if (editor.tf.selectAll()) {
           event.preventDefault();
+          event.stopPropagation();
         }
       } else if (Hotkeys.isEscape(event) && editor.tf.escape()) {
         event.preventDefault();
+        event.stopPropagation();
       }
     },
   },

@@ -3,7 +3,7 @@ import { createSlatePlugin, findHtmlParentElement, KEYS } from '@udecode/plate';
 /** Enables support for code formatting */
 export const BaseCodePlugin = createSlatePlugin({
   key: KEYS.code,
-  node: { inset: true, isHardEdge: true, isLeaf: true },
+  node: { isLeaf: true },
   parsers: {
     html: {
       deserializer: {
@@ -22,6 +22,7 @@ export const BaseCodePlugin = createSlatePlugin({
     },
   },
   render: { as: 'code' },
+  rules: { selection: { affinity: 'hard' } },
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleMark(type);

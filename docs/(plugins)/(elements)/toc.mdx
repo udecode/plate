@@ -110,6 +110,18 @@ const editor = createPlateEditor({
 - `options.topOffset`: Sets the top offset when scrolling to headings.
 - `options.isScroll`: Enables scrolling behavior to headings.
 
+### Insert Toolbar Button
+
+You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert table of contents elements:
+
+```tsx
+{
+  icon: <TableOfContentsIcon />,
+  label: 'Table of contents',
+  value: KEYS.toc,
+}
+```
+
 ### Scroll Container Setup
 
 - If your scrolling element is [EditorContainer](/docs/components/editor), you can skip this step.

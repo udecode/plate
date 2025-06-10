@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import { SiteHeader } from '@/components/site-header';
 import { cn } from '@/lib/utils';
 
@@ -12,7 +14,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           // '[@media(width>=1800px)]:max-w-(--breakpoint-2xl) [@media(width>=1800px)]:border-x'
         )}
       >
-        <SiteHeader />
+        <Suspense fallback={null}>
+          <SiteHeader />
+        </Suspense>
         <main className="flex-1">{children}</main>
       </div>
     </div>

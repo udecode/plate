@@ -81,21 +81,6 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
       },
     },
   },
-  node: {
-    breakRules: {
-      empty: 'reset',
-      splitReset: false,
-    },
-    deleteRules: {
-      start: 'reset',
-    },
-    mergeRules: {
-      removeEmpty: false,
-    },
-    matchRules: ({ node }) => {
-      return isDefined(node[KEYS.listType]);
-    },
-  },
   options: {
     getListStyleType: (element) => element.style.listStyleType as ListStyleType,
   },
@@ -124,6 +109,21 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
       if (!props.element.listStyleType) return;
 
       return (props) => <List {...props} />;
+    },
+  },
+  rules: {
+    break: {
+      empty: 'reset',
+      splitReset: false,
+    },
+    delete: {
+      start: 'reset',
+    },
+    merge: {
+      removeEmpty: false,
+    },
+    match: ({ node }) => {
+      return isDefined(node[KEYS.listType]);
     },
   },
 }).overrideEditor(withList);

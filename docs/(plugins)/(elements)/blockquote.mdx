@@ -95,6 +95,30 @@ const editor = createPlateEditor({
 - `node.component`: Assigns [`BlockquoteElement`](/docs/components/blockquote-node) to render blockquote elements.
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle blockquote formatting.
 
+### Turn Into Toolbar Button
+
+You can add blockquote to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to toggle blockquotes:
+
+```tsx
+{
+  icon: <QuoteIcon />,
+  label: 'Quote',
+  value: KEYS.blockquote,
+}
+```
+
+### Insert Toolbar Button
+
+You can add blockquote to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert blockquotes:
+
+```tsx
+{
+  icon: <QuoteIcon />,
+  label: 'Quote',
+  value: KEYS.blockquote,
+}
+```
+
 </Steps>
 
 ## Plugins

@@ -20,7 +20,6 @@ import {
   ListIcon,
   ListOrderedIcon,
   MinusIcon,
-  PenToolIcon,
   PilcrowIcon,
   PlusIcon,
   QuoteIcon,
@@ -149,11 +148,6 @@ const groups: Group[] = [
         icon: <FilmIcon />,
         label: 'Embed',
         value: KEYS.mediaEmbed,
-      },
-      {
-        icon: <PenToolIcon />,
-        label: 'Excalidraw',
-        value: KEYS.excalidraw,
       },
     ].map((item) => ({
       ...item,

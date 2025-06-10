@@ -98,7 +98,7 @@ export const PlateElement = React.forwardRef(function PlateElement(
   );
 
   const inset =
-    insetProp ?? props.plugin?.node.selectionRules?.affinity === 'directional';
+    insetProp ?? props.plugin?.rules.selection?.affinity === 'directional';
 
   return (
     <>
@@ -181,7 +181,7 @@ export const PlateLeaf = React.forwardRef<
 >(({ as: Tag = 'span', children, inset: insetProp, ...props }, ref) => {
   const attributes = useNodeAttributes(props, ref);
 
-  const inset = insetProp ?? props.plugin?.node.inset;
+  const inset = insetProp ?? props.plugin?.rules.selection?.affinity === 'hard';
 
   if (inset) {
     return (

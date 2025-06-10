@@ -6,7 +6,7 @@ import type { DocsConfig } from '@/config/docs';
 import type { SidebarNavItem } from '@/types/nav';
 
 import { castArray } from 'lodash';
-import { ChevronDown, Leaf, X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -317,9 +317,9 @@ function DocsNavItems({
                     ))}
                   </div>
                 )}
-                {item.title?.toLowerCase().includes('leaf') && (
+                {/* {item.title?.toLowerCase().includes('leaf') && (
                   <Leaf className="ml-auto size-4 text-foreground/80" />
-                )}
+                )} */}
               </Link>
             ) : (
               <span
@@ -345,9 +345,9 @@ function DocsNavItems({
                     ))}
                   </div>
                 )}
-                {item.title?.toLowerCase().includes('leaf') && (
+                {/* {item.title?.toLowerCase().includes('leaf') && (
                   <Leaf className="ml-auto size-4 text-foreground/80" />
-                )}
+                )} */}
               </span>
             )}
             {!!item.items?.length && (

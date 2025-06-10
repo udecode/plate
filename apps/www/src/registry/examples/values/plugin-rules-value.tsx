@@ -8,161 +8,87 @@ export const pluginRulesValue: any = (
   <fragment>
     <hh2>Plugin Rules</hh2>
     <hp>
-      Plugin rules control how blocks respond to Enter and Backspace. Try the
-      examples below:
+      Plugin rules control how blocks respond to Enter, Backspace, selection,
+      and normalization.
     </hp>
 
     <hh3>Break Rules</hh3>
 
     <hp>
-      <htext bold>Blockquote with line breaks:</htext> Press Enter for line
-      breaks, Enter on empty lines to reset to paragraph.
+      <htext bold>Heading splitReset:</htext> Press Enter in middle of heading
+      to split and reset new block to paragraph.
     </hp>
-    <hblockquote>
-      This blockquote uses lineBreak rules. Try pressing Enter here to add line
-      breaks instead of splitting blocks.
-    </hblockquote>
-    <hblockquote>
-      <text />
-    </hblockquote>
+    <hh3>Press Enter after "Press" to see splitReset behavior</hh3>
 
     <hp>
-      <htext bold>Code block with smart exits:</htext> Enter in empty lines
-      exits the block.
+      <htext bold>Blockquote with line breaks:</htext> Enter adds line breaks,
+      Enter on empty lines resets to paragraph.
     </hp>
-    <hcodeblock>
+    <hblockquote>
+      This blockquote uses lineBreak rules. Press Enter here for line breaks.
+    </hblockquote>
+
+    <hh3>Delete Rules</hh3>
+
+    <hp>
+      <htext bold>Code block reset:</htext> Backspace in empty code block resets
+      to paragraph.
+    </hp>
+    <hcodeblock lang="javascript">
       <hcodeline>console.info('Hello world');</hcodeline>
       <hcodeline>
         <text />
       </hcodeline>
     </hcodeblock>
 
-    <hh3>Delete Rules</hh3>
-
-    <hp>
-      <htext bold>Headings with reset:</htext> Press Backspace at the start to
-      convert to paragraph.
-    </hp>
-    <hh1>Try Backspace at the start of this heading</hh1>
-    <hh2>Or this one</hh2>
-
     <hp>
       <htext bold>List items:</htext> Backspace at start removes list
       formatting.
     </hp>
     <hp indent={1} listStyleType="disc">
-      First list item - try Backspace at start
+      Press Backspace at start to remove list formatting
     </hp>
-    <hp indent={1} listStyleType="disc">
-      Second list item
+
+    <hh3>Selection Rules</hh3>
+
+    <hp>
+      <htext bold>Hard affinity (code):</htext> Use arrow keys around{' '}
+      <htext code>code marks</htext> - requires two key presses to cross
+      boundaries.
     </hp>
-    <hp indent={2} listStyleType="circle">
-      Nested item - Backspace removes one level
+
+    <hp>
+      <htext bold>Directional affinity:</htext> Use arrow keys around{' '}
+      <htext superscript>superscript</htext> text - cursor affinity depends on
+      movement direction.
+    </hp>
+
+    <hp>
+      <htext bold>Link directional:</htext> Navigate with arrows around{' '}
+      <ha url="https://example.com">this link</ha> to test directional behavior.
+    </hp>
+
+    <hh3>Normalize Rules</hh3>
+
+    <hp>
+      <htext bold>Empty link removal:</htext> Delete all text from{' '}
+      <ha url="https://example.com">this link</ha> - the link element will be
+      automatically removed.
     </hp>
 
     <hh3>Merge Rules</hh3>
 
     <hp>
-      <htext bold>Empty paragraphs:</htext> These will be removed when merging
-      with following blocks.
+      <htext bold>Void elements:</htext>
     </hp>
+    <element type="hr" />
+    <hp>
+      Press Backspace at start - void element are selected rather than deleted.
+    </hp>
+
     <hp>
       <text />
     </hp>
-    <hh2>Try Backspace at start - empty paragraph above gets removed</hh2>
-
-    <hp>
-      <htext bold>Blockquotes preserve empty blocks:</htext> Empty paragraphs
-      before blockquotes are kept.
-    </hp>
-    <hp>
-      <text />
-    </hp>
-    <hblockquote>Try Backspace here - empty paragraph is preserved</hblockquote>
-
-    <hh3>Match Rules</hh3>
-
-    <hp>
-      <htext bold>Conditional list behavior:</htext> These paragraphs have list
-      styling but only apply list rules when they have the listStyleType
-      property.
-    </hp>
-    <hp indent={1} listStyleType="disc">
-      This has list styling - Enter/Backspace use list rules
-    </hp>
-    <hp indent={1}>
-      This is indented but no listStyleType - uses paragraph rules
-    </hp>
-
-    <hp>
-      <htext bold>Code blocks with emptiness detection:</htext> Special rules
-      only apply when truly empty.
-    </hp>
-    <hcodeblock>
-      <hcodeline>// This code block has content</hcodeline>
-      <hcodeline>console.info('test');</hcodeline>
-    </hcodeblock>
-    <hcodeblock>
-      <hcodeline>
-        <text />
-      </hcodeline>
-    </hcodeblock>
-
-    <hh3>Combined Examples</hh3>
-
-    <hp>
-      <htext bold>Complex nested structure:</htext> Try different key
-      combinations in this table.
-    </hp>
-    <htable>
-      <htr>
-        <htd>
-          <hblockquote>
-            Blockquote in table cell. Try Enter for line breaks.
-          </hblockquote>
-        </htd>
-        <htd>
-          <hcodeblock>
-            <hcodeline>function example() {'{'}</hcodeline>
-            <hcodeline> return 'Press Enter on empty line';</hcodeline>
-            <hcodeline>{'}'}</hcodeline>
-            <hcodeline>
-              <text />
-            </hcodeline>
-          </hcodeblock>
-        </htd>
-      </htr>
-      <htr>
-        <htd>
-          <hp indent={1} listStyleType="disc">
-            List item in cell
-          </hp>
-          <hp indent={1} listStyleType="disc">
-            Another item
-          </hp>
-        </htd>
-        <htd>
-          <hh3>Heading in cell</hh3>
-          <hp>Regular paragraph</hp>
-        </htd>
-      </htr>
-    </htable>
-
-    <hp>
-      <htext bold>Experiment:</htext> Try these interactions to see plugin rules
-      in action:
-    </hp>
-    <hp indent={1} listStyleType="disc">
-      Press Enter at different positions in blockquotes
-    </hp>
-    <hp indent={1} listStyleType="disc">
-      Use Backspace at the start of headings and list items
-    </hp>
-    <hp indent={1} listStyleType="disc">
-      Try Enter in empty vs non-empty code lines
-    </hp>
-    <hp indent={1} listStyleType="disc">
-      Notice how empty paragraphs behave with different following blocks
-    </hp>
+    <hh2>Backspace at start removes empty paragraph above</hh2>
   </fragment>
 );

@@ -125,6 +125,22 @@ const editor = createPlateEditor({
 - `options.disableMerge`: Disables cell merging functionality.
 - `options.minColumnWidth`: Sets the minimum width for table columns.
 
+### Add Toolbar Button
+
+You can add [`TableToolbarButton`](/docs/components/table-toolbar-button) to your [Toolbar](/docs/toolbar) to insert tables.
+
+### Insert Toolbar Button
+
+You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert table elements:
+
+```tsx
+{
+  icon: <TableIcon />,
+  label: 'Table',
+  value: KEYS.table,
+}
+```
+
 ### Disable Merging Example
 
 <ComponentPreview name="table-nomerge-demo" />

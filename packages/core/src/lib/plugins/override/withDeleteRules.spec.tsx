@@ -8,7 +8,7 @@ import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 jsxt;
 
 describe('withDeleteRules', () => {
-  describe('deleteRules: { empty: "reset" }', () => {
+  describe('rules: { delete: { empty: "reset" }', () => {
     it('should reset on deleteBackward when block is empty', () => {
       const input = (
         <editor>
@@ -31,10 +31,10 @@ describe('withDeleteRules', () => {
           createSlatePlugin({
             key: 'blockquote',
             node: {
-              deleteRules: { empty: 'reset' },
               isElement: true,
               type: 'blockquote',
             },
+            rules: { delete: { empty: 'reset' } },
           }),
         ],
         selection: input.selection,
@@ -74,10 +74,10 @@ describe('withDeleteRules', () => {
           createSlatePlugin({
             key: 'blockquote',
             node: {
-              deleteRules: { empty: 'reset' },
               isElement: true,
               type: 'blockquote',
             },
+            rules: { delete: { empty: 'reset' } },
           }),
         ],
         selection: input.selection,
@@ -91,7 +91,7 @@ describe('withDeleteRules', () => {
     });
   });
 
-  describe('deleteRules: { start: "reset" }', () => {
+  describe('rules: { delete: { start: "reset" }', () => {
     it('should reset on deleteBackward when at start with content', () => {
       const input = (
         <editor>
@@ -116,10 +116,10 @@ describe('withDeleteRules', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              deleteRules: { start: 'reset' },
               isElement: true,
               type: 'h1',
             },
+            rules: { delete: { start: 'reset' } },
           }),
         ],
         selection: input.selection,
@@ -154,10 +154,10 @@ describe('withDeleteRules', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              deleteRules: { start: 'reset' },
               isElement: true,
               type: 'h1',
             },
+            rules: { delete: { start: 'reset' } },
           }),
         ],
         selection: input.selection,
@@ -196,10 +196,10 @@ describe('withDeleteRules', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              deleteRules: { start: 'reset' },
               isElement: true,
               type: 'h1',
             },
+            rules: { delete: { start: 'reset' } },
           }),
         ],
         selection: input.selection,
@@ -213,7 +213,7 @@ describe('withDeleteRules', () => {
     });
   });
 
-  describe('deleteRules: undefined (default)', () => {
+  describe('rules: { delete: undefined (default)', () => {
     it('should NOT reset on deleteBackward when at start', () => {
       const input = (
         <editor>
@@ -280,10 +280,10 @@ describe('withDeleteRules', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              deleteRules: { start: 'reset' },
               isElement: true,
               type: 'h1',
             },
+            rules: { delete: { start: 'reset' } },
           }),
         ],
         selection: input.selection,
@@ -400,7 +400,7 @@ describe('withDeleteRules', () => {
     });
   });
 
-  describe('deleteRules: undefined (default)', () => {
+  describe('rules: { delete: undefined (default)', () => {
     it('should use default behavior when deleteRules is undefined', () => {
       const input = (
         <editor>
@@ -471,10 +471,10 @@ describe('withDeleteRules', () => {
           createSlatePlugin({
             key: 'custom',
             node: {
-              deleteRules: {}, // empty object
               isElement: true,
               type: 'custom',
             },
+            rules: { delete: {} }, // empty object
           }),
         ],
         selection: input.selection,
@@ -514,18 +514,20 @@ describe('withDeleteRules', () => {
           createSlatePlugin({
             key: 'paragraph',
             node: {
-              deleteRules: { start: 'default' }, // Default behavior
               isElement: true,
               type: 'paragraph',
             },
+            rules: { delete: { start: 'default' } }, // Default behavior
           }),
           // Override plugin that matches nodes with customProperty
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              deleteRules: { start: 'reset' }, // Override behavior
               type: 'override',
-              matchRules: ({ node }) => Boolean(node.customProperty),
+            },
+            rules: {
+              delete: { start: 'reset' }, // Override behavior
+              match: ({ node }: { node: any }) => Boolean(node.customProperty),
             },
           }),
         ],
@@ -567,18 +569,20 @@ describe('withDeleteRules', () => {
           createSlatePlugin({
             key: 'p',
             node: {
-              deleteRules: { start: 'default' }, // Default behavior
               isElement: true,
               type: 'p',
             },
+            rules: { delete: { start: 'default' } }, // Default behavior
           }),
           // Override plugin that only matches nodes with customProperty
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              deleteRules: { start: 'reset' }, // Override behavior
               type: 'override',
-              matchRules: ({ node }) => Boolean(node.customProperty), // Won't match
+            },
+            rules: {
+              delete: { start: 'reset' }, // Override behavior
+              match: ({ node }: { node: any }) => Boolean(node.customProperty), // Won't match
             },
           }),
         ],
@@ -614,17 +618,19 @@ describe('withDeleteRules', () => {
           createSlatePlugin({
             key: 'paragraph',
             node: {
-              deleteRules: { empty: 'default' },
               isElement: true,
               type: 'paragraph',
             },
+            rules: { delete: { empty: 'default' } },
           }),
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              deleteRules: { empty: 'reset' },
               type: 'override',
-              matchRules: ({ node }) => Boolean(node.customProperty),
+            },
+            rules: {
+              delete: { empty: 'reset' },
+              match: ({ node }: { node: any }) => Boolean(node.customProperty),
             },
           }),
         ],

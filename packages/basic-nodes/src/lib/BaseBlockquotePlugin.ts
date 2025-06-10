@@ -4,14 +4,6 @@ import { createSlatePlugin, KEYS } from '@udecode/plate';
 export const BaseBlockquotePlugin = createSlatePlugin({
   key: KEYS.blockquote,
   node: {
-    breakRules: {
-      default: 'lineBreak',
-      empty: 'reset',
-      emptyLineEnd: 'deleteExit',
-    },
-    deleteRules: {
-      start: 'reset',
-    },
     isElement: true,
   },
   parsers: {
@@ -26,6 +18,16 @@ export const BaseBlockquotePlugin = createSlatePlugin({
     },
   },
   render: { as: 'blockquote' },
+  rules: {
+    break: {
+      default: 'lineBreak',
+      empty: 'reset',
+      emptyLineEnd: 'deleteExit',
+    },
+    delete: {
+      start: 'reset',
+    },
+  },
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleBlock(type);

@@ -20,16 +20,16 @@
   "meta": {
     "docs": [
       {
-        "route": "/docs/comments"
+        "route": "/docs/comment"
       },
       {
         "route": "https://pro.platejs.org/docs/components/comment-toolbar-button"
       }
     ],
     "examples": [
-      "comments-demo",
+      "comment-demo",
       "floating-toolbar-demo",
-      "comments-pro"
+      "comment-pro"
     ]
   }
 }

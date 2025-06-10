@@ -3,7 +3,7 @@ import { createSlatePlugin, KEYS } from '@udecode/plate';
 /** Enables support for subscript formatting. */
 export const BaseSubscriptPlugin = createSlatePlugin({
   key: KEYS.sub,
-  node: { isAffinity: true, isLeaf: true },
+  node: { isLeaf: true },
   parsers: {
     html: {
       deserializer: {
@@ -15,6 +15,7 @@ export const BaseSubscriptPlugin = createSlatePlugin({
     },
   },
   render: { as: 'sub' },
+  rules: { selection: { affinity: 'directional' } },
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleMark(type, {

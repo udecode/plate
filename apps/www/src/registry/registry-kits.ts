@@ -589,8 +589,8 @@ export const registryKits: Registry['items'] = [
       'date-kit',
       'dnd-kit',
       'docx-kit',
-      'editing-kit',
       'emoji-kit',
+      'exit-break-kit',
       'fixed-toolbar-kit',
       'floating-toolbar-kit',
       'font-kit',
@@ -607,18 +607,6 @@ export const registryKits: Registry['items'] = [
       'toc-kit',
       'toggle-kit',
     ],
-    type: 'registry:component',
-  },
-  {
-    dependencies: [],
-    files: [
-      {
-        path: 'components/editor/plugins/editing-kit.tsx',
-        type: 'registry:component',
-      },
-    ],
-    name: 'editing-kit',
-    registryDependencies: ['exit-break-kit'],
     type: 'registry:component',
   },
   {
@@ -866,20 +854,11 @@ export const registryKits: Registry['items'] = [
         path: 'components/editor/plugins/suggestion-kit.tsx',
         type: 'registry:component',
       },
-      {
-        path: 'ui/suggestion-line-break.tsx',
-        type: 'registry:ui',
-      },
-      {
-        path: 'ui/suggestion-toolbar-button.tsx',
-        type: 'registry:ui',
-      },
     ],
     name: 'suggestion-kit',
     registryDependencies: [
       'suggestion-base-kit',
       'suggestion-node',
-      'suggestion-line-break',
       'suggestion-toolbar-button',
       'discussion-kit',
     ],

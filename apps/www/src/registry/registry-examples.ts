@@ -24,6 +24,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
+    dependencies: ['@udecode/plate-tag'],
     description: 'A form with a select editor component for managing labels.',
     files: [
       {
@@ -258,10 +259,6 @@ export const demoExamples: Registry['items'] = (
       files: [
         {
           path: 'examples/single-block-demo.tsx',
-          type: 'registry:example',
-        },
-        {
-          path: 'examples/values/single-block-value.tsx',
           type: 'registry:example',
         },
       ],
@@ -569,19 +566,19 @@ export const demoExamples: Registry['items'] = (
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
         {
-          path: 'examples/values/comments-value.tsx',
+          path: 'examples/values/comment-value.tsx',
           type: 'registry:example',
         },
       ],
       meta: {
         docs: [
           {
-            route: '/docs/comments',
+            route: '/docs/comment',
             title: 'Comments',
           },
         ],
       },
-      name: 'comments-demo',
+      name: 'comment-demo',
       registryDependencies: [
         'comment-kit',
         'discussion-kit',

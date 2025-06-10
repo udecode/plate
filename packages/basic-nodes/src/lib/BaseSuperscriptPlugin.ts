@@ -3,7 +3,7 @@ import { createSlatePlugin, KEYS } from '@udecode/plate';
 /** Enables support for superscript formatting. */
 export const BaseSuperscriptPlugin = createSlatePlugin({
   key: KEYS.sup,
-  node: { isAffinity: true, isLeaf: true },
+  node: { isLeaf: true },
   parsers: {
     html: {
       deserializer: {
@@ -15,6 +15,7 @@ export const BaseSuperscriptPlugin = createSlatePlugin({
     },
   },
   render: { as: 'sup' },
+  rules: { selection: { affinity: 'directional' } },
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleMark(type, {

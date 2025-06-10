@@ -16,13 +16,21 @@ const registryApi: Registry['items'] = [
         target: 'app/api/ai/command/route.ts',
         type: 'registry:file',
       },
+    ],
+    name: 'ai-api',
+    registryDependencies: ['copilot-api'],
+    type: 'registry:file',
+  },
+  {
+    dependencies: ['@ai-sdk/openai', 'ai'],
+    files: [
       {
         path: 'app/api/ai/copilot/route.ts',
         target: 'app/api/ai/copilot/route.ts',
         type: 'registry:file',
       },
     ],
-    name: 'ai-api',
+    name: 'copilot-api',
     registryDependencies: [],
     type: 'registry:file',
   },

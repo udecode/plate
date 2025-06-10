@@ -83,7 +83,7 @@ export const playgroundValue: Value = [
       {
         children: [{ comment: true, comment_discussion4: true, text: '评论' }],
         type: 'a',
-        url: '/docs/comments',
+        url: '/docs/comment',
       },
       {
         comment: true,

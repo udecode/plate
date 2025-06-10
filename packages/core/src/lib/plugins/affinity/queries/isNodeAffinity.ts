@@ -14,7 +14,7 @@ export const isNodeAffinity = (
   const keys = ElementApi.isElement(node) ? [node.type] : marks;
   return keys.some(
     (type) =>
-      getPluginByType(editor, type)?.node.selectionRules?.affinity === affinity
+      getPluginByType(editor, type)?.rules.selection?.affinity === affinity
   );
 };
 

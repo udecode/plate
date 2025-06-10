@@ -46,7 +46,10 @@ export type BaseCommentConfig = PluginConfig<
 
 export const BaseCommentPlugin = createTSlatePlugin<BaseCommentConfig>({
   key: KEYS.comment,
-  node: { clearOnEdge: true, isLeaf: true },
+  node: {
+    isLeaf: true,
+  },
+  rules: { selection: { affinity: 'outward' } },
 })
   .overrideEditor(withComment)
   .extendApi<BaseCommentConfig['api']['comment']>(({ editor, type }) => ({

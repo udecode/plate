@@ -64,7 +64,6 @@ export const BaseTableCellPlugin = createSlatePlugin({
     isContainer: true,
     isElement: true,
     isStrictSiblings: true,
-    mergeRules: { removeEmpty: false },
     props: ({ element }) => ({
       colSpan: (element?.attributes as any)?.colspan,
       rowSpan: (element?.attributes as any)?.rowspan,
@@ -79,6 +78,9 @@ export const BaseTableCellPlugin = createSlatePlugin({
       },
     },
   },
+  rules: {
+    merge: { removeEmpty: false },
+  },
 });
 
 export const BaseTableCellHeaderPlugin = createSlatePlugin({
@@ -88,7 +90,6 @@ export const BaseTableCellHeaderPlugin = createSlatePlugin({
     isContainer: true,
     isElement: true,
     isStrictSiblings: true,
-    mergeRules: { removeEmpty: false },
     props: ({ element }) => ({
       colSpan: (element?.attributes as any)?.colspan,
       rowSpan: (element?.attributes as any)?.rowspan,
@@ -102,6 +103,9 @@ export const BaseTableCellHeaderPlugin = createSlatePlugin({
         rules: [{ validNodeName: 'TH' }],
       },
     },
+  },
+  rules: {
+    merge: { removeEmpty: false },
   },
 });
 

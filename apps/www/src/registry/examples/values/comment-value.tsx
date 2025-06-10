@@ -1,6 +1,6 @@
 import type { Value } from '@udecode/plate';
 
-export const commentsValue: Value = [
+export const commentValue: Value = [
   {
     children: [{ text: 'Comments and suggestions' }],
     type: 'h2',

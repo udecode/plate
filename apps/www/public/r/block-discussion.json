@@ -45,15 +45,15 @@
   "meta": {
     "docs": [
       {
-        "route": "/docs/comments"
+        "route": "/docs/comment"
       },
       {
         "route": "https://pro.platejs.org/docs/components/block-discussion"
       }
     ],
     "examples": [
-      "comments-demo",
-      "comments-pro"
+      "comment-demo",
+      "comment-pro"
     ]
   }
 }

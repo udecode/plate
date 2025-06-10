@@ -295,6 +295,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         },
         selectAll: () => {
           const apply = () => {
+            console.log('selectAlle');
             const ancestorNode = editor.api.block({ highest: true });
 
             if (!ancestorNode) return;
@@ -302,11 +303,13 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
             const [, path] = ancestorNode;
 
             if (editor.api.isAt({ block: true, end: true, start: true })) {
-              return api.blockSelection.selectAll();
+              api.blockSelection.selectAll();
+              return true;
             }
             // TODO： should select the blocks then selected all should exclude table and columns
             if (!editor.api.isAt({ block: true })) {
-              return api.blockSelection.selectAll();
+              api.blockSelection.selectAll();
+              return true;
             }
 
             editor.tf.select(path);

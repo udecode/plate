@@ -7,7 +7,7 @@
   - Replace `@udecode/plate-basic-elements` and `@udecode/plate-basic-marks` in your dependencies with `@platejs/basic-nodes`.
   - Update all import paths from `@udecode/plate-basic-elements/react` or `@udecode/plate-basic-marks/react` to `@platejs/basic-nodes/react`.
   - `CodeBlockPlugin` is **not** part of `@platejs/basic-nodes`. Ensure it is imported from `@platejs/code-block/react`.
-- `SkipMarkPlugin` (standalone) is removed. Its functionality is now built into the core editor. To enable boundary clearing for a specific mark, configure the mark plugin directly: `plugin.configure({ node: { clearOnEdge: true } })`.
+- `SkipMarkPlugin` (standalone) is removed. Its functionality is now built into the core editor. To enable boundary clearing for a specific mark, configure the mark plugin directly: `plugin.configure({ rules: { selection: { affinity: 'outward' } } })`.
 - Default HTML Tag Changes:
   - **Blocks**: Element plugins in `@udecode/plate-basic-nodes` (e.g., `BlockquotePlugin`, `HeadingPlugin`, `HorizontalRulePlugin`) now default to rendering with specific HTML tags (`<blockquote>`, `<h1>-<h6>`, `<hr>` respectively). `ParagraphPlugin` still defaults to `<div>`. If you relied on previous defaults or need different tags, provide a custom component or use the `render.as` option.
   - **Marks**: Mark plugins in `@udecode/plate-basic-nodes` (e.g., `BoldPlugin`, `CodePlugin`, `ItalicPlugin`) now default to specific HTML tags (`<strong>`, `<code>`, `<em>` respectively). If you relied on previous defaults or need different tags, provide a custom component or use the `render.as` option.

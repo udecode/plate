@@ -6,6 +6,8 @@ toc: true
 
 <ComponentPreview name="collaboration-demo" />
 
+<PackageInfo>
+
 ## Features
 
 - **Multi-Provider Support:** Enables real-time collaboration using [Yjs](https://github.com/yjs/yjs) and [slate-yjs](https://docs.slate-yjs.dev/). Supports multiple synchronization providers simultaneously (e.g., Hocuspocus + WebRTC) working on a shared `Y.Doc`.
@@ -15,8 +17,13 @@ toc: true
 - **Customizable Cursors:** Cursor appearance (name, color) can be customized via `cursors`.
 - **Manual Lifecycle:** Provides explicit `init` and `destroy` methods for managing the Yjs connection lifecycle.
 
+</PackageInfo>
 
-## Installation
+## Usage
+
+<Steps>
+
+### Installation
 
 Install the core Yjs plugin and the specific provider packages you intend to use:
 
@@ -36,59 +43,16 @@ For WebRTC peer-to-peer collaboration:
 npm install y-webrtc
 ```
 
-## Usage
-
-### 1. Configure Plugin
-
-Set up `YjsPlugin` within your Plate editor configuration. Define the providers you want to use in the `providers` array.
+### Add Plugin
 
 ```tsx
 import { YjsPlugin } from '@udecode/plate-yjs/react';
-import { Plate, createPlateEditor } from '@udecode/plate/react';
-import { RemoteCursorOverlay } from '@/components/ui/remote-cursor-overlay';
-import { EditorContainer } from '@/components/ui/editor';
+import { createPlateEditor } from '@udecode/plate/react';
 
 const editor = createPlateEditor({
   plugins: [
-    // ... other plugins
-    YjsPlugin.configure({
-      // Render remote cursors using the overlay component
-      render: {
-        afterEditable: RemoteCursorOverlay,
-      },
-      // Yjs Plugin Options
-      options: {
-        // Configure local user cursor appearance
-        cursors: {
-          data: {
-            name: 'User Name', // Replace with dynamic user name
-            color: '#aabbcc', // Replace with dynamic user color
-          },
-        },
-
-        // Configure providers. All providers share the same Y.Doc and Awareness instance.
-        providers: [
-          // Example: Hocuspocus provider
-          {
-            type: 'hocuspocus',
-            options: {
-              name: 'my-document-id', // Unique identifier for the document
-              url: 'ws://localhost:8888', // Your Hocuspocus server URL
-              // Additional Hocuspocus options...
-            },
-          },
-          // Example: WebRTC provider (can be used alongside Hocuspocus)
-          {
-            type: 'webrtc',
-            options: {
-              roomName: 'my-document-id', // Must match the document identifier
-              signaling: ['ws://localhost:4444'], // Optional: Your signaling server URLs
-              // peerOpts: { ... } // Optional: WebRTC Peer options (e.g., for TURN servers)
-            },
-          },
-        ],
-      },
-    }),
+    // ...otherPlugins,
+    YjsPlugin,
   ],
   // Important: Skip Plate's default initialization when using Yjs
   skipInitialization: true,
@@ -99,13 +63,80 @@ const editor = createPlateEditor({
   It's crucial to set `skipInitialization: true` when creating the editor. Yjs manages the initial document state, so Plate's default value initialization should be skipped to avoid conflicts.
 </Callout>
 
-### 2. Add Editor Container
+### Configure YjsPlugin
 
-The `RemoteCursorOverlay` requires a positioned container around the editor content. Use [`EditorContainer`](/docs/components/editor) component or `PlateContainer` from `@udecode/plate/react`.
+Configure the plugin with providers and cursor settings:
 
-### 3. Initialize Yjs Connection
+```tsx
+import { YjsPlugin } from '@udecode/plate-yjs/react';
+import { createPlateEditor } from '@udecode/plate/react';
+import { RemoteCursorOverlay } from '@/components/ui/remote-cursor-overlay';
 
-Yjs connection and state initialization are handled manually, typically within a `useEffect` hook.
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    YjsPlugin.configure({
+      render: {
+        afterEditable: RemoteCursorOverlay,
+      },
+      options: {
+        // Configure local user cursor appearance
+        cursors: {
+          data: {
+            name: 'User Name', // Replace with dynamic user name
+            color: '#aabbcc', // Replace with dynamic user color
+          },
+        },
+        // Configure providers. All providers share the same Y.Doc and Awareness instance.
+        providers: [
+          // Example: Hocuspocus provider
+          {
+            type: 'hocuspocus',
+            options: {
+              name: 'my-document-id', // Unique identifier for the document
+              url: 'ws://localhost:8888', // Your Hocuspocus server URL
+            },
+          },
+          // Example: WebRTC provider (can be used alongside Hocuspocus)
+          {
+            type: 'webrtc',
+            options: {
+              roomName: 'my-document-id', // Must match the document identifier
+              signaling: ['ws://localhost:4444'], // Optional: Your signaling server URLs
+            },
+          },
+        ],
+      },
+    }),
+  ],
+  skipInitialization: true,
+});
+```
+
+- `render.afterEditable`: Assigns [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) to render remote user cursors.
+- `cursors.data`: Configures the local user's cursor appearance with name and color.
+- `providers`: Array of collaboration providers to use (Hocuspocus, WebRTC, or custom providers).
+
+### Add Editor Container
+
+The `RemoteCursorOverlay` requires a positioned container around the editor content. Use [`EditorContainer`](/docs/components/editor) component or `PlateContainer` from `@udecode/plate/react`:
+
+```tsx
+import { Plate } from '@udecode/plate/react';
+import { EditorContainer } from '@/components/ui/editor';
+
+return (
+  <Plate editor={editor}>
+    <EditorContainer>
+      <Editor />
+    </EditorContainer>
+  </Plate>
+);
+```
+
+### Initialize Yjs Connection
+
+Yjs connection and state initialization are handled manually, typically within a `useEffect` hook:
 
 ```tsx
 import React, { useEffect } from 'react';
@@ -113,7 +144,7 @@ import { YjsPlugin } from '@udecode/plate-yjs/react';
 import { useMounted } from '@/hooks/use-mounted'; // Or your own mounted check
 
 const MyEditorComponent = ({ documentId, initialValue }) => {
-  const editor = usePlateEditor(/** editor config from step 1 **/);
+  const editor = usePlateEditor(/** editor config from previous steps **/);
   const mounted = useMounted();
 
   useEffect(() => {
@@ -135,9 +166,6 @@ const MyEditorComponent = ({ documentId, initialValue }) => {
   return (
     <Plate editor={editor}>
       <EditorContainer>
-        {/* Components to display connection status, user info, etc. */}
-        {/* <EditorStatus /> */}
-        
         <Editor />
       </EditorContainer>
     </Plate>
@@ -151,10 +179,9 @@ const MyEditorComponent = ({ documentId, initialValue }) => {
   **Lifecycle Management**: You **must** call `editor.api.yjs.init()` to establish the connection and `editor.api.yjs.destroy()` on component unmount to clean up resources.
 </Callout>
 
+### Monitor Connection Status (Optional)
 
-### 4. Monitor Connection Status (Optional)
-
-You can access internal state via plugin options or use the event handlers (`onConnect`, `onDisconnect`, `onSyncChange`) for more fine-grained control.
+Access provider states and add event handlers for connection monitoring:
 
 ```tsx
 import React from 'react';
@@ -177,7 +204,7 @@ function EditorStatus() {
   );
 }
 
-// Alternatively, use event handlers for more complex logic:
+// Add event handlers for connection events:
 YjsPlugin.configure({
   options: {
     // ... other options
@@ -189,11 +216,241 @@ YjsPlugin.configure({
 });
 ```
 
-## API
+</Steps>
+
+## Provider Types
+
+### Hocuspocus Provider
+
+Server-based collaboration using [Hocuspocus](https://tiptap.dev/hocuspocus). Requires a running Hocuspocus server.
+
+```tsx
+type HocuspocusProviderConfig = {
+  type: 'hocuspocus',
+  options: {
+    name: string;     // Document identifier
+    url: string;      // WebSocket server URL
+    token?: string;   // Authentication token
+  }
+}
+```
+
+### WebRTC Provider
+
+Peer-to-peer collaboration using [y-webrtc](https://github.com/yjs/y-webrtc).
+
+```tsx
+type WebRTCProviderConfig = {
+  type: 'webrtc',
+  options: {
+    roomName: string;      // Room name for collaboration
+    signaling?: string[];  // Signaling server URLs
+    password?: string;     // Room password
+    maxConns?: number;     // Max connections
+    peerOpts?: object;     // WebRTC peer options
+  }
+}
+```
+
+### Custom Provider
+
+Create custom providers by implementing the `UnifiedProvider` interface:
+
+```typescript
+interface UnifiedProvider {
+  awareness: Awareness;
+  document: Y.Doc;
+  type: string;
+  connect: () => void;
+  destroy: () => void;
+  disconnect: () => void;
+  isConnected: boolean;
+  isSynced: boolean;
+}
+```
+
+Use custom providers directly in the providers array:
+
+```tsx
+const customProvider = new MyCustomProvider({ doc: ydoc, awareness });
+
+YjsPlugin.configure({
+  options: {
+    providers: [customProvider],
+  },
+});
+```
+
+## Backend Setup
+
+### Hocuspocus Server
+
+Set up a [Hocuspocus server](https://tiptap.dev/hocuspocus/getting-started) for server-based collaboration. Ensure the `url` and `name` in your provider options match your server configuration.
+
+### WebRTC Setup
+
+#### Signaling Server
+
+WebRTC requires signaling servers for peer discovery. Public servers work for testing but use your own for production:
+
+```bash
+npm install y-webrtc
+PORT=4444 node ./node_modules/y-webrtc/bin/server.js
+```
+
+Configure your client to use custom signaling:
+
+```tsx
+{
+  type: 'webrtc',
+  options: {
+    roomName: 'document-1',
+    signaling: ['ws://your-signaling-server.com:4444'],
+  },
+}
+```
+
+#### TURN Servers
+
+<Callout type="warning">
+  WebRTC connections can fail due to firewalls. Use TURN servers or combine with Hocuspocus for production reliability.
+</Callout>
+
+Configure TURN servers for reliable connections:
+
+```tsx
+{
+  type: 'webrtc',
+  options: {
+    roomName: 'document-1',
+    signaling: ['ws://your-signaling-server.com:4444'],
+    peerOpts: {
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          {
+            urls: 'turn:your-turn-server.com:3478',
+            username: 'username',
+            credential: 'password'
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+## Security
+
+**Authentication & Authorization:**
+- Use Hocuspocus's `onAuthenticate` hook to validate users
+- Implement document-level access control on your backend
+- Pass authentication tokens via the `token` option
+
+**Transport Security:**
+- Use `wss://` URLs in production for encrypted communication
+- Configure secure TURN servers with the `turns://` protocol
+
+**WebRTC Security:**
+- Use the `password` option for basic room access control
+- Configure secure signaling servers
+
+Example secure configuration:
+
+```tsx
+YjsPlugin.configure({
+  options: {
+    providers: [
+      {
+        type: 'hocuspocus',
+        options: {
+          name: 'secure-document-id',
+          url: 'wss://your-hocuspocus-server.com',
+          token: 'user-auth-token',
+        },
+      },
+      {
+        type: 'webrtc',
+        options: {
+          roomName: 'secure-document-id',
+          password: 'strong-room-password',
+          signaling: ['wss://your-secure-signaling.com'],
+          peerOpts: {
+            config: {
+              iceServers: [
+                {
+                  urls: 'turns:your-turn-server.com:443?transport=tcp',
+                  username: 'user',
+                  credential: 'pass'
+                }
+              ]
+            }
+          }
+        },
+      },
+    ],
+  },
+});
+```
+
+## Troubleshooting
+
+### Connection Issues
+
+**Check URLs and Names:**
+- Verify `url` (Hocuspocus) and `signaling` URLs (WebRTC) are correct
+- Ensure `name` or `roomName` matches exactly across all collaborators
+- Use `ws://` for local development, `wss://` for production
+
+**Server Status:**
+- Verify Hocuspocus and signaling servers are running
+- Check server logs for errors
+- Test TURN server connectivity if using WebRTC
+
+**Network Issues:**
+- Firewalls may block WebSocket or WebRTC traffic
+- Use TURN servers configured for TCP (port 443) for better traversal
+- Check browser console for provider errors
+
+### Multiple Documents
+
+**Separate Instances:**
+- Create separate `Y.Doc` instances for each document
+- Use unique document identifiers for `name`/`roomName`
+- Pass unique `ydoc` and `awareness` instances to each editor
+
+### Sync Issues
+
+**Editor Initialization:**
+- Always set `skipInitialization: true` when creating the editor
+- Use `editor.api.yjs.init({ value })` for initial content
+- Ensure all providers use the exact same document identifier
+
+**Content Conflicts:**
+- Avoid manually manipulating the shared `Y.Doc`
+- Let Yjs handle all document operations through the editor
+
+### Cursor Issues
+
+**Overlay Setup:**
+- Include [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) in plugin render config
+- Use positioned container (`EditorContainer` or `PlateContainer`)
+- Verify `cursors.data` (name, color) is set correctly for local user
+
+## Related
+
+- [Yjs](https://github.com/yjs/yjs) - CRDT framework for collaboration
+- [slate-yjs](https://docs.slate-yjs.dev/) - Yjs bindings for Slate
+- [Hocuspocus](https://tiptap.dev/hocuspocus) - Backend server for Yjs
+- [y-webrtc](https://github.com/yjs/y-webrtc) - WebRTC provider
+- [RemoteCursorOverlay](/docs/components/remote-cursor-overlay) - Remote cursor component
+- [EditorContainer](/docs/components/editor) - Editor container component
+
+## Plugins
 
 ### `YjsPlugin`
 
-Configure the Yjs plugin using `YjsPlugin.configure({ options: { ... } })`.
+Enables real-time collaboration using Yjs with support for multiple providers and remote cursors.
 
 <API name="YjsPlugin">
 <APIOptions>
@@ -237,6 +494,8 @@ Configure the Yjs plugin using `YjsPlugin.configure({ options: { ... } })`.
   </APIItem>
 </APIAttributes>
 </API>
+
+## API
 
 ### `api.yjs.init`
 
@@ -299,244 +558,3 @@ Manually disconnects from providers.
  </APIItem>
 </APIParameters>
 </API>
-
-## Provider Types
-
-### Hocuspocus Provider
-
-Server-based collaboration using [Hocuspocus](https://tiptap.dev/hocuspocus). Requires a running Hocuspocus server.
-
-```tsx
-type HocuspocusProviderConfig = {
-  type: 'hocuspocus',
-  options: { // HocuspocusProviderConfiguration
-    name: string;           // Document identifier (must match server/other clients)
-    url: string;           // WebSocket server URL (e.g., 'ws://localhost:8888')
-    token?: string;        // Optional authentication token
-    // ... see Hocuspocus documentation for all options
-  }
-}
-```
-
-### WebRTC Provider
-
-Peer-to-peer collaboration using [y-webrtc](https://github.com/yjs/y-webrtc). Requires signaling servers for peer discovery and potentially TURN servers for NAT traversal.
-
-```tsx
-type WebRTCProviderConfig = {
-  type: 'webrtc',
-  options: { // WebRTCProviderOptions
-    roomName: string;      // Room name for collaboration (must match other clients)
-    signaling?: string[];  // Optional signaling server URLs (defaults to public servers)
-    password?: string;     // Optional room password
-    maxConns?: number;     // Max WebRTC connections
-    filterBcConns?: boolean; // Filter broadcast connections
-    peerOpts?: object;    // Options passed to simple-peer (e.g., for ICE/TURN servers)
-  }
-}
-```
-
-### Custom Provider (`UnifiedProvider`)
-
-Interface for custom provider implementations. If you create a custom provider (e.g., for IndexedDB persistence), it should implement this interface and be registered if necessary.
-
-```typescript
-interface UnifiedProvider {
-  awareness: Awareness; // Must use the shared Awareness instance
-  document: Y.Doc;      // Must use the shared Y.Doc instance
-  type: string;         // Unique type identifier (e.g., 'indexeddb')
-  connect: () => void;    // Logic to establish connection/load data
-  destroy: () => void;    // Cleanup logic (called by editor.api.yjs.destroy)
-  disconnect: () => void; // Logic to disconnect/save data
-  isConnected: boolean;   // Provider's connection status
-  isSynced: boolean;      // Provider's data sync status
-}
-```
-
-You can pass an instance of your custom provider directly into the `providers` array:
-
-```tsx
-const myCustomProvider = new MyCustomProvider({ doc: ydoc, awareness, options: {} });
-
-YjsPlugin.configure({
-  options: {
-    ydoc,
-    awareness,
-    providers: [
-      myCustomProvider,
-      // ... other provider configs or instances
-    ]
-  }
-});
-```
-
-## Backend Setup
-
-Real-time collaboration requires backend infrastructure depending on the chosen provider(s).
-
-### Hocuspocus Server
-
-For server-based collaboration using the `hocuspocus` provider:
-- Set up a Hocuspocus server instance.
-- Follow the instructions in the [Hocuspocus Documentation](https://tiptap.dev/hocuspocus/getting-started).
-- Ensure the `url` and `name` in your `YjsPlugin` provider options match your server configuration.
-
-### WebRTC Configuration
-
-The `webrtc` provider enables peer-to-peer collaboration, reducing server load for document synchronization but requiring additional components for peer discovery and connectivity in challenging network conditions.
-
-#### Signaling Server
-
-Peers need a way to find each other initially. This is done via signaling servers.
-- **Default:** `y-webrtc` uses public signaling servers by default (`wss://signaling.yjs.dev`, etc.). These are suitable for testing but not recommended for production due to reliability and privacy concerns.
-- **Custom:** For reliability and privacy, run your own signaling server(s). A basic server is included with `y-webrtc`:
-
-```bash
-# Install y-webrtc if not already installed
-npm install y-webrtc
-
-# Run the signaling server (defaults to port 4444)
-PORT=4444 node ./node_modules/y-webrtc/bin/server.js
-```
-
-- Configure your client to use your server(s) via the `signaling` option:
-
-```tsx
-{
-  type: 'webrtc',
-  options: {
-    roomName: 'document-1',
-    signaling: ['ws://your-signaling-server.com:4444'], // Your server URL(s)
-  },
-}
-```
-
-- For details, see the [y-webrtc repository](https://github.com/yjs/y-webrtc) and its [server code](https://github.com/yjs/y-webrtc/blob/master/bin/server.js).
-
-#### TURN Servers (Recommended for Production)
-
-<Callout className="my-4" type="warning">
-  Direct peer-to-peer WebRTC connections can fail due to firewalls or NAT configurations. Relying solely on WebRTC without fallbacks (like TURN servers or a primary Hocuspocus connection) is **not recommended** for production applications.
-</Callout>
-
-TURN (Traversal Using Relays around NAT) servers act as relays when direct P2P connections fail.
-- **Services:** Use hosted TURN services like [Twilio Network Traversal Service](https://www.twilio.com/stun-turn) or others.
-- **Self-Hosted:** Deploy your own TURN server using open-source software like [Coturn](https://github.com/coturn/coturn).
-- **Configuration:** Provide ICE server configurations (including STUN and TURN servers) via the `peerOpts` option in your WebRTC provider settings:
-
-```tsx
-{
-  type: 'webrtc',
-  options: {
-    roomName: 'document-1',
-    signaling: ['ws://your-signaling-server.com:4444'],
-    // Configure ICE servers via simple-peer options
-    peerOpts: {
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' }, // Example public STUN server
-          {
-            urls: 'turn:your-turn-server.com:3478',
-            username: 'your-turn-username',
-            credential: 'your-turn-password'
-          }
-          // Add more STUN/TURN servers as needed
-        ]
-      }
-      // Other WebRTC Peer options can go here
-    }
-  }
-}
-```
-
-## Security
-
-When implementing real-time collaboration, consider these security aspects:
-
-1.  **Authentication**: Use Hocuspocus's `onAuthenticate` hook or similar mechanisms on your backend to validate users before allowing connections or document access. Pass necessary tokens via the `token` option.
-2.  **Authorization**: Implement document-level access control on your backend (Hocuspocus server or your application server). Verify user permissions before granting access to specific documents (`name`/`roomName`).
-3.  **WebRTC Security**:
-    *   Use the `password` option in `y-webrtc` for basic room access control (note: this is transmitted via signaling).
-    *   Configure secure TURN servers (`turns:` protocol) with credentials for reliable and potentially more private relaying.
-    *   Use secure signaling servers (`wss://`).
-4.  **Data Validation**: Although Yjs handles CRDT merging, consider server-side validation if needed for specific content rules beyond structural integrity.
-5.  **Transport Security**: Always use `wss://` for Hocuspocus and signaling URLs in production to encrypt communication.
-
-Example secure configuration combining Hocuspocus auth and WebRTC with TURN:
-
-```tsx
-YjsPlugin.configure({
-  options: {
-    providers: [
-      {
-        type: 'hocuspocus',
-        options: {
-          name: 'secure-document-id',
-          url: 'wss://your-hocuspocus-server.com', // Use wss://
-          token: 'user-auth-token', // Send auth token
-          // Server verifies token in onAuthenticate hook
-        },
-      },
-      {
-        type: 'webrtc',
-        options: {
-          roomName: 'secure-document-id',
-          password: 'a-strong-room-password', // Basic access control
-          signaling: ['wss://your-secure-signaling.com'], // Use wss://
-          peerOpts: {
-            config: {
-              iceServers: [
-                // Secure TURN server example
-                {
-                  urls: 'turns:your-turn-server.com:443?transport=tcp', // Use turns://
-                  username: 'user',
-                  credential: 'pass'
-                }
-              ]
-            }
-          }
-        },
-      },
-    ],
-  },
-});
-```
-
-## Troubleshooting
-
-### Provider Connection Issues
-
-- **Check URLs:** Double-check the `url` for Hocuspocus and the `signaling` URLs for WebRTC. Ensure they are correct and reachable from the client. Use `ws://` for local/unencrypted, `wss://` for production/encrypted.
-- **Check Names:** Ensure the `name` (Hocuspocus) or `roomName` (WebRTC) matches exactly for all collaborators intended to join the same document session.
-- **Server Status:** Verify that your Hocuspocus server and/or WebRTC signaling server are running and accessible. Check server logs for errors.
-- **Firewalls:** Network firewalls might block WebSocket connections (`ws://`, `wss://`) or WebRTC traffic (often dynamic UDP ports). Ensure necessary ports are open or use TURN servers configured for TCP (port 443) for better firewall traversal.
-- **TURN Configuration:** If using WebRTC in production and encountering connection problems, ensure your TURN server credentials and URLs are correct in `peerOpts`. Test TURN server connectivity independently.
-- **Provider Logs:** Check browser console logs for errors reported by the Hocuspocus or WebRTC providers themselves.
-
-### Multiple Documents / Dynamic Rooms
-
-- **Unique Y.Doc:** If your application handles multiple collaborative documents simultaneously (e.g., in different tabs or components), ensure you create a **separate `Y.Doc` instance for each distinct document**.
-- **Shared Y.Doc/Awareness:** Pass this unique `ydoc` instance and a corresponding `new Awareness(ydoc)` instance into the `YjsPlugin.configure({ options: { ydoc, awareness, ... } })` for that specific editor instance. Do **not** reuse the same Y.Doc/Awareness across logically separate documents.
-- **Unique IDs:** Use a unique document identifier (e.g., fetched from your backend) for the `name` (Hocuspocus) or `roomName` (WebRTC) option when configuring providers for each distinct document session. The `id` passed to `editor.api.yjs.init({ id: documentId })` should usually match these provider identifiers.
-
-### Content Conflicts / Sync Issues
-
-- **Initialization:** Ensure `skipInitialization: true` is set when creating the editor. Initializing Plate's value alongside Yjs fetching existing state is a common source of conflicts. Rely solely on `editor.api.yjs.init({ value: ... })` to handle the initial state *only if the Y.Doc is new*.
-- **Provider Mismatch:** Ensure all providers intended for a single document session are configured with the *exact same* document identifier (`name`/`roomName`). Connecting providers configured for different documents to the same editor will lead to errors or unpredictable behavior.
-- **Manual Y.Doc Manipulation:** Avoid directly manipulating the shared `Y.Doc` outside of the Plate editor's operations unless you fully understand the implications for the Slate data structure managed by `slate-yjs`.
-
-### Cursor Issues
-
-- **Awareness Instance:** Ensure the `awareness` instance provided to the plugin (or the one created internally) is the same one used by all providers connected to the shared `Y.Doc`. Cursors rely on Awareness updates.
-- **Cursor Overlay:** Make sure [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) (or your own component) is included in `YjsPlugin.configure({ render: { afterEditable: ... } })` and that the editor has a positioned container (`EditorContainer` or `PlateContainer`).
-- **`cursors.data`:** Verify that the `cursors.data` (name, color) is being set correctly for the local user. Check the network tab or Yjs debugging tools to see if awareness updates are being sent/received.
-
-## Related
-
-- **[Yjs](https://github.com/yjs/yjs):** The CRDT framework powering the collaboration.
-- **[slate-yjs](https://docs.slate-yjs.dev/):** Yjs bindings for Slate.
-- **[Hocuspocus](https://tiptap.dev/hocuspocus):** Backend persistence and scaling for Yjs.
-- **[y-webrtc](https://github.com/yjs/y-webrtc):** WebRTC provider for Yjs.
-- **[y-indexeddb](https://github.com/yjs/y-indexeddb):** IndexedDB database provider for Yjs.
-- **[Component: RemoteCursorOverlay](/docs/components/remote-cursor-overlay):** Renders remote user cursors.
-- **[Component: EditorContainer](/docs/components/editor):** Provides positioning context for overlays.

@@ -3,7 +3,7 @@ import { createSlatePlugin, KEYS, someHtmlElement } from '@udecode/plate';
 /** Enables support for strikethrough formatting. */
 export const BaseStrikethroughPlugin = createSlatePlugin({
   key: KEYS.strikethrough,
-  node: { isAffinity: true, isLeaf: true },
+  node: { isLeaf: true },
   parsers: {
     html: {
       deserializer: {
@@ -20,6 +20,7 @@ export const BaseStrikethroughPlugin = createSlatePlugin({
     },
   },
   render: { as: 's' },
+  rules: { selection: { affinity: 'directional' } },
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleMark(type);

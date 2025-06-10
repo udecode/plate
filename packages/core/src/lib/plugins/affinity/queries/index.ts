@@ -4,6 +4,4 @@
 
 export * from './getEdgeNodes';
 export * from './getMarkBoundaryAffinity';
-export * from './hasElement';
 export * from './isNodeAffinity';
-export * from './isOutwardEdge';

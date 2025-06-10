@@ -43,8 +43,8 @@ export const registryBlocks: Registry['items'] = [
       'discussion-kit',
       'dnd-kit',
       'docx-kit',
-      'editing-kit',
       'emoji-kit',
+      'exit-break-kit',
       'fixed-toolbar-kit',
       'floating-toolbar-kit',
       'font-kit',
@@ -134,7 +134,7 @@ export const registryBlocks: Registry['items'] = [
         type: 'registry:example',
       },
       {
-        path: 'examples/values/comments-value.tsx',
+        path: 'examples/values/comment-value.tsx',
         type: 'registry:example',
       },
       {

@@ -10,6 +10,7 @@ import {
 export const withColumn: OverrideEditor = ({
   editor,
   tf: { normalizeNode, selectAll },
+  type,
 }) => ({
   transforms: {
     normalizeNode([n, path]) {
@@ -23,9 +24,7 @@ export const withColumn: OverrideEditor = ({
         // If no columns found, unwrap the column group
         if (
           !node.children.some(
-            (child) =>
-              ElementApi.isElement(child) &&
-              child.type === editor.getType(KEYS.column)
+            (child) => ElementApi.isElement(child) && child.type === type
           )
         ) {
           editor.tf.removeNodes({ at: path });
@@ -72,7 +71,7 @@ export const withColumn: OverrideEditor = ({
         });
       }
       // If it's a column, ensure it has at least one block (optional)
-      if (ElementApi.isElement(n) && n.type === editor.getType(KEYS.column)) {
+      if (ElementApi.isElement(n) && n.type === type) {
         const node = n as TColumnElement;
 
         if (node.children.length === 0) {
@@ -91,7 +90,7 @@ export const withColumn: OverrideEditor = ({
         if (!at) return;
 
         const column = editor.api.above({
-          match: { type: editor.getType(KEYS.column) },
+          match: { type: type },
         });
 
         if (!column) return;

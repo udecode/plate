@@ -1,5 +1,6 @@
 ---
 title: Cursor Overlay
+description: Visual feedback for selections and cursor positions when editor loses focus.
 docs:
   - route: /docs/components/cursor-overlay
     title: Cursor Overlay
@@ -9,56 +10,98 @@ docs:
 
 <PackageInfo>
 
-The Cursor Overlay feature provides visual feedback for selections and cursor positions, particularly useful for maintaining context when the editor loses focus or during drag operations.
-
 ## Features
 
-- Maintains selection highlight when another element is focused
-- Dynamic selection (e.g. during AI streaming)
-- Shows cursor position during drag operations
-- Customizable styling for cursors and selections
-- Essential for external UI interactions (e.g. link toolbar, AI combobox)
+- Maintains selection highlight when another element is focused.
+- Dynamic selection display (e.g., during AI streaming).
+- Shows cursor position during drag operations.
+- Customizable styling for cursors and selections.
+- Essential for external UI interactions (e.g., link toolbar, AI combobox).
 
 </PackageInfo>
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add cursor overlay functionality is with the `CursorOverlayKit`, which includes the pre-configured `CursorOverlayPlugin` and the [`CursorOverlay`](/docs/components/cursor-overlay) UI component.
+
+<ComponentSource name="cursor-overlay-kit" />
+
+- [`CursorOverlay`](/docs/components/cursor-overlay): Renders cursor and selection overlays.
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { CursorOverlayKit } from '@/components/editor/plugins/cursor-overlay-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...CursorOverlayKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @udecode/plate-selection
 ```
 
-## Usage
+### Add Plugin
+
+```tsx
+import { CursorOverlayPlugin } from '@udecode/plate-selection/react';
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CursorOverlayPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+Configure the cursor overlay with a component to render overlays:
 
 ```tsx
 import { CursorOverlayPlugin } from '@udecode/plate-selection/react';
 import { CursorOverlay } from '@/components/ui/cursor-overlay';
+
+CursorOverlayPlugin.configure({
+  render: {
+    afterEditable: () => <CursorOverlay />,
+  },
+});
 ```
 
-- [CursorOverlay](/docs/components/cursor-overlay)
+- `render.afterEditable`: Assigns [`CursorOverlay`](/docs/components/cursor-overlay) to render after the editable content.
+
+### Editor Container Setup
+
+The cursor overlay requires a container component to ensure correct positioning. If you're using the [Editor](/docs/components/editor) component, this is handled automatically through `EditorContainer`.
+
+For custom setups, ensure your editor is wrapped with a container that has the editor's unique ID:
 
 ```tsx
-const plugins = [
-  // ...otherPlugins,
-  CursorOverlayPlugin.configure({
-    render: { afterEditable: () => <CursorOverlay /> },
-  }),
-];
+import { PlateContainer } from '@udecode/plate/react';
+
+export function EditorContainer(props: React.HTMLAttributes<HTMLDivElement>) {
+  return <PlateContainer {...props} />;
+}
 ```
-
-### Editor Container
-
-The editor requires a container component above `PlateContent` to ensure correct cursor overlay positioning:
-
-```tsx
-export const EditorContainer = (props: React.HTMLAttributes<HTMLDivElement>) => {
-  const editor = useEditorRef();
-  const containerRef = useEditorContainerRef();
-
-  return <div id={editor.meta.uid} ref={containerRef} {...props} />;
-};
-```
-
-This component is available in [Editor](/docs/components/editor).
 
 ### Preserving Selection Focus
 
@@ -70,16 +113,20 @@ To maintain the editor's selection state when focusing UI elements, add the `dat
 </ToolbarButton>
 ```
 
+This prevents the cursor overlay from disappearing when interacting with toolbar buttons or other UI elements.
+
+</Steps>
+
 ## Plugins
 
 ### `CursorOverlayPlugin`
 
-Plugin that manages cursor and selection overlays.
+Plugin that manages cursor and selection overlays for visual feedback.
 
 <API name="CursorOverlayPlugin">
 <APIOptions>
   <APIItem name="cursors" type="Record<string, CursorState<CursorData>>">
-    Object containing cursor states.
+    Object containing cursor states with their unique identifiers.
     - **Default:** `{}`
   </APIItem>
 </APIOptions>

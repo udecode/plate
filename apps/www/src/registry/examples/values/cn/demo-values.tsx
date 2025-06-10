@@ -7,7 +7,7 @@ import { basicNodesValue } from './basic-nodes-value';
 import { blockMenuValue } from './block-menu-value';
 import { blockSelectionValue } from './block-selection-value';
 import { columnValue } from './column-value';
-import { commentsValue } from './comments-value';
+import { commentValue } from './comment-value';
 import { copilotValue } from './copilot-value';
 import { cursorOverlayValue } from './cursor-overlay-value';
 import { dateValue } from './date-value';
@@ -50,7 +50,7 @@ const values = {
   'block-selection': blockSelectionValue,
   // callout: calloutValue,
   column: columnValue,
-  comments: commentsValue,
+  comment: commentValue,
   copilot: copilotValue,
   csv: deserializeCsvValue,
   'cursor-overlay': cursorOverlayValue,

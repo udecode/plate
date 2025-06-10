@@ -131,6 +131,7 @@ export function createSlatePlugin<
       plugins: [],
       priority: 100,
       render: {},
+      rules: {},
       shortcuts: {},
       transforms: {},
     },

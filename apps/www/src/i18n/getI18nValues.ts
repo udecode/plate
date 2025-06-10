@@ -15,7 +15,7 @@ import { basicNodesValue as basicNodesValueCn } from '@/registry/examples/values
 import { blockMenuValue as blockMenuValueCn } from '@/registry/examples/values/cn/block-menu-value';
 import { blockSelectionValue as blockSelectionValueCn } from '@/registry/examples/values/cn/block-selection-value';
 import { columnValue as columnValueCn } from '@/registry/examples/values/cn/column-value';
-import { commentsValue as commentsValueCn } from '@/registry/examples/values/cn/comments-value';
+import { commentValue as commentValueCn } from '@/registry/examples/values/cn/comment-value';
 import { copilotValue as copilotValueCn } from '@/registry/examples/values/cn/copilot-value';
 import { cursorOverlayValue as cursorOverlayValueCn } from '@/registry/examples/values/cn/cursor-overlay-value';
 import { dateValue as dateValueCn } from '@/registry/examples/values/cn/date-value';
@@ -55,7 +55,7 @@ import { tableValue as tableValueCn } from '@/registry/examples/values/cn/table-
 import { tocValue as tocValueCn } from '@/registry/examples/values/cn/toc-value';
 import { toggleValue as toggleValueCn } from '@/registry/examples/values/cn/toggle-value';
 import { columnValue as columnValueEn } from '@/registry/examples/values/column-value';
-import { commentsValue as commentsValueEn } from '@/registry/examples/values/comments-value';
+import { commentValue as commentValueEn } from '@/registry/examples/values/comment-value';
 import { copilotValue as copilotValueEn } from '@/registry/examples/values/copilot-value';
 import { cursorOverlayValue as cursorOverlayValueEn } from '@/registry/examples/values/cursor-overlay-value';
 import { dateValue as dateValueEn } from '@/registry/examples/values/date-value';
@@ -102,7 +102,7 @@ const i18n = {
     blockMenu: blockMenuValueCn,
     blockSelection: blockSelectionValueCn,
     column: columnValueCn,
-    comments: commentsValueCn,
+    comment: commentValueCn,
     copilot: copilotValueCn,
     cursorOverlay: cursorOverlayValueCn,
     date: dateValueCn,
@@ -148,7 +148,7 @@ const i18n = {
     blockMenu: blockMenuValueEn,
     blockSelection: blockSelectionValueEn,
     column: columnValueEn,
-    comments: commentsValueEn,
+    comment: commentValueEn,
     copilot: copilotValueEn,
     cursorOverlay: cursorOverlayValueEn,
     date: dateValueEn,

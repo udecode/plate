@@ -6,7 +6,6 @@ export const BaseParagraphPlugin = createSlatePlugin({
   key: 'p',
   node: {
     isElement: true,
-    mergeRules: { removeEmpty: true },
   },
   parsers: {
     html: {
@@ -19,5 +18,8 @@ export const BaseParagraphPlugin = createSlatePlugin({
         query: ({ element }) => element.style.fontFamily !== 'Consolas',
       },
     },
+  },
+  rules: {
+    merge: { removeEmpty: true },
   },
 });

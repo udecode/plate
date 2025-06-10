@@ -91,6 +91,19 @@ const editor = createPlateEditor({
 
 - `withComponent`: Assigns [`DateElement`](/docs/components/date-node) to render inline date elements.
 
+### Insert Toolbar Button
+
+You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert date elements:
+
+```tsx
+{
+  focusEditor: true,
+  icon: <CalendarIcon />,
+  label: 'Date',
+  value: KEYS.date,
+}
+```
+
 </Steps>
 
 ## Plugins

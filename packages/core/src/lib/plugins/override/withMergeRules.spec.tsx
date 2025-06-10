@@ -10,7 +10,7 @@ import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 jsxt;
 
 describe('withMergeRules', () => {
-  describe('mergeRules: { removeEmpty: true }', () => {
+  describe('rules: { merge: { removeEmpty: true } }', () => {
     it('should remove empty previous node when merging', () => {
       const input = (
         <editor>
@@ -39,9 +39,9 @@ describe('withMergeRules', () => {
             key: 'p',
             node: {
               isElement: true,
-              mergeRules: { removeEmpty: true },
               type: 'p',
             },
+            rules: { merge: { removeEmpty: true } },
           }),
         ],
         selection: input.selection,
@@ -81,9 +81,9 @@ describe('withMergeRules', () => {
             key: 'p',
             node: {
               isElement: true,
-              mergeRules: { removeEmpty: true },
               type: 'p',
             },
+            rules: { merge: { removeEmpty: true } },
           }),
         ],
         selection: input.selection,
@@ -97,7 +97,7 @@ describe('withMergeRules', () => {
     });
   });
 
-  describe('mergeRules: { removeEmpty: false }', () => {
+  describe('rules: { merge: { removeEmpty: false } }', () => {
     it('should NOT remove empty previous node when merging', () => {
       const input = (
         <editor>
@@ -126,9 +126,9 @@ describe('withMergeRules', () => {
             key: 'custom',
             node: {
               isElement: true,
-              mergeRules: { removeEmpty: false },
               type: 'custom',
             },
+            rules: { merge: { removeEmpty: false } },
           }),
         ],
         selection: input.selection,
@@ -216,17 +216,19 @@ describe('withMergeRules', () => {
             key: 'p',
             node: {
               isElement: true,
-              mergeRules: { removeEmpty: true },
               type: 'p',
             },
+            rules: { merge: { removeEmpty: true } },
           }),
           // Override plugin that prevents removal for nodes with customProperty
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              mergeRules: { removeEmpty: false },
               type: 'override',
-              matchRules: ({ node }) => Boolean(node.customProperty),
+            },
+            rules: {
+              merge: { removeEmpty: false },
+              match: ({ node }: { node: any }) => Boolean(node.customProperty),
             },
           }),
         ],
@@ -304,17 +306,19 @@ describe('withMergeRules', () => {
             key: 'p',
             node: {
               isElement: true,
-              mergeRules: { removeEmpty: true },
               type: 'p',
             },
+            rules: { merge: { removeEmpty: true } },
           }),
           // Override plugin that only matches nodes with customProperty (won't match)
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              mergeRules: { removeEmpty: false },
               type: 'override',
-              matchRules: ({ node }) => Boolean(node.customProperty),
+            },
+            rules: {
+              merge: { removeEmpty: false },
+              match: ({ node }: { node: any }) => Boolean(node.customProperty),
             },
           }),
         ],

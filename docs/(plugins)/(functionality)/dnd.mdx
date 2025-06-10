@@ -1,5 +1,6 @@
 ---
 title: Drag & Drop
+description: Drag and drop blocks to reorganize content within the editor.
 docs:
   - route: /docs/components/block-draggable
     title: Block Draggable
@@ -11,47 +12,114 @@ docs:
 
 ## Features
 
-- Drag & drop of blocks for content movement and insertion within the editor.
+- Drag and drop blocks for content movement and insertion within the editor.
+- Automatic scrolling when dragging blocks near viewport edges.
+- File drop support for inserting media blocks.
+- Visual drop indicators and drag handles.
 
 </PackageInfo>
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add drag and drop functionality is with the `DndKit`, which includes the pre-configured `DndPlugin` along with React DnD setup and the [`BlockDraggable`](/docs/components/block-draggable) UI component.
+
+<ComponentSource name="dnd-kit" />
+
+- [`BlockDraggable`](/docs/components/block-draggable): Renders drag handles and drop indicators for blocks.
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { DndKit } from '@/components/editor/plugins/dnd-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...DndKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @udecode/plate-dnd react-dnd react-dnd-html5-backend
 ```
 
-## Usage
-
-<Steps>
-
-### Add Plugins
-
-Include `DndPlugin` in your Plate plugins array.
+### Add Plugin
 
 ```tsx
 import { DndPlugin } from '@udecode/plate-dnd';
+import { createPlateEditor } from '@udecode/plate/react';
 
-const plugins = [
-  // ...otherPlugins,
-  DndPlugin,
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    DndPlugin,
+  ],
+});
 ```
 
-### Configure `DndPlugin`
+### Configure Plugin
 
-<ComponentSource name="dnd-kit" />
+Configure drag and drop with a draggable component and DnD provider:
 
-- `enableScroller: true` - Enables automatic scrolling when dragging blocks near the viewport edges
-- `onDropFiles` - Handles file drops by inserting them as media blocks at the target location
-- `render.aboveNodes` - Uses the `BlockDraggable` component to render drag handles and drop indicators above blocks
-- `render.aboveSlate` - Wraps the editor with `DndProvider` and `HTML5Backend`. Remove this if you already have `DndProvider` in your React tree.
+```tsx
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndPlugin } from '@udecode/plate-dnd';
 
-### Add Draggable Component
+DndPlugin.configure({
+  render: {
+    aboveSlate: ({ children }) => (
+      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
+    ),
+  },
+});
+```
 
-To enable drag and drop functionality on your editor blocks, you'll need to implement draggable components. These components use hooks like `useDraggable` to handle drag interactions and provide visual feedback.
+- `render.aboveNodes`: Assigns [`BlockDraggable`](/docs/components/block-draggable) to render drag handles above blocks.
+- `render.aboveSlate`: Wraps the editor with `DndProvider` and `HTML5Backend`. Remove this if you already have `DndProvider` in your React tree.
 
-You can use our [BlockDraggable](/docs/components/block-draggable) component or implement your own using the API below.
+### Advanced Configuration
+
+Add automatic scrolling and file drop handling:
+
+```tsx
+import { DndPlugin } from '@udecode/plate-dnd';
+import { PlaceholderPlugin } from '@udecode/plate-media/react';
+
+DndPlugin.configure({
+  options: {
+    enableScroller: true,
+    onDropFiles: ({ dragItem, editor, target }) => {
+      editor
+        .getTransforms(PlaceholderPlugin)
+        .insert.media(dragItem.files, { at: target, nextBlock: false });
+    },
+  },
+  render: {
+    aboveNodes: BlockDraggable,
+    aboveSlate: ({ children }) => (
+      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
+    ),
+  },
+});
+```
+
+- `enableScroller`: Enables automatic scrolling when dragging blocks near the viewport edges.
+- `onDropFiles`: Handles file drops by inserting them as media blocks at the target location.
 
 </Steps>
 
@@ -59,13 +127,33 @@ You can use our [BlockDraggable](/docs/components/block-draggable) component or 
 
 ### `DndPlugin`
 
+Plugin for drag and drop functionality within the editor.
+
 <API name="DndPlugin">
 <APIOptions>
   <APIItem name="enableScroller" type="boolean" optional>
-    Enables the scroller feature.
+    Enables automatic scrolling when dragging blocks near viewport edges.
+    - **Default:** `false`
   </APIItem>
   <APIItem name="scrollerProps" type="Partial<ScrollerProps>" optional>
-    Props for the `Scroller` component.
+    Props for the `Scroller` component when `enableScroller` is true.
+  </APIItem>
+  <APIItem name="onDropFiles" type="function" optional>
+    Handler for file drop events.
+    <APISubList>
+      <APISubListItem parent="onDropFiles" name="id" type="string">
+        ID of the target element.
+      </APISubListItem>
+      <APISubListItem parent="onDropFiles" name="dragItem" type="FileDragItemNode">
+        Object containing the dropped files.
+      </APISubListItem>
+      <APISubListItem parent="onDropFiles" name="editor" type="PlateEditor">
+        The editor instance.
+      </APISubListItem>
+      <APISubListItem parent="onDropFiles" name="target" type="Path">
+        Path where files should be inserted.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
   <APIItem name="dropTarget" type="{ id: string | null; line: DropLineDirection }" optional>
     The current drop target state containing both the target element id and drop line direction.
@@ -102,6 +190,8 @@ Returns an array of blocks that have an ID.
 </API>
 
 ### `selectBlockById`
+
+Selects a block by its ID.
 
 <API name="selectBlockById">
 <APIParameters>

@@ -6,7 +6,7 @@ import { createSlatePlugin, KEYS } from '@udecode/plate';
  */
 export const BaseHighlightPlugin = createSlatePlugin({
   key: KEYS.highlight,
-  node: { isAffinity: true, isLeaf: true },
+  node: { isLeaf: true },
   parsers: {
     html: {
       deserializer: {
@@ -19,6 +19,7 @@ export const BaseHighlightPlugin = createSlatePlugin({
     },
   },
   render: { as: 'mark' },
+  rules: { selection: { affinity: 'directional' } },
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleMark(type);

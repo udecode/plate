@@ -8,7 +8,7 @@ import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 jsxt;
 
 describe('withNormalizeRules', () => {
-  describe('normalizeRules: { removeEmpty: true }', () => {
+  describe('rules: { normalize: { removeEmpty: true }', () => {
     it('should remove empty element on normalize', () => {
       const input = (
         <editor>
@@ -35,8 +35,9 @@ describe('withNormalizeRules', () => {
             key: 'link',
             node: {
               isElement: true,
-              normalizeRules: { removeEmpty: true },
-              type: 'link',
+            },
+            rules: {
+              normalize: { removeEmpty: true },
             },
           }),
         ],
@@ -78,8 +79,10 @@ describe('withNormalizeRules', () => {
             key: 'link',
             node: {
               isElement: true,
-              normalizeRules: { removeEmpty: true },
               type: 'link',
+            },
+            rules: {
+              normalize: { removeEmpty: true },
             },
           }),
         ],
@@ -93,8 +96,8 @@ describe('withNormalizeRules', () => {
     });
   });
 
-  describe('normalizeRules: undefined (default)', () => {
-    it('should NOT remove empty element when normalizeRules is undefined', () => {
+  describe('rules: { normalize: undefined (default)', () => {
+    it('should NOT remove empty element when rules.normalize is undefined', () => {
       const input = (
         <editor>
           <hp>
@@ -124,7 +127,6 @@ describe('withNormalizeRules', () => {
             node: {
               isElement: true,
               type: 'link',
-              // normalizeRules is undefined
             },
           }),
         ],
@@ -179,7 +181,7 @@ describe('withNormalizeRules', () => {
   });
 
   describe('matchRules override behavior', () => {
-    it('should use matchRules override instead of default plugin normalizeRules', () => {
+    it('should use matchRules override instead of default plugin rules.normalize', () => {
       const input = (
         <editor>
           <hp>
@@ -207,16 +209,18 @@ describe('withNormalizeRules', () => {
             node: {
               isElement: true,
               type: 'paragraph',
-              // normalizeRules is undefined
+              // rules.normalize is undefined
             },
           }),
           // Override plugin that matches nodes with customProperty
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              normalizeRules: { removeEmpty: true }, // Override behavior
               type: 'override',
-              matchRules: ({ node }) => Boolean(node.customProperty),
+            },
+            rules: {
+              normalize: { removeEmpty: true }, // Override behavior
+              match: ({ node }) => Boolean(node.customProperty) as any,
             },
           }),
         ],
@@ -258,16 +262,18 @@ describe('withNormalizeRules', () => {
             node: {
               isElement: true,
               type: 'paragraph',
-              // normalizeRules is undefined
+              // rules.normalize is undefined
             },
           }),
           // Override plugin that only matches nodes with customProperty
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              normalizeRules: { removeEmpty: true }, // Override behavior
               type: 'override',
-              matchRules: ({ node }) => Boolean(node.customProperty), // Won't match
+            },
+            rules: {
+              normalize: { removeEmpty: true }, // Override behavior
+              match: ({ node }) => Boolean(node.customProperty) as any, // Won't match
             },
           }),
         ],
@@ -311,8 +317,10 @@ describe('withNormalizeRules', () => {
             key: 'link',
             node: {
               isElement: true,
-              normalizeRules: { removeEmpty: true },
               type: 'link',
+            },
+            rules: {
+              normalize: { removeEmpty: true },
             },
           }),
         ],
@@ -367,8 +375,10 @@ describe('withNormalizeRules', () => {
             key: 'paragraph',
             node: {
               isElement: true,
-              normalizeRules: { removeEmpty: true },
               type: 'paragraph',
+            },
+            rules: {
+              normalize: { removeEmpty: true },
             },
           }),
         ],

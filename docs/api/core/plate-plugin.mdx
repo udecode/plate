@@ -84,11 +84,6 @@ Indicates if this plugin's nodes can be rendered as decorated leaf. Set to false
 <APISubListItem parent="node" name="isElement" type="boolean" optional>
 Indicates if this plugin's nodes should be rendered as elements.
 </APISubListItem>
-<APISubListItem parent="node" name="isHardEdge" type="boolean" optional>
-Whether the inline node is a hard edge. When true, allows precise cursor positioning at the exact start or end of the node. This is useful for marks or inline elements that need precise cursor control, such as code spans.
-
-- **Default:** `false`
-</APISubListItem>
 <APISubListItem parent="node" name="isInline" type="boolean" optional>
 Indicates if this plugin's elements should be treated as inline.
 </APISubListItem>
@@ -98,10 +93,15 @@ Indicates if this plugin's nodes should be rendered as leaves.
 <APISubListItem parent="node" name="isContainer" type="boolean" optional>
 When `true`, indicates that the plugin's elements are primarily containers for other content. This property is typically used by fragment queries to unwrap the container nodes.
 </APISubListItem>
-<APISubListItem parent="node" name="clearOnEdge" type="boolean" optional>
-If true, enables automatically clearing the mark when typing at its boundary. Only applies when `isLeaf` is true.
+<APISubListItem parent="rules" name="selection.affinity" type="'default' | 'directional' | 'outward' | 'hard'" optional>
+Defines the selection behavior at the boundaries of nodes. See [Plugin Rules](/docs/plugin-rules#rulesselection).
 
-When enabled, typing at the start or end of a marked text range will automatically remove the mark from the new text, allowing users to "exit" the mark naturally.
+- `'default'`: Uses Slate's default behavior
+- `'directional'`: Selection affinity is determined by the direction of cursor movement. Maintains inward or outward affinity based on approach
+- `'outward'`: Forces outward affinity. Typing at the edge of a mark will not apply the mark to new text
+- `'hard'`: Creates a 'hard' edge that requires two key presses to move across. Uses offset-based navigation
+
+- **Default:** `undefined` (Slate's default behavior)
 </APISubListItem>
 <APISubListItem parent="node" name="isMarkableVoid" type="boolean" optional>
 Indicates if this plugin's void elements should be markable.
@@ -118,62 +118,60 @@ Used by exit break functionality to determine appropriate exit points in nested 
 
 - **Default:** `false`
 </APISubListItem>
-<APISubListItem parent="node" name="breakRules.empty" type="'default' | 'deleteExit' | 'exit' | 'reset'" optional>
+<APISubListItem parent="rules" name="break.empty" type="'default' | 'deleteExit' | 'exit' | 'reset'" optional>
 Action when Enter is pressed in an empty block. See [Plugin Rules](/docs/plugin-rules).
 
-- `'default'`: Default behavior (split the block)
-- `'exit'`: Exit the current block
+- `'default'`: Default behavior
 - `'reset'`: Reset block to default paragraph type
-- `'deleteExit'`: Delete backward then exit
-</APISubListItem>
-<APISubListItem parent="node" name="breakRules.emptyLineEnd" type="'default' | 'deleteExit' | 'exit'" optional>
-Action when Enter is pressed at the end of an empty line. This is typically used with `breakRules.default: 'lineBreak'`. See [Plugin Rules](/docs/plugin-rules).
-
-- `'default'`: Default behavior (split the block)
 - `'exit'`: Exit the current block
 - `'deleteExit'`: Delete backward then exit
 </APISubListItem>
-<APISubListItem parent="node" name="breakRules.default" type="'default' | 'deleteExit' | 'exit' | 'lineBreak'" optional>
+<APISubListItem parent="rules" name="break.emptyLineEnd" type="'default' | 'deleteExit' | 'exit'" optional>
+Action when Enter is pressed at the end of an empty line. This is typically used with `rules.break.default: 'lineBreak'`. See [Plugin Rules](/docs/plugin-rules).
+
+- `'default'`: Default behavior
+- `'exit'`: Exit the current block
+- `'deleteExit'`: Delete backward then exit
+</APISubListItem>
+<APISubListItem parent="rules" name="break.default" type="'default' | 'deleteExit' | 'exit' | 'lineBreak'" optional>
 Default action when Enter is pressed. Defaults to splitting the block. See [Plugin Rules](/docs/plugin-rules).
 
-- `'default'`: Default behavior (split the block)
+- `'default'`: Default behavior
 - `'exit'`: Exit the current block
 - `'lineBreak'`: Insert newline character
 - `'deleteExit'`: Delete backward then exit
 </APISubListItem>
-<APISubListItem parent="node" name="deleteRules.start" type="'default' | 'reset'" optional>
+<APISubListItem parent="rules" name="break.splitReset" type="boolean" optional>
+If true, the new block after splitting will be reset to the default type. See [Plugin Rules](/docs/plugin-rules).
+</APISubListItem>
+<APISubListItem parent="rules" name="delete.start" type="'default' | 'reset'" optional>
 Action when Backspace is pressed at the start of the block. This applies whether the block is empty or not. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
 - `'reset'`: Reset block to default paragraph type
 </APISubListItem>
-<APISubListItem parent="node" name="deleteRules.empty" type="'default' | 'reset'" optional>
+<APISubListItem parent="rules" name="delete.empty" type="'default' | 'reset'" optional>
 Action when Backspace is pressed and the block is empty. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
 - `'reset'`: Reset block to default paragraph type
 </APISubListItem>
-<APISubListItem parent="node" name="matchRules" type="MatchRules" optional>
-Function to determine if this plugin's rules should apply to a node. Used to override behavior based on node properties beyond just type matching. See [Plugin Rules](/docs/plugin-rules).
+<APISubListItem parent="rules" name="match" type="MatchRules" optional>
+Function to determine if this plugin's rules should apply to a node. Used to override behavior based on node properties beyond just type matching.
 
-```typescript
-type MatchRules = (options: {
-  rule: 'break.default' | 'break.empty' | 'break.emptyLineEnd' | 'delete.empty' | 'delete.start' | 'merge.removeEmpty' | 'normalize.removeEmpty';
-  node: TElement;
-  path: Path;
-}) => boolean;
-```
+**Default:** `type === node.type`
 
-Example: List plugin sets `matchRules: ({ node }) => !!node.listStyleType` to override paragraph behavior when the paragraph is a list item.
+**Example:** `matchRules: ({ node }) => Boolean(node.listStyleType)`
 
-- **Default:** `block.type === plugin.node.type`
+Example: List plugin sets `match: ({ node }) => !!node.listStyleType` to override paragraph behavior when the paragraph is a list item.
+
 </APISubListItem>
-<APISubListItem parent="node" name="mergeRules.removeEmpty" type="boolean" optional>
+<APISubListItem parent="rules" name="merge.removeEmpty" type="boolean" optional>
 Whether to remove the node when it's empty during merge operations. See [Plugin Rules](/docs/plugin-rules).
 
 - **Default:** `false`
 </APISubListItem>
-<APISubListItem parent="node" name="normalizeRules.removeEmpty" type="boolean" optional>
+<APISubListItem parent="rules" name="normalize.removeEmpty" type="boolean" optional>
 Whether to remove nodes with empty text during normalization. See [Plugin Rules](/docs/plugin-rules).
 
 - **Default:** `false`

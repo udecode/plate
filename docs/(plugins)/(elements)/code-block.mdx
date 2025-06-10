@@ -150,6 +150,30 @@ const editor = createPlateEditor({
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code blocks.
 - `withComponent`: Assigns components for code lines and syntax highlighting.
 
+### Turn Into Toolbar Button
+
+You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into code blocks:
+
+```tsx
+{
+  icon: <FileCodeIcon />,
+  label: 'Code',
+  value: KEYS.codeBlock,
+}
+```
+
+### Insert Toolbar Button
+
+You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert code block elements:
+
+```tsx
+{
+  icon: <FileCodeIcon />,
+  label: 'Code',
+  value: KEYS.codeBlock,
+}
+```
+
 </Steps>
 
 ## Plugins

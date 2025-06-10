@@ -362,24 +362,6 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         props?: NodeProps<WithAnyKey<C>>;
         /** Override `data-slate-node="text"` element attributes */
         textProps?: TextNodeProps<WithAnyKey<C>>;
-        /**
-         * Function to determine if this plugin's rules should apply to a node.
-         * Used to override behavior based on node properties beyond just type
-         * matching.
-         *
-         * Example: List plugin sets `matchRules: ({ node }) =>
-         * !!node.listStyleType` to override paragraph behavior when the
-         * paragraph is a list item.
-         *
-         * @default type === node.type
-         */
-        matchRules?: (
-          options: {
-            node: TElement;
-            path: Path;
-            rule: MatchRules;
-          } & PlatePluginContext<C>
-        ) => boolean;
       };
       override: {
         /** Replace plugin {@link NodeComponent} by key. */
@@ -459,6 +441,25 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
           props: PlateElementProps<TElement, C>
         ) => React.ReactNode;
       }>;
+      rules: {
+        /**
+         * Function to determine if this plugin's rules should apply to a node.
+         * Used to override behavior based on node properties beyond just type
+         * matching.
+         *
+         * Example: List plugin sets `match: ({ node }) => !!node.listStyleType`
+         * to override paragraph behavior when the paragraph is a list item.
+         *
+         * @default type === node.type
+         */
+        match?: (
+          options: {
+            node: TElement;
+            path: Path;
+            rule: MatchRules;
+          } & PlatePluginContext<C>
+        ) => boolean;
+      };
       /**
        * Keyboard shortcuts configuration mapping shortcut names to their key
        * combinations and handlers. Each shortcut can link to a transform

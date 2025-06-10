@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';

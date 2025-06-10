@@ -9,144 +9,150 @@ docs:
 
 <PackageInfo>
 
-The Block Selection feature allows users to select and manipulate entire text blocks, as opposed to individual words or characters. This powerful functionality enhances the editing experience by providing efficient ways to manage large sections of content.
+The Block Selection feature allows users to select and manipulate entire text blocks, as opposed to individual words or characters.
 
 ## Features
 
-- Select entire blocks with a single action
-- Multi-block selection
-- Copy, cut, and delete operations on selected blocks
+- Select entire blocks with a single action.
+- Multi-block selection using mouse drag or keyboard shortcuts.
+- Copy, cut, and delete operations on selected blocks.
 - Keyboard shortcuts for quick selection:
-  - `Cmd+A`:
-    - First press: select the current block
-    - Double press: select all blocks
-  - Arrow keys: select the block above or below
-- Customizable styling for selected blocks
+  - `Cmd+A`: Select all blocks.
+  - Arrow keys: Select the block above or below.
+- Customizable styling for selected blocks.
 
 </PackageInfo>
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add Block Selection is with the `BlockSelectionKit`, which includes the pre-configured `BlockSelectionPlugin` and the [`BlockSelection`](/docs/components/block-selection) UI component.
+
+<ComponentSource name="block-selection-kit" />
+
+- [`BlockSelection`](/docs/components/block-selection): Renders the selection rectangle around selected blocks.
+
+### Add Kit
+
+The `BlockSelectionKit` enables the context menu by default and provides a default `isSelectable` logic to exclude common non-selectable blocks like code lines and table cells.
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { BlockSelectionKit } from '@/components/editor/plugins/block-selection-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BlockSelectionKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @udecode/plate-selection
 ```
 
-## Usage
+### Add Plugin
+
+```tsx
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    BlockSelectionPlugin,
+  ],
+});
+```
+
+Put this plugin before any other plugins overriding `selectAll` – `Cmd+A` (code block, table, column, etc.) to avoid any conflicts.
+
+#### Excluding Blocks from Selection
+
+You can control which blocks are selectable using `options.isSelectable`. This function receives an element and its path, and should return `true` if the block is selectable.
+
+For example, to exclude code lines, columns, and table cells:
 
 ```tsx
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
-const plugins = [
-  // ...otherPlugins,
-  BlockSelectionPlugin,
-];
+BlockSelectionPlugin.configure({
+  options: {
+    isSelectable: (element, path) => {
+      if (['code_line', 'column', 'td'].includes(element.type)) {
+        return false;
+      }
+      // Exclude blocks inside table rows
+      if (editor.api.block({ above: true, at: path, match: { type: 'tr' } })) {
+        return false;
+      }
+      return true;
+    },
+  },
+});
 ```
 
-### `Exclude blocks from selection`
+#### Customizing Scroll Behavior
 
-You can exclude certain plugins from block selection using:
+If your editor is inside a scrollable container, you may need to configure the selection area's boundaries and scroll speed.
+
+1.  Add an `id` to your scroll container, e.g., `id={editor.meta.uid}`.
+2.  Set `position: relative` on the container.
+3.  Use the `areaOptions` to configure the boundaries and scrolling behavior.
 
 ```ts
-BlockSelectionPlugin.configure({
-  inject: {
-    // Exclude blocks below table rows
-    excludeBelowPlugins: ['tr'],
-    // Exclude block types
-    excludePlugins: ['table', 'code_line', 'column_group', 'column'],
-  }
-})
-```
-
-- `excludeBelowPlugins`: Plugin keys of non-selectable block descendants. Use this to prevent selection below specific blocks. For example, excluding 'tr' prevents selecting individual cells while still allowing table row selection.
-
-- `excludePlugins`: Plugin keys of non-selectable blocks.
-
-### Set scrollable container
-
-If you're using `EditorContainer` from [Editor](/docs/components/editor), you can skip this section.
-
-To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #${editor.meta.uid}`, which are used with `document.querySelector()`.
-
-For this to work effectively:
-
-1. Add an `id` or `className` to your scroll container. If you're not sure about the container, you can add it to the `<Editor />` component. We recommend using `id={editor.meta.uid}`.
-2. Use the appropriate selector in your configuration.
-3. Don't forget to set `position: relative` to the container.
-
-Default configuration:
-
-```js
 BlockSelectionPlugin.configure({
   options: {
     areaOptions: {
       boundaries: `#${editor.meta.uid}`,
       container: `#${editor.meta.uid}`,
-      selectables: `#${editor.meta.uid} .slate-selectable`,
-    },
-  },
-});
-```
-
-### Set scroll speed
-
-Use `options.areaOptions.behaviour.scrolling.speedDivider` to set the scroll speed.
-
-The value `0.8` is our recommended speed since it's near the browser-native speed.
-
-```ts
-BlockSelectionPlugin.configure({
-  options: {
-    areaOptions: {
       behaviour: {
-      scrolling: {
-        // You can slow down the scroll speed by setting a bigger value.
-        speedDivider: 1.5,
+        scrolling: {
+          // Recommended speed, close to native
+          speedDivider: 0.8,
+        },
+        // Threshold to start selection area
+        startThreshold: 4,
       },
-      // The distance needed to move for the selection area to appear.
-      // If it's too small, it may cause the mouse click event to be blocked. 10 is a good default.
-      startThreshold: 4,
     },
   },
 });
 ```
 
-### Add selectable element
+#### Full Page Selection
 
-Add `data-plate-selectable="true"` to any element you want to start block selection.
-
-### Prevent unselect
-
-To prevent unselecting blocks when clicking on certain elements, add the `data-plate-prevent-unselect` attribute to those components
-
-For example:
-```tsx
-<YourSpecialButtoon data-plate-prevent-unselect />
-```
-
-### Full Page Selection
-
-#### Making Elements Selectable
-
-You can enable block selection for elements outside the `<Editor />` component, similar to the [Potion](https://potion.platejs.org/) template. Add the `data-plate-selectable` attribute to any component you want to make selectable:
+You can enable block selection for elements outside the `<Editor />` component by adding the `data-plate-selectable` attribute.
 
 ```tsx
 <Cover data-plate-selectable />
 <Sidebar data-plate-selectable />
 ```
 
-This works for any element, even those outside the editor's DOM tree.
+To prevent unselecting blocks when clicking on certain elements (e.g., a toolbar button), add the `data-plate-prevent-unselect` attribute.
 
-#### Resetting Selection
-
-There are two ways to handle resetting selection across the full page:
-
-1. Direct API call:
 ```tsx
-editor.api.blockSelection.deselect();
+<YourToolbarButton data-plate-prevent-unselect />
 ```
 
-2. Click outside handler:
+To reset the selection when clicking outside selectable areas, you can use a click handler or call the API directly:
+
 ```tsx
+// 1. Direct API call
+editor.api.blockSelection.deselect();
+
+// 2. Click outside handler
 const handleClickOutside = (event: MouseEvent) => {
   if (!(event.target as HTMLElement).closest('[data-plate-selectable]')) {
     editor.api.blockSelection.deselect();
@@ -154,21 +160,24 @@ const handleClickOutside = (event: MouseEvent) => {
 };
 ```
 
+</Steps>
+
 ## Styling
 
-### Selection area
+### Selection Area
 
-Style the selection area by adding the `.slate-selection-area` class to your editor container component. For example:
+Style the selection area by targeting the `.slate-selection-area` class, which is added to the editor container.
 
-```js
+```css
+/* Example using Tailwind CSS utility classes */
 '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
 ```
 
-### Selected element
+### Selected Element
 
-To determine if an element is selected, use `useBlockSelected` hook. You can render a visual indicator around selected blocks using our [BlockSelection](/docs/components/block-selection) component or create your own.
+Use the `useBlockSelected` hook to determine if a block is selected. You can render a visual indicator, like the [`BlockSelection`](/docs/components/block-selection) component, which is designed for this purpose.
 
-This component should be rendered inside each block element for consistent selection feedback. Plate UI is doing it by configuring the plugin this way:
+Plate UI renders this component for all selectable blocks using `render.belowRootNodes`:
 
 ```tsx
 render: {
@@ -189,16 +198,17 @@ Plugin for block selection functionality.
 <API name="BlockSelectionPlugin">
 <APIOptions>
   <APIItem name="areaOptions" type="PartialSelectionOptions" optional>
-    Options for the selection area.
-
+    Options for the selection area. See [SelectionJS docs](https://github.com/Simonwep/selection-js) for all available options.
+    
 ```ts
 {
-    boundaries: [`#${editor.meta.uid}`],
-    container: [`#${editor.meta.uid}`],
-    selectables: [`#${editor.meta.uid} .slate-selectable`],
-    selectionAreaClass: 'slate-selection-area',
+  boundaries: [`#${editor.meta.uid}`],
+  container: [`#${editor.meta.uid}`],
+  selectables: [`#${editor.meta.uid} .slate-selectable`],
+  selectionAreaClass: 'slate-selection-area',
 }
 ```
+    
   </APIItem>
   <APIItem name="enableContextMenu" type="boolean" optional>
     Enables or disables the context menu for block selection.
@@ -288,12 +298,50 @@ Checks if one or more blocks are selected.
     The ID(s) of the block(s) to check.
   </APIItem>
 </APIParameters>
-
 <APIReturns>
   <APIItem type="boolean">
     Whether the block(s) are selected.
   </APIItem>
 </APIReturns>
+</API>
+
+### `api.blockSelection.isSelectable`
+
+Checks if a block at a given path is selectable based on the `isSelectable` plugin option.
+
+<API name="isSelectable">
+<APIParameters>
+  <APIItem name="element" type="TElement">
+    Block element to check.
+  </APIItem>
+  <APIItem name="path" type="Path">
+    Path to the block element.
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  Whether the block is selectable.
+</APIReturns>
+</API>
+
+### `api.blockSelection.moveSelection`
+
+Moves the selection up or down to the next selectable block.
+
+When moving up:
+- Gets the previous selectable block from the top-most selected block
+- Sets it as the new anchor
+- Clears previous selection and selects only this block
+When moving down:
+- Gets the next selectable block from the bottom-most selected block
+- Sets it as the new anchor
+- Clears previous selection and selects only this block
+
+<API name="moveSelection">
+<APIParameters>
+  <APIItem name="direction" type="'up' | 'down'">
+    Direction to move selection.
+  </APIItem>
+</APIParameters>
 </API>
 
 ### `api.blockSelection.selectAll`
@@ -312,19 +360,41 @@ Sets the selection to one or more blocks, clearing any existing selection.
 </APIParameters>
 </API>
 
+### `api.blockSelection.shiftSelection`
+
+Expands or shrinks the selection based on the anchor block.
+
+For `Shift+ArrowDown`:
+- If anchor is top-most: Expands down by adding block below bottom-most
+- Otherwise: Shrinks from top-most (unless top-most is the anchor)
+For `Shift+ArrowUp`:
+- If anchor is bottom-most: Expands up by adding block above top-most
+- Otherwise: Shrinks from bottom-most (unless bottom-most is the anchor)
+The anchor block always remains selected. If no anchor is set, it defaults to:
+- Bottom-most block for `Shift+ArrowUp`
+- Top-most block for `Shift+ArrowDown`
+
+<API name="shiftSelection">
+<APIParameters>
+  <APIItem name="direction" type="'up' | 'down'">
+    Direction to expand/shrink selection.
+  </APIItem>
+</APIParameters>
+</API>
+
 ## Transforms
 
 ### `tf.blockSelection.duplicate`
 
-Duplicate the selected blocks.
+Duplicates the selected blocks.
 
 ### `tf.blockSelection.removeNodes`
 
-Remove the selected nodes from the editor.
+Removes the selected nodes from the editor.
 
 ### `tf.blockSelection.select`
 
-Select the nodes returned by `getNodes()` and reset selected IDs.
+Selects the nodes returned by `getNodes()` in the editor and resets selected IDs.
 
 ### `tf.blockSelection.setNodes`
 
@@ -418,64 +488,4 @@ A hook that provides props for making a block element selectable, including cont
 ### `useSelectionArea`
 
 Initialize and manage selection area functionality.
-
-### `api.blockSelection.isSelectable`
-
-<API name="isSelectable">
-<APIParameters>
-  <APIItem name="element" type="TElement">
-    Block element to check.
-  </APIItem>
-  <APIItem name="path" type="Path">
-    Path to the block element.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="boolean">
-  Whether the block is selectable.
-</APIReturns>
-</API>
-
-### `api.blockSelection.moveSelection`
-
-Moves the selection up or down to the next selectable block.
-
-When moving up:
-- Gets the previous selectable block from the top-most selected block
-- Sets it as the new anchor
-- Clears previous selection and selects only this block
-When moving down:
-- Gets the next selectable block from the bottom-most selected block
-- Sets it as the new anchor
-- Clears previous selection and selects only this block
-
-<API name="moveSelection">
-<APIParameters>
-  <APIItem name="direction" type="'up' | 'down'">
-    Direction to move selection.
-  </APIItem>
-</APIParameters>
-</API>
-
-### `api.blockSelection.shiftSelection`
-
-Expands or shrinks the selection based on the anchor block.
-
-For SHIFT + DOWN:
-- If anchor is top-most: Expands down by adding block below bottom-most
-- Otherwise: Shrinks from top-most (unless top-most is the anchor)
-For SHIFT + UP:
-- If anchor is bottom-most: Expands up by adding block above top-most
-- Otherwise: Shrinks from bottom-most (unless bottom-most is the anchor)
-The anchor block always remains selected. If no anchor is set, it defaults to:
-- Bottom-most block for SHIFT + UP
-- Top-most block for SHIFT + DOWN
-
-<API name="shiftSelection">
-<APIParameters>
-  <APIItem name="direction" type="'up' | 'down'">
-    Direction to expand/shrink selection.
-  </APIItem>
-</APIParameters>
-</API>
 

@@ -95,6 +95,18 @@ const editor = createPlateEditor({
 
 - `withComponent`: Assigns [`ColumnGroupElement`](/docs/components/column-node) to render column group containers and [`ColumnElement`](/docs/components/column-node) to render individual columns.
 
+### Turn Into Toolbar Button
+
+You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into column layouts:
+
+```tsx
+{
+  icon: <Columns3Icon />,
+  label: '3 columns',
+  value: 'action_three_columns',
+}
+```
+
 </Steps>
 
 ## Plugins

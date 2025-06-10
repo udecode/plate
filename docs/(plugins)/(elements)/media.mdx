@@ -98,7 +98,6 @@ const editor = createPlateEditor({
 });
 ```
 
-
 ### Add API Routes
 
 <ComponentInstallation name="media-uploadthing-api" inline />
@@ -337,6 +336,22 @@ export function PlaceholderElement({ className, children, element, ...props }) {
 
   // Use uploadFile when files are dropped or selected
   // This integrates with the PlaceholderPlugin's file handling
+}
+```
+
+### Add Toolbar Button
+
+You can add [`MediaToolbarButton`](/docs/components/media-toolbar-button) to your [Toolbar](/docs/toolbar) to upload and insert media.
+
+### Insert Toolbar Button
+
+You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert media elements:
+
+```tsx
+{
+  icon: <ImageIcon />,
+  label: 'Image',
+  value: KEYS.img,
 }
 ```
 

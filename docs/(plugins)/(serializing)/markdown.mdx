@@ -24,7 +24,7 @@ The `@udecode/plate-markdown` package provides robust, two-way conversion betwee
 
 </PackageInfo>
 
-## Why Use `@udecode/plate-markdown`?
+## Why Use Plate Markdown?
 
 While libraries like `react-markdown` render Markdown to React elements, `@udecode/plate-markdown` offers deeper integration with the Plate ecosystem:
 
@@ -37,17 +37,57 @@ While libraries like `react-markdown` render Markdown to React elements, `@udeco
   If you only need to display Markdown as HTML without editing or custom elements, `react-markdown` might be sufficient. For a rich text editor with Markdown import/export and custom content, `@udecode/plate-markdown` is the integrated solution.
 </Callout>
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add Markdown functionality is with the `MarkdownKit`, which includes pre-configured `MarkdownPlugin` with essential remark plugins for [Plate UI](/docs/installation/plate-ui) compatibility.
+
+<ComponentSource name="markdown-kit" />
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...MarkdownKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @udecode/plate @udecode/plate-markdown
 ```
 
-## Usage
+### Add Plugin
 
-<Steps>
+```tsx
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { createPlateEditor } from '@udecode/plate/react';
 
-### Configure the Plugin
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    MarkdownPlugin,
+  ],
+});
+```
+
+### Configure Plugin
 
 Configuring `MarkdownPlugin` is recommended to enable Markdown paste handling and set default conversion `rules`.
 

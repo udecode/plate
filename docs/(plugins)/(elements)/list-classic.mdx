@@ -152,6 +152,50 @@ const editor = createPlateEditor({
 - `node.component`: Assigns [`BulletedListElement`](/docs/components/list-classic-node) and [`NumberedListElement`](/docs/components/list-classic-node) to render list elements.
 - `shortcuts.toggle`: Defines keyboard [shortcuts](/docs/plugin-shortcuts) to toggle list types (`mod+alt+5` for bulleted, `mod+alt+6` for numbered).
 
+### Add Toolbar Button
+
+You can add [`ListToolbarButton`](/docs/components/list-classic-toolbar-button) to your [Toolbar](/docs/toolbar) to create and manage lists.
+
+### Turn Into Toolbar Button
+
+You can add these items to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into lists:
+
+```tsx
+{
+  icon: <ListIcon />,
+  label: 'Bulleted list',
+  value: KEYS.ul,
+}
+```
+
+```tsx
+{
+  icon: <ListOrderedIcon />,
+  label: 'Numbered list',
+  value: KEYS.ol,
+}
+```
+
+### Insert Toolbar Button
+
+You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert list elements:
+
+```tsx
+{
+  icon: <ListIcon />,
+  label: 'Bulleted list',
+  value: KEYS.ul,
+}
+```
+
+```tsx
+{
+  icon: <ListOrderedIcon />,
+  label: 'Numbered list',
+  value: KEYS.ol,
+}
+```
+
 </Steps>
 
 ## Plugins

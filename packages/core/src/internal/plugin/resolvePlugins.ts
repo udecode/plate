@@ -46,7 +46,6 @@ export const resolvePlugins = (
       isNotSelectable: [],
       isStrictSiblings: [],
       isVoid: [],
-      matchRules: [],
       types: {},
     },
     normalizeInitialValue: [],
@@ -60,6 +59,9 @@ export const resolvePlugins = (
       beforeEditable: [],
       belowNodes: [],
       belowRootNodes: [],
+    },
+    rules: {
+      match: [],
     },
     useHooks: [],
   };
@@ -142,8 +144,8 @@ export const resolvePlugins = (
       editor.meta.pluginCache.render.beforeEditable.push(plugin.key);
     }
 
-    if (plugin.node.matchRules) {
-      editor.meta.pluginCache.node.matchRules.push(plugin.key);
+    if (plugin.rules?.match) {
+      editor.meta.pluginCache.rules.match.push(plugin.key);
     }
 
     if (plugin.render.afterContainer) {

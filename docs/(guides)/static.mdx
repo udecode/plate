@@ -27,7 +27,45 @@ It's a core part of [`serializeHtml`](/docs/api/core/plate-plugin#serializehtml)
   For interactive read-only features (like comment popovers or selections), use the standard `<Plate>` component in the browser. For purely server-rendered, non-interactive content, `<PlateStatic>` is the recommended choice.
 </Callout>
 
-## Usage
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to enable static rendering is with the `BaseEditorKit`, which includes pre-configured base plugins that work seamlessly with server-side rendering.
+
+<ComponentSource name="editor-base-kit" />
+
+### Add Kit
+
+```tsx
+import { createSlateEditor, PlateStatic } from '@udecode/plate';
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+
+const editor = createSlateEditor({
+  plugins: BaseEditorKit,
+  value: [
+    { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
+    { type: 'p', children: [{ text: 'This content is rendered statically.' }] },
+  ],
+});
+
+// Render statically
+export default function MyStaticPage() {
+  return <PlateStatic editor={editor} />;
+}
+```
+
+### Example
+
+See a complete server-side static rendering example:
+
+<ComponentSource name="slate-to-html" />
+
+</Steps>
+
+## Manual Usage
 
 <Steps>
 

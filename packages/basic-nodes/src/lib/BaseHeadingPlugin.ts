@@ -16,16 +16,20 @@ export type HeadingConfig = PluginConfig<
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 const node = {
-  breakRules: { splitReset: true },
   isElement: true,
-  mergeRules: { removeEmpty: true },
 } satisfies Partial<AnyEditorPlugin['node']>;
+
+const rules = {
+  break: { splitReset: true },
+  merge: { removeEmpty: true },
+};
 
 export const BaseH1Plugin = createTSlatePlugin({
   key: 'h1',
   node,
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H1' }] } } },
   render: { as: 'h1' },
+  rules,
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleBlock(type);
@@ -37,6 +41,7 @@ export const BaseH2Plugin = createTSlatePlugin({
   node,
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H2' }] } } },
   render: { as: 'h2' },
+  rules,
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleBlock(type);
@@ -48,6 +53,7 @@ export const BaseH3Plugin = createTSlatePlugin({
   node,
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H3' }] } } },
   render: { as: 'h3' },
+  rules,
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleBlock(type);
@@ -59,6 +65,7 @@ export const BaseH4Plugin = createTSlatePlugin({
   node,
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H4' }] } } },
   render: { as: 'h4' },
+  rules,
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleBlock(type);
@@ -70,6 +77,7 @@ export const BaseH5Plugin = createTSlatePlugin({
   node,
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H5' }] } } },
   render: { as: 'h5' },
+  rules,
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleBlock(type);
@@ -81,6 +89,7 @@ export const BaseH6Plugin = createTSlatePlugin({
   node,
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H6' }] } } },
   render: { as: 'h6' },
+  rules,
 }).extendTransforms(({ editor, type }) => ({
   toggle: () => {
     editor.tf.toggleBlock(type);

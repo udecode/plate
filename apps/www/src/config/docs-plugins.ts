@@ -25,10 +25,11 @@ export const pluginsNavItems: SidebarNavItem[] = [
     title: 'AI',
   },
   {
+    href: '/docs/discussion',
     items: [
       {
         description: 'Add comments to text as marks.',
-        href: '/docs/comments',
+        href: '/docs/comment',
         keywords: ['leaf'],
         title: 'Comments',
       },
@@ -36,17 +37,11 @@ export const pluginsNavItems: SidebarNavItem[] = [
         description: 'Add suggestions to text as marks.',
         href: '/docs/suggestion',
         keywords: ['leaf'],
-        label: 'Experimental',
         title: 'Suggestion',
       },
-      {
-        description: 'Collaborate with others in a single document.',
-        href: '/docs/yjs',
-        label: 'New',
-        title: 'Yjs',
-      },
     ],
-    title: 'Collaboration',
+    label: 'New',
+    title: 'Discussion',
   },
   {
     items: [
@@ -254,11 +249,12 @@ export const pluginsNavItems: SidebarNavItem[] = [
             href: '/docs/exit-break',
             title: 'Exit Break',
           },
-          {
-            description: 'Strict document structure.',
-            href: '/docs/forced-layout',
-            title: 'Forced Layout',
-          },
+          // ! Wait for more robust implementation
+          // {
+          //   description: 'Strict document structure.',
+          //   href: '/docs/forced-layout',
+          //   title: 'Forced Layout',
+          // },
           {
             description: 'Restrict the editor to a single block.',
             href: '/docs/single-block',
@@ -338,6 +334,18 @@ export const pluginsNavItems: SidebarNavItem[] = [
         description: 'Maintain a consistent tab order for tabbable elements.',
         href: '/docs/tabbable',
         title: 'Tabbable',
+      },
+      {
+        description: 'Add a toolbar to your editor.',
+        href: '/docs/toolbar',
+        label: 'New',
+        title: 'Toolbar',
+      },
+      {
+        description: 'Collaborate with others in a single document.',
+        href: '/docs/yjs',
+        label: 'New',
+        title: 'Yjs',
       },
       {
         description: 'A rich multi-select editor.',

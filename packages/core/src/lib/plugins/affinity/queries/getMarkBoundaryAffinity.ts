@@ -9,9 +9,9 @@ import type { EdgeNodes } from '../types';
 export const getMarkBoundaryAffinity = (
   editor: SlateEditor,
   markBoundary: EdgeNodes
-): 'backward' | 'forward' | 'new-mark' => {
+): 'backward' | 'forward' | undefined => {
   const { marks, selection } = editor;
-  if (!selection) return 'new-mark';
+  if (!selection) return;
 
   const marksMatchLeaf = (leaf: TElement | TText) => {
     return (
@@ -30,7 +30,7 @@ export const getMarkBoundaryAffinity = (
     if (affinityIsTowardsLeaf) {
       return leafEntry === backwardLeafEntry ? 'backward' : 'forward';
     }
-    return 'new-mark';
+    return;
   }
 
   const marksDirection: 'backward' | 'forward' | null =

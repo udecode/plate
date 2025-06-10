@@ -43,8 +43,8 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
   const isAffinityInlineElement = (() => {
     if (!parent || !ElementApi.isElement(parent)) return false;
 
-    const parentAffinity = getPluginByType(editor, parent.type)?.node
-      .selectionRules?.affinity;
+    const parentAffinity = getPluginByType(editor, parent.type)?.rules.selection
+      ?.affinity;
 
     return parentAffinity === 'hard' || parentAffinity === 'directional';
   })();

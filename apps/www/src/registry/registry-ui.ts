@@ -192,13 +192,13 @@ export const uiComponents: Registry['items'] = [
     files: [{ path: 'ui/comment-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [
-        { route: '/docs/comments' },
+        { route: '/docs/comment' },
         {
           route:
             'https://pro.platejs.org/docs/components/comment-toolbar-button',
         },
       ],
-      examples: ['comments-demo', 'floating-toolbar-demo', 'comments-pro'],
+      examples: ['comment-demo', 'floating-toolbar-demo', 'comment-pro'],
     },
     name: 'comment-toolbar-button',
     registryDependencies: ['comment-kit'],
@@ -235,10 +235,10 @@ export const uiComponents: Registry['items'] = [
     ],
     meta: {
       docs: [
-        { route: '/docs/comments' },
+        { route: '/docs/comment' },
         { route: 'https://pro.platejs.org/docs/components/block-discussion' },
       ],
-      examples: ['comments-demo', 'comments-pro'],
+      examples: ['comment-demo', 'comment-pro'],
     },
     name: 'block-discussion',
     registryDependencies: [
@@ -847,7 +847,7 @@ export const uiComponents: Registry['items'] = [
     files: [{ path: 'ui/suggestion-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/suggestion' }],
-      examples: ['comments-demo', 'comments-pro'],
+      examples: ['comment-demo', 'comment-pro'],
     },
     name: 'suggestion-toolbar-button',
     registryDependencies: ['toolbar'],
@@ -1013,10 +1013,10 @@ export const uiNodes: Registry['items'] = [
     ],
     meta: {
       docs: [
-        { route: '/docs/comments' },
+        { route: '/docs/comment' },
         { route: 'https://pro.platejs.org/docs/components/comment-node' },
       ],
-      examples: ['comments-demo', 'comments-pro'],
+      examples: ['comment-demo', 'comment-pro'],
     },
     name: 'comment-node',
     registryDependencies: ['highlight-style'],
@@ -1032,24 +1032,11 @@ export const uiNodes: Registry['items'] = [
     ],
     meta: {
       docs: [{ route: '/docs/suggestion' }],
-      examples: ['comments-demo', 'comments-pro'],
+      examples: ['comment-demo', 'comment-pro'],
     },
     name: 'suggestion-node',
     registryDependencies: ['suggestion-kit'],
     title: 'Suggestion Leaf',
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@udecode/plate-suggestion'],
-    description: 'A line break component for suggestion.',
-    files: [{ path: 'ui/suggestion-line-break.tsx', type: 'registry:ui' }],
-    meta: {
-      docs: [{ route: '/docs/suggestion' }],
-      examples: ['comments-demo', 'comments-pro'],
-    },
-    name: 'suggestion-line-break',
-    registryDependencies: ['suggestion-kit'],
-    title: 'Suggestion Line Break',
     type: 'registry:ui',
   },
   {

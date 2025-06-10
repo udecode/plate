@@ -46,11 +46,12 @@ export type BaseSuggestionConfig = PluginConfig<
 
 export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
   key: KEYS.suggestion,
-  node: { clearOnEdge: true, isLeaf: true },
+  node: { isLeaf: true },
   options: {
     currentUserId: 'alice',
     isSuggesting: false,
   },
+  rules: { selection: { affinity: 'outward' } },
 })
   .overrideEditor(withSuggestion)
   .extendApi<BaseSuggestionConfig['api']['suggestion']>(

@@ -15,19 +15,19 @@ export const withBreakRules: OverrideEditor = (ctx) => {
     blockNode: any,
     blockPath: any
   ): BreakRules | null => {
-    const matchRulesKeys = editor.meta.pluginCache.node.matchRules;
+    const matchRulesKeys = editor.meta.pluginCache.rules.match;
     for (const key of matchRulesKeys) {
-      const overridePlugin = editor.getPlugin({ key }).node;
+      const overridePlugin = editor.getPlugin({ key });
       if (
-        overridePlugin.breakRules &&
-        overridePlugin.matchRules?.({
+        overridePlugin.rules?.break &&
+        overridePlugin.rules?.match?.({
           ...ctx,
           node: blockNode,
           path: blockPath,
           rule: rule as any,
         })
       ) {
-        return overridePlugin.breakRules;
+        return overridePlugin.rules.break;
       }
     }
     return null;
@@ -66,7 +66,7 @@ export const withBreakRules: OverrideEditor = (ctx) => {
             const [blockNode, blockPath] = block;
             const plugin = getPluginByType(editor, blockNode.type);
 
-            const breakRules = plugin?.node.breakRules;
+            const breakRules = plugin?.rules.break;
 
             // Handle 'empty' scenario
             if (

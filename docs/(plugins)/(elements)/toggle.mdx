@@ -104,6 +104,34 @@ const editor = createPlateEditor({
 - `withComponent`: Assigns [`ToggleElement`](/docs/components/toggle-node) to render toggle elements.
 - `IndentPlugin.inject.targetPlugins`: Configures which element types support indentation, including toggles.
 
+### Add Toolbar Button
+
+You can add [`ToggleToolbarButton`](/docs/components/toggle-toolbar-button) to your [Toolbar](/docs/toolbar) to insert toggle elements.
+
+### Turn Into Toolbar Button
+
+You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into toggles:
+
+```tsx
+{
+  icon: <ChevronRightIcon />,
+  label: 'Toggle list',
+  value: KEYS.toggle,
+}
+```
+
+### Insert Toolbar Button
+
+You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert toggle elements:
+
+```tsx
+{
+  icon: <ChevronRightIcon />,
+  label: 'Toggle list',
+  value: KEYS.toggle,
+}
+```
+
 </Steps>
 
 ## Plugins

@@ -14,8 +14,10 @@ import {
 import { createPlatePlugin, toTPlatePlugin } from '@udecode/plate/react';
 
 import { BlockSuggestion } from '@/registry/ui/block-suggestion';
-import { SuggestionLineBreak } from '@/registry/ui/suggestion-line-break';
-import { SuggestionLeaf } from '@/registry/ui/suggestion-node';
+import {
+  SuggestionLeaf,
+  SuggestionLineBreak,
+} from '@/registry/ui/suggestion-node';
 
 import { discussionPlugin } from './discussion-kit';
 
@@ -79,6 +81,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
       uniquePathMap: new Map(),
     },
     render: {
+      node: SuggestionLeaf,
       belowRootNodes: ({ api, element }) => {
         if (!api.suggestion!.isBlockSuggestion(element)) {
           return null;
@@ -91,11 +94,8 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
 );
 
 const suggestionLineBreakPlugin = createPlatePlugin({
-  key: 'suggestion-line-break',
+  key: 'suggestionLineBreak',
   render: { belowNodes: SuggestionLineBreak as any },
 });
 
-export const SuggestionKit = [
-  suggestionPlugin.withComponent(SuggestionLeaf),
-  suggestionLineBreakPlugin,
-];
+export const SuggestionKit = [suggestionPlugin, suggestionLineBreakPlugin];

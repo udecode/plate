@@ -10,7 +10,7 @@ alwaysApply: false
 
 1.  **Writing Style**:
 
-    - Maintain a "better-auth/shadcn straightforward and simple English writing style."
+    - Maintain a "shadcn-like straight to the point (but exhaustive is good) simple english easy to read for average english speakers" writing style.
     - Adhere to the conciseness, tone, and style of existing key documentation files like [`index.mdx`](<mdc:docs/(get-started)/index.mdx>), [`installation.mdx`](<mdc:docs/(get-started)/installation.mdx>), and especially [`plate-ui.mdx`](mdc:docs/installation/plate-ui.mdx). When mentioning [Plate UI](/docs/installation/plate-ui) for the first time in a document, ensure it is linked.
 
 2.  **Headless Approach**:
@@ -160,6 +160,50 @@ Plugin documentation should generally follow this order:
 
         - `inject.nodeProps.defaultNodeValue`: Sets the default value for the styling property.
         - `inject.targetPlugins`: Specifies which element types receive the styling.
+
+    - **### Add to Toolbar Buttons** (For Element Plugins):
+
+      - For element plugins that can be turned into or inserted, add sections showing how to integrate with specialized toolbar buttons:
+
+      **Turn Into Toolbar Button:**
+
+      ````markdown
+      ### Turn Into Toolbar Button
+
+      You can add these items to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into [elements]:
+
+      ```tsx
+      {
+        icon: <SpecificIcon />,
+        keywords: ['keyword1', 'keyword2', 'symbol'],
+        label: 'Element Name',
+        value: KEYS.elementKey,
+      }
+      ```
+      ````
+
+      **Insert Toolbar Button:**
+
+      ````markdown
+      ### Insert Toolbar Button
+
+      You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert [element] elements:
+
+      ```tsx
+      {
+        icon: <SpecificIcon />,
+        label: 'Element Name',
+        value: KEYS.elementKey,
+      }
+      ```
+      ````
+
+      - Only include these sections for element plugins that make sense in these contexts (blocks, lists, etc.)
+      - Use appropriate action verbs: "toggle" for turn-into, "insert" for insert
+
+    - **### Add Toolbar Button** (If the kit includes a toolbar button):
+      - Include "You can add [`*ToolbarButton`](/docs/components/*-toolbar-button) to your [Toolbar](/docs/toolbar) to <action>."
+      - Check `registry-kits.ts` to see if a `*-toolbar-button` is part of the kit's dependencies.
 
 5.  **## Plugins**:
     - **### `PluginName`**: Document each relevant plugin with a simple description (e.g., "Plugin for H1 heading elements").

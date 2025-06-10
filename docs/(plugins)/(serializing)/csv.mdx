@@ -8,7 +8,8 @@ title: Serializing CSV
 
 ## Features
 
-- Convert CSV content to a Slate value.
+- Convert CSV content to Slate table format
+- Configurable error tolerance for parsing malformed CSV data
 
 <Callout className="my-4" type="note">
   Converting a Slate value to CSV is not yet supported.
@@ -16,28 +17,79 @@ title: Serializing CSV
 
 </PackageInfo>
 
-## Installation
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @udecode/plate-csv
 ```
 
-## Usage
-
-### CSV -> Slate
+### Add Plugin
 
 ```tsx
 import { CsvPlugin } from '@udecode/plate-csv';
+import { createPlateEditor } from '@udecode/plate/react';
 
-const plugins = [
-  // ...otherPlugins,
-  CsvPlugin,
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CsvPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+```tsx
+import { CsvPlugin } from '@udecode/plate-csv';
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CsvPlugin.configure({
+      options: {
+        errorTolerance: 0.1,
+        parseOptions: {
+          header: true,
+          skipEmptyLines: true,
+          delimiter: ',',
+        },
+      },
+    }),
+  ],
+});
+```
+
+- `options.errorTolerance`: Percentage of rows that can contain errors (default: `0.25` for 25%)
+- `options.parseOptions`: Configuration passed to PapaParse library for CSV parsing
+- `options.parseOptions.header`: Treat first row as headers (default: `true`)
+
+</Steps>
+
+## Usage
+
+### CSV to Slate
+
+Use the API method to deserialize CSV data:
+
+```tsx
+// Deserialize CSV string to Slate format
+const csvData = `Name,Age,City
+John,30,New York
+Jane,25,Boston`;
+
+const nodes = editor.api.csv.deserialize({ data: csvData });
 ```
 
 ## Plugins
 
-### `CsvPlugin`
+### CsvPlugin
+
+Plugin for CSV deserialization functionality.
 
 <API name="CsvPlugin">
 <APIOptions>
@@ -57,7 +109,7 @@ const plugins = [
 
 ## API
 
-### `api.csv.deserialize`
+### api.csv.deserialize
 
 Takes a CSV (Comma Separated Values) string and converts it into a Slate compatible format. This function uses the `papaparse` library to parse the CSV data.
 

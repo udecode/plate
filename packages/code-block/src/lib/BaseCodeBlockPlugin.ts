@@ -58,16 +58,7 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
     },
   },
   node: {
-    deleteRules: {
-      empty: 'reset',
-    },
     isElement: true,
-    matchRules: ({ editor, rule }) => {
-      return (
-        ['break.empty', 'delete.empty'].includes(rule) &&
-        isCodeBlockEmpty(editor)
-      );
-    },
   },
   options: {
     defaultLanguage: null,
@@ -76,6 +67,17 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
   plugins: [BaseCodeLinePlugin, BaseCodeSyntaxPlugin],
   render: { as: 'pre' },
+  rules: {
+    delete: {
+      empty: 'reset',
+    },
+    match: ({ editor, rule }) => {
+      return (
+        ['break.empty', 'delete.empty'].includes(rule) &&
+        isCodeBlockEmpty(editor)
+      );
+    },
+  },
   decorate: ({ editor, entry: [node, path], getOptions, type }) => {
     if (!getOptions().lowlight) return [];
 

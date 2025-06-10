@@ -24,6 +24,14 @@
 - New plugin field: `node.isStrictSiblings` (boolean).
   - When `true`, indicates that the element enforces strict sibling type constraints and only allows specific siblings (e.g., `td` can only have `td` siblings, `column` can only have `column` siblings).
   - Used by `editor.tf.insertExitBreak` functionality to determine appropriate exit points in nested structures.
+- New plugin field: `rules` (object).
+  - Configures common editing behaviors declaratively instead of overriding editor methods. See documentation for more details.
+  - `rules.break`: Controls Enter key behavior (`empty`, `default`, `emptyLineEnd`, `splitReset`)
+  - `rules.delete`: Controls Backspace key behavior (`start`, `empty`)
+  - `rules.merge`: Controls block merging behavior (`removeEmpty`)
+  - `rules.normalize`: Controls normalization behavior (`removeEmpty`)
+  - `rules.selection`: Controls cursor positioning behavior (`affinity`)
+  - `rules.match`: Conditional rule application based on node properties
 - Plugin shortcuts can now automatically leverage existing plugin transforms by specifying the transform name, in addition to custom handlers.
 - New editor transform methods for keyboard handling:
   - `editor.tf.escape`: Handle Escape key events. Returns `true` if the event is handled.

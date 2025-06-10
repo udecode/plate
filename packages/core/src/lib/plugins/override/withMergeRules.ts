@@ -22,19 +22,19 @@ export const withMergeRules: OverrideEditor = (ctx) => {
     blockNode: any,
     blockPath: any
   ): MergeRules | null => {
-    const matchRulesKeys = editor.meta.pluginCache.node.matchRules;
+    const matchRulesKeys = editor.meta.pluginCache.rules.match;
     for (const key of matchRulesKeys) {
-      const overridePlugin = editor.getPlugin({ key }).node;
+      const overridePlugin = editor.getPlugin({ key });
       if (
-        overridePlugin.mergeRules &&
-        overridePlugin.matchRules?.({
+        overridePlugin.rules.merge &&
+        overridePlugin.rules?.match?.({
           ...ctx,
           node: blockNode,
           path: blockPath,
           rule: rule as any,
         })
       ) {
-        return overridePlugin.mergeRules;
+        return overridePlugin.rules.merge;
       }
     }
     return null;
@@ -66,7 +66,7 @@ export const withMergeRules: OverrideEditor = (ctx) => {
             return true;
           }
 
-          const mergeRules = plugin.node.mergeRules;
+          const mergeRules = plugin.rules.merge;
           if (!mergeRules?.removeEmpty) {
             return false;
           }
@@ -126,7 +126,7 @@ export const withMergeRules: OverrideEditor = (ctx) => {
               // Check if this node should be removed based on merge rules
               const plugin = getPluginByType(editor, node.type);
               if (plugin) {
-                const mergeRules = plugin.node.mergeRules;
+                const mergeRules = plugin.rules.merge;
 
                 // Check for override rules
                 const overrideMergeRules = checkMatchRulesOverride(

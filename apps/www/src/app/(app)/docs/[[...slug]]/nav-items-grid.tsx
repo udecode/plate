@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 
 import type { SidebarNavItem } from '@/types/nav';
 
@@ -173,18 +173,16 @@ export function NavItemsGrid({
                 </H3>
               </div>
             )}
-            <Suspense fallback={null}>
-              <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-                {group.items &&
-                  flattenItems(group.items).map((item) => (
-                    <NavItemCard
-                      key={item.href}
-                      category={category}
-                      item={item}
-                    />
-                  ))}
-              </div>
-            </Suspense>
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+              {group.items &&
+                flattenItems(group.items).map((item) => (
+                  <NavItemCard
+                    key={item.href}
+                    category={category}
+                    item={item}
+                  />
+                ))}
+            </div>
           </div>
         ))}
       </div>

@@ -1,7 +1,6 @@
 'use client';
 
-import type { Value } from '@udecode/plate';
-
+import { type Value, TrailingBlockPlugin } from '@udecode/plate';
 import { type TPlateEditor, useEditorRef } from '@udecode/plate/react';
 
 import { AIKit } from './plugins/ai-kit';
@@ -20,8 +19,8 @@ import { DateKit } from './plugins/date-kit';
 import { DiscussionKit } from './plugins/discussion-kit';
 import { DndKit } from './plugins/dnd-kit';
 import { DocxKit } from './plugins/docx-kit';
-import { EditingKit } from './plugins/editing-kit';
 import { EmojiKit } from './plugins/emoji-kit';
+import { ExitBreakKit } from './plugins/exit-break-kit';
 import { FixedToolbarKit } from './plugins/fixed-toolbar-kit';
 import { FloatingToolbarKit } from './plugins/floating-toolbar-kit';
 import { FontKit } from './plugins/font-kit';
@@ -40,6 +39,7 @@ import { ToggleKit } from './plugins/toggle-kit';
 
 export const EditorKit = [
   ...AIKit,
+  ...BlockMenuKit,
 
   // Elements
   ...BasicBlocksKit,
@@ -73,10 +73,10 @@ export const EditorKit = [
   ...SlashKit,
   ...AutoformatKit,
   ...CursorOverlayKit,
-  ...BlockMenuKit,
   ...DndKit,
   ...EmojiKit,
-  ...EditingKit,
+  ...ExitBreakKit,
+  TrailingBlockPlugin,
 
   // Parsers
   ...DocxKit,

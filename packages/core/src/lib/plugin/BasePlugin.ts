@@ -177,6 +177,31 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
      */
     node?: NodeComponent;
   }>;
+  rules: {
+    /**
+     * Defines actions on insert break based on block state.
+     *
+     * - `'default'`: Default behavior
+     * - `'exit'`: Exit the current block
+     * - `'reset'`: Reset block to default paragraph type
+     * - `'lineBreak'`: Insert newline character
+     * - `'deleteExit'`: Delete backward then exit
+     */
+    break?: BreakRules;
+    /**
+     * Defines actions on delete based on block state.
+     *
+     * - `'default'`: Default behavior
+     * - `'reset'`: Reset block to default paragraph type
+     */
+    delete?: DeleteRules;
+    /** Defines the behavior of merging nodes. */
+    merge?: MergeRules;
+    /** Defines the behavior of normalizing nodes. */
+    normalize?: NormalizeRules;
+    /** Defines the behavior of selection. */
+    selection?: SelectionRules;
+  };
   /** Selectors for the plugin. */
   selectors: InferSelectors<C>;
   /** Transforms (state-modifying operations) that can be applied to the editor. */
@@ -256,16 +281,6 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * @default plugin.key
    */
   type: string;
-  /**
-   * Defines actions on insert break based on block state.
-   *
-   * - `'default'`: Default behavior
-   * - `'exit'`: Exit the current block
-   * - `'reset'`: Reset block to default paragraph type
-   * - `'lineBreak'`: Insert newline character
-   * - `'deleteExit'`: Delete backward then exit
-   */
-  breakRules?: BreakRules;
   component?: NodeComponent | null;
   /**
    * Controls which (if any) attribute names in the `attributes` property of an
@@ -297,19 +312,6 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * @default [ ]
    */
   dangerouslyAllowAttributes?: string[];
-  /**
-   * Defines actions on delete based on block state.
-   *
-   * - `'default'`: Default behavior
-   * - `'reset'`: Reset block to default paragraph type
-   */
-  deleteRules?: DeleteRules;
-  /**
-   * Whether the node has non-breaking space on both sides.
-   *
-   * @default false
-   */
-  inset?: boolean;
   /**
    * Indicates if this plugin's elements are primarily containers for other
    * content. Container elements are typically unwrapped when querying
@@ -366,12 +368,6 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    * void.
    */
   isVoid?: boolean;
-  /** Defines the behavior of merging nodes. */
-  mergeRules?: MergeRules;
-  /** Defines the behavior of normalizing nodes. */
-  normalizeRules?: NormalizeRules;
-  /** Defines the behavior of selection. */
-  selectionRules?: SelectionRules;
   /**
    * Function that returns an object of data attributes to be added to the
    * element.

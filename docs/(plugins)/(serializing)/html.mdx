@@ -8,6 +8,42 @@ This guide covers converting Plate editor content to HTML (`serializeHtml`) and 
 
 <ComponentPreview name="html-demo" />
 
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to enable HTML serialization is with the `BaseEditorKit`, which includes pre-configured base plugins that support HTML conversion for most common elements and marks.
+
+<ComponentSource name="editor-base-kit" />
+
+### Add Kit
+
+```tsx
+import { createSlateEditor, serializeHtml } from '@udecode/plate';
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+
+const editor = createSlateEditor({
+  plugins: BaseEditorKit,
+  value: [
+    { type: 'h1', children: [{ text: 'Hello World' }] },
+    { type: 'p', children: [{ text: 'This content will be serialized to HTML.' }] },
+  ],
+});
+
+// Serialize to HTML
+const html = await serializeHtml(editor);
+```
+
+### Example
+
+See a complete server-side HTML generation example:
+
+<ComponentSource name="slate-to-html" />
+
+</Steps>
+
 ## Plate to HTML
 
 Convert Plate editor content (Slate nodes) into an HTML string. This is often done server-side.

@@ -16,19 +16,19 @@ export const withNormalizeRules: OverrideEditor = (ctx) => {
     node: any,
     path: any
   ): NormalizeRules | null => {
-    const matchRulesKeys = editor.meta.pluginCache.node.matchRules;
+    const matchRulesKeys = editor.meta.pluginCache.rules.match;
     for (const key of matchRulesKeys) {
-      const overridePlugin = editor.getPlugin({ key }).node;
+      const overridePlugin = editor.getPlugin({ key });
       if (
-        overridePlugin.normalizeRules &&
-        overridePlugin.matchRules?.({
+        overridePlugin.rules?.normalize &&
+        overridePlugin.rules?.match?.({
           ...ctx,
-          node,
-          path,
+          node: node,
+          path: path,
           rule: rule as any,
         })
       ) {
-        return overridePlugin.normalizeRules;
+        return overridePlugin.rules.normalize;
       }
     }
     return null;
@@ -39,7 +39,7 @@ export const withNormalizeRules: OverrideEditor = (ctx) => {
       normalizeNode([node, path]) {
         if (ElementApi.isElement(node) && node.type) {
           const plugin = getPluginByType(editor, node.type);
-          const normalizeRules = plugin?.node.normalizeRules;
+          const normalizeRules = plugin?.rules.normalize;
 
           // Handle 'removeEmpty' scenario
           const overridenormalizeRules = checkMatchRulesOverride(

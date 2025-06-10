@@ -18,42 +18,103 @@ docs:
 
 ## Features
 
-- Right-click on a block to open the menu.
-- Allows you to perform actions on blocks such as turn into, duplicating or deleting.
+- Right-click on blocks to open a context menu.
+- Perform actions on blocks such as turning into different types, duplicating, or deleting.
 - Customizable menu items and actions.
-- Keyboard navigation
+- Keyboard navigation support.
+- Block selection integration.
 
 </PackageInfo>
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add the block menu is with the `BlockMenuKit`, which includes the pre-configured `BlockMenuPlugin` along with `BlockSelectionPlugin` and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="block-menu-kit" />
+
+- [`BlockContextMenu`](/docs/components/block-context-menu): Renders the context menu interface.
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { BlockMenuKit } from '@/components/editor/plugins/block-menu-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BlockMenuKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @udecode/plate-selection
 ```
 
-## Usage
+### Add Plugins
+
+The block menu requires both `BlockSelectionPlugin` and `BlockMenuPlugin` to function properly.
 
 ```tsx
-import { BlockMenuPlugin } from '@udecode/plate-selection/react';
+import { BlockSelectionPlugin, BlockMenuPlugin } from '@udecode/plate-selection/react';
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    BlockSelectionPlugin.configure({
+      options: {
+        enableContextMenu: true,
+      },
+    }),
+    BlockMenuPlugin,
+  ],
+});
 ```
+
+### Configure Plugins
+
+Configure the block menu with a context menu component:
 
 ```tsx
-const plugins = [
-  // ...otherPlugins,
-  BlockSelectionPlugin.configure({
-    options: {
-      enableContextMenu: true,
-    },
-  }),
-  BlockMenuPlugin.configure({
-    render: { aboveEditable: BlockContextMenu },
-  }),
-]
+import { BlockSelectionPlugin, BlockMenuPlugin } from '@udecode/plate-selection/react';
+import { createPlateEditor } from '@udecode/plate/react';
+import { BlockContextMenu } from '@/components/ui/block-context-menu';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    BlockSelectionPlugin.configure({
+      options: {
+        enableContextMenu: true,
+      },
+    }),
+    BlockMenuPlugin.configure({
+      render: { aboveEditable: BlockContextMenu },
+    }),
+  ],
+});
 ```
 
-- [BlockContextMenu](/docs/components/block-context-menu)
+- `BlockSelectionPlugin.options.enableContextMenu`: Enables the context menu functionality.
+- `BlockMenuPlugin.render.aboveEditable`: Assigns [`BlockContextMenu`](/docs/components/block-context-menu) to render the context menu.
 
-To control the opening of the context menu for specific elements, you can use the `data-plate-open-context-menu` attribute:
+#### Controlling Context Menu Behavior
+
+To control the opening of the context menu for specific elements, use the `data-plate-open-context-menu` attribute:
 
 ```tsx
 <PlateElement data-plate-open-context-menu={false} {...props}>
@@ -61,7 +122,9 @@ To control the opening of the context menu for specific elements, you can use th
 </PlateElement>
 ```
 
-Generally, we only need to prevent right-clicking on the padding of the `<Editor />`.
+This is commonly used to prevent right-clicking on the padding of the `<Editor />` component from opening the menu.
+
+</Steps>
 
 ## Plate Plus
 
@@ -71,13 +134,13 @@ Generally, we only need to prevent right-clicking on the padding of the `<Editor
 
 ### `BlockMenuPlugin`
 
-Block menu state management.
+Plugin for block menu state management and context menu functionality.
 
 ## API
 
 ### `api.blockMenu.hide`
 
-Hide the block menu.
+Hides the block menu.
 
 ### `api.blockMenu.show`
 
@@ -86,17 +149,17 @@ Shows the block menu for a specific block.
 <API name="show">
 <APIParameters>
   <APIItem name="id" type="'context' | string">
-    The ID of the block to show the menu for.
+    The ID of the block to show the menu for, or 'context' for the context menu.
   </APIItem>
   <APIItem name="position" type="{ x: number; y: number }" optional>
-    The position to show the menu at.
+    The position to show the menu at. If not provided, only the openId is updated.
   </APIItem>
 </APIParameters>
 </API>
 
 ### `api.blockMenu.showContextMenu`
 
-Shows the context menu for a specific block.
+Shows the context menu for a specific block and automatically selects that block.
 
 <API name="showContextMenu">
 <APIParameters>

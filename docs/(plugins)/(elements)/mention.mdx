@@ -13,36 +13,104 @@ docs:
 
 ## Features
 
-- Provides smart autocompletion for mentioning users or applying tags.
-- Invoke combobox with `@` or `#` and select suggestion.
+- Smart autocompletion for mentioning users, pages, or any reference
+- Triggered by configurable characters (default: `@`)
+- Keyboard navigation and selection
+- Customizable mention data and rendering
 
 </PackageInfo>
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add mentions is with the `MentionKit`, which includes pre-configured `MentionPlugin` and `MentionInputPlugin` along with their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="mention-kit" />
+
+- [`MentionElement`](/docs/components/mention-node): Renders mention elements
+- [`MentionInputElement`](/docs/components/mention-node): Renders the mention input combobox
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { MentionKit } from '@/components/editor/plugins/mention-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...MentionKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @udecode/plate-mention
 ```
 
-## Usage
+### Add Plugins
 
 ```tsx
-import { MentionPlugin } from '@udecode/plate-mention/react';
+import { MentionPlugin, MentionInputPlugin } from '@udecode/plate-mention/react';
+import { createPlateEditor } from '@udecode/plate/react';
 
-const plugins = [
-  // ...otherPlugins,
-  MentionPlugin,
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    MentionPlugin,
+    MentionInputPlugin,
+  ],
+});
 ```
+
+### Configure Plugins
+
+```tsx
+import { MentionPlugin, MentionInputPlugin } from '@udecode/plate-mention/react';
+import { createPlateEditor } from '@udecode/plate/react';
+import { MentionElement, MentionInputElement } from '@/components/ui/mention-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    MentionPlugin.configure({
+      options: {
+        trigger: '@',
+        triggerPreviousCharPattern: /^$|^[\s"']$/,
+        insertSpaceAfterMention: false,
+      },
+    }).withComponent(MentionElement),
+    MentionInputPlugin.withComponent(MentionInputElement),
+  ],
+});
+```
+
+- `options.trigger`: Character that triggers the mention combobox
+- `options.triggerPreviousCharPattern`: RegExp pattern for the character before trigger. The kit uses `/^$|^[\s"']$/` to allow mentions at start of line, after whitespace, or after quotes
+- `options.insertSpaceAfterMention`: Whether to automatically insert a space after inserting a mention
+- `withComponent`: Assigns the UI components for rendering mentions and mention input
+
+</Steps>
 
 ## Plugins
 
-### `MentionPlugin`
+### MentionPlugin
 
-Plugin for mention functionality. Extends [TriggerComboboxPlugin](/docs/combobox#options).
+Plugin for mention functionality. Extends [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions).
 
 <API name="MentionPlugin">
-<APIOptions type="MentionPluginOptions">
+<APIOptions>
   <APIItem name="insertSpaceAfterMention" type="boolean" optional>
     Whether to insert a space after the mention.
     - **Default:** `false`
@@ -51,32 +119,57 @@ Plugin for mention functionality. Extends [TriggerComboboxPlugin](/docs/combobox
     Character that triggers the mention combobox.
     - **Default:** `'@'`
   </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+    Pattern to match the character before trigger.
+    - **Default:** `/^\s?$/`
+  </APIItem>
+  <APIItem name="createComboboxInput" type="(trigger: string) => TElement" optional>
+    Function to create the input element when trigger is activated.
+  </APIItem>
 </APIOptions>
 </API>
 
-### `MentionInputPlugin`
+### MentionInputPlugin
 
 Plugin for mention input functionality.
 
 ## API
 
-### `api.insert.mention`
+### api.insert.mention
 
-Override this API method to customize how mentions are inserted.
+Inserts a mention element at the current selection.
 
-### `getMentionOnSelectItem`
+<API name="api.insert.mention">
+<APIParameters>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="search" type="string">
+        The search text that triggered the mention.
+      </APISubListItem>
+      <APISubListItem parent="options" name="value" type="any">
+        The value to store in the mention element.
+      </APISubListItem>
+      <APISubListItem parent="options" name="key" type="any" optional>
+        Optional key for the mention element.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+</API>
+
+### getMentionOnSelectItem
 
 Gets handler for selecting mention combobox item.
 
 <API name="getMentionOnSelectItem">
-<APIOptions type="GetMentionOnSelectItemOptions">
+<APIOptions>
   <APIItem name="key" type="string" optional>
     Plugin key for mention plugin.
     - **Default:** `MentionPlugin.key`
   </APIItem>
 </APIOptions>
 
-<APIReturns type="MentionOnSelectItem">
-  Handler for mention item selection.
+<APIReturns>
+  Handler function for mention item selection.
 </APIReturns>
 </API>

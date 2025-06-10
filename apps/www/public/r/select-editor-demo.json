@@ -4,6 +4,9 @@
   "type": "registry:example",
   "title": "Select Editor Form",
   "description": "A form with a select editor component for managing labels.",
+  "dependencies": [
+    "@udecode/plate-tag"
+  ],
   "registryDependencies": [
     "form",
     "button",

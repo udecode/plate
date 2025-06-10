@@ -1,5 +1,6 @@
 ---
 title: Caption
+description: Add captions to media elements like images, videos, and files.
 docs:
   - route: /docs/components/caption
     title: Caption
@@ -11,19 +12,70 @@ docs:
 
 ## Features
 
-- Arrow navigation should select caption within a block.
+- Add captions to images, videos, audio files, and other media elements.
+- Arrow navigation selects caption within a block.
+- Inline caption editing with textarea component.
 
 </PackageInfo>
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add caption functionality is with the `MediaKit`, which includes the pre-configured `CaptionPlugin` along with media plugins and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="media-kit" />
+
+- [`Caption`](/docs/components/caption): Renders caption components for media elements.
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { MediaKit } from '@/components/editor/plugins/media-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...MediaKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @udecode/plate-caption
 ```
 
-## Usage
+### Add Plugin
 
 ```tsx
+import { CaptionPlugin } from '@udecode/plate-caption/react';
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CaptionPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+Configure which media plugins should support captions:
+
+```tsx
+import { KEYS } from '@udecode/plate';
 import { CaptionPlugin } from '@udecode/plate-caption/react';
 import {
   AudioPlugin,
@@ -32,50 +84,57 @@ import {
   MediaEmbedPlugin,
   VideoPlugin,
 } from '@udecode/plate-media/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ImagePlugin,
+    VideoPlugin,
+    AudioPlugin,
+    FilePlugin,
+    MediaEmbedPlugin,
+    CaptionPlugin.configure({
+      options: {
+        query: {
+          allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
+        },
+      },
+    }),
+  ],
+});
 ```
 
-```tsx
-const plugins = [
-  // ...otherPlugins,
-  ImagePlugin,
-  VideoPlugin,
-  AudioPlugin,
-  FilePlugin,
-  MediaEmbedPlugin,
-  CaptionPlugin.configure({
-    options: {
-      plugins: [
-        ImagePlugin,
-        VideoPlugin,
-        AudioPlugin,
-        FilePlugin,
-        MediaEmbedPlugin,
-      ],
-    },
-  }),
-];
-```
+- `query.allow`: Array of plugin keys that support captions.
+
+</Steps>
 
 ## Plugins
 
 ### `CaptionPlugin`
 
+Plugin for adding caption functionality to media elements.
+
 <API name="CaptionPlugin">
 <APIOptions>
-  <APIItem name="plugins" type="string[]" required>
-    The plugin keys of the blocks that have caption.
+  <APIItem name="query" type="{ allow: string[] }" required>
+    Configuration for which plugins support captions.
+    <APISubList>
+      <APISubListItem parent="query" name="allow" type="string[]">
+        Plugin keys of the blocks that can have captions.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
   <APIItem name="focusEndPath" type="Path" optional>
     Path to focus at the end of the caption.
+    - **Default:** `null`
   </APIItem>
   <APIItem name="focusStartPath" type="Path" optional>
     Path to focus at the start of the caption.
+    - **Default:** `null`
   </APIItem>
   <APIItem name="visibleId" type="string" optional>
-    ID of the visible caption.
-  </APIItem>
-  <APIItem name="isVisible" type="boolean" optional>
-    Whether the caption is visible.
+    ID of the currently visible caption.
+    - **Default:** `null`
   </APIItem>
 </APIOptions>
 </API>
@@ -89,7 +148,7 @@ Extends `TElement`.
 <API name="TCaptionElement">
 <APIAttributes>
   <APIItem name="caption" type="Descendant[]" optional>
-    Caption value.
+    Caption value as an array of descendant nodes.
   </APIItem>
 </APIAttributes>
 </API>

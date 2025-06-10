@@ -30,7 +30,6 @@ import { cloneDeep } from 'lodash';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { BasicMarksKit } from '@/registry/components/editor/plugins/basic-marks-kit';
-import { EditingKit } from '@/registry/components/editor/plugins/editing-kit';
 
 const InlinePlugin = createPlatePlugin({
   key: 'inline',
@@ -226,7 +225,6 @@ const initialValue: Value = [
 
 const plugins = [
   ...BasicMarksKit,
-  ...EditingKit,
   InlinePlugin.withComponent(InlineElement),
   InlineVoidPlugin.withComponent(InlineVoidElement),
   DiffPlugin,

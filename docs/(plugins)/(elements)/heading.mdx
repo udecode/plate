@@ -109,6 +109,62 @@ const editor = createPlateEditor({
 - `node.component`: Assigns a custom React component like [`H1Element`](/docs/components/heading-node) to render the specific heading level.
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) (e.g., `mod+alt+1`) to toggle the respective heading level.
 
+### Turn Into Toolbar Button
+
+You can add these items to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into headings:
+
+```tsx
+{
+  icon: <Heading1Icon />,
+  label: 'Heading 1',
+  value: 'h1',
+}
+```
+
+```tsx
+{
+  icon: <Heading2Icon />,
+  label: 'Heading 2',
+  value: 'h2',
+}
+```
+
+```tsx
+{
+  icon: <Heading3Icon />,
+  label: 'Heading 3',
+  value: 'h3',
+}
+```
+
+### Insert Toolbar Button
+
+You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert heading elements:
+
+```tsx
+{
+  icon: <Heading1Icon />,
+  label: 'Heading 1',
+  value: 'h1',
+}
+```
+
+```tsx
+{
+  icon: <Heading2Icon />,
+  label: 'Heading 2',
+  value: 'h2',
+}
+```
+
+```tsx
+{
+  icon: <Heading3Icon />,
+  label: 'Heading 3',
+  value: 'h3',
+}
+```
+
 </Steps>
 
 ## Plugins

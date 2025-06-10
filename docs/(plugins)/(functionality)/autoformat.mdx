@@ -1,5 +1,6 @@
 ---
 title: Autoformat
+description: Automatic text formatting via shortcodes and markdown-like shortcuts.
 docs:
   - route: /docs/basic-blocks
     title: Basic Elements
@@ -17,80 +18,205 @@ docs:
 
 ## Features
 
-- Enables quick content formatting via shortcodes.
-- Offers markdown-like inline codes for real-time typing.
-- Enhances and simplifies editing by avoiding toolbar buttons and shortcuts for common formatting.
-- Auto conversion feature (e.g., `#` to H1).
-- Provides predefined formatting rules.
-
-## Shortcodes
-
-- `text*` for bold text.
-- `_text_` for italicized text.
-- `~~text~~` for strikethrough text.
-- ... and more.
+- Markdown-style shortcuts for blocks (e.g., `#` to H1, `>` for blockquote).
+- Inline mark formatting (e.g., `**bold**`, `*italic*`, `~~strikethrough~~`).
+- Smart punctuation conversion (e.g., `--` to `—`, `...` to `…`).
+- Mathematical symbols and fractions.
+- Legal symbols and arrows.
+- Undo support on delete to reverse autoformatting.
 
 </PackageInfo>
 
-## Installation
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add autoformatting is with the `AutoformatKit`, which includes comprehensive formatting rules for blocks, marks, and text replacements.
+
+<ComponentSource name="autoformat-kit" />
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from '@udecode/plate/react';
+import { AutoformatKit } from '@/components/editor/plugins/autoformat-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...AutoformatKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
 ```bash
 npm install @udecode/plate-autoformat
 ```
 
-## Usage
+### Add Plugin
+
+```tsx
+import { AutoformatPlugin } from '@udecode/plate-autoformat';
+import { createPlateEditor } from '@udecode/plate/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    AutoformatPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+Configure autoformat with custom rules:
 
 ```tsx
 import { AutoformatPlugin } from '@udecode/plate-autoformat';
 
-const plugins = [
-  // ...otherPlugins,
-  AutoformatPlugin.configure({
-    options: {
-      rules: autoformatRules,
-      enableUndoOnDelete: true,
-    },
-  }),
-];
+AutoformatPlugin.configure({
+  options: {
+    rules: [
+      // Block rules
+      {
+        match: '# ',
+        mode: 'block',
+        type: 'h1',
+      },
+      {
+        match: '> ',
+        mode: 'block',
+        type: 'blockquote',
+      },
+      // Mark rules
+      {
+        match: '**',
+        mode: 'mark',
+        type: 'bold',
+      },
+      {
+        match: '*',
+        mode: 'mark',
+        type: 'italic',
+      },
+    ],
+    enableUndoOnDelete: true,
+  },
+});
 ```
 
-## Examples
+### Advanced Configuration
 
-### `autoformatRules`
+Import predefined rule sets for comprehensive autoformatting:
 
-<ComponentSource name="autoformat-kit" />
+```tsx
+import { AutoformatPlugin } from '@udecode/plate-autoformat';
+import {
+  autoformatArrow,
+  autoformatLegal,
+  autoformatMath,
+  autoformatPunctuation,
+  autoformatSmartQuotes,
+} from '@udecode/plate-autoformat';
 
-### `autoformatBlocks`
+AutoformatPlugin.configure({
+  options: {
+    enableUndoOnDelete: true,
+    rules: [
+      // Custom block rules
+      {
+        match: '# ',
+        mode: 'block',
+        type: 'h1',
+      },
+      // Predefined rule sets
+      ...autoformatSmartQuotes,
+      ...autoformatPunctuation,
+      ...autoformatArrow,
+      ...autoformatLegal,
+      ...autoformatMath,
+    ].map((rule) => ({
+      ...rule,
+      // Disable autoformat in code blocks
+      query: (editor) =>
+        !editor.api.some({
+          match: { type: 'code_block' },
+        }),
+    })),
+  },
+});
+```
 
-### `autoformatLists`
+- `rules`: Array of autoformat rules defining triggers and formatting actions.
+- `enableUndoOnDelete`: Allows undoing autoformat by pressing backspace.
+- `query`: Function to conditionally enable/disable rules based on context.
 
-If using the [List Classic plugin](/docs/list-classic), you can use the following rules:
+### Using Regex Patterns
 
-<ComponentSource name="autoformat-classic-kit" />
+For more complex matching patterns, you can use regular expressions:
 
-### `autoformatMarks`
+```tsx
+import { AutoformatPlugin } from '@udecode/plate-autoformat';
+import { toggleList } from '@udecode/plate-list';
 
-### `autoformatUtils`
+AutoformatPlugin.configure({
+  options: {
+    rules: [
+      {
+        match: [String.raw`^\d+\.$ `, String.raw`^\d+\)$ `],
+        matchByRegex: true,
+        mode: 'block',
+        type: 'list',
+        format: (editor, { matchString }) => {
+          const number = Number(matchString.match(/\d+/)?.[0]) || 1;
+          toggleList(editor, {
+            listRestartPolite: number,
+            listStyleType: 'ol',
+          });
+        },
+      },
+    ],
+  },
+});
+```
+
+- `matchByRegex`: Enables regex pattern matching instead of string equality.
+- Note that Regex patterns only work with `mode: 'block'` and are applied at block start (`triggerAtBlockStart: true`).
+
+</Steps>
 
 ## Plugins
 
 ### `AutoformatPlugin`
 
+Plugin for automatic text formatting based on typing patterns.
+
 <API name="AutoformatPlugin">
 <APIOptions>
   <APIItem name="rules" type="AutoformatRule[]" optional>
-    A list of triggering rules.
-    - Can be one of: `AutoformatBlockRule`, `AutoformatMarkRule`, `AutoformatTextRule`
-    - Extends `AutoformatCommonRule`
+    A list of triggering rules. Can be one of: `AutoformatBlockRule`, `AutoformatMarkRule`, `AutoformatTextRule`. Each extends `AutoformatCommonRule`.
+    - **Default:** `[]`
   </APIItem>
   <APIItem name="enableUndoOnDelete" type="boolean" optional>
-    Enable undo on delete.
+    Enable undo on delete to reverse autoformatting.
+    - **Default:** `false`
   </APIItem>
 </APIOptions>
 </API>
 
-## Rules
+## Predefined Rules
 
-You can import the following rules:
+You can import the following predefined rule sets:
 
 | Name                           | Description                          |
 | :----------------------------- | :----------------------------------- |
@@ -111,7 +237,7 @@ You can import the following rules:
 |                                | Converts `&reg;` to `®`.            |
 |                                | Converts `&copy;` to `©`.           |
 |                                | Converts `&sect;` to `§`.            |
-| `autoformatComparison`         | Converts `!>` to `!>`.               |
+| `autoformatComparison`         | Converts `!>` to `≯`.               |
 |                                | Converts `!<` to `≮`.                |
 |                                | Converts `>=` to `≥`.                |
 |                                | Converts `<=` to `≤`.                |
@@ -129,7 +255,7 @@ You can import the following rules:
 | `autoformatDivision`           | Converts `//` to `÷`.                |
 | `autoformatOperation`          | Converts `+-` to `±`.                |
 |                                | Converts `%%` to `‰`.                |
-|                                | Converts `%%%` and `‰%` to `‱.       |
+|                                | Converts `%%%` and `‰%` to `‱`.       |
 |                                | `autoformatDivision` rules.          |
 | `autoformatSubscriptNumbers`   | Converts `~0` to `₀`.                |
 |                                | Converts `~1` to `₁`.                |
@@ -141,8 +267,8 @@ You can import the following rules:
 |                                | Converts `^1` to `¹`.                |
 |                                | ...                                  |
 |                                | Converts `^9` to `⁹`.                |
-| `autoformatSuperscriptSymbols` | Converts `^+` to `°`.                |
-|                                | Converts `^-` to `⁺`.                |
+| `autoformatSuperscriptSymbols` | Converts `^+` to `⁺`.                |
+|                                | Converts `^-` to `⁻`.                |
 | `autoformatMath`               | `autoformatComparison` rules         |
 |                                | `autoformatEquality` rules           |
 |                                | `autoformatOperation` rules          |
@@ -212,17 +338,12 @@ An interface for autoformat rules for block mode.
 <APIAttributes>
   <APIItem name="mode" type="'block'">
     Block mode: set block type or custom format.
-
-    - Text: insert text.
-    - Block: set block type or custom format. 
-    - Mark: insert mark(s) between matches.
   </APIItem>
   <APIItem name="match" type="string | string[]">
     Pattern to match for the autoformat rule.
   </APIItem>
   <APIItem name="type" type="string" optional>
-    - For `mode: 'block'`: set block type. If `format` is defined, this field is ignored.
-    - For `mode: 'mark'`: Mark(s) to add.
+    For `mode: 'block'`: set block type. If `format` is defined, this field is ignored.
   </APIItem>
   <APIItem name="triggerAtBlockStart" type="boolean" optional>
     Whether trigger should be at block start.

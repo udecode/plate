@@ -1,8 +1,7 @@
-import {
-  type OverrideEditor,
-  type TCodeBlockElement,
-  type TElement,
-  KEYS,
+import type {
+  OverrideEditor,
+  TCodeBlockElement,
+  TElement,
 } from '@udecode/plate';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
@@ -69,7 +68,7 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
         if (
           editor.api.block({
             at: options?.at,
-            match: { type: editor.getType(KEYS.codeBlock) },
+            match: { type },
           })
         ) {
           unwrapCodeBlock(editor);
@@ -80,12 +79,11 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
       },
       selectAll: () => {
         const apply = () => {
-          const res = getCodeLineEntry(editor, {});
+          const codeBlock = editor.api.above({
+            match: { type },
+          });
 
-          if (!res) return;
-
-          const { codeBlock } = res;
-          const [, codeBlockPath] = codeBlock;
+          if (!codeBlock) return;
 
           if (
             editor.api.isAt({ end: true }) &&
@@ -95,7 +93,7 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
           }
 
           // Select the whole code block
-          editor.tf.select(codeBlockPath);
+          editor.tf.select(codeBlock[1]);
           return true;
         };
 
@@ -106,7 +104,7 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
       tab: (options) => {
         const apply = () => {
           const _codeLines = editor.api.nodes<TElement>({
-            match: { type: editor.getType(KEYS.codeLine) },
+            match: { type },
           });
           const codeLines = Array.from(_codeLines);
 

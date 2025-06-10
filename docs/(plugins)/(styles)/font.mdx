@@ -37,8 +37,6 @@ The fastest way to add font styling functionality is with the `FontKit`, which i
 
 <ComponentSource name="font-kit" />
 
-- [`FontColorButton`](/docs/components/font-color-toolbar-button): Provides font color selection.
-- [`FontSizeButton`](/docs/components/font-size-toolbar-button): Provides font size selection.
 - Includes all font plugins (`FontColorPlugin`, `FontBackgroundColorPlugin`, `FontSizePlugin`, `FontFamilyPlugin`) with sensible defaults.
 
 ### Add Kit
@@ -139,6 +137,10 @@ const editor = createPlateEditor({
 
 - `inject.nodeProps.defaultNodeValue`: Sets the default font color value.
 - `inject.targetPlugins`: Specifies which element types can receive font styling (affects HTML parsing).
+
+### Add Toolbar Button
+
+You can add [`FontColorToolbarButton`](/docs/components/font-color-toolbar-button) and [`FontSizeToolbarButton`](/docs/components/font-size-toolbar-button) to your [Toolbar](/docs/toolbar) to control font color and size.
 
 </Steps>
 

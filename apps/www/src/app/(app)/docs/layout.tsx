@@ -1,5 +1,7 @@
 'use client';
 
+import { Suspense } from 'react';
+
 import { DocsNav } from '@/components/docs-nav';
 import { docsConfig } from '@/config/docs';
 import { cn } from '@/lib/utils';
@@ -21,7 +23,9 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
       >
         <aside className="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 md:sticky md:block">
           <div className="scrollbar-hide h-full overflow-auto">
-            <DocsNav config={docsConfig} />
+            <Suspense fallback={null}>
+              <DocsNav config={docsConfig} />
+            </Suspense>
           </div>
         </aside>
 

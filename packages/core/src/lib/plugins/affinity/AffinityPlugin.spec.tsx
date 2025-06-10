@@ -101,7 +101,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'outward' } } as any,
+              rules: { selection: { affinity: 'outward' } } as any,
             }),
           ],
           selection: input.selection,
@@ -140,7 +140,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'outward' } } as any,
+              rules: { selection: { affinity: 'outward' } } as any,
             }),
           ],
           selection: input.selection,
@@ -178,7 +178,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'outward' } } as any,
+              rules: { selection: { affinity: 'outward' } } as any,
             }),
           ],
           selection: input.selection,
@@ -218,7 +218,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'outward' } } as any,
+              rules: { selection: { affinity: 'outward' } } as any,
             }),
           ],
           selection: input.selection,
@@ -255,7 +255,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'outward' } } as any,
+              rules: { selection: { affinity: 'outward' } } as any,
             }),
           ],
           selection: input.selection,
@@ -292,7 +292,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'outward' } } as any,
+              rules: { selection: { affinity: 'outward' } } as any,
             }),
           ],
           selection: input.selection,
@@ -335,7 +335,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'outward' } } as any,
+              rules: { selection: { affinity: 'outward' } } as any,
             }),
           ],
           selection: input.selection,
@@ -375,10 +375,10 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'outward' } } as any,
+              rules: { selection: { affinity: 'outward' } } as any,
             }),
             BaseItalicPlugin.configure({
-              node: { selectionRules: {} } as any,
+              rules: { selection: {} } as any,
             }),
           ],
           selection: input.selection,
@@ -418,10 +418,10 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'outward' } } as any,
+              rules: { selection: { affinity: 'outward' } } as any,
             }),
             BaseItalicPlugin.configure({
-              node: { selectionRules: { affinity: 'outward' } } as any,
+              rules: { selection: { affinity: 'outward' } } as any,
             }),
           ],
           selection: input.selection,
@@ -465,7 +465,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'directional' } } as any,
+              rules: { selection: { affinity: 'directional' } } as any,
             }),
           ],
           selection: input.selection,
@@ -509,7 +509,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'directional' } } as any,
+              rules: { selection: { affinity: 'directional' } } as any,
             }),
           ],
           selection: input.selection,
@@ -554,7 +554,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'directional' } } as any,
+              rules: { selection: { affinity: 'directional' } } as any,
             }),
           ],
           selection: input.selection,
@@ -599,7 +599,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'directional' } } as any,
+              rules: { selection: { affinity: 'directional' } } as any,
             }),
           ],
           selection: input.selection,
@@ -641,7 +641,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'directional' } } as any,
+              rules: { selection: { affinity: 'directional' } } as any,
             }),
           ],
           selection: input.selection,
@@ -684,7 +684,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
-              node: { selectionRules: { affinity: 'directional' } } as any,
+              rules: { selection: { affinity: 'directional' } } as any,
             }),
           ],
           selection: input.selection,
@@ -819,7 +819,7 @@ describe('AffinityPlugin', () => {
           plugins: [
             AffinityPlugin,
             BaseLinkPlugin.configure({
-              node: { selectionRules: { affinity: 'directional' } } as any,
+              rules: { selection: { affinity: 'directional' } } as any,
             }),
           ],
           selection: input.selection,
@@ -878,7 +878,7 @@ describe('AffinityPlugin', () => {
   });
 
   describe('Hard edge movement', () => {
-    describe('when moving around hard edge marks (isHardEdge: true)', () => {
+    describe('when moving around hard edge marks', () => {
       it('should use offset movement when moving right at hard edge boundary', async () => {
         const input = (
           <editor>
@@ -909,7 +909,7 @@ describe('AffinityPlugin', () => {
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
           plugins: [
             BaseCodePlugin.configure({
-              node: { selectionRules: { affinity: 'hard' } } as any,
+              rules: { selection: { affinity: 'hard' } } as any,
             }),
           ],
           selection: input.selection,
@@ -953,7 +953,7 @@ describe('AffinityPlugin', () => {
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
           plugins: [
             BaseCodePlugin.configure({
-              node: { selectionRules: { affinity: 'hard' } } as any,
+              rules: { selection: { affinity: 'hard' } } as any,
             }),
           ],
           selection: input.selection,
@@ -1001,7 +1001,7 @@ describe('AffinityPlugin', () => {
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
           plugins: [
             BaseCodePlugin.configure({
-              node: { selectionRules: { affinity: 'hard' } } as any,
+              rules: { selection: { affinity: 'hard' } } as any,
             }),
           ],
           selection: input.selection,
@@ -1045,7 +1045,7 @@ describe('AffinityPlugin', () => {
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
           plugins: [
             BaseCodePlugin.configure({
-              node: { selectionRules: { affinity: 'hard' } } as any,
+              rules: { selection: { affinity: 'hard' } } as any,
             }),
           ],
           selection: input.selection,
@@ -1093,7 +1093,7 @@ describe('AffinityPlugin', () => {
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
           plugins: [
             BaseCodePlugin.configure({
-              node: { selectionRules: { affinity: 'hard' } } as any,
+              rules: { selection: { affinity: 'hard' } } as any,
             }),
           ],
           selection: input.selection,
@@ -1135,7 +1135,7 @@ describe('AffinityPlugin', () => {
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
           plugins: [
             BaseCodePlugin.configure({
-              node: { selectionRules: { affinity: 'hard' } } as any,
+              rules: { selection: { affinity: 'hard' } } as any,
             }),
             BaseBoldPlugin,
           ],
@@ -1179,7 +1179,7 @@ describe('AffinityPlugin', () => {
         const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
           plugins: [
             BaseCodePlugin.configure({
-              node: { selectionRules: { affinity: 'hard' } } as any,
+              rules: { selection: { affinity: 'hard' } } as any,
             }),
           ],
           selection: input.selection,

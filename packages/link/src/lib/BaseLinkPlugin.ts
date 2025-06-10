@@ -7,8 +7,7 @@ import {
   KEYS,
 } from '@udecode/plate';
 
-import { getLinkAttributes } from './utils/getLinkAttributes';
-import { validateUrl } from './utils/index';
+import { getLinkAttributes, validateUrl } from './utils/index';
 import { withLink } from './withLink';
 
 export type BaseLinkConfig = PluginConfig<
@@ -88,12 +87,8 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
   key: KEYS.link,
   node: {
     dangerouslyAllowAttributes: ['target'],
-    isAffinity: true,
     isElement: true,
     isInline: true,
-    normalizeRules: {
-      removeEmpty: true,
-    },
     props: ({ editor, element }) =>
       getLinkAttributes(editor, element as TLinkElement),
   },
@@ -131,5 +126,9 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
         },
       },
     },
+  },
+  rules: {
+    normalize: { removeEmpty: true },
+    selection: { affinity: 'directional' },
   },
 }).overrideEditor(withLink);

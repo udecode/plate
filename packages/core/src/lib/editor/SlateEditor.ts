@@ -70,7 +70,6 @@ export type BaseEditor = EditorBase & {
         isNotSelectable: string[];
         isStrictSiblings: string[];
         isVoid: string[];
-        matchRules: string[];
         /** Node types to plugin keys. */
         types: Record<string, string>;
       };
@@ -86,6 +85,7 @@ export type BaseEditor = EditorBase & {
         belowNodes: string[];
         belowRootNodes: string[];
       };
+      rules: { match: string[] };
       useHooks: string[];
     };
     /** All plugins. */

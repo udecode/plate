@@ -22,19 +22,19 @@ export const withDeleteRules: OverrideEditor = (ctx) => {
     blockNode: any,
     blockPath: any
   ): DeleteRules | null => {
-    const matchRulesKeys = editor.meta.pluginCache.node.matchRules;
+    const matchRulesKeys = editor.meta.pluginCache.rules.match;
     for (const key of matchRulesKeys) {
-      const overridePlugin = editor.getPlugin({ key }).node;
+      const overridePlugin = editor.getPlugin({ key });
       if (
-        overridePlugin.deleteRules &&
-        overridePlugin.matchRules?.({
+        overridePlugin.rules?.delete &&
+        overridePlugin.rules?.match?.({
           ...ctx,
           node: blockNode,
           path: blockPath,
           rule: rule as any,
         })
       ) {
-        return overridePlugin.deleteRules;
+        return overridePlugin.rules.delete;
       }
     }
     return null;
@@ -60,7 +60,7 @@ export const withDeleteRules: OverrideEditor = (ctx) => {
             const [blockNode, blockPath] = block;
             const plugin = getPluginByType(editor, blockNode.type);
 
-            const deleteRules = plugin?.node.deleteRules;
+            const deleteRules = plugin?.rules.delete;
 
             // Handle 'start' scenario
             if (editor.api.isAt({ start: true })) {

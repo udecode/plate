@@ -16,7 +16,7 @@
         "https://platejs.org/r/-guides-plugin-components-docs",
         "https://platejs.org/r/-guides-plugin-context-docs",
         "https://platejs.org/r/-guides-plugin-methods-docs",
-        "https://platejs.org/r/-guides-plugin-modes-docs",
+        "https://platejs.org/r/-guides-plugin-rules-docs",
         "https://platejs.org/r/-guides-plugin-shortcuts-docs",
         "https://platejs.org/r/-guides-plugin-docs",
         "https://platejs.org/r/-guides-static-docs",
@@ -25,7 +25,8 @@
         "https://platejs.org/r/-guides-unit-testing-docs",
         "https://platejs.org/r/-plugins-ai-ai-docs",
         "https://platejs.org/r/-plugins-ai-copilot-docs",
-        "https://platejs.org/r/-plugins-collaboration-comments-docs",
+        "https://platejs.org/r/-plugins-collaboration-comment-docs",
+        "https://platejs.org/r/-plugins-collaboration-discussion-docs",
         "https://platejs.org/r/-plugins-collaboration-suggestion-docs",
         "https://platejs.org/r/-plugins-collaboration-yjs-docs",
         "https://platejs.org/r/-plugins-elements-basic-blocks-docs",
@@ -50,7 +51,6 @@
         "https://platejs.org/r/-plugins-functionality-combobox-slash-command-docs",
         "https://platejs.org/r/-plugins-functionality-utils-exit-break-docs",
         "https://platejs.org/r/-plugins-functionality-utils-forced-layout-docs",
-        "https://platejs.org/r/-plugins-functionality-utils-select-docs",
         "https://platejs.org/r/-plugins-functionality-utils-single-block-docs",
         "https://platejs.org/r/-plugins-functionality-utils-trailing-block-docs",
         "https://platejs.org/r/-plugins-functionality-autoformat-docs",
@@ -298,13 +298,13 @@
       "description": "Configure common editing behaviors.",
       "files": [
         {
-          "path": "../../docs/(guides)/plugin-modes.mdx",
-          "target": "content/docs/plate/(guides)/plugin-modes.mdx",
+          "path": "../../docs/(guides)/plugin-rules.mdx",
+          "target": "content/docs/plate/(guides)/plugin-rules.mdx",
           "type": "registry:file"
         }
       ],
-      "name": "-guides-plugin-modes-docs",
-      "title": "Plugin Modes",
+      "name": "-guides-plugin-rules-docs",
+      "title": "Plugin Rules",
       "type": "registry:file"
     },
     {
@@ -412,16 +412,29 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Comments",
+      "description": "Documentation for Comment",
       "files": [
         {
-          "path": "../../docs/(plugins)/(collaboration)/comments.mdx",
-          "target": "content/docs/plate/(plugins)/(collaboration)/comments.mdx",
+          "path": "../../docs/(plugins)/(collaboration)/comment.mdx",
+          "target": "content/docs/plate/(plugins)/(collaboration)/comment.mdx",
           "type": "registry:file"
         }
       ],
-      "name": "-plugins-collaboration-comments-docs",
-      "title": "Comments",
+      "name": "-plugins-collaboration-comment-docs",
+      "title": "Comment",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Discussion",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(collaboration)/discussion.mdx",
+          "target": "content/docs/plate/(plugins)/(collaboration)/discussion.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "-plugins-collaboration-discussion-docs",
+      "title": "Discussion",
       "type": "registry:file"
     },
     {
@@ -594,7 +607,7 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for List",
+      "description": "Documentation for List Classic",
       "files": [
         {
           "path": "../../docs/(plugins)/(elements)/list-classic.mdx",
@@ -603,7 +616,7 @@
         }
       ],
       "name": "-plugins-elements-list-classic-docs",
-      "title": "List",
+      "title": "List Classic",
       "type": "registry:file"
     },
     {
@@ -737,19 +750,6 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Select",
-      "files": [
-        {
-          "path": "../../docs/(plugins)/(functionality)/(utils)/select.mdx",
-          "target": "content/docs/plate/(plugins)/(functionality)/(utils)/select.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "-plugins-functionality-utils-select-docs",
-      "title": "Select",
-      "type": "registry:file"
-    },
-    {
       "description": "Documentation for Single Block",
       "files": [
         {
@@ -776,7 +776,7 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Autoformat",
+      "description": "Automatic text formatting via shortcodes and markdown-like shortcuts.",
       "files": [
         {
           "path": "../../docs/(plugins)/(functionality)/autoformat.mdx",
@@ -828,7 +828,7 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Caption",
+      "description": "Add captions to media elements like images, videos, and files.",
       "files": [
         {
           "path": "../../docs/(plugins)/(functionality)/caption.mdx",
@@ -841,7 +841,7 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Cursor Overlay",
+      "description": "Visual feedback for selections and cursor positions when editor loses focus.",
       "files": [
         {
           "path": "../../docs/(plugins)/(functionality)/cursor-overlay.mdx",
@@ -854,7 +854,7 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Drag & Drop",
+      "description": "Drag and drop blocks to reorganize content within the editor.",
       "files": [
         {
           "path": "../../docs/(plugins)/(functionality)/dnd.mdx",

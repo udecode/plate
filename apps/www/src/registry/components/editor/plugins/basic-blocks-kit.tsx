@@ -18,25 +18,28 @@ export const BasicBlocksKit = [
   ParagraphPlugin.withComponent(ParagraphElement),
   H1Plugin.configure({
     node: {
-      breakRules: { empty: 'reset' },
       component: H1Element,
-      splitRules: { default: 'reset' },
+    },
+    rules: {
+      break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+1' } },
   }),
   H2Plugin.configure({
     node: {
-      breakRules: { empty: 'reset' },
       component: H2Element,
-      splitRules: { default: 'reset' },
+    },
+    rules: {
+      break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+2' } },
   }),
   H3Plugin.configure({
     node: {
-      breakRules: { empty: 'reset' },
       component: H3Element,
-      splitRules: { default: 'reset' },
+    },
+    rules: {
+      break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+3' } },
   }),

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 
@@ -28,5 +28,9 @@ export const metadata: Metadata = {
 };
 
 export default function PluginsPage() {
-  return <NavItemsGrid category="plugin" />;
+  return (
+    <Suspense fallback={null}>
+      <NavItemsGrid category="plugin" />
+    </Suspense>
+  );
 }

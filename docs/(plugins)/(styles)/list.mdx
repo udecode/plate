@@ -50,7 +50,39 @@ const editor = createPlateEditor({
 });
 ```
 
+### Add Toolbar Button
+
+You can add [`ListToolbarButton`](/docs/components/list-toolbar-button) to your [Toolbar](/docs/toolbar) to create and manage lists.
+
 </Steps>
+
+## Turn Into Toolbar Button
+
+You can add these items to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into lists:
+
+```tsx
+{
+  icon: <ListIcon />,
+  label: 'Bulleted list',
+  value: KEYS.ul,
+}
+```
+
+```tsx
+{
+  icon: <ListOrderedIcon />,
+  label: 'Numbered list',
+  value: KEYS.ol,
+}
+```
+
+```tsx
+{
+  icon: <SquareIcon />,
+  label: 'To-do list',
+  value: KEYS.listTodo,
+}
+```
 
 ## Manual Usage
 

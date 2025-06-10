@@ -11,7 +11,7 @@ import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export default function SingleBlockDemo() {
-  const [isSingleBlock, setIsSingleBlock] = React.useState(false);
+  const [isSingleBlock, setIsSingleBlock] = React.useState(true);
 
   const editor = usePlateEditor(
     {

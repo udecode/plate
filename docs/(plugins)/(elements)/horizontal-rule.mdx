@@ -111,6 +111,18 @@ const editor = createPlateEditor({
 
 - `AutoformatPlugin`: Automatically converts typed patterns (like `---`) into horizontal rules.
 
+### Insert Toolbar Button
+
+You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert horizontal rules:
+
+```tsx
+{
+  icon: <MinusIcon />,
+  label: 'Divider',
+  value: KEYS.hr,
+}
+```
+
 </Steps>
 
 ## Plugins

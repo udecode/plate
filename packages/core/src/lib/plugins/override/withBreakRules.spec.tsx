@@ -10,7 +10,7 @@ import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 jsxt;
 
 describe('withBreakRules', () => {
-  describe('breakRules: { empty: "reset" }', () => {
+  describe('rules: { break: { empty: "reset" }', () => {
     it('should reset on insertBreak when block is empty', () => {
       const input = (
         <editor>
@@ -33,9 +33,11 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'blockquote',
             node: {
-              breakRules: { empty: 'reset' },
               isElement: true,
               type: 'blockquote',
+            },
+            rules: {
+              break: { empty: 'reset' },
             },
           }),
         ],
@@ -73,9 +75,11 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'blockquote',
             node: {
-              breakRules: { empty: 'reset' },
               isElement: true,
               type: 'blockquote',
+            },
+            rules: {
+              break: { empty: 'reset' },
             },
           }),
         ],
@@ -90,7 +94,7 @@ describe('withBreakRules', () => {
     });
   });
 
-  describe('breakRules: { empty: "reset" }', () => {
+  describe('rules: { break: { empty: "reset" }', () => {
     it('should reset on insertBreak when block is empty', () => {
       const input = (
         <editor>
@@ -113,9 +117,11 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              breakRules: { empty: 'reset' },
               isElement: true,
               type: 'h1',
+            },
+            rules: {
+              break: { empty: 'reset' },
             },
           }),
         ],
@@ -153,9 +159,11 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              breakRules: { empty: 'reset' },
               isElement: true,
               type: 'h1',
+            },
+            rules: {
+              break: { empty: 'reset' },
             },
           }),
         ],
@@ -170,7 +178,7 @@ describe('withBreakRules', () => {
     });
   });
 
-  describe('breakRules: undefined (default)', () => {
+  describe('rules: { break: undefined (default)', () => {
     it('should NOT reset on insertBreak when block is empty', () => {
       const input = (
         <editor>
@@ -235,9 +243,11 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              breakRules: { empty: 'reset' },
               isElement: true,
               type: 'h1',
+            },
+            rules: {
+              break: { empty: 'reset' },
             },
           }),
         ],
@@ -252,7 +262,7 @@ describe('withBreakRules', () => {
     });
   });
 
-  describe('breakRules: { empty: "deleteExit" }', () => {
+  describe('rules: { break: { empty: "deleteExit" }', () => {
     it('should NOT delete and exit when block has content', () => {
       const input = (
         <editor>
@@ -277,9 +287,11 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'blockquote',
             node: {
-              breakRules: { empty: 'deleteExit' },
               isElement: true,
               type: 'blockquote',
+            },
+            rules: {
+              break: { empty: 'deleteExit' },
             },
           }),
         ],
@@ -294,8 +306,8 @@ describe('withBreakRules', () => {
     });
   });
 
-  describe('breakRules: undefined (default)', () => {
-    it('should use default behavior when breakRules is undefined', () => {
+  describe('rules: { break: undefined (default)', () => {
+    it('should use default behavior when rules.break is undefined', () => {
       const input = (
         <editor>
           <element type="custom">
@@ -322,7 +334,7 @@ describe('withBreakRules', () => {
             node: {
               isElement: true,
               type: 'custom',
-              // breakRules is undefined
+              // rules.break is undefined
             },
           }),
         ],
@@ -336,7 +348,7 @@ describe('withBreakRules', () => {
       expect(editor.selection).toEqual(output.selection);
     });
 
-    it('should use default behavior when breakRules is empty object', () => {
+    it('should use default behavior when rules.break is empty object', () => {
       const input = (
         <editor>
           <element type="custom">
@@ -361,9 +373,11 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'custom',
             node: {
-              breakRules: {}, // empty object
               isElement: true,
               type: 'custom',
+            },
+            rules: {
+              break: {}, // empty object
             },
           }),
         ],
@@ -379,7 +393,7 @@ describe('withBreakRules', () => {
   });
 
   describe('matchRules override behavior', () => {
-    it('should use matchRules override instead of default plugin breakRules', () => {
+    it('should use matchRules override instead of default plugin rules.break', () => {
       const input = (
         <editor>
           <element customProperty="customValue" type="paragraph">
@@ -402,18 +416,22 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'paragraph',
             node: {
-              breakRules: { empty: 'default' }, // Default behavior
               isElement: true,
               type: 'paragraph',
+            },
+            rules: {
+              break: { empty: 'default' }, // Default behavior
             },
           }),
           // Override plugin that matches nodes with customProperty
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              breakRules: { empty: 'reset' }, // Override behavior
               type: 'override',
-              matchRules: ({ node }) => Boolean(node.customProperty),
+            },
+            rules: {
+              break: { empty: 'reset' }, // Override behavior
+              match: ({ node }: any) => Boolean(node.customProperty),
             },
           }),
         ],
@@ -453,18 +471,22 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'paragraph',
             node: {
-              breakRules: { empty: 'default' }, // Default behavior
               isElement: true,
               type: 'paragraph',
+            },
+            rules: {
+              break: { empty: 'default' }, // Default behavior
             },
           }),
           // Override plugin that only matches nodes with customProperty
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              breakRules: { empty: 'reset' }, // Override behavior
               type: 'override',
-              matchRules: ({ node }) => Boolean(node.customProperty), // Won't match
+            },
+            rules: {
+              break: { empty: 'reset' }, // Override behavior
+              match: ({ node }: any) => Boolean(node.customProperty), // Won't match
             },
           }),
         ],
@@ -504,17 +526,21 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'paragraph',
             node: {
-              breakRules: { emptyLineEnd: 'default' },
               isElement: true,
               type: 'paragraph',
+            },
+            rules: {
+              break: { emptyLineEnd: 'default' },
             },
           }),
           createSlatePlugin({
             key: 'customOverride',
             node: {
-              breakRules: { emptyLineEnd: 'exit' },
               type: 'override',
-              matchRules: ({ node }) => Boolean(node.customProperty),
+            },
+            rules: {
+              break: { emptyLineEnd: 'exit' },
+              match: ({ node }: any) => Boolean(node.customProperty),
             },
           }),
         ],
@@ -529,7 +555,7 @@ describe('withBreakRules', () => {
     });
   });
 
-  describe('breakRules: { splitReset: true }', () => {
+  describe('rules: { break: { splitReset: true }', () => {
     it('should reset the new block after splitting', () => {
       const input = (
         <editor>
@@ -555,9 +581,11 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              breakRules: { splitReset: true },
               isElement: true,
               type: 'h1',
+            },
+            rules: {
+              break: { splitReset: true },
             },
           }),
         ],
@@ -598,9 +626,11 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              breakRules: { splitReset: true },
               isElement: true,
               type: 'h1',
+            },
+            rules: {
+              break: { splitReset: true },
             },
           }),
         ],
@@ -638,9 +668,11 @@ describe('withBreakRules', () => {
           createSlatePlugin({
             key: 'h1',
             node: {
-              breakRules: { splitReset: true },
               isElement: true,
               type: 'h1',
+            },
+            rules: {
+              break: { splitReset: true },
             },
           }),
         ],

@@ -26,7 +26,7 @@
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"plugin-methods\",\n    \"plugin-shortcuts\",\n    \"plugin-context\",\n    \"plugin-components\",\n    \"plugin-modes\"\n  ],\n  \"title\": \"Plugin\"\n}",
+      "content": "{\n  \"pages\": [\n    \"plugin-methods\",\n    \"plugin-shortcuts\",\n    \"plugin-context\",\n    \"plugin-components\",\n    \"plugin-rules\"\n  ],\n  \"title\": \"Plugin\"\n}",
       "path": "content/docs/plate/guides/plugin/meta.json",
       "target": "content/docs/plate/guides/plugin/meta.json",
       "type": "registry:file"
@@ -38,7 +38,7 @@
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"index\",\n    \"index\",\n    \"index\",\n    \"index\",\n    \"basic-marks\",\n    \"index\",\n    \"index\",\n    \"index\"\n  ],\n  \"title\": \"Plugins\"\n}",
+      "content": "{\n  \"pages\": [\n    \"index\",\n    \"index\",\n    \"discussion\",\n    \"index\",\n    \"basic-marks\",\n    \"index\",\n    \"index\",\n    \"index\"\n  ],\n  \"title\": \"Plugins\"\n}",
       "path": "content/docs/plate/plugins/meta.json",
       "target": "content/docs/plate/plugins/meta.json",
       "type": "registry:file"
@@ -50,9 +50,9 @@
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"comments\",\n    \"suggestion\",\n    \"yjs\"\n  ],\n  \"title\": \"Collaboration\"\n}",
-      "path": "content/docs/plate/plugins/collaboration/meta.json",
-      "target": "content/docs/plate/plugins/collaboration/meta.json",
+      "content": "{\n  \"pages\": [\n    \"comment\",\n    \"suggestion\"\n  ],\n  \"title\": \"Discussion\"\n}",
+      "path": "content/docs/plate/plugins/discussion/meta.json",
+      "target": "content/docs/plate/plugins/discussion/meta.json",
       "type": "registry:file"
     },
     {
@@ -74,7 +74,7 @@
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"index\",\n    \"autoformat\",\n    \"block-menu\",\n    \"block-placeholder\",\n    \"block-selection\",\n    \"caption\",\n    \"combobox\",\n    \"cursor-overlay\",\n    \"dnd\",\n    \"tabbable\",\n    \"multi-select\"\n  ],\n  \"title\": \"Functionality\"\n}",
+      "content": "{\n  \"pages\": [\n    \"index\",\n    \"autoformat\",\n    \"block-menu\",\n    \"block-placeholder\",\n    \"block-selection\",\n    \"caption\",\n    \"combobox\",\n    \"cursor-overlay\",\n    \"dnd\",\n    \"tabbable\",\n    \"yjs\",\n    \"multi-select\"\n  ],\n  \"title\": \"Functionality\"\n}",
       "path": "content/docs/plate/plugins/functionality/meta.json",
       "target": "content/docs/plate/plugins/functionality/meta.json",
       "type": "registry:file"
@@ -98,13 +98,13 @@
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"ai-node\",\n    \"block-list\",\n    \"blockquote-node\",\n    \"callout-node\",\n    \"code-block-node\",\n    \"code-node\",\n    \"column-node\",\n    \"comment-node\",\n    \"suggestion-node\",\n    \"suggestion-line-break\",\n    \"date-node\",\n    \"equation-node\",\n    \"equation-toolbar-button\",\n    \"emoji-node\",\n    \"excalidraw-node\",\n    \"font-size-toolbar-button\",\n    \"heading-node\",\n    \"highlight-node\",\n    \"hr-node\",\n    \"media-image-node\",\n    \"media-preview-dialog\",\n    \"kbd-node\",\n    \"link-node\",\n    \"list-classic-node\",\n    \"media-audio-node\",\n    \"media-embed-node\",\n    \"media-file-node\",\n    \"media-placeholder-node\",\n    \"media-video-node\",\n    \"mention-node\",\n    \"paragraph-node\",\n    \"search-highlight-node\",\n    \"slash-node\",\n    \"table-node\",\n    \"tag-node\",\n    \"toc-node\",\n    \"toggle-node\"\n  ],\n  \"title\": \"Node Components\"\n}",
+      "content": "{\n  \"pages\": [\n    \"ai-node\",\n    \"block-list\",\n    \"blockquote-node\",\n    \"callout-node\",\n    \"code-block-node\",\n    \"code-node\",\n    \"column-node\",\n    \"comment-node\",\n    \"suggestion-node\",\n    \"date-node\",\n    \"equation-node\",\n    \"equation-toolbar-button\",\n    \"emoji-node\",\n    \"excalidraw-node\",\n    \"font-size-toolbar-button\",\n    \"heading-node\",\n    \"highlight-node\",\n    \"hr-node\",\n    \"media-image-node\",\n    \"media-preview-dialog\",\n    \"kbd-node\",\n    \"link-node\",\n    \"list-classic-node\",\n    \"media-audio-node\",\n    \"media-embed-node\",\n    \"media-file-node\",\n    \"media-placeholder-node\",\n    \"media-video-node\",\n    \"mention-node\",\n    \"paragraph-node\",\n    \"search-highlight-node\",\n    \"slash-node\",\n    \"table-node\",\n    \"tag-node\",\n    \"toc-node\",\n    \"toggle-node\"\n  ],\n  \"title\": \"Node Components\"\n}",
       "path": "content/docs/plate/components/node-components/meta.json",
       "target": "content/docs/plate/components/node-components/meta.json",
       "type": "registry:file"
     },
     {
-      "content": "{\n  \"pages\": [\n    \"index\",\n    \"slate-to-html\",\n    \"export\",\n    \"server-side\",\n    \"version-history\",\n    \"editable-voids\",\n    \"hundreds-blocks\",\n    \"hundreds-editors\",\n    \"preview-markdown\",\n    \"collaboration\",\n    \"table-nomerge\",\n    \"excalidraw\",\n    \"single-block\",\n    \"editable-voids\",\n    \"list-classic\",\n    \"find-replace\",\n    \"ai\",\n    \"align\",\n    \"autoformat\",\n    \"basic-nodes\",\n    \"block-menu\",\n    \"block-selection\",\n    \"column\",\n    \"code-block\",\n    \"callout\",\n    \"comments\",\n    \"cursor-overlay\",\n    \"date\",\n    \"dnd\",\n    \"emoji\",\n    \"equation\",\n    \"exit-break\",\n    \"floating-toolbar\",\n    \"font\",\n    \"indent\",\n    \"list\",\n    \"line-height\",\n    \"link\",\n    \"media\",\n    \"mention\",\n    \"block-placeholder\",\n    \"csv\",\n    \"docx\",\n    \"html\",\n    \"markdown\",\n    \"slash-command\",\n    \"plugin-modes\",\n    \"table\",\n    \"toc\",\n    \"toggle\"\n  ],\n  \"title\": \"Examples\"\n}",
+      "content": "{\n  \"pages\": [\n    \"index\",\n    \"slate-to-html\",\n    \"export\",\n    \"server-side\",\n    \"version-history\",\n    \"editable-voids\",\n    \"hundreds-blocks\",\n    \"hundreds-editors\",\n    \"preview-markdown\",\n    \"collaboration\",\n    \"table-nomerge\",\n    \"excalidraw\",\n    \"single-block\",\n    \"editable-voids\",\n    \"list-classic\",\n    \"find-replace\",\n    \"ai\",\n    \"align\",\n    \"autoformat\",\n    \"basic-nodes\",\n    \"block-menu\",\n    \"block-selection\",\n    \"column\",\n    \"code-block\",\n    \"callout\",\n    \"comment\",\n    \"cursor-overlay\",\n    \"date\",\n    \"dnd\",\n    \"emoji\",\n    \"equation\",\n    \"exit-break\",\n    \"floating-toolbar\",\n    \"font\",\n    \"indent\",\n    \"list\",\n    \"line-height\",\n    \"link\",\n    \"media\",\n    \"mention\",\n    \"block-placeholder\",\n    \"csv\",\n    \"docx\",\n    \"html\",\n    \"markdown\",\n    \"slash-command\",\n    \"plugin-rules\",\n    \"table\",\n    \"toc\",\n    \"toggle\"\n  ],\n  \"title\": \"Examples\"\n}",
       "path": "content/docs/plate/examples/meta.json",
       "target": "content/docs/plate/examples/meta.json",
       "type": "registry:file"

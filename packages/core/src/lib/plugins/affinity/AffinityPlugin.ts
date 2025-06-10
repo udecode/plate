@@ -67,6 +67,7 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
       deleteBackward(unit);
     },
     insertText(text, options) {
+      /** This will be computed only for text nodes with marks. */
       const applyOutwardAffinity = () => {
         if (!editor.selection || editor.api.isExpanded()) {
           return;
@@ -75,18 +76,21 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
         const textPath = editor.selection.focus.path;
         const textNode = NodeApi.get<TText>(editor, textPath);
 
-        if (!textNode || !editor.api.isEnd(editor.selection.focus, textPath)) {
+        if (!textNode) {
           return;
         }
 
         const marks = Object.keys(NodeApi.extractProps(textNode));
         const outwardMarks = marks.filter(
           (type) =>
-            getPluginByType(editor, type)?.node.selectionRules?.affinity ===
+            getPluginByType(editor, type)?.rules.selection?.affinity ===
             'outward'
         );
 
-        if (!outwardMarks.length) {
+        if (
+          !outwardMarks.length ||
+          !editor.api.isEnd(editor.selection.focus, textPath)
+        ) {
           return;
         }
 
