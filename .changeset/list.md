@@ -9,7 +9,7 @@
 - This package, `@platejs/list`, now contains the functionality previously in `@udecode/plate-indent-list` (indent-based list system).
   - Plugin names have been generalized: `IndentListPlugin` is now `ListPlugin`, `BaseIndentListPlugin` is `BaseListPlugin`, etc. (`*IndentList*` -> `*List*`).
   - The primary plugin key is now `list` (e.g., `ListPlugin.key`) instead of `listStyleType`.
-  - Constants for list keys previously in `INDENT_LIST_KEYS` are now available under `KEYS` from `@udecode/plate`.
+  - Constants for list keys previously in `INDENT_LIST_KEYS` are now available under `KEYS` from `platejs`.
     - Migration for constants:
       - `INDENT_LIST_KEYS.listStyleType` -> `KEYS.listType`
       - `INDENT_LIST_KEYS.todo` -> `KEYS.listTodo`

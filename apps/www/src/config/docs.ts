@@ -246,6 +246,14 @@ export const docsConfig: DocsConfig = {
     {
       items: [
         {
+          href: '/docs/migration',
+          title: 'Latest',
+        },
+        {
+          href: '/docs/migration/v48',
+          title: 'v48',
+        },
+        {
           href: '/docs/migration/slate-to-plate',
           title: 'From Slate to Plate',
         },
