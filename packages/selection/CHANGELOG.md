@@ -1,5 +1,11 @@
 # @platejs/selection
 
+## 49.0.1
+
+### Patch Changes
+
+- [#4343](https://github.com/udecode/plate/pull/4343) by [@zbeyens](https://github.com/zbeyens) – Remove console.log
+
 ## 49.0.0
 
 ## 49.0.0

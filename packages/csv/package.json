@@ -1,6 +1,6 @@
 {
   "name": "@platejs/csv",
-  "version": "49.0.0",
+  "version": "49.0.1",
   "description": "CSV serializer plugin for Plate",
   "keywords": [
     "csv",
@@ -46,7 +46,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/table": "49.0.0",
+    "@platejs/table": "49.0.1",
     "papaparse": "^5.5.3"
   },
   "devDependencies": {
