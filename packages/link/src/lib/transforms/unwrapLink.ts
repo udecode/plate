@@ -3,8 +3,7 @@ import {
   type UnwrapNodesOptions,
   ElementApi,
 } from '@udecode/plate';
-
-import { BaseLinkPlugin } from '../BaseLinkPlugin';
+import { KEYS } from '@udecode/plate';
 
 /** Unwrap link node. */
 export const unwrapLink = (
@@ -17,7 +16,7 @@ export const unwrapLink = (
     if (options?.split) {
       const linkAboveAnchor = editor.api.above({
         at: editor.selection?.anchor,
-        match: { type: editor.getType(BaseLinkPlugin) },
+        match: { type: editor.getType(KEYS.link) },
       });
 
       // anchor in link
@@ -25,8 +24,7 @@ export const unwrapLink = (
         editor.tf.splitNodes({
           at: editor.selection?.anchor,
           match: (n) =>
-            ElementApi.isElement(n) &&
-            n.type === editor.getType(BaseLinkPlugin),
+            ElementApi.isElement(n) && n.type === editor.getType(KEYS.link),
         });
         unwrapLink(editor, {
           at: editor.selection?.anchor,
@@ -37,7 +35,7 @@ export const unwrapLink = (
 
       const linkAboveFocus = editor.api.above({
         at: editor.selection?.focus,
-        match: { type: editor.getType(BaseLinkPlugin) },
+        match: { type: editor.getType(KEYS.link) },
       });
 
       // focus in link
@@ -45,8 +43,7 @@ export const unwrapLink = (
         editor.tf.splitNodes({
           at: editor.selection?.focus,
           match: (n) =>
-            ElementApi.isElement(n) &&
-            n.type === editor.getType(BaseLinkPlugin),
+            ElementApi.isElement(n) && n.type === editor.getType(KEYS.link),
         });
         unwrapLink(editor, {
           at: editor.selection?.focus,
@@ -57,7 +54,7 @@ export const unwrapLink = (
     }
 
     editor.tf.unwrapNodes({
-      match: { type: editor.getType(BaseLinkPlugin) },
+      match: { type: editor.getType(KEYS.link) },
       ...options,
     });
   });

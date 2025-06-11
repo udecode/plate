@@ -1,14 +1,12 @@
 import {
   type PluginConfig,
   type SlateEditor,
+  type TMediaElement,
   type WithRequiredKey,
   isUrl,
 } from '@udecode/plate';
 
-import type {
-  MediaPluginOptions,
-  TMediaElement,
-} from '../../../lib/media/types';
+import type { MediaPluginOptions } from '../../../lib/media/types';
 
 import { FloatingMediaStore } from './FloatingMediaStore';
 

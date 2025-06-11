@@ -2,10 +2,10 @@ import {
   type PluginConfig,
   type SlateRenderElementProps,
   type TElement,
-  BaseParagraphPlugin,
   createTSlatePlugin,
   HtmlPlugin,
   isHtmlBlockElement,
+  KEYS,
   postCleanHtml,
   traverseHtmlElements,
 } from '@udecode/plate';
@@ -112,7 +112,7 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
             // gdoc uses aria-level attribute
             indent: Number(element.getAttribute('aria-level')),
             listStyleType: getOptions().getListStyleType?.(element),
-            type: editor.getType(BaseParagraphPlugin),
+            type: editor.getType(KEYS.p),
           };
         },
       },

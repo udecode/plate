@@ -12,8 +12,7 @@ import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { editorComponents } from '@/registry/components/editor/use-create-editor';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { useDebounce } from '@/registry/hooks/use-debounce';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
@@ -105,8 +104,7 @@ export default function MarkdownDemo() {
 
   const editor = usePlateEditor(
     {
-      components: editorComponents,
-      plugins: editorPlugins,
+      plugins: EditorKit,
       value: (editor) =>
         editor.getApi(MarkdownPlugin).markdown.deserialize(initialMarkdown, {
           remarkPlugins: [

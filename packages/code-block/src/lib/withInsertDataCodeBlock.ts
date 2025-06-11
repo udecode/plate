@@ -1,6 +1,6 @@
 import type { OverrideEditor, TElement } from '@udecode/plate';
 
-import { BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
+import { KEYS } from '@udecode/plate';
 
 export const withInsertDataCodeBlock: OverrideEditor = ({
   editor,
@@ -11,7 +11,7 @@ export const withInsertDataCodeBlock: OverrideEditor = ({
     insertData(data) {
       const text = data.getData('text/plain');
       const vscodeDataString = data.getData('vscode-editor-data');
-      const codeLineType = editor.getType(BaseCodeLinePlugin);
+      const codeLineType = editor.getType(KEYS.codeLine);
 
       // Handle VSCode paste with language
       if (vscodeDataString) {

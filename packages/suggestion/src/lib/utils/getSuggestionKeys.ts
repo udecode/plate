@@ -3,16 +3,17 @@ import {
   type TNode,
   type TText,
   isDefined,
+  KEYS,
 } from '@udecode/plate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData } from './getSuggestionId';
 
 export const getSuggestionKey = (id = '0'): string =>
-  `${BaseSuggestionPlugin.key}_${id}`;
+  `${KEYS.suggestion}_${id}`;
 
 export const isSuggestionKey = (key: string) =>
-  key.startsWith(`${BaseSuggestionPlugin.key}_`);
+  key.startsWith(`${KEYS.suggestion}_`);
 
 export const getSuggestionKeys = (node: TNode) => {
   const keys: string[] = [];
@@ -25,7 +26,7 @@ export const getSuggestionKeys = (node: TNode) => {
 };
 
 export const getSuggestionUserIdByKey = (key?: string | null) =>
-  isDefined(key) ? key.split(`${BaseSuggestionPlugin.key}_`)[1] : null;
+  isDefined(key) ? key.split(`${KEYS.suggestion}_`)[1] : null;
 
 export const getSuggestionUserIds = (node: TNode) => {
   return getSuggestionKeys(node).map(

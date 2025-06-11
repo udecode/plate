@@ -5,7 +5,6 @@
 export * from './EditorHotkeysEffect';
 export * from './EditorMethodsEffect';
 export * from './EditorRefEffect';
-export * from './EditorStateEffect';
 export * from './Plate';
 export * from './PlateContainer';
 export * from './PlateContent';

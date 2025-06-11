@@ -1,11 +1,6 @@
 import type { PlateEditor } from '@udecode/plate/react';
 
-import {
-  type TElement,
-  type TText,
-  BaseParagraphPlugin,
-  isDefined,
-} from '@udecode/plate';
+import { type TElement, type TText, isDefined, KEYS } from '@udecode/plate';
 
 const LIST_STYLE_TYPE = 'listStyleType';
 
@@ -15,8 +10,8 @@ export const isSameNode = (
   node2: TElement | TText
 ) => {
   if (
-    node1.type !== editor.getType(BaseParagraphPlugin) ||
-    node2.type !== editor.getType(BaseParagraphPlugin)
+    node1.type !== editor.getType(KEYS.p) ||
+    node2.type !== editor.getType(KEYS.p)
   )
     return node1.type === node2.type;
 

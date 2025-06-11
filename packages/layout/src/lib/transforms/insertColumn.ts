@@ -1,8 +1,10 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TColumnElement,
+} from '@udecode/plate';
 
-import type { TColumnElement } from '../types';
-
-import { BaseColumnItemPlugin } from '../BaseColumnPlugin';
+import { KEYS } from '@udecode/plate';
 
 export const insertColumn = (
   editor: SlateEditor,
@@ -11,7 +13,7 @@ export const insertColumn = (
   editor.tf.insertNodes<TColumnElement>(
     {
       children: [editor.api.create.block()],
-      type: BaseColumnItemPlugin.key,
+      type: editor.getType(KEYS.column) as any,
       width,
     },
     options as any

@@ -15,6 +15,16 @@ export const siteConfig = {
       `https://pro.platejs.org/docs/examples/${id}`,
   },
   name: 'Plate',
+  navItems: [
+    {
+      href: '/docs',
+      label: 'Docs',
+    },
+    {
+      href: '/editors',
+      label: 'Editors',
+    },
+  ],
   ogImage: 'https://platejs.org/og.png',
   registryUrl:
     process.env.NODE_ENV === 'development'

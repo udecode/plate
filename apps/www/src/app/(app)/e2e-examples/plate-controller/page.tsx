@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
 import {
   Plate,
@@ -14,6 +14,14 @@ import { Button } from '@/components/ui/button';
 let nextId = 3;
 
 export default function PlateControllerExamplePage() {
+  return (
+    <Suspense fallback={null}>
+      <PlateControllerExample />
+    </Suspense>
+  );
+}
+
+function PlateControllerExample() {
   const [editors, setEditors] = useState<number[]>([1, 2]);
   const addEditor = () => setEditors([...editors, nextId++]);
 

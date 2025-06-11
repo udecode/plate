@@ -1,4 +1,4 @@
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicBlocksPlugin } from '@udecode/plate-basic-nodes/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 
 import {
@@ -439,7 +439,7 @@ describe('createSlatePlugin', () => {
     it('should be', () => {
       const editor = createSlateEditor({
         plugins: [
-          BasicElementsPlugin.extendPlugin(
+          BasicBlocksPlugin.extendPlugin(
             { key: 'heading' },
             {
               node: { type: 'h' },

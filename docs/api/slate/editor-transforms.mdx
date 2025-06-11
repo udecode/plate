@@ -119,12 +119,6 @@ Merge a node at the specified location with the previous node at the same depth.
 <APIOptions type="MergeNodesOptions">
   <APIItem name="...options" type="QueryOptions" optional />
   <APIItem name="hanging" type="boolean" optional />
-  <APIItem name="mergeNode" type="(editor: E, options: { at: Path; to: Path }) => void" optional>
-    Custom function to handle node merging.
-  </APIItem>
-  <APIItem name="removeEmptyAncestor" type="(editor: E, options: { at: Path }) => void" optional>
-    Custom function to remove empty ancestor after merging.
-  </APIItem>
 </APIOptions>
 </API>
 
@@ -916,3 +910,143 @@ Call a function, deferring normalization until after it completes.
   True if normalization was performed afterwards.
 </APIReturns>
 </API>
+
+## Keyboard Shortcuts
+
+### `moveLine`
+
+Handle `ArrowUp` and `ArrowDown` keyboard events.
+
+<API name="moveLine">
+<APIParameters>
+  <APIItem name="options" type="{ reverse: boolean }">
+    - `reverse: true` for `ArrowUp`
+    - `reverse: false` for `ArrowDown`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean | void">
+  Return `true` to prevent default browser behavior, `false` to allow it.
+</APIReturns>
+</API>
+
+**Default behavior:** Returns `false` (allows Slate's default line movement).
+
+**Usage:**
+```ts
+const plugin = createPlatePlugin({
+  key: 'myPlugin',
+}).overrideEditor(() => ({
+  transforms: {
+    moveLine: ({ reverse }) => {
+      // Custom line movement logic
+      if (reverse) {
+        // Handle ArrowUp
+      } else {
+        // Handle ArrowDown  
+      }
+      return true; // Prevent default
+    },
+  },
+}));
+```
+
+### `tab`
+
+Handle `Tab` and `Shift+Tab` keyboard events.
+
+<API name="tab">
+<APIParameters>
+  <APIItem name="options" type="{ reverse: boolean }">
+    - `reverse: false` for `Tab`
+    - `reverse: true` for `Shift+Tab`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean | void">
+  Return `true` to prevent default browser behavior, `false` to allow it.
+</APIReturns>
+</API>
+
+**Default behavior:** Returns `false` (allows default browser tab navigation).
+
+**Usage:**
+```ts
+const plugin = createPlatePlugin({
+  key: 'myPlugin',
+}).overrideEditor(() => ({
+  transforms: {
+    tab: ({ reverse }) => {
+      if (reverse) {
+        // Handle Shift+Tab (usually outdent)
+        editor.tf.outdent();
+      } else {
+        // Handle Tab (usually indent)
+        editor.tf.indent();
+      }
+      return true; // Prevent default
+    },
+  },
+}));
+```
+
+### `selectAll`
+
+Handle `Cmd+A` / `Ctrl+A` keyboard events.
+
+<API name="selectAll">
+<APIReturns type="boolean | void">
+  Return `true` to prevent default browser behavior, `false` to allow it.
+</APIReturns>
+</API>
+
+**Default behavior:** Returns `false` (allows default browser select all).
+
+**Usage:**
+```ts
+const plugin = createPlatePlugin({
+  key: 'myPlugin',
+}).overrideEditor(() => ({
+  transforms: {
+    selectAll: () => {
+      // Custom select all logic
+      const blockEntry = editor.api.block();
+      if (blockEntry) {
+        editor.tf.select(blockEntry[1]);
+        return true; // Prevent default
+      }
+      return false; // Allow default
+    },
+  },
+}));
+```
+
+### `escape`
+
+Handle `Escape` keyboard events.
+
+<API name="escape">
+<APIReturns type="boolean | void">
+  Return `true` to prevent default browser behavior, `false` to allow it.
+</APIReturns>
+</API>
+
+**Default behavior:** Returns `false` (allows default browser escape handling).
+
+**Usage:**
+```ts
+const plugin = createPlatePlugin({
+  key: 'myPlugin',
+}).overrideEditor(() => ({
+  transforms: {
+    escape: () => {
+      // Custom escape logic (e.g., exit special mode)
+      if (editor.api.inSpecialMode()) {
+        editor.tf.exitSpecialMode();
+        return true; // Prevent default
+      }
+      return false; // Allow default
+    },
+  },
+}));
+```

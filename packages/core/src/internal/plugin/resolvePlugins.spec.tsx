@@ -29,7 +29,7 @@ describe('resolvePlugins', () => {
 
     resolvePlugins(editor, plugins);
 
-    expect(editor.pluginList.map((p) => p.key)).toEqual(['b', 'c', 'a']);
+    expect(editor.meta.pluginList.map((p) => p.key)).toEqual(['b', 'c', 'a']);
   });
 
   it('should handle nested plugins', () => {
@@ -43,11 +43,11 @@ describe('resolvePlugins', () => {
       }),
     ];
 
-    resolvePlugins(editor, plugins);
+    resolvePlugins(editor, plugins as any);
 
-    expect(editor.pluginList.map((p) => p.key)).toContain('parent');
-    expect(editor.pluginList.map((p) => p.key)).toContain('child1');
-    expect(editor.pluginList.map((p) => p.key)).toContain('child2');
+    expect(editor.meta.pluginList.map((p) => p.key)).toContain('parent');
+    expect(editor.meta.pluginList.map((p) => p.key)).toContain('child1');
+    expect(editor.meta.pluginList.map((p) => p.key)).toContain('child2');
   });
 
   it('should not include disabled plugins', () => {
@@ -58,8 +58,8 @@ describe('resolvePlugins', () => {
 
     resolvePlugins(editor, plugins);
 
-    expect(editor.pluginList.map((p) => p.key)).toContain('enabled');
-    expect(editor.pluginList.map((p) => p.key)).not.toContain('disabled');
+    expect(editor.meta.pluginList.map((p) => p.key)).toContain('enabled');
+    expect(editor.meta.pluginList.map((p) => p.key)).not.toContain('disabled');
   });
 
   it('should apply overrides correctly', () => {
@@ -145,7 +145,7 @@ describe('resolveAndSortPlugins', () => {
       }),
     ];
 
-    const result = resolveAndSortPlugins(editor, plugins);
+    const result = resolveAndSortPlugins(editor, plugins as any);
 
     expect(result.map((p) => p.key)).toEqual(['parent', 'child1', 'child2']);
   });
@@ -228,7 +228,7 @@ describe('resolveAndSortPlugins', () => {
       }),
     ];
 
-    const result = resolveAndSortPlugins(editor, plugins);
+    const result = resolveAndSortPlugins(editor, plugins as any);
 
     const childIndices = result.map((p) => p.key).slice(1); // Exclude 'parent'
     expect(childIndices).toEqual(['child2', 'child1']);
@@ -246,7 +246,7 @@ describe('applyPluginsToEditor', () => {
 
     applyPluginsToEditor(editor, plugins);
 
-    expect(editor.pluginList).toHaveLength(2);
+    expect(editor.meta.pluginList).toHaveLength(2);
     expect(editor.plugins.a.node.type).toBe('typeA');
     expect(editor.plugins.b.node.type).toBe('typeB');
   });
@@ -262,7 +262,7 @@ describe('applyPluginsToEditor', () => {
 
     applyPluginsToEditor(editor, plugins);
 
-    expect(editor.pluginList).toHaveLength(1);
+    expect(editor.meta.pluginList).toHaveLength(1);
     expect(editor.plugins.a.node.type).toBe('newType');
   });
 });
@@ -648,5 +648,67 @@ describe('mergePlugins behavior in resolvePlugins', () => {
 
     // Check that the modification does not affect the original plugin
     expect(plugin.options.value).toBe('original');
+  });
+});
+
+describe('resolvePlugins with keyless plugins', () => {
+  let editor: SlateEditor;
+
+  beforeEach(() => {
+    editor = createPlateEditor();
+  });
+
+  it('should not add a plugin without a key to the editor', () => {
+    const plugins = [
+      createSlatePlugin({ node: { type: 'no-key-plugin' } } as any), // Simulate a plugin without a key
+      createSlatePlugin({ key: 'keyedPlugin', node: { type: 'keyed-type' } }),
+    ];
+
+    resolvePlugins(editor, plugins);
+
+    expect(editor.meta.pluginList.map((p) => p.key)).not.toContain('');
+    expect(editor.plugins.keyedPlugin).toBeDefined();
+    expect(editor.meta.pluginList.some((p) => p.key === 'keyedPlugin')).toBe(
+      true
+    );
+    // Exact count depends on core plugins, but it should contain keyedPlugin and not the keyless one.
+  });
+
+  it('should process child plugins of a keyless plugin', () => {
+    const plugins = [
+      createSlatePlugin({
+        // No key for the parent
+        node: { type: 'parent-no-key' },
+        plugins: [
+          createSlatePlugin({
+            key: 'childKey1',
+            node: { type: 'child1-type' },
+            priority: 2,
+          }),
+          createSlatePlugin({
+            key: 'childKey2',
+            node: { type: 'child2-type' },
+            priority: 1,
+          }),
+        ],
+      } as any),
+      createSlatePlugin({
+        key: 'anotherPlugin',
+        node: { type: 'another-type' },
+        priority: 3,
+      }),
+    ];
+
+    resolvePlugins(editor, plugins);
+
+    expect(editor.plugins['parent-no-key']).toBeUndefined();
+    expect(editor.plugins.childKey1).toBeDefined();
+    expect(editor.plugins.childKey2).toBeDefined();
+    expect(editor.plugins.anotherPlugin).toBeDefined();
+
+    const pluginKeys = editor.meta.pluginList.map((p) => p.key);
+    expect(pluginKeys).toContain('childKey1');
+    expect(pluginKeys).toContain('childKey2');
+    expect(pluginKeys).toContain('anotherPlugin');
   });
 });

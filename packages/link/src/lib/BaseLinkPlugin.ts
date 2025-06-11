@@ -1,19 +1,13 @@
 import {
   type EditorBeforeOptions,
   type PluginConfig,
+  type TLinkElement,
   createTSlatePlugin,
-  getEditorPlugin,
   isUrl,
+  KEYS,
 } from '@udecode/plate';
-import {
-  RemoveEmptyNodesPlugin,
-  withRemoveEmptyNodes,
-} from '@udecode/plate-normalizers';
 
-import type { TLinkElement } from './types';
-
-import { getLinkAttributes } from './utils/getLinkAttributes';
-import { validateUrl } from './utils/index';
+import { getLinkAttributes, validateUrl } from './utils/index';
 import { withLink } from './withLink';
 
 export type BaseLinkConfig = PluginConfig<
@@ -90,7 +84,7 @@ export type BaseLinkConfig = PluginConfig<
 
 /** Enables support for hyperlinks. */
 export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
-  key: 'a',
+  key: KEYS.link,
   node: {
     dangerouslyAllowAttributes: ['target'],
     isElement: true,
@@ -133,16 +127,8 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
       },
     },
   },
-})
-  .overrideEditor(withLink)
-  .overrideEditor(
-    ({ editor, type }) =>
-      withRemoveEmptyNodes(
-        getEditorPlugin(
-          editor,
-          RemoveEmptyNodesPlugin.configure({
-            options: { types: type },
-          })
-        )
-      ) as any
-  );
+  rules: {
+    normalize: { removeEmpty: true },
+    selection: { affinity: 'directional' },
+  },
+}).overrideEditor(withLink);

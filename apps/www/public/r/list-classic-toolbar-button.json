@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "list-classic-toolbar-button",
+  "type": "registry:ui",
+  "title": "List Toolbar Buttons",
+  "description": "Toolbar controls for list creation and management.",
+  "dependencies": [
+    "@udecode/plate-list-classic"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/list-classic-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { KEYS } from '@udecode/plate';\nimport {\n  indentListItems,\n  unindentListItems,\n} from '@udecode/plate-list-classic';\nimport {\n  useListToolbarButton,\n  useListToolbarButtonState,\n} from '@udecode/plate-list-classic/react';\nimport { useEditorRef } from '@udecode/plate/react';\nimport { IndentIcon, List, ListOrdered, OutdentIcon } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function ListToolbarButton({\n  nodeType = KEYS.ulClassic,\n  ...props\n}: React.ComponentProps<typeof ToolbarButton> & {\n  nodeType?: string;\n}) {\n  const state = useListToolbarButtonState({ nodeType });\n  const { props: buttonProps } = useListToolbarButton(state);\n\n  return (\n    <ToolbarButton\n      {...props}\n      {...buttonProps}\n      tooltip={nodeType === KEYS.ulClassic ? 'Bulleted List' : 'Numbered List'}\n    >\n      {nodeType === KEYS.ulClassic ? <List /> : <ListOrdered />}\n    </ToolbarButton>\n  );\n}\n\nexport function IndentToolbarButton({\n  reverse = false,\n  ...props\n}: React.ComponentProps<typeof ToolbarButton> & {\n  reverse?: boolean;\n}) {\n  const editor = useEditorRef();\n\n  return (\n    <ToolbarButton\n      {...props}\n      onClick={() => {\n        reverse ? unindentListItems(editor) : indentListItems(editor);\n      }}\n      tooltip={reverse ? 'Outdent' : 'Indent'}\n    >\n      {reverse ? <OutdentIcon /> : <IndentIcon />}\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/list-classic"
+      }
+    ],
+    "examples": [
+      "list-classic-demo"
+    ]
+  }
+}

@@ -1,15 +1,11 @@
-import { type TElement, bindFirst, createSlatePlugin } from '@udecode/plate';
+import { bindFirst, createSlatePlugin, KEYS } from '@udecode/plate';
 
 import { insertEquation } from './transforms';
 
 import 'katex/dist/katex.min.css';
 
-export interface TEquationElement extends TElement {
-  texExpression: string;
-}
-
 export const BaseEquationPlugin = createSlatePlugin({
-  key: 'equation',
+  key: KEYS.equation,
   node: { isElement: true, isVoid: true },
 }).extendEditorTransforms(({ editor }) => ({
   insert: {

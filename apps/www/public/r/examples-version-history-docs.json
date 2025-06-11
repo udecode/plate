@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "examples-version-history-docs",
+  "type": "registry:file",
+  "title": "Version History",
+  "description": "Documentation for Version History",
+  "files": [
+    {
+      "path": "../../docs/examples/version-history.mdx",
+      "content": "---\ntitle: Version History\n---\n\n\n## Examples\n\n### Plate UI\n\n<ComponentPreview name=\"version-history-demo\" />\n\n### Potion\n\n- Full version history:\n  - Save document snapshots\n  - View all document versions\n  - Compare any two versions\n  - Restore previous versions\n- Visual diff comparison:\n  - Added content in green\n  - Removed content in red\n- Beautifully crafted UI\n\nTry it out. Sign in, then click on the top right clock icon:\n\n<ComponentPreview name=\"potion-iframe-demo\" />",
+      "type": "registry:file",
+      "target": "content/docs/plate/examples/version-history.mdx"
+    }
+  ]
+}

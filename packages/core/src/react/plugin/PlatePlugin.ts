@@ -11,6 +11,7 @@ import type {
   EditorApi,
   EditorTransforms,
   NodeEntry,
+  Path,
   TElement,
   TText,
   Value,
@@ -28,6 +29,8 @@ import type {
   BasePluginContext,
   BaseSerializer,
   BaseTransformOptions,
+  CorePluginApi,
+  CorePluginTransforms,
   EditableProps,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
@@ -36,7 +39,9 @@ import type {
   InferOptions,
   InferSelectors,
   InferTransforms,
+  MatchRules,
   NodeComponent,
+  NodeComponents,
   ParserOptions,
   PluginConfig,
   SlatePlugin,
@@ -89,7 +94,7 @@ export type ExtendEditorApi<
   C extends AnyPluginConfig = PluginConfig,
   EA = {},
 > = (ctx: PlatePluginContext<C>) => EA &
-  Deep2Partial<EditorApi> & {
+  Deep2Partial<EditorApi & CorePluginApi> & {
     [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
       ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
       : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
@@ -105,7 +110,7 @@ export type ExtendEditorTransforms<
   C extends AnyPluginConfig = PluginConfig,
   ET = {},
 > = (ctx: PlatePluginContext<C>) => ET &
-  Deep2Partial<EditorTransforms> & {
+  Deep2Partial<EditorTransforms & CorePluginTransforms> & {
     [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
       ...args: any[]
     ) => any
@@ -241,7 +246,7 @@ export type OnChange<C extends AnyPluginConfig = PluginConfig> = (
 export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C>
 ) => {
-  api?: Deep2Partial<EditorApi> & {
+  api?: Deep2Partial<EditorApi & CorePluginApi> & {
     [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
       ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
       : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
@@ -252,7 +257,7 @@ export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
           }
         : never;
   };
-  transforms?: Deep2Partial<EditorTransforms> & {
+  transforms?: Deep2Partial<EditorTransforms & CorePluginTransforms> & {
     [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
       ...args: any[]
     ) => any
@@ -360,7 +365,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       };
       override: {
         /** Replace plugin {@link NodeComponent} by key. */
-        components?: Record<string, NodeComponent>;
+        components?: NodeComponents;
         /** Extend {@link PlatePlugin} by key. */
         plugins?: Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>;
       };
@@ -388,6 +393,11 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
               serializer?: HtmlReactSerializer<WithAnyKey<C>>;
             }>;
           };
+      /**
+       * Recursive plugin support to allow having multiple plugins in a single
+       * plugin. Plate eventually flattens all the plugins into the editor.
+       */
+      plugins: any[];
       render: Nullable<{
         /**
          * When other plugins' node components are rendered, this function can
@@ -426,16 +436,46 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * children. Similar to belowNodes but renders directly in the element
          * rather than wrapping. Multiple plugins can provide this, and all
          * their content will be rendered in sequence.
-         *
-         * NOTE: This is implemented in PlateElement (@udecode/plate-utils), not
-         * in plate-core.
          */
         belowRootNodes?: (
           props: PlateElementProps<TElement, C>
         ) => React.ReactNode;
       }>;
-      /** @see {@link Shortcuts} */
-      shortcuts: Shortcuts;
+      rules: {
+        /**
+         * Function to determine if this plugin's rules should apply to a node.
+         * Used to override behavior based on node properties beyond just type
+         * matching.
+         *
+         * Example: List plugin sets `match: ({ node }) => !!node.listStyleType`
+         * to override paragraph behavior when the paragraph is a list item.
+         *
+         * @default type === node.type
+         */
+        match?: (
+          options: {
+            node: TElement;
+            path: Path;
+            rule: MatchRules;
+          } & PlatePluginContext<C>
+        ) => boolean;
+      };
+      /**
+       * Keyboard shortcuts configuration mapping shortcut names to their key
+       * combinations and handlers. Each shortcut can link to a transform
+       * method, an API method, or use a custom handler function.
+       */
+      shortcuts: Partial<
+        Record<
+          | (string & {})
+          | Exclude<
+              keyof InferApi<C>[C['key']],
+              keyof InferTransforms<C>[C['key']]
+            >
+          | keyof InferTransforms<C>[C['key']],
+          Shortcut | null
+        >
+      >;
       useOptionsStore: TCreatedStoreType<
         C['options'],
         [['zustand/mutative-x', never]]
@@ -752,13 +792,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     >
   >;
   overrideEditor: (override: OverrideEditor<C>) => PlatePlugin<C>;
-  /**
-   * Set {@link NodeComponent} for the plugin.
-   *
-   * @param component {@link NodeComponent}.
-   * @returns A new instance of the plugin with the updated
-   *   {@link NodeComponent}.
-   */
+  /** Returns a new instance of the plugin with the component. */
   withComponent: (component: NodeComponent) => PlatePlugin<C>;
   __resolved?: boolean;
 };
@@ -786,13 +820,13 @@ export type Serializer<C extends AnyPluginConfig = PluginConfig> =
   };
 
 export type Shortcut = HotkeysOptions & {
-  keys?: Keys;
+  keys?: Keys | null;
   priority?: number;
   handler?: (ctx: {
     editor: PlateEditor;
     event: KeyboardEvent;
     eventDetails: HotkeysEvent;
-  }) => void;
+  }) => boolean | void;
 };
 
 export type Shortcuts = Record<string, Shortcut | null>;

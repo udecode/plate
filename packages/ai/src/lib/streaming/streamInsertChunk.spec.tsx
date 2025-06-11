@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { type SlateEditor, createSlateEditor } from '@udecode/plate';
-import { BaseHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { BaseHorizontalRulePlugin } from '@udecode/plate-basic-nodes';
 import { deserializeMd } from '@udecode/plate-markdown';
 import { jsxt } from '@udecode/plate-test-utils';
 

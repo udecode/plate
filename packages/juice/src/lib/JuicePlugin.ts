@@ -1,11 +1,12 @@
-import { createSlatePlugin, HtmlPlugin } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from '@udecode/plate';
 import juice from 'juice';
 
 export const JuicePlugin = createSlatePlugin({
-  key: 'juice',
+  key: KEYS.juice,
+  editOnly: true,
   inject: {
     plugins: {
-      [HtmlPlugin.key]: {
+      [KEYS.html]: {
         parser: {
           transformData: ({ data }) => {
             // juice ignores the first class when there is <!-- just after <style>, so we remove it

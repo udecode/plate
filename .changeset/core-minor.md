@@ -1,0 +1,40 @@
+---
+'@udecode/plate-core': minor
+---
+
+- New editor DOM state fields available under `editor.dom`:
+  - `editor.dom.composing`: Boolean, true if the editor is currently composing text (e.g., during IME input).
+  - `editor.dom.focused`: Boolean, true if the editor currently has focus.
+  - `editor.dom.readOnly`: Boolean, true if the editor is in read-only mode. Passing the `readOnly` prop to `PlateContent` will sync its value to this state and to the `useEditorReadOnly` hook.
+- New editor metadata fields:
+  - `editor.meta.components` - stores the plugin components by key
+- New hook `useEditorComposing`: Allows subscription to the editor's composing state (`editor.dom.composing`) outside of `PlateContent`.
+- `createPlateEditor` and `usePlateEditor` now accept a `readOnly` option to initialize the editor in a read-only state. For dynamic read-only changes after initialization, continue to use the `readOnly` prop on the `<Plate>` or `<PlateContent>` component.
+- New plugin field: `editOnly` (boolean or object).
+  - When `true` or when specific properties are true in the object, Plate will disable certain plugin behaviors (handlers, rendering, injections) in read-only mode and re-enable them if the editor becomes editable.
+  - By default, `render`, `handlers`, and `inject` are considered edit-only (`true`). `normalizeInitialValue` defaults to always active (`false`).
+  - Example: `editOnly: { render: false, normalizeInitialValue: true }` would make rendering active always, but normalization only in edit mode.
+- New plugin field: `node.clearOnEdge` (boolean).
+  - When enabled for mark plugins (`node.isLeaf: true`), this feature automatically clears the mark when the user types at the boundary of the marked text. This provides a natural way to "exit" a mark. This is utilized by suggestion and comment marks.
+- New plugin field: `render.as` (`keyof HTMLElementTagNameMap`).
+  - Specifies the default HTML tag name to be used by `PlateElement` (default: `'div'`) or `PlateLeaf` (default: `'span'`) when rendering the node, but only if no custom `node.component` is provided for the plugin.
+  - Example: `render: { as: 'h1' }` would make the plugin render its node as an `<h1>` tag by default without the need to provide a custom component.
+- New plugin field: `node.isContainer` (boolean).
+  - When `true`, indicates that the plugin's elements are primarily containers for other content.
+- New plugin field: `node.isStrictSiblings` (boolean).
+  - When `true`, indicates that the element enforces strict sibling type constraints and only allows specific siblings (e.g., `td` can only have `td` siblings, `column` can only have `column` siblings).
+  - Used by `editor.tf.insertExitBreak` functionality to determine appropriate exit points in nested structures.
+- New plugin field: `rules` (object).
+  - Configures common editing behaviors declaratively instead of overriding editor methods. See documentation for more details.
+  - `rules.break`: Controls Enter key behavior (`empty`, `default`, `emptyLineEnd`, `splitReset`)
+  - `rules.delete`: Controls Backspace key behavior (`start`, `empty`)
+  - `rules.merge`: Controls block merging behavior (`removeEmpty`)
+  - `rules.normalize`: Controls normalization behavior (`removeEmpty`)
+  - `rules.selection`: Controls cursor positioning behavior (`affinity`)
+  - `rules.match`: Conditional rule application based on node properties
+- Plugin shortcuts can now automatically leverage existing plugin transforms by specifying the transform name, in addition to custom handlers.
+- New editor transform methods for keyboard handling:
+  - `editor.tf.escape`: Handle Escape key events. Returns `true` if the event is handled.
+  - `editor.tf.moveLine`: Handle ArrowDown and ArrowUp key events with `reverse` option for direction. Returns `true` if the event is handled.
+  - `editor.tf.selectAll`: Handle Ctrl/Cmd+A key events for selecting all content. Returns `true` if the event is handled.
+  - `editor.tf.tab`: Handle Tab and Shift+Tab key events with `reverse` option for Shift+Tab. Returns `true` if the event is handled.

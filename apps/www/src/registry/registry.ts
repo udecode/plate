@@ -13,15 +13,10 @@ const url =
     ? 'http://localhost:3000'
     : 'https://platejs.org';
 
-const registryUrl =
-  process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000/r'
-    : 'https://platejs.org/r';
-
 export const registryInit: RegistryItem[] = [
   {
     dependencies: ['@udecode/plate'],
-    description: `Use \`npx shadcn@latest add ${registryUrl}/<name>\` to install items from this registry.`,
+    description: 'Install Plate package',
     devDependencies: [],
     files: [],
     name: 'plate',
@@ -37,6 +32,7 @@ export const registryInit: RegistryItem[] = [
         brand: 'oklch(0.623 0.214 259.815)',
       },
     },
+    description: 'Install Plate package and styles',
     devDependencies: [],
     files: [],
     name: 'plate-ui',

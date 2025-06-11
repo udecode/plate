@@ -6,11 +6,10 @@ import {
   bindFirst,
   createTSlatePlugin,
   isUrl,
+  KEYS,
 } from '@udecode/plate';
 
-import type { TRules } from './rules';
-// import type { deserializeMd } from './deserializer/deserializeMd';
-import type { plateTypes } from './utils/mapTypeUtils';
+import type { MdRules, PlateType } from './types';
 
 import { deserializeInlineMd, deserializeMd } from './deserializer';
 import { serializeMd } from './serializer';
@@ -29,14 +28,14 @@ export type MarkdownConfig = PluginConfig<
      * Configuration for allowed node types. Cannot be combined with
      * disallowedNodes.
      */
-    allowedNodes: NodesConfig;
+    allowedNodes: PlateType[] | null;
     /**
      * Configuration for disallowed node types. Cannot be combined with
      * allowedNodes.
      *
      * @default null
      */
-    disallowedNodes: NodesConfig;
+    disallowedNodes: PlateType[] | null;
     /**
      * Array of remark plugins to extend Markdown parsing and serialization
      * functionality. For example, you can add remark-gfm to support GFM syntax,
@@ -58,7 +57,7 @@ export type MarkdownConfig = PluginConfig<
      *
      * @default null
      */
-    rules: TRules | null;
+    rules: MdRules | null;
     /**
      * Custom filter function for nodes during deserialization and
      * serialization.
@@ -76,10 +75,8 @@ export type MarkdownConfig = PluginConfig<
   }
 >;
 
-export type NodesConfig = ((string & {}) | plateTypes)[] | null;
-
 export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
-  key: 'markdown',
+  key: KEYS.markdown,
   options: {
     allowedNodes: null,
     disallowedNodes: null,

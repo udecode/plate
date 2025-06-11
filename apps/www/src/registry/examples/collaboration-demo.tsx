@@ -14,11 +14,9 @@ import { nanoid } from 'nanoid';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { editorComponents } from '@/registry/components/editor/use-create-editor';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { useMounted } from '@/registry/hooks/use-mounted';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { withPlaceholders } from '@/registry/ui/placeholder';
 import { RemoteCursorOverlay } from '@/registry/ui/remote-cursor-overlay';
 
 const INITIAL_VALUE = [
@@ -36,9 +34,8 @@ export default function CollaborativeEditingDemo(): React.ReactNode {
 
   const editor = usePlateEditor(
     {
-      components: withPlaceholders(editorComponents),
       plugins: [
-        ...editorPlugins,
+        ...EditorKit,
         YjsPlugin.configure({
           options: {
             cursors: {

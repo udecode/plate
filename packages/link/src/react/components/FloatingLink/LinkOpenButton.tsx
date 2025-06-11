@@ -1,15 +1,13 @@
 import React from 'react';
 
+import { type TLinkElement, KEYS } from '@udecode/plate';
 import {
   createPrimitiveComponent,
   useEditorRef,
   useEditorSelection,
 } from '@udecode/plate/react';
 
-import type { TLinkElement } from '../../../lib';
-
 import { getLinkAttributes } from '../../../lib/utils/getLinkAttributes';
-import { LinkPlugin } from '../../LinkPlugin';
 
 // @deprecated
 export const useLinkOpenButtonState = () => {
@@ -19,7 +17,7 @@ export const useLinkOpenButtonState = () => {
   const entry = React.useMemo(
     () =>
       editor.api.node<TLinkElement>({
-        match: { type: editor.getType(LinkPlugin) },
+        match: { type: editor.getType(KEYS.link) },
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editor, selection]

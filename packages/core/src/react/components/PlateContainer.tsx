@@ -1,12 +1,18 @@
 import React, { type HTMLAttributes } from 'react';
 
-import { useEditorContainerRef, useEditorRef } from '../stores';
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import {
+  useEditorContainerRef,
+  useEditorReadOnly,
+  useEditorRef,
+} from '../stores';
 
 export const PlateContainer = ({
   children,
   ...props
 }: HTMLAttributes<HTMLDivElement>) => {
   const editor = useEditorRef();
+  const readOnly = useEditorReadOnly();
 
   const containerRef = useEditorContainerRef();
 
@@ -14,35 +20,37 @@ export const PlateContainer = ({
   let beforeContainer: React.ReactNode = null;
 
   const mainContainer = (
-    <div id={editor.uid} ref={containerRef} {...props}>
+    <div id={editor.meta.uid} ref={containerRef} {...props}>
       {children}
     </div>
   );
 
-  editor.pluginList.forEach((plugin) => {
-    const {
-      render: {
-        afterContainer: AfterContainer,
-        beforeContainer: BeforeContainer,
-      } = {},
-    } = plugin;
+  editor.meta.pluginCache.render.beforeContainer.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
+    if (isEditOnly(readOnly, plugin, 'render')) return;
 
-    if (AfterContainer) {
-      afterContainer = (
-        <>
-          {afterContainer}
-          <AfterContainer {...props} />
-        </>
-      );
-    }
-    if (BeforeContainer) {
-      beforeContainer = (
-        <>
-          {beforeContainer}
-          <BeforeContainer {...props} />
-        </>
-      );
-    }
+    const BeforeContainer = plugin.render.beforeContainer!;
+
+    beforeContainer = (
+      <>
+        {beforeContainer}
+        <BeforeContainer {...props} />
+      </>
+    );
+  });
+
+  editor.meta.pluginCache.render.afterContainer.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
+    if (isEditOnly(readOnly, plugin, 'render')) return;
+
+    const AfterContainer = plugin.render.afterContainer!;
+
+    afterContainer = (
+      <>
+        {afterContainer}
+        <AfterContainer {...props} />
+      </>
+    );
   });
 
   return (

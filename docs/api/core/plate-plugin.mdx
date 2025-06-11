@@ -90,6 +90,19 @@ Indicates if this plugin's elements should be treated as inline.
 <APISubListItem parent="node" name="isLeaf" type="boolean" optional>
 Indicates if this plugin's nodes should be rendered as leaves.
 </APISubListItem>
+<APISubListItem parent="node" name="isContainer" type="boolean" optional>
+When `true`, indicates that the plugin's elements are primarily containers for other content. This property is typically used by fragment queries to unwrap the container nodes.
+</APISubListItem>
+<APISubListItem parent="rules" name="selection.affinity" type="'default' | 'directional' | 'outward' | 'hard'" optional>
+Defines the selection behavior at the boundaries of nodes. See [Plugin Rules](/docs/plugin-rules#rulesselection).
+
+- `'default'`: Uses Slate's default behavior
+- `'directional'`: Selection affinity is determined by the direction of cursor movement. Maintains inward or outward affinity based on approach
+- `'outward'`: Forces outward affinity. Typing at the edge of a mark will not apply the mark to new text
+- `'hard'`: Creates a 'hard' edge that requires two key presses to move across. Uses offset-based navigation
+
+- **Default:** `undefined` (Slate's default behavior)
+</APISubListItem>
 <APISubListItem parent="node" name="isMarkableVoid" type="boolean" optional>
 Indicates if this plugin's void elements should be markable.
 </APISubListItem>
@@ -98,11 +111,76 @@ Indicates if this plugin's nodes should be selectable.
 
 - **Default:** `true`
 </APISubListItem>
+<APISubListItem parent="node" name="isStrictSiblings" type="boolean" optional>
+Indicates whether this element enforces strict sibling type constraints. Set to `true` when the element only allows specific siblings (e.g., `td` can only have `td` siblings, `column` can only have `column` siblings) and prevents standard text blocks like paragraphs from being inserted as siblings.
+
+Used by exit break functionality to determine appropriate exit points in nested structures. See [Exit Break](/docs/exit-break).
+
+- **Default:** `false`
+</APISubListItem>
+<APISubListItem parent="rules" name="break.empty" type="'default' | 'deleteExit' | 'exit' | 'reset'" optional>
+Action when Enter is pressed in an empty block. See [Plugin Rules](/docs/plugin-rules).
+
+- `'default'`: Default behavior
+- `'reset'`: Reset block to default paragraph type
+- `'exit'`: Exit the current block
+- `'deleteExit'`: Delete backward then exit
+</APISubListItem>
+<APISubListItem parent="rules" name="break.emptyLineEnd" type="'default' | 'deleteExit' | 'exit'" optional>
+Action when Enter is pressed at the end of an empty line. This is typically used with `rules.break.default: 'lineBreak'`. See [Plugin Rules](/docs/plugin-rules).
+
+- `'default'`: Default behavior
+- `'exit'`: Exit the current block
+- `'deleteExit'`: Delete backward then exit
+</APISubListItem>
+<APISubListItem parent="rules" name="break.default" type="'default' | 'deleteExit' | 'exit' | 'lineBreak'" optional>
+Default action when Enter is pressed. Defaults to splitting the block. See [Plugin Rules](/docs/plugin-rules).
+
+- `'default'`: Default behavior
+- `'exit'`: Exit the current block
+- `'lineBreak'`: Insert newline character
+- `'deleteExit'`: Delete backward then exit
+</APISubListItem>
+<APISubListItem parent="rules" name="break.splitReset" type="boolean" optional>
+If true, the new block after splitting will be reset to the default type. See [Plugin Rules](/docs/plugin-rules).
+</APISubListItem>
+<APISubListItem parent="rules" name="delete.start" type="'default' | 'reset'" optional>
+Action when Backspace is pressed at the start of the block. This applies whether the block is empty or not. See [Plugin Rules](/docs/plugin-rules).
+
+- `'default'`: Default behavior
+- `'reset'`: Reset block to default paragraph type
+</APISubListItem>
+<APISubListItem parent="rules" name="delete.empty" type="'default' | 'reset'" optional>
+Action when Backspace is pressed and the block is empty. See [Plugin Rules](/docs/plugin-rules).
+
+- `'default'`: Default behavior
+- `'reset'`: Reset block to default paragraph type
+</APISubListItem>
+<APISubListItem parent="rules" name="match" type="MatchRules" optional>
+Function to determine if this plugin's rules should apply to a node. Used to override behavior based on node properties beyond just type matching.
+
+**Default:** `type === node.type`
+
+**Example:** `matchRules: ({ node }) => Boolean(node.listStyleType)`
+
+Example: List plugin sets `match: ({ node }) => !!node.listStyleType` to override paragraph behavior when the paragraph is a list item.
+
+</APISubListItem>
+<APISubListItem parent="rules" name="merge.removeEmpty" type="boolean" optional>
+Whether to remove the node when it's empty during merge operations. See [Plugin Rules](/docs/plugin-rules).
+
+- **Default:** `false`
+</APISubListItem>
+<APISubListItem parent="rules" name="normalize.removeEmpty" type="boolean" optional>
+Whether to remove nodes with empty text during normalization. See [Plugin Rules](/docs/plugin-rules).
+
+- **Default:** `false`
+</APISubListItem>
 <APISubListItem parent="node" name="isVoid" type="boolean" optional>
 Indicates if this plugin's elements should be treated as void.
 </APISubListItem>
 <APISubListItem parent="node" name="type" type="string" optional>
-Specifies the type identifier for this plugin's nodes.
+Specifies the type identifier for this plugin's nodes. 
 
 - **Default:** `plugin.key`
 </APISubListItem>
@@ -177,7 +255,7 @@ Renders a component before the Editable component.
 Create a function that generates a React node below all other plugins' node React node, but above their children.
 </APISubListItem>
 <APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<TElement, C>) => React.ReactNode" optional>
-Renders a component after the direct children of the root element. This differs from `belowNodes` in that it's the direct child of `PlateElement` rather than wrapping the children that could be nested. This is useful when you need components relative to the root element. Note: this is not used in Plate Core but in `PlateElement`. If you're not using `PlateElement`, you'll need to use this plugin field on your own.
+Renders a component after the direct children of the root element. This differs from `belowNodes` in that it's the direct child of `PlateElement` rather than wrapping the children that could be nested. This is useful when you need components relative to the root element.
 </APISubListItem>
 <APISubListItem parent="render" name="leaf" type="NodeComponent" optional>
 Renders a component below leaf nodes when `isLeaf: true` and `isDecoration: false`. Use `render.node` instead when `isDecoration: true`.
@@ -187,6 +265,12 @@ Renders a component for:
 - Elements nodes if `isElement: true`
 - Below text nodes if `isLeaf: true` and `isDecoration: false`
 - Below leaf if `isLeaf: true` and `isDecoration: true`
+</APISubListItem>
+<APISubListItem parent="render" name="as" type="keyof HTMLElementTagNameMap" optional>
+Specifies the HTML tag name to use when rendering the node component. Only used when no custom `component` is provided for the plugin.
+
+- **Default:** `'div'` for elements, `'span'` for leaves
+
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -234,6 +318,43 @@ extendEditor: ({ editor }) => {
 
 <APIItem name="useHooks" type="() => void" optional>
 Hook called when the editor is initialized.
+</APIItem>
+
+<APIItem name="editOnly" type="boolean | EditOnlyConfig" optional>
+Configures which plugin functionalities should only be active when the editor is not read-only.
+
+Can be either a boolean or an object configuration:
+
+```ts
+type EditOnlyConfig = {
+  render?: boolean;      // default: true
+  handlers?: boolean;    // default: true
+  inject?: boolean;      // default: true
+  normalizeInitialValue?: boolean;  // default: false
+}
+```
+
+When set to `true` (boolean):
+- `render`, `handlers`, and `inject.nodeProps` are only active when editor is not read-only
+- `normalizeInitialValue` remains active regardless of read-only state
+
+When set to an object:
+- Each property can be individually configured
+- Properties default to being edit-only (`true`) except `normalizeInitialValue` which defaults to always active (`false`)
+- Set a property to `false` to make it always active regardless of read-only state
+- For `normalizeInitialValue`, set to `true` to make it edit-only
+
+Examples:
+```ts
+// All features (except normalizeInitialValue) are edit-only
+editOnly: true
+
+// normalizeInitialValue is edit-only, others remain edit-only by default
+editOnly: { normalizeInitialValue: true }
+
+// render is always active, others follow default behavior
+editOnly: { render: false }
+```
 </APIItem>
 </APIAttributes>
 </API>

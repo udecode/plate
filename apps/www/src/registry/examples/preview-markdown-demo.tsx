@@ -9,13 +9,11 @@ import {
   createSlatePlugin,
   TextApi,
 } from '@udecode/plate';
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { Plate } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 import Prism from 'prismjs';
 
 import { cn } from '@/lib/utils';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { BasicNodesKit } from '@/registry/components/editor/plugins/basic-nodes-kit';
 import { previewMdValue } from '@/registry/examples/values/preview-md-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
@@ -98,17 +96,19 @@ function PreviewLeaf({
 }
 
 export default function PreviewMdDemo() {
-  const editor = useCreateEditor({
-    plugins: [
-      BasicElementsPlugin,
-      BasicMarksPlugin,
-      createSlatePlugin({
-        key: 'preview-markdown',
-        decorate: decoratePreview,
-      }),
-    ],
-    value: previewMdValue,
-  });
+  const editor = usePlateEditor(
+    {
+      plugins: [
+        ...BasicNodesKit,
+        createSlatePlugin({
+          key: 'preview-markdown',
+          decorate: decoratePreview,
+        }),
+      ],
+      value: previewMdValue,
+    },
+    []
+  );
 
   return (
     <Plate editor={editor}>

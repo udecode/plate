@@ -161,6 +161,12 @@ export type EditorTransforms<V extends Value = Value> = {
    */
   withoutNormalizing: OmitFirst<typeof withoutNormalizing>;
   /**
+   * Handle `Escape`.
+   *
+   * @returns `true` if the event is handled, `false` otherwise.
+   */
+  escape: () => boolean | void;
+  /**
    * Insert of fragment of nodes at the specified location or (if not defined)
    * the current selection or (if not defined) the end of the document.
    */
@@ -202,6 +208,12 @@ export type EditorTransforms<V extends Value = Value> = {
    */
   mergeNodes: (options?: MergeNodesOptions<V>) => void;
   /**
+   * Handle `ArrowDown` and `ArrowUp` (reverse).
+   *
+   * @returns `true` if the event is handled, `false` otherwise.
+   */
+  moveLine: (options: { reverse: boolean }) => boolean | void;
+  /**
    * Move the nodes from an origin to a destination. A destination must be
    * specified in the `options`. If no origin is specified, move the selection.
    */
@@ -239,6 +251,12 @@ export type EditorTransforms<V extends Value = Value> = {
     options?: ReplaceNodesOptions<V>
   ) => void;
   /**
+   * Handle `mod+a`.
+   *
+   * @returns `true` if the event is handled, `false` otherwise.
+   */
+  selectAll: () => boolean | void;
+  /**
    * Set properties of nodes at the specified location. If no location is
    * specified, use the selection.
    *
@@ -254,6 +272,12 @@ export type EditorTransforms<V extends Value = Value> = {
    * the selection.
    */
   splitNodes: (options?: SplitNodesOptions<V>) => void;
+  /**
+   * Handle `Tab`, `Shift+Tab` (reverse).
+   *
+   * @returns `true` if the event is handled, `false` otherwise.
+   */
+  tab: (options: { reverse: boolean }) => boolean | void;
   /** Undo to the previous saved state. */
   undo: () => void;
   /**
@@ -438,16 +462,8 @@ export type LiftNodesOptions<V extends Value = Value> = QueryOptions<V> &
 
 export type MergeNodesOptions<V extends Value, E extends Editor = Editor> = {
   hanging?: boolean;
-  /**
-   * Default: if the node isn't already the next sibling of the previous node,
-   * move it so that it is before merging.
-   */
-  mergeNode?: (editor: E, options: { at: Path; to: Path }) => void;
-  /**
-   * Default: if there was going to be an empty ancestor of the node that was
-   * merged, we remove it from the tree.
-   */
-  removeEmptyAncestor?: (editor: E, options: { at: Path }) => void;
+  /** Whether it's merging node from `deleteForward`. */
+  reverse?: boolean;
 } & QueryOptions<V> &
   QueryMode &
   QueryVoids;
@@ -472,6 +488,7 @@ export type RemoveMarksOptions = {
 export type RemoveNodesOptions<V extends Value = Value> = {
   /** When true, remove all children of the node at the specified location */
   children?: boolean;
+  event?: { type: 'mergeNodes' };
   hanging?: boolean;
   /** When true, remove the previous empty block if it exists */
   previousEmptyBlock?: boolean;

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "mention-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-mention"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/mention-base-kit",
+    "https://platejs.org/r/mention-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/mention-kit.tsx",
+      "content": "'use client';\n\nimport {\n  MentionInputPlugin,\n  MentionPlugin,\n} from '@udecode/plate-mention/react';\n\nimport {\n  MentionElement,\n  MentionInputElement,\n} from '@/registry/ui/mention-node';\n\nexport const MentionKit = [\n  MentionPlugin.configure({\n    options: { triggerPreviousCharPattern: /^$|^[\\s\"']$/ },\n  }).withComponent(MentionElement),\n  MentionInputPlugin.withComponent(MentionInputElement),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

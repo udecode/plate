@@ -107,13 +107,13 @@ export type EditorApi<V extends Value = Value> = {
    * this incorrectly can leave the editor in an invalid state.
    */
   setNormalizing: (isNormalizing: boolean) => void;
-  /**
-   * Call a function, Determine whether or not remove the previous node when
-   * merge.
-   */
-  shouldMergeNodesRemovePrevNode: (
+  /** Whether nodes should be merged. */
+  shouldMergeNodes: (
     prevNodeEntry: NodeEntry,
-    curNodeEntry: NodeEntry
+    curNodeEntry: NodeEntry,
+    options?: {
+      reverse?: boolean;
+    }
   ) => boolean;
   /** Override this method to prevent normalizing the editor. */
   shouldNormalize: (options: {
@@ -559,8 +559,8 @@ export type EditorFragmentDeletionOptions = {
 };
 
 export type EditorFragmentOptions = {
-  /** Types of structural nodes to unwrap */
-  structuralTypes?: string[];
+  /** Types of container nodes to unwrap */
+  unwrap?: string[];
 };
 
 export type EditorIsSelectedOptions = {

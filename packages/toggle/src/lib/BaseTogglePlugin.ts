@@ -1,4 +1,4 @@
-import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
+import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
 
 export type BaseToggleConfig = PluginConfig<
   'toggle',
@@ -17,12 +17,8 @@ export type BaseToggleConfig = PluginConfig<
   }
 >;
 
-export type TToggleElement = {
-  type: typeof BaseTogglePlugin.key;
-};
-
 export const BaseTogglePlugin = createTSlatePlugin<BaseToggleConfig>({
-  key: 'toggle',
+  key: KEYS.toggle,
   node: { isElement: true },
   options: {
     openIds: new Set(),

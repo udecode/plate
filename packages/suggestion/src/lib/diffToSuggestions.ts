@@ -3,6 +3,7 @@ import {
   type SlateEditor,
   type ValueOf,
   ElementApi,
+  KEYS,
   nanoid,
   TextApi,
 } from '@udecode/plate';
@@ -49,7 +50,7 @@ export function diffToSuggestions<E extends SlateEditor>(
         };
       }
 
-      if (TextApi.isText(node) && node[BaseSuggestionPlugin.key]) {
+      if (TextApi.isText(node) && node[KEYS.suggestion]) {
         const api = editor.getApi(BaseSuggestionPlugin);
         const currentNodeData = api.suggestion.suggestionData(node as any);
 
@@ -57,7 +58,7 @@ export function diffToSuggestions<E extends SlateEditor>(
           // Get the previous node if it exists
           const previousNode = index > 0 ? nodes[index - 1] : null;
 
-          if (previousNode?.[BaseSuggestionPlugin.key]) {
+          if (previousNode?.[KEYS.suggestion]) {
             const previousData = api.suggestion.suggestionData(
               previousNode as any
             );

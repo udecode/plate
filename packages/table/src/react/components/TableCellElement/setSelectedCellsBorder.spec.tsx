@@ -49,7 +49,7 @@ describe('setSelectedCellsBorder', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    editor = createPlateEditor({});
+    editor = createPlateEditor({ nodeId: true });
     editor.api.findPath = jest.fn().mockReturnValue([0]);
   });
 

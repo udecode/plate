@@ -1,15 +1,13 @@
-import type { SlateEditor } from '@udecode/plate';
-
-import { BaseTablePlugin } from '../BaseTablePlugin';
+import { type SlateEditor, KEYS } from '@udecode/plate';
 
 export const deleteTable = (editor: SlateEditor) => {
   if (
     editor.api.some({
-      match: { type: editor.getType(BaseTablePlugin) },
+      match: { type: editor.getType(KEYS.table) },
     })
   ) {
     const tableItem = editor.api.above({
-      match: { type: editor.getType(BaseTablePlugin) },
+      match: { type: editor.getType(KEYS.table) },
     });
 
     if (tableItem) {

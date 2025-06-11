@@ -1,6 +1,14 @@
-import { type SlateEditor, ElementApi, PathApi, TextApi } from '@udecode/plate';
+import {
+  type SlateEditor,
+  type TSuggestionElement,
+  type TSuggestionText,
+  ElementApi,
+  KEYS,
+  PathApi,
+  TextApi,
+} from '@udecode/plate';
 
-import type { TResolvedSuggestion, TSuggestionText } from '../types';
+import type { TResolvedSuggestion } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData } from '../utils';
@@ -19,10 +27,11 @@ export const acceptSuggestion = (
           if (
             editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
           ) {
+            const suggestionElement = n as TSuggestionElement;
             return (
-              n.suggestion.type === 'remove' &&
-              n.suggestion.isLineBreak &&
-              n.suggestion.id === description.suggestionId
+              suggestionElement.suggestion.type === 'remove' &&
+              suggestionElement.suggestion.isLineBreak &&
+              suggestionElement.suggestion.id === description.suggestionId
             );
           }
 
@@ -35,7 +44,7 @@ export const acceptSuggestion = (
       editor.tf.mergeNodes({ at: PathApi.next(path) });
     });
 
-    editor.tf.unsetNodes([description.keyId, BaseSuggestionPlugin.key], {
+    editor.tf.unsetNodes([description.keyId, KEYS.suggestion], {
       at: [],
       mode: 'all',
       match: (n) => {
@@ -67,7 +76,8 @@ export const acceptSuggestion = (
           ElementApi.isElement(n) &&
           editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
         ) {
-          const suggestionData = n.suggestion;
+          const suggestionElement = n as TSuggestionElement;
+          const suggestionData = suggestionElement.suggestion;
 
           if (suggestionData) {
             const isLineBreak = suggestionData.isLineBreak;
@@ -107,7 +117,8 @@ export const acceptSuggestion = (
           ElementApi.isElement(n) &&
           editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
         ) {
-          const suggestionData = n.suggestion;
+          const suggestionElement = n as TSuggestionElement;
+          const suggestionData = suggestionElement.suggestion;
 
           if (suggestionData) {
             const isLineBreak = suggestionData.isLineBreak;

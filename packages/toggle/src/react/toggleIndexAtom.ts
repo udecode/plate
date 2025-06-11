@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 
-import type { Value } from '@udecode/plate';
+import type { TIndentElement, Value } from '@udecode/plate';
 
-import { type TIndentElement, BaseIndentPlugin } from '@udecode/plate-indent';
+import { KEYS } from '@udecode/plate';
 import {
   atom,
   plateStore,
@@ -13,23 +13,23 @@ import {
 
 import { TogglePlugin } from './TogglePlugin';
 
-// Duplicate constant instead of importing from "plate-indent-list" to avoid a dependency.
-const IndentListPluginKey = 'listStyleType';
+// Duplicate constant instead of importing from "plate-list" to avoid a dependency.
+const ListPluginKey = 'listStyleType';
 
 // Returns, for each child, the enclosing toggle ids
 export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
   const result = new Map<string, string[]>();
   let currentEnclosingToggles: [string, number][] = []; // [toggleId, indent][]
   elements.forEach((element) => {
-    const elementIndent = (element[BaseIndentPlugin.key] as number) || 0;
+    const elementIndent = (element[KEYS.indent] as number) || 0;
     // For some reason, indent lists have a min indent of 1, even though they are not indented
-    const elementIndentWithIndentListCorrection =
-      element[IndentListPluginKey] && element[BaseIndentPlugin.key]
+    const elementIndentWithListCorrection =
+      element[ListPluginKey] && element[KEYS.indent]
         ? elementIndent - 1
         : elementIndent;
 
     const enclosingToggles = currentEnclosingToggles.filter(([_, indent]) => {
-      return indent < elementIndentWithIndentListCorrection;
+      return indent < elementIndentWithListCorrection;
     });
     currentEnclosingToggles = enclosingToggles;
     result.set(
@@ -37,7 +37,7 @@ export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
       enclosingToggles.map(([toggleId]) => toggleId)
     );
 
-    if (element.type === TogglePlugin.key) {
+    if (element.type === KEYS.toggle) {
       currentEnclosingToggles.push([element.id as string, elementIndent]);
     }
   });

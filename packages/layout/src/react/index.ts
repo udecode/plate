@@ -3,5 +3,4 @@
  */
 
 export * from './ColumnPlugin';
-export * from './onKeyDownColumn';
 export * from './hooks/index';

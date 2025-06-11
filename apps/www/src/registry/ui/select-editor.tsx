@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
-import { isHotkey } from '@udecode/plate';
+import { isHotkey, KEYS } from '@udecode/plate';
 import { isEqualTags } from '@udecode/plate-tag';
 import {
   MultiSelectPlugin,
@@ -28,7 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 
 import { Editor, EditorContainer } from './editor';
-import { TagElement } from './tag-element';
+import { TagElement } from './tag-node';
 
 export type SelectItem = {
   value: string;
@@ -184,7 +184,7 @@ export function SelectEditorCombobox() {
     <Popover open={open}>
       <PopoverAnchor virtualRef={containerRef as any} />
       <PopoverContent
-        className="p-0"
+        className="p-0 data-[state=open]:animate-none"
         style={{
           width: (containerRef.current?.offsetWidth ?? 0) + 8,
         }}
@@ -192,7 +192,6 @@ export function SelectEditorCombobox() {
         onOpenAutoFocus={(e) => e.preventDefault()}
         align="start"
         alignOffset={-4}
-        animate={false}
         sideOffset={8}
       >
         <CommandList>
@@ -231,7 +230,7 @@ const createEditorValue = (value?: SelectItem[]) => [
       ...(value?.flatMap((item) => [
         {
           children: [{ text: '' }],
-          type: TagPlugin.key,
+          type: KEYS.tag,
           ...item,
         },
         {
@@ -239,7 +238,7 @@ const createEditorValue = (value?: SelectItem[]) => [
         },
       ]) ?? []),
     ],
-    type: 'p',
+    type: KEYS.p,
   },
 ];
 

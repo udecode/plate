@@ -3,4 +3,3 @@
  */
 
 export * from './LineHeightPlugin';
-export * from './hooks/index';

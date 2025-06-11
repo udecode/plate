@@ -14,10 +14,10 @@ export const overrideSelectionFromCell = (
   let hotkey: string | undefined;
 
   if (
-    !editor.currentKeyboardEvent ||
+    !editor.dom.currentKeyboardEvent ||
     !['up', 'down', 'shift+up', 'shift+right', 'shift+down', 'shift+left'].some(
       (key) => {
-        const valid = isHotkey(key, editor.currentKeyboardEvent!);
+        const valid = isHotkey(key, editor.dom.currentKeyboardEvent!);
 
         if (valid) hotkey = key;
 

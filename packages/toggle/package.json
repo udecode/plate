@@ -51,7 +51,6 @@
   },
   "dependencies": {
     "@udecode/plate-indent": "48.0.0",
-    "@udecode/plate-node-id": "48.0.6",
     "lodash": "^4.17.21"
   },
   "devDependencies": {

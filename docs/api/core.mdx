@@ -33,6 +33,55 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   <APIItem name="maxLength" type="number" optional>
     Specifies the maximum number of characters allowed in the editor.
   </APIItem>
+  <APIItem name="nodeId" type="object | boolean" optional>
+    Configuration for automatic node ID generation and management.
+    <APISubList>
+      <APISubListItem parent="nodeId" name="disableInsertOverrides" type="boolean" optional>
+        Disable using existing IDs when inserting nodes.
+        - When `false`: Keeps existing IDs if they don't exist in document
+        - When `true`: Always generates new IDs
+        - **Default:** `false`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="filterInline" type="boolean" optional>
+        Filter inline Element nodes from receiving IDs.
+        - **Default:** `true`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="filterText" type="boolean" optional>
+        Filter Text nodes from receiving IDs.
+        - **Default:** `true`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="idCreator" type="() => any" optional>
+        Function to generate unique IDs.
+        - **Default:** `() => nanoid(10)`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="idKey" type="string" optional>
+        Property key used to store node IDs.
+        - **Default:** `'id'`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="normalizeInitialValue" type="boolean" optional>
+        Whether to normalize all nodes in initial value.
+        - When `false`: Only checks first and last nodes
+        - When `true`: Normalizes all nodes
+        - **Default:** `false`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="reuseId" type="boolean" optional>
+        Reuse IDs on undo/redo and copy/paste.
+        - When `true`: Keeps IDs if they don't exist in document
+        - When `false`: Always generates new IDs (safer across documents)
+        - **Default:** `false`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="allow" type="string[]" optional>
+        Node types that should receive IDs.
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="exclude" type="string[]" optional>
+        Node types that should not receive IDs.
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="filter" type="(node: NodeEntry) => boolean" optional>
+        Custom filter function for nodes that should receive IDs.
+        - **Default:** `() => true`
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
   <APIItem name="selection" type="TSelection" optional>
     Initial selection for the editor.
   </APIItem>
@@ -69,6 +118,10 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   </APIItem>
   <APIItem name="priority" type="number" optional>
     Priority of the editor plugin.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean" optional>
+    Editor read-only initial state. For dynamic value, use
+    `Plate.readOnly` prop.
   </APIItem>
   <APIItem name="render" type="object" optional>
     Render functions for the editor.
@@ -288,11 +341,24 @@ Get the Slate editor reference with re-rendering.
 </APIReturns>
 </API>
 
+### `useEditorComposing`
+
+Get the editor's `composing` state.
+
+<API name="useEditorComposing">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    The ID of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  Whether the editor is composing.
+</APIReturns>
+</API>
 
 ### `useEditorReadOnly`
 
 Get the editor's `readOnly` state.
-
 <API name="useEditorReadOnly">
 <APIParameters>
   <APIItem name="id" type="string" optional>
@@ -401,12 +467,6 @@ Whether the current selection spans across multiple blocks.
 Returns the fragment of the current selection, optionally unwrapping structural nodes.
 
 <API name="useSelectionFragment">
-<APIOptions type="GetSelectionFragmentOptions">
-  <APIItem name="structuralTypes" type="string[]" optional>
-    Array of structural types to unwrap from the fragment.
-  </APIItem>
-</APIOptions>
-
 <APIReturns type="TElement[]">
   The fragment of the current selection. Returns an empty array if the selection is not expanded or if no fragment is found.
 </APIReturns>
@@ -418,9 +478,6 @@ Returns a prop value derived from the current selection fragment.
     
 <API name="useSelectionFragmentProp">
 <APIOptions type="GetSelectionFragmentOptions & GetFragmentPropOptions" optional>
-<APIItem name="structuralTypes" type="string[]" optional>
-Array of structural types to unwrap from the fragment.
-</APIItem>
 <APIItem name="key" type="string" optional>
 The key of the property to extract from each node.
 </APIItem>

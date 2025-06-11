@@ -6,7 +6,7 @@ description: 为 React Server Components 安装和配置 Plate
 本指南演示如何在 React Server Components (RSC) 中使用 Plate，适用于静态内容生成或服务端数据处理等任务。Plate 的核心设计为服务端安全，可在无浏览器环境下处理编辑器内容。
 
 <Callout type="warning" title="RSC 关键限制">
-  在 RSC 中使用 Plate 时，**绝不能**从任何 `@udecode/plate*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@udecode/plate-basic-elements`，而不是 `@udecode/plate-basic-elements/react`）。
+  在 RSC 中使用 Plate 时，**绝不能**从任何 `@udecode/plate*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@udecode/plate-basic-nodes`，而不是 `@udecode/plate-basic-nodes/react`）。
 
   这意味着你不能使用 `@udecode/plate/react` 的 `createPlateEditor`。请改用 `@udecode/plate` 的 `createSlateEditor`。
 </Callout>
@@ -18,7 +18,7 @@ description: 为 React Server Components 安装和配置 Plate
 安装核心 Plate 包以及你需要的特定插件包。
 
 ```bash
-npm add @udecode/plate
+npm add @udecode/plate @udecode/plate-basic-nodes
 ```
 
 ### 创建编辑器实例
@@ -29,71 +29,74 @@ npm add @udecode/plate
 
 ```tsx title="app/api/generate-doc/route.ts"
 import { createSlateEditor } from '@udecode/plate';
-import { BaseAlignPlugin } from '@udecode/plate-alignment';
+import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
 import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
   BaseItalicPlugin,
-  // ... other basic mark plugins
-} from '@udecode/plate-basic-marks';
-import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
-// ... import many other base plugins (NOT from /react paths)
-import { BaseHeadingPlugin } from '@udecode/plate-heading';
+  BaseBlockquotePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+} from '@udecode/plate-basic-nodes';
 import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-// Example initial value
+// 示例初始值
 const initialValue = [
-  { type: 'h1', children: [{ text: 'Server-Generated Document' }] },
-  { type: 'p', children: [{ text: 'This content was processed on the server.' }] },
-  { type: 'p', children: [{ text: 'And this is bold.', bold: true }] },
+  { type: 'h1', children: [{ text: '服务端生成的文档' }] },
+  { type: 'p', children: [{ text: '此内容在服务端处理。' }] },
+  { type: 'blockquote', children: [{ text: '这是一个引用。' }] },
+  { type: 'p', children: [{ text: '这是粗体。', bold: true }] },
 ];
 
-// Create the editor instance
+// 创建编辑器实例
 const editor = createSlateEditor({
   plugins: [
-    // Element plugins
-    BaseHeadingPlugin,
+    // 块级插件
+    BaseH1Plugin,
+    BaseH2Plugin,
+    BaseH3Plugin,
     BaseBlockquotePlugin,
-    BaseAlignPlugin,
-    // ... add more element plugins as needed
+    BaseTextAlignPlugin,
+    // ... 根据需要添加更多 element 插件
 
-    // Mark plugins
+    // Mark 插件
     BaseBoldPlugin,
     BaseItalicPlugin,
     BaseCodePlugin,
-    // ... add more mark plugins
+    // ... 添加更多 mark 插件
 
-    // Functionality plugins
+    // 功能插件
     BaseAutoformatPlugin,
-    MarkdownPlugin.configure({ // For serialization example
+    MarkdownPlugin.configure({ // 序列化示例
       options: {
         remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
       },
     }),
-    // ... add other functional plugins
+    // ... 添加其他功能插件
   ],
-  value: initialValue, // Set initial content
+  value: initialValue, // 设置初始内容
 });
 
-// You can now use editor.children, editor.api, editor.tf, etc.
-// For example, to get the text content:
+// 现在你可以使用 editor.children、editor.api、editor.tf 等
+// 例如，获取文本内容：
 const textContent = editor.api.string([]);
-// console.log('Text Content:', textContent);
+// console.log('文本内容:', textContent);
 
-// Or to serialize to Markdown:
+// 或序列化为 Markdown：
 const markdown = editor.api.markdown.serialize();
-// console.log('Markdown Output:', markdown);
+// console.log('Markdown 输出:', markdown);
 
-// The editor instance can be used for various server-side tasks.
-// For a complete example of using this in an RSC page for rendering,
-// see the /docs/examples/server-side page.
+// 编辑器实例可用于各种服务端任务。
+// 有关在 RSC 页面中使用此功能进行渲染的完整示例，
+// 请参阅 /docs/examples/server-side 页面。
 ```
 
 <Callout type="info">
-  `createSlateEditor` 创建一个原生 Slate 编辑器实例，适用于服务端逻辑、数据转换或为静态渲染准备内容。可参考完整的 [服务端示例](/docs/examples/server-side) 了解实际用法。
+  `createSlateEditor` 创建一个原生 Slate 编辑器实例。它适用于服务端逻辑、数据转换或为静态渲染准备内容。可参考完整的 [服务端示例](/docs/examples/server-side) 了解实际用法。
 </Callout>
 
 ### 内容操作
@@ -110,7 +113,7 @@ const markdown = editor.api.markdown.serialize();
     -   `editor.tf.insertNodes(nodes, opts)`：插入新节点。
     -   `editor.tf.removeNodes(opts)`：删除节点。
     -   `editor.tf.setNodes(props, opts)`：更新现有节点属性。
-    -   `editor.tf.normalize({ force: true })`：强制规范化编辑器。
+    -   `editor.tf.normalize({ force: true })`：规范化编辑器。
 
 </Steps>
 

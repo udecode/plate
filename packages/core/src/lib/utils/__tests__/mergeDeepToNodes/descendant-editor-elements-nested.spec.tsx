@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { ListItemPlugin } from '@udecode/plate-list/react';
+import { ListItemPlugin } from '@udecode/plate-list-classic/react';
 import { jsxt } from '@udecode/plate-test-utils';
 import { NodeApi } from '@udecode/slate';
 

@@ -43,7 +43,7 @@ export const pluginInjectNodeProps = (
   const {
     classNames,
     defaultNodeValue,
-    nodeKey = key,
+    nodeKey = editor.getType(key),
     query,
     styleKey = nodeKey as any,
     transformClassName,
@@ -89,7 +89,7 @@ export const pluginInjectNodeProps = (
 
   let newProps: GetInjectNodePropsReturnType = {};
 
-  if (element && nodeKey) {
+  if (element && nodeKey && nodeValue) {
     newProps.className = `slate-${nodeKey}-${nodeValue}`;
   }
   if (classNames?.[nodeValue] || transformClassName) {

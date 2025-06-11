@@ -1,12 +1,13 @@
 import {
   type SetNodesOptions,
   type SlateEditor,
+  type TInlineSuggestionData,
+  type TSuggestionText,
   ElementApi,
   getAt,
+  KEYS,
   nanoid,
 } from '@udecode/plate';
-
-import type { TInlineSuggestionData, TSuggestionText } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';
@@ -41,8 +42,8 @@ export const setSuggestionNodes = (
     };
 
     const props = {
-      [BaseSuggestionPlugin.key]: true,
       [getSuggestionKey(suggestionId)]: data,
+      [KEYS.suggestion]: true,
     };
 
     editor.tf.setNodes(props, {

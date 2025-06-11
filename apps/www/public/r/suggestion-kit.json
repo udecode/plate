@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "suggestion-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@udecode/plate-suggestion"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/suggestion-base-kit",
+    "https://platejs.org/r/suggestion-node",
+    "https://platejs.org/r/suggestion-toolbar-button",
+    "https://platejs.org/r/discussion-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/suggestion-kit.tsx",
+      "content": "'use client';\n\nimport {\n  type ExtendConfig,\n  type Path,\n  isSlateEditor,\n  isSlateElement,\n  isSlateString,\n} from '@udecode/plate';\nimport {\n  type BaseSuggestionConfig,\n  BaseSuggestionPlugin,\n} from '@udecode/plate-suggestion';\nimport { createPlatePlugin, toTPlatePlugin } from '@udecode/plate/react';\n\nimport { BlockSuggestion } from '@/registry/ui/block-suggestion';\nimport {\n  SuggestionLeaf,\n  SuggestionLineBreak,\n} from '@/registry/ui/suggestion-node';\n\nimport { discussionPlugin } from './discussion-kit';\n\nexport type SuggestionConfig = ExtendConfig<\n  BaseSuggestionConfig,\n  {\n    activeId: string | null;\n    hoverId: string | null;\n    uniquePathMap: Map<string, Path>;\n  }\n>;\n\nexport const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(\n  BaseSuggestionPlugin,\n  ({ editor }) => ({\n    handlers: {\n      // unset active suggestion when clicking outside of suggestion\n      onClick: ({ api, event, setOption, type }) => {\n        let leaf = event.target as HTMLElement;\n        let isSet = false;\n\n        const unsetActiveSuggestion = () => {\n          setOption('activeId', null);\n          isSet = true;\n        };\n\n        if (!isSlateString(leaf)) unsetActiveSuggestion();\n\n        while (\n          leaf.parentElement &&\n          !isSlateElement(leaf.parentElement) &&\n          !isSlateEditor(leaf.parentElement)\n        ) {\n          if (leaf.classList.contains(`slate-${type}`)) {\n            const suggestionEntry = api.suggestion!.node({ isText: true });\n\n            if (!suggestionEntry) {\n              unsetActiveSuggestion();\n\n              break;\n            }\n\n            const id = api.suggestion!.nodeId(suggestionEntry[0]);\n\n            setOption('activeId', id ?? null);\n            isSet = true;\n\n            break;\n          }\n\n          leaf = leaf.parentElement;\n        }\n\n        if (!isSet) unsetActiveSuggestion();\n      },\n    },\n    options: {\n      activeId: null,\n      currentUserId: editor.getOption(discussionPlugin, 'currentUserId'),\n      hoverId: null,\n      uniquePathMap: new Map(),\n    },\n    render: {\n      node: SuggestionLeaf,\n      belowRootNodes: ({ api, element }) => {\n        if (!api.suggestion!.isBlockSuggestion(element)) {\n          return null;\n        }\n\n        return <BlockSuggestion element={element} />;\n      },\n    },\n  })\n);\n\nconst suggestionLineBreakPlugin = createPlatePlugin({\n  key: 'suggestionLineBreak',\n  render: { belowNodes: SuggestionLineBreak as any },\n});\n\nexport const SuggestionKit = [suggestionPlugin, suggestionLineBreakPlugin];\n",
+      "type": "registry:component"
+    }
+  ]
+}

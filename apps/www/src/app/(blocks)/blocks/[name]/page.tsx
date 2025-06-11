@@ -27,7 +27,7 @@ export async function generateMetadata({
   }
 
   const title = `${item.description ? `${item.description}` : ''}`;
-  const description = `npx shadcn@canary add ${siteConfig.registryUrl}${item.name}`;
+  const description = `npx shadcn@latest add ${siteConfig.registryUrl}${item.name}`;
 
   return {
     description,

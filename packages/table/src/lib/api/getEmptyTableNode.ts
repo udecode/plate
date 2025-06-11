@@ -1,9 +1,9 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor, TTableElement } from '@udecode/plate';
 
-import type { TTableElement } from '../types';
+import { KEYS } from '@udecode/plate';
+
+import type { TableConfig } from '../BaseTablePlugin';
 import type { GetEmptyRowNodeOptions } from './getEmptyRowNode';
-
-import { type TableConfig, BaseTablePlugin } from '../BaseTablePlugin';
 
 export interface GetEmptyTableNodeOptions extends GetEmptyRowNodeOptions {
   rowCount?: number;
@@ -18,7 +18,7 @@ export const getEmptyTableNode = (
     ...cellOptions
   }: GetEmptyTableNodeOptions = {}
 ): TTableElement => {
-  const { api } = editor.getPlugin<TableConfig>({ key: 'table' });
+  const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });
 
   const rows = Array.from({ length: rowCount })
     .fill(rowCount)
@@ -32,6 +32,6 @@ export const getEmptyTableNode = (
 
   return {
     children: rows,
-    type: editor.getType(BaseTablePlugin),
+    type: editor.getType(KEYS.table),
   };
 };

@@ -8,6 +8,8 @@ import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
 import type { TStateApi } from 'zustand-x';
 
+import type { CorePluginApi, CorePluginTransforms } from '../plugins';
+
 export type AnyPluginConfig = {
   key: any;
   api: any;
@@ -128,11 +130,6 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
     enabled?: Partial<Record<string, boolean>>;
   };
   /**
-   * Recursive plugin support to allow having multiple plugins in a single
-   * plugin. Plate eventually flattens all the plugins into the editor.
-   */
-  plugins: any[];
-  /**
    * Defines the order in which plugins are registered and executed.
    *
    * Plugins with higher priority values are registered and executed before
@@ -159,6 +156,13 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
      */
     aboveSlate?: React.FC<{ children: React.ReactNode }>;
     /**
+     * Specifies the HTML tag name to use when rendering the node component.
+     * Only used when no custom `component` is provided for the plugin.
+     *
+     * @default 'div' for elements, 'span' for leaves
+     */
+    as?: keyof HTMLElementTagNameMap;
+    /**
      * Renders a component below leaf nodes when `isLeaf: true` and
      * `isDecoration: false`. Use `render.node` instead when `isDecoration:
      * true`.
@@ -173,10 +177,54 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
      */
     node?: NodeComponent;
   }>;
+  rules: {
+    /**
+     * Defines actions on insert break based on block state.
+     *
+     * - `'default'`: Default behavior
+     * - `'exit'`: Exit the current block
+     * - `'reset'`: Reset block to default paragraph type
+     * - `'lineBreak'`: Insert newline character
+     * - `'deleteExit'`: Delete backward then exit
+     */
+    break?: BreakRules;
+    /**
+     * Defines actions on delete based on block state.
+     *
+     * - `'default'`: Default behavior
+     * - `'reset'`: Reset block to default paragraph type
+     */
+    delete?: DeleteRules;
+    /** Defines the behavior of merging nodes. */
+    merge?: MergeRules;
+    /** Defines the behavior of normalizing nodes. */
+    normalize?: NormalizeRules;
+    /** Defines the behavior of selection. */
+    selection?: SelectionRules;
+  };
   /** Selectors for the plugin. */
   selectors: InferSelectors<C>;
   /** Transforms (state-modifying operations) that can be applied to the editor. */
   transforms: InferTransforms<C>;
+  /**
+   * Configures edit-only behavior for various plugin functionalities.
+   *
+   * - If `true` (boolean):
+   *
+   *   - `render`, `handlers`, and `inject.nodeProps` are active only when the
+   *       editor is NOT read-only.
+   * - If an object ({@link EditOnlyConfig}): Allows fine-grained control:
+   *
+   *   - `render`: Edit-only by default (true if not specified). Set to `false` to
+   *       always be active.
+   *   - `handlers`: Edit-only by default (true if not specified). Set to `false` to
+   *       always be active.
+   *   - `inject` (for `inject.nodeProps`): Edit-only by default (true if not
+   *       specified). Set to `false` to always be active.
+   *   - `normalizeInitialValue`: NOT edit-only by default (false if not specified).
+   *       Set to `true` to make it edit-only.
+   */
+  editOnly?: EditOnlyConfig | boolean;
   /**
    * Enables or disables the plugin. Used by Plate to determine if the plugin
    * should be used.
@@ -185,12 +233,12 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
 };
 
 export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
-  api: C['api'] & EditorApi;
+  api: C['api'] & EditorApi & CorePluginApi;
   setOptions: {
     (options: (state: Draft<Partial<InferOptions<C>>>) => void): void;
     (options: Partial<InferOptions<C>>): void;
   };
-  tf: C['transforms'] & EditorTransforms;
+  tf: C['transforms'] & EditorTransforms & CorePluginTransforms;
   type: string;
   getOption: <
     K extends keyof InferOptions<C> | keyof InferSelectors<C> | 'state',
@@ -265,6 +313,16 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   dangerouslyAllowAttributes?: string[];
   /**
+   * Indicates if this plugin's elements are primarily containers for other
+   * content. Container elements are typically unwrapped when querying
+   * fragments.
+   *
+   * Examples: table, tr, td, column, column_group
+   *
+   * @default false
+   */
+  isContainer?: boolean;
+  /**
    * Indicates if this plugin's nodes can be rendered as decorated leaf. Set to
    * false to render node component only once per text node.
    *
@@ -298,6 +356,14 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
    */
   isSelectable?: boolean;
   /**
+   * Indicates whether this element enforces strict sibling type constraints.
+   * Set to true `true` when the element only allows specific siblings (e.g.,
+   * `td` can only have `td` siblings, `column` can only have `column` siblings)
+   * and prevents standard text blocks like paragraphs from being inserted as
+   * siblings.
+   */
+  isStrictSiblings?: boolean;
+  /**
    * Property used by `inlineVoid` core plugin to set elements of this `type` as
    * void.
    */
@@ -319,6 +385,113 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 };
 
 // -----------------------------------------------------------------------------
+
+export interface BreakRules {
+  /** Action when Enter is pressed in an empty block. */
+  empty?: 'default' | 'deleteExit' | 'exit' | 'reset';
+  /**
+   * Action when Enter is pressed at the end of an empty line. This is typically
+   * used with `default: 'lineBreak'`.
+   *
+   * Example:
+   *
+   * ```tsx
+   *     <blockquote>
+   *     This is some text\n
+   *     |
+   *     </blockquote>
+   * ```
+   */
+  emptyLineEnd?: 'default' | 'deleteExit' | 'exit';
+  /** Default action when Enter is pressed. Defaults to splitting the block. */
+  default?: 'default' | 'deleteExit' | 'exit' | 'lineBreak';
+  /** If true, the new block after splitting will be reset to the default type. */
+  splitReset?: boolean;
+}
+
+export interface MergeRules {
+  /** Whether to remove the node when it's empty. */
+  removeEmpty?: boolean;
+}
+
+export interface NormalizeRules {
+  /** Whether to remove nodes with empty text. */
+  removeEmpty?: boolean;
+}
+
+export interface DeleteRules {
+  /**
+   * Action when Backspace is pressed at the start of the block. This applies
+   * whether the block is empty or not.
+   *
+   * Example:
+   *
+   * ```tsx
+   *     <blockquote>
+   *     |Text
+   *     </blockquote>
+   * ```
+   */
+  start?: 'default' | 'reset';
+  /** Action when Backspace is pressed and the block is empty. */
+  empty?: 'default' | 'reset';
+}
+
+export interface SelectionRules {
+  /**
+   * Defines the selection behavior at the boundaries of nodes.
+   *
+   * - `directional`: Selection affinity is determined by the direction of cursor
+   *   movement. Maintains inward or outward affinity based on approach.
+   * - `outward`: Forces outward affinity. Typing at the edge of a mark will not
+   *   apply the mark to new text.
+   * - `hard`: Creates a 'hard' edge that requires two key presses to move across.
+   *   Uses offset-based navigation.
+   * - `default`: Uses Slate's default behavior.
+   */
+  affinity?: 'default' | 'directional' | 'hard' | 'outward';
+}
+
+export type MatchRules =
+  | 'break.default'
+  | 'break.empty'
+  | 'break.emptyLineEnd'
+  | 'break.splitReset'
+  | 'delete.empty'
+  | 'delete.start'
+  | 'merge.removeEmpty'
+  | 'normalize.removeEmpty'
+  | 'selection.affinity';
+
+export type EditOnlyConfig = {
+  /**
+   * If true, `handlers` are only active when the editor is not read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  handlers?: boolean;
+  /**
+   * If true, `inject.nodeProps` is only active when the editor is not
+   * read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  inject?: boolean;
+  /**
+   * If true, `normalizeInitialValue` is only called when the editor is not
+   * read-only.
+   *
+   * @default false (This is an exception. It's not edit-only by default, even if `editOnly` is true or an object, unless explicitly set to true here).
+   */
+  normalizeInitialValue?: boolean;
+  /**
+   * If true, `render` functions are only active when the editor is not
+   * read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  render?: boolean;
+};
 
 export type ExtendConfig<
   C extends PluginConfig,
@@ -352,6 +525,8 @@ export interface GetInjectNodePropsReturnType extends AnyObject {
   className?: string;
   style?: CSSStyleDeclaration;
 }
+
+export type InferKey<P> = P extends PluginConfig ? P['key'] : never;
 
 export type InferApi<P> = P extends PluginConfig ? P['api'] : never;
 

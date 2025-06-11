@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { KEYS } from '@udecode/plate';
 import {
   type RenderNodeWrapperProps,
   getEditorPlugin,
@@ -13,7 +14,7 @@ export const renderCopilotBelowNodes = ({
   editor,
 }: RenderNodeWrapperProps<CopilotPluginConfig>) => {
   const copilot = getEditorPlugin<CopilotPluginConfig>(editor, {
-    key: 'copilot',
+    key: KEYS.copilot,
   });
 
   const { renderGhostText: GhostText } = copilot.getOptions();

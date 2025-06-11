@@ -1,13 +1,14 @@
+import { KEYS } from '@udecode/plate';
 import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
 
-import { LinkPlugin, triggerFloatingLink } from '../index';
+import { triggerFloatingLink } from '../index';
 
 export const useLinkToolbarButtonState = () => {
   const pressed = useEditorSelector(
     (editor) =>
       !!editor?.selection &&
       editor.api.some({
-        match: { type: editor.getType(LinkPlugin) },
+        match: { type: editor.getType(KEYS.link) },
       }),
     []
   );

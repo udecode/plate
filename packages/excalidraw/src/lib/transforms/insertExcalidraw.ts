@@ -4,10 +4,9 @@ import type {
   SlateEditor,
 } from '@udecode/plate';
 
-import {
-  type TExcalidrawElement,
-  BaseExcalidrawPlugin,
-} from '../BaseExcalidrawPlugin';
+import { KEYS } from '@udecode/plate';
+
+import type { TExcalidrawElement } from '../BaseExcalidrawPlugin';
 
 export const insertExcalidraw = (
   editor: SlateEditor,
@@ -25,7 +24,7 @@ export const insertExcalidraw = (
   editor.tf.insertNodes<TExcalidrawElement>(
     {
       children: [{ text: '' }],
-      type: editor.getType(BaseExcalidrawPlugin),
+      type: editor.getType(KEYS.excalidraw),
       ...props,
     },
     { at: path, nextBlock: true, ...(options as any) }

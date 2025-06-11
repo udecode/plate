@@ -1,14 +1,9 @@
-import { BaseParagraphPlugin, createSlatePlugin } from '@udecode/plate';
-import { BaseBlockquotePlugin } from '@udecode/plate-block-quote';
-import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
-import { BaseHeadingPlugin } from '@udecode/plate-heading';
+import { createSlatePlugin } from '@udecode/plate';
+
+import { BaseBlockquotePlugin } from './BaseBlockquotePlugin';
+import { BaseHeadingPlugin } from './BaseHeadingPlugin';
+import { BaseHorizontalRulePlugin } from './BaseHorizontalRulePlugin';
 
 export const BaseBasicElementsPlugin = createSlatePlugin({
-  key: 'basicElements',
-  plugins: [
-    BaseBlockquotePlugin,
-    BaseCodeBlockPlugin,
-    BaseHeadingPlugin,
-    BaseParagraphPlugin,
-  ],
+  plugins: [BaseBlockquotePlugin, BaseHeadingPlugin, BaseHorizontalRulePlugin],
 });

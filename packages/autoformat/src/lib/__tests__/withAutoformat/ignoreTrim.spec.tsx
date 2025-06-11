@@ -5,10 +5,10 @@ import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks/react';
+} from '@udecode/plate-basic-nodes/react';
 import { jsxt } from '@udecode/plate-test-utils';
 
-import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
+import { AutoformatPlugin } from '../../AutoformatPlugin';
 
 jsxt;
 
@@ -33,7 +33,7 @@ describe('when ignoreTrim is true', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        BaseAutoformatPlugin.configure({
+        AutoformatPlugin.configure({
           options: {
             rules: [
               {
@@ -75,7 +75,7 @@ describe('when ignoreTrim is false', () => {
 
       const editor = createSlateEditor({
         plugins: [
-          BaseAutoformatPlugin.configure({
+          AutoformatPlugin.configure({
             options: {
               rules: [
                 {

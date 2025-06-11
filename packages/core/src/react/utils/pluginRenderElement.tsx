@@ -3,8 +3,10 @@ import React from 'react';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { type PlateElementProps, PlateElement } from '../components';
-import { useElement } from '../stores';
+import { useReadOnly } from '../slate-react';
+import { useEditorRef, useElement } from '../stores';
 import { ElementProvider } from '../stores/element/useElementStore';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
@@ -19,23 +21,30 @@ export type RenderElement = (
 
 function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
   const element = useElement();
+  const readOnly = useReadOnly();
+
+  if (isEditOnly(readOnly, plugin, 'render')) return null;
 
   const { children: _children } = props;
   const key = plugin.key;
-  const Element = plugin.render?.node ?? (PlateElement as any);
+  const Component = plugin.render?.node;
+  const Element = Component ?? (PlateElement as any);
 
-  const aboveNodes = editor.pluginList.flatMap(
-    (o) => o.render?.aboveNodes ?? []
-  );
-  const belowNodes = editor.pluginList.flatMap(
-    (o) => o.render?.belowNodes ?? []
-  );
+  const aboveNodes = editor.meta.pluginList.flatMap((o) => {
+    if (isEditOnly(readOnly, o, 'render')) return [];
+    return o.render?.aboveNodes ?? [];
+  });
+  const belowNodes = editor.meta.pluginList.flatMap((o) => {
+    if (isEditOnly(readOnly, o, 'render')) return [];
+    return o.render?.belowNodes ?? [];
+  });
 
   props = getRenderNodeProps({
     attributes: element.attributes as any,
     editor,
     plugin,
     props: props as any,
+    readOnly,
   }) as any;
 
   let children = _children;
@@ -48,7 +57,15 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
     }
   });
 
-  let component: React.ReactNode = <Element {...props}>{children}</Element>;
+  const defaultProps = Component ? {} : { as: plugin.render?.as };
+
+  let component: React.ReactNode = (
+    <Element {...defaultProps} {...props}>
+      {children}
+
+      <BelowRootNodes {...defaultProps} {...props} />
+    </Element>
+  );
 
   aboveNodes.forEach((withHOC) => {
     const hoc = withHOC({ ...props, key } as any);
@@ -59,6 +76,25 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
   });
 
   return component;
+}
+
+export function BelowRootNodes(props: any) {
+  const editor = useEditorRef();
+  const readOnly = useReadOnly();
+
+  return (
+    <>
+      {editor.meta.pluginCache.render.belowRootNodes.map((key) => {
+        const plugin = editor.getPlugin({ key });
+
+        if (isEditOnly(readOnly, plugin, 'render')) return null;
+
+        const Component = plugin.render.belowRootNodes!;
+
+        return <Component key={key} {...props} />;
+      })}
+    </>
+  );
 }
 
 /**

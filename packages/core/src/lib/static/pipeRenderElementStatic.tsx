@@ -1,7 +1,6 @@
 import React from 'react';
 
 import type { SlateEditor } from '../editor';
-import type { NodeComponents } from '../plugin';
 
 import { SlateElement } from './components/slate-nodes';
 import {
@@ -13,28 +12,18 @@ import { getRenderNodeStaticProps } from './utils';
 export const pipeRenderElementStatic = (
   editor: SlateEditor,
   {
-    components,
     renderElement: renderElementProp,
   }: {
-    components: NodeComponents;
     renderElement?: SlateRenderElement;
-  }
+  } = {}
 ): SlateRenderElement => {
-  const renderElements: SlateRenderElement[] = [];
-
-  editor.pluginList.forEach((plugin) => {
-    if (plugin.node.isElement) {
-      renderElements.push(
-        pluginRenderElementStatic(editor, plugin, components)
-      );
-    }
-  });
-
   return function render(props) {
     let element;
 
-    renderElements.some((renderElement) => {
-      element = renderElement(props as any);
+    editor.meta.pluginCache.node.isElement.some((key) => {
+      const plugin = editor.getPlugin({ key });
+
+      element = pluginRenderElementStatic(editor, plugin)(props as any);
 
       return !!element;
     });
@@ -49,6 +38,17 @@ export const pipeRenderElementStatic = (
       props: { ...props } as any,
     }) as any;
 
-    return <SlateElement {...ctxProps}>{props.children}</SlateElement>;
+    return (
+      <SlateElement {...ctxProps}>
+        {props.children}
+
+        {editor.meta.pluginCache.render.belowRootNodes.map((key) => {
+          const plugin = editor.getPlugin({ key }) as any;
+          const Component = plugin.render.belowRootNodes;
+
+          return <Component key={key} {...ctxProps} />;
+        })}
+      </SlateElement>
+    );
   };
 };

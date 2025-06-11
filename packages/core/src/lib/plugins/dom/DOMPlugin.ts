@@ -1,4 +1,4 @@
-import type { Operation, ScrollIntoViewOptions } from '@udecode/slate';
+import type { Operation, ScrollIntoViewOptions, TRange } from '@udecode/slate';
 
 import { bindFirst } from '@udecode/utils';
 
@@ -100,6 +100,21 @@ export const DOMPlugin = createTSlatePlugin<DomConfig>({
         }
 
         return apply(operation);
+      },
+    },
+  }))
+  .overrideEditor(({ editor, tf: { apply } }) => ({
+    transforms: {
+      apply(operation) {
+        if (operation.type === 'set_selection') {
+          const { properties } = operation;
+          editor.dom.prevSelection = properties as TRange | null;
+          apply(operation);
+          editor.dom.currentKeyboardEvent = null;
+          return;
+        }
+
+        apply(operation);
       },
     },
   }));

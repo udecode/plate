@@ -1,12 +1,15 @@
 import {
   type SlateEditor,
+  type TSuggestionElement,
+  type TSuggestionText,
   type TText,
   ElementApi,
+  KEYS,
   PathApi,
   TextApi,
 } from '@udecode/plate';
 
-import type { TResolvedSuggestion, TSuggestionText } from '../types';
+import type { TResolvedSuggestion } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData, getSuggestionKey } from '../utils';
@@ -25,10 +28,11 @@ export const rejectSuggestion = (
           if (
             editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
           ) {
+            const suggestionElement = n as TSuggestionElement;
             return (
-              n.suggestion.type === 'insert' &&
-              n.suggestion.isLineBreak &&
-              n.suggestion.id === description.suggestionId
+              suggestionElement.suggestion.type === 'insert' &&
+              suggestionElement.suggestion.isLineBreak &&
+              suggestionElement.suggestion.id === description.suggestionId
             );
           }
 
@@ -41,7 +45,7 @@ export const rejectSuggestion = (
       editor.tf.mergeNodes({ at: PathApi.next(path) });
     });
 
-    editor.tf.unsetNodes([description.keyId, BaseSuggestionPlugin.key], {
+    editor.tf.unsetNodes([description.keyId, KEYS.suggestion], {
       at: [],
       mode: 'all',
       match: (n) => {
@@ -61,13 +65,15 @@ export const rejectSuggestion = (
           ElementApi.isElement(n) &&
           editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
         ) {
-          const isLineBreak = n.suggestion.isLineBreak;
+          const suggestionElement = n as TSuggestionElement;
+          const isLineBreak = suggestionElement.suggestion.isLineBreak;
 
-          if (isLineBreak) return n.suggestion.id === description.suggestionId;
+          if (isLineBreak)
+            return suggestionElement.suggestion.id === description.suggestionId;
 
           return (
-            n.suggestion.type === 'remove' &&
-            n.suggestion.id === description.suggestionId
+            suggestionElement.suggestion.type === 'remove' &&
+            suggestionElement.suggestion.id === description.suggestionId
           );
         }
 
@@ -97,10 +103,11 @@ export const rejectSuggestion = (
           ElementApi.isElement(n) &&
           editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
         ) {
+          const suggestionElement = n as TSuggestionElement;
           return (
-            n.suggestion.type === 'insert' &&
-            n.suggestion.id === description.suggestionId &&
-            !n.suggestion.isLineBreak
+            suggestionElement.suggestion.type === 'insert' &&
+            suggestionElement.suggestion.id === description.suggestionId &&
+            !suggestionElement.suggestion.isLineBreak
           );
         }
 

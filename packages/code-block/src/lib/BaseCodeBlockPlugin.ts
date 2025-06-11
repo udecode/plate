@@ -1,20 +1,18 @@
 import type { createLowlight } from 'lowlight';
 
 import {
-  type NodeEntry,
   type PluginConfig,
+  type TCodeBlockElement,
   type TElement,
   createSlatePlugin,
   createTSlatePlugin,
-  HtmlPlugin,
+  KEYS,
 } from '@udecode/plate';
 
-import type { TCodeBlockElement } from './types';
-
 import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBlock';
+import { isCodeBlockEmpty } from './queries';
 import {
   CODE_LINE_TO_DECORATIONS,
-  resetCodeBlockDecorations,
   setCodeBlockToDecorations as setCodeBlockToDecorations,
 } from './setCodeBlockToDecorations';
 import { withCodeBlock } from './withCodeBlock';
@@ -36,40 +34,54 @@ export type CodeBlockConfig = PluginConfig<
 >;
 
 export const BaseCodeLinePlugin = createTSlatePlugin({
-  key: 'code_line',
-  node: { isElement: true },
+  key: KEYS.codeLine,
+  node: { isElement: true, isStrictSiblings: true },
 });
 
 export const BaseCodeSyntaxPlugin = createSlatePlugin({
-  key: 'code_syntax',
+  key: KEYS.codeSyntax,
   node: { isLeaf: true },
 });
 
 export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
-  key: 'code_block',
+  key: KEYS.codeBlock,
   inject: {
     plugins: {
-      [HtmlPlugin.key]: {
+      [KEYS.html]: {
         parser: {
           query: ({ editor }) =>
             !editor.api.some({
-              match: { type: editor.getType(BaseCodeLinePlugin) },
+              match: { type: editor.getType(KEYS.codeLine) },
             }),
         },
       },
     },
   },
-  node: { isElement: true },
+  node: {
+    isElement: true,
+  },
   options: {
     defaultLanguage: null,
     lowlight: null,
   },
   parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
   plugins: [BaseCodeLinePlugin, BaseCodeSyntaxPlugin],
+  render: { as: 'pre' },
+  rules: {
+    delete: {
+      empty: 'reset',
+    },
+    match: ({ editor, rule }) => {
+      return (
+        ['break.empty', 'delete.empty'].includes(rule) &&
+        isCodeBlockEmpty(editor)
+      );
+    },
+  },
   decorate: ({ editor, entry: [node, path], getOptions, type }) => {
     if (!getOptions().lowlight) return [];
 
-    const codeLineType = editor.getType(BaseCodeLinePlugin);
+    const codeLineType = editor.getType(KEYS.codeLine);
 
     // Initialize decorations for the code block, we assume code line decorate will be called next.
     if (
@@ -86,35 +98,9 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
     return [];
   },
 })
-  .overrideEditor(
-    ({ editor, getOptions, tf: { apply, normalizeNode }, type }) => ({
-      transforms: {
-        apply(operation) {
-          if (getOptions().lowlight && operation.type === 'set_node') {
-            const entry = editor.api.node(operation.path);
-
-            if (entry?.[0].type === type && operation.newProperties?.lang) {
-              // Clear decorations for all code lines in this block
-              resetCodeBlockDecorations(entry[0] as TCodeBlockElement);
-            }
-          }
-
-          apply(operation);
-        },
-        normalizeNode(entry, options) {
-          const [node] = entry;
-
-          // Decorate is called on selection change as well, so we prefer to only run this on code block changes.
-          if (getOptions().lowlight && node.type === type) {
-            setCodeBlockToDecorations(
-              editor,
-              entry as NodeEntry<TCodeBlockElement>
-            );
-          }
-
-          normalizeNode(entry, options);
-        },
-      },
-    })
-  )
-  .overrideEditor(withCodeBlock);
+  .overrideEditor(withCodeBlock)
+  .extendTransforms(({ editor }) => ({
+    toggle: () => {
+      editor.tf.toggleBlock(editor.getType(KEYS.codeBlock));
+    },
+  }));

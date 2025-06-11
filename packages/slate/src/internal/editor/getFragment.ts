@@ -7,13 +7,10 @@ import type { At } from '../../types';
 
 import { getAt } from '../../utils';
 
-const unwrapStructuralNodes = (
-  nodes: TElement[],
-  { structuralTypes }: { structuralTypes?: string[] } = {}
-) => {
+const unwrapContainerNodes = (nodes: TElement[], types: string[]) => {
   const unwrap = (nodes: TElement[], acc: TElement[] = []): TElement[] => {
     nodes.forEach((node) => {
-      if (structuralTypes?.includes(node.type)) {
+      if (types?.includes(node.type)) {
         return unwrap(node.children as TElement[], acc);
       }
 
@@ -39,8 +36,8 @@ export const getFragment = <E extends Editor>(
         ? (getFragmentBase(editor as any) as any)
         : (fragment(editor as any, getAt(editor, at)!) as any);
 
-    if (result.length > 0 && options?.structuralTypes) {
-      return unwrapStructuralNodes(result, options) as any;
+    if (result.length > 0 && options?.unwrap && options.unwrap.length > 0) {
+      return unwrapContainerNodes(result, options.unwrap) as any;
     }
 
     return result;

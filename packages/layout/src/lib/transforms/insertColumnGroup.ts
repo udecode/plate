@@ -1,8 +1,10 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TColumnGroupElement,
+} from '@udecode/plate';
 
-import type { TColumnGroupElement } from '../types';
-
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
+import { KEYS } from '@udecode/plate';
 
 export const insertColumnGroup = (
   editor: SlateEditor,
@@ -21,10 +23,10 @@ export const insertColumnGroup = (
       {
         children: new Array(columns).fill(null).map(() => ({
           children: [editor.api.create.block()],
-          type: BaseColumnItemPlugin.key,
+          type: editor.getType(KEYS.column) as any,
           width: `${width}%`,
         })),
-        type: BaseColumnPlugin.key,
+        type: editor.getType(KEYS.columnGroup) as any,
       },
       options
     );
@@ -32,7 +34,7 @@ export const insertColumnGroup = (
     if (selectProp) {
       const entry = editor.api.node({
         at: options.at,
-        match: { type: editor.getType(BaseColumnPlugin) },
+        match: { type: editor.getType(KEYS.column) },
       });
 
       if (!entry) return;

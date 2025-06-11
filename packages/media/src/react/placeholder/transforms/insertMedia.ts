@@ -3,11 +3,12 @@ import type { PlateEditor } from '@udecode/plate/react';
 import {
   type InsertNodesOptions,
   type Path,
+  type TPlaceholderElement,
+  KEYS,
   nanoid,
   PathApi,
 } from '@udecode/plate';
 
-import { type TPlaceholderElement, BasePlaceholderPlugin } from '../../../lib';
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
 import { UploadErrorCode } from '../type';
 import { createUploadError, isUploadError } from '../utils/createUploadError';
@@ -80,7 +81,7 @@ export const insertMedia = (
           id,
           children: [{ text: '' }],
           mediaType: getMediaType(file, uploadConfig)!,
-          type: editor.getType(BasePlaceholderPlugin),
+          type: editor.getType(KEYS.placeholder),
         },
         { at: currentAt, nextBlock, ...restOptions }
       );

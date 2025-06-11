@@ -1,12 +1,20 @@
 import React, { useRef } from 'react';
 
 import { useComposedRef } from '@udecode/react-utils';
+import { isDefined } from '@udecode/utils';
 
 import type { EditableProps } from '../../lib/types/EditableProps';
+import type { PlateEditor } from '../editor';
 
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { useEditableProps } from '../hooks';
 import { Editable } from '../slate-react';
-import { type PlateStoreState, useEditorRef } from '../stores';
+import {
+  type PlateStoreState,
+  useEditorReadOnly,
+  useEditorRef,
+  usePlateStore,
+} from '../stores';
 import { EditorHotkeysEffect } from './EditorHotkeysEffect';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
 import { EditorRefEffect } from './EditorRefEffect';
@@ -36,12 +44,23 @@ export type PlateContentProps = Omit<EditableProps, 'decorate'> & {
  */
 const PlateContent = React.forwardRef(
   (
-    { autoFocusOnEditable, renderEditable, ...props }: PlateContentProps,
+    {
+      autoFocusOnEditable,
+      readOnly: readOnlyProp,
+      renderEditable,
+      ...props
+    }: PlateContentProps,
     ref
   ) => {
     const { id } = props;
 
     const editor = useEditorRef(id);
+
+    const storeReadOnly = useEditorReadOnly();
+    const readOnly = props.disabled ? true : (readOnlyProp ?? storeReadOnly);
+
+    // Can't be in useLayoutEffect for the first render
+    editor.dom.readOnly = readOnly;
 
     if (!editor) {
       throw new Error(
@@ -49,7 +68,7 @@ const PlateContent = React.forwardRef(
       );
     }
 
-    const editableProps = useEditableProps(props);
+    const editableProps = useEditableProps({ ...props, readOnly });
 
     const editableRef = useRef<HTMLDivElement | null>(null);
     const combinedRef = useComposedRef(ref, editableRef);
@@ -59,30 +78,32 @@ const PlateContent = React.forwardRef(
     let afterEditable: React.ReactNode = null;
     let beforeEditable: React.ReactNode = null;
 
-    editor.pluginList.forEach((plugin) => {
-      const {
-        render: {
-          afterEditable: AfterEditable,
-          beforeEditable: BeforeEditable,
-        },
-      } = plugin;
+    editor.meta.pluginCache.render.beforeEditable.forEach((key) => {
+      const plugin = editor.getPlugin({ key });
+      if (isEditOnly(readOnly, plugin, 'render')) return;
 
-      if (AfterEditable) {
-        afterEditable = (
-          <>
-            {afterEditable}
-            <AfterEditable {...editableProps} />
-          </>
-        );
-      }
-      if (BeforeEditable) {
-        beforeEditable = (
-          <>
-            {beforeEditable}
-            <BeforeEditable {...editableProps} />
-          </>
-        );
-      }
+      const BeforeEditable = plugin.render.beforeEditable!;
+
+      beforeEditable = (
+        <>
+          {beforeEditable}
+          <BeforeEditable {...editableProps} />
+        </>
+      );
+    });
+
+    editor.meta.pluginCache.render.afterEditable.forEach((key) => {
+      const plugin = editor.getPlugin({ key });
+      if (isEditOnly(readOnly, plugin, 'render')) return;
+
+      const AfterEditable = plugin.render.afterEditable!;
+
+      afterEditable = (
+        <>
+          {afterEditable}
+          <AfterEditable {...editableProps} />
+        </>
+      );
     });
 
     let aboveEditable: React.ReactNode = (
@@ -91,34 +112,30 @@ const PlateContent = React.forwardRef(
 
         <EditorMethodsEffect id={id} />
         <EditorHotkeysEffect id={id} editableRef={editableRef} />
-        {/* <EditorStateEffect id={id} /> */}
         <EditorRefEffect id={id} />
         <PlateControllerEffect id={id} />
       </>
     );
 
-    editor.pluginList.forEach((plugin) => {
-      const {
-        render: { aboveEditable: AboveEditable },
-      } = plugin;
+    editor.meta.pluginCache.render.aboveEditable.forEach((key) => {
+      const plugin = editor.getPlugin({ key });
+      if (isEditOnly(readOnly, plugin, 'render')) return;
 
-      if (AboveEditable)
-        aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
+      const AboveEditable = plugin.render.aboveEditable!;
+
+      aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
     });
-
-    const readOnly = props.readOnly ?? false;
-    const prevReadOnly = React.useRef(readOnly);
-
-    React.useEffect(() => {
-      if (autoFocusOnEditable && prevReadOnly.current && !readOnly) {
-        editor.tf.focus({ edge: 'endEditor' });
-      }
-
-      prevReadOnly.current = readOnly;
-    }, [autoFocusOnEditable, editor, readOnly]);
 
     return (
       <PlateSlate id={id}>
+        <EditorStateEffect
+          id={id}
+          disabled={props.disabled}
+          readOnly={readOnlyProp}
+          autoFocusOnEditable={autoFocusOnEditable}
+          editor={editor}
+        />
+
         {beforeEditable}
         {aboveEditable}
         {afterEditable}
@@ -129,3 +146,43 @@ const PlateContent = React.forwardRef(
 PlateContent.displayName = 'PlateContent';
 
 export { PlateContent };
+
+function EditorStateEffect({
+  id,
+  autoFocusOnEditable,
+  disabled,
+  editor,
+  readOnly,
+}: {
+  editor: PlateEditor;
+  id?: string;
+  autoFocusOnEditable?: boolean;
+  disabled?: boolean;
+  readOnly?: boolean;
+}) {
+  const store = usePlateStore(id);
+
+  // Sync PlateContent.readOnly to Plate.readOnly
+  React.useLayoutEffect(() => {
+    if (disabled) {
+      store.setReadOnly(true);
+      return;
+    }
+
+    if (isDefined(readOnly)) {
+      store.setReadOnly(readOnly);
+    }
+  }, [disabled, editor.dom, readOnly, store]);
+
+  const prevReadOnly = React.useRef(readOnly);
+
+  React.useEffect(() => {
+    if (autoFocusOnEditable && prevReadOnly.current && !readOnly) {
+      editor.tf.focus({ edge: 'endEditor' });
+    }
+
+    prevReadOnly.current = readOnly;
+  }, [autoFocusOnEditable, editor, readOnly]);
+
+  return null;
+}

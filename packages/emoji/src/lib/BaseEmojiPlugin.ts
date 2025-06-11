@@ -5,6 +5,7 @@ import {
   type PluginConfig,
   createSlatePlugin,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 import {
   type TriggerComboboxPluginOptions,
@@ -28,19 +29,21 @@ export type EmojiInputConfig = PluginConfig<
 >;
 
 export const BaseEmojiInputPlugin = createSlatePlugin({
-  key: 'emoji_input',
+  key: KEYS.emojiInput,
+  editOnly: true,
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
 export const BaseEmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
-  key: 'emoji',
+  key: KEYS.emoji,
+  editOnly: true,
   options: {
     data: DEFAULT_EMOJI_LIBRARY,
     trigger: ':',
     triggerPreviousCharPattern: /^\s?$/,
     createComboboxInput: () => ({
       children: [{ text: '' }],
-      type: BaseEmojiInputPlugin.key,
+      type: KEYS.emojiInput,
     }),
     createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
   },

@@ -1,14 +1,14 @@
 /** @jsx jsxt */
 
-import { AlignPlugin } from '@udecode/plate-alignment/react';
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import { KEYS } from '@udecode/plate';
+import { BasicBlocksPlugin } from '@udecode/plate-basic-nodes/react';
+import { HorizontalRulePlugin } from '@udecode/plate-basic-nodes/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
+import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
+import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
 import { DocxPlugin } from '@udecode/plate-docx';
-import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
-import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
@@ -22,12 +22,7 @@ jsxt;
 
 const injectConfig = {
   inject: {
-    targetPlugins: [
-      ParagraphPlugin.key,
-      HEADING_KEYS.h1,
-      HEADING_KEYS.h2,
-      HEADING_KEYS.h3,
-    ],
+    targetPlugins: [ParagraphPlugin.key, KEYS.h1, KEYS.h2, KEYS.h3],
   },
 };
 
@@ -51,11 +46,11 @@ describe('when insertData disc and decimal from gdocs', () => {
         HorizontalRulePlugin,
         LinkPlugin,
         TablePlugin,
-        BasicElementsPlugin,
+        BasicBlocksPlugin,
         BasicMarksPlugin,
         TablePlugin,
         LineHeightPlugin.extend(injectConfig),
-        AlignPlugin.extend(injectConfig),
+        TextAlignPlugin.extend(injectConfig),
         IndentPlugin.extend(injectConfig),
         BaseIndentListPlugin,
         DocxPlugin,

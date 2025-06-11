@@ -4,10 +4,8 @@ import {
   createEditor as createSlateEditor,
   getDirtyPaths,
   hasPath,
-  insertSoftBreak,
   normalizeNode,
   setNormalizing,
-  shouldMergeNodesRemovePrevNode,
   shouldNormalize,
 } from 'slate';
 
@@ -102,6 +100,7 @@ import { parent } from './internal/editor/parent';
 import { previous } from './internal/editor/previous';
 import { range } from './internal/editor/range';
 import { removeEditorMark } from './internal/editor/removeEditorMark';
+import { shouldMergeNodes } from './internal/editor/shouldMergeNodes';
 import { unhangRange } from './internal/editor/unhangRange';
 import { withoutNormalizing } from './internal/editor/withoutNormalizing';
 import { addMarks } from './internal/transforms-extension/addMarks';
@@ -116,6 +115,7 @@ import { deleteText } from './internal/transforms/deleteText';
 import { deselect } from './internal/transforms/deselect';
 import { insertFragment } from './internal/transforms/insertFragment';
 import { insertNodes } from './internal/transforms/insertNodes';
+import { insertSoftBreak } from './internal/transforms/insertSoftBreak';
 import { insertText } from './internal/transforms/insertText';
 import { liftNodes } from './internal/transforms/liftNodes';
 import { mergeNodes } from './internal/transforms/mergeNodes';
@@ -244,10 +244,7 @@ export const createEditor = <V extends Value>({
     setNormalizing: bindFirst(setNormalizing, editor as any),
     setPoint: bindFirst(setPoint, editor),
     setSelection: bindFirst(setSelection, editor),
-    shouldMergeNodesRemovePrevNode: bindFirst(
-      shouldMergeNodesRemovePrevNode,
-      editor as any
-    ),
+    shouldMergeNodes: bindFirst(shouldMergeNodes, editor as any),
     splitNodes: bindFirst(splitNodes, editor),
     start: bindFirst(getStartPoint, editor),
     string: bindFirst(getEditorString, editor),
@@ -261,6 +258,7 @@ export const createEditor = <V extends Value>({
 
   Object.assign(editor, {
     history: { redos: [], undos: [] },
+    meta: {},
     redo: noop('redo'),
     undo: noop('undo'),
     writeHistory: noop('writeHistory'),
@@ -339,6 +337,10 @@ export const createEditor = <V extends Value>({
     withNewBatch: bindFirst(HistoryApi.withNewBatch, editor as any),
     withoutMerging: bindFirst(HistoryApi.withoutMerging, editor as any),
     withoutSaving: bindFirst(HistoryApi.withoutSaving, editor as any),
+    escape: () => false,
+    moveLine: () => false,
+    selectAll: () => false,
+    tab: () => false,
   };
 
   editor.api = api as any;

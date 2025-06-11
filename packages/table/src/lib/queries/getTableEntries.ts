@@ -1,6 +1,5 @@
-import type { SlateEditor, TLocation } from '@udecode/plate';
+import { type SlateEditor, type TLocation, KEYS } from '@udecode/plate';
 
-import { BaseTablePlugin, BaseTableRowPlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';
 
 /**
@@ -26,7 +25,7 @@ export const getTableEntries = (
 
   const rowEntry = editor.api.above({
     at: cellPath,
-    match: { type: editor.getType(BaseTableRowPlugin) },
+    match: { type: editor.getType(KEYS.tr) },
   });
 
   if (!rowEntry) return;
@@ -35,7 +34,7 @@ export const getTableEntries = (
 
   const tableEntry = editor.api.above({
     at: rowPath,
-    match: { type: editor.getType(BaseTablePlugin) },
+    match: { type: editor.getType(KEYS.table) },
   });
 
   if (!tableEntry) return;

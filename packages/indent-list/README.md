@@ -6,7 +6,7 @@ because the list structure has no children.
 
 ## Documentation
 
-Check out [Indent List](https://platejs.org/docs/indent-list).
+Check out [List](https://platejs.org/docs/indent-list).
 
 ## License
 

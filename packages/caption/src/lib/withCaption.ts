@@ -23,12 +23,12 @@ import { type CaptionConfig, BaseCaptionPlugin } from './BaseCaptionPlugin';
 export const withCaption: OverrideEditor<CaptionConfig> = ({
   editor,
   getOptions,
-  tf: { apply },
+  tf: { apply, moveLine },
 }) => {
   return {
     transforms: {
       apply(operation) {
-        const { plugins } = getOptions();
+        const { query } = getOptions();
 
         if (operation.type === 'set_selection') {
           const newSelection = {
@@ -37,12 +37,12 @@ export const withCaption: OverrideEditor<CaptionConfig> = ({
           } as TRange | null;
 
           if (
-            editor.currentKeyboardEvent &&
-            isHotkey('up', editor.currentKeyboardEvent) &&
+            editor.dom.currentKeyboardEvent &&
+            isHotkey('up', editor.dom.currentKeyboardEvent) &&
             newSelection &&
             RangeApi.isCollapsed(newSelection)
           ) {
-            const types = getPluginTypes(editor, plugins!);
+            const types = getPluginTypes(editor, query.allow);
 
             const entry = editor.api.above({
               at: newSelection,
@@ -65,6 +65,28 @@ export const withCaption: OverrideEditor<CaptionConfig> = ({
         }
 
         apply(operation);
+      },
+      moveLine: (options) => {
+        const apply = () => {
+          // focus caption from image on down arrow
+          if (!options.reverse) {
+            const types = getPluginTypes(editor, getOptions().query.allow);
+
+            const entry = editor.api.block({
+              match: { type: types },
+            });
+
+            if (!entry) return;
+
+            editor.setOption(BaseCaptionPlugin, 'focusEndPath', entry[1]);
+
+            return true;
+          }
+        };
+
+        if (apply()) return true;
+
+        return moveLine(options);
       },
     },
   };

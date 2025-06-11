@@ -15,6 +15,7 @@ export type ExitBreakConfig = PluginConfig<
  */
 export const BaseExitBreakPlugin = createTSlatePlugin<ExitBreakConfig>({
   key: 'exitBreak',
+  editOnly: true,
   options: {
     rules: [
       { hotkey: 'mod+enter' },

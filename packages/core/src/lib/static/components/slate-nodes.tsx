@@ -87,10 +87,6 @@ export const SlateElement = React.forwardRef(function SlateElement(
 
   const block = !!props.element.id && !!props.editor.api.isBlock(props.element);
 
-  const belowRootComponents = props.editor.pluginList
-    .map((plugin) => plugin.render.belowRootNodes!)
-    .filter(Boolean);
-
   return (
     <Tag
       data-slate-node="element"
@@ -105,10 +101,6 @@ export const SlateElement = React.forwardRef(function SlateElement(
       }
     >
       {children}
-
-      {belowRootComponents?.map((Component, index) => (
-        <Component key={index} {...(props as any)} />
-      ))}
     </Tag>
   );
 }) as <
@@ -149,7 +141,9 @@ export const SlateText = React.forwardRef<
 export type SlateLeafProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-> = SlateNodeProps<C> & RenderLeafProps<N> & DeprecatedNodeProps;
+> = SlateNodeProps<C> &
+  RenderLeafProps<N> &
+  DeprecatedNodeProps & { inset?: boolean };
 
 export type StyledSlateLeafProps<
   N extends TText = TText,
@@ -158,11 +152,29 @@ export type StyledSlateLeafProps<
 > = Omit<SlateLeafProps<N, C>, keyof DeprecatedNodeProps> &
   SlateHTMLProps<C, T>;
 
+const NonBreakingSpace = () => (
+  <span style={{ fontSize: 0 }} contentEditable={false}>
+    {String.fromCodePoint(160)}
+  </span>
+);
+
 export const SlateLeaf = React.forwardRef<
   HTMLSpanElement,
   StyledSlateLeafProps
->(({ as: Tag = 'span', children, ...props }, ref) => {
+>(({ as: Tag = 'span', children, inset, ...props }, ref) => {
   const attributes = useNodeAttributes(props, ref);
+
+  if (inset) {
+    return (
+      <>
+        <NonBreakingSpace />
+        <Tag {...attributes}>
+          {children}
+          <NonBreakingSpace />
+        </Tag>
+      </>
+    );
+  }
 
   return <Tag {...attributes}>{children}</Tag>;
 }) as <

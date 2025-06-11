@@ -4,7 +4,6 @@
 
 export * from './BaseHeadingPlugin';
 export * from './BaseTocPlugin';
-export * from './constants';
 export * from './types';
 export * from './transforms/index';
 export * from './utils/index';

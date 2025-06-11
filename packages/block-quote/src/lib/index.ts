@@ -3,4 +3,3 @@
  */
 
 export * from './BaseBlockquotePlugin';
-export * from './withBlockquote';

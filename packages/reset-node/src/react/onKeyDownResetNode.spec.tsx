@@ -10,7 +10,6 @@ import {
   unwrapCodeBlock,
 } from '@udecode/plate-code-block';
 import * as isHotkey from '@udecode/plate-core';
-import { BaseListItemPlugin, unwrapList } from '@udecode/plate-list';
 import { jsxt } from '@udecode/plate-test-utils';
 import { ParagraphPlugin } from '@udecode/plate/react';
 import {
@@ -21,6 +20,7 @@ import {
 
 import type { ResetNodeConfig } from '../lib/BaseResetNodePlugin';
 
+import { BaseListItemPlugin, unwrapList } from '../../../list-classic/dist';
 import { onKeyDownResetNode } from './onKeyDownResetNode';
 
 jsxt;

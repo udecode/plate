@@ -124,7 +124,7 @@ export const normalizeDescendantsToDocumentFragment = (
   }: { descendants: Descendant[]; defaultElementPlugin?: WithRequiredKey }
 ): Descendant[] => {
   const isInline = isInlineNode(editor);
-  const defaultType = editor.getType(defaultElementPlugin);
+  const defaultType = editor.getType(defaultElementPlugin.key);
   const makeDefaultBlock = makeBlockLazy(defaultType);
 
   return normalize(descendants, isInline, makeDefaultBlock as any);

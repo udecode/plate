@@ -4,6 +4,7 @@ import {
   type QueryNodeOptions,
   createTSlatePlugin,
   ElementApi,
+  KEYS,
   nanoid,
   queryNode,
 } from '@udecode/plate';
@@ -53,9 +54,9 @@ export type NodeIdConfig = PluginConfig<
      */
     reuseId?: boolean;
     /**
-     * ID factory, e.g. `uuid`
+     * A function that generates and returns a unique ID.
      *
-     * @default () => Date.now()
+     * @default () => nanoid(10)
      */
     idCreator?: () => any;
   } & QueryNodeOptions
@@ -63,7 +64,7 @@ export type NodeIdConfig = PluginConfig<
 
 /** @see {@link withNodeId} */
 export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
-  key: 'nodeId',
+  key: KEYS.nodeId,
   options: {
     filterInline: true,
     filterText: true,

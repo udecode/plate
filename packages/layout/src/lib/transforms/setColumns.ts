@@ -1,8 +1,12 @@
-import { type At, type SlateEditor, NodeApi } from '@udecode/plate';
+import {
+  type At,
+  type SlateEditor,
+  type TColumnElement,
+  type TColumnGroupElement,
+  NodeApi,
+} from '@udecode/plate';
+import { KEYS } from '@udecode/plate';
 
-import type { TColumnElement, TColumnGroupElement } from '../types';
-
-import { BaseColumnItemPlugin } from '../BaseColumnPlugin';
 import { columnsToWidths } from '../utils/columnsToWidths';
 
 export const setColumns = (
@@ -53,7 +57,7 @@ export const setColumns = (
       // Insert the extra columns
       const newColumns = new Array(columnsToAdd).fill(null).map((_, i) => ({
         children: [editor.api.create.block()],
-        type: editor.getType(BaseColumnItemPlugin),
+        type: editor.getType(KEYS.column),
         width: widths![currentCount + i] || `${100 / targetCount}%`,
       }));
 

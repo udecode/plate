@@ -1,5 +1,6 @@
 import type { ChatRequestOptions } from 'ai';
 
+import { KEYS } from '@udecode/plate';
 import { isSelecting } from '@udecode/plate-selection';
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
@@ -25,7 +26,7 @@ export const submitAIChat = (
   const { getOptions, setOption } = getEditorPlugin<AIChatPluginConfig>(
     editor,
     {
-      key: 'aiChat',
+      key: KEYS.aiChat,
     }
   );
 

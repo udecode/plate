@@ -1,5 +1,5 @@
 import { serializeHtml } from '../serializeHtml';
-import { components, createStaticEditor } from './create-static-editor';
+import { createStaticEditor } from './create-static-editor';
 
 describe('serializePlateStatic marks', () => {
   it('should serialize bold to html', async () => {
@@ -15,7 +15,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -38,7 +37,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -60,7 +58,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -82,12 +79,11 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
     expect(html).toContain(
-      '<span data-slate-leaf="true" data-slate-strikethrough="true"><del><span data-slate-string="true">strikethrough</span></del></span>'
+      '<span data-slate-leaf="true" data-slate-strikethrough="true"><s><span data-slate-string="true">strikethrough</span></s></span>'
     );
   });
 
@@ -104,7 +100,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -126,7 +121,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -148,7 +142,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -170,7 +163,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });
@@ -192,7 +184,6 @@ describe('serializePlateStatic marks', () => {
     ]);
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });

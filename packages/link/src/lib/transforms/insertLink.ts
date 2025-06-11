@@ -1,6 +1,9 @@
-import type { InsertNodesOptions, SlateEditor, TText } from '@udecode/plate';
-
-import type { TLinkElement } from '../types';
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TLinkElement,
+  TText,
+} from '@udecode/plate';
 
 import { type CreateLinkNodeOptions, createLinkNode } from '../utils';
 

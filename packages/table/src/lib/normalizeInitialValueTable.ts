@@ -1,7 +1,6 @@
-import type { NormalizeInitialValue } from '@udecode/plate';
+import type { NormalizeInitialValue, TTableElement } from '@udecode/plate';
 
 import type { TableConfig } from './BaseTablePlugin';
-import type { TTableElement } from './types';
 
 import { computeCellIndices } from './utils';
 

@@ -18,6 +18,7 @@ const createEditorInstance = ({
   selection?: any;
 }) => {
   return createPlateEditor({
+    nodeId: true,
     plugins: getTestTablePlugins(),
     selection,
     value: children,

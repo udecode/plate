@@ -1,23 +1,22 @@
-import { type TElement, bindFirst, createSlatePlugin } from '@udecode/plate';
+import { bindFirst, createSlatePlugin, KEYS } from '@udecode/plate';
 
 import { insertCallout } from './transforms';
 
-export interface TCalloutElement extends TElement {
-  backgroundColor?: string;
-  icon?: string;
-  variant?:
-    | (string & {})
-    | 'error'
-    | 'info'
-    | 'note'
-    | 'success'
-    | 'tip'
-    | 'warning';
-}
-
 export const BaseCalloutPlugin = createSlatePlugin({
-  key: 'callout',
-  node: { isElement: true },
+  key: KEYS.callout,
+  node: {
+    isElement: true,
+  },
+  rules: {
+    break: {
+      default: 'lineBreak',
+      empty: 'reset',
+      emptyLineEnd: 'deleteExit',
+    },
+    delete: {
+      start: 'reset',
+    },
+  },
 }).extendEditorTransforms(({ editor }) => ({
   insert: { callout: bindFirst(insertCallout, editor) },
 }));

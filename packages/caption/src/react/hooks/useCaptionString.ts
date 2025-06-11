@@ -1,9 +1,9 @@
 import React from 'react';
 
+import type { TCaptionElement } from '@udecode/plate';
+
 import { NodeApi } from '@udecode/plate';
 import { useElement } from '@udecode/plate/react';
-
-import type { TCaptionElement } from '../../lib';
 
 export const useCaptionString = () => {
   const { caption: nodeCaption = [{ children: [{ text: '' }] }] } =

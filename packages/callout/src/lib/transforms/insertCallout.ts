@@ -1,6 +1,10 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TCalloutElement,
+} from '@udecode/plate';
 
-import { type TCalloutElement, BaseCalloutPlugin } from '../BaseCalloutPlugin';
+import { KEYS } from '@udecode/plate';
 
 export const CALLOUT_STORAGE_KEY = `plate-storage-callout`;
 
@@ -19,7 +23,7 @@ export const insertCallout = (
     {
       children: [{ text: '' }],
       icon: icon ?? localStorage.getItem(CALLOUT_STORAGE_KEY) ?? '💡',
-      type: editor.getType(BaseCalloutPlugin),
+      type: editor.getType(KEYS.callout),
       variant,
     },
     options as any

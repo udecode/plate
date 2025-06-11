@@ -21,16 +21,23 @@ export const getRenderNodeProps = ({
   editor,
   plugin,
   props,
+  readOnly,
 }: {
   editor: PlateEditor;
   props: PlateHTMLProps;
   attributes?: AnyObject;
   plugin?: AnyEditorPlatePlugin;
+  readOnly?: boolean;
 }): PlateHTMLProps => {
   let newProps = {
     ...props,
-    ...(plugin ? (getEditorPlugin(editor, plugin) as any) : {}),
-    editor,
+    ...(plugin
+      ? (getEditorPlugin(editor, plugin) as any)
+      : {
+          api: editor.api,
+          editor,
+          tf: editor.transforms,
+        }),
   };
 
   const { className } = props;
@@ -57,7 +64,8 @@ export const getRenderNodeProps = ({
   newProps = pipeInjectNodeProps(
     editor,
     newProps,
-    (node) => editor.api.findPath(node)!
+    (node) => editor.api.findPath(node)!,
+    readOnly
   ) as PlateHTMLProps;
 
   if (

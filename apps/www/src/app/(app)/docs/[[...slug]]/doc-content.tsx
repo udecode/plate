@@ -1,23 +1,22 @@
 'use client';
 
-import React, { Suspense } from 'react';
-import Balancer from 'react-wrap-balancer';
+import React from 'react';
 
-import type { TableOfContents } from '@/lib/toc';
+import type { TocItem } from '@/lib/toc';
 import type { Doc } from 'contentlayer/generated';
 import type { RegistryItem } from 'shadcn/registry';
 
-import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
+import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
+import { ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 
-import { DocBreadcrumb } from '@/app/(app)/docs/[[...slug]]/doc-breadcrumb';
+import { DocsTableOfContents } from '@/components/docs-toc';
 import { OpenInPlus } from '@/components/open-in-plus';
-import { DocsPager } from '@/components/pager';
-import { DashboardTableOfContents } from '@/components/toc';
+import { getPagerForDoc } from '@/components/pager';
 import { badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
+import { useDedupeNavItems } from '@/hooks/use-dedupe-nav-items';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
 import { cn } from '@/lib/utils';
 
@@ -58,117 +57,208 @@ export function DocContent({
   category: 'api' | 'component' | 'example' | 'guide' | 'plugin';
   children: React.ReactNode;
   doc: Partial<Doc>;
-  toc?: TableOfContents;
+  toc?: TocItem[];
 } & Partial<RegistryItem>) {
   const title = doc?.title ?? getRegistryTitle(file);
   const hasToc = doc?.toc && toc;
-
-  const items = categoryNavGroups[category];
 
   const docSection = docSections[0].items!.find(
     (item) => item.value === category
   );
 
+  const items = useDedupeNavItems(categoryNavGroups[category]);
+
+  // v3
+  const neighbours = getPagerForDoc(doc as any);
+
   return (
-    <main
-      className={cn(
-        'relative py-6 lg:gap-10 lg:py-8',
-        hasToc && 'lg:grid lg:grid-cols-[1fr_230px]'
-      )}
-    >
-      <div className="w-full min-w-0">
-        <div className="mb-4 flex items-center space-x-1 text-sm text-muted-foreground">
-          {category === 'guide' ? (
-            <DocBreadcrumb
-              value={category}
-              placeholder="Search"
-              combobox={false}
-              items={docSections}
-            />
-          ) : (
-            <Link href={docSection!.href!}>
-              <Button variant="ghost">{docSection!.title}</Button>
-            </Link>
+    <div className="relative flex items-stretch lg:w-full" data-slot="docs">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="h-(--top-spacing) shrink-0" />
+        <div
+          className={cn(
+            'mx-auto flex w-full min-w-0 flex-1 flex-col gap-8 px-4 py-6 text-neutral-800 lg:px-0 lg:py-8 dark:text-neutral-300'
+            // v4
+            // 'max-w-3xl'
           )}
-          <ChevronRight className="size-4" />
-          <DocBreadcrumb
-            value={doc?.slug || 'Introduction'}
-            placeholder={searchCategories[category] ?? 'Search'}
-            category={category}
-            items={items}
-          />
-        </div>
-        <div className="space-y-2">
-          <h1 className={cn('scroll-m-20 text-4xl font-bold tracking-tight')}>
-            {title}
-          </h1>
-          {doc?.description && (
-            <p className="text-lg text-muted-foreground">
-              <Balancer>{doc?.description}</Balancer>
-            </p>
-          )}
-        </div>
-        {doc?.links || doc?.docs ? (
-          <div className="flex flex-wrap items-center gap-1 pt-4">
-            {doc?.links?.doc && (
-              <Link
-                className={cn(badgeVariants({ variant: 'secondary' }), 'gap-1')}
-                href={doc?.links.doc}
-                rel="noreferrer"
-                target="_blank"
-              >
-                Docs
-                <ExternalLinkIcon className="size-3" />
-              </Link>
-            )}
-            {doc?.links?.api && (
-              <Link
-                className={cn(badgeVariants({ variant: 'secondary' }), 'gap-1')}
-                href={doc?.links.api}
-                rel="noreferrer"
-                target="_blank"
-              >
-                API Reference
-                <ExternalLinkIcon className="size-3" />
-              </Link>
-            )}
-            {doc?.docs?.map((item: any) => (
-              <Link
-                key={item.route}
-                className={cn(
-                  badgeVariants({
-                    variant: getItemVariant(item),
-                  })
+        >
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-start justify-between">
+                <h1 className="scroll-m-20 text-4xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
+                  {title}
+                </h1>
+                <div className="flex items-center gap-2 pt-1.5">
+                  {neighbours.previous?.href && (
+                    <Button
+                      asChild
+                      size="icon"
+                      variant="secondary"
+                      className="extend-touch-target size-8 shadow-none md:size-7"
+                    >
+                      <Link href={neighbours.previous.href}>
+                        <IconArrowLeft />
+                        <span className="sr-only">Previous</span>
+                      </Link>
+                    </Button>
+                  )}
+                  {neighbours.next?.href && (
+                    <Button
+                      asChild
+                      size="icon"
+                      variant="secondary"
+                      className="extend-touch-target size-8 shadow-none md:size-7"
+                    >
+                      <Link href={neighbours.next.href}>
+                        <span className="sr-only">Next</span>
+                        <IconArrowRight />
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {doc.description && (
+                <p className="text-[1.05rem] text-balance text-muted-foreground sm:text-base">
+                  {doc.description}
+                </p>
+              )}
+            </div>
+            {/* {links ? (
+              <div className="flex items-center space-x-2 pt-4">
+                {links?.doc && (
+                  <Badge asChild variant="secondary">
+                    <Link href={links.doc} rel="noreferrer" target="_blank">
+                      Docs <IconArrowUpRight />
+                    </Link>
+                  </Badge>
                 )}
-                href={item.route as any}
-                // rel={item.route?.includes('https') ? 'noreferrer' : undefined}
-                // target={item.route?.includes('https') ? '_blank' : undefined}
-              >
-                {getDocTitle(item)}
-              </Link>
-            ))}
+                {links?.api && (
+                  <Badge asChild variant="secondary">
+                    <Link href={links.api} rel="noreferrer" target="_blank">
+                      API Reference <IconArrowUpRight />
+                    </Link>
+                  </Badge>
+                )}
+              </div>
+            ) : null} */}
+            {doc?.links || doc?.docs ? (
+              <div className="flex flex-wrap items-center gap-1 pt-4">
+                {doc?.links?.doc && (
+                  <Link
+                    className={cn(
+                      badgeVariants({ variant: 'secondary' }),
+                      'gap-1'
+                    )}
+                    href={doc?.links.doc}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    Docs
+                    <ExternalLinkIcon className="size-3" />
+                  </Link>
+                )}
+                {doc?.links?.api && (
+                  <Link
+                    className={cn(
+                      badgeVariants({ variant: 'secondary' }),
+                      'gap-1'
+                    )}
+                    href={doc?.links.api}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    API Reference
+                    <ExternalLinkIcon className="size-3" />
+                  </Link>
+                )}
+                {doc?.docs?.map((item: any) => (
+                  <Link
+                    key={item.route}
+                    className={cn(
+                      badgeVariants({
+                        variant: getItemVariant(item),
+                      })
+                    )}
+                    href={item.route as any}
+                    // rel={item.route?.includes('https') ? 'noreferrer' : undefined}
+                    // target={item.route?.includes('https') ? '_blank' : undefined}
+                  >
+                    {getDocTitle(item)}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </div>
-        ) : null}
-        <div className="pt-8 pb-12">{children}</div>
-        {doc && <DocsPager doc={doc as any} />}
+          <div className="w-full flex-1 *:data-[slot=alert]:first:mt-0">
+            {/* <MDX components={mdxComponents} /> */}
+            {children}
+          </div>
+        </div>
+        <div
+          className={cn(
+            'mx-auto flex h-16 w-full items-center gap-2 px-4 lg:px-0',
+            // v4
+            // 'max-w-2xl',
+            // no footer
+            'mb-12'
+          )}
+        >
+          {neighbours.previous?.href && (
+            <Button
+              asChild
+              size="sm"
+              variant="secondary"
+              className="shadow-none"
+            >
+              <Link href={neighbours.previous.href}>
+                <IconArrowLeft /> {neighbours.previous.title}
+              </Link>
+            </Button>
+          )}
+          {neighbours.next?.href && (
+            <Button
+              asChild
+              size="sm"
+              variant="secondary"
+              className="ml-auto shadow-none"
+            >
+              <Link href={neighbours.next.href}>
+                {neighbours.next.title} <IconArrowRight />
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {hasToc && (
-        <div className="hidden text-sm lg:block">
-          <div className="sticky top-20 -mt-6 flex h-[calc(100vh-100px)] flex-col pt-4">
-            <ScrollArea className="grow pb-2">
-              <div className="sticky top-0 flex w-[230px] flex-col">
-                <DashboardTableOfContents toc={toc} />
-              </div>
-            </ScrollArea>
-            <div className="mt-2 shrink-0">
-              <Suspense fallback={null}>
-                <OpenInPlus />
-              </Suspense>
+        <div className="sticky top-[calc(var(--header-height)+1px)] z-30 ml-auto hidden h-[calc(100svh-var(--header-height)-var(--footer-height))] w-72 flex-col gap-4 overflow-hidden overscroll-none pb-8 lg:flex">
+          <div className="h-(--top-spacing) shrink-0" />
+          {toc?.length ? (
+            <div className="no-scrollbar overflow-y-auto px-8">
+              <DocsTableOfContents toc={toc} />
+              <div className="h-12" />
             </div>
+          ) : null}
+          <div className="flex flex-1 flex-col gap-12 px-6">
+            <OpenInPlus />
           </div>
         </div>
+
+        // <div className="hidden text-sm lg:block">
+        //   <div className="sticky top-20 -mt-6 flex h-[calc(100vh-100px)] flex-col pt-4">
+        //     <ScrollArea className="grow pb-2">
+        //       <div className="sticky top-0 flex w-[230px] flex-col">
+        //         <DashboardTableOfContents toc={toc} />
+        //       </div>
+        //     </ScrollArea>
+        //     <div className="mt-2 shrink-0">
+        //       <Suspense fallback={null}>
+        //         <OpenInPlus />
+        //       </Suspense>
+        //     </div>
+        //   </div>
+        // </div>
       )}
-    </main>
+    </div>
   );
 }

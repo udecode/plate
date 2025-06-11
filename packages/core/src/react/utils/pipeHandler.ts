@@ -4,6 +4,7 @@ import type { EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from '../plugin/DOMHandlers';
 
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { getEditorPlugin } from '../plugin/getEditorPlugin';
 
 export const convertDomEventToSyntheticEvent = (
@@ -81,7 +82,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
     event: any
   ) => boolean | void;
 
-  const relevantPlugins = editor.pluginList.filter(
+  const relevantPlugins = editor.meta.pluginList.filter(
     (plugin) => plugin.handlers?.[handlerKey]
   );
 
@@ -94,6 +95,10 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
       : event;
 
     const eventIsHandled = relevantPlugins.some((plugin) => {
+      if (isEditOnly(editor.dom.readOnly, plugin, 'handlers')) {
+        return false;
+      }
+
       const pluginHandler = plugin.handlers[handlerKey]!;
 
       const shouldTreatEventAsHandled = pluginHandler({

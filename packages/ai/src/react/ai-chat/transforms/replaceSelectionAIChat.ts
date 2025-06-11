@@ -4,6 +4,7 @@ import {
   type NodeEntry,
   type SlateEditor,
   type TElement,
+  KEYS,
   NodeApi,
   TextApi,
 } from '@udecode/plate';
@@ -72,7 +73,7 @@ export const replaceSelectionAIChat = (
     'isSelectingSome'
   );
 
-  editor.getApi<AIChatPluginConfig>({ key: 'ai' }).aiChat.hide();
+  editor.getApi<AIChatPluginConfig>({ key: KEYS.ai }).aiChat.hide();
 
   // If no blocks selected, treat it like a normal selection replacement
   if (!isBlockSelecting) {

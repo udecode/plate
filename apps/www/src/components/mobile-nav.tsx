@@ -2,108 +2,187 @@
 
 import * as React from 'react';
 
+import type { SidebarNavItem } from '@/types/nav';
+
 import Link, { type LinkProps } from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
-import { docsConfig } from '@/config/docs';
-import { useMetaColor } from '@/hooks/use-meta-color';
 import { cn } from '@/lib/utils';
 
-import { Drawer, DrawerContent, DrawerTrigger } from './ui/drawer';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 
-export function MobileNav() {
-  const navItems = docsConfig.sidebarNav;
+const FLATTEN_SECTIONS = new Set(['Components', 'Node Components']);
 
+export function MobileNav({
+  className,
+  items,
+  tree,
+}: {
+  items: SidebarNavItem[];
+  tree: SidebarNavItem[];
+  className?: string;
+}) {
   const [open, setOpen] = React.useState(false);
-  const { metaColor, setMetaColor } = useMetaColor();
-  const onOpenChange = React.useCallback(
-    (open: boolean) => {
-      setOpen(open);
-      setMetaColor(open ? '#09090b' : metaColor);
-    },
-    [setMetaColor, metaColor]
-  );
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="mr-2 -ml-2 size-8 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+          className={cn(
+            'extend-touch-target h-8 touch-manipulation items-center justify-start gap-2.5 !p-0 hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 active:bg-transparent dark:hover:bg-transparent',
+            'mr-2 -ml-2 size-8 px-0 text-base md:hidden',
+            className
+          )}
         >
-          <svg
-            className="size-6!"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M3.75 9h16.5m-16.5 6.75h16.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-
-          <span className="sr-only">Toggle Menu</span>
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent className="max-h-[60svh] p-0">
-        <div className="overflow-auto p-6">
-          <div className="flex flex-col space-y-3">
-            {docsConfig.mainNav?.map((item) => {
-              return (
-                item.href && (
-                  <MobileLink
-                    key={item.href}
-                    onOpenChange={setOpen}
-                    href={item.href}
-                  >
-                    {item.title}
-                    {item.label && (
-                      <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
-                        {item.label}
-                      </span>
-                    )}
-                  </MobileLink>
-                )
-              );
-            })}
+          <div className="relative flex h-8 w-4 items-center justify-center">
+            <div className="relative size-4">
+              <span
+                className={cn(
+                  'absolute left-0 block h-0.5 w-4 bg-foreground transition-all duration-100',
+                  open ? 'top-[0.4rem] -rotate-45' : 'top-1'
+                )}
+              />
+              <span
+                className={cn(
+                  'absolute left-0 block h-0.5 w-4 bg-foreground transition-all duration-100',
+                  open ? 'top-[0.4rem] rotate-45' : 'top-2.5'
+                )}
+              />
+            </div>
+            <span className="sr-only">Toggle Menu</span>
           </div>
-          <div className="flex flex-col space-y-2">
-            {navItems.map((item, index) => (
-              <div key={index} className="flex flex-col space-y-3 pt-6">
-                <h4 className="font-medium">{item.title}</h4>
-                {item?.items?.length &&
-                  item.items.map((_item) => (
-                    <React.Fragment key={_item.href}>
-                      {!_item.disabled &&
-                        (_item.href ? (
-                          <MobileLink
-                            className="text-muted-foreground"
-                            onOpenChange={setOpen}
-                            href={_item.href}
+          <span className="flex h-8 items-center text-lg leading-none font-medium">
+            Menu
+          </span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="no-scrollbar h-(--radix-popper-available-height) w-(--radix-popper-available-width) overflow-y-auto rounded-none border-none bg-background/90 p-0 shadow-none backdrop-blur duration-100"
+        align="start"
+        alignOffset={-16}
+        side="bottom"
+        sideOffset={12}
+      >
+        <div className="flex flex-col gap-12 overflow-auto px-6 py-6">
+          <div className="flex flex-col gap-4">
+            <div className="text-sm font-medium text-muted-foreground">
+              Menu
+            </div>
+            <div className="flex flex-col gap-3">
+              {items.map((item) => {
+                return (
+                  item.href && (
+                    <MobileLink
+                      key={item.href}
+                      onOpenChange={setOpen}
+                      href={item.href}
+                    >
+                      {item.title}
+                      {item.label && (
+                        <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                          {item.label}
+                        </span>
+                      )}
+                    </MobileLink>
+                  )
+                );
+              })}
+            </div>
+          </div>
+          <div className="flex flex-col gap-8">
+            {tree.map((item, index) => (
+              <div key={index} className="flex flex-col gap-4">
+                <div className="text-sm font-medium text-muted-foreground">
+                  {item.title}
+                </div>
+                <div className="flex flex-col gap-3">
+                  {item?.items?.length &&
+                    item.items.map((_item) => {
+                      const shouldFlatten =
+                        !_item.title || FLATTEN_SECTIONS.has(_item.title);
+
+                      if (shouldFlatten && _item.items?.length) {
+                        return _item.items.map((nestedItem) => (
+                          <React.Fragment
+                            key={(item.title ?? '') + nestedItem.title}
                           >
-                            {_item.title}
-                            {item.label && (
-                              <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
-                                {item.label}
-                              </span>
+                            {!nestedItem.disabled && nestedItem.href && (
+                              <MobileLink
+                                onOpenChange={setOpen}
+                                href={nestedItem.href}
+                              >
+                                {nestedItem.title}
+                                {nestedItem.label && (
+                                  <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                                    {nestedItem.label}
+                                  </span>
+                                )}
+                              </MobileLink>
                             )}
-                          </MobileLink>
-                        ) : (
-                          _item.title
-                        ))}
-                    </React.Fragment>
-                  ))}
+                          </React.Fragment>
+                        ));
+                      }
+
+                      return (
+                        <React.Fragment key={(item.title ?? '') + _item.title}>
+                          {!_item.disabled && (
+                            <>
+                              {_item.href ? (
+                                <MobileLink
+                                  onOpenChange={setOpen}
+                                  href={_item.href}
+                                >
+                                  {_item.title}
+                                  {_item.label && (
+                                    <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                                      {_item.label}
+                                    </span>
+                                  )}
+                                </MobileLink>
+                              ) : (
+                                <div className="text-lg font-medium">
+                                  {_item.title}
+                                </div>
+                              )}
+                              {_item.items?.length && !shouldFlatten && (
+                                <div className="ml-4 flex flex-col gap-2">
+                                  {_item.items.map((nestedItem) => (
+                                    <React.Fragment
+                                      key={nestedItem.href || nestedItem.title}
+                                    >
+                                      {!nestedItem.disabled &&
+                                        nestedItem.href && (
+                                          <MobileLink
+                                            className="text-lg font-normal text-muted-foreground"
+                                            onOpenChange={setOpen}
+                                            href={nestedItem.href}
+                                          >
+                                            {nestedItem.title}
+                                            {nestedItem.label && (
+                                              <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                                                {nestedItem.label}
+                                              </span>
+                                            )}
+                                          </MobileLink>
+                                        )}
+                                    </React.Fragment>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -124,7 +203,7 @@ function MobileLink({
 
   return (
     <Link
-      className={cn('text-base', className)}
+      className={cn('text-2xl font-medium', className)}
       onClick={() => {
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         router.push(href.toString());

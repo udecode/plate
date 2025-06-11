@@ -1,16 +1,16 @@
 import type { Descendant } from '@udecode/plate';
 
 import type { MdRootContent } from '../mdast';
+import type { MdDecoration } from '../types';
 import type { DeserializeMdOptions } from './deserializeMd';
-import type { Decoration } from './type';
 
-import { getPlateNodeType } from '../utils';
+import { mdastToPlate } from '../types';
 import { customMdxDeserialize } from './utils';
 import { getDeserializerByKey } from './utils/getDeserializerByKey';
 
 export const convertNodesDeserialize = (
   nodes: MdRootContent[],
-  deco: Decoration,
+  deco: MdDecoration,
   options: DeserializeMdOptions
 ): Descendant[] => {
   return nodes.reduce<Descendant[]>((acc, node) => {
@@ -24,7 +24,7 @@ export const convertNodesDeserialize = (
 
 export const buildSlateNode = (
   mdastNode: MdRootContent,
-  deco: Decoration,
+  deco: MdDecoration,
   options: DeserializeMdOptions
 ): Descendant[] => {
   /** Handle custom mdx nodes */
@@ -36,7 +36,7 @@ export const buildSlateNode = (
     return Array.isArray(result) ? result : [result];
   }
 
-  const type = getPlateNodeType(mdastNode.type);
+  const type = mdastToPlate(mdastNode.type);
 
   const nodeParser = getDeserializerByKey(type, options);
 
@@ -55,7 +55,7 @@ const shouldIncludeNode = (
 
   if (!node.type) return true;
 
-  const type = getPlateNodeType(node.type);
+  const type = mdastToPlate(node.type);
 
   // First check allowedNodes/disallowedNodes
   if (

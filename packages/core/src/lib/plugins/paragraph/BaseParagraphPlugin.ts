@@ -19,4 +19,7 @@ export const BaseParagraphPlugin = createSlatePlugin({
       },
     },
   },
+  rules: {
+    merge: { removeEmpty: true },
+  },
 });

@@ -1,10 +1,11 @@
-import type { TText } from '@udecode/plate';
+import {
+  type TElement,
+  type TListElement,
+  type TMentionElement,
+  type TText,
+  KEYS,
+} from '@udecode/plate';
 
-import type {
-  TIndentListElement,
-  TMentionElement,
-  TStandardListElement,
-} from '../internal/types';
 import type {
   MdHeading,
   MdImage,
@@ -19,7 +20,7 @@ import type {
   MdTableRow,
 } from '../mdast';
 import type { MentionNode } from '../plugins/remarkMention';
-import type { TRules } from './types';
+import type { MdRules } from '../types';
 
 import {
   buildSlateNode,
@@ -27,7 +28,7 @@ import {
   convertTextsDeserialize,
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
-import { getPlateNodeType } from '../utils';
+import { mdastToPlate } from '../types';
 import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
@@ -42,7 +43,7 @@ function isBoolean(value: any) {
   );
 }
 
-export const defaultRules: TRules = {
+export const defaultRules: MdRules = {
   a: {
     deserialize: (mdastNode, deco, options) => {
       return {
@@ -281,7 +282,7 @@ export const defaultRules: TRules = {
 
       return {
         children: flattenedChildren,
-        type: 'p',
+        type: KEYS.p,
       };
     },
   },
@@ -425,13 +426,11 @@ export const defaultRules: TRules = {
       mdastNode: MdList,
       deco,
       options
-    ): TIndentListElement[] | TStandardListElement => {
+    ): ({ type: 'ol' | 'ul' } & TElement) | TListElement[] => {
       // Handle standard list
-      const isStandardList = !options.editor?.pluginList.some(
-        (p) => p.key === 'listStyleType'
-      );
+      const isIndentList = !!options.editor?.plugins.list;
 
-      if (isStandardList) {
+      if (!isIndentList) {
         // For standard lists, we need to ensure each list item is properly structured
         const children = mdastNode.children.map((child) => {
           if (child.type === 'listItem') {
@@ -484,14 +483,14 @@ export const defaultRules: TRules = {
           // Create list item from paragraph content
           const result = paragraph
             ? buildSlateNode(paragraph, deco, options)
-            : { children: [{ text: '' }], type: 'p' };
+            : { children: [{ text: '' }], type: KEYS.p };
 
           // Convert result to array if it's not already
           const itemNodes = Array.isArray(result) ? result : [result];
 
           // Add list properties to each node
           itemNodes.forEach((node: any) => {
-            const itemContent: TIndentListElement = {
+            const itemContent: TListElement = {
               ...node,
               indent,
               type: (node.type || 'p') as string,
@@ -548,7 +547,7 @@ export const defaultRules: TRules = {
       const startIndex = (mdastNode as any).start || 1;
       return parseListItems(mdastNode, 1, startIndex);
     },
-    serialize: (node: TStandardListElement, options): MdList => {
+    serialize: (node: { type: 'ol' | 'ul' } & TElement, options): MdList => {
       const isOrdered = node.type === 'ol';
 
       const serializeListItems = (children: any[]): any[] => {
@@ -639,7 +638,7 @@ export const defaultRules: TRules = {
     deserialize: (node, deco, options) => {
       const isKeepLineBreak = options.splitLineBreaks;
       const children = convertChildrenDeserialize(node.children, deco, options);
-      const paragraphType = getPlateNodeType('paragraph');
+      const paragraphType = mdastToPlate('paragraph');
       const splitBlockTypes = new Set(['img']);
 
       const elements: any[] = [];
@@ -807,7 +806,7 @@ export const defaultRules: TRules = {
                     if (!child.type) {
                       return {
                         children: [child],
-                        type: 'p',
+                        type: KEYS.p,
                       };
                     }
 

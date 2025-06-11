@@ -66,7 +66,7 @@ export const proExamples: Registry['items'] = [
 - Floating comments & suggestions UI with better user experience
 - Comment rendered with Plate editor
 - Discussion list in the sidebar`,
-    name: 'comments-pro',
+    name: 'comment-pro',
     type: 'registry:example',
   },
   {
@@ -79,8 +79,7 @@ export const proExamples: Registry['items'] = [
   },
   {
     categories: ['pro'],
-    description: `- Suggestions powered by AI SDK (OpenAI). Code available in [Potion template](https://pro.platejs.org/docs/templates/potion)
-- Rich text suggestions including marks and links
+    description: `- Rich text suggestions including marks and links
 - Hover card with additional information
 - Beautifully crafted UI`,
     name: 'copilot-pro',

@@ -15,6 +15,7 @@ export type DeleteConfig = PluginConfig<
 
 export const DeletePlugin = createTSlatePlugin<DeleteConfig>({
   key: 'delete',
+  editOnly: true,
   options: {
     query: {
       allow: [BaseParagraphPlugin.key],

@@ -2,17 +2,16 @@
 
 import * as React from 'react';
 
-import { Plate } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 import { DEMO_VALUES } from './values/demo-values';
 
 export default function Demo({ id }: { id: string }) {
-  const editor = useCreateEditor({
-    plugins: [...editorPlugins],
+  const editor = usePlateEditor({
+    plugins: EditorKit,
     value: DEMO_VALUES[id],
   });
 

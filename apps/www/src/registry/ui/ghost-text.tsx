@@ -5,7 +5,7 @@ import * as React from 'react';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { useElement, usePluginOption } from '@udecode/plate/react';
 
-export const GhostText = () => {
+export function GhostText() {
   const element = useElement();
 
   const isSuggested = usePluginOption(
@@ -17,9 +17,9 @@ export const GhostText = () => {
   if (!isSuggested) return null;
 
   return <GhostTextContent />;
-};
+}
 
-export function GhostTextContent() {
+function GhostTextContent() {
   const suggestionText = usePluginOption(CopilotPlugin, 'suggestionText');
 
   return (

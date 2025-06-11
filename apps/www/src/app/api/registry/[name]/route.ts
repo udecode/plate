@@ -18,9 +18,9 @@ export function generateStaticParams() {
 }
 
 export async function GET(_: Request, { params }: any) {
-  try {
-    const { name } = ParamsSchema.parse({ name: (await params).name });
+  const { name } = ParamsSchema.parse({ name: (await params).name });
 
+  try {
     const item = await getRegistryItem(name);
 
     if (!item?.files) {
@@ -34,7 +34,11 @@ export async function GET(_: Request, { params }: any) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error('Failed to get registry files:', error.issues[0].message);
+      console.error(
+        'Failed to get registry files:',
+        name,
+        error.issues[0].message
+      );
 
       return NextResponse.json(
         { error: error.issues[0].message },
@@ -42,10 +46,10 @@ export async function GET(_: Request, { params }: any) {
       );
     }
 
-    console.error('Failed to get registry files:', error);
+    console.error('Failed to get registry files:', name, error);
 
     return NextResponse.json(
-      { error: 'Failed to get registry files' },
+      { error: `Failed to get registry files: ${name}` },
       { status: 500 }
     );
   }

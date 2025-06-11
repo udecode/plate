@@ -48,7 +48,7 @@ function PlateInner({
 }) {
   return (
     <PlateStoreProvider
-      readOnly={readOnly}
+      readOnly={readOnly ?? editor?.dom.readOnly}
       onChange={onChange}
       onSelectionChange={onSelectionChange}
       onValueChange={onValueChange}
@@ -78,11 +78,11 @@ export function Plate<E extends PlateEditor = PlateEditor>(
 
   if (!props.editor) return null;
 
-  props.editor.uid = 'e-' + id.replaceAll(':', '');
+  props.editor.meta.uid = 'e-' + id.replaceAll(':', '');
 
   return (
     <PlateInner
-      key={props.editor.key}
+      key={props.editor.meta.key}
       containerRef={containerRef}
       scrollRef={scrollRef}
       {...(props as any)}

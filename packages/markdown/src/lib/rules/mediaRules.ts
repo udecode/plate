@@ -1,6 +1,7 @@
-import type { TMediaElement } from '../internal/types';
+import type { TMediaElement } from '@udecode/plate';
+
 import type { MdMdxJsxFlowElement } from '../mdast';
-import type { TRules } from './types';
+import type { MdRules } from '../types';
 
 import { convertNodesSerialize } from '../serializer';
 import { parseAttributes, propsToAttributes } from './utils';
@@ -30,7 +31,7 @@ function createMediaRule() {
   };
 }
 
-export const mediaRules: TRules = {
+export const mediaRules: MdRules = {
   audio: createMediaRule(),
   file: createMediaRule(),
   video: createMediaRule(),

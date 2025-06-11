@@ -83,7 +83,7 @@ export const playgroundValue: Value = [
       {
         children: [{ comment: true, comment_discussion4: true, text: '评论' }],
         type: 'a',
-        url: '/docs/comments',
+        url: '/docs/comment',
       },
       {
         comment: true,
@@ -164,19 +164,19 @@ export const playgroundValue: Value = [
       {
         children: [{ text: '标题' }],
         type: 'a',
-        url: '/docs/basic-elements',
+        url: '/docs/heading',
       },
       { text: '、' },
       {
         children: [{ text: '列表' }],
         type: 'a',
-        url: '/docs/indent-list',
+        url: '/docs/list',
       },
       { text: ' 和 ' },
       {
         children: [{ text: '引用' }],
         type: 'a',
-        url: '/docs/basic-elements',
+        url: '/docs/blockquote',
       },
       { text: ' 来组织您的内容。应用 ' },
       {

@@ -3,20 +3,16 @@
 import * as React from 'react';
 
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
-import { Plate } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from '@udecode/plate/react';
 
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { excalidrawValue } from '@/registry/examples/values/excalidraw-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { ExcalidrawElement } from '@/registry/ui/excalidraw-element';
+import { ExcalidrawElement } from '@/registry/ui/excalidraw-node';
 
 export default function ExcalidrawDemo() {
-  const editor = useCreateEditor({
-    components: {
-      [ExcalidrawPlugin.key]: ExcalidrawElement,
-    },
-    plugins: [...editorPlugins, ExcalidrawPlugin],
+  const editor = usePlateEditor({
+    plugins: [...EditorKit, ExcalidrawPlugin.withComponent(ExcalidrawElement)],
     value: excalidrawValue,
   });
 

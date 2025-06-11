@@ -6,7 +6,13 @@ import { PlaceholderPlugin, UploadErrorCode } from '@udecode/plate-media/react';
 import { usePluginOption } from '@udecode/plate/react';
 import { toast } from 'sonner';
 
-export const useUploadErrorToast = () => {
+export function MediaUploadToast() {
+  useUploadErrorToast();
+
+  return null;
+}
+
+const useUploadErrorToast = () => {
   const uploadError = usePluginOption(PlaceholderPlugin, 'error');
 
   React.useEffect(() => {
@@ -60,10 +66,4 @@ export const useUploadErrorToast = () => {
       }
     }
   }, [uploadError]);
-};
-
-export const MediaUploadToast = () => {
-  useUploadErrorToast();
-
-  return null;
 };

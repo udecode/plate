@@ -131,6 +131,7 @@ export function createSlatePlugin<
       plugins: [],
       priority: 100,
       render: {},
+      rules: {},
       shortcuts: {},
       transforms: {},
     },
@@ -328,6 +329,13 @@ export function createSlatePlugin<
     }
 
     return createSlatePlugin(newPlugin);
+  };
+
+  plugin.withComponent = (component) => {
+    return plugin.extend({
+      node: { component },
+      render: { node: component },
+    }) as any;
   };
 
   return plugin;

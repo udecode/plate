@@ -13,7 +13,7 @@ function WithPlate({ id, value }: any) {
   const editor = usePlateEditor({
     id,
     // components: PlateUI,
-    // plugins: [BasicElementsPlugin, BasicMarksPlugin],
+    // plugins: [BasicBlocksPlugin, BasicMarksPlugin],
     value,
   });
 

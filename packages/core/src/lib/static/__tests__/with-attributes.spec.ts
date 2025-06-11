@@ -1,5 +1,5 @@
 import { serializeHtml } from '../serializeHtml';
-import { components, createStaticEditor } from './create-static-editor';
+import { createStaticEditor } from './create-static-editor';
 
 describe('serializePlateStatic with attributes', () => {
   it('should serialize elements with right slate attributes', async () => {
@@ -36,7 +36,6 @@ describe('serializePlateStatic with attributes', () => {
     );
 
     const html = await serializeHtml(editor, {
-      components: components,
       preserveClassNames: [],
       stripClassNames: true,
     });

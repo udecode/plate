@@ -1,3 +1,5 @@
+import type { UnknownObject } from '@udecode/utils';
+
 import type { Editor, LegacyEditorMethods } from '../interfaces';
 
 const LEGACY_TRANSFORMS = new Set([
@@ -118,7 +120,7 @@ const LEGACY_API = new Set([
   'rangeRefs',
   'selection',
   'setNormalizing',
-  'shouldMergeNodesRemovePrevNode',
+  'shouldMergeNodes',
   'shouldNormalize',
   'start',
   'string',
@@ -154,7 +156,7 @@ export const assignLegacyTransforms = (editor: Editor, transforms: any) => {
 export const assignLegacyApi = (editor: Editor, api: any) => {
   if (!api) return;
 
-  const e = editor as Editor & LegacyEditorMethods;
+  const e = editor as Editor & LegacyEditorMethods & UnknownObject;
 
   const legacyApi = Object.entries(api).reduce(
     (acc, [key, value]) => {
@@ -180,7 +182,7 @@ export const assignLegacyApi = (editor: Editor, api: any) => {
  * NOTE: can't use yet because of recursion issues
  */
 export const syncLegacyMethods = (editor: Editor) => {
-  const e = editor as Editor & LegacyEditorMethods;
+  const e = editor as Editor & LegacyEditorMethods & UnknownObject;
 
   // Assign to editor.api
   LEGACY_API.forEach((key) => {

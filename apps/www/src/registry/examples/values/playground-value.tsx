@@ -85,7 +85,7 @@ export const playgroundValue: Value = [
           { comment: true, comment_discussion4: true, text: 'comments' },
         ],
         type: 'a',
-        url: '/docs/comments',
+        url: '/docs/comment',
       },
       {
         comment: true,
@@ -170,19 +170,19 @@ export const playgroundValue: Value = [
       {
         children: [{ text: 'headings' }],
         type: 'a',
-        url: '/docs/basic-elements',
+        url: '/docs/heading',
       },
       { text: ', ' },
       {
         children: [{ text: 'lists' }],
         type: 'a',
-        url: '/docs/indent-list',
+        url: '/docs/list',
       },
       { text: ', and ' },
       {
         children: [{ text: 'quotes' }],
         type: 'a',
-        url: '/docs/basic-elements',
+        url: '/docs/blockquote',
       },
       { text: '. Apply ' },
       {

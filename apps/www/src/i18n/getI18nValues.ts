@@ -1,7 +1,7 @@
 import { aiValue as aiValueEn } from '@/registry/examples/values/ai-value';
 import { alignValue as alignValueEn } from '@/registry/examples/values/align-value';
 import { autoformatValue as autoformatValueEn } from '@/registry/examples/values/autoformat-value';
-import { basicElementsValue as basicElementsValueEn } from '@/registry/examples/values/basic-elements-value';
+import { basicBlocksValue as basicBlocksValueEn } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue as basicMarksValueEn } from '@/registry/examples/values/basic-marks-value';
 import { basicNodesValue as basicNodesValueEn } from '@/registry/examples/values/basic-nodes-value';
 import { blockMenuValue as blockMenuValueEn } from '@/registry/examples/values/block-menu-value';
@@ -9,13 +9,13 @@ import { blockSelectionValue as blockSelectionValueEn } from '@/registry/example
 import { aiValue as aiValueCn } from '@/registry/examples/values/cn/ai-value';
 import { alignValue as alignValueCn } from '@/registry/examples/values/cn/align-value';
 import { autoformatValue as autoformatValueCn } from '@/registry/examples/values/cn/autoformat-value';
-import { basicElementsValue as basicElementsValueCn } from '@/registry/examples/values/cn/basic-elements-value';
+import { basicBlocksValue as basicBlocksValueCn } from '@/registry/examples/values/cn/basic-blocks-value';
 import { basicMarksValue as basicMarksValueCn } from '@/registry/examples/values/cn/basic-marks-value';
 import { basicNodesValue as basicNodesValueCn } from '@/registry/examples/values/cn/basic-nodes-value';
 import { blockMenuValue as blockMenuValueCn } from '@/registry/examples/values/cn/block-menu-value';
 import { blockSelectionValue as blockSelectionValueCn } from '@/registry/examples/values/cn/block-selection-value';
 import { columnValue as columnValueCn } from '@/registry/examples/values/cn/column-value';
-import { commentsValue as commentsValueCn } from '@/registry/examples/values/cn/comments-value';
+import { commentValue as commentValueCn } from '@/registry/examples/values/cn/comment-value';
 import { copilotValue as copilotValueCn } from '@/registry/examples/values/cn/copilot-value';
 import { cursorOverlayValue as cursorOverlayValueCn } from '@/registry/examples/values/cn/cursor-overlay-value';
 import { dateValue as dateValueCn } from '@/registry/examples/values/cn/date-value';
@@ -35,33 +35,27 @@ import {
 import { findReplaceValue as findReplaceValueCn } from '@/registry/examples/values/cn/find-replace-value';
 import { floatingToolbarValue as floatingToolbarValueCn } from '@/registry/examples/values/cn/floating-toolbar-value';
 import { fontValue as fontValueCn } from '@/registry/examples/values/cn/font-value';
-import { highlightValue as highlightValueCn } from '@/registry/examples/values/cn/highlight-value';
-import { horizontalRuleValue as horizontalRuleValueCn } from '@/registry/examples/values/cn/horizontal-rule-value';
 import { iframeValue as iframeValueCn } from '@/registry/examples/values/cn/iframe-value';
-import { indentListValue as indentListValueCn } from '@/registry/examples/values/cn/indent-list-value';
 import { indentValue as indentValueCn } from '@/registry/examples/values/cn/indent-value';
-import { kbdValue as kbdValueCn } from '@/registry/examples/values/cn/kbd-value';
 import { lineHeightValue as lineHeightValueCn } from '@/registry/examples/values/cn/line-height-value';
 import { linkValue as linkValueCn } from '@/registry/examples/values/cn/link-value';
 import {
+  listValue as listClassicValueCn,
   listValue as listValueCn,
-  todoListValue as todoListValueCn,
-} from '@/registry/examples/values/cn/list-value';
+} from '@/registry/examples/values/cn/list-classic-value';
 import { mediaValue as mediaValueCn } from '@/registry/examples/values/cn/media-value';
 import { mentionValue as mentionValueCn } from '@/registry/examples/values/cn/mention-value';
 import { placeholderValue as placeholderValueCn } from '@/registry/examples/values/cn/placeholder-value';
 import { playgroundValue as playgroundValueCn } from '@/registry/examples/values/cn/playground-value';
 import { previewMdValue as previewMdValueCn } from '@/registry/examples/values/cn/preview-md-value';
-import { singleLineValue as singleLineValueCn } from '@/registry/examples/values/cn/single-line-value';
 import { slashCommandValue as slashCommandValueCn } from '@/registry/examples/values/cn/slash-command-value';
-import { softBreakValue as softBreakValueCn } from '@/registry/examples/values/cn/soft-break-value';
 import { suggestionValue as suggestionValueCn } from '@/registry/examples/values/cn/suggestion-value';
 import { tabbableValue as tabbableValueCn } from '@/registry/examples/values/cn/tabbable-value';
 import { tableValue as tableValueCn } from '@/registry/examples/values/cn/table-value';
 import { tocValue as tocValueCn } from '@/registry/examples/values/cn/toc-value';
 import { toggleValue as toggleValueCn } from '@/registry/examples/values/cn/toggle-value';
 import { columnValue as columnValueEn } from '@/registry/examples/values/column-value';
-import { commentsValue as commentsValueEn } from '@/registry/examples/values/comments-value';
+import { commentValue as commentValueEn } from '@/registry/examples/values/comment-value';
 import { copilotValue as copilotValueEn } from '@/registry/examples/values/copilot-value';
 import { cursorOverlayValue as cursorOverlayValueEn } from '@/registry/examples/values/cursor-overlay-value';
 import { dateValue as dateValueEn } from '@/registry/examples/values/date-value';
@@ -81,26 +75,18 @@ import {
 import { findReplaceValue as findReplaceValueEn } from '@/registry/examples/values/find-replace-value';
 import { floatingToolbarValue as floatingToolbarValueEn } from '@/registry/examples/values/floating-toolbar-value';
 import { fontValue as fontValueEn } from '@/registry/examples/values/font-value';
-import { highlightValue as highlightValueEn } from '@/registry/examples/values/highlight-value';
-import { horizontalRuleValue as horizontalRuleValueEn } from '@/registry/examples/values/horizontal-rule-value';
 import { iframeValue as iframeValueEn } from '@/registry/examples/values/iframe-value';
-import { indentListValue as indentListValueEn } from '@/registry/examples/values/indent-list-value';
 import { indentValue as indentValueEn } from '@/registry/examples/values/indent-value';
-import { kbdValue as kbdValueEn } from '@/registry/examples/values/kbd-value';
 import { lineHeightValue as lineHeightValueEn } from '@/registry/examples/values/line-height-value';
 import { linkValue as linkValueEn } from '@/registry/examples/values/link-value';
-import {
-  listValue as listValueEn,
-  todoListValue as todoListValueEn,
-} from '@/registry/examples/values/list-value';
+import { listValue as listValueEn } from '@/registry/examples/values/list-classic-value';
 import { mediaValue as mediaValueEn } from '@/registry/examples/values/media-value';
 import { mentionValue as mentionValueEn } from '@/registry/examples/values/mention-value';
-import { placeholderValue as placeholderValueEn } from '@/registry/examples/values/placeholder-value';
+import { blockPlaceholderValue as placeholderValueEn } from '@/registry/examples/values/placeholder-value';
 import { playgroundValue as playgroundValueEn } from '@/registry/examples/values/playground-value';
+import { pluginRulesValue as pluginRulesValueEn } from '@/registry/examples/values/plugin-rules-value';
 import { previewMdValue as previewMdValueEn } from '@/registry/examples/values/preview-md-value';
-import { singleLineValue as singleLineValueEn } from '@/registry/examples/values/single-line-value';
 import { slashCommandValue as slashCommandValueEn } from '@/registry/examples/values/slash-command-value';
-import { softBreakValue as softBreakValueEn } from '@/registry/examples/values/soft-break-value';
 import { tabbableValue as tabbableValueEn } from '@/registry/examples/values/tabbable-value';
 import { tableValue as tableValueEn } from '@/registry/examples/values/table-value';
 import { tocValue as tocValueEn } from '@/registry/examples/values/toc-value';
@@ -109,15 +95,14 @@ import { toggleValue as toggleValueEn } from '@/registry/examples/values/toggle-
 const i18n = {
   cn: {
     ai: aiValueCn,
-    align: alignValueCn,
     autoformat: autoformatValueCn,
-    basicElements: basicElementsValueCn,
+    basicBlocks: basicBlocksValueCn,
     basicMarks: basicMarksValueCn,
     basicNodes: basicNodesValueCn,
     blockMenu: blockMenuValueCn,
     blockSelection: blockSelectionValueCn,
     column: columnValueCn,
-    comments: commentsValueCn,
+    comment: commentValueCn,
     copilot: copilotValueCn,
     cursorOverlay: cursorOverlayValueCn,
     date: dateValueCn,
@@ -134,42 +119,36 @@ const i18n = {
     findReplace: findReplaceValueCn,
     floatingToolbar: floatingToolbarValueCn,
     font: fontValueCn,
-    highlight: highlightValueCn,
-    horizontalRule: horizontalRuleValueCn,
     iframe: iframeValueCn,
     indent: indentValueCn,
-    indentList: indentListValueCn,
-    kbd: kbdValueCn,
     lineHeight: lineHeightValueCn,
     link: linkValueCn,
     list: listValueCn,
+    listClassic: listClassicValueCn,
     media: mediaValueCn,
     mention: mentionValueCn,
     placeholder: placeholderValueCn,
     playground: playgroundValueCn,
     previewMd: previewMdValueCn,
-    singleLine: singleLineValueCn,
     slashCommand: slashCommandValueCn,
-    softBreak: softBreakValueCn,
     suggestion: suggestionValueCn,
     tabbable: tabbableValueCn,
     table: tableValueCn,
+    'text-align': alignValueCn,
     toc: tocValueCn,
-    todoList: todoListValueCn,
     toggle: toggleValueCn,
     trailingBlock: trailingBlockValueCn,
   },
   en: {
     ai: aiValueEn,
-    align: alignValueEn,
     autoformat: autoformatValueEn,
-    basicElements: basicElementsValueEn,
+    basicBlocks: basicBlocksValueEn,
     basicMarks: basicMarksValueEn,
     basicNodes: basicNodesValueEn,
     blockMenu: blockMenuValueEn,
     blockSelection: blockSelectionValueEn,
     column: columnValueEn,
-    comments: commentsValueEn,
+    comment: commentValueEn,
     copilot: copilotValueEn,
     cursorOverlay: cursorOverlayValueEn,
     date: dateValueEn,
@@ -186,12 +165,8 @@ const i18n = {
     findReplace: findReplaceValueEn,
     floatingToolbar: floatingToolbarValueEn,
     font: fontValueEn,
-    highlight: highlightValueEn,
-    horizontalRule: horizontalRuleValueEn,
     iframe: iframeValueEn,
     indent: indentValueEn,
-    indentList: indentListValueEn,
-    kbd: kbdValueEn,
     lineHeight: lineHeightValueEn,
     link: linkValueEn,
     list: listValueEn,
@@ -199,14 +174,13 @@ const i18n = {
     mention: mentionValueEn,
     placeholder: placeholderValueEn,
     playground: playgroundValueEn,
+    'plugin-rules': pluginRulesValueEn,
     previewMd: previewMdValueEn,
-    singleLine: singleLineValueEn,
     slashCommand: slashCommandValueEn,
-    softBreak: softBreakValueEn,
     tabbable: tabbableValueEn,
     table: tableValueEn,
+    'text-align': alignValueEn,
     toc: tocValueEn,
-    todoList: todoListValueEn,
     toggle: toggleValueEn,
     trailingBlock: trailingBlockValueEn,
   },

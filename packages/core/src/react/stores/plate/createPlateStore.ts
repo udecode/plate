@@ -21,6 +21,7 @@ export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
 
 export const createPlateStore = <E extends PlateEditor = PlateEditor>({
   id,
+  composing = false,
   containerRef = { current: null },
   decorate = null,
   editor,
@@ -42,6 +43,7 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
 }: Partial<PlateStoreState<E>> = {}) =>
   createAtomStore(
     {
+      composing,
       containerRef,
       decorate,
       editor,
@@ -188,6 +190,11 @@ export const useEditorMounted = (id?: string): boolean => {
  */
 export const useEditorReadOnly = (id?: string): boolean => {
   return !!useAtomStoreValue(usePlateStore(id), 'readOnly');
+};
+
+/** Whether the editor is composing. */
+export const useEditorComposing = (id?: string): boolean => {
+  return !!useAtomStoreValue(usePlateStore(id), 'composing');
 };
 
 /**

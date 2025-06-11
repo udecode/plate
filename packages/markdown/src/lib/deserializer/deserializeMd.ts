@@ -4,14 +4,14 @@ import type { Plugin } from 'unified';
 import {
   type Descendant,
   type SlateEditor,
-  BaseParagraphPlugin,
+  KEYS,
   TextApi,
 } from '@udecode/plate';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-import type { AllowNodeConfig, NodesConfig } from '../MarkdownPlugin';
-import type { TRules } from '../rules';
+import type { AllowNodeConfig } from '../MarkdownPlugin';
+import type { MdRules, PlateType } from '../types';
 
 import { mdastToSlate } from './mdastToSlate';
 import { type ParseMarkdownBlocksOptions, parseMarkdownBlocks } from './utils';
@@ -21,14 +21,14 @@ import { markdownToSlateNodesSafely } from './utils/markdownToSlateNodesSafely';
 // TODO: fixes tests
 
 export type DeserializeMdOptions = {
-  allowedNodes?: NodesConfig;
+  allowedNodes?: PlateType[] | null;
   allowNode?: AllowNodeConfig;
-  disallowedNodes?: NodesConfig;
+  disallowedNodes?: PlateType[] | null;
   editor?: SlateEditor;
   memoize?: boolean;
   parser?: ParseMarkdownBlocksOptions;
   remarkPlugins?: Plugin[];
-  rules?: TRules | null;
+  rules?: MdRules | null;
   splitLineBreaks?: boolean;
   withoutMdx?: boolean;
   onError?: (error: Error) => void;
@@ -96,7 +96,7 @@ export const deserializeMd = (
     TextApi.isText(item)
       ? {
           children: [item],
-          type: editor.getType(BaseParagraphPlugin),
+          type: editor.getType(KEYS.p),
         }
       : item
   );

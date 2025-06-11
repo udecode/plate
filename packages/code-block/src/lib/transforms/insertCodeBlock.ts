@@ -1,9 +1,6 @@
 import type { InsertNodesOptions, SlateEditor, TElement } from '@udecode/plate';
 
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-} from '../BaseCodeBlockPlugin';
+import { KEYS } from '@udecode/plate';
 
 /**
  * Insert a code block: set the node to code line and wrap it with a code block.
@@ -16,8 +13,7 @@ export const insertCodeBlock = (
   if (!editor.selection || editor.api.isExpanded()) return;
 
   const matchCodeElements = (node: TElement) =>
-    node.type === editor.getType(BaseCodeBlockPlugin) ||
-    node.type === editor.getType(BaseCodeLinePlugin);
+    node.type === KEYS.codeBlock || node.type === KEYS.codeLine;
 
   if (
     editor.api.some({
@@ -33,7 +29,7 @@ export const insertCodeBlock = (
   editor.tf.setNodes(
     {
       children: [{ text: '' }],
-      type: editor.getType(BaseCodeLinePlugin),
+      type: KEYS.codeLine,
     },
     insertNodesOptions
   );
@@ -41,7 +37,7 @@ export const insertCodeBlock = (
   editor.tf.wrapNodes<TElement>(
     {
       children: [],
-      type: editor.getType(BaseCodeBlockPlugin),
+      type: KEYS.codeBlock,
     },
     insertNodesOptions
   );

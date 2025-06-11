@@ -4,12 +4,14 @@
 
 export * from './AstPlugin';
 export * from './HistoryPlugin';
-export * from './InlineVoidPlugin';
 export * from './ParserPlugin';
 export * from './getCorePlugins';
+export * from './affinity/index';
 export * from './debug/index';
 export * from './dom/index';
 export * from './html/index';
 export * from './length/index';
+export * from './node-id/index';
+export * from './override/index';
 export * from './paragraph/index';
 export * from './slate-extension/index';

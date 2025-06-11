@@ -3,3 +3,4 @@
  */
 
 export * from './SlateExtensionPlugin';
+export * from './transforms/index';

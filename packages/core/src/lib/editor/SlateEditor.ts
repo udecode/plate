@@ -13,9 +13,11 @@ import type { TStateApi } from 'zustand-x';
 import type {
   AnyPluginConfig,
   InferApi,
+  InferKey,
   InferOptions,
   InferSelectors,
   InferTransforms,
+  NodeComponents,
   PluginConfig,
   WithRequiredKey,
 } from '../plugin/BasePlugin';
@@ -24,21 +26,77 @@ import type {
   EditorPlugin,
   InjectNodeProps,
 } from '../plugin/SlatePlugin';
-import type { CorePlugin } from '../plugins';
+import type { BaseParagraphPlugin, CorePlugin } from '../plugins';
 
 export type BaseEditor = EditorBase & {
-  key: any;
-  currentKeyboardEvent: KeyboardEventLike | null;
-  /**
-   * Whether the editor is a fallback editor.
-   *
-   * @default false
-   * @see {@link createPlateFallbackEditor}
-   */
-  isFallback: boolean;
-  pluginList: any[];
+  /** DOM state */
+  dom: {
+    /** Whether the editor is composing text. */
+    composing: boolean;
+    /** The current keyboard event. */
+    currentKeyboardEvent: KeyboardEventLike | null;
+    /** Whether the editor is focused. */
+    focused: boolean;
+    /** The previous selection. */
+    prevSelection: TRange | null;
+    /** Whether the editor is read-only. */
+    readOnly: boolean;
+  };
+  meta: EditorBase['meta'] & {
+    /**
+     * A key that can be used to uniquely identify the editor. For RSC usage,
+     * use `uid` instead.
+     */
+    key: any;
+    /** A record of plugin components. */
+    components: NodeComponents;
+    /** Whether the editor is a fallback editor. */
+    isFallback: boolean;
+    /** Plugin cache by feature. */
+    pluginCache: {
+      decorate: string[];
+      handlers: {
+        onChange: string[];
+      };
+      inject: {
+        nodeProps: string[];
+      };
+      node: {
+        isContainer: string[];
+        isElement: string[];
+        isInline: string[];
+        isLeaf: string[];
+        isMarkableVoid: string[];
+        isNotSelectable: string[];
+        isStrictSiblings: string[];
+        isVoid: string[];
+        /** Node types to plugin keys. */
+        types: Record<string, string>;
+      };
+      normalizeInitialValue: string[];
+      render: {
+        aboveEditable: string[];
+        aboveNodes: string[];
+        aboveSlate: string[];
+        afterContainer: string[];
+        afterEditable: string[];
+        beforeContainer: string[];
+        beforeEditable: string[];
+        belowNodes: string[];
+        belowRootNodes: string[];
+      };
+      rules: { match: string[] };
+      useHooks: string[];
+    };
+    /** All plugins. */
+    pluginList: any[];
+    /**
+     * A stable unique identifier that remains constant from Plate RSC to client
+     * hydration.
+     */
+    uid?: string;
+  };
   plugins: Record<string, any>;
-  prevSelection: TRange | null;
   setOptions: {
     <C extends AnyPluginConfig>(
       plugin: WithRequiredKey<C>,
@@ -82,7 +140,7 @@ export type BaseEditor = EditorBase & {
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => C extends { node: any } ? C : EditorPlugin<C>;
-  getType: (plugin: WithRequiredKey) => string;
+  getType: (pluginKey: string) => string;
   setOption: <C extends AnyPluginConfig, K extends keyof InferOptions<C>>(
     plugin: WithRequiredKey<C>,
     optionKey: K,
@@ -92,9 +150,21 @@ export type BaseEditor = EditorBase & {
 
 export type InferPlugins<T extends AnyPluginConfig[]> = T[number];
 
+export type KeyofPlugins<T extends AnyPluginConfig> =
+  | (string & {})
+  | InferKey<CorePlugin | T>;
+
+export type KeyofNodePlugins<T extends AnyPluginConfig> =
+  | (string & {})
+  | InferKey<T | typeof BaseParagraphPlugin>;
+
 export type SlateEditor = BaseEditor & {
   api: EditorApi & UnionToIntersection<InferApi<CorePlugin>>;
-  pluginList: AnyEditorPlugin[];
+  meta: BaseEditor['meta'] & {
+    /** An array of plugins that are currently being used by the editor. */
+    pluginList: AnyEditorPlugin[];
+    shortcuts: any;
+  };
   plugins: Record<string, AnyEditorPlugin>;
   // Alias for transforms
   tf: EditorTransforms & UnionToIntersection<InferTransforms<CorePlugin>>;
@@ -103,6 +173,9 @@ export type SlateEditor = BaseEditor & {
   getApi: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => SlateEditor['api'] & InferApi<C>;
+  getPlugin: <C extends AnyPluginConfig = PluginConfig>(
+    plugin: WithRequiredKey<C>
+  ) => C extends { node: any } ? C : EditorPlugin<C>;
   getTransforms: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => SlateEditor['tf'] & InferTransforms<C>;
@@ -114,7 +187,10 @@ export type TSlateEditor<
 > = SlateEditor & {
   api: EditorApi<V> & UnionToIntersection<InferApi<CorePlugin | P>>;
   children: V;
-  pluginList: P[];
+  meta: BaseEditor['meta'] & {
+    pluginList: P[];
+    shortcuts: any;
+  };
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
   tf: EditorTransforms<V> &
     UnionToIntersection<InferTransforms<CorePlugin | P>>;

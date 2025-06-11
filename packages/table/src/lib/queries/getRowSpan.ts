@@ -1,4 +1,4 @@
-import type { TTableCellElement } from '../types';
+import type { TTableCellElement } from '@udecode/plate';
 
 /**
  * Returns the rowspan attribute of the table cell element.

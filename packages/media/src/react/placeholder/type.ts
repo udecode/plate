@@ -1,9 +1,5 @@
-import type {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  VideoPlugin,
-} from '../plugins';
+import type { KEYS } from '@udecode/plate';
+
 import type { AllowedFileType } from './internal/mimes';
 
 export enum UploadErrorCode {
@@ -28,10 +24,10 @@ export type MediaItemConfig = {
 };
 
 export type MediaKeys =
-  | typeof AudioPlugin.key
-  | typeof FilePlugin.key
-  | typeof ImagePlugin.key
-  | typeof VideoPlugin.key;
+  | typeof KEYS.audio
+  | typeof KEYS.file
+  | typeof KEYS.img
+  | typeof KEYS.video;
 
 export type SizeUnit = 'B' | 'GB' | 'KB' | 'MB';
 

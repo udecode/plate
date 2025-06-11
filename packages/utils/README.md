@@ -1,6 +1,8 @@
-# Udecode Utils
+# Plate utils
 
-Utils used by the many packages of the Udecode ecosystem.
+## Documentation
+
+Visit https://platejs.org/docs/api/utils to view the documentation.
 
 ## License
 

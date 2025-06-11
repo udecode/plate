@@ -2,9 +2,7 @@
 
 import * as React from 'react';
 
-import { type Value, createSlatePlugin } from '@udecode/plate';
-import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
-import { SoftBreakPlugin } from '@udecode/plate-break/react';
+import { type Value, createSlatePlugin, KEYS } from '@udecode/plate';
 import {
   type DiffOperation,
   type DiffUpdate,
@@ -13,7 +11,6 @@ import {
 } from '@udecode/plate-diff';
 import {
   createPlatePlugin,
-  ParagraphPlugin,
   toPlatePlugin,
   useSelected,
 } from '@udecode/plate/react';
@@ -26,12 +23,13 @@ import {
   PlateContent,
   PlateElement,
   PlateLeaf,
+  usePlateEditor,
 } from '@udecode/plate/react';
 import { cloneDeep } from 'lodash';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { BasicMarksKit } from '@/registry/components/editor/plugins/basic-marks-kit';
 
 const InlinePlugin = createPlatePlugin({
   key: 'inline',
@@ -197,7 +195,7 @@ function DiffLeaf({ children, ...props }: PlateLeafProps) {
 const initialValue: Value = [
   {
     children: [{ text: 'This is a version history demo.' }],
-    type: ParagraphPlugin.key,
+    type: KEYS.p,
   },
   {
     children: [
@@ -205,7 +203,7 @@ const initialValue: Value = [
       { bold: true, text: 'text and see what' },
       { text: ' happens.' },
     ],
-    type: ParagraphPlugin.key,
+    type: KEYS.p,
   },
   {
     children: [
@@ -213,7 +211,7 @@ const initialValue: Value = [
       { children: [{ text: '' }], type: InlineVoidPlugin.key },
       { text: '. Try removing it.' },
     ],
-    type: ParagraphPlugin.key,
+    type: KEYS.p,
   },
   {
     children: [
@@ -221,17 +219,15 @@ const initialValue: Value = [
       { children: [{ text: 'editable inline' }], type: InlinePlugin.key },
       { text: '. Try editing it.' },
     ],
-    type: ParagraphPlugin.key,
+    type: KEYS.p,
   },
 ];
 
 const plugins = [
+  ...BasicMarksKit,
   InlinePlugin.withComponent(InlineElement),
   InlineVoidPlugin.withComponent(InlineVoidElement),
-  BoldPlugin,
-  ItalicPlugin,
   DiffPlugin,
-  SoftBreakPlugin,
 ];
 
 function VersionHistoryPlate(props: Omit<PlateProps, 'children'>) {
@@ -259,7 +255,7 @@ function Diff({ current, previous }: DiffProps) {
     }) as Value;
   }, [previous, current]);
 
-  const editor = useCreateEditor(
+  const editor = usePlateEditor(
     {
       plugins,
       value: diffValue,
@@ -295,12 +291,12 @@ export default function VersionHistoryDemo() {
     setRevisions([...revisions, value]);
   };
 
-  const editor = useCreateEditor({
+  const editor = usePlateEditor({
     plugins,
     value: initialValue,
   });
 
-  const editorRevision = useCreateEditor(
+  const editorRevision = usePlateEditor(
     {
       plugins,
       value: selectedRevisionValue,

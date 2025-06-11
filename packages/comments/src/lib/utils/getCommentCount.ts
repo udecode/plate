@@ -1,4 +1,4 @@
-import type { TCommentText } from '../types';
+import type { TCommentText } from '@udecode/plate';
 
 import { getDraftCommentKey } from './getDraftCommentKey';
 import { isCommentKey } from './isCommentKey';

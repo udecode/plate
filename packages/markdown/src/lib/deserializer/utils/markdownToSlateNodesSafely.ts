@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate';
+import { type SlateEditor, KEYS } from '@udecode/plate';
 
 import {
   type DeserializeMdOptions,
@@ -35,7 +35,7 @@ export const markdownToSlateNodesSafely = (
 
   const newBlock = {
     children: incompleteNodes,
-    type: 'p',
+    type: KEYS.p,
   };
 
   // Push inlineNodes to the children of the last block in blockNodes

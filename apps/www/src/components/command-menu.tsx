@@ -1,73 +1,137 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import * as React from 'react';
 
 import type { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
 import type { DialogProps } from '@radix-ui/react-dialog';
 
+import { Command } from 'cmdk';
+import { castArray } from 'lodash';
 import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
-  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { docsConfig } from '@/config/docs';
 import { cn } from '@/lib/utils';
 
 export function CommandItems({
-  children,
+  idx = 0,
   item,
+  parentKey = '',
+  parentTitle = '',
   runCommand,
 }: {
   item: NavItemWithChildren;
   runCommand: any;
-  children?: ReactNode;
+  idx?: number;
+  parentKey?: string;
+  parentTitle?: string;
 }) {
   const router = useRouter();
+  const itemKey = `${parentKey}-${item.href ?? item.title}-${idx}`;
+
+  // Invisible characters to make items unique across groups
+  const invisibleSuffixes: Record<string, string> = {
+    'group-API': '\uFEFF', // Zero Width No-Break Space
+    'group-Examples': '\u2060', // Word Joiner
+    'group-Getting Started': '\u200B', // Zero Width Space
+    'group-Guides': '\u061C', // Arabic Letter Mark
+    'group-Installation': '\u200C', // Zero Width Non-Joiner
+    'group-Migration': '\u180E', // Mongolian Vowel Separator
+    'group-Plugins': '\u200D', // Zero Width Joiner
+  };
+
+  // Dirty hack to make items unique across groups, fallback to combining different characters
+  const getInvisibleSuffix = (key: string) => {
+    if (invisibleSuffixes[key]) return invisibleSuffixes[key];
+    // Generate a unique invisible character combination for unknown groups
+    const hash = key
+      .split('')
+      .reduce((a, b) => Math.trunc((a << 5) - a + (b.codePointAt(0) ?? 0)), 0);
+    const suffixIndex = Math.abs(hash) % 7;
+    const fallbackSuffixes = [
+      '\u200B',
+      '\u200C',
+      '\u200D',
+      '\u2060',
+      '\uFEFF',
+      '\u061C',
+      '\u180E',
+    ];
+    return fallbackSuffixes[suffixIndex];
+  };
+
+  const invisibleSuffix = getInvisibleSuffix(parentKey);
+
+  // Extract keywords from the item, including labels and parent title
+  const { keywords = [], ...itemWithoutKeywords } = item;
+  const allKeywords = [
+    ...keywords,
+    ...castArray(item.label),
+    ...(parentTitle ? [parentTitle] : []),
+  ].filter(Boolean);
 
   return (
-    <React.Fragment key={item.href}>
-      <CommandItem
-        onSelect={() => {
-          runCommand(() => router.push(item.href as string));
-        }}
-      >
-        <div className="flex items-center justify-center">
-          <Circle className="size-3" />
-        </div>
-        {item.title}
-      </CommandItem>
-      {item.headings?.map((heading) => {
-        return (
-          <CommandItem
-            key={item.href + heading}
-            onSelect={() => {
-              runCommand(() =>
-                router.push(
-                  (item.href +
-                    '#' +
-                    heading.replaceAll(' ', '').toLowerCase()) as string
-                )
-              );
-            }}
-          >
-            <div className="flex items-center justify-center">
-              <Circle className="size-3" />
-            </div>
-            {item.title} – {heading}
-          </CommandItem>
-        );
-      })}
-
-      {children}
+    <React.Fragment key={itemKey}>
+      {item.href && (
+        <CommandItem
+          onSelect={() => {
+            runCommand(() => router.push(item.href as string));
+          }}
+          keywords={allKeywords}
+        >
+          <div className="flex items-center justify-center">
+            <Circle className="size-3" />
+          </div>
+          {item.title}
+          {invisibleSuffix}
+        </CommandItem>
+      )}
+      {item.headings?.map((heading, headingIdx) => (
+        <CommandItem
+          key={`${itemKey}-heading-${headingIdx}`}
+          onSelect={() => {
+            runCommand(() =>
+              router.push(
+                (item.href +
+                  '#' +
+                  heading.replaceAll(' ', '').toLowerCase()) as string
+              )
+            );
+          }}
+          keywords={allKeywords}
+        >
+          <div className="flex items-center justify-center">
+            <Circle className="size-3" />
+          </div>
+          {item.title} – {heading}
+          {invisibleSuffix}
+        </CommandItem>
+      ))}
+      {item.items?.map((child, childIdx) => (
+        <CommandItems
+          key={`${itemKey}-child-${childIdx}`}
+          idx={childIdx}
+          item={child}
+          parentKey={itemKey}
+          parentTitle={item.title}
+          runCommand={runCommand}
+        />
+      ))}
     </React.Fragment>
   );
 }
@@ -80,25 +144,16 @@ export function CommandMenuGroup({
 } & SidebarNavItem) {
   return (
     <CommandGroup heading={group.title}>
-      {group.items?.map((navItem) => {
-        return (
-          <CommandItems
-            key={navItem.title}
-            item={navItem}
-            runCommand={runCommand}
-          >
-            {navItem?.items?.map((item) => {
-              return (
-                <CommandItems
-                  key={item.title}
-                  item={item}
-                  runCommand={runCommand}
-                />
-              );
-            })}
-          </CommandItems>
-        );
-      })}
+      {group.items?.map((navItem, navIdx) => (
+        <CommandItems
+          key={`group-${group.title}-${navIdx}`}
+          idx={navIdx}
+          item={navItem}
+          parentKey={`group-${group.title}`}
+          parentTitle={group.title}
+          runCommand={runCommand}
+        />
+      ))}
     </CommandGroup>
   );
 }
@@ -151,66 +206,95 @@ export function CommandMenu({ ...props }: DialogProps) {
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
-        <CommandEmpty>No results found.</CommandEmpty>
-        <CommandList>
-          <CommandGroup heading="Links">
-            {docsConfig.mainNav
-              .filter((navitem) => !navitem.external)
-              .map((navItem) => (
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogHeader className="sr-only">
+          <DialogTitle>Search</DialogTitle>
+        </DialogHeader>
+
+        <DialogContent className="overflow-hidden p-0">
+          <Command
+            className="**:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
+            filter={(value, search, keywords) => {
+              const searchValue = search.toLowerCase();
+              if (
+                value.toLowerCase().includes(searchValue) ||
+                keywords?.some((keyword) =>
+                  keyword.toLowerCase().includes(searchValue)
+                )
+              ) {
+                return 1;
+              }
+              return 0;
+            }}
+          >
+            <CommandInput placeholder="Type a command or search..." />
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandList>
+              <CommandGroup heading="Links">
+                {docsConfig.mainNav
+                  .filter((navitem) => !navitem.external)
+                  .map((navItem) => (
+                    <CommandItem
+                      key={navItem.href}
+                      onSelect={() => {
+                        runCommand(() => router.push(navItem.href as string));
+                      }}
+                    >
+                      <File />
+                      {navItem.title}
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
+              {docsConfig.sidebarNav.map((group) => {
+                if (group.title === 'API') return null;
+
+                return (
+                  <CommandMenuGroup
+                    key={group.title + ':sidebar'}
+                    runCommand={runCommand}
+                    {...group}
+                  />
+                );
+              })}
+
+              <CommandGroup heading="Theme">
                 <CommandItem
-                  key={navItem.href}
-                  onSelect={() => {
-                    runCommand(() => router.push(navItem.href as string));
-                  }}
+                  onSelect={() => runCommand(() => setTheme('light'))}
                 >
-                  <File />
-                  {navItem.title}
+                  <SunMedium />
+                  Light
                 </CommandItem>
-              ))}
-          </CommandGroup>
-          {docsConfig.sidebarNav.map((group) => {
-            if (group.title === 'API') return null;
+                <CommandItem
+                  onSelect={() => runCommand(() => setTheme('dark'))}
+                >
+                  <Moon />
+                  Dark
+                </CommandItem>
+                <CommandItem
+                  onSelect={() => runCommand(() => setTheme('system'))}
+                >
+                  <Laptop />
+                  System
+                </CommandItem>
+              </CommandGroup>
 
-            return (
-              <CommandMenuGroup
-                key={group.title + ':sidebar'}
-                runCommand={runCommand}
-                {...group}
-              />
-            );
-          })}
+              {docsConfig.sidebarNav.map((group) => {
+                // API is last
+                if (group.title !== 'API') return null;
 
-          <CommandGroup heading="Theme">
-            <CommandItem onSelect={() => runCommand(() => setTheme('light'))}>
-              <SunMedium />
-              Light
-            </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => setTheme('dark'))}>
-              <Moon />
-              Dark
-            </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => setTheme('system'))}>
-              <Laptop />
-              System
-            </CommandItem>
-          </CommandGroup>
-
-          {docsConfig.sidebarNav.map((group) => {
-            // API is last
-            if (group.title !== 'API') return null;
-
-            return (
-              <CommandMenuGroup
-                key={group.title}
-                runCommand={runCommand}
-                {...group}
-              />
-            );
-          })}
-        </CommandList>
-      </CommandDialog>
+                return (
+                  <CommandMenuGroup
+                    key={group.title}
+                    runCommand={runCommand}
+                    {...group}
+                  />
+                );
+              })}
+            </CommandList>
+          </Command>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

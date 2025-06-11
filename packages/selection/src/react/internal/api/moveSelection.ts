@@ -1,4 +1,4 @@
-import type { TElement } from '@udecode/plate';
+import type { TIdElement } from '@udecode/plate';
 
 import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
 
@@ -15,7 +15,7 @@ export const moveSelection = (
   if (direction === 'up') {
     const [, topPath] = blocks[0];
 
-    const prevEntry = editor.api.previous<TElement & { id: string }>({
+    const prevEntry = editor.api.previous<TIdElement>({
       at: topPath,
       from: 'parent',
       match: api.blockSelection.isSelectable,
@@ -32,7 +32,7 @@ export const moveSelection = (
     // direction === 'down'
     const [, bottomPath] = blocks.at(-1)!;
 
-    const nextEntry = editor.api.next<TElement & { id: string }>({
+    const nextEntry = editor.api.next<TIdElement>({
       at: bottomPath,
       from: 'child',
       match: api.blockSelection.isSelectable,

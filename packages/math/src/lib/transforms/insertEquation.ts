@@ -1,9 +1,10 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
+import type {
+  InsertNodesOptions,
+  SlateEditor,
+  TEquationElement,
+} from '@udecode/plate';
 
-import {
-  type TEquationElement,
-  BaseEquationPlugin,
-} from '../BaseEquationPlugin';
+import { KEYS } from '@udecode/plate';
 
 export const insertEquation = (
   editor: SlateEditor,
@@ -13,7 +14,7 @@ export const insertEquation = (
     {
       children: [{ text: '' }],
       texExpression: '',
-      type: editor.getType(BaseEquationPlugin),
+      type: editor.getType(KEYS.equation),
     },
     options as any
   );

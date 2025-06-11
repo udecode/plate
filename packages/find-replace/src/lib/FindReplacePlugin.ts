@@ -1,4 +1,4 @@
-import { type PluginConfig, createTSlatePlugin } from '@udecode/plate';
+import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
 
 import { decorateFindReplace } from './decorateFindReplace';
 
@@ -11,7 +11,7 @@ export type FindReplaceConfig = PluginConfig<
 >;
 
 export const FindReplacePlugin = createTSlatePlugin<FindReplaceConfig>({
-  key: 'search_highlight',
+  key: KEYS.searchHighlight,
   decorate: decorateFindReplace,
   node: { isLeaf: true },
   options: { search: '' },

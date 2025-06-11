@@ -78,10 +78,12 @@ export type StyledPlateElementProps<
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'div',
 > = Omit<PlateElementProps<N, C>, keyof DeprecatedNodeProps> &
-  PlateHTMLProps<C, T>;
+  PlateHTMLProps<C, T> & {
+    insetProp?: boolean;
+  };
 
 export const PlateElement = React.forwardRef(function PlateElement(
-  { as: Tag = 'div', children, ...props }: StyledPlateElementProps,
+  { as: Tag = 'div', children, insetProp, ...props }: StyledPlateElementProps,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
   const attributes = useNodeAttributes(props, ref);
@@ -95,33 +97,28 @@ export const PlateElement = React.forwardRef(function PlateElement(
     [props.element, props.editor, mounted]
   );
 
-  const belowRootComponents = React.useMemo(
-    () =>
-      props.editor?.pluginList
-        .map((plugin) => plugin.render.belowRootNodes!)
-        .filter(Boolean),
-    [props.editor?.pluginList]
-  );
+  const inset =
+    insetProp ?? props.plugin?.rules.selection?.affinity === 'directional';
 
   return (
-    <Tag
-      data-slate-node="element"
-      data-slate-inline={attributes['data-slate-inline']}
-      data-block-id={block ? props.element.id : undefined}
-      {...attributes}
-      style={
-        {
-          position: 'relative',
-          ...attributes?.style,
-        } as React.CSSProperties
-      }
-    >
-      {children}
-
-      {belowRootComponents?.map((Component, index) => (
-        <Component key={index} {...(props as any)} />
-      ))}
-    </Tag>
+    <>
+      {inset && <NonBreakingSpace />}
+      <Tag
+        data-slate-node="element"
+        data-slate-inline={attributes['data-slate-inline']}
+        data-block-id={block ? props.element.id : undefined}
+        {...attributes}
+        style={
+          {
+            position: 'relative',
+            ...attributes?.style,
+          } as React.CSSProperties
+        }
+      >
+        {children}
+        {inset && <NonBreakingSpace />}
+      </Tag>
+    </>
   );
 }) as <
   N extends TElement = TElement,
@@ -161,7 +158,9 @@ export const PlateText = React.forwardRef<
 export type PlateLeafProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-> = PlateNodeProps<C> & RenderLeafProps<N> & DeprecatedNodeProps;
+> = PlateNodeProps<C> &
+  RenderLeafProps<N> &
+  DeprecatedNodeProps & { inset?: boolean };
 
 export type StyledPlateLeafProps<
   N extends TText = TText,
@@ -170,11 +169,32 @@ export type StyledPlateLeafProps<
 > = Omit<PlateLeafProps<N, C>, keyof DeprecatedNodeProps> &
   PlateHTMLProps<C, T>;
 
+const NonBreakingSpace = () => (
+  <span style={{ fontSize: 0 }} contentEditable={false}>
+    {String.fromCodePoint(160)}
+  </span>
+);
+
 export const PlateLeaf = React.forwardRef<
   HTMLSpanElement,
   StyledPlateLeafProps
->(({ as: Tag = 'span', children, ...props }, ref) => {
+>(({ as: Tag = 'span', children, inset: insetProp, ...props }, ref) => {
   const attributes = useNodeAttributes(props, ref);
+
+  const inset = insetProp ?? props.plugin?.rules.selection?.affinity === 'hard';
+
+  if (inset) {
+    return (
+      <>
+        <NonBreakingSpace />
+        <Tag {...attributes}>
+          {children}
+
+          <NonBreakingSpace />
+        </Tag>
+      </>
+    );
+  }
 
   return <Tag {...attributes}>{children}</Tag>;
 }) as <

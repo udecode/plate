@@ -1,8 +1,8 @@
-import { createSlatePlugin } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from '@udecode/plate';
 
 /** Enables support for subscript formatting. */
 export const BaseSubscriptPlugin = createSlatePlugin({
-  key: 'subscript',
+  key: KEYS.sub,
   node: { isLeaf: true },
   parsers: {
     html: {
@@ -14,4 +14,11 @@ export const BaseSubscriptPlugin = createSlatePlugin({
       },
     },
   },
-});
+  render: { as: 'sub' },
+}).extendTransforms(({ editor, type }) => ({
+  toggle: () => {
+    editor.tf.toggleMark(type, {
+      remove: editor.getType(KEYS.sup),
+    });
+  },
+}));

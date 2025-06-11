@@ -1,7 +1,5 @@
 /** @jsx jsxt */
 
-import type { LegacyEditorMethods } from '@udecode/slate';
-
 import { jsxt } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../react';
@@ -10,36 +8,36 @@ jsxt;
 
 // https://github.com/udecode/editor-protocol/issues/81
 describe('delete marked text at block start', () => {
-  it('delete backward in a marked text at offset 1, it should remove the mark (legacy)', () => {
-    const input = (
-      <editor>
-        <hp>
-          <htext bold>
-            a<cursor />
-            bc
-          </htext>
-        </hp>
-      </editor>
-    ) as any;
+  // it('delete backward in a marked text at offset 1, it should remove the mark (legacy)', () => {
+  //   const input = (
+  //     <editor>
+  //       <hp>
+  //         <htext bold>
+  //           a<cursor />
+  //           bc
+  //         </htext>
+  //       </hp>
+  //     </editor>
+  //   ) as any;
 
-    const output = (
-      <editor>
-        <hp>
-          a<htext bold>bc</htext>
-        </hp>
-      </editor>
-    ) as any;
+  //   const output = (
+  //     <editor>
+  //       <hp>
+  //         a<htext bold>bc</htext>
+  //       </hp>
+  //     </editor>
+  //   ) as any;
 
-    const editor = createPlateEditor({
-      selection: input.selection,
-      value: input.children,
-    });
+  //   const editor = createPlateEditor({
+  //     selection: input.selection,
+  //     value: input.children,
+  //   });
 
-    (editor as typeof editor & LegacyEditorMethods).deleteBackward('character');
-    (editor as typeof editor & LegacyEditorMethods).insertText('a');
+  //   (editor as typeof editor & LegacyEditorMethods).deleteBackward('character');
+  //   (editor as typeof editor & LegacyEditorMethods).insertText('a');
 
-    expect(editor.children).toEqual(output.children);
-  });
+  //   expect(editor.children).toEqual(output.children);
+  // });
 
   it('delete backward in a marked text at offset 1, it should remove the mark', () => {
     const input = (

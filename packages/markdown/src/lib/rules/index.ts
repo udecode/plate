@@ -6,5 +6,4 @@ export * from './columnRules';
 export * from './defaultRules';
 export * from './fontRules';
 export * from './mediaRules';
-export * from './types';
 export * from './utils/index';

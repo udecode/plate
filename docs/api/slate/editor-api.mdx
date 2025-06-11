@@ -291,11 +291,6 @@ Get the fragment at a location or selection.
     Options for extracting and processing the fragment.
   </APIItem>
 </APIParameters>
-<APIOptions type="EditorFragmentOptions">
-  <APIItem name="structuralTypes" type="string[]" optional>
-    Types of structural nodes to unwrap.
-  </APIItem>
-</APIOptions>
 
 <APIReturns type="ElementOrTextIn<V>[] | undefined">
   The fragment at the location.
@@ -1672,25 +1667,6 @@ Manually control the editor's normalizing state.
     Whether the editor should normalize after each operation.
   </APIItem>
 </APIOptions>
-</API>
-
-### `shouldMergeNodesRemovePrevNode`
-
-Determines whether to remove the previous node when merging nodes.
-
-<API name="shouldMergeNodesRemovePrevNode">
-<APIParameters>
-  <APIItem name="prevNodeEntry" type="NodeEntry">
-    A tuple containing the previous node and its path.
-  </APIItem>
-  <APIItem name="curNodeEntry" type="NodeEntry">
-    A tuple containing the current node and its path.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="boolean">
-  True if the previous node should be removed during merge, false if it should be kept.
-</APIReturns>
 </API>
 
 ### `shouldNormalize`

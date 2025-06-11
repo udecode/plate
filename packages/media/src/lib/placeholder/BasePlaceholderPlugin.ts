@@ -1,8 +1,8 @@
 import {
   type PluginConfig,
-  type TElement,
   bindFirst,
   createTSlatePlugin,
+  KEYS,
 } from '@udecode/plate';
 
 import {
@@ -25,12 +25,8 @@ export interface PlaceholderRule {
   mediaType: string;
 }
 
-export interface TPlaceholderElement extends TElement {
-  mediaType: string;
-}
-
 export const BasePlaceholderPlugin = createTSlatePlugin<PlaceholderConfig>({
-  key: 'placeholder',
+  key: KEYS.placeholder,
   node: { isElement: true, isVoid: true },
 }).extendEditorTransforms(({ editor }) => ({
   insert: {

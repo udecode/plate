@@ -1,8 +1,8 @@
-import { createSlatePlugin } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from '@udecode/plate';
 
 /** Enables support for code formatting */
 export const BaseKbdPlugin = createSlatePlugin({
-  key: 'kbd',
+  key: KEYS.kbd,
   node: { isLeaf: true },
   parsers: {
     html: {

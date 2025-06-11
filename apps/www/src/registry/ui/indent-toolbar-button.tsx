@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { useIndentButton } from '@udecode/plate-indent/react';
-import { Indent } from 'lucide-react';
+import { useIndentButton, useOutdentButton } from '@udecode/plate-indent/react';
+import { IndentIcon, OutdentIcon } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -14,7 +14,19 @@ export function IndentToolbarButton(
 
   return (
     <ToolbarButton {...props} {...buttonProps} tooltip="Indent">
-      <Indent />
+      <IndentIcon />
+    </ToolbarButton>
+  );
+}
+
+export function OutdentToolbarButton(
+  props: React.ComponentProps<typeof ToolbarButton>
+) {
+  const { props: buttonProps } = useOutdentButton();
+
+  return (
+    <ToolbarButton {...props} {...buttonProps} tooltip="Outdent">
+      <OutdentIcon />
     </ToolbarButton>
   );
 }

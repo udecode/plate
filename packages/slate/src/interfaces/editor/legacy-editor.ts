@@ -19,7 +19,7 @@ export type LegacyEditorApi<V extends Value = Value> = Pick<
   | 'markableVoid'
   | 'onChange'
   | 'setNormalizing'
-  | 'shouldMergeNodesRemovePrevNode'
+  | 'shouldMergeNodes'
   | 'shouldNormalize'
 >;
 

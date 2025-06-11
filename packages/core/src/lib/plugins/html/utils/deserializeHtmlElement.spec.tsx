@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`deserializeMdIndentList - comprehensive coverage should deserialize a empty list 1`] = `
+exports[`deserializeMdList - comprehensive coverage should deserialize a empty list 1`] = `
 [
   {
     "children": [
@@ -55,7 +55,7 @@ exports[`deserializeMdIndentList - comprehensive coverage should deserialize a e
 ]
 `;
 
-exports[`deserializeMdIndentList - comprehensive coverage should deserialize a todo list 1`] = `
+exports[`deserializeMdList - comprehensive coverage should deserialize a todo list 1`] = `
 [
   {
     "checked": false,

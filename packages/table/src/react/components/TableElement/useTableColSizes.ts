@@ -1,9 +1,8 @@
-import { PathApi } from '@udecode/plate';
+import { KEYS, PathApi } from '@udecode/plate';
 import { useElementSelector } from '@udecode/plate/react';
 
 import { getTableOverriddenColSizes } from '../../../lib';
 import { useTableValue } from '../../stores';
-import { TablePlugin } from '../../TablePlugin';
 
 /**
  * Returns colSizes with overrides applied. Unset node.colSizes if `colCount`
@@ -33,7 +32,7 @@ export const useTableColSizes = ({
     },
     [disableOverrides, colSizeOverrides, transformColSizes],
     {
-      key: TablePlugin.key,
+      key: KEYS.table,
       equalityFn: (a, b) => !!a && !!b && PathApi.equals(a, b),
     }
   );

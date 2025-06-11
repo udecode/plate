@@ -61,28 +61,10 @@ export const preventDeleteTableCell = (
 /** Prevent cell deletion. */
 export const withDeleteTable: OverrideEditor<TableConfig> = ({
   editor,
-  tf: { deleteBackward, deleteForward, deleteFragment },
+  tf: { deleteFragment },
   type,
 }) => ({
   transforms: {
-    deleteBackward(unit) {
-      if (preventDeleteTableCell(editor, { unit: unit })) return;
-
-      deleteBackward(unit);
-    },
-
-    deleteForward(unit) {
-      if (
-        preventDeleteTableCell(editor, {
-          reverse: true,
-          unit: unit,
-        })
-      )
-        return;
-
-      deleteForward(unit);
-    },
-
     deleteFragment(direction) {
       if (editor.api.isAt({ block: true, match: (n) => n.type === type })) {
         const cellEntries = getTableGridAbove(editor, { format: 'cell' });

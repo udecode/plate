@@ -2,16 +2,13 @@ import {
   type DecoratedRange,
   type NodeEntry,
   type SlateEditor,
+  type TCodeBlockElement,
   type TElement,
+  KEYS,
   NodeApi,
 } from '@udecode/plate';
 
-import type { TCodeBlockElement } from './types';
-
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeSyntaxPlugin,
-} from './BaseCodeBlockPlugin';
+import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 
 // Cache for storing decorations per code line element
 export const CODE_LINE_TO_DECORATIONS = new WeakMap<
@@ -139,12 +136,12 @@ export function codeBlockToDecorations(
           offset: start,
           path: [...blockPath, index, 0],
         },
-        [BaseCodeSyntaxPlugin.key]: true,
         className: token.classes.join(' '),
         focus: {
           offset: end,
           path: [...blockPath, index, 0],
         },
+        [KEYS.codeSyntax]: true,
       } as any;
 
       nodeToDecorations.get(element)!.push(decoration);

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { isHotkey, PathApi } from '@udecode/plate';
+import { isHotkey, KEYS, PathApi } from '@udecode/plate';
 import {
   type EditableSiblingComponent,
   useEditorPlugin,
@@ -23,7 +23,7 @@ import {
 export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const editor = useEditorRef();
   const { api, getOption, getOptions, setOption } =
-    useEditorPlugin<BlockSelectionConfig>({ key: 'blockSelection' });
+    useEditorPlugin<BlockSelectionConfig>({ key: KEYS.blockSelection });
 
   const isSelectingSome = usePluginOption(
     BlockSelectionPlugin,

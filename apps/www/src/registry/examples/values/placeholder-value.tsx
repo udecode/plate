@@ -4,7 +4,7 @@ import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 
-export const placeholderValue: any = (
+export const blockPlaceholderValue: any = (
   <fragment>
     <hh2>Placeholder</hh2>
     <hp>

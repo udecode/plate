@@ -1,12 +1,16 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
+import type {
+  SlateEditor,
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '@udecode/plate';
+
+import { getEditorPlugin, KEYS } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { TableConfig } from '../BaseTablePlugin';
 
 import {
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
   findCellByIndexes,
   getCellIndices,
   getCellTypes,
@@ -16,7 +20,7 @@ import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
 
 export const deleteTableMergeRow = (editor: SlateEditor) => {
   const { api, tf, type } = getEditorPlugin<TableConfig>(editor, {
-    key: 'table',
+    key: KEYS.table,
   });
 
   if (

@@ -9,19 +9,19 @@ import {
   Plate,
   PlateElement,
   useFocused,
+  usePlateEditor,
   useSelected,
 } from '@udecode/plate/react';
 
 import { cn } from '@/lib/utils';
-import { editorPlugins } from '@/registry/components/editor/plugins/editor-plugins';
-import { useCreateEditor } from '@/registry/components/editor/use-create-editor';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { tabbableValue } from '@/registry/examples/values/tabbable-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export default function TabbableDemo() {
-  const editor = useCreateEditor({
+  const editor = usePlateEditor({
     plugins: [
-      ...editorPlugins,
+      ...EditorKit,
       TabbablePlugin.configure({
         node: { component: TabbableElement, isElement: true, isVoid: true },
       }),

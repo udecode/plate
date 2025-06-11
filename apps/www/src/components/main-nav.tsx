@@ -2,13 +2,15 @@
 
 import * as React from 'react';
 
+import type { SidebarNavItem } from '@/types/nav';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
 import { useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';
-import { hrefWithLocale } from '@/lib/withLocale';
 
 import { Icons } from './icons';
 
@@ -27,55 +29,41 @@ const i18n = {
   },
 };
 
-export function MainNav() {
+export function MainNav({
+  className,
+  items,
+  ...props
+}: React.ComponentProps<'nav'> & {
+  items: SidebarNavItem[];
+}) {
   const pathname = usePathname();
   const locale = useLocale();
   const content = i18n[locale as keyof typeof i18n];
 
   return (
-    <div className="mr-4 hidden md:flex">
-      <Link
-        className="mr-4 flex items-center gap-2 lg:mr-6"
-        href={hrefWithLocale('/', locale)}
+    <nav className={cn('items-center gap-0.5', className)} {...props}>
+      {items.map((item) => (
+        <Button key={item.href} asChild size="sm" variant="ghost">
+          <Link
+            className={cn(pathname === item.href && 'text-primary')}
+            href={item.href!}
+          >
+            {item.label}
+          </Link>
+        </Button>
+      ))}
+
+      <Button
+        asChild
+        size="sm"
+        variant="ghost"
+        className="relative gap-0.5 font-normal"
       >
-        <Icons.minus className="size-6" />
-        <span className="hidden items-center font-bold lg:inline-flex">
-          {siteConfig.name}
-        </span>
-      </Link>
-      <nav className="flex items-center gap-4 text-sm xl:gap-6">
-        <Link
-          className={cn(
-            'transition-colors hover:text-foreground/80',
-            pathname === '/docs' || pathname === '/cn/docs'
-              ? 'font-medium text-foreground'
-              : 'text-foreground/80'
-          )}
-          href={hrefWithLocale('/docs', locale)}
-        >
-          {content.docs}
-        </Link>
-        <Link
-          className={cn(
-            'transition-colors hover:text-foreground/80',
-            pathname?.includes('/editors')
-              ? 'font-medium text-foreground'
-              : 'text-foreground/80'
-          )}
-          href={hrefWithLocale('/editors', locale)}
-        >
-          {content.editors}
-        </Link>
-        <Link
-          className={cn(
-            'relative text-foreground/80 transition-colors hover:text-foreground/80'
-          )}
-          href={siteConfig.links.platePro}
-        >
+        <Link href={siteConfig.links.platePro}>
           {content.templates}
-          <Icons.arrowUpRight className="absolute top-0 -right-3 size-2.5 text-muted-foreground" />
+          <Icons.arrowUpRight className="-mt-2.5 size-2.5 text-muted-foreground" />
         </Link>
-      </nav>
-    </div>
+      </Button>
+    </nav>
   );
 }

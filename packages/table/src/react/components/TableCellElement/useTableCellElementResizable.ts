@@ -1,5 +1,8 @@
 import React from 'react';
 
+import type { TTableElement } from '@udecode/plate';
+
+import { KEYS } from '@udecode/plate';
 import {
   type ResizeEvent,
   type ResizeHandle,
@@ -14,7 +17,6 @@ import {
 import type { TableCellElementState } from './useTableCellElement';
 
 import {
-  type TTableElement,
   setTableColSize,
   setTableMarginLeft,
   setTableRowSize,
@@ -57,12 +59,12 @@ export const useTableCellElementResizable = ({
     ([node]) =>
       colSpan > 1 ? (node as TTableElement).colSizes?.[colIndex] : undefined,
     [colSpan, colIndex],
-    { key: TablePlugin.key }
+    { key: KEYS.table }
   );
   const marginLeft = useElementSelector(
     ([node]) => (node as TTableElement).marginLeft ?? 0,
     [],
-    { key: TablePlugin.key }
+    { key: KEYS.table }
   );
 
   const colSizesWithoutOverrides = useTableColSizes({ disableOverrides: true });

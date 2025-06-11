@@ -9,7 +9,7 @@ import type { unistLib } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
 
 import { convertTextsSerialize } from './convertTextsSerialize';
-import { indentListToMdastTree } from './indentListToMdastTree';
+import { listToMdastTree } from './listToMdastTree';
 import { unreachable } from './utils';
 import { getSerializerByKey } from './utils/getSerializerByKey';
 
@@ -55,7 +55,7 @@ export const convertNodesSerialize = (
           next && next.type === 'p' && 'listStyleType' in next;
 
         if (!isNextIndent) {
-          mdastNodes.push(indentListToMdastTree(listBlock as any, options));
+          mdastNodes.push(listToMdastTree(listBlock as any, options));
           listBlock.length = 0;
         }
       } else {

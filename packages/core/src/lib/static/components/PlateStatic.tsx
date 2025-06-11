@@ -16,7 +16,6 @@ import {
 import clsx from 'clsx';
 
 import type { SlateEditor } from '../../editor';
-import type { NodeComponents } from '../../plugin';
 import type { EditableProps } from '../../types/EditableProps';
 import type { SlateRenderElementProps } from '../types';
 
@@ -26,20 +25,18 @@ import { pipeRenderTextStatic } from '../pluginRenderTextStatic';
 import { pipeDecorate } from '../utils/pipeDecorate';
 
 function BaseElementStatic({
-  components,
   decorate,
   decorations,
   editor,
   element = { children: [], type: '' },
 }: {
-  components: NodeComponents;
   decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: SlateEditor;
   element: TElement;
   style?: React.CSSProperties;
 }) {
-  const renderElement = pipeRenderElementStatic(editor, { components });
+  const renderElement = pipeRenderElementStatic(editor);
 
   const attributes: SlateRenderElementProps['attributes'] = {
     'data-slate-node': 'element',
@@ -47,12 +44,7 @@ function BaseElementStatic({
   };
 
   let children: React.ReactNode = (
-    <Children
-      components={components}
-      decorate={decorate}
-      decorations={decorations}
-      editor={editor}
-    >
+    <Children decorate={decorate} decorations={decorations} editor={editor}>
       {element.children}
     </Children>
   );
@@ -69,12 +61,7 @@ function BaseElementStatic({
         }}
         data-slate-spacer
       >
-        <Children
-          components={components}
-          decorate={decorate}
-          decorations={decorations}
-          editor={editor}
-        >
+        <Children decorate={decorate} decorations={decorations} editor={editor}>
           {element.children}
         </Children>
       </span>
@@ -101,18 +88,16 @@ export const ElementStatic = React.memo(BaseElementStatic, (prev, next) => {
 });
 
 function BaseLeafStatic({
-  components,
   decorations,
   editor,
   text: text = { text: '' },
 }: {
-  components: NodeComponents;
   decorations: DecoratedRange[];
   editor: SlateEditor;
   text: TText;
 }) {
-  const renderLeaf = pipeRenderLeafStatic(editor, { components });
-  const renderText = pipeRenderTextStatic(editor, { components });
+  const renderLeaf = pipeRenderLeafStatic(editor);
+  const renderText = pipeRenderTextStatic(editor);
 
   const decoratedLeaves = TextApi.decorations(text, decorations);
 
@@ -151,13 +136,11 @@ const defaultDecorate: (entry: NodeEntry) => DecoratedRange[] = () => [];
 
 function Children({
   children = [],
-  components,
   decorate = defaultDecorate,
   decorations = [],
   editor,
 }: {
   children: Descendant[];
-  components: NodeComponents;
   decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: SlateEditor;
@@ -185,20 +168,13 @@ function Children({
         return ElementApi.isElement(child) ? (
           <ElementStatic
             key={i}
-            components={components}
             decorate={decorate}
             decorations={ds}
             editor={editor}
             element={child}
           />
         ) : (
-          <LeafStatic
-            key={i}
-            components={components}
-            decorations={ds}
-            editor={editor}
-            text={child}
-          />
+          <LeafStatic key={i} decorations={ds} editor={editor} text={child} />
         );
       })}
     </React.Fragment>
@@ -206,8 +182,6 @@ function Children({
 }
 
 export type PlateStaticProps = {
-  /** Node components to render. */
-  components: NodeComponents;
   /** Editor instance. */
   editor: SlateEditor;
   style?: React.CSSProperties;
@@ -216,7 +190,7 @@ export type PlateStaticProps = {
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export function PlateStatic(props: PlateStaticProps) {
-  const { className, components, editor, value, ...rest } = props;
+  const { className, editor, value, ...rest } = props;
 
   if (value) {
     editor.children = value;
@@ -227,24 +201,29 @@ export function PlateStatic(props: PlateStaticProps) {
   let afterEditable: React.ReactNode = null;
   let beforeEditable: React.ReactNode = null;
 
-  editor.pluginList.forEach((plugin) => {
-    const {
-      render: { afterEditable: AfterEditable, beforeEditable: BeforeEditable },
-    } = plugin;
+  editor.meta.pluginCache.render.beforeEditable.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
+    const BeforeEditable = plugin.render.beforeEditable;
+
+    if (BeforeEditable) {
+      beforeEditable = (
+        <>
+          {beforeEditable}
+          <BeforeEditable />
+        </>
+      );
+    }
+  });
+
+  editor.meta.pluginCache.render.afterEditable.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
+    const AfterEditable = plugin.render.afterEditable;
 
     if (AfterEditable) {
       afterEditable = (
         <>
           {afterEditable}
           <AfterEditable />
-        </>
-      );
-    }
-    if (BeforeEditable) {
-      beforeEditable = (
-        <>
-          {beforeEditable}
-          <BeforeEditable />
         </>
       );
     }
@@ -257,12 +236,7 @@ export function PlateStatic(props: PlateStaticProps) {
       data-slate-node="value"
       {...rest}
     >
-      <Children
-        components={components}
-        decorate={decorate}
-        decorations={[]}
-        editor={editor}
-      >
+      <Children decorate={decorate} decorations={[]} editor={editor}>
         {editor.children}
       </Children>
     </div>
@@ -276,10 +250,10 @@ export function PlateStatic(props: PlateStaticProps) {
     </>
   );
 
-  editor.pluginList.forEach((plugin) => {
-    const {
-      render: { aboveEditable: AboveEditable },
-    } = plugin;
+  // Use pre-computed arrays for aboveEditable components
+  editor.meta.pluginCache.render.aboveEditable.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
+    const AboveEditable = plugin.render.aboveEditable;
 
     if (AboveEditable) {
       aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;

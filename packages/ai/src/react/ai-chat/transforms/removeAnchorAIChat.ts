@@ -1,8 +1,6 @@
 import type { PlateEditor } from '@udecode/plate/react';
 
-import { type RemoveNodesOptions, ElementApi } from '@udecode/plate';
-
-import { AIChatPlugin } from '../AIChatPlugin';
+import { type RemoveNodesOptions, ElementApi, KEYS } from '@udecode/plate';
 
 export const removeAnchorAIChat = (
   editor: PlateEditor,
@@ -11,7 +9,7 @@ export const removeAnchorAIChat = (
   editor.tf.withoutSaving(() => {
     editor.tf.removeNodes({
       at: [],
-      match: (n) => ElementApi.isElement(n) && n.type === AIChatPlugin.key,
+      match: (n) => ElementApi.isElement(n) && n.type === KEYS.aiChat,
       ...options,
     });
   });
