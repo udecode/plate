@@ -5,7 +5,7 @@
   "title": "Select Editor Form",
   "description": "A form with a select editor component for managing labels.",
   "dependencies": [
-    "@udecode/plate-tag"
+    "@platejs/tag"
   ],
   "registryDependencies": [
     "form",

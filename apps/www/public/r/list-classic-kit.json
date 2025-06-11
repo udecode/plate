@@ -3,7 +3,7 @@
   "name": "list-classic-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-list-classic"
+    "@platejs/list-classic"
   ],
   "registryDependencies": [
     "https://platejs.org/r/list-classic-node",
@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/list-classic-kit.tsx",
-      "content": "'use client';\n\nimport {\n  BulletedListPlugin,\n  ListItemPlugin,\n  ListPlugin,\n  NumberedListPlugin,\n} from '@udecode/plate-list-classic/react';\n\nimport {\n  BulletedListElement,\n  NumberedListElement,\n} from '@/registry/ui/list-classic-node';\n\nexport const ListKit = [\n  ListPlugin,\n  BulletedListPlugin.configure({\n    node: { component: BulletedListElement },\n    shortcuts: { toggle: { keys: 'mod+alt+5' } },\n  }),\n  NumberedListPlugin.configure({\n    node: { component: NumberedListElement },\n    shortcuts: { toggle: { keys: 'mod+alt+6' } },\n  }),\n  ListItemPlugin,\n];\n",
+      "content": "'use client';\n\nimport {\n  BulletedListPlugin,\n  ListItemPlugin,\n  ListPlugin,\n  NumberedListPlugin,\n} from '@platejs/list-classic/react';\n\nimport {\n  BulletedListElement,\n  NumberedListElement,\n} from '@/registry/ui/list-classic-node';\n\nexport const ListKit = [\n  ListPlugin,\n  BulletedListPlugin.configure({\n    node: { component: BulletedListElement },\n    shortcuts: { toggle: { keys: 'mod+alt+5' } },\n  }),\n  NumberedListPlugin.configure({\n    node: { component: NumberedListElement },\n    shortcuts: { toggle: { keys: 'mod+alt+6' } },\n  }),\n  ListItemPlugin,\n];\n",
       "type": "registry:component"
     }
   ]

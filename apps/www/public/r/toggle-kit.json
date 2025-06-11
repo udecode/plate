@@ -3,7 +3,7 @@
   "name": "toggle-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-toggle"
+    "@platejs/toggle"
   ],
   "registryDependencies": [
     "https://platejs.org/r/toggle-base-kit",
@@ -14,7 +14,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/toggle-kit.tsx",
-      "content": "'use client';\n\nimport { TogglePlugin } from '@udecode/plate-toggle/react';\n\nimport { IndentKit } from '@/registry/components/editor/plugins/indent-kit';\nimport { ToggleElement } from '@/registry/ui/toggle-node';\n\nexport const ToggleKit = [\n  ...IndentKit,\n  TogglePlugin.withComponent(ToggleElement),\n];\n",
+      "content": "'use client';\n\nimport { TogglePlugin } from '@platejs/toggle/react';\n\nimport { IndentKit } from '@/registry/components/editor/plugins/indent-kit';\nimport { ToggleElement } from '@/registry/ui/toggle-node';\n\nexport const ToggleKit = [\n  ...IndentKit,\n  TogglePlugin.withComponent(ToggleElement),\n];\n",
       "type": "registry:component"
     }
   ]

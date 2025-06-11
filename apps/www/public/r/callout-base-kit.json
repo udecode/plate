@@ -3,7 +3,7 @@
   "name": "callout-base-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-callout"
+    "@platejs/callout"
   ],
   "registryDependencies": [
     "https://platejs.org/r/callout-node"
@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/callout-base-kit.tsx",
-      "content": "import { BaseCalloutPlugin } from '@udecode/plate-callout';\n\nimport { CalloutElementStatic } from '@/registry/ui/callout-node-static';\n\nexport const BaseCalloutKit = [\n  BaseCalloutPlugin.withComponent(CalloutElementStatic),\n];\n",
+      "content": "import { BaseCalloutPlugin } from '@platejs/callout';\n\nimport { CalloutElementStatic } from '@/registry/ui/callout-node-static';\n\nexport const BaseCalloutKit = [\n  BaseCalloutPlugin.withComponent(CalloutElementStatic),\n];\n",
       "type": "registry:component"
     }
   ]

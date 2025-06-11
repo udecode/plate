@@ -5,8 +5,8 @@
   "title": "Media Audio Element",
   "description": "An audio player component with caption support.",
   "dependencies": [
-    "@udecode/plate-media",
-    "@udecode/plate-resizable"
+    "@platejs/media",
+    "@platejs/resizable"
   ],
   "registryDependencies": [
     "https://platejs.org/r/caption"
@@ -14,12 +14,12 @@
   "files": [
     {
       "path": "src/registry/ui/media-audio-node.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TAudioElement } from '@udecode/plate';\nimport type { PlateElementProps } from '@udecode/plate/react';\n\nimport { useMediaState } from '@udecode/plate-media/react';\nimport { ResizableProvider } from '@udecode/plate-resizable';\nimport { PlateElement, withHOC } from '@udecode/plate/react';\n\nimport { Caption, CaptionTextarea } from './caption';\n\nexport const AudioElement = withHOC(\n  ResizableProvider,\n  function AudioElement(props: PlateElementProps<TAudioElement>) {\n    const { align = 'center', readOnly, unsafeUrl } = useMediaState();\n\n    return (\n      <PlateElement {...props} className=\"mb-1\">\n        <figure\n          className=\"group relative cursor-default\"\n          contentEditable={false}\n        >\n          <div className=\"h-16\">\n            <audio className=\"size-full\" src={unsafeUrl} controls />\n          </div>\n\n          <Caption style={{ width: '100%' }} align={align}>\n            <CaptionTextarea\n              className=\"h-20\"\n              readOnly={readOnly}\n              placeholder=\"Write a caption...\"\n            />\n          </Caption>\n        </figure>\n        {props.children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TAudioElement } from 'platejs';\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { useMediaState } from '@platejs/media/react';\nimport { ResizableProvider } from '@platejs/resizable';\nimport { PlateElement, withHOC } from 'platejs/react';\n\nimport { Caption, CaptionTextarea } from './caption';\n\nexport const AudioElement = withHOC(\n  ResizableProvider,\n  function AudioElement(props: PlateElementProps<TAudioElement>) {\n    const { align = 'center', readOnly, unsafeUrl } = useMediaState();\n\n    return (\n      <PlateElement {...props} className=\"mb-1\">\n        <figure\n          className=\"group relative cursor-default\"\n          contentEditable={false}\n        >\n          <div className=\"h-16\">\n            <audio className=\"size-full\" src={unsafeUrl} controls />\n          </div>\n\n          <Caption style={{ width: '100%' }} align={align}>\n            <CaptionTextarea\n              className=\"h-20\"\n              readOnly={readOnly}\n              placeholder=\"Write a caption...\"\n            />\n          </Caption>\n        </figure>\n        {props.children}\n      </PlateElement>\n    );\n  }\n);\n",
       "type": "registry:ui"
     },
     {
       "path": "src/registry/ui/media-audio-node-static.tsx",
-      "content": "import * as React from 'react';\n\nimport type { SlateElementProps, TAudioElement } from '@udecode/plate';\n\nimport { SlateElement } from '@udecode/plate';\n\nexport function AudioElementStatic(props: SlateElementProps<TAudioElement>) {\n  return (\n    <SlateElement {...props} className=\"mb-1\">\n      <figure className=\"group relative cursor-default\">\n        <div className=\"h-16\">\n          <audio className=\"size-full\" src={props.element.url} controls />\n        </div>\n      </figure>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "content": "import * as React from 'react';\n\nimport type { SlateElementProps, TAudioElement } from 'platejs';\n\nimport { SlateElement } from 'platejs';\n\nexport function AudioElementStatic(props: SlateElementProps<TAudioElement>) {\n  return (\n    <SlateElement {...props} className=\"mb-1\">\n      <figure className=\"group relative cursor-default\">\n        <div className=\"h-16\">\n          <audio className=\"size-full\" src={props.element.url} controls />\n        </div>\n      </figure>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

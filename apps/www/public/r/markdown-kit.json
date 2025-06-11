@@ -3,7 +3,7 @@
   "name": "markdown-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-markdown",
+    "@platejs/markdown",
     "remark-gfm",
     "remark-math"
   ],
@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/markdown-kit.tsx",
-      "content": "import { KEYS } from '@udecode/plate';\nimport {\n  MarkdownPlugin,\n  remarkMdx,\n  remarkMention,\n} from '@udecode/plate-markdown';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\n\nexport const MarkdownKit = [\n  MarkdownPlugin.configure({\n    options: {\n      disallowedNodes: [KEYS.suggestion],\n      remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],\n    },\n  }),\n];\n",
+      "content": "import { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';\nimport { KEYS } from 'platejs';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\n\nexport const MarkdownKit = [\n  MarkdownPlugin.configure({\n    options: {\n      disallowedNodes: [KEYS.suggestion],\n      remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

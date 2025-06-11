@@ -3,7 +3,7 @@
   "name": "code-block-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-code-block",
+    "@platejs/code-block",
     "lowlight"
   ],
   "registryDependencies": [
@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/code-block-kit.tsx",
-      "content": "'use client';\n\nimport {\n  CodeBlockPlugin,\n  CodeLinePlugin,\n  CodeSyntaxPlugin,\n} from '@udecode/plate-code-block/react';\nimport { all, createLowlight } from 'lowlight';\n\nimport {\n  CodeBlockElement,\n  CodeLineElement,\n  CodeSyntaxLeaf,\n} from '@/registry/ui/code-block-node';\n\nconst lowlight = createLowlight(all);\n\nexport const CodeBlockKit = [\n  CodeBlockPlugin.configure({\n    node: { component: CodeBlockElement },\n    options: { lowlight },\n    shortcuts: { toggle: { keys: 'mod+alt+8' } },\n  }),\n  CodeLinePlugin.withComponent(CodeLineElement),\n  CodeSyntaxPlugin.withComponent(CodeSyntaxLeaf),\n];\n",
+      "content": "'use client';\n\nimport {\n  CodeBlockPlugin,\n  CodeLinePlugin,\n  CodeSyntaxPlugin,\n} from '@platejs/code-block/react';\nimport { all, createLowlight } from 'lowlight';\n\nimport {\n  CodeBlockElement,\n  CodeLineElement,\n  CodeSyntaxLeaf,\n} from '@/registry/ui/code-block-node';\n\nconst lowlight = createLowlight(all);\n\nexport const CodeBlockKit = [\n  CodeBlockPlugin.configure({\n    node: { component: CodeBlockElement },\n    options: { lowlight },\n    shortcuts: { toggle: { keys: 'mod+alt+8' } },\n  }),\n  CodeLinePlugin.withComponent(CodeLineElement),\n  CodeSyntaxPlugin.withComponent(CodeSyntaxLeaf),\n];\n",
       "type": "registry:component"
     }
   ]

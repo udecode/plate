@@ -3,7 +3,7 @@
   "name": "toggle-base-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-toggle"
+    "@platejs/toggle"
   ],
   "registryDependencies": [
     "https://platejs.org/r/toggle-node"
@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/toggle-base-kit.tsx",
-      "content": "import { BaseTogglePlugin } from '@udecode/plate-toggle';\n\nimport { ToggleElementStatic } from '@/registry/ui/toggle-node-static';\n\nexport const BaseToggleKit = [\n  BaseTogglePlugin.withComponent(ToggleElementStatic),\n];\n",
+      "content": "import { BaseTogglePlugin } from '@platejs/toggle';\n\nimport { ToggleElementStatic } from '@/registry/ui/toggle-node-static';\n\nexport const BaseToggleKit = [\n  BaseTogglePlugin.withComponent(ToggleElementStatic),\n];\n",
       "type": "registry:component"
     }
   ]
