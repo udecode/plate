@@ -1,5 +1,16 @@
 # @udecode/plate-normalizers
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - Package `@udecode/plate-normalizers` has been deprecated.
+  - Its functionality has been moved to `platejs` (which is re-exported via `platejs`).
+  - Migration:
+    - Remove `@udecode/plate-normalizers` from your dependencies.
+    - Update import paths to use `platejs`
+
 ## 48.0.0
 
 ## 44.0.0

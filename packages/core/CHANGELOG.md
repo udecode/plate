@@ -1,5 +1,98 @@
 # @udecode/plate-core
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `editor.getType()` now takes a `pluginKey: string` instead of a `plugin: PlatePlugin` instance.
+    - Example: Use `editor.getType(ParagraphPlugin.key)` instead of `editor.getType(ParagraphPlugin)`.
+  - Plugins without a `key` property will not be registered into the editor.
+  - Passing `disabled: true` prop to `PlateContent` will now also set the editor to `readOnly: true` state internally.
+  - Editor DOM state properties have been moved under `editor.dom` namespace:
+    - `editor.currentKeyboardEvent` is now `editor.dom.currentKeyboardEvent`.
+    - `editor.prevSelection` is now `editor.dom.prevSelection`.
+  - Editor metadata properties have been moved under `editor.meta` namespace:
+    - `editor.isFallback` is now `editor.meta.isFallback`
+    - `editor.key` is now `editor.meta.key`
+    - `editor.pluginList` is now `editor.meta.pluginList`
+    - `editor.shortcuts` is now `editor.meta.shortcuts`
+    - `editor.uid` is now `editor.meta.uid`
+  - `NodeIdPlugin` is now enabled by default as part of the core plugins. This automatically assigns unique IDs to block nodes.
+    - Migration: If you were not previously using `NodeIdPlugin` and wish to maintain the old behavior (no automatic IDs), explicitly disable it in your editor configuration:
+      ```ts
+      const editor = usePlateEditor({
+        // ...other options
+        nodeId: false, // Disables automatic node ID generation
+      });
+      ```
+  - The `components` prop has been removed from `serializeHtml` and `PlateStatic`.
+    - Migration: Pass the `components` to `createSlateEditor({ components })` or the individual plugins instead.
+  - Plugin Shortcuts System Changes:
+    - Shortcut keys defined in `editor.shortcuts` are now namespaced by the plugin key (e.g., `code.toggle` for `CodePlugin`).
+    - The `priority` property for shortcuts is used to resolve conflicts when multiple shortcuts share the exact same key combination, not for overriding shortcuts by name.
+    - `preventDefault` for plugin shortcuts now defaults to `true`, unless the handler returns `false` (i.e. not handled). This means browser default actions for these key combinations will be prevented unless explicitly allowed.
+      - Migration: If you need to allow browser default behavior for a specific shortcut, set `preventDefault: false` in its configuration:
+        ```ts
+        MyPlugin.configure({
+          shortcuts: {
+            myAction: {
+              keys: 'mod+s',
+              preventDefault: false, // Example: Allow browser's default save dialog
+            },
+          },
+        });
+        ```
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
+
+### Minor Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - New editor DOM state fields available under `editor.dom`:
+    - `editor.dom.composing`: Boolean, true if the editor is currently composing text (e.g., during IME input).
+    - `editor.dom.focused`: Boolean, true if the editor currently has focus.
+    - `editor.dom.readOnly`: Boolean, true if the editor is in read-only mode. Passing the `readOnly` prop to `PlateContent` will sync its value to this state and to the `useEditorReadOnly` hook.
+  - New editor metadata fields:
+    - `editor.meta.components` - stores the plugin components by key
+  - New hook `useEditorComposing`: Allows subscription to the editor's composing state (`editor.dom.composing`) outside of `PlateContent`.
+  - `createPlateEditor` and `usePlateEditor` now accept a `readOnly` option to initialize the editor in a read-only state. For dynamic read-only changes after initialization, continue to use the `readOnly` prop on the `<Plate>` or `<PlateContent>` component.
+  - New plugin field: `editOnly` (boolean or object).
+    - When `true` or when specific properties are true in the object, Plate will disable certain plugin behaviors (handlers, rendering, injections) in read-only mode and re-enable them if the editor becomes editable.
+    - By default, `render`, `handlers`, and `inject` are considered edit-only (`true`). `normalizeInitialValue` defaults to always active (`false`).
+    - Example: `editOnly: { render: false, normalizeInitialValue: true }` would make rendering active always, but normalization only in edit mode.
+  - New plugin field: `node.clearOnEdge` (boolean).
+    - When enabled for mark plugins (`node.isLeaf: true`), this feature automatically clears the mark when the user types at the boundary of the marked text. This provides a natural way to "exit" a mark. This is utilized by suggestion and comment marks.
+  - New plugin field: `render.as` (`keyof HTMLElementTagNameMap`).
+    - Specifies the default HTML tag name to be used by `PlateElement` (default: `'div'`) or `PlateLeaf` (default: `'span'`) when rendering the node, but only if no custom `node.component` is provided for the plugin.
+    - Example: `render: { as: 'h1' }` would make the plugin render its node as an `<h1>` tag by default without the need to provide a custom component.
+  - New plugin field: `node.isContainer` (boolean).
+    - When `true`, indicates that the plugin's elements are primarily containers for other content.
+  - New plugin field: `node.isStrictSiblings` (boolean).
+    - When `true`, indicates that the element enforces strict sibling type constraints and only allows specific siblings (e.g., `td` can only have `td` siblings, `column` can only have `column` siblings).
+    - Used by `editor.tf.insertExitBreak` functionality to determine appropriate exit points in nested structures.
+  - New plugin field: `rules` (object).
+    - Configures common editing behaviors declaratively instead of overriding editor methods. See documentation for more details.
+    - `rules.break`: Controls Enter key behavior (`empty`, `default`, `emptyLineEnd`, `splitReset`)
+    - `rules.delete`: Controls Backspace key behavior (`start`, `empty`)
+    - `rules.merge`: Controls block merging behavior (`removeEmpty`)
+    - `rules.normalize`: Controls normalization behavior (`removeEmpty`)
+    - `rules.selection`: Controls cursor positioning behavior (`affinity`)
+    - `rules.match`: Conditional rule application based on node properties
+  - Plugin shortcuts can now automatically leverage existing plugin transforms by specifying the transform name, in addition to custom handlers.
+  - New editor transform methods for keyboard handling:
+    - `editor.tf.escape`: Handle Escape key events. Returns `true` if the event is handled.
+    - `editor.tf.moveLine`: Handle ArrowDown and ArrowUp key events with `reverse` option for direction. Returns `true` if the event is handled.
+    - `editor.tf.selectAll`: Handle Ctrl/Cmd+A key events for selecting all content. Returns `true` if the event is handled.
+    - `editor.tf.tab`: Handle Tab and Shift+Tab key events with `reverse` option for Shift+Tab. Returns `true` if the event is handled.
+
+### Patch Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed an issue where `editor.api` and `editor.tf` (transforms) were not consistently available in the props passed to default element components when no custom component was provided for a plugin.
+
 ## 48.0.5
 
 ### Patch Changes

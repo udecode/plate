@@ -1,5 +1,73 @@
 # @udecode/plate-utils
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Node type definitions (e.g., `TImageElement`, `TParagraphElement`) previously co-located with their respective plugin packages (like `@udecode/plate-media`) have been centralized into `@platejs/utils`. These are typically re-exported via the main `platejs` package.
+
+    - Migration: Update imports for these types to pull from `platejs`.
+
+      ```tsx
+      // Before
+      // import { TImageElement } from '@udecode/plate-media';
+
+      // After
+      import { TImageElement } from 'platejs';
+      ```
+
+  - Removed `structuralTypes` option from `useSelectionFragment` and `useSelectionFragmentProp`. These hooks now automatically use `plugin.node.isContainer` from enabled plugins.
+  - Removed:
+    - `createNodesHOC`
+    - `createNodesWithHOC`
+    - `createNodeHOC`
+  - Removed `usePlaceholderState` hook.
+    - Migration: Use the `BlockPlaceholderPlugin` (typically from `platejs`) instead of the `withPlaceholders` HOC and `usePlaceholderState`. Configure placeholders directly within the `BlockPlaceholderPlugin` options.
+      ```ts
+      // Example BlockPlaceholderPlugin configuration
+      BlockPlaceholderPlugin.configure({
+        options: {
+          className:
+            'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
+          placeholders: {
+            [ParagraphPlugin.key]: 'Type something...',
+            // ...other placeholders
+          },
+          query: ({ editor, path }) => {
+            // Example query: only show for top-level empty blocks
+            return (
+              path.length === 1 && editor.api.isEmpty(editor.children[path[0]])
+            );
+          },
+        },
+      });
+      ```
+
+### Minor Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+  - New plugin `SingleBlockPlugin` to restrict editor content to a single block while preserving line breaks, while `SingleLinePlugin` prevents all line breaks.
+  - `@platejs/utils` (and by extension, `platejs`) now exports a comprehensive `KEYS` object containing all official plugin keys.
+
+    - This is intended to improve decoupling and provide a centralized way to reference plugin keys.
+    - Example Usage:
+
+      ```ts
+      import { KEYS } from 'platejs';
+
+      // Instead of: ParagraphPlugin.key
+      // Use: KEYS.p
+      ```
+
+  - Many node type definitions (e.g., `TParagraphElement`, `TLinkElement`) are also now exported from `platejs`, in addition to being available from their specific plugin packages if those still exist or from `@platejs/basic-nodes`.
+
 ## 48.0.5
 
 ## 48.0.3

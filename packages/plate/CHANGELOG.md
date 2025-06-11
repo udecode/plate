@@ -1,5 +1,14 @@
 # @udecode/plate
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - Renamed package to `platejs`:
+    - Replace all `@udecode/plate/react` with `platejs/react`
+    - Replace all `'@udecode/plate'` with `'platejs'`
+
 ## 48.0.5
 
 ## 48.0.3

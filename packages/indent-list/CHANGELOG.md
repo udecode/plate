@@ -1,5 +1,15 @@
 # @udecode/plate-indent-list
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - Package `@udecode/plate-indent-list` has been renamed to `@platejs/list`.
+  - Migration:
+    - Rename all import paths from `@udecode/plate-indent-list` to `@platejs/list`.
+    - Update your `package.json`: remove `@udecode/plate-indent-list` and add `@platejs/list`.
+
 ## 48.0.0
 
 ## 47.4.0

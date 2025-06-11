@@ -1,5 +1,16 @@
 # @udecode/plate-markdown
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Function `indentListToMdastTree` has been renamed to `listToMdastTree` to align with the list plugin renames (`IndentListPlugin` -> `ListPlugin`).
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
+
 ## 48.0.2
 
 ### Patch Changes

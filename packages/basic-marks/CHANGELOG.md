@@ -1,5 +1,17 @@
 # @udecode/plate-basic-marks
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - Package `@udecode/plate-basic-marks` has been deprecated.
+  - Its plugins have been moved to the new `@platejs/basic-nodes` package.
+  - Migration:
+    - Replace `@udecode/plate-basic-marks` with `@platejs/basic-nodes` in your dependencies.
+    - Update import paths from `@udecode/plate-basic-marks/react` to `@platejs/basic-nodes/react`.
+    - For detailed changes to individual plugins, default HTML tags, and shortcut configurations, refer to the changeset for `@platejs/basic-nodes`.
+
 ## 48.0.0
 
 ## 46.0.5

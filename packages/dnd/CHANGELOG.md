@@ -1,5 +1,16 @@
 # @udecode/plate-dnd
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+  - The following plugins now default to `editOnly: true`. This means their core functionalities (handlers, rendering injections, etc.) will be disabled when the editor is in read-only mode. To override this behavior for a specific plugin, configure its `editOnly` field. For example, `SomePlugin.configure({ editOnly: false })`.
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
+
 ## 48.0.0
 
 ## 46.0.6
