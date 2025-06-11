@@ -295,7 +295,6 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         },
         selectAll: () => {
           const apply = () => {
-            console.log('selectAlle');
             const ancestorNode = editor.api.block({ highest: true });
 
             if (!ancestorNode) return;

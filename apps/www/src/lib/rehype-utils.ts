@@ -255,9 +255,6 @@ export async function getRegistryItem(
   const allFiles = await getAllItemFiles(name, seen);
 
   for (const file of allFiles) {
-    if (!file) {
-      console.log(name, file);
-    }
     const relativePath = path.relative(process.cwd(), file.path);
 
     const content =
@@ -315,9 +312,6 @@ async function getAllItemFiles(
   if (!item) return [];
 
   let allFiles = [...(item.files ?? [])].map((file) => {
-    if (!file) {
-      console.log(1, name, file);
-    }
     const filePath = typeof file === 'string' ? file : file.path;
     // Ensure path starts with src/registry/
     const normalizedPath = filePath.startsWith('src/registry/')
@@ -355,10 +349,6 @@ async function getAllItemFiles(
 }
 
 async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
-  if (!file) {
-    console.log(2, file);
-  }
-
   // Try different path resolutions
   const possiblePaths = [
     file.path,
@@ -470,9 +460,6 @@ export function createFileTreeForRegistryItemFiles(
   const root: FileTree[] = [];
 
   for (const file of files) {
-    if (!file) {
-      console.log(4, file);
-    }
     const path = file.target ?? file.path;
     const parts = path.split('/');
     let currentLevel = root;

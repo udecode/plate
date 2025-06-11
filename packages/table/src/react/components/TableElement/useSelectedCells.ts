@@ -3,6 +3,7 @@ import React from 'react';
 import {
   useEditorPlugin,
   useEditorRef,
+  useEditorSelection,
   usePluginOption,
   useReadOnly,
   useSelected,
@@ -19,6 +20,7 @@ export const useSelectedCells = () => {
   const readOnly = useReadOnly();
   const selected = useSelected();
   const editor = useEditorRef();
+  const selection = useEditorSelection();
 
   const { setOption } = useEditorPlugin(TablePlugin);
   const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
@@ -48,5 +50,5 @@ export const useSelectedCells = () => {
       setOption('selectedCells', null);
       setOption('selectedTables', null);
     }
-  }, [editor, editor.selection, readOnly, selectedCells, setOption]);
+  }, [editor, selection, readOnly, selectedCells, setOption]);
 };
