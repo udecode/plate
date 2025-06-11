@@ -1,4 +1,4 @@
-# @udecode/plate-reset-node
+# @platejs/reset-node
 
 ## 49.0.0
 
@@ -77,6 +77,9 @@
     },
   }));
   ```
+
+
+# @udecode/plate-reset-node
 
 ## 48.0.0
 

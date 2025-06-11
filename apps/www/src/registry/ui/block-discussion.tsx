@@ -14,8 +14,8 @@ import {
   PathApi,
   TextApi,
 } from 'platejs';
-import { getDraftCommentKey } from '@platejs/comments';
-import { CommentPlugin } from '@platejs/comments/react';
+import { getDraftCommentKey } from '@platejs/comment';
+import { CommentPlugin } from '@platejs/comment/react';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { useEditorPlugin, useEditorRef, usePluginOption } from 'platejs/react';
 import {

@@ -1,4 +1,4 @@
-# @udecode/plate-basic-marks
+# @platejs/basic-marks
 
 ## 49.0.0
 
@@ -11,6 +11,9 @@
     - Replace `@udecode/plate-basic-marks` with `@platejs/basic-nodes` in your dependencies.
     - Update import paths from `@udecode/plate-basic-marks/react` to `@platejs/basic-nodes/react`.
     - For detailed changes to individual plugins, default HTML tags, and shortcut configurations, refer to the changeset for `@platejs/basic-nodes`.
+
+
+# @udecode/plate-basic-marks
 
 ## 48.0.0
 

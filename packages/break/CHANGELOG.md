@@ -1,4 +1,4 @@
-# @udecode/plate-break
+# @platejs/break
 
 ## 49.0.0
 
@@ -40,6 +40,9 @@
           },
         });
         ```
+
+
+# @udecode/plate-break
 
 ## 48.0.0
 

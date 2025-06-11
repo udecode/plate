@@ -1,4 +1,4 @@
-# @udecode/plate-code-block
+# @platejs/code-block
 
 ## 49.0.0
 
@@ -6,6 +6,9 @@
 
 - [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
   - `CodeBlockPlugin` now defaults to rendering the code block container with a `<pre>` HTML tag if no custom component is provided for `CodeBlockElement` (or the plugin key `code_block`).
+
+
+# @udecode/plate-code-block
 
 ## 48.0.0
 

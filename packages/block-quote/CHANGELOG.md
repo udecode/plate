@@ -1,4 +1,4 @@
-# @udecode/plate-block-quote
+# @platejs/block-quote
 
 ## 49.0.0
 
@@ -11,6 +11,9 @@
     - Remove `@udecode/plate-block-quote` from your dependencies.
     - Add `@platejs/basic-nodes` to your dependencies if not already present.
     - Import `BlockquotePlugin` from `@platejs/basic-nodes/react`.
+
+
+# @udecode/plate-block-quote
 
 ## 48.0.0
 

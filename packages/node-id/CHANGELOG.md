@@ -1,4 +1,4 @@
-# @udecode/plate-node-id
+# @platejs/node-id
 
 ## 49.0.0
 
@@ -33,6 +33,9 @@
       ```
 
     - If you want to disable automatic node ID generation (to replicate behavior if you weren't using `NodeIdPlugin` before), set `nodeId: false` in your editor configuration.
+
+
+# @udecode/plate-node-id
 
 ## 48.0.6
 

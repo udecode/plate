@@ -7,7 +7,7 @@ import {
   type BaseCommentConfig,
   BaseCommentPlugin,
   getDraftCommentKey,
-} from '@platejs/comments';
+} from '@platejs/comment';
 import { toTPlatePlugin } from 'platejs/react';
 
 import { CommentLeaf } from '@/registry/ui/comment-node';

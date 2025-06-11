@@ -1,4 +1,4 @@
-# @udecode/plate-basic-elements
+# @platejs/basic-elements
 
 ## 49.0.0
 
@@ -12,6 +12,9 @@
     - Replace `@udecode/plate-basic-elements` with `@platejs/basic-nodes` in your dependencies.
     - Update import paths from `@udecode/plate-basic-elements/react` to `@platejs/basic-nodes/react`.
     - For detailed changes to individual plugins, default HTML tags, and shortcut configurations, refer to the changeset for `@platejs/basic-nodes`.
+
+
+# @udecode/plate-basic-elements
 
 ## 48.0.0
 

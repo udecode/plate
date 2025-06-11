@@ -24,6 +24,7 @@ update_changelog() {
         sed -i '' "${latest_v48}i\\
 \\
 # @udecode/plate-$package_name\\
+\\
 " "$file"
     fi
 }

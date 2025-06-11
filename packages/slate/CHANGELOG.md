@@ -38,6 +38,9 @@
 - [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
   - `editor.tf.insertSoftBreak` now inserts a soft break instead of a hard break.
 
+
+# @udecode/plate-slate
+
 ## 48.0.1
 
 ### Patch Changes

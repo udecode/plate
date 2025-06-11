@@ -1,4 +1,4 @@
-# @udecode/plate-select
+# @platejs/select
 
 ## 49.0.0
 
@@ -17,6 +17,9 @@
     - Remove `@udecode/plate-select` from your dependencies.
     - Remove any usage of `SelectOnBackspacePlugin`, `DeletePlugin` from your project.
     - Replace `RemoveEmptyNodesPlugin.configure({ options: { types: ['custom'] } })` with `CustomPlugin.configure({ rules: { normalize: { removeEmpty: true } } })`. This is used by our `LinkPlugin`.
+
+
+# @udecode/plate-select
 
 ## 48.0.0
 

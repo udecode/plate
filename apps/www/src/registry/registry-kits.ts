@@ -79,7 +79,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/comments'],
+    dependencies: ['@platejs/comment'],
     files: [
       {
         path: 'components/editor/plugins/comment-base-kit.tsx',
@@ -470,7 +470,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/comments'],
+    dependencies: ['@platejs/comment'],
     files: [
       {
         path: 'components/editor/plugins/comment-kit.tsx',

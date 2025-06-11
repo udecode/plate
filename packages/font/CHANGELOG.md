@@ -1,4 +1,4 @@
-# @udecode/plate-font
+# @platejs/font
 
 ## 49.0.0
 
@@ -140,6 +140,9 @@
     // ...
   }
   ```
+
+
+# @udecode/plate-font
 
 ## 48.0.0
 

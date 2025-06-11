@@ -6,7 +6,7 @@ module.exports = {
   '@platejs/basic-styles': 'basic-styles',
   '@platejs/code-block': 'code-block',
   '@platejs/combobox': 'combobox',
-  '@platejs/comments': 'comments',
+  '@platejs/comment': 'comments',
   '@platejs/core': 'core',
   '@platejs/csv': 'csv',
   '@platejs/diff': 'diff',

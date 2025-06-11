@@ -55,7 +55,7 @@
     "@platejs/caption": "workspace:^",
     "@platejs/code-block": "workspace:^",
     "@platejs/combobox": "workspace:^",
-    "@platejs/comments": "workspace:^",
+    "@platejs/comment": "workspace:^",
     "@platejs/csv": "workspace:^",
     "@platejs/date": "workspace:^",
     "@platejs/diff": "workspace:^",

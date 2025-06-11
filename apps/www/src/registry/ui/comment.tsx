@@ -5,8 +5,8 @@ import * as React from 'react';
 import type { CreatePlateEditorOptions } from 'platejs/react';
 
 import { type Value, KEYS, nanoid, NodeApi } from 'platejs';
-import { getCommentKey, getDraftCommentKey } from '@platejs/comments';
-import { CommentPlugin, useCommentId } from '@platejs/comments/react';
+import { getCommentKey, getDraftCommentKey } from '@platejs/comment';
+import { CommentPlugin, useCommentId } from '@platejs/comment/react';
 import {
   Plate,
   useEditorPlugin,

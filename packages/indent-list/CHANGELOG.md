@@ -1,4 +1,4 @@
-# @udecode/plate-indent-list
+# @platejs/indent-list
 
 ## 49.0.0
 
@@ -9,6 +9,9 @@
   - Migration:
     - Rename all import paths from `@udecode/plate-indent-list` to `@platejs/list`.
     - Update your `package.json`: remove `@udecode/plate-indent-list` and add `@platejs/list`.
+
+
+# @udecode/plate-indent-list
 
 ## 48.0.0
 

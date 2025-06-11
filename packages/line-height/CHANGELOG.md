@@ -1,4 +1,4 @@
-# @udecode/plate-line-height
+# @platejs/line-height
 
 ## 49.0.0
 
@@ -51,6 +51,9 @@
 - [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
   - New transform method to `LineHeightPlugin`:
     - `editor.tf.lineHeight.setNodes` - Transform method for setting line height values. Alias to `setLineHeight`
+
+
+# @udecode/plate-line-height
 
 ## 48.0.0
 

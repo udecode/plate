@@ -1,4 +1,4 @@
-# @udecode/plate-horizontal-rule
+# @platejs/horizontal-rule
 
 ## 49.0.0
 
@@ -11,6 +11,9 @@
     - Remove `@udecode/plate-horizontal-rule` from your dependencies.
     - Add `@platejs/basic-nodes` to your dependencies if not already present.
     - Import `HorizontalRulePlugin` from `@platejs/basic-nodes/react`.
+
+
+# @udecode/plate-horizontal-rule
 
 ## 48.0.0
 

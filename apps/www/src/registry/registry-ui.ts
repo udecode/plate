@@ -187,7 +187,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@platejs/comments'],
+    dependencies: ['@platejs/comment'],
     description: 'A toolbar button for adding inline comments.',
     files: [{ path: 'ui/comment-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
@@ -212,7 +212,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@platejs/comments', 'date-fns', '@platejs/suggestion'],
+    dependencies: ['@platejs/comment', 'date-fns', '@platejs/suggestion'],
     description:
       'A popover interface for managing discussions: comments, replies, suggestions.',
     files: [
@@ -1000,7 +1000,7 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@platejs/comments'],
+    dependencies: ['@platejs/comment'],
     description:
       'A text component for displaying comments with visual indicators.',
     files: [

@@ -1,4 +1,4 @@
-# @udecode/plate-kbd
+# @platejs/kbd
 
 ## 49.0.0
 
@@ -11,6 +11,9 @@
     - Remove `@udecode/plate-kbd` from your dependencies.
     - Add `@platejs/basic-nodes` to your dependencies if not already present.
     - Import `KbdPlugin` from `@platejs/basic-nodes/react`.
+
+
+# @udecode/plate-kbd
 
 ## 48.0.0
 

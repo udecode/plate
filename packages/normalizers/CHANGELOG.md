@@ -1,4 +1,4 @@
-# @udecode/plate-normalizers
+# @platejs/normalizers
 
 ## 49.0.0
 
@@ -10,6 +10,9 @@
   - Migration:
     - Remove `@udecode/plate-normalizers` from your dependencies.
     - Update import paths to use `platejs`
+
+
+# @udecode/plate-normalizers
 
 ## 48.0.0
 

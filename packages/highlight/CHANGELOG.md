@@ -1,4 +1,4 @@
-# @udecode/plate-highlight
+# @platejs/highlight
 
 ## 49.0.0
 
@@ -11,6 +11,9 @@
     - Remove `@udecode/plate-highlight` from your dependencies.
     - Add `@platejs/basic-nodes` to your dependencies if not already present.
     - Import `HighlightPlugin` from `@platejs/basic-nodes/react`.
+
+
+# @udecode/plate-highlight
 
 ## 48.0.0
 

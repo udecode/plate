@@ -1,4 +1,4 @@
-# @udecode/plate-utils
+# @platejs/utils
 
 ## 49.0.0
 
@@ -67,6 +67,9 @@
       ```
 
   - Many node type definitions (e.g., `TParagraphElement`, `TLinkElement`) are also now exported from `platejs`, in addition to being available from their specific plugin packages if those still exist or from `@platejs/basic-nodes`.
+
+
+# @udecode/plate-utils
 
 ## 48.0.5
 

@@ -1,4 +1,4 @@
-# @udecode/plate-trailing-block
+# @platejs/trailing-block
 
 ## 49.0.0
 
@@ -14,6 +14,9 @@
   - Migration:
     - Remove `@udecode/plate-trailing-block` from your dependencies.
     - Update import paths to use `platejs` (e.g., `import { TrailingBlockPlugin } from 'platejs';`).
+
+
+# @udecode/plate-trailing-block
 
 ## 48.0.0
 

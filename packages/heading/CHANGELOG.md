@@ -1,4 +1,4 @@
-# @udecode/plate-heading
+# @platejs/heading
 
 ## 49.0.0
 
@@ -11,6 +11,9 @@
     - `TocPlugin` has been moved to `@platejs/toc`.
       - Migration: Add `@platejs/toc` to your dependencies and import `TocPlugin` from `@platejs/toc/react`.
   - Remove `@udecode/plate-heading` from your dependencies.
+
+
+# @udecode/plate-heading
 
 ## 48.0.0
 
