@@ -1,5 +1,35 @@
 # @udecode/plate-caption
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `CaptionPlugin` option `options.plugins` (accepting an array of `PlatePlugin`) has been renamed to `options.query.allow` (accepting an array of plugin keys).
+  - Migration:
+
+    ```tsx
+    // Before
+    CaptionPlugin.configure({
+      options: {
+        plugins: [ImagePlugin], // ImagePlugin is an example
+      },
+    });
+
+    // After
+    CaptionPlugin.configure({
+      options: {
+        query: {
+          allow: [ImagePlugin.key], // Use the plugin's key
+        },
+      },
+    });
+    ```
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
+
 ## 48.0.0
 
 ## 47.3.1

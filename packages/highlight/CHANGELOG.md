@@ -1,5 +1,17 @@
 # @udecode/plate-highlight
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - Package `@udecode/plate-highlight` has been deprecated.
+  - `HighlightPlugin` has been moved to the `@platejs/basic-nodes` package.
+  - Migration:
+    - Remove `@udecode/plate-highlight` from your dependencies.
+    - Add `@platejs/basic-nodes` to your dependencies if not already present.
+    - Import `HighlightPlugin` from `@platejs/basic-nodes/react`.
+
 ## 48.0.0
 
 ## 44.0.0

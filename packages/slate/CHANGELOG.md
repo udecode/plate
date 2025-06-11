@@ -1,5 +1,43 @@
 # @udecode/slate
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Replaced `editor.api.shouldMergeNodesRemovePrevNode` with `editor.api.shouldMergeNodes`. `shouldMergeNodes` is now controlling the remove + merge behavior
+
+    - Returns `true` if the default merging behavior should be applied.
+    - Returns `false` if the default merging behavior should not be applied. This is used by Plate to prevent void blocks deletion, and to prioritize empty block deletion over merging.
+
+    ```ts
+    // Before
+    editor.api.shouldMergeNodesRemovePrevNode(prev, current);
+
+    // After
+    editor.api.shouldMergeNodes(prev, current);
+    ```
+
+  - Replace `editor.api.fragment` option `structuralTypes` with `unwrap`.
+
+    ```ts
+    // Before
+    editor.api.fragment(editor.selection, { structuralTypes: ['table'] });
+
+    // After
+    editor.api.fragment(editor.selection, { unwrap: ['table'] });
+    ```
+
+### Minor Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - `editor.tf.insertSoftBreak` now inserts a soft break instead of a hard break.
+
 ## 48.0.1
 
 ### Patch Changes

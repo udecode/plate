@@ -1,5 +1,57 @@
 # @udecode/plate-line-height
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Package `@udecode/plate-line-height` has been deprecated.
+  - `LineHeightPlugin` has been moved to the `@platejs/basic-styles` package.
+  - Migration:
+
+    - Remove `@udecode/plate-line-height` from your dependencies.
+    - Add `@platejs/basic-styles` to your dependencies if not already present.
+    - Import `LineHeightPlugin` from `@platejs/basic-styles/react`.
+
+  - `setLineHeight` signature change:
+
+  ```ts
+  // Before
+  setLineHeight(editor, { value: 1.5, setNodesOptions });
+
+  // After
+  setLineHeight(editor, 1.5, setNodesOptions);
+  ```
+
+  - Removed `useLineHeightDropdownMenu` and `useLineHeightDropdownMenuState`. Use it in your own codebase, for example:
+
+  ```tsx
+  export function LineHeightToolbarButton() {
+    const editor = useEditorRef();
+    const { defaultNodeValue, validNodeValues: values = [] } =
+      editor.getInjectProps(LineHeightPlugin);
+
+    const value = useSelectionFragmentProp({
+      defaultValue: defaultNodeValue,
+      getProp: (node) => node.lineHeight,
+    });
+
+    const onValueChange = (newValue: string) => {
+      editor.tf.lineHeight.setNodes(Number(newValue));
+      editor.tf.focus();
+    };
+
+    // ...
+  }
+  ```
+
+### Minor Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - New transform method to `LineHeightPlugin`:
+    - `editor.tf.lineHeight.setNodes` - Transform method for setting line height values. Alias to `setLineHeight`
+
 ## 48.0.0
 
 ## 44.0.0

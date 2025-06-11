@@ -1,5 +1,65 @@
 # @udecode/plate-alignment
 
+## 49.0.0
+
+### Major Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Package `@udecode/plate-alignment` has been deprecated.
+  - `TextAlignPlugin` (formerly `AlignPlugin`) has been moved to the `@platejs/basic-styles` package.
+  - Migration:
+
+    - Remove `@udecode/plate-alignment` from your dependencies.
+    - Add `@platejs/basic-styles` to your dependencies if not already present.
+    - Import `TextAlignPlugin` from `@platejs/basic-styles/react`.
+
+  - Renamed `AlignPlugin` to `TextAlignPlugin` and changed plugin key from `'align'` to `'textAlign'`.
+
+    ```ts
+    // Before
+    import { AlignPlugin } from '@udecode/plate-alignment/react';
+
+    // After
+    import { TextAlignPlugin } from '@platejs/basic-styles/react';
+    ```
+
+  - `setAlign` signature change:
+
+  ```ts
+  // Before
+  setAlign(editor, { value: 'center', setNodesOptions });
+
+  // After
+  setAlign(editor, 'center', setNodesOptions);
+  ```
+
+  - Removed `useAlignDropdownMenu` and `useAlignDropdownMenuState`. Use it in your own codebase, for example:
+
+  ```tsx
+  export function AlignToolbarButton() {
+    const editor = useEditorRef();
+    const value = useSelectionFragmentProp({
+      defaultValue: 'start',
+      structuralTypes,
+      getProp: (node) => node.align,
+    });
+
+    const onValueChange = (newValue: string) => {
+      editor.tf.textAlign.setNodes(newValue as Alignment);
+      editor.tf.focus();
+    };
+
+    // ...
+  }
+  ```
+
+### Minor Changes
+
+- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+  - New transform method to `AlignPlugin`:
+    - `editor.tf.textAlign.set` - Transform method for setting alignment values. Alias to `setAlign`
+
 ## 48.0.0
 
 ## 44.0.0
