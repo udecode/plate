@@ -6,8 +6,8 @@ import {
   type NodeEntry,
   type TNode,
   isDefined,
-} from '@udecode/plate';
-import { BaseIndentPlugin } from '@udecode/plate-indent';
+} from 'platejs';
+import { BaseIndentPlugin } from '@platejs/indent';
 
 import {
   BaseIndentListPlugin,

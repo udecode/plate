@@ -1,6 +1,6 @@
-import type { Decorate, TRange } from '@udecode/plate';
+import type { Decorate, TRange } from 'platejs';
 
-import { ElementApi, TextApi } from '@udecode/plate';
+import { ElementApi, TextApi } from 'platejs';
 
 import type { FindReplaceConfig } from './FindReplacePlugin';
 

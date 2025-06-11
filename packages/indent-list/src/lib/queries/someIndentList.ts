@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor } from 'platejs';
 
 import { BaseIndentListPlugin, INDENT_LIST_KEYS } from '../../index';
 

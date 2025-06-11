@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor } from 'platejs';
 
-import { setIndent } from '@udecode/plate-indent';
+import { setIndent } from '@platejs/indent';
 
 import type { IndentListOptions } from './indentList';
 

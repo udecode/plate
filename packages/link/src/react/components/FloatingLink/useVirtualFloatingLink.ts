@@ -1,8 +1,8 @@
 import {
   type UseVirtualFloatingOptions,
   useVirtualFloating,
-} from '@udecode/plate-floating';
-import { useEditorPlugin } from '@udecode/plate/react';
+} from '@platejs/floating';
+import { useEditorPlugin } from 'platejs/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 

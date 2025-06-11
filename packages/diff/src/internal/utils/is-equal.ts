@@ -1,4 +1,4 @@
-import type { UnknownObject } from '@udecode/plate';
+import type { UnknownObject } from 'platejs';
 
 import baseIsEqual from 'lodash/isEqual.js';
 import isPlainObject from 'lodash/isPlainObject.js';

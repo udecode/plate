@@ -1,7 +1,7 @@
-export * from '@udecode/plate-core';
+export * from '@platejs/core';
 
-export * from '@udecode/plate-utils';
+export * from '@platejs/utils';
 
-export * from '@udecode/slate';
+export * from '@platejs/slate';
 
 export * from '@udecode/utils';

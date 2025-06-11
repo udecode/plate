@@ -1,4 +1,4 @@
-import type { Editor, TRange } from '@udecode/plate';
+import type { Editor, TRange } from 'platejs';
 
 import castArray from 'lodash/castArray.js';
 

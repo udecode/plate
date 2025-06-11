@@ -1,4 +1,4 @@
-import type { Operation, SlateEditor } from '@udecode/plate';
+import type { Operation, SlateEditor } from 'platejs';
 import type * as Y from 'yjs';
 
 import { type YjsEditor, withYjs } from '@slate-yjs/core';

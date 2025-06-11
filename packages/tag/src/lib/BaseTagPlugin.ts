@@ -3,7 +3,7 @@ import {
   type TTagProps,
   createSlatePlugin,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 export const BaseTagPlugin = createSlatePlugin({
   key: KEYS.tag,

@@ -38,7 +38,7 @@ Insert emojis with autocomplete using `:`
 ### Installation
 
 ```bash
-npm install @udecode/plate-combobox
+npm install @platejs/combobox
 ```
 
 ### Create Input Plugin
@@ -46,7 +46,7 @@ npm install @udecode/plate-combobox
 First, create an input plugin that will be inserted when the trigger is activated:
 
 ```tsx
-import { createSlatePlugin } from '@udecode/plate';
+import { createSlatePlugin } from 'platejs';
 
 const TagInputPlugin = createSlatePlugin({
   key: 'tag_input',
@@ -64,11 +64,11 @@ const TagInputPlugin = createSlatePlugin({
 Create your main plugin using `withTriggerCombobox`:
 
 ```tsx
-import { createTSlatePlugin, type PluginConfig } from '@udecode/plate';
+import { createTSlatePlugin, type PluginConfig } from 'platejs';
 import { 
   type TriggerComboboxPluginOptions, 
   withTriggerCombobox 
-} from '@udecode/plate-combobox';
+} from '@platejs/combobox';
 
 type TagConfig = PluginConfig<'tag', TriggerComboboxPluginOptions>;
 
@@ -99,7 +99,7 @@ export const TagPlugin = createTSlatePlugin<TagConfig>({
 Create the input element component using `InlineCombobox`:
 
 ```tsx
-import { PlateElement, useFocused, useReadOnly, useSelected } from '@udecode/plate/react';
+import { PlateElement, useFocused, useReadOnly, useSelected } from 'platejs/react';
 import {
   InlineCombobox,
   InlineComboboxContent,
@@ -181,7 +181,7 @@ export function TagElement({ element, ...props }) {
 ### Add to Editor
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { TagPlugin, TagInputPlugin } from './tag-plugin';
 import { TagElement, TagInputElement } from './tag-components';
 

@@ -102,7 +102,7 @@ Version incremented on each editor.children change.
 ## Accessing the Store
 
 ```ts
-import { usePlateStore, useEditorRef, useEditorPlugin } from '@udecode/plate/react'
+import { usePlateStore, useEditorRef, useEditorPlugin } from 'platejs/react'
 
 // Direct store access
 const store = usePlateStore(id?) 
@@ -121,7 +121,7 @@ Note: The `id` parameter is optional and defaults to the closest editor.
 The following hooks are available to interact with the Plate store:
 
 ```ts
-import { usePlateState, usePlateValue, usePlateSet } from '@udecode/plate/react'
+import { usePlateState, usePlateValue, usePlateSet } from 'platejs/react'
 ```
 
 ### usePlateState
@@ -179,7 +179,7 @@ Last editor ID.
 
 
 ```ts
-import { EventEditorStore, useEventEditorValue } from '@udecode/plate'
+import { EventEditorStore, useEventEditorValue } from 'platejs'
 
 // Get a value
 const focusedId = EventEditorStore.get('focus')

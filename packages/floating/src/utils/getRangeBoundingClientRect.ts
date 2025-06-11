@@ -1,5 +1,5 @@
 import type { ClientRectObject } from '@floating-ui/core';
-import type { Editor, TRange } from '@udecode/plate';
+import type { Editor, TRange } from 'platejs';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
 

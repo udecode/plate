@@ -1,4 +1,4 @@
-# @udecode/plate-core
+# @platejs/core
 
 ## 49.0.0
 
@@ -92,6 +92,8 @@
 
 - [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
   - Fixed an issue where `editor.api` and `editor.tf` (transforms) were not consistently available in the props passed to default element components when no custom component was provided for a plugin.
+
+# @udecode/plate-core
 
 ## 48.0.5
 

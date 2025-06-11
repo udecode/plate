@@ -1,6 +1,6 @@
-import type { TIdElement } from '@udecode/plate';
+import type { TIdElement } from 'platejs';
 
-import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
+import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 

@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { KEYS, NodeApi } from '@udecode/plate';
+import { KEYS, NodeApi } from 'platejs';
 import {
   useEditorPlugin,
   useEditorSelector,
   useScrollRef,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import type { Heading } from '../../lib/types';
 

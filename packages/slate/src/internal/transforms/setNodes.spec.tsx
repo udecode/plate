@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@udecode/plate-test-utils';
+import { jsx } from '@platejs/test-utils';
 
 import { createEditor } from '../../create-editor';
 

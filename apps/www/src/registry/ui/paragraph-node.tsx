@@ -2,9 +2,9 @@
 
 import * as React from 'react';
 
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { PlateElementProps } from 'platejs/react';
 
-import { PlateElement } from '@udecode/plate/react';
+import { PlateElement } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 

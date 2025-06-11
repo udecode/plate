@@ -21,7 +21,7 @@ The fastest way to enable HTML serialization is with the `BaseEditorKit`, which 
 ### Add Kit
 
 ```tsx
-import { createSlateEditor, serializeHtml } from '@udecode/plate';
+import { createSlateEditor, serializeHtml } from 'platejs';
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
 const editor = createSlateEditor({
@@ -51,9 +51,9 @@ Convert Plate editor content (Slate nodes) into an HTML string. This is often do
 [View Server-Side Example](/docs/examples/slate-to-html)
 
 <Callout type="warning" title="Key Server-Side Constraint">
-  When using `serializeHtml` or other Plate utilities in a server environment (Node.js, RSC), you **must not** import from `/react` subpaths of any `@udecode/plate*` package. Always use the base imports (e.g., `@udecode/plate-basic-nodes` instead of `@udecode/plate-basic-nodes/react`).
+  When using `serializeHtml` or other Plate utilities in a server environment (Node.js, RSC), you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `@platejs/basic-nodes` instead of `@platejs/basic-nodes/react`).
 
-  This means you should use `createSlateEditor` from `@udecode/plate` for server-side editor instances, not `usePlateEditor` or `createPlateEditor` from `@udecode/plate/react`.
+  This means you should use `createSlateEditor` from `platejs` for server-side editor instances, not `usePlateEditor` or `createPlateEditor` from `platejs/react`.
 </Callout>
 
 <Steps>
@@ -63,9 +63,9 @@ Convert Plate editor content (Slate nodes) into an HTML string. This is often do
 Provide a server-side editor instance and configure your Plate components during editor creation.
 
 ```tsx title="lib/generate-html.ts"
-import { createSlateEditor, serializeHtml } from '@udecode/plate'; // Base import
+import { createSlateEditor, serializeHtml } from 'platejs'; // Base import
 // Import base plugins (NOT from /react paths)
-import { BaseHeadingPlugin } from '@udecode/plate-basic-nodes';
+import { BaseHeadingPlugin } from '@platejs/basic-nodes';
 // Import your STATIC components for rendering
 import { ParagraphElementStatic } from '@/components/ui/paragraph-node-static';
 import { HeadingElementStatic } from '@/components/ui/heading-node-static';
@@ -148,7 +148,7 @@ Refer to the [Static Rendering Guide](/docs/static) for detailed instructions on
 
 ```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
-import type { SlateElementProps } from '@udecode/plate';
+import type { SlateElementProps } from 'platejs';
 
 // Example static paragraph component
 export function ParagraphElementStatic(props: SlateElementProps) {
@@ -175,9 +175,9 @@ The HTML deserializer allows you to convert HTML content (strings or DOM element
 Use `editor.api.html.deserialize` within a client-side Plate editor context.
 
 ```tsx title="components/my-html-importer.tsx"
-import { PlateEditor, usePlateEditor } from '@udecode/plate/react'; // React-specific imports for client-side
+import { PlateEditor, usePlateEditor } from 'platejs/react'; // React-specific imports for client-side
 // Import ALL Plate plugins needed to represent the HTML content
-import { HeadingPlugin } from '@udecode/plate-basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 // ... and so on for bold, italic, tables, lists, etc.
 
 function MyHtmlImporter({ htmlString }: { htmlString: string }) {
@@ -266,8 +266,8 @@ Plugins can define how they handle HTML deserialization using properties within 
 You can extend a plugin to modify its HTML parsing logic. This is useful for supporting non-standard HTML attributes or structures.
 
 ```tsx title="lib/custom-code-block-plugin.ts"
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { CodeLinePlugin } from '@udecode/plate-code-block'; // Base if needed
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { CodeLinePlugin } from '@platejs/code-block'; // Base if needed
 
 const MyCustomCodeBlockPlugin = CodeBlockPlugin.configure({
   parsers: {

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { getHtmlDocument, jsxt } from '@udecode/plate-test-utils';
+import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
 import { createPlateEditor } from '../../../../react';
 import { deserializeHtmlNode } from './deserializeHtmlNode';

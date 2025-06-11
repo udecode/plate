@@ -1,4 +1,4 @@
-import { createZustandStore } from '@udecode/plate';
+import { createZustandStore } from 'platejs';
 
 export const FloatingMediaStore = createZustandStore(
   {

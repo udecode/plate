@@ -1,11 +1,11 @@
-import { type TPlaceholderElement, KEYS } from '@udecode/plate';
+import { type TPlaceholderElement, KEYS } from 'platejs';
 import {
   useEditorRef,
   useElement,
   useFocused,
   useReadOnly,
   useSelected,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { usePlaceholderSet, usePlaceholderValue } from '../placeholderStore';
 

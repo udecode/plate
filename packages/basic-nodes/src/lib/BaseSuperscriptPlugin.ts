@@ -1,4 +1,4 @@
-import { createSlatePlugin, KEYS } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from 'platejs';
 
 /** Enables support for superscript formatting. */
 export const BaseSuperscriptPlugin = createSlatePlugin({

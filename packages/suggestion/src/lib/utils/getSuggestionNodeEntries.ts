@@ -4,7 +4,7 @@ import {
   type TSuggestionText,
   type ValueOf,
   combineMatchOptions,
-} from '@udecode/plate';
+} from 'platejs';
 
 export const getSuggestionNodeEntries = <E extends SlateEditor>(
   editor: E,

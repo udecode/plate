@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
-import * as isHotkey from '@udecode/plate-core';
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { jsxt } from '@udecode/plate-test-utils';
-import { getEditorPlugin, ParagraphPlugin } from '@udecode/plate/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import * as isHotkey from '@platejs/core';
+import { IndentPlugin } from '@platejs/indent/react';
+import { jsxt } from '@platejs/test-utils';
+import { getEditorPlugin, ParagraphPlugin } from 'platejs/react';
+import { createPlateEditor } from 'platejs/react';
 
 import { IndentListPlugin } from './IndentListPlugin';
 import { onKeyDownIndentList } from './onKeyDownIndentList';

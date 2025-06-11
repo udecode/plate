@@ -8,7 +8,7 @@ import {
   KEYS,
   NodeApi,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';

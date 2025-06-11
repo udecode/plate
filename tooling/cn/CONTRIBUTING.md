@@ -30,13 +30,13 @@ packages
 └── core
 ```
 
-| 路径                      | 描述                       |
-| ------------------------- | -------------------------- |
-| `apps/www/content`        | 网站的内容。               |
-| `apps/www/src/app`        | 网站的 Next.js 应用程序。  |
-| `apps/www/src/components` | 网站的 React 组件。        |
-| `apps/www/src/registry`   | 组件的注册表。             |
-| `packages/core`           | `@udecode/plate-core` 包。 |
+| 路径                      | 描述                      |
+| ------------------------- | ------------------------- |
+| `apps/www/content`        | 网站的内容。              |
+| `apps/www/src/app`        | 网站的 Next.js 应用程序。 |
+| `apps/www/src/components` | 网站的 React 组件。       |
+| `apps/www/src/registry`   | 组件的注册表。            |
+| `packages/core`           | `@platejs/core` 包。      |
 
 ## 开发
 
@@ -70,10 +70,10 @@ yarn build
 turbo --filter=www dev
 ```
 
-2. 构建 `@udecode/plate-core` 包：
+2. 构建 `@platejs/core` 包：
 
 ```
-turbo --filter=@udecode/plate-core build
+turbo --filter=@platejs/core build
 ```
 
 ## 文档

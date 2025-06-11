@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
+import { jsxt } from '@platejs/test-utils';
+import { createPlateEditor } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../../react';
 import { selectBlocks } from './selectBlocks';

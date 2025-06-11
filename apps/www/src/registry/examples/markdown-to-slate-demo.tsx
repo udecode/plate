@@ -2,12 +2,8 @@
 
 import * as React from 'react';
 
-import {
-  MarkdownPlugin,
-  remarkMdx,
-  remarkMention,
-} from '@udecode/plate-markdown';
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+import { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';
+import { Plate, usePlateEditor } from 'platejs/react';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { useIndentButton, useOutdentButton } from '@udecode/plate-indent/react';
+import { useIndentButton, useOutdentButton } from '@platejs/indent/react';
 import { IndentIcon, OutdentIcon } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';

@@ -1,4 +1,4 @@
-import { useEditorRef, useElement } from '@udecode/plate/react';
+import { useEditorRef, useElement } from 'platejs/react';
 
 import { BaseCaptionPlugin } from '../../lib';
 

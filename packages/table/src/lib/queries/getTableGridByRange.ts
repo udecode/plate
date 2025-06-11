@@ -6,7 +6,7 @@ import {
   type TTableElement,
   KEYS,
   NodeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { type TableConfig, BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';

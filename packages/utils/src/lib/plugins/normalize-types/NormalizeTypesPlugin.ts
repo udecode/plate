@@ -1,6 +1,6 @@
-import type { Path } from '@udecode/slate';
+import type { Path } from '@platejs/slate';
 
-import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-core';
+import { type PluginConfig, createTSlatePlugin } from '@platejs/core';
 
 import { KEYS } from '../../plate-keys';
 import { withNormalizeTypes } from './withNormalizeTypes';

@@ -1,4 +1,4 @@
-import { type TElement, NodeApi, PathApi } from '@udecode/plate';
+import { type TElement, NodeApi, PathApi } from 'platejs';
 
 import { type GetSiblingIndentListOptions, BaseIndentListPlugin } from '../lib';
 

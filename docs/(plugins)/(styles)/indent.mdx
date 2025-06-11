@@ -37,7 +37,7 @@ The fastest way to add indent functionality is with the `IndentKit`, which inclu
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { IndentKit } from '@/components/editor/plugins/indent-kit';
 
 const editor = createPlateEditor({
@@ -57,7 +57,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-indent
+npm install @platejs/indent
 ```
 
 ### Add Plugin
@@ -65,8 +65,8 @@ npm install @udecode/plate-indent
 Include `IndentPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { IndentPlugin } from '@platejs/indent/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -81,9 +81,9 @@ const editor = createPlateEditor({
 You can configure the `IndentPlugin` to target specific elements and customize indentation behavior.
 
 ```tsx
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { KEYS } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate/react';
+import { IndentPlugin } from '@platejs/indent/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [

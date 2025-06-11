@@ -8,10 +8,10 @@ import type {
   PluginConfig,
   TElement,
   TIdElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { bindFirst, KEYS } from '@udecode/plate';
-import { createTPlatePlugin } from '@udecode/plate/react';
+import { bindFirst, KEYS } from 'platejs';
+import { createTPlatePlugin } from 'platejs/react';
 
 import type { PartialSelectionOptions } from '../internal';
 

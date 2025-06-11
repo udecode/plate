@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import { createSlatePlugin } from '@udecode/plate';
-import { createSlateEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
-import { ParagraphPlugin } from '@udecode/plate/react';
+import { createSlatePlugin } from 'platejs';
+import { createSlateEditor } from 'platejs';
+import { jsxt } from '@platejs/test-utils';
+import { ParagraphPlugin } from 'platejs/react';
 
 import type { TriggerComboboxPluginOptions } from './types';
 

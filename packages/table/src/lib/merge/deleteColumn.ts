@@ -3,9 +3,9 @@ import type {
   SlateEditor,
   TTableCellElement,
   TTableElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { getEditorPlugin, KEYS } from '@udecode/plate';
+import { getEditorPlugin, KEYS } from 'platejs';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import { getCellIndices, getCellTypes } from '..';

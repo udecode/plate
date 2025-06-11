@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   createTSlatePlugin,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { Heading } from './types';
 

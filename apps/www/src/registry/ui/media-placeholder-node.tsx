@@ -2,16 +2,16 @@
 
 import * as React from 'react';
 
-import type { TPlaceholderElement } from '@udecode/plate';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TPlaceholderElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 import {
   PlaceholderPlugin,
   PlaceholderProvider,
   updateUploadHistory,
-} from '@udecode/plate-media/react';
-import { PlateElement, useEditorPlugin, withHOC } from '@udecode/plate/react';
+} from '@platejs/media/react';
+import { PlateElement, useEditorPlugin, withHOC } from 'platejs/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { useFilePicker } from 'use-file-picker';
 

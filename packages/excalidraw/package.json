@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-excalidraw",
+  "name": "@platejs/excalidraw",
   "version": "49.0.0",
   "description": "Excalidraw plugin for Plate",
   "keywords": [
@@ -53,10 +53,10 @@
     "@excalidraw/excalidraw": "0.16.4"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

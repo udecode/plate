@@ -1,18 +1,18 @@
 import React from 'react';
 
-import type { TTableElement } from '@udecode/plate';
+import type { TTableElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 import {
   type ResizeEvent,
   type ResizeHandle,
   resizeLengthClampStatic,
-} from '@udecode/plate-resizable';
+} from '@platejs/resizable';
 import {
   useEditorPlugin,
   useElement,
   useElementSelector,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import type { TableCellElementState } from './useTableCellElement';
 

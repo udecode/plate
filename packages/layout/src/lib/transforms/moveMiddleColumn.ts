@@ -4,7 +4,7 @@ import {
   type TColumnElement,
   type TNode,
   NodeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 /**
  * Move the middle column to the left if direction is 'left', or to the right if

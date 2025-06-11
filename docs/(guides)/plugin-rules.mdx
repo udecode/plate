@@ -175,7 +175,7 @@ Each property controls a specific scenario:
 **Reset heading on break:**
 
 ```tsx
-import { H1Plugin } from '@udecode/plate-heading/react';
+import { H1Plugin } from '@platejs/heading/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -211,7 +211,7 @@ After (split and reset):
 **Blockquote with line breaks and smart exits:**
 
 ```tsx
-import { BlockquotePlugin } from '@udecode/plate-basic-nodes/react';
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -245,7 +245,7 @@ After (line break):
 **Code block with custom empty handling:**
 
 ```tsx
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { CodeBlockPlugin } from '@platejs/code-block/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -311,7 +311,7 @@ Each property controls a specific scenario:
 **Reset blockquotes at start:**
 
 ```tsx
-import { BlockquotePlugin } from '@udecode/plate-basic-nodes/react';
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -340,7 +340,7 @@ After (reset):
 **List items with start reset:**
 
 ```tsx
-import { ListPlugin } from '@udecode/plate-list/react';
+import { ListPlugin } from '@platejs/list/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -391,7 +391,7 @@ ParagraphPlugin.configure({
 Only paragraph and heading plugins enable removal by default. Most other plugins use `false`:
 
 ```tsx
-import { H1Plugin, ParagraphPlugin } from '@udecode/plate/react';
+import { H1Plugin, ParagraphPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -420,7 +420,7 @@ After (empty paragraph removed):
 **Blockquote with removal disabled:**
 
 ```tsx
-import { BlockquotePlugin } from '@udecode/plate-basic-nodes/react';
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -452,7 +452,7 @@ After (empty paragraph preserved):
 **Table cells preserve structure during merge:**
 
 ```tsx
-import { TablePlugin } from '@udecode/plate-table/react';
+import { TablePlugin } from '@platejs/table/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -522,7 +522,7 @@ LinkPlugin.configure({
 **Remove empty link nodes:**
 
 ```tsx
-import { LinkPlugin } from '@udecode/plate-link/react';
+import { LinkPlugin } from '@platejs/link/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -560,7 +560,7 @@ The `match` function in plugin rules allows you to override the default behavior
 **Code block with custom empty detection:**
 
 ```tsx
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { CodeBlockPlugin } from '@platejs/code-block/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -580,7 +580,7 @@ Since the list plugin extends existing blocks that already have their own plugin
 **List override for paragraphs:**
 
 ```tsx
-import { ListPlugin } from '@udecode/plate-list/react';
+import { ListPlugin } from '@platejs/list/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -646,7 +646,7 @@ const CodeBlockPlugin = createPlatePlugin({
 You can combine different rules for comprehensive block behavior:
 
 ```tsx
-import { H1Plugin } from '@udecode/plate-heading/react';
+import { H1Plugin } from '@platejs/heading/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -799,7 +799,7 @@ Typing would not apply bold formatting to new text.
 Selection affinity is determined by the direction of cursor movement. When the cursor moves to a boundary, it maintains the affinity based on where it came from.
 
 ```tsx
-import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -828,7 +828,7 @@ After pressing `←`:
 Typing would extend the bold formatting, which is not possible with `default` affinity.
 
 ```tsx
-import { LinkPlugin } from '@udecode/plate-link/react';
+import { LinkPlugin } from '@platejs/link/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -861,7 +861,7 @@ Cursor movement direction determines whether new text extends the link or create
 Forces outward affinity, automatically clearing marks when typing at their boundaries. This creates a natural "exit" behavior from formatted text.
 
 ```tsx
-import { CommentPlugin } from '@udecode/plate-comment/react';
+import { CommentPlugin } from '@platejs/comment/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -894,7 +894,7 @@ Users automatically exit comment formatting by typing at the end of commented te
 Creates a "hard" edge that requires two key presses to move across. This provides precise cursor control for elements that need exact positioning.
 
 ```tsx
-import { CodePlugin } from '@udecode/plate-basic-nodes/react';
+import { CodePlugin } from '@platejs/basic-nodes/react';
 
 const plugins = [
   // ...otherPlugins,

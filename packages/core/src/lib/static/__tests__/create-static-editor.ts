@@ -1,4 +1,4 @@
-import { type Value } from '@udecode/plate';
+import { type Value } from 'platejs';
 
 import { BaseEditorKit } from 'www/src/registry/components/editor/editor-base-kit';
 import { createSlateEditor, CreateSlateEditorOptions } from '../../editor';

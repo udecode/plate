@@ -46,7 +46,7 @@ The fastest way to add AI functionality is with the `AIKit`, which includes pre-
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { AIKit } from '@/components/editor/plugins/ai-kit';
 
 const editor = createPlateEditor({
@@ -80,14 +80,14 @@ OPENAI_API_KEY="your-api-key"
 ### Installation
 
 ```bash
-npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-nodes
+npm install @platejs/ai @platejs/selection @platejs/markdown @platejs/basic-nodes
 ```
 
 ### Add Plugins
 
 ```tsx
-import { AIPlugin, AIChatPlugin } from '@udecode/plate-ai/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { AIPlugin, AIChatPlugin } from '@platejs/ai/react';
+import { createPlateEditor } from 'platejs/react';
 import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
 
 const editor = createPlateEditor({
@@ -109,13 +109,13 @@ const editor = createPlateEditor({
 Create the extended `aiChatPlugin` with basic configuration:
 
 ```tsx
-import type { AIChatPluginConfig } from '@udecode/plate-ai/react';
+import type { AIChatPluginConfig } from '@platejs/ai/react';
 import type { UseChatOptions } from 'ai/react';
 
-import { KEYS, PathApi } from '@udecode/plate';
-import { streamInsertChunk, withAIBatch } from '@udecode/plate-ai';
-import { AIChatPlugin, AIPlugin, useChatChunk } from '@udecode/plate-ai/react';
-import { usePluginOption } from '@udecode/plate/react';
+import { KEYS, PathApi } from 'platejs';
+import { streamInsertChunk, withAIBatch } from '@platejs/ai';
+import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
+import { usePluginOption } from 'platejs/react';
 import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
 import { AILoadingBar, AIMenu } from '@/components/ui/ai-menu';
 import { AIAnchorElement, AILeaf } from '@/components/ui/ai-node';

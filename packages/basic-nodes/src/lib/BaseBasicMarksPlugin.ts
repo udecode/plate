@@ -1,4 +1,4 @@
-import { createSlatePlugin } from '@udecode/plate';
+import { createSlatePlugin } from 'platejs';
 
 import { BaseBoldPlugin } from './BaseBoldPlugin';
 import { BaseCodePlugin } from './BaseCodePlugin';

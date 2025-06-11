@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
-import { type TEquationElement, isHotkey } from '@udecode/plate';
-import { useEditorRef, useElement } from '@udecode/plate/react';
+import { type TEquationElement, isHotkey } from 'platejs';
+import { useEditorRef, useElement } from 'platejs/react';
 
 export const useEquationInput = ({
   isInline,

@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor, TUpdateSuggestionData } from '@udecode/plate';
+import type { SlateEditor, TUpdateSuggestionData } from 'platejs';
 
-import { createSlateEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { createSlateEditor } from 'platejs';
+import { jsxt } from '@platejs/test-utils';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData } from '../utils';

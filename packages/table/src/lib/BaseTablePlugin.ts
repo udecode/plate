@@ -9,7 +9,7 @@ import {
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { CellIndices } from './utils';
 

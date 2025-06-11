@@ -1,4 +1,4 @@
-import { type SlateEditor, type TLocation, KEYS } from '@udecode/plate';
+import { type SlateEditor, type TLocation, KEYS } from 'platejs';
 
 import { getCellTypes } from '../utils';
 

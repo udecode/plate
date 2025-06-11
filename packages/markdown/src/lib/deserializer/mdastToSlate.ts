@@ -1,6 +1,6 @@
 import type { Root } from 'mdast';
 
-import { type Descendant, KEYS } from '@udecode/plate';
+import { type Descendant, KEYS } from 'platejs';
 
 import type { MdRoot } from '../mdast';
 import type { DeserializeMdOptions } from './deserializeMd';

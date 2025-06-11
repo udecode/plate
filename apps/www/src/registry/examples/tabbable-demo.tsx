@@ -2,16 +2,16 @@
 
 import * as React from 'react';
 
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { PlateElementProps } from 'platejs/react';
 
-import { TabbablePlugin } from '@udecode/plate-tabbable/react';
+import { TabbablePlugin } from '@platejs/tabbable/react';
 import {
   Plate,
   PlateElement,
   useFocused,
   usePlateEditor,
   useSelected,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 import { EditorKit } from '@/registry/components/editor/editor-kit';

@@ -5,14 +5,11 @@ import TextareaAutosize, {
   type TextareaAutosizeProps,
 } from 'react-textarea-autosize';
 
-import type { TEquationElement } from '@udecode/plate';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TEquationElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 
-import {
-  useEquationElement,
-  useEquationInput,
-} from '@udecode/plate-math/react';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { useEquationElement, useEquationInput } from '@platejs/math/react';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
   createPrimitiveComponent,
   PlateElement,
@@ -21,7 +18,7 @@ import {
   useElement,
   useReadOnly,
   useSelected,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 import { CornerDownLeftIcon, RadicalIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';

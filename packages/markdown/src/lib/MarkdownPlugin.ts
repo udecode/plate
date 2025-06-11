@@ -7,7 +7,7 @@ import {
   createTSlatePlugin,
   isUrl,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { MdRules, PlateType } from './types';
 

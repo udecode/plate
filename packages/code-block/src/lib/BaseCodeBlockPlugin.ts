@@ -7,7 +7,7 @@ import {
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBlock';
 import { isCodeBlockEmpty } from './queries';

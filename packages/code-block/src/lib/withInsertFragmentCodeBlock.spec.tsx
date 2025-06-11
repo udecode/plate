@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
-import type { Descendant } from '@udecode/plate';
+import type { Descendant } from 'platejs';
 
-import { BaseParagraphPlugin, createEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
+import { BaseParagraphPlugin, createEditor } from 'platejs';
+import { jsxt } from '@platejs/test-utils';
+import { createPlateEditor } from 'platejs/react';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 

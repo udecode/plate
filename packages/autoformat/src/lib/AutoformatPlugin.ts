@@ -3,7 +3,7 @@ import {
   createTSlatePlugin,
   KEYS,
   RangeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { AutoformatRule, AutoformatTextRule } from './types';
 

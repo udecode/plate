@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+} from '@platejs/basic-nodes/react';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 import { FixedToolbar } from '@/registry/ui/fixed-toolbar';

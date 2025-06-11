@@ -5,7 +5,7 @@ import {
   KEYS,
   NodeApi,
   RangeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { getListItemEntry, getListTypes } from '../queries/index';

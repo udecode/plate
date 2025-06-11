@@ -1,7 +1,4 @@
-import {
-  BaseEquationPlugin,
-  BaseInlineEquationPlugin,
-} from '@udecode/plate-math';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 
 import {
   EquationElementStatic,

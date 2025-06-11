@@ -4,7 +4,7 @@ import {
   type SlateEditor,
   KEYS,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { TableConfig } from '../BaseTablePlugin';
 

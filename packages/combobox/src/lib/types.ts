@@ -1,4 +1,4 @@
-import type { SlateEditor, TElement } from '@udecode/plate';
+import type { SlateEditor, TElement } from 'platejs';
 
 export type CancelComboboxInputCause =
   | 'arrowLeft'

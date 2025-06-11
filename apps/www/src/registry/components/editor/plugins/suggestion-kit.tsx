@@ -6,12 +6,12 @@ import {
   isSlateEditor,
   isSlateElement,
   isSlateString,
-} from '@udecode/plate';
+} from 'platejs';
 import {
   type BaseSuggestionConfig,
   BaseSuggestionPlugin,
-} from '@udecode/plate-suggestion';
-import { createPlatePlugin, toTPlatePlugin } from '@udecode/plate/react';
+} from '@platejs/suggestion';
+import { createPlatePlugin, toTPlatePlugin } from 'platejs/react';
 
 import { BlockSuggestion } from '@/registry/ui/block-suggestion';
 import {

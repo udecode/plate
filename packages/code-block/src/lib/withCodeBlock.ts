@@ -2,7 +2,7 @@ import type {
   OverrideEditor,
   TCodeBlockElement,
   TElement,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 

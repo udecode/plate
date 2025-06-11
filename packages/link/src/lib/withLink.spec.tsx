@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { createEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
+import { createEditor } from 'platejs';
+import { jsxt } from '@platejs/test-utils';
+import { createPlateEditor } from 'platejs/react';
 
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 

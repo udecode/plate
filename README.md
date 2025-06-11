@@ -4,7 +4,7 @@ Plate
 
 <p>
 <div align="center">
-  <a href="https://www.npmjs.com/package/@udecode/plate-core"><img src="https://img.shields.io/npm/dm/@udecode/plate-core.svg" alt="Total Downloads"></a>
+  <a href="https://www.npmjs.com/package/@platejs/core"><img src="https://img.shields.io/npm/dm/@platejs/core.svg" alt="Total Downloads"></a>
   <a target="_blank" href="https://github.com/udecode/plate/releases/latest"><img src="https://img.shields.io/github/v/release/udecode/plate" /></a>
   <a target="_blank" href="tooling/CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
   <a target="_blank" href="https://discord.gg/mAZRuBzGM3"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" /></a>

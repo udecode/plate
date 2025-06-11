@@ -1,5 +1,5 @@
-import { type Editor, type NodeEntry, isDefined } from '@udecode/plate';
-import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { type Editor, type NodeEntry, isDefined } from 'platejs';
+import { BaseIndentPlugin } from '@platejs/indent';
 
 import {
   BaseIndentListPlugin,

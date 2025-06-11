@@ -1,7 +1,7 @@
-import type { TElement } from '@udecode/plate';
-import type { PlateEditor } from '@udecode/plate/react';
+import type { TElement } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 const historyMarks = new WeakMap<PlateEditor, boolean>();
 

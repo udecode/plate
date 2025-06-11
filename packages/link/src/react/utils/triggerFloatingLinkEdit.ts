@@ -3,7 +3,7 @@ import {
   type TLinkElement,
   getEditorPlugin,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { LinkPlugin } from '../LinkPlugin';
 

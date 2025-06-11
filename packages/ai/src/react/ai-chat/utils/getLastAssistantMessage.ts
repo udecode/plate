@@ -1,4 +1,4 @@
-import { type PlateEditor, usePluginOption } from '@udecode/plate/react';
+import { type PlateEditor, usePluginOption } from 'platejs/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 

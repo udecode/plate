@@ -1,11 +1,7 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  createEditor,
-  createSlateEditor,
-} from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { type SlateEditor, createEditor, createSlateEditor } from 'platejs';
+import { jsxt } from '@platejs/test-utils';
 
 import { setAlign } from '.';
 import { BaseTextAlignPlugin } from '../BaseTextAlignPlugin';

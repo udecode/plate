@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 
-import type { TImageElement } from '@udecode/plate';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TImageElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 
-import { useDraggable } from '@udecode/plate-dnd';
-import { Image, ImagePlugin, useMediaState } from '@udecode/plate-media/react';
-import { ResizableProvider, useResizableValue } from '@udecode/plate-resizable';
-import { PlateElement, withHOC } from '@udecode/plate/react';
+import { useDraggable } from '@platejs/dnd';
+import { Image, ImagePlugin, useMediaState } from '@platejs/media/react';
+import { ResizableProvider, useResizableValue } from '@platejs/resizable';
+import { PlateElement, withHOC } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 

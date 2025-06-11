@@ -1,4 +1,4 @@
-import { type SlateEditor, getPluginTypes, KEYS } from '@udecode/plate';
+import { type SlateEditor, getPluginTypes, KEYS } from 'platejs';
 
 /** Get td and th types */
 export const getCellTypes = (editor: SlateEditor) =>

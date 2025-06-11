@@ -5,8 +5,8 @@ import {
   type SlateEditor,
   type TElement,
   createEditor,
-} from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+} from 'platejs';
+import { jsxt } from '@platejs/test-utils';
 
 import { getIndentListSiblings } from './getIndentListSiblings';
 

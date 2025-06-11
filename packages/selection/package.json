@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-selection",
+  "name": "@platejs/selection",
   "version": "49.0.0",
   "description": "Plate selection plugins",
   "keywords": [
@@ -53,10 +53,10 @@
     "copy-to-clipboard": "^3.3.3"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

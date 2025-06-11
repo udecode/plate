@@ -2,9 +2,9 @@ import type {
   InsertNodesOptions,
   NodeProps,
   SlateEditor,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import type { TExcalidrawElement } from '../BaseExcalidrawPlugin';
 

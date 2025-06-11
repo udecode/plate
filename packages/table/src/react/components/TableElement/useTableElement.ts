@@ -1,10 +1,10 @@
-import type { TTableElement } from '@udecode/plate';
+import type { TTableElement } from 'platejs';
 
 import {
   useEditorPlugin,
   useElement,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { useTableValue } from '../../stores';
 import { TablePlugin } from '../../TablePlugin';

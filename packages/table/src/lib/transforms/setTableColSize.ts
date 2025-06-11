@@ -2,9 +2,9 @@ import type {
   EditorAboveOptions,
   SlateEditor,
   TTableElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import { getTableColumnCount } from '../queries/getTableColumnCount';
 

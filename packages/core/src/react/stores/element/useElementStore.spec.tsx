@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { TElement } from '@udecode/slate';
+import type { TElement } from '@platejs/slate';
 
 import { act, render } from '@testing-library/react';
 

@@ -35,7 +35,7 @@ The fastest way to add cursor overlay functionality is with the `CursorOverlayKi
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { CursorOverlayKit } from '@/components/editor/plugins/cursor-overlay-kit';
 
 const editor = createPlateEditor({
@@ -55,14 +55,14 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-selection
+npm install @platejs/selection
 ```
 
 ### Add Plugin
 
 ```tsx
-import { CursorOverlayPlugin } from '@udecode/plate-selection/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { CursorOverlayPlugin } from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -77,7 +77,7 @@ const editor = createPlateEditor({
 Configure the cursor overlay with a component to render overlays:
 
 ```tsx
-import { CursorOverlayPlugin } from '@udecode/plate-selection/react';
+import { CursorOverlayPlugin } from '@platejs/selection/react';
 import { CursorOverlay } from '@/components/ui/cursor-overlay';
 
 CursorOverlayPlugin.configure({
@@ -96,7 +96,7 @@ The cursor overlay requires a container component to ensure correct positioning.
 For custom setups, ensure your editor is wrapped with a container that has the editor's unique ID:
 
 ```tsx
-import { PlateContainer } from '@udecode/plate/react';
+import { PlateContainer } from 'platejs/react';
 
 export function EditorContainer(props: React.HTMLAttributes<HTMLDivElement>) {
   return <PlateContainer {...props} />;

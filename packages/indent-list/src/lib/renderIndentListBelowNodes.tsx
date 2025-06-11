@@ -4,7 +4,7 @@ import type {
   RenderStaticNodeWrapper,
   RenderStaticNodeWrapperFunction,
   RenderStaticNodeWrapperProps,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { clsx } from 'clsx';
 

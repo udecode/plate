@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from '@udecode/plate';
+import { traverseHtmlElements } from 'platejs';
 
 /** Clean elements style mso-list to mso-list:Ignore */
 export const cleanDocxListElements = (rootNode: Node): void => {

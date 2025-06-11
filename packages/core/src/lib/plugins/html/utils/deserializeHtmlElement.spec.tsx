@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
-import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
-import { ImagePlugin } from '@udecode/plate-media/react';
-import { TablePlugin } from '@udecode/plate-table/react';
-import { getHtmlDocument, jsxt } from '@udecode/plate-test-utils';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { LinkPlugin } from '@platejs/link/react';
+import { ImagePlugin } from '@platejs/media/react';
+import { TablePlugin } from '@platejs/table/react';
+import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
 import { createPlateEditor } from '../../../../react';
 import { createSlatePlugin } from '../../../plugin';

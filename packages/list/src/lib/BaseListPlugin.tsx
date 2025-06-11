@@ -11,7 +11,7 @@ import {
   KEYS,
   postCleanHtml,
   traverseHtmlElements,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { GetSiblingListOptions } from './queries/getSiblingList';
 import type { ListStyleType } from './types';

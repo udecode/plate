@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
 import {
   type InsertNodesOptions,
@@ -7,7 +7,7 @@ import {
   KEYS,
   nanoid,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
 import { UploadErrorCode } from '../type';

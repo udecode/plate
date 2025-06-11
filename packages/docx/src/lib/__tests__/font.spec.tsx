@@ -6,8 +6,8 @@ import {
   FontFamilyPlugin,
   FontSizePlugin,
   FontWeightPlugin,
-} from '@udecode/plate-basic-styles/react';
-import { jsxt } from '@udecode/plate-test-utils';
+} from '@platejs/basic-styles/react';
+import { jsxt } from '@platejs/test-utils';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 

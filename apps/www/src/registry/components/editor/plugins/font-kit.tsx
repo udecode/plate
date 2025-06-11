@@ -1,14 +1,14 @@
 'use client';
 
-import type { PlatePluginConfig } from '@udecode/plate/react';
+import type { PlatePluginConfig } from 'platejs/react';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontFamilyPlugin,
   FontSizePlugin,
-} from '@udecode/plate-basic-styles/react';
+} from '@platejs/basic-styles/react';
 
 const options = {
   inject: { targetPlugins: [KEYS.p] },

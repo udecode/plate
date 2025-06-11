@@ -3,8 +3,8 @@ import type {
   SetNodesOptions,
   TElement,
   TText,
-} from '@udecode/plate';
-import type { PlateEditor } from '@udecode/plate/react';
+} from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

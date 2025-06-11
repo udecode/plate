@@ -1,4 +1,4 @@
-import { PathApi } from '@udecode/slate';
+import { PathApi } from '@platejs/slate';
 
 import type { OverrideEditor } from '../../plugin';
 import type { BreakRules } from '../../plugin/BasePlugin';

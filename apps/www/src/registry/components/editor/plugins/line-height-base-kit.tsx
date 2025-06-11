@@ -1,5 +1,5 @@
-import { KEYS } from '@udecode/plate';
-import { BaseLineHeightPlugin } from '@udecode/plate-basic-styles';
+import { KEYS } from 'platejs';
+import { BaseLineHeightPlugin } from '@platejs/basic-styles';
 
 export const BaseLineHeightKit = [
   BaseLineHeightPlugin.configure({

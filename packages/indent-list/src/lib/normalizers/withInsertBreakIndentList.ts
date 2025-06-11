@@ -1,4 +1,4 @@
-import { type OverrideEditor, type TElement, isDefined } from '@udecode/plate';
+import { type OverrideEditor, type TElement, isDefined } from 'platejs';
 
 import {
   type BaseIndentListConfig,

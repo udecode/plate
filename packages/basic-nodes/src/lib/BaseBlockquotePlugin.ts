@@ -1,4 +1,4 @@
-import { createSlatePlugin, KEYS } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from 'platejs';
 
 /** Enables support for block quotes, useful for quotations and passages. */
 export const BaseBlockquotePlugin = createSlatePlugin({

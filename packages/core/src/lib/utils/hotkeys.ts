@@ -1,4 +1,4 @@
-import type { Editor } from '@udecode/slate';
+import type { Editor } from '@platejs/slate';
 
 import { IS_APPLE } from '@udecode/utils';
 import { type KeyboardEventLike, isKeyHotkey } from 'is-hotkey';

@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { BasicNodesKit } from '@/registry/components/editor/plugins/basic-nodes-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';

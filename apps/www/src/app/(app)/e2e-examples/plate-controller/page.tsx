@@ -7,7 +7,7 @@ import {
   PlateController,
   useEditorRef,
   usePlateEditor,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 

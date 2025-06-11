@@ -3,13 +3,10 @@
 import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import type { Alignment } from '@udecode/plate-basic-styles';
+import type { Alignment } from '@platejs/basic-styles';
 
-import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
-import {
-  useEditorPlugin,
-  useSelectionFragmentProp,
-} from '@udecode/plate/react';
+import { TextAlignPlugin } from '@platejs/basic-styles/react';
+import { useEditorPlugin, useSelectionFragmentProp } from 'platejs/react';
 import {
   AlignCenterIcon,
   AlignJustifyIcon,

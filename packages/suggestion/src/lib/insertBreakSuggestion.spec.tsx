@@ -4,10 +4,10 @@ import type {
   SlateEditor,
   TSuggestionData,
   TSuggestionElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { createSlateEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { createSlateEditor } from 'platejs';
+import { jsxt } from '@platejs/test-utils';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { getInlineSuggestionData } from './utils';

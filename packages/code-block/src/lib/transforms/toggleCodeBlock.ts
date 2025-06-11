@@ -1,6 +1,6 @@
-import type { SlateEditor, TElement } from '@udecode/plate';
+import type { SlateEditor, TElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 

@@ -36,7 +36,7 @@ The fastest way to add emoji functionality is with the `EmojiKit`, which include
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { EmojiKit } from '@/components/editor/plugins/emoji-kit';
 
 const editor = createPlateEditor({
@@ -56,14 +56,14 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-emoji @emoji-mart/data
+npm install @platejs/emoji @emoji-mart/data
 ```
 
 ### Add Plugins
 
 ```tsx
-import { EmojiPlugin, EmojiInputPlugin } from '@udecode/plate-emoji/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { EmojiPlugin, EmojiInputPlugin } from '@platejs/emoji/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -77,8 +77,8 @@ const editor = createPlateEditor({
 ### Configure Plugins
 
 ```tsx
-import { EmojiPlugin, EmojiInputPlugin } from '@udecode/plate-emoji/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { EmojiPlugin, EmojiInputPlugin } from '@platejs/emoji/react';
+import { createPlateEditor } from 'platejs/react';
 import { EmojiInputElement } from '@/components/ui/emoji-node';
 import emojiMartData from '@emoji-mart/data';
 

@@ -4,13 +4,13 @@ import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
 
-import type { TMediaEmbedElement } from '@udecode/plate';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TMediaEmbedElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 
-import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';
-import { MediaEmbedPlugin, useMediaState } from '@udecode/plate-media/react';
-import { ResizableProvider, useResizableValue } from '@udecode/plate-resizable';
-import { PlateElement, withHOC } from '@udecode/plate/react';
+import { parseTwitterUrl, parseVideoUrl } from '@platejs/media';
+import { MediaEmbedPlugin, useMediaState } from '@platejs/media/react';
+import { ResizableProvider, useResizableValue } from '@platejs/resizable';
+import { PlateElement, withHOC } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 

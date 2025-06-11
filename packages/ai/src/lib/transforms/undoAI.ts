@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor } from 'platejs';
 
 export const undoAI = (editor: SlateEditor) => {
   if (

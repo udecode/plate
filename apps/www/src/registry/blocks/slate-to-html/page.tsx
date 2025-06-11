@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { type Value, createSlateEditor, serializeHtml } from '@udecode/plate';
+import { type Value, createSlateEditor, serializeHtml } from 'platejs';
 import { cva } from 'class-variance-authority';
 import fs from 'node:fs/promises';
 import path from 'node:path';

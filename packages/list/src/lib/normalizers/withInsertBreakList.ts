@@ -3,7 +3,7 @@ import {
   type TElement,
   isDefined,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { BaseListConfig } from '../BaseListPlugin';
 

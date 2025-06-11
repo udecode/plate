@@ -1,9 +1,9 @@
 'use client';
 
-import type { TDateElement } from '@udecode/plate';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TDateElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 
-import { PlateElement, useReadOnly } from '@udecode/plate/react';
+import { PlateElement, useReadOnly } from 'platejs/react';
 
 import { Calendar } from '@/components/ui/calendar';
 import {

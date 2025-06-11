@@ -1,4 +1,4 @@
-import { type OverrideEditor, KEYS } from '@udecode/plate';
+import { type OverrideEditor, KEYS } from 'platejs';
 
 import type { ListConfig } from './BaseListPlugin';
 

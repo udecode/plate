@@ -1,4 +1,4 @@
-import { type OverrideEditor, TextApi } from '@udecode/plate';
+import { type OverrideEditor, TextApi } from 'platejs';
 
 import type { TableConfig } from '.';
 

@@ -1,10 +1,6 @@
-import type {
-  InsertNodesOptions,
-  SlateEditor,
-  TColumnElement,
-} from '@udecode/plate';
+import type { InsertNodesOptions, SlateEditor, TColumnElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export const insertColumn = (
   editor: SlateEditor,

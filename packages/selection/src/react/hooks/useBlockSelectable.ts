@@ -1,7 +1,7 @@
 import type React from 'react';
 
-import { type TElement, KEYS, PathApi } from '@udecode/plate';
-import { useEditorPlugin, useElement, usePath } from '@udecode/plate/react';
+import { type TElement, KEYS, PathApi } from 'platejs';
+import { useEditorPlugin, useElement, usePath } from 'platejs/react';
 
 import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
 

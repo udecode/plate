@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   type TTableCellElement,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { getCellTypes } from '../utils/index';
 

@@ -12,7 +12,7 @@ This package only requires the providers you actually use. Each provider package
 
 ```bash
 # Base installation
-npm install @udecode/plate-yjs
+npm install @platejs/yjs
 
 # For Hocuspocus server-based collaboration
 npm install @hocuspocus/provider
@@ -42,7 +42,7 @@ The plugin supports two types of providers out of the box, with full type safety
 Configuration is done using the `providerConfigs` array with provider-specific type checking:
 
 ```typescript
-import { YjsPlugin } from '@udecode/plate-yjs';
+import { YjsPlugin } from '@platejs/yjs';
 import * as Y from 'yjs';
 
 // Create a Y.Doc (or use an existing one)
@@ -89,7 +89,7 @@ The plugin now supports passing in pre-instantiated providers that implement the
 Here's an example using IndexedDB for offline persistence:
 
 ```typescript
-import { YjsPlugin } from '@udecode/plate-yjs';
+import { YjsPlugin } from '@platejs/yjs';
 import * as Y from 'yjs';
 import { IndexeddbProvider } from 'y-indexeddb';
 import { Awareness } from 'y-protocols/awareness';
@@ -156,7 +156,7 @@ The plugin will handle initializing, connecting, and synchronizing with all prov
 You can use multiple providers simultaneously with the same Y.Doc for different synchronization strategies:
 
 ```typescript
-import { YjsPlugin } from '@udecode/plate-yjs';
+import { YjsPlugin } from '@platejs/yjs';
 import * as Y from 'yjs';
 
 // Create a shared Y.Doc
@@ -230,10 +230,10 @@ YjsPlugin({
 For more complex scenarios, you can register your own provider types for the plugin to create automatically:
 
 ```typescript
-import { registerProviderType } from '@udecode/plate-yjs';
+import { registerProviderType } from '@platejs/yjs';
 import * as Y from 'yjs';
 import { Awareness } from 'y-protocols/awareness';
-import { ProviderEventHandlers } from '@udecode/plate-yjs';
+import { ProviderEventHandlers } from '@platejs/yjs';
 
 // Create a custom provider class that implements UnifiedProvider interface
 class CustomProviderWrapper {

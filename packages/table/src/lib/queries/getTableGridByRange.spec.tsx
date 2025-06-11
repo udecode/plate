@@ -4,8 +4,8 @@ import {
   type SlateEditor,
   type TElement,
   createSlateEditor,
-} from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+} from 'platejs';
+import { jsxt } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../withNormalizeTable.spec';
 import { getTableGridAbove } from './getTableGridAbove';

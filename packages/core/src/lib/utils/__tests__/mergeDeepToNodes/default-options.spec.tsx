@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@udecode/plate-test-utils';
-import { type TNode, createEditor } from '@udecode/slate';
+import { jsxt } from '@platejs/test-utils';
+import { type TNode, createEditor } from '@platejs/slate';
 
 import { mergeDeepToNodes } from '../../../utils';
 

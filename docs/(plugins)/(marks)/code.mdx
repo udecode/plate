@@ -34,7 +34,7 @@ The fastest way to add the code plugin is with the `BasicMarksKit`, which includ
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
 
 const editor = createPlateEditor({
@@ -54,7 +54,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-basic-nodes
+npm install @platejs/basic-nodes
 ```
 
 ### Add Plugin
@@ -62,8 +62,8 @@ npm install @udecode/plate-basic-nodes
 Include `CodePlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { CodePlugin } from '@udecode/plate-basic-nodes/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { CodePlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -78,8 +78,8 @@ const editor = createPlateEditor({
 You can configure the `CodePlugin` with a custom component and keyboard shortcuts.
 
 ```tsx
-import { CodePlugin } from '@udecode/plate-basic-nodes/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { CodePlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
 import { CodeLeaf } from '@/components/ui/code-node';
 
 const editor = createPlateEditor({

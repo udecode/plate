@@ -3,7 +3,7 @@ import React from 'react';
 import {
   type UseVirtualFloatingOptions,
   getDOMSelectionBoundingClientRect,
-} from '@udecode/plate-floating';
+} from '@platejs/floating';
 import {
   useComposedRef,
   useEditorPlugin,
@@ -12,7 +12,7 @@ import {
   useHotkeys,
   useOnClickOutside,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';

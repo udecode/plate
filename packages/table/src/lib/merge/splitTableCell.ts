@@ -4,9 +4,9 @@ import type {
   SlateEditor,
   TTableCellElement,
   TTableRowElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { getEditorPlugin, KEYS } from '@udecode/plate';
+import { getEditorPlugin, KEYS } from 'platejs';
 
 import { getCellIndices } from '..';
 import { BaseTablePlugin } from '../BaseTablePlugin';

@@ -1,6 +1,6 @@
-import type { TCommentText, TNode } from '@udecode/plate';
+import type { TCommentText, TNode } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export const isCommentText = (node: TNode): node is TCommentText => {
   return !!node[KEYS.comment];

@@ -4,8 +4,8 @@ import {
   bindFirst,
   KEYS,
   NodeApi,
-} from '@udecode/plate';
-import { toTPlatePlugin } from '@udecode/plate/react';
+} from 'platejs';
+import { toTPlatePlugin } from 'platejs/react';
 
 import type { AllowedFileType } from './internal/mimes';
 import type { MediaItemConfig, UploadError } from './type';

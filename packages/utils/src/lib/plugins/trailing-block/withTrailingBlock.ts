@@ -1,6 +1,6 @@
-import type { OverrideEditor } from '@udecode/plate-core';
+import type { OverrideEditor } from '@platejs/core';
 
-import { PathApi, queryNode } from '@udecode/slate';
+import { PathApi, queryNode } from '@platejs/slate';
 
 import type { TrailingBlockConfig } from './TrailingBlockPlugin';
 

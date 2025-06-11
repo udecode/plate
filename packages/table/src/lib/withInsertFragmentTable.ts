@@ -7,7 +7,7 @@ import {
   type TTableRowElement,
   KEYS,
   NodeApi,
-} from '@udecode/plate';
+} from 'platejs';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import { type TableConfig, getTableAbove } from '.';

@@ -1,4 +1,4 @@
-import { hexToBase64, traverseHtmlElements } from '@udecode/plate';
+import { hexToBase64, traverseHtmlElements } from 'platejs';
 import validator from 'validator';
 
 import { getRtfImagesMap } from './getRtfImagesMap';

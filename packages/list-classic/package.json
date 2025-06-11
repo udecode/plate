@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-list-classic",
+  "name": "@platejs/list-classic",
   "version": "49.0.0",
   "description": "List Classic plugin for Plate",
   "keywords": [
@@ -53,10 +53,10 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

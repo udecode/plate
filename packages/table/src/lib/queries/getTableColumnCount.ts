@@ -1,4 +1,4 @@
-import type { TElement } from '@udecode/plate';
+import type { TElement } from 'platejs';
 
 export const getTableColumnCount = (tableNode: TElement): number => {
   if ((tableNode.children as TElement[])?.[0]?.children) {

@@ -1,4 +1,4 @@
-import type { TElement } from '@udecode/plate';
+import type { TElement } from 'platejs';
 
 import { getColSpan } from '../queries';
 

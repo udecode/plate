@@ -1,12 +1,12 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate';
+import { createSlateEditor } from 'platejs';
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
-import { jsxt } from '@udecode/plate-test-utils';
+} from '@platejs/basic-nodes/react';
+import { jsxt } from '@platejs/test-utils';
 
 import { AutoformatPlugin } from '../../AutoformatPlugin';
 

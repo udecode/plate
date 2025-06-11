@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 
-import { createPrimitiveComponent } from '@udecode/plate/react';
+import { createPrimitiveComponent } from 'platejs/react';
 
 import { ImagePreviewStore, useImagePreviewValue } from '../ImagePreviewStore';
 import { useZoom } from '../useZoom';

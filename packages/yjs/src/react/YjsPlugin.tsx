@@ -1,4 +1,4 @@
-import { toPlatePlugin } from '@udecode/plate/react';
+import { toPlatePlugin } from 'platejs/react';
 
 // Explicitly import the types from providers
 import { BaseYjsPlugin } from '../lib/BaseYjsPlugin';

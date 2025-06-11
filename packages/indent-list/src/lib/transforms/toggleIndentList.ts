@@ -3,9 +3,9 @@ import type {
   ElementOf,
   SlateEditor,
   TElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentPlugin } from '@platejs/indent';
 
 import type { IndentListOptions } from './indentList';
 

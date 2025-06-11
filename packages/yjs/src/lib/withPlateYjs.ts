@@ -1,4 +1,4 @@
-import type { ExtendEditor, SlateEditor } from '@udecode/plate';
+import type { ExtendEditor, SlateEditor } from 'platejs';
 
 import * as Y from 'yjs';
 

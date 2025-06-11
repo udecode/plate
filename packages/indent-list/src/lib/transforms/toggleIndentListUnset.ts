@@ -1,4 +1,4 @@
-import type { Editor, NodeEntry } from '@udecode/plate';
+import type { Editor, NodeEntry } from 'platejs';
 
 import {
   BaseIndentListPlugin,

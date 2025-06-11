@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from '@udecode/plate';
+import { traverseHtmlElements } from 'platejs';
 
 import { docxListToList } from './docxListToList';
 import { isDocxList } from './isDocxList';

@@ -1,4 +1,4 @@
-import type { TElement } from '@udecode/slate';
+import type { TElement } from '@platejs/slate';
 
 import { getTableColumnCount } from './getTableColumnCount';
 

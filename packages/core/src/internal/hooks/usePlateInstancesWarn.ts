@@ -20,7 +20,7 @@ export function usePlateInstancesWarn(disabled?: boolean) {
       (globalThis as any).__PLATE_INSTANCES__ &&
       (globalThis as any).__PLATE_INSTANCES__ > 1
     ) {
-      console.warn('Detected multiple @udecode/plate-core instances!');
+      console.warn('Detected multiple @platejs/core instances!');
     }
   }, [disabled]);
 }

@@ -1,4 +1,4 @@
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 /** @jsx jsxt */

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { isDefined } from '@udecode/plate';
+import { isDefined } from 'platejs';
 import { Check, Terminal } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';

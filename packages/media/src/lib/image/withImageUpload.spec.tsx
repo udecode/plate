@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
+import { jsxt } from '@platejs/test-utils';
+import { createPlateEditor } from 'platejs/react';
 
 import { BaseImagePlugin } from './BaseImagePlugin';
 

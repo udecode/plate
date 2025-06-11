@@ -1,5 +1,5 @@
-import { type ExtendConfig, type OmitFirst, bindFirst } from '@udecode/plate';
-import { toTPlatePlugin } from '@udecode/plate/react';
+import { type ExtendConfig, type OmitFirst, bindFirst } from 'platejs';
+import { toTPlatePlugin } from 'platejs/react';
 
 import { type BaseLinkConfig, BaseLinkPlugin } from '../lib';
 import { getLinkAttributes } from '../lib/utils';

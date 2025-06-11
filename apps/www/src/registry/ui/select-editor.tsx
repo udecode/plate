@@ -3,20 +3,20 @@
 import * as React from 'react';
 
 import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
-import { isHotkey, KEYS } from '@udecode/plate';
-import { isEqualTags } from '@udecode/plate-tag';
+import { isHotkey, KEYS } from 'platejs';
+import { isEqualTags } from '@platejs/tag';
 import {
   MultiSelectPlugin,
   TagPlugin,
   useSelectableItems,
   useSelectEditorCombobox,
-} from '@udecode/plate-tag/react';
+} from '@platejs/tag/react';
 import {
   Plate,
   useEditorContainerRef,
   useEditorRef,
   usePlateEditor,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 import { Fzf } from 'fzf';
 import { PlusIcon } from 'lucide-react';
 

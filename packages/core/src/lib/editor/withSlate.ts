@@ -3,7 +3,7 @@ import {
   type TSelection,
   type Value,
   createEditor,
-} from '@udecode/slate';
+} from '@platejs/slate';
 import { nanoid } from 'nanoid';
 
 import type { AnyPluginConfig, NodeComponents } from '../plugin/BasePlugin';

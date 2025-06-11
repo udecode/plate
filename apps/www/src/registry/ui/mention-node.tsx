@@ -2,17 +2,17 @@
 
 import * as React from 'react';
 
-import type { TComboboxInputElement, TMentionElement } from '@udecode/plate';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TComboboxInputElement, TMentionElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 
-import { IS_APPLE, KEYS } from '@udecode/plate';
-import { getMentionOnSelectItem } from '@udecode/plate-mention';
+import { IS_APPLE, KEYS } from 'platejs';
+import { getMentionOnSelectItem } from '@platejs/mention';
 import {
   PlateElement,
   useFocused,
   useReadOnly,
   useSelected,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';

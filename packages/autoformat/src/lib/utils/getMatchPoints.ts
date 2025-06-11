@@ -1,4 +1,4 @@
-import type { Editor, Point } from '@udecode/plate';
+import type { Editor, Point } from 'platejs';
 
 import type { MatchRange } from '../types';
 

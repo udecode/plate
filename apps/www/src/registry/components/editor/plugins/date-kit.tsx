@@ -1,6 +1,6 @@
 'use client';
 
-import { DatePlugin } from '@udecode/plate-date/react';
+import { DatePlugin } from '@platejs/date/react';
 
 import { DateElement } from '@/registry/ui/date-node';
 

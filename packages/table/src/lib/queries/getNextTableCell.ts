@@ -1,9 +1,4 @@
-import {
-  type Editor,
-  type NodeEntry,
-  type Path,
-  PathApi,
-} from '@udecode/plate';
+import { type Editor, type NodeEntry, type Path, PathApi } from 'platejs';
 
 import { getCellInNextTableRow } from './getCellInNextTableRow';
 

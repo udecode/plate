@@ -1,4 +1,4 @@
-import type { History, SlateEditor } from '@udecode/plate';
+import type { History, SlateEditor } from 'platejs';
 
 export type AIBatch = History['undos'][number] & { ai?: boolean };
 

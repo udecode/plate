@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-resizable",
+  "name": "@platejs/resizable",
   "version": "49.0.0",
   "description": "Plate React resize components",
   "keywords": [
@@ -43,10 +43,10 @@
     "typecheck": "yarn p:typecheck"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

@@ -2,11 +2,11 @@
 
 import { useEffect } from 'react';
 
-import type { NodeEntry } from '@udecode/plate';
+import type { NodeEntry } from 'platejs';
 import type { UseChatHelpers } from 'ai/react';
 
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 

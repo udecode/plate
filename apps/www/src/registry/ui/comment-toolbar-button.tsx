@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { useEditorRef } from '@udecode/plate/react';
+import { useEditorRef } from 'platejs/react';
 import { MessageSquareTextIcon } from 'lucide-react';
 
 import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';

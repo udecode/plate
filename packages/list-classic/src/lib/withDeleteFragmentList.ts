@@ -4,7 +4,7 @@ import {
   type TRange,
   deleteMerge,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { ListConfig } from './BaseListPlugin';
 

@@ -1,5 +1,5 @@
 import type { ClientRectObject } from '@floating-ui/core';
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
 import { getRangeBoundingClientRect } from './getRangeBoundingClientRect';

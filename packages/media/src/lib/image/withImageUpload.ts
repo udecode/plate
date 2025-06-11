@@ -2,7 +2,7 @@ import {
   type OverrideEditor,
   getInjectedPlugins,
   pipeInsertDataQuery,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { ImageConfig } from './BaseImagePlugin';
 

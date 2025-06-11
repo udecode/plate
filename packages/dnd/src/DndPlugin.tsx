@@ -1,10 +1,10 @@
 import React from 'react';
 
-import type { Path, PluginConfig } from '@udecode/plate';
+import type { Path, PluginConfig } from 'platejs';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { KEYS } from '@udecode/plate';
-import { type PlateEditor, createTPlatePlugin } from '@udecode/plate/react';
+import { KEYS } from 'platejs';
+import { type PlateEditor, createTPlatePlugin } from 'platejs/react';
 
 import type {
   DragItemNode,

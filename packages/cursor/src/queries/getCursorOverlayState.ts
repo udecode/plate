@@ -1,4 +1,4 @@
-import type { UnknownObject } from '@udecode/plate';
+import type { UnknownObject } from 'platejs';
 
 import type { CursorOverlayProps } from '../components';
 import type { CursorOverlayState, SelectionRect } from '../types';

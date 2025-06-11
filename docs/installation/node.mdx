@@ -6,9 +6,9 @@ description: Install and configure Plate for Node.js
 This guide demonstrates how to use Plate in a Node.js environment. This is useful for backend tasks such as data processing, content migration, validation, or any scenario where you need to interact with Plate editor content without a browser or a full React frontend.
 
 <Callout type="warning" title="Key Node.js Constraint">
-  When using Plate in a Node.js environment, you **must not** import from `/react` subpaths of any `@udecode/plate*` package. Always use the base imports (e.g., `@udecode/plate-basic-nodes` instead of `@udecode/plate-basic-nodes/react`).
+  When using Plate in a Node.js environment, you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `@platejs/basic-nodes` instead of `@platejs/basic-nodes/react`).
 
-  This means you cannot use `createPlateEditor` from `@udecode/plate/react`. Instead, use `createSlateEditor` from `@udecode/plate`.
+  This means you cannot use `createPlateEditor` from `platejs/react`. Instead, use `createSlateEditor` from `platejs`.
 </Callout>
 
 <Steps>
@@ -18,18 +18,18 @@ This guide demonstrates how to use Plate in a Node.js environment. This is usefu
 Install the core Plate package and any specific plugin packages required for your data processing needs.
 
 ```bash
-npm add @udecode/plate @udecode/plate-basic-nodes
+npm add platejs @platejs/basic-nodes
 ```
 
--   `@udecode/plate`: The core Plate engine and Slate editor functionality.
--   `@udecode/plate-basic-nodes`: Plugin for basic nodes like headings, bold, italic, underline, etc.
+-   `platejs`: The core Plate engine and Slate editor functionality.
+-   `@platejs/basic-nodes`: Plugin for basic nodes like headings, bold, italic, underline, etc.
 
 ### Create an Editor Instance
 
-In your Node.js script, use `createSlateEditor` from `@udecode/plate` to initialize an editor instance. This function is framework-agnostic and doesn't depend on React or browser APIs.
+In your Node.js script, use `createSlateEditor` from `platejs` to initialize an editor instance. This function is framework-agnostic and doesn't depend on React or browser APIs.
 
 ```typescript title="scripts/process-content.ts"
-import { createSlateEditor } from '@udecode/plate';
+import { createSlateEditor } from 'platejs';
 import {
   BaseBoldPlugin,
   BaseItalicPlugin,
@@ -38,7 +38,7 @@ import {
   BaseH2Plugin,
   BaseH3Plugin,
   BaseBlockquotePlugin,
-} from '@udecode/plate-basic-nodes';
+} from '@platejs/basic-nodes';
 
 const initialValue = [
   {
@@ -85,7 +85,7 @@ console.debug('Editor content:', editor.children);
 The primary use case for Plate in Node.js is programmatic content manipulation:
 
 ```typescript title="scripts/transform-content.ts"
-import { createSlateEditor } from '@udecode/plate';
+import { createSlateEditor } from 'platejs';
 import {
   BaseBoldPlugin,
   BaseItalicPlugin,
@@ -93,7 +93,7 @@ import {
   BaseH2Plugin,
   BaseH3Plugin,
   BaseBlockquotePlugin,
-} from '@udecode/plate-basic-nodes';
+} from '@platejs/basic-nodes';
 
 async function processDocument(value: any[]) {
   const editor = createSlateEditor({

@@ -1,4 +1,4 @@
-import type { Editor } from '@udecode/plate';
+import type { Editor } from 'platejs';
 
 import type { OutdentCodeLineOptions } from './outdentCodeLine';
 

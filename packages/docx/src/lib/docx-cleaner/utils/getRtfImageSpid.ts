@@ -1,4 +1,4 @@
-import { CARRIAGE_RETURN, LINE_FEED, SPACE } from '@udecode/plate';
+import { CARRIAGE_RETURN, LINE_FEED, SPACE } from 'platejs';
 
 const END_OF_ID_SEQUENCE_CHARACTERS = [
   '\\',

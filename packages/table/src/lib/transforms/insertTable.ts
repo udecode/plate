@@ -4,7 +4,7 @@ import {
   type TTableElement,
   KEYS,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { GetEmptyTableNodeOptions } from '../api/getEmptyTableNode';
 import type { TableConfig } from '../BaseTablePlugin';

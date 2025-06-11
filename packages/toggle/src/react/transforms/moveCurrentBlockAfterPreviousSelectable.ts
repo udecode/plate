@@ -1,4 +1,4 @@
-import { type SlateEditor, ElementApi } from '@udecode/plate';
+import { type SlateEditor, ElementApi } from 'platejs';
 
 import { isInClosedToggle } from '../queries';
 

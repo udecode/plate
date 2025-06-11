@@ -44,7 +44,7 @@ The fastest way to add font styling functionality is with the `FontKit`, which i
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { FontKit } from '@/components/editor/plugins/font-kit';
 
 const editor = createPlateEditor({
@@ -64,7 +64,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-basic-styles
+npm install @platejs/basic-styles
 ```
 
 ### Add Plugins
@@ -77,8 +77,8 @@ import {
   FontColorPlugin,
   FontFamilyPlugin,
   FontSizePlugin,
-} from '@udecode/plate-basic-styles/react';
-import { createPlateEditor } from '@udecode/plate/react';
+} from '@platejs/basic-styles/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -101,9 +101,9 @@ import {
   FontBackgroundColorPlugin,
   FontSizePlugin,
   FontFamilyPlugin,
-} from '@udecode/plate-basic-styles/react';
-import { KEYS } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate/react';
+} from '@platejs/basic-styles/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [

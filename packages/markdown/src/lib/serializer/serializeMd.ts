@@ -1,4 +1,4 @@
-import type { Descendant, SlateEditor } from '@udecode/plate';
+import type { Descendant, SlateEditor } from 'platejs';
 
 import remarkStringify from 'remark-stringify';
 import { type Plugin, unified } from 'unified';

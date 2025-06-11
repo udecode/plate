@@ -4,14 +4,14 @@ import type {
   NodeEntry,
   TTableCellElement,
   TTableRowElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 import {
   useEditorPlugin,
   useElement,
   useElementSelector,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { useCellIndices } from '../../hooks/useCellIndices';
 import { TablePlugin } from '../../TablePlugin';

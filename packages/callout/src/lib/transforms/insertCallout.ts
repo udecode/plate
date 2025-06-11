@@ -2,9 +2,9 @@ import type {
   InsertNodesOptions,
   SlateEditor,
   TCalloutElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export const CALLOUT_STORAGE_KEY = `plate-storage-callout`;
 

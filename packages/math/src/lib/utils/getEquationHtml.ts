@@ -1,4 +1,4 @@
-import type { TEquationElement } from '@udecode/plate';
+import type { TEquationElement } from 'platejs';
 
 import katex, { type KatexOptions } from 'katex';
 

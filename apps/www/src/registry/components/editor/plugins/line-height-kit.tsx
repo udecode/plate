@@ -1,7 +1,7 @@
 'use client';
 
-import { KEYS } from '@udecode/plate';
-import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
+import { KEYS } from 'platejs';
+import { LineHeightPlugin } from '@platejs/basic-styles/react';
 
 export const LineHeightKit = [
   LineHeightPlugin.configure({

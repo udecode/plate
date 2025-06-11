@@ -36,7 +36,7 @@ The fastest way to add mentions is with the `MentionKit`, which includes pre-con
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { MentionKit } from '@/components/editor/plugins/mention-kit';
 
 const editor = createPlateEditor({
@@ -56,14 +56,14 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-mention
+npm install @platejs/mention
 ```
 
 ### Add Plugins
 
 ```tsx
-import { MentionPlugin, MentionInputPlugin } from '@udecode/plate-mention/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { MentionPlugin, MentionInputPlugin } from '@platejs/mention/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -77,8 +77,8 @@ const editor = createPlateEditor({
 ### Configure Plugins
 
 ```tsx
-import { MentionPlugin, MentionInputPlugin } from '@udecode/plate-mention/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { MentionPlugin, MentionInputPlugin } from '@platejs/mention/react';
+import { createPlateEditor } from 'platejs/react';
 import { MentionElement, MentionInputElement } from '@/components/ui/mention-node';
 
 const editor = createPlateEditor({

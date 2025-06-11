@@ -3,7 +3,7 @@ import {
   type Point,
   type SlateEditor,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 export const isPointNextToNode = (
   editor: SlateEditor,

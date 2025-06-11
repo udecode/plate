@@ -1,4 +1,4 @@
-import { useEditorSelector } from '@udecode/plate-core/react';
+import { useEditorSelector } from '@platejs/core/react';
 
 export const useEditorString = () => {
   return useEditorSelector((editor) => editor.api.string([]), []);

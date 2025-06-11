@@ -11,7 +11,7 @@ import {
   getAt,
   KEYS,
   TextApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { getSuggestionKey, getSuggestionKeyId } from './utils';
 import { withSuggestion } from './withSuggestion';

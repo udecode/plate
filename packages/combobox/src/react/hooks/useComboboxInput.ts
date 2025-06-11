@@ -6,8 +6,8 @@ import {
   useRef,
 } from 'react';
 
-import { Hotkeys, isHotkey } from '@udecode/plate';
-import { useEditorRef, useElement, useSelected } from '@udecode/plate/react';
+import { Hotkeys, isHotkey } from 'platejs';
+import { useEditorRef, useElement, useSelected } from 'platejs/react';
 
 import type {
   CancelComboboxInputCause,

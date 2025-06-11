@@ -28,7 +28,7 @@ toc: true
 Install the core Yjs plugin and the specific provider packages you intend to use:
 
 ```bash
-npm install @udecode/plate-yjs
+npm install @platejs/yjs
 ```
 
 For Hocuspocus server-based collaboration:
@@ -46,8 +46,8 @@ npm install y-webrtc
 ### Add Plugin
 
 ```tsx
-import { YjsPlugin } from '@udecode/plate-yjs/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { YjsPlugin } from '@platejs/yjs/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -68,8 +68,8 @@ const editor = createPlateEditor({
 Configure the plugin with providers and cursor settings:
 
 ```tsx
-import { YjsPlugin } from '@udecode/plate-yjs/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { YjsPlugin } from '@platejs/yjs/react';
+import { createPlateEditor } from 'platejs/react';
 import { RemoteCursorOverlay } from '@/components/ui/remote-cursor-overlay';
 
 const editor = createPlateEditor({
@@ -119,10 +119,10 @@ const editor = createPlateEditor({
 
 ### Add Editor Container
 
-The `RemoteCursorOverlay` requires a positioned container around the editor content. Use [`EditorContainer`](/docs/components/editor) component or `PlateContainer` from `@udecode/plate/react`:
+The `RemoteCursorOverlay` requires a positioned container around the editor content. Use [`EditorContainer`](/docs/components/editor) component or `PlateContainer` from `platejs/react`:
 
 ```tsx
-import { Plate } from '@udecode/plate/react';
+import { Plate } from 'platejs/react';
 import { EditorContainer } from '@/components/ui/editor';
 
 return (
@@ -140,7 +140,7 @@ Yjs connection and state initialization are handled manually, typically within a
 
 ```tsx
 import React, { useEffect } from 'react';
-import { YjsPlugin } from '@udecode/plate-yjs/react';
+import { YjsPlugin } from '@platejs/yjs/react';
 import { useMounted } from '@/hooks/use-mounted'; // Or your own mounted check
 
 const MyEditorComponent = ({ documentId, initialValue }) => {
@@ -185,8 +185,8 @@ Access provider states and add event handlers for connection monitoring:
 
 ```tsx
 import React from 'react';
-import { YjsPlugin } from '@udecode/plate-yjs/react';
-import { usePluginOption } from '@udecode/plate/react';
+import { YjsPlugin } from '@platejs/yjs/react';
+import { usePluginOption } from 'platejs/react';
 
 function EditorStatus() {
   // Access provider states directly (read-only)

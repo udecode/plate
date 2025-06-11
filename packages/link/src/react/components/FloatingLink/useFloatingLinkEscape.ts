@@ -2,7 +2,7 @@ import {
   useEditorPlugin,
   useHotkeys,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 

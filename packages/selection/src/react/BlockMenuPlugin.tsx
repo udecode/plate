@@ -1,7 +1,7 @@
-import type { PluginConfig } from '@udecode/plate';
+import type { PluginConfig } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
-import { createTPlatePlugin } from '@udecode/plate/react';
+import { KEYS } from 'platejs';
+import { createTPlatePlugin } from 'platejs/react';
 
 import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 

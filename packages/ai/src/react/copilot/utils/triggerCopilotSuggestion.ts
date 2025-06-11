@@ -1,5 +1,5 @@
-import { KEYS } from '@udecode/plate';
-import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
+import { KEYS } from 'platejs';
+import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import type { CopilotPluginConfig } from '../CopilotPlugin';
 

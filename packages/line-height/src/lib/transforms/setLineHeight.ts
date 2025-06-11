@@ -3,7 +3,7 @@ import {
   type SlateEditor,
   getInjectMatch,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { BaseLineHeightPlugin } from '../BaseLineHeightPlugin';
 

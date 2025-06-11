@@ -1,6 +1,6 @@
-import type { Path } from '@udecode/plate';
+import type { Path } from 'platejs';
 
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 import { toggleColumnGroup } from './toggleColumnGroup';

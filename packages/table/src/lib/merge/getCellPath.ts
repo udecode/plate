@@ -4,7 +4,7 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { getCellIndices } from '../utils/getCellIndices';
 

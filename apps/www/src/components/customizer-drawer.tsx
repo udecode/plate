@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { useStoreValue } from '@udecode/plate/react';
+import { useStoreValue } from 'platejs/react';
 
 import { ThemeCustomizer } from '@/components/theme-customizer';
 import { SettingsStore } from '@/components/themes-button';

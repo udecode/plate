@@ -1,10 +1,7 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import { type Descendant, ElementApi, TextApi } from '@udecode/plate';
-import {
-  type SerializeMdOptions,
-  MarkdownPlugin,
-} from '@udecode/plate-markdown';
+import { type Descendant, ElementApi, TextApi } from 'platejs';
+import { type SerializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
 
 import { getChunkTrimmed, isCompleteCodeBlock, isCompleteMath } from './utils';
 

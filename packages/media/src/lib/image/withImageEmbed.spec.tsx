@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { createEditor } from '@udecode/plate';
-import { createSlateEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { createEditor } from 'platejs';
+import { createSlateEditor } from 'platejs';
+import { jsxt } from '@platejs/test-utils';
 
 import { BaseImagePlugin } from './BaseImagePlugin';
 

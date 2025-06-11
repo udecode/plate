@@ -1,4 +1,4 @@
-import type { Value } from '@udecode/slate';
+import type { Value } from '@platejs/slate';
 
 import {
   type InferPlugins,
@@ -6,9 +6,9 @@ import {
   createSlatePlugin,
   DebugPlugin,
   someHtmlElement,
-} from '@udecode/plate-core';
-import { createPlateEditor, withPlate } from '@udecode/plate-core/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
+} from '@platejs/core';
+import { createPlateEditor, withPlate } from '@platejs/core/react';
+import { LinkPlugin } from '@platejs/link/react';
 
 describe('TPlateEditor core package', () => {
   const MyCustomPlugin = createSlatePlugin({

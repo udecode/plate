@@ -2,18 +2,18 @@
 
 import React from 'react';
 
-import type { TListElement } from '@udecode/plate';
+import type { TListElement } from 'platejs';
 
-import { isOrderedList } from '@udecode/plate-list';
+import { isOrderedList } from '@platejs/list';
 import {
   useTodoListElement,
   useTodoListElementState,
-} from '@udecode/plate-list/react';
+} from '@platejs/list/react';
 import {
   type PlateElementProps,
   type RenderNodeWrapper,
   useReadOnly,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';

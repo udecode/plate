@@ -1,6 +1,6 @@
-import type { TElement } from '@udecode/plate';
+import type { TElement } from 'platejs';
 
-import { usePluginOption } from '@udecode/plate/react';
+import { usePluginOption } from 'platejs/react';
 
 import { TablePlugin } from '../../TablePlugin';
 

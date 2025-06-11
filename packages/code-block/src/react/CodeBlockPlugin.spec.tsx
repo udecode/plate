@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor } from 'platejs';
 
-import { createSlatePlugin } from '@udecode/plate';
-import { BaseParagraphPlugin } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
+import { createSlatePlugin } from 'platejs';
+import { BaseParagraphPlugin } from 'platejs';
+import { jsxt } from '@platejs/test-utils';
+import { createPlateEditor } from 'platejs/react';
 
 import { CodeBlockPlugin } from './CodeBlockPlugin';
 

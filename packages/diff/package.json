@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-diff",
+  "name": "@platejs/diff",
   "version": "49.0.0",
   "description": "Compute a diff of two Slate documents",
   "keywords": [
@@ -47,10 +47,10 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

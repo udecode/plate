@@ -35,9 +35,9 @@ vi.mock('nanoid', () => ({
   nanoid: () => `${id++}`,
 }));
 
-// vi.mock('@udecode/plate-core', () => ({
+// vi.mock('@platejs/core', () => ({
 //   __esModule: true,
-//   ...(await vi.importActual('@udecode/plate-core')),
+//   ...(await vi.importActual('@platejs/core')),
 // }));
 
 // Add mock for lucide-react

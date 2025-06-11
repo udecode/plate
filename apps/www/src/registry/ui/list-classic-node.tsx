@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 
-import type { TTodoListItemElement } from '@udecode/plate-list-classic';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TTodoListItemElement } from '@platejs/list-classic';
+import type { PlateElementProps } from 'platejs/react';
 
 import {
   useTodoListElement,
   useTodoListElementState,
-} from '@udecode/plate-list-classic/react';
-import { PlateElement } from '@udecode/plate/react';
+} from '@platejs/list-classic/react';
+import { PlateElement } from 'platejs/react';
 import { type VariantProps, cva } from 'class-variance-authority';
 
 import { Checkbox } from '@/components/ui/checkbox';

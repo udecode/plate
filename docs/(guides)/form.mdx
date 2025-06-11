@@ -21,8 +21,8 @@ This is the most straightforward approach: each time the editor changes, update 
 
 ```tsx
 import { useForm } from 'react-hook-form';
-import type { Value } from '@udecode/plate';
-import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+import type { Value } from 'platejs';
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 
 type FormData = {
   content: Value;
@@ -90,7 +90,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 
 type FormValues = {
   content: any;
@@ -185,7 +185,7 @@ Here's a more complete form demonstrating both saving and resetting the editor/f
 
 ```tsx
 import { useForm } from 'react-hook-form';
-import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 
 function MyForm() {
   const form = useForm({
@@ -267,8 +267,8 @@ Create a new `EditorField` component:
 "use client";
 
 import * as React from "react";
-import type { Value } from "@udecode/plate";
-import { Plate, PlateContent, usePlateEditor } from "@udecode/plate/react";
+import type { Value } from "platejs";
+import { Plate, PlateContent, usePlateEditor } from "platejs/react";
 
 /**
  * A reusable editor component that works like a standard <Textarea>,

@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-markdown",
+  "name": "@platejs/markdown",
   "version": "49.0.0",
   "description": "Markdown serializer plugin for Plate",
   "keywords": [
@@ -59,10 +59,10 @@
   "devDependencies": {
     "@types/mdast": "^4.0.4",
     "@types/unist": "^3.0.3",
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

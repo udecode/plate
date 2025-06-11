@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Editor, TSelection, Value } from '@udecode/slate';
+import type { Editor, TSelection, Value } from '@platejs/slate';
 import type { UnknownObject } from '@udecode/utils';
 
 import { useAtomStoreValue } from 'jotai-x';

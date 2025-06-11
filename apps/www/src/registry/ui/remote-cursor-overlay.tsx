@@ -8,8 +8,8 @@ import {
   type CursorOverlayData,
   useRemoteCursorOverlayPositions,
 } from '@slate-yjs/react';
-import { YjsPlugin } from '@udecode/plate-yjs/react';
-import { useEditorContainerRef, usePluginOption } from '@udecode/plate/react';
+import { YjsPlugin } from '@platejs/yjs/react';
+import { useEditorContainerRef, usePluginOption } from 'platejs/react';
 
 export function RemoteCursorOverlay() {
   const isSynced = usePluginOption(YjsPlugin, '_isSynced');

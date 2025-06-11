@@ -2,10 +2,7 @@
 
 import * as React from 'react';
 
-import type {
-  PlateElementProps,
-  RenderNodeWrapper,
-} from '@udecode/plate/react';
+import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
 
 import {
   type AnyPluginConfig,
@@ -16,15 +13,11 @@ import {
   type TSuggestionText,
   PathApi,
   TextApi,
-} from '@udecode/plate';
-import { getDraftCommentKey } from '@udecode/plate-comments';
-import { CommentPlugin } from '@udecode/plate-comments/react';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import {
-  useEditorPlugin,
-  useEditorRef,
-  usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs';
+import { getDraftCommentKey } from '@platejs/comments';
+import { CommentPlugin } from '@platejs/comments/react';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { useEditorPlugin, useEditorRef, usePluginOption } from 'platejs/react';
 import {
   MessageSquareTextIcon,
   MessagesSquareIcon,

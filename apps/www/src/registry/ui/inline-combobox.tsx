@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { Point, TElement } from '@udecode/plate';
+import type { Point, TElement } from 'platejs';
 
 import {
   type ComboboxItemProps,
@@ -17,13 +17,13 @@ import {
   useComboboxContext,
   useComboboxStore,
 } from '@ariakit/react';
-import { filterWords } from '@udecode/plate-combobox';
+import { filterWords } from '@platejs/combobox';
 import {
   type UseComboboxInputResult,
   useComboboxInput,
   useHTMLInputCursorState,
-} from '@udecode/plate-combobox/react';
-import { useComposedRef, useEditorRef } from '@udecode/plate/react';
+} from '@platejs/combobox/react';
+import { useComposedRef, useEditorRef } from 'platejs/react';
 import { cva } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';

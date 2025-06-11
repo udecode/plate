@@ -7,7 +7,7 @@ import {
   KEYS,
   nanoid,
   queryNode,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { withNodeId } from './withNodeId';
 

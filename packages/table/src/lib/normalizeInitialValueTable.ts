@@ -1,4 +1,4 @@
-import type { NormalizeInitialValue, TTableElement } from '@udecode/plate';
+import type { NormalizeInitialValue, TTableElement } from 'platejs';
 
 import type { TableConfig } from './BaseTablePlugin';
 

@@ -42,11 +42,11 @@ If you prefer a step-by-step approach or are not using the shadcn CLI, follow th
 ### Install Plate
 
 ```bash
-npm add @udecode/plate
+npm add platejs
 ```
 
 <Callout type="note" title="Plugin Dependencies">
-  When manually installing Plate, you'll need to add the specific packages for each plugin you want to use. For example, if you want to use the `AIMenu` component, you would need `@udecode/plate-ai` and its dependencies. Check each component's documentation for its required packages, or use the CLI to automatically install the required packages.
+  When manually installing Plate, you'll need to add the specific packages for each plugin you want to use. For example, if you want to use the `AIMenu` component, you would need `@platejs/ai` and its dependencies. Check each component's documentation for its required packages, or use the CLI to automatically install the required packages.
 </Callout>
 
 ### Configure CSS Variables
@@ -75,7 +75,7 @@ npx shadcn@latest add https://platejs.org/r/fixed-toolbar https://platejs.org/r/
 Import and use them in your editor:
 
 ```tsx showLineNumbers title="components/editor.tsx"
-import { Plate } from "@udecode/plate/react";
+import { Plate } from "platejs/react";
 import { FixedToolbar } from "@/components/ui/fixed-toolbar";
 import { MarkToolbarButton } from "@/components/ui/mark-toolbar-button";
 // ... other imports

@@ -4,7 +4,7 @@ import type {
   TElement,
   TTableCellElement,
   TTableRowElement,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { TableConfig } from './BaseTablePlugin';
 

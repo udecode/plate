@@ -6,7 +6,7 @@ import {
   type TElement,
   KEYS,
   NodeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 

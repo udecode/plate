@@ -1,5 +1,5 @@
-import { KEYS } from '@udecode/plate';
-import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
+import { KEYS } from 'platejs';
+import { useEditorRef, useEditorSelector } from 'platejs/react';
 
 import { triggerFloatingLink } from '../index';
 

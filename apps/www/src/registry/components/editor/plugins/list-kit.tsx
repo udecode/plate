@@ -1,7 +1,7 @@
 'use client';
 
-import { KEYS } from '@udecode/plate';
-import { ListPlugin } from '@udecode/plate-list/react';
+import { KEYS } from 'platejs';
+import { ListPlugin } from '@platejs/list/react';
 
 import { IndentKit } from '@/registry/components/editor/plugins/indent-kit';
 import { BlockList } from '@/registry/ui/block-list';

@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { KEYS } from '@udecode/plate';
-import { useEditorReadOnly } from '@udecode/plate/react';
+import { KEYS } from 'platejs';
+import { useEditorReadOnly } from 'platejs/react';
 import {
   ArrowUpToLineIcon,
   BaselineIcon,

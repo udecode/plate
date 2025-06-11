@@ -3,7 +3,7 @@ import {
   type TElement,
   type TText,
   TextApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { unistLib } from '../types';
 import type { SerializeMdOptions } from './serializeMd';

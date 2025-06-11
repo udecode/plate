@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey, getSuggestionUserIds } from './getSuggestionKeys';

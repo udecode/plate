@@ -1,4 +1,4 @@
-import { type SlateEditor, KEYS, PathApi } from '@udecode/plate';
+import { type SlateEditor, KEYS, PathApi } from 'platejs';
 
 import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
 

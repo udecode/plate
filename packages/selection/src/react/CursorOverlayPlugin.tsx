@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 
-import type { PluginConfig } from '@udecode/plate';
+import type { PluginConfig } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 import {
   type DOMHandler,
   createTPlatePlugin,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import type { CursorData, CursorState } from './types';
 

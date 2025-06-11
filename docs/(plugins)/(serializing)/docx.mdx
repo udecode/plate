@@ -31,7 +31,7 @@ The fastest way to add DOCX import functionality is with the `DocxKit`, which in
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { DocxKit } from '@/components/editor/plugins/docx-kit';
 
 const editor = createPlateEditor({
@@ -51,15 +51,15 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-docx @udecode/plate-juice
+npm install @platejs/docx @platejs/juice
 ```
 
 ### Add Plugins
 
 ```tsx
-import { DocxPlugin } from '@udecode/plate-docx';
-import { JuicePlugin } from '@udecode/plate-juice';
-import { createPlateEditor } from '@udecode/plate/react';
+import { DocxPlugin } from '@platejs/docx';
+import { JuicePlugin } from '@platejs/juice';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -73,9 +73,9 @@ const editor = createPlateEditor({
 ### Configure Plugins
 
 ```tsx
-import { DocxPlugin } from '@udecode/plate-docx';
-import { JuicePlugin } from '@udecode/plate-juice';
-import { createPlateEditor } from '@udecode/plate/react';
+import { DocxPlugin } from '@platejs/docx';
+import { JuicePlugin } from '@platejs/juice';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [

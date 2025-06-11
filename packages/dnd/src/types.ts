@@ -1,4 +1,4 @@
-import type { TElement } from '@udecode/plate';
+import type { TElement } from 'platejs';
 
 export type DragItemNode = ElementDragItemNode | FileDragItemNode;
 

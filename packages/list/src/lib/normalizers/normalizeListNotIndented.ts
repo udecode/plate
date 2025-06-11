@@ -1,4 +1,4 @@
-import { type Editor, type NodeEntry, isDefined, KEYS } from '@udecode/plate';
+import { type Editor, type NodeEntry, isDefined, KEYS } from 'platejs';
 
 /** Unset listStyle, listStart if KEYS.indent is not defined. */
 export const normalizeListNotIndented = (

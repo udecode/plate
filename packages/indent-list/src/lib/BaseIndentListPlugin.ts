@@ -8,7 +8,7 @@ import {
   KEYS,
   postCleanHtml,
   traverseHtmlElements,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
 import type { ListStyleType } from './types';

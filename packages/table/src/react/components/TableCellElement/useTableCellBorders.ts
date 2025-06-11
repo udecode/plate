@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { TTableCellElement } from '@udecode/plate';
+import type { TTableCellElement } from 'platejs';
 
-import { useEditorPlugin, useElement } from '@udecode/plate/react';
+import { useEditorPlugin, useElement } from 'platejs/react';
 
 import { getTableCellBorders } from '../../../lib';
 import { useCellIndices } from '../../hooks/useCellIndices';

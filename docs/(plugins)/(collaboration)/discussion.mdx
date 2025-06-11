@@ -34,7 +34,7 @@ The fastest way to add discussion functionality is with the `DiscussionKit`, whi
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { DiscussionKit } from '@/components/editor/plugins/discussion-kit';
 
 const editor = createPlateEditor({
@@ -54,13 +54,13 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-comments @udecode/plate-suggestion
+npm install @platejs/comments @platejs/suggestion
 ```
 
 ### Create Plugin
 
 ```tsx
-import { createPlatePlugin } from '@udecode/plate/react';
+import { createPlatePlugin } from 'platejs/react';
 import { BlockDiscussion } from '@/components/ui/block-discussion';
 
 export interface TDiscussion {
@@ -112,7 +112,7 @@ export const discussionPlugin = createPlatePlugin({
 ### Add Plugin
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [

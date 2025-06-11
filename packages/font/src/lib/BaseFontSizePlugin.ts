@@ -1,4 +1,4 @@
-import { type PluginConfig, createTSlatePlugin, KEYS } from '@udecode/plate';
+import { type PluginConfig, createTSlatePlugin, KEYS } from 'platejs';
 
 export type BaseFontSizeConfig = PluginConfig<
   'fontSize',

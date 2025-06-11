@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { createPlateEditor } from '@udecode/plate-core/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
-import { jsxt } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@platejs/core/react';
+import { LinkPlugin } from '@platejs/link/react';
+import { jsxt } from '@platejs/test-utils';
 
 import type { Editor, LegacyEditorMethods } from '../../interfaces';
 

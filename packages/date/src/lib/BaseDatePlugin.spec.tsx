@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import { jsxt } from '@udecode/plate-test-utils';
+import { jsxt } from '@platejs/test-utils';
 
 import { createPlateTestEditor } from '../../../core/src/react/__tests__/createPlateTestEditor';
 import { BaseDatePlugin } from './BaseDatePlugin';

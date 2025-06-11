@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TResolvedSuggestion } from '@udecode/plate-suggestion';
+import type { TResolvedSuggestion } from '@platejs/suggestion';
 
 import {
   type NodeEntry,
@@ -14,15 +14,15 @@ import {
   KEYS,
   PathApi,
   TextApi,
-} from '@udecode/plate';
+} from 'platejs';
 import {
   acceptSuggestion,
   getSuggestionKey,
   keyId2SuggestionId,
   rejectSuggestion,
-} from '@udecode/plate-suggestion';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
+} from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { useEditorPlugin, usePluginOption } from 'platejs/react';
 import { CheckIcon, XIcon } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

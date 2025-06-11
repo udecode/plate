@@ -1,4 +1,4 @@
-import { useEditorSelector } from '@udecode/plate/react';
+import { useEditorSelector } from 'platejs/react';
 
 import { BaseCommentPlugin } from '../../lib';
 

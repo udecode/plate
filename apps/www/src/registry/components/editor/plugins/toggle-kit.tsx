@@ -1,6 +1,6 @@
 'use client';
 
-import { TogglePlugin } from '@udecode/plate-toggle/react';
+import { TogglePlugin } from '@platejs/toggle/react';
 
 import { IndentKit } from '@/registry/components/editor/plugins/indent-kit';
 import { ToggleElement } from '@/registry/ui/toggle-node';

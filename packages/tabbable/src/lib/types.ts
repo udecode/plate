@@ -1,4 +1,4 @@
-import type { Path, TElement } from '@udecode/plate';
+import type { Path, TElement } from 'platejs';
 
 export type TabbableEntry = {
   domNode: HTMLElement;

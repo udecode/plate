@@ -1,11 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { jsx } from '@udecode/plate-test-utils';
+import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-import type { NodeProps } from '@udecode/plate';
-import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
+import type { NodeProps } from 'platejs';
+import type { TExcalidrawElement } from '@platejs/excalidraw';
 
 export const excalidrawInitialData: NodeProps<TExcalidrawElement> = {
   data: {

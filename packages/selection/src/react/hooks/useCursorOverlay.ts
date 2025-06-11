@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { TRange, UnknownObject } from '@udecode/plate';
+import type { TRange, UnknownObject } from 'platejs';
 
 import {
   useEditorContainerRef,
   useEditorRef,
   useIsomorphicLayoutEffect,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import type { CursorOverlayState, CursorState, SelectionRect } from '../types';
 

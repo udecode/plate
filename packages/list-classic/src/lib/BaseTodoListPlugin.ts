@@ -1,4 +1,4 @@
-import { type TElement, createSlatePlugin, KEYS } from '@udecode/plate';
+import { type TElement, createSlatePlugin, KEYS } from 'platejs';
 
 import { getTodoListItemEntry } from './queries';
 import { insertTodoListItem } from './transforms';

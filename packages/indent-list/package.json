@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-indent-list",
+  "name": "@platejs/indent-list",
   "version": "49.0.0",
   "description": "List plugin for Plate",
   "keywords": [
@@ -50,15 +50,15 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-indent": "49.0.0",
-    "@udecode/plate-list": "49.0.0",
+    "@platejs/indent": "49.0.0",
+    "@platejs/list": "49.0.0",
     "clsx": "^2.1.1"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

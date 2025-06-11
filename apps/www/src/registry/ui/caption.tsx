@@ -10,7 +10,7 @@ import {
   CaptionTextarea as CaptionTextareaPrimitive,
   useCaptionButton,
   useCaptionButtonState,
-} from '@udecode/plate-caption/react';
+} from '@platejs/caption/react';
 import { cva } from 'class-variance-authority';
 
 import { Button } from '@/components/ui/button';

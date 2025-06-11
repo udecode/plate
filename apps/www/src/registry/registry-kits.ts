@@ -2,7 +2,7 @@ import type { Registry } from 'shadcn/registry';
 
 export const registryBaseKits: Registry['items'] = [
   {
-    dependencies: ['@udecode/plate-basic-styles'],
+    dependencies: ['@platejs/basic-styles'],
     files: [
       {
         path: 'components/editor/plugins/align-base-kit.tsx',
@@ -31,7 +31,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-basic-nodes'],
+    dependencies: ['@platejs/basic-nodes'],
     files: [
       {
         path: 'components/editor/plugins/basic-marks-base-kit.tsx',
@@ -43,7 +43,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-callout'],
+    dependencies: ['@platejs/callout'],
     files: [
       {
         path: 'components/editor/plugins/callout-base-kit.tsx',
@@ -55,7 +55,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-code-block', 'lowlight'],
+    dependencies: ['@platejs/code-block', 'lowlight'],
     files: [
       {
         path: 'components/editor/plugins/code-block-base-kit.tsx',
@@ -67,7 +67,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-layout'],
+    dependencies: ['@platejs/layout'],
     files: [
       {
         path: 'components/editor/plugins/column-base-kit.tsx',
@@ -79,7 +79,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-comments'],
+    dependencies: ['@platejs/comments'],
     files: [
       {
         path: 'components/editor/plugins/comment-base-kit.tsx',
@@ -91,7 +91,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-date'],
+    dependencies: ['@platejs/date'],
     files: [
       {
         path: 'components/editor/plugins/date-base-kit.tsx',
@@ -103,7 +103,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-basic-styles'],
+    dependencies: ['@platejs/basic-styles'],
     files: [
       {
         path: 'components/editor/plugins/font-base-kit.tsx',
@@ -115,7 +115,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-indent'],
+    dependencies: ['@platejs/indent'],
     files: [
       {
         path: 'components/editor/plugins/indent-base-kit.tsx',
@@ -127,7 +127,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-basic-styles'],
+    dependencies: ['@platejs/basic-styles'],
     files: [
       {
         path: 'components/editor/plugins/line-height-base-kit.tsx',
@@ -139,7 +139,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-link'],
+    dependencies: ['@platejs/link'],
     files: [
       {
         path: 'components/editor/plugins/link-base-kit.tsx',
@@ -151,7 +151,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-list'],
+    dependencies: ['@platejs/list'],
     files: [
       {
         path: 'components/editor/plugins/list-base-kit.tsx',
@@ -163,7 +163,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-math'],
+    dependencies: ['@platejs/math'],
     files: [
       {
         path: 'components/editor/plugins/math-base-kit.tsx',
@@ -175,7 +175,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-media'],
+    dependencies: ['@platejs/media'],
     files: [
       {
         path: 'components/editor/plugins/media-base-kit.tsx',
@@ -192,7 +192,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-mention'],
+    dependencies: ['@platejs/mention'],
     files: [
       {
         path: 'components/editor/plugins/mention-base-kit.tsx',
@@ -204,7 +204,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-suggestion'],
+    dependencies: ['@platejs/suggestion'],
     files: [
       {
         path: 'components/editor/plugins/suggestion-base-kit.tsx',
@@ -216,7 +216,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-table'],
+    dependencies: ['@platejs/table'],
     files: [
       {
         path: 'components/editor/plugins/table-base-kit.tsx',
@@ -228,7 +228,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-toc'],
+    dependencies: ['@platejs/toc'],
     files: [
       {
         path: 'components/editor/plugins/toc-base-kit.tsx',
@@ -240,7 +240,7 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-toggle'],
+    dependencies: ['@platejs/toggle'],
     files: [
       {
         path: 'components/editor/plugins/toggle-base-kit.tsx',
@@ -289,7 +289,7 @@ export const registryBaseKits: Registry['items'] = [
 export const registryKits: Registry['items'] = [
   ...registryBaseKits,
   {
-    dependencies: ['@udecode/plate-ai'],
+    dependencies: ['@platejs/ai'],
     files: [
       {
         path: 'components/editor/plugins/ai-kit.tsx',
@@ -308,7 +308,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-basic-styles'],
+    dependencies: ['@platejs/basic-styles'],
     files: [
       {
         path: 'components/editor/plugins/align-kit.tsx',
@@ -321,9 +321,9 @@ export const registryKits: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate-autoformat',
-      '@udecode/plate-code-block',
-      '@udecode/plate-list-classic',
+      '@platejs/autoformat',
+      '@platejs/code-block',
+      '@platejs/list-classic',
     ],
     files: [
       {
@@ -337,9 +337,9 @@ export const registryKits: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate-autoformat',
-      '@udecode/plate-code-block',
-      '@udecode/plate-list',
+      '@platejs/autoformat',
+      '@platejs/code-block',
+      '@platejs/list',
     ],
     files: [
       {
@@ -369,7 +369,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-basic-nodes'],
+    dependencies: ['@platejs/basic-nodes'],
     files: [
       {
         path: 'components/editor/plugins/basic-marks-kit.tsx',
@@ -398,7 +398,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-selection'],
+    dependencies: ['@platejs/selection'],
     files: [
       {
         path: 'components/editor/plugins/block-menu-kit.tsx',
@@ -422,7 +422,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-selection'],
+    dependencies: ['@platejs/selection'],
     files: [
       {
         path: 'components/editor/plugins/block-selection-kit.tsx',
@@ -434,7 +434,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-callout'],
+    dependencies: ['@platejs/callout'],
     files: [
       {
         path: 'components/editor/plugins/callout-kit.tsx',
@@ -446,7 +446,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-code-block', 'lowlight'],
+    dependencies: ['@platejs/code-block', 'lowlight'],
     files: [
       {
         path: 'components/editor/plugins/code-block-kit.tsx',
@@ -458,7 +458,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-layout'],
+    dependencies: ['@platejs/layout'],
     files: [
       {
         path: 'components/editor/plugins/column-kit.tsx',
@@ -470,7 +470,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-comments'],
+    dependencies: ['@platejs/comments'],
     files: [
       {
         path: 'components/editor/plugins/comment-kit.tsx',
@@ -487,11 +487,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@udecode/plate-ai',
-      '@udecode/plate-markdown',
-      '@faker-js/faker',
-    ],
+    dependencies: ['@platejs/ai', '@platejs/markdown', '@faker-js/faker'],
     files: [
       {
         path: 'components/editor/plugins/copilot-kit.tsx',
@@ -503,7 +499,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-selection'],
+    dependencies: ['@platejs/selection'],
     files: [
       {
         path: 'components/editor/plugins/cursor-overlay-kit.tsx',
@@ -515,7 +511,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-date'],
+    dependencies: ['@platejs/date'],
     files: [
       {
         path: 'components/editor/plugins/date-kit.tsx',
@@ -540,8 +536,8 @@ export const registryKits: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate-dnd',
-      '@udecode/plate-media',
+      '@platejs/dnd',
+      '@platejs/media',
       'react-dnd',
       'react-dnd-html5-backend',
     ],
@@ -556,7 +552,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-docx', '@udecode/plate-juice'],
+    dependencies: ['@platejs/docx', '@platejs/juice'],
     files: [
       {
         path: 'components/editor/plugins/docx-kit.tsx',
@@ -610,7 +606,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-emoji', '@emoji-mart/data@1.2.1'],
+    dependencies: ['@platejs/emoji', '@emoji-mart/data@1.2.1'],
     files: [
       {
         path: 'components/editor/plugins/emoji-kit.tsx',
@@ -669,7 +665,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-basic-styles'],
+    dependencies: ['@platejs/basic-styles'],
     files: [
       {
         path: 'components/editor/plugins/font-kit.tsx',
@@ -685,7 +681,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-indent'],
+    dependencies: ['@platejs/indent'],
     files: [
       {
         path: 'components/editor/plugins/indent-kit.tsx',
@@ -697,7 +693,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-basic-styles'],
+    dependencies: ['@platejs/basic-styles'],
     files: [
       {
         path: 'components/editor/plugins/line-height-kit.tsx',
@@ -712,7 +708,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-link'],
+    dependencies: ['@platejs/link'],
     files: [
       {
         path: 'components/editor/plugins/link-kit.tsx',
@@ -729,7 +725,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-list-classic'],
+    dependencies: ['@platejs/list-classic'],
     files: [
       {
         path: 'components/editor/plugins/list-classic-kit.tsx',
@@ -745,7 +741,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-list'],
+    dependencies: ['@platejs/list'],
     files: [
       {
         path: 'components/editor/plugins/list-kit.tsx',
@@ -762,7 +758,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-markdown', 'remark-gfm', 'remark-math'],
+    dependencies: ['@platejs/markdown', 'remark-gfm', 'remark-math'],
     files: [
       {
         path: 'components/editor/plugins/markdown-kit.tsx',
@@ -774,7 +770,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-math'],
+    dependencies: ['@platejs/math'],
     files: [
       {
         path: 'components/editor/plugins/math-kit.tsx',
@@ -790,7 +786,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-caption', '@udecode/plate-media'],
+    dependencies: ['@platejs/caption', '@platejs/media'],
     description:
       'Media kit without API (see media-uploadthing-api for reference)',
     files: [
@@ -824,7 +820,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-mention'],
+    dependencies: ['@platejs/mention'],
     files: [
       {
         path: 'components/editor/plugins/mention-kit.tsx',
@@ -836,7 +832,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-slash-command'],
+    dependencies: ['@platejs/slash-command'],
     files: [
       {
         path: 'components/editor/plugins/slash-kit.tsx',
@@ -848,7 +844,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-suggestion'],
+    dependencies: ['@platejs/suggestion'],
     files: [
       {
         path: 'components/editor/plugins/suggestion-kit.tsx',
@@ -865,7 +861,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-tabbable'],
+    dependencies: ['@platejs/tabbable'],
     files: [
       {
         path: 'components/editor/plugins/tabbable-kit.tsx',
@@ -876,7 +872,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-table'],
+    dependencies: ['@platejs/table'],
     files: [
       {
         path: 'components/editor/plugins/table-kit.tsx',
@@ -892,7 +888,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-toc'],
+    dependencies: ['@platejs/toc'],
     files: [
       {
         path: 'components/editor/plugins/toc-kit.tsx',
@@ -904,7 +900,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/plate-toggle'],
+    dependencies: ['@platejs/toggle'],
     files: [
       {
         path: 'components/editor/plugins/toggle-kit.tsx',

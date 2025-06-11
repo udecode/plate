@@ -20,7 +20,7 @@ Ensure the `children` prop is rendered unconditionally for the editor to functio
 ### Element Component
 
 ```tsx
-import { type PlateElementProps, PlateElement } from '@udecode/plate/react';
+import { type PlateElementProps, PlateElement } from 'platejs/react';
 
 export function BlockquoteElement(props: PlateElementProps) {
   // props contains attributes, children, element, editor, etc.
@@ -40,7 +40,7 @@ This example defines a `BlockquoteElement`. The `as` prop on `PlateElement` spec
 ### Leaf Component
 
 ```tsx
-import { type PlateLeafProps, PlateLeaf } from '@udecode/plate/react';
+import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
 
 export function CodeLeaf(props: PlateLeafProps) {
   // props contains attributes, children, leaf, text, editor, etc.

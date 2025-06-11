@@ -26,7 +26,7 @@ The fastest way to add the tabbable plugin is with the `TabbableKit`, which incl
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { TabbableKit } from '@/components/editor/plugins/tabbable-kit';
 
 const editor = createPlateEditor({
@@ -46,14 +46,14 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-tabbable
+npm install @platejs/tabbable
 ```
 
 ### Add Plugin
 
 ```tsx
-import { TabbablePlugin } from '@udecode/plate-tabbable/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { TabbablePlugin } from '@platejs/tabbable/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -66,9 +66,9 @@ const editor = createPlateEditor({
 ### Configure Plugin
 
 ```tsx
-import { TabbablePlugin } from '@udecode/plate-tabbable/react';
-import { createPlateEditor } from '@udecode/plate/react';
-import { KEYS } from '@udecode/plate';
+import { TabbablePlugin } from '@platejs/tabbable/react';
+import { createPlateEditor } from 'platejs/react';
+import { KEYS } from 'platejs';
 
 const editor = createPlateEditor({
   plugins: [

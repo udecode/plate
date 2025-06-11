@@ -1,4 +1,4 @@
-import type { Descendant } from '@udecode/plate';
+import type { Descendant } from 'platejs';
 
 import type { MdRootContent } from '../mdast';
 import type { MdDecoration } from '../types';

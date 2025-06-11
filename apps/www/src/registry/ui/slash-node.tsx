@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 
-import type { PlateEditor, PlateElementProps } from '@udecode/plate/react';
+import type { PlateEditor, PlateElementProps } from 'platejs/react';
 
-import { type TComboboxInputElement, KEYS } from '@udecode/plate';
-import { AIChatPlugin } from '@udecode/plate-ai/react';
-import { PlateElement } from '@udecode/plate/react';
+import { type TComboboxInputElement, KEYS } from 'platejs';
+import { AIChatPlugin } from '@platejs/ai/react';
+import { PlateElement } from 'platejs/react';
 import {
   CalendarIcon,
   ChevronRightIcon,

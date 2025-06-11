@@ -1,10 +1,6 @@
-import type {
-  InsertNodesOptions,
-  SlateEditor,
-  TImageElement,
-} from '@udecode/plate';
+import type { InsertNodesOptions, SlateEditor, TImageElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export const insertImage = (
   editor: SlateEditor,

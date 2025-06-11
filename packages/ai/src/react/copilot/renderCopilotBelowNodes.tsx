@@ -2,11 +2,11 @@
 
 import React from 'react';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 import {
   type RenderNodeWrapperProps,
   getEditorPlugin,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 

@@ -12,7 +12,7 @@ import {
   isTextDecorationsEqual,
   RangeApi,
   TextApi,
-} from '@udecode/slate';
+} from '@platejs/slate';
 import clsx from 'clsx';
 
 import type { SlateEditor } from '../../editor';

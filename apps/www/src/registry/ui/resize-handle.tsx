@@ -9,7 +9,7 @@ import {
   Resizable as ResizablePrimitive,
   useResizeHandle,
   useResizeHandleState,
-} from '@udecode/plate-resizable';
+} from '@platejs/resizable';
 import { cva } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';

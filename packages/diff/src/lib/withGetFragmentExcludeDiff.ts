@@ -1,4 +1,4 @@
-import type { Descendant, OverrideEditor } from '@udecode/plate';
+import type { Descendant, OverrideEditor } from 'platejs';
 
 import cloneDeep from 'lodash/cloneDeep.js';
 

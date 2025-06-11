@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from '@udecode/plate';
+import { traverseHtmlElements } from 'platejs';
 
 /**
  * Check if the element contains docx content. True if one element has:

@@ -1,8 +1,8 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import type { Descendant, Value } from '@udecode/plate';
+import type { Descendant, Value } from 'platejs';
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsx } from '@platejs/test-utils';
 
 jsx;
 

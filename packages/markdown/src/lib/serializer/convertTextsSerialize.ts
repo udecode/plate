@@ -1,4 +1,4 @@
-import type { TText } from '@udecode/plate';
+import type { TText } from 'platejs';
 
 import type { MdMark } from '../types';
 import type { SerializeMdOptions } from './serializeMd';

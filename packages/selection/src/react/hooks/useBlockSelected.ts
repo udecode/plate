@@ -1,4 +1,4 @@
-import { useElement, usePluginOption } from '@udecode/plate/react';
+import { useElement, usePluginOption } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

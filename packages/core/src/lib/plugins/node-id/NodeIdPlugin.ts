@@ -3,7 +3,7 @@ import {
   type QueryNodeOptions,
   ElementApi,
   queryNode,
-} from '@udecode/slate';
+} from '@platejs/slate';
 import { nanoid } from 'nanoid';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';

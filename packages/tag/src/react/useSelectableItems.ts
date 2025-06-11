@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useEditorString } from '@udecode/plate/react';
+import { useEditorString } from 'platejs/react';
 
 import { useSelectedItems } from './useSelectedItems';
 

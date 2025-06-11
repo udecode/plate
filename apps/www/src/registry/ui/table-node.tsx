@@ -12,13 +12,13 @@ import {
   type TTableRowElement,
   KEYS,
   PathApi,
-} from '@udecode/plate';
-import { useDraggable, useDropLine } from '@udecode/plate-dnd';
+} from 'platejs';
+import { useDraggable, useDropLine } from '@platejs/dnd';
 import {
   BlockSelectionPlugin,
   useBlockSelected,
-} from '@udecode/plate-selection/react';
-import { setCellBackground } from '@udecode/plate-table';
+} from '@platejs/selection/react';
+import { setCellBackground } from '@platejs/table';
 import {
   TablePlugin,
   TableProvider,
@@ -27,7 +27,7 @@ import {
   useTableCellElementResizable,
   useTableElement,
   useTableMergeState,
-} from '@udecode/plate-table/react';
+} from '@platejs/table/react';
 import {
   type PlateElementProps,
   PlateElement,
@@ -41,8 +41,8 @@ import {
   useRemoveNodeButton,
   useSelected,
   withHOC,
-} from '@udecode/plate/react';
-import { useElementSelector } from '@udecode/plate/react';
+} from 'platejs/react';
+import { useElementSelector } from 'platejs/react';
 import { cva } from 'class-variance-authority';
 import {
   ArrowDown,

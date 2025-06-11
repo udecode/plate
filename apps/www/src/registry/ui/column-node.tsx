@@ -2,16 +2,16 @@
 
 import * as React from 'react';
 
-import type { TColumnElement } from '@udecode/plate';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TColumnElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 
 import { useComposedRef } from '@udecode/cn';
-import { PathApi } from '@udecode/plate';
-import { useDraggable, useDropLine } from '@udecode/plate-dnd';
-import { setColumns } from '@udecode/plate-layout';
-import { useDebouncePopoverOpen } from '@udecode/plate-layout/react';
-import { ResizableProvider } from '@udecode/plate-resizable';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { PathApi } from 'platejs';
+import { useDraggable, useDropLine } from '@platejs/dnd';
+import { setColumns } from '@platejs/layout';
+import { useDebouncePopoverOpen } from '@platejs/layout/react';
+import { ResizableProvider } from '@platejs/resizable';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
   PlateElement,
   useEditorRef,
@@ -20,7 +20,7 @@ import {
   useReadOnly,
   useRemoveNodeButton,
   withHOC,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 import { type LucideProps, Trash2Icon } from 'lucide-react';
 import { GripHorizontal } from 'lucide-react';
 

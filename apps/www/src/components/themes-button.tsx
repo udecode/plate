@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { createZustandStore } from '@udecode/plate';
+import { createZustandStore } from 'platejs';
 import { Paintbrush } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';

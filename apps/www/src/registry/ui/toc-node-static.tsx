@@ -1,9 +1,9 @@
 import * as React from 'react';
 
-import type { SlateEditor, SlateElementProps, TElement } from '@udecode/plate';
+import type { SlateEditor, SlateElementProps, TElement } from 'platejs';
 
-import { NodeApi, SlateElement } from '@udecode/plate';
-import { type Heading, BaseTocPlugin, isHeading } from '@udecode/plate-toc';
+import { NodeApi, SlateElement } from 'platejs';
+import { type Heading, BaseTocPlugin, isHeading } from '@platejs/toc';
 import { cva } from 'class-variance-authority';
 
 import { Button } from '@/components/ui/button';

@@ -4,7 +4,7 @@ import {
   CodeBlockPlugin,
   CodeLinePlugin,
   CodeSyntaxPlugin,
-} from '@udecode/plate-code-block/react';
+} from '@platejs/code-block/react';
 import { all, createLowlight } from 'lowlight';
 
 import {

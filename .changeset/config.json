@@ -4,10 +4,8 @@
   "commit": false,
   "linked": [
     [
-      "@udecode/plate",
-      "@udecode/plate*",
-      "@udecode/slate",
-      "@udecode/slate*",
+      "platejs",
+      "@platejs/*",
       "@udecode/react*",
       "@udecode/cn",
       "@udecode/utils"

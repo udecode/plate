@@ -1,9 +1,9 @@
 import * as React from 'react';
 
-import type { SlateLeafProps, TSuggestionText } from '@udecode/plate';
+import type { SlateLeafProps, TSuggestionText } from 'platejs';
 
-import { SlateLeaf } from '@udecode/plate';
-import { BaseSuggestionPlugin } from '@udecode/plate-suggestion';
+import { SlateLeaf } from 'platejs';
+import { BaseSuggestionPlugin } from '@platejs/suggestion';
 
 import { cn } from '@/lib/utils';
 

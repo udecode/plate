@@ -11,9 +11,9 @@ import {
   bindFirst,
   KEYS,
   NodeApi,
-} from '@udecode/plate';
-import { serializeMd } from '@udecode/plate-markdown';
-import { type PlateEditor, createTPlatePlugin } from '@udecode/plate/react';
+} from 'platejs';
+import { serializeMd } from '@platejs/markdown';
+import { type PlateEditor, createTPlatePlugin } from 'platejs/react';
 import debounce from 'lodash/debounce.js';
 
 import type { CompleteOptions } from './utils/callCompletionApi';

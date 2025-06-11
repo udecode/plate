@@ -6,7 +6,7 @@ import {
   combineMatchOptions,
   KEYS,
   TextApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 export const findInlineSuggestionNode = <E extends SlateEditor>(
   editor: E,

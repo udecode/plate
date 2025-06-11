@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorPlugin } from '@udecode/plate/react';
+import { useEditorPlugin } from 'platejs/react';
 
 import { SelectionArea } from '../../internal';
 import { extractSelectableIds } from '../../lib';

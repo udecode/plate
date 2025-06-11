@@ -1,7 +1,7 @@
-import type { TRange } from '@udecode/plate';
+import type { TRange } from 'platejs';
 
-import { getEditorPlugin } from '@udecode/plate';
-import { createSlateEditor } from '@udecode/plate';
+import { getEditorPlugin } from 'platejs';
+import { createSlateEditor } from 'platejs';
 
 import { FindReplacePlugin } from '../../../FindReplacePlugin';
 import { decorateFindReplace } from '../../../decorateFindReplace';

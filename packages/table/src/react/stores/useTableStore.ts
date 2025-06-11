@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { atom, createAtomStore } from '@udecode/plate/react';
+import { atom, createAtomStore } from 'platejs/react';
 
 import type { TableStoreSizeOverrides } from '../../lib';
 

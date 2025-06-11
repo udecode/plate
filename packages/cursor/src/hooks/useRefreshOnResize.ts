@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { TRange } from '@udecode/plate';
+import type { TRange } from 'platejs';
 
 import type { CursorOverlayProps } from '../components';
 import type { SelectionRect } from '../types';

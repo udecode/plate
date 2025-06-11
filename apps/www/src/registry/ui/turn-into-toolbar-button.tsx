@@ -3,11 +3,11 @@
 import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import type { TElement } from '@udecode/plate';
+import type { TElement } from 'platejs';
 
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
-import { KEYS } from '@udecode/plate';
-import { useEditorRef, useSelectionFragmentProp } from '@udecode/plate/react';
+import { KEYS } from 'platejs';
+import { useEditorRef, useSelectionFragmentProp } from 'platejs/react';
 import {
   CheckIcon,
   ChevronRightIcon,

@@ -1,6 +1,6 @@
-import type { TElement, TText } from '@udecode/slate';
+import type { TElement, TText } from '@platejs/slate';
 
-import { IS_FIREFOX, NodeApi } from '@udecode/slate';
+import { IS_FIREFOX, NodeApi } from '@platejs/slate';
 import isEqual from 'lodash/isEqual.js';
 
 import type { SlateEditor } from '../../../editor';

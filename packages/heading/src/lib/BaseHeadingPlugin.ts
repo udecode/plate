@@ -4,7 +4,7 @@ import {
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 export type HeadingConfig = PluginConfig<
   'heading',

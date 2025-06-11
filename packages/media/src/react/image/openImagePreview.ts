@@ -1,6 +1,6 @@
-import type { SlateEditor, TMediaElement } from '@udecode/plate';
+import type { SlateEditor, TMediaElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import { type PreviewItem, ImagePreviewStore } from './ImagePreviewStore';
 

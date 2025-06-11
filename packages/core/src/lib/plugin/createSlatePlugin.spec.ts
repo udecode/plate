@@ -1,5 +1,5 @@
-import { BasicBlocksPlugin } from '@udecode/plate-basic-nodes/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
+import { BasicBlocksPlugin } from '@platejs/basic-nodes/react';
+import { LinkPlugin } from '@platejs/link/react';
 
 import {
   resolveCreatePluginTest,

@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { TText } from '@udecode/slate';
+import type { TText } from '@platejs/slate';
 
 export type RenderTextFn = (props: RenderTextProps) => React.ReactElement<any>;
 export interface RenderTextProps<N extends TText = TText> {

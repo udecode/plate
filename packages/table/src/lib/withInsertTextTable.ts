@@ -1,4 +1,4 @@
-import type { OverrideEditor } from '@udecode/plate';
+import type { OverrideEditor } from 'platejs';
 
 import { type TableConfig, getTableAbove } from '.';
 import { getTableGridAbove } from './queries';

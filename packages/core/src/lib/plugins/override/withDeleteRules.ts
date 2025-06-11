@@ -1,4 +1,4 @@
-import { PointApi, RangeApi } from '@udecode/slate';
+import { PointApi, RangeApi } from '@platejs/slate';
 
 import type { OverrideEditor } from '../../plugin';
 import type { DeleteRules } from '../../plugin/BasePlugin';

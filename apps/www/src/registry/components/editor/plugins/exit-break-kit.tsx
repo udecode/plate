@@ -1,6 +1,6 @@
 'use client';
 
-import { ExitBreakPlugin } from '@udecode/plate';
+import { ExitBreakPlugin } from 'platejs';
 
 export const ExitBreakKit = [
   ExitBreakPlugin.configure({

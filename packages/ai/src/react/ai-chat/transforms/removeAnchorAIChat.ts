@@ -1,6 +1,6 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import { type RemoveNodesOptions, ElementApi, KEYS } from '@udecode/plate';
+import { type RemoveNodesOptions, ElementApi, KEYS } from 'platejs';
 
 export const removeAnchorAIChat = (
   editor: PlateEditor,

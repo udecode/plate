@@ -1,4 +1,4 @@
-import { NO_BREAK_SPACE, traverseHtmlElements } from '@udecode/plate';
+import { NO_BREAK_SPACE, traverseHtmlElements } from 'platejs';
 
 const isHtmlOpEmpty = (element: Element): boolean =>
   element.nodeName === 'O:P' && element.textContent === NO_BREAK_SPACE;

@@ -1,4 +1,4 @@
-import type { SlateEditor, TElement } from '@udecode/plate';
+import type { SlateEditor, TElement } from 'platejs';
 
 import { CaptionPlugin } from '../CaptionPlugin';
 

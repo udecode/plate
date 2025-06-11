@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { UnknownObject } from '@udecode/plate';
+import type { UnknownObject } from 'platejs';
 
-import { useEditorMounted } from '@udecode/plate/react';
+import { useEditorMounted } from 'platejs/react';
 
 import type {
   CursorData,

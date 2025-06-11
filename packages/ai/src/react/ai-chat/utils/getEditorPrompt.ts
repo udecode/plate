@@ -1,7 +1,7 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import { isSelecting } from '@udecode/plate-selection';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { isSelecting } from '@platejs/selection';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 
 import { getMarkdown } from './getMarkdown';
 

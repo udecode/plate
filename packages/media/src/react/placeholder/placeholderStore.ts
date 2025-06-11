@@ -1,4 +1,4 @@
-import { createAtomStore } from '@udecode/plate/react';
+import { createAtomStore } from 'platejs/react';
 
 interface PlaceholderStore {
   isUploading: boolean;

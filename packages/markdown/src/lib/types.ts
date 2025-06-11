@@ -8,7 +8,7 @@ import type {
   TElement,
   TNodeMap,
   TText,
-} from '@udecode/plate';
+} from 'platejs';
 import type { StrictExtract } from 'ts-essentials';
 
 import type { DeserializeMdOptions } from './deserializer';

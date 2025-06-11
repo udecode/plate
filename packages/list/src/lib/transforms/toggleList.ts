@@ -3,9 +3,9 @@ import type {
   ElementOf,
   SlateEditor,
   TElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import type { ListOptions } from './indentList';
 

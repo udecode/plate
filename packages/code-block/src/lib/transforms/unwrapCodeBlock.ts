@@ -3,7 +3,7 @@ import {
   type TLocation,
   KEYS,
   NodeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 export const unwrapCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;

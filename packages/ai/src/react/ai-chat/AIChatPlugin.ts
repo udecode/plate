@@ -1,4 +1,4 @@
-import type { TriggerComboboxPluginOptions } from '@udecode/plate-combobox';
+import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 import type { UseChatHelpers } from 'ai/react';
 
 import {
@@ -11,9 +11,9 @@ import {
   bindFirst,
   ElementApi,
   KEYS,
-} from '@udecode/plate';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { createTPlatePlugin } from '@udecode/plate/react';
+} from 'platejs';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { createTPlatePlugin } from 'platejs/react';
 
 import type { AIBatch } from '../../lib';
 

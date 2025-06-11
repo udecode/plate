@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 
-import type { WithRequiredKey } from '@udecode/plate';
+import type { WithRequiredKey } from 'platejs';
 
 import {
   FloatingMedia as FloatingMediaPrimitive,
   FloatingMediaStore,
   useFloatingMediaValue,
   useImagePreviewValue,
-} from '@udecode/plate-media/react';
+} from '@platejs/media/react';
 import {
   useEditorRef,
   useEditorSelector,
@@ -17,7 +17,7 @@ import {
   useReadOnly,
   useRemoveNodeButton,
   useSelected,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 import { cva } from 'class-variance-authority';
 import { Link, Trash2Icon } from 'lucide-react';
 

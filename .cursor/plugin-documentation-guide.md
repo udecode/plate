@@ -51,7 +51,7 @@ Plugin documentation should generally follow this order:
       - Show how to add the kit to plugins:
 
         ```tsx
-        import { createPlateEditor } from '@udecode/plate/react';
+        import { createPlateEditor } from 'platejs/react';
         import { RelevantKit } from '@/components/editor/plugins/relevant-kit-name';
 
         const editor = createPlateEditor({
@@ -67,7 +67,7 @@ Plugin documentation should generally follow this order:
     - Enclose steps within `<Steps>`.
     - **### Installation**:
 
-      - The `npm install @udecode/plate-package-name` command for the core plugin package.
+      - The `npm install @platejs/package-name` command for the core plugin package.
 
     - **### Add Plugin** (or **Add Plugins** if documenting multiple plugins in this step):
 
@@ -75,8 +75,8 @@ Plugin documentation should generally follow this order:
       - Provide a basic code snippet demonstrating how to add the plugin to the `plugins` array within `createPlateEditor`.
 
         ```tsx
-        import { SpecificPlugin } from '@udecode/plate-specific-package/react';
-        import { createPlateEditor } from '@udecode/plate/react';
+        import { SpecificPlugin } from '@platejs/specific-package/react';
+        import { createPlateEditor } from 'platejs/react';
 
         const editor = createPlateEditor({
           plugins: [
@@ -86,7 +86,7 @@ Plugin documentation should generally follow this order:
         });
         ```
 
-      - Note: `ParagraphPlugin` from `@udecode/plate/react` is included by default and usually doesn't need to be explicitly added unless overriding its component (e.g., `ParagraphPlugin.withComponent(CustomParagraph)`).
+      - Note: `ParagraphPlugin` from `platejs/react` is included by default and usually doesn't need to be explicitly added unless overriding its component (e.g., `ParagraphPlugin.withComponent(CustomParagraph)`).
 
     - **### Configure Plugin** (or **Configure Plugins** if documenting multiple plugins in this step):
 
@@ -97,8 +97,8 @@ Plugin documentation should generally follow this order:
       - **Prioritize `withComponent`** when only assigning a component without other options:
 
         ```tsx
-        import { SpecificPlugin } from '@udecode/plate-specific-package/react';
-        import { createPlateEditor } from '@udecode/plate/react';
+        import { SpecificPlugin } from '@platejs/specific-package/react';
+        import { createPlateEditor } from 'platejs/react';
         import { SpecificElement } from '@/components/ui/specific-node';
 
         const editor = createPlateEditor({
@@ -114,8 +114,8 @@ Plugin documentation should generally follow this order:
       - Use `.configure()` when there are additional options beyond the component:
 
         ```tsx
-        import { SpecificPlugin } from '@udecode/plate-specific-package/react';
-        import { createPlateEditor } from '@udecode/plate/react';
+        import { SpecificPlugin } from '@platejs/specific-package/react';
+        import { createPlateEditor } from 'platejs/react';
         import { SpecificElement } from '@/components/ui/specific-node';
 
         const editor = createPlateEditor({
@@ -139,8 +139,8 @@ Plugin documentation should generally follow this order:
       - Focus on configuration options like `inject.nodeProps`, default values, and target elements:
 
         ```tsx
-        import { SpecificPlugin } from '@udecode/plate-specific-package/react';
-        import { createPlateEditor } from '@udecode/plate/react';
+        import { SpecificPlugin } from '@platejs/specific-package/react';
+        import { createPlateEditor } from 'platejs/react';
 
         const editor = createPlateEditor({
           plugins: [

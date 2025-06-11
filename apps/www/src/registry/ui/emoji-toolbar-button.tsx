@@ -10,12 +10,12 @@ import {
   type EmojiIconList,
   type GridRow,
   EmojiSettings,
-} from '@udecode/plate-emoji';
+} from '@platejs/emoji';
 import {
   type EmojiDropdownMenuOptions,
   type UseEmojiPickerType,
   useEmojiDropdownMenuState,
-} from '@udecode/plate-emoji/react';
+} from '@platejs/emoji/react';
 import {
   AppleIcon,
   ClockIcon,

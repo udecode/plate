@@ -15,7 +15,7 @@ import {
   PathApi,
   PointApi,
   RangeApi,
-} from '@udecode/plate';
+} from 'platejs';
 import isEqual from 'lodash/isEqual.js';
 import uniqWith from 'lodash/uniqWith.js';
 

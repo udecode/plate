@@ -6,7 +6,7 @@ import {
   type SlateEditor,
   KEYS,
   TextApi,
-} from '@udecode/plate';
+} from 'platejs';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 

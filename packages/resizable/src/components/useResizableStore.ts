@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import { createAtomStore } from '@udecode/plate/react';
+import { createAtomStore } from 'platejs/react';
 
 export const {
   ResizableProvider,

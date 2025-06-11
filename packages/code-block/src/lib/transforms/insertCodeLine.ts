@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 /** Insert a code line starting with indentation. */
 export const insertCodeLine = (editor: SlateEditor, indentDepth = 0) => {

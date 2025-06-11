@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-caption",
+  "name": "@platejs/caption",
   "version": "49.0.0",
   "description": "Primitive components for caption.",
   "keywords": [
@@ -52,10 +52,10 @@
     "react-textarea-autosize": "^8.5.9"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

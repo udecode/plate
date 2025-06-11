@@ -5,7 +5,7 @@ import {
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import {
   toggleBulletedList,

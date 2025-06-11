@@ -9,7 +9,7 @@ import {
   PathApi,
   PointApi,
   TextApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries/';

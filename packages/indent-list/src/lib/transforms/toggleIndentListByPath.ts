@@ -2,8 +2,8 @@ import {
   type NodeEntry,
   type SlateEditor,
   BaseParagraphPlugin,
-} from '@udecode/plate';
-import { BaseIndentPlugin } from '@udecode/plate-indent';
+} from 'platejs';
+import { BaseIndentPlugin } from '@platejs/indent';
 
 import {
   BaseIndentListPlugin,

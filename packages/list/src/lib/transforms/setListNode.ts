@@ -1,6 +1,6 @@
-import type { Editor, Path } from '@udecode/plate';
+import type { Editor, Path } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import { ListStyleType } from '../types';
 

@@ -1,4 +1,4 @@
-import { type SlateEditor, KEYS } from '@udecode/plate';
+import { type SlateEditor, KEYS } from 'platejs';
 
 export const someToggle = (editor: SlateEditor) => {
   return (

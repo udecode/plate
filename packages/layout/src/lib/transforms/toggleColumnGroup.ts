@@ -1,10 +1,6 @@
-import type {
-  ReplaceNodesOptions,
-  SlateEditor,
-  TElement,
-} from '@udecode/plate';
+import type { ReplaceNodesOptions, SlateEditor, TElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import { columnsToWidths } from '../utils/columnsToWidths';
 import { setColumns } from './setColumns';

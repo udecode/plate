@@ -3,9 +3,9 @@ import type {
   TElement,
   TTableCellElement,
   TTableElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import type { TableConfig } from './BaseTablePlugin';
 

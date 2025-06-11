@@ -1,4 +1,4 @@
-import { createSlatePlugin, KEYS } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from 'platejs';
 
 /**
  * Enables support for highlights, useful when reviewing content or highlighting

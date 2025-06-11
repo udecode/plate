@@ -5,7 +5,7 @@ import {
   type TElement,
   type TNode,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import {
   type BaseIndentListConfig,

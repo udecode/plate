@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 
-import { FindReplacePlugin } from '@udecode/plate-find-replace';
+import { FindReplacePlugin } from '@platejs/find-replace';
 import {
   Plate,
   useEditorPlugin,
   usePlateEditor,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { Input } from '@/components/ui/input';
 import { EditorKit } from '@/registry/components/editor/editor-kit';

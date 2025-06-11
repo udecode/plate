@@ -7,7 +7,7 @@ import {
   KEYS,
   PathApi,
   TextApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { TResolvedSuggestion } from '../types';
 

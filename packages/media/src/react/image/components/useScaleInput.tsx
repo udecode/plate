@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { isHotkey } from '@udecode/plate';
+import { isHotkey } from 'platejs';
 
 import { ImagePreviewStore, useImagePreviewValue } from '../ImagePreviewStore';
 

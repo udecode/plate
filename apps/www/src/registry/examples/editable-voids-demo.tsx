@@ -2,9 +2,9 @@
 
 import * as React from 'react';
 
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { PlateElementProps } from 'platejs/react';
 
-import { createPlatePlugin, Plate, usePlateEditor } from '@udecode/plate/react';
+import { createPlatePlugin, Plate, usePlateEditor } from 'platejs/react';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

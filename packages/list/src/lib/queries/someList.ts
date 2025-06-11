@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export const someList = (editor: SlateEditor, type: string[] | string) => {
   return (

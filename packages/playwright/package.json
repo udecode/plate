@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-playwright",
+  "name": "@platejs/playwright",
   "version": "49.0.0",
   "description": "Interact with a Plate editor from inside a Playwright test",
   "keywords": [
@@ -43,11 +43,11 @@
     "typecheck": "yarn p:typecheck"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
     "@playwright/test": ">=1.42.1",
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

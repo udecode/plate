@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-juice",
+  "name": "@platejs/juice",
   "version": "49.0.0",
   "description": "HTML juice plugin for Plate",
   "keywords": [
@@ -47,10 +47,10 @@
     "juice": "^11.0.1"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

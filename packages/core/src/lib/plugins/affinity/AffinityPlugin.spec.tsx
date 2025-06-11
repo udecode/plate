@@ -1,14 +1,14 @@
 /** @jsx jsxt */
 
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
   BaseItalicPlugin,
-} from '@udecode/plate-basic-nodes';
-import { BaseLinkPlugin } from '@udecode/plate-link';
-import { jsxt } from '@udecode/plate-test-utils';
+} from '@platejs/basic-nodes';
+import { BaseLinkPlugin } from '@platejs/link';
+import { jsxt } from '@platejs/test-utils';
 
 import { createPlateTestEditor } from '../../../react/__tests__/createPlateTestEditor';
 import { AffinityPlugin } from './AffinityPlugin';

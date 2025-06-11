@@ -2,18 +2,18 @@
 
 import * as React from 'react';
 
-import type { CreatePlateEditorOptions } from '@udecode/plate/react';
+import type { CreatePlateEditorOptions } from 'platejs/react';
 
-import { type Value, KEYS, nanoid, NodeApi } from '@udecode/plate';
-import { getCommentKey, getDraftCommentKey } from '@udecode/plate-comments';
-import { CommentPlugin, useCommentId } from '@udecode/plate-comments/react';
+import { type Value, KEYS, nanoid, NodeApi } from 'platejs';
+import { getCommentKey, getDraftCommentKey } from '@platejs/comments';
+import { CommentPlugin, useCommentId } from '@platejs/comments/react';
 import {
   Plate,
   useEditorPlugin,
   useEditorRef,
   usePlateEditor,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 import {
   differenceInDays,
   differenceInHours,

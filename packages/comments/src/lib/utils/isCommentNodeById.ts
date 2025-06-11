@@ -1,4 +1,4 @@
-import type { TNode } from '@udecode/plate';
+import type { TNode } from 'platejs';
 
 import { getCommentKey } from './getCommentKey';
 

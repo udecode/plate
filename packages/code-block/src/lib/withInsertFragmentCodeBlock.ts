@@ -3,7 +3,7 @@ import {
   type TElement,
   KEYS,
   NodeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 function extractCodeLinesFromCodeBlock(node: TElement) {
   return node.children as TElement[];

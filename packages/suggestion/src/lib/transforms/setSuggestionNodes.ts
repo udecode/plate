@@ -7,7 +7,7 @@ import {
   getAt,
   KEYS,
   nanoid,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';

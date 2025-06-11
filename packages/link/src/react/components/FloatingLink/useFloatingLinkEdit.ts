@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 import {
   getDOMSelectionBoundingClientRect,
   getRangeBoundingClientRect,
-} from '@udecode/plate-floating';
+} from '@platejs/floating';
 import {
   useComposedRef,
   useEditorPlugin,
@@ -13,7 +13,7 @@ import {
   useHotkeys,
   useOnClickOutside,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import type { LinkFloatingToolbarState } from './useFloatingLinkInsert';
 

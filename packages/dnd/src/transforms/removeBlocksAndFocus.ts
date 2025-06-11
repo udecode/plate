@@ -1,4 +1,4 @@
-import type { Editor, EditorNodesOptions, ValueOf } from '@udecode/plate';
+import type { Editor, EditorNodesOptions, ValueOf } from 'platejs';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 

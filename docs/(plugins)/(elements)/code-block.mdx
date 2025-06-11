@@ -37,7 +37,7 @@ The fastest way to add code block functionality is with the `CodeBlockKit`, whic
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { CodeBlockKit } from '@/components/editor/plugins/code-block-kit';
 
 const editor = createPlateEditor({
@@ -57,7 +57,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-code-block lowlight
+npm install @platejs/code-block lowlight
 ```
 
 ### Add Plugins
@@ -65,8 +65,8 @@ npm install @udecode/plate-code-block lowlight
 Include the code block plugins in your Plate plugins array when creating the editor.
 
 ```tsx
-import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@udecode/plate-code-block/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -85,9 +85,9 @@ Configure the plugins with syntax highlighting and custom components.
 **Basic Setup with All Languages:**
 
 ```tsx
-import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@udecode/plate-code-block/react';
+import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
 import { all, createLowlight } from 'lowlight';
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/ui/code-block-node';
 
 // Create a lowlight instance with all languages

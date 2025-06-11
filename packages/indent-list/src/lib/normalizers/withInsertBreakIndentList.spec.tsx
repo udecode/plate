@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, BaseParagraphPlugin } from '@udecode/plate';
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
+import { type SlateEditor, BaseParagraphPlugin } from 'platejs';
+import { IndentPlugin } from '@platejs/indent/react';
+import { jsxt } from '@platejs/test-utils';
+import { createPlateEditor } from 'platejs/react';
 
 import {
   BaseIndentListPlugin,

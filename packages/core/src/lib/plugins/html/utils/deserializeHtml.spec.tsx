@@ -1,9 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  BlockquotePlugin,
-  HeadingPlugin,
-} from '@udecode/plate-basic-nodes/react';
+import { BlockquotePlugin, HeadingPlugin } from '@platejs/basic-nodes/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -12,16 +9,16 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
-import { HighlightPlugin, KbdPlugin } from '@udecode/plate-basic-nodes/react';
-import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { FindReplacePlugin } from '@udecode/plate-find-replace';
-import { LinkPlugin } from '@udecode/plate-link/react';
-import { ListPlugin } from '@udecode/plate-list-classic/react';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
-import { TablePlugin } from '@udecode/plate-table/react';
-import { getHtmlDocument, jsxt } from '@udecode/plate-test-utils';
+} from '@platejs/basic-nodes/react';
+import { HighlightPlugin, KbdPlugin } from '@platejs/basic-nodes/react';
+import { TextAlignPlugin } from '@platejs/basic-styles/react';
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { FindReplacePlugin } from '@platejs/find-replace';
+import { LinkPlugin } from '@platejs/link/react';
+import { ListPlugin } from '@platejs/list-classic/react';
+import { ImagePlugin, MediaEmbedPlugin } from '@platejs/media/react';
+import { TablePlugin } from '@platejs/table/react';
+import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
 import { createPlateEditor } from '../../../../react';
 import { BaseParagraphPlugin } from '../../paragraph';

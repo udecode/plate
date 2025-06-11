@@ -6,7 +6,7 @@ import {
   KEYS,
   NodeApi,
   RangeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { getTableGridAbove } from '../queries';
 

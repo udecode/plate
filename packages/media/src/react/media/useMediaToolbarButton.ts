@@ -1,4 +1,4 @@
-import { useEditorRef } from '@udecode/plate/react';
+import { useEditorRef } from 'platejs/react';
 
 import { insertMedia } from '../../lib/media/insertMedia';
 

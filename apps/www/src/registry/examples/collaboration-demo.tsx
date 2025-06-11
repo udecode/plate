@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 
-import { YjsPlugin } from '@udecode/plate-yjs/react';
+import { YjsPlugin } from '@platejs/yjs/react';
 import {
   Plate,
   useEditorRef,
   usePlateEditor,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 import { RefreshCw } from 'lucide-react';
 import { nanoid } from 'nanoid';
 

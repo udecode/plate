@@ -34,17 +34,17 @@ npx depset@latest @udecode 45
 
 **Problem:** Unexpected behavior or "hooks can only be called inside a component" errors.
 
-**Root Cause:** Having incompatible versions of Plate packages in your project. This often means different ``@udecode/plate*`` packages or ``@udecode/plate-core`` are at different versions that weren't designed to work together.
+**Root Cause:** Having incompatible versions of Plate packages in your project. This often means different ``platejs*`` packages or ``@platejs/core`` are at different versions that weren't designed to work together.
 
 **Diagnosis:** Check for multiple Plate package versions:
 
 ```bash
 # npm
-npm ls @udecode/plate @udecode/plate-core
+npm ls platejs @platejs/core
 
 # pnpm or yarn
-pnpm why @udecode/plate
-pnpm why @udecode/plate-core
+pnpm why platejs
+pnpm why @platejs/core
 ```
 
 **Solution:**

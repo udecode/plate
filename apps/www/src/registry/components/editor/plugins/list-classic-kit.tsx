@@ -5,7 +5,7 @@ import {
   ListItemPlugin,
   ListPlugin,
   NumberedListPlugin,
-} from '@udecode/plate-list-classic/react';
+} from '@platejs/list-classic/react';
 
 import {
   BulletedListElement,

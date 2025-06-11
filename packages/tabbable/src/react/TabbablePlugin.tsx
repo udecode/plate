@@ -1,4 +1,4 @@
-import { toPlatePlugin } from '@udecode/plate/react';
+import { toPlatePlugin } from 'platejs/react';
 
 import { BaseTabbablePlugin } from '../lib/BaseTabbablePlugin';
 import { TabbableEffects } from './TabbableEffects';

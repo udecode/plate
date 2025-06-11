@@ -4,7 +4,7 @@ import {
   createPrimitiveComponent,
   useEditorPlugin,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 

@@ -35,7 +35,7 @@ The fastest way to add text alignment functionality is with the `AlignKit`, whic
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { AlignKit } from '@/components/editor/plugins/align-kit';
 
 const editor = createPlateEditor({
@@ -55,7 +55,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-basic-styles
+npm install @platejs/basic-styles
 ```
 
 ### Add Plugin
@@ -63,8 +63,8 @@ npm install @udecode/plate-basic-styles
 Include `TextAlignPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { TextAlignPlugin } from '@platejs/basic-styles/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -79,9 +79,9 @@ const editor = createPlateEditor({
 You can configure the `TextAlignPlugin` to target specific elements and define alignment options.
 
 ```tsx
-import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
-import { KEYS } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate/react';
+import { TextAlignPlugin } from '@platejs/basic-styles/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [

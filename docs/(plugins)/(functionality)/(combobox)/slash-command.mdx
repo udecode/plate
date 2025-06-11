@@ -37,7 +37,7 @@ The fastest way to add slash command functionality is with the `SlashKit`, which
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { SlashKit } from '@/components/editor/plugins/slash-kit';
 
 const editor = createPlateEditor({
@@ -57,14 +57,14 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-slash-command
+npm install @platejs/slash-command
 ```
 
 ### Add Plugins
 
 ```tsx
-import { SlashPlugin, SlashInputPlugin } from '@udecode/plate-slash-command/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -78,10 +78,10 @@ const editor = createPlateEditor({
 ### Configure Plugins
 
 ```tsx
-import { SlashPlugin, SlashInputPlugin } from '@udecode/plate-slash-command/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
+import { createPlateEditor } from 'platejs/react';
 import { SlashInputElement } from '@/components/ui/slash-node';
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 const editor = createPlateEditor({
   plugins: [

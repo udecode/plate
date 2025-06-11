@@ -1,4 +1,4 @@
-import type { SetNodesOptions, SlateEditor } from '@udecode/plate';
+import type { SetNodesOptions, SlateEditor } from 'platejs';
 
 type props = {
   type: string;

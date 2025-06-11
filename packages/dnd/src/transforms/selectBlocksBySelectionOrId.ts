@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 import { selectBlockById } from './selectBlockById';

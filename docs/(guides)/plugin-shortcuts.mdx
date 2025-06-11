@@ -22,7 +22,7 @@ To do this:
 Plate will automatically find and call the corresponding method when the specified keys are pressed.
 
 ```tsx title="plugins/my-document-plugin.ts"
-import { createPlatePlugin, Key } from '@udecode/plate/react';
+import { createPlatePlugin, Key } from 'platejs/react';
 
 // Example: A simplified plugin with both transforms and API
 export const MyDocumentPlugin = createPlatePlugin({
@@ -64,7 +64,7 @@ export const MyDocumentPlugin = createPlatePlugin({
 For actions that require more complex logic, depends on the keyboard event, or if there isn't a direct one-to-one mapping with an existing transform name, you can provide a custom `handler` function. This function will be executed when the shortcut is activated.
 
 ```tsx title="plugins/custom-logger-plugin.ts"
-import { createPlatePlugin, Key } from '@udecode/plate/react';
+import { createPlatePlugin, Key } from 'platejs/react';
 
 export const CustomLoggerPlugin = createPlatePlugin({
   key: 'customLogger',
@@ -120,7 +120,7 @@ Other plugins, like `CodePlugin`, `StrikethroughPlugin`, etc., provide transform
 A single plugin isn't limited to one shortcut; you can define as many as needed:
 
 ```tsx title="plugins/my-formatting-tools.ts"
-import { createPlatePlugin, Key } from '@udecode/plate/react';
+import { createPlatePlugin, Key } from 'platejs/react';
 
 export const MyFormattingTools = createPlatePlugin({
   key: 'myFormatting',
@@ -183,7 +183,7 @@ You can change or disable shortcuts for a specific plugin when you configure it.
 When you configure a plugin (e.g., `BoldPlugin.configure({ ... })`), you can define a shortcut by its name (like `toggle`). If the plugin already has a shortcut with that name (perhaps a default one), your new configuration for `toggle` will be used for that plugin. You can change its `keys`, provide a new `handler`, or adjust other properties.
 
 ```tsx
-import { BoldPlugin, Key } from '@udecode/plate-basic-nodes/react';
+import { BoldPlugin, Key } from '@platejs/basic-nodes/react';
 
 // BoldPlugin has a default shortcut named 'toggle' (typically Mod+B).
 // Let's change its key combination to Mod+Shift+B for BoldPlugin.
@@ -202,7 +202,7 @@ const MyCustomBoldPlugin = BoldPlugin.configure({
 Set the shortcut's configuration to `null` in that plugin's `shortcuts` object. This will remove that specific shortcut (e.g., `toggle` for `ItalicPlugin`).
 
 ```tsx
-import { ItalicPlugin } from '@udecode/plate-basic-nodes/react';
+import { ItalicPlugin } from '@platejs/basic-nodes/react';
 
 // Example: Disable the 'toggle' shortcut for the ItalicPlugin
 const MyCustomItalicPlugin = ItalicPlugin.configure({
@@ -217,7 +217,7 @@ const MyCustomItalicPlugin = ItalicPlugin.configure({
 In addition to plugin-specific shortcuts, you can define global shortcuts directly on the editor instance when you create it using `createPlateEditor`. These shortcuts behave similarly to plugin shortcuts.
 
 ```tsx title="editor-config.ts"
-import { createPlateEditor, Key } from '@udecode/plate/react';
+import { createPlateEditor, Key } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [/* ...your array of plugins... */],

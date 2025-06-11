@@ -1,6 +1,6 @@
-import type { Editor, ElementEntryOf, ElementOf } from '@udecode/plate';
+import type { Editor, ElementEntryOf, ElementOf } from 'platejs';
 
-import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentPlugin } from '@platejs/indent';
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 

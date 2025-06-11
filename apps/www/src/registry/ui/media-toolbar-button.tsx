@@ -4,9 +4,9 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { isUrl, KEYS } from '@udecode/plate';
-import { PlaceholderPlugin } from '@udecode/plate-media/react';
-import { useEditorRef } from '@udecode/plate/react';
+import { isUrl, KEYS } from 'platejs';
+import { PlaceholderPlugin } from '@platejs/media/react';
+import { useEditorRef } from 'platejs/react';
 import {
   AudioLinesIcon,
   FileUpIcon,

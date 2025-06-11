@@ -3,7 +3,7 @@ import {
   type NodeEntry,
   type Path,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { getCellInPreviousTableRow } from './getCellInPreviousTableRow';
 

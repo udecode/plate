@@ -1,4 +1,4 @@
-import { createPlatePlugin } from '@udecode/plate/react';
+import { createPlatePlugin } from 'platejs/react';
 
 import { BlockquotePlugin } from './BlockquotePlugin';
 import { HeadingPlugin } from './HeadingPlugin';

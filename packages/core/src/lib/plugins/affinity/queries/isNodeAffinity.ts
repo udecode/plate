@@ -1,4 +1,4 @@
-import { type TElement, type TText, ElementApi, NodeApi } from '@udecode/slate';
+import { type TElement, type TText, ElementApi, NodeApi } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';

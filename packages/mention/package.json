@@ -1,5 +1,5 @@
 {
-  "name": "@udecode/plate-mention",
+  "name": "@platejs/mention",
   "version": "49.0.0",
   "description": "Mention plugin for Plate",
   "keywords": [
@@ -50,13 +50,13 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-combobox": "49.0.0"
+    "@platejs/combobox": "49.0.0"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

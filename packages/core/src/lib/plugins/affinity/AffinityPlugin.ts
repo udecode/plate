@@ -4,7 +4,7 @@ import {
   ElementApi,
   NodeApi,
   TextApi,
-} from '@udecode/slate';
+} from '@platejs/slate';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';
 import type { EdgeNodes } from './types';

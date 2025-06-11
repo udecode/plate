@@ -33,7 +33,7 @@ The fastest way to add caption functionality is with the `MediaKit`, which inclu
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { MediaKit } from '@/components/editor/plugins/media-kit';
 
 const editor = createPlateEditor({
@@ -53,14 +53,14 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-caption
+npm install @platejs/caption
 ```
 
 ### Add Plugin
 
 ```tsx
-import { CaptionPlugin } from '@udecode/plate-caption/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { CaptionPlugin } from '@platejs/caption/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -75,15 +75,15 @@ const editor = createPlateEditor({
 Configure which media plugins should support captions:
 
 ```tsx
-import { KEYS } from '@udecode/plate';
-import { CaptionPlugin } from '@udecode/plate-caption/react';
+import { KEYS } from 'platejs';
+import { CaptionPlugin } from '@platejs/caption/react';
 import {
   AudioPlugin,
   FilePlugin,
   ImagePlugin,
   MediaEmbedPlugin,
   VideoPlugin,
-} from '@udecode/plate-media/react';
+} from '@platejs/media/react';
 
 const editor = createPlateEditor({
   plugins: [

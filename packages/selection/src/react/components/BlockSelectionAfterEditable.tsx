@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { isHotkey, KEYS, PathApi } from '@udecode/plate';
+import { isHotkey, KEYS, PathApi } from 'platejs';
 import {
   type EditableSiblingComponent,
   useEditorPlugin,
   useEditorRef,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import {
   type BlockSelectionConfig,

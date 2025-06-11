@@ -1,7 +1,7 @@
 import {
   removeHtmlNodesBetweenComments,
   traverseHtmlElements,
-} from '@udecode/plate';
+} from 'platejs';
 
 export const getDocxListContentHtml = (rootElement: Element): string => {
   const clonedElement = rootElement.cloneNode(true) as Element;

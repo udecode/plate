@@ -5,7 +5,7 @@ import {
   type SlateEditor,
   KEYS,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';

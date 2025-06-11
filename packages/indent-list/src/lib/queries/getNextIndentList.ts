@@ -5,7 +5,7 @@ import {
   type NodeEntry,
   NodeApi,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import {
   type GetSiblingIndentListOptions,

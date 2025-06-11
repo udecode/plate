@@ -1,4 +1,4 @@
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import { slateNodesToInsertDelta } from '@slate-yjs/core';
 import * as Y from 'yjs';

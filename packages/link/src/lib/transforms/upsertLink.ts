@@ -7,8 +7,8 @@ import {
   isDefined,
   NodeApi,
   RangeApi,
-} from '@udecode/plate';
-import { KEYS } from '@udecode/plate';
+} from 'platejs';
+import { KEYS } from 'platejs';
 
 import { type CreateLinkNodeOptions, validateUrl } from '../utils';
 import { insertLink } from './insertLink';

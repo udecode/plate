@@ -9,7 +9,7 @@ import {
   NodeApi,
   RangeApi,
   TextApi,
-} from '@udecode/slate';
+} from '@platejs/slate';
 
 import {
   addAnchorToken,

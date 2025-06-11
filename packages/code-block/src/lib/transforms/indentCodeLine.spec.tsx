@@ -4,9 +4,9 @@ import {
   type ElementEntry,
   type SlateEditor,
   createEditor,
-} from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
+} from 'platejs';
+import { jsxt } from '@platejs/test-utils';
+import { createPlateEditor } from 'platejs/react';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { indentCodeLine } from './indentCodeLine';

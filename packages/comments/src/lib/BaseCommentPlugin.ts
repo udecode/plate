@@ -7,7 +7,7 @@ import {
   createTSlatePlugin,
   KEYS,
   TextApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import {
   getCommentCount,

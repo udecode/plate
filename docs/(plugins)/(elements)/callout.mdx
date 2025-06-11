@@ -36,7 +36,7 @@ The fastest way to add the callout plugin is with the `CalloutKit`, which includ
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { CalloutKit } from '@/components/editor/plugins/callout-kit';
 
 const editor = createPlateEditor({
@@ -56,7 +56,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-callout
+npm install @platejs/callout
 ```
 
 ### Add Plugin
@@ -64,8 +64,8 @@ npm install @udecode/plate-callout
 Include `CalloutPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { CalloutPlugin } from '@udecode/plate-callout/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { CalloutPlugin } from '@platejs/callout/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -80,8 +80,8 @@ const editor = createPlateEditor({
 You can configure the `CalloutPlugin` with a custom component to render callout elements.
 
 ```tsx
-import { CalloutPlugin } from '@udecode/plate-callout/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { CalloutPlugin } from '@platejs/callout/react';
+import { createPlateEditor } from 'platejs/react';
 import { CalloutElement } from '@/components/ui/callout-node';
 
 const editor = createPlateEditor({

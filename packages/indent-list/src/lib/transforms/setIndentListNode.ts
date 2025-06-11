@@ -1,6 +1,6 @@
-import type { Editor, Path } from '@udecode/plate';
+import type { Editor, Path } from 'platejs';
 
-import { BaseIndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentPlugin } from '@platejs/indent';
 
 import {
   BaseIndentListPlugin,

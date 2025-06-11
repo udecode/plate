@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createEditor, createSlateEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { createEditor, createSlateEditor } from 'platejs';
+import { jsxt } from '@platejs/test-utils';
 
 import { moveListItemsToList } from './moveListItemsToList';
 

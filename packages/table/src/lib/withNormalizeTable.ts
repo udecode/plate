@@ -6,7 +6,7 @@ import {
   ElementApi,
   KEYS,
   TextApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { TableConfig } from './BaseTablePlugin';
 

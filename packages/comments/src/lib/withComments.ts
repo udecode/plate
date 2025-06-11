@@ -1,6 +1,6 @@
-import type { OverrideEditor, TCommentText } from '@udecode/plate';
+import type { OverrideEditor, TCommentText } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import type { BaseCommentConfig } from './BaseCommentPlugin';
 

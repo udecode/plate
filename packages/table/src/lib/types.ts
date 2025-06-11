@@ -1,4 +1,4 @@
-import type { Descendant, TTableRowElement } from '@udecode/plate';
+import type { Descendant, TTableRowElement } from 'platejs';
 
 export type BorderDirection = 'bottom' | 'left' | 'right' | 'top';
 

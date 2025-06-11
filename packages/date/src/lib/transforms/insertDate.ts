@@ -2,9 +2,9 @@ import type {
   InsertNodesOptions,
   SlateEditor,
   TDateElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export const insertDate = (
   editor: SlateEditor,

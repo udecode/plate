@@ -8,7 +8,7 @@ import type {
   TElement,
   TText,
   Value,
-} from '@udecode/slate';
+} from '@platejs/slate';
 import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type { SlateEditor } from '../editor';

@@ -1,5 +1,5 @@
-import { type TIdElement, PathApi } from '@udecode/plate';
-import { type PlateEditor, getEditorPlugin } from '@udecode/plate/react';
+import { type TIdElement, PathApi } from 'platejs';
+import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 

@@ -4,7 +4,7 @@ import {
   type TMentionElement,
   type TText,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type {
   MdHeading,

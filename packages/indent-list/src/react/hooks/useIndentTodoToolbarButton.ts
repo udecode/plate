@@ -1,4 +1,4 @@
-import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
+import { useEditorRef, useEditorSelector } from 'platejs/react';
 
 import { ListStyleType, toggleIndentList } from '../../index';
 import { someIndentTodo } from '../../lib/queries/someIndentTodo';

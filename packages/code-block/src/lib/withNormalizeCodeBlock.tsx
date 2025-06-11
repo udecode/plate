@@ -5,7 +5,7 @@ import {
   ElementApi,
   KEYS,
   NodeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 

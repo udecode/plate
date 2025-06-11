@@ -1,13 +1,13 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import type { TTableCellElement } from '@udecode/plate';
+import type { TTableCellElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 import {
   useEditorPlugin,
   useEditorSelector,
   usePluginOption,
   useReadOnly,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { getTableGridAbove, isTableRectangular } from '../../lib';
 import { TablePlugin } from '../TablePlugin';

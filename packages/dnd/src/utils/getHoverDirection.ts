@@ -1,4 +1,4 @@
-import type { TElement } from '@udecode/plate';
+import type { TElement } from 'platejs';
 import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 
 import type {

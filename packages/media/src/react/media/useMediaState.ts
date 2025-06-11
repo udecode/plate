@@ -4,14 +4,14 @@ import {
   type TMediaElement,
   type TResizableElement,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 import {
   useEditorRef,
   useElement,
   useFocused,
   useReadOnly,
   useSelected,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { VIDEO_PROVIDERS } from '../../lib/media-embed';
 import {

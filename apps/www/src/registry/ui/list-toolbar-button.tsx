@@ -2,12 +2,12 @@
 
 import * as React from 'react';
 
-import { ListStyleType, someList, toggleList } from '@udecode/plate-list';
+import { ListStyleType, someList, toggleList } from '@platejs/list';
 import {
   useIndentTodoToolBarButton,
   useIndentTodoToolBarButtonState,
-} from '@udecode/plate-list/react';
-import { useEditorRef, useEditorSelector } from '@udecode/plate/react';
+} from '@platejs/list/react';
+import { useEditorRef, useEditorSelector } from 'platejs/react';
 import { List, ListOrdered, ListTodoIcon } from 'lucide-react';
 
 import {

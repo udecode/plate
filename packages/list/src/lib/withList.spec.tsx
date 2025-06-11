@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor } from 'platejs';
 
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
+import { IndentPlugin } from '@platejs/indent/react';
+import { jsxt } from '@platejs/test-utils';
+import { createPlateEditor } from 'platejs/react';
 
 import { BaseListPlugin } from './BaseListPlugin';
 

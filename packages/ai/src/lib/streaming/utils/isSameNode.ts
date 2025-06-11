@@ -1,6 +1,6 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import { type TElement, type TText, isDefined, KEYS } from '@udecode/plate';
+import { type TElement, type TText, isDefined, KEYS } from 'platejs';
 
 const LIST_STYLE_TYPE = 'listStyleType';
 

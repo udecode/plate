@@ -1,10 +1,7 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import { type TElement, KEYS, TextApi } from '@udecode/plate';
-import {
-  type DeserializeMdOptions,
-  MarkdownPlugin,
-} from '@udecode/plate-markdown';
+import { type TElement, KEYS, TextApi } from 'platejs';
+import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
 
 import { getChunkTrimmed } from './utils';
 import { escapeInput } from './utils/escapeInput';

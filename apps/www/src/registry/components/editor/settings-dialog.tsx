@@ -4,8 +4,8 @@
 
 import * as React from 'react';
 
-import { CopilotPlugin } from '@udecode/plate-ai/react';
-import { useEditorRef } from '@udecode/plate/react';
+import { CopilotPlugin } from '@platejs/ai/react';
+import { useEditorRef } from 'platejs/react';
 import {
   Check,
   ChevronsUpDown,

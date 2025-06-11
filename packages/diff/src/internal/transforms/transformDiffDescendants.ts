@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { type Descendant, TextApi } from '@udecode/plate';
+import { type Descendant, TextApi } from 'platejs';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 import type { StringCharMapping } from '../utils/string-char-mapping';

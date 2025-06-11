@@ -6,8 +6,8 @@ import {
   KEYS,
   nanoid,
   TextApi,
-} from '@udecode/plate';
-import { type ComputeDiffOptions, computeDiff } from '@udecode/plate-diff';
+} from 'platejs';
+import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { getSuggestionProps } from './transforms';

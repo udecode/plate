@@ -1,4 +1,4 @@
-import { useEditorRef, useEditorSelector } from '@udecode/plate-core/react';
+import { useEditorRef, useEditorSelector } from '@platejs/core/react';
 
 export const useMarkToolbarButtonState = ({
   clear,

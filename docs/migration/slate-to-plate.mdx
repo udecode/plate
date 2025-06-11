@@ -10,7 +10,7 @@ Plate is built on top of Slate, so migrating from a pure Slate implementation to
 First, install the necessary Plate packages. If you're new to Plate, you might want to start by reading the [Introduction](/docs/installation) to get an overview of the library.
 
 ```bash
-npm install @udecode/plate
+npm install platejs
 ```
 
 ## 2. Replace Slate Imports
@@ -23,7 +23,7 @@ import { createEditor } from 'slate';
 import { Slate, Editable, withReact } from 'slate-react';
 
 // After
-import { createPlateEditor, Plate, PlateContent } from '@udecode/plate/react';
+import { createPlateEditor, Plate, PlateContent } from 'platejs/react';
 ```
 
 ## 3. Create a Plate Editor
@@ -76,7 +76,7 @@ const renderElement = useCallback(({ attributes, children, element }) => {
 }, []);
 
 // After
-import { type PlateElement, type PlateElementProps } from '@udecode/plate/react';
+import { type PlateElement, type PlateElementProps } from 'platejs/react';
 import { cn } from '@/lib/utils';
 
 export function ParagraphElement(props: PlateElementProps) {
@@ -200,7 +200,7 @@ For a comprehensive list of editor methods, see the [Editor Methods guide](/docs
 Plate comes with many built-in plugins that you can see in the sidebar. Use them to quickly add functionality:
 
 ```ts
-import { BoldPlugin, ItalicPlugin, UnderlinePlugin } from '@udecode/plate/react';
+import { BoldPlugin, ItalicPlugin, UnderlinePlugin } from 'platejs/react';
 
 const plugins = [
   BoldPlugin,

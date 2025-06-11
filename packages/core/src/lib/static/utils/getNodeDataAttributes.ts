@@ -1,4 +1,4 @@
-import { type TElement, type TText, TextApi } from '@udecode/slate';
+import { type TElement, type TText, TextApi } from '@platejs/slate';
 import kebabCase from 'lodash/kebabCase.js';
 
 import type { SlateEditor } from '../../editor';

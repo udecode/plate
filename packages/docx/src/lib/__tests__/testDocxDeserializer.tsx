@@ -1,18 +1,18 @@
 /** @jsx jsx */
 
-import { type SlatePlugin, createSlateEditor } from '@udecode/plate';
-import { TextAlignPlugin } from '@udecode/plate-basic-styles/react';
-import { BasicBlocksPlugin } from '@udecode/plate-basic-nodes/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
-import { HorizontalRulePlugin } from '@udecode/plate-basic-nodes/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { JuicePlugin } from '@udecode/plate-juice';
-import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
-import { ImagePlugin } from '@udecode/plate-media/react';
-import { TablePlugin } from '@udecode/plate-table/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { type SlatePlugin, createSlateEditor } from 'platejs';
+import { TextAlignPlugin } from '@platejs/basic-styles/react';
+import { BasicBlocksPlugin } from '@platejs/basic-nodes/react';
+import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
+import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { IndentPlugin } from '@platejs/indent/react';
+import { JuicePlugin } from '@platejs/juice';
+import { LineHeightPlugin } from '@platejs/basic-styles/react';
+import { LinkPlugin } from '@platejs/link/react';
+import { ImagePlugin } from '@platejs/media/react';
+import { TablePlugin } from '@platejs/table/react';
+import { jsx } from '@platejs/test-utils';
 
 import { DocxPlugin } from '../DocxPlugin';
 import { readTestFile } from './readTestFile';

@@ -11,7 +11,7 @@ import {
   KEYS,
   PathApi,
   TextApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
