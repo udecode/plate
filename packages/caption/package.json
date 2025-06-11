@@ -1,6 +1,6 @@
 {
   "name": "@platejs/caption",
-  "version": "48.0.5",
+  "version": "49.0.0",
   "description": "Primitive components for caption.",
   "keywords": [
     "plate",
@@ -55,7 +55,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=48.0.5",
+    "platejs": ">=49.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
