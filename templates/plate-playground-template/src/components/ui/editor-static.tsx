@@ -2,8 +2,8 @@ import * as React from 'react';
 
 import type { VariantProps } from 'class-variance-authority';
 
-import { type PlateStaticProps, PlateStatic } from '@udecode/plate';
 import { cva } from 'class-variance-authority';
+import { type PlateStaticProps, PlateStatic } from 'platejs';
 
 import { cn } from '@/lib/utils';
 

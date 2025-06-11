@@ -5,7 +5,7 @@
   "title": "Import Toolbar Button",
   "description": "A toolbar button to import editor content from a file.",
   "dependencies": [
-    "use-file-picker"
+    "use-file-picker@2.1.2"
   ],
   "registryDependencies": [
     "dropdown-menu",

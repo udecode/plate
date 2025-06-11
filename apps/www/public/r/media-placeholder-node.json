@@ -6,7 +6,7 @@
   "description": "A placeholder for media upload progress indication.",
   "dependencies": [
     "@platejs/media",
-    "use-file-picker"
+    "use-file-picker@2.1.2"
   ],
   "registryDependencies": [
     "https://platejs.org/r/uploadthing"

@@ -2,12 +2,10 @@
 
 import * as React from 'react';
 
-import { DndPlugin } from '@udecode/plate-dnd';
-import { useBlockSelected } from '@udecode/plate-selection/react';
-import { usePluginOption } from '@udecode/plate/react';
-import { type VariantProps, cva } from 'class-variance-authority';
-
-import { cn } from '@/lib/utils';
+import { DndPlugin } from '@platejs/dnd';
+import { useBlockSelected } from '@platejs/selection/react';
+import { cva } from 'class-variance-authority';
+import { type PlateElementProps, usePluginOption } from 'platejs/react';
 
 export const blockSelectionVariants = cva(
   'pointer-events-none absolute inset-0 z-1 bg-brand/[.13] transition-opacity',
@@ -24,25 +22,18 @@ export const blockSelectionVariants = cva(
   }
 );
 
-export function BlockSelection({
-  className,
-  ...props
-}: React.ComponentProps<'div'> & VariantProps<typeof blockSelectionVariants>) {
+export function BlockSelection(props: PlateElementProps) {
   const isBlockSelected = useBlockSelected();
   const isDragging = usePluginOption(DndPlugin, 'isDragging');
 
-  if (!isBlockSelected) return null;
+  if (!isBlockSelected || props.plugin.key === 'tr') return null;
 
   return (
     <div
-      className={cn(
-        blockSelectionVariants({
-          active: isBlockSelected && !isDragging,
-        }),
-        className
-      )}
+      className={blockSelectionVariants({
+        active: isBlockSelected && !isDragging,
+      })}
       data-slot="block-selection"
-      {...props}
     />
   );
 }

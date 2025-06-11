@@ -2,52 +2,28 @@
 
 import * as React from 'react';
 
-import type {
-  TResolvedSuggestion,
-  TSuggestionElement,
-  TSuggestionText,
-} from '@udecode/plate-suggestion';
+import type { TResolvedSuggestion } from '@platejs/suggestion';
 
-import {
-  type NodeEntry,
-  type Path,
-  type TElement,
-  ElementApi,
-  PathApi,
-  TextApi,
-} from '@udecode/plate';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { CalloutPlugin } from '@udecode/plate-callout/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
-import { TocPlugin } from '@udecode/plate-heading/react';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
-import { INDENT_LIST_KEYS, ListStyleType } from '@udecode/plate-indent-list';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
-import { ColumnPlugin } from '@udecode/plate-layout/react';
-import { EquationPlugin } from '@udecode/plate-math/react';
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  MediaEmbedPlugin,
-  VideoPlugin,
-} from '@udecode/plate-media/react';
 import {
   acceptSuggestion,
   getSuggestionKey,
   keyId2SuggestionId,
   rejectSuggestion,
-} from '@udecode/plate-suggestion';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import { TablePlugin } from '@udecode/plate-table/react';
-import { TogglePlugin } from '@udecode/plate-toggle/react';
-import {
-  ParagraphPlugin,
-  useEditorPlugin,
-  usePluginOption,
-} from '@udecode/plate/react';
+} from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { CheckIcon, XIcon } from 'lucide-react';
+import {
+  type NodeEntry,
+  type Path,
+  type TElement,
+  type TSuggestionElement,
+  type TSuggestionText,
+  ElementApi,
+  KEYS,
+  PathApi,
+  TextApi,
+} from 'platejs';
+import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -55,51 +31,71 @@ import { cn } from '@/lib/utils';
 import {
   type TDiscussion,
   discussionPlugin,
-} from '@/components/editor/plugins/discussion-plugin';
-import { suggestionPlugin } from '@/components/editor/plugins/suggestion-plugin';
+} from '@/components/editor/plugins/discussion-kit';
+import { suggestionPlugin } from '@/components/editor/plugins/suggestion-kit';
 
-import { type TComment, Comment, formatCommentDate } from './comment';
-import { CommentCreateForm } from './comment-create-form';
+import {
+  type TComment,
+  Comment,
+  CommentCreateForm,
+  formatCommentDate,
+} from './comment';
 
 export interface ResolvedSuggestion extends TResolvedSuggestion {
   comments: TComment[];
 }
 
-export const BLOCK_SUGGESTION = '__block__';
+const BLOCK_SUGGESTION = '__block__';
 
-export const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
-  [AudioPlugin.key]: () => 'Audio',
-  [BlockquotePlugin.key]: () => 'Blockquote',
-  [CalloutPlugin.key]: () => 'Callout',
-  [CodeBlockPlugin.key]: () => 'Code Block',
-  [ColumnPlugin.key]: () => 'Column',
-  [EquationPlugin.key]: () => 'Equation',
-  [FilePlugin.key]: () => 'File',
-  [HEADING_KEYS.h1]: () => `Heading 1`,
-  [HEADING_KEYS.h2]: () => `Heading 2`,
-  [HEADING_KEYS.h3]: () => `Heading 3`,
-  [HEADING_KEYS.h4]: () => `Heading 4`,
-  [HEADING_KEYS.h5]: () => `Heading 5`,
-  [HEADING_KEYS.h6]: () => `Heading 6`,
-  [HorizontalRulePlugin.key]: () => 'Horizontal Rule',
-  [ImagePlugin.key]: () => 'Image',
-  [MediaEmbedPlugin.key]: () => 'Media',
-  [ParagraphPlugin.key]: (node) => {
-    if (node?.[IndentListPlugin.key] === INDENT_LIST_KEYS.todo)
-      return 'Todo List';
-    if (node?.[IndentListPlugin.key] === ListStyleType.Decimal)
-      return 'Ordered List';
-    if (node?.[IndentListPlugin.key] === ListStyleType.Disc) return 'List';
+const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
+  [KEYS.audio]: () => 'Audio',
+  [KEYS.blockquote]: () => 'Blockquote',
+  [KEYS.callout]: () => 'Callout',
+  [KEYS.codeBlock]: () => 'Code Block',
+  [KEYS.column]: () => 'Column',
+  [KEYS.equation]: () => 'Equation',
+  [KEYS.file]: () => 'File',
+  [KEYS.h1]: () => `Heading 1`,
+  [KEYS.h2]: () => `Heading 2`,
+  [KEYS.h3]: () => `Heading 3`,
+  [KEYS.h4]: () => `Heading 4`,
+  [KEYS.h5]: () => `Heading 5`,
+  [KEYS.h6]: () => `Heading 6`,
+  [KEYS.hr]: () => 'Horizontal Rule',
+  [KEYS.img]: () => 'Image',
+  [KEYS.mediaEmbed]: () => 'Media',
+  [KEYS.p]: (node) => {
+    if (node?.[KEYS.listType] === KEYS.listTodo) return 'Todo List';
+    if (node?.[KEYS.listType] === KEYS.ol) return 'Ordered List';
+    if (node?.[KEYS.listType] === KEYS.ul) return 'List';
 
     return 'Paragraph';
   },
-  [TablePlugin.key]: () => 'Table',
-  [TocPlugin.key]: () => 'Table of Contents',
-  [TogglePlugin.key]: () => 'Toggle',
-  [VideoPlugin.key]: () => 'Video',
+  [KEYS.table]: () => 'Table',
+  [KEYS.toc]: () => 'Table of Contents',
+  [KEYS.toggle]: () => 'Toggle',
+  [KEYS.video]: () => 'Video',
 };
 
-export const BlockSuggestionCard = ({
+export function BlockSuggestion({ element }: { element: TSuggestionElement }) {
+  const suggestionData = element.suggestion;
+
+  if (suggestionData?.isLineBreak) return null;
+
+  const isRemove = suggestionData?.type === 'remove';
+
+  return (
+    <div
+      className={cn(
+        'pointer-events-none absolute inset-0 z-1 border-2 border-brand/[0.8] transition-opacity',
+        isRemove && 'border-gray-300'
+      )}
+      contentEditable={false}
+    />
+  );
+}
+
+export function BlockSuggestionCard({
   idx,
   isLast,
   suggestion,
@@ -107,7 +103,7 @@ export const BlockSuggestionCard = ({
   idx: number;
   isLast: boolean;
   suggestion: ResolvedSuggestion;
-}) => {
+}) {
   const { api, editor } = useEditorPlugin(SuggestionPlugin);
 
   const userInfo = usePluginOption(discussionPlugin, 'user', suggestion.userId);
@@ -258,7 +254,7 @@ export const BlockSuggestionCard = ({
           <div className="absolute top-4 right-4 flex gap-2">
             <Button
               variant="ghost"
-              className="h-6 p-1 text-muted-foreground"
+              className="size-6 p-1 text-muted-foreground"
               onClick={() => accept(suggestion)}
             >
               <CheckIcon className="size-4" />
@@ -266,7 +262,7 @@ export const BlockSuggestionCard = ({
 
             <Button
               variant="ghost"
-              className="h-6 p-1 text-muted-foreground"
+              className="size-6 p-1 text-muted-foreground"
               onClick={() => reject(suggestion)}
             >
               <XIcon className="size-4" />
@@ -280,7 +276,7 @@ export const BlockSuggestionCard = ({
       {!isLast && <div className="h-px w-full bg-muted" />}
     </div>
   );
-};
+}
 
 export const useResolveSuggestion = (
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[],
@@ -360,7 +356,7 @@ export const useResolveSuggestion = (
           at: [],
           mode: 'all',
           match: (n) =>
-            (n[SuggestionPlugin.key] && n[getSuggestionKey(id)]) ||
+            (n[KEYS.suggestion] && n[getSuggestionKey(id)]) ||
             api.suggestion.nodeId(n as TElement) === id,
         }),
       ];
@@ -510,21 +506,3 @@ export const isResolvedSuggestion = (
 ): suggestion is ResolvedSuggestion => {
   return 'suggestionId' in suggestion;
 };
-
-export function BlockSuggestion({ element }: { element: TSuggestionElement }) {
-  const suggestionData = element.suggestion;
-
-  if (suggestionData?.isLineBreak) return null;
-
-  const isRemove = suggestionData?.type === 'remove';
-
-  return (
-    <div
-      className={cn(
-        'pointer-events-none absolute inset-0 z-1 border-2 border-brand/[0.8] transition-opacity',
-        isRemove && 'border-gray-300'
-      )}
-      contentEditable={false}
-    />
-  );
-}

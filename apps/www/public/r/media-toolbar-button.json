@@ -6,7 +6,7 @@
   "description": "Toolbar button for inserting and managing media.",
   "dependencies": [
     "@platejs/media",
-    "use-file-picker",
+    "use-file-picker@2.1.2",
     "sonner"
   ],
   "registryDependencies": [

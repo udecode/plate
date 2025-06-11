@@ -4,15 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { isUrl } from '@udecode/plate';
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  PlaceholderPlugin,
-  VideoPlugin,
-} from '@udecode/plate-media/react';
-import { useEditorRef } from '@udecode/plate/react';
+import { PlaceholderPlugin } from '@platejs/media/react';
 import {
   AudioLinesIcon,
   FileUpIcon,
@@ -20,6 +12,8 @@ import {
   ImageIcon,
   LinkIcon,
 } from 'lucide-react';
+import { isUrl, KEYS } from 'platejs';
+import { useEditorRef } from 'platejs/react';
 import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
 
@@ -57,25 +51,25 @@ const MEDIA_CONFIG: Record<
     tooltip: string;
   }
 > = {
-  [AudioPlugin.key]: {
+  [KEYS.audio]: {
     accept: ['audio/*'],
     icon: <AudioLinesIcon className="size-4" />,
     title: 'Insert Audio',
     tooltip: 'Audio',
   },
-  [FilePlugin.key]: {
+  [KEYS.file]: {
     accept: ['*'],
     icon: <FileUpIcon className="size-4" />,
     title: 'Insert File',
     tooltip: 'File',
   },
-  [ImagePlugin.key]: {
+  [KEYS.img]: {
     accept: ['image/*'],
     icon: <ImageIcon className="size-4" />,
     title: 'Insert Image',
     tooltip: 'Image',
   },
-  [VideoPlugin.key]: {
+  [KEYS.video]: {
     accept: ['video/*'],
     icon: <FilmIcon className="size-4" />,
     title: 'Insert Video',
@@ -184,7 +178,7 @@ function MediaUrlDialogContent({
     setOpen(false);
     editor.tf.insertNodes({
       children: [{ text: '' }],
-      name: nodeType === FilePlugin.key ? url.split('/').pop() : undefined,
+      name: nodeType === KEYS.file ? url.split('/').pop() : undefined,
       type: nodeType,
       url,
     });

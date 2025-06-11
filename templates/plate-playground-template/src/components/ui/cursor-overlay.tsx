@@ -2,18 +2,30 @@
 
 import * as React from 'react';
 
-import { RangeApi } from '@udecode/plate';
-import { AIChatPlugin } from '@udecode/plate-ai/react';
+import { AIChatPlugin } from '@platejs/ai/react';
 import {
   type CursorData,
   type CursorOverlayState,
   useCursorOverlay,
-} from '@udecode/plate-selection/react';
-import { usePluginOption } from '@udecode/plate/react';
+} from '@platejs/selection/react';
+import { RangeApi } from 'platejs';
+import { usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
-export function Cursor({
+export function CursorOverlay() {
+  const { cursors } = useCursorOverlay();
+
+  return (
+    <>
+      {cursors.map((cursor) => (
+        <Cursor key={cursor.id} {...cursor} />
+      ))}
+    </>
+  );
+}
+
+function Cursor({
   id,
   caretPosition,
   data,
@@ -53,18 +65,6 @@ export function Cursor({
           style={{ ...caretPosition, ...style }}
         />
       )}
-    </>
-  );
-}
-
-export function CursorOverlay() {
-  const { cursors } = useCursorOverlay();
-
-  return (
-    <>
-      {cursors.map((cursor) => (
-        <Cursor key={cursor.id} {...cursor} />
-      ))}
     </>
   );
 }

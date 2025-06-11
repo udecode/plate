@@ -28,14 +28,15 @@ export const registryBlocks: Registry['items'] = [
       'settings-dialog',
 
       // editor-kit
-      'editor',
+      'editor-base-kit',
       'ai-kit',
       'align-kit',
       'autoformat-kit',
-      'basic-marks-kit',
+      'basic-nodes-kit',
       'block-menu-kit',
       'block-placeholder-kit',
       'callout-kit',
+      'code-block-kit',
       'column-kit',
       'comment-kit',
       'cursor-overlay-kit',

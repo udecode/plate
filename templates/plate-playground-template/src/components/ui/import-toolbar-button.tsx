@@ -4,10 +4,10 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { getEditorDOMFromHtmlString } from '@udecode/plate';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
-import { useEditorRef } from '@udecode/plate/react';
+import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowUpToLineIcon } from 'lucide-react';
+import { getEditorDOMFromHtmlString } from 'platejs';
+import { useEditorRef } from 'platejs/react';
 import { useFilePicker } from 'use-file-picker';
 
 import {

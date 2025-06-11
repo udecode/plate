@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 
-import type { PlateContentProps } from '@udecode/plate/react';
 import type { VariantProps } from 'class-variance-authority';
+import type { PlateContentProps } from 'platejs/react';
 
-import { PlateContainer, PlateContent } from '@udecode/plate/react';
 import { cva } from 'class-variance-authority';
+import { PlateContainer, PlateContent } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
@@ -35,12 +35,11 @@ const editorContainerVariants = cva(
   }
 );
 
-export const EditorContainer = ({
+export function EditorContainer({
   className,
   variant,
   ...props
-}: React.ComponentProps<'div'> &
-  VariantProps<typeof editorContainerVariants>) => {
+}: React.ComponentProps<'div'> & VariantProps<typeof editorContainerVariants>) {
   return (
     <PlateContainer
       className={cn(
@@ -51,9 +50,7 @@ export const EditorContainer = ({
       {...props}
     />
   );
-};
-
-EditorContainer.displayName = 'EditorContainer';
+}
 
 const editorVariants = cva(
   cn(

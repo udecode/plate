@@ -213,7 +213,7 @@
       "title": "Import Toolbar Button",
       "description": "A toolbar button to import editor content from a file.",
       "dependencies": [
-        "use-file-picker"
+        "use-file-picker@2.1.2"
       ],
       "registryDependencies": [
         "dropdown-menu",
@@ -312,7 +312,8 @@
       "description": "A color picker toolbar button with text and background color controls.",
       "dependencies": [
         "@udecode/cn",
-        "@platejs/basic-styles"
+        "@platejs/basic-styles",
+        "lodash"
       ],
       "registryDependencies": [
         "dropdown-menu",
@@ -1134,7 +1135,7 @@
       "description": "Toolbar button for inserting and managing media.",
       "dependencies": [
         "@platejs/media",
-        "use-file-picker",
+        "use-file-picker@2.1.2",
         "sonner"
       ],
       "registryDependencies": [
@@ -2296,7 +2297,7 @@
       "description": "A placeholder for media upload progress indication.",
       "dependencies": [
         "@platejs/media",
-        "use-file-picker"
+        "use-file-picker@2.1.2"
       ],
       "registryDependencies": [
         "https://platejs.org/r/uploadthing"
@@ -3327,12 +3328,14 @@
         "https://platejs.org/r/autoformat-kit",
         "https://platejs.org/r/basic-nodes-kit",
         "https://platejs.org/r/block-menu-kit",
+        "https://platejs.org/r/block-placeholder-kit",
         "https://platejs.org/r/callout-kit",
         "https://platejs.org/r/code-block-kit",
         "https://platejs.org/r/column-kit",
         "https://platejs.org/r/comment-kit",
         "https://platejs.org/r/cursor-overlay-kit",
         "https://platejs.org/r/date-kit",
+        "https://platejs.org/r/discussion-kit",
         "https://platejs.org/r/dnd-kit",
         "https://platejs.org/r/docx-kit",
         "https://platejs.org/r/emoji-kit",
@@ -3877,14 +3880,15 @@
         "https://platejs.org/r/media-uploadthing-api",
         "https://platejs.org/r/plate-types",
         "https://platejs.org/r/settings-dialog",
-        "https://platejs.org/r/editor",
+        "https://platejs.org/r/editor-base-kit",
         "https://platejs.org/r/ai-kit",
         "https://platejs.org/r/align-kit",
         "https://platejs.org/r/autoformat-kit",
-        "https://platejs.org/r/basic-marks-kit",
+        "https://platejs.org/r/basic-nodes-kit",
         "https://platejs.org/r/block-menu-kit",
         "https://platejs.org/r/block-placeholder-kit",
         "https://platejs.org/r/callout-kit",
+        "https://platejs.org/r/code-block-kit",
         "https://platejs.org/r/column-kit",
         "https://platejs.org/r/comment-kit",
         "https://platejs.org/r/cursor-overlay-kit",
