@@ -425,7 +425,7 @@ function ScrollableAccordionContent({
   return (
     <div className="relative flex grow flex-col overflow-y-hidden">
       <div ref={contentRef} className="grow overflow-y-auto">
-        <AccordionContent ref={accordionRef} className="pb-0" {...props}>
+        <AccordionContent ref={accordionRef} className="pb-1" {...props}>
           {children}
         </AccordionContent>
       </div>
