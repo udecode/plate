@@ -1,8 +1,4 @@
-import type {
-  SlateEditor,
-  TTableCellElement,
-  TTableElement,
-} from '@udecode/plate';
+import type { SlateEditor, TTableCellElement, TTableElement } from 'platejs';
 
 import { getCellIndices } from '../utils/getCellIndices';
 import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';

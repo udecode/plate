@@ -1,7 +1,7 @@
-import type { TElement } from '@udecode/plate';
+import type { TElement } from 'platejs';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 
 import type { DragItemNode } from '../types';
 

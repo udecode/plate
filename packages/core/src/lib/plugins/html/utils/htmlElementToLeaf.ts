@@ -1,4 +1,4 @@
-import { type Descendant, ElementApi, TextApi } from '@udecode/slate';
+import { type Descendant, ElementApi, TextApi } from '@platejs/slate';
 import { jsx } from 'slate-hyperscript';
 
 import type { SlateEditor } from '../../../editor';

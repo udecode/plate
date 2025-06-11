@@ -1,4 +1,4 @@
-import { BaseLinkPlugin } from '@udecode/plate-link';
+import { BaseLinkPlugin } from '@platejs/link';
 
 import { LinkElementStatic } from '@/registry/ui/link-node-static';
 

@@ -32,7 +32,7 @@ The fastest way to add the subscript plugin is with the `BasicMarksKit`, which i
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
 
 const editor = createPlateEditor({
@@ -52,7 +52,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-basic-nodes
+npm install @platejs/basic-nodes
 ```
 
 ### Add Plugin
@@ -60,8 +60,8 @@ npm install @udecode/plate-basic-nodes
 Include `SubscriptPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { SubscriptPlugin } from '@udecode/plate-basic-nodes/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { SubscriptPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -76,8 +76,8 @@ const editor = createPlateEditor({
 You can configure the `SubscriptPlugin` with custom keyboard shortcuts.
 
 ```tsx
-import { SubscriptPlugin } from '@udecode/plate-basic-nodes/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { SubscriptPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [

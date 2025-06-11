@@ -1,4 +1,4 @@
-import type { EditorApi, EditorTransforms, Value } from '@udecode/slate';
+import type { EditorApi, EditorTransforms, Value } from '@platejs/slate';
 import type { UnionToIntersection } from '@udecode/utils';
 
 import type {

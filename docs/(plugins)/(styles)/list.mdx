@@ -39,7 +39,7 @@ The fastest way to add list functionality is with the `ListKit`, which includes 
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { ListKit } from '@/components/editor/plugins/list-kit';
 
 const editor = createPlateEditor({
@@ -91,7 +91,7 @@ You can add these items to the [Turn Into Toolbar Button](/docs/toolbar#turn-int
 ### Installation
 
 ```bash
-npm install @udecode/plate-list @udecode/plate-indent
+npm install @platejs/list @platejs/indent
 ```
 
 ### Add Plugins
@@ -99,9 +99,9 @@ npm install @udecode/plate-list @udecode/plate-indent
 Include both `IndentPlugin` and `ListPlugin` in your Plate plugins array when creating the editor. The List plugin depends on the Indent plugin.
 
 ```tsx
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { ListPlugin } from '@udecode/plate-list/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { IndentPlugin } from '@platejs/indent/react';
+import { ListPlugin } from '@platejs/list/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -117,10 +117,10 @@ const editor = createPlateEditor({
 You can configure both plugins to target specific elements and customize list behavior.
 
 ```tsx
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { ListPlugin } from '@udecode/plate-list/react';
-import { KEYS } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate/react';
+import { IndentPlugin } from '@platejs/indent/react';
+import { ListPlugin } from '@platejs/list/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 import { BlockList } from '@/components/ui/block-list';
 
 const editor = createPlateEditor({

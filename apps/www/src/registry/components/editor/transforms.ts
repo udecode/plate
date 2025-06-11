@@ -1,29 +1,29 @@
 'use client';
 
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
+import { insertCallout } from '@platejs/callout';
+import { insertCodeBlock } from '@platejs/code-block';
+import { insertDate } from '@platejs/date';
+import { insertColumnGroup, toggleColumnGroup } from '@platejs/layout';
+import { triggerFloatingLink } from '@platejs/link/react';
+import { insertEquation, insertInlineEquation } from '@platejs/math';
+import {
+  insertAudioPlaceholder,
+  insertFilePlaceholder,
+  insertMedia,
+  insertVideoPlaceholder,
+} from '@platejs/media';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { TablePlugin } from '@platejs/table/react';
+import { insertToc } from '@platejs/toc';
 import {
   type NodeEntry,
   type Path,
   type TElement,
   KEYS,
   PathApi,
-} from '@udecode/plate';
-import { insertCallout } from '@udecode/plate-callout';
-import { insertCodeBlock } from '@udecode/plate-code-block';
-import { insertDate } from '@udecode/plate-date';
-import { insertColumnGroup, toggleColumnGroup } from '@udecode/plate-layout';
-import { triggerFloatingLink } from '@udecode/plate-link/react';
-import { insertEquation, insertInlineEquation } from '@udecode/plate-math';
-import {
-  insertAudioPlaceholder,
-  insertFilePlaceholder,
-  insertMedia,
-  insertVideoPlaceholder,
-} from '@udecode/plate-media';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import { TablePlugin } from '@udecode/plate-table/react';
-import { insertToc } from '@udecode/plate-toc';
+} from 'platejs';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 

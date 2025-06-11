@@ -1,4 +1,4 @@
-import type { TElement } from '@udecode/plate';
+import type { TElement } from 'platejs';
 
 import { ULIST_STYLE_TYPES } from '../types';
 

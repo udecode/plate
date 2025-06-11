@@ -1,4 +1,4 @@
-import type { NodeEntry, SlateEditor } from '@udecode/plate';
+import type { NodeEntry, SlateEditor } from 'platejs';
 
 import last from 'lodash/last.js';
 

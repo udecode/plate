@@ -5,7 +5,7 @@ import {
   isHotkey,
   NodeApi,
   RangeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { type CaptionConfig, BaseCaptionPlugin } from './BaseCaptionPlugin';
 

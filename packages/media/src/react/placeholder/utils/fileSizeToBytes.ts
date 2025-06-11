@@ -12,7 +12,7 @@ export const fileSizeToBytes = (fileSize: FileSize, file: File): number => {
   );
 
   // make sure the string is in the format of 123KB
-  const match = fileSize.match(regex);
+  const match = regex.exec(fileSize);
 
   if (!match) {
     throw createUploadError(UploadErrorCode.INVALID_FILE_SIZE, {

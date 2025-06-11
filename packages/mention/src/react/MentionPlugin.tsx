@@ -1,4 +1,4 @@
-import { toPlatePlugin } from '@udecode/plate/react';
+import { toPlatePlugin } from 'platejs/react';
 
 import { BaseMentionInputPlugin, BaseMentionPlugin } from '../lib';
 

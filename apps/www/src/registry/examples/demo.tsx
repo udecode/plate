@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';

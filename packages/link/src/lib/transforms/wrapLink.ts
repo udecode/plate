@@ -1,10 +1,6 @@
-import type {
-  SlateEditor,
-  TLinkElement,
-  WrapNodesOptions,
-} from '@udecode/plate';
+import type { SlateEditor, TLinkElement, WrapNodesOptions } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export interface WrapLinkOptions extends WrapNodesOptions {
   url: string;

@@ -3,7 +3,7 @@ import {
   type TLinkElement,
   KEYS,
   sanitizeUrl,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { BaseLinkConfig } from '../BaseLinkPlugin';
 

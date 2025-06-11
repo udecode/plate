@@ -81,7 +81,7 @@ The fastest way to add list functionality is with the `ListKit`, which includes 
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { ListKit } from '@/components/editor/plugins/list-classic-kit';
 
 const editor = createPlateEditor({
@@ -101,7 +101,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-list-classic
+npm install @platejs/list-classic
 ```
 
 ### Add Plugins
@@ -109,8 +109,8 @@ npm install @udecode/plate-list-classic
 Include the list plugins in your Plate plugins array when creating the editor.
 
 ```tsx
-import { ListPlugin, BulletedListPlugin, NumberedListPlugin, ListItemPlugin } from '@udecode/plate-list-classic/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { ListPlugin, BulletedListPlugin, NumberedListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -128,8 +128,8 @@ const editor = createPlateEditor({
 Configure the plugins with custom components and keyboard shortcuts.
 
 ```tsx
-import { ListPlugin, BulletedListPlugin, NumberedListPlugin, ListItemPlugin } from '@udecode/plate-list-classic/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { ListPlugin, BulletedListPlugin, NumberedListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
+import { createPlateEditor } from 'platejs/react';
 import { BulletedListElement, NumberedListElement } from '@/components/ui/list-classic-node';
 
 const editor = createPlateEditor({

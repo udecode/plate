@@ -1,4 +1,4 @@
-import { type OverrideEditor, PathApi } from '@udecode/plate';
+import { type OverrideEditor, PathApi } from 'platejs';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
 

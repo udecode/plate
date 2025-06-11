@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { BaseCodeBlockPlugin } from '@udecode/plate-code-block';
-import { BaseTablePlugin } from '@udecode/plate-table';
-import { jsxt } from '@udecode/plate-test-utils';
+import { BaseCodeBlockPlugin } from '@platejs/code-block';
+import { BaseTablePlugin } from '@platejs/table';
+import { jsxt } from '@platejs/test-utils';
 
 import { type SlateEditor, createSlateEditor } from '../../editor';
 import { createSlatePlugin } from '../../plugin/createSlatePlugin';

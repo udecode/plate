@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { useAIChatEditor } from '@udecode/plate-ai/react';
-import { usePlateEditor } from '@udecode/plate/react';
+import { useAIChatEditor } from '@platejs/ai/react';
+import { usePlateEditor } from 'platejs/react';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 

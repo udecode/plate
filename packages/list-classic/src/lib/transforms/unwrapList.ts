@@ -4,7 +4,7 @@ import {
   ElementApi,
   KEYS,
   NodeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { getListTypes } from '../queries/index';
 

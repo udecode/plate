@@ -1,4 +1,4 @@
-# @udecode/plate-basic-nodes
+# @platejs/basic-nodes
 
 ## 49.0.0
 

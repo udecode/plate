@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor, NodeApi } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { jsxt } from '@platejs/test-utils';
+import { type SlateEditor, createSlateEditor, NodeApi } from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 

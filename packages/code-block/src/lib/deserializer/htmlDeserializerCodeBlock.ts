@@ -1,6 +1,6 @@
-import type { HtmlDeserializer } from '@udecode/plate';
+import type { HtmlDeserializer } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export const htmlDeserializerCodeBlock: HtmlDeserializer = {
   rules: [

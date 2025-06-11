@@ -1,4 +1,4 @@
-import type { TColumnGroupElement } from '@udecode/plate';
+import type { TColumnGroupElement } from 'platejs';
 
 export function resizeColumn(
   columnGroup: TColumnGroupElement,

@@ -1,6 +1,6 @@
-import type { InsertNodesOptions, SlateEditor, TElement } from '@udecode/plate';
+import type { InsertNodesOptions, SlateEditor, TElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 /**
  * Insert a code block: set the node to code line and wrap it with a code block.

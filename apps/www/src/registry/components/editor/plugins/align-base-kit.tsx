@@ -1,5 +1,5 @@
-import { KEYS } from '@udecode/plate';
-import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
+import { BaseTextAlignPlugin } from '@platejs/basic-styles';
+import { KEYS } from 'platejs';
 
 export const BaseAlignKit = [
   BaseTextAlignPlugin.configure({

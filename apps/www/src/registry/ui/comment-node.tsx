@@ -2,15 +2,11 @@
 
 import * as React from 'react';
 
-import type { TCommentText } from '@udecode/plate';
-import type { PlateLeafProps } from '@udecode/plate/react';
+import type { TCommentText } from 'platejs';
+import type { PlateLeafProps } from 'platejs/react';
 
-import { getCommentCount } from '@udecode/plate-comments';
-import {
-  PlateLeaf,
-  useEditorPlugin,
-  usePluginOption,
-} from '@udecode/plate/react';
+import { getCommentCount } from '@platejs/comment';
+import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';

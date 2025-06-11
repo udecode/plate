@@ -1,6 +1,6 @@
 'use client';
 
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 
 import { BlockSelection } from '@/registry/ui/block-selection';
 

@@ -1,10 +1,10 @@
 import * as React from 'react';
 
-import type { SlateElementProps, TEquationElement } from '@udecode/plate';
+import type { SlateElementProps, TEquationElement } from 'platejs';
 
-import { SlateElement } from '@udecode/plate';
-import { getEquationHtml } from '@udecode/plate-math';
+import { getEquationHtml } from '@platejs/math';
 import { RadicalIcon } from 'lucide-react';
+import { SlateElement } from 'platejs';
 
 import { cn } from '@/lib/utils';
 

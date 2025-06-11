@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createEditor } from '@udecode/plate';
-import { createSlateEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { jsxt } from '@platejs/test-utils';
+import { type SlateEditor, createEditor } from 'platejs';
+import { createSlateEditor } from 'platejs';
 
 import { getListItemEntry } from './getListItemEntry';
 

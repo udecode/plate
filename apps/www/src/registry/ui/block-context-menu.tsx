@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 
-import { KEYS } from '@udecode/plate';
-import { AIChatPlugin } from '@udecode/plate-ai/react';
+import { AIChatPlugin } from '@platejs/ai/react';
 import {
   BLOCK_CONTEXT_MENU_ID,
   BlockMenuPlugin,
   BlockSelectionPlugin,
-} from '@udecode/plate-selection/react';
-import { useEditorPlugin, usePlateState } from '@udecode/plate/react';
+} from '@platejs/selection/react';
+import { KEYS } from 'platejs';
+import { useEditorPlugin, usePlateState } from 'platejs/react';
 
 import {
   ContextMenu,

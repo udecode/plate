@@ -1,3 +1,3 @@
-# @udecode/plate-basic-styles
+# @platejs/basic-styles
 
 ## 49.0.0

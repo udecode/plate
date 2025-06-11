@@ -1,4 +1,4 @@
-import type { Editor } from '@udecode/plate';
+import type { Editor } from 'platejs';
 
 /** Select the start of a block by id and focus the editor. */
 export const focusBlockStartById = (editor: Editor, id: string) => {

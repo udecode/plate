@@ -1,4 +1,4 @@
-import { type Descendant, type SlateEditor, ElementApi } from '@udecode/plate';
+import { type Descendant, type SlateEditor, ElementApi } from 'platejs';
 
 import { getListTypes } from './getListTypes';
 

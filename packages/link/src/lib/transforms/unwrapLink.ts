@@ -1,9 +1,5 @@
-import {
-  type SlateEditor,
-  type UnwrapNodesOptions,
-  ElementApi,
-} from '@udecode/plate';
-import { KEYS } from '@udecode/plate';
+import { type SlateEditor, type UnwrapNodesOptions, ElementApi } from 'platejs';
+import { KEYS } from 'platejs';
 
 /** Unwrap link node. */
 export const unwrapLink = (

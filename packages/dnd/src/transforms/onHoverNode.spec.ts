@@ -1,17 +1,17 @@
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type TElement, RangeApi } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate/react';
+import { type TElement, RangeApi } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import type { DragItemNode } from '../types';
 
 import { DndPlugin } from '../DndPlugin';
 import { onHoverNode } from './onHoverNode';
 
-jest.mock('@udecode/plate', () => ({
-  ...jest.requireActual('@udecode/plate'),
+jest.mock('platejs', () => ({
+  ...jest.requireActual('platejs'),
   RangeApi: {
-    ...jest.requireActual('@udecode/plate').RangeApi,
+    ...jest.requireActual('platejs').RangeApi,
     isExpanded: jest.fn(),
   },
 }));

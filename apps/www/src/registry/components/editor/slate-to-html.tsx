@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { Plate, usePlateEditor } from '@udecode/plate/react';
 import { useTheme } from 'next-themes';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { EditorKit } from '@/registry/components/editor/editor-kit';

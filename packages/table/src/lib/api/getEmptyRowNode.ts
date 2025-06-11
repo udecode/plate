@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@udecode/plate';
+import type { SlateEditor } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import type { TableConfig } from '../BaseTablePlugin';
 import type { CreateCellOptions } from '../types';

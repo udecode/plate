@@ -5,10 +5,10 @@ import {
   useImagePreview,
   useImagePreviewValue,
   useScaleInput,
-} from '@udecode/plate-media/react';
-import { useEditorRef } from '@udecode/plate/react';
+} from '@platejs/media/react';
 import { cva } from 'class-variance-authority';
 import { ArrowLeft, ArrowRight, Download, Minus, Plus, X } from 'lucide-react';
+import { useEditorRef } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 

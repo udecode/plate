@@ -1,8 +1,4 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  KEYS,
-} from '@udecode/plate';
+import { type InsertNodesOptions, type SlateEditor, KEYS } from 'platejs';
 
 import { insertCodeBlock } from './insertCodeBlock';
 

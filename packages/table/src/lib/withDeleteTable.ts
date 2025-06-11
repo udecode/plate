@@ -1,8 +1,4 @@
-import {
-  type OverrideEditor,
-  type SlateEditor,
-  PointApi,
-} from '@udecode/plate';
+import { type OverrideEditor, type SlateEditor, PointApi } from 'platejs';
 
 import { type TableConfig, getCellTypes } from '.';
 import { getTableGridAbove } from './queries/getTableGridAbove';

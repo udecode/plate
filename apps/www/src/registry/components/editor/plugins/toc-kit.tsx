@@ -1,6 +1,6 @@
 'use client';
 
-import { TocPlugin } from '@udecode/plate-toc/react';
+import { TocPlugin } from '@platejs/toc/react';
 
 import { TocElement } from '@/registry/ui/toc-node';
 

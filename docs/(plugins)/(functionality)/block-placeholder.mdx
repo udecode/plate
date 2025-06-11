@@ -28,7 +28,7 @@ The fastest way to add block placeholders is with the `BlockPlaceholderKit`, whi
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { BlockPlaceholderKit } from '@/components/editor/plugins/block-placeholder-kit';
 
 const editor = createPlateEditor({
@@ -50,14 +50,14 @@ const editor = createPlateEditor({
 Block placeholders are included in the core Plate package.
 
 ```tsx
-import { BlockPlaceholderPlugin } from '@udecode/plate/react';
+import { BlockPlaceholderPlugin } from 'platejs/react';
 ```
 
 ### Add Plugin
 
 ```tsx
-import { BlockPlaceholderPlugin } from '@udecode/plate/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { BlockPlaceholderPlugin } from 'platejs/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -72,8 +72,8 @@ const editor = createPlateEditor({
 Configure placeholders for different block types:
 
 ```tsx
-import { KEYS } from '@udecode/plate';
-import { BlockPlaceholderPlugin } from '@udecode/plate/react';
+import { KEYS } from 'platejs';
+import { BlockPlaceholderPlugin } from 'platejs/react';
 
 BlockPlaceholderPlugin.configure({
   options: {
@@ -92,8 +92,8 @@ BlockPlaceholderPlugin.configure({
 Customize appearance and visibility rules:
 
 ```tsx
-import { KEYS } from '@udecode/plate';
-import { BlockPlaceholderPlugin } from '@udecode/plate/react';
+import { KEYS } from 'platejs';
+import { BlockPlaceholderPlugin } from 'platejs/react';
 
 BlockPlaceholderPlugin.configure({
   options: {

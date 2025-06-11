@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { KEYS } from '@udecode/plate';
-import { jsx } from '@udecode/plate-test-utils';
+import { jsx } from '@platejs/test-utils';
+import { KEYS } from 'platejs';
 
 jsx;
 

@@ -1,4 +1,4 @@
-import type { Value } from '@udecode/slate';
+import type { Value } from '@platejs/slate';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 

@@ -1,12 +1,8 @@
 'use client';
 
-import type { SlateEditor } from '@udecode/plate';
-import type {
-  AutoformatBlockRule,
-  AutoformatRule,
-} from '@udecode/plate-autoformat';
+import type { AutoformatBlockRule, AutoformatRule } from '@platejs/autoformat';
+import type { SlateEditor } from 'platejs';
 
-import { ElementApi, isType, KEYS } from '@udecode/plate';
 import {
   autoformatArrow,
   autoformatLegal,
@@ -15,9 +11,10 @@ import {
   AutoformatPlugin,
   autoformatPunctuation,
   autoformatSmartQuotes,
-} from '@udecode/plate-autoformat';
-import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
-import { toggleList, unwrapList } from '@udecode/plate-list-classic';
+} from '@platejs/autoformat';
+import { insertEmptyCodeBlock } from '@platejs/code-block';
+import { toggleList, unwrapList } from '@platejs/list-classic';
+import { ElementApi, isType, KEYS } from 'platejs';
 
 const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
   unwrapList(editor);

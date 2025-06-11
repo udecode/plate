@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { ElementEntry, SlateEditor } from '@udecode/plate';
+import type { ElementEntry, SlateEditor } from 'platejs';
 
-import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
+import { jsxt } from '@platejs/test-utils';
+import { createPlateEditor } from 'platejs/react';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';

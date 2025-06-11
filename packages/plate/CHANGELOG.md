@@ -1,4 +1,4 @@
-# @udecode/plate
+# platejs
 
 ## 49.0.0
 
@@ -8,6 +8,8 @@
   - Renamed package to `platejs`:
     - Replace all `@udecode/plate/react` with `platejs/react`
     - Replace all `'@udecode/plate'` with `'platejs'`
+
+# @udecode/plate
 
 ## 48.0.5
 

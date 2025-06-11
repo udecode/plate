@@ -3,7 +3,7 @@ import {
   type PluginConfig,
   type SlatePlugin,
   createTSlatePlugin,
-} from '@udecode/plate';
+} from 'platejs';
 
 export type HeadingConfig = PluginConfig<
   'heading',

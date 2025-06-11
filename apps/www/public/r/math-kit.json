@@ -3,7 +3,7 @@
   "name": "math-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-math"
+    "@platejs/math"
   ],
   "registryDependencies": [
     "https://platejs.org/r/math-base-kit",
@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/math-kit.tsx",
-      "content": "'use client';\n\nimport {\n  EquationPlugin,\n  InlineEquationPlugin,\n} from '@udecode/plate-math/react';\n\nimport {\n  EquationElement,\n  InlineEquationElement,\n} from '@/registry/ui/equation-node';\n\nexport const MathKit = [\n  InlineEquationPlugin.withComponent(InlineEquationElement),\n  EquationPlugin.withComponent(EquationElement),\n];\n",
+      "content": "'use client';\n\nimport { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';\n\nimport {\n  EquationElement,\n  InlineEquationElement,\n} from '@/registry/ui/equation-node';\n\nexport const MathKit = [\n  InlineEquationPlugin.withComponent(InlineEquationElement),\n  EquationPlugin.withComponent(EquationElement),\n];\n",
       "type": "registry:component"
     }
   ]

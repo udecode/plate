@@ -5,7 +5,7 @@ import {
   ElementApi,
   KEYS,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 export const withColumn: OverrideEditor = ({
   editor,

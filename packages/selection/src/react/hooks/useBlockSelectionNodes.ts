@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 
-import type { EditorPropOptions, TElement } from '@udecode/plate';
+import type { EditorPropOptions, TElement } from 'platejs';
 
-import { useEditorRef, usePluginOption } from '@udecode/plate/react';
+import { useEditorRef, usePluginOption } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

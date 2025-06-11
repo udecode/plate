@@ -87,7 +87,7 @@ The fastest way to add comprehensive media support is with the `MediaKit`, which
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { MediaKit } from '@/components/editor/plugins/media-kit';
 
 const editor = createPlateEditor({
@@ -119,7 +119,7 @@ UPLOADTHING_TOKEN=xxx
 ### Installation
 
 ```bash
-npm install @udecode/plate-media
+npm install @platejs/media
 ```
 
 ### Add Plugins
@@ -134,8 +134,8 @@ import {
   MediaEmbedPlugin,
   PlaceholderPlugin,
   VideoPlugin,
-} from '@udecode/plate-media/react';
-import { createPlateEditor } from '@udecode/plate/react';
+} from '@platejs/media/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -162,9 +162,9 @@ import {
   MediaEmbedPlugin,
   PlaceholderPlugin,
   VideoPlugin,
-} from '@udecode/plate-media/react';
-import { KEYS } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate/react';
+} from '@platejs/media/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 import { 
   AudioElement, 
   FileElement, 
@@ -200,7 +200,7 @@ const editor = createPlateEditor({
 To enable media captions, add the [Caption Plugin](/docs/caption):
 
 ```tsx
-import { CaptionPlugin } from '@udecode/plate-caption/react';
+import { CaptionPlugin } from '@platejs/caption/react';
 
 const editor = createPlateEditor({
   plugins: [

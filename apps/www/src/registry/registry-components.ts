@@ -53,7 +53,7 @@ export const registryComponents: Registry['items'] = [
   ...registryKits,
   ...registryApi,
   {
-    dependencies: ['@udecode/plate-ai'],
+    dependencies: ['@platejs/ai'],
     files: [
       {
         path: 'components/editor/settings-dialog.tsx',
@@ -85,15 +85,15 @@ export const registryComponents: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate-callout',
-      '@udecode/plate-code-block',
-      '@udecode/plate-date',
-      '@udecode/plate-toc',
-      '@udecode/plate-layout',
-      '@udecode/plate-link',
-      '@udecode/plate-math',
-      '@udecode/plate-media',
-      '@udecode/plate-table',
+      '@platejs/callout',
+      '@platejs/code-block',
+      '@platejs/date',
+      '@platejs/toc',
+      '@platejs/layout',
+      '@platejs/link',
+      '@platejs/math',
+      '@platejs/media',
+      '@platejs/table',
     ],
     files: [
       {
@@ -106,13 +106,13 @@ export const registryComponents: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate-comments',
-      '@udecode/plate-excalidraw',
-      '@udecode/plate-link',
-      '@udecode/plate-media',
-      '@udecode/plate-mention',
-      '@udecode/plate-table',
-      '@udecode/plate-toggle',
+      '@platejs/comment',
+      '@platejs/excalidraw',
+      '@platejs/link',
+      '@platejs/media',
+      '@platejs/mention',
+      '@platejs/table',
+      '@platejs/toggle',
     ],
     files: [
       {

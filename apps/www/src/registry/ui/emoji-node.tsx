@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { PlateElementProps } from 'platejs/react';
 
-import { EmojiInlineIndexSearch, insertEmoji } from '@udecode/plate-emoji';
-import { EmojiPlugin } from '@udecode/plate-emoji/react';
-import { PlateElement, usePluginOption } from '@udecode/plate/react';
+import { EmojiInlineIndexSearch, insertEmoji } from '@platejs/emoji';
+import { EmojiPlugin } from '@platejs/emoji/react';
+import { PlateElement, usePluginOption } from 'platejs/react';
 
 import { useDebounce } from '@/registry/hooks/use-debounce';
 

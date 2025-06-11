@@ -2,7 +2,7 @@ import {
   type PlateEditor,
   useEditorSelector,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { isSelecting } from '../../lib';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';

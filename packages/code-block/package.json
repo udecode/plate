@@ -1,6 +1,6 @@
 {
-  "name": "@udecode/plate-code-block",
-  "version": "49.0.0",
+  "name": "@platejs/code-block",
+  "version": "48.0.5",
   "description": "Code block plugin for Plate",
   "keywords": [
     "plate",
@@ -50,11 +50,11 @@
     "typecheck": "yarn p:typecheck"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^",
-    "lowlight": "^3.3.0"
+    "lowlight": "^3.3.0",
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=48.0.5",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

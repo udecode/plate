@@ -1,11 +1,11 @@
-import { BaseParagraphPlugin } from '@udecode/plate';
 import {
   BaseBlockquotePlugin,
   BaseH1Plugin,
   BaseH2Plugin,
   BaseH3Plugin,
   BaseHorizontalRulePlugin,
-} from '@udecode/plate-basic-nodes';
+} from '@platejs/basic-nodes';
+import { BaseParagraphPlugin } from 'platejs';
 
 import { BlockquoteElementStatic } from '@/registry/ui/blockquote-node-static';
 import {

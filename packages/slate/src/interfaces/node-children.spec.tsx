@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate-core/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
-import { jsx } from '@udecode/plate-test-utils';
+import { createPlateEditor } from '@platejs/core/react';
+import { LinkPlugin } from '@platejs/link/react';
+import { jsx } from '@platejs/test-utils';
 
 import { createEditor } from '../create-editor';
 import { NodeApi } from './node';

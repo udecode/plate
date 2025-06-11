@@ -1,4 +1,4 @@
-import { createSlateEditor, isType } from '@udecode/plate-core';
+import { createSlateEditor, isType } from '@platejs/core';
 
 it('should not throw', () => {
   const editor = createSlateEditor();

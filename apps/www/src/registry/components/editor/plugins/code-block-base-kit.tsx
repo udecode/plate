@@ -2,7 +2,7 @@ import {
   BaseCodeBlockPlugin,
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
-} from '@udecode/plate-code-block';
+} from '@platejs/code-block';
 import { all, createLowlight } from 'lowlight';
 
 import {

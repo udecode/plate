@@ -1,4 +1,4 @@
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 export const playgroundValue: Value = [
   // Intro

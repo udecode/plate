@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
-import { jsxt } from '@udecode/plate-test-utils';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { jsxt } from '@platejs/test-utils';
 
 import { createPlateTestEditor } from '../__tests__/createPlateTestEditor';
 

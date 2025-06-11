@@ -1,4 +1,4 @@
-import { type Editor, type Value, createEditor } from '@udecode/slate';
+import { type Editor, type Value, createEditor } from '@platejs/slate';
 
 import type { AnyPlatePlugin } from '../plugin';
 import type { EventEditorPlugin, SlateReactExtensionPlugin } from '../plugins';

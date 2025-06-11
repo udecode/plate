@@ -21,8 +21,8 @@ description: 如何将 Plate 编辑器与 react-hook-form 集成。
 
 ```tsx
 import { useForm } from 'react-hook-form';
-import type { Value } from '@udecode/plate';
-import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+import type { Value } from 'platejs';
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 
 type FormData = {
   content: Value;
@@ -90,7 +90,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 
 type FormValues = {
   content: any;
@@ -185,7 +185,7 @@ editor.tf.setValue(formStateValue);
 
 ```tsx
 import { useForm } from 'react-hook-form';
-import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 
 function MyForm() {
   const form = useForm({
@@ -267,8 +267,8 @@ function MyForm() {
 "use client";
 
 import * as React from "react";
-import type { Value } from "@udecode/plate";
-import { Plate, PlateContent, usePlateEditor } from "@udecode/plate/react";
+import type { Value } from "platejs";
+import { Plate, PlateContent, usePlateEditor } from "platejs/react";
 
 /**
  * 一个可重用的编辑器组件，其行为类似于标准的 <Textarea>，

@@ -1,5 +1,5 @@
-import { isUrl } from '@udecode/plate';
 import videoParser from 'js-video-url-parser';
+import { isUrl } from 'platejs';
 
 import type { EmbedUrlData } from '../media';
 

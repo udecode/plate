@@ -1,7 +1,7 @@
 'use client';
 
-import { KEYS } from '@udecode/plate';
-import { TabbablePlugin } from '@udecode/plate-tabbable/react';
+import { TabbablePlugin } from '@platejs/tabbable/react';
+import { KEYS } from 'platejs';
 
 export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
   node: {

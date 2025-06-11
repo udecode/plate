@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin, KEYS } from '@udecode/plate';
+import { type SlateEditor, getEditorPlugin, KEYS } from 'platejs';
 
 import type { MentionConfig } from './BaseMentionPlugin';
 import type { TMentionItemBase } from './types';

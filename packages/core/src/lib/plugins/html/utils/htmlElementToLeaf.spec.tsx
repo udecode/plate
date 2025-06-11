@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-nodes/react';
-import { ListPlugin } from '@udecode/plate-list-classic/react';
-import { jsxt } from '@udecode/plate-test-utils';
+import { BoldPlugin, ItalicPlugin } from '@platejs/basic-nodes/react';
+import { ListPlugin } from '@platejs/list-classic/react';
+import { jsxt } from '@platejs/test-utils';
 
 import { createPlateEditor } from '../../../../react';
 import { createSlatePlugin } from '../../../plugin';

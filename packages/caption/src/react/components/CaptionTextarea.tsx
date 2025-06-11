@@ -8,14 +8,14 @@ import {
   isHotkey,
   NodeApi,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
   usePluginOption,
   useReadOnly,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { CaptionPlugin } from '../CaptionPlugin';
 import { TextareaAutosize } from './TextareaAutosize';

@@ -33,14 +33,14 @@ Unlike traditional input-based multi-selects, this component is built on top of 
 ### Installation
 
 ```bash
-npm install @udecode/plate-tag
+npm install @platejs/tag
 ```
 
 ### Add Plugins
 
 ```tsx
-import { MultiSelectPlugin } from '@udecode/plate-tag/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { MultiSelectPlugin } from '@platejs/tag/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -53,8 +53,8 @@ const editor = createPlateEditor({
 ### Configure Plugins
 
 ```tsx
-import { MultiSelectPlugin } from '@udecode/plate-tag/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { MultiSelectPlugin } from '@platejs/tag/react';
+import { createPlateEditor } from 'platejs/react';
 import { TagElement } from '@/components/ui/tag-node';
 
 const editor = createPlateEditor({
@@ -75,7 +75,7 @@ const editor = createPlateEditor({
 ### Basic Example
 
 ```tsx
-import { MultiSelectPlugin } from '@udecode/plate-tag/react';
+import { MultiSelectPlugin } from '@platejs/tag/react';
 import { TagElement } from '@/components/ui/tag-node';
 import {
   SelectEditor,

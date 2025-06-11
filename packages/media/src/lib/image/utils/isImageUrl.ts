@@ -1,4 +1,4 @@
-import { isUrl } from '@udecode/plate';
+import { isUrl } from 'platejs';
 
 const imageExtensions = new Set([
   '3dv',

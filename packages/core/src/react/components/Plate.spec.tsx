@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Value } from '@udecode/slate';
+import type { Value } from '@platejs/slate';
 
 import { render } from '@testing-library/react';
 import { renderHook } from '@testing-library/react';

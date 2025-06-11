@@ -1,11 +1,7 @@
 /** @jsx jsxt */
 
-import {
-  type Descendant,
-  type SlateEditor,
-  createSlateEditor,
-} from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { jsxt } from '@platejs/test-utils';
+import { type Descendant, type SlateEditor, createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
 

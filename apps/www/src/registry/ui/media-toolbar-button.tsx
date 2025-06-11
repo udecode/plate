@@ -4,9 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { isUrl, KEYS } from '@udecode/plate';
-import { PlaceholderPlugin } from '@udecode/plate-media/react';
-import { useEditorRef } from '@udecode/plate/react';
+import { PlaceholderPlugin } from '@platejs/media/react';
 import {
   AudioLinesIcon,
   FileUpIcon,
@@ -14,6 +12,8 @@ import {
   ImageIcon,
   LinkIcon,
 } from 'lucide-react';
+import { isUrl, KEYS } from 'platejs';
+import { useEditorRef } from 'platejs/react';
 import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
 

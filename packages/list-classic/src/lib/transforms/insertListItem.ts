@@ -1,4 +1,4 @@
-import { type SlateEditor, type TElement, KEYS, PathApi } from '@udecode/plate';
+import { type SlateEditor, type TElement, KEYS, PathApi } from 'platejs';
 
 /** Insert list item if selection in li>p. TODO: test */
 export const insertListItem = (editor: SlateEditor): boolean => {

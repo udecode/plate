@@ -1,4 +1,4 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
+import type { InsertNodesOptions, SlateEditor } from 'platejs';
 
 import { BaseImagePlugin } from '../BaseImagePlugin';
 import { insertImage } from './insertImage';

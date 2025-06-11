@@ -1,7 +1,7 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import { KEYS } from '@udecode/plate';
-import { deserializeInlineMd } from '@udecode/plate-markdown';
+import { deserializeInlineMd } from '@platejs/markdown';
+import { KEYS } from 'platejs';
 
 import type { CopilotPluginConfig } from '../CopilotPlugin';
 

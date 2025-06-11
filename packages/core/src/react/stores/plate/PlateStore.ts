@@ -1,4 +1,4 @@
-import type { NodeEntry, TRange, TSelection, ValueOf } from '@udecode/slate';
+import type { NodeEntry, TRange, TSelection, ValueOf } from '@platejs/slate';
 import type { Nullable } from '@udecode/utils';
 
 import type { EditableProps } from '../../../lib';

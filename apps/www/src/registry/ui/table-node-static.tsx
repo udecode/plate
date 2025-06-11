@@ -4,10 +4,10 @@ import type {
   SlateElementProps,
   TTableCellElement,
   TTableElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { SlateElement } from '@udecode/plate';
-import { BaseTablePlugin } from '@udecode/plate-table';
+import { BaseTablePlugin } from '@platejs/table';
+import { SlateElement } from 'platejs';
 
 import { cn } from '@/lib/utils';
 

@@ -10,7 +10,7 @@ description: 学习如何配置和自定义 Plate 编辑器。
 要创建一个基本的 Plate 编辑器，你可以使用 `createPlateEditor` 函数，或者在 React 组件中使用 `usePlateEditor`：
 
 ```ts
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [HeadingPlugin],
@@ -202,8 +202,8 @@ editor.tf.insert.tableRow()
 对于更复杂的编辑器，你可以在单独的文件中定义类型（例如 `plate-types.ts`）：
 
 ```ts
-import type { TElement, TText } from '@udecode/plate';
-import type { TPlateEditor } from '@udecode/plate/react';
+import type { TElement, TText } from 'platejs';
+import type { TPlateEditor } from 'platejs/react';
 
 // 定义自定义元素类型
 interface ParagraphElement extends TElement {

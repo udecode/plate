@@ -1,5 +1,5 @@
-import type { TElement } from '@udecode/plate';
-import type { PlateEditor } from '@udecode/plate/react';
+import type { TElement } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 export const getListNode = (editor: PlateEditor, node: TElement): TElement => {
   if (node.listStyleType && node.listStart) {

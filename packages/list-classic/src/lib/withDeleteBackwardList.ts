@@ -5,7 +5,7 @@ import {
   deleteMerge,
   KEYS,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { ListConfig } from './BaseListPlugin';
 

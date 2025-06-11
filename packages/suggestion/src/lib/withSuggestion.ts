@@ -4,7 +4,7 @@ import {
   KEYS,
   nanoid,
   TextApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import {
   type BaseSuggestionConfig,

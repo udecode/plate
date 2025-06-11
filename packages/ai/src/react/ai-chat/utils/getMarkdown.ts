@@ -1,8 +1,8 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import { type TElement, KEYS } from '@udecode/plate';
-import { serializeMd } from '@udecode/plate-markdown';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { serializeMd } from '@platejs/markdown';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { type TElement, KEYS } from 'platejs';
 
 // Internal
 export const getMarkdown = (

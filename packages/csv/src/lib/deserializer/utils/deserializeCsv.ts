@@ -1,7 +1,7 @@
-import type { Descendant, SlateEditor, TElement, TNode } from '@udecode/plate';
+import type { Descendant, SlateEditor, TElement, TNode } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
 import papaparse from 'papaparse';
+import { KEYS } from 'platejs';
 
 import { type CsvParseOptions, CsvPlugin } from '../../CsvPlugin';
 

@@ -1,6 +1,6 @@
-import type { KeyboardHandler } from '@udecode/plate/react';
+import type { KeyboardHandler } from 'platejs/react';
 
-import { Hotkeys } from '@udecode/plate';
+import { Hotkeys } from 'platejs';
 
 import {
   type TableConfig,

@@ -2,15 +2,11 @@
 
 import * as React from 'react';
 
-import type { TSuggestionData, TSuggestionText } from '@udecode/plate';
-import type { PlateLeafProps, RenderNodeWrapper } from '@udecode/plate/react';
+import type { TSuggestionData, TSuggestionText } from 'platejs';
+import type { PlateLeafProps, RenderNodeWrapper } from 'platejs/react';
 
-import {
-  PlateLeaf,
-  useEditorPlugin,
-  usePluginOption,
-} from '@udecode/plate/react';
 import { CornerDownLeftIcon } from 'lucide-react';
+import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 import {

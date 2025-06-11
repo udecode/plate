@@ -1,4 +1,4 @@
-import type { NodeEntry, TRange } from '@udecode/slate';
+import type { NodeEntry, TRange } from '@platejs/slate';
 
 import type { SlateEditor } from '../../editor';
 import type { EditableProps } from '../../types/EditableProps';

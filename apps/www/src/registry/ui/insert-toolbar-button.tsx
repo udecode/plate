@@ -4,8 +4,6 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { KEYS } from '@udecode/plate';
-import { type PlateEditor, useEditorRef } from '@udecode/plate/react';
 import {
   CalendarIcon,
   ChevronRightIcon,
@@ -28,6 +26,8 @@ import {
   TableIcon,
   TableOfContentsIcon,
 } from 'lucide-react';
+import { KEYS } from 'platejs';
+import { type PlateEditor, useEditorRef } from 'platejs/react';
 
 import {
   DropdownMenu,

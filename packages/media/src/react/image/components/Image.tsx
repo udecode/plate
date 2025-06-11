@@ -1,10 +1,10 @@
-import type { TMediaElement } from '@udecode/plate';
+import type { TMediaElement } from 'platejs';
 
 import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { openImagePreview } from '../openImagePreview';
 

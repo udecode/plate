@@ -1,4 +1,4 @@
-import { useElement, usePluginOptions } from '@udecode/plate/react';
+import { useElement, usePluginOptions } from 'platejs/react';
 
 import type { DropLineDirection } from '../types';
 

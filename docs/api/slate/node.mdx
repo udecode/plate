@@ -1,9 +1,9 @@
 ---
 title: Node
-description: API reference for nodes in Slate.
+description: API reference for nodes in Plate.
 ---
 
-Nodes are the building blocks of Slate documents. It can either be the Editor root node (highest), an Element node, or a Text node (lowest). This API provides utilities for interacting with nodes, including traversing, querying, and extracting data.
+Nodes are the building blocks of Plate documents. It can either be the Editor root node (highest), an Element node, or a Text node (lowest). This API provides utilities for interacting with nodes, including traversing, querying, and extracting data.
 
 ```ts
 type TNode = Editor | TElement | TText;
@@ -636,7 +636,7 @@ type TNode = Editor | TElement | TText;
 
 ### `NodeEntry`
 
-`NodeEntry` objects are returned when iterating over the nodes in a Slate document tree. They consist of an array with two elements: the `TNode` and its `Path` relative to the root node in the document.
+`NodeEntry` objects are returned when iterating over the nodes in a Plate document tree. They consist of an array with two elements: the `TNode` and its `Path` relative to the root node in the document.
 
 <API name="NodeEntry">
 <APIAttributes>

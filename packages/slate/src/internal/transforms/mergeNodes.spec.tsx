@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createSlateEditor, createSlatePlugin } from '@udecode/plate-core';
-import { jsxt } from '@udecode/plate-test-utils';
+import { createSlateEditor, createSlatePlugin } from '@platejs/core';
+import { jsxt } from '@platejs/test-utils';
 
 jsxt;
 

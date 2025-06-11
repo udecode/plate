@@ -2,11 +2,16 @@
 
 import * as React from 'react';
 
-import type {
-  PlateElementProps,
-  RenderNodeWrapper,
-} from '@udecode/plate/react';
+import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
 
+import { getDraftCommentKey } from '@platejs/comment';
+import { CommentPlugin } from '@platejs/comment/react';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import {
+  MessageSquareTextIcon,
+  MessagesSquareIcon,
+  PencilLineIcon,
+} from 'lucide-react';
 import {
   type AnyPluginConfig,
   type NodeEntry,
@@ -16,20 +21,8 @@ import {
   type TSuggestionText,
   PathApi,
   TextApi,
-} from '@udecode/plate';
-import { getDraftCommentKey } from '@udecode/plate-comments';
-import { CommentPlugin } from '@udecode/plate-comments/react';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import {
-  useEditorPlugin,
-  useEditorRef,
-  usePluginOption,
-} from '@udecode/plate/react';
-import {
-  MessageSquareTextIcon,
-  MessagesSquareIcon,
-  PencilLineIcon,
-} from 'lucide-react';
+} from 'platejs';
+import { useEditorPlugin, useEditorRef, usePluginOption } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {

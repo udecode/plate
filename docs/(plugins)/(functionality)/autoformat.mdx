@@ -40,7 +40,7 @@ The fastest way to add autoformatting is with the `AutoformatKit`, which include
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { AutoformatKit } from '@/components/editor/plugins/autoformat-kit';
 
 const editor = createPlateEditor({
@@ -60,14 +60,14 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-autoformat
+npm install @platejs/autoformat
 ```
 
 ### Add Plugin
 
 ```tsx
-import { AutoformatPlugin } from '@udecode/plate-autoformat';
-import { createPlateEditor } from '@udecode/plate/react';
+import { AutoformatPlugin } from '@platejs/autoformat';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -82,7 +82,7 @@ const editor = createPlateEditor({
 Configure autoformat with custom rules:
 
 ```tsx
-import { AutoformatPlugin } from '@udecode/plate-autoformat';
+import { AutoformatPlugin } from '@platejs/autoformat';
 
 AutoformatPlugin.configure({
   options: {
@@ -120,14 +120,14 @@ AutoformatPlugin.configure({
 Import predefined rule sets for comprehensive autoformatting:
 
 ```tsx
-import { AutoformatPlugin } from '@udecode/plate-autoformat';
+import { AutoformatPlugin } from '@platejs/autoformat';
 import {
   autoformatArrow,
   autoformatLegal,
   autoformatMath,
   autoformatPunctuation,
   autoformatSmartQuotes,
-} from '@udecode/plate-autoformat';
+} from '@platejs/autoformat';
 
 AutoformatPlugin.configure({
   options: {
@@ -166,8 +166,8 @@ AutoformatPlugin.configure({
 For more complex matching patterns, you can use regular expressions:
 
 ```tsx
-import { AutoformatPlugin } from '@udecode/plate-autoformat';
-import { toggleList } from '@udecode/plate-list';
+import { AutoformatPlugin } from '@platejs/autoformat';
+import { toggleList } from '@platejs/list';
 
 AutoformatPlugin.configure({
   options: {

@@ -7,7 +7,7 @@ import {
   type TTableRowElement,
   KEYS,
   RangeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { TableConfig } from './BaseTablePlugin';
 

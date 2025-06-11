@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import type { TLocation } from '@udecode/plate';
+import type { TLocation } from 'platejs';
 
 import type { EditorHandle } from './types';
 

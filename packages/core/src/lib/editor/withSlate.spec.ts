@@ -1,6 +1,6 @@
 /* eslint-disable jest/no-conditional-expect */
-import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
-import { type Value, createEditor } from '@udecode/slate';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { type Value, createEditor } from '@platejs/slate';
 
 import { ParagraphPlugin, ReactPlugin } from '../../react';
 import { withPlate } from '../../react/editor/withPlate';

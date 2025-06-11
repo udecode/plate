@@ -36,7 +36,7 @@ packages
 | `apps/www/src/app`        | The Next.js application for the website. |
 | `apps/www/src/components` | The React components for the website.    |
 | `apps/www/src/registry`   | The registry for the components.         |
-| `packages/core`           | The `@udecode/plate-core` package.       |
+| `packages/core`           | The `@platejs/core` package.             |
 
 ## Development
 
@@ -70,10 +70,10 @@ You can use the `turbo --filter=[WORKSPACE]` command to start the development pr
 turbo --filter=www dev
 ```
 
-2. To build the `@udecode/plate-core` package:
+2. To build the `@platejs/core` package:
 
 ```
-turbo --filter=@udecode/plate-core build
+turbo --filter=@platejs/core build
 ```
 
 ## Documentation

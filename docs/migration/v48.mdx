@@ -6,9 +6,9 @@ title: Major Releases
   This page covers **major breaking changes** for Plate up to v48. For the latest migration guide, see [Latest Migration](/docs/migration). For patch and minor changes, refer to the individual package `CHANGELOG.md` files or visit the [GitHub Releases](https://github.com/udecode/plate/releases) page.
 </Callout>
 
-# @udecode/plate-core@48.0.0
+# 48.0.0
 
-### Major Changes
+## @udecode/plate-core@48.0.0
 
 - [#4281](https://github.com/udecode/plate/pull/4281) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -67,14 +67,10 @@ title: Major Releases
 
 ## @udecode/plate-utils@48.0.0
 
-### Major Changes
-
 - [#4281](https://github.com/udecode/plate/pull/4281) by [@zbeyens](https://github.com/zbeyens) –
   - Moved `PlateElement`, `PlateLeaf`, `PlateText` to `@udecode/plate-core`. No migration needed if you're importing from `@udecode/plate`.
 
 ## @udecode/plate-yjs@48.0.0
-
-### Major Changes
 
 - [#4225](https://github.com/udecode/plate/pull/4225) by [@bbyiringiro](<https://github.com/[bbyiringiro](https://github.com/bbyiringiro)>) –
 
@@ -173,9 +169,7 @@ title: Major Releases
 
 # 47.0.0
 
-# @udecode/plate-markdown
-
-### Major Changes
+## @udecode/plate-markdown
 
 - [#4174](https://github.com/udecode/plate/pull/4174) by [@felixfeng33](https://github.com/felixfeng33) – #### New Features
 
@@ -294,8 +288,6 @@ title: Major Releases
 
 ## @udecode/plate-code-block@46.0.0
 
-### Major Changes
-
 - [#4122](https://github.com/udecode/plate/pull/4122) by [@zbeyens](https://github.com/zbeyens) – Migrated from `prismjs` to `highlight.js` + `lowlight` for syntax highlighting.
 
   - Fix highlighting multi-lines tokens. Before, line tokens were computed line by line. Now, it's computed once for the whole block.
@@ -323,8 +315,6 @@ title: Major Releases
 # 45.0.0
 
 ## @udecode/plate-comments@45.0.0
-
-### Major Changes
 
 - [#4064](https://github.com/udecode/plate/pull/4064) by [@felixfeng33](https://github.com/felixfeng33) – This is a rewrite of the comments plugin removing UI logic (headless).
 
@@ -387,8 +377,6 @@ title: Major Releases
 
 ## @udecode/plate-suggestion@45.0.0
 
-### Major Changes
-
 - [#4064](https://github.com/udecode/plate/pull/4064) by [@felixfeng33](https://github.com/felixfeng33) – Note: This plugin is currently in an experimental phase and breaking changes may be introduced without a major version bump.
 
   - Add Suggestion UI
@@ -399,8 +387,6 @@ title: Major Releases
 # 44.0.1
 
 ## @udecode/plate-core@44.0.0
-
-### Major Changes
 
 - [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -443,13 +429,9 @@ title: Major Releases
 
 ## @udecode/plate-comments@44.0.0
 
-### Major Changes
-
 - [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `jotai-x@2`. [Migration](https://github.com/udecode/jotai-x/blob/main/packages/jotai-x/CHANGELOG.md#211) needed only if you use `useCommentStore`
 
 ## @udecode/plate-media@44.0.0
-
-### Major Changes
 
 - [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `zustand-x@2`. [Migration](https://github.com/udecode/zustand-x/blob/main/packages/zustand-x/CHANGELOG.md#600) needed only if you use one of these stores:
 
@@ -460,13 +442,9 @@ title: Major Releases
 
 ## @udecode/plate-resizable@44.0.0
 
-### Major Changes
-
 - [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Upgrade to `jotai-x@2`. [Migration](https://github.com/udecode/jotai-x/blob/main/packages/jotai-x/CHANGELOG.md#211) needed only if you use `useResizableStore`
 
 ## @udecode/plate-table@44.0.0
-
-### Major Changes
 
 - [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Move store state `selectedCells` and `selectedTables` from `useTableStore` to `TablePlugin` options store. This fixes the issue to get access to those state outside a table element (e.g. the toolbar)
 
@@ -480,13 +458,9 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
 ## @udecode/plate-ai@42.0.0
 
-### Major Changes
-
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – AI plugins are now experimental: pin the dependency to avoid breaking changes. No breaking changes for this release.
 
 ## @udecode/plate-common@42.0.0
-
-### Major Changes
 
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – This package is now deprecated and will be renamed to `@udecode/plate`. Migration:
 
@@ -494,8 +468,6 @@ No breaking changes. Upgraded all dependencies to the latest version.
   - Replace all `'@udecode/plate-common'` with `'@udecode/plate'`,
 
 ## @udecode/plate-core@42.0.0
-
-### Major Changes
 
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -608,8 +580,6 @@ No breaking changes. Upgraded all dependencies to the latest version.
   - Rename `TEditableProps` to `EditableProps`
 
 ## @udecode/plate@42.0.0
-
-### Major Changes
 
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – **This package is now the new common package**, so all plugin packages are being removed. **Migration**:
 
@@ -733,20 +703,14 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
 ## @udecode/plate-utils@42.0.0
 
-### Major Changes
-
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
   - Removed unused `moveSelectionByOffset`, `getLastBlockDOMNode`, `useLastBlock`, `useLastBlockDOMNode`
 
 ## @udecode/plate-selection@42.0.0
 
-### Major Changes
-
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – Remove first parameter of editor.api.blockSelection.duplicate
 
 ## @udecode/slate@42.0.0
-
-### Major Changes
 
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -1064,19 +1028,13 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
 ## @udecode/slate-utils@42.0.0
 
-### Major Changes
-
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – This package is now deprecated. Use `@udecode/slate` or `@udecode/plate` instead.
 
 ## @udecode/slate-react@42.0.0
 
-### Major Changes
-
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – This package is now deprecated. Use `@udecode/slate` or `@udecode/plate` instead.
 
 ## @udecode/plate-table@42.0.0
-
-### Major Changes
 
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) – **Major performance improvement**: all table cells were re-rendering when a single cell changed. This is now fixed.
 
@@ -1106,8 +1064,6 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
 ## @udecode/slate-react@41.0.0
 
-### Major Changes
-
 - [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Rename `findNodePath` to `findPath` since the addition of `findNodePath` in the headless lib.
 
   We recommend using `findPath` mostly when subscribing to its value (e.g. in a React component) as it has O(path.length) complexity, compared to O(n) for the traversal-based `findNodePath`. This optimization is particularly important in:
@@ -1118,8 +1074,6 @@ No breaking changes. Upgraded all dependencies to the latest version.
   where n is the number of nodes in the editor.
 
 ## @udecode/plate-dnd@41.0.2
-
-### Major Changes
 
 - [#3861](https://github.com/udecode/plate/pull/3861) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -1138,15 +1092,11 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
 ## @udecode/plate-indent-list@41.0.0
 
-### Major Changes
-
 - [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) –
   - Move `render.belowNodes` from `IndentListPlugin` to `BaseIndentListPlugin`. Props type for `listStyleTypes.liComponent` and `listStyleTypes.markerComponent` options is now `SlateRenderElementProps` instead of `PlateRenderElementProps`
   - Move `someIndentList`, `someIndentTodo` from `@udecode/plate-indent-list/react` to `@udecode/plate-indent-list`
 
 ## @udecode/plate-layout@41.0.2
-
-### Major Changes
 
 - [#3878](https://github.com/udecode/plate/pull/3878) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -1154,8 +1104,6 @@ No breaking changes. Upgraded all dependencies to the latest version.
   - Remove `setColumnWidth`, `useColumnState`. Use `setColumns` instead
 
 ## @udecode/plate-table@41.0.0
-
-### Major Changes
 
 - [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Move from `@udecode/plate-table/react` to `@udecode/plate-table`:
 
@@ -1185,29 +1133,21 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
 ## @udecode/slate-react@40.0.0
 
-### Major Changes
-
 - [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
   - Add `slate-dom` as a peer dependency.
   - Update `slate-react` peer dependency to `>=0.111.0`
 
 ## @udecode/plate-ai@40.0.0
 
-### Major Changes
-
 - [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
   - Remove `scrollContainerSelector` option in favor of `useEditorContainerRef`
 
 ## @udecode/plate-heading@40.0.0
 
-### Major Changes
-
 - [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
   - Remove `scrollContainerSelector` option in favor of `useEditorContainerRef`
 
 ## @udecode/plate-layout@40.0.0
-
-### Major Changes
 
 - [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
   - Remove `toggleColumns` in favor of `toggleColumnGroup`
@@ -1216,8 +1156,6 @@ No breaking changes. Upgraded all dependencies to the latest version.
 # 39.0.0
 
 ## @udecode/plate-dnd@39.0.0
-
-### Major Changes
 
 - [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) – The following changes were made to improve performance:
 
@@ -1228,8 +1166,6 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
 ## @udecode/plate-selection@39.0.0
 
-### Major Changes
-
 - [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) – The following changes were made to improve performance:
 
   - Removed `useHooksBlockSelection` in favor of `BlockSelectionAfterEditable`
@@ -1239,8 +1175,6 @@ No breaking changes. Upgraded all dependencies to the latest version.
 # 38.0.1
 
 ## @udecode/plate-core@38.0.1
-
-### Major Changes
 
 - [#3506](https://github.com/udecode/plate/pull/3506) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -1293,22 +1227,16 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-alignment@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createAlignPlugin` -> `AlignPlugin`
   - `setAlign`: remove `key` option
 
 ## @udecode/plate-autoformat@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createAutoformatPlugin` -> `AutoformatPlugin`
 
 ## @udecode/plate-basic-elements@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createBasicElementPlugins` -> `BasicElementsPlugin`
@@ -1318,8 +1246,6 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   - Move paragraph plugin to `@udecode/plate-core`
 
 ## @udecode/plate-basic-marks@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createBasicMarksPlugins` -> `BasicMarksPlugin`
@@ -1334,14 +1260,10 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-block-quote@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createBlockquotePlugin` -> `BlockquotePlugin`
 
 ## @udecode/plate-break@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createSoftBreakPlugin` -> `SoftBreakPlugin`
@@ -1349,8 +1271,6 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   - `createSingleLinePlugin` -> `SingleLinePlugin`
 
 ## @udecode/plate-caption@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createCaptionPlugin` -> `CaptionPlugin`
@@ -1364,14 +1284,10 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-cloud@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createCloudPlugin` -> `CloudPlugin`
 
 ## @udecode/plate-code-block@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createCodeBlockPlugin` -> `CodeBlockPlugin`
@@ -1381,14 +1297,10 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-combobox@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - Split build into `@udecode/plate-combobox` and `@udecode/plate-combobox/react`.
 
 ## @udecode/plate-comments@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createCommentsPlugin` -> `CommentsPlugin`
@@ -1411,15 +1323,11 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-common@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - Split build into `@udecode/plate-common` and `@udecode/plate-common/react`.
   - NEW `/react` exports `@udecode/react-hotkeys`
 
 ## @udecode/plate-core@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – **Plugin System**:
 
@@ -1877,35 +1785,25 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-csv@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createDeserializeCsvPlugin` -> `CsvPlugin`
 
 ## @udecode/plate-cursor@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createCursorPlugin` -> `CursorPlugin`
 
 ## @udecode/plate-date@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createDatePlugin` -> `DatePlugin`
 
 ## @udecode/plate-diff@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createDiffPlugin` -> `DiffPlugin`
 
 ## @udecode/plate-dnd@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createDndPlugin` -> `DndPlugin`
@@ -1914,14 +1812,10 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-docx@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createDeserializeDocxPlugin` -> `DocxPlugin`
 
 ## @udecode/plate-emoji@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createEmojiPlugin` -> `EmojiPlugin`
@@ -1929,29 +1823,21 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-excalidraw@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createExcalidrawPlugin` -> `ExcalidrawPlugin`
   - `insertExcalidraw` remove `key` option
 
 ## @udecode/plate-find-replace@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createFindReplacePlugin` -> `FindReplacePlugin`
 
 ## @udecode/plate-floating@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - Remove unused generics
 
 ## @udecode/plate-font@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createFontBackgroundColorPlugin` -> `FontBackgroundColorPlugin`
@@ -1962,8 +1848,6 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-heading@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createHeadingPlugin` -> `HeadingPlugin`
   - Replace `ELEMENT_H1` with `HEADING_KEYS.H1`
@@ -1971,21 +1855,15 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-highlight@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createHighlightPlugin` -> `HighlightPlugin`
 
 ## @udecode/plate-horizontal-rule@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createHorizontalRulePlugin` -> `HorizontalRulePlugin`
 
 ## @udecode/plate-html@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createDeserializeHtmlPlugin` -> `HtmlPlugin`
@@ -1994,14 +1872,10 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-indent@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createIndentPlugin` -> `IndentPlugin`
 
 ## @udecode/plate-indent-list@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createIndentListPlugin` -> `IndentListPlugin`
@@ -2013,21 +1887,15 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-juice@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createJuicePlugin` -> `JuicePlugin`
 
 ## @udecode/plate-kbd@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createKbdPlugin` -> `KbdPlugin`
 
 ## @udecode/plate-layout@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createColumnPlugin` -> `ColumnPlugin`
@@ -2035,22 +1903,16 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-line-height@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createLineHeightPlugin` -> `LineHeightPlugin`
 
 ## @udecode/plate-link@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createLinkPlugin` -> `LinkPlugin`
   - Move `floatingLinkStore` to `LinkPlugin`
 
 ## @udecode/plate-list@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createListPlugin` -> `ListPlugin`
@@ -2070,21 +1932,15 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-markdown@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createDeserializeMdPlugin` -> `MarkdownPlugin`
 
 ## @udecode/plate-math@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createMathPlugin` -> `MathPlugin`
 
 ## @udecode/plate-media@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createMediaPlugin` -> `MediaPlugin`
@@ -2093,8 +1949,6 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-mention@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createMentionPlugin` -> `MentionPlugin`
   - NEW `MentionInputPlugin`
@@ -2102,21 +1956,15 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-node-id@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createNodeIdPlugin` -> `NodeIdPlugin`
 
 ## @udecode/plate-normalizers@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createNormalizersPlugin` -> `NormalizersPlugin`
 
 ## @udecode/plate@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - NEW `@udecode/plate-layout`
@@ -2127,43 +1975,31 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-utils@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - Remove `onKeyDownToggleElement`, use shortcuts instead.
   - Remove `onKeyDownToggleMark`, use shortcuts instead.
 
 ## @udecode/plate-playwright@37.0.0
 
-### Major Changes
-
 - [#3473](https://github.com/udecode/plate/pull/3473) by [@12joan](https://github.com/12joan) – New package for integrating Plate with Playwright tests
 
 ## @udecode/plate-reset-node@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createResetNodePlugin` -> `ResetNodePlugin`
 
 ## @udecode/plate-resizable@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - Peer dependencies updated
 
 ## @udecode/plate-select@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createSelectOnBackspacePlugin` -> `SelectOnBackspacePlugin`
   - `createDeletePlugin` -> `DeletePlugin`
 
 ## @udecode/plate-selection@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - Rename `createSelectionPlugin` to `BlockSelectionPlugin`
@@ -2186,15 +2022,11 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-slash-command@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createSlashPlugin` -> `SlashPlugin`
   - NEW `SlashInputPlugin`
 
 ## @udecode/slate@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – `createTEditor`:
 
@@ -2227,8 +2059,6 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/slate-react@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – Types:
 
   - Remove `TReactEditor` type, as it's now integrated into the main `TEditor` type in `@udecode/slate`. Use `TEditor` instead.
@@ -2237,15 +2067,11 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/slate-utils@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – Types:
 
   - Replace `V extends Value` with `E extends TEditor` for improved type inference
 
 ## @udecode/plate-suggestion@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createSuggestionPlugin` -> `SuggestionPlugin`
@@ -2268,15 +2094,11 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-tabbable@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createTabbablePlugin` -> `TabbablePlugin`
   - `TabbablePlugin` option `isTabbable`: remove first `editor` parameter
 
 ## @udecode/plate-table@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createTablePlugin` -> `TablePlugin`
@@ -2288,8 +2110,6 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-toggle@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createTogglePlugin` -> `TogglePlugin`
   - Move `toggleControllerStore` to `TogglePlugin`
@@ -2299,14 +2119,10 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-trailing-block@37.0.0
 
-### Major Changes
-
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createTrailingBlockPlugin` -> `TrailingBlockPlugin`
 
 ## @udecode/plate-yjs@37.0.0
-
-### Major Changes
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createYjsPlugin` -> `YjsPlugin`
@@ -2321,8 +2137,6 @@ No breaking changes
 # 35.0.0
 
 ## @udecode/plate-code-block@35.0.0
-
-### Major Changes
 
 - [#3282](https://github.com/udecode/plate/pull/3282) by [@12joan](https://github.com/12joan) – Make the dependency on prismjs optional
 
@@ -2359,8 +2173,6 @@ No breaking changes
 
 ## @udecode/plate-serializer-md@33.0.0
 
-### Major Changes
-
 - [#3125](https://github.com/udecode/plate/pull/3125) by [@zbeyens](https://github.com/zbeyens) –
   - `serializeMd`: remove `nodes` option. `editor.children` is now serialized
 
@@ -2376,15 +2188,11 @@ None (CI release issue)
 
 ## @udecode/plate-table@30.0.0
 
-### Major Changes
-
 - [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: in v28, `TableProvider` was incorrectly shared by all tables in the editor. `TableProvider` must now be rendered as part of `TableElement`.
 
 # 29.0.0
 
 ## @udecode/plate-utils@29.0.0
-
-### Major Changes
 
 - [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
   - Moved `withProps` to `@udecode/cn`
@@ -2395,8 +2203,6 @@ None (CI release issue)
 
 ## @udecode/plate-core@28.0.0
 
-### Major Changes
-
 - [`822f6f56b`](https://github.com/udecode/plate/commit/822f6f56be526a6e26f904b9e767c0bc09f1e28b) by [@12joan](https://github.com/12joan) –
   - Remove `{ fn: ... }` workaround for jotai stores that contain functions
   - Breaking change: `usePlateSelectors`, `usePlateActions` and `usePlateStates` no longer accept generic type arguments. If custom types are required, cast the resulting values at the point of use, or use hooks like `useEditorRef` that still provide generics.
@@ -2405,15 +2211,11 @@ None (CI release issue)
 
 ## @udecode/plate-comments@27.0.0
 
-### Major Changes
-
 - [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
   - Migrate store to `jotai@2`
   - Revert the breaking changes to `@udecode/plate-comments` made in 26.0.0
 
 ## @udecode/plate-core@27.0.0
-
-### Major Changes
 
 - [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
   - Migrate store from `jotai@1` to `jotai@2`
@@ -2429,8 +2231,6 @@ None (CI release issue)
 
 ## @udecode/plate-resizable@27.0.0
 
-### Major Changes
-
 - [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
   - Migrate store to `jotai@2`
   - Resizable components must now be wrapped inside a `ResizableProvider`
@@ -2438,8 +2238,6 @@ None (CI release issue)
 # 26.0.0
 
 ## @udecode/plate-comments@26.0.0
-
-### Major Changes
 
 - [#2760](https://github.com/udecode/plate/pull/2760) by [@12joan](https://github.com/12joan) –
   - Renamed the `comments` prop on CommentsProvider to `initialComments` to reflect the fact that updating its value after the initial render has no effect
@@ -2457,8 +2255,6 @@ None (CI release issue)
 
 ## @udecode/plate-serializer-html@26.0.0
 
-### Major Changes
-
 - [#2733](https://github.com/udecode/plate/pull/2733) by [@dimaanj](https://github.com/dimaanj) –
   - [Breaking] `serializeHtml`: replaced option `slateProps` by `plateProps`.
 
@@ -2466,22 +2262,16 @@ None (CI release issue)
 
 ## @udecode/plate-core@25.0.1
 
-### Major Changes
-
 - [#2729](https://github.com/udecode/plate/pull/2729) by [@12joan](https://github.com/12joan) – **This is a breaking change meant to be part of v25, hence the patch.**
   On `deserializeHtml`, replace `stripWhitespace` with `collapseWhiteSpace`, defaulting to true. The `collapseWhiteSpace` option aims to parse white space in HTML according to the HTML specification, ensuring greater accuracy when pasting HTML from browsers.
 
 ## @udecode/plate-comments@25.0.0
-
-### Major Changes
 
 - [#2725](https://github.com/udecode/plate/pull/2725) by [@EandrewJones](https://github.com/EandrewJones) – Remove `useCommentValue`, which was redundant with the hooks applied automatically in `CommentEditTextarea.tsx`.
 
 # 24.0.0
 
 ## @udecode/plate-core@24.0.0
-
-### Major Changes
 
 - [#2629](https://github.com/udecode/plate/pull/2629) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -2520,8 +2310,6 @@ None (CI release issue)
 
 ## @udecode/plate-media@23.0.0
 
-### Major Changes
-
 - [#2537](https://github.com/udecode/plate/pull/2537) by [@haydencarlson](https://github.com/haydencarlson) – `MediaEmbedElement` is now more headless with a smaller bundle size.
   Update the following components:
 
@@ -2551,16 +2339,12 @@ None (CI release issue)
 
 ## @udecode/plate-resizable@23.0.0
 
-### Major Changes
-
 - [#2541](https://github.com/udecode/plate/pull/2541) by [@zbeyens](https://github.com/zbeyens) –
   - Package renamed to `@udecode/plate-resizable`.
   - `ResizeHandle` is now fully headless: no style is applied by default. Add your own `Resizable`, `ResizeHandle` components:
     - `npx shadcn@canary add resizable`
 
 ## @udecode/plate-table@23.0
-
-### Major Changes
 
 - Removed `TableCellElementResizable`. Use `useTableCellElementResizableState` and `useTableCellElementResizable` instead.
 
@@ -2570,8 +2354,6 @@ Headless UI.
 
 ## @udecode/plate-ui@22.0.0
 
-### Major Changes
-
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – This package is now a CLI to generate components. Install it as a dev dependency. See https://platejs.org/docs/components/cli.
 
 Migration:
@@ -2580,8 +2362,6 @@ Migration:
 - For each unresolved import not listed in the following major changes (components from `@udecode/plate-ui-x`), generate the component using the [CLI](https://platejs.org/docs/components/cli).
 
 ## @udecode/plate-comments@22.0.0
-
-### Major Changes
 
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
   - `AccountCircleIcon`
@@ -2598,8 +2378,6 @@ Migration:
 
 ## @udecode/plate-dnd@22.0.0
 
-### Major Changes
-
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
   - `Draggable`
   - `DraggableBlock`
@@ -2611,8 +2389,6 @@ Migration:
   - `DragHandle`
 
 ## @udecode/plate-link@22.0.0
-
-### Major Changes
 
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
   - `FloatingLink`
@@ -2627,14 +2403,10 @@ Migration:
 
 ## @udecode/plate-media@22.0.0
 
-### Major Changes
-
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
   - `MediaEmbed`
 
 ## @udecode/plate@22.0.0
-
-### Major Changes
 
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Plate 2.0 – Headless UI.
   Read the docs about the new UI pattern: https://platejs.org/docs/components.
@@ -2686,8 +2458,6 @@ Migration:
 
 ## @udecode/plate-utils@22.0.0
 
-### Major Changes
-
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Upgraded peer dependencies:
   - `slate-react: >=0.95.0`
     Removed:
@@ -2697,8 +2467,6 @@ Migration:
   - `createElementAs`
 
 ## @udecode/plate-table@22.0.0
-
-### Major Changes
 
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
   - `TableCellElement`
@@ -2723,15 +2491,11 @@ Migration:
 
 ## @udecode/slate@21.0.0
 
-### Major Changes
-
 - [#2369](https://github.com/udecode/plate/pull/2369) by [@zbeyens](https://github.com/zbeyens) – Support `slate@0.94.0`, `slate-react@0.94.0` and `slate-history@0.93.0` by upgrading the peer dependencies.
 
 # 20.0.0
 
 ## @udecode/plate-core@20.0.0
-
-### Major Changes
 
 - [`0077402`](https://github.com/udecode/plate/commit/00774029236d37737abdadf49b074e613e290792) by [@zbeyens](https://github.com/zbeyens) –
   - This package has been split into multiple packages for separation of concerns and decoupled versioning:
@@ -2749,15 +2513,11 @@ Migration:
 
 ## @udecode/plate-link@20.0.0
 
-### Major Changes
-
 - [#2240](https://github.com/udecode/plate/pull/2240) by [@OliverWales](https://github.com/OliverWales) –
   - Add `allowedSchemes` plugin option
     - Any URL schemes other than `http(s)`, `mailto` and `tel` must be added to `allowedSchemes`, otherwise they will not be included in links
 
 ## @udecode/plate-table@20.0.0
-
-### Major Changes
 
 - [#2251](https://github.com/udecode/plate/pull/2251) by [@zbeyens](https://github.com/zbeyens) –
   - `TablePlugin` option `disableUnsetSingleColSize` has been renamed and inverted into `enableUnsetSingleColSize`. New default is disabled. **Migration**:
@@ -2766,8 +2526,6 @@ Migration:
   - `getTableColumnIndex` second parameter type is now: `cellNode: TElement`
 
 ## @udecode/plate-ui-dnd@20.0.0
-
-### Major Changes
 
 - [#2237](https://github.com/udecode/plate/pull/2237) by [@tmorane](https://github.com/tmorane) – Unstyled logic has been moved to `@udecode/plate-dnd`
 
@@ -2802,8 +2560,6 @@ Migration:
 
 ## @udecode/plate-ui-table@20.0.0
 
-### Major Changes
-
 - [#2251](https://github.com/udecode/plate/pull/2251) by [@zbeyens](https://github.com/zbeyens) – Headless components and hooks moved to `@udecode/plate-table`, so the following components have been renamed:
   - `TableElement` -> `PlateTableElement`
     - removed table border to set it at the cell level
@@ -2821,8 +2577,6 @@ Migration:
 
 ## @udecode/plate-core@19.0.0
 
-### Major Changes
-
 - [#2097](https://github.com/udecode/plate/pull/2097) by [@zbeyens](https://github.com/zbeyens) –
   - upgrade deps, including typescript support for the new editor methods:
   ```json
@@ -2837,8 +2591,6 @@ Migration:
   ```
 
 ## @udecode/plate@19.0.0
-
-### Major Changes
 
 - [#2097](https://github.com/udecode/plate/pull/2097) by [@zbeyens](https://github.com/zbeyens) –
   - due to esm issues, dnd plugin is not part of plate package anymore. To use it, install `@udecode/plate-ui-dnd`
@@ -2864,8 +2616,6 @@ Migration:
 
 ## @udecode/plate-headless@18.0.0
 
-### Major Changes
-
 - [#1889](https://github.com/udecode/plate/pull/1889) by [@zbeyens](https://github.com/zbeyens) –
   - `@udecode/plate-selection` package moved out from `@udecode/plate` because of https://github.com/Simonwep/selection/issues/124
   - Migration:
@@ -2875,8 +2625,6 @@ Migration:
 # 17.0.0
 
 ## @udecode/plate-core@17.0.0
-
-### Major Changes
 
 - [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -2959,8 +2707,6 @@ Migration:
 
 ## @udecode/plate-code-block@17.0.0
 
-### Major Changes
-
 - [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
   - Removed these imports because of build errors:
     - `prismjs/components/prism-django`
@@ -2968,8 +2714,6 @@ Migration:
     - `prismjs/components/prism-php`
 
 ## @udecode/plate-ui@17.0.0
-
-### Major Changes
 
 - [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
   - Removed `[ELEMENT_CODE_BLOCK]: CodeBlockElement` from Plate UI. You can define it in your app.
@@ -2980,14 +2724,10 @@ Migration:
 
 ## @udecode/plate-headless@16.0.0
 
-### Major Changes
-
 - [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
   - deprecate `@udecode/plate-image` and `@udecode/plate-media-embed`, those got merged into `@udecode/plate-media`
 
 ## @udecode/plate-media@16.0.0
-
-### Major Changes
 
 - [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
   - removed:
@@ -3003,8 +2743,6 @@ Migration:
 
 ## @udecode/plate-ui-table@16.0.0
 
-### Major Changes
-
 - [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
 - `TableElementBase` props:
   - replace `onRenderContainer` by `floatingOptions` or by replacing `ELEMENT_TABLE` in the `createPlateUI` function.
@@ -3014,16 +2752,12 @@ Migration:
 
 ## @udecode/plate-ui@16.0.0
 
-### Major Changes
-
 - [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
 - deprecate `@udecode/plate-ui-popover` for `@udecode/plate-floating`
 
 # 15.0.0
 
 ## @udecode/plate-combobox@15.0.0
-
-### Major Changes
 
 - [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
   - deps:
@@ -3033,8 +2767,6 @@ Migration:
     - removed `popperOptions`, use `floatingOptions` instead
 
 ## @udecode/plate-link@15.0.0
-
-### Major Changes
 
 - [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
   - `createLinkPlugin`
@@ -3048,22 +2780,16 @@ Migration:
 
 ## @udecode/plate-table@15.0.0
 
-### Major Changes
-
 - [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
 - remove `addRow` for `insertTableRow`
 - remove `addColumn` for `insertTableColumn`
 
 ## @udecode/plate@15.0.0
 
-### Major Changes
-
 - [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
   - remove `@udecode/plate-ui-popper` dep for `@udecode/plate-floating`
 
 ## @udecode/plate-ui-button@15.0.0
-
-### Major Changes
 
 - [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
   - moved `Button` to `@udecode/plate-button`
@@ -3071,14 +2797,10 @@ Migration:
 
 ## @udecode/plate-ui-popper@15.0.0
 
-### Major Changes
-
 - [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
 - deprecated, use instead `@udecode/plate-floating`
 
 ## @udecode/plate-ui-toolbar@15.0.0
-
-### Major Changes
 
 - [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
 - remove `@udecode/plate-ui-popper` and `react-popper` deps for `@udecode/plate-floating`
@@ -3090,8 +2812,6 @@ Migration:
 
 ## @udecode/plate-core@14.0.0
 
-### Major Changes
-
 - [#1633](https://github.com/udecode/plate/pull/1633) by [@tjramage](https://github.com/tjramage) – Moved `serializeHtml` and its utils to `@udecode/plate-serializer-html` as it has a new dependency: [html-entities](https://www.npmjs.com/package/html-entities).
   - If you're using `@udecode/plate`, no migration is needed
   - Otherwise, import it from `@udecode/plate-serializer-html`
@@ -3100,15 +2820,11 @@ Migration:
 
 ## @udecode/plate-core@13.1.0
 
-### Major Changes
-
 - `Plate` children are now rendered as last children of `Slate` (previously first children). To reproduce the previous behavior, move `children` to `firstChildren`
 
 ## @udecode/plate@13.0.0
 
 ## @udecode/plate-headless@13.0.0
-
-### Major Changes
 
 - [#1585](https://github.com/udecode/plate/pull/1585) by [@zbeyens](https://github.com/zbeyens) – Removed `@udecode/plate-juice` from `@udecode/plate`. Install it if using `@udecode/plate-serializer-docx`:
   ```bash
@@ -3121,8 +2837,6 @@ Migration:
 
 ## @udecode/plate-ui-dnd@13.0.0
 
-### Major Changes
-
 - [#1585](https://github.com/udecode/plate/pull/1585) by [@zbeyens](https://github.com/zbeyens) – Moved `react-dnd react-dnd-html5-backend` deps to peer-dependencies. Install these if using `@udecode/plate-ui-dnd`:
   ```bash
   yarn install react-dnd react-dnd-html5-backend
@@ -3131,8 +2845,6 @@ Migration:
 # 12.0.0
 
 ## @udecode/plate-ui-dnd@12.0.0
-
-### Major Changes
 
 - [#1579](https://github.com/udecode/plate/pull/1579) by [@zbeyens](https://github.com/zbeyens) – renamed:
 - `useDndBlock` options:
@@ -3165,8 +2877,6 @@ Migration:
 # 11.0.0
 
 ## @udecode/plate-core@11.0.6
-
-### Major Changes
 
 - [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – Thanks @ianstormtaylor for the initial work on https://github.com/ianstormtaylor/slate/pull/4177.
 
@@ -3295,8 +3005,6 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
 # 10.0.0
 
 ## @udecode/plate-ui-toolbar@10.0.0
-
-### Major Changes
 
 - [#1377](https://github.com/udecode/plate/pull/1377) by [@zbeyens](https://github.com/zbeyens) – Before, `BalloonToolbar` could be outside `Plate`. Now, `BallonToolbar` should be a child of `Plate` to support multiple editors.
 

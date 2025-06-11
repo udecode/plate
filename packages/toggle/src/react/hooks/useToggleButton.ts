@@ -1,4 +1,4 @@
-import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
+import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { BaseTogglePlugin } from '../../lib';
 

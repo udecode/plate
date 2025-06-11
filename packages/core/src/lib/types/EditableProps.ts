@@ -1,6 +1,6 @@
 import type { JSX } from 'react';
 
-import type { DOMRange, Editor, NodeEntry, TRange } from '@udecode/slate';
+import type { DOMRange, Editor, NodeEntry, TRange } from '@platejs/slate';
 
 import type { RenderElementFn } from './RenderElementProps';
 import type { RenderLeafFn } from './RenderLeafProps';

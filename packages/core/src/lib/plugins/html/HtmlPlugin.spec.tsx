@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
-import { HeadingPlugin } from '@udecode/plate-basic-nodes/react';
-import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
-import { MediaEmbedPlugin } from '@udecode/plate-media/react';
-import { jsxt } from '@udecode/plate-test-utils';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { LinkPlugin } from '@platejs/link/react';
+import { MediaEmbedPlugin } from '@platejs/media/react';
+import { jsxt } from '@platejs/test-utils';
 
 import type { SlateEditor } from '../../editor';
 

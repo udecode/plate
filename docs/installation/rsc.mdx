@@ -6,9 +6,9 @@ description: Install and configure Plate for React Server Components
 This guide demonstrates how to use Plate in React Server Components (RSC) for tasks like static content generation or server-side data processing. Plate's core is designed to be server-safe, allowing you to work with editor content without a browser environment.
 
 <Callout type="warning" title="Key RSC Constraint">
-  When using Plate in RSC, you **must not** import from `/react` subpaths of any `@udecode/plate*` package. Always use the base imports (e.g., `@udecode/plate-basic-nodes` instead of `@udecode/plate-basic-nodes/react`).
+  When using Plate in RSC, you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `@platejs/basic-nodes` instead of `@platejs/basic-nodes/react`).
 
-  This means you cannot use `createPlateEditor` from `@udecode/plate/react`. Instead, use `createSlateEditor` from `@udecode/plate`.
+  This means you cannot use `createPlateEditor` from `platejs/react`. Instead, use `createSlateEditor` from `platejs`.
 </Callout>
 
 <Steps>
@@ -18,19 +18,19 @@ This guide demonstrates how to use Plate in React Server Components (RSC) for ta
 Install the core Plate package and any specific plugin packages you need.
 
 ```bash
-npm add @udecode/plate @udecode/plate-basic-nodes
+npm install platejs @platejs/basic-nodes
 ```
 
 ### Create an Editor Instance
 
-In an RSC environment, you use `createSlateEditor` from `@udecode/plate` to initialize an editor instance. This function doesn't rely on React hooks or client-side specific code.
+In an RSC environment, you use `createSlateEditor` from `platejs` to initialize an editor instance. This function doesn't rely on React hooks or client-side specific code.
 
 Here's an example demonstrating how to set up an editor with various plugins, similar to the [Server-Side Example](/docs/examples/server-side):
 
 ```tsx title="app/api/generate-doc/route.ts"
-import { createSlateEditor } from '@udecode/plate';
-import { AutoformatPlugin } from '@udecode/plate-autoformat';
-import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
+import { createSlateEditor } from 'platejs';
+import { AutoformatPlugin } from '@platejs/autoformat';
+import { BaseTextAlignPlugin } from '@platejs/basic-styles';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -39,8 +39,8 @@ import {
   BaseH1Plugin,
   BaseH2Plugin,
   BaseH3Plugin,
-} from '@udecode/plate-basic-nodes';
-import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
+} from '@platejs/basic-nodes';
+import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
@@ -96,7 +96,7 @@ const markdown = editor.api.markdown.serialize();
 ```
 
 <Callout type="info">
-  `createSlateEditor` creates a raw Slate editor instance. It's suitable for server-side logic, data transformation, or preparing content for static rendering. Check out the full [Server-Side Example](/docs/examples/server-side) to see it in action.
+  `createSlateEditor` creates a raw Plate editor instance. It's suitable for server-side logic, data transformation, or preparing content for static rendering. Check out the full [Server-Side Example](/docs/examples/server-side) to see it in action.
 </Callout>
 
 ### Content Manipulation

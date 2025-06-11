@@ -1,4 +1,4 @@
-import type { TElement, TText } from '@udecode/slate';
+import type { TElement, TText } from '@platejs/slate';
 import type { AnyObject } from '@udecode/utils';
 
 import clsx from 'clsx';

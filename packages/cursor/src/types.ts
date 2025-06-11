@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { TRange, UnknownObject } from '@udecode/plate';
+import type { TRange, UnknownObject } from 'platejs';
 
 export type CaretPosition = {
   height: number;

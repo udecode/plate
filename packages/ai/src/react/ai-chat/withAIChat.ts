@@ -1,6 +1,6 @@
-import type { OverrideEditor } from '@udecode/plate/react';
+import type { OverrideEditor } from 'platejs/react';
 
-import { ElementApi, KEYS } from '@udecode/plate';
+import { ElementApi, KEYS } from 'platejs';
 
 import { AIPlugin } from '../ai/AIPlugin';
 import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';

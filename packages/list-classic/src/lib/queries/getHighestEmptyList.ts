@@ -1,5 +1,5 @@
-import { type Path, type SlateEditor, PathApi } from '@udecode/plate';
-import { KEYS } from '@udecode/plate';
+import { type Path, type SlateEditor, PathApi } from 'platejs';
+import { KEYS } from 'platejs';
 
 import { getListTypes } from './getListTypes';
 

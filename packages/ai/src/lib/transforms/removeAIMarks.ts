@@ -1,4 +1,4 @@
-import type { SlateEditor, TLocation } from '@udecode/plate';
+import type { SlateEditor, TLocation } from 'platejs';
 
 export const removeAIMarks = (
   editor: SlateEditor,

@@ -1,4 +1,4 @@
-import { type Path, NodeApi } from '@udecode/slate';
+import { type Path, NodeApi } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 

@@ -1,6 +1,6 @@
-import type { TLinkElement } from '@udecode/plate';
+import type { TLinkElement } from 'platejs';
 
-import { useEditorRef } from '@udecode/plate/react';
+import { useEditorRef } from 'platejs/react';
 
 import { getLinkAttributes } from '../../lib';
 

@@ -4,7 +4,7 @@ description: Plate 内容与 Markdown 的互转。
 toc: true
 ---
 
-`@udecode/plate-markdown` 包为 Markdown 与 Plate 内容结构之间提供了强大、双向的转换能力。
+`@platejs/markdown` 包为 Markdown 与 Plate 内容结构之间提供了强大、双向的转换能力。
 
 <ComponentPreview name="markdown-to-slate-demo" />
 
@@ -24,9 +24,9 @@ toc: true
 
 </PackageInfo>
 
-## 为什么选择 `@udecode/plate-markdown`？
+## 为什么选择 `@platejs/markdown`？
 
-虽然像 `react-markdown` 这样的库可以将 Markdown 渲染为 React 元素，`@udecode/plate-markdown` 则为 Plate 生态提供了更深度的集成：
+虽然像 `react-markdown` 这样的库可以将 Markdown 渲染为 React 元素，`@platejs/markdown` 则为 Plate 生态提供了更深度的集成：
 
 -   **富文本编辑：** 支持将 Markdown 转换为 Plate 结构，启用高级编辑功能。
 -   **所见即所得体验：** 可在富文本视图中编辑内容，并序列化回 Markdown。
@@ -34,13 +34,13 @@ toc: true
 -   **可扩展性：** 利用 Plate 插件系统和 unified/remark 生态实现强大自定义。
 
 <Callout type="note">
-  如果你只需将 Markdown 显示为 HTML（无需编辑或自定义元素），`react-markdown` 已足够。若需富文本编辑器并支持 Markdown 导入/导出及自定义内容，`@udecode/plate-markdown` 是集成方案。
+  如果你只需将 Markdown 显示为 HTML（无需编辑或自定义元素），`react-markdown` 已足够。若需富文本编辑器并支持 Markdown 导入/导出及自定义内容，`@platejs/markdown` 是集成方案。
 </Callout>
 
 ## 安装
 
 ```bash
-npm install @udecode/plate @udecode/plate-markdown
+npm install platejs @platejs/markdown
 ```
 
 ## 用法
@@ -52,8 +52,8 @@ npm install @udecode/plate @udecode/plate-markdown
 推荐配置 `MarkdownPlugin`，以启用 Markdown 粘贴处理并设置默认转换 `rules`。
 
 ```tsx title="lib/plate-editor.ts"
-import { createPlateEditor } from '@udecode/plate/react';
-import { MarkdownPlugin, remarkMention, remarkMdx } from '@udecode/plate-markdown';
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin, remarkMention, remarkMdx } from '@platejs/markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
@@ -91,8 +91,8 @@ const editorWithoutPaste = createPlateEditor({
 使用 `editor.api.markdown.deserialize` 将 Markdown 字符串转换为 Slate `Value`（节点数组）。常用于编辑器初始内容。
 
 ```tsx title="components/my-editor.tsx"
-import { createPlateEditor } from '@udecode/plate/react';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin } from '@platejs/markdown';
 // ...导入其他用于渲染元素的 Plate 插件
 
 const markdownString = '# Hello, *Plate*!';
@@ -158,8 +158,8 @@ console.info(partialMarkdownOutput);
 
 **插件规则配置：**
 ```tsx title="lib/plate-editor.ts"
-import type { MdMdxJsxTextElement } from '@udecode/plate-markdown';
-import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
+import type { MdMdxJsxTextElement } from '@platejs/markdown';
+import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
 // ...其他导入
 
 MarkdownPlugin.configure({
@@ -358,14 +358,14 @@ MarkdownPlugin.configure({
 
 **插件配置：**
 ```tsx title="lib/plate-editor.ts"
-import { createPlateEditor } from '@udecode/plate/react';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin } from '@platejs/markdown';
 import remarkGfm from 'remark-gfm';
 // 导入 GFM 元素的 Plate 插件
-import { TablePlugin } from '@udecode/plate-table/react';
-import { TodoListPlugin } from '@udecode/plate-list/react'; // 任务列表插件
-import { StrikethroughPlugin } from '@udecode/plate-basic-nodes/react';
-import { LinkPlugin } from '@udecode/plate-link/react';
+import { TablePlugin } from '@platejs/table/react';
+import { TodoListPlugin } from '@platejs/list/react'; // 任务列表插件
+import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
+import { LinkPlugin } from '@platejs/link/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -411,8 +411,8 @@ const markdownOutput = editor.api.markdown.serialize();
 本例展示两种方式：自定义渲染组件（常用于 UI 变更）和自定义转换规则（高级用法，改变 Slate 结构）。
 
 **背景：**
--   `@udecode/plate-markdown` 会将 Markdown 的代码块（如 \`\`\`js ... \`\`\`）转换为 Slate 的 `code_block` 元素，子节点为 `code_line`。
--   Plate 的 `CodeBlockElement`（通常来自 `@udecode/plate-code-block/react`）负责渲染。
+-   `@platejs/markdown` 会将 Markdown 的代码块（如 \`\`\`js ... \`\`\`）转换为 Slate 的 `code_block` 元素，子节点为 `code_line`。
+-   Plate 的 `CodeBlockElement`（通常来自 `@platejs/code-block/react`）负责渲染。
 -   语法高亮通常在 `CodeBlockElement` 内用如 `lowlight`（通过 `CodeBlockPlugin`）实现。详见[代码块插件](/docs/plugins/code-block)。
 
 **方式 1：自定义渲染组件（推荐 UI 变更）**
@@ -420,9 +420,9 @@ const markdownOutput = editor.api.markdown.serialize();
 如需更改代码块外观，自定义 `code_block` 插件 key 的组件。
 
 ```tsx title="components/my-editor.tsx"
-import { createPlateEditor } from '@udecode/plate/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react'; // 主插件
-import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { createPlateEditor } from 'platejs/react';
+import { CodeBlockPlugin } from '@platejs/code-block/react'; // 主插件
+import { MarkdownPlugin } from '@platejs/markdown';
 import { MyCustomCodeBlockElement } from './my-custom-code-block'; // 你的自定义组件
 
 const editor = createPlateEditor({
@@ -442,8 +442,8 @@ const editor = createPlateEditor({
 如需根本改变代码块的 Slate JSON（如将代码存为单一字符串属性），可重写 `deserialize` 规则。
 
 ```tsx title="lib/plate-editor.ts"
-import { MarkdownPlugin } from '@udecode/plate-markdown';
-import { KEYS } from '@udecode/plate';
+import { MarkdownPlugin } from '@platejs/markdown';
+import { KEYS } from 'platejs';
 
 MarkdownPlugin.configure({
   options: {
@@ -483,11 +483,11 @@ MarkdownPlugin.configure({
 
 **插件配置：**
 ```tsx title="lib/plate-editor.ts"
-import { createPlateEditor } from '@udecode/plate/react';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin } from '@platejs/markdown';
 import remarkMath from 'remark-math';
 // 导入 Plate 数学插件
-import { MathPlugin } from '@udecode/plate-math/react';
+import { MathPlugin } from '@platejs/math/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -526,7 +526,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 
 ## remark 插件
 
-`@udecode/plate-markdown` 基于 [unified][github-unified] / [remark][github-remark] 生态。可通过 `MarkdownPlugin.configure` 的 `remarkPlugins` 选项扩展能力。这些插件操作 [mdast (Markdown 抽象语法树)][github-mdast]。
+`@platejs/markdown` 基于 [unified][github-unified] / [remark][github-remark] 生态。可通过 `MarkdownPlugin.configure` 的 `remarkPlugins` 选项扩展能力。这些插件操作 [mdast (Markdown 抽象语法树)][github-mdast]。
 
 **插件查找：**
 -   [remark 插件列表][github-remark-plugins]（官方）
@@ -544,17 +544,17 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 
 ## 语法支持
 
-`@udecode/plate-markdown` 使用 [`remark-parse`][github-remark-parse]，遵循 [CommonMark][commonmark-spec]。可通过 `remarkPlugins` 启用 GFM 或其他语法。
+`@platejs/markdown` 使用 [`remark-parse`][github-remark-parse]，遵循 [CommonMark][commonmark-spec]。可通过 `remarkPlugins` 启用 GFM 或其他语法。
 
 -   **Markdown 学习：** [CommonMark 帮助][commonmark-help]
 -   **GFM 规范：** [GitHub Flavored Markdown Spec][gfm-spec]
 
 ## 架构概览
 
-`@udecode/plate-markdown` 通过 unified/remark 生态桥接 Markdown 字符串与 Plate 编辑器格式。
+`@platejs/markdown` 通过 unified/remark 生态桥接 Markdown 字符串与 Plate 编辑器格式。
 
 ```
-                                             @udecode/plate-markdown
+                                             @platejs/markdown
           +--------------------------------------------------------------------------------------------+
           |                                                                                            |
           |  +-----------+        +----------------+        +---------------+      +-----------+       |
@@ -597,17 +597,17 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 迁移需将 `react-markdown` 概念映射到 Plate 架构。
 
 **主要区别：**
-1.  **渲染流程：** `react-markdown`（MD → mdast → hast → React） vs. `@udecode/plate-markdown`（MD ↔ mdast ↔ Slate JSON；Plate 组件渲染 Slate JSON）。
+1.  **渲染流程：** `react-markdown`（MD → mdast → hast → React） vs. `@platejs/markdown`（MD ↔ mdast ↔ Slate JSON；Plate 组件渲染 Slate JSON）。
 2.  **组件自定义：**
     -   `react-markdown`：`components` 属性替换 HTML 标签渲染器。
     -   Plate：
         -   `MarkdownPlugin` 的 `rules`：自定义 mdast ↔ Slate JSON 转换。
         -   `createPlateEditor` 的 `components`：自定义 React 组件渲染节点。详见[附录 C](#appendix-c-components)。
-3.  **插件生态：** `@udecode/plate-markdown` 主要用 `remarkPlugins`，`rehypePlugins` 很少用。
+3.  **插件生态：** `@platejs/markdown` 主要用 `remarkPlugins`，`rehypePlugins` 很少用。
 
 **映射关系：**
 
-| `react-markdown` 属性         | `@udecode/plate-markdown` 对应/概念                                | 说明                                                                                                                                                 |
+| `react-markdown` 属性         | `@platejs/markdown` 对应/概念                                | 说明                                                                                                                                                 |
 | :---------------------------- | :---------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `children` (string)           | 传给 `editor.api.markdown.deserialize(string)`                             | 反序列化输入，常用于 `createPlateEditor` 的 `value` 选项。                                                                             |
 | `remarkPlugins`               | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] }})`              | 直接映射，作用于 mdast。                                                                                                                    |
@@ -624,7 +624,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 
 ## 附录 A：Markdown 中的 HTML
 
-默认情况下，`@udecode/plate-markdown` **不会**处理原始 HTML 标签以保证安全。标准 Markdown 生成的 HTML（如 `*emphasis*` → `<em>`）会被处理。
+默认情况下，`@platejs/markdown` **不会**处理原始 HTML 标签以保证安全。标准 Markdown 生成的 HTML（如 `*emphasis*` → `<em>`）会被处理。
 
 如需在**可信环境**下处理原始 HTML：
 1.  **引入 `remark-mdx`：** 加入 `remarkPlugins`。
@@ -632,7 +632,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 3.  **配置规则：** 需为解析出的 HTML `hast` 节点配置 `rules`，映射为 Slate 结构。
 
 ```tsx title="lib/plate-editor.ts"
-import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
+import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
 import rehypeRaw from 'rehype-raw';
 // import { VFile } from 'vfile'; // 如 rehype-raw 需要
 
@@ -773,9 +773,9 @@ MarkdownPlugin.configure({
 
 **示例：**
 ```tsx title="components/my-editor.tsx"
-import { createPlateEditor, PlateLeaf, withProps } from '@udecode/plate/react';
-import { BoldPlugin } from '@udecode/plate-basic-nodes/react';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { createPlateEditor, PlateLeaf, withProps } from 'platejs/react';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { ParagraphElement } from '@/components/ui/paragraph-element';
 import { CodeBlockElement } from '@/components/ui/code-block-element';
 // marks 可用 PlateLeaf 或自定义 leaf 组件
@@ -798,10 +798,10 @@ const editor = createPlateEditor({
 
 ```tsx title="components/plate-markdown.tsx"
 import React, { useEffect } from 'react';
-import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+import { MarkdownPlugin } from '@platejs/markdown';
 // 导入常用 Markdown 功能的 Plate 插件
-import { HeadingPlugin } from '@udecode/plate-basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 // ...其他如 BlockquotePlugin、CodeBlockPlugin、ListPlugin、BoldPlugin、ItalicPlugin 等
 
 export interface PlateMarkdownProps {
@@ -852,7 +852,7 @@ export function PlateMarkdown({
 
 ## 安全性说明
 
-`@udecode/plate-markdown` 优先保证安全，将 Markdown 转为结构化 Slate 格式，避免直接渲染 HTML。但安全性还取决于：
+`@platejs/markdown` 优先保证安全，将 Markdown 转为结构化 Slate 格式，避免直接渲染 HTML。但安全性还取决于：
 
 -   **自定义 `rules`：** 确保 `deserialize` 规则不会引入不安全数据。
 -   **`remarkPlugins`：** 审查第三方 remark 插件的安全风险。

@@ -1,14 +1,14 @@
 'use client';
 
-import type { ExtendConfig, Path } from '@udecode/plate';
+import type { ExtendConfig, Path } from 'platejs';
 
-import { isSlateString } from '@udecode/plate';
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
   getDraftCommentKey,
-} from '@udecode/plate-comments';
-import { toTPlatePlugin } from '@udecode/plate/react';
+} from '@platejs/comment';
+import { isSlateString } from 'platejs';
+import { toTPlatePlugin } from 'platejs/react';
 
 import { CommentLeaf } from '@/registry/ui/comment-node';
 

@@ -4,8 +4,8 @@ import {
   type TColumnElement,
   type TColumnGroupElement,
   NodeApi,
-} from '@udecode/plate';
-import { KEYS } from '@udecode/plate';
+} from 'platejs';
+import { KEYS } from 'platejs';
 
 import { columnsToWidths } from '../utils/columnsToWidths';
 

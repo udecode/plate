@@ -1,4 +1,4 @@
-# @udecode/plate-slash-command
+# @platejs/slash-command
 
 ## 49.0.0
 
@@ -15,6 +15,9 @@
 - [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
   - The type `TSlashInputElement` has been removed.
   - Use `TComboboxInputElement` from `platejs` instead for Slash Command input elements, as slash command functionality is built upon the combobox.
+
+
+# @udecode/plate-slash-command
 
 ## 48.0.0
 

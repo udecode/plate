@@ -33,9 +33,9 @@ jest.mock('nanoid', () => ({
   nanoid: () => `nanoid-${id++}`,
 }));
 
-jest.mock('@udecode/plate-core', () => ({
+jest.mock('@platejs/core', () => ({
   __esModule: true,
-  ...jest.requireActual('@udecode/plate-core'),
+  ...jest.requireActual('@platejs/core'),
 }));
 
 // Add mock for lucide-react

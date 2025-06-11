@@ -3,7 +3,7 @@ import { getEmptyImage, NativeTypes } from 'react-dnd-html5-backend';
 
 import type { ConnectDragSource, DropTargetMonitor } from 'react-dnd';
 
-import { type PlateEditor, useEditorRef } from '@udecode/plate/react';
+import { type PlateEditor, useEditorRef } from 'platejs/react';
 
 import type { DragItemNode } from '../types';
 

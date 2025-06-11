@@ -3,7 +3,7 @@ import {
   bindFirst,
   createTSlatePlugin,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { MediaPluginOptions } from '../media';
 

@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { isDefined } from '@udecode/plate';
 import { Check, Terminal } from 'lucide-react';
+import { isDefined } from 'platejs';
 
 import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';

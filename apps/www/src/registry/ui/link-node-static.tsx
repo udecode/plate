@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import type { SlateElementProps, TLinkElement } from '@udecode/plate';
+import type { SlateElementProps, TLinkElement } from 'platejs';
 
-import { SlateElement } from '@udecode/plate';
+import { SlateElement } from 'platejs';
 
 export function LinkElementStatic(props: SlateElementProps<TLinkElement>) {
   return (

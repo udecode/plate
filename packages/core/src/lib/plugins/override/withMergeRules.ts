@@ -4,7 +4,7 @@ import {
   ElementApi,
   PathApi,
   TextApi,
-} from '@udecode/slate';
+} from '@platejs/slate';
 
 import type { OverrideEditor } from '../../plugin';
 import type { MergeRules } from '../../plugin/BasePlugin';

@@ -6,9 +6,9 @@ description: 为 Node.js 安装和配置 Plate
 本指南演示如何在 Node.js 环境中使用 Plate。这对于后端任务（如数据处理、内容迁移、校验）或任何需要在无浏览器或无完整 React 前端的情况下操作 Plate 编辑器内容的场景都很有用。
 
 <Callout type="warning" title="Node.js 关键限制">
-  在 Node.js 环境中使用 Plate 时，**绝不能**从任何 `@udecode/plate*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@udecode/plate-basic-nodes`，而不是 `@udecode/plate-basic-nodes/react`）。
+  在 Node.js 环境中使用 Plate 时，**绝不能**从任何 `platejs*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@platejs/basic-nodes`，而不是 `@platejs/basic-nodes/react`）。
 
-  这意味着你不能使用 `@udecode/plate/react` 的 `createPlateEditor`。请改用 `@udecode/plate` 的 `createSlateEditor`。
+  这意味着你不能使用 `platejs/react` 的 `createPlateEditor`。请改用 `platejs` 的 `createSlateEditor`。
 </Callout>
 
 <Steps>
@@ -18,18 +18,18 @@ description: 为 Node.js 安装和配置 Plate
 安装核心 Plate 包以及你数据处理所需的特定插件包。
 
 ```bash
-npm add @udecode/plate @udecode/plate-basic-nodes
+npm install platejs @platejs/basic-nodes
 ```
 
--   `@udecode/plate`：核心 Plate 引擎和 Slate 编辑器功能。
--   `@udecode/plate-basic-nodes`：基础节点插件，如标题、粗体、斜体、下划线等。
+-   `platejs`：核心 Plate 引擎和 Slate 编辑器功能。
+-   `@platejs/basic-nodes`：基础节点插件，如标题、粗体、斜体、下划线等。
 
 ### 创建编辑器实例
 
-在 Node.js 脚本中，使用 `@udecode/plate` 的 `createSlateEditor` 初始化编辑器实例。此函数与框架无关，不依赖 React 或浏览器 API。
+在 Node.js 脚本中，使用 `platejs` 的 `createSlateEditor` 初始化编辑器实例。此函数与框架无关，不依赖 React 或浏览器 API。
 
 ```typescript title="scripts/process-content.ts"
-import { createSlateEditor } from '@udecode/plate';
+import { createSlateEditor } from 'platejs';
 import {
   BaseBoldPlugin,
   BaseItalicPlugin,
@@ -38,7 +38,7 @@ import {
   BaseH2Plugin,
   BaseH3Plugin,
   BaseBlockquotePlugin,
-} from '@udecode/plate-basic-nodes';
+} from '@platejs/basic-nodes';
 
 const initialValue = [
   {
@@ -85,7 +85,7 @@ console.log('编辑器内容:', editor.children);
 在 Node.js 中使用 Plate 的主要场景是编程式内容操作：
 
 ```typescript title="scripts/transform-content.ts"
-import { createSlateEditor } from '@udecode/plate';
+import { createSlateEditor } from 'platejs';
 import {
   BaseBoldPlugin,
   BaseItalicPlugin,
@@ -93,7 +93,7 @@ import {
   BaseH2Plugin,
   BaseH3Plugin,
   BaseBlockquotePlugin,
-} from '@udecode/plate-basic-nodes';
+} from '@platejs/basic-nodes';
 
 async function processDocument(value: any[]) {
   const editor = createSlateEditor({

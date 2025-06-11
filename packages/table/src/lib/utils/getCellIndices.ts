@@ -3,7 +3,7 @@ import {
   type TTableCellElement,
   getEditorPlugin,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { TableConfig } from '../BaseTablePlugin';
 

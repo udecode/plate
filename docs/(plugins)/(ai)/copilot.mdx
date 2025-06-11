@@ -38,7 +38,7 @@ The fastest way to add Copilot functionality is with the `CopilotKit`, which inc
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { CopilotKit } from '@/components/editor/plugins/copilot-kit';
 
 const editor = createPlateEditor({
@@ -77,15 +77,15 @@ OPENAI_API_KEY="your-api-key"
 ### Installation
 
 ```bash
-npm install @udecode/plate-ai @udecode/plate-markdown
+npm install @platejs/ai @platejs/markdown
 ```
 
 ### Add Plugins
 
 ```tsx
-import { CopilotPlugin } from '@udecode/plate-ai/react';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
-import { createPlateEditor } from '@udecode/plate/react';
+import { CopilotPlugin } from '@platejs/ai/react';
+import { MarkdownPlugin } from '@platejs/markdown';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -107,8 +107,8 @@ const editor = createPlateEditor({
 ### Configure Plugins
 
 ```tsx
-import { CopilotPlugin } from '@udecode/plate-ai/react';
-import { serializeMd, stripMarkdown } from '@udecode/plate-markdown';
+import { CopilotPlugin } from '@platejs/ai/react';
+import { serializeMd, stripMarkdown } from '@platejs/markdown';
 import { GhostText } from '@/components/ui/ghost-text';
 
 const plugins = [

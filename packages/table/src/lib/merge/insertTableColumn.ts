@@ -1,3 +1,4 @@
+import cloneDeep from 'lodash/cloneDeep.js';
 import {
   type Path,
   type SlateEditor,
@@ -8,8 +9,7 @@ import {
   KEYS,
   NodeApi,
   PathApi,
-} from '@udecode/plate';
-import cloneDeep from 'lodash/cloneDeep.js';
+} from 'platejs';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';

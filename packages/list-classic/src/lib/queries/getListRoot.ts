@@ -5,9 +5,9 @@ import type {
   SlateEditor,
   TElement,
   TRange,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 /** Searches upward for the root list element */
 export const getListRoot = (

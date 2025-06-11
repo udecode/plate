@@ -1,6 +1,6 @@
 /** @jsx jsxt */
-import { LinkPlugin } from '@udecode/plate-link/react';
-import { jsxt } from '@udecode/plate-test-utils';
+import { LinkPlugin } from '@platejs/link/react';
+import { jsxt } from '@platejs/test-utils';
 
 import { createPlateEditor, createPlatePlugin } from '../../react';
 import { normalizeDescendantsToDocumentFragment } from './index';

@@ -1,4 +1,4 @@
-import type { EditorTransforms, TSelection, Value } from '@udecode/slate';
+import type { EditorTransforms, TSelection, Value } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 

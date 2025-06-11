@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@udecode/plate-test-utils';
-import { NodeApi } from '@udecode/slate';
+import { jsxt } from '@platejs/test-utils';
+import { NodeApi } from '@platejs/slate';
 
 import { mergeDeepToNodes } from '../../../utils';
 

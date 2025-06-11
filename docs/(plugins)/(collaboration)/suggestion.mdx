@@ -42,7 +42,7 @@ The fastest way to add suggestion functionality is with the `SuggestionKit`, whi
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { SuggestionKit } from '@/components/editor/plugins/suggestion-kit';
 
 const editor = createPlateEditor({
@@ -62,7 +62,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-suggestion
+npm install @platejs/suggestion
 ```
 
 ### Extend Suggestion Plugin
@@ -76,12 +76,12 @@ import {
   isSlateEditor,
   isSlateElement,
   isSlateString,
-} from '@udecode/plate';
+} from 'platejs';
 import {
   type BaseSuggestionConfig,
   BaseSuggestionPlugin,
-} from '@udecode/plate-suggestion';
-import { createPlatePlugin, toTPlatePlugin } from '@udecode/plate/react';
+} from '@platejs/suggestion';
+import { createPlatePlugin, toTPlatePlugin } from 'platejs/react';
 import { BlockSuggestion } from '@/components/ui/block-suggestion';
 import { SuggestionLeaf } from '@/components/ui/suggestion-node';
 
@@ -184,7 +184,7 @@ The click handler tracks which suggestion is currently active:
 ### Add Plugins
 
 ```tsx
-import { createPlateEditor, createPlatePlugin } from '@udecode/plate/react';
+import { createPlateEditor, createPlatePlugin } from 'platejs/react';
 import { SuggestionLineBreak } from '@/components/ui/suggestion-node';
 
 const suggestionLineBreakPlugin = createPlatePlugin({
@@ -208,7 +208,7 @@ const editor = createPlateEditor({
 Use the plugin's API to control suggestion mode:
 
 ```tsx
-import { useEditorRef, usePluginOption } from '@udecode/plate/react';
+import { useEditorRef, usePluginOption } from 'platejs/react';
 
 function SuggestionToolbar() {
   const editor = useEditorRef();

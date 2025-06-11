@@ -1,5 +1,5 @@
-import { KEYS } from '@udecode/plate';
-import { createPlatePlugin } from '@udecode/plate/react';
+import { KEYS } from 'platejs';
+import { createPlatePlugin } from 'platejs/react';
 
 import { usePlaywrightAdapter } from './usePlaywrightAdapter';
 

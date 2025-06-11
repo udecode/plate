@@ -1,7 +1,7 @@
 'use client';
 
-import { KEYS } from '@udecode/plate';
-import { BlockPlaceholderPlugin } from '@udecode/plate/react';
+import { KEYS } from 'platejs';
+import { BlockPlaceholderPlugin } from 'platejs/react';
 
 export const BlockPlaceholderKit = [
   BlockPlaceholderPlugin.configure({

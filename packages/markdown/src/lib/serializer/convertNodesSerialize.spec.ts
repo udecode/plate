@@ -1,4 +1,4 @@
-import type { Descendant } from '@udecode/plate';
+import type { Descendant } from 'platejs';
 
 import type { SerializeMdOptions } from './serializeMd';
 

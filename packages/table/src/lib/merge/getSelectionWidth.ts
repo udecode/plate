@@ -1,4 +1,4 @@
-import type { Path, TTableCellElement } from '@udecode/plate';
+import type { Path, TTableCellElement } from 'platejs';
 
 import { getCellRowIndexByPath } from '../utils/getCellRowIndexByPath';
 

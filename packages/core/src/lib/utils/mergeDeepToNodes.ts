@@ -1,4 +1,4 @@
-import type { TNode } from '@udecode/slate';
+import type { TNode } from '@platejs/slate';
 
 import merge from 'lodash/merge.js';
 

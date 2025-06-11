@@ -7,7 +7,7 @@ import {
   type TNode,
   isDefined,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 export interface GetSiblingListOptions<
   N extends ElementOf<E>,

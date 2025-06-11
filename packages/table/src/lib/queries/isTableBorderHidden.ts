@@ -1,4 +1,4 @@
-import type { SlateEditor, TTableCellElement } from '@udecode/plate';
+import type { SlateEditor, TTableCellElement } from 'platejs';
 
 import type { BorderDirection } from '../types';
 

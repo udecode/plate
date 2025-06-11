@@ -1,4 +1,4 @@
-import type { OverrideEditor, TElement } from '@udecode/plate';
+import type { OverrideEditor, TElement } from 'platejs';
 
 import type { TableConfig } from './BaseTablePlugin';
 

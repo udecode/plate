@@ -39,7 +39,7 @@ The fastest way to add comment functionality is with the `CommentKit`, which inc
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { CommentKit } from '@/components/editor/plugins/comment-kit';
 
 const editor = createPlateEditor({
@@ -59,7 +59,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-comments
+npm install @platejs/comment
 ```
 
 ### Extend Comment Plugin
@@ -71,13 +71,13 @@ import {
   type ExtendConfig,
   type Path,
   isSlateString,
-} from '@udecode/plate';
+} from 'platejs';
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
   getDraftCommentKey,
-} from '@udecode/plate-comments';
-import { toTPlatePlugin } from '@udecode/plate/react';
+} from '@platejs/comment';
+import { toTPlatePlugin } from 'platejs/react';
 import { CommentLeaf } from '@/components/ui/comment-node';
 
 type CommentConfig = ExtendConfig<
@@ -212,7 +212,7 @@ You can add [`CommentToolbarButton`](/docs/components/comment-toolbar-button) to
 ### Add Plugins
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [

@@ -205,7 +205,6 @@ function MobileLink({
     <Link
       className={cn('text-2xl font-medium', className)}
       onClick={() => {
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         router.push(href.toString());
         onOpenChange?.(false);
       }}

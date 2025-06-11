@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 
-import type { TElement } from '@udecode/plate';
+import type { TElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
-import { toUnitLess } from '@udecode/plate-basic-styles';
-import { FontSizePlugin } from '@udecode/plate-basic-styles/react';
-import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
+import { toUnitLess } from '@platejs/basic-styles';
+import { FontSizePlugin } from '@platejs/basic-styles/react';
 import { Minus, Plus } from 'lucide-react';
+import { KEYS } from 'platejs';
+import { useEditorPlugin, useEditorSelector } from 'platejs/react';
 
 import {
   Popover,

@@ -3,7 +3,7 @@
   "name": "suggestion-base-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-suggestion"
+    "@platejs/suggestion"
   ],
   "registryDependencies": [
     "https://platejs.org/r/suggestion-node"
@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/suggestion-base-kit.tsx",
-      "content": "import { BaseSuggestionPlugin } from '@udecode/plate-suggestion';\n\nimport { SuggestionLeafStatic } from '@/registry/ui/suggestion-node-static';\n\nexport const BaseSuggestionKit = [\n  BaseSuggestionPlugin.withComponent(SuggestionLeafStatic),\n];\n",
+      "content": "import { BaseSuggestionPlugin } from '@platejs/suggestion';\n\nimport { SuggestionLeafStatic } from '@/registry/ui/suggestion-node-static';\n\nexport const BaseSuggestionKit = [\n  BaseSuggestionPlugin.withComponent(SuggestionLeafStatic),\n];\n",
       "type": "registry:component"
     }
   ]

@@ -4,9 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { KEYS } from '@udecode/plate';
-import { TablePlugin, useTableMergeState } from '@udecode/plate-table/react';
-import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
+import { TablePlugin, useTableMergeState } from '@platejs/table/react';
 import {
   ArrowDown,
   ArrowLeft,
@@ -19,6 +17,8 @@ import {
   Ungroup,
   XIcon,
 } from 'lucide-react';
+import { KEYS } from 'platejs';
+import { useEditorPlugin, useEditorSelector } from 'platejs/react';
 
 import {
   DropdownMenu,

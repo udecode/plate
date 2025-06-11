@@ -1,6 +1,6 @@
-import type { Editor, ElementEntryOf, ElementOf } from '@udecode/plate';
+import type { Editor, ElementEntryOf, ElementOf } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 

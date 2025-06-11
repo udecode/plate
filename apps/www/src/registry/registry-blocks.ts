@@ -83,7 +83,7 @@ export const registryBlocks: Registry['items'] = [
   },
   {
     categories: ['Editors'],
-    dependencies: ['@udecode/plate-basic-nodes', '@udecode/plate-basic-nodes'],
+    dependencies: ['@platejs/basic-nodes', '@platejs/basic-nodes'],
     description: 'A basic editor',
     files: [
       {

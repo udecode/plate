@@ -1,6 +1,6 @@
 {
-  "name": "@udecode/plate-list",
-  "version": "49.0.0",
+  "name": "@platejs/list",
+  "version": "48.0.5",
   "description": "List plugin for Plate",
   "keywords": [
     "plate",
@@ -50,14 +50,14 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-indent": "49.0.0",
+    "@platejs/indent": "48.0.5",
     "clsx": "^2.1.1"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=48.0.5",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

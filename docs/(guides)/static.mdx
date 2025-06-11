@@ -3,14 +3,14 @@ title: Static Rendering
 description: A minimal, memoized, read-only version of Plate with RSC/SSR support.
 ---
 
-`<PlateStatic>` is a **fast, read-only** React component for rendering Slate content, optimized for **server-side** or **React Server Component** (RSC) environments. It avoids client-side editing logic and memoizes node renders for better performance compared to using [`<Plate>`](/docs/api/core/plate-components) in read-only mode.
+`<PlateStatic>` is a **fast, read-only** React component for rendering Plate content, optimized for **server-side** or **React Server Component** (RSC) environments. It avoids client-side editing logic and memoizes node renders for better performance compared to using [`<Plate>`](/docs/api/core/plate-components) in read-only mode.
 
 It's a core part of [`serializeHtml`](/docs/api/core/plate-plugin#serializehtml) for HTML export and is ideal for any server or RSC context needing a non-interactive, presentational view of Plate content.
 
 ## Key Advantages
 
 -   **Server-Safe:** No browser API dependencies; works in SSR/RSC.
--   **No Slate Editor Overhead:** Excludes interactive features like selections or event handlers.
+-   **No Plate Editor Overhead:** Excludes interactive features like selections or event handlers.
 -   **Memoized Rendering:** Uses `_memo` and structural checks to re-render only changed nodes.
 -   **Partial Re-Renders:** Changes in one part of the document don't force a full re-render.
 -   **Lightweight:** Smaller bundle size as it omits interactive editor code.
@@ -40,7 +40,7 @@ The fastest way to enable static rendering is with the `BaseEditorKit`, which in
 ### Add Kit
 
 ```tsx
-import { createSlateEditor, PlateStatic } from '@udecode/plate';
+import { createSlateEditor, PlateStatic } from 'platejs';
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
 const editor = createSlateEditor({
@@ -74,7 +74,7 @@ See a complete server-side static rendering example:
 Initialize a Slate editor instance using `createSlateEditor` with your required plugins and components. This is analogous to using `usePlateEditor` for the interactive `<Plate>` component.
 
 ```tsx title="lib/plate-static-editor.ts"
-import { createSlateEditor } from '@udecode/plate';
+import { createSlateEditor } from 'platejs';
 // Import your desired base plugins (e.g., BaseHeadingPlugin, MarkdownPlugin)
 // Ensure you are NOT importing from /react subpaths for server environments.
 
@@ -98,7 +98,7 @@ If your interactive editor uses client-side components (e.g., with `use client` 
 
 ```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
-import type { SlateElementProps } from '@udecode/plate';
+import type { SlateElementProps } from 'platejs';
 
 export function ParagraphElementStatic(props: SlateElementProps) {
   return (
@@ -131,9 +131,9 @@ export const staticComponents = {
 Use the `<PlateStatic>` component, providing the `editor` instance configured with your components.
 
 ```tsx title="app/my-static-page/page.tsx (RSC Example)"
-import { PlateStatic } from '@udecode/plate';
-import { createSlateEditor } from '@udecode/plate';
-// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-nodes'; // etc.
+import { PlateStatic } from 'platejs';
+import { createSlateEditor } from 'platejs';
+// import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes'; // etc.
 import { staticComponents } from '@/components/static-components';
 
 export default async function MyStaticPage() {
@@ -196,10 +196,10 @@ export default async function MyStaticPage() {
 In a Next.js App Router (or similar RSC environment), `<PlateStatic>` can be used directly in Server Components:
 
 ```tsx title="app/preview/page.tsx (RSC)"
-import { PlateStatic } from '@udecode/plate';
-import { createSlateEditor } from '@udecode/plate';
+import { PlateStatic } from 'platejs';
+import { createSlateEditor } from 'platejs';
 // Example base plugins (ensure non-/react imports)
-// import { BaseHeadingPlugin } from '@udecode/plate-basic-nodes';
+// import { BaseHeadingPlugin } from '@platejs/basic-nodes';
 import { staticComponents } from '@/components/static-components'; // Your static components mapping
 
 export default async function Page() {
@@ -231,9 +231,9 @@ This renders the content to HTML on the server without needing a client-side Jav
 For generating a complete HTML string (e.g., for emails, PDFs, or external systems), use `serializeHtml`. It utilizes `<PlateStatic>` internally.
 
 ```ts title="lib/html-serializer.ts"
-import { createSlateEditor, serializeHtml } from '@udecode/plate';
+import { createSlateEditor, serializeHtml } from 'platejs';
 import { staticComponents } from '@/components/static-components';
-// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-nodes';
+// import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes';
 
 async function getDocumentAsHtml(value: any[]) {
   const editor = createSlateEditor({
@@ -263,17 +263,17 @@ For more details, see the [HTML Serialization guide](/docs/html).
 ```ts
 import type React from 'react';
 import type { Descendant } from 'slate';
-import type { PlateEditor } from '@udecode/plate/core'; // Adjust imports as per your setup
+import type { PlateEditor } from 'platejs/core'; // Adjust imports as per your setup
 
 interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
-   * The Slate editor instance, created via `createSlateEditor`.
+   * The Plate editor instance, created via `createSlateEditor`.
    * Must include plugins and components relevant to the content being rendered.
    */
   editor: PlateEditor;
 
   /**
-   * Optional Slate `Value` (array of `Descendant` nodes).
+   * Optional Plate `Value` (array of `Descendant` nodes).
    * If provided, this will be used for rendering instead of `editor.children`.
    */
   value?: Descendant[];

@@ -3,27 +3,12 @@
 import * as React from 'react';
 
 import {
-  type NodeEntry,
-  type SlateEditor,
-  isHotkey,
-  NodeApi,
-} from '@udecode/plate';
-import {
   AIChatPlugin,
   AIPlugin,
   useEditorChat,
   useLastAssistantMessage,
-} from '@udecode/plate-ai/react';
-import {
-  BlockSelectionPlugin,
-  useIsSelecting,
-} from '@udecode/plate-selection/react';
-import {
-  useEditorPlugin,
-  useHotkeys,
-  usePluginOption,
-} from '@udecode/plate/react';
-import { type PlateEditor, useEditorRef } from '@udecode/plate/react';
+} from '@platejs/ai/react';
+import { BlockSelectionPlugin, useIsSelecting } from '@platejs/selection/react';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
   Album,
@@ -42,6 +27,9 @@ import {
   Wand,
   X,
 } from 'lucide-react';
+import { type NodeEntry, type SlateEditor, isHotkey, NodeApi } from 'platejs';
+import { useEditorPlugin, useHotkeys, usePluginOption } from 'platejs/react';
+import { type PlateEditor, useEditorRef } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {

@@ -1,8 +1,4 @@
-import type {
-  AnyObject,
-  EditorNodesOptions,
-  SlateEditor,
-} from '@udecode/plate';
+import type { AnyObject, EditorNodesOptions, SlateEditor } from 'platejs';
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
 

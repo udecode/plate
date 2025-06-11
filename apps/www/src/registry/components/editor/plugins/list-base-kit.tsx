@@ -1,5 +1,5 @@
-import { KEYS } from '@udecode/plate';
-import { BaseListPlugin } from '@udecode/plate-list';
+import { BaseListPlugin } from '@platejs/list';
+import { KEYS } from 'platejs';
 
 import { BaseIndentKit } from '@/registry/components/editor/plugins/indent-base-kit';
 import { BlockListStatic } from '@/registry/ui/block-list-static';

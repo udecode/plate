@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { NodeEntry, TElement } from '@udecode/slate';
+import type { NodeEntry, TElement } from '@platejs/slate';
 
 import { useStoreAtomValue } from 'jotai-x';
 import { selectAtom } from 'jotai/utils';

@@ -6,8 +6,8 @@ import {
   H2Plugin,
   H3Plugin,
   HorizontalRulePlugin,
-} from '@udecode/plate-basic-nodes/react';
-import { ParagraphPlugin } from '@udecode/plate/react';
+} from '@platejs/basic-nodes/react';
+import { ParagraphPlugin } from 'platejs/react';
 
 import { BlockquoteElement } from '@/registry/ui/blockquote-node';
 import { H1Element, H2Element, H3Element } from '@/registry/ui/heading-node';

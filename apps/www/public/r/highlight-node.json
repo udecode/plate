@@ -11,12 +11,12 @@
   "files": [
     {
       "path": "src/registry/ui/highlight-node.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateLeafProps } from '@udecode/plate/react';\n\nimport { PlateLeaf } from '@udecode/plate/react';\n\nexport function HighlightLeaf(props: PlateLeafProps) {\n  return (\n    <PlateLeaf {...props} as=\"mark\" className=\"bg-highlight/30 text-inherit\">\n      {props.children}\n    </PlateLeaf>\n  );\n}\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateLeafProps } from 'platejs/react';\n\nimport { PlateLeaf } from 'platejs/react';\n\nexport function HighlightLeaf(props: PlateLeafProps) {\n  return (\n    <PlateLeaf {...props} as=\"mark\" className=\"bg-highlight/30 text-inherit\">\n      {props.children}\n    </PlateLeaf>\n  );\n}\n",
       "type": "registry:ui"
     },
     {
       "path": "src/registry/ui/highlight-node-static.tsx",
-      "content": "import * as React from 'react';\n\nimport type { SlateLeafProps } from '@udecode/plate';\n\nimport { SlateLeaf } from '@udecode/plate';\n\nexport function HighlightLeafStatic(props: SlateLeafProps) {\n  return (\n    <SlateLeaf {...props} as=\"mark\" className=\"bg-highlight/30 text-inherit\">\n      {props.children}\n    </SlateLeaf>\n  );\n}\n",
+      "content": "import * as React from 'react';\n\nimport type { SlateLeafProps } from 'platejs';\n\nimport { SlateLeaf } from 'platejs';\n\nexport function HighlightLeafStatic(props: SlateLeafProps) {\n  return (\n    <SlateLeaf {...props} as=\"mark\" className=\"bg-highlight/30 text-inherit\">\n      {props.children}\n    </SlateLeaf>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

@@ -7,7 +7,7 @@ import {
   type TTableElement,
   type TTableRowElement,
   getEditorPlugin,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';

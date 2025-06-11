@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate';
-import { BasicMarksPlugin } from '@udecode/plate-basic-nodes/react';
-import { BaseSuggestionPlugin } from '@udecode/plate-suggestion';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import { jsxt } from '@udecode/plate-test-utils';
+import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
+import { BaseSuggestionPlugin } from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { jsxt } from '@platejs/test-utils';
+import { createSlateEditor } from 'platejs';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 

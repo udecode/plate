@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from '@udecode/plate';
+import { traverseHtmlElements } from 'platejs';
 
 import { cleanDocxSpacerun } from './cleanDocxSpacerun';
 import { cleanDocxTabCount } from './cleanDocxTabCount';

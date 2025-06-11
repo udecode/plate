@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { createEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
-import { createPlateEditor } from '@udecode/plate/react';
+import { jsxt } from '@platejs/test-utils';
+import { createEditor } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertCodeBlock } from './insertCodeBlock';

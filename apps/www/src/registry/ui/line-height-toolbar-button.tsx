@@ -4,10 +4,10 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
+import { LineHeightPlugin } from '@platejs/basic-styles/react';
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
-import { LineHeightPlugin } from '@udecode/plate-basic-styles/react';
-import { useEditorRef, useSelectionFragmentProp } from '@udecode/plate/react';
 import { CheckIcon, WrapText } from 'lucide-react';
+import { useEditorRef, useSelectionFragmentProp } from 'platejs/react';
 
 import {
   DropdownMenu,

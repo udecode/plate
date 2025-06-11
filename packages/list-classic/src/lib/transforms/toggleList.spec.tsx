@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from '@udecode/plate';
-import { KEYS } from '@udecode/plate';
-import { BaseImagePlugin } from '@udecode/plate-media';
-import { jsxt } from '@udecode/plate-test-utils';
+import { BaseImagePlugin } from '@platejs/media';
+import { jsxt } from '@platejs/test-utils';
+import { type SlateEditor, createSlateEditor } from 'platejs';
+import { KEYS } from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { toggleList } from './toggleList';

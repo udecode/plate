@@ -5,7 +5,7 @@
   "title": "Comment Toolbar Button",
   "description": "A toolbar button for adding inline comments.",
   "dependencies": [
-    "@udecode/plate-comments"
+    "@platejs/comment"
   ],
   "registryDependencies": [
     "https://platejs.org/r/comment-kit"
@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "src/registry/ui/comment-toolbar-button.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { useEditorRef } from '@udecode/plate/react';\nimport { MessageSquareTextIcon } from 'lucide-react';\n\nimport { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function CommentToolbarButton() {\n  const editor = useEditorRef();\n\n  return (\n    <ToolbarButton\n      onClick={() => {\n        editor.getTransforms(commentPlugin).comment.setDraft();\n      }}\n      data-plate-prevent-overlay\n      tooltip=\"Comment\"\n    >\n      <MessageSquareTextIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { MessageSquareTextIcon } from 'lucide-react';\nimport { useEditorRef } from 'platejs/react';\n\nimport { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function CommentToolbarButton() {\n  const editor = useEditorRef();\n\n  return (\n    <ToolbarButton\n      onClick={() => {\n        editor.getTransforms(commentPlugin).comment.setDraft();\n      }}\n      data-plate-prevent-overlay\n      tooltip=\"Comment\"\n    >\n      <MessageSquareTextIcon />\n    </ToolbarButton>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

@@ -1,6 +1,6 @@
-import type { TElement } from '@udecode/plate';
+import type { TElement } from 'platejs';
 
-import { useEditorRef, useReadOnly } from '@udecode/plate/react';
+import { useEditorRef, useReadOnly } from 'platejs/react';
 
 export const useTodoListElementState = ({ element }: { element: TElement }) => {
   const editor = useEditorRef();

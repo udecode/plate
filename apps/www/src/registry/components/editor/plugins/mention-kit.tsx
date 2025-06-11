@@ -1,9 +1,6 @@
 'use client';
 
-import {
-  MentionInputPlugin,
-  MentionPlugin,
-} from '@udecode/plate-mention/react';
+import { MentionInputPlugin, MentionPlugin } from '@platejs/mention/react';
 
 import {
   MentionElement,

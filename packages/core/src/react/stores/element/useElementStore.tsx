@@ -7,7 +7,7 @@ import {
   type Path,
   type TElement,
   PathApi,
-} from '@udecode/slate';
+} from '@platejs/slate';
 
 import { createAtomStore } from '../../libs/jotai';
 import { useComposing, useReadOnly } from '../../slate-react';

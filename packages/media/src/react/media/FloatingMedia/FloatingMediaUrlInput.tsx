@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { TMediaElement, WithRequiredKey } from '@udecode/plate';
+import type { TMediaElement, WithRequiredKey } from 'platejs';
 
 import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
   useHotkeys,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { FloatingMediaStore } from './FloatingMediaStore';
 import { submitFloatingMedia } from './submitFloatingMedia';

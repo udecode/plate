@@ -2,20 +2,16 @@
 
 import * as React from 'react';
 
-import {
-  type TCodeBlockElement,
-  type TCodeSyntaxLeaf,
-  NodeApi,
-} from '@udecode/plate';
-import { formatCodeBlock, isLangSupported } from '@udecode/plate-code-block';
+import { formatCodeBlock, isLangSupported } from '@platejs/code-block';
+import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
+import { type TCodeBlockElement, type TCodeSyntaxLeaf, NodeApi } from 'platejs';
 import {
   type PlateElementProps,
   type PlateLeafProps,
   PlateElement,
   PlateLeaf,
-} from '@udecode/plate/react';
-import { useEditorRef, useElement, useReadOnly } from '@udecode/plate/react';
-import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
+} from 'platejs/react';
+import { useEditorRef, useElement, useReadOnly } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {

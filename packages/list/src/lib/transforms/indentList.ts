@@ -1,7 +1,7 @@
-import type { SlateEditor, TLocation } from '@udecode/plate';
+import type { SlateEditor, TLocation } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
-import { setIndent } from '@udecode/plate-indent';
+import { setIndent } from '@platejs/indent';
+import { KEYS } from 'platejs';
 
 import { ListStyleType } from '../types';
 

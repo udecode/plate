@@ -3,7 +3,7 @@
   "name": "link-base-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-link"
+    "@platejs/link"
   ],
   "registryDependencies": [
     "https://platejs.org/r/link-node"
@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/link-base-kit.tsx",
-      "content": "import { BaseLinkPlugin } from '@udecode/plate-link';\n\nimport { LinkElementStatic } from '@/registry/ui/link-node-static';\n\nexport const BaseLinkKit = [BaseLinkPlugin.withComponent(LinkElementStatic)];\n",
+      "content": "import { BaseLinkPlugin } from '@platejs/link';\n\nimport { LinkElementStatic } from '@/registry/ui/link-node-static';\n\nexport const BaseLinkKit = [BaseLinkPlugin.withComponent(LinkElementStatic)];\n",
       "type": "registry:component"
     }
   ]

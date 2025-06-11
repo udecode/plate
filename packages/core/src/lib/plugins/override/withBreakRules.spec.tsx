@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { BaseH1Plugin } from '@udecode/plate-basic-nodes';
-import { BaseListPlugin } from '@udecode/plate-list';
-import { jsxt } from '@udecode/plate-test-utils';
+import { BaseH1Plugin } from '@platejs/basic-nodes';
+import { BaseListPlugin } from '@platejs/list';
+import { jsxt } from '@platejs/test-utils';
 
 import { createSlateEditor } from '../../editor';
 import { createSlatePlugin } from '../../plugin/createSlatePlugin';

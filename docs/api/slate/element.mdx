@@ -3,7 +3,7 @@ title: Element
 description: API reference for elements in Slate.
 ---
 
-`TElement` objects are a type of `Node` in a Slate document that contain other `TElement` nodes or `Text` nodes.
+`TElement` objects are a type of `Node` in a Plate document that contain other `TElement` nodes or `Text` nodes.
 
 ```typescript
 interface TElement {
@@ -87,7 +87,7 @@ Check if a value implements the `TElement` interface.
 </APIParameters>
 
 <APIReturns type="boolean">
-  `true` if the value is a Slate element.
+  `true` if the value is a Plate element.
 </APIReturns>
 </API>
 
@@ -146,7 +146,7 @@ Check if an element matches a set of properties.
 
 ### `TElement`
 
-`TElement` objects are a type of node in a Slate document that contain other element nodes or text nodes. They can be either "blocks" or "inlines" depending on the editor's configuration.
+`TElement` objects are a type of node in a Plate document that contain other element nodes or text nodes. They can be either "blocks" or "inlines" depending on the editor's configuration.
 
 `Element` is a type alias for `TElement`.
 
@@ -202,5 +202,5 @@ The `ElementOrTextIn` type represents either an element or a text node from a sp
 type ElementIn<V extends Value> = ElementOf<V[number]>;
 ```
 
-`ElementIn` is a utility type to get an element type from a Slate `Value` type.
+`ElementIn` is a utility type to get an element type from a Plate `Value` type.
 ```

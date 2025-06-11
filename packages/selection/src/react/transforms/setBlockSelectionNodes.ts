@@ -1,10 +1,5 @@
-import type {
-  NodeProps,
-  SetNodesOptions,
-  TElement,
-  TText,
-} from '@udecode/plate';
-import type { PlateEditor } from '@udecode/plate/react';
+import type { NodeProps, SetNodesOptions, TElement, TText } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

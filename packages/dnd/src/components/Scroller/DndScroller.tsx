@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { usePluginOption } from '@udecode/plate/react';
+import { usePluginOption } from 'platejs/react';
 
 import { DndPlugin } from '../../DndPlugin';
 import { type ScrollerProps, Scroller } from './Scroller';

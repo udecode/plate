@@ -41,7 +41,7 @@ The fastest way to add the block menu is with the `BlockMenuKit`, which includes
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { BlockMenuKit } from '@/components/editor/plugins/block-menu-kit';
 
 const editor = createPlateEditor({
@@ -61,7 +61,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-selection
+npm install @platejs/selection
 ```
 
 ### Add Plugins
@@ -69,8 +69,8 @@ npm install @udecode/plate-selection
 The block menu requires both `BlockSelectionPlugin` and `BlockMenuPlugin` to function properly.
 
 ```tsx
-import { BlockSelectionPlugin, BlockMenuPlugin } from '@udecode/plate-selection/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { BlockSelectionPlugin, BlockMenuPlugin } from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -90,8 +90,8 @@ const editor = createPlateEditor({
 Configure the block menu with a context menu component:
 
 ```tsx
-import { BlockSelectionPlugin, BlockMenuPlugin } from '@udecode/plate-selection/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { BlockSelectionPlugin, BlockMenuPlugin } from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
 import { BlockContextMenu } from '@/components/ui/block-context-menu';
 
 const editor = createPlateEditor({

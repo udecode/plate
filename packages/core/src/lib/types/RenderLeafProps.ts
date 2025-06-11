@@ -1,4 +1,4 @@
-import type { LeafPosition, TText } from '@udecode/slate';
+import type { LeafPosition, TText } from '@platejs/slate';
 
 export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement<any>;
 

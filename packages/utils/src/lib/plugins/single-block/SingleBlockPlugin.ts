@@ -1,4 +1,4 @@
-import { createSlatePlugin } from '@udecode/plate-core';
+import { createSlatePlugin } from '@platejs/core';
 
 import { KEYS } from '../../plate-keys';
 

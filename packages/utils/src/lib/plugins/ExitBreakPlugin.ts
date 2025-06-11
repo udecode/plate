@@ -1,7 +1,4 @@
-import {
-  type InsertExitBreakOptions,
-  createSlatePlugin,
-} from '@udecode/plate-core';
+import { type InsertExitBreakOptions, createSlatePlugin } from '@platejs/core';
 
 import { KEYS } from '../plate-keys';
 

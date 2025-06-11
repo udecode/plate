@@ -1,11 +1,6 @@
-import type {
-  Path,
-  SlateEditor,
-  TElement,
-  TTableElement,
-} from '@udecode/plate';
+import type { Path, SlateEditor, TElement, TTableElement } from 'platejs';
 
-import { getEditorPlugin, KEYS, NodeApi, PathApi } from '@udecode/plate';
+import { getEditorPlugin, KEYS, NodeApi, PathApi } from 'platejs';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { insertTableMergeColumn } from '../merge/insertTableColumn';

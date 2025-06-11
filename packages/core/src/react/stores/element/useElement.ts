@@ -1,4 +1,4 @@
-import type { TElement } from '@udecode/slate';
+import type { TElement } from '@platejs/slate';
 
 import { useAtomStoreValue } from 'jotai-x';
 

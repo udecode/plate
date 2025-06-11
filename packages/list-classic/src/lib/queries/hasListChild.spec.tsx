@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { jsxt } from '@platejs/test-utils';
+import { createSlateEditor } from 'platejs';
 
 import { hasListChild } from './hasListChild';
 

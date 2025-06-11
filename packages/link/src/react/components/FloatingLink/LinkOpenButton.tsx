@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { type TLinkElement, KEYS } from '@udecode/plate';
+import { type TLinkElement, KEYS } from 'platejs';
 import {
   createPrimitiveComponent,
   useEditorRef,
   useEditorSelection,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { getLinkAttributes } from '../../../lib/utils/getLinkAttributes';
 

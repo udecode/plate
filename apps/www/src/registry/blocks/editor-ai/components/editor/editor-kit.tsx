@@ -1,7 +1,7 @@
 'use client';
 
-import { type Value, TrailingBlockPlugin } from '@udecode/plate';
-import { type TPlateEditor, useEditorRef } from '@udecode/plate/react';
+import { type Value, TrailingBlockPlugin } from 'platejs';
+import { type TPlateEditor, useEditorRef } from 'platejs/react';
 
 import { AIKit } from '@/registry/components/editor/plugins/ai-kit';
 import { AlignKit } from '@/registry/components/editor/plugins/align-kit';

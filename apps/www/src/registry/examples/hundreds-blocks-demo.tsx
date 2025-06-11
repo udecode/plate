@@ -2,19 +2,19 @@
 
 import * as React from 'react';
 
-import type { RenderElementProps, TElement, Value } from '@udecode/plate';
+import type { RenderElementProps, TElement, Value } from 'platejs';
 
 import {
   BasicBlocksPlugin,
   BasicMarksPlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Editable,
   Plate,
   Slate,
   usePlateEditor,
   withReact,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 import { createEditor } from 'slate';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';

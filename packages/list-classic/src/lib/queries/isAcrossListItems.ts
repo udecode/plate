@@ -1,4 +1,4 @@
-import { type SlateEditor, type TRange, KEYS, RangeApi } from '@udecode/plate';
+import { type SlateEditor, type TRange, KEYS, RangeApi } from 'platejs';
 
 /** Is selection across blocks with list items */
 export const isAcrossListItems = (

@@ -4,21 +4,12 @@ import * as React from 'react';
 
 import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 
-import { PopoverAnchor } from '@radix-ui/react-popover';
-import {
-  type TElement,
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
-  KEYS,
-  PathApi,
-} from '@udecode/plate';
-import { useDraggable, useDropLine } from '@udecode/plate-dnd';
+import { useDraggable, useDropLine } from '@platejs/dnd';
 import {
   BlockSelectionPlugin,
   useBlockSelected,
-} from '@udecode/plate-selection/react';
-import { setCellBackground } from '@udecode/plate-table';
+} from '@platejs/selection/react';
+import { setCellBackground } from '@platejs/table';
 import {
   TablePlugin,
   TableProvider,
@@ -27,22 +18,8 @@ import {
   useTableCellElementResizable,
   useTableElement,
   useTableMergeState,
-} from '@udecode/plate-table/react';
-import {
-  type PlateElementProps,
-  PlateElement,
-  useComposedRef,
-  useEditorPlugin,
-  useEditorRef,
-  useEditorSelector,
-  useElement,
-  usePluginOption,
-  useReadOnly,
-  useRemoveNodeButton,
-  useSelected,
-  withHOC,
-} from '@udecode/plate/react';
-import { useElementSelector } from '@udecode/plate/react';
+} from '@platejs/table/react';
+import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cva } from 'class-variance-authority';
 import {
   ArrowDown,
@@ -58,6 +35,29 @@ import {
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
+import {
+  type TElement,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
+  KEYS,
+  PathApi,
+} from 'platejs';
+import {
+  type PlateElementProps,
+  PlateElement,
+  useComposedRef,
+  useEditorPlugin,
+  useEditorRef,
+  useEditorSelector,
+  useElement,
+  usePluginOption,
+  useReadOnly,
+  useRemoveNodeButton,
+  useSelected,
+  withHOC,
+} from 'platejs/react';
+import { useElementSelector } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {

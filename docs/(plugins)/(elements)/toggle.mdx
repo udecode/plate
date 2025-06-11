@@ -36,7 +36,7 @@ The fastest way to add toggle functionality is with the `ToggleKit`, which inclu
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { ToggleKit } from '@/components/editor/plugins/toggle-kit';
 
 const editor = createPlateEditor({
@@ -56,7 +56,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-indent @udecode/plate-toggle
+npm install @platejs/indent @platejs/toggle
 ```
 
 ### Add Plugins
@@ -64,9 +64,9 @@ npm install @udecode/plate-indent @udecode/plate-toggle
 Include `TogglePlugin` and `IndentPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { TogglePlugin } from '@udecode/plate-toggle/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { IndentPlugin } from '@platejs/indent/react';
+import { TogglePlugin } from '@platejs/toggle/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -82,11 +82,11 @@ const editor = createPlateEditor({
 Configure the `IndentPlugin` and `TogglePlugin` with proper targeting and component assignment.
 
 ```tsx
-import { IndentPlugin } from '@udecode/plate-indent/react';
-import { TogglePlugin } from '@udecode/plate-toggle/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { IndentPlugin } from '@platejs/indent/react';
+import { TogglePlugin } from '@platejs/toggle/react';
+import { createPlateEditor } from 'platejs/react';
 import { ToggleElement } from '@/components/ui/toggle-node';
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 const editor = createPlateEditor({
   plugins: [

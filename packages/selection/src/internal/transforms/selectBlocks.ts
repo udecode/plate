@@ -1,4 +1,4 @@
-import type { Path, SlateEditor, TIdElement, TNode } from '@udecode/plate';
+import type { Path, SlateEditor, TIdElement, TNode } from 'platejs';
 
 import { BlockSelectionPlugin } from '../../react';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 

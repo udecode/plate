@@ -3,7 +3,7 @@
   "name": "block-menu-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-selection"
+    "@platejs/selection"
   ],
   "registryDependencies": [
     "https://platejs.org/r/block-context-menu",
@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/block-menu-kit.tsx",
-      "content": "'use client';\n\nimport { BlockMenuPlugin } from '@udecode/plate-selection/react';\n\nimport { BlockContextMenu } from '@/registry/ui/block-context-menu';\n\nimport { BlockSelectionKit } from './block-selection-kit';\n\nexport const BlockMenuKit = [\n  ...BlockSelectionKit,\n  BlockMenuPlugin.configure({\n    render: { aboveEditable: BlockContextMenu },\n  }),\n];\n",
+      "content": "'use client';\n\nimport { BlockMenuPlugin } from '@platejs/selection/react';\n\nimport { BlockContextMenu } from '@/registry/ui/block-context-menu';\n\nimport { BlockSelectionKit } from './block-selection-kit';\n\nexport const BlockMenuKit = [\n  ...BlockSelectionKit,\n  BlockMenuPlugin.configure({\n    render: { aboveEditable: BlockContextMenu },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

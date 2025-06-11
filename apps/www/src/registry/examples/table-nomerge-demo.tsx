@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { TablePlugin } from '@udecode/plate-table/react';
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+import { TablePlugin } from '@platejs/table/react';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { tableValue } from '@/registry/examples/values/table-value';

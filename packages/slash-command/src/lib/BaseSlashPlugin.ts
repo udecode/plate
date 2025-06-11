@@ -1,13 +1,13 @@
 import {
+  type TriggerComboboxPluginOptions,
+  withTriggerCombobox,
+} from '@platejs/combobox';
+import {
   type PluginConfig,
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
-} from '@udecode/plate';
-import {
-  type TriggerComboboxPluginOptions,
-  withTriggerCombobox,
-} from '@udecode/plate-combobox';
+} from 'platejs';
 
 export type SlashConfig = PluginConfig<
   'slash_command',

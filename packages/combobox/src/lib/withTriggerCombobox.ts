@@ -3,7 +3,7 @@ import type {
   PluginConfig,
   SlateEditor,
   TElement,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { TriggerComboboxPluginOptions } from './types';
 

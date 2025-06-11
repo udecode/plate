@@ -1,6 +1,6 @@
 {
-  "name": "@udecode/plate-media",
-  "version": "49.0.0",
+  "name": "@platejs/media",
+  "version": "48.0.5",
   "description": "Plate Media plugin",
   "keywords": [
     "plate",
@@ -53,10 +53,10 @@
     "js-video-url-parser": "^0.5.1"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=48.0.5",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

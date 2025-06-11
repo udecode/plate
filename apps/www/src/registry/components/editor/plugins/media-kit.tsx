@@ -1,7 +1,6 @@
 'use client';
 
-import { KEYS } from '@udecode/plate';
-import { CaptionPlugin } from '@udecode/plate-caption/react';
+import { CaptionPlugin } from '@platejs/caption/react';
 import {
   AudioPlugin,
   FilePlugin,
@@ -9,7 +8,8 @@ import {
   MediaEmbedPlugin,
   PlaceholderPlugin,
   VideoPlugin,
-} from '@udecode/plate-media/react';
+} from '@platejs/media/react';
+import { KEYS } from 'platejs';
 
 import { AudioElement } from '@/registry/ui/media-audio-node';
 import { MediaEmbedElement } from '@/registry/ui/media-embed-node';

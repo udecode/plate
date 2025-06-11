@@ -1,4 +1,4 @@
-import { usePluginOption, useStableMemo } from '@udecode/plate/react';
+import { usePluginOption, useStableMemo } from 'platejs/react';
 
 import {
   type EmojiSettingsType,

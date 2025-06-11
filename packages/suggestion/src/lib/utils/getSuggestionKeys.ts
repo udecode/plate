@@ -4,7 +4,7 @@ import {
   type TText,
   isDefined,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData } from './getSuggestionId';

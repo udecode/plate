@@ -5,7 +5,7 @@ import {
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
-} from '@udecode/plate-table/react';
+} from '@platejs/table/react';
 
 import {
   TableCellElement,

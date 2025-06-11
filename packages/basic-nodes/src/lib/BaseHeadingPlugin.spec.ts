@@ -1,5 +1,5 @@
-import { KEYS } from '@udecode/plate';
-import { createPlateEditor } from '@udecode/plate/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import { HeadingPlugin } from '../react/HeadingPlugin';
 

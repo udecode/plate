@@ -2,13 +2,7 @@
 
 export type * as unistLib from 'unist';
 
-import type {
-  NodeKey,
-  Nullable,
-  TElement,
-  TNodeMap,
-  TText,
-} from '@udecode/plate';
+import type { NodeKey, Nullable, TElement, TNodeMap, TText } from 'platejs';
 import type { StrictExtract } from 'ts-essentials';
 
 import type { DeserializeMdOptions } from './deserializer';

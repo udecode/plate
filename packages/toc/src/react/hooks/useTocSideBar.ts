@@ -1,11 +1,7 @@
 import React from 'react';
 
-import { NodeApi } from '@udecode/plate';
-import {
-  useEditorRef,
-  useEditorSelector,
-  useScrollRef,
-} from '@udecode/plate/react';
+import { NodeApi } from 'platejs';
+import { useEditorRef, useEditorSelector, useScrollRef } from 'platejs/react';
 
 import type { Heading } from '../../lib/types';
 import type { TocSideBarProps } from '../types';

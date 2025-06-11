@@ -1,10 +1,4 @@
-import {
-  type Editor,
-  type TRange,
-  PathApi,
-  RangeApi,
-  TextApi,
-} from '@udecode/plate';
+import { type Editor, type TRange, PathApi, RangeApi, TextApi } from 'platejs';
 
 import type { SelectionRect } from '../types';
 

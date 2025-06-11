@@ -1,4 +1,4 @@
-import { BaseTocPlugin } from '@udecode/plate-toc';
+import { BaseTocPlugin } from '@platejs/toc';
 
 import { TocElementStatic } from '@/registry/ui/toc-node-static';
 

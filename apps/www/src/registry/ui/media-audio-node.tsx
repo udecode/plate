@@ -2,12 +2,12 @@
 
 import * as React from 'react';
 
-import type { TAudioElement } from '@udecode/plate';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TAudioElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 
-import { useMediaState } from '@udecode/plate-media/react';
-import { ResizableProvider } from '@udecode/plate-resizable';
-import { PlateElement, withHOC } from '@udecode/plate/react';
+import { useMediaState } from '@platejs/media/react';
+import { ResizableProvider } from '@platejs/resizable';
+import { PlateElement, withHOC } from 'platejs/react';
 
 import { Caption, CaptionTextarea } from './caption';
 

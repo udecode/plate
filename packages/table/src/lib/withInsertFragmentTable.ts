@@ -1,3 +1,4 @@
+import cloneDeep from 'lodash/cloneDeep.js';
 import {
   type OverrideEditor,
   type Path,
@@ -7,8 +8,7 @@ import {
   type TTableRowElement,
   KEYS,
   NodeApi,
-} from '@udecode/plate';
-import cloneDeep from 'lodash/cloneDeep.js';
+} from 'platejs';
 
 import { type TableConfig, getTableAbove } from '.';
 import { getTableGridAbove } from './queries/getTableGridAbove';

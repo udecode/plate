@@ -1,4 +1,4 @@
-import type { TTableCellElement } from '@udecode/plate';
+import type { TTableCellElement } from 'platejs';
 
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';

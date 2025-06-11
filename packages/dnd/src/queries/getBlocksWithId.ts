@@ -1,4 +1,4 @@
-import type { Editor, EditorNodesOptions, ValueOf } from '@udecode/plate';
+import type { Editor, EditorNodesOptions, ValueOf } from 'platejs';
 
 /** Get blocks with an id */
 export const getBlocksWithId = <E extends Editor>(

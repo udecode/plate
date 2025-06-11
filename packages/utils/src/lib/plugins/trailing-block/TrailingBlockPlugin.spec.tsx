@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
-import { ParagraphPlugin } from '@udecode/plate/react';
+import { jsxt } from '@platejs/test-utils';
+import { createSlateEditor } from 'platejs';
+import { ParagraphPlugin } from 'platejs/react';
 
 import { TrailingBlockPlugin } from './TrailingBlockPlugin';
 

@@ -6,7 +6,7 @@ import {
   type TLocation,
   ElementApi,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 /** If at (default = selection) is in ul>li>p, return li and ul node entries. */
 export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(

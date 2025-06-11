@@ -6,19 +6,12 @@ excluded_packages=$(cat << 'EOF' | jq -r '.[] | "!\(.)"'
   "@changesets/get-github-info",
   "@excalidraw/excalidraw",
   "@shikijs/compat",
-  "@types/diff",
-  "commander",
   "contentlayer2",
-  "cosmiconfig",
-  "delay",
-  "diff",
-  "execa",
-  "https-proxy-agent",
   "jiti",
   "jotai",
   "juice",
   "next-contentlayer2",
-  "ora",
+  "react-day-picker",
   "rehype-autolink-headings",
   "rehype-pretty-code",
   "rehype-slug",
@@ -26,13 +19,7 @@ excluded_packages=$(cat << 'EOF' | jq -r '.[] | "!\(.)"'
   "remark-parse",
   "remark",
   "shiki",
-  "tailwind-scrollbar-hide",
-  "ts-morph",
-  "tsup",
-  "type-fest",
-  "vaul",
-  "vitest",
-  "zod"
+  "ts-morph"
 ]
 EOF
 )

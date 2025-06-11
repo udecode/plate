@@ -4,9 +4,9 @@ import type {
   SlateEditor,
   TTableCellBorder,
   TTableCellElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { ElementApi } from '@udecode/plate';
+import { ElementApi } from 'platejs';
 
 import type { BorderDirection } from '../types';
 

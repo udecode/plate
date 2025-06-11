@@ -1,7 +1,7 @@
 /* eslint-disable perfectionist/sort-jsx-props */
 import React from 'react';
 
-import type { Path, TElement, TText } from '@udecode/slate';
+import type { Path, TElement, TText } from '@platejs/slate';
 import type { UnknownObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';

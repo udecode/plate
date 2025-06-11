@@ -1,4 +1,4 @@
-import { Key, toPlatePlugin } from '@udecode/plate/react';
+import { Key, toPlatePlugin } from 'platejs/react';
 
 import { BaseUnderlinePlugin } from '../lib/BaseUnderlinePlugin';
 

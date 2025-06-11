@@ -4,18 +4,18 @@ import * as React from 'react';
 
 import type { Emoji } from '@emoji-mart/data';
 
-import * as Popover from '@radix-ui/react-popover';
 import {
   type EmojiCategoryList,
   type EmojiIconList,
   type GridRow,
   EmojiSettings,
-} from '@udecode/plate-emoji';
+} from '@platejs/emoji';
 import {
   type EmojiDropdownMenuOptions,
   type UseEmojiPickerType,
   useEmojiDropdownMenuState,
-} from '@udecode/plate-emoji/react';
+} from '@platejs/emoji/react';
+import * as Popover from '@radix-ui/react-popover';
 import {
   AppleIcon,
   ClockIcon,

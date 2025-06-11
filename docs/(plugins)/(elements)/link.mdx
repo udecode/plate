@@ -37,7 +37,7 @@ The fastest way to add link functionality is with the `LinkKit`, which includes 
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { LinkKit } from '@/components/editor/plugins/link-kit';
 
 const editor = createPlateEditor({
@@ -57,7 +57,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-link
+npm install @platejs/link
 ```
 
 ### Add Plugin
@@ -65,8 +65,8 @@ npm install @udecode/plate-link
 Include `LinkPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { LinkPlugin } from '@udecode/plate-link/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { LinkPlugin } from '@platejs/link/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -81,8 +81,8 @@ const editor = createPlateEditor({
 Configure the plugin with floating toolbar and custom components.
 
 ```tsx
-import { LinkPlugin } from '@udecode/plate-link/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { LinkPlugin } from '@platejs/link/react';
+import { createPlateEditor } from 'platejs/react';
 import { LinkElement } from '@/components/ui/link-node';
 import { LinkFloatingToolbar } from '@/components/ui/link-toolbar';
 

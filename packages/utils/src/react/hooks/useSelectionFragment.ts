@@ -1,7 +1,7 @@
-import type { EditorPropOptions, TElement } from '@udecode/slate';
+import type { EditorPropOptions, TElement } from '@platejs/slate';
 
-import { getContainerTypes } from '@udecode/plate-core';
-import { useEditorSelector } from '@udecode/plate-core/react';
+import { getContainerTypes } from '@platejs/core';
+import { useEditorSelector } from '@platejs/core/react';
 
 export const useSelectionFragment = () => {
   return useEditorSelector((editor) => {

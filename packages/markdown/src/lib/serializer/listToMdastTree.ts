@@ -1,4 +1,4 @@
-import type { TListElement } from '@udecode/plate';
+import type { TListElement } from 'platejs';
 
 import type { MdList, MdListItem, MdParagraph } from '../mdast';
 import type { SerializeMdOptions } from './serializeMd';

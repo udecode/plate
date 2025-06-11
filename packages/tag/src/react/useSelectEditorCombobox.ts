@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { type TTagProps, isDefined } from '@udecode/plate';
-import { useEditorRef, useEditorString } from '@udecode/plate/react';
+import { type TTagProps, isDefined } from 'platejs';
+import { useEditorRef, useEditorString } from 'platejs/react';
 
 import { useSelectedItems } from './useSelectedItems';
 

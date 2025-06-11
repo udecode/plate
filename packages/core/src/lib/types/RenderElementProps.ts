@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { TElement } from '@udecode/slate';
+import type { TElement } from '@platejs/slate';
 
 export type RenderElementFn = (
   props: RenderElementProps

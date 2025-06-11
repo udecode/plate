@@ -7,7 +7,7 @@
   "files": [
     {
       "path": "../../docs/(plugins)/(functionality)/find-replace.mdx",
-      "content": "---\ntitle: Find\ndescription: Search and locate specific text or blocks within your document.\n---\n\n<Callout type=\"info\">\n  Work in progress.\n</Callout>\n\n- Search for whole words, word parts, or phrases with case matching.\n\n[//]: # '- Use search input for find and replace operations.'\n\n<PackageInfo>\n\n## Installation\n\n```bash\nnpm install @udecode/plate-find-replace\n```\n\n</PackageInfo>\n",
+      "content": "---\ntitle: Find\ndescription: Search and locate specific text or blocks within your document.\n---\n\n<Callout type=\"info\">\n  Work in progress.\n</Callout>\n\n- Search for whole words, word parts, or phrases with case matching.\n\n[//]: # '- Use search input for find and replace operations.'\n\n<PackageInfo>\n\n## Installation\n\n```bash\nnpm install @platejs/find-replace\n```\n\n</PackageInfo>\n",
       "type": "registry:file",
       "target": "content/docs/plate/(plugins)/(functionality)/find-replace.mdx"
     }

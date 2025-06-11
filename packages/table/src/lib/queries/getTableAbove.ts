@@ -1,6 +1,6 @@
-import type { EditorAboveOptions, SlateEditor } from '@udecode/plate';
+import type { EditorAboveOptions, SlateEditor } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export const getTableAbove = (
   editor: SlateEditor,

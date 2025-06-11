@@ -1,6 +1,6 @@
 {
-  "name": "@udecode/plate-yjs",
-  "version": "49.0.0",
+  "name": "@platejs/yjs",
+  "version": "48.0.5",
   "description": "Yjs plugin for Plate",
   "keywords": [
     "plate",
@@ -52,14 +52,14 @@
   },
   "dependencies": {
     "@slate-yjs/core": "^1.0.2",
-    "yjs": "^13.6.23"
+    "yjs": "^13.6.27"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
     "@hocuspocus/provider": "^2.15.2",
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=48.0.5",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "y-webrtc": "10.3.0"

@@ -2,17 +2,13 @@
 
 import * as React from 'react';
 
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
   type DropdownMenuProps,
   DropdownMenuItemIndicator,
 } from '@radix-ui/react-dropdown-menu';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import {
-  useEditorRef,
-  usePlateState,
-  usePluginOption,
-} from '@udecode/plate/react';
 import { CheckIcon, EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';
+import { useEditorRef, usePlateState, usePluginOption } from 'platejs/react';
 
 import {
   DropdownMenu,

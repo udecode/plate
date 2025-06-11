@@ -5,7 +5,7 @@ import {
   KEYS,
   NodeApi,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';

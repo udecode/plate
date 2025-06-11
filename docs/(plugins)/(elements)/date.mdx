@@ -33,7 +33,7 @@ The fastest way to add date functionality is with the `DateKit`, which includes 
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { DateKit } from '@/components/editor/plugins/date-kit';
 
 const editor = createPlateEditor({
@@ -53,7 +53,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-date
+npm install @platejs/date
 ```
 
 ### Add Plugin
@@ -61,8 +61,8 @@ npm install @udecode/plate-date
 Include `DatePlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { DatePlugin } from '@udecode/plate-date/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { DatePlugin } from '@platejs/date/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -77,8 +77,8 @@ const editor = createPlateEditor({
 Configure the plugin with a custom component to render date elements.
 
 ```tsx
-import { DatePlugin } from '@udecode/plate-date/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { DatePlugin } from '@platejs/date/react';
+import { createPlateEditor } from 'platejs/react';
 import { DateElement } from '@/components/ui/date-node';
 
 const editor = createPlateEditor({

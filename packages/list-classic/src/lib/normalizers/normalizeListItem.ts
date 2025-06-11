@@ -9,7 +9,7 @@ import {
   match,
   NodeApi,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { ListConfig } from '../BaseListPlugin';
 

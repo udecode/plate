@@ -1,4 +1,4 @@
-import type { TTableElement } from '@udecode/plate';
+import type { TTableElement } from 'platejs';
 
 import type { TableStoreSizeOverrides } from '../types';
 

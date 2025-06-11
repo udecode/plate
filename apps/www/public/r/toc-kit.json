@@ -3,7 +3,7 @@
   "name": "toc-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-toc"
+    "@platejs/toc"
   ],
   "registryDependencies": [
     "https://platejs.org/r/toc-base-kit",
@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/toc-kit.tsx",
-      "content": "'use client';\n\nimport { TocPlugin } from '@udecode/plate-toc/react';\n\nimport { TocElement } from '@/registry/ui/toc-node';\n\nexport const TocKit = [\n  TocPlugin.configure({\n    options: {\n      // isScroll: true,\n      topOffset: 80,\n    },\n  }).withComponent(TocElement),\n];\n",
+      "content": "'use client';\n\nimport { TocPlugin } from '@platejs/toc/react';\n\nimport { TocElement } from '@/registry/ui/toc-node';\n\nexport const TocKit = [\n  TocPlugin.configure({\n    options: {\n      // isScroll: true,\n      topOffset: 80,\n    },\n  }).withComponent(TocElement),\n];\n",
       "type": "registry:component"
     }
   ]

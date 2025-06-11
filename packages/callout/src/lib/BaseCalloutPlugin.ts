@@ -1,4 +1,4 @@
-import { bindFirst, createSlatePlugin, KEYS } from '@udecode/plate';
+import { bindFirst, createSlatePlugin, KEYS } from 'platejs';
 
 import { insertCallout } from './transforms';
 

@@ -1,8 +1,4 @@
-import {
-  useEditorPlugin,
-  useHotkeys,
-  usePluginOption,
-} from '@udecode/plate/react';
+import { useEditorPlugin, useHotkeys, usePluginOption } from 'platejs/react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 

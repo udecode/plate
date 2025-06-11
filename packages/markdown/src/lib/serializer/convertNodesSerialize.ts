@@ -1,9 +1,4 @@
-import {
-  type Descendant,
-  type TElement,
-  type TText,
-  TextApi,
-} from '@udecode/plate';
+import { type Descendant, type TElement, type TText, TextApi } from 'platejs';
 
 import type { unistLib } from '../types';
 import type { SerializeMdOptions } from './serializeMd';

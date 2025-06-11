@@ -1,13 +1,13 @@
 'use client';
 
-import { AIChatPlugin } from '@udecode/plate-ai/react';
+import { AIChatPlugin } from '@platejs/ai/react';
 import {
   type PlateElementProps,
   type PlateTextProps,
   PlateElement,
   PlateText,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 

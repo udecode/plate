@@ -1,5 +1,10 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
+import {
+  BlockSelectionPlugin,
+  removeBlockSelectionNodes,
+} from '@platejs/selection/react';
+import cloneDeep from 'lodash/cloneDeep.js';
 import {
   type NodeEntry,
   type SlateEditor,
@@ -7,12 +12,7 @@ import {
   KEYS,
   NodeApi,
   TextApi,
-} from '@udecode/plate';
-import {
-  BlockSelectionPlugin,
-  removeBlockSelectionNodes,
-} from '@udecode/plate-selection/react';
-import cloneDeep from 'lodash/cloneDeep.js';
+} from 'platejs';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 

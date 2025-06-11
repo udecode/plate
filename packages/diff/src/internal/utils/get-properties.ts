@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { TText } from '@udecode/plate';
+import type { TText } from 'platejs';
 
 // Get object that will set the properties of before
 // to equal the properties of node, in terms of the

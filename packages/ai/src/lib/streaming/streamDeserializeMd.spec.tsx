@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@udecode/plate-test-utils';
+import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from './__tests__/createTestEditor';
 import { streamDeserializeMd } from './streamDeserializeMd';

@@ -4,7 +4,7 @@ import {
   type Path,
   type TElement,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 export const getCellInNextTableRow = (
   editor: Editor,

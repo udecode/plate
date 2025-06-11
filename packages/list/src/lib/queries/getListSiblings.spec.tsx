@@ -1,12 +1,12 @@
 /** @jsx jsxt */
 
+import { jsxt } from '@platejs/test-utils';
 import {
   type Descendant,
   type SlateEditor,
   type TElement,
   createEditor,
-} from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+} from 'platejs';
 
 import { getListSiblings } from './getListSiblings';
 

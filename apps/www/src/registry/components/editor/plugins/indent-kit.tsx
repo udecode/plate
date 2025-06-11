@@ -1,7 +1,7 @@
 'use client';
 
-import { KEYS } from '@udecode/plate';
-import { IndentPlugin } from '@udecode/plate-indent/react';
+import { IndentPlugin } from '@platejs/indent/react';
+import { KEYS } from 'platejs';
 
 export const IndentKit = [
   IndentPlugin.configure({

@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate-core';
-import { ParagraphPlugin } from '@udecode/plate-core/react';
-import { jsxt } from '@udecode/plate-test-utils';
-import { createEditor } from '@udecode/slate';
+import { createSlateEditor } from '@platejs/core';
+import { ParagraphPlugin } from '@platejs/core/react';
+import { createEditor } from '@platejs/slate';
+import { jsxt } from '@platejs/test-utils';
 
 import { NormalizeTypesPlugin } from './NormalizeTypesPlugin';
 

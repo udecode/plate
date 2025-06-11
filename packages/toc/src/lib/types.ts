@@ -1,4 +1,4 @@
-import type { Path } from '@udecode/plate';
+import type { Path } from 'platejs';
 
 export interface Heading {
   id: string;

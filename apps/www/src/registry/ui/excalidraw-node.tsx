@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 
-import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TExcalidrawElement } from '@platejs/excalidraw';
+import type { PlateElementProps } from 'platejs/react';
 
-import { useExcalidrawElement } from '@udecode/plate-excalidraw/react';
-import { PlateElement } from '@udecode/plate/react';
+import { useExcalidrawElement } from '@platejs/excalidraw/react';
+import { PlateElement } from 'platejs/react';
 
 export function ExcalidrawElement(
   props: PlateElementProps<TExcalidrawElement>

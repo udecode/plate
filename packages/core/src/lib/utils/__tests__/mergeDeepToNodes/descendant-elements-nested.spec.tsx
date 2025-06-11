@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { ListItemPlugin } from '@udecode/plate-list-classic/react';
-import { jsxt } from '@udecode/plate-test-utils';
-import { NodeApi } from '@udecode/slate';
+import { ListItemPlugin } from '@platejs/list-classic/react';
+import { jsxt } from '@platejs/test-utils';
+import { NodeApi } from '@platejs/slate';
 
 import { BaseParagraphPlugin } from '../../../plugins';
 import { mergeDeepToNodes } from '../../../utils';

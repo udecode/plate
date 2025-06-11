@@ -4,7 +4,7 @@ import {
   type TElement,
   match,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { getListTypes } from '../queries/index';
 

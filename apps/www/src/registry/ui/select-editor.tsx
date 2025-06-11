@@ -2,23 +2,23 @@
 
 import * as React from 'react';
 
-import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
-import { isHotkey, KEYS } from '@udecode/plate';
-import { isEqualTags } from '@udecode/plate-tag';
+import { isEqualTags } from '@platejs/tag';
 import {
   MultiSelectPlugin,
   TagPlugin,
   useSelectableItems,
   useSelectEditorCombobox,
-} from '@udecode/plate-tag/react';
+} from '@platejs/tag/react';
+import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
+import { Fzf } from 'fzf';
+import { PlusIcon } from 'lucide-react';
+import { isHotkey, KEYS } from 'platejs';
 import {
   Plate,
   useEditorContainerRef,
   useEditorRef,
   usePlateEditor,
-} from '@udecode/plate/react';
-import { Fzf } from 'fzf';
-import { PlusIcon } from 'lucide-react';
+} from 'platejs/react';
 
 import {
   Popover,

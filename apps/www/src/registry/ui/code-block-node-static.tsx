@@ -6,7 +6,7 @@ import {
   type TCodeBlockElement,
   SlateElement,
   SlateLeaf,
-} from '@udecode/plate';
+} from 'platejs';
 
 export function CodeBlockElementStatic(
   props: SlateElementProps<TCodeBlockElement>

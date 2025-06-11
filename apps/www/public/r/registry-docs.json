@@ -125,7 +125,9 @@
         "https://platejs.org/r/installation-react-docs",
         "https://platejs.org/r/installation-rsc-docs",
         "https://platejs.org/r/installation-docs",
-        "https://platejs.org/r/migration-slate-to-plate-docs"
+        "https://platejs.org/r/migration-index-docs",
+        "https://platejs.org/r/migration-slate-to-plate-docs",
+        "https://platejs.org/r/migration-v48-docs"
       ],
       "title": "Documentation",
       "type": "registry:file"
@@ -1244,7 +1246,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for @udecode/plate-core.",
+      "description": "API reference for @platejs/core.",
       "files": [
         {
           "path": "../../docs/api/core.mdx",
@@ -1270,7 +1272,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for @udecode/plate.",
+      "description": "API reference for platejs.",
       "files": [
         {
           "path": "../../docs/api/plate.mdx",
@@ -1296,7 +1298,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for @udecode/plate-resizable.",
+      "description": "API reference for @platejs/resizable.",
       "files": [
         {
           "path": "../../docs/api/resizable.mdx",
@@ -1322,7 +1324,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for editor transformation operations in Slate.",
+      "description": "API reference for editor transformation operations in Plate.",
       "files": [
         {
           "path": "../../docs/api/slate/editor-transforms.mdx",
@@ -1348,7 +1350,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for location references in Slate.",
+      "description": "API reference for location references in Plate.",
       "files": [
         {
           "path": "../../docs/api/slate/location-ref.mdx",
@@ -1361,7 +1363,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for locations in Slate.",
+      "description": "API reference for locations in Plate.",
       "files": [
         {
           "path": "../../docs/api/slate/location.mdx",
@@ -1374,7 +1376,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for nodes in Slate.",
+      "description": "API reference for nodes in Plate.",
       "files": [
         {
           "path": "../../docs/api/slate/node.mdx",
@@ -1387,7 +1389,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for operations in Slate.",
+      "description": "API reference for operations in Plate.",
       "files": [
         {
           "path": "../../docs/api/slate/operation.mdx",
@@ -1400,7 +1402,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for paths in Slate.",
+      "description": "API reference for paths in Plate.",
       "files": [
         {
           "path": "../../docs/api/slate/path.mdx",
@@ -1413,7 +1415,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for points in Slate.",
+      "description": "API reference for points in Plate.",
       "files": [
         {
           "path": "../../docs/api/slate/point.mdx",
@@ -1426,7 +1428,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for ranges in Slate.",
+      "description": "API reference for ranges in Plate.",
       "files": [
         {
           "path": "../../docs/api/slate/range.mdx",
@@ -1439,7 +1441,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for text nodes in Slate.",
+      "description": "API reference for text nodes in Plate.",
       "files": [
         {
           "path": "../../docs/api/slate/text.mdx",
@@ -1452,7 +1454,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for @udecode/slate",
+      "description": "API reference for @platejs/slate",
       "files": [
         {
           "path": "../../docs/api/slate.mdx",
@@ -1465,7 +1467,7 @@
       "type": "registry:file"
     },
     {
-      "description": "API reference for @udecode/plate-utils.",
+      "description": "API reference for @platejs/utils.",
       "files": [
         {
           "path": "../../docs/api/utils.mdx",
@@ -1712,6 +1714,19 @@
       "type": "registry:file"
     },
     {
+      "description": "Documentation for Major Releases",
+      "files": [
+        {
+          "path": "../../docs/migration/index.mdx",
+          "target": "content/docs/plate/migration/index.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "migration-index-docs",
+      "title": "Major Releases",
+      "type": "registry:file"
+    },
+    {
       "description": "Learn how to migrate from Slate to Plate.",
       "files": [
         {
@@ -1722,6 +1737,19 @@
       ],
       "name": "migration-slate-to-plate-docs",
       "title": "Migrating from Slate to Plate",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Major Releases",
+      "files": [
+        {
+          "path": "../../docs/migration/v48.mdx",
+          "target": "content/docs/plate/migration/v48.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "migration-v48-docs",
+      "title": "Major Releases",
       "type": "registry:file"
     }
   ],

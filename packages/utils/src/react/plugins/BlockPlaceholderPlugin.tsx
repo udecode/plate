@@ -1,7 +1,7 @@
 import React from 'react';
 
-import type { PluginConfig } from '@udecode/plate-core';
-import type { Path, TElement } from '@udecode/slate';
+import type { PluginConfig } from '@platejs/core';
+import type { Path, TElement } from '@platejs/slate';
 
 import {
   type PlatePluginContext,
@@ -11,7 +11,7 @@ import {
   useEditorSelector,
   useFocused,
   usePluginOption,
-} from '@udecode/plate-core/react';
+} from '@platejs/core/react';
 
 import { KEYS } from '../../lib';
 

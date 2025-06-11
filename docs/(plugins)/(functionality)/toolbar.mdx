@@ -41,7 +41,7 @@ The fastest way to add toolbar functionality is with the `FixedToolbarKit` and `
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { FixedToolbarKit } from '@/components/editor/plugins/fixed-toolbar-kit';
 import { FloatingToolbarKit } from '@/components/editor/plugins/floating-toolbar-kit';
 
@@ -63,7 +63,7 @@ const editor = createPlateEditor({
 ### Create Plugins
 
 ```tsx
-import { createPlatePlugin } from '@udecode/plate/react';
+import { createPlatePlugin } from 'platejs/react';
 import { FixedToolbar } from '@/components/ui/fixed-toolbar';
 import { FixedToolbarButtons } from '@/components/ui/fixed-toolbar-buttons';
 import { FloatingToolbar } from '@/components/ui/floating-toolbar';
@@ -123,7 +123,7 @@ Similarly, you can customize the floating toolbar by editing `components/ui/floa
 This example shows a button that inserts custom text into the editor.
 
 ```tsx
-import { useEditorRef } from '@udecode/plate/react';
+import { useEditorRef } from 'platejs/react';
 import { CustomIcon } from 'lucide-react';
 import { ToolbarButton } from '@/components/ui/toolbar';
 

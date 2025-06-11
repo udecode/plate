@@ -49,10 +49,10 @@ The frontmatter is enclosed by ---` lines. It lists each affected package and it
 **Important Note on SemVer Bumping and Multiple Changesets:**
 
 - Each distinct change (breaking, feature, fix) for a package **MUST** have its own changeset file.
-- For example, if you make a breaking API change, add a new feature, and fix a bug in `@udecode/plate-core` for an upcoming release, you will create **three separate changeset files**:
-  1.  One file marked `major` for `@udecode/plate-core` detailing only the breaking change.
-  2.  One file marked `minor` for `@udecode/plate-core` detailing only the new feature.
-  3.  One file marked `patch` for `@udecode/plate-core` detailing only the bug fix.
+- For example, if you make a breaking API change, add a new feature, and fix a bug in `@platejs/core` for an upcoming release, you will create **three separate changeset files**:
+  1.  One file marked `major` for `@platejs/core` detailing only the breaking change.
+  2.  One file marked `minor` for `@platejs/core` detailing only the new feature.
+  3.  One file marked `patch` for `@platejs/core` detailing only the bug fix.
 - The versioning tool will look at all pending changesets for a package. If there's at least one `major` file, the package gets a major version bump, and all changes (from major, minor, and patch files) are included in that release. If no `major` but at least one `minor`, it gets a minor bump, and so on.
 
 **Example (Illustrating multiple files for one package):**
@@ -61,7 +61,7 @@ File 1: `core-major.md`
 
 ```yaml
 ---
-'@udecode/plate-core': major
+'@platejs/core': major
 ---
 - Renamed `oldApi()` to `newApi()`.
   ```ts
@@ -74,7 +74,7 @@ File 1: `core-major.md`
 File 2: `core-minor.md`
 ```yaml
 ---
-'@udecode/plate-core': minor
+'@platejs/core': minor
 ---
 - Added `useCoreHook()` for enhanced state management.
 ```
@@ -83,7 +83,7 @@ File 3: `core-patch.md`
 
 ```yaml
 ---
-'@udecode/plate-core': patch
+'@platejs/core': patch
 ---
 - Fixed an issue where X would cause Y.
 ```
@@ -101,7 +101,7 @@ This section explains **what changed for the user** and **how they should adapt*
   - Get straight to the point. Avoid verbose explanations or justifications.
   - If a code snippet clearly shows the "before" and "after," **let the code snippet speak for itself.** Minimize or eliminate redundant introductory text for code blocks.
 - Use **bold text (`**text**`)** for emphasis on:
-  - Package names (e.g., `**@udecode/plate-core**`)
+  - Package names (e.g., `**@platejs/core**`)
   - Plugin names (e.g., `**BlockquotePlugin**`)
   - Important function, option, or property names being changed.
 - Use **code blocks** (```tsx) for:
@@ -114,7 +114,7 @@ This section explains **what changed for the user** and **how they should adapt*
 
 - **Breaking Changes (`major` changeset):**
 
-  - - Renamed `EditorFragmentOptions.structuralTypes` to `EditorFragmentOptions.containerTypes` in `**@udecode/slate**`.
+  - - Renamed `EditorFragmentOptions.structuralTypes` to `EditorFragmentOptions.containerTypes` in `**@platejs/slate**`.
 
     ```ts
     // Before
@@ -136,15 +136,15 @@ This section explains **what changed for the user** and **how they should adapt*
 
 - **Deprecations (can be `major` if immediate removal or `minor` if still available with warnings):**
 
-  - If removed in this version (major): - Removed `**@udecode/plate-old-package**`. Use `**@udecode/plate-new-package**` instead.
-  - If only deprecated (minor): - Deprecated `**@udecode/plate-old-package**`. It will be removed in a future version. Use `**@udecode/plate-new-package**` instead.
+  - If removed in this version (major): - Removed `**@platejs/old-package**`. Use `**@platejs/new-package**` instead.
+  - If only deprecated (minor): - Deprecated `**@platejs/old-package**`. It will be removed in a future version. Use `**@platejs/new-package**` instead.
   - Provide migration steps:
     - To migrate:
-      - Replace `**@udecode/plate-old-package**` with `**@udecode/plate-new-package**` in your `package.json`.
+      - Replace `**@platejs/old-package**` with `**@platejs/new-package**` in your `package.json`.
       - Update import paths:
         ```diff
-        - import { SomeFeature } from '@udecode/plate-old-package';
-        + import { SomeFeature } from '@udecode/plate-new-package';
+        - import { SomeFeature } from '@platejs/old-package';
+        + import { SomeFeature } from '@platejs/new-package';
         ```
         `
 

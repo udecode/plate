@@ -1,11 +1,11 @@
-import type { TTableElement } from '@udecode/plate';
+import type { TTableElement } from 'platejs';
 
 import {
   useEditorPlugin,
   useEditorSelector,
   useElement,
   usePluginOption,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import {
   type TableBorderStates,

@@ -101,6 +101,24 @@ const BoldPlugin = createPlatePlugin({
 
 Rather than render an element or a mark, you may want to customize the behavior of your editor. Various plugin options are available to modify the behavior of Plate.
 
+### Plugin Rules
+
+The `rules` property allows you to configure common editing behaviors like breaking, deleting, and merging nodes without overriding editor methods. This is a powerful way to define intuitive interactions for your custom elements.
+
+For example, you can define what happens when a user presses `Enter` in an empty heading, or `Backspace` at the start of a blockquote.
+
+```ts
+import { H1Plugin } from '@platejs/heading/react';
+
+H1Plugin.configure({
+  rules: {
+    break: { empty: 'reset' },
+  },
+});
+```
+
+See the [Plugin Rules guide](/docs/plugin-rules) for a complete list of available rules and actions.
+
 ### Event Handlers
 
 The recommended way to respond to user-generated events from inside a plugin is with the `handlers` plugin option. A handler should be a function that takes a `PlatePluginContext & { event }` object.
@@ -126,7 +144,7 @@ const ExamplePlugin = createPlatePlugin({
 You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with an `align` property.
 
 ```ts showLineNumbers
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 const TextAlignPlugin = createPlatePlugin({
   key: 'align',

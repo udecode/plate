@@ -1,11 +1,6 @@
-import type {
-  ElementOf,
-  NodeEntry,
-  SlateEditor,
-  TElement,
-} from '@udecode/plate';
+import type { ElementOf, NodeEntry, SlateEditor, TElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import type { ListStyleType } from '../types';
 

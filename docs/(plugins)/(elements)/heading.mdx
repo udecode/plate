@@ -35,7 +35,7 @@ The fastest way to add heading plugins is with the `BasicBlocksKit`, which inclu
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
 
 const editor = createPlateEditor({
@@ -55,7 +55,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-basic-nodes
+npm install @platejs/basic-nodes
 ```
 
 ### Add Plugins
@@ -63,8 +63,8 @@ npm install @udecode/plate-basic-nodes
 Add individual heading plugins when you need more control or want to include specific heading levels.
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
-import { H1Plugin, H2Plugin, H3Plugin } from '@udecode/plate-basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+import { H1Plugin, H2Plugin, H3Plugin } from '@platejs/basic-nodes/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -82,8 +82,8 @@ const editor = createPlateEditor({
 Configure individual heading plugins with custom components or shortcuts.
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
-import { H1Plugin, H2Plugin, H3Plugin } from '@udecode/plate-basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+import { H1Plugin, H2Plugin, H3Plugin } from '@platejs/basic-nodes/react';
 import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
 
 const editor = createPlateEditor({

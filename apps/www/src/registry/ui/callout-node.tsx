@@ -2,9 +2,9 @@
 
 import * as React from 'react';
 
-import { useCalloutEmojiPicker } from '@udecode/plate-callout/react';
-import { useEmojiDropdownMenuState } from '@udecode/plate-emoji/react';
-import { PlateElement } from '@udecode/plate/react';
+import { useCalloutEmojiPicker } from '@platejs/callout/react';
+import { useEmojiDropdownMenuState } from '@platejs/emoji/react';
+import { PlateElement } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

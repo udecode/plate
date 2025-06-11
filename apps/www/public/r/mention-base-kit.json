@@ -3,7 +3,7 @@
   "name": "mention-base-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-mention"
+    "@platejs/mention"
   ],
   "registryDependencies": [
     "https://platejs.org/r/mention-node"
@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/mention-base-kit.tsx",
-      "content": "import { BaseMentionPlugin } from '@udecode/plate-mention';\n\nimport { MentionElementStatic } from '@/registry/ui/mention-node-static';\n\nexport const BaseMentionKit = [\n  BaseMentionPlugin.withComponent(MentionElementStatic),\n];\n",
+      "content": "import { BaseMentionPlugin } from '@platejs/mention';\n\nimport { MentionElementStatic } from '@/registry/ui/mention-node-static';\n\nexport const BaseMentionKit = [\n  BaseMentionPlugin.withComponent(MentionElementStatic),\n];\n",
       "type": "registry:component"
     }
   ]

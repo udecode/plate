@@ -2,7 +2,7 @@ import type { Registry } from 'shadcn/registry';
 
 export const examples: Registry['items'] = [
   {
-    dependencies: ['@udecode/plate-ai', '@udecode/plate-markdown'],
+    dependencies: ['@platejs/ai', '@platejs/markdown'],
     description: 'Renders AI ghost text suggestions at the cursor position.',
     files: [
       { path: 'examples/copilot-demo.tsx', type: 'registry:example' },
@@ -24,7 +24,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['@udecode/plate-tag'],
+    dependencies: ['@platejs/tag'],
     description: 'A form with a select editor component for managing labels.',
     files: [
       {
@@ -56,7 +56,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['@udecode/plate-basic-nodes', '@udecode/plate-basic-nodes'],
+    dependencies: ['@platejs/basic-nodes', '@platejs/basic-nodes'],
     files: [
       {
         path: 'examples/hundreds-blocks-demo.tsx',
@@ -88,9 +88,9 @@ export const examples: Registry['items'] = [
   },
   {
     dependencies: [
-      '@udecode/plate-basic-nodes',
-      '@udecode/plate-basic-nodes',
-      '@udecode/plate-media',
+      '@platejs/basic-nodes',
+      '@platejs/basic-nodes',
+      '@platejs/media',
     ],
     files: [
       {
@@ -122,11 +122,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: [
-      '@udecode/plate-basic-nodes',
-      '@udecode/plate-diff',
-      'lodash',
-    ],
+    dependencies: ['@platejs/basic-nodes', '@platejs/diff', 'lodash'],
     files: [
       {
         path: 'examples/version-history-demo.tsx',
@@ -166,7 +162,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['@udecode/plate-yjs', 'nanoid'],
+    dependencies: ['@platejs/yjs', 'nanoid'],
     description: 'Real-time collaboration with cursors and selections.',
     files: [
       {
@@ -184,7 +180,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['@udecode/plate-basic-nodes', '@udecode/plate-basic-nodes'],
+    dependencies: ['@platejs/basic-nodes', '@platejs/basic-nodes'],
     files: [
       {
         path: 'examples/installation-next-04-value-demo.tsx',
@@ -203,7 +199,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['@udecode/plate-tabbable'],
+    dependencies: ['@platejs/tabbable'],
     files: [
       { path: 'examples/tabbable-demo.tsx', type: 'registry:example' },
       {
@@ -220,7 +216,7 @@ export const examples: Registry['items'] = [
 export const demoExamples: Registry['items'] = (
   [
     {
-      dependencies: ['@udecode/plate-table'],
+      dependencies: ['@platejs/table'],
       files: [
         {
           path: 'examples/table-nomerge-demo.tsx',
@@ -307,7 +303,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      dependencies: ['@udecode/plate-find-replace'],
+      dependencies: ['@platejs/find-replace'],
       description: 'Find and replace functionality in text.',
       files: [
         {
@@ -1076,7 +1072,7 @@ export const internalExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      dependencies: ['@udecode/plate-basic-nodes'],
+      dependencies: ['@platejs/basic-nodes'],
       files: [
         {
           path: 'examples/installation-next-02-marks-demo.tsx',
@@ -1088,10 +1084,7 @@ export const internalExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      dependencies: [
-        '@udecode/plate-basic-nodes',
-        '@udecode/plate-basic-nodes',
-      ],
+      dependencies: ['@platejs/basic-nodes', '@platejs/basic-nodes'],
       files: [
         {
           path: 'examples/installation-next-03-elements-demo.tsx',

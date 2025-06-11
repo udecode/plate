@@ -1,4 +1,4 @@
-import { type NodeEntry, type SlateEditor, KEYS } from '@udecode/plate';
+import { type NodeEntry, type SlateEditor, KEYS } from 'platejs';
 
 export const toggleListByPath = (
   editor: SlateEditor,

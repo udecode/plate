@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import type { UseDropNodeOptions } from '../hooks/useDropNode';

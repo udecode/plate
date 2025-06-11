@@ -1,6 +1,6 @@
-import type { SlateEditor, TLinkElement, TText } from '@udecode/plate';
+import type { SlateEditor, TLinkElement, TText } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export interface CreateLinkNodeOptions {
   url: string;

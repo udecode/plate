@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
-import { LinkPlugin } from '@udecode/plate-link/react';
+import { LinkPlugin } from '@platejs/link/react';
 import {
   BulletedListPlugin,
   ListItemPlugin,
-} from '@udecode/plate-list-classic/react';
-import { jsxt } from '@udecode/plate-test-utils';
+} from '@platejs/list-classic/react';
+import { jsxt } from '@platejs/test-utils';
 
 import { ParagraphPlugin } from '../../../react';
 import { type SlateEditor, createSlateEditor } from '../../editor';

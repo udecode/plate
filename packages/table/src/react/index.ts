@@ -3,6 +3,7 @@
  */
 
 export * from './TablePlugin';
+export * from './onKeyDownTable';
 export * from './components/index';
 export * from './hooks/index';
 export * from './stores/index';

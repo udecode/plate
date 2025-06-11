@@ -5,7 +5,7 @@ import {
   type NodeEntry,
   isDefined,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 

@@ -1,12 +1,12 @@
 'use client';
 
-import type { AIChatPluginConfig } from '@udecode/plate-ai/react';
+import type { AIChatPluginConfig } from '@platejs/ai/react';
 import type { UseChatOptions } from 'ai/react';
 
-import { KEYS, PathApi } from '@udecode/plate';
-import { streamInsertChunk, withAIBatch } from '@udecode/plate-ai';
-import { AIChatPlugin, AIPlugin, useChatChunk } from '@udecode/plate-ai/react';
-import { usePluginOption } from '@udecode/plate/react';
+import { streamInsertChunk, withAIBatch } from '@platejs/ai';
+import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
+import { KEYS, PathApi } from 'platejs';
+import { usePluginOption } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
 import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';

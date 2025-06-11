@@ -42,11 +42,11 @@ npx shadcn@latest add https://platejs.org/r/plate-ui
 ### 安装 Plate
 
 ```bash
-npm add @udecode/plate
+npm install platejs
 ```
 
 <Callout type="note" title="插件依赖">
-  手动安装 Plate 时，你需要为每个想用的插件单独安装依赖包。例如，如果你想用 `AIMenu` 组件，需要安装 `@udecode/plate-ai` 及其依赖。请查阅每个组件的文档了解所需包，或直接用 CLI 自动安装。
+  手动安装 Plate 时，你需要为每个想用的插件单独安装依赖包。例如，如果你想用 `AIMenu` 组件，需要安装 `@platejs/ai` 及其依赖。请查阅每个组件的文档了解所需包，或直接用 CLI 自动安装。
 </Callout>
 
 ### 配置 CSS 变量
@@ -75,7 +75,7 @@ npx shadcn@latest add https://platejs.org/r/fixed-toolbar https://platejs.org/r/
 在编辑器中导入并使用它们：
 
 ```tsx showLineNumbers title="components/editor.tsx"
-import { Plate } from "@udecode/plate/react";
+import { Plate } from "platejs/react";
 import { FixedToolbar } from "@/components/ui/fixed-toolbar";
 import { MarkToolbarButton } from "@/components/ui/mark-toolbar-button";
 // ... 其他导入

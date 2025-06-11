@@ -5,9 +5,9 @@ import type {
   TCaptionProps,
   TImageElement,
   TResizableProps,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { NodeApi, SlateElement } from '@udecode/plate';
+import { NodeApi, SlateElement } from 'platejs';
 
 import { cn } from '@/lib/utils';
 

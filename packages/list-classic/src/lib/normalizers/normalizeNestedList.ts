@@ -1,9 +1,4 @@
-import {
-  type ElementEntry,
-  type SlateEditor,
-  match,
-  PathApi,
-} from '@udecode/plate';
+import { type ElementEntry, type SlateEditor, match, PathApi } from 'platejs';
 
 import { getListTypes } from '../queries/index';
 

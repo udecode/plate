@@ -8,8 +8,8 @@ import {
   type TText,
   createSlatePlugin,
   TextApi,
-} from '@udecode/plate';
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+} from 'platejs';
+import { Plate, usePlateEditor } from 'platejs/react';
 import Prism from 'prismjs';
 
 import { cn } from '@/lib/utils';

@@ -1,9 +1,4 @@
-import {
-  type Editor,
-  type TLocation,
-  type TRange,
-  PathApi,
-} from '@udecode/plate';
+import { type Editor, type TLocation, type TRange, PathApi } from 'platejs';
 
 import { mergeClientRects } from './mergeClientRects';
 

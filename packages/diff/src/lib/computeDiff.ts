@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Descendant, EditorApi, TElement } from '@udecode/plate';
+import type { Descendant, EditorApi, TElement } from 'platejs';
 
 import type { DiffProps } from './types';
 

@@ -1,6 +1,6 @@
-import { jsx } from '@udecode/plate-test-utils';
 /** @jsx jsx */
-import { type PlateEditor, createPlateEditor } from '@udecode/plate/react';
+import { jsx } from '@platejs/test-utils';
+import { type PlateEditor, createPlateEditor } from 'platejs/react';
 
 import { setSelectedCellsBorder } from './getOnSelectTableBorderFactory';
 

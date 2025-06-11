@@ -1,6 +1,6 @@
 import type { JSHandle } from '@playwright/test';
-import type { NodeApi } from '@udecode/plate';
-import type { PlateEditor } from '@udecode/plate/react';
+import type { NodeApi } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 export type EditorHandle<E extends PlateEditor = PlateEditor> = JSHandle<E>;
 

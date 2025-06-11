@@ -1,4 +1,4 @@
-# @udecode/plate-mention
+# @platejs/mention
 
 ## 49.0.0
 
@@ -11,6 +11,9 @@
 
 - [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
   - Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
+
+
+# @udecode/plate-mention
 
 ## 48.0.0
 

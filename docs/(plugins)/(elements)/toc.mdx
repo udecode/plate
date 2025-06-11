@@ -35,7 +35,7 @@ The fastest way to add table of contents functionality is with the `TocKit`, whi
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { TocKit } from '@/components/editor/plugins/toc-kit';
 
 const editor = createPlateEditor({
@@ -55,7 +55,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-basic-nodes @udecode/plate-toc
+npm install @platejs/basic-nodes @platejs/toc
 ```
 
 ### Add Plugins
@@ -63,9 +63,9 @@ npm install @udecode/plate-basic-nodes @udecode/plate-toc
 Include `TocPlugin` and `HnPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { TocPlugin } from '@udecode/plate-toc/react';
-import { H1Plugin, H2Plugin, H3Plugin } from '@udecode/plate-basic-nodes/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { TocPlugin } from '@platejs/toc/react';
+import { H1Plugin, H2Plugin, H3Plugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -83,9 +83,9 @@ const editor = createPlateEditor({
 Configure the `TocPlugin` with custom component and scroll options.
 
 ```tsx
-import { TocPlugin } from '@udecode/plate-toc/react';
-import { H1Plugin, H2Plugin, H3Plugin } from '@udecode/plate-basic-nodes/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { TocPlugin } from '@platejs/toc/react';
+import { H1Plugin, H2Plugin, H3Plugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
 import { TocElement } from '@/components/ui/toc-node';
 import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
 

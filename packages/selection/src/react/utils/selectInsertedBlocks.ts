@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin } from '@udecode/plate';
+import { type SlateEditor, getEditorPlugin } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

@@ -102,7 +102,7 @@ Slate 编辑器引用。
 ## 访问存储
 
 ```ts
-import { usePlateStore, useEditorRef, useEditorPlugin } from '@udecode/plate/react'
+import { usePlateStore, useEditorRef, useEditorPlugin } from 'platejs/react'
 
 // 直接访问存储
 const store = usePlateStore(id?) 
@@ -121,7 +121,7 @@ const store = useEditorPlugin(myPlugin).store
 以下钩子可用于与 Plate 存储进行交互：
 
 ```ts
-import { usePlateState, usePlateValue, usePlateSet } from '@udecode/plate/react'
+import { usePlateState, usePlateValue, usePlateSet } from 'platejs/react'
 ```
 
 ### usePlateState
@@ -179,7 +179,7 @@ const setReadOnly = usePlateSet('readOnly', id?)
 
 
 ```ts
-import { EventEditorStore, useEventEditorValue } from '@udecode/plate'
+import { EventEditorStore, useEventEditorValue } from 'platejs'
 
 // 获取值
 const focusedId = EventEditorStore.get('focus')

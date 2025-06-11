@@ -1,6 +1,6 @@
-import type { InsertNodesOptions, SlateEditor } from '@udecode/plate';
+import type { InsertNodesOptions, SlateEditor } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import { insertImage, insertMediaEmbed } from '../..';
 

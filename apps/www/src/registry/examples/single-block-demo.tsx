@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { SingleBlockPlugin, SingleLinePlugin } from '@udecode/plate';
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+import { SingleBlockPlugin, SingleLinePlugin } from 'platejs';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';

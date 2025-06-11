@@ -40,7 +40,7 @@ The fastest way to add Block Selection is with the `BlockSelectionKit`, which in
 The `BlockSelectionKit` enables the context menu by default and provides a default `isSelectable` logic to exclude common non-selectable blocks like code lines and table cells.
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { BlockSelectionKit } from '@/components/editor/plugins/block-selection-kit';
 
 const editor = createPlateEditor({
@@ -60,14 +60,14 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-selection
+npm install @platejs/selection
 ```
 
 ### Add Plugin
 
 ```tsx
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -86,7 +86,7 @@ You can control which blocks are selectable using `options.isSelectable`. This f
 For example, to exclude code lines, columns, and table cells:
 
 ```tsx
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 
 BlockSelectionPlugin.configure({
   options: {

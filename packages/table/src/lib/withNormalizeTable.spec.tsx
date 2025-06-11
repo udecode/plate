@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { type Value, createSlateEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { jsxt } from '@platejs/test-utils';
+import { type Value, createSlateEditor } from 'platejs';
 
 import { type TableConfig, BaseTablePlugin } from './BaseTablePlugin';
 

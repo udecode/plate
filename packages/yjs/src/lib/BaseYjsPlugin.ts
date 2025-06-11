@@ -4,7 +4,7 @@ import {
   type Value,
   createTSlatePlugin,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 import { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
 

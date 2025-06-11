@@ -124,7 +124,9 @@
     "https://platejs.org/r/installation-react-docs",
     "https://platejs.org/r/installation-rsc-docs",
     "https://platejs.org/r/installation-docs",
-    "https://platejs.org/r/migration-slate-to-plate-docs"
+    "https://platejs.org/r/migration-index-docs",
+    "https://platejs.org/r/migration-slate-to-plate-docs",
+    "https://platejs.org/r/migration-v48-docs"
   ],
   "files": []
 }

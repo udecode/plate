@@ -3,10 +3,10 @@ import type {
   SlateEditor,
   TTableCellElement,
   TTableElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { getEditorPlugin, KEYS } from '@udecode/plate';
 import cloneDeep from 'lodash/cloneDeep.js';
+import { getEditorPlugin, KEYS } from 'platejs';
 
 import { getCellIndices, getCellTypes } from '..';
 import { BaseTablePlugin } from '../BaseTablePlugin';

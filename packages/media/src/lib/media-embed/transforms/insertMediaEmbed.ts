@@ -2,9 +2,9 @@ import type {
   InsertNodesOptions,
   SlateEditor,
   TMediaEmbedElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export const insertMediaEmbed = (
   editor: SlateEditor,

@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
 import type { EditorHandle } from './types';
 

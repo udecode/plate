@@ -43,7 +43,7 @@ The fastest way to add table functionality is with the `TableKit`, which include
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { TableKit } from '@/components/editor/plugins/table-kit';
 
 const editor = createPlateEditor({
@@ -63,7 +63,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-table
+npm install @platejs/table
 ```
 
 ### Add Plugin
@@ -71,8 +71,8 @@ npm install @udecode/plate-table
 Include `TablePlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { TablePlugin } from '@udecode/plate-table/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { TablePlugin } from '@platejs/table/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -92,8 +92,8 @@ import {
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
-} from '@udecode/plate-table/react';
-import { createPlateEditor } from '@udecode/plate/react';
+} from '@platejs/table/react';
+import { createPlateEditor } from 'platejs/react';
 import {
   TableCellElement,
   TableCellHeaderElement,

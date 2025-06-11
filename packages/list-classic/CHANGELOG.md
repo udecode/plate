@@ -1,4 +1,4 @@
-# @udecode/plate-list-classic
+# @platejs/list-classic
 
 ## 49.0.0
 

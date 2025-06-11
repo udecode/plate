@@ -1,6 +1,6 @@
-import type { TRange } from '@udecode/plate';
+import type { TRange } from 'platejs';
 
-import { RangeApi } from '@udecode/plate';
+import { RangeApi } from 'platejs';
 
 import type { CaretPosition, SelectionRect } from '../types';
 

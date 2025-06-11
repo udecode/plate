@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { createSlateEditor } from 'platejs';
+import { jsxt } from '@platejs/test-utils';
 import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
 
 import type { AutoformatBlockRule } from '../../../types';

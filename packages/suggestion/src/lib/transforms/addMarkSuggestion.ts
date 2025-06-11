@@ -1,10 +1,4 @@
-import {
-  type SlateEditor,
-  type TNode,
-  KEYS,
-  nanoid,
-  TextApi,
-} from '@udecode/plate';
+import { type SlateEditor, type TNode, KEYS, nanoid, TextApi } from 'platejs';
 
 import { getInlineSuggestionData, getSuggestionKey } from '../..';
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';

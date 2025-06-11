@@ -1,6 +1,6 @@
 'use client';
 
-import { DocxPlugin } from '@udecode/plate-docx';
-import { JuicePlugin } from '@udecode/plate-juice';
+import { DocxPlugin } from '@platejs/docx';
+import { JuicePlugin } from '@platejs/juice';
 
 export const DocxKit = [DocxPlugin, JuicePlugin];

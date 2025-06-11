@@ -1,4 +1,4 @@
-import { BaseSuggestionPlugin } from '@udecode/plate-suggestion';
+import { BaseSuggestionPlugin } from '@platejs/suggestion';
 
 import { SuggestionLeafStatic } from '@/registry/ui/suggestion-node-static';
 

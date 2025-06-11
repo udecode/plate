@@ -1,14 +1,11 @@
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin } from '@udecode/plate';
-import { createSlateEditor } from '@udecode/plate';
-import {
-  BaseCodeBlockPlugin,
-  insertEmptyCodeBlock,
-} from '@udecode/plate-code-block';
-import { jsxt } from '@udecode/plate-test-utils';
+import { BaseParagraphPlugin } from 'platejs';
+import { createSlateEditor } from 'platejs';
+import { BaseCodeBlockPlugin, insertEmptyCodeBlock } from '@platejs/code-block';
+import { jsxt } from '@platejs/test-utils';
 import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 jsxt;
 

@@ -1,4 +1,4 @@
-import { createSlatePlugin, KEYS } from '@udecode/plate';
+import { createSlatePlugin, KEYS } from 'platejs';
 
 export const BaseFontSizePlugin = createSlatePlugin({
   key: KEYS.fontSize,

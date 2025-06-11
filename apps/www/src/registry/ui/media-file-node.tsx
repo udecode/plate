@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 
-import type { TFileElement } from '@udecode/plate';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TFileElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 
-import { useMediaState } from '@udecode/plate-media/react';
-import { ResizableProvider } from '@udecode/plate-resizable';
-import { PlateElement, useReadOnly, withHOC } from '@udecode/plate/react';
+import { useMediaState } from '@platejs/media/react';
+import { ResizableProvider } from '@platejs/resizable';
 import { FileUp } from 'lucide-react';
+import { PlateElement, useReadOnly, withHOC } from 'platejs/react';
 
 import { Caption, CaptionTextarea } from './caption';
 

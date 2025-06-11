@@ -1,6 +1,6 @@
-import type { OverrideEditor, TIndentElement } from '@udecode/plate';
+import type { OverrideEditor, TIndentElement } from 'platejs';
 
-import { getInjectMatch } from '@udecode/plate';
+import { getInjectMatch } from 'platejs';
 
 import type { IndentConfig } from './BaseIndentPlugin';
 

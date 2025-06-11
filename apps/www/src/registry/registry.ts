@@ -15,7 +15,7 @@ const url =
 
 export const registryInit: RegistryItem[] = [
   {
-    dependencies: ['@udecode/plate'],
+    dependencies: ['platejs'],
     description: 'Install Plate package',
     devDependencies: [],
     files: [],

@@ -4,7 +4,7 @@ import {
   type TMediaElement,
   type WithRequiredKey,
   isUrl,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { MediaPluginOptions } from '../../../lib/media/types';
 

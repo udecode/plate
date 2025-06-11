@@ -1,6 +1,6 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import { PathApi } from '@udecode/plate';
+import { PathApi } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 

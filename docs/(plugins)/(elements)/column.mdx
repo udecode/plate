@@ -35,7 +35,7 @@ The fastest way to add column functionality is with the `ColumnKit`, which inclu
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { ColumnKit } from '@/components/editor/plugins/column-kit';
 
 const editor = createPlateEditor({
@@ -55,7 +55,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-layout
+npm install @platejs/layout
 ```
 
 ### Add Plugins
@@ -63,8 +63,8 @@ npm install @udecode/plate-layout
 Include the column plugins in your Plate plugins array when creating the editor.
 
 ```tsx
-import { ColumnPlugin, ColumnItemPlugin } from '@udecode/plate-layout/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -80,8 +80,8 @@ const editor = createPlateEditor({
 Configure the plugins with custom components to render column layouts.
 
 ```tsx
-import { ColumnPlugin, ColumnItemPlugin } from '@udecode/plate-layout/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
+import { createPlateEditor } from 'platejs/react';
 import { ColumnGroupElement, ColumnElement } from '@/components/ui/column-node';
 
 const editor = createPlateEditor({

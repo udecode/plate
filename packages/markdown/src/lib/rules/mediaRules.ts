@@ -1,4 +1,4 @@
-import type { TMediaElement } from '@udecode/plate';
+import type { TMediaElement } from 'platejs';
 
 import type { MdMdxJsxFlowElement } from '../mdast';
 import type { MdRules } from '../types';

@@ -2,8 +2,16 @@
 
 import * as React from 'react';
 
-import type { TResolvedSuggestion } from '@udecode/plate-suggestion';
+import type { TResolvedSuggestion } from '@platejs/suggestion';
 
+import {
+  acceptSuggestion,
+  getSuggestionKey,
+  keyId2SuggestionId,
+  rejectSuggestion,
+} from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { CheckIcon, XIcon } from 'lucide-react';
 import {
   type NodeEntry,
   type Path,
@@ -14,16 +22,8 @@ import {
   KEYS,
   PathApi,
   TextApi,
-} from '@udecode/plate';
-import {
-  acceptSuggestion,
-  getSuggestionKey,
-  keyId2SuggestionId,
-  rejectSuggestion,
-} from '@udecode/plate-suggestion';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
-import { CheckIcon, XIcon } from 'lucide-react';
+} from 'platejs';
+import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';

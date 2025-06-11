@@ -1,10 +1,6 @@
-import type { TCalloutElement } from '@udecode/plate';
+import type { TCalloutElement } from 'platejs';
 
-import {
-  useEditorReadOnly,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate/react';
+import { useEditorReadOnly, useEditorRef, useElement } from 'platejs/react';
 
 import { CALLOUT_STORAGE_KEY } from '../../lib';
 

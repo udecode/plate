@@ -1,11 +1,7 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  type TElement,
-  createSlateEditor,
-} from '@udecode/plate';
-import { jsxt } from '@udecode/plate-test-utils';
+import { jsxt } from '@platejs/test-utils';
+import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
 
 import { getTestTablePlugins } from './withNormalizeTable.spec';
 

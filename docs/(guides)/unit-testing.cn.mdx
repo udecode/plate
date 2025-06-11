@@ -3,12 +3,12 @@ title: 单元测试 Plate
 description: 学习如何对 Plate 编辑器及其插件进行单元测试。
 ---
 
-本指南概述了使用 `@udecode/plate-test-utils` 对 Plate 插件和组件进行单元测试的最佳实践。
+本指南概述了使用 `@platejs/test-utils` 对 Plate 插件和组件进行单元测试的最佳实践。
 
 ## 安装
 
 ```bash
-npm install @udecode/plate-test-utils
+npm install @platejs/test-utils
 ```
 
 ## 设置测试
@@ -18,7 +18,7 @@ npm install @udecode/plate-test-utils
 ```typescript
 /** @jsx jsx */
 
-import { jsx } from '@udecode/plate-test-utils';
+import { jsx } from '@platejs/test-utils';
 
 jsx; // 这样 ESLint 不会报错
 ```

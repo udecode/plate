@@ -1,6 +1,6 @@
-import type { OverrideEditor, TElement } from '@udecode/plate';
+import type { OverrideEditor, TElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 export const withInsertDataCodeBlock: OverrideEditor = ({
   editor,

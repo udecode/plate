@@ -2,9 +2,9 @@
 
 import * as React from 'react';
 
-import { KEYS, NormalizeTypesPlugin } from '@udecode/plate';
-import { PlaywrightPlugin } from '@udecode/plate-playwright';
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+import { PlaywrightPlugin } from '@platejs/playwright';
+import { KEYS, NormalizeTypesPlugin } from 'platejs';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { useLocale } from '@/hooks/useLocale';
 import { getI18nValues } from '@/i18n/getI18nValues';

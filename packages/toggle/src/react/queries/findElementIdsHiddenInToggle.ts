@@ -1,4 +1,4 @@
-import type { TIndentElement } from '@udecode/plate';
+import type { TIndentElement } from 'platejs';
 
 import { buildToggleIndex } from '../toggleIndexAtom';
 

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@udecode/plate-test-utils';
+import { jsxt } from '@platejs/test-utils';
 
 import { createPlateTestEditor } from '../__tests__/createPlateTestEditor';
 import { createPlatePlugin } from '../plugin';

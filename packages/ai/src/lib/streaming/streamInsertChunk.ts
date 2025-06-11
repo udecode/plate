@@ -1,6 +1,6 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import { type SlateEditor, NodeApi, PathApi } from '@udecode/plate';
+import { type SlateEditor, NodeApi, PathApi } from 'platejs';
 
 import { AIChatPlugin } from '../../react';
 import { streamDeserializeInlineMd } from './streamDeserializeInlineMd';

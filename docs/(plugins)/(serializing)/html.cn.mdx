@@ -15,9 +15,9 @@ toc: true
 [查看服务端示例](/docs/examples/slate-to-html)
 
 <Callout type="warning" title="服务端关键限制">
-  在服务端环境（Node.js、RSC）使用 `serializeHtml` 或其他 Plate 工具时，**绝不能**从任何 `@udecode/plate*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@udecode/plate-basic-nodes`，而不是 `@udecode/plate-basic-nodes/react`）。
+  在服务端环境（Node.js、RSC）使用 `serializeHtml` 或其他 Plate 工具时，**绝不能**从任何 `platejs*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@platejs/basic-nodes`，而不是 `@platejs/basic-nodes/react`）。
 
-  这意味着服务端编辑器实例应使用 `@udecode/plate` 的 `createSlateEditor`，而不是 `@udecode/plate/react` 的 `usePlateEditor` 或 `createPlateEditor`。
+  这意味着服务端编辑器实例应使用 `platejs` 的 `createSlateEditor`，而不是 `platejs/react` 的 `usePlateEditor` 或 `createPlateEditor`。
 </Callout>
 
 <Steps>
@@ -27,9 +27,9 @@ toc: true
 提供服务端编辑器实例，并将 Plate 组件映射到它们的静态 HTML 渲染组件。
 
 ```tsx title="lib/generate-html.ts"
-import { createSlateEditor, serializeHtml } from '@udecode/plate'; // 基础导入
+import { createSlateEditor, serializeHtml } from 'platejs'; // 基础导入
 // 导入基础插件（不要从 /react 路径导入）
-import { BaseHeadingPlugin } from '@udecode/plate-basic-nodes';
+import { BaseHeadingPlugin } from '@platejs/basic-nodes';
 // 导入用于渲染的静态组件
 import { ParagraphElementStatic } from '@/components/ui/paragraph-element-static';
 import { HeadingElementStatic } from '@/components/ui/heading-element-static';
@@ -112,7 +112,7 @@ async function getFullHtmlDocument() {
 
 ```tsx title="components/ui/paragraph-element-static.tsx"
 import React from 'react';
-import type { SlateElementProps } from '@udecode/plate';
+import type { SlateElementProps } from 'platejs';
 
 // 示例静态段落组件
 export function ParagraphElementStatic(props: SlateElementProps) {
@@ -139,9 +139,9 @@ HTML 反序列化允许你将 HTML 内容（字符串或 DOM 元素）转换回 
 在客户端 Plate 编辑器上下文中用 `editor.api.html.deserialize`。
 
 ```tsx title="components/my-html-importer.tsx"
-import { PlateEditor, usePlateEditor } from '@udecode/plate/react'; // 客户端专用导入
+import { PlateEditor, usePlateEditor } from 'platejs/react'; // 客户端专用导入
 // 导入所有需要解析 HTML 的 Plate 插件
-import { HeadingPlugin } from '@udecode/plate-basic-nodes/react';
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 // ... 以及 bold、italic、table、list 等等
 
 function MyHtmlImporter({ htmlString }: { htmlString: string }) {
@@ -230,8 +230,8 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 你可以扩展插件以修改其 HTML 解析逻辑，支持非标准 HTML 属性或结构。
 
 ```tsx title="lib/custom-code-block-plugin.ts"
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { CodeLinePlugin } from '@udecode/plate-code-block'; // 如需基础插件
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { CodeLinePlugin } from '@platejs/code-block'; // 如需基础插件
 
 const MyCustomCodeBlockPlugin = CodeBlockPlugin.extend({
   parsers: {

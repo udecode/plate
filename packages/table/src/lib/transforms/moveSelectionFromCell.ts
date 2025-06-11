@@ -1,4 +1,4 @@
-import { type SlateEditor, type TLocation, NodeApi } from '@udecode/plate';
+import { type SlateEditor, type TLocation, NodeApi } from 'platejs';
 
 import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';

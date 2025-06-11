@@ -7,7 +7,7 @@ import {
   KEYS,
   NodeApi,
   RangeApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 /**
  * Returns the nearest li and ul / ol wrapping node entries for a given path

@@ -3,7 +3,7 @@ import {
   type TTagElement,
   type TTagProps,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 /**
  * Compares two sets of tags/labels for equality, ignoring order

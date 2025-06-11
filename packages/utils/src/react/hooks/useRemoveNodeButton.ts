@@ -1,6 +1,6 @@
-import type { TElement } from '@udecode/slate';
+import type { TElement } from '@platejs/slate';
 
-import { useEditorRef } from '@udecode/plate-core/react';
+import { useEditorRef } from '@platejs/core/react';
 
 export const useRemoveNodeButton = ({ element }: { element: TElement }) => {
   const editor = useEditorRef();

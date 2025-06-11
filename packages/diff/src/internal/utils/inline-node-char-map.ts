@@ -1,4 +1,4 @@
-import { type Descendant, type TText, NodeApi, TextApi } from '@udecode/plate';
+import { type Descendant, type TText, NodeApi, TextApi } from 'platejs';
 
 export class InlineNodeCharMap {
   private _charGenerator: Generator<string>;

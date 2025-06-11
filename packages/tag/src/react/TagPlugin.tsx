@@ -1,5 +1,5 @@
-import { type TText, PathApi, TextApi } from '@udecode/plate';
-import { toPlatePlugin } from '@udecode/plate/react';
+import { type TText, PathApi, TextApi } from 'platejs';
+import { toPlatePlugin } from 'platejs/react';
 
 import { BaseTagPlugin } from '../lib';
 

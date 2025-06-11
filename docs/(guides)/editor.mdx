@@ -10,7 +10,7 @@ This guide covers the configuration options for the Plate editor, including basi
 To create a basic Plate editor, you can use the `createPlateEditor` function, or `usePlateEditor` in a React component:
 
 ```ts
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [HeadingPlugin],
@@ -318,8 +318,8 @@ editor.tf.insert.tableRow()
 For more complex editors, you can define your types in a separate file (e.g., `plate-types.ts`):
 
 ```ts
-import type { TElement, TText } from '@udecode/plate';
-import type { TPlateEditor } from '@udecode/plate/react';
+import type { TElement, TText } from 'platejs';
+import type { TPlateEditor } from 'platejs/react';
 
 // Define custom element types
 interface ParagraphElement extends TElement {

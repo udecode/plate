@@ -1,4 +1,4 @@
-import { type SlateEditor, sanitizeUrl } from '@udecode/plate';
+import { type SlateEditor, sanitizeUrl } from 'platejs';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 

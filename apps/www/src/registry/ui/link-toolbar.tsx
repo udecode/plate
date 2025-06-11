@@ -2,15 +2,14 @@
 
 import * as React from 'react';
 
-import type { TLinkElement } from '@udecode/plate';
+import type { TLinkElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
 import {
   type UseVirtualFloatingOptions,
   flip,
   offset,
-} from '@udecode/plate-floating';
-import { getLinkAttributes } from '@udecode/plate-link';
+} from '@platejs/floating';
+import { getLinkAttributes } from '@platejs/link';
 import {
   type LinkFloatingToolbarState,
   FloatingLinkUrlInput,
@@ -18,15 +17,16 @@ import {
   useFloatingLinkEditState,
   useFloatingLinkInsert,
   useFloatingLinkInsertState,
-} from '@udecode/plate-link/react';
+} from '@platejs/link/react';
+import { cva } from 'class-variance-authority';
+import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
+import { KEYS } from 'platejs';
 import {
   useEditorRef,
   useEditorSelection,
   useFormInputProps,
   usePluginOption,
-} from '@udecode/plate/react';
-import { cva } from 'class-variance-authority';
-import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
+} from 'platejs/react';
 
 import { buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';

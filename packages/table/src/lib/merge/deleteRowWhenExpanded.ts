@@ -3,9 +3,9 @@ import type {
   PathRef,
   SlateEditor,
   TTableCellElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { getEditorPlugin } from '@udecode/plate';
+import { getEditorPlugin } from 'platejs';
 
 import {
   BaseTablePlugin,

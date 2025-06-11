@@ -3,7 +3,7 @@ import type {
   SlateEditor,
   TLinkElement,
   TText,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { type CreateLinkNodeOptions, createLinkNode } from '../utils';
 

@@ -6,7 +6,7 @@ import {
   usePluginOption,
   useReadOnly,
   useSelected,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { getTableGridAbove } from '../../../lib';
 import { TablePlugin } from '../../TablePlugin';

@@ -3,7 +3,7 @@
   "name": "date-base-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-date"
+    "@platejs/date"
   ],
   "registryDependencies": [
     "https://platejs.org/r/date-node"
@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/date-base-kit.tsx",
-      "content": "import { BaseDatePlugin } from '@udecode/plate-date';\n\nimport { DateElementStatic } from '@/registry/ui/date-node-static';\n\nexport const BaseDateKit = [BaseDatePlugin.withComponent(DateElementStatic)];\n",
+      "content": "import { BaseDatePlugin } from '@platejs/date';\n\nimport { DateElementStatic } from '@/registry/ui/date-node-static';\n\nexport const BaseDateKit = [BaseDatePlugin.withComponent(DateElementStatic)];\n",
       "type": "registry:component"
     }
   ]

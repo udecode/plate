@@ -5,9 +5,9 @@ import type {
   TCaptionElement,
   TResizableProps,
   TVideoElement,
-} from '@udecode/plate';
+} from 'platejs';
 
-import { NodeApi, SlateElement } from '@udecode/plate';
+import { NodeApi, SlateElement } from 'platejs';
 
 export function VideoElementStatic(
   props: SlateElementProps<TVideoElement & TCaptionElement & TResizableProps>

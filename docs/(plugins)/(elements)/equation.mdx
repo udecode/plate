@@ -42,7 +42,7 @@ The fastest way to add equation functionality is with the `MathKit`, which inclu
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { MathKit } from '@/components/editor/plugins/math-kit';
 
 const editor = createPlateEditor({
@@ -62,7 +62,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-math
+npm install @platejs/math
 ```
 
 ### Add Plugins
@@ -70,8 +70,8 @@ npm install @udecode/plate-math
 Include the equation plugins in your Plate plugins array when creating the editor.
 
 ```tsx
-import { EquationPlugin, InlineEquationPlugin } from '@udecode/plate-math/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -87,8 +87,8 @@ const editor = createPlateEditor({
 Configure the plugins with custom components to render equation elements.
 
 ```tsx
-import { EquationPlugin, InlineEquationPlugin } from '@udecode/plate-math/react';
-import { createPlateEditor } from '@udecode/plate/react';
+import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import { createPlateEditor } from 'platejs/react';
 import { EquationElement, InlineEquationElement } from '@/components/ui/equation-node';
 
 const editor = createPlateEditor({

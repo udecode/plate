@@ -5,7 +5,7 @@ import {
   createTSlatePlugin,
   isUrl,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { getLinkAttributes, validateUrl } from './utils/index';
 import { withLink } from './withLink';

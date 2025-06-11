@@ -1,11 +1,6 @@
-import type {
-  ElementEntryOf,
-  ElementOf,
-  SlateEditor,
-  TElement,
-} from '@udecode/plate';
+import type { ElementEntryOf, ElementOf, SlateEditor, TElement } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
+import { KEYS } from 'platejs';
 
 import type { ListOptions } from './indentList';
 

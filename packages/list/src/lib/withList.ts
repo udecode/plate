@@ -6,7 +6,7 @@ import {
   type TNode,
   KEYS,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import type { BaseListConfig } from './BaseListPlugin';
 

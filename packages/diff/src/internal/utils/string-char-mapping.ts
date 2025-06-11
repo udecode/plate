@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Descendant } from '@udecode/plate';
+import type { Descendant } from 'platejs';
 
 import isEqual from 'lodash/isEqual.js';
 

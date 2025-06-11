@@ -1,4 +1,4 @@
-import { parseHtmlElement } from '@udecode/plate';
+import { parseHtmlElement } from 'platejs';
 
 import { getDocxListContentHtml } from './getDocxListContentHtml';
 import { getDocxListIndent } from './getDocxListIndent';

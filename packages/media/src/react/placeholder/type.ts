@@ -1,4 +1,4 @@
-import type { KEYS } from '@udecode/plate';
+import type { KEYS } from 'platejs';
 
 import type { AllowedFileType } from './internal/mimes';
 

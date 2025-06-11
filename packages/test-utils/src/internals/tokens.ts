@@ -1,4 +1,4 @@
-import type { Path, TNode, TText } from '@udecode/slate';
+import type { Path, TNode, TText } from '@platejs/slate';
 
 /** A weak map to hold anchor tokens. */
 

@@ -1,6 +1,6 @@
-import type { Path, SlateEditor, TTableCellElement } from '@udecode/plate';
+import type { Path, SlateEditor, TTableCellElement } from 'platejs';
 
-import { PathApi } from '@udecode/plate';
+import { PathApi } from 'platejs';
 
 import { getCellTypes } from '../utils';
 

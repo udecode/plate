@@ -1,9 +1,6 @@
-import type { PlateEditor } from '@udecode/plate/react';
+import type { PlateEditor } from 'platejs/react';
 
-import {
-  type DeserializeMdOptions,
-  MarkdownPlugin,
-} from '@udecode/plate-markdown';
+import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
 
 export const streamDeserializeInlineMd = (
   editor: PlateEditor,

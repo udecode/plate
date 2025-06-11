@@ -2,15 +2,15 @@
 
 import * as React from 'react';
 
-import { YjsPlugin } from '@udecode/plate-yjs/react';
+import { YjsPlugin } from '@platejs/yjs/react';
+import { RefreshCw } from 'lucide-react';
+import { nanoid } from 'nanoid';
 import {
   Plate,
   useEditorRef,
   usePlateEditor,
   usePluginOption,
-} from '@udecode/plate/react';
-import { RefreshCw } from 'lucide-react';
-import { nanoid } from 'nanoid';
+} from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

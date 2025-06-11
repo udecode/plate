@@ -1,4 +1,4 @@
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '@udecode/plate-layout';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
 
 import {
   ColumnElementStatic,

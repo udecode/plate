@@ -1,4 +1,4 @@
-import { BaseTogglePlugin } from '@udecode/plate-toggle';
+import { BaseTogglePlugin } from '@platejs/toggle';
 
 import { ToggleElementStatic } from '@/registry/ui/toggle-node-static';
 

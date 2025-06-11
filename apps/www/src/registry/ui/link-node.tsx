@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 
-import type { TLinkElement } from '@udecode/plate';
-import type { PlateElementProps } from '@udecode/plate/react';
+import type { TLinkElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 
-import { useLink } from '@udecode/plate-link/react';
-import { PlateElement } from '@udecode/plate/react';
+import { useLink } from '@platejs/link/react';
+import { PlateElement } from 'platejs/react';
 
 export function LinkElement(props: PlateElementProps<TLinkElement>) {
   const { props: linkProps } = useLink({ element: props.element });

@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin, PathApi } from '@udecode/plate';
+import { type SlateEditor, getEditorPlugin, PathApi } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { selectInsertedBlocks } from './selectInsertedBlocks';

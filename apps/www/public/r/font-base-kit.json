@@ -3,13 +3,13 @@
   "name": "font-base-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-basic-styles"
+    "@platejs/basic-styles"
   ],
   "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/components/editor/plugins/font-base-kit.tsx",
-      "content": "import type { SlatePluginConfig } from '@udecode/plate';\n\nimport { KEYS } from '@udecode/plate';\nimport {\n  BaseFontBackgroundColorPlugin,\n  BaseFontColorPlugin,\n  BaseFontFamilyPlugin,\n  BaseFontSizePlugin,\n} from '@udecode/plate-basic-styles';\n\nconst options = {\n  inject: { targetPlugins: [KEYS.p] },\n} satisfies SlatePluginConfig;\n\nexport const BaseFontKit = [\n  BaseFontColorPlugin.configure(options),\n  BaseFontBackgroundColorPlugin.configure(options),\n  BaseFontSizePlugin.configure(options),\n  BaseFontFamilyPlugin.configure(options),\n];\n",
+      "content": "import type { SlatePluginConfig } from 'platejs';\n\nimport {\n  BaseFontBackgroundColorPlugin,\n  BaseFontColorPlugin,\n  BaseFontFamilyPlugin,\n  BaseFontSizePlugin,\n} from '@platejs/basic-styles';\nimport { KEYS } from 'platejs';\n\nconst options = {\n  inject: { targetPlugins: [KEYS.p] },\n} satisfies SlatePluginConfig;\n\nexport const BaseFontKit = [\n  BaseFontColorPlugin.configure(options),\n  BaseFontBackgroundColorPlugin.configure(options),\n  BaseFontSizePlugin.configure(options),\n  BaseFontFamilyPlugin.configure(options),\n];\n",
       "type": "registry:component"
     }
   ]

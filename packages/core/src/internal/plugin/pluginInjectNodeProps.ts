@@ -1,4 +1,4 @@
-import type { Path, TElement, TText } from '@udecode/slate';
+import type { Path, TElement, TText } from '@platejs/slate';
 
 import { isDefined } from '@udecode/utils';
 

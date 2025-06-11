@@ -2,8 +2,8 @@ it('TODO: serialize list to html', () => {
   expect(1).toBe(1);
 });
 
-import { BaseLinkPlugin } from '@udecode/plate-link';
-import { BaseImagePlugin } from '@udecode/plate-media';
+import { BaseLinkPlugin } from '@platejs/link';
+import { BaseImagePlugin } from '@platejs/media';
 
 import { createSlateEditor } from '../../editor';
 import { BaseParagraphPlugin } from '../../plugins';

@@ -5,7 +5,7 @@ import {
   type NodeEntry,
   isDefined,
   KEYS,
-} from '@udecode/plate';
+} from 'platejs';
 
 export const getListAbove = <N extends ElementOf<E>, E extends Editor = Editor>(
   editor: E,

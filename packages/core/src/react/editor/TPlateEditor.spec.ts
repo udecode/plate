@@ -1,4 +1,4 @@
-import { type Value, createEditor } from '@udecode/slate';
+import { type Value, createEditor } from '@platejs/slate';
 
 import type { InferPlugins } from '../../lib/editor/SlateEditor';
 

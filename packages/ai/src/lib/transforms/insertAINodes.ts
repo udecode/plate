@@ -1,4 +1,4 @@
-import type { Descendant, Path, SlateEditor } from '@udecode/plate';
+import type { Descendant, Path, SlateEditor } from 'platejs';
 
 export const insertAINodes = (
   editor: SlateEditor,

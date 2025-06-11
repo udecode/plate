@@ -6,7 +6,7 @@ import {
   type TSuggestionElement,
   type TSuggestionText,
   nanoid,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData, isCurrentUserSuggestion } from '../utils';

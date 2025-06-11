@@ -3,7 +3,7 @@
   "name": "emoji-kit",
   "type": "registry:component",
   "dependencies": [
-    "@udecode/plate-emoji",
+    "@platejs/emoji",
     "@emoji-mart/data@1.2.1"
   ],
   "registryDependencies": [
@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/emoji-kit.tsx",
-      "content": "'use client';\n\nimport emojiMartData from '@emoji-mart/data';\nimport { EmojiInputPlugin, EmojiPlugin } from '@udecode/plate-emoji/react';\n\nimport { EmojiInputElement } from '@/registry/ui/emoji-node';\n\nexport const EmojiKit = [\n  EmojiPlugin.configure({\n    options: { data: emojiMartData as any },\n  }),\n  EmojiInputPlugin.withComponent(EmojiInputElement),\n];\n",
+      "content": "'use client';\n\nimport emojiMartData from '@emoji-mart/data';\nimport { EmojiInputPlugin, EmojiPlugin } from '@platejs/emoji/react';\n\nimport { EmojiInputElement } from '@/registry/ui/emoji-node';\n\nexport const EmojiKit = [\n  EmojiPlugin.configure({\n    options: { data: emojiMartData as any },\n  }),\n  EmojiInputPlugin.withComponent(EmojiInputElement),\n];\n",
       "type": "registry:component"
     }
   ]

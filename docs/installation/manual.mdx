@@ -24,11 +24,11 @@ npm create vite@latest
 First, install the necessary Plate packages. These packages provide the core editor functionality, React integration, and basic plugins for marks and elements.
 
 ```bash
-npm add @udecode/plate @udecode/plate-basic-nodes
+npm install platejs @platejs/basic-nodes
 ```
 
--   `@udecode/plate`: The core Plate engine and React components.
--   `@udecode/plate-basic-nodes`: Plugin for basic nodes like headings, bold, italic, underline, etc.
+-   `platejs`: The core Plate engine and React components.
+-   `@platejs/basic-nodes`: Plugin for basic nodes like headings, bold, italic, underline, etc.
 
 ### TypeScript Configuration
 
@@ -56,8 +56,8 @@ Start by creating a basic editor component. This example sets up a simple editor
 
 ```tsx title="src/App.tsx"
 import React from 'react';
-import type { Value } from '@udecode/plate';
-import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+import type { Value } from 'platejs';
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 
 export default function App() {
   const editor = usePlateEditor();
@@ -74,7 +74,7 @@ export default function App() {
 ```
 
 <Callout type="info">
-  `usePlateEditor` creates a memoized editor instance, ensuring stability across re-renders. For a non-memoized version, use `createPlateEditor` from `@udecode/plate/react`.
+  `usePlateEditor` creates a memoized editor instance, ensuring stability across re-renders. For a non-memoized version, use `createPlateEditor` from `platejs/react`.
 </Callout>
 
 <ComponentPreview name="installation-next-01-editor-demo" height="200px" />
@@ -87,18 +87,18 @@ Let's add support for basic text formatting like bold, italic, and underline.
 
 ```tsx showLineNumbers title="src/App.tsx" {4-8,32}
 import React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   PlateContent,
   usePlateEditor,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 const initialValue: Value = [
   {
@@ -144,7 +144,7 @@ Now, let's add support for block-level elements like headings, and blockquotes.
 
 ```tsx showLineNumbers title="src/App.tsx" {5,7-9,76-79}
 import React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BlockquotePlugin,
@@ -154,14 +154,14 @@ import {
   H3Plugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   PlateContent,
   PlateElement,
   usePlateEditor,
   type PlateElementProps,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 const initialValue: Value = [
   {
@@ -247,7 +247,7 @@ To make the editor's content persistent, let's integrate state management to sav
 
 ```tsx showLineNumbers title="src/App.tsx" {81-87,93-95}
 import React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BlockquotePlugin,
@@ -257,14 +257,14 @@ import {
   H3Plugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   PlateContent,
   PlateElement,
   usePlateEditor,
   type PlateElementProps,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 const initialValue: Value = [
   {
@@ -388,7 +388,7 @@ You've now set up a basic Plate editor manually! From here, you can:
 *   **Add Styling:**
     *   For a quick start with pre-built components, consider using [Plate UI](/docs/installation/plate-ui)
     *   Or continue styling manually using CSS, CSS-in-JS libraries, or your preferred styling solution
-*   **[Add Plugins](/docs/plugins):** Plate has a rich ecosystem of plugins for features like tables, mentions, images, lists, and more. Install their packages (e.g., `@udecode/plate-table`) and add them to your `plugins` array.
+*   **[Add Plugins](/docs/plugins):** Plate has a rich ecosystem of plugins for features like tables, mentions, images, lists, and more. Install their packages (e.g., `@platejs/table`) and add them to your `plugins` array.
 *   **[Build a Toolbar](/docs/toolbar):** Create React components for toolbar buttons that use the [Editor Transforms](/docs/transforms) to apply formatting (e.g., `editor.tf.bold.toggle()`, `editor.tf.h1.toggle()`). You can also use the editor state with the [Editor API](/docs/api).
 *   **Learn More:**
     *   [Editor Configuration](/docs/editor)

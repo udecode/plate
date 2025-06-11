@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BlockquotePlugin,
@@ -12,8 +12,8 @@ import {
   H3Plugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+} from '@platejs/basic-nodes/react';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { BlockquoteElement } from '@/registry/ui/blockquote-node';
 import { Editor, EditorContainer } from '@/registry/ui/editor';

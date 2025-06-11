@@ -3,7 +3,7 @@ import React from 'react';
 import type {
   RenderNodeWrapper,
   RenderNodeWrapperFunction,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { useIsVisible } from './toggleIndexAtom';
 

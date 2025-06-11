@@ -1,17 +1,13 @@
 import React from 'react';
 
-import {
-  type TMediaElement,
-  type TResizableElement,
-  KEYS,
-} from '@udecode/plate';
+import { type TMediaElement, type TResizableElement, KEYS } from 'platejs';
 import {
   useEditorRef,
   useElement,
   useFocused,
   useReadOnly,
   useSelected,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { VIDEO_PROVIDERS } from '../../lib/media-embed';
 import {

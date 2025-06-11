@@ -2,18 +2,15 @@
 
 import * as React from 'react';
 
-import { type Value, createSlatePlugin, KEYS } from '@udecode/plate';
 import {
   type DiffOperation,
   type DiffUpdate,
   computeDiff,
   withGetFragmentExcludeDiff,
-} from '@udecode/plate-diff';
-import {
-  createPlatePlugin,
-  toPlatePlugin,
-  useSelected,
-} from '@udecode/plate/react';
+} from '@platejs/diff';
+import { cloneDeep } from 'lodash';
+import { type Value, createSlatePlugin, KEYS } from 'platejs';
+import { createPlatePlugin, toPlatePlugin, useSelected } from 'platejs/react';
 import {
   type PlateElementProps,
   type PlateLeafProps,
@@ -24,8 +21,7 @@ import {
   PlateElement,
   PlateLeaf,
   usePlateEditor,
-} from '@udecode/plate/react';
-import { cloneDeep } from 'lodash';
+} from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

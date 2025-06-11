@@ -34,7 +34,7 @@ The fastest way to add drag and drop functionality is with the `DndKit`, which i
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from '@udecode/plate/react';
+import { createPlateEditor } from 'platejs/react';
 import { DndKit } from '@/components/editor/plugins/dnd-kit';
 
 const editor = createPlateEditor({
@@ -54,14 +54,14 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @udecode/plate-dnd react-dnd react-dnd-html5-backend
+npm install @platejs/dnd react-dnd react-dnd-html5-backend
 ```
 
 ### Add Plugin
 
 ```tsx
-import { DndPlugin } from '@udecode/plate-dnd';
-import { createPlateEditor } from '@udecode/plate/react';
+import { DndPlugin } from '@platejs/dnd';
+import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
@@ -78,7 +78,7 @@ Configure drag and drop with a draggable component and DnD provider:
 ```tsx
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { DndPlugin } from '@udecode/plate-dnd';
+import { DndPlugin } from '@platejs/dnd';
 
 DndPlugin.configure({
   render: {
@@ -97,8 +97,8 @@ DndPlugin.configure({
 Add automatic scrolling and file drop handling:
 
 ```tsx
-import { DndPlugin } from '@udecode/plate-dnd';
-import { PlaceholderPlugin } from '@udecode/plate-media/react';
+import { DndPlugin } from '@platejs/dnd';
+import { PlaceholderPlugin } from '@platejs/media/react';
 
 DndPlugin.configure({
   options: {

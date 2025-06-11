@@ -1,6 +1,6 @@
 {
-  "name": "@udecode/plate-cursor",
-  "version": "49.0.0",
+  "name": "@platejs/cursor",
+  "version": "48.0.5",
   "description": "Cursor for Plate React",
   "keywords": [
     "plate",
@@ -44,10 +44,10 @@
     "typecheck": "yarn p:typecheck"
   },
   "devDependencies": {
-    "@udecode/plate": "workspace:^"
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate": ">=49.0.0",
+    "platejs": ">=48.0.5",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

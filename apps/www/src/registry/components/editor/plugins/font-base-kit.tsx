@@ -1,12 +1,12 @@
-import type { SlatePluginConfig } from '@udecode/plate';
+import type { SlatePluginConfig } from 'platejs';
 
-import { KEYS } from '@udecode/plate';
 import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
-} from '@udecode/plate-basic-styles';
+} from '@platejs/basic-styles';
+import { KEYS } from 'platejs';
 
 const options = {
   inject: { targetPlugins: [KEYS.p] },

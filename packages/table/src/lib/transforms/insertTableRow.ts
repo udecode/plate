@@ -7,7 +7,7 @@ import {
   KEYS,
   NodeApi,
   PathApi,
-} from '@udecode/plate';
+} from 'platejs';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { insertTableMergeRow } from '../merge/insertTableRow';

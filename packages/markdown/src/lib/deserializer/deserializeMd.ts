@@ -1,12 +1,7 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import {
-  type Descendant,
-  type SlateEditor,
-  KEYS,
-  TextApi,
-} from '@udecode/plate';
+import { type Descendant, type SlateEditor, KEYS, TextApi } from 'platejs';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 

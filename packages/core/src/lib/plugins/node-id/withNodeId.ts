@@ -4,7 +4,7 @@ import {
   type NodeProps,
   type TNode,
   queryNode,
-} from '@udecode/slate';
+} from '@platejs/slate';
 import { isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray.js';
 import cloneDeep from 'lodash/cloneDeep.js';
