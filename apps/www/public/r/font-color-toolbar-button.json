@@ -6,7 +6,8 @@
   "description": "A color picker toolbar button with text and background color controls.",
   "dependencies": [
     "@udecode/cn",
-    "@platejs/basic-styles"
+    "@platejs/basic-styles",
+    "lodash"
   ],
   "registryDependencies": [
     "dropdown-menu",

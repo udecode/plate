@@ -36,7 +36,6 @@
     "@types/react-dom": "^19.1.6",
     "eslint": "^9.28.0",
     "eslint-config-next": "15.3.3",
-    "eslint-plugin-perfectionist": "4.14.0",
     "eslint-plugin-unused-imports": "^4.1.4",
     "postcss": "^8.5.4",
     "prettier": "^3.5.3",

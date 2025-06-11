@@ -161,7 +161,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/cn', '@platejs/basic-styles'],
+    dependencies: ['@udecode/cn', '@platejs/basic-styles', 'lodash'],
     description:
       'A color picker toolbar button with text and background color controls.',
     files: [{ path: 'ui/font-color-toolbar-button.tsx', type: 'registry:ui' }],

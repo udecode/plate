@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 
-import { DndPlugin } from '@udecode/plate-dnd';
-import { useBlockSelected } from '@udecode/plate-selection/react';
-import { usePluginOption } from '@udecode/plate/react';
+import { DndPlugin } from '@platejs/dnd';
+import { useBlockSelected } from '@platejs/selection/react';
 import { type VariantProps, cva } from 'class-variance-authority';
+import { usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 

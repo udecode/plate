@@ -4,11 +4,12 @@ import * as React from 'react';
 
 import { useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
+import { usePluginOption } from 'platejs/react';
 
-import { useSettings } from '@/components/editor/settings';
+import { aiChatPlugin } from '@/components/editor/plugins/ai-kit';
 
 export const useChat = () => {
-  const { keys, model } = useSettings();
+  const options = usePluginOption(aiChatPlugin, 'chatOptions');
 
   // remove when you implement the route /api/ai/command
   const abortControllerRef = React.useRef<AbortController | null>(null);
@@ -21,12 +22,6 @@ export const useChat = () => {
 
   const chat = useBaseChat({
     id: 'editor',
-    api: '/api/ai/command',
-    body: {
-      // !!! DEMO ONLY: don't use API keys client-side
-      apiKey: keys.openai,
-      model: model.value,
-    },
     // Mock the API response. Remove it when you implement the route /api/ai/command
     fetch: async (input, init) => {
       const res = await fetch(input, init);
@@ -66,6 +61,7 @@ export const useChat = () => {
 
       return res;
     },
+    ...options,
   });
 
   return { ...chat, _abortFakeStream };

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { PointRef, TElement } from '@udecode/plate';
+import type { Point, TElement } from 'platejs';
 
 import {
   type ComboboxItemProps,
@@ -17,14 +17,14 @@ import {
   useComboboxContext,
   useComboboxStore,
 } from '@ariakit/react';
-import { filterWords } from '@udecode/plate-combobox';
+import { filterWords } from '@platejs/combobox';
 import {
   type UseComboboxInputResult,
   useComboboxInput,
   useHTMLInputCursorState,
-} from '@udecode/plate-combobox/react';
-import { useComposedRef, useEditorRef } from '@udecode/plate/react';
+} from '@platejs/combobox/react';
 import { cva } from 'class-variance-authority';
+import { useComposedRef, useEditorRef } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
@@ -47,7 +47,7 @@ const InlineComboboxContext = React.createContext<InlineComboboxContextValue>(
   null as unknown as InlineComboboxContextValue
 );
 
-export const defaultFilter: FilterFn = (
+const defaultFilter: FilterFn = (
   { group, keywords = [], label, value },
   search
 ) => {
@@ -104,7 +104,7 @@ const InlineCombobox = ({
    * Track the point just before the input element so we know where to
    * insertText if the combobox closes due to a selection change.
    */
-  const [insertPoint, setInsertPoint] = React.useState<PointRef | null>(null);
+  const insertPoint = React.useRef<Point | null>(null);
 
   React.useEffect(() => {
     const path = editor.api.findPath(element);
@@ -116,7 +116,7 @@ const InlineCombobox = ({
     if (!point) return;
 
     const pointRef = editor.api.pointRef(point);
-    setInsertPoint(pointRef);
+    insertPoint.current = pointRef.current;
 
     return () => {
       pointRef.unref();
@@ -285,14 +285,6 @@ const comboboxItemVariants = cva(
   }
 );
 
-export type InlineComboboxItemProps = {
-  focusEditor?: boolean;
-  group?: string;
-  keywords?: string[];
-  label?: string;
-} & ComboboxItemProps &
-  Required<Pick<ComboboxItemProps, 'value'>>;
-
 const InlineComboboxItem = ({
   className,
   focusEditor = true,
@@ -301,7 +293,13 @@ const InlineComboboxItem = ({
   label,
   onClick,
   ...props
-}: InlineComboboxItemProps) => {
+}: {
+  focusEditor?: boolean;
+  group?: string;
+  keywords?: string[];
+  label?: string;
+} & ComboboxItemProps &
+  Required<Pick<ComboboxItemProps, 'value'>>) => {
   const { value } = props;
 
   const { filter, removeInput } = React.useContext(InlineComboboxContext);

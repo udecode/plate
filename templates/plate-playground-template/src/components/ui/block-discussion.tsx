@@ -2,33 +2,27 @@
 
 import * as React from 'react';
 
-import type { TSuggestionText } from '@udecode/plate-suggestion';
-import type {
-  PlateElementProps,
-  RenderNodeWrapper,
-} from '@udecode/plate/react';
+import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
 
-import {
-  type AnyPluginConfig,
-  type NodeEntry,
-  type Path,
-  type TElement,
-  PathApi,
-  TextApi,
-} from '@udecode/plate';
-import { type TCommentText, getDraftCommentKey } from '@udecode/plate-comments';
-import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { SuggestionPlugin } from '@udecode/plate-suggestion/react';
-import {
-  useEditorPlugin,
-  useEditorRef,
-  usePluginOption,
-} from '@udecode/plate/react';
+import { getDraftCommentKey } from '@platejs/comment';
+import { CommentPlugin } from '@platejs/comment/react';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
   MessageSquareTextIcon,
   MessagesSquareIcon,
   PencilLineIcon,
 } from 'lucide-react';
+import {
+  type AnyPluginConfig,
+  type NodeEntry,
+  type Path,
+  type TCommentText,
+  type TElement,
+  type TSuggestionText,
+  PathApi,
+  TextApi,
+} from 'platejs';
+import { useEditorPlugin, useEditorRef, usePluginOption } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -37,25 +31,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { commentsPlugin } from '@/components/editor/plugins/comments-plugin';
+import { commentPlugin } from '@/components/editor/plugins/comment-kit';
 import {
   type TDiscussion,
   discussionPlugin,
-} from '@/components/editor/plugins/discussion-plugin';
-import { suggestionPlugin } from '@/components/editor/plugins/suggestion-plugin';
+} from '@/components/editor/plugins/discussion-kit';
+import { suggestionPlugin } from '@/components/editor/plugins/suggestion-kit';
 
 import {
   BlockSuggestionCard,
   isResolvedSuggestion,
   useResolveSuggestion,
 } from './block-suggestion';
-import { Comment } from './comment';
-import { CommentCreateForm } from './comment-create-form';
+import { Comment, CommentCreateForm } from './comment';
 
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   const { editor, element } = props;
 
-  const commentsApi = editor.getApi(CommentsPlugin).comment;
+  const commentsApi = editor.getApi(CommentPlugin).comment;
   const blockPath = editor.api.findPath(element);
 
   // avoid duplicate in table or column
@@ -78,7 +71,7 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   }
 
   return (props) => (
-    <BlockCommentsContent
+    <BlockCommentContent
       blockPath={blockPath}
       commentNodes={commentNodes}
       draftCommentNode={draftCommentNode}
@@ -88,7 +81,7 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   );
 };
 
-const BlockCommentsContent = ({
+const BlockCommentContent = ({
   blockPath,
   children,
   commentNodes,
@@ -114,8 +107,8 @@ const BlockCommentsContent = ({
     activeSuggestionId &&
     resolvedSuggestions.find((s) => s.suggestionId === activeSuggestionId);
 
-  const commentingBlock = usePluginOption(commentsPlugin, 'commentingBlock');
-  const activeCommentId = usePluginOption(commentsPlugin, 'activeId');
+  const commentingBlock = usePluginOption(commentPlugin, 'commentingBlock');
+  const activeCommentId = usePluginOption(commentPlugin, 'activeId');
   const isCommenting = activeCommentId === getDraftCommentKey();
   const activeDiscussion =
     activeCommentId &&
@@ -161,7 +154,7 @@ const BlockCommentsContent = ({
       } else {
         activeNode = commentNodes.find(
           ([node]) =>
-            editor.getApi(CommentsPlugin).comment.nodeId(node) ===
+            editor.getApi(commentPlugin).comment.nodeId(node) ===
             activeCommentId
         );
       }
@@ -261,7 +254,7 @@ const BlockCommentsContent = ({
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
-                className="mt-1 ml-1 flex h-6 gap-1 px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
+                className="mt-1 ml-1 flex h-6 gap-1 !px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
                 data-active={open}
                 contentEditable={false}
               >
@@ -287,13 +280,13 @@ const BlockCommentsContent = ({
   );
 };
 
-export const BlockComment = ({
+function BlockComment({
   discussion,
   isLast,
 }: {
   discussion: TDiscussion;
   isLast: boolean;
-}) => {
+}) {
   const [editingId, setEditingId] = React.useState<string | null>(null);
 
   return (
@@ -317,13 +310,13 @@ export const BlockComment = ({
       {!isLast && <div className="h-px w-full bg-muted" />}
     </React.Fragment>
   );
-};
+}
 
-export const useResolvedDiscussion = (
+const useResolvedDiscussion = (
   commentNodes: NodeEntry<TCommentText>[],
   blockPath: Path
 ) => {
-  const { api, getOption, setOption } = useEditorPlugin(commentsPlugin);
+  const { api, getOption, setOption } = useEditorPlugin(commentPlugin);
 
   const discussions = usePluginOption(discussionPlugin, 'discussions');
 

@@ -5,7 +5,7 @@ import * as React from 'react';
 import {
   useLinkToolbarButton,
   useLinkToolbarButtonState,
-} from '@udecode/plate-link/react';
+} from '@platejs/link/react';
 import { Link } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';

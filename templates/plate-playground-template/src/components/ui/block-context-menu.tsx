@@ -2,20 +2,14 @@
 
 import * as React from 'react';
 
-import { AIChatPlugin } from '@udecode/plate-ai/react';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
-import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { AIChatPlugin } from '@platejs/ai/react';
 import {
   BLOCK_CONTEXT_MENU_ID,
   BlockMenuPlugin,
   BlockSelectionPlugin,
-} from '@udecode/plate-selection/react';
-import {
-  ParagraphPlugin,
-  useEditorPlugin,
-  usePlateState,
-} from '@udecode/plate/react';
+} from '@platejs/selection/react';
+import { KEYS } from 'platejs';
+import { useEditorPlugin, usePlateState } from 'platejs/react';
 
 import {
   ContextMenu,
@@ -43,8 +37,8 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
         .getApi(BlockSelectionPlugin)
         .blockSelection.getNodes()
         .forEach(([node, path]) => {
-          if (node[IndentListPlugin.key]) {
-            editor.tf.unsetNodes([IndentListPlugin.key, 'indent'], {
+          if (node[KEYS.listType]) {
+            editor.tf.unsetNodes([KEYS.listType, 'indent'], {
               at: path,
             });
           }
@@ -141,24 +135,20 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
           <ContextMenuSub>
             <ContextMenuSubTrigger>Turn into</ContextMenuSubTrigger>
             <ContextMenuSubContent className="w-48">
-              <ContextMenuItem
-                onClick={() => handleTurnInto(ParagraphPlugin.key)}
-              >
+              <ContextMenuItem onClick={() => handleTurnInto(KEYS.p)}>
                 Paragraph
               </ContextMenuItem>
 
-              <ContextMenuItem onClick={() => handleTurnInto(HEADING_KEYS.h1)}>
+              <ContextMenuItem onClick={() => handleTurnInto(KEYS.h1)}>
                 Heading 1
               </ContextMenuItem>
-              <ContextMenuItem onClick={() => handleTurnInto(HEADING_KEYS.h2)}>
+              <ContextMenuItem onClick={() => handleTurnInto(KEYS.h2)}>
                 Heading 2
               </ContextMenuItem>
-              <ContextMenuItem onClick={() => handleTurnInto(HEADING_KEYS.h3)}>
+              <ContextMenuItem onClick={() => handleTurnInto(KEYS.h3)}>
                 Heading 3
               </ContextMenuItem>
-              <ContextMenuItem
-                onClick={() => handleTurnInto(BlockquotePlugin.key)}
-              >
+              <ContextMenuItem onClick={() => handleTurnInto(KEYS.blockquote)}>
                 Blockquote
               </ContextMenuItem>
             </ContextMenuSubContent>
