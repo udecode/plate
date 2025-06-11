@@ -1,9 +1,4 @@
-import {
-  type OverrideEditor,
-  type TElement,
-  KEYS,
-  NodeApi,
-} from 'platejs';
+import { type OverrideEditor, type TElement, KEYS, NodeApi } from 'platejs';
 
 function extractCodeLinesFromCodeBlock(node: TElement) {
   return node.children as TElement[];

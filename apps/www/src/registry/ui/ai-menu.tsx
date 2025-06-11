@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { type NodeEntry, type SlateEditor, isHotkey, NodeApi } from 'platejs';
 import {
   AIChatPlugin,
   AIPlugin,
@@ -10,8 +9,6 @@ import {
   useLastAssistantMessage,
 } from '@platejs/ai/react';
 import { BlockSelectionPlugin, useIsSelecting } from '@platejs/selection/react';
-import { useEditorPlugin, useHotkeys, usePluginOption } from 'platejs/react';
-import { type PlateEditor, useEditorRef } from 'platejs/react';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
   Album,
@@ -30,6 +27,9 @@ import {
   Wand,
   X,
 } from 'lucide-react';
+import { type NodeEntry, type SlateEditor, isHotkey, NodeApi } from 'platejs';
+import { useEditorPlugin, useHotkeys, usePluginOption } from 'platejs/react';
+import { type PlateEditor, useEditorRef } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {

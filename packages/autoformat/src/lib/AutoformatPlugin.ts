@@ -1,9 +1,4 @@
-import {
-  type PluginConfig,
-  createTSlatePlugin,
-  KEYS,
-  RangeApi,
-} from 'platejs';
+import { type PluginConfig, createTSlatePlugin, KEYS, RangeApi } from 'platejs';
 
 import type { AutoformatRule, AutoformatTextRule } from './types';
 

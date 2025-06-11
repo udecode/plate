@@ -3,10 +3,7 @@
 import React from 'react';
 
 import { KEYS } from 'platejs';
-import {
-  type RenderNodeWrapperProps,
-  getEditorPlugin,
-} from 'platejs/react';
+import { type RenderNodeWrapperProps, getEditorPlugin } from 'platejs/react';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 

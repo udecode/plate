@@ -1,6 +1,7 @@
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 import type { UseChatHelpers } from 'ai/react';
 
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
   type EditorNodesOptions,
   type NodeEntry,
@@ -12,7 +13,6 @@ import {
   ElementApi,
   KEYS,
 } from 'platejs';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { createTPlatePlugin } from 'platejs/react';
 
 import type { AIBatch } from '../../lib';

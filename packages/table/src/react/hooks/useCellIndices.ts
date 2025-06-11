@@ -2,11 +2,7 @@ import React from 'react';
 
 import type { TTableCellElement } from 'platejs';
 
-import {
-  useEditorPlugin,
-  useElement,
-  usePluginOption,
-} from 'platejs/react';
+import { useEditorPlugin, useElement, usePluginOption } from 'platejs/react';
 
 import { computeCellIndices } from '../../lib';
 import { TablePlugin } from '../TablePlugin';

@@ -20,7 +20,7 @@ description: 学习如何为 Plate 插件创建和样式化自定义组件。
 ### 元素组件
 
 ```tsx
-import { type PlateElementProps, PlateElement } from '@udecode/plate/react';
+import { type PlateElementProps, PlateElement } from 'platejs/react';
 
 export function BlockquoteElement(props: PlateElementProps) {
   // props contains attributes, children, element, editor, etc.
@@ -40,7 +40,7 @@ export function BlockquoteElement(props: PlateElementProps) {
 ### 叶子组件
 
 ```tsx
-import { type PlateLeafProps, PlateLeaf } from '@udecode/plate/react';
+import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
 
 export function CodeLeaf(props: PlateLeafProps) {
   // props contains attributes, children, leaf, text, editor, etc.

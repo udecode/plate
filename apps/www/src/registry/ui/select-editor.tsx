@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 
-import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
-import { isHotkey, KEYS } from 'platejs';
 import { isEqualTags } from '@platejs/tag';
 import {
   MultiSelectPlugin,
@@ -11,14 +9,16 @@ import {
   useSelectableItems,
   useSelectEditorCombobox,
 } from '@platejs/tag/react';
+import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
+import { Fzf } from 'fzf';
+import { PlusIcon } from 'lucide-react';
+import { isHotkey, KEYS } from 'platejs';
 import {
   Plate,
   useEditorContainerRef,
   useEditorRef,
   usePlateEditor,
 } from 'platejs/react';
-import { Fzf } from 'fzf';
-import { PlusIcon } from 'lucide-react';
 
 import {
   Popover,

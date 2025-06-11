@@ -2,8 +2,8 @@
 
 import type { SlateEditor } from 'platejs';
 
-import { BaseParagraphPlugin } from 'platejs';
 import { createDataTransfer, jsxt } from '@platejs/test-utils';
+import { BaseParagraphPlugin } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';

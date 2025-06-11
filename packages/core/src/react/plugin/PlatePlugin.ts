@@ -1,11 +1,6 @@
 import type React from 'react';
 
 import type {
-  HotkeysEvent,
-  HotkeysOptions,
-  Keys,
-} from '@udecode/react-hotkeys';
-import type {
   DecoratedRange,
   Descendant,
   EditorApi,
@@ -16,6 +11,11 @@ import type {
   TText,
   Value,
 } from '@platejs/slate';
+import type {
+  HotkeysEvent,
+  HotkeysOptions,
+  Keys,
+} from '@udecode/react-hotkeys';
 import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 import type { TCreatedStoreType } from 'zustand-x';
 

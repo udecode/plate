@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
+import { jsxt } from '@platejs/test-utils';
 import { type SlateEditor, createEditor } from 'platejs';
 import { createSlateEditor } from 'platejs';
-import { jsxt } from '@platejs/test-utils';
 
 import { removeListItem } from './removeListItem';
 

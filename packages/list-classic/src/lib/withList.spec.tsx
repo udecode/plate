@@ -2,9 +2,9 @@
 
 import type { SlateEditor } from 'platejs';
 
-import { createSlateEditor } from 'platejs';
 import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
+import { createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
 

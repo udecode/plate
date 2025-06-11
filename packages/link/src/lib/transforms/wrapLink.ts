@@ -1,8 +1,4 @@
-import type {
-  SlateEditor,
-  TLinkElement,
-  WrapNodesOptions,
-} from 'platejs';
+import type { SlateEditor, TLinkElement, WrapNodesOptions } from 'platejs';
 
 import { KEYS } from 'platejs';
 

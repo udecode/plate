@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 
-import { KEYS } from 'platejs';
-import { useEditorReadOnly } from 'platejs/react';
 import {
   BoldIcon,
   Code2Icon,
@@ -12,6 +10,8 @@ import {
   UnderlineIcon,
   WandSparklesIcon,
 } from 'lucide-react';
+import { KEYS } from 'platejs';
+import { useEditorReadOnly } from 'platejs/react';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';

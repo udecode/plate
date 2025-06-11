@@ -1,7 +1,7 @@
 'use client';
 
-import { KEYS } from 'platejs';
 import { TabbablePlugin } from '@platejs/tabbable/react';
+import { KEYS } from 'platejs';
 
 export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
   node: {

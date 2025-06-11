@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { KEYS } from 'platejs';
 import {
   getDOMSelectionBoundingClientRect,
   getRangeBoundingClientRect,
 } from '@platejs/floating';
+import { KEYS } from 'platejs';
 import {
   useComposedRef,
   useEditorPlugin,

@@ -1,10 +1,6 @@
 import React from 'react';
 
-import {
-  type TMediaElement,
-  type TResizableElement,
-  KEYS,
-} from 'platejs';
+import { type TMediaElement, type TResizableElement, KEYS } from 'platejs';
 import {
   useEditorRef,
   useElement,

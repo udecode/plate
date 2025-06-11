@@ -1,8 +1,4 @@
-import type {
-  AnyObject,
-  EditorNodesOptions,
-  SlateEditor,
-} from 'platejs';
+import type { AnyObject, EditorNodesOptions, SlateEditor } from 'platejs';
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
 

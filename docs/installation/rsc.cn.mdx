@@ -6,9 +6,9 @@ description: 为 React Server Components 安装和配置 Plate
 本指南演示如何在 React Server Components (RSC) 中使用 Plate，适用于静态内容生成或服务端数据处理等任务。Plate 的核心设计为服务端安全，可在无浏览器环境下处理编辑器内容。
 
 <Callout type="warning" title="RSC 关键限制">
-  在 RSC 中使用 Plate 时，**绝不能**从任何 `@udecode/plate*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@udecode/plate-basic-nodes`，而不是 `@udecode/plate-basic-nodes/react`）。
+  在 RSC 中使用 Plate 时，**绝不能**从任何 `platejs*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@platejs/basic-nodes`，而不是 `@platejs/basic-nodes/react`）。
 
-  这意味着你不能使用 `@udecode/plate/react` 的 `createPlateEditor`。请改用 `@udecode/plate` 的 `createSlateEditor`。
+  这意味着你不能使用 `platejs/react` 的 `createPlateEditor`。请改用 `platejs` 的 `createSlateEditor`。
 </Callout>
 
 <Steps>
@@ -18,19 +18,19 @@ description: 为 React Server Components 安装和配置 Plate
 安装核心 Plate 包以及你需要的特定插件包。
 
 ```bash
-npm add @udecode/plate @udecode/plate-basic-nodes
+npm add platejs @platejs/basic-nodes
 ```
 
 ### 创建编辑器实例
 
-在 RSC 环境中，使用 `@udecode/plate` 的 `createSlateEditor` 初始化编辑器实例。此函数不依赖 React hooks 或客户端专用代码。
+在 RSC 环境中，使用 `platejs` 的 `createSlateEditor` 初始化编辑器实例。此函数不依赖 React hooks 或客户端专用代码。
 
 以下示例展示了如何用多种插件设置编辑器，类似于 [服务端示例](/docs/examples/server-side)：
 
 ```tsx title="app/api/generate-doc/route.ts"
-import { createSlateEditor } from '@udecode/plate';
-import { BaseTextAlignPlugin } from '@udecode/plate-basic-styles';
-import { BaseAutoformatPlugin } from '@udecode/plate-autoformat';
+import { createSlateEditor } from 'platejs';
+import { BaseTextAlignPlugin } from '@platejs/basic-styles';
+import { BaseAutoformatPlugin } from '@platejs/autoformat';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -39,8 +39,8 @@ import {
   BaseH1Plugin,
   BaseH2Plugin,
   BaseH3Plugin,
-} from '@udecode/plate-basic-nodes';
-import { MarkdownPlugin, remarkMdx } from '@udecode/plate-markdown';
+} from '@platejs/basic-nodes';
+import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 

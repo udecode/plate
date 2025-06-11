@@ -1,6 +1,5 @@
 'use client';
 
-import { KEYS } from 'platejs';
 import { CaptionPlugin } from '@platejs/caption/react';
 import {
   AudioPlugin,
@@ -10,6 +9,7 @@ import {
   PlaceholderPlugin,
   VideoPlugin,
 } from '@platejs/media/react';
+import { KEYS } from 'platejs';
 
 import { AudioElement } from '@/registry/ui/media-audio-node';
 import { MediaEmbedElement } from '@/registry/ui/media-embed-node';

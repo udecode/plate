@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 
-import { KEYS } from 'platejs';
 import { indentListItems, unindentListItems } from '@platejs/list-classic';
 import {
   useListToolbarButton,
   useListToolbarButtonState,
 } from '@platejs/list-classic/react';
-import { useEditorRef } from 'platejs/react';
 import { IndentIcon, List, ListOrdered, OutdentIcon } from 'lucide-react';
+import { KEYS } from 'platejs';
+import { useEditorRef } from 'platejs/react';
 
 import { ToolbarButton } from './toolbar';
 

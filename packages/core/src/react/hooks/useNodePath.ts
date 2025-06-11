@@ -1,5 +1,5 @@
-import { useMemoizedSelector } from '@udecode/react-utils';
 import { type TNode, PathApi } from '@platejs/slate';
+import { useMemoizedSelector } from '@udecode/react-utils';
 
 import { useEditorRef } from '../stores';
 

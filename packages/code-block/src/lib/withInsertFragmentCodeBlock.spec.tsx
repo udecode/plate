@@ -2,8 +2,8 @@
 
 import type { Descendant } from 'platejs';
 
-import { BaseParagraphPlugin, createEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { BaseParagraphPlugin, createEditor } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';

@@ -1,5 +1,5 @@
-import { createSlatePlugin, KEYS } from 'platejs';
 import juice from 'juice';
+import { createSlatePlugin, KEYS } from 'platejs';
 
 export const JuicePlugin = createSlatePlugin({
   key: KEYS.juice,

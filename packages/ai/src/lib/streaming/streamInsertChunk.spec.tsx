@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
 import { BaseHorizontalRulePlugin } from '@platejs/basic-nodes';
 import { deserializeMd } from '@platejs/markdown';
 import { jsxt } from '@platejs/test-utils';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { createTestEditor, defaultPlugins } from './__tests__/createTestEditor';
 import { getCurrentBlockPath, streamInsertChunk } from './streamInsertChunk';

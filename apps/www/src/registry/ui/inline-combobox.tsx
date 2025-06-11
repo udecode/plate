@@ -23,8 +23,8 @@ import {
   useComboboxInput,
   useHTMLInputCursorState,
 } from '@platejs/combobox/react';
-import { useComposedRef, useEditorRef } from 'platejs/react';
 import { cva } from 'class-variance-authority';
+import { useComposedRef, useEditorRef } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 

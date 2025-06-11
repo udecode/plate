@@ -1,8 +1,4 @@
-import type {
-  InsertNodesOptions,
-  NodeProps,
-  SlateEditor,
-} from 'platejs';
+import type { InsertNodesOptions, NodeProps, SlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 

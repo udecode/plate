@@ -1,9 +1,4 @@
-import {
-  type Editor,
-  type NodeEntry,
-  type Path,
-  PathApi,
-} from 'platejs';
+import { type Editor, type NodeEntry, type Path, PathApi } from 'platejs';
 
 import { getCellInPreviousTableRow } from './getCellInPreviousTableRow';
 

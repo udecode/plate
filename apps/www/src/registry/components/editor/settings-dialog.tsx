@@ -5,7 +5,6 @@
 import * as React from 'react';
 
 import { CopilotPlugin } from '@platejs/ai/react';
-import { useEditorRef } from 'platejs/react';
 import {
   Check,
   ChevronsUpDown,
@@ -15,6 +14,7 @@ import {
   Settings,
   Wand2Icon,
 } from 'lucide-react';
+import { useEditorRef } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {

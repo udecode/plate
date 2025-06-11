@@ -2,9 +2,9 @@
 
 import type { SlateEditor } from 'platejs';
 
+import { jsxt } from '@platejs/test-utils';
 import { createSlatePlugin } from 'platejs';
 import { BaseParagraphPlugin } from 'platejs';
-import { jsxt } from '@platejs/test-utils';
 import { createPlateEditor } from 'platejs/react';
 
 import { CodeBlockPlugin } from './CodeBlockPlugin';

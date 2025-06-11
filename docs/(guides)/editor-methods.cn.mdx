@@ -18,7 +18,7 @@ description: 探索可用于与 Plate 编辑器交互和自定义的各种方法
 - `useEditorState`：每次更改时重新渲染。
 
 ```ts
-import { useEditorRef, useEditorSelector, useEditorState } from '@udecode/plate/react';
+import { useEditorRef, useEditorSelector, useEditorState } from 'platejs/react';
 
 const MyComponent = () => {
   const editor = useEditorRef();
@@ -56,7 +56,7 @@ const MyComponent = () => {
 要在 `Plate` 组件外部访问编辑器或处理多个编辑器，请使用 `PlateController` 组件：
 
 ```ts
-import { PlateController } from '@udecode/plate/react';
+import { PlateController } from 'platejs/react';
 
 const App = () => (
   <PlateController>

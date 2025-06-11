@@ -1,11 +1,7 @@
 /** @jsx jsxt */
 
-import {
-  type ElementEntry,
-  type SlateEditor,
-  createEditor,
-} from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { type ElementEntry, type SlateEditor, createEditor } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';

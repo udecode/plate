@@ -1,8 +1,4 @@
-import type {
-  InsertNodesOptions,
-  SlateEditor,
-  TDateElement,
-} from 'platejs';
+import type { InsertNodesOptions, SlateEditor, TDateElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 

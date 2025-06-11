@@ -1,16 +1,16 @@
 import type { Emoji, EmojiMartData } from '@emoji-mart/data';
 
 import {
+  type TriggerComboboxPluginOptions,
+  withTriggerCombobox,
+} from '@platejs/combobox';
+import {
   type Descendant,
   type PluginConfig,
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
 } from 'platejs';
-import {
-  type TriggerComboboxPluginOptions,
-  withTriggerCombobox,
-} from '@platejs/combobox';
 
 import { DEFAULT_EMOJI_LIBRARY } from './constants';
 

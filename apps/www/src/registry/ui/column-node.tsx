@@ -5,13 +5,15 @@ import * as React from 'react';
 import type { TColumnElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
-import { useComposedRef } from '@udecode/cn';
-import { PathApi } from 'platejs';
 import { useDraggable, useDropLine } from '@platejs/dnd';
 import { setColumns } from '@platejs/layout';
 import { useDebouncePopoverOpen } from '@platejs/layout/react';
 import { ResizableProvider } from '@platejs/resizable';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { useComposedRef } from '@udecode/cn';
+import { type LucideProps, Trash2Icon } from 'lucide-react';
+import { GripHorizontal } from 'lucide-react';
+import { PathApi } from 'platejs';
 import {
   PlateElement,
   useEditorRef,
@@ -21,8 +23,6 @@ import {
   useRemoveNodeButton,
   withHOC,
 } from 'platejs/react';
-import { type LucideProps, Trash2Icon } from 'lucide-react';
-import { GripHorizontal } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {

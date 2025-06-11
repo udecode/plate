@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 
-import { RangeApi } from 'platejs';
 import { AIChatPlugin } from '@platejs/ai/react';
 import {
   type CursorData,
   type CursorOverlayState,
   useCursorOverlay,
 } from '@platejs/selection/react';
+import { RangeApi } from 'platejs';
 import { usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';

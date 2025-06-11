@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { useEditorRef } from 'platejs/react';
 import { MessageSquareTextIcon } from 'lucide-react';
+import { useEditorRef } from 'platejs/react';
 
 import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';
 

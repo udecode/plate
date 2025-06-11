@@ -2,12 +2,12 @@
 
 import type { ExtendConfig, Path } from 'platejs';
 
-import { isSlateString } from 'platejs';
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
   getDraftCommentKey,
 } from '@platejs/comment';
+import { isSlateString } from 'platejs';
 import { toTPlatePlugin } from 'platejs/react';
 
 import { CommentLeaf } from '@/registry/ui/comment-node';

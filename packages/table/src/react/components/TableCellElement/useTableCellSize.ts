@@ -1,17 +1,9 @@
 import React from 'react';
 
-import type {
-  NodeEntry,
-  TTableCellElement,
-  TTableRowElement,
-} from 'platejs';
+import type { NodeEntry, TTableCellElement, TTableRowElement } from 'platejs';
 
 import { KEYS } from 'platejs';
-import {
-  useEditorPlugin,
-  useElement,
-  useElementSelector,
-} from 'platejs/react';
+import { useEditorPlugin, useElement, useElementSelector } from 'platejs/react';
 
 import { useCellIndices } from '../../hooks/useCellIndices';
 import { TablePlugin } from '../../TablePlugin';

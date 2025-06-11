@@ -1,9 +1,4 @@
-import type {
-  NodeProps,
-  SetNodesOptions,
-  TElement,
-  TText,
-} from 'platejs';
+import type { NodeProps, SetNodesOptions, TElement, TText } from 'platejs';
 import type { PlateEditor } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';

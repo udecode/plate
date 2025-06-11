@@ -1,7 +1,7 @@
 import type { SlateEditor, TLocation } from 'platejs';
 
-import { KEYS } from 'platejs';
 import { setIndent } from '@platejs/indent';
+import { KEYS } from 'platejs';
 
 import { ListStyleType } from '../types';
 

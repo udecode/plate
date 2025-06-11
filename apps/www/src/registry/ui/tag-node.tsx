@@ -5,13 +5,13 @@ import * as React from 'react';
 import type { TTagElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
+import Link from 'next/link';
 import {
   PlateElement,
   useFocused,
   useReadOnly,
   useSelected,
 } from 'platejs/react';
-import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
 

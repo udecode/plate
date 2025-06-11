@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 
-import { KEYS } from 'platejs';
 import { AIChatPlugin } from '@platejs/ai/react';
 import {
   BLOCK_CONTEXT_MENU_ID,
   BlockMenuPlugin,
   BlockSelectionPlugin,
 } from '@platejs/selection/react';
+import { KEYS } from 'platejs';
 import { useEditorPlugin, usePlateState } from 'platejs/react';
 
 import {

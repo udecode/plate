@@ -1,9 +1,4 @@
-import {
-  type Descendant,
-  type SlateEditor,
-  KEYS,
-  TextApi,
-} from 'platejs';
+import { type Descendant, type SlateEditor, KEYS, TextApi } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries';

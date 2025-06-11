@@ -36,7 +36,7 @@ description: Plate 的极简、memo 化、只读版本，支持 RSC/SSR。
 使用 `createSlateEditor` 和所需插件初始化 Slate 编辑器实例。这类似于交互式 `<Plate>` 组件的 `usePlateEditor`。
 
 ```tsx title="lib/plate-static-editor.ts"
-import { createSlateEditor } from '@udecode/plate';
+import { createSlateEditor } from 'platejs';
 // 导入你需要的基础插件（如 BaseHeadingPlugin、MarkdownPlugin）
 // 服务端环境请勿从 /react 子路径导入。
 
@@ -60,7 +60,7 @@ const editor = createSlateEditor({
 
 ```tsx title="components/ui/paragraph-element-static.tsx"
 import React from 'react';
-import type { SlateElementProps } from '@udecode/plate';
+import type { SlateElementProps } from 'platejs';
 
 export function ParagraphElementStatic(props: SlateElementProps) {
   return (
@@ -93,9 +93,9 @@ export const staticComponents = {
 使用 `<PlateStatic>` 组件，传入 `editor` 实例和你的 `components` 映射。
 
 ```tsx title="app/my-static-page/page.tsx (RSC 示例)"
-import { PlateStatic } from '@udecode/plate';
-import { createSlateEditor } from '@udecode/plate';
-// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-nodes'; // 等等
+import { PlateStatic } from 'platejs';
+import { createSlateEditor } from 'platejs';
+// import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes'; // 等等
 import { staticComponents } from '@/components/static-components';
 
 export default async function MyStaticPage() {
@@ -159,10 +159,10 @@ export default async function MyStaticPage() {
 在 Next.js App Router（或类似 RSC 环境）中，`<PlateStatic>` 可直接用于 Server Components：
 
 ```tsx title="app/preview/page.tsx (RSC)"
-import { PlateStatic } from '@udecode/plate';
-import { createSlateEditor } from '@udecode/plate';
+import { PlateStatic } from 'platejs';
+import { createSlateEditor } from 'platejs';
 // 示例基础插件（确保非 /react 导入）
-// import { BaseHeadingPlugin } from '@udecode/plate-basic-nodes';
+// import { BaseHeadingPlugin } from '@platejs/basic-nodes';
 import { staticComponents } from '@/components/static-components'; // 你的静态组件映射
 
 export default async function Page() {
@@ -194,9 +194,9 @@ export default async function Page() {
 如需生成完整 HTML 字符串（如用于邮件、PDF、外部系统），请用 `serializeHtml`。它内部会用 `<PlateStatic>`。
 
 ```ts title="lib/html-serializer.ts"
-import { createSlateEditor, serializeHtml } from '@udecode/plate';
+import { createSlateEditor, serializeHtml } from 'platejs';
 import { staticComponents } from '@/components/static-components';
-// import { BaseHeadingPlugin, ... } from '@udecode/plate-basic-nodes';
+// import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes';
 
 async function getDocumentAsHtml(value: any[]) {
   const editor = createSlateEditor({
@@ -226,7 +226,7 @@ async function getDocumentAsHtml(value: any[]) {
 ```ts
 import type React from 'react';
 import type { Descendant } from 'slate';
-import type { PlateEditor, PlatePluginComponent } from '@udecode/plate/core'; // 按你的项目调整导入
+import type { PlateEditor, PlatePluginComponent } from 'platejs/core'; // 按你的项目调整导入
 
 interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
   /**

@@ -1,3 +1,5 @@
+import isEqual from 'lodash/isEqual.js';
+import uniqWith from 'lodash/uniqWith.js';
 import {
   type Editor,
   type EditorTransforms,
@@ -16,8 +18,6 @@ import {
   PointApi,
   RangeApi,
 } from 'platejs';
-import isEqual from 'lodash/isEqual.js';
-import uniqWith from 'lodash/uniqWith.js';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 

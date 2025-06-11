@@ -4,11 +4,11 @@
 
 import * as React from 'react';
 
+import { YjsPlugin } from '@platejs/yjs/react';
 import {
   type CursorOverlayData,
   useRemoteCursorOverlayPositions,
 } from '@slate-yjs/react';
-import { YjsPlugin } from '@platejs/yjs/react';
 import { useEditorContainerRef, usePluginOption } from 'platejs/react';
 
 export function RemoteCursorOverlay() {

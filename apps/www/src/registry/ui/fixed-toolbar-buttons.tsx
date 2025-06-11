@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 
-import { KEYS } from 'platejs';
-import { useEditorReadOnly } from 'platejs/react';
 import {
   ArrowUpToLineIcon,
   BaselineIcon,
@@ -16,6 +14,8 @@ import {
   UnderlineIcon,
   WandSparklesIcon,
 } from 'lucide-react';
+import { KEYS } from 'platejs';
+import { useEditorReadOnly } from 'platejs/react';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignToolbarButton } from './align-toolbar-button';

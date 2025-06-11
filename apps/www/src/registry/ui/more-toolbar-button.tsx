@@ -4,14 +4,14 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { KEYS } from 'platejs';
-import { useEditorRef } from 'platejs/react';
 import {
   KeyboardIcon,
   MoreHorizontalIcon,
   SubscriptIcon,
   SuperscriptIcon,
 } from 'lucide-react';
+import { KEYS } from 'platejs';
+import { useEditorRef } from 'platejs/react';
 
 import {
   DropdownMenu,

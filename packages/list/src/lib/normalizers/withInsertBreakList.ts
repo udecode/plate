@@ -1,9 +1,4 @@
-import {
-  type OverrideEditor,
-  type TElement,
-  isDefined,
-  KEYS,
-} from 'platejs';
+import { type OverrideEditor, type TElement, isDefined, KEYS } from 'platejs';
 
 import type { BaseListConfig } from '../BaseListPlugin';
 

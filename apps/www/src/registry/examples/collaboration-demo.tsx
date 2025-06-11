@@ -3,14 +3,14 @@
 import * as React from 'react';
 
 import { YjsPlugin } from '@platejs/yjs/react';
+import { RefreshCw } from 'lucide-react';
+import { nanoid } from 'nanoid';
 import {
   Plate,
   useEditorRef,
   usePlateEditor,
   usePluginOption,
 } from 'platejs/react';
-import { RefreshCw } from 'lucide-react';
-import { nanoid } from 'nanoid';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

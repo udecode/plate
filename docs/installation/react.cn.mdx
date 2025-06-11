@@ -22,7 +22,7 @@ npx shadcn@latest add https://platejs.org/r/editor
 接下来，在主应用文件（如 `src/App.tsx`）中创建一个基础编辑器。以下示例在 `EditorContainer` 中设置了一个简单的编辑器。
 
 ```tsx showLineNumbers title="src/App.tsx"
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/ui/editor';
 
@@ -62,17 +62,17 @@ npx shadcn@latest add https://platejs.org/r/basic-nodes-kit https://platejs.org/
 
 ```tsx showLineNumbers title="src/App.tsx" {2,4-8,15-16,18-31,35-36,41-45}
 import * as React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   usePlateEditor,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/ui/editor';
 import { FixedToolbar } from '@/components/ui/fixed-toolbar';
@@ -122,7 +122,7 @@ export default function App() {
 
 ```tsx showLineNumbers title="src/App.tsx" {5,7-9,18,21,23,26-33,50-53,61-65}
 import * as React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BlockquotePlugin,
@@ -132,11 +132,11 @@ import {
   H3Plugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   usePlateEditor,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/ui/blockquote-node';
 import { Editor, EditorContainer } from '@/components/ui/editor';
@@ -217,7 +217,7 @@ export default function App() {
 
 ```tsx showLineNumbers title="src/App.tsx" {55-61,67-69,79-85}
 import * as React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BlockquotePlugin,
@@ -227,11 +227,11 @@ import {
   H3Plugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   usePlateEditor,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/ui/blockquote-node';
 import { Editor, EditorContainer } from '@/components/ui/editor';

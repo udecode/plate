@@ -1,14 +1,14 @@
 import {
+  type TriggerComboboxPluginOptions,
+  withTriggerCombobox,
+} from '@platejs/combobox';
+import {
   type PluginConfig,
   type TMentionElement,
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
 } from 'platejs';
-import {
-  type TriggerComboboxPluginOptions,
-  withTriggerCombobox,
-} from '@platejs/combobox';
 
 export type MentionConfig = PluginConfig<
   'mention',

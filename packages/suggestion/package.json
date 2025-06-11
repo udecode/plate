@@ -1,6 +1,6 @@
 {
   "name": "@platejs/suggestion",
-  "version": "49.0.0",
+  "version": "48.0.5",
   "description": "Plate plugin for suggestions",
   "keywords": [
     "plate",

@@ -1,3 +1,4 @@
+import cloneDeep from 'lodash/cloneDeep.js';
 import {
   type Path,
   type SlateEditor,
@@ -9,7 +10,6 @@ import {
   NodeApi,
   PathApi,
 } from 'platejs';
-import cloneDeep from 'lodash/cloneDeep.js';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableColumnCount } from '../queries';

@@ -29,6 +29,7 @@ export default defineConfig(
           },
         ],
         '@typescript-eslint/ban-types': 'off',
+        '@typescript-eslint/no-base-to-string': 'off',
         '@typescript-eslint/no-empty-object-type': [
           'error',
           {

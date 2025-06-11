@@ -10,6 +10,8 @@ import {
   useFloatingMediaValue,
   useImagePreviewValue,
 } from '@platejs/media/react';
+import { cva } from 'class-variance-authority';
+import { Link, Trash2Icon } from 'lucide-react';
 import {
   useEditorRef,
   useEditorSelector,
@@ -18,8 +20,6 @@ import {
   useRemoveNodeButton,
   useSelected,
 } from 'platejs/react';
-import { cva } from 'class-variance-authority';
-import { Link, Trash2Icon } from 'lucide-react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import {

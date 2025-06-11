@@ -1,5 +1,5 @@
-import type { OmitFirst, PluginConfig } from 'platejs';
 import type { ParseConfig } from 'papaparse';
+import type { OmitFirst, PluginConfig } from 'platejs';
 
 import { bindFirst, createTSlatePlugin, KEYS } from 'platejs';
 

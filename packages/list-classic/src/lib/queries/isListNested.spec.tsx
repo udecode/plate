@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
+import { jsxt } from '@platejs/test-utils';
 import { createEditor } from 'platejs';
 import { createSlateEditor } from 'platejs';
-import { jsxt } from '@platejs/test-utils';
 
 import { isListNested } from './isListNested';
 

@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
+import { jsxt } from '@platejs/test-utils';
 import { createSlatePlugin } from 'platejs';
 import { createSlateEditor } from 'platejs';
-import { jsxt } from '@platejs/test-utils';
 import { ParagraphPlugin } from 'platejs/react';
 
 import type { TriggerComboboxPluginOptions } from './types';

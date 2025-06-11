@@ -4,6 +4,8 @@ import type React from 'react';
 
 import type { DebouncedFunc } from 'lodash';
 
+import { serializeMd } from '@platejs/markdown';
+import debounce from 'lodash/debounce.js';
 import {
   type OmitFirst,
   type PluginConfig,
@@ -12,9 +14,7 @@ import {
   KEYS,
   NodeApi,
 } from 'platejs';
-import { serializeMd } from '@platejs/markdown';
 import { type PlateEditor, createTPlatePlugin } from 'platejs/react';
-import debounce from 'lodash/debounce.js';
 
 import type { CompleteOptions } from './utils/callCompletionApi';
 

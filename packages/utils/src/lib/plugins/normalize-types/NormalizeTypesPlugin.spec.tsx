@@ -2,8 +2,8 @@
 
 import { createSlateEditor } from '@platejs/core';
 import { ParagraphPlugin } from '@platejs/core/react';
-import { jsxt } from '@platejs/test-utils';
 import { createEditor } from '@platejs/slate';
+import { jsxt } from '@platejs/test-utils';
 
 import { NormalizeTypesPlugin } from './NormalizeTypesPlugin';
 

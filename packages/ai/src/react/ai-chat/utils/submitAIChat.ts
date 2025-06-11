@@ -1,7 +1,7 @@
 import type { ChatRequestOptions } from 'ai';
 
-import { KEYS } from 'platejs';
 import { isSelecting } from '@platejs/selection';
+import { KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';

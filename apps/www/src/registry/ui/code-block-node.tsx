@@ -2,8 +2,9 @@
 
 import * as React from 'react';
 
-import { type TCodeBlockElement, type TCodeSyntaxLeaf, NodeApi } from 'platejs';
 import { formatCodeBlock, isLangSupported } from '@platejs/code-block';
+import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
+import { type TCodeBlockElement, type TCodeSyntaxLeaf, NodeApi } from 'platejs';
 import {
   type PlateElementProps,
   type PlateLeafProps,
@@ -11,7 +12,6 @@ import {
   PlateLeaf,
 } from 'platejs/react';
 import { useEditorRef, useElement, useReadOnly } from 'platejs/react';
-import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {

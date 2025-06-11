@@ -2,17 +2,17 @@
 
 import * as React from 'react';
 
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import type { Alignment } from '@platejs/basic-styles';
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
-import { useEditorPlugin, useSelectionFragmentProp } from 'platejs/react';
 import {
   AlignCenterIcon,
   AlignJustifyIcon,
   AlignLeftIcon,
   AlignRightIcon,
 } from 'lucide-react';
+import { useEditorPlugin, useSelectionFragmentProp } from 'platejs/react';
 
 import {
   DropdownMenu,

@@ -4,15 +4,6 @@ import * as React from 'react';
 
 import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 
-import { PopoverAnchor } from '@radix-ui/react-popover';
-import {
-  type TElement,
-  type TTableCellElement,
-  type TTableElement,
-  type TTableRowElement,
-  KEYS,
-  PathApi,
-} from 'platejs';
 import { useDraggable, useDropLine } from '@platejs/dnd';
 import {
   BlockSelectionPlugin,
@@ -28,21 +19,7 @@ import {
   useTableElement,
   useTableMergeState,
 } from '@platejs/table/react';
-import {
-  type PlateElementProps,
-  PlateElement,
-  useComposedRef,
-  useEditorPlugin,
-  useEditorRef,
-  useEditorSelector,
-  useElement,
-  usePluginOption,
-  useReadOnly,
-  useRemoveNodeButton,
-  useSelected,
-  withHOC,
-} from 'platejs/react';
-import { useElementSelector } from 'platejs/react';
+import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cva } from 'class-variance-authority';
 import {
   ArrowDown,
@@ -58,6 +35,29 @@ import {
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
+import {
+  type TElement,
+  type TTableCellElement,
+  type TTableElement,
+  type TTableRowElement,
+  KEYS,
+  PathApi,
+} from 'platejs';
+import {
+  type PlateElementProps,
+  PlateElement,
+  useComposedRef,
+  useEditorPlugin,
+  useEditorRef,
+  useEditorSelector,
+  useElement,
+  usePluginOption,
+  useReadOnly,
+  useRemoveNodeButton,
+  useSelected,
+  withHOC,
+} from 'platejs/react';
+import { useElementSelector } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {

@@ -19,7 +19,7 @@ title: 序列化 Docx
 ## 安装
 
 ```bash
-npm install @udecode/plate-docx @udecode/plate-juice
+npm install @platejs/docx @platejs/juice
 ```
 
 ## 使用
@@ -27,8 +27,8 @@ npm install @udecode/plate-docx @udecode/plate-juice
 ### DOCX -> Slate
 
 ```tsx
-import { JuicePlugin } from '@udecode/plate-juice';
-import { DocxPlugin } from '@udecode/plate-docx';
+import { JuicePlugin } from '@platejs/juice';
+import { DocxPlugin } from '@platejs/docx';
 
 const plugins = [
   // ...其他插件,
@@ -37,7 +37,7 @@ const plugins = [
 ];
 ```
 
-在粘贴 HTML 时，`@udecode/plate-juice` 用于将 CSS 属性内联到 `style` 属性中。
+在粘贴 HTML 时，`@platejs/juice` 用于将 CSS 属性内联到 `style` 属性中。
 
 ## 插件
 

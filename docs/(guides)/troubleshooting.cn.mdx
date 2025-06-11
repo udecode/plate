@@ -34,17 +34,17 @@ npx depset@latest @udecode 45
 
 **问题:** 出现意外行为或 "hooks 只能在组件内部调用" 的错误提示。
 
-**根本原因:** 项目中 Plate 包版本不兼容。通常是不同 ``@udecode/plate*`` 包或 ``@udecode/plate-core`` 版本不一致。
+**根本原因:** 项目中 Plate 包版本不兼容。通常是不同 ``platejs*`` 包或 ``@platejs/core`` 版本不一致。
 
 **诊断方法:** 检查是否存在多个 Plate 包版本：
 
 ``bash
 # npm
-npm ls @udecode/plate @udecode/plate-core
+npm ls platejs @platejs/core
 
 # pnpm 或 yarn
-pnpm why @udecode/plate
-pnpm why @udecode/plate-core
+pnpm why platejs
+pnpm why @platejs/core
 ``
 
 **解决方案：**

@@ -1,9 +1,4 @@
-import {
-  type SlateEditor,
-  type TLocation,
-  KEYS,
-  NodeApi,
-} from 'platejs';
+import { type SlateEditor, type TLocation, KEYS, NodeApi } from 'platejs';
 
 export const unwrapCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;

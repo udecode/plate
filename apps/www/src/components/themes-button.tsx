@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { createZustandStore } from 'platejs';
 import { Paintbrush } from 'lucide-react';
+import { createZustandStore } from 'platejs';
 
 import { Button } from '@/components/ui/button';
 import { THEME_LIST } from '@/lib/themes';

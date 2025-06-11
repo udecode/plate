@@ -24,7 +24,7 @@ npx shadcn@latest add https://platejs.org/r/editor
 ```tsx showLineNumbers title="app/editor/page.tsx"
 'use client';
 
-import { Plate, usePlateEditor } from '@udecode/plate/react';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/ui/editor';
 
@@ -66,17 +66,17 @@ npx shadcn@latest add https://platejs.org/r/basic-nodes-kit https://platejs.org/
 'use client';
 
 import * as React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   usePlateEditor,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/ui/editor';
 import { FixedToolbar } from '@/components/ui/fixed-toolbar';
@@ -128,7 +128,7 @@ export default function MyEditorPage() {
 'use client';
 
 import * as React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BlockquotePlugin,
@@ -138,11 +138,11 @@ import {
   H3Plugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   usePlateEditor,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/ui/blockquote-node';
 import { Editor, EditorContainer } from '@/components/ui/editor';
@@ -225,7 +225,7 @@ export default function MyEditorPage() {
 'use client';
 
 import * as React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BlockquotePlugin,
@@ -235,11 +235,11 @@ import {
   H3Plugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   usePlateEditor,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/ui/blockquote-node';
 import { Editor, EditorContainer } from '@/components/ui/editor';

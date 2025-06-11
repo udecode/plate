@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createEditor, createSlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { createEditor, createSlateEditor } from 'platejs';
 
 import { SingleBlockPlugin } from './SingleBlockPlugin';
 

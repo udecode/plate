@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import { jsxt } from '@platejs/test-utils';
+import { createSlateEditor } from 'platejs';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { MarkdownPlugin } from '../MarkdownPlugin';

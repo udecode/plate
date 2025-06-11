@@ -5,6 +5,14 @@ import * as React from 'react';
 import type { TResolvedSuggestion } from '@platejs/suggestion';
 
 import {
+  acceptSuggestion,
+  getSuggestionKey,
+  keyId2SuggestionId,
+  rejectSuggestion,
+} from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { CheckIcon, XIcon } from 'lucide-react';
+import {
   type NodeEntry,
   type Path,
   type TElement,
@@ -15,15 +23,7 @@ import {
   PathApi,
   TextApi,
 } from 'platejs';
-import {
-  acceptSuggestion,
-  getSuggestionKey,
-  keyId2SuggestionId,
-  rejectSuggestion,
-} from '@platejs/suggestion';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { useEditorPlugin, usePluginOption } from 'platejs/react';
-import { CheckIcon, XIcon } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';

@@ -1,5 +1,5 @@
-import type { Value } from 'platejs';
 import type { SuggestionUser, TSuggestion } from '@platejs/suggestion';
+import type { Value } from 'platejs';
 
 export const usersData: Record<string, SuggestionUser> = {
   1: {

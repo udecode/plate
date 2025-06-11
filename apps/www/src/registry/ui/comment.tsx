@@ -4,16 +4,8 @@ import * as React from 'react';
 
 import type { CreatePlateEditorOptions } from 'platejs/react';
 
-import { type Value, KEYS, nanoid, NodeApi } from 'platejs';
 import { getCommentKey, getDraftCommentKey } from '@platejs/comment';
 import { CommentPlugin, useCommentId } from '@platejs/comment/react';
-import {
-  Plate,
-  useEditorPlugin,
-  useEditorRef,
-  usePlateEditor,
-  usePluginOption,
-} from 'platejs/react';
 import {
   differenceInDays,
   differenceInHours,
@@ -28,6 +20,14 @@ import {
   TrashIcon,
   XIcon,
 } from 'lucide-react';
+import { type Value, KEYS, nanoid, NodeApi } from 'platejs';
+import {
+  Plate,
+  useEditorPlugin,
+  useEditorRef,
+  usePlateEditor,
+  usePluginOption,
+} from 'platejs/react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';

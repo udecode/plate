@@ -1,5 +1,5 @@
-import { jsx } from '@platejs/test-utils';
 /** @jsx jsx */
+import { jsx } from '@platejs/test-utils';
 import { type PlateEditor, createPlateEditor } from 'platejs/react';
 
 import { setSelectedCellsBorder } from './getOnSelectTableBorderFactory';

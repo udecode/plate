@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
 

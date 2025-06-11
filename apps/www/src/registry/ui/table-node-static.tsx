@@ -6,8 +6,8 @@ import type {
   TTableElement,
 } from 'platejs';
 
-import { SlateElement } from 'platejs';
 import { BaseTablePlugin } from '@platejs/table';
+import { SlateElement } from 'platejs';
 
 import { cn } from '@/lib/utils';
 

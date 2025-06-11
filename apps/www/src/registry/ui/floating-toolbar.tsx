@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 
-import { useComposedRef } from '@udecode/cn';
-import { KEYS } from 'platejs';
 import {
   type FloatingToolbarState,
   flip,
@@ -11,6 +9,8 @@ import {
   useFloatingToolbar,
   useFloatingToolbarState,
 } from '@platejs/floating';
+import { useComposedRef } from '@udecode/cn';
+import { KEYS } from 'platejs';
 import {
   useEditorId,
   useEventEditorValue,

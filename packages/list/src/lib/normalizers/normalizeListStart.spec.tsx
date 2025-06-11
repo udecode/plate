@@ -5,9 +5,9 @@ import type { SlateEditor } from 'platejs';
 
 import { IndentPlugin } from '@platejs/indent/react';
 import { jsxt } from '@platejs/test-utils';
+import { omit } from 'lodash';
 import { ParagraphPlugin } from 'platejs/react';
 import { createPlateEditor } from 'platejs/react';
-import { omit } from 'lodash';
 
 import { listPluginPage } from '../../__tests__/listPluginPage';
 import { BaseListPlugin } from '../BaseListPlugin';

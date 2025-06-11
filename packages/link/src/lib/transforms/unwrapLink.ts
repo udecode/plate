@@ -1,8 +1,4 @@
-import {
-  type SlateEditor,
-  type UnwrapNodesOptions,
-  ElementApi,
-} from 'platejs';
+import { type SlateEditor, type UnwrapNodesOptions, ElementApi } from 'platejs';
 import { KEYS } from 'platejs';
 
 /** Unwrap link node. */

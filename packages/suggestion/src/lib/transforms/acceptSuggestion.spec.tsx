@@ -2,8 +2,8 @@
 
 import type { SlateEditor } from 'platejs';
 
-import { createSlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { createSlateEditor } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { acceptSuggestion } from './acceptSuggestion';

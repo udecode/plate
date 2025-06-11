@@ -2,8 +2,8 @@
 
 import type { JSX } from 'react';
 
-import { createEditor, createSlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { createEditor, createSlateEditor } from 'platejs';
 
 import { isPointNextToNode } from './isPointNextToNode';
 

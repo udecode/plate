@@ -2,7 +2,6 @@
 
 import type { AutoformatRule } from '@platejs/autoformat';
 
-import { KEYS } from 'platejs';
 import {
   autoformatArrow,
   autoformatLegal,
@@ -14,6 +13,7 @@ import {
 } from '@platejs/autoformat';
 import { insertEmptyCodeBlock } from '@platejs/code-block';
 import { toggleList } from '@platejs/list';
+import { KEYS } from 'platejs';
 
 const autoformatMarks: AutoformatRule[] = [
   {

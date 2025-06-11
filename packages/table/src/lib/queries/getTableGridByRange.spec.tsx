@@ -1,11 +1,7 @@
 /** @jsx jsxt */
 
-import {
-  type SlateEditor,
-  type TElement,
-  createSlateEditor,
-} from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
 
 import { getTestTablePlugins } from '../withNormalizeTable.spec';
 import { getTableGridAbove } from './getTableGridAbove';

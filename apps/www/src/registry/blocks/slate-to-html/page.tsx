@@ -1,9 +1,9 @@
 import * as React from 'react';
 
-import { type Value, createSlateEditor, serializeHtml } from 'platejs';
 import { cva } from 'class-variance-authority';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { type Value, createSlateEditor, serializeHtml } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import {

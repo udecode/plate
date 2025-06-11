@@ -27,7 +27,7 @@ docs:
 ## 安装
 
 ```bash
-npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-nodes
+npm install @platejs/ai @platejs/selection @platejs/markdown @platejs/basic-nodes
 ```
 
 ## 使用指南
@@ -35,7 +35,7 @@ npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @
 ### 插件配置
 
 ```tsx
-import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
+import { AIChatPlugin, AIPlugin } from '@platejs/ai/react';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -43,16 +43,16 @@ import {
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
   BaseHorizontalRulePlugin, BaseHeadingPlugin, BaseBlockquotePlugin
-} from '@udecode/plate-basic-nodes';
+} from '@platejs/basic-nodes';
 import {
   BaseCodeBlockPlugin,
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
-} from '@udecode/plate-code-block';
-import { createSlateEditor, KEYS } from '@udecode/plate';
-import { BaseListPlugin } from '@udecode/plate-list';
-import { BaseLinkPlugin } from '@udecode/plate-link';
-import { MarkdownPlugin } from '@udecode/plate-markdown';
+} from '@platejs/code-block';
+import { createSlateEditor, KEYS } from 'platejs';
+import { BaseListPlugin } from '@platejs/list';
+import { BaseLinkPlugin } from '@platejs/link';
+import { MarkdownPlugin } from '@platejs/markdown';
 ```
 
 ```tsx

@@ -3,9 +3,9 @@
 import type { AIChatPluginConfig } from '@platejs/ai/react';
 import type { UseChatOptions } from 'ai/react';
 
-import { KEYS, PathApi } from 'platejs';
 import { streamInsertChunk, withAIBatch } from '@platejs/ai';
 import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
+import { KEYS, PathApi } from 'platejs';
 import { usePluginOption } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';

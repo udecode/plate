@@ -1,10 +1,5 @@
-import {
-  type SlateEditor,
-  type TRange,
-  ElementApi,
-  KEYS,
-} from 'platejs';
 import castArray from 'lodash/castArray.js';
+import { type SlateEditor, type TRange, ElementApi, KEYS } from 'platejs';
 
 import type { AutoformatBlockRule } from '../types';
 

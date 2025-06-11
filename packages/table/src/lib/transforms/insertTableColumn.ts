@@ -1,9 +1,4 @@
-import type {
-  Path,
-  SlateEditor,
-  TElement,
-  TTableElement,
-} from 'platejs';
+import type { Path, SlateEditor, TElement, TTableElement } from 'platejs';
 
 import { getEditorPlugin, KEYS, NodeApi, PathApi } from 'platejs';
 

@@ -2,8 +2,8 @@
 
 import type { SlateEditor } from 'platejs';
 
-import { createSlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { unwrapList } from './unwrapList';

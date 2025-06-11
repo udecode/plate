@@ -1,8 +1,4 @@
-import type {
-  EditorAboveOptions,
-  SlateEditor,
-  TTableElement,
-} from 'platejs';
+import type { EditorAboveOptions, SlateEditor, TTableElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 

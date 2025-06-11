@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 
-import type { NodeEntry } from 'platejs';
 import type { UseChatHelpers } from 'ai/react';
+import type { NodeEntry } from 'platejs';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { useEditorPlugin, usePluginOption } from 'platejs/react';

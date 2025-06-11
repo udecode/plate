@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, BaseParagraphPlugin, KEYS } from 'platejs';
 import { IndentPlugin } from '@platejs/indent/react';
 import { jsxt } from '@platejs/test-utils';
+import { type SlateEditor, BaseParagraphPlugin, KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { BaseListPlugin } from '../BaseListPlugin';

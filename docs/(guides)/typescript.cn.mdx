@@ -3,13 +3,13 @@ title: TypeScript
 description: Configure TypeScript (tsconfig) for using Plate, including module resolution solutions.
 ---
 
-Plate provides ESM packages, which require certain TypeScript (and bundler) configurations to ensure compatibility, especially when importing subpath modules like `@udecode/plate/react`. Below are several solutions and workarounds to make TypeScript happy.
+Plate provides ESM packages, which require certain TypeScript (and bundler) configurations to ensure compatibility, especially when importing subpath modules like `platejs/react`. Below are several solutions and workarounds to make TypeScript happy.
 
 ## Quick Summary
 
 1. **Recommended (Easiest):** Use TypeScript **5.0+** and set `"moduleResolution": "bundler"` in your `tsconfig.json`.
 2. **Alternate (Node resolution):** Keep `"moduleResolution": "node"` and map paths to `dist/react` (and potentially alias them in your bundler config).
-3. **Up-to-date Packages:** Ensure all `@udecode/plate-*` dependencies share the same major/minor version.
+3. **Up-to-date Packages:** Ensure all `@platejs/*` dependencies share the same major/minor version.
 
 
 ## Recommended: `"moduleResolution": "bundler"`
@@ -109,16 +109,16 @@ If upgrading your entire project to TS 5.0 or changing the resolution mode is no
   "compilerOptions": {
     "moduleResolution": "node",
     "paths": {
-      "@udecode/plate/react": [
-        "./node_modules/@udecode/plate/dist/react/index.d.ts"
+      "platejs/react": [
+        "./node_modules/platejs/dist/react/index.d.ts"
       ],
-      "@udecode/plate-core/react": [
-        "./node_modules/@udecode/plate-core/dist/react/index.d.ts"
+      "@platejs/core/react": [
+        "./node_modules/@platejs/core/dist/react/index.d.ts"
       ],
-      "@udecode/plate-list/react": [
-        "./node_modules/@udecode/plate-list/dist/react/index.d.ts"
+      "@platejs/list/react": [
+        "./node_modules/@platejs/list/dist/react/index.d.ts"
       ]
-      // ...repeat for all @udecode/plate-*/react packages
+      // ...repeat for all @platejs/*/react packages
     }
   }
 }
@@ -133,31 +133,31 @@ import path from 'path';
 export default defineConfig({
   resolve: {
     alias: {
-      '@udecode/plate/react': path.resolve(
+      'platejs/react': path.resolve(
         __dirname,
-        'node_modules/@udecode/plate/dist/react'
+        'node_modules/platejs/dist/react'
       ),
-      '@udecode/plate-core/react': path.resolve(
+      '@platejs/core/react': path.resolve(
         __dirname,
-        'node_modules/@udecode/plate-core/dist/react'
+        'node_modules/@platejs/core/dist/react'
       ),
-      '@udecode/plate-list/react': path.resolve(
+      '@platejs/list/react': path.resolve(
         __dirname,
-        'node_modules/@udecode/plate-list/dist/react'
+        'node_modules/@platejs/list/dist/react'
       ),
 
       // Non-/react base aliases:
-      '@udecode/plate': path.resolve(
+      'platejs': path.resolve(
         __dirname,
-        'node_modules/@udecode/plate'
+        'node_modules/platejs'
       ),
-      '@udecode/plate-core': path.resolve(
+      '@platejs/core': path.resolve(
         __dirname,
-        'node_modules/@udecode/plate-core'
+        'node_modules/@platejs/core'
       ),
-      '@udecode/plate-list': path.resolve(
+      '@platejs/list': path.resolve(
         __dirname,
-        'node_modules/@udecode/plate-list'
+        'node_modules/@platejs/list'
       )
     }
   }
@@ -165,12 +165,12 @@ export default defineConfig({
 ```
 
 **Note:**  
-- You must do this for every `@udecode/plate-*/react` import you use.  
+- You must do this for every `@platejs/*/react` import you use.  
 - For testing/Jest, replicate these aliases via `moduleNameMapper` or similar.
 
 ## Ensure Matching Plate Versions
 
-Say you're upgrading one package to `42.0.3`, double-check that all your `@udecode/plate-*` packages are on the **latest version up to 42.0.3** (one package could stay at `42.0.2` if it has no `42.0.3` release). Mixing versions often leads to mismatches.
+Say you're upgrading one package to `42.0.3`, double-check that all your `@platejs/*` packages are on the **latest version up to 42.0.3** (one package could stay at `42.0.2` if it has no `42.0.3` release). Mixing versions often leads to mismatches.
 
 ## FAQ
 
@@ -201,8 +201,8 @@ You'll need to replicate your alias/resolution changes for Jest. For example:
 module.exports = {
   // ...
   moduleNameMapper: {
-    '^@udecode/plate/react$': '<rootDir>/node_modules/@udecode/plate/dist/react',
-    '^@udecode/plate-core/react$': '<rootDir>/node_modules/@udecode/plate-core/dist/react',
+    '^platejs/react$': '<rootDir>/node_modules/platejs/dist/react',
+    '^@platejs/core/react$': '<rootDir>/node_modules/@platejs/core/dist/react',
     // ...
   }
 };

@@ -2,9 +2,10 @@
 
 import * as React from 'react';
 
-import { getContainerTypes, isType, KEYS } from 'platejs';
 import { useDraggable, useDropLine } from '@platejs/dnd';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { GripVertical } from 'lucide-react';
+import { getContainerTypes, isType, KEYS } from 'platejs';
 import {
   type PlateElementProps,
   type RenderNodeWrapper,
@@ -15,7 +16,6 @@ import {
   usePluginOption,
 } from 'platejs/react';
 import { useSelected } from 'platejs/react';
-import { GripVertical } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {

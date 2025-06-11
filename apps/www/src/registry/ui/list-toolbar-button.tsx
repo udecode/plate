@@ -7,8 +7,8 @@ import {
   useIndentTodoToolBarButton,
   useIndentTodoToolBarButtonState,
 } from '@platejs/list/react';
-import { useEditorRef, useEditorSelector } from 'platejs/react';
 import { List, ListOrdered, ListTodoIcon } from 'lucide-react';
+import { useEditorRef, useEditorSelector } from 'platejs/react';
 
 import {
   DropdownMenu,

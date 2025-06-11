@@ -1,6 +1,6 @@
 {
   "name": "@platejs/diff",
-  "version": "49.0.0",
+  "version": "48.0.5",
   "description": "Compute a diff of two Slate documents",
   "keywords": [
     "plate",

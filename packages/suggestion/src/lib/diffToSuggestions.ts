@@ -1,3 +1,4 @@
+import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
 import {
   type Descendant,
   type SlateEditor,
@@ -7,7 +8,6 @@ import {
   nanoid,
   TextApi,
 } from 'platejs';
-import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { getSuggestionProps } from './transforms';

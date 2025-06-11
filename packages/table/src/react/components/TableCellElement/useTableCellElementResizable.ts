@@ -2,17 +2,13 @@ import React from 'react';
 
 import type { TTableElement } from 'platejs';
 
-import { KEYS } from 'platejs';
 import {
   type ResizeEvent,
   type ResizeHandle,
   resizeLengthClampStatic,
 } from '@platejs/resizable';
-import {
-  useEditorPlugin,
-  useElement,
-  useElementSelector,
-} from 'platejs/react';
+import { KEYS } from 'platejs';
+import { useEditorPlugin, useElement, useElementSelector } from 'platejs/react';
 
 import type { TableCellElementState } from './useTableCellElement';
 

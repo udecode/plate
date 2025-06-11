@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { KEYS, NormalizeTypesPlugin } from 'platejs';
 import { PlaywrightPlugin } from '@platejs/playwright';
+import { KEYS, NormalizeTypesPlugin } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { useLocale } from '@/hooks/useLocale';

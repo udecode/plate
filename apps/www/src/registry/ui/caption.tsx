@@ -4,13 +4,13 @@ import * as React from 'react';
 
 import type { VariantProps } from 'class-variance-authority';
 
-import { createPrimitiveComponent } from '@udecode/cn';
 import {
   Caption as CaptionPrimitive,
   CaptionTextarea as CaptionTextareaPrimitive,
   useCaptionButton,
   useCaptionButtonState,
 } from '@platejs/caption/react';
+import { createPrimitiveComponent } from '@udecode/cn';
 import { cva } from 'class-variance-authority';
 
 import { Button } from '@/components/ui/button';

@@ -4,7 +4,6 @@ import * as React from 'react';
 
 import type { Emoji } from '@emoji-mart/data';
 
-import * as Popover from '@radix-ui/react-popover';
 import {
   type EmojiCategoryList,
   type EmojiIconList,
@@ -16,6 +15,7 @@ import {
   type UseEmojiPickerType,
   useEmojiDropdownMenuState,
 } from '@platejs/emoji/react';
+import * as Popover from '@radix-ui/react-popover';
 import {
   AppleIcon,
   ClockIcon,

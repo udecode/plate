@@ -1,9 +1,4 @@
-import type {
-  ElementOf,
-  NodeEntry,
-  SlateEditor,
-  TElement,
-} from 'platejs';
+import type { ElementOf, NodeEntry, SlateEditor, TElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 

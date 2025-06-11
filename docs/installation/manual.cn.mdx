@@ -24,11 +24,11 @@ npm create vite@latest
 首先安装必要的 Plate 包。这些包提供了核心编辑器功能、React 集成以及基础的 marks 和 elements 插件。
 
 ```bash
-npm add @udecode/plate @udecode/plate-basic-nodes
+npm add platejs @platejs/basic-nodes
 ```
 
--   `@udecode/plate`：Plate 核心引擎和 React 组件。
--   `@udecode/plate-basic-nodes`：基础节点插件，如标题、粗体、斜体、下划线等。
+-   `platejs`：Plate 核心引擎和 React 组件。
+-   `@platejs/basic-nodes`：基础节点插件，如标题、粗体、斜体、下划线等。
 
 ### TypeScript 配置
 
@@ -56,8 +56,8 @@ Plate 提供 ESM 包。如果你使用 TypeScript，请确保你的 `tsconfig.js
 
 ```tsx title="src/App.tsx"
 import React from 'react';
-import type { Value } from '@udecode/plate';
-import { Plate, PlateContent, usePlateEditor } from '@udecode/plate/react';
+import type { Value } from 'platejs';
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 
 export default function App() {
   const editor = usePlateEditor();
@@ -74,7 +74,7 @@ export default function App() {
 ```
 
 <Callout type="info">
-  `usePlateEditor` 会创建一个 memoized 的编辑器实例，确保多次渲染时的稳定性。如果你需要非 memoized 版本，可以用 `@udecode/plate/react` 的 `createPlateEditor`。
+  `usePlateEditor` 会创建一个 memoized 的编辑器实例，确保多次渲染时的稳定性。如果你需要非 memoized 版本，可以用 `platejs/react` 的 `createPlateEditor`。
 </Callout>
 
 <ComponentPreview name="installation-next-01-editor-demo" height="200px" />
@@ -87,18 +87,18 @@ export default function App() {
 
 ```tsx showLineNumbers title="src/App.tsx" {4-8,32}
 import React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   PlateContent,
   usePlateEditor,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 const initialValue: Value = [
   {
@@ -144,7 +144,7 @@ export default function App() {
 
 ```tsx showLineNumbers title="src/App.tsx" {5,7-9,76-79}
 import React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BlockquotePlugin,
@@ -154,14 +154,14 @@ import {
   H3Plugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   PlateContent,
   PlateElement,
   usePlateEditor,
   type PlateElementProps,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 const initialValue: Value = [
   {
@@ -247,7 +247,7 @@ export default function App() {
 
 ```tsx showLineNumbers title="src/App.tsx" {81-87,93-95}
 import React from 'react';
-import type { Value } from '@udecode/plate';
+import type { Value } from 'platejs';
 
 import {
   BlockquotePlugin,
@@ -257,14 +257,14 @@ import {
   H3Plugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-nodes/react';
+} from '@platejs/basic-nodes/react';
 import {
   Plate,
   PlateContent,
   PlateElement,
   usePlateEditor,
   type PlateElementProps,
-} from '@udecode/plate/react';
+} from 'platejs/react';
 
 const initialValue: Value = [
   {
@@ -388,7 +388,7 @@ export default function App() {
 *   **添加样式：**
     *   想要快速体验预设组件，可考虑使用 [Plate UI](/docs/installation/plate-ui)
     *   或继续用 CSS、CSS-in-JS 库或你喜欢的样式方案手动美化
-*   **[添加插件](/docs/plugins)：** Plate 拥有丰富的插件生态，支持表格、提及、图片、列表等功能。安装相应包（如 `@udecode/plate-table`），并添加到 `plugins` 数组。
+*   **[添加插件](/docs/plugins)：** Plate 拥有丰富的插件生态，支持表格、提及、图片、列表等功能。安装相应包（如 `@platejs/table`），并添加到 `plugins` 数组。
 *   **[构建工具栏](/docs/toolbar)：** 创建 React 组件作为工具栏按钮，利用 [Editor Transforms](/docs/transforms) 应用格式（如 `editor.tf.bold.toggle()`、`editor.tf.h1.toggle()`）。你也可以通过 [Editor API](/docs/api) 获取编辑器状态。
 *   **了解更多：**
     *   [编辑器配置](/docs/editor)

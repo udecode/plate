@@ -1,12 +1,7 @@
 import type { OverrideEditor } from 'platejs/react';
 
-import {
-  type SlateEditor,
-  type TIndentElement,
-  KEYS,
-  NodeApi,
-} from 'platejs';
 import { indent } from '@platejs/indent';
+import { type SlateEditor, type TIndentElement, KEYS, NodeApi } from 'platejs';
 
 import type { ToggleConfig } from './TogglePlugin';
 

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-base-to-string */
-
 'use client';
 
 import { memo } from 'react';

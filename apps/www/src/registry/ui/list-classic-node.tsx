@@ -9,8 +9,8 @@ import {
   useTodoListElement,
   useTodoListElementState,
 } from '@platejs/list-classic/react';
-import { PlateElement } from 'platejs/react';
 import { type VariantProps, cva } from 'class-variance-authority';
+import { PlateElement } from 'platejs/react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 

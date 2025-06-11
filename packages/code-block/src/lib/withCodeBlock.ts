@@ -1,8 +1,4 @@
-import type {
-  OverrideEditor,
-  TCodeBlockElement,
-  TElement,
-} from 'platejs';
+import type { OverrideEditor, TCodeBlockElement, TElement } from 'platejs';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 

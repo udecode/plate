@@ -1,4 +1,3 @@
-import { KEYS } from 'platejs';
 import { BaseCaptionPlugin } from '@platejs/caption';
 import {
   BaseAudioPlugin,
@@ -8,6 +7,7 @@ import {
   BasePlaceholderPlugin,
   BaseVideoPlugin,
 } from '@platejs/media';
+import { KEYS } from 'platejs';
 
 import { AudioElementStatic } from '@/registry/ui/media-audio-node-static';
 import { FileElementStatic } from '@/registry/ui/media-file-node-static';

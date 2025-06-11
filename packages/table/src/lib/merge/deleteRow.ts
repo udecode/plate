@@ -5,8 +5,8 @@ import type {
   TTableRowElement,
 } from 'platejs';
 
-import { getEditorPlugin, KEYS } from 'platejs';
 import cloneDeep from 'lodash/cloneDeep.js';
+import { getEditorPlugin, KEYS } from 'platejs';
 
 import type { TableConfig } from '../BaseTablePlugin';
 

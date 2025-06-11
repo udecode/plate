@@ -1,4 +1,3 @@
-import { BaseParagraphPlugin } from 'platejs';
 import {
   BaseBlockquotePlugin,
   BaseH1Plugin,
@@ -6,6 +5,7 @@ import {
   BaseH3Plugin,
   BaseHorizontalRulePlugin,
 } from '@platejs/basic-nodes';
+import { BaseParagraphPlugin } from 'platejs';
 
 import { BlockquoteElementStatic } from '@/registry/ui/blockquote-node-static';
 import {

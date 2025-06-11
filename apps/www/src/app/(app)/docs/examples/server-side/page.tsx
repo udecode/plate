@@ -2,13 +2,13 @@ import type { Doc } from 'contentlayer/generated';
 
 import type { Metadata } from 'next';
 
+import { AutoformatPlugin } from '@platejs/autoformat';
+import { DocxPlugin } from '@platejs/docx';
 import {
   createSlateEditor,
   ExitBreakPlugin,
   TrailingBlockPlugin,
 } from 'platejs';
-import { AutoformatPlugin } from '@platejs/autoformat';
-import { DocxPlugin } from '@platejs/docx';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { Code } from '@/components/code';

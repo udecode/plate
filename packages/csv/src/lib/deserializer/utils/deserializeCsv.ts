@@ -1,7 +1,7 @@
 import type { Descendant, SlateEditor, TElement, TNode } from 'platejs';
 
-import { KEYS } from 'platejs';
 import papaparse from 'papaparse';
+import { KEYS } from 'platejs';
 
 import { type CsvParseOptions, CsvPlugin } from '../../CsvPlugin';
 

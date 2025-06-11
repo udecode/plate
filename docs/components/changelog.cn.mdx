@@ -58,7 +58,7 @@ toc: true
 
 ### 3月12日 #20.4
 
-- `ai-toolbar-button`: 添加缺失的 `@udecode/plate-ai` 依赖。
+- `ai-toolbar-button`: 添加缺失的 `@platejs/ai` 依赖。
 - `comment-toolbar-button`: 添加缺失的 `comments-plugin` registry 依赖。
 - `font-size-toolbar-button`: 添加缺失的 `popover` registry 依赖。
 - `tooltip`: 添加缺失的 `button` registry 依赖。
@@ -116,7 +116,7 @@ Plate 45 - 新评论和建议 UI
 - 新增 `block-suggestion`
 - 新增 `suggestion-leaf`
 - 新增 `suggestion-line-break`
-- 移除 `plate-element`，从 `@udecode/plate/react` 导入 `PlateElement` 代替。在 `block-selection-plugins` 中添加:
+- 移除 `plate-element`，从 `platejs/react` 导入 `PlateElement` 代替。在 `block-selection-plugins` 中添加:
 ```tsx
 render: {
   belowRootNodes: (props) => {

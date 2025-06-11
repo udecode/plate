@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
 

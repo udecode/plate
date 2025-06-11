@@ -6,9 +6,9 @@ import {
   useImagePreviewValue,
   useScaleInput,
 } from '@platejs/media/react';
-import { useEditorRef } from 'platejs/react';
 import { cva } from 'class-variance-authority';
 import { ArrowLeft, ArrowRight, Download, Minus, Plus, X } from 'lucide-react';
+import { useEditorRef } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 

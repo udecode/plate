@@ -1,7 +1,7 @@
 import type { PlateEditor } from 'platejs/react';
 
-import { type Descendant, ElementApi, TextApi } from 'platejs';
 import { type SerializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
+import { type Descendant, ElementApi, TextApi } from 'platejs';
 
 import { getChunkTrimmed, isCompleteCodeBlock, isCompleteMath } from './utils';
 

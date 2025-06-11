@@ -22,7 +22,7 @@ description: 了解如何配置键盘快捷键。
 当按下指定按键时，Plate 会自动查找并调用对应的方法。
 
 ```tsx title="plugins/my-document-plugin.ts"
-import { createPlatePlugin, Key } from '@udecode/plate/react';
+import { createPlatePlugin, Key } from 'platejs/react';
 
 // 示例：包含 transforms 和 API 的简化插件
 export const MyDocumentPlugin = createPlatePlugin({
@@ -64,7 +64,7 @@ export const MyDocumentPlugin = createPlatePlugin({
 对于需要更复杂逻辑、依赖于键盘事件，或没有与现有 transform 名称一一对应的操作，可以提供自定义 `handler` 函数。当快捷键被激活时，该函数会被执行。
 
 ```tsx title="plugins/custom-logger-plugin.ts"
-import { createPlatePlugin, Key } from '@udecode/plate/react';
+import { createPlatePlugin, Key } from 'platejs/react';
 
 export const CustomLoggerPlugin = createPlatePlugin({
   key: 'customLogger',
@@ -120,7 +120,7 @@ export const CustomLoggerPlugin = createPlatePlugin({
 单个插件不限于一个快捷键；你可以根据需要定义多个：
 
 ```tsx title="plugins/my-formatting-tools.ts"
-import { createPlatePlugin, Key } from '@udecode/plate/react';
+import { createPlatePlugin, Key } from 'platejs/react';
 
 export const MyFormattingTools = createPlatePlugin({
   key: 'myFormatting',
@@ -182,7 +182,7 @@ const PluginB = createPlatePlugin({ key: 'pluginB', priority: 20 }).extend({
 配置插件时（如 `BoldPlugin.configure({ ... })`），可以通过名称（如 `toggle`）定义快捷键。如果插件已有同名快捷键（如默认值），你的新配置会覆盖原有快捷键。你可以更改其 `keys`，提供新的 `handler`，或调整其他属性。
 
 ```tsx
-import { BoldPlugin, Key } from '@udecode/plate-basic-nodes/react';
+import { BoldPlugin, Key } from '@platejs/basic-nodes/react';
 
 // BoldPlugin 默认有名为 'toggle' 的快捷键（通常为 Mod+B）。
 // 这里将其组合改为 Mod+Shift+B。
@@ -201,7 +201,7 @@ const MyCustomBoldPlugin = BoldPlugin.configure({
 将快捷键配置设置为 `null` 即可禁用该快捷键（如 ItalicPlugin 的 `toggle`）。
 
 ```tsx
-import { ItalicPlugin } from '@udecode/plate-basic-nodes/react';
+import { ItalicPlugin } from '@platejs/basic-nodes/react';
 
 // 示例：禁用 ItalicPlugin 的 'toggle' 快捷键
 const MyCustomItalicPlugin = ItalicPlugin.configure({
@@ -216,7 +216,7 @@ const MyCustomItalicPlugin = ItalicPlugin.configure({
 除了插件快捷键外，还可以在创建编辑器实例时直接定义全局快捷键。这些快捷键行为与插件快捷键类似。
 
 ```tsx title="editor-config.ts"
-import { createPlateEditor, Key } from '@udecode/plate/react';
+import { createPlateEditor, Key } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [/* ...你的插件数组... */],
