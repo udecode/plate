@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "@platejs/combobox": "48.0.5",
-    "ai": "4.3.11"
+    "ai": "4.3.16"
   },
   "peerDependencies": {
     "platejs": ">=48.0.5",

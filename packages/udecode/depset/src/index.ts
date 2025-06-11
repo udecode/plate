@@ -62,7 +62,7 @@ async function fetchPackageVersion(
     );
     const versions = JSON.parse(stdout);
     const latestMatchingVersion = Array.isArray(versions)
-      ? versions.at(-1)
+      ? versions[versions.length - 1]
       : versions;
 
     if (latestMatchingVersion) {

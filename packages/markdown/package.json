@@ -47,13 +47,13 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "marked": "^15.0.11",
+    "marked": "^15.0.12",
     "mdast-util-math": "3.0.0",
     "mdast-util-mdx": "3.0.0",
     "remark-mdx": "^3.1.0",
     "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
-    "ts-essentials": "10.0.4",
+    "ts-essentials": "10.1.0",
     "unified": "^11.0.5"
   },
   "devDependencies": {

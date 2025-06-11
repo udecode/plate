@@ -46,7 +46,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "validator": "^13.15.0"
+    "validator": "^13.15.15"
   },
   "devDependencies": {
     "platejs": "workspace:^"
