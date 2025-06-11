@@ -56,9 +56,9 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/core": "49.0.0",
-    "@platejs/slate": "49.0.0",
-    "@platejs/utils": "49.0.0",
+    "@platejs/core": "48.0.5",
+    "@platejs/slate": "48.0.5",
+    "@platejs/utils": "48.0.5",
     "@udecode/react-hotkeys": "37.0.0",
     "@udecode/react-utils": "47.3.1",
     "@udecode/utils": "47.2.7"

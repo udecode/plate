@@ -45,7 +45,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate": "49.0.0",
+    "@platejs/slate": "48.0.5",
     "slate-hyperscript": "0.100.0"
   },
   "publishConfig": {

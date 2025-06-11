@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/combobox": "49.0.0"
+    "@platejs/combobox": "48.0.5"
   },
   "devDependencies": {
     "@emoji-mart/data": "^1.2.1",
@@ -58,7 +58,7 @@
   },
   "peerDependencies": {
     "@emoji-mart/data": ">=1.2.0",
-    "platejs": ">=49.0.0",
+    "platejs": ">=48.0.5",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
