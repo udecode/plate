@@ -5,6 +5,7 @@
 - `@changesets/get-github-info`: to test
 - `@excalidraw/excalidraw`: breaking
 - `contentlayer2@0.4.6`: issue with react-tweet css, etc.
+- `jest@29.7.0`: jest 30.0.0 is failing parallel tests while it succeeds individually
 - `jotai@2.8`: https://github.com/pmndrs/jotai/discussions/2725
 - `juice@8`: Jest encountered an unexpected token
 - `next-contentlayer2`: see contentlayer2
