@@ -10,9 +10,14 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 
 # 49.0.0
 
-## @udecode/slate@49.0.0
+## platejs@49.0.0
 
-### Major Changes
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+    -   Renamed package to `platejs`:
+        -   Replace all `@udecode/plate/react` with `platejs/react`
+        -   Replace all `'@udecode/plate'` with `'platejs'`
+
+## @platejs/slate@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -48,9 +53,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   `editor.tf.insertSoftBreak` now inserts a soft break instead of a hard break.
 
-## @udecode/plate-core@49.0.0
-
-### Major Changes
+## @platejs/core@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -134,9 +137,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
         -   `editor.tf.selectAll`: Handle Ctrl/Cmd+A key events for selecting all content. Returns `true` if the event is handled.
         -   `editor.tf.tab`: Handle Tab and Shift+Tab key events with `reverse` option for Shift+Tab. Returns `true` if the event is handled.
 
-## @udecode/plate-utils@49.0.0
-
-### Major Changes
+## @platejs/utils@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -185,9 +186,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
             });
             ```
 
-## @udecode/plate-ai@49.0.0
-
-### Major Changes
+## @platejs/ai@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -216,9 +215,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-alignment@49.0.0
-
-### Major Changes
+## @platejs/alignment@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -272,9 +269,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
     }
     ```
 
-## @udecode/plate-autoformat@49.0.0
-
-### Major Changes
+## @platejs/autoformat@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -287,9 +282,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-basic-elements@49.0.0
-
-### Major Changes
+## @platejs/basic-elements@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Package `@udecode/plate-basic-elements` has been deprecated.
@@ -300,9 +293,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
         -   Update import paths from `@udecode/plate-basic-elements/react` to `@platejs/basic-nodes/react`.
         -   For detailed changes to individual plugins, default HTML tags, and shortcut configurations, refer to the changeset for `@platejs/basic-nodes`.
 
-## @udecode/plate-basic-marks@49.0.0
-
-### Major Changes
+## @platejs/basic-marks@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Package `@udecode/plate-basic-marks` has been deprecated.
@@ -312,9 +303,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
         -   Update import paths from `@udecode/plate-basic-marks/react` to `@platejs/basic-nodes/react`.
         -   For detailed changes to individual plugins, default HTML tags, and shortcut configurations, refer to the changeset for `@platejs/basic-nodes`.
 
-## @udecode/plate-basic-nodes@49.0.0
-
-### Major Changes
+## @platejs/basic-nodes@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   The packages `@udecode/plate-basic-elements` and `@udecode/plate-basic-marks` have been deprecated. All their plugins are now consolidated into the new `@platejs/basic-nodes` package.
@@ -353,9 +342,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
             });
             ```
 
-## @udecode/plate-block-quote@49.0.0
-
-### Major Changes
+## @platejs/block-quote@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Package `@udecode/plate-block-quote` has been deprecated.
@@ -365,9 +352,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
         -   Add `@platejs/basic-nodes` to your dependencies if not already present.
         -   Import `BlockquotePlugin` from `@platejs/basic-nodes/react`.
 
-## @udecode/plate-break@49.0.0
-
-### Major Changes
+## @platejs/break@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -406,16 +391,12 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
                 });
                 ```
 
-## @udecode/plate-callout@49.0.0
-
-### Major Changes
+## @platejs/callout@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-caption@49.0.0
-
-### Major Changes
+## @platejs/caption@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -443,23 +424,17 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-code-block@49.0.0
-
-### Major Changes
+## @platejs/code-block@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   `CodeBlockPlugin` now defaults to rendering the code block container with a `<pre>` HTML tag if no custom component is provided for `CodeBlockElement` (or the plugin key `code_block`).
 
-## @udecode/plate-combobox@49.0.0
-
-### Major Changes
+## @platejs/combobox@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-comments@49.0.0
-
-### Major Changes
+## @platejs/comments@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -471,37 +446,27 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-csv@49.0.0
-
-### Major Changes
+## @platejs/csv@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-cursor@49.0.0
-
-### Major Changes
+## @platejs/cursor@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-date@49.0.0
-
-### Major Changes
+## @platejs/date@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-diff@49.0.0
-
-### Major Changes
+## @platejs/diff@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-dnd@49.0.0
-
-### Major Changes
+## @platejs/dnd@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -510,9 +475,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-docx@49.0.0
-
-### Major Changes
+## @platejs/docx@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -521,9 +484,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-emoji@49.0.0
-
-### Major Changes
+## @platejs/emoji@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -532,30 +493,22 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-excalidraw@49.0.0
-
-### Major Changes
+## @platejs/excalidraw@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-find-replace@49.0.0
-
-### Major Changes
+## @platejs/find-replace@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-floating@49.0.0
-
-### Major Changes
+## @platejs/floating@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-font@49.0.0
-
-### Major Changes
+## @platejs/font@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -694,9 +647,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
     }
     ```
 
-## @udecode/plate-heading@49.0.0
-
-### Major Changes
+## @platejs/heading@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Package `@udecode/plate-heading` has been deprecated.
@@ -706,9 +657,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
             -   Migration: Add `@platejs/toc` to your dependencies and import `TocPlugin` from `@platejs/toc/react`.
     -   Remove `@udecode/plate-heading` from your dependencies.
 
-## @udecode/plate-highlight@49.0.0
-
-### Major Changes
+## @platejs/highlight@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Package `@udecode/plate-highlight` has been deprecated.
@@ -718,9 +667,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
         -   Add `@platejs/basic-nodes` to your dependencies if not already present.
         -   Import `HighlightPlugin` from `@platejs/basic-nodes/react`.
 
-## @udecode/plate-horizontal-rule@49.0.0
-
-### Major Changes
+## @platejs/horizontal-rule@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Package `@udecode/plate-horizontal-rule` has been deprecated.
@@ -730,16 +677,12 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
         -   Add `@platejs/basic-nodes` to your dependencies if not already present.
         -   Import `HorizontalRulePlugin` from `@platejs/basic-nodes/react`.
 
-## @udecode/plate-indent@49.0.0
-
-### Major Changes
+## @platejs/indent@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-indent-list@49.0.0
-
-### Major Changes
+## @platejs/indent-list@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Package `@udecode/plate-indent-list` has been renamed to `@platejs/list`.
@@ -747,16 +690,12 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
         -   Rename all import paths from `@udecode/plate-indent-list` to `@platejs/list`.
         -   Update your `package.json`: remove `@udecode/plate-indent-list` and add `@platejs/list`.
 
-## @udecode/plate-juice@49.0.0
-
-### Major Changes
+## @platejs/juice@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-kbd@49.0.0
-
-### Major Changes
+## @platejs/kbd@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Package `@udecode/plate-kbd` has been deprecated.
@@ -766,9 +705,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
         -   Add `@platejs/basic-nodes` to your dependencies if not already present.
         -   Import `KbdPlugin` from `@platejs/basic-nodes/react`.
 
-## @udecode/plate-layout@49.0.0
-
-### Major Changes
+## @platejs/layout@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -777,9 +714,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-line-height@49.0.0
-
-### Major Changes
+## @platejs/line-height@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -825,16 +760,12 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
     }
     ```
 
-## @udecode/plate-link@49.0.0
-
-### Major Changes
+## @platejs/link@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-list@49.0.0
-
-### Major Changes
+## @platejs/list@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -858,9 +789,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-list-classic@49.0.0
-
-### Major Changes
+## @platejs/list-classic@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   **Removed Default Shortcuts** for `BulletedListPlugin` and `NumberedListPlugin`.
@@ -880,9 +809,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
             -   Update your `package.json`: remove `@udecode/plate-list` and add `@platejs/list-classic`.
     -   For changelogs of `@udecode/plate-list` version `<=48`, refer to its [archived changelog](https://github.com/udecode/plate/blob/7afd88089f4a76c896f3edf928b03c7e9f2ab903/packages/list/CHANGELOG.md).
 
-## @udecode/plate-markdown@49.0.0
-
-### Major Changes
+## @platejs/markdown@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -891,23 +818,17 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-math@49.0.0
-
-### Major Changes
+## @platejs/math@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-media@49.0.0
-
-### Major Changes
+## @platejs/media@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-mention@49.0.0
-
-### Major Changes
+## @platejs/mention@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -917,9 +838,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-node-id@49.0.0
-
-### Major Changes
+## @platejs/node-id@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -953,9 +872,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 
         -   If you want to disable automatic node ID generation (to replicate behavior if you weren't using `NodeIdPlugin` before), set `nodeId: false` in your editor configuration.
 
-## @udecode/plate-normalizers@49.0.0
-
-### Major Changes
+## @platejs/normalizers@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Package `@udecode/plate-normalizers` has been deprecated.
@@ -964,25 +881,12 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
         -   Remove `@udecode/plate-normalizers` from your dependencies.
         -   Update import paths to use `platejs`
 
-## @udecode/plate@49.0.0
-
-### Major Changes
-
--   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
-    -   Renamed package to `platejs`:
-        -   Replace all `@udecode/plate/react` with `platejs/react`
-        -   Replace all `'@udecode/plate'` with `'platejs'`
-
-## @udecode/plate-playwright@49.0.0
-
-### Major Changes
+## @platejs/playwright@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-reset-node@49.0.0
-
-### Major Changes
+## @platejs/reset-node@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) – Package `@udecode/plate-reset-node` has been deprecated. Its functionality (e.g., `ResetNodePlugin`) is now exclusively configured using the `rules.break` and `rules.delete` options on plugin definitions. Migration:
 
@@ -1058,16 +962,12 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
     }));
     ```
 
-## @udecode/plate-resizable@49.0.0
-
-### Major Changes
+## @platejs/resizable@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-select@49.0.0
-
-### Major Changes
+## @platejs/select@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -1083,9 +983,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
         -   Remove any usage of `SelectOnBackspacePlugin`, `DeletePlugin` from your project.
         -   Replace `RemoveEmptyNodesPlugin.configure({ options: { types: ['custom'] } })` with `CustomPlugin.configure({ rules: { normalize: { removeEmpty: true } } })`. This is used by our `LinkPlugin`.
 
-## @udecode/plate-selection@49.0.0
-
-### Major Changes
+## @platejs/selection@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -1094,9 +992,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-slash-command@49.0.0
-
-### Major Changes
+## @platejs/slash-command@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -1110,58 +1006,42 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
     -   The type `TSlashInputElement` has been removed.
     -   Use `TComboboxInputElement` from `platejs` instead for Slash Command input elements, as slash command functionality is built upon the combobox.
 
-## @udecode/plate-suggestion@49.0.0
-
-### Major Changes
+## @platejs/suggestion@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-tabbable@49.0.0
-
-### Major Changes
+## @platejs/tabbable@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-table@49.0.0
-
-### Major Changes
+## @platejs/table@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-tag@49.0.0
-
-### Major Changes
+## @platejs/tag@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-test-utils@49.0.0
-
-### Major Changes
+## @platejs/test-utils@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-toc@49.0.0
-
-### Major Changes
+## @platejs/toc@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-toggle@49.0.0
-
-### Major Changes
+## @platejs/toggle@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
 
-## @udecode/plate-trailing-block@49.0.0
-
-### Major Changes
+## @platejs/trailing-block@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -1174,9 +1054,7 @@ This PR was opened by the [Changesets release](https://github.com/changesets/act
         -   Remove `@udecode/plate-trailing-block` from your dependencies.
         -   Update import paths to use `platejs` (e.g., `import { TrailingBlockPlugin } from 'platejs';`).
 
-## @udecode/plate-yjs@49.0.0
-
-### Major Changes
+## @platejs/yjs@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
     -   Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.

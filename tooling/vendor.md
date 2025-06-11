@@ -17,6 +17,7 @@
 - `remark@14`: UnexpectedMDXError
 - `remark-parse@10`: jest
 - `ts-morph`: shadcn
+- `use-file-picker@2.1.2`: TS broken and no changelog
 
 ### Terms
 

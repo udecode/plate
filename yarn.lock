@@ -10760,21 +10760,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"file-selector@npm:0.2.4":
+  version: 0.2.4
+  resolution: "file-selector@npm:0.2.4"
+  dependencies:
+    tslib: "npm:^2.0.3"
+  checksum: 10c0/f43a8c370e69897c5c060dcfdeacb8828ccbdacdd2a255723c28fd16f230098ba079526de2dd0e7e519e4d9e72a06f2be0bbaee7ab8e09bed8f05b619f3fba94
+  languageName: node
+  linkType: hard
+
 "file-selector@npm:0.6.0":
   version: 0.6.0
   resolution: "file-selector@npm:0.6.0"
   dependencies:
     tslib: "npm:^2.4.0"
   checksum: 10c0/477ca1b56274db9fee1a8a623c4bfef580389726a5fef843af8c1f2f17f70ec2d1e41b29115777c92e120a15f1cca734c6ef36bb48bfa2ee027c68da16cd0d28
-  languageName: node
-  linkType: hard
-
-"file-selector@npm:^2.1.2":
-  version: 2.1.2
-  resolution: "file-selector@npm:2.1.2"
-  dependencies:
-    tslib: "npm:^2.7.0"
-  checksum: 10c0/fe827e0e95410aacfcc3eabc38c29cc36055257f03c1c06b631a2b5af9730c142ad2c52f5d64724d02231709617bda984701f52bd1f4b7aca50fb6585a27c1d2
   languageName: node
   linkType: hard
 
@@ -20730,7 +20730,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.4.0, tslib@npm:^2.4.1, tslib@npm:^2.7.0, tslib@npm:^2.8.0":
+"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.4.0, tslib@npm:^2.4.1, tslib@npm:^2.8.0":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
@@ -21494,16 +21494,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-file-picker@npm:2.1.4":
-  version: 2.1.4
-  resolution: "use-file-picker@npm:2.1.4"
+"use-file-picker@npm:2.1.2":
+  version: 2.1.2
+  resolution: "use-file-picker@npm:2.1.2"
   dependencies:
-    file-selector: "npm:^2.1.2"
+    file-selector: "npm:0.2.4"
   peerDependencies:
-    "@types/react": ">=16"
-    "@types/react-dom": ">=16"
     react: ">=16"
-  checksum: 10c0/05dbe86c403bb0cbd2e06909c9b2fff08e21808474829fb4be8cf645d894f1815b022af18bc391262de8d1c76ebe0c30583be0ab8b1686ad9e0846eb8a0cbad9
+  checksum: 10c0/7d1c5f8800d87584731a9caf83b447f3633bc2dc05408f668b3349a374502f81a4116d216d2008d682f63076615894ad01a1c3a518d7142307a529a1d11776d0
   languageName: node
   linkType: hard
 
@@ -22225,7 +22223,7 @@ __metadata:
     unist-builder: "npm:4.0.0"
     unist-util-visit: "npm:5.0.0"
     uploadthing: "npm:7.7.2"
-    use-file-picker: "npm:2.1.4"
+    use-file-picker: "npm:2.1.2"
     vaul: "npm:1.1.2"
     y-webrtc: "npm:10.3.0"
     zod: "npm:3.25.61"

@@ -59,7 +59,7 @@ async function captureScreenshots() {
         }
       });
       await page.screenshot({
-        path: screenshotPath,
+        path: screenshotPath as any,
       });
     }
     await page.close();

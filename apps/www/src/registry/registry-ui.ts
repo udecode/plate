@@ -103,7 +103,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['use-file-picker'],
+    dependencies: ['use-file-picker@2.1.2'],
     description: 'A toolbar button to import editor content from a file.',
     files: [{ path: 'ui/import-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
@@ -684,7 +684,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@platejs/media', 'use-file-picker', 'sonner'],
+    dependencies: ['@platejs/media', 'use-file-picker@2.1.2', 'sonner'],
     description: 'Toolbar button for inserting and managing media.',
     files: [{ path: 'ui/media-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
@@ -1356,7 +1356,7 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@platejs/media', 'use-file-picker'],
+    dependencies: ['@platejs/media', 'use-file-picker@2.1.2'],
     description: 'A placeholder for media upload progress indication.',
     files: [
       {
