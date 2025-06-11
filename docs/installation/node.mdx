@@ -18,10 +18,10 @@ This guide demonstrates how to use Plate in a Node.js environment. This is usefu
 Install the core Plate package and any specific plugin packages required for your data processing needs.
 
 ```bash
-npm add platejs @platejs/basic-nodes
+npm install platejs @platejs/basic-nodes
 ```
 
--   `platejs`: The core Plate engine and Slate editor functionality.
+-   `platejs`: The core Plate editor functionality.
 -   `@platejs/basic-nodes`: Plugin for basic nodes like headings, bold, italic, underline, etc.
 
 ### Create an Editor Instance
@@ -77,7 +77,7 @@ console.debug('Editor content:', editor.children);
 ```
 
 <Callout type="info">
-  `createSlateEditor` creates a raw Slate editor instance suitable for server-side logic, data transformation, or preparing content for static rendering. It provides the same API as the React version but without browser dependencies.
+  `createSlateEditor` creates a raw Plate editor instance suitable for server-side logic, data transformation, or preparing content for static rendering. It provides the same API as the React version but without browser dependencies.
 </Callout>
 
 ### Content Manipulation

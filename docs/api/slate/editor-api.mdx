@@ -927,7 +927,7 @@ Match a void node in the current branch of the editor.
 
 ### `findPath`
 
-Find the path of a Slate node in the editor.
+Find the path of a Plate node in the editor.
 
 <API name="findPath">
 <APIParameters>
@@ -1371,7 +1371,7 @@ Get the target range from a DOM event.
 
 ### `findKey`
 
-Find a key for a Slate node. Returns an instance of `Key` which looks like `{ id: string }`.
+Find a key for a Plate node. Returns an instance of `Key` which looks like `{ id: string }`.
 
 <API name="findKey">
 <APIParameters>
@@ -1515,28 +1515,28 @@ Check if the editor is in read-only mode.
 
 ### `toDOMNode`
 
-Find the native DOM element from a Slate node.
+Find the native DOM element from a Plate node.
 
 <API name="toDOMNode">
 <APIOptions type="TNode">
   <APIItem name="node" type="TNode">
-    The Slate node to convert to a DOM element.
+    The Plate node to convert to a DOM element.
   </APIItem>
 </APIOptions>
 
 <APIReturns type="HTMLElement">
-  The corresponding DOM element for the Slate node.
+  The corresponding DOM element for the Plate node.
 </APIReturns>
 </API>
 
 ### `toDOMPoint`
 
-Find a native DOM selection point from a Slate point.
+Find a native DOM selection point from a Plate point.
 
 <API name="toDOMPoint">
 <APIOptions type="Point">
   <APIItem name="point" type="Point">
-    The Slate point to convert to a DOM point.
+    The Plate point to convert to a DOM point.
   </APIItem>
 </APIOptions>
 
@@ -1547,65 +1547,65 @@ Find a native DOM selection point from a Slate point.
 
 ### `toDOMRange`
 
-Find a native DOM range from a Slate range.
+Find a native DOM range from a Plate range.
 
 <API name="toDOMRange">
 <APIOptions type="TRange">
   <APIItem name="range" type="TRange">
-    The Slate range to convert to a DOM range.
+    The Plate range to convert to a DOM range.
   </APIItem>
 </APIOptions>
 
 <APIReturns type="DOMRange">
-  The corresponding DOM range for the Slate range.
+  The corresponding DOM range for the Plate range.
 </APIReturns>
 </API>
 
 ### `toSlateNode`
 
-Find a Slate node from a native DOM element.
+Find a Plate node from a native DOM element.
 
 <API name="toSlateNode">
 <APIOptions type="DOMNode">
   <APIItem name="domNode" type="DOMNode">
-    The DOM node to convert to a Slate node.
+    The DOM node to convert to a Plate node.
   </APIItem>
 </APIOptions>
 
 <APIReturns type="TNode | undefined">
-  The corresponding Slate node if found, undefined otherwise.
+  The corresponding Plate node if found, undefined otherwise.
 </APIReturns>
 </API>
 
 ### `toSlatePoint`
 
-Find a Slate point from a DOM selection point.
+Find a Plate point from a DOM selection point.
 
 <API name="toSlatePoint">
 <APIOptions type="DOMPoint">
   <APIItem name="domPoint" type="DOMPoint">
-    The DOM point to convert to a Slate point.
+    The DOM point to convert to a Plate point.
   </APIItem>
 </APIOptions>
 
 <APIReturns type="Point | undefined">
-  The corresponding Slate point if found, undefined otherwise.
+  The corresponding Plate point if found, undefined otherwise.
 </APIReturns>
 </API>
 
 ### `toSlateRange`
 
-Find a Slate range from a DOM range.
+Find a Plate range from a DOM range.
 
 <API name="toSlateRange">
 <APIOptions type="DOMRange">
   <APIItem name="domRange" type="DOMRange">
-    The DOM range to convert to a Slate range.
+    The DOM range to convert to a Plate range.
   </APIItem>
 </APIOptions>
 
 <APIReturns type="TRange | undefined">
-  The corresponding Slate range if found, undefined otherwise.
+  The corresponding Plate range if found, undefined otherwise.
 </APIReturns>
 </API>
 

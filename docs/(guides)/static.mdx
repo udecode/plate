@@ -3,14 +3,14 @@ title: Static Rendering
 description: A minimal, memoized, read-only version of Plate with RSC/SSR support.
 ---
 
-`<PlateStatic>` is a **fast, read-only** React component for rendering Slate content, optimized for **server-side** or **React Server Component** (RSC) environments. It avoids client-side editing logic and memoizes node renders for better performance compared to using [`<Plate>`](/docs/api/core/plate-components) in read-only mode.
+`<PlateStatic>` is a **fast, read-only** React component for rendering Plate content, optimized for **server-side** or **React Server Component** (RSC) environments. It avoids client-side editing logic and memoizes node renders for better performance compared to using [`<Plate>`](/docs/api/core/plate-components) in read-only mode.
 
 It's a core part of [`serializeHtml`](/docs/api/core/plate-plugin#serializehtml) for HTML export and is ideal for any server or RSC context needing a non-interactive, presentational view of Plate content.
 
 ## Key Advantages
 
 -   **Server-Safe:** No browser API dependencies; works in SSR/RSC.
--   **No Slate Editor Overhead:** Excludes interactive features like selections or event handlers.
+-   **No Plate Editor Overhead:** Excludes interactive features like selections or event handlers.
 -   **Memoized Rendering:** Uses `_memo` and structural checks to re-render only changed nodes.
 -   **Partial Re-Renders:** Changes in one part of the document don't force a full re-render.
 -   **Lightweight:** Smaller bundle size as it omits interactive editor code.
@@ -267,13 +267,13 @@ import type { PlateEditor } from 'platejs/core'; // Adjust imports as per your s
 
 interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
-   * The Slate editor instance, created via `createSlateEditor`.
+   * The Plate editor instance, created via `createSlateEditor`.
    * Must include plugins and components relevant to the content being rendered.
    */
   editor: PlateEditor;
 
   /**
-   * Optional Slate `Value` (array of `Descendant` nodes).
+   * Optional Plate `Value` (array of `Descendant` nodes).
    * If provided, this will be used for rendering instead of `editor.children`.
    */
   value?: Descendant[];

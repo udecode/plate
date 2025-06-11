@@ -11,7 +11,7 @@ While Plate is typically used as an **uncontrolled** input, there are valid scen
 - **Validation**: You want to validate the editor's content (e.g., checking if it's empty) at the same time as other form fields.
 - **Form Data Management**: You want to store the editor content in the same store (like `react-hook-form`'s state) as other fields.
 
-However, keep in mind the warning about **fully controlling** the editor value. Plate (and Slate) strongly prefer an uncontrolled model. If you attempt to replace the editor's internal state too frequently, you can break **selection**, **history**, or cause performance issues. The recommended pattern is to treat the editor as uncontrolled, but still **sync** form data on certain events.
+However, keep in mind the warning about **fully controlling** the editor value. Plate strongly prefer an uncontrolled model. If you attempt to replace the editor's internal state too frequently, you can break **selection**, **history**, or cause performance issues. The recommended pattern is to treat the editor as uncontrolled, but still **sync** form data on certain events.
 
 ## Approach 1: Sync on `onChange`
 
@@ -297,7 +297,7 @@ import { Plate, PlateContent, usePlateEditor } from "platejs/react";
 export interface EditorFieldProps
   extends React.HTMLAttributes<HTMLDivElement> {
   /**
-   * The current Slate Value. Should be an array of Slate nodes.
+   * The current Plate Value. Should be an array of Plate nodes.
    */
   value?: Value;
 
@@ -417,7 +417,7 @@ export function EditorForm() {
 ```
 
 - Any existing form validations or error messages remain the same.
-- For default values, ensure `form.defaultValues.bio` is a valid Slate value (array of nodes) instead of a string.
+- For default values, ensure `form.defaultValues.bio` is a valid Plate value (array of nodes) instead of a string.
 - For controlled values, use `editor.tf.setValue(formStateValue)` with moderation.
 
 ## Best Practices

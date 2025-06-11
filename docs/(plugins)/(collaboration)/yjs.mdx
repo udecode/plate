@@ -513,7 +513,7 @@ Initializes the Yjs connection, binds it to the editor, sets up providers based 
     A unique identifier for the Yjs document (e.g., room name, document ID). If not provided, `editor.id` is used. Essential for ensuring collaborators connect to the same document state.
   </APIItem>
   <APIItem name="value" type="Value | string | ((editor: PlateEditor) => Value | Promise<Value>)" optional>
-    The initial content for the editor. **This is only applied if the Y.Doc associated with the `id` is completely empty in the shared state (backend/peers).** If the document already exists, its content will be synced, ignoring this value. Can be Slate JSON (`Value`), an HTML string, or a function returning/resolving to `Value`. If omitted or empty, a default empty paragraph is used for initialization if the Y.Doc is new.
+    The initial content for the editor. **This is only applied if the Y.Doc associated with the `id` is completely empty in the shared state (backend/peers).** If the document already exists, its content will be synced, ignoring this value. Can be Plate JSON (`Value`), an HTML string, or a function returning/resolving to `Value`. If omitted or empty, a default empty paragraph is used for initialization if the Y.Doc is new.
   </APIItem>
   <APIItem name="autoConnect" type="boolean" optional>
     Whether to automatically call `provider.connect()` for all configured providers during initialization. Default: `true`. Set to `false` if you want to manage connections manually using `editor.api.yjs.connect()`.
@@ -522,7 +522,7 @@ Initializes the Yjs connection, binds it to the editor, sets up providers based 
     If set, automatically focuses the editor and places the cursor at the 'start' or 'end' of the document after initialization and sync.
   </APIItem>
   <APIItem name="selection" type="Location" optional>
-    Specific Slate `Location` to set the selection to after initialization, overriding `autoSelect`.
+    Specific Plate `Location` to set the selection to after initialization, overriding `autoSelect`.
   </APIItem>
 </APIOptions>
 

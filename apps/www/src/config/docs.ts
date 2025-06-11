@@ -65,12 +65,10 @@ export const installationNavItems: SidebarNavItem[] = [
   },
   {
     href: '/docs/installation/rsc',
-    label: 'New',
     title: 'RSC',
   },
   {
     href: '/docs/installation/node',
-    label: 'New',
     title: 'Node.js',
   },
   {

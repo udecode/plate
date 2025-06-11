@@ -46,7 +46,7 @@ See a complete server-side HTML generation example:
 
 ## Plate to HTML
 
-Convert Plate editor content (Slate nodes) into an HTML string. This is often done server-side.
+Convert Plate editor content (Plate nodes) into an HTML string. This is often done server-side.
 
 [View Server-Side Example](/docs/examples/slate-to-html)
 
@@ -137,7 +137,7 @@ async function getFullHtmlDocument() {
 ```
 
 <Callout type="info" title="Static Output Only">
-  The serialization process converts Slate nodes to static HTML. Interactive features (React event handlers, client-side hooks) or components relying on browser APIs will not function in the serialized output.
+  The serialization process converts Plate nodes to static HTML. Interactive features (React event handlers, client-side hooks) or components relying on browser APIs will not function in the serialized output.
 </Callout>
 
 ### Using Static Components
@@ -249,16 +249,16 @@ Each Plate plugin can define rules for how it interprets specific HTML tags, sty
 
 Plugins can define how they handle HTML deserialization using properties within their `parsers.html.deserializer` configuration:
 
--   **`parse`**: A function `({ editor, element, getOptions, ... }) => Partial<SlateNode>` that takes an HTML element and returns a partial Slate node. This is where the main conversion logic resides.
+-   **`parse`**: A function `({ editor, element, getOptions, ... }) => Partial<SlateNode>` that takes an HTML element and returns a partial Plate node. This is where the main conversion logic resides.
 -   **`query`**: An optional function `({ element, getOptions }) => boolean` that determines if the deserializer rule should even be considered for the current HTML element.
 -   **`rules`**: An array of rule objects, each defining conditions for matching an HTML element:
     -   `validNodeName`: String or array of strings for matching HTML tag names (e.g., `'P'`, `['STRONG', 'B']`).
     -   `validAttribute`: Object or array of objects specifying required attribute names and/or values (e.g., `{ align: ['left', 'center'] }`).
     -   `validClassName`: String or array of strings for matching CSS class names.
     -   `validStyle`: Object or array of objects specifying required CSS style properties and/or values (e.g., `{ fontWeight: ['600', '700', 'bold'] }`).
--   **`isElement`**: Boolean, `true` if the plugin deserializes an HTML element into a Slate Element node.
--   **`isLeaf`**: Boolean, `true` if the plugin deserializes an HTML element or style into a Slate Leaf (mark) on a Text node.
--   **`attributeNames`**: Array of HTML attribute names whose values should be preserved on the `node.attributes` property of the resulting Slate node.
+-   **`isElement`**: Boolean, `true` if the plugin deserializes an HTML element into a Plate Element node.
+-   **`isLeaf`**: Boolean, `true` if the plugin deserializes an HTML element or style into a Plate Leaf (mark) on a Text node.
+-   **`attributeNames`**: Array of HTML attribute names whose values should be preserved on the `node.attributes` property of the resulting Plate node.
 -   **`withoutChildren`**: Boolean, if `true`, child nodes of the HTML element are not processed by `convertHtmlAttributes`.
 
 ### Customizing Deserialization Behavior
@@ -342,7 +342,7 @@ This illustrates how a plugin can completely reinterpret HTML structures into a 
 
 ### `serializeHtml(editor, options)`
 
-Converts Slate nodes from `editor.children` (or a provided `value`) into an HTML string. This function is typically used server-side.
+Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML string. This function is typically used server-side.
 
 <API name="serializeHtml">
 <APIParameters>
@@ -362,7 +362,7 @@ Converts Slate nodes from `editor.children` (or a provided `value`) into an HTML
     Props to pass to the `editorComponent`. `P` defaults to `PlateStaticProps`.
   </APIItem>
   <APIItem name="value" type="Descendant[]" optional>
-    Slate nodes to serialize. If not provided, `editor.children` will be used.
+    Plate nodes to serialize. If not provided, `editor.children` will be used.
   </APIItem>
   <APIItem name="preserveClassNames" type="string[] | null" optional>
     An array of class name prefixes to preserve if `stripClassNames` is true. `null` preserves all if `stripClassNames` is true. Default: `['slate-', 'line-clamp']`.
@@ -385,7 +385,7 @@ Converts Slate nodes from `editor.children` (or a provided `value`) into an HTML
 
 ### `api.html.deserialize(options)`
 
-Parses an HTML string or `HTMLElement` into a Slate `Value` (an array of `Descendant` nodes). This is typically used on the client-side with a fully configured Plate editor.
+Parses an HTML string or `HTMLElement` into a Plate `Value` (an array of `Descendant` nodes). This is typically used on the client-side with a fully configured Plate editor.
 
 <API name="deserializeHtml">
 <APIParameters>
@@ -409,7 +409,7 @@ Parses an HTML string or `HTMLElement` into a Slate `Value` (an array of `Descen
 </APIOptions>
 <APIReturns>
   <APIItem type="Descendant[]">
-    The deserialized Slate `Value`.
+    The deserialized Plate `Value`.
   </APIItem>
 </APIReturns>
 </API>

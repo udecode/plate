@@ -13,7 +13,7 @@ The process of creating and registering components is similar whether you use Pl
 
 ## Defining Components
 
-Use `PlateElement` for element nodes (like paragraphs, headings) and `PlateLeaf` for text leaf nodes (like bold, italic). These components handle applying the necessary Slate props to your custom HTML elements.
+Use `PlateElement` for element nodes (like paragraphs, headings) and `PlateLeaf` for text leaf nodes (like bold, italic). These components handle applying the necessary Plate props to your custom HTML elements.
 
 Ensure the `children` prop is rendered unconditionally for the editor to function correctly, even for void nodes.
 
@@ -59,7 +59,7 @@ export function CodeLeaf(props: PlateLeafProps) {
 
 We recommend styling components using Tailwind CSS, as demonstrated in Plate UI.
 
-Alternatively, Slate generates class names like `slate-<node-type>` (e.g., `slate-p` for paragraphs, `slate-h1` for H1 headings) which you can target with global CSS:
+Alternatively, Plate generates class names like `slate-<node-type>` (e.g., `slate-p` for paragraphs, `slate-h1` for H1 headings) which you can target with global CSS:
 
 ```css
 .slate-p {
