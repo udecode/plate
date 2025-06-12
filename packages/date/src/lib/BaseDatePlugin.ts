@@ -10,10 +10,8 @@ export const BaseDatePlugin = createSlatePlugin({
     isSelectable: false,
     isVoid: true,
   },
-})
-
-  .extendEditorTransforms(({ editor }) => ({
-    insert: {
-      date: bindFirst(insertDate, editor),
-    },
-  }));
+}).extendEditorTransforms(({ editor }) => ({
+  insert: {
+    date: bindFirst(insertDate, editor),
+  },
+}));
