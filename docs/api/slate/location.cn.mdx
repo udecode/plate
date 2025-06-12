@@ -1,26 +1,26 @@
 ---
-title: 位置
-description: Slate 中位置的 API 参考。
+title: 位置(Location)
+description: Plate中位置相关的API参考。
 ---
 
-位置可以是路径、点或范围。方法通常接受位置而不是仅接受路径、点或范围。
+位置(Location)可以是路径(Path)、点(Point)或范围(Range)。方法通常会接受位置参数，而不仅限于路径、点或范围。
 
 ```typescript
 type TLocation = Path | Point | TRange
 ```
 
-- [Path](/docs/api/slate/path)
-- [PathRef](/docs/api/slate/location-ref#pathref)
-- [Point](/docs/api/slate/point)
-- [PointRef](/docs/api/slate/location-ref#pointref)
-- [Range](/docs/api/slate/range)
-- [RangeRef](/docs/api/slate/location-ref#rangeref)
+- [路径(Path)](/docs/api/slate/path)
+- [路径引用(PathRef)](/docs/api/slate/location-ref#pathref)
+- [点(Point)](/docs/api/slate/point)
+- [点引用(PointRef)](/docs/api/slate/location-ref#pointref)
+- [范围(Range)](/docs/api/slate/range)
+- [范围引用(RangeRef)](/docs/api/slate/location-ref#rangeref)
 
 ## `LocationApi`
 
 ### `isAt`
 
-检查一个值是否实现了 `At` 接口。
+检查一个值是否实现了`At`接口。
 
 <API name="isAt">
 <APIParameters>
@@ -30,13 +30,13 @@ type TLocation = Path | Point | TRange
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值是位置或节点，则返回 `true`。
+  如果是位置或节点则返回`true`。
 </APIReturns>
 </API>
 
 ### `isLocation`
 
-检查一个值是否实现了 `TLocation` 接口。
+检查一个值是否实现了`TLocation`接口。
 
 <API name="isLocation">
 <APIParameters>
@@ -46,13 +46,13 @@ type TLocation = Path | Point | TRange
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值是 `Path`、`Point` 或 `TRange`，则返回 `true`。
+  如果是`Path`、`Point`或`TRange`则返回`true`。
 </APIReturns>
 </API>
 
 ### `isSpan`
 
-检查一个值是否实现了 `Span` 接口。
+检查一个值是否实现了`Span`接口。
 
 <API name="isSpan">
 <APIParameters>
@@ -62,7 +62,7 @@ type TLocation = Path | Point | TRange
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值是有效的 `Span`，则返回 `true`。
+  如果是有效的`Span`则返回`true`。
 </APIReturns>
 </API>
 
@@ -70,7 +70,7 @@ type TLocation = Path | Point | TRange
 
 ### `TLocation`
 
-`Location` 是 `TLocation` 的类型别名。
+`Location`是`TLocation`的类型别名。
 
 <API name="TLocation">
 <APIAttributes>
@@ -78,10 +78,10 @@ type TLocation = Path | Point | TRange
     表示节点位置的数字数组。
   </APIItem>
   <APIItem name="Point" type="Point">
-    包含 `path` 和 `offset` 的对象。
+    包含`path`和`offset`的对象。
   </APIItem>
   <APIItem name="TRange" type="TRange">
-    包含 `anchor` 和 `focus` 的对象。
+    包含`anchor`和`focus`的对象。
   </APIItem>
 </APIAttributes>
 </API>

@@ -1,13 +1,13 @@
 ---
 title: cn
-description: \@udecode/cn 的 API 参考。
+description: \@udecode/cn 的 API 参考文档。
 ---
 
 `@udecode/cn` 包含用于 React 和 Tailwind 的工具函数。
 
 ### `cn`
 
-有条件地添加 Tailwind CSS 类，避免冲突。
+条件性地添加 Tailwind CSS 类而不产生冲突。
 
 <API name="cn">
 <APIParameters>
@@ -17,7 +17,7 @@ description: \@udecode/cn 的 API 参考。
 </APIParameters>
 
 <APIReturns type="string">
-  组合后的 className。
+  合并后的 className。
 </APIReturns>
 </API>
 
@@ -28,7 +28,7 @@ description: \@udecode/cn 的 API 参考。
 <API name="withCn">
 <APIParameters>
   <APIItem name="Component" type="React.ComponentType">
-    要添加属性的组件。
+    需要添加属性的组件。
   </APIItem>
   <APIItem name="...inputs" type="CxOptions">
     使用 `cn` 设置的默认 `className`。
@@ -47,7 +47,7 @@ description: \@udecode/cn 的 API 参考。
 <API name="withProps">
 <APIParameters>
   <APIItem name="Component" type="React.ComponentType | ElementType">
-    要添加属性的组件。
+    需要添加属性的组件。
   </APIItem>
   <APIItem name="props" type="Partial<T>">
     要添加到组件的属性。
@@ -61,18 +61,18 @@ description: \@udecode/cn 的 API 参考。
 
 ### `withVariants`
 
-使用 `class-variance-authority` 的变体为组件设置默认的 `className`。
+使用 `class-variance-authority` 的变体为组件设置默认 `className`。
 
 <API name="withVariants">
 <APIParameters>
   <APIItem name="Component" type="React.ComponentType | ElementType">
-    要添加属性的组件。
+    需要添加属性的组件。
   </APIItem>
   <APIItem name="variants" type="V extends ReturnType<typeof cva>">
     作为默认 `className` 的变体。
   </APIItem>
   <APIItem name="onlyVariantsProps" type="(keyof VariantProps<V>)[]">
-    从 `Component` 中排除的属性。设置仅用于变体的属性。
+    要从 `Component` 中排除的属性。设置仅用于变体的属性。
   </APIItem>
 </APIParameters>
 

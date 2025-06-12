@@ -1,32 +1,32 @@
 ---
 title: Node.js
-description: 为 Node.js 安装和配置 Plate
+description: 在Node.js环境中安装和配置Plate
 ---
 
-本指南演示如何在 Node.js 环境中使用 Plate。这对于后端任务（如数据处理、内容迁移、校验）或任何需要在无浏览器或无完整 React 前端的情况下操作 Plate 编辑器内容的场景都很有用。
+本指南演示如何在Node.js环境中使用Plate。这对于后端任务非常有用，例如数据处理、内容迁移、验证，或任何需要在不使用浏览器或完整React前端的情况下与Plate编辑器内容交互的场景。
 
-<Callout type="warning" title="Node.js 关键限制">
-  在 Node.js 环境中使用 Plate 时，**绝不能**从任何 `platejs*` 包的 `/react` 子路径导入。始终使用基础导入（如 `@platejs/basic-nodes`，而不是 `@platejs/basic-nodes/react`）。
+<Callout type="warning" title="Node.js关键限制">
+  在Node.js环境中使用Plate时，**绝对不要**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`@platejs/basic-nodes`而不是`@platejs/basic-nodes/react`）。
 
-  这意味着你不能使用 `platejs/react` 的 `createPlateEditor`。请改用 `platejs` 的 `createSlateEditor`。
+  这意味着你不能使用`platejs/react`中的`createPlateEditor`。应改用`platejs`中的`createSlateEditor`。
 </Callout>
 
 <Steps>
 
-### 安装 Plate
+### 安装Plate
 
-安装核心 Plate 包以及你数据处理所需的特定插件包。
+安装核心Plate包以及数据处理所需的特定插件包。
 
 ```bash
 npm install platejs @platejs/basic-nodes
 ```
 
--   `platejs`：核心 Plate 引擎和 Slate 编辑器功能。
--   `@platejs/basic-nodes`：基础节点插件，如标题、粗体、斜体、下划线等。
+-   `platejs`: Plate编辑器的核心功能
+-   `@platejs/basic-nodes`: 提供基础节点（如标题、粗体、斜体、下划线等）的插件
 
 ### 创建编辑器实例
 
-在 Node.js 脚本中，使用 `platejs` 的 `createSlateEditor` 初始化编辑器实例。此函数与框架无关，不依赖 React 或浏览器 API。
+在Node.js脚本中，使用`platejs`的`createSlateEditor`初始化编辑器实例。此函数与框架无关，不依赖React或浏览器API。
 
 ```typescript title="scripts/process-content.ts"
 import { createSlateEditor } from 'platejs';
@@ -47,14 +47,14 @@ const initialValue = [
   },
   {
     type: 'blockquote',
-    children: [{ text: '这是一个引用。' }],
+    children: [{ text: '这是一段引用。' }],
   },
   {
     type: 'p',
     children: [
-      { text: '包含一些 ' },
+      { text: '包含一些' },
       { text: '粗体', bold: true },
-      { text: ' 文本以示强调！' },
+      { text: '强调文本！' },
     ],
   },
 ];
@@ -72,17 +72,17 @@ const editor = createSlateEditor({
   value: initialValue,
 });
 
-// 现在你可以使用 editor.children、editor.api、editor.tf 等
-console.log('编辑器内容:', editor.children);
+// 现在可以使用editor.children、editor.api、editor.tf等
+console.debug('编辑器内容:', editor.children);
 ```
 
 <Callout type="info">
-  `createSlateEditor` 创建一个原始的 Slate 编辑器实例，适用于服务端逻辑、数据转换或准备静态渲染内容。它提供与 React 版本相同的 API，但没有浏览器依赖。
+  `createSlateEditor`创建一个原始的Plate编辑器实例，适用于服务端逻辑、数据转换或准备静态渲染内容。它提供与React版本相同的API，但没有浏览器依赖。
 </Callout>
 
 ### 内容操作
 
-在 Node.js 中使用 Plate 的主要场景是编程式内容操作：
+Plate在Node.js中的主要用例是程序化内容操作：
 
 ```typescript title="scripts/transform-content.ts"
 import { createSlateEditor } from 'platejs';
@@ -110,9 +110,9 @@ async function processDocument(value: any[]) {
 
   // 提取文本内容
   const textContent = editor.api.string([]);
-  console.log('提取的文本:', textContent);
+  console.debug('提取的文本:', textContent);
 
-  // 将所有 H1 转为 H2
+  // 将所有H1转换为H2
   editor.tf.setNodes(
     { type: 'h2' },
     { at: [], match: (n) => n.type === 'h1' }
@@ -120,7 +120,7 @@ async function processDocument(value: any[]) {
 
   // 在末尾添加新段落
   editor.tf.insertNodes(
-    [{ type: 'p', children: [{ text: '由 Node.js 脚本添加！' }] }],
+    [{ type: 'p', children: [{ text: '由Node.js脚本添加！' }] }],
     { at: [editor.children.length] }
   );
 
@@ -130,47 +130,47 @@ async function processDocument(value: any[]) {
   };
 }
 
-// 示例用法
+// 使用示例
 const mySlateValue = [
   { type: 'h1', children: [{ text: '原始文档标题' }] },
-  { type: 'p', children: [{ text: '一些段落内容。' }] },
+  { type: 'p', children: [{ text: '段落内容。' }] },
   {
     type: 'p',
     children: [
-      { text: '包含 ' },
+      { text: '包含' },
       { text: '粗体', bold: true },
-      { text: ' 格式的文本。' },
+      { text: '格式的文本。' },
     ],
   },
 ];
 
 processDocument(mySlateValue).then(result => {
-  console.log('处理完成:', result);
+  console.debug('处理完成:', result);
 });
 ```
 
-### 可用 API
+### 可用API
 
--   **[`editor.api`](/docs/api/slate/editor-api)**：访问各种实用函数以查询编辑器状态：
-    -   `editor.api.nodes({ at: [], match })`：查找特定节点
-    -   `editor.api.string([])`：提取文本内容
-    -   [HTML 序列化](/docs/html)
-    -   [Markdown 序列化](/docs/markdown)
+-   **[`editor.api`](/docs/api/slate/editor-api)**: 访问查询编辑器状态的各种实用函数：
+    -   `editor.api.nodes({ at: [], match })`: 查找特定节点
+    -   `editor.api.string([])`: 提取文本内容
+    -   [HTML序列化](/docs/html)
+    -   [Markdown序列化](/docs/markdown)
 
--   **[`editor.tf`](/docs/api/slate/editor-transforms)**：使用变换函数修改编辑器内容：
-    -   `editor.tf.insertNodes(nodes, opts)`：插入新节点
-    -   `editor.tf.removeNodes(opts)`：删除节点
-    -   `editor.tf.setNodes(props, opts)`：更新现有节点属性
-    -   `editor.tf.normalize({ force: true })`：规范化编辑器
+-   **[`editor.tf`](/docs/api/slate/editor-transforms)**: 使用转换函数修改编辑器内容：
+    -   `editor.tf.insertNodes(nodes, opts)`: 插入新节点
+    -   `editor.tf.removeNodes(opts)`: 删除节点
+    -   `editor.tf.setNodes(props, opts)`: 更新现有节点属性
+    -   `editor.tf.normalize({ force: true })`: 规范化编辑器
 
 </Steps>
 
-### 下一步
+### 后续步骤
 
-在 Node.js 环境中配置好 Plate 后，你可以：
+在Node.js环境中配置好Plate后，您可以：
 
-*   **构建内容流水线：** 创建脚本，将其他系统的内容迁移为 Plate 格式
-*   **批量操作：** 对现有 Plate 文档进行批量更新或转换
-*   **数据提取：** 校验内容结构，或从文档中提取特定数据
-*   **后端集成：** 与其他后端服务集成，实现内容处理流水线
-*   **静态生成：** 探索 [Markdown 序列化](/docs/markdown)、[HTML 序列化](/docs/html) 和 [`PlateStatic`](/docs/plate-static) 以生成静态内容 
+*   **构建内容管道**: 创建脚本将其他系统的内容迁移到Plate格式
+*   **批量操作**: 对现有Plate文档执行批量更新或转换
+*   **数据提取**: 验证内容结构或从文档中提取特定数据
+*   **后端集成**: 与其他后端服务集成构建内容处理管道
+*   **静态生成**: 探索[Markdown序列化](/docs/markdown)、[HTML序列化](/docs/html)和[`PlateStatic`](/docs/plate-static)生成静态内容

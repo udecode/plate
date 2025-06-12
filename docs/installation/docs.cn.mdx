@@ -1,0 +1,156 @@
+---
+title: 本地文档
+description: 为版本控制和AI增强的开发环境设置Plate的本地文档。
+---
+
+将Plate文档托管在本地，直接与您的项目集成。这种设置确保您的团队使用的文档与Plate版本完全匹配，同时使AI工具能更好地理解和协助您的代码库。
+
+## 为何选择本地托管文档？
+
+相比外部站点，本地文档具有显著优势：
+
+*   **版本锁定：** 保持文档与项目Plate版本的同步。避免因未采用的新版Plate功能或API导致的混淆。
+*   **AI友好开发：**
+    *   **超越`llms.txt`：** 虽然将文档转储到单个文本文件是常见的LLM上下文处理方法，但对于大型文档（超过通常的10万token限制）这种方法会失效。我们的结构化本地设置让AI工具能精准获取所需内容。
+    *   **AI工具直接访问：** 您的AI辅助IDE可直接访问特定版本的文档，实现准确的代码生成和上下文相关帮助。
+    *   **为AI任务优化结构：** AI工具可协助完成文档翻译、创建摘要或在Plate版本间更新文档等任务。
+*   **自定义与控制：** 根据项目需求调整文档外观和结构。
+*   **轻松更新：** 像管理代码一样管理文档——与代码库一起审查、更新和版本控制。
+*   **快速访问：** 获得可靠、快速的文档访问体验。
+*   **中心化枢纽：** 将Plate文档与其他库的文档集中存放。
+
+## 设置指南
+
+有两种设置本地文档的方式：
+
+### 方案1：文档应用
+
+此方案使用Fumadocs搭建完整的文档站点，提供可搜索、可导航的界面。
+
+<Steps>
+
+#### 创建Fumadocs应用
+
+按照[Fumadocs应用指南](https://fumadocs.dev/docs/ui#automatic-installation)进行设置。Fumadocs为您的文档站点提供基于Next.js的框架。
+
+```bash
+pnpm create fumadocs-app
+```
+
+为文档目录命名。本指南假设目录名为`docs`。
+详细设置请参考[Fumadocs UI文档](https://fumadocs.dev/docs/ui)。
+
+#### 创建`components.json`
+
+创建配置文件：
+
+```bash
+echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "new-york",\n  "rsc": true,\n  "tsx": true,\n  "tailwind": {\n    "config": "",\n    "css": "app/global.css",\n    "baseColor": "neutral",\n    "cssVariables": true,\n    "prefix": ""\n  },\n  "aliases": {\n    "components": "@/components",\n    "utils": "@/lib/utils",\n    "ui": "@/components/ui",\n    "lib": "@/lib",\n    "hooks": "@/hooks"\n  },\n  "iconLibrary": "lucide"\n}' > components.json
+```
+
+<Callout type="note">
+  也可运行`npx shadcn@latest init -c docs`来自定义配置。
+</Callout>
+
+#### 添加Plate文档
+
+使用shadcn CLI获取Plate文档文件和必要的MDX组件。
+
+```bash
+npx shadcn@latest add https://platejs.org/r/fumadocs -c docs
+```
+
+<Callout type="warning" title="版本特定文档">
+  上述命令安装的是**最新版**Plate文档。对于使用旧版Plate的项目（最低`v48.0.0`），请指定版本：
+
+  1.  访问[Plate在GitHub的公共注册表](https://github.com/udecode/plate/tree/main/apps/www/public/r)。
+  2.  使用标签切换器选择您的Plate版本。
+  3.  复制版本化URL（如[v48](https://github.com/udecode/plate/tree/%40udecode/plate%4048.0.5/apps/www/public/r)）。
+  4.  将`shadcn`命令中的`https://platejs.org/r/`替换为此URL。
+</Callout>
+
+这将填充`content/docs/plate`目录并安装所需的MDX组件。
+
+#### 运行Fumadocs应用
+
+进入文档目录后启动开发服务器：
+
+```bash
+pnpm run dev
+```
+
+访问本地Plate文档，通常位于`http://localhost:3000/docs/plate`。
+
+#### 自定义
+
+利用[Fumadocs功能](https://fumadocs.dev/docs/ui#writing-content)增强您的文档。
+
+</Steps>
+
+### 方案2：仅MDX文件
+
+如果只需文档文件而不搭建完整站点：
+
+```bash
+npx shadcn@latest add https://platejs.org/r/docs
+```
+
+这将仅在项目中安装MDX文档文件。您可以：
+- 在代码库中直接引用
+- 与现有文档系统配合使用
+- 提供给AI工具作为上下文参考
+
+## 高级集成
+
+### MCP集成
+
+通过将Plate服务器添加到`.cursor/mcp.json`（或等效文件），使AI工具能使用本地文档。
+
+```json
+{
+  "mcpServers": {
+    "plate": {
+      "description": "Plate编辑器、插件、组件和文档",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "shadcn@canary", "registry:mcp"],
+      "env": {
+        "REGISTRY_URL": "https://platejs.org/r/registry.json"
+      }
+    }
+  }
+}
+```
+
+配置后您的AI工具可以：
+*   访问文档上下文以提供更好的代码协助
+*   帮助管理和更新文档
+*   生成带有正确导入和配置的代码
+*   协助编辑器设置和功能集成
+
+详见[MCP指南](/docs/installation/mcp)。
+
+<Callout>
+  配置完成后，尝试询问您的AI：
+  ```bash
+  "帮助我理解Plate AI插件的工作原理"
+  "如何创建自定义插件？"
+  "最新版Plate有哪些新特性？"
+  ```
+</Callout>
+
+### 集中管理多文档
+
+您的`content/docs/`目录可托管多个库的文档。重复Plate的添加流程即可集成其他内部或外部工具的文档：
+
+```plaintext
+content/
+└── docs/
+    ├── plate/         # Plate文档
+    │   └── ...
+    ├── other-library/ # 其他库文档
+    │   └── ...
+    └── index.mdx      # 所有文档的主页
+```
+
+这将为您的技术栈创建统一的、版本可控的知识库。

@@ -1,64 +1,64 @@
 ---
 title: 问题排查
-description: Plate 使用过程中常见问题的解决方案。
+description: 使用 Plate 时常见问题的解决方案。
 ---
 
 ## 依赖冲突
 
-在使用 Plate 的项目中，常见的问题来源于依赖版本不一致或冲突。本节介绍如何识别和解决这些冲突。
+使用 Plate 的项目中，依赖版本不匹配或冲突是常见问题来源。本节介绍如何识别和解决这类问题。
 
 ### 使用 `depset` 管理 Plate 包版本
 
-推荐使用 [`depset`](https://npmjs.com/package/depset) 命令行工具，确保所有 ``@udecode/*`` 包（包括 Plate 及其相关插件）版本一致且兼容。
+确保所有 ``@udecode/*`` 包（包括 Plate 及其相关插件）同步到一致且兼容的版本集，推荐使用 [`depset`](https://npmjs.com/package/depset) 命令行工具。
 
-**为什么用 `depset`？**
-- 简化 ``@udecode`` 作用域下多个包的升级或对齐。
-- 避免部分 Plate 包版本不一致导致的兼容性问题。
+**为什么选择 `depset`？**
+- 它简化了 ``@udecode`` 范围内多个包的升级或对齐操作
+- 防止因部分 Plate 包使用一个版本而其他包使用可能不兼容的不同版本导致的问题
 
-**用法：**
+**使用方法：**
 
-要将 ``@udecode`` 作用域下所有包升级或对齐到指定目标版本（如 ``45.0.1``），在项目根目录运行：
-``bash
+要将 ``@udecode`` 范围内的所有包升级或对齐到特定目标版本（如 ``45.0.1``），在项目根目录运行：
+```bash
 npx depset@latest @udecode 45.0.1
-``
+```
 
-要将所有 ``@udecode`` 包升级到小于主版本 ``46`` 的最新版本（如 ``45.x.y``）：
-``bash
+要将所有 ``@udecode`` 包升级到主版本 ``46`` 以下的最新版本（例如如果 ``45.x.y`` 是最新发布版本，则会选择这些）：
+```bash
 npx depset@latest @udecode 45
-``
+```
 
-- 用你需要的版本号替换 ``<target_version>``（如 ``45.0.1`` 或 ``45``）。
-- ``depset`` 会自动更新你的 ``package.json``。
+- 将 ``<target_version>``（如 ``45.0.1`` 或 ``45``）替换为你想要的版本标识符
+- ``depset`` 会更新你的 ``package.json``
 
-### 多个 Plate 实例
+### 示例：多个 Plate 实例
 
-**问题:** 出现意外行为或 "hooks 只能在组件内部调用" 的错误提示。
+**问题：** 出现意外行为或"hooks can only be called inside a component"错误
 
-**根本原因:** 项目中 Plate 包版本不兼容。通常是不同 ``platejs*`` 包或 ``@platejs/core`` 版本不一致。
+**根本原因：** 项目中存在不兼容版本的 Plate 包。通常意味着不同的 ``platejs*`` 包或 ``@platejs/core`` 使用了不同版本且未设计为协同工作
 
-**诊断方法:** 检查是否存在多个 Plate 包版本：
+**诊断方法：** 检查多个 Plate 包版本：
 
-``bash
+```bash
 # npm
 npm ls platejs @platejs/core
 
 # pnpm 或 yarn
 pnpm why platejs
 pnpm why @platejs/core
-``
+```
 
 **解决方案：**
-主要解决方法是确保所有 ``@udecode/*`` 包都升级到兼容且设计为协同工作的最新版本，避免某些 Plate 包过旧或过新。建议使用上文介绍的 ``depset`` 工具。
+主要解决方案是确保所有 ``@udecode/*`` 包都更新到各自最新且设计为相互兼容的版本。这样可以防止项目中某些 Plate 包版本过旧或过新导致的不匹配问题。使用上述的 ``depset`` 工具。
 
-### 多个 Slate 实例
+### 示例：多个 Slate 实例
 
-**问题:** 编辑器功能可能无法正常工作。
+**问题：** 编辑器功能可能无法正常工作
 
-**根本原因:** 包管理器有时会安装不匹配的 Slate 依赖版本。例如，`pnpm` 可能会安装 `slate` 的 0.112.2 版本而非所需的 0.111.0 版本。
+**根本原因：** 包管理器有时会安装不匹配的 Slate 依赖版本。例如，`pnpm` 可能安装 `slate` 0.112.2 版本而非所需的 0.111.0 版本
 
-**诊断方法:** 检查是否存在多个 Slate 版本：
+**诊断方法：** 检查多个 Slate 版本：
 
-``bash
+```bash
 # npm
 npm ls slate slate-react slate-dom
 
@@ -66,13 +66,15 @@ npm ls slate slate-react slate-dom
 pnpm why slate
 pnpm why slate-react
 pnpm why slate-dom
-``
+```
 
-**解决方案:** 按以下顺序尝试：
+**解决方案：** 按顺序尝试以下解决方案：
 
-1. 如果 `package.json` 里有 `slate*` 依赖，先移除。Plate 会自动管理这些依赖。
-2. 使用上文介绍的 ``depset`` 工具。
-2. 强制统一 Slate 依赖版本：
+1. 从 `package.json` 中移除 `slate*` 依赖（如果有）。Plate 会管理这些依赖
+
+2. 使用上述的 ``depset`` 工具
+
+3. 强制使用一致的 Slate 依赖版本：
 
 ```jsonc
 // package.json

@@ -1,44 +1,115 @@
 ---
-title: 序列化 Docx
+title: DOCX 序列化
 ---
 
 <ComponentPreview name="docx-demo" />
 
 <PackageInfo>
 
-## 功能
+## 功能特性
 
-- 将 DOCX 内容转换为 Slate 值。
+- 将粘贴的 DOCX 内容转换为 Plate 格式
+- 清理并规范化 DOCX HTML 内容以确保与 Plate 兼容
+- 支持从 Word 文档保留列表样式和嵌套缩进
 
-<Callout className="my-4">
-  **注意**：目前不支持将 Slate 值转换为 DOCX。
+<Callout className="my-4" type="note">
+  目前暂不支持将 Plate 值转换回 DOCX 格式。
 </Callout>
 
 </PackageInfo>
 
-## 安装
+## 套件使用
+
+<Steps>
+
+### 安装
+
+添加 DOCX 导入功能的最快方式是使用 `DocxKit`，它包含预配置的 `DocxPlugin` 和 `JuicePlugin`，用于处理 DOCX 内容和 CSS 处理。
+
+<ComponentSource name="docx-kit" />
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { DocxKit } from '@/components/editor/plugins/docx-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...DocxKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装依赖
 
 ```bash
 npm install @platejs/docx @platejs/juice
 ```
 
-## 使用
-
-### DOCX -> Slate
+### 添加插件
 
 ```tsx
-import { JuicePlugin } from '@platejs/juice';
 import { DocxPlugin } from '@platejs/docx';
+import { JuicePlugin } from '@platejs/juice';
+import { createPlateEditor } from 'platejs/react';
 
-const plugins = [
-  // ...其他插件,
-  DocxPlugin,
-  JuicePlugin,
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    DocxPlugin,
+    JuicePlugin,
+  ],
+});
 ```
 
-在粘贴 HTML 时，`@platejs/juice` 用于将 CSS 属性内联到 `style` 属性中。
+### 配置插件
 
-## 插件
+```tsx
+import { DocxPlugin } from '@platejs/docx';
+import { JuicePlugin } from '@platejs/juice';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    DocxPlugin, // 处理 DOCX 内容转换
+    JuicePlugin, // 将 CSS 属性内联到 style 属性中
+  ],
+});
+```
+
+- `DocxPlugin`: 处理粘贴的 DOCX 内容并转换为 Plate 格式
+- `JuicePlugin`: 将 CSS 属性内联到 `style` 属性中以提高兼容性
+
+</Steps>
+
+## 使用说明
+
+### DOCX 转 Plate
+
+当用户从 Microsoft Word 粘贴内容时，DOCX 插件会自动：
+
+1. 检测剪贴板中的 DOCX 内容
+2. 清理并规范化 HTML 结构
+3. 保留缩进和列表格式
+4. 将 DOCX 特定元素转换为 Plate 格式
+
+该插件与粘贴功能无缝协作 - 安装后无需额外代码。
+
+## 插件说明
 
 ### DocxPlugin
+
+用于在粘贴操作中处理 DOCX 内容的插件。
+
+### JuicePlugin
+
+用于将 CSS 属性内联到 HTML 元素中的插件。将外部 CSS 样式转换为内联的 `style` 属性。这对于 DOCX 处理至关重要，因为它能确保从 Word 文档粘贴内容时保留样式信息。

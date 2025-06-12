@@ -1,88 +1,140 @@
 ---
-title: 序列化 CSV
+title: Serializing CSV
 ---
 
 <ComponentPreview name="csv-demo" />
 
 <PackageInfo>
 
-## 功能
+## Features
 
-- 将 CSV 内容转换为 Slate 值。
+- Convert CSV content to Plate table format
+- Configurable error tolerance for parsing malformed CSV data
 
-<Callout className="my-4">
-  **注意**：目前不支持将 Slate 值转换为 CSV。
+<Callout className="my-4" type="note">
+  Converting a Plate value to CSV is not yet supported.
 </Callout>
 
 </PackageInfo>
 
-## 安装
+## Manual Usage
+
+<Steps>
+
+### Installation
 
 ```bash
 npm install @platejs/csv
 ```
 
-## 使用
-
-### CSV -> Slate
+### Add Plugin
 
 ```tsx
 import { CsvPlugin } from '@platejs/csv';
+import { createPlateEditor } from 'platejs/react';
 
-const plugins = [
-  // ...其他插件
-  CsvPlugin,
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CsvPlugin,
+  ],
+});
 ```
 
-## 插件
+### Configure Plugin
 
-### `CsvPlugin`
+```tsx
+import { CsvPlugin } from '@platejs/csv';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CsvPlugin.configure({
+      options: {
+        errorTolerance: 0.1,
+        parseOptions: {
+          header: true,
+          skipEmptyLines: true,
+          delimiter: ',',
+        },
+      },
+    }),
+  ],
+});
+```
+
+- `options.errorTolerance`: Percentage of rows that can contain errors (default: `0.25` for 25%)
+- `options.parseOptions`: Configuration passed to PapaParse library for CSV parsing
+- `options.parseOptions.header`: Treat first row as headers (default: `true`)
+
+</Steps>
+
+## Usage
+
+### CSV to Plate
+
+Use the API method to deserialize CSV data:
+
+```tsx
+// Deserialize CSV string to Plate format
+const csvData = `Name,Age,City
+John,30,New York
+Jane,25,Boston`;
+
+const nodes = editor.api.csv.deserialize({ data: csvData });
+```
+
+## Plugins
+
+### CsvPlugin
+
+Plugin for CSV deserialization functionality.
 
 <API name="CsvPlugin">
 <APIOptions>
   <APIItem name="errorTolerance" type="number" optional>
-    CSV 数据中的错误容忍度，以百分比的小数形式表示。该值计算为错误数与总行数的比率。
+    The tolerance for errors in the CSV data, represented as a percentage in decimal form. This value is calculated as the ratio of errors to the total number of rows.
 
-    - **默认值:** `0.25`（表示最多允许 25% 的行包含错误。）
+    - **Default:** `0.25` (This indicates that up to 25% of the rows can contain errors.)
   </APIItem>
   <APIItem name="parseOptions" type="ParseConfig" optional>
-    传递给 PapaParse 库用于解析 CSV 数据的选项。
+    Options to be passed to the PapaParse library for parsing CSV data.
 
-    - **默认值:** `{ header: true }`（表示 CSV 数据的第一行应被视为标题。）
-    - 有关这些选项的更多详细信息，请参阅 [PapaParse 文档](https://www.papaparse.com/docs#config)。
+    - **Default:** `{ header: true }` (Indicating that the first row of the CSV data should be treated as a header.)
+    - See [PapaParse documentation](https://www.papaparse.com/docs#config) for more details about these options.
   </APIItem>
 </APIOptions>
 </API>
 
 ## API
 
-### `api.csv.deserialize`
+### api.csv.deserialize
 
-接收一个 CSV（逗号分隔值）字符串并将其转换为 Slate 兼容的格式。此函数使用 `papaparse` 库来解析 CSV 数据。
+Takes a CSV (Comma Separated Values) string and converts it into a Plate compatible format. This function uses the `papaparse` library to parse the CSV data.
 
 <API name="deserialize">
 <APIParameters>
   <APIItem name="data" type="string">
-    要反序列化的 CSV 数据字符串。
+    The CSV data string to be deserialized.
   </APIItem>
   <APIItem name="errorTolerance" type="number" optional>
-    以小数形式表示的百分比，从 0 到 ∞，0 表示不允许任何错误。百分比基于错误数与行数的比率。
-    - **默认值:** `0.25`
+    Percentage in decimal form, from 0 to ∞, 0 for no errors allowed. Percentage is based on number of errors compared to number of rows.
+    - **Default:** `0.25`
   </APIItem>
   <APIItem name="parseOptions" type="ParseConfig">
-    传递给 PapaParse 库用于解析 CSV 数据的选项。
-    - **默认值:** `{ header: true }`
-    - 参阅 [PapaParse 文档](https://www.papaparse.com/docs#config)
+    Options to be passed to the PapaParse library for parsing CSV data.
+    - **Default:** `{ header: true }`
+    - See [PapaParse documentation](https://www.papaparse.com/docs#config)
   </APIItem>
 </APIParameters>
 
 <APIReturns type="Descendant[]">
-  表示 Slate 格式的 CSV 数据的 `Descendant` 节点数组。如果解析失败，则返回 `undefined`。
+  Array of `Descendant` nodes representing the CSV data in Plate format. Returns `undefined` if parsing fails.
 </APIReturns>
 </API>
 
-创建 CSV 数据的表格表示：
-- 标题（如果存在）成为第一行
-- 每个 CSV 行成为表格的一行
-- 使用插件：`TablePlugin`、`TableCellHeaderPlugin`、`TableRowPlugin` 和 `TableCellPlugin`
+Creates a table representation of the CSV data:
+- Headers (if present) become the first row
+- Each CSV row becomes a table row
+- Uses plugins: `TablePlugin`, `TableCellHeaderPlugin`, `TableRowPlugin`, and `TableCellPlugin`

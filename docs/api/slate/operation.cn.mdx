@@ -1,9 +1,9 @@
 ---
-title: 操作（Operation）
-description: Slate 操作的 API 参考文档。
+title: 操作
+description: Plate 中操作相关的 API 参考。
 ---
 
-操作是 Slate 编辑器用于应用更改到其内部状态的最低级别指令。将所有更改表示为操作使得 Slate 编辑器能够轻松实现历史记录、协作和其他功能。
+操作（Operation）是 Plate 编辑器用来修改其内部状态的最底层指令。将所有变更表示为操作，使得 Plate 编辑器能够轻松实现历史记录、协作编辑等功能。
 
 ```typescript
 export type Operation<N extends Descendant = Descendant> =
@@ -26,13 +26,13 @@ export type Operation<N extends Descendant = Descendant> =
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值是节点操作则为 `true`。
+  如果是节点操作则返回 `true`。
 </APIReturns>
 </API>
 
 ### `inverse`
 
-反转一个操作，返回一个新操作，当应用时将完全撤销原始操作。
+反转操作，返回一个新操作，当应用该操作时将完全撤销原始操作。
 
 <API name="inverse">
 <APIParameters>
@@ -58,13 +58,13 @@ export type Operation<N extends Descendant = Descendant> =
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值是操作则为 `true`。
+  如果是操作则返回 `true`。
 </APIReturns>
 </API>
 
 ### `isOperationList`
 
-检查一个值是否为 `Operation` 对象的列表。
+检查一个值是否为 `Operation` 对象列表。
 
 <API name="isOperationList">
 <APIParameters>
@@ -74,7 +74,7 @@ export type Operation<N extends Descendant = Descendant> =
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值是操作数组则为 `true`。
+  如果是操作数组则返回 `true`。
 </APIReturns>
 </API>
 
@@ -90,7 +90,7 @@ export type Operation<N extends Descendant = Descendant> =
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值是选择操作则为 `true`。
+  如果是选区操作则返回 `true`。
 </APIReturns>
 </API>
 
@@ -106,7 +106,7 @@ export type Operation<N extends Descendant = Descendant> =
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值是文本操作则为 `true`。
+  如果是文本操作则返回 `true`。
 </APIReturns>
 </API>
 
@@ -123,7 +123,7 @@ export type Operation<N extends Descendant = Descendant> =
 
 ### `NodeOperation`
 
-节点操作修改一个节点。
+节点操作用于修改节点。
 
 ```ts
 export type NodeOperation<N extends Descendant = Descendant> =
@@ -137,7 +137,7 @@ export type NodeOperation<N extends Descendant = Descendant> =
 
 ### `SelectionOperation`
 
-选择操作修改选择。
+选区操作用于修改选区。
 
 ```ts
 export type SelectionOperation = SetSelectionOperation;
@@ -145,7 +145,7 @@ export type SelectionOperation = SetSelectionOperation;
 
 ### `TextOperation`
 
-文本操作修改文本内容。
+文本操作用于修改文本内容。
 
 ```ts
 export type TextOperation = InsertTextOperation | RemoveTextOperation;
@@ -159,7 +159,7 @@ export type TextOperation = InsertTextOperation | RemoveTextOperation;
     要插入的节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    要插入的路径。
+    插入位置的路径。
   </APIItem>
   <APIItem name="type" type="'insert_node'">
     操作类型。
@@ -172,13 +172,13 @@ export type TextOperation = InsertTextOperation | RemoveTextOperation;
 <API name="MergeNodeOperation">
 <APIAttributes>
   <APIItem name="path" type="Path">
-    要合并的节点的路径。
+    要合并节点的路径。
   </APIItem>
   <APIItem name="position" type="number">
-    要合并的位置。
+    合并位置。
   </APIItem>
   <APIItem name="properties" type="Partial<NodeProps<N>>">
-    合并节点的属性。
+    合并后节点的属性。
   </APIItem>
   <APIItem name="type" type="'merge_node'">
     操作类型。
@@ -191,10 +191,10 @@ export type TextOperation = InsertTextOperation | RemoveTextOperation;
 <API name="MoveNodeOperation">
 <APIAttributes>
   <APIItem name="newPath" type="Path">
-    要移动到的新路径。
+    移动目标路径。
   </APIItem>
   <APIItem name="path" type="Path">
-    要移动的节点的路径。
+    要移动节点的路径。
   </APIItem>
   <APIItem name="type" type="'move_node'">
     操作类型。
@@ -242,13 +242,13 @@ export type TextOperation = InsertTextOperation | RemoveTextOperation;
 <API name="SplitNodeOperation">
 <APIAttributes>
   <APIItem name="path" type="Path">
-    要分割的节点的路径。
+    要拆分节点的路径。
   </APIItem>
   <APIItem name="position" type="number">
-    要分割的位置。
+    拆分位置。
   </APIItem>
   <APIItem name="properties" type="Partial<NodeProps<N>>">
-    新分割节点的属性。
+    拆分后新节点的属性。
   </APIItem>
   <APIItem name="type" type="'split_node'">
     操作类型。
@@ -261,10 +261,10 @@ export type TextOperation = InsertTextOperation | RemoveTextOperation;
 <API name="SetSelectionOperation">
 <APIAttributes>
   <APIItem name="newProperties" type="Partial<TRange> | TRange | null">
-    新的选择属性。
+    新选区属性。
   </APIItem>
   <APIItem name="properties" type="Partial<TRange> | TRange | null">
-    旧的选择属性。
+    旧选区属性。
   </APIItem>
   <APIItem name="type" type="'set_selection'">
     操作类型。
@@ -277,7 +277,7 @@ export type TextOperation = InsertTextOperation | RemoveTextOperation;
 <API name="InsertTextOperation">
 <APIAttributes>
   <APIItem name="offset" type="number">
-    要插入的偏移量。
+    插入位置的偏移量。
   </APIItem>
   <APIItem name="path" type="Path">
     文本节点的路径。
@@ -296,7 +296,7 @@ export type TextOperation = InsertTextOperation | RemoveTextOperation;
 <API name="RemoveTextOperation">
 <APIAttributes>
   <APIItem name="offset" type="number">
-    要移除的起始偏移量。
+    移除位置的偏移量。
   </APIItem>
   <APIItem name="path" type="Path">
     文本节点的路径。

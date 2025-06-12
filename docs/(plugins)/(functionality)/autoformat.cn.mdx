@@ -1,11 +1,14 @@
 ---
 title: 自动格式化
+description: 通过短代码和类Markdown快捷方式实现文本自动格式化。
 docs:
   - route: /docs/basic-blocks
-    title: 基础元素
+    title: 基础块元素
   - route: /docs/basic-marks
     title: 基础标记
-  - route: /docs/list-classic
+  - route: /docs/code-block
+    title: 代码块
+  - route: /docs/list
     title: 列表
 ---
 
@@ -13,150 +16,273 @@ docs:
 
 <PackageInfo>
 
-## 功能
+## 功能特性
 
-- 通过短代码实现快速内容格式化。
-- 提供类似 Markdown 的实时输入内联代码。
-- 通过避免工具栏按钮和常见格式化的快捷键，增强并简化编辑体验。
-- 自动转换功能（例如，`#` 转换为 H1）。
-- 提供预定义的格式化规则。
-
-## 短代码
-
-- `text*` 用于加粗文本。
-- `_text_` 用于斜体文本。
-- `~~text~~` 用于删除线文本。
-- ... 以及更多。
+- 块级元素的Markdown风格快捷方式（如`#`转换为H1，`>`转换为引用块）
+- 行内标记格式化（如`**粗体**`，`*斜体*`，`~~删除线~~`）
+- 智能标点转换（如`--`转为`—`，`...`转为`…`）
+- 数学符号和分数
+- 法律符号和箭头
+- 支持通过删除操作撤销自动格式化
 
 </PackageInfo>
 
-## 安装
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的添加自动格式化方式是使用`AutoformatKit`，它包含了全面的块级、标记级和文本替换的格式化规则。
+
+<ComponentSource name="autoformat-kit" />
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { AutoformatKit } from '@/components/editor/plugins/autoformat-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...AutoformatKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装
+
 ```bash
 npm install @platejs/autoformat
 ```
 
-## 使用
+### 添加插件
 
 ```tsx
-import { AutoformatPlugin } from '@platejs/autoformat/react';
+import { AutoformatPlugin } from '@platejs/autoformat';
+import { createPlateEditor } from 'platejs/react';
 
-const plugins = [
-  // ...其他插件,
-  AutoformatPlugin.configure({
-    options: {
-      rules: autoformatRules,
-      enableUndoOnDelete: true,
-    },
-  }),
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    AutoformatPlugin,
+  ],
+});
 ```
 
-## 示例
+### 配置插件
 
-### `autoformatRules`
+自定义自动格式化规则：
 
-<ComponentSource name="autoformat-kit" />
+```tsx
+import { AutoformatPlugin } from '@platejs/autoformat';
 
-### `autoformatBlocks`
+AutoformatPlugin.configure({
+  options: {
+    rules: [
+      // 块级规则
+      {
+        match: '# ',
+        mode: 'block',
+        type: 'h1',
+      },
+      {
+        match: '> ',
+        mode: 'block',
+        type: 'blockquote',
+      },
+      // 标记规则
+      {
+        match: '**',
+        mode: 'mark',
+        type: 'bold',
+      },
+      {
+        match: '*',
+        mode: 'mark',
+        type: 'italic',
+      },
+    ],
+    enableUndoOnDelete: true,
+  },
+});
+```
 
-### `autoformatIndentLists`
+### 高级配置
 
-如果使用 [缩进列表插件](/docs/list)，可以使用以下规则：
+导入预定义的规则集实现全面自动格式化：
 
-### `autoformatLists`
+```tsx
+import { AutoformatPlugin } from '@platejs/autoformat';
+import {
+  autoformatArrow,
+  autoformatLegal,
+  autoformatMath,
+  autoformatPunctuation,
+  autoformatSmartQuotes,
+} from '@platejs/autoformat';
 
-如果使用 [列表插件](/docs/list-classic)，可以使用以下规则：
+AutoformatPlugin.configure({
+  options: {
+    enableUndoOnDelete: true,
+    rules: [
+      // 自定义块级规则
+      {
+        match: '# ',
+        mode: 'block',
+        type: 'h1',
+      },
+      // 预定义规则集
+      ...autoformatSmartQuotes,
+      ...autoformatPunctuation,
+      ...autoformatArrow,
+      ...autoformatLegal,
+      ...autoformatMath,
+    ].map((rule) => ({
+      ...rule,
+      // 在代码块中禁用自动格式化
+      query: (editor) =>
+        !editor.api.some({
+          match: { type: 'code_block' },
+        }),
+    })),
+  },
+});
+```
 
-### `autoformatMarks`
+- `rules`: 定义触发条件和格式化操作的规则数组
+- `enableUndoOnDelete`: 允许通过退格键撤销自动格式化
+- `query`: 根据上下文条件启用/禁用规则的函数
 
-### `autoformatUtils`
+### 使用正则表达式
+
+对于更复杂的匹配模式，可以使用正则表达式：
+
+```tsx
+import { AutoformatPlugin } from '@platejs/autoformat';
+import { toggleList } from '@platejs/list';
+
+AutoformatPlugin.configure({
+  options: {
+    rules: [
+      {
+        match: [String.raw`^\d+\.$ `, String.raw`^\d+\)$ `],
+        matchByRegex: true,
+        mode: 'block',
+        type: 'list',
+        format: (editor, { matchString }) => {
+          const number = Number(matchString.match(/\d+/)?.[0]) || 1;
+          toggleList(editor, {
+            listRestartPolite: number,
+            listStyleType: 'ol',
+          });
+        },
+      },
+    ],
+  },
+});
+```
+
+- `matchByRegex`: 启用正则模式匹配（替代字符串完全匹配）
+- 注意：正则模式仅适用于`mode: 'block'`且只在块起始位置生效(`triggerAtBlockStart: true`)
+
+</Steps>
 
 ## 插件
 
 ### `AutoformatPlugin`
 
+基于输入模式实现文本自动格式化的插件。
+
 <API name="AutoformatPlugin">
 <APIOptions>
   <APIItem name="rules" type="AutoformatRule[]" optional>
-    触发规则的列表。
-    - 可以是以下之一：`AutoformatBlockRule`, `AutoformatMarkRule`, `AutoformatTextRule`
-    - 继承自 `AutoformatCommonRule`
+    触发规则列表。可以是以下类型之一：`AutoformatBlockRule`、`AutoformatMarkRule`、`AutoformatTextRule`。均继承自`AutoformatCommonRule`。
+    - **默认值:** `[]`
   </APIItem>
   <APIItem name="enableUndoOnDelete" type="boolean" optional>
-    启用删除时的撤销功能。
+    启用删除时撤销自动格式化功能。
+    - **默认值:** `false`
   </APIItem>
 </APIOptions>
 </API>
 
-## 规则
+## 预定义规则集
 
-你可以导入以下规则：
+可导入以下预定义规则集：
 
 | 名称                           | 描述                          |
 | :----------------------------- | :----------------------------------- |
-| `autoformatSmartQuotes`        | 将 `"text"` 转换为 `"text"`。       |
-|                                | 将 `'text'` 转换为 `'text'`。       |
-| `autoformatPunctuation`        | 将 `--` 转换为 `—`。                |
-|                                | 将 `...` 转换为 `…`。               |
-|                                | 将 `>>` 转换为 `»`。                |
-|                                | 将 `<<` 转换为 `«`。                |
-| `autoformatArrow`              | 将 `->` 转换为 `→`。                |
-|                                | 将 `<-` 转换为 `←`。                |
-|                                | 将 `=>` 转换为 `⇒`。                |
-|                                | 将 `<=` 和 `≤=` 转换为 `⇐`。       |
-| `autoformatLegal`              | 将 `(tm)` 和 `(TM)` 转换为 `™`。  |
-|                                | 将 `(r)` 和 `(R)` 转换为 `®`。    |
-|                                | 将 `(c)` 和 `(C)` 转换为 `©`。    |
-| `autoformatLegalHtml`          | 将 `&trade;` 转换为 `™`。          |
-|                                | 将 `&reg;` 转换为 `®`。            |
-|                                | 将 `&copy;` 转换为 `©`。           |
-|                                | 将 `&sect;` 转换为 `§`。            |
-| `autoformatComparison`         | 将 `!>` 转换为 `!>`。               |
-|                                | 将 `!<` 转换为 `≮`。                |
-|                                | 将 `>=` 转换为 `≥`。                |
-|                                | 将 `<=` 转换为 `≤`。                |
-|                                | 将 `!>=` 转换为 `≱`。               |
-|                                | 将 `!<=` 转换为 `≰`。               |
-| `autoformatEquality`           | 将 `!=` 转换为 `≠`。                |
-|                                | 将 `==` 转换为 `≡`。                |
-|                                | 将 `!==` 和 `≠=` 转换为 `≢`。      |
-|                                | 将 `~=` 转换为 `≈`。                |
-|                                | 将 `!~=` 转换为 `≉`。               |
-| `autoformatFraction`           | 将 `1/2` 转换为 `½`。               |
-|                                | 将 `1/3` 转换为 `⅓`。               |
-|                                | ...                                  |
-|                                | 将 `7/8` 转换为 `⅞`。               |
-| `autoformatDivision`           | 将 `//` 转换为 `÷`。                |
-| `autoformatOperation`          | 将 `+-` 转换为 `±`。                |
-|                                | 将 `%%` 转换为 `‰`。                |
-|                                | 将 `%%%` 和 `‰%` 转换为 `‱.       |
-|                                | `autoformatDivision` 规则。          |
-| `autoformatSubscriptNumbers`   | 将 `~0` 转换为 `₀`。                |
-|                                | 将 `~1` 转换为 `₁`。                |
-|                                | ...                                  |
-|                                | 将 `~9` 转换为 `₉`。                |
-| `autoformatSubscriptSymbols`   | 将 `~+` 转换为 `₊`。                |
-|                                | 将 `~-` 转换为 `₋`。                |
-| `autoformatSuperscriptNumbers` | 将 `^0` 转换为 `⁰`。                |
-|                                | 将 `^1` 转换为 `¹`。                |
-|                                | ...                                  |
-|                                | 将 `^9` 转换为 `⁹`。                |
-| `autoformatSuperscriptSymbols` | 将 `^+` 转换为 `°`。                |
-|                                | 将 `^-` 转换为 `⁺`。                |
-| `autoformatMath`               | `autoformatComparison` 规则         |
-|                                | `autoformatEquality` 规则           |
-|                                | `autoformatOperation` 规则          |
-|                                | `autoformatFraction` 规则           |
-|                                | `autoformatSubscriptNumbers` 规则   |
-|                                | `autoformatSubscriptSymbols` 规则   |
-|                                | `autoformatSuperscriptNumbers` 规则 |
-|                                | `autoformatSuperscriptSymbols` 规则 |
+| `autoformatSmartQuotes`        | 转换`"文本"`为`"文本"`       |
+|                                | 转换`'文本'`为`'文本'`       |
+| `autoformatPunctuation`        | 转换`--`为`—`                |
+|                                | 转换`...`为`…`               |
+|                                | 转换`>>`为`»`                |
+|                                | 转换`<<`为`«`                |
+| `autoformatArrow`              | 转换`->`为`→`                |
+|                                | 转换`<-`为`←`                |
+|                                | 转换`=>`为`⇒`                |
+|                                | 转换`<=`和`≤=`为`⇐`          |
+| `autoformatLegal`              | 转换`(tm)`和`(TM)`为`™`      |
+|                                | 转换`(r)`和`(R)`为`®`        |
+|                                | 转换`(c)`和`(C)`为`©`        |
+| `autoformatLegalHtml`          | 转换`&trade;`为`™`           |
+|                                | 转换`&reg;`为`®`             |
+|                                | 转换`&copy;`为`©`            |
+|                                | 转换`&sect;`为`§`            |
+| `autoformatComparison`         | 转换`!>`为`≯`                |
+|                                | 转换`!<`为`≮`                |
+|                                | 转换`>=`为`≥`                |
+|                                | 转换`<=`为`≤`                |
+|                                | 转换`!>=`为`≱`               |
+|                                | 转换`!<=`为`≰`               |
+| `autoformatEquality`           | 转换`!=`为`≠`                |
+|                                | 转换`==`为`≡`                |
+|                                | 转换`!==`和`≠=`为`≢`         |
+|                                | 转换`~=`为`≈`                |
+|                                | 转换`!~=`为`≉`               |
+| `autoformatFraction`           | 转换`1/2`为`½`               |
+|                                | 转换`1/3`为`⅓`               |
+|                                | ...                          |
+|                                | 转换`7/8`为`⅞`               |
+| `autoformatDivision`           | 转换`//`为`÷`                |
+| `autoformatOperation`          | 转换`+-`为`±`                |
+|                                | 转换`%%`为`‰`                |
+|                                | 转换`%%%`和`‰%`为`‱`         |
+|                                | 包含`autoformatDivision`规则 |
+| `autoformatSubscriptNumbers`   | 转换`~0`为`₀`                |
+|                                | 转换`~1`为`₁`                |
+|                                | ...                          |
+|                                | 转换`~9`为`₉`                |
+| `autoformatSubscriptSymbols`   | 转换`~+`为`₊`                |
+|                                | 转换`~-`为`₋`                |
+| `autoformatSuperscriptNumbers` | 转换`^0`为`⁰`                |
+|                                | 转换`^1`为`¹`                |
+|                                | ...                          |
+|                                | 转换`^9`为`⁹`                |
+| `autoformatSuperscriptSymbols` | 转换`^+`为`⁺`                |
+|                                | 转换`^-`为`⁻`                |
+| `autoformatMath`               | 包含`autoformatComparison`规则 |
+|                                | `autoformatEquality`规则      |
+|                                | `autoformatOperation`规则     |
+|                                | `autoformatFraction`规则      |
+|                                | `autoformatSubscriptNumbers`规则 |
+|                                | `autoformatSubscriptSymbols`规则 |
+|                                | `autoformatSuperscriptNumbers`规则 |
+|                                | `autoformatSuperscriptSymbols`规则 |
 
-## 类型
+## 类型定义
 
 ### `AutoformatCommonRule`
 
-一个接口，用于自动格式化规则的通用结构，无论其模式如何。
+自动格式化规则的通用接口结构，与模式无关。
 
 <API name="AutoformatCommonRule">
 <APIAttributes>
@@ -164,28 +290,28 @@ const plugins = [
   name="match"
   type="string | string[] | MatchRange | MatchRange[]"
 >
-  当触发器和光标前的文本匹配时，规则适用。
+  当触发字符和光标前的文本匹配时应用规则。
 
-  - 对于 `mode: 'block'`：查找光标前的结束匹配项。
-  - 对于 `mode: 'text'`：查找光标前的结束匹配项。如果 `format` 是一个数组，还要查找开始匹配项。
-  - 对于 `mode: 'mark'`：查找开始和结束匹配项。
-  - 注意：`'_*'`、`['_*']` 和 `{ start: '_*', end: '*_' }` 是等价的。
+  - 对于`mode: 'block'`: 在光标前查找结束匹配项
+  - 对于`mode: 'text'`: 在光标前查找结束匹配项。如果`format`是数组，还需查找起始匹配项
+  - 对于`mode: 'mark'`: 查找起始和结束匹配项
+  - 注意：`'_*'`、`['_*']`和`{ start: '_*', end: '*_' }`等效
   - `MatchRange`:
 
   <APISubList>
     <APISubListItem parent="match" name="start" type="string">
-      范围的起始点。
+      范围的起始点
     </APISubListItem>
     <APISubListItem parent="match" name="end" type="string">
-      范围的结束点。
+      范围的结束点
     </APISubListItem>
   </APISubList>
 </APIItem>
 <APIItem name="trigger" type="string | string[]" optional>
-  触发自动格式化的字符。
+  触发自动格式化的字符
 </APIItem>
 <APIItem name="insertTrigger" type="boolean" optional>
-  如果为 true，则在自动格式化后插入触发字符。
+  为true时，在自动格式化后插入触发字符
   - **默认值:** `false`
 </APIItem>
 <APIItem
@@ -193,11 +319,11 @@ const plugins = [
   type="(editor: PlateEditor, options: AutoformatQueryOptions) => boolean"
   optional
 >
-  允许自动格式化的查询函数。
+  允许自动格式化的查询函数
 
   <APIOptions type="AutoformatQueryOptions">
     <APIItem name="text" type="string">
-      `insertText` 文本。
+      `insertText`文本内容
     </APIItem>
   </APIOptions>
 </APIItem>
@@ -206,73 +332,68 @@ const plugins = [
 
 ### `AutoformatBlockRule`
 
-一个接口，用于块模式的自动格式化规则。
+块级模式自动格式化规则接口。
 
 <API name="AutoformatBlockRule">
 <APIAttributes>
   <APIItem name="mode" type="'block'">
-    块模式：设置块类型或自定义格式。
-
-    - 文本：插入文本。
-    - 块：设置块类型或自定义格式。 
-    - 标记：在匹配项之间插入标记。
+    块级模式：设置块类型或自定义格式
   </APIItem>
   <APIItem name="match" type="string | string[]">
-    自动格式化规则的匹配模式。
+    自动格式化规则的匹配模式
   </APIItem>
   <APIItem name="type" type="string" optional>
-    - 对于 `mode: 'block'`：设置块类型。如果定义了 `format`，则忽略此字段。
-    - 对于 `mode: 'mark'`：要添加的标记。
+    对于`mode: 'block'`：设置块类型。如果定义了`format`，则忽略此字段
   </APIItem>
   <APIItem name="triggerAtBlockStart" type="boolean" optional>
-    触发器是否应在块的开头。
+    是否仅在块起始位置触发
     - **默认值:** `true`
   </APIItem>
   <APIItem name="allowSameTypeAbove" type="boolean" optional>
-    是否允许在上方使用相同块类型进行自动格式化。
+    是否允许上方存在相同块类型时触发
     - **默认值:** `false`
   </APIItem>
   <APIItem name="preFormat" type="(editor: PlateEditor) => void" optional>
-    在 `format` 之前调用的函数。用于重置选定的块。
+    在`format`前调用的函数。用于重置选中块
   </APIItem>
   <APIItem name="format" type="(editor: PlateEditor) => void" optional>
-    自定义格式化函数。
+    自定义格式化函数
   </APIItem>
 </APIAttributes>
 </API>
 
 ### `AutoformatMarkRule`
 
-一个接口，用于标记模式的自动格式化规则。
+标记模式自动格式化规则接口。
 
 <API name="AutoformatMarkRule">
 <APIAttributes>
   <APIItem name="mode" type="'mark'">
-    标记模式：在匹配项之间插入标记。
+    标记模式：在匹配项之间插入标记
   </APIItem>
   <APIItem name="type" type="string | string[]">
-    要添加的标记。
+    要添加的标记（可多个）
   </APIItem>
   <APIItem name="ignoreTrim" type="boolean" optional>
-    是否在字符串可以修剪时进行格式化。
+    字符串可修剪时是否仍进行格式化
   </APIItem>
 </APIAttributes>
 </API>
 
 ### `AutoformatTextRule`
 
-一个接口，用于文本模式的自动格式化规则。
+文本模式自动格式化规则接口。
 
 <API name="AutoformatTextRule">
 <APIParameters>
   <APIItem name="mode" type="'text'">
-    文本模式：插入文本。
+    文本模式：插入文本
   </APIItem>
   <APIItem name="match" type="string | string[]">
-    自动格式化规则的匹配模式。
+    自动格式化规则的匹配模式
   </APIItem>
   <APIItem name="format" type="string | string[] | ((editor: PlateEditor, options: GetMatchPointsReturnType) => void)">
-    文本替换或格式化函数。
+    文本替换内容或格式化函数
   </APIItem>
 </APIParameters>
 </API>

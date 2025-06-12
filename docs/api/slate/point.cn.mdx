@@ -1,9 +1,9 @@
 ---
-title: 点（Point）
-description: Slate 中点的 API 参考文档。
+title: Point
+description: Plate 文档中点的 API 参考。
 ---
 
-点（Point）表示 Slate 文档中的特定位置。它由指向文本节点的路径和该文本节点内容中的偏移量组成。
+Point 表示 Plate 文档中的特定位置。它由指向文本节点的路径和该文本节点内容中的偏移量组成。
 
 ```typescript
 type Point = {
@@ -12,7 +12,7 @@ type Point = {
 }
 ```
 
-- [路径（Path）](/docs/api/slate/path)
+- [Path](/docs/api/slate/path)
 
 ## `PointAPI`
 
@@ -23,55 +23,55 @@ type Point = {
 <API name="get">
 <APIParameters>
   <APIItem name="at" type="At | null" optional>
-    获取点的位置。可以是 `TRange`、`Point` 或 `Path`。
+    要获取点的位置。可以是 `TRange`、`Point` 或 `Path`。
   </APIItem>
   <APIItem name="options" type="object" optional>
-    点检索的附加选项。
+    获取点的附加选项。
   </APIItem>
 </APIParameters>
 
 <APIOptions type="object">
   <APIItem name="focus" type="boolean" optional>
-    如果为 true 且位置是范围，则返回焦点而不是锚点。
+    如果为 true 且位置是范围，则返回焦点点而非锚点。
   </APIItem>
 </APIOptions>
 
 <APIReturns type="Point | undefined">
-  指定位置的点，如果未找到则为 `undefined`。
+  指定位置的点，如果未找到则返回 `undefined`。
 </APIReturns>
 </API>
 
 ### `transform`
 
-通过操作转换点。
+通过操作变换点。
 
 <API name="transform">
 <APIParameters>
   <APIItem name="point" type="Point">
-    要转换的点。
+    要变换的点。
   </APIItem>
   <APIItem name="op" type="Operation">
     要应用的操作。
   </APIItem>
   <APIItem name="options" type="PointTransformOptions" optional>
-    转换点的选项。
+    变换点的选项。
   </APIItem>
 </APIParameters>
 
 <APIOptions type="PointTransformOptions">
   <APIItem name="affinity" type="TextDirection | null" optional>
-    转换点时首选的方向。
+    变换点时首选的方向。
   </APIItem>
 </APIOptions>
 
 <APIReturns type="Point | null">
-  转换后的点，如果点被删除则为 `null`。
+  变换后的点，如果点被删除则返回 `null`。
 </APIReturns>
 </API>
 
 ### `compare`
 
-将一个点与另一个点进行比较。
+比较两个点。
 
 <API name="compare">
 <APIParameters>
@@ -84,7 +84,7 @@ type Point = {
 </APIParameters>
 
 <APIReturns type="-1 | 0 | 1">
-  如果在前面则为 `-1`，如果在相同位置则为 `0`，如果在后面则为 `1`。
+  如果第一个点在前面返回 `-1`，相同位置返回 `0`，在后面返回 `1`。
 </APIReturns>
 </API>
 
@@ -103,7 +103,7 @@ type Point = {
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果点相等则为 `true`，否则为 `false`。
+  如果点相等返回 `true`，否则返回 `false`。
 </APIReturns>
 </API>
 
@@ -122,7 +122,7 @@ type Point = {
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果第一个点在第二个点之后则为 `true`。
+  如果第一个点在第二个点之后返回 `true`。
 </APIReturns>
 </API>
 
@@ -141,13 +141,13 @@ type Point = {
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果第一个点在第二个点之前则为 `true`。
+  如果第一个点在第二个点之前返回 `true`。
 </APIReturns>
 </API>
 
 ### `isPoint`
 
-检查一个值是否实现了 `Point` 接口。
+检查值是否实现了 `Point` 接口。
 
 <API name="isPoint">
 <APIParameters>
@@ -157,7 +157,7 @@ type Point = {
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值是点则为 `true`。
+  如果值是点则返回 `true`。
 </APIReturns>
 </API>
 
@@ -165,7 +165,7 @@ type Point = {
 
 ### `Point`
 
-点表示 Slate 文档中的特定位置。
+点表示 Plate 文档中的特定位置。
 
 <API name="Point">
 <APIAttributes>
@@ -180,12 +180,12 @@ type Point = {
 
 ### `PointEntry`
 
-当迭代属于范围的 `Point` 对象时，会返回点条目。
+点条目在迭代属于范围的 `Point` 对象时返回。
 
 <API name="PointEntry">
 <APIAttributes>
   <APIItem name="[0]" type="Point">
-    点的位置。
+    点位置。
   </APIItem>
   <APIItem name="[1]" type="'anchor' | 'focus'">
     指示此点是范围的锚点还是焦点。

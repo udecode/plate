@@ -1,6 +1,6 @@
 ---
 title: 存储
-description: Plate 存储的 API 参考。
+description: Plate 存储的 API 参考文档。
 ---
 
 `Plate` 使用 [jotai-x](https://github.com/udecode/jotai-x) 来存储编辑器的状态。
@@ -12,13 +12,13 @@ description: Plate 存储的 API 参考。
 
 <APIState>
 <APIItem name="editor" type="PlateEditor">
-Slate 编辑器引用。
+Plate 编辑器的引用。
 
 - **默认值:** `createPlateFallbackEditor()`
 </APIItem>
 
 <APIItem name="id" type="string">
-用作提供者范围的唯一 ID。如果你在同一个 React 树中有多个 `Plate`，请使用它。
+用作 provider 作用域的唯一 ID。如果在同一个 React 树中有多个 `Plate`，请使用它。
 
 - **默认值:** 随机 ID
 </APIItem>
@@ -36,11 +36,11 @@ Slate 编辑器引用。
 </APIItem>
 
 <APIItem name="isMounted" type="boolean" optional>
-`Editable` 是否已渲染，以便 Slate DOM 可解析。
+`Editable` 是否已渲染，以便 slate DOM 可解析。
 </APIItem>
 
 <APIItem name="onChange" type="function" optional>
-当编辑器状态发生变化时调用的受控回调。
+编辑器状态变化时的受控回调函数。
 
 ```ts
 (options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
@@ -48,7 +48,7 @@ Slate 编辑器引用。
 </APIItem>
 
 <APIItem name="onSelectionChange" type="function" optional>
-当 `editor.selection` 发生变化时调用的受控回调。
+编辑器选区变化时的受控回调函数。
 
 ```ts
 (options: { editor: PlateEditor; selection: TSelection }) => void
@@ -56,7 +56,7 @@ Slate 编辑器引用。
 </APIItem>
 
 <APIItem name="onValueChange" type="function" optional>
-当 `editor.children` 发生变化时调用的受控回调。
+编辑器子节点变化时的受控回调函数。
 
 ```ts
 (options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
@@ -64,21 +64,21 @@ Slate 编辑器引用。
 </APIItem>
 
 <APIItem name="primary" type="boolean" optional>
-编辑器是否是主要的。如果没有编辑器处于活动状态，则 PlateController 将使用第一个挂载的主要编辑器。
+编辑器是否是主要的。如果没有活跃的编辑器，PlateController 将使用第一个挂载的主要编辑器。
 
 - **默认值:** `true`
 </APIItem>
 
 <APIItem name="readOnly" type="boolean" optional>
-编辑器是否为只读。
+编辑器是否为只读模式。
 </APIItem>
 
 <APIItem name="renderElement" type="function" optional>
-用于渲染编辑器中元素的函数。
+渲染编辑器中元素的函数。
 </APIItem>
 
 <APIItem name="renderLeaf" type="function" optional>
-用于渲染编辑器中叶子节点的函数。
+渲染编辑器中叶子节点的函数。
 </APIItem>
 
 <APIItem name="versionDecorate" type="number" optional>
@@ -86,15 +86,15 @@ Slate 编辑器引用。
 </APIItem>
 
 <APIItem name="versionEditor" type="number" optional>
-每次编辑器更改时递增的版本号。
+每次编辑器变化时递增的版本号。
 </APIItem>
 
 <APIItem name="versionSelection" type="number" optional>
-每次 `editor.selection` 更改时递增的版本号。
+每次编辑器选区变化时递增的版本号。
 </APIItem>
 
 <APIItem name="versionValue" type="number" optional>
-每次 `editor.children` 更改时递增的版本号。
+每次编辑器子节点变化时递增的版本号。
 </APIItem>
 </APIState>
 </API>
@@ -114,11 +114,11 @@ const store = useEditorRef().store
 const store = useEditorPlugin(myPlugin).store
 ```
 
-注意：`id` 参数是可选的，默认为最近的编辑器。
+注意：`id` 参数是可选的，默认使用最近的编辑器。
 
 ## 存储钩子
 
-以下钩子可用于与 Plate 存储进行交互：
+以下钩子可用于与 Plate 存储交互：
 
 ```ts
 import { usePlateState, usePlateValue, usePlateSet } from 'platejs/react'
@@ -150,9 +150,9 @@ const setReadOnly = usePlateSet('readOnly', id?)
 
 ## 事件编辑器存储
 
-此存储是一个对象，其属性键是事件名称（例如 `'focus'`），属性值是 [编辑器 ID](Plate#id)。
+该存储是一个对象，其属性键是事件名称（例如 `'focus'`），属性值是[编辑器 ID](Plate#id)。
 
-- 当有 [多个编辑器](multiple-editors) 时，这非常有用，可以根据 DOM 事件（例如最后聚焦的编辑器）获取一个编辑器。
+- 这在有[多个编辑器](multiple-editors)时非常有用，可以根据 DOM 事件（例如最近聚焦的编辑器）获取一个编辑器。
 - [Plate](Plate) 的核心插件之一将存储以下事件。
 
 <API name="EventEditorStore">
@@ -187,7 +187,7 @@ const focusedId = EventEditorStore.get('focus')
 // 设置值
 EventEditorStore.set('focus', editorId)
 
-// 订阅更改
+// 订阅变化
 const focusedId = useEventEditorValue('focus')
 ```
 

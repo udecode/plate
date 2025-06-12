@@ -1,0 +1,222 @@
+---
+title: 讨论
+docs:
+  - route: /docs/components/block-discussion
+    title: 块讨论
+---
+
+<ComponentPreview name="comment-demo" />
+
+<PackageInfo>
+
+## 功能特点
+
+- **用户管理**: 存储和管理带有头像和名称的用户数据
+- **讨论线程**: 管理带有评论的讨论数据结构
+- **当前用户跟踪**: 跟踪当前活跃用户以进行协作
+- **数据存储**: 用于存储协作状态的纯 UI 插件
+- **选择器 API**: 通过插件选择器轻松访问用户数据
+
+</PackageInfo>
+
+## Kit 使用
+
+<Steps>
+
+### 安装
+
+添加讨论功能最快的方法是使用 `DiscussionKit`,它包含预配置的 `discussionPlugin` 及其 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="discussion-kit" />
+
+- [`BlockDiscussion`](/docs/components/block-discussion): 在节点上方渲染讨论 UI
+
+### 添加 Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { DiscussionKit } from '@/components/editor/plugins/discussion-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...DiscussionKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/comment @platejs/suggestion
+```
+
+### 创建插件
+
+```tsx
+import { createPlatePlugin } from 'platejs/react';
+import { BlockDiscussion } from '@/components/ui/block-discussion';
+
+export interface TDiscussion {
+  id: string;
+  comments: TComment[];
+  createdAt: Date;
+  isResolved: boolean;
+  userId: string;
+  documentContent?: string;
+}
+
+const usersData = {
+  alice: {
+    id: 'alice',
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
+    name: 'Alice',
+  },
+  bob: {
+    id: 'bob', 
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
+    name: 'Bob',
+  },
+};
+
+export const discussionPlugin = createPlatePlugin({
+  key: 'discussion',
+  options: {
+    currentUserId: 'alice',
+    discussions: [],
+    users: usersData,
+  },
+})
+  .configure({
+    render: { aboveNodes: BlockDiscussion },
+  })
+  .extendSelectors(({ getOption }) => ({
+    currentUser: () => getOption('users')[getOption('currentUserId')],
+    user: (id: string) => getOption('users')[id],
+  }));
+```
+
+- `options.currentUserId`: 当前活跃用户的 ID
+- `options.discussions`: 讨论数据结构数组
+- `options.users`: 将用户 ID 映射到用户数据的对象
+- `render.aboveNodes`: 在节点上方渲染 [`BlockDiscussion`](/docs/components/block-discussion) 用于讨论 UI
+- `selectors.currentUser`: 获取当前用户数据
+- `selectors.user`: 通过 ID 获取用户数据
+
+### 添加插件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    discussionPlugin,
+  ],
+});
+```
+
+</Steps>
+
+## 插件
+
+### `discussionPlugin`
+
+用于管理包括用户和讨论数据在内的协作状态的纯 UI 插件。
+
+<API name="discussionPlugin">
+<APIOptions>
+  <APIItem name="currentUserId" type="string">
+    协作会话中当前活跃用户的 ID。
+  </APIItem>
+  <APIItem name="discussions" type="TDiscussion[]">
+    包含评论和元数据的讨论对象数组。
+  </APIItem>
+  <APIItem name="users" type="Record<string, UserData>">
+    将用户 ID 映射到包括名称和头像在内的用户信息的对象。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 选择器
+
+### `currentUser`
+
+获取当前用户数据。
+
+<API name="currentUser">
+<APIReturns type="UserData">
+  当前用户的数据,包括 id、name 和 avatarUrl。
+</APIReturns>
+</API>
+
+### `user`
+
+通过 ID 获取用户数据。
+
+<API name="user">
+<APIParameters>
+  <APIItem name="id" type="string">
+    要查找的用户 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns type="UserData | undefined">
+  如果找到则返回用户数据,否则返回 undefined。
+</APIReturns>
+</API>
+
+## 类型
+
+### `TDiscussion`
+
+包含评论和元数据的讨论数据结构。
+
+<API name="TDiscussion">
+<APIAttributes>
+  <APIItem name="id" type="string">
+    讨论的唯一标识符。
+  </APIItem>
+  <APIItem name="comments" type="TComment[]">
+    讨论线程中的评论数组。
+  </APIItem>
+  <APIItem name="createdAt" type="Date">
+    讨论创建的时间。
+  </APIItem>
+  <APIItem name="isResolved" type="boolean">
+    讨论是否已解决。
+  </APIItem>
+  <APIItem name="userId" type="string">
+    创建讨论的用户 ID。
+  </APIItem>
+  <APIItem name="documentContent" type="string" optional>
+    与此讨论相关的文档内容。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `UserData`
+
+用于协作的用户信息结构。
+
+<API name="UserData">
+<APIAttributes>
+  <APIItem name="id" type="string">
+    用户的唯一标识符。
+  </APIItem>
+  <APIItem name="name" type="string">
+    用户的显示名称。
+  </APIItem>
+  <APIItem name="avatarUrl" type="string">
+    用户头像图片的 URL。
+  </APIItem>
+  <APIItem name="hue" type="number" optional>
+    用于用户识别的可选颜色色调。
+  </APIItem>
+</APIAttributes>
+</API>

@@ -1,0 +1,244 @@
+---
+title: 工具栏
+description: 为编辑器提供固定和浮动工具栏。
+docs:
+  - route: /docs/components/fixed-toolbar
+    title: 固定工具栏
+  - route: /docs/components/floating-toolbar
+    title: 浮动工具栏
+---
+
+<ComponentPreview name="basic-nodes-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- **固定工具栏**: 持久固定在编辑器顶部的工具栏
+- **浮动工具栏**: 文本选中时出现的上下文工具栏
+- **可定制按钮**: 轻松添加、删除和重新排序工具栏按钮
+- **响应式设计**: 适配不同屏幕尺寸和内容
+- **插件集成**: 与Plate插件和UI组件无缝集成
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的方式是使用`FixedToolbarKit`和`FloatingToolbarKit`，它们包含预配置的工具栏插件及其[Plate UI](/docs/installation/plate-ui)组件。
+
+<ComponentSource name="fixed-toolbar-kit" />
+<ComponentSource name="floating-toolbar-kit" />
+
+- [`FixedToolbar`](/docs/components/fixed-toolbar): 在编辑器上方渲染固定工具栏
+- [`FixedToolbarButtons`](/docs/components/fixed-toolbar-buttons): 固定工具栏的预配置按钮集
+- [`FloatingToolbar`](/docs/components/floating-toolbar): 文本选中时渲染浮动工具栏
+- [`FloatingToolbarButtons`](/docs/components/floating-toolbar-buttons): 浮动工具栏的预配置按钮集
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { FixedToolbarKit } from '@/components/editor/plugins/fixed-toolbar-kit';
+import { FloatingToolbarKit } from '@/components/editor/plugins/floating-toolbar-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...FixedToolbarKit,
+    ...FloatingToolbarKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 创建插件
+
+```tsx
+import { createPlatePlugin } from 'platejs/react';
+import { FixedToolbar } from '@/components/ui/fixed-toolbar';
+import { FixedToolbarButtons } from '@/components/ui/fixed-toolbar-buttons';
+import { FloatingToolbar } from '@/components/ui/floating-toolbar';
+import { FloatingToolbarButtons } from '@/components/ui/floating-toolbar-buttons';
+
+const fixedToolbarPlugin = createPlatePlugin({
+  key: 'fixed-toolbar',
+  render: {
+    beforeEditable: () => (
+      <FixedToolbar>
+        <FixedToolbarButtons />
+      </FixedToolbar>
+    ),
+  },
+});
+
+const floatingToolbarPlugin = createPlatePlugin({
+  key: 'floating-toolbar',
+  render: {
+    afterEditable: () => (
+      <FloatingToolbar>
+        <FloatingToolbarButtons />
+      </FloatingToolbar>
+    ),
+  },
+});
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    fixedToolbarPlugin,
+    floatingToolbarPlugin,
+  ],
+});
+```
+
+- `render.beforeEditable`: 在编辑器内容上方渲染[`FixedToolbar`](/docs/components/fixed-toolbar)
+- `render.afterEditable`: 在编辑器后渲染[`FloatingToolbar`](/docs/components/floating-toolbar)作为覆盖层
+
+### 自定义固定工具栏按钮
+
+`FixedToolbarButtons`组件包含固定工具栏的默认按钮集。
+
+<ComponentSource name="fixed-toolbar-buttons" />
+
+可以通过编辑`components/ui/fixed-toolbar-buttons.tsx`来自定义。
+
+### 自定义浮动工具栏按钮
+
+同样地，可以通过编辑`components/ui/floating-toolbar-buttons.tsx`来自定义浮动工具栏。
+
+<ComponentSource name="floating-toolbar-buttons" />
+
+
+### 创建自定义按钮
+
+这个示例展示了一个向编辑器插入自定义文本的按钮。
+
+```tsx
+import { useEditorRef } from 'platejs/react';
+import { CustomIcon } from 'lucide-react';
+import { ToolbarButton } from '@/components/ui/toolbar';
+
+export function CustomToolbarButton() {
+  const editor = useEditorRef();
+
+  return (
+    <ToolbarButton
+      onClick={() => {
+        // 自定义操作
+        editor.tf.insertText('自定义文本');
+      }}
+      tooltip="自定义操作"
+    >
+      <CustomIcon />
+    </ToolbarButton>
+  );
+}
+```
+
+### 创建标记按钮
+
+对于切换粗体或斜体等标记，可以使用[`MarkToolbarButton`](/docs/components/mark-toolbar-button)组件。它会自动处理切换状态和操作。
+
+这个示例创建了一个"粗体"按钮。
+
+```tsx
+import { BoldIcon } from 'lucide-react';
+
+import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+
+export function BoldToolbarButton() {
+  return (
+    <MarkToolbarButton nodeType="bold" tooltip="粗体 (⌘+B)">
+      <BoldIcon />
+    </MarkToolbarButton>
+  );
+}
+```
+
+- `nodeType`: 指定要切换的标记类型(如`bold`、`italic`)
+- `tooltip`: 为按钮提供提示信息
+- `MarkToolbarButton`使用`useMarkToolbarButtonState`获取切换状态，使用`useMarkToolbarButton`获取`onClick`处理器和其他属性
+
+### 转换工具栏按钮
+
+[`TurnIntoToolbarButton`](/docs/components/turn-into-toolbar-button)提供下拉菜单将当前块转换为不同类型(标题、列表、引用等)。
+
+<ComponentSource name="turn-into-toolbar-button" />
+
+要添加新的块类型选项，编辑`turnIntoItems`数组:
+
+```tsx
+const turnIntoItems = [
+  // ... 现有项
+  {
+    icon: <CustomIcon />,
+    keywords: ['custom', 'special'],
+    label: '自定义块',
+    value: 'custom-block',
+  },
+];
+```
+
+### 插入工具栏按钮
+
+[`InsertToolbarButton`](/docs/components/insert-toolbar-button)提供下拉菜单插入各种元素(块、列表、媒体、内联元素)。
+
+<ComponentSource name="insert-toolbar-button" />
+
+要添加新的可插入项，将其添加到`groups`数组的相应分组中:
+
+```tsx
+{
+  group: '基础块',
+  items: [
+    // ... 现有项
+    {
+      icon: <CustomIcon />,
+      label: '自定义块',
+      value: 'custom-block',
+    },
+  ].map((item) => ({
+    ...item,
+    onSelect: (editor, value) => {
+      insertBlock(editor, value);
+    },
+  })),
+}
+```
+
+</Steps>
+
+## 插件
+
+### `FixedToolbarKit`
+
+在编辑器内容上方渲染固定工具栏的插件。
+
+<API name="FixedToolbarKit">
+<APIOptions>
+  <APIItem name="render.beforeEditable" type="() => ReactNode">
+    在编辑器内容前渲染固定工具栏。默认包含FixedToolbarButtons。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `FloatingToolbarKit`
+
+在文本选中时渲染浮动工具栏的插件。
+
+<API name="FloatingToolbarKit">
+<APIOptions>
+  <APIItem name="render.afterEditable" type="() => ReactNode">
+    在编辑器后作为覆盖层渲染浮动工具栏。默认包含FloatingToolbarButtons。
+  </APIItem>
+</APIOptions>
+</API>

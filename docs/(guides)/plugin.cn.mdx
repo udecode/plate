@@ -1,18 +1,18 @@
 ---
 title: 插件配置
-description: 如何配置和自定义 Plate 插件。
+description: 如何配置和自定义Plate插件。
 ---
 
-Plate 插件具有高度可配置性，允许您根据需要自定义其行为。本指南将带您了解最常见的配置选项以及如何使用它们。
+Plate插件具有高度可配置性，允许您根据需要定制其行为。本指南将介绍最常见的配置选项及使用方法。
 
-- [入门：组件](/docs/installation#components) - 向编辑器添加插件的说明
-- [PlatePlugin API](/docs/api/core/plate-plugin) - 创建插件的完整 API 参考
+- [入门指南：组件](/docs/installation#components) - 添加插件到编辑器的说明
+- [PlatePlugin API](/docs/api/core/plate-plugin) - 创建插件的完整API参考
 
-## 基本插件配置
+## 基础插件配置
 
 ### 新建插件
 
-最基本的插件配置只需要一个 `key`：
+最基本的插件配置只需一个`key`：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -20,11 +20,11 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-虽然这个插件目前还没有任何功能，但它是一个更复杂配置的起点。
+虽然这个插件目前没有任何功能，但它是更复杂配置的起点。
 
 ### 现有插件
 
-`.configure` 方法允许您配置现有插件：
+使用`.configure`方法可以配置现有插件：
 
 ```ts
 const ConfiguredPlugin = MyPlugin.configure({
@@ -36,11 +36,11 @@ const ConfiguredPlugin = MyPlugin.configure({
 
 ## 节点插件
 
-节点插件用于使用 `node` 属性在编辑器中定义新类型的节点。这些节点可以是元素（块级或内联）或叶子节点（用于文本级格式化）。
+节点插件通过`node`属性定义编辑器中的新节点类型，可以是元素（块级或行内）或叶子节点（用于文本级格式）。
 
 ### 元素
 
-要创建新类型的元素，请使用 `node.isElement` 选项：
+要创建新元素类型，使用`node.isElement`选项：
 
 ```ts
 const ParagraphPlugin = createPlatePlugin({
@@ -52,7 +52,7 @@ const ParagraphPlugin = createPlatePlugin({
 });
 ```
 
-您可以将组件与元素关联。有关更多信息，请参阅[插件组件](/docs/plugin-components)。
+您可以为元素关联组件。详见[插件组件](/docs/plugin-components)。
 
 ```ts
 const ParagraphPlugin = createPlatePlugin({
@@ -65,9 +65,9 @@ const ParagraphPlugin = createPlatePlugin({
 });
 ```
 
-### 内联、Void 和叶子节点
+### 行内元素、Void元素和叶子节点
 
-对于内联元素、void 元素或叶子节点，请使用适当的节点选项：
+对于行内元素、void元素或叶子节点，使用相应的节点选项：
 
 ```ts
 const LinkPlugin = createPlatePlugin({
@@ -98,13 +98,31 @@ const BoldPlugin = createPlatePlugin({
 
 ## 行为插件
 
-您可能希望自定义编辑器的行为，而不是渲染元素或标记。Plate 提供了各种插件选项来修改编辑器的行为。
+除了渲染元素或标记外，您可能还想自定义编辑器的行为。Plate提供了多种插件选项来修改编辑器行为。
 
-### 事件处理程序
+### 插件规则
 
-推荐的方式是使用 `handlers` 插件选项来响应插件内部的用户生成事件。处理程序应该是一个接受 `PlatePluginContext & { event }` 对象的函数。
+`rules`属性允许您配置常见的编辑行为，如拆分、删除和合并节点，而无需重写编辑器方法。这是为自定义元素定义直观交互的强大方式。
 
-`onChange` 处理程序是一个例外，它在编辑器值更改时调用；上下文对象包含更改后的 `value` 而不是 `event`。
+例如，您可以定义当用户在空标题中按`Enter`或在块引用开头按`Backspace`时发生的情况。
+
+```ts
+import { H1Plugin } from '@platejs/heading/react';
+
+H1Plugin.configure({
+  rules: {
+    break: { empty: 'reset' },
+  },
+});
+```
+
+完整规则列表和可用操作请见[插件规则指南](/docs/plugin-rules)。
+
+### 事件处理器
+
+推荐通过`handlers`插件选项响应插件内部用户生成的事件。处理器应是一个接收`PlatePluginContext & { event }`对象的函数。
+
+`onChange`处理器（当编辑器值变化时调用）是个例外，其上下文对象包含变化的`value`而非`event`。
 
 ```ts showLineNumbers
 const ExamplePlugin = createPlatePlugin({
@@ -122,7 +140,7 @@ const ExamplePlugin = createPlatePlugin({
 
 ### 注入属性
 
-您可能希望将类名或 CSS 属性注入到具有特定属性的任何节点中。例如，以下插件在具有 `align` 属性的段落上设置 `textAlign` CSS 属性。
+您可能希望向具有特定属性的任何节点注入类名或CSS属性。例如，以下插件为具有`align`属性的段落设置`textAlign` CSS属性。
 
 ```ts showLineNumbers
 import { KEYS } from 'platejs';
@@ -137,7 +155,7 @@ const TextAlignPlugin = createPlatePlugin({
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
     targetPlugins: [KEYS.p],
-    // 这将注入到所有 `targetPlugins` 中。在此示例中，ParagraphPlugin 将能够反序列化 `textAlign` 样式。
+    // 这将注入到所有`targetPlugins`中。本例中，ParagraphPlugin将能够反序列化`textAlign`样式。
     targetPluginToInject: ({ editor, plugin }) => ({
       parsers: {
         html: {
@@ -155,41 +173,41 @@ const TextAlignPlugin = createPlatePlugin({
 });
 ```
 
-受上述插件影响的段落节点将如下所示：
+受上述插件影响的段落节点示例如下：
 
 ```ts showLineNumbers {3}
 {
   type: 'p',
   align: 'right',
-  children: [{ text: '此段落右对齐！' }],
+  children: [{ text: '本段落右对齐！' }],
 }
 ```
 
-### 覆盖编辑器方法
+### 重写编辑器方法
 
-`overrideEditor` 方法提供了一种在保持对原始实现访问的同时覆盖现有编辑器方法的方式。这在您希望修改核心编辑器功能的行为时特别有用。
+`overrideEditor`方法提供了一种在保持访问原始实现的同时重写现有编辑器方法的方式。这在您想修改核心编辑器功能行为时特别有用。
 
 ```ts
 const CustomPlugin = createPlatePlugin({
   key: 'custom',
 }).overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
-  // 覆盖 transforms
+  // 重写转换
   transforms: {
     deleteForward(options) {
       // 删除前的自定义逻辑
-      console.info('正在向前删除...');
+      console.info('向前删除中...');
       
-      // 调用原始 transform
+      // 调用原始转换
       deleteForward(options);
       
       // 删除后的自定义逻辑
       console.info('已向前删除');
     },
   },
-  // 覆盖 API 方法
+  // 重写API方法
   api: {
     isInline(element) {
-      // 自定义内联元素检查
+      // 自定义行内元素检查
       if (element.type === 'custom-inline') {
         return true;
       }
@@ -201,12 +219,12 @@ const CustomPlugin = createPlatePlugin({
 }));
 ```
 
-- 通过解构的 `tf`（transforms）和 `api` 参数访问原始方法
-- 现有方法的类型安全覆盖
-- 干净地分离 transforms 和 API 方法
+- 通过解构的`tf`（转换）和`api`参数访问原始方法
+- 现有方法的类型安全重写
+- 转换和API方法的清晰分离
 - 插件上下文和选项访问
 
-带有类型选项的示例：
+带类型选项的示例：
 
 ```ts
 type CustomConfig = PluginConfig<
@@ -220,7 +238,7 @@ const CustomPlugin = createTPlatePlugin<CustomConfig>({
 }).overrideEditor(({ editor, tf: { deleteForward }, getOptions }) => ({
   transforms: {
     deleteForward(options) {
-      // 使用类型选项控制行为
+      // 使用类型化选项控制行为
       if (!getOptions().allowDelete) {
         return;
       }
@@ -233,7 +251,7 @@ const CustomPlugin = createTPlatePlugin<CustomConfig>({
 
 ### 扩展编辑器（高级）
 
-您可以扩展编辑器以实现复杂功能。为此，您可以使用 `extendEditor` 插件选项在创建后直接修改 `editor` 对象的属性。
+对于复杂功能，您可以直接扩展编辑器。使用`extendEditor`插件选项在创建后直接修改`editor`对象的属性。
 
 ```ts showLineNumbers {20}
 const CustomNormalizerPlugin = createPlatePlugin({
@@ -246,17 +264,16 @@ const CustomNormalizerPlugin = createPlatePlugin({
 });
 ```
 
-<Callout>
-`extendEditor` 和 `overrideEditor` 的区别：
-- 当集成需要直接编辑器变异的旧版 Slate 插件（如 `withYjs`）时，请使用 `extendEditor`。每个插件只有一个 `extendEditor`。
-- 优先使用 `overrideEditor` 来修改编辑器行为，因为它具有单一职责和更好的类型安全性。它可以多次调用以分层不同的覆盖。
+<Callout type="info" title="extendEditor与overrideEditor的区别">
+- 当集成需要直接编辑器变异的传统Slate插件（如`withYjs`）时使用`extendEditor`。每个插件只有一个`extendEditor`。
+- 修改编辑器行为时优先使用`overrideEditor`，因为它具有单一职责和更好的类型安全性。可以多次调用以分层不同的重写。
 </Callout>
 
 ## 高级插件配置
 
 ### 插件存储
 
-每个插件都有自己的存储，可用于管理插件特定的状态。
+每个插件都有自己的存储，可用于管理插件特定状态。
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -282,11 +299,11 @@ const count = editor.getOption(MyPlugin, 'count');
 // 设置新值
 editor.setOption(MyPlugin, 'count', 5);
 
-// 根据之前的状态更新值
+// 基于先前状态更新值
 editor.setOption(MyPlugin, 'count', (prev) => prev + 1);
 ```
 
-在 React 组件中，您可以使用 `usePluginOption` 或 `usePluginOptions` 钩子来订阅存储更改：
+在React组件中，可以使用`usePluginOption`或`usePluginOptions`钩子订阅存储变更：
 
 ```tsx
 const MyComponent = () => {
@@ -295,11 +312,11 @@ const MyComponent = () => {
 };
 ```
 
-有关更多信息，请参阅[插件上下文](/docs/plugin-context)和[编辑器方法](/docs/editor-methods)指南。
+更多内容请见[插件上下文](/docs/plugin-context)和[编辑器方法](/docs/editor-methods)指南。
 
 ### 依赖项
 
-您可以使用 `dependencies` 属性指定插件依赖项。这确保在加载当前插件之前加载所需的插件。
+使用`dependencies`属性指定插件依赖项，确保当前插件加载前所需插件已加载。
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -310,18 +327,18 @@ const MyPlugin = createPlatePlugin({
 
 ### 启用标志
 
-`enabled` 属性允许您有条件地启用或禁用插件：
+`enabled`属性允许您有条件地启用或禁用插件：
 
 ```ts
 const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
-  enabled: true, // 或 false 以禁用
+  enabled: true, // 或false禁用
 });
 ```
 
 ### 嵌套插件
 
-Plate 支持嵌套插件，允许您创建插件层次结构。使用 `plugins` 属性定义子插件：
+Plate支持嵌套插件，允许创建插件层次结构。使用`plugins`属性定义子插件：
 
 ```ts
 const ParentPlugin = createPlatePlugin({
@@ -335,7 +352,7 @@ const ParentPlugin = createPlatePlugin({
 
 ### 插件优先级
 
-`priority` 属性决定了插件的注册和执行顺序。优先级值较高的插件会先处理：
+`priority`属性决定插件注册和执行的顺序。优先级值较高的插件优先处理：
 
 ```ts
 const HighPriorityPlugin = createPlatePlugin({
@@ -349,11 +366,11 @@ const LowPriorityPlugin = createPlatePlugin({
 });
 ```
 
-这在您需要确保某些插件在其他插件之前初始化或运行时特别有用。
+这在需要确保某些插件先于其他插件初始化或运行时特别有用。
 
 ### 自定义解析器
 
-`parsers` 属性接受字符串键来构建您自己的解析器：
+`parsers`属性接受字符串键来构建自己的解析器：
 
 ```ts
 const MyPlugin = createPlatePlugin({
@@ -371,17 +388,17 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-核心插件包括 `html` 和 `htmlReact` 解析器。
+核心插件包含`html`和`htmlReact`解析器。
 
 ## 类型化插件
 
-使用上述方法，插件类型会自动从给定配置中推断出来。
+使用上述方法时，插件类型会根据给定配置自动推断。
 
-如果您需要将显式类型作为泛型传递，可以使用 `createTPlatePlugin`。
+如果需要显式传递泛型类型，可以使用`createTPlatePlugin`。
 
-### 使用 createTPlatePlugin
+### 使用createTPlatePlugin
 
-`createTPlatePlugin` 函数允许您创建一个类型化插件：
+`createTPlatePlugin`函数允许创建类型化插件：
 
 ```ts
 type CodeBlockConfig = PluginConfig<
@@ -423,7 +440,7 @@ const CodeBlockPlugin = createTPlatePlugin<CodeBlockConfig>({
 
 ### 使用类型化插件
 
-使用类型化插件时，您将获得完整的类型检查和自动补全 ✨
+使用类型化插件时，您将获得完整的类型检查和自动补全功能 ✨
 
 ```ts
 const editor = createPlateEditor({
@@ -436,16 +453,16 @@ options.syntax;
 options.syntaxPopularFirst;
 options.hotkey;
 
-// 类型安全的 API
+// 类型安全的API
 editor.api.toggleSyntax();
 editor.api.plugin.getSyntaxState();
 editor.api.plugin2.setLanguage('python');
 editor.api.plugin.getLanguage();
 
-// 类型安全的 Transforms
+// 类型安全的转换
 editor.tf.insert.codeBlock({ language: 'typescript' });
 ```
 
 ## 另请参阅
 
-有关更多插件选项，请参阅 [PlatePlugin API](/docs/api/core/plate-plugin)。
+更多插件选项请见[PlatePlugin API](/docs/api/core/plate-plugin)。

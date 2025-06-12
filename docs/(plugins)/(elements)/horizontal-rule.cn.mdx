@@ -1,7 +1,7 @@
 ---
-title: 水平分割线
+title: 水平分隔线
 docs:
-  - route: /docs/components/hr-element
+  - route: /docs/components/hr-node
     title: Hr 元素
 ---
 
@@ -9,56 +9,124 @@ docs:
 
 <PackageInfo>
 
-## 功能
+## 功能特性
 
-- 插入水平线以分隔内容或指示主题转换
-- 在新行开头输入三个破折号 (`---`) 以转换为水平分割线
+- 插入水平线来分隔内容或表示主题转换
+- 在新行开头输入三个破折号 (`---`) 可自动转换为水平分隔线
+- 默认渲染为 `<hr>` HTML 元素
 
 </PackageInfo>
 
-## 安装
+## 套件使用
+
+<Steps>
+
+### 安装
+
+添加水平分隔线插件最快的方式是使用 `BasicBlocksKit`，该套件包含预配置的 `HorizontalRulePlugin` 以及其他基础块元素及其 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="basic-blocks-kit" />
+
+- [`HrElement`](/docs/components/hr-node): 渲染水平分隔线元素
+
+### 添加套件
+
+将套件添加到你的插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...BasicBlocksKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
 
 ```bash
 npm install @platejs/basic-nodes
 ```
 
-## 使用
+### 添加插件
+
+在创建编辑器时，将 `HorizontalRulePlugin` 包含到 Plate 插件数组中。
+
+```tsx
+import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    HorizontalRulePlugin,
+  ],
+});
+```
+
+### 配置插件
+
+你可以配置 `HorizontalRulePlugin` 的自动格式化规则，将输入的特定模式（如 `---`）自动转换为水平分隔线。
 
 ```tsx
 import { insertNodes, setNodes, KEYS } from 'platejs';
-import { AutoformatPlugin } from '@platejs/autoformat/react';
+import { AutoformatPlugin } from '@platejs/autoformat';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
-import { SelectOnBackspacePlugin } from 'platejs/react';
+import { createPlateEditor } from 'platejs/react';
 
-const plugins = [
-  // ...其他插件,
-  HorizontalRulePlugin,
-  SelectOnBackspacePlugin.configure({
-    options: { query: { allow: [KEYS.hr] } },
-  }),
-  AutoformatPlugin.configure({
-    options: {
-      rules: [
-        {
-          mode: 'block',
-          type: KEYS.hr,
-          match: ['---', '—-', '___ '],
-          format: (editor) => {
-            setNodes(editor, { type: KEYS.hr });
-            insertNodes(editor, {
-              type: KEYS.p,
-              children: [{ text: '' }],
-            });
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    HorizontalRulePlugin,
+    AutoformatPlugin.configure({
+      options: {
+        rules: [
+          {
+            mode: 'block',
+            type: KEYS.hr,
+            match: ['---', '—-', '___ '],
+            format: (editor) => {
+              setNodes(editor, { type: KEYS.hr });
+              insertNodes(editor, {
+                type: KEYS.p,
+                children: [{ text: '' }],
+              });
+            },
           },
-        },
-      ],
-    },
-  }),
-];
+        ],
+      },
+    }),
+  ],
+});
 ```
+
+- `AutoformatPlugin`: 自动将输入的特定模式（如 `---`）转换为水平分隔线
+
+### 插入工具栏按钮
+
+你可以将此项目添加到 [插入工具栏按钮](/docs/toolbar#insert-toolbar-button) 中来插入水平分隔线：
+
+```tsx
+{
+  icon: <MinusIcon />,
+  label: '分隔线',
+  value: KEYS.hr,
+}
+```
+
+</Steps>
 
 ## 插件
 
 ### `HorizontalRulePlugin`
 
-用于插入水平分割线以分隔内容的插件。
+用于插入水平分隔线来分隔内容的插件。水平分隔线是 void 元素，默认渲染为 `<hr>` 标签。

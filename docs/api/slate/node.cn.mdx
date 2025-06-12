@@ -1,9 +1,9 @@
 ---
-title: 节点（Node）
-description: Slate 节点的 API 参考文档。
+title: Node
+description: Plate 中节点的 API 参考。
 ---
 
-节点是 Slate 文档的构建基石。它可以是编辑器根节点（最高层）、元素节点，或文本节点（最低层）。本 API 提供了与节点交互的工具，包括遍历、查询和提取数据。
+节点是 Plate 文档的基本构建块。它可以是编辑器根节点（最高层级）、Element 节点或 Text 节点（最低层级）。此 API 提供了与节点交互的工具，包括遍历、查询和提取数据。
 
 ```ts
 type TNode = Editor | TElement | TText;
@@ -12,15 +12,15 @@ type Descendant = Element | Text
 type Ancestor = Editor | Element
 ```
 
-- [编辑器](/docs/api/slate/editor-api)
-- [元素](/docs/api/slate/element)
-- [文本](/docs/api/slate/text)
+- [Editor](/docs/api/slate/editor-api)
+- [Element](/docs/api/slate/element)
+- [Text](/docs/api/slate/text)
 
 ## `NodeAPI`
 
 ### `ancestor`
 
-根据指定路径获取节点，并断言其为祖先节点。
+获取特定路径的节点，并断言它是祖先节点。
 
 <API name="ancestor">
 <APIParameters>
@@ -28,7 +28,7 @@ type Ancestor = Editor | Element
     起始的根节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    祖先节点的路径。
+    到祖先节点的路径。
   </APIItem>
 </APIParameters>
 
@@ -39,7 +39,7 @@ type Ancestor = Editor | Element
 
 ### `ancestors`
 
-返回指定路径以上所有祖先节点的生成器。
+返回特定路径上方所有祖先节点的生成器。
 
 <API name="ancestors">
 <APIParameters>
@@ -47,16 +47,16 @@ type Ancestor = Editor | Element
     起始的根节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    要获取祖先的路径。
+    获取祖先的路径。
   </APIItem>
   <APIItem name="options" type="NodeAncestorsOptions" optional>
-    祖先节点检索的选项。
+    获取祖先的选项。
   </APIItem>
 </APIParameters>
 
 <APIOptions type="NodeAncestorsOptions">
   <APIItem name="reverse" type="boolean" optional>
-    如果为 true，则以自顶向下顺序返回祖先节点，否则自底向上。
+    如果为 true，则从上到下返回祖先而非从下到上。
   </APIItem>
 </APIOptions>
 
@@ -67,7 +67,7 @@ type Ancestor = Editor | Element
 
 ### `child`
 
-获取指定索引的子节点。
+获取节点在特定索引的子节点。
 
 <API name="child">
 <APIParameters>
@@ -86,7 +86,7 @@ type Ancestor = Editor | Element
 
 ### `children`
 
-遍历指定路径下父节点的所有子节点。
+遍历特定路径节点的子节点。
 
 <API name="children">
 <APIParameters>
@@ -94,7 +94,7 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    父节点的路径。
+    到父节点的路径。
   </APIItem>
   <APIItem name="options" type="NodeChildrenOptions" optional>
     遍历子节点的选项。
@@ -103,7 +103,7 @@ type Ancestor = Editor | Element
 
 <APIOptions type="NodeChildrenOptions">
   <APIItem name="reverse" type="boolean" optional>
-    如果为 true，则反向遍历。
+    如果为 true，则反向迭代。
   </APIItem>
   <APIItem name="from" type="number" optional>
     起始索引（包含）。
@@ -120,7 +120,7 @@ type Ancestor = Editor | Element
 
 ### `common`
 
-获取两个路径的共同祖先节点条目。
+获取两个路径公共祖先节点的条目。
 
 <API name="common">
 <APIParameters>
@@ -136,13 +136,13 @@ type Ancestor = Editor | Element
 </APIParameters>
 
 <APIReturns type="NodeEntry<N> | undefined">
-  如果找到则返回共同祖先节点条目，否则返回 `undefined`。
+  如果找到则返回公共祖先条目，否则返回 `undefined`。
 </APIReturns>
 </API>
 
 ### `descendant`
 
-根据指定路径获取节点，并断言其为后代节点。
+获取特定路径的节点，并断言它是后代节点。
 
 <API name="descendant">
 <APIParameters>
@@ -150,7 +150,7 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    后代节点的路径。
+    到后代的路径。
   </APIItem>
 </APIParameters>
 
@@ -161,7 +161,7 @@ type Ancestor = Editor | Element
 
 ### `descendants`
 
-返回根节点下所有后代节点条目的生成器。
+返回根节点内所有后代节点条目的生成器。
 
 <API name="descendants">
 <APIParameters>
@@ -169,7 +169,7 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="options" type="NodeDescendantsOptions" optional>
-    后代节点检索的选项。
+    获取后代的选项。
   </APIItem>
 </APIParameters>
 
@@ -181,10 +181,10 @@ type Ancestor = Editor | Element
     结束路径。
   </APIItem>
   <APIItem name="reverse" type="boolean" optional>
-    如果为 true，则反向遍历。
+    如果为 true，则反向迭代。
   </APIItem>
   <APIItem name="pass" type="(node: Descendant) => boolean" optional>
-    用于过滤后代节点的函数。
+    过滤后代的函数。
   </APIItem>
 </APIOptions>
 
@@ -195,7 +195,7 @@ type Ancestor = Editor | Element
 
 ### `elements`
 
-返回根节点下所有元素节点的生成器。
+返回根节点内所有 Element 节点的生成器。
 
 <API name="elements">
 <APIParameters>
@@ -203,16 +203,16 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="options" type="NodeElementsOptions" optional>
-    元素节点检索的选项。
+    获取 Element 的选项。
   </APIItem>
 </APIParameters>
 
 <APIOptions type="NodeElementsOptions">
   <APIItem name="pass" type="(node: Element) => boolean" optional>
-    用于过滤元素的函数。
+    过滤 Element 的函数。
   </APIItem>
   <APIItem name="reverse" type="boolean" optional>
-    如果为 true，则反向遍历。
+    如果为 true，则反向迭代。
   </APIItem>
   <APIItem name="from" type="Path" optional>
     起始路径。
@@ -223,13 +223,13 @@ type Ancestor = Editor | Element
 </APIOptions>
 
 <APIReturns type="Generator<NodeEntry<Element>, void, undefined>">
-  元素节点条目的生成器。
+  Element 条目的生成器。
 </APIReturns>
 </API>
 
 ### `first`
 
-从指定路径获取根节点下的第一个节点条目。
+从路径获取根节点中的第一个节点条目。
 
 <API name="first">
 <APIParameters>
@@ -237,7 +237,7 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    节点的路径。
+    到节点的路径。
   </APIItem>
 </APIParameters>
 
@@ -256,7 +256,7 @@ type Ancestor = Editor | Element
     父节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    父节点的路径。
+    到父节点的路径。
   </APIItem>
 </APIParameters>
 
@@ -267,7 +267,7 @@ type Ancestor = Editor | Element
 
 ### `firstText`
 
-获取节点的第一个文本节点条目。
+获取节点的第一个 Text 节点条目。
 
 <API name="firstText">
 <APIParameters>
@@ -275,18 +275,18 @@ type Ancestor = Editor | Element
     父节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    父节点的路径。
+    到父节点的路径。
   </APIItem>
 </APIParameters>
 
 <APIReturns type="NodeEntry<N> | undefined">
-  如果找到则返回第一个文本节点条目，否则返回 `undefined`。
+  如果找到则返回第一个 Text 节点条目，否则返回 `undefined`。
 </APIReturns>
 </API>
 
 ### `fragment`
 
-获取根节点中由范围表示的切片片段。
+获取根节点内范围所表示的切片片段。
 
 <API name="fragment">
 <APIParameters>
@@ -299,13 +299,13 @@ type Ancestor = Editor | Element
 </APIParameters>
 
 <APIReturns type="N[]">
-  切片片段。
+  切片后的片段。
 </APIReturns>
 </API>
 
 ### `get`
 
-获取指定路径的后代节点。
+获取特定路径引用的后代节点。
 
 <API name="get">
 <APIParameters>
@@ -313,7 +313,7 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    节点的路径。
+    到节点的路径。
   </APIItem>
 </APIParameters>
 
@@ -324,7 +324,7 @@ type Ancestor = Editor | Element
 
 ### `last`
 
-从指定路径获取根节点下的最后一个节点条目。
+从路径获取根节点中的最后一个节点条目。
 
 <API name="last">
 <APIParameters>
@@ -332,7 +332,7 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    节点的路径。
+    到节点的路径。
   </APIItem>
 </APIParameters>
 
@@ -351,7 +351,7 @@ type Ancestor = Editor | Element
     父节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    父节点的路径。
+    到父节点的路径。
   </APIItem>
 </APIParameters>
 
@@ -362,7 +362,7 @@ type Ancestor = Editor | Element
 
 ### `leaf`
 
-获取指定路径的叶子文本节点。
+获取特定路径的节点，并确保它是叶子 Text 节点。
 
 <API name="leaf">
 <APIParameters>
@@ -370,7 +370,7 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    节点的路径。
+    到节点的路径。
   </APIItem>
 </APIParameters>
 
@@ -381,7 +381,7 @@ type Ancestor = Editor | Element
 
 ### `levels`
 
-返回树中某一分支的节点条目的生成器，从指定路径开始。
+返回树分支中从特定路径开始的节点生成器。
 
 <API name="levels">
 <APIParameters>
@@ -389,18 +389,18 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    节点的路径。
+    到节点的路径。
   </APIItem>
 </APIParameters>
 
 <APIReturns type="Generator<NodeEntry<N>, void, undefined>">
-  从指定路径开始的树分支中的节点条目的生成器。
+  从特定路径开始的树分支中节点条目的生成器。
 </APIReturns>
 </API>
 
 ### `nodes`
 
-返回根节点下所有节点条目的生成器。
+返回根节点所有节点条目的生成器。
 
 <API name="nodes">
 <APIParameters>
@@ -408,7 +408,7 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="options" type="NodeTextsOptions" optional>
-    类似于 `descendants` 的选项。
+    类似 `descendants` 的选项。
   </APIItem>
 </APIParameters>
 
@@ -419,7 +419,7 @@ type Ancestor = Editor | Element
 
 ### `parent`
 
-获取指定路径节点的父节点。
+获取特定路径节点的父节点。
 
 <API name="parent">
 <APIParameters>
@@ -427,7 +427,7 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    节点的路径。
+    到节点的路径。
   </APIItem>
 </APIParameters>
 
@@ -438,7 +438,7 @@ type Ancestor = Editor | Element
 
 ### `texts`
 
-返回根节点下所有叶子文本节点的生成器。
+返回根节点中所有叶子 Text 节点的生成器。
 
 <API name="texts">
 <APIParameters>
@@ -446,12 +446,12 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="options" type="NodeTextsOptions" optional>
-    文本节点检索的选项。
+    获取 Text 节点的选项。
   </APIItem>
 </APIParameters>
 
 <APIReturns type="Generator<NodeEntry<Text>, void, undefined>">
-  文本节点条目的生成器。
+  Text 节点条目的生成器。
 </APIReturns>
 </API>
 
@@ -473,7 +473,7 @@ type Ancestor = Editor | Element
 
 ### `has`
 
-检查指定路径下是否存在后代节点。
+检查特定路径是否存在后代节点。
 
 <API name="has">
 <APIParameters>
@@ -486,7 +486,7 @@ type Ancestor = Editor | Element
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果指定路径存在节点则为 `true`，否则为 `false`。
+  如果指定路径存在节点则返回 `true`，否则返回 `false`。
 </APIReturns>
 </API>
 
@@ -502,13 +502,13 @@ type Ancestor = Editor | Element
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果节点只有一个子节点则为 `true`。
+  如果节点只有一个子节点则返回 `true`。
 </APIReturns>
 </API>
 
 ### `isAncestor`
 
-检查某个值是否实现了 `Ancestor` 接口。
+检查值是否实现了 `Ancestor` 接口。
 
 <API name="isAncestor">
 <APIParameters>
@@ -518,13 +518,13 @@ type Ancestor = Editor | Element
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值实现了 `Ancestor` 接口则为 `true`。
+  如果值实现了 `Ancestor` 接口则返回 `true`。
 </APIReturns>
 </API>
 
 ### `isDescendant`
 
-检查某个值是否实现了 `Descendant` 接口。
+检查值是否实现了 `Descendant` 接口。
 
 <API name="isDescendant">
 <APIParameters>
@@ -534,13 +534,13 @@ type Ancestor = Editor | Element
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值实现了 `Descendant` 接口则为 `true`。
+  如果值实现了 `Descendant` 接口则返回 `true`。
 </APIReturns>
 </API>
 
 ### `isLastChild`
 
-检查节点是否为其父节点的最后一个子节点。
+检查节点是否是父节点的最后一个子节点。
 
 <API name="isLastChild">
 <APIParameters>
@@ -548,18 +548,18 @@ type Ancestor = Editor | Element
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    节点的路径。
+    到节点的路径。
   </APIItem>
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果节点是其父节点的最后一个子节点则为 `true`。
+  如果节点是父节点的最后一个子节点则返回 `true`。
 </APIReturns>
 </API>
 
 ### `isNode`
 
-检查某个值是否实现了 `TNode` 接口。
+检查值是否实现了 `TNode` 接口。
 
 <API name="isNode">
 <APIParameters>
@@ -569,13 +569,13 @@ type Ancestor = Editor | Element
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值实现了 `TNode` 接口则为 `true`。
+  如果值实现了 `TNode` 接口则返回 `true`。
 </APIReturns>
 </API>
 
 ### `isNodeList`
 
-检查某个值是否为 `Descendant` 对象的列表。
+检查值是否是 `Descendant` 对象的列表。
 
 <API name="isNodeList">
 <APIParameters>
@@ -585,7 +585,7 @@ type Ancestor = Editor | Element
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值为 `Descendant` 对象的列表则为 `true`。
+  如果值是 `Descendant` 对象的列表则返回 `true`。
 </APIReturns>
 </API>
 
@@ -604,13 +604,13 @@ type Ancestor = Editor | Element
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果节点匹配所提供的属性则为 `true`。
+  如果节点匹配提供的属性则返回 `true`。
 </APIReturns>
 </API>
 
 ### `string`
 
-获取节点内容的拼接文本字符串。
+获取节点内容的连接文本字符串。
 
 <API name="string">
 <APIParameters>
@@ -620,7 +620,7 @@ type Ancestor = Editor | Element
 </APIParameters>
 
 <APIReturns type="string">
-  拼接的文本内容。
+  连接后的文本内容。
 </APIReturns>
 </API>
 
@@ -636,7 +636,7 @@ type TNode = Editor | TElement | TText;
 
 ### `NodeEntry`
 
-`NodeEntry` 对象用于遍历 Slate 文档树中的节点。它由一个包含两个元素的数组组成：`TNode` 及其相对于文档根节点的 `Path`。
+`NodeEntry` 对象在遍历 Plate 文档树中的节点时返回。它们由两个元素的数组组成：`TNode` 及其相对于文档中根节点的 `Path`。
 
 <API name="NodeEntry">
 <APIAttributes>
@@ -644,7 +644,7 @@ type TNode = Editor | TElement | TText;
     节点本身。
   </APIItem>
   <APIItem name="1" type="Path">
-    节点的路径。
+    到节点的路径。
   </APIItem>
 </APIAttributes>
 </API>
@@ -670,7 +670,7 @@ type Ancestor = Editor | TElement;
 <API name="NodeOf">
 <APIParameters>
   <APIItem name="node" type="TNode">
-    获取类型的节点。
+    要获取类型的节点。
   </APIItem>
 </APIParameters>
 
@@ -740,7 +740,7 @@ type Ancestor = Editor | TElement;
 <API name="ChildOf">
 <APIParameters>
   <APIItem name="node" type="N">
-    要获取子类型的节点。
+    要获取子节点类型的节点。
   </APIItem>
 </APIParameters>
 
@@ -779,30 +779,30 @@ type Ancestor = Editor | TElement;
 
 ### `AncestorEntry`
 
-祖先条目表示一个祖先节点（编辑器或元素）及其路径。
+祖先条目表示一个祖先节点（Editor 或 Element）及其路径。
 
 <API name="AncestorEntry">
 <APIAttributes>
   <APIItem name="0" type="Ancestor">
-    编辑器或元素节点。
+    Editor 或 Element 节点。
   </APIItem>
   <APIItem name="1" type="Path">
-    祖先的路径。
+    到祖先的路径。
   </APIItem>
 </APIAttributes>
 </API>
 
 ### `DescendantEntry`
 
-后代条目表示一个后代节点（元素或文本）及其路径。
+后代条目表示一个后代节点（Element 或 Text）及其路径。
 
 <API name="DescendantEntry">
 <APIAttributes>
   <APIItem name="0" type="Descendant">
-    元素或文本节点。
+    Element 或 Text 节点。
   </APIItem>
   <APIItem name="1" type="Path">
-    后代的路径。
+    到后代的路径。
   </APIItem>
 </APIAttributes>
 </API>
@@ -817,7 +817,7 @@ type Ancestor = Editor | TElement;
     子节点。
   </APIItem>
   <APIItem name="1" type="Path">
-    子节点的路径。
+    到子节点的路径。
   </APIItem>
 </APIAttributes>
 </API>

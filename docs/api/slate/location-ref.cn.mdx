@@ -1,86 +1,86 @@
 ---
 title: 位置引用
-description: Slate 中位置引用的 API 参考。
+description: Plate 中位置引用的 API 参考。
 ---
 
-位置引用是一种对象，它能在文档中的特定位置（路径、点或范围）随着编辑器应用新操作时保持同步。您可以随时访问它们的 `current` 属性来获取最新的位置值。
+位置引用是用于在文档中保持特定位置（路径、点或范围）同步的对象，当编辑器应用新操作时会自动更新。您可以随时访问其 `current` 属性以获取最新的位置值。
 
 ## 类型
 
 ### `PathRef`
 
-路径引用对象使文档中的特定路径随时间保持同步。通过 `editor.api.pathRef` 创建。
+路径引用对象用于在文档中保持特定路径的同步。使用 `editor.api.pathRef` 创建。
 
 <API name="PathRef">
 <APIAttributes>
   <APIItem name="current" type="Path | null">
-    当前路径值，随着操作的应用而更新。
+    当前路径值，随操作应用而更新。
   </APIItem>
   <APIItem name="affinity" type="'forward' | 'backward' | null">
-    转换路径时的偏好方向：
-    - `'forward'`：偏好插入内容后的位置
-    - `'backward'`：偏好插入内容前的位置
+    转换路径时首选的方向：
+    - `'forward'`：首选插入内容后的位置
+    - `'backward'`：首选插入内容前的位置
     - `null`：无偏好
   </APIItem>
   <APIItem name="unref()" type="() => Path | null">
-    当您不再需要同步此路径时调用。返回最终路径值。
+    当不再需要同步此路径时调用。返回最终的路径值。
   </APIItem>
 </APIAttributes>
 </API>
 
 ### `PointRef`
 
-点引用对象使文档中的特定点随时间保持同步。通过 `editor.api.pointRef` 创建。
+点引用对象用于在文档中保持特定点的同步。使用 `editor.api.pointRef` 创建。
 
 <API name="PointRef">
 <APIAttributes>
   <APIItem name="current" type="Point | null">
-    当前点值，随着操作的应用而更新。
+    当前点值，随操作应用而更新。
   </APIItem>
   <APIItem name="affinity" type="'forward' | 'backward' | null">
-    转换点时的偏好方向：
-    - `'forward'`：偏好插入内容后的位置
-    - `'backward'`：偏好插入内容前的位置
+    转换点时首选的方向：
+    - `'forward'`：首选插入内容后的位置
+    - `'backward'`：首选插入内容前的位置
     - `null`：无偏好
   </APIItem>
   <APIItem name="unref()" type="() => Point | null">
-    当您不再需要同步此点时调用。返回最终点值。
+    当不再需要同步此点时调用。返回最终的点值。
   </APIItem>
 </APIAttributes>
 </API>
 
 ### `RangeRef`
 
-范围引用对象使文档中的特定范围随时间保持同步。通过 `editor.api.rangeRef` 创建。
+范围引用对象用于在文档中保持特定范围的同步。使用 `editor.api.rangeRef` 创建。
 
 <API name="RangeRef">
 <APIAttributes>
   <APIItem name="current" type="TRange | null">
-    当前范围值，随着操作的应用而更新。
+    当前范围值，随操作应用而更新。
   </APIItem>
   <APIItem name="affinity" type="'forward' | 'backward' | 'inward' | 'outward' | null">
-    转换范围时的偏好方向：
-    - `'forward'`：两个点都偏好插入内容后的位置
-    - `'backward'`：两个点都偏好插入内容前的位置
-    - `'inward'`：当内容插入边缘时，范围倾向于保持相同大小
-    - `'outward'`：当内容插入边缘时，范围倾向于扩大
+    转换范围时首选的方向：
+    - `'forward'`：两个点都首选插入内容后的位置
+    - `'backward'`：两个点都首选插入内容前的位置
+    - `'inward'`：在边缘插入内容时范围倾向于保持相同大小
+    - `'outward'`：在边缘插入内容时范围倾向于扩大
     - `null`：无偏好
   </APIItem>
   <APIItem name="unref()" type="() => TRange | null">
-    当您不再需要同步此范围时调用。返回最终范围值。
+    当不再需要同步此范围时调用。返回最终的范围值。
   </APIItem>
 </APIAttributes>
 </API>
 
-RangeRef 的使用示例：
+RangeRef 使用示例：
 
 ```typescript
 const selectionRef = editor.api.rangeRef(editor.selection, {
   affinity: 'inward',
 })
-// 可能改变选中的操作
+// 可能会改变选择的操作
 Transforms.unwrapNodes(editor)
-// 使用引用恢复选中的位置
+// 使用引用恢复选择
 Transforms.select(editor, selectionRef.unref())
 ```
 
@@ -97,7 +97,7 @@ Transforms.select(editor, selectionRef.unref())
     要转换的路径引用。
   </APIItem>
   <APIItem name="op" type="Operation">
-    要应用的操作。编辑器会根据需要自动调用此函数。
+    要应用的操作。编辑器会根据需要自动调用。
   </APIItem>
 </APIParameters>
 </API>
@@ -114,7 +114,7 @@ Transforms.select(editor, selectionRef.unref())
     要转换的点引用。
   </APIItem>
   <APIItem name="op" type="Operation">
-    要应用的操作。编辑器会根据需要自动调用此函数。
+    要应用的操作。编辑器会根据需要自动调用。
   </APIItem>
 </APIParameters>
 </API>
@@ -131,7 +131,7 @@ Transforms.select(editor, selectionRef.unref())
     要转换的范围引用。
   </APIItem>
   <APIItem name="op" type="Operation">
-    要应用的操作。编辑器会根据需要自动调用此函数。
+    要应用的操作。编辑器会根据需要自动调用。
   </APIItem>
 </APIParameters>
 </API>

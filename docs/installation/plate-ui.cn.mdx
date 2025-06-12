@@ -1,12 +1,12 @@
 ---
-title: Plate UI 安装
-description: 如何在你的项目中设置 Plate UI。
+title: Plate UI 安装指南
+description: 如何在项目中设置 Plate UI。
 ---
 
-本指南详细介绍了如何安装 Plate UI（Plate 的组件层）。请选择适合你项目的方法：
+本指南详细介绍了如何安装 Plate UI（Plate 的组件层）。根据项目需求选择适合的安装方式：
 
-*   **CLI 安装（推荐）：** 使用 shadcn CLI 快速集成。
-*   **手动安装：** 如果你需要更细致的控制。
+*   **CLI 安装（推荐）：** 使用 shadcn CLI 快速设置
+*   **手动安装：** 提供更精细的安装控制
 
 ## CLI 安装（推荐）
 
@@ -17,25 +17,25 @@ description: 如何在你的项目中设置 Plate UI。
 ### 安装 Plate UI
 
 <Callout type="info">
-  如果你不是在使用 Next.js，请先参考官方 [shadcn/ui 安装指南](https://ui.shadcn.com/docs/installation) 选择你的框架。
+  如果未使用 Next.js，请先参考 [shadcn/ui 官方安装指南](https://ui.shadcn.com/docs/installation) 配置您的框架环境。
 </Callout>
 
 ```bash
 npx shadcn@latest add https://platejs.org/r/plate-ui
 ```
 
-### 基本用法
+### 基础使用 
 
-安装好 Plate UI 核心后，请根据你的框架继续阅读对应的指南：
+安装 Plate UI 核心后，根据框架选择对应指南：
 
-*   **[Next.js 指南](./next)** - 适用于服务端渲染应用（Next、Remix 等）
-*   **[React 指南](./react)** - 适用于单页应用（Vite、React Router 等）
+*   **[Next.js 指南](./next)** - 服务端渲染应用（Next.js、Remix 等）
+*   **[React 指南](./react)** - 单页应用（Vite、React Router 等）
 
 </Steps>
 
 ## 手动安装
 
-如果你更喜欢逐步操作，或不使用 shadcn CLI，请按以下步骤操作：
+如需逐步安装或未使用 shadcn CLI，请按以下步骤操作：
 
 <Steps>
 
@@ -46,16 +46,16 @@ npm install platejs
 ```
 
 <Callout type="note" title="插件依赖">
-  手动安装 Plate 时，你需要为每个想用的插件单独安装依赖包。例如，如果你想用 `AIMenu` 组件，需要安装 `@platejs/ai` 及其依赖。请查阅每个组件的文档了解所需包，或直接用 CLI 自动安装。
+  手动安装 Plate 时，需要为每个插件单独安装对应包。例如使用 `AIMenu` 组件需安装 `@platejs/ai` 及其依赖。可查阅各组件文档获取所需包，或直接使用 CLI 自动安装。
 </Callout>
 
 ### 配置 CSS 变量
 
-将以下 CSS 变量添加到你的全局样式表：
+在全局样式表中添加以下 CSS 变量：
 
 ```css title="app/globals.css"
 :root {
-  /* Plate UI 组件的基础品牌色 */
+  /* Plate UI 组件基础品牌色 */
   --brand: oklch(0.623 0.214 259.815);
 }
 
@@ -66,13 +66,13 @@ npm install platejs
 
 ### 添加组件
 
-安装好 Plate UI 核心后，你可以按需添加 Plate UI 组件来构建编辑器界面。例如，添加 `FixedToolbar` 和 `MarkToolbarButton`：
+安装核心后，可添加独立组件构建编辑器界面。例如安装 `FixedToolbar` 和 `MarkToolbarButton`：
 
 ```bash
 npx shadcn@latest add https://platejs.org/r/fixed-toolbar https://platejs.org/r/mark-toolbar-button
 ```
 
-在编辑器中导入并使用它们：
+在编辑器中导入使用：
 
 ```tsx showLineNumbers title="components/editor.tsx"
 import { Plate } from "platejs/react";
@@ -81,26 +81,127 @@ import { MarkToolbarButton } from "@/components/ui/mark-toolbar-button";
 // ... 其他导入
 
 export function MyEditor() {
-  // ... 编辑器设置
+  // ... 编辑器配置
   return (
     <Plate editor={editor}>
       <FixedToolbar>
-        <MarkToolbarButton nodeType="bold" tooltip="Bold">B</MarkToolbarButton>
+        <MarkToolbarButton nodeType="bold" tooltip="加粗">B</MarkToolbarButton>
         {/* ... 其他工具栏按钮 ... */}
       </FixedToolbar>
-      {/* ... Editor 组件 ... */}
+      {/* ... 编辑器组件 ... */}
     </Plate>
   );
 }
 ```
 
-探索可用的 [UI 组件](/docs/components) 和 [插件组件](/docs/plugin-components)，自定义你的编辑器节点（如段落、标题等），打造功能丰富的编辑体验。
+浏览可用 [UI 组件](/docs/components) 和 [插件组件](/docs/plugin-components) 自定义编辑器节点（如段落、标题等），构建功能丰富的编辑体验。
 
-### 基本用法
+### 基础使用 
 
-安装好 Plate UI 核心后，请根据你的框架继续阅读对应的指南：
+安装核心后，根据框架选择对应指南：
 
-*   **[Next.js 指南](./next)** - 适用于服务端渲染应用（Next、Remix 等）
-*   **[React 指南](./react)** - 适用于单页应用（Vite、React Router 等）
+*   **[Next.js 指南](./next)** - 服务端渲染应用（Next.js、Remix 等）
+*   **[React 指南](./react)** - 单页应用（Vite、React Router 等）
 
-</Steps> 
+</Steps>
+
+## 组件类型
+
+Plate UI 组件安装时包含多种类型，命名模式统一。以下是各类组件说明：
+
+### 功能套件
+
+功能套件是添加完整功能的最便捷方式。包含插件配置、UI 组件（节点渲染器和工具栏项）及其 npm 依赖。
+
+```bash
+# 安装 AI 功能套件（含配置和 UI）
+npx shadcn@latest add https://platejs.org/r/ai-kit
+
+# 安装拖拽功能套件
+npx shadcn@latest add https://platejs.org/r/dnd-kit
+```
+
+<Callout type="note">
+  不确定需要哪些组件时，建议从功能套件开始。套件提供开箱即用的完整功能，后续可自定义调整。
+</Callout>
+
+### 组件
+
+#### 节点组件
+
+负责渲染编辑器中特定类型内容（element 或 leaf）。如需自定义，请参考 [插件组件指南](/docs/plugin-components)。
+
+```bash
+# 安装引用块渲染组件
+npx shadcn@latest add https://platejs.org/r/blockquote-node
+
+# 安装代码文本渲染组件
+npx shadcn@latest add https://platejs.org/r/code-node
+```
+
+#### 工具栏组件
+
+为编辑器工具栏添加交互控件（按钮、下拉菜单等）。
+
+```bash
+# 添加对齐方式下拉菜单
+npx shadcn@latest add https://platejs.org/r/align-toolbar-button
+
+# 添加 AI 功能工具栏按钮
+npx shadcn@latest add https://platejs.org/r/ai-toolbar-button
+
+# 添加颜色选择器下拉菜单
+npx shadcn@latest add https://platejs.org/r/font-color-toolbar-button
+```
+
+#### 其他组件
+
+Plate UI 还包含高级编辑器组件（悬浮层、菜单、区块包装器等）。
+
+```bash
+# 安装 AI 功能菜单
+npx shadcn@latest add https://platejs.org/r/ai-menu
+
+# 安装可拖拽区块组件
+npx shadcn@latest add https://platejs.org/r/block-draggable
+```
+
+这些组件通常已包含在对应功能套件中，也可单独安装用于自定义配置。
+
+### 编辑器模板
+
+预配置的编辑器方案，针对特定用例或作为完整起点。可浏览所有 [编辑器模板](/editors)。
+
+```bash
+# 安装 AI 功能编辑器模板
+npx shadcn@latest add https://platejs.org/r/editor-ai
+
+# 安装基础编辑器模板
+npx shadcn@latest add https://platejs.org/r/editor-basic
+```
+
+### API 路由
+
+提供特定功能所需的服务器端组件或 API 路由处理器。
+
+```bash
+# 安装 AI 相关 API 路由
+npx shadcn@latest add https://platejs.org/r/ai-api
+
+# 安装文件上传 API 路由（如 UploadThing 集成）
+npx shadcn@latest add https://platejs.org/r/media-uploadthing-api
+```
+
+### 文档
+
+Plate 各项功能的文档、指南和 API 参考也可添加到本地项目。这对于保持版本化文档与代码同步，以及通过 MCP 为 AI 工具提供上下文特别有用。了解更多 [本地文档设置](/installation/docs)。
+
+```bash
+# 添加 AI 文档
+npx shadcn@latest add https://platejs.org/r/ai-docs
+
+# 添加 Plate 插件文档
+npx shadcn@latest add https://platejs.org/r/plugin-docs
+```
+
+这些内容由 Markdown 文件组成，可集成到自有文档系统或用于本地搜索和 AI 调用。

@@ -1,50 +1,116 @@
 ---
-title: 提及
+title: 提及功能
 docs:
   - route: /docs/combobox
     title: 组合框
-  - route: /docs/components/mention-element
-    title: 提及元素
-  - route: /docs/components/mention-input-element
-    title: 提及输入元素
+  - route: /docs/components/mention-node
+    title: 提及节点
 ---
 
 <ComponentPreview name="mention-demo" />
 
 <PackageInfo>
 
-## 功能
+## 功能特性
 
-- 提供智能的自动补全功能，用于提及用户或应用标签。
-- 使用 `@` 或 `#` 调用组合框并选择建议。
+- 智能自动补全，可用于提及用户、页面或任何引用
+- 通过可配置字符触发（默认：`@`）
+- 键盘导航与选择
+- 可自定义的提及数据与渲染方式
 
 </PackageInfo>
 
-## 安装
+## 套件使用方式
+
+<Steps>
+
+### 安装
+
+最快捷的添加提及功能方式是使用 `MentionKit`，它包含预配置的 `MentionPlugin` 和 `MentionInputPlugin` 以及它们的 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="mention-kit" />
+
+- [`MentionElement`](/docs/components/mention-node): 渲染提及元素
+- [`MentionInputElement`](/docs/components/mention-node): 渲染提及输入组合框
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { MentionKit } from '@/components/editor/plugins/mention-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...MentionKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置方式
+
+<Steps>
+
+### 安装
 
 ```bash
 npm install @platejs/mention
 ```
 
-## 使用
+### 添加插件
 
 ```tsx
-import { MentionPlugin } from '@platejs/mention/react';
+import { MentionPlugin, MentionInputPlugin } from '@platejs/mention/react';
+import { createPlateEditor } from 'platejs/react';
 
-const plugins = [
-  // ...其他插件,
-  MentionPlugin,
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    MentionPlugin,
+    MentionInputPlugin,
+  ],
+});
 ```
 
-## 插件
+### 配置插件
 
-### `MentionPlugin`
+```tsx
+import { MentionPlugin, MentionInputPlugin } from '@platejs/mention/react';
+import { createPlateEditor } from 'platejs/react';
+import { MentionElement, MentionInputElement } from '@/components/ui/mention-node';
 
-用于提及功能的插件。扩展了 [TriggerComboboxPlugin](/docs/combobox#options)。
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    MentionPlugin.configure({
+      options: {
+        trigger: '@',
+        triggerPreviousCharPattern: /^$|^[\s"']$/,
+        insertSpaceAfterMention: false,
+      },
+    }).withComponent(MentionElement),
+    MentionInputPlugin.withComponent(MentionInputElement),
+  ],
+});
+```
+
+- `options.trigger`: 触发提及组合框的字符
+- `options.triggerPreviousCharPattern`: 触发字符前一个字符的正则表达式模式。套件使用 `/^$|^[\s"']$/` 允许在行首、空白符后或引号后触发提及
+- `options.insertSpaceAfterMention`: 是否在插入提及后自动添加空格
+- `withComponent`: 分配用于渲染提及和提及输入的UI组件
+
+</Steps>
+
+## 插件说明
+
+### MentionPlugin
+
+提供提及功能的插件。扩展自 [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions)。
 
 <API name="MentionPlugin">
-<APIOptions type="MentionPluginOptions">
+<APIOptions>
   <APIItem name="insertSpaceAfterMention" type="boolean" optional>
     是否在提及后插入空格。
     - **默认值:** `false`
@@ -53,32 +119,57 @@ const plugins = [
     触发提及组合框的字符。
     - **默认值:** `'@'`
   </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+    匹配触发字符前一个字符的模式。
+    - **默认值:** `/^\s?$/`
+  </APIItem>
+  <APIItem name="createComboboxInput" type="(trigger: string) => TElement" optional>
+    当触发字符激活时创建输入元素的函数。
+  </APIItem>
 </APIOptions>
 </API>
 
-### `MentionInputPlugin`
+### MentionInputPlugin
 
-用于提及输入功能的插件。
+提供提及输入功能的插件。
 
-## API
+## API接口
 
-### `api.insert.mention`
+### api.insert.mention
 
-重写此 API 方法以自定义提及的插入方式。
+在当前选区插入提及元素。
 
-### `getMentionOnSelectItem`
+<API name="api.insert.mention">
+<APIParameters>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="search" type="string">
+        触发提及的搜索文本。
+      </APISubListItem>
+      <APISubListItem parent="options" name="value" type="any">
+        存储在提及元素中的值。
+      </APISubListItem>
+      <APISubListItem parent="options" name="key" type="any" optional>
+        提及元素的可选键值。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+</API>
 
-获取用于选择提及组合框项的处理程序。
+### getMentionOnSelectItem
+
+获取处理提及组合框项选择的处理器。
 
 <API name="getMentionOnSelectItem">
-<APIOptions type="GetMentionOnSelectItemOptions">
+<APIOptions>
   <APIItem name="key" type="string" optional>
     提及插件的插件键。
     - **默认值:** `MentionPlugin.key`
   </APIItem>
 </APIOptions>
 
-<APIReturns type="MentionOnSelectItem">
-  提及项选择的处理程序。
+<APIReturns>
+  处理提及项选择的函数。
 </APIReturns>
 </API>

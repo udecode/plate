@@ -1,21 +1,21 @@
 ---
 title: 插件组件
-description: 学习如何为 Plate 插件创建和样式化自定义组件。
+description: 学习如何为Plate插件创建和样式化自定义组件。
 ---
 
-默认情况下，Plate 插件是无头（headless）的，这意味着所有节点都将以纯文本形式渲染。本指南将向您展示如何为编辑器创建和样式化自定义组件。
+默认情况下，Plate插件是无头(headless)的，意味着所有节点都将以纯文本形式渲染。本指南将展示如何为编辑器创建和样式化自定义组件。
 
 ## Plate UI
 
-除非您更喜欢从头开始构建所有内容，否则我们建议使用 [Plate UI](/docs/components) 来入门。Plate UI 是一个组件集合，您可以将其复制到您的应用程序中并根据需要进行修改。
+除非您希望从零开始构建所有内容，否则我们建议使用[Plate UI](/docs/components)作为起点。Plate UI是一组可直接复制到您的应用中并根据需求修改的组件集合。
 
-无论您是使用 Plate UI 还是从头开始构建自己的组件，创建和注册组件的过程都是类似的。
+无论您使用Plate UI还是从零开始构建自己的组件，创建和注册组件的过程都是相似的。
 
 ## 定义组件
 
-对于元素节点（如段落、标题），请使用 `PlateElement`，对于文本叶子节点（如加粗、斜体），请使用 `PlateLeaf`。这些组件会为您的自定义 HTML 元素应用必要的 Slate 属性。
+使用`PlateElement`处理元素节点（如段落、标题），使用`PlateLeaf`处理文本叶子节点（如粗体、斜体）。这些组件负责将必要的Plate属性应用到您的自定义HTML元素上。
 
-请确保无条件渲染 `children` 属性，以保证编辑器正常工作，即使对于 void 节点也是如此。
+确保无条件渲染`children`属性，即使对于void节点，这也是编辑器正常工作的必要条件。
 
 ### 元素组件
 
@@ -23,19 +23,19 @@ description: 学习如何为 Plate 插件创建和样式化自定义组件。
 import { type PlateElementProps, PlateElement } from 'platejs/react';
 
 export function BlockquoteElement(props: PlateElementProps) {
-  // props contains attributes, children, element, editor, etc.
-  // plus any custom props your plugin might pass.
+  // props包含attributes, children, element, editor等属性
+  // 以及您的插件可能传递的任何自定义属性
   return (
     <PlateElement
       as="blockquote"
-      className="my-1 border-l-2 pl-6 italic" // Apply custom styles directly
-      {...props} // Pass all original props (attributes, children, element, etc.)
+      className="my-1 border-l-2 pl-6 italic" // 直接应用自定义样式
+      {...props} // 传递所有原始属性(attributes, children, element等)
     />
   );
 }
 ```
 
-此示例定义了一个 `BlockquoteElement`。`PlateElement` 的 `as` 属性指定它应渲染为 HTML `<blockquote>`。`PlateElement` 通过 `{...props}` 处理 `children` 的渲染。
+此示例定义了一个`BlockquoteElement`。`PlateElement`上的`as`属性指定它应渲染为HTML `<blockquote>`。`PlateElement`负责处理通过`{...props}`传递的`children`渲染。
 
 ### 叶子组件
 
@@ -43,23 +43,23 @@ export function BlockquoteElement(props: PlateElementProps) {
 import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
 
 export function CodeLeaf(props: PlateLeafProps) {
-  // props contains attributes, children, leaf, text, editor, etc.
-  // plus any custom props your plugin might pass.
+  // props包含attributes, children, leaf, text, editor等属性
+  // 以及您的插件可能传递的任何自定义属性
   return (
     <PlateLeaf
       as="code"
-      className="rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm" // Apply custom styles
-      {...props} // Pass all original props (attributes, children, leaf, text, etc.)
+      className="rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm" // 应用自定义样式
+      {...props} // 传递所有原始属性(attributes, children, leaf, text等)
     />
   );
 }
 ```
 
-### 样式化
+### 样式设计
 
-我们推荐使用 Tailwind CSS 来样式化组件，正如 Plate UI 所演示的那样。
+我们推荐使用Tailwind CSS来样式化组件，如Plate UI中所示。
 
-另外，Slate 会为每个节点类型生成类似 `slate-<node-type>` 的类名（例如段落为 `slate-p`，标题为 `slate-h1`），您可以通过全局 CSS 进行样式化：
+或者，Plate会生成类似`slate-<节点类型>`的类名（例如段落为`slate-p`，H1标题为`slate-h1`），您可以通过全局CSS定位这些类名：
 
 ```css
 .slate-p {
@@ -72,15 +72,15 @@ export function CodeLeaf(props: PlateLeafProps) {
 
 ## 注册组件
 
-要使用自定义组件，需要将其注册到对应的插件或直接在编辑器配置中注册。
+要使用您的自定义组件，需要将它们注册到相应的插件或直接注册到编辑器配置中。
 
-### 方法一：插件的 `withComponent`（推荐）
+### 方法1：插件的`withComponent`（推荐）
 
-`withComponent` 方法是将组件与插件关联的最直接方式。
+`withComponent`方法是关联组件与插件最直接的方式。
 
 ```tsx
 const plugins = [
-  // This is equivalent to:
+  // 这等同于：
   // ParagraphPlugin.configure({ node: { component: MyParagraphElement }});
   ParagraphPlugin.withComponent(MyParagraphElement),
   CodeBlockPlugin.withComponent(MyCodeBlockElement),
@@ -89,10 +89,9 @@ const plugins = [
 ]
 ```
 
+### 方法2：插件的`override.components`
 
-### 方法二：插件 `override.components`
-
-对于管理多个组件部分的插件（如 `CodeBlockPlugin` 包含 `code_block`、`code_line` 和 `code_syntax`），或需要为特定插件实例覆盖组件时，可在 `configure` 中使用 `override.components` 选项。
+对于管理多个组件部分的插件（如`CodeBlockPlugin`包含`code_block`、`code_line`和`code_syntax`），或者当您需要为特定插件实例覆盖组件时，在`configure`中使用`override.components`选项。
 
 ```tsx
 const plugins = [
@@ -108,19 +107,19 @@ const plugins = [
 ];
 ```
 
-### 方法三：编辑器 `components` 选项
+### 方法3：编辑器的`components`选项
 
-您可以在 `createPlateEditor`（或 `usePlateEditor`）中全局映射插件 key 到组件。这对于集中管理所有组件或插件由多个插件组成时很有用。
+您可以在`createPlateEditor`（或`usePlateEditor`）中全局映射插件键到组件。这对于在一个地方管理所有组件，或由多个插件组成的插件特别有用。
 
 ```tsx
 const editor = createPlateEditor({
-  plugins: [ParagraphPlugin, CodeBlockPlugin /* ...other plugins */],
+  plugins: [ParagraphPlugin, CodeBlockPlugin /* ...其他插件 */],
   components: {
     [ParagraphPlugin.key]: MyParagraphElement,
     [CodeBlockPlugin.key]: MyCodeBlockElement,
     [CodeLinePlugin.key]: MyCodeLineElement,
     [CodeSyntaxPlugin.key]: MyCodeSyntaxLeaf,
-    // ...other component overrides
+    // ...其他组件覆盖
   },
 });
 ```

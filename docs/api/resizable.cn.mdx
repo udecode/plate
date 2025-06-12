@@ -5,12 +5,12 @@ description: \@platejs/resizable 的 API 参考。
 
 <PackageInfo>
 
-## 功能
+## 特性
 
-- 带有手柄的可调整大小元素
+- 带有手柄的可调整大小的元素
 - 可配置的最小/最大宽度约束
 - 支持居中/左/右对齐
-- 编辑器状态中的宽度持久化
+- 在编辑器状态中保持宽度
 
 </PackageInfo>
 
@@ -69,7 +69,7 @@ npm install @platejs/resizable
 
 ### `useResizable`
 
-为可调整大小元素提供调整大小的行为属性和处理程序。
+为可调整大小的元素提供调整大小的行为属性和处理程序。
 
 <API name="useResizable">
 <APIParameters>
@@ -117,7 +117,7 @@ npm install @platejs/resizable
     可调整大小元素的初始大小。
   </APIItem>
   <APIItem name="onHover" type="() => void" optional>
-    手柄悬停时的回调。
+    手柄被悬停时的回调。
   </APIItem>
   <APIItem name="onHoverEnd" type="() => void" optional>
     手柄悬停结束时的回调。
@@ -141,7 +141,7 @@ npm install @platejs/resizable
     初始光标/触摸位置。
   </APIItem>
   <APIItem name="initialSize" type="number">
-    初始元素大小。
+    元素初始大小。
   </APIItem>
   <APIItem name="isHorizontal" type="boolean">
     调整大小方向是否为水平。
@@ -192,10 +192,10 @@ npm install @platejs/resizable
 
 <APIReturns type="object">
   <APIItem name="hidden" type="boolean">
-    手柄是否应隐藏（在只读模式下）。
+    手柄是否应该隐藏（在只读模式下）。
   </APIItem>
   <APIItem name="props" type="object">
-    要应用于手柄元素的属性：
+    要应用到手柄元素的属性：
     - `onMouseDown`: 鼠标按下事件处理程序
     - `onMouseOut`: 鼠标移出事件处理程序
     - `onMouseOver`: 鼠标悬停事件处理程序
