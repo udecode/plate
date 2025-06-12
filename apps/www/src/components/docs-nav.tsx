@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 
 export function DocsNav({ config }: { config: DocsConfig }) {
+  const locale = useLocale();
   const pathname = usePathname();
   const [filter, setFilter] = useState('');
   const [activeSection, setActiveSection] = useState<string | undefined>();
@@ -205,7 +206,7 @@ export function DocsNav({ config }: { config: DocsConfig }) {
             >
               <AccordionTrigger className="h-9 shrink-0 items-center px-2 py-1 text-sm outline-none">
                 <div className="flex items-center">
-                  {item.title}
+                  {locale === 'cn' ? item.titleCn || item.title : item.title}
                   {item.label && (
                     <div className="flex gap-1">
                       {castArray(item.label).map((label, labelIndex) => (
@@ -276,7 +277,7 @@ function DocsNavItems({
               item.disabled && 'cursor-not-allowed opacity-60'
             )}
           >
-            {item.title}
+            {locale === 'cn' ? item.titleCn || item.title : item.title}
             {item.label && (
               <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground no-underline group-hover:no-underline">
                 {item.label}
@@ -299,7 +300,7 @@ function DocsNavItems({
                 rel={item.external ? 'noreferrer' : ''}
                 target={item.external ? '_blank' : ''}
               >
-                {item.title}
+                {locale === 'cn' ? item.titleCn || item.title : item.title}
                 {item.label && (
                   <div className="ml-2 flex gap-1">
                     {castArray(item.label).map((label, labelIndex) => (
@@ -327,7 +328,7 @@ function DocsNavItems({
                   'flex h-8 w-full items-center truncate rounded-lg px-2 font-medium text-foreground select-none'
                 )}
               >
-                {item.title}
+                {locale === 'cn' ? item.titleCn || item.title : item.title}
                 {item.label && (
                   <div className="ml-2 flex gap-1">
                     {castArray(item.label).map((label, labelIndex) => (

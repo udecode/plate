@@ -9,7 +9,7 @@ import { usePathname } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
-import { useLocale } from '@/hooks/useLocale';
+import { getLocalizedPath, useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';
 
 import { Icons } from './icons';
@@ -46,9 +46,9 @@ export function MainNav({
         <Button key={item.href} asChild size="sm" variant="ghost">
           <Link
             className={cn(pathname === item.href && 'text-primary')}
-            href={item.href!}
+            href={getLocalizedPath(locale, item.href!)}
           >
-            {item.label}
+            {locale === 'cn' ? item.labelCn || item.label : item.label}
           </Link>
         </Button>
       ))}

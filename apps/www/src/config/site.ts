@@ -19,10 +19,12 @@ export const siteConfig = {
     {
       href: '/docs',
       label: 'Docs',
+      labelCn: '文档',
     },
     {
       href: '/editors',
       label: 'Editors',
+      labelCn: '编辑器',
     },
   ],
   ogImage: 'https://platejs.org/og.png',

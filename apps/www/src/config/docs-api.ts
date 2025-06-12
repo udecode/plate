@@ -15,6 +15,7 @@ export const docsApi: SidebarNavItem[] = [
       {
         href: '/docs/api/slate/editor-api',
         title: 'Editor API',
+        titleCn: '编辑器 API',
       },
       {
         href: '/docs/api/slate/editor-transforms',
@@ -116,6 +117,7 @@ export const docsApi: SidebarNavItem[] = [
         ],
         href: '/docs/api/core/plate-components',
         title: 'Plate Components',
+        titleCn: 'Plate 组件',
       },
       {
         headings: [
@@ -148,6 +150,7 @@ export const docsApi: SidebarNavItem[] = [
         ],
         href: '/docs/api/core/plate-editor',
         title: 'Plate Editor',
+        titleCn: 'Plate 编辑器',
       },
       {
         headings: [
@@ -228,11 +231,13 @@ export const docsApi: SidebarNavItem[] = [
         ],
         href: '/docs/api/core/plate-plugin',
         title: 'Plate Plugin',
+        titleCn: 'Plate 插件',
       },
       {
         headings: ['useEventEditorSelectors', 'useEventPlateId'],
         href: '/docs/api/core/plate-store',
         title: 'Plate Store',
+        titleCn: 'Plate 存储',
       },
       {
         headings: [
@@ -248,15 +253,18 @@ export const docsApi: SidebarNavItem[] = [
         ],
         href: '/docs/api/core/plate-controller',
         title: 'Plate Controller',
+        titleCn: 'Plate 控制器',
       },
     ],
     title: 'Plate Core',
+    titleCn: 'Plate 核心',
   },
   {
     description: 'Additional utilities for Plate.',
     headings: [],
     href: '/docs/api/utils',
     title: 'Plate Utils',
+    titleCn: 'Plate 工具',
   },
   {
     description: 'React utilities.',
@@ -270,23 +278,27 @@ export const docsApi: SidebarNavItem[] = [
     ],
     href: '/docs/api/react-utils',
     title: 'React Utils',
+    titleCn: 'React 工具',
   },
   {
     description: 'Class utilities.',
     headings: ['cn', 'withCn', 'withProps', 'withVariants'],
     href: '/docs/api/cn',
     title: 'cn',
+    titleCn: 'cn',
   },
   {
     description: 'API reference for @platejs/floating',
     headings: [],
     href: '/docs/api/floating',
     title: 'Floating',
+    titleCn: 'Floating',
   },
   {
     description: 'API reference for @platejs/resizable',
     headings: [],
     href: '/docs/api/resizable',
     title: 'Resizable',
+    titleCn: 'Resizable',
   },
 ];

@@ -32,16 +32,18 @@ if (files.length === 0) {
 console.error(`Scanning ${files.length} files… (cutoff = ${DAYS} days)`);
 
 // 2) 查询最后提交时间并过滤
-const results = files.flatMap((f) => {
-  const out = spawnSync('git', ['log', '-1', '--format=%ci', '--', f], {
-    encoding: 'utf8',
+const results = files
+  .filter(f => !f.endsWith('.cn.mdx')) // 过滤掉以.cn.mdx结尾的文件
+  .flatMap((f) => {
+    const out = spawnSync('git', ['log', '-1', '--format=%ci', '--', f], {
+      encoding: 'utf8',
+    });
+    if (out.status !== 0) return [];
+    const dateStr = out.stdout.trim();
+    const ts = Date.parse(dateStr);
+    if (Number.isNaN(ts) || ts < CUTOFF) return []; // 超过时间窗口，丢弃
+    return { file: f, lastModified: dateStr };
   });
-  if (out.status !== 0) return [];
-  const dateStr = out.stdout.trim();
-  const ts = Date.parse(dateStr);
-  if (Number.isNaN(ts) || ts < CUTOFF) return []; // 超过时间窗口，丢弃
-  return { file: f, lastModified: dateStr };
-});
 
 // 3) 排序并输出
 results.sort((a, b) => a.file.localeCompare(b.file));
@@ -111,8 +113,8 @@ async function processTranslation() {
     const sourceContent = fs.readFileSync(sourceFile, 'utf8');
 
     for (const targetLanguage of language.targets) {
-      // Simply replace 'en' with the target language code in the path
-      const targetFile = sourceFile.replace('/en/', `/${targetLanguage}/`);
+      // Add .cn.mdx suffix to the source file path
+      const targetFile = sourceFile.replace('.mdx', '.cn.mdx');
 
       console.info(
         `Translating ${sourceFile} to ${targetLanguage} (${targetFile})`
