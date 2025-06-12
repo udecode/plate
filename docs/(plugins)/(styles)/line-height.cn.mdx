@@ -1,56 +1,147 @@
 ---
 title: 行高
 docs:
-  - route: /docs/components/line-height-dropdown-menu
-    title: 行高下拉菜单
+  - route: /docs/components/line-height-toolbar-button
+    title: 行高工具栏按钮
 ---
 
 <ComponentPreview name="line-height-demo" />
 
 <PackageInfo>
 
-## 功能
+## 功能特性
 
-- 为选中的块设置行高。
+- 为段落、标题等块级元素应用自定义行高
+- 向目标块级元素注入 `lineHeight` 属性
 
 </PackageInfo>
 
-## 安装
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的方式是使用 `LineHeightKit`，它包含预配置的 `LineHeightPlugin`，针对段落和标题元素。
+
+<ComponentSource name="line-height-kit" />
+
+- 配置 `Paragraph` 和 `Heading` 元素（H1-H6）支持 `lineHeight` 属性
+- 提供默认行高值 `1.5` 和有效值 `[1, 1.2, 1.5, 2, 3]`
+
+### 添加套件
+
+将套件添加到插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { LineHeightKit } from '@/components/editor/plugins/line-height-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...LineHeightKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装
 
 ```bash
 npm install @platejs/basic-styles
 ```
 
-## 使用
+### 添加插件
+
+在创建编辑器时将 `LineHeightPlugin` 包含到 Plate 插件数组中。
 
 ```tsx
 import { LineHeightPlugin } from '@platejs/basic-styles/react';
+import { createPlateEditor } from 'platejs/react';
 
-const plugins = [
-  // ...其他插件,
-  LineHeightPlugin,
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    LineHeightPlugin,
+  ],
+});
 ```
+
+### 配置插件
+
+您可以配置 `LineHeightPlugin` 来指定目标元素并定义默认或有效的行高值。
+
+```tsx
+import { LineHeightPlugin } from '@platejs/basic-styles/react';
+import { KEYS } from 'platejs/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    LineHeightPlugin.configure({
+      inject: {
+        nodeProps: {
+          defaultNodeValue: 1.5,
+          validNodeValues: [1, 1.2, 1.5, 2, 3],
+        },
+        targetPlugins: [KEYS.p, KEYS.h1, KEYS.h2, KEYS.h3],
+      },
+    }),
+  ],
+});
+```
+
+- `inject.nodeProps.defaultNodeValue`: 设置默认行高值（如 `1.5`）
+- `inject.nodeProps.validNodeValues`: 定义常用行高值列表，适用于工具栏下拉菜单
+- `inject.targetPlugins`: 插件键名数组（如 `KEYS.p`, `KEYS.h1`），指定哪些元素类型将接收 `lineHeight` 属性
+
+### 添加工具栏按钮
+
+您可以在[工具栏](/docs/toolbar)中添加 [`LineHeightToolbarButton`](/docs/components/line-height-toolbar-button) 来控制行高。
+
+</Steps>
 
 ## 插件
 
 ### `LineHeightPlugin`
 
-用于在块上设置行高的插件。
+用于设置块级元素行高的插件。它会向 `inject.targetPlugins` 指定的元素注入 `lineHeight` 属性。
 
-## API
-
-### `setLineHeight`
-
-为编辑器中的选中节点设置行高。
-
-<API name="setLineHeight">
-<APIOptions type="SetLineHeightOptions">
-  <APIItem name="value" type="number">
-    要设置的行高值。
+<API name="LineHeightPlugin">
+<APIOptions type="object">
+  <APIItem name="inject.nodeProps.defaultNodeValue" type="number" optional>
+    默认行高值
   </APIItem>
-  <APIItem name="setNodesOptions" type="SetNodesOptions">
-    设置节点的额外选项。
+  <APIItem name="inject.nodeProps.validNodeValues" type="number[]" optional>
+    有效行高值数组
+  </APIItem>
+  <APIItem name="inject.targetPlugins" type="string[]" optional>
+    目标插件键名数组，用于行高注入
+    - **默认值:** `['p']`
   </APIItem>
 </APIOptions>
+</API>
+
+## 转换器
+
+### `tf.lineHeight.setNodes`
+
+为编辑器中选中的节点设置行高。
+
+<API name="tf.lineHeight.setNodes">
+<APIParameters>
+<APIItem name="value" type="number">
+行高值
+</APIItem>
+<APIItem name="options" type="SetNodesOptions" optional>
+`setNodes` 函数的配置选项
+</APIItem>
+</APIParameters>
 </API>

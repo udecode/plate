@@ -3,9 +3,9 @@ title: 斜杠命令
 docs:
   - route: /docs/combobox
     title: 组合框
-  - route: components/slash-input-element
+  - route: components/slash-node
     title: 斜杠输入元素
-  - route: https://pro.platejs.org/docs/components/slash-input-element
+  - route: https://pro.platejs.org/docs/components/slash-node
     title: 斜杠输入元素
 ---
 
@@ -13,81 +13,143 @@ docs:
 
 <PackageInfo>
 
-## 功能
+## 特性
 
 - 快速访问各种编辑器命令
-- 键盘导航和过滤
-  {/* - AI 辅助集成 */}
+- 通过 `/` 字符触发
+- 支持键盘导航和筛选
+- 可自定义的命令组和选项
 
 </PackageInfo>
 
-## 安装
+## 套件使用
+
+<Steps>
+
+### 安装
+
+添加斜杠命令功能最快的方式是使用 `SlashKit`，它包含预配置的 `SlashPlugin` 和 `SlashInputPlugin` 以及它们的 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="slash-kit" />
+
+- [`SlashInputElement`](/docs/components/slash-node): 渲染带有预定义选项的斜杠命令组合框
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { SlashKit } from '@/components/editor/plugins/slash-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...SlashKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
 
 ```bash
 npm install @platejs/slash-command
 ```
 
-## 使用
+### 添加插件
 
 ```tsx
 import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    SlashPlugin,
+    SlashInputPlugin,
+  ],
+});
 ```
 
-```tsx
-const plugins = [
-  // ...其他插件
-  SlashPlugin,
-];
-```
+### 配置插件
 
 ```tsx
+import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
+import { createPlateEditor } from 'platejs/react';
+import { SlashInputElement } from '@/components/ui/slash-node';
 import { KEYS } from 'platejs';
 
-const components = {
-  // ...其他组件
-  [KEYS.slashInput]: SlashInputElement,
-};
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    SlashPlugin.configure({
+      options: {
+        trigger: '/',
+        triggerPreviousCharPattern: /^\s?$/,
+        triggerQuery: (editor) =>
+          !editor.api.some({
+            match: { type: editor.getType(KEYS.codeBlock) },
+          }),
+      },
+    }),
+    SlashInputPlugin.withComponent(SlashInputElement),
+  ],
+});
 ```
 
-另请参阅：
-- [SlashInputElement](/components/slash-input-element)
+- `options.trigger`: 触发斜杠命令组合框的字符（默认: `/`）
+- `options.triggerPreviousCharPattern`: 匹配触发字符前字符的正则表达式
+- `options.triggerQuery`: 判断何时启用斜杠命令的函数
+- `withComponent`: 指定斜杠命令界面的UI组件
 
-使用方法：
+</Steps>
 
-1. 在文档中的任意位置输入 `/` 以打开斜杠菜单
-2. 开始输入以过滤选项或使用箭头键导航
-3. 按 Enter 或点击以选择选项
-4. 按 Escape 关闭菜单而不选择
+## 使用方式
+
+如何使用斜杠命令：
+
+1. 在文档任意位置输入 `/` 打开斜杠菜单
+2. 开始输入以筛选选项，或使用方向键导航
+3. 按回车或点击选择选项
+4. 按ESC键不选择直接关闭菜单
 
 可用选项包括：
-- 标题
-- 列表
+- 文本块（段落、标题）
+- 列表（项目符号、编号、待办事项）
+- 高级块（表格、代码块、标注）
+- 行内元素（日期、公式）
 
-<Callout>
-  💡 使用关键词快速查找选项。例如，输入 `/ul` 以选择项目符号列表。
+<Callout type="info">
+  使用关键词快速查找选项。例如输入 '/ul' 查找项目符号列表，或 '/h1' 查找一级标题。
 </Callout>
 
-## 示例
-
-### Plate UI
-
-请参考上面的预览。
-
-### Plate Plus
+## Plate Plus
 
 <ComponentPreviewPro name="slash-menu-pro" />
 
 ## 插件
 
-### `SlashPlugin`
+### SlashPlugin
 
-用于斜杠命令功能的插件。扩展了 [TriggerComboboxPlugin](/docs/combobox#options)。
+实现斜杠命令功能的插件。扩展自 [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions)。
 
 <API name="SlashPlugin">
-<APIOptions type="SlashPluginOptions">
+<APIOptions>
+  <APIItem name="trigger" type="string" optional>
+    触发斜杠命令组合框的字符。
+    - **默认值:** `'/'`
+  </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+    匹配触发字符前字符的正则表达式。
+    - **默认值:** `/^\s?$/`
+  </APIItem>
   <APIItem name="createComboboxInput" type="() => TComboboxInputElement" optional>
-    用于创建组合框输入元素的函数。
-    - **默认值：** 
+    创建组合框输入元素的函数。
+    - **默认值:** 
     ```tsx
     () => ({
       children: [{ text: '' }],
@@ -95,17 +157,12 @@ const components = {
     });
     ```
   </APIItem>
-  <APIItem name="trigger" type="string" optional>
-    触发斜杠命令组合框的字符。
-    - **默认值：** `'/'`
-  </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
-    用于匹配触发字符前的字符的正则表达式。
-    - **默认值：** `/^\s?$/`
+  <APIItem name="triggerQuery" type="(editor: PlateEditor) => boolean" optional>
+    判断何时启用斜杠命令的函数。可用于在代码块等特定上下文中禁用功能。
   </APIItem>
 </APIOptions>
 </API>
 
-### `SlashInputPlugin`
+### SlashInputPlugin
 
-用于斜杠输入功能的插件。
+处理斜杠命令插入的输入行为。

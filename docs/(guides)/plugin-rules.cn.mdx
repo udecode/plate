@@ -1,0 +1,852 @@
+---
+title: 插件规则
+description: 配置常见的编辑行为。
+---
+
+插件规则控制编辑器节点如何响应常见的用户操作。您可以直接在插件的 `rules` 属性上配置这些行为，而无需重写编辑器方法。
+
+本指南展示如何使用 `rules.break`、`rules.delete`、`rules.merge`、`rules.normalize`、`rules.selection` 和 `rules.match` 来创建直观的编辑体验。
+
+<ComponentPreview name="plugin-rules-demo" />
+
+## 操作类型
+
+插件规则使用特定的操作名称来定义行为：
+
+- **`'default'`**: Slate 的默认行为。
+- **`'reset'`**: 将当前块重置为默认段落，保留内容。
+- **`'exit'`**: 退出当前块结构，在其后插入新段落。详见 [Exit Break](/docs/exit-break) 了解此行为的更多信息。
+- **`'deleteExit'`**: 删除内容后退出块。
+- **`'lineBreak'`**: 插入换行符 (`\n`) 而非拆分块。
+
+### `default`
+
+标准 Slate 行为。对于 `rules.break` 会拆分块，对于 `rules.delete` 会与前一个块合并。
+
+```tsx
+<p>
+  Hello world|
+</p>
+```
+
+按下 `Enter` 后：
+
+```tsx
+<p>Hello world</p>
+<p>
+  |
+</p>
+```
+
+按下 `Backspace` 后：
+
+```tsx
+<p>Hello world|</p>
+```
+
+### `reset`
+
+将当前块转换为默认段落，同时保留内容。自定义属性将被移除。
+
+```tsx
+<h3 listStyleType="disc">
+  |
+</h3>
+```
+
+配置 `rules: { break: { empty: 'reset' } }` 后按下 `Enter`：
+
+```tsx
+<p>
+  |
+</p>
+```
+
+### `exit`
+
+通过在其后插入新段落来退出当前块结构。
+
+```tsx
+<blockquote>
+  |
+</blockquote>
+```
+
+配置 `rules: { break: { empty: 'exit' } }` 后按下 `Enter`：
+
+```tsx
+<blockquote>
+  <text />
+</blockquote>
+<p>
+  |
+</p>
+```
+
+### `deleteExit`
+
+删除内容后退出块。
+
+```tsx
+<blockquote>
+  line1
+  |
+</blockquote>
+```
+
+配置 `rules: { break: { emptyLineEnd: 'deleteExit' } }` 后按下 `Enter`：
+
+```tsx
+<blockquote>line1</blockquote>
+<p>
+  |
+</p>
+```
+
+### `lineBreak`
+
+插入软换行符 (`\n`) 而非拆分块。
+
+```tsx
+<blockquote>
+  Hello|
+</blockquote>
+```
+
+配置 `rules: { break: { default: 'lineBreak' } }` 后按下 `Enter`：
+
+```tsx
+<blockquote>
+  Hello
+  |
+</blockquote>
+```
+
+## `rules.break`
+
+控制用户在特定块类型内按下 `Enter` 时的行为。
+
+### 配置
+
+```tsx
+BlockquotePlugin.configure({
+  rules: {
+    break: {
+      // 正常按下 Enter 时的操作
+      default: 'default' | 'lineBreak' | 'exit' | 'deleteExit',
+      
+      // 在空块中按下 Enter 时的操作
+      empty: 'default' | 'reset' | 'exit' | 'deleteExit',
+      
+      // 在空行末尾按下 Enter 时的操作
+      emptyLineEnd: 'default' | 'exit' | 'deleteExit',
+
+      // 如果为 true，拆分后的新块将被重置
+      splitReset: boolean,
+    },
+  },
+});
+```
+
+每个属性控制特定场景：
+
+- `default`
+  - [`'default'`](#default)
+  - [`'lineBreak'`](#linebreak)
+  - [`'exit'`](#exit)
+  - [`'deleteExit'`](#deleteexit)
+
+- `empty`
+  - [`'default'`](#default)
+  - [`'reset'`](#reset)
+  - [`'exit'`](#exit)
+  - [`'deleteExit'`](#deleteexit)
+
+- `emptyLineEnd`
+  - [`'default'`](#default)
+  - [`'exit'`](#exit)
+  - [`'deleteExit'`](#deleteexit)
+
+- `splitReset`: 如果为 `true`，拆分后的新块将被重置为默认类型。这对于退出格式化块（如标题）很有用。
+
+### 示例
+
+**标题拆分时重置：**
+
+```tsx
+import { H1Plugin } from '@platejs/heading/react';
+
+const plugins = [
+  // ...其他插件
+  H1Plugin.configure({
+    rules: {
+      break: {
+        splitReset: true,
+      },
+    },
+  }),
+];
+```
+
+按下 `Enter` 前：
+
+```tsx
+<h1>
+  Heading|text
+</h1>
+```
+
+按下后（拆分并重置）：
+
+```tsx
+<h1>
+  Heading
+</h1>
+<p>
+  |text
+</p>
+```
+
+**带换行和智能退出的块引用：**
+
+```tsx
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+
+const plugins = [
+  // ...其他插件
+  BlockquotePlugin.configure({
+    rules: {
+      break: {
+        default: 'lineBreak',
+        empty: 'reset',
+        emptyLineEnd: 'deleteExit',
+      },
+    },
+  }),
+];
+```
+
+在块引用中按下 `Enter` 前：
+```tsx
+<blockquote>
+  Quote text|
+</blockquote>
+```
+
+按下后（换行）：
+```tsx
+<blockquote>
+  Quote text
+  |
+</blockquote>
+```
+
+**带自定义空块处理的代码块：**
+
+```tsx
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+
+const plugins = [
+  // ...其他插件
+  CodeBlockPlugin.configure({
+    rules: {
+      delete: { empty: 'reset' },
+      match: ({ editor, rule }) => {
+        return rule === 'delete.empty' && isCodeBlockEmpty(editor);
+      },
+    },
+  }),
+];
+```
+
+在空代码块中按下 `Backspace` 前：
+```tsx
+<code_block>
+  <code_line>
+    |
+  </code_line>
+</code_block>
+```
+
+按下后（重置）：
+```tsx
+<p>
+  |
+</p>
+```
+
+## `rules.delete`
+
+控制用户在特定位置按下 `Backspace` 时的行为。
+
+### 配置
+
+```tsx
+HeadingPlugin.configure({
+  rules: {
+    delete: {
+      // 在块起始处按下 Backspace 时的操作
+      start: 'default' | 'reset',
+      
+      // 在空块中按下 Backspace 时的操作
+      empty: 'default' | 'reset',
+    },
+  },
+});
+```
+
+每个属性控制特定场景：
+
+- `start`
+  - [`'default'`](#default)
+  - [`'reset'`](#reset)
+
+- `empty`
+  - [`'default'`](#default)
+  - [`'reset'`](#reset)
+
+### 示例
+
+**在起始处重置块引用：**
+
+```tsx
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+
+const plugins = [
+  // ...其他插件
+  BlockquotePlugin.configure({
+    rules: {
+      delete: { start: 'reset' },
+    },
+  }),
+];
+```
+
+在起始处按下 `Backspace` 前：
+```tsx
+<blockquote>
+  |Quote content
+</blockquote>
+```
+
+按下后（重置）：
+```tsx
+<p>
+  |Quote content
+</p>
+```
+
+**带起始重置的列表项：**
+
+```tsx
+import { ListPlugin } from '@platejs/list/react';
+
+const plugins = [
+  // ...其他插件
+  ListPlugin.configure({
+    rules: {
+      delete: { start: 'reset' },
+      match: ({ rule, node }) => {
+        return rule === 'delete.start' && Boolean(node.listStyleType);
+      },
+    },
+  }),
+];
+```
+
+在列表项起始处按下 `Backspace` 前：
+```tsx
+<p listStyleType="disc">
+  |List item content
+</p>
+```
+
+按下后（重置）：
+```tsx
+<p>
+  |List item content
+</p>
+```
+
+## `rules.merge`
+
+控制块与前一个块合并时的行为。
+
+### 配置
+
+```tsx
+ParagraphPlugin.configure({
+  rules: {
+    merge: {
+      // 合并时是否移除空块
+      removeEmpty: boolean,
+    },
+  },
+});
+```
+
+### 示例
+
+默认情况下，只有段落和标题插件启用移除功能。大多数其他插件使用 `false`：
+
+```tsx
+import { H1Plugin, ParagraphPlugin } from 'platejs/react';
+
+const plugins = [
+  // ...其他插件
+  H1Plugin, // 默认 rules.merge: { removeEmpty: true }
+  ParagraphPlugin, // 默认 rules.merge: { removeEmpty: true }
+];
+```
+
+在起始处按下 `Backspace` 前：
+```tsx
+<p>
+  <text />
+</p>
+<h1>
+  |Heading content
+</h1>
+```
+
+按下后（空段落被移除）：
+```tsx
+<h1>
+  |Heading content
+</h1>
+```
+
+**禁用移除的块引用：**
+
+```tsx
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+
+const plugins = [
+  // ...其他插件
+  BlockquotePlugin.configure({
+    rules: {
+      merge: { removeEmpty: false }, // 默认
+    },
+  }),
+];
+```
+
+在起始处按下 `Backspace` 前：
+```tsx
+<p>
+  <text />
+</p>
+<blockquote>
+  |Code content
+</blockquote>
+```
+
+按下后（保留空段落）：
+```tsx
+<p>
+  |Code content
+</p>
+```
+
+**表格单元格在合并时保留结构：**
+
+```tsx
+import { TablePlugin } from '@platejs/table/react';
+
+const plugins = [
+  // ...其他插件
+  TablePlugin, // 表格单元格有 rules.merge: { removeEmpty: false }
+];
+```
+
+在段落末尾按下 `Delete` 前：
+```tsx
+<p>
+  Content|
+</p>
+<table>
+  <tr>
+    <td>
+      <p>Cell data</p>
+    </td>
+    <td>
+      <p>More data</p>
+    </td>
+  </tr>
+</table>
+```
+
+按下后（合并单元格内容，保留结构）：
+```tsx
+<p>
+  Content|Cell data
+</p>
+<table>
+  <tr>
+    <td>
+      <p>
+        <text />
+      </p>
+    </td>
+    <td>
+      <p>More data</p>
+    </td>
+  </tr>
+</table>
+```
+
+<Callout>
+Slate 的默认值为 `true`，因为默认块（段落）是一等公民，而 Plate 插件很可能用于定义其他节点行为，这些行为不应自动移除空的前驱块。
+</Callout>
+
+## `rules.normalize`
+
+控制在规范化过程中如何规范化节点。
+
+### 配置
+
+```tsx
+LinkPlugin.configure({
+  rules: {
+    normalize: {
+      // 是否移除空文本节点
+      removeEmpty: boolean,
+    },
+  },
+});
+```
+
+### 示例
+
+**移除空链接节点：**
+
+```tsx
+import { LinkPlugin } from '@platejs/link/react';
+
+const plugins = [
+  // ...其他插件
+  LinkPlugin.configure({
+    rules: {
+      normalize: { removeEmpty: true },
+    },
+  }),
+];
+```
+
+规范化前：
+```tsx
+<p>
+  <a href="http://google.com">
+    <text />
+  </a>
+  <cursor />
+</p>
+```
+
+规范化后（移除空链接）：
+```tsx
+<p>
+  <cursor />
+</p>
+```
+
+## `rules.match`
+
+插件规则中的 `match` 函数允许您基于节点属性（而不仅仅是类型匹配）覆盖特定插件的默认行为。这在您想为现有节点类型扩展新行为时特别有用。
+
+### 示例
+
+**带自定义空块检测的代码块：**
+
+```tsx
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+
+const plugins = [
+  // ...其他插件
+  CodeBlockPlugin.configure({
+    rules: {
+      delete: { empty: 'reset' },
+      match: ({ rule, node }) => {
+        return rule === 'delete.empty' && isCodeBlockEmpty(editor);
+      },
+    },
+  }),
+];
+```
+
+由于列表插件扩展了已有自己的插件配置的现有块（如 `ParagraphPlugin`），使用 `rules.match` 允许您覆盖这些行为。
+
+**段落的列表覆盖：**
+
+```tsx
+import { ListPlugin } from '@platejs/list/react';
+
+const plugins = [
+  // ...其他插件
+  ListPlugin.configure({
+    rules: {
+      match: ({ editor, rule }) => {
+        return rule === 'delete.empty' && isCodeBlockEmpty(editor);
+      },
+    },
+  }),
+];
+```
+
+## 自定义重置逻辑
+
+某些插件需要超出标准段落转换的特殊重置行为。您可以覆盖 `resetBlock` 转换：
+
+**列表插件重置（缩进而非转换为段落）：**
+
+```tsx
+const ListPlugin = createPlatePlugin({
+  key: 'list',
+  // ... 其他配置
+}).overrideEditor(({ editor, tf: { resetBlock } }) => ({
+  transforms: {
+    resetBlock(options) {
+      if (editor.api.block(options)?.[0]?.listStyleType) {
+        outdentList();
+        return;
+      }
+      
+      return resetBlock(options);
+    },
+  },
+}));
+```
+
+**代码块重置（解包而非转换）：**
+
+```tsx
+const CodeBlockPlugin = createPlatePlugin({
+  key: 'code_block',
+  // ... 其他配置
+}).overrideEditor(({ editor, tf: { resetBlock } }) => ({
+  transforms: {
+    resetBlock(options) {
+      if (editor.api.block({
+        at: options?.at,
+        match: { type: 'code_block' },
+      })) {
+        unwrapCodeBlock();
+        return;
+      }
+      
+      return resetBlock(options);
+    },
+  },
+}));
+```
+
+## 组合规则
+
+您可以组合不同的规则来实现全面的块行为：
+
+```tsx
+import { H1Plugin } from '@platejs/heading/react';
+
+const plugins = [
+  // ...其他插件
+  H1Plugin.configure({
+    rules: {
+      break: {
+        empty: 'reset',
+        splitReset: true,
+      },
+      delete: {
+        start: 'reset',
+      },
+    },
+  }),
+];
+```
+
+**换行行为（默认）：**
+```tsx
+<blockquote>
+  Hello|
+</blockquote>
+```
+
+按下 `Enter` 后：
+```tsx
+<blockquote>
+  Hello
+  |
+</blockquote>
+```
+
+**空块重置行为：**
+```tsx
+<blockquote>
+  |
+</blockquote>
+```
+
+按下 `Enter` 后：
+```tsx
+<p>
+  |
+</p>
+```
+
+**起始处重置行为：**
+```tsx
+<blockquote>
+  |Quote content
+</blockquote>
+```
+按下 `Backspace` 后：
+```tsx
+<p>
+  |Quote content
+</p>
+```
+
+## 高级用法
+
+对于超出简单规则的复杂场景，您可以直接使用 [`.overrideEditor`](/docs/plugin-methods#overrideeditor) 覆盖编辑器转换。这使您可以完全控制 [`resetBlock`](/docs/plugin-methods#extendtransforms) 和 [`insertExitBreak`](/docs/plugin-methods#extendtransforms) 等转换：
+
+```tsx
+const CustomPlugin = createPlatePlugin({
+  key: 'custom',
+  // ... 其他配置
+}).overrideEditor(({ editor, tf: { insertBreak, deleteBackward, resetBlock } }) => ({
+  transforms: {
+    insertBreak() {
+      const block = editor.api.block();
+      
+      if (/* 自定义条件 */) {
+        // 自定义行为
+        return;
+      }
+      
+      // 默认行为
+      insertBreak();
+    },
+    
+    deleteBackward(unit) {
+      const block = editor.api.block();
+      
+      if (/* 自定义条件 */) {
+        // 自定义行为
+        return;
+      }
+      
+      deleteBackward(unit);
+    },
+    
+    resetBlock(options) {
+      if (/* 自定义条件 */) {
+        // 自定义行为
+        return true;
+      }
+      
+      return resetBlock(options);
+    },
+  },
+}));
+```
+
+## `rules.selection`
+
+控制光标定位和文本插入在节点边界的行为，特别是对于标记和内联元素。
+
+### 配置
+
+```tsx
+BoldPlugin.configure({
+  rules: {
+    selection: {
+      // 定义边界处的选择行为
+      affinity: 'default' | 'directional' | 'outward' | 'hard',
+    },
+  },
+});
+```
+
+### 亲和性选项
+
+`affinity` 属性决定光标在不同标记或内联元素边界处的行为：
+
+#### `default`
+
+使用 Slate 的默认行为。对于标记，光标在起始边缘具有向外亲和性（在标记前输入不会应用它），在结束边缘具有向内亲和性（在标记后输入会扩展它）。
+
+**在标记结束处（向内亲和性）：**
+```tsx
+<p>
+  <text bold>Bold text|</text><text>Normal text</text>
+</p>
+```
+
+输入会将粗体格式扩展到新文本。
+
+**在标记起始处（向外亲和性）：**
+```tsx
+<p>
+  <text>Normal text|</text><text bold>Bold text</text>
+</p>
+```
+
+输入不会将粗体格式应用于新文本。
+
+#### `directional`
+
+选择亲和性由光标移动方向决定。当光标移动到边界时，基于其来源位置保持亲和性。
+
+```tsx
+import { BoldPlugin } from '@platejs/basic-nodes/react';
+
+const plugins = [
+  // ...其他插件
+  BoldPlugin.configure({
+    rules: {
+      selection: { affinity: 'directional' },
+    },
+  }),
+];
+```
+
+**从右侧移动（向内亲和性）：**
+```tsx
+<p>
+  <text>Normal</text><text bold>B|old text</text>
+</p>
+```
+
+按下 `←` 后：
+```tsx
+<p>
+  <text>Normal</text><text bold>|Bold text</text>
+</p>
+```
+
+输入会扩展粗体格式，这在 `default` 亲和性下是不可能的。
+
+```tsx
+import { LinkPlugin } from '@platejs/link/react';
+
+const plugins = [
+  // ...其他插件
+  LinkPlugin.configure({
+    rules: {
+      selection: { affinity: 'directional' },
+    },
+  }),
+];
+```
+
+**从右侧移动（向外亲和性）：**
+```tsx
+<p>
+  Visit <a href="https://example.com">our website</a> |for more information text.
+</p>
+```
+
+按下 `←` 后：
+```tsx
+<p>
+  Visit <a href="https://example.com">our website</a

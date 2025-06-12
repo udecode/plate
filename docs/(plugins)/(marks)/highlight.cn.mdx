@@ -1,0 +1,115 @@
+---
+title: 高亮标记
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: 标记工具栏按钮
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 使用背景色高亮重要文本
+- 支持快捷键快速格式化
+- 默认渲染为 `<mark>` HTML 元素
+
+</PackageInfo>
+
+## 套件使用方式
+
+<Steps>
+
+### 安装
+
+最快捷添加高亮插件的方式是使用 `BasicMarksKit`，它包含预配置的 `HighlightPlugin` 以及其他基础标记及其 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="basic-marks-kit" />
+
+- [`HighlightLeaf`](/docs/components/highlight-node): 渲染高亮文本元素
+
+### 添加套件
+
+将套件添加到你的插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...BasicMarksKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用方式
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### 添加插件
+
+在创建编辑器时将 `HighlightPlugin` 包含到 Plate 插件数组中。
+
+```tsx
+import { HighlightPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    HighlightPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+你可以使用自定义组件和快捷键来配置 `HighlightPlugin`。
+
+```tsx
+import { HighlightPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+import { HighlightLeaf } from '@/components/ui/highlight-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    HighlightPlugin.configure({
+      node: { component: HighlightLeaf },
+      shortcuts: { toggle: { keys: 'mod+shift+h' } },
+    }),
+  ],
+});
+```
+
+- `node.component`: 分配 [`HighlightLeaf`](/docs/components/highlight-node) 来渲染高亮文本元素
+- `shortcuts.toggle`: 定义用于切换高亮格式的键盘[快捷键](/docs/plugin-shortcuts)
+
+### 添加工具栏按钮
+
+你可以将 [`MarkToolbarButton`](/docs/components/mark-toolbar-button) 添加到你的[工具栏](/docs/toolbar)中来切换高亮格式。
+
+</Steps>
+
+## 插件
+
+### `HighlightPlugin`
+
+用于高亮文本格式化的插件。默认渲染为 `<mark>` HTML 元素。
+
+## 转换方法
+
+### `tf.highlight.toggle`
+
+切换选中文本的高亮格式。

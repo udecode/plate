@@ -1,9 +1,9 @@
 ---
 title: Element
-description: Slate 中元素的 API 参考。
+description: Slate 中元素的 API 参考文档。
 ---
 
-`TElement` 对象是 Slate 文档中 `Node` 类型的一种，它们包含其他 `TElement` 节点或 `Text` 节点。
+`TElement` 对象是 Plate 文档中的一种 `Node` 类型，可以包含其他 `TElement` 节点或 `Text` 节点。
 
 ```typescript
 interface TElement {
@@ -15,21 +15,21 @@ interface TElement {
 
 ## 元素行为
 
-元素的行为可以根据编辑器的配置而不同：
+根据编辑器的配置，元素可以有不同的行为表现：
 
-### 块级与内联
+### 块级 vs 行内
 
-元素可以是“块级”或“内联”，由插件 `node.isInline` 定义：
+元素可以是"块级"或"行内"，由插件 `node.isInline` 定义：
 
-- 块级元素只能与其他块级元素作为兄弟节点
-- 内联元素可以与文本节点或其他内联元素作为兄弟节点
+- 块级元素只能与其他块级元素并列
+- 行内元素可以与 Text 节点或其他行内元素并列
 
-### 空元素与非空元素
+### 空元素 vs 非空元素
 
-元素可以是“空元素”或“非空元素”，由插件 `node.isVoid` 定义：
+元素可以是"空元素"或"非空元素"，由插件 `node.isVoid` 定义：
 
-- 非空元素：Slate 负责渲染其子节点（例如，包含文本和内联子节点的段落）
-- 空元素：子节点由元素的渲染代码处理
+- 非空元素：Slate 负责渲染子节点（例如包含 Text 和行内子元素的段落）
+- 空元素：子元素由 Element 的渲染代码处理
 
 ### 可标记的空元素
 
@@ -39,7 +39,7 @@ interface TElement {
 
 ### `isElementType`
 
-检查一个值是否实现了 `TElement` 接口，并且其 `elementKey` 匹配指定的值。默认检查 `'type'` 键。
+检查一个值是否实现了 `TElement` 接口并且 `elementKey` 匹配指定值。默认检查 `'type'` 键。
 
 <API name="isElementType">
 <APIParameters>
@@ -55,7 +55,7 @@ interface TElement {
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果该值是具有指定键且匹配 `elementVal` 的元素，则返回 `true`。
+  如果该值是一个元素且指定键匹配 `elementVal`，则返回 `true`。
 </APIReturns>
 </API>
 
@@ -87,13 +87,13 @@ interface TElement {
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果该值是 Slate 元素，则返回 `true`。
+  如果该值是 Plate 元素，则返回 `true`。
 </APIReturns>
 </API>
 
 ### `isElementList`
 
-检查一个值是否为 `TElement` 对象数组。
+检查一个值是否是 `TElement` 对象的数组。
 
 <API name="isElementList">
 <APIParameters>
@@ -109,17 +109,17 @@ interface TElement {
 
 ### `isElementProps`
 
-检查一组 props 是否为 `TElement` 的部分属性。
+检查一组属性是否是 `TElement` 的部分。
 
 <API name="isElementProps">
 <APIParameters>
   <APIItem name="props" type="any">
-    要检查的 props。
+    要检查的属性。
   </APIItem>
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果 props 匹配元素属性，则返回 `true`。
+  如果属性匹配元素属性，则返回 `true`。
 </APIReturns>
 </API>
 
@@ -146,7 +146,7 @@ interface TElement {
 
 ### `TElement`
 
-`TElement` 对象是 Slate 文档中包含其他元素节点或文本节点的节点类型。它们可以根据编辑器配置为“块级”或“内联”。
+`TElement` 对象是 Plate 文档中的一种节点类型，可以包含其他元素节点或文本节点。根据编辑器配置，它们可以是"块级"或"行内"。
 
 `Element` 是 `TElement` 的类型别名。
 
@@ -156,19 +156,19 @@ interface TElement {
     可以是元素或文本节点的子节点数组。
   </APIItem>
   <APIItem name="type" type="string">
-    定义元素类型的字符串标识符（如 'paragraph'、'heading' 等）。
+    定义元素类型的字符串标识符（例如 'paragraph'、'heading' 等）。
   </APIItem>
 </APIAttributes>
 </API>
 
 ### `ElementEntry`
 
-元素条目表示一个元素节点及其路径。
+Element entry 表示一个 Element 节点及其路径。
 
 <API name="ElementEntry">
 <APIAttributes>
   <APIItem name="0" type="Element">
-    元素节点。
+    Element 节点。
   </APIItem>
   <APIItem name="1" type="Path">
     元素的路径。
@@ -202,5 +202,4 @@ type ElementOrTextIn<V extends Value> = ElementIn<V> | TextIn<V>;
 type ElementIn<V extends Value> = ElementOf<V[number]>;
 ```
 
-`ElementIn` 是一个工具类型，用于从 Slate 的 `Value` 类型获取元素类型。
-```
+`ElementIn` 是一个工具类型，用于从 Plate `Value` 类型获取元素类型。

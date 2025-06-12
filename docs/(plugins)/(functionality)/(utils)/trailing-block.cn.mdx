@@ -1,0 +1,97 @@
+---
+title: 尾部块
+---
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 确保文档末尾始终存在特定类型的块
+
+</PackageInfo>
+
+## 手动使用
+
+<Steps>
+
+### 添加插件
+
+```tsx
+import { TrailingBlockPlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    TrailingBlockPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+该插件开箱即用，具有合理的默认配置，但也可以针对特定用例进行配置：
+
+```tsx
+import { TrailingBlockPlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    TrailingBlockPlugin.configure({
+      options: {
+        type: 'p', // 段落块
+        exclude: ['blockquote'], // 不在这些类型后添加
+      },
+    }),
+  ],
+});
+```
+
+**配置选项：**
+- `type`: 要插入的尾部块类型（默认为段落）
+- `exclude`: 不应触发尾部块插入的块类型数组
+- `allow`: 允许的块类型数组（与exclude互斥）
+- `filter`: 自定义函数用于确定何时添加尾部块
+
+</Steps>
+
+## 插件
+
+### `TrailingBlockPlugin`
+
+确保在文档末尾或指定嵌套层级始终存在特定块类型的插件。
+
+**核心行为：**
+- 当最后一个节点不符合预期类型时自动添加尾部块
+- 通过编辑器规范化机制维护文档结构
+- 通过配置`level`选项支持嵌套结构
+- 防止空文档，确保至少存在一个块
+- 遵循过滤选项控制尾部块的添加时机
+
+<API name="TrailingBlockPlugin">
+<APIOptions>
+  <APIItem name="level" type="number" optional>
+    应添加尾部节点的层级，第一层级为0。
+    - **默认值:** `0`
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    要插入的尾部块类型。
+    - **默认值:** `'p'` (段落)
+  </APIItem>
+  <APIItem name="allow" type="string[]" optional>
+    过滤匹配这些类型的节点。只有这些类型会被视为有效的尾部块。
+    - **默认值:** `[]` (允许所有类型)
+  </APIItem>
+  <APIItem name="exclude" type="string[]" optional>
+    过滤不匹配这些类型的节点。这些类型不会触发尾部块插入。
+    - **默认值:** `[]` (不排除任何类型)
+  </APIItem>
+  <APIItem name="filter" type="(node: TNode) => boolean" optional>
+    自定义过滤函数，用于确定节点是否应触发尾部块插入。
+  </APIItem>
+</APIOptions>
+</API>

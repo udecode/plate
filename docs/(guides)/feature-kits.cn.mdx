@@ -1,0 +1,71 @@
+---
+title: 功能套件
+description: 了解如何使用预配置插件和UI组件的功能套件快速搭建编辑器。
+---
+
+功能套件将相关插件及其UI组件打包整合，提供最快捷的编辑器功能添加方式。
+
+## 什么是功能套件？
+
+功能套件是预先组装的工具包，包含针对特定编辑器功能的多个插件和组件。
+
+例如，`BasicBlocksKit`包含段落、标题、引用块和水平分割线的插件，以及对应的UI组件。
+
+## 使用套件的优势
+
+- **快速配置**：通过一次导入添加多个功能
+- **最佳实践**：套件采用合理的默认配置
+- **内置UI**：多数套件包含[Plate UI](/docs/installation/plate-ui)组件
+- **简化依赖**：套件自动处理插件依赖关系
+
+## 套件使用 vs 手动配置
+
+插件文档中展示两种使用方式：
+
+- **套件使用**：使用预配置套件，推荐大多数用户采用
+- **手动配置**：单独安装配置每个插件，适用于以下场景：
+  - 需要自定义插件配置（超出套件默认值）
+  - 需要使用不同UI组件或无UI（headless模式）
+  - 仅需套件中的特定插件
+
+套件本质上是预配置好的手动方案。
+
+## 查找可用套件
+
+在插件文档中寻找"Kit Usage"章节，这里会说明使用的套件并展示套件源代码。
+
+## 示例：BasicBlocksKit
+
+[`BasicBlocksKit`](/docs/basic-blocks#installation)包含以下插件和组件：
+
+- `ParagraphPlugin`及`ParagraphElement`
+- `H1Plugin`及`H1Element`
+- `H2Plugin`及`H2Element`
+- `H3Plugin`及`H3Element`
+- `BlockquotePlugin`及`BlockquoteElement`
+- `HorizontalRulePlugin`及`HrElement`
+
+无需单独添加每个插件，直接使用套件：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...BasicBlocksKit,
+  ],
+});
+```
+
+即可一次性添加所有区块元素及其UI组件。
+
+## 何时选择手动配置
+
+以下情况建议手动配置：
+
+- **自定义配置**：套件默认值不满足需求时
+- **定制UI**：不使用[Plate UI](/docs/installation/plate-ui)组件时
+- **精简配置**：仅需套件中一两个插件时
+- **学习目的**：需要理解插件协作机制时

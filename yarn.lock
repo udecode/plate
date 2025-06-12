@@ -3192,7 +3192,7 @@ __metadata:
   dependencies:
     "@platejs/combobox": "npm:49.0.0"
     "@platejs/markdown": "npm:49.0.0"
-    "@platejs/selection": "npm:49.0.0"
+    "@platejs/selection": "npm:49.0.1"
     ai: "npm:4.3.16"
     lodash: "npm:^4.17.21"
   peerDependencies:
@@ -3334,7 +3334,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@platejs/csv@workspace:packages/csv"
   dependencies:
-    "@platejs/table": "npm:49.0.0"
+    "@platejs/table": "npm:49.0.1"
     "@types/papaparse": "npm:^5.3.16"
     papaparse: "npm:^5.5.3"
     platejs: "workspace:^"
@@ -3630,7 +3630,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@platejs/selection@npm:49.0.0, @platejs/selection@workspace:^, @platejs/selection@workspace:packages/selection":
+"@platejs/selection@npm:49.0.1, @platejs/selection@workspace:^, @platejs/selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@platejs/selection@workspace:packages/selection"
   dependencies:
@@ -3695,7 +3695,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@platejs/table@npm:49.0.0, @platejs/table@workspace:^, @platejs/table@workspace:packages/table":
+"@platejs/table@npm:49.0.1, @platejs/table@workspace:^, @platejs/table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@platejs/table@workspace:packages/table"
   dependencies:

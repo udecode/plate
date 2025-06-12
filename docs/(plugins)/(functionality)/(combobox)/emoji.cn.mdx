@@ -1,58 +1,145 @@
 ---
-title: 表情符号
+title: Emoji
 docs:
   - route: /docs/combobox
     title: 组合框
-  - route: /docs/components/emoji-input-element
-    title: 表情符号输入元素
+  - route: /docs/components/emoji-node
+    title: Emoji输入元素
   - route: /docs/components/emoji-dropdown-menu
-    title: 表情符号下拉菜单
+    title: Emoji工具栏按钮
 ---
 
 <ComponentPreview name="emoji-demo" />
 
 <PackageInfo>
 
-## 功能
+## 功能特性
 
-- 内联插入表情符号。
-- 使用 `:` 快捷键后跟表情符号名称（例如，`:apple:` 🍎）。
-- 输入时自动显示补全建议。
+- 通过自动补全建议内联插入表情符号
+- 通过输入`:`字符后跟表情名称触发（例如`:apple:` 🍎）
+- 可自定义的表情数据源和渲染方式
 
 </PackageInfo>
 
-## 安装
+## 套件使用方式
+
+<Steps>
+
+### 安装
+
+最快捷的添加表情功能方式是使用`EmojiKit`，它包含预配置的`EmojiPlugin`和`EmojiInputPlugin`以及它们的[Plate UI](/docs/installation/plate-ui)组件。
+
+<ComponentSource name="emoji-kit" />
+
+- [`EmojiInputElement`](/docs/components/emoji-node): 渲染表情输入组合框
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { EmojiKit } from '@/components/editor/plugins/emoji-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...EmojiKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置方式
+
+<Steps>
+
+### 安装
 
 ```bash
 npm install @platejs/emoji @emoji-mart/data
 ```
 
-## 使用
+### 添加插件
 
 ```tsx
-import { EmojiPlugin } from '@platejs/emoji/react';
-import emojiMartData from '@emoji-mart/data';
+import { EmojiPlugin, EmojiInputPlugin } from '@platejs/emoji/react';
+import { createPlateEditor } from 'platejs/react';
 
-const plugins = [
-  // ...其他插件
-  EmojiPlugin.configure({ options: { data: emojiMartData } }),
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    EmojiPlugin,
+    EmojiInputPlugin,
+  ],
+});
 ```
 
-## 插件
+### 配置插件
 
-### `EmojiPlugin`
+```tsx
+import { EmojiPlugin, EmojiInputPlugin } from '@platejs/emoji/react';
+import { createPlateEditor } from 'platejs/react';
+import { EmojiInputElement } from '@/components/ui/emoji-node';
+import emojiMartData from '@emoji-mart/data';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    EmojiPlugin.configure({
+      options: {
+        data: emojiMartData,
+        trigger: ':',
+        triggerPreviousCharPattern: /^\s?$/,
+        createEmojiNode: (emoji) => ({ text: emoji.skins[0].native }),
+      },
+    }),
+    EmojiInputPlugin.withComponent(EmojiInputElement),
+  ],
+});
+```
+
+- `options.data`: 来自@emoji-mart/data包的表情数据
+- `options.trigger`: 触发表情组合框的字符（默认：`:`）
+- `options.triggerPreviousCharPattern`: 匹配触发字符前一个字符的正则表达式
+- `options.createEmojiNode`: 选择表情时创建表情节点的函数。默认插入Unicode字符作为文本
+- `withComponent`: 为表情输入组合框分配UI组件
+
+### 添加工具栏按钮
+
+您可以在[工具栏](/docs/toolbar)中添加[`EmojiToolbarButton`](/docs/components/emoji-toolbar-button)来插入表情符号。
+
+</Steps>
+
+## 插件说明
+
+### EmojiPlugin
+
+提供表情功能的核心插件。扩展自[TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions)。
 
 <API name="EmojiPlugin">
-  扩展自 [TriggerComboboxPlugin](/docs/combobox#options)
 <APIOptions>
-  <APIItem name="createEmojiNode" type="(emoji: TEmoji): ElementOrTextOf<any>" optional>
-    指定选择表情符号时插入的节点的函数。
-    - **默认值:** 插入带有表情符号 Unicode 字符的文本节点
+  <APIItem name="data" type="EmojiMartData" optional>
+    来自@emoji-mart/data包的表情数据。
+    - **默认值:** 内置表情库
+  </APIItem>
+  <APIItem name="createEmojiNode" type="(emoji: Emoji) => Descendant" optional>
+    指定选择表情时插入节点的函数。
+    - **默认行为:** 插入包含表情Unicode字符的文本节点
+  </APIItem>
+  <APIItem name="trigger" type="string" optional>
+    触发表情组合框的字符。
+    - **默认值:** `':'`
+  </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+    匹配触发字符前一个字符的模式。
+    - **默认值:** `/^\s?$/`
+  </APIItem>
+  <APIItem name="createComboboxInput" type="() => TElement" optional>
+    创建触发激活时输入元素的函数。
   </APIItem>
 </APIOptions>
 </API>
 
-### `EmojiInputPlugin`
+### EmojiInputPlugin
 
-处理表情符号插入的输入行为。
+处理表情插入的输入行为。

@@ -1,9 +1,9 @@
 ---
-title: 路径（Path）
-description: Slate 中路径的 API 参考文档。
+title: 路径(Path)
+description: Plate 中路径的 API 参考。
 ---
 
-路径（Path）是一个索引列表，描述了节点在 Slate 节点树中的确切位置。虽然它们通常是相对于根 `Editor` 对象的，但它们可以相对于任何 `Node` 对象。
+Path 是一个索引列表，用于描述节点在 Plate 节点树中的确切位置。虽然它们通常是相对于根 `Editor` 对象的，但也可以相对于任何 `Node` 对象。
 
 ```ts
 type Path = number[];
@@ -13,7 +13,7 @@ type Path = number[];
 
 ### `operationCanTransformPath`
 
-检查一个操作是否会影响路径（用作规范化过程中脏路径更新的优化）。
+检查操作是否会影响路径（在规范化过程中用作脏路径更新的优化）。
 
 <API name="operationCanTransformPath">
 <APIParameters>
@@ -23,7 +23,7 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果操作是插入、合并、移动、删除或分割操作，则返回 `true`。
+  如果操作是插入、合并、移动、删除或拆分操作，则返回 `true`。
 </APIReturns>
 </API>
 
@@ -40,7 +40,7 @@ type Path = number[];
     要应用的操作。
   </APIItem>
   <APIItem name="options" type="PathTransformOptions" optional>
-    转换路径的选项。
+    路径转换的选项。
   </APIItem>
 </APIParameters>
 
@@ -57,7 +57,7 @@ type Path = number[];
 
 ### `ancestors`
 
-获取给定路径的祖先路径列表。
+获取给定路径的所有祖先路径列表。
 
 <API name="ancestors">
 <APIParameters>
@@ -65,24 +65,24 @@ type Path = number[];
     要获取祖先的路径。
   </APIItem>
   <APIItem name="options" type="PathAncestorsOptions" optional>
-    祖先检索的选项。
+    获取祖先的选项。
   </APIItem>
 </APIParameters>
 
 <APIOptions type="PathAncestorsOptions">
   <APIItem name="reverse" type="boolean" optional>
-    如果为 true，则按相反顺序返回路径（从最深到最浅）。
+    如果为 true，则按反向顺序返回路径（从最深到最浅）。
   </APIItem>
 </APIOptions>
 
 <APIReturns type="Path[]">
-  按从最浅到最深的祖先排序的路径数组（除非反转）。
+  从最浅到最深的祖先路径数组（除非反向）。
 </APIReturns>
 </API>
 
 ### `child`
 
-获取给定索引处的子节点路径。
+获取指定索引的子节点路径。
 
 <API name="child">
 <APIParameters>
@@ -90,7 +90,7 @@ type Path = number[];
     父路径。
   </APIItem>
   <APIItem name="index" type="number">
-    子索引。
+    子节点索引。
   </APIItem>
 </APIParameters>
 
@@ -120,7 +120,7 @@ type Path = number[];
 
 ### `compare`
 
-比较一个路径与另一个路径，返回一个整数，表示该路径是在另一个路径之前、相同位置还是之后。
+比较两个路径，返回一个整数表示路径是在另一个之前、相同还是之后。
 
 <API name="compare">
 <APIParameters>
@@ -133,13 +133,13 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="-1 | 0 | 1">
-  如果在之前则为 `-1`，如果在相同位置则为 `0`，如果在之后则为 `1`。
+  如果在之前返回 `-1`，相同位置返回 `0`，之后返回 `1`。
 </APIReturns>
 </API>
 
 ### `endsAfter`
 
-检查一个路径是否在另一个路径的某个索引之后结束。
+检查路径是否在另一个路径的某个索引之后结束。
 
 <API name="endsAfter">
 <APIParameters>
@@ -152,13 +152,13 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果 `path` 在 `another` 之后结束，则为 `true`。
+  如果 `path` 在 `another` 之后结束返回 `true`。
 </APIReturns>
 </API>
 
 ### `endsAt`
 
-检查一个路径是否在另一个路径的某个索引处结束。
+检查路径是否在另一个路径的某个索引处结束。
 
 <API name="endsAt">
 <APIParameters>
@@ -171,13 +171,13 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果 `path` 在与 `another` 相同的索引处结束，则为 `true`。
+  如果 `path` 在 `another` 相同索引处结束返回 `true`。
 </APIReturns>
 </API>
 
 ### `endsBefore`
 
-检查一个路径是否在另一个路径的某个索引之前结束。
+检查路径是否在另一个路径的某个索引之前结束。
 
 <API name="endsBefore">
 <APIParameters>
@@ -190,13 +190,13 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果 `path` 在 `another` 之前结束，则为 `true`。
+  如果 `path` 在 `another` 之前结束返回 `true`。
 </APIReturns>
 </API>
 
 ### `equals`
 
-检查一个路径是否与另一个路径完全相等。
+检查路径是否与另一个完全相等。
 
 <API name="equals">
 <APIParameters>
@@ -209,13 +209,13 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果路径完全相等，则为 `true`。
+  如果路径完全相等返回 `true`。
 </APIReturns>
 </API>
 
 ### `firstChild`
 
-获取路径的第一个子节点的路径。
+获取路径的第一个子节点路径。
 
 <API name="firstChild">
 <APIParameters>
@@ -241,13 +241,13 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果存在前一个兄弟节点，则为 `true`。
+  如果存在前一个兄弟节点返回 `true`。
 </APIReturns>
 </API>
 
 ### `isAfter`
 
-检查一个路径是否在另一个路径之后。
+检查路径是否在另一个之后。
 
 <API name="isAfter">
 <APIParameters>
@@ -260,32 +260,32 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果第一个路径在第二个路径之后，则为 `true`。
+  如果第一个路径在第二个之后返回 `true`。
 </APIReturns>
 </API>
 
 ### `isAncestor`
 
-检查一个路径是否是另一个路径的祖先。
+检查路径是否是另一个的祖先。
 
 <API name="isAncestor">
 <APIParameters>
   <APIItem name="path" type="Path">
-    潜在的祖先路径。
+    可能的祖先路径。
   </APIItem>
   <APIItem name="another" type="Path">
-    潜在的后代路径。
+    可能的子孙路径。
   </APIItem>
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果 `path` 是 `another` 的祖先，则为 `true`。
+  如果 `path` 是 `another` 的祖先返回 `true`。
 </APIReturns>
 </API>
 
 ### `isBefore`
 
-检查一个路径是否在另一个路径之前。
+检查路径是否在另一个之前。
 
 <API name="isBefore">
 <APIParameters>
@@ -298,32 +298,32 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果第一个路径在第二个路径之前，则为 `true`。
+  如果第一个路径在第二个之前返回 `true`。
 </APIReturns>
 </API>
 
 ### `isChild`
 
-检查一个路径是否是另一个路径的子路径。
+检查路径是否是另一个的子路径。
 
 <API name="isChild">
 <APIParameters>
   <APIItem name="path" type="Path">
-    潜在的子路径。
+    可能的子路径。
   </APIItem>
   <APIItem name="another" type="Path">
-    潜在的父路径。
+    可能的父路径。
   </APIItem>
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果 `path` 是 `another` 的子路径，则为 `true`。
+  如果 `path` 是 `another` 的子路径返回 `true`。
 </APIReturns>
 </API>
 
 ### `isCommon`
 
-检查一个路径是否等于或是另一个路径的祖先。
+检查路径是否等于或是另一个的祖先。
 
 <API name="isCommon">
 <APIParameters>
@@ -336,51 +336,51 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果 `path` 等于或是 `another` 的祖先，则为 `true`。
+  如果 `path` 等于或是 `another` 的祖先返回 `true`。
 </APIReturns>
 </API>
 
 ### `isDescendant`
 
-检查一个路径是否是另一个路径的后代。
+检查路径是否是另一个的子孙。
 
 <API name="isDescendant">
 <APIParameters>
   <APIItem name="path" type="Path">
-    潜在的后代路径。
+    可能的子孙路径。
   </APIItem>
   <APIItem name="another" type="Path">
-    潜在的祖先路径。
+    可能的祖先路径。
   </APIItem>
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果 `path` 是 `another` 的后代，则为 `true`。
+  如果 `path` 是 `another` 的子孙返回 `true`。
 </APIReturns>
 </API>
 
 ### `isParent`
 
-检查一个路径是否是另一个路径的父路径。
+检查路径是否是另一个的父路径。
 
 <API name="isParent">
 <APIParameters>
   <APIItem name="path" type="Path">
-    潜在的父路径。
+    可能的父路径。
   </APIItem>
   <APIItem name="another" type="Path">
-    潜在的子路径。
+    可能的子路径。
   </APIItem>
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果 `path` 是 `another` 的父路径，则为 `true`。
+  如果 `path` 是 `another` 的父路径返回 `true`。
 </APIReturns>
 </API>
 
 ### `isPath`
 
-检查一个值是否实现了 `Path` 接口。
+检查值是否实现了 `Path` 接口。
 
 <API name="isPath">
 <APIParameters>
@@ -390,13 +390,13 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值是路径，则为 `true`。
+  如果值是路径返回 `true`。
 </APIReturns>
 </API>
 
 ### `isSibling`
 
-检查一个路径是否是另一个路径的兄弟路径。
+检查路径是否是另一个的兄弟路径。
 
 <API name="isSibling">
 <APIParameters>
@@ -409,7 +409,7 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果路径共享相同的父路径，则为 `true`。
+  如果路径共享同一个父路径返回 `true`。
 </APIReturns>
 </API>
 
@@ -425,13 +425,13 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="number">
-  最后一个索引，如果路径为空则为 -1。
+  最后一个索引，如果路径为空则返回 -1。
 </APIReturns>
 </API>
 
 ### `levels`
 
-获取一个路径下每个级别的路径列表。
+获取从路径到每个级别的路径列表。
 
 <API name="levels">
 <APIParameters>
@@ -439,13 +439,13 @@ type Path = number[];
     要获取级别的路径。
   </APIItem>
   <APIItem name="options" type="PathLevelsOptions" optional>
-    级别检索的选项。
+    获取级别的选项。
   </APIItem>
 </APIParameters>
 
 <APIOptions type="PathLevelsOptions">
   <APIItem name="reverse" type="boolean" optional>
-    如果为 true，则按相反顺序返回路径（从最深到最浅）。
+    如果为 true，则按反向顺序返回路径（从最深到最浅）。
   </APIItem>
 </APIOptions>
 
@@ -498,7 +498,7 @@ type Path = number[];
 </APIParameters>
 
 <APIReturns type="Path | undefined">
-  前一个兄弟节点的路径，如果没有则为 `undefined`。
+  前一个兄弟节点的路径，如果没有则返回 `undefined`。
 </APIReturns>
 </API>
 
@@ -509,7 +509,7 @@ type Path = number[];
 <API name="relative">
 <APIParameters>
   <APIItem name="path" type="Path">
-    要转换为相对路径的路径。
+    要相对化的路径。
   </APIItem>
   <APIItem name="ancestor" type="Path">
     祖先路径。
@@ -525,4 +525,4 @@ type Path = number[];
 
 ### `Path`
 
-表示索引数组，用于遍历文档树以到达特定节点。
+一个数字数组，表示遍历文档树以到达特定节点的索引。

@@ -1,59 +1,125 @@
 ---
-title: 拖拽
+title: 拖拽功能
+description: 通过拖拽区块来重新组织编辑器中的内容。
 docs:
   - route: /docs/components/block-draggable
-    title: 可拖拽组件
+    title: 可拖拽区块组件
 ---
 
 <ComponentPreview name="dnd-demo" />
 
 <PackageInfo>
 
-## 功能
+## 功能特性
 
-- 在编辑器内通过拖拽块来移动和插入内容。
+- 通过拖拽区块实现内容移动和插入
+- 拖拽至视窗边缘时自动滚动
+- 支持文件拖放插入媒体区块
+- 可视化拖放指示器和拖拽手柄
 
 </PackageInfo>
 
-## 安装
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的方式是使用 `DndKit` 套件，它包含预配置的 `DndPlugin`、React DnD 设置以及 [`BlockDraggable`](/docs/components/block-draggable) UI组件。
+
+<ComponentSource name="dnd-kit" />
+
+- [`BlockDraggable`](/docs/components/block-draggable): 为区块渲染拖拽手柄和放置指示器
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { DndKit } from '@/components/editor/plugins/dnd-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...DndKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装依赖
 
 ```bash
 npm install @platejs/dnd react-dnd react-dnd-html5-backend
 ```
 
-## 使用
-
-<Steps>
-
 ### 添加插件
-
-在你的 Plate 插件数组中包含 `DndPlugin`。
 
 ```tsx
 import { DndPlugin } from '@platejs/dnd';
+import { createPlateEditor } from 'platejs/react';
 
-const plugins = [
-  // ...其他插件,
-  DndPlugin,
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    DndPlugin,
+  ],
+});
 ```
 
-### 配置 `DndPlugin`
+### 配置插件
 
-<ComponentSource name="dnd-kit" />
+通过可拖拽组件和DnD provider配置拖放功能：
 
-`DndPlugin` 自动提供必要的 `react-dnd` 设置：
+```tsx
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndPlugin } from '@platejs/dnd';
 
-- `enableScroller: true` - 在视口边缘附近拖拽块时启用自动滚动
-- `onDropFiles` - 通过在目标位置插入文件作为媒体块来处理文件拖放
-- `render.aboveNodes` - 使用 `BlockDraggable` 组件在块上方渲染拖拽手柄和放置指示器
-- `render.aboveSlate` - 使用 `DndProvider` 和 `HTML5Backend` 包装编辑器。如果你的 React 树中已经有 `DndProvider`，请移除此配置。
+DndPlugin.configure({
+  render: {
+    aboveSlate: ({ children }) => (
+      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
+    ),
+  },
+});
+```
 
-### 添加可拖拽组件
+- `render.aboveNodes`: 分配 [`BlockDraggable`](/docs/components/block-draggable) 组件在区块上方渲染拖拽手柄
+- `render.aboveSlate`: 用 `DndProvider` 包裹编辑器。如果React树中已有 `DndProvider` 可移除此配置
 
-要在编辑器块上启用拖放功能，你需要实现可拖拽组件。这些组件使用 `useDraggable` 等钩子来处理拖拽交互并提供视觉反馈。
+### 高级配置
 
-你可以使用我们的 [BlockDraggable](/docs/components/block-draggable) 组件或使用下面的 API 实现你自己的组件。
+添加自动滚动和文件拖放处理：
+
+```tsx
+import { DndPlugin } from '@platejs/dnd';
+import { PlaceholderPlugin } from '@platejs/media/react';
+
+DndPlugin.configure({
+  options: {
+    enableScroller: true,
+    onDropFiles: ({ dragItem, editor, target }) => {
+      editor
+        .getTransforms(PlaceholderPlugin)
+        .insert.media(dragItem.files, { at: target, nextBlock: false });
+    },
+  },
+  render: {
+    aboveNodes: BlockDraggable,
+    aboveSlate: ({ children }) => (
+      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
+    ),
+  },
+});
+```
+
+- `enableScroller`: 启用拖拽至视窗边缘时的自动滚动
+- `onDropFiles`: 处理文件拖放，在目标位置插入媒体区块
 
 </Steps>
 
@@ -61,16 +127,36 @@ const plugins = [
 
 ### `DndPlugin`
 
+实现编辑器内拖拽功能的插件。
+
 <API name="DndPlugin">
 <APIOptions>
   <APIItem name="enableScroller" type="boolean" optional>
-    启用滚动功能。
+    是否启用拖拽至视窗边缘自动滚动
+    - **默认值:** `false`
   </APIItem>
   <APIItem name="scrollerProps" type="Partial<ScrollerProps>" optional>
-    `Scroller` 组件的属性。
+    当启用滚动时的 `Scroller` 组件属性
+  </APIItem>
+  <APIItem name="onDropFiles" type="function" optional>
+    文件拖放事件处理器
+    <APISubList>
+      <APISubListItem parent="onDropFiles" name="id" type="string">
+        目标元素ID
+      </APISubListItem>
+      <APISubListItem parent="onDropFiles" name="dragItem" type="FileDragItemNode">
+        包含拖放文件的对象
+      </APISubListItem>
+      <APISubListItem parent="onDropFiles" name="editor" type="PlateEditor">
+        编辑器实例
+      </APISubListItem>
+      <APISubListItem parent="onDropFiles" name="target" type="Path">
+        文件应插入的路径
+      </APISubListItem>
+    </APISubList>
   </APIItem>
   <APIItem name="dropTarget" type="{ id: string | null; line: DropLineDirection }" optional>
-    当前拖放目标状态，包含目标元素的 ID 和拖放线的方向。
+    当前拖放目标状态，包含目标元素ID和放置线方向
   </APIItem>
 </APIOptions>
 </API>
@@ -79,252 +165,189 @@ const plugins = [
 
 ### `focusBlockStartById`
 
-通过 ID 选择块的起始位置并聚焦编辑器。
+通过ID选中区块起始位置并聚焦编辑器。
 
 <API name="focusBlockStartById">
 <APIParameters>
   <APIItem name="id" type="string">
-    要聚焦的块的 ID。
+    要聚焦的区块ID
   </APIItem>
 </APIParameters>
 </API>
 
 ### `getBlocksWithId`
 
-返回带有 ID 的块的数组。
+返回带有ID的区块数组。
 
 <API name="getBlocksWithId">
 <APIOptions type="EditorNodesOptions">
-  获取节点entry的选项。
+  获取节点条目的选项
 </APIOptions>
 
 <APIReturns type="NodeEntry[]">
-  带有 ID 的块的数组。
+  带有ID的区块数组
 </APIReturns>
 </API>
 
 ### `selectBlockById`
 
+通过ID选中区块。
+
 <API name="selectBlockById">
 <APIParameters>
   <APIItem name="id" type="string">
-    要选择的块的 ID。
+    要选中的区块ID
   </APIItem>
 </APIParameters>
-</API>
-
-## 组件
-
-### `withDraggable`
-
-为组件添加可拖拽行为。
-
-<API name="withDraggable">
-<APIParameters>
-  <APIItem name="Draggable" type="React.FC">
-    要渲染的可拖拽组件。
-  </APIItem>
-  <APIItem name="Component" type="React.FC">
-    要添加可拖拽行为的组件。
-  </APIItem>
-  <APIItem name="options" type="WithDraggableOptions" optional>
-    可拖拽行为的选项。
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="WithDraggableOptions">
-  <APIItem name="level" type="number | null" optional>
-    可拖拽组件的层级。
-  </APIItem>
-  <APIItem name="filter" type="(editor: PlateEditor, path: Path) => boolean" optional>
-    返回组件是否可拖拽的函数。
-  </APIItem>
-  <APIItem name="allowReadOnly" type="boolean" optional>
-    组件是否在只读模式下可拖拽。
-  </APIItem>
-  <APIItem name="draggableProps" type="T" optional>
-    传递给可拖拽组件的属性。
-  </APIItem>
-</APIOptions>
-</API>
-
-### `DndScroller`
-
-`Scroller` 组件的包装组件，根据拖拽状态有条件地渲染。
-
-<API name="DndScroller">
-<APIState>
-  <APIItem name="enabled" type="boolean">
-    指示滚动区域是否启用的标志。如果设置为 false，滚动功能将被禁用。
-  </APIItem>
-  <APIItem name="height" type="number">
-    滚动区域的高度（以像素为单位）。
-  </APIItem>
-  <APIItem name="zIndex" type="number">
-    滚动区域的堆叠顺序。具有较高 z-index 的元素将绘制在较低 z-index 的元素前面。
-  </APIItem>
-  <APIItem name="minStrength" type="number">
-    滚动操作的最小强度（速度）。较高的值将使滚动操作更敏感。
-  </APIItem>
-  <APIItem name="strengthMultiplier" type="number">
-    增加滚动速度的乘数。较高的值将导致更快的滚动。
-  </APIItem>
-  <APIItem name="containerRef" type="RefObject<any>">
-    滚动容器 DOM 元素的引用。
-  </APIItem>
-  <APIItem name="scrollAreaProps" type="HTMLAttributes<HTMLDivElement>">
-    滚动区域 div 元素的附加属性。
-  </APIItem>
-</APIState>
 </API>
 
 ## 钩子
 
 ### `useDndNode`
 
-一个自定义钩子，结合了 `useDragNode` 和 `useDropNode` 钩子，以启用从编辑器中拖拽和放置节点。它为拖拽的节点提供了一个默认的预览，可以自定义或禁用。
+组合了 `useDragNode` 和 `useDropNode` 的自定义钩子，用于启用编辑器节点的拖拽功能。提供默认的拖拽预览效果，可自定义或禁用。
 
 <API name="useDndNode">
 <APIOptions type="UseDndNodeOptions">
   <APIItem name="element" type="TElement">
-    要拖拽的节点。
+    要拖拽的节点
   </APIItem>
   <APIItem name="type" type="string" optional>
-    拖拽项的类型。
+    拖拽项类型
     - **默认值:** `'block'`
   </APIItem>
   <APIItem name="nodeRef" type="any">
-    要拖拽的节点的引用。
+    节点拖拽引用
   </APIItem>
   <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
-    拖拽和放置的方向。
+    拖拽方向
     - **默认值:** `'vertical'`
   </APIItem>
   <APIItem name="canDropNode" type="(args: { dragEntry: NodeEntry; dragItem: DragItemNode; dropEntry: NodeEntry; editor: PlateEditor }) => boolean" optional>
-    回调函数，用于确定节点是否可以放置在当前位置。
+    判断节点能否放置到当前位置的回调
   </APIItem>
   <APIItem name="preview" type="previewOptions" optional>
-    拖拽节点的预览选项。
+    拖拽节点的预览选项
   </APIItem>
   <APIItem name="drag" type="dragOptions" optional>
-    拖拽节点的拖拽选项。
+    拖拽节点的拖拽选项
   </APIItem>
   <APIItem name="drop" type="dropOptions" optional>
-    拖拽节点的放置选项。
+    拖拽节点的放置选项
   </APIItem>
   <APIItem name="onDropHandler" type="string" optional>
-    节点放置时调用的处理程序。
+    节点放置时的处理函数
   </APIItem>
 </APIOptions>
 
 <APIReturns type="object">
   <APIItem name="isDragging" type="boolean">
-    节点是否正在被拖拽。
+    节点是否正在被拖拽
   </APIItem>
   <APIItem name="isOver" type="boolean">
-    拖拽的节点是否在放置目标上方。
+    拖拽节点是否在放置目标上方
   </APIItem>
   <APIItem name="dragRef" type="ConnectDragSource">
-    可拖拽元素的拖拽引用。
+    可拖拽元素的拖拽引用
   </APIItem>
 </APIReturns>
 </API>
 
 ### `useDragNode`
 
-一个自定义钩子，使用 `react-dnd` 的 `useDrag` 钩子来启用从编辑器中拖拽节点。
+使用 `react-dnd` 的 `useDrag` 钩子实现节点拖拽功能的自定义钩子。
 
 <API name="useDragNode">
 <APIOptions type="UseDragNodeOptions">
   <APIItem name="element" type="TElement">
-    要拖拽的节点。
+    要拖拽的节点
   </APIItem>
   <APIItem name="item" type="DragObject | DragObjectFactory<DragObject>" optional>
-    拖拽对象或返回它的工厂函数。
+    拖拽对象或其工厂函数
   </APIItem>
 </APIOptions>
 </API>
 
 ### `useDraggable`
 
-一个自定义钩子，为给定元素启用可拖拽行为。它为元素提供了一个预览，可以自定义或禁用。
+使元素具备可拖拽行为的自定义钩子，提供可自定义或禁用的拖拽预览效果。
 
 <API name="useDraggable">
 <APIOptions type="object">
   <APIItem name="element" type="TElement">
-    要使其可拖拽的元素。
+    要设为可拖拽的元素
   </APIItem>
   <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
-    拖拽和放置的方向。
+    拖拽方向
     - **默认值:** `'vertical'`
   </APIItem>
   <APIItem name="type" type="string" optional>
-    拖拽项的类型。
+    拖拽项类型
     - **默认值:** `'block'`
   </APIItem>
   <APIItem name="onDropHandler" type="function" optional>
-    元素放置时调用的处理程序。
+    元素放置时的处理函数
   </APIItem>
 </APIOptions>
 
 <APIReturns type="object">
   <APIItem name="handleRef" type="(element: Element | React.ReactElement | React.RefObject<any> | null) => void">
-    拖拽源连接函数。
+    拖拽源连接函数
   </APIItem>
   <APIItem name="isDragging" type="boolean">
-    元素是否正在被拖拽。
+    元素是否正在被拖拽
   </APIItem>
   <APIItem name="previewRef" type="React.RefObject<HTMLDivElement>">
-    可拖拽元素的引用。
+    可拖拽元素的引用
   </APIItem>
 </APIReturns>
 </API>
 
 ### `useDropNode`
 
-一个自定义钩子，使用 `react-dnd` 的 `useDrop` 钩子来启用将节点放置在编辑器上。
+使用 `react-dnd` 的 `useDrop` 钩子实现节点放置功能的自定义钩子。
 
 <API name="useDropNode">
 <APIOptions type="UseDropNodeOptions">
   <APIItem name="nodeRef" type="any">
-    被拖拽节点的引用。
+    被拖拽节点的引用
   </APIItem>
   <APIItem name="element" type="TElement">
-    拖放线所附加的节点。
+    放置线依附的节点
   </APIItem>
   <APIItem name="dropLine" type="string">
-    拖放线的当前值。
+    当前放置线的值
   </APIItem>
   <APIItem name="onChangeDropLine" type="function">
-    拖放线变化时的回调。
+    放置线变化时的回调
   </APIItem>
   <APIItem name="onDropHandler" type="object">
-    拦截放置处理的回调。
-    - 返回 `true` 以阻止默认行为
-    - 返回 `false` 以在之后运行默认行为
+    拦截放置处理的回调
+    - 返回 `true` 阻止默认行为
+    - 返回 `false` 执行默认行为
   </APIItem>
 </APIOptions>
 </API>
 
 ### `useDropLine`
 
-返回元素的当前拖放线状态。
+返回元素的当前放置线状态。
 
 <API name="useDropLine">
 <APIOptions type="object">
   <APIItem name="id" type="string" optional>
-    显示拖放线的元素 ID。
-    - **默认值:** 当前元素 ID
+    显示放置线的元素ID
+    - **默认值:** 当前元素ID
   </APIItem>
   <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
-    按方向过滤拖放线。
+    按方向过滤放置线
     - **默认值:** `'vertical'`
   </APIItem>
 </APIOptions>
 
 <APIReturns type="object">
   <APIItem name="dropLine" type="'top' | 'bottom' | 'left' | 'right' | ''">
-    当前拖放线的方向。
+    当前放置线方向
   </APIItem>
 </APIReturns>
 </API>

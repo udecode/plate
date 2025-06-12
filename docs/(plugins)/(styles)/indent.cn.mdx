@@ -3,68 +3,149 @@ title: 缩进
 docs:
   - route: /docs/components/indent-toolbar-button
     title: 缩进工具栏按钮
-  - route: /docs/components/outdent-toolbar-button
-    title: 减少缩进工具栏按钮
 ---
 
 <ComponentPreview name="indent-demo" />
 
 <PackageInfo>
 
-## 功能
+## 特性
 
-- **核心功能**:
-  - 缩进/减少缩进任何块元素
-  - Tab/Shift+Tab 键盘快捷键
-  - 干净的 DOM 结构
-
-- **自定义**:
-  - 定义目标块类型
-  - 设置缩进大小和单位
-  - 控制最大深度
-  - 自定义 CSS 样式
-
-有关列表特定功能，请参阅 [缩进列表插件](/docs/list)。
+- 使用 Tab/Shift+Tab 快捷键为块级元素添加缩进。
+- 应用具有可自定义偏移量和单位的统一缩进。
+- 向目标块级元素注入 `indent` 属性。
+- 支持最大缩进深度控制。
 
 </PackageInfo>
 
-## 安装
+## Kit 使用
+
+<Steps>
+
+### 安装
+
+添加缩进功能最快的方法是使用 `IndentKit`，它包含预配置的 `IndentPlugin`，针对段落、标题、引用块、代码块和切换元素。
+
+<ComponentSource name="indent-kit" />
+
+- 配置 `Paragraph`、`Heading`、`Blockquote`、`CodeBlock` 和 `Toggle` 元素以支持 `indent` 属性。
+- 设置自定义缩进间距为 `24px`。
+- 提供 Tab/Shift+Tab 快捷键用于缩进和取消缩进。
+
+### 添加 Kit
+
+将 kit 添加到你的插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { IndentKit } from '@/components/editor/plugins/indent-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...IndentKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
 
 ```bash
 npm install @platejs/indent
 ```
 
-## 使用
+### 添加插件
+
+在创建编辑器时，将 `IndentPlugin` 包含在你的 Plate 插件数组中。
+
+```tsx
+import { IndentPlugin } from '@platejs/indent/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+你可以配置 `IndentPlugin` 以针对特定元素并自定义缩进行为。
 
 ```tsx
 import { IndentPlugin } from '@platejs/indent/react';
 import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
-const plugins = [
-  // ...其他插件,
-  IndentPlugin.configure({
-    inject: {
-      targetPlugins: [KEYS.p, KEYS.h1],
-    },
-  }),
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin.configure({
+      inject: {
+        nodeProps: {
+          styleKey: 'marginLeft',
+        },
+        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote],
+      },
+      options: {
+        offset: 24,
+        unit: 'px',
+        indentMax: 10,
+      },
+    }),
+  ],
+});
 ```
+
+- `inject.nodeProps.styleKey`：将注入的属性映射到 CSS `marginLeft` 属性。
+- `inject.targetPlugins`：一个插件键数组，指示哪些元素类型可以缩进。
+- `options.offset`：缩进偏移量（像素）（默认：`24`）。
+- `options.unit`：缩进值的单位（默认：`'px'`）。
+- `options.indentMax`：允许的最大缩进次数。
+
+### 添加工具栏按钮
+
+你可以将 [`IndentToolbarButton`](/docs/components/indent-toolbar-button) 添加到你的[工具栏](/docs/toolbar)中以控制缩进。
+
+</Steps>
 
 ## 插件
 
 ### `IndentPlugin`
 
+用于缩进块级元素的插件。它向 `inject.targetPlugins` 指定的元素注入 `indent` 属性并应用 `marginLeft` 样式。
+
 <API name="IndentPlugin">
-<APIOptions>
-  <APIItem name="offset" type="number" optional>
-    缩进偏移量，用于 `(offset * element.indent) + unit`。
-    - **默认值:** `40`
+<APIOptions type="object">
+  <APIItem name="inject.nodeProps.nodeKey" type="string" optional>
+    注入到目标元素的属性名称。
+    - **默认值：** `'indent'`
   </APIItem>
-  <APIItem name="unit" type="string" optional>
-    缩进单位，用于 `(offset * element.indent) + unit`。
-    - **默认值:** `'px'`
+  <APIItem name="inject.nodeProps.styleKey" type="string" optional>
+    用于样式的 CSS 属性名称。
+    - **默认值：** `'marginLeft'`
   </APIItem>
-  <APIItem name="indentMax" type="number" optional>
+  <APIItem name="inject.targetPlugins" type="string[]" optional>
+    用于缩进注入的插件键数组。
+    - **默认值：** `['p']`
+  </APIItem>
+  <APIItem name="options.offset" type="number" optional>
+    在 `(offset * element.indent) + unit` 中使用的缩进偏移量。
+    - **默认值：** `24`
+  </APIItem>
+  <APIItem name="options.unit" type="string" optional>
+    在 `(offset * element.indent) + unit` 中使用的缩进单位。
+    - **默认值：** `'px'`
+  </APIItem>
+  <APIItem name="options.indentMax" type="number" optional>
     允许的最大缩进次数。
   </APIItem>
 </APIOptions>
@@ -74,43 +155,43 @@ const plugins = [
 
 ### `indent`
 
-缩进编辑器中选择的块。
+缩进编辑器中的选定块。
 
 <API name="indent">
   <APIOptions type="SetIndentOptions" optional>
-    缩进块的选项。
+    用于缩进块的选项。
   </APIOptions>
 </API>
 
 ### `outdent`
 
-减少所选块的缩进。
+减少选定块的缩进。
 
 <API name="outdent">
   <APIOptions type="SetIndentOptions" optional>
-    减少缩进块的选项。
+    用于取消缩进块的选项。
   </APIOptions>
 </API>
 
 ### `setIndent`
 
-为所选块的缩进添加偏移量。
+为选定的块添加缩进偏移量。
 
 <API name="setIndent">
 <APIOptions type="SetIndentOptions">
   <APIItem name="offset" type="number" optional>
-    缩进偏移量，用于 `(offset * element.indent) + unit`。
-    - **默认值:** `1`
+    在 `(offset * element.indent) + unit` 中使用的缩进偏移量。
+    - **默认值：** `1`
   </APIItem>
   <APIItem name="getNodesOptions" type="EditorNodesOptions" optional>
     获取要缩进的节点的选项。
   </APIItem>
   <APIItem name="setNodesProps" type="object" optional>
-    在要缩进的节点上设置的额外属性。
+    要设置到要缩进的节点上的其他属性。
   </APIItem>
   <APIItem name="unsetNodesProps" type="string[]" optional>
-    在要缩进的节点上取消设置的额外属性。
-    - **默认值:** `[]`
+    要从未缩进的节点上取消设置的其他属性。
+    - **默认值：** `[]`
   </APIItem>
 </APIOptions>
 </API>
@@ -124,8 +205,8 @@ const plugins = [
 <API name="SetIndentOptions">
 <APIOptions>
   <APIItem name="offset" type="number">
-    缩进的变化（1 为缩进，-1 为减少缩进）。
-    - **默认值:** `1`
+    缩进的变化（1 表示缩进，-1 表示取消缩进）。
+    - **默认值：** `1`
   </APIItem>
   <APIItem name="getNodesOptions" type="EditorNodesOptions<V>">
     额外的 `getNodes` 选项。
@@ -139,11 +220,11 @@ const plugins = [
 </APIOptions>
 </API>
 
-## 钩子
+## Hooks
 
 ### `useIndentButton`
 
-缩进按钮组件的行为钩子。
+缩进按钮组件的行为 hook。
 
 <API name="useIndentButton">
 <APIReturns type="object">
@@ -151,7 +232,7 @@ const plugins = [
     缩进按钮的属性。
     <APISubList>
       <APISubListItem parent="props" name="onClick" type="function">
-        处理点击事件的回调。缩进选中的内容并聚焦编辑器。
+        处理点击事件的回调。缩进选定的内容并聚焦编辑器。
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -160,15 +241,15 @@ const plugins = [
 
 ### `useOutdentButton`
 
-减少缩进按钮组件的行为钩子。
+取消缩进按钮组件的行为 hook。
 
 <API name="useOutdentButton">
 <APIReturns type="object">
   <APIItem name="props" type="object">
-    减少缩进按钮的属性。
+    取消缩进按钮的属性。
     <APISubList>
       <APISubListItem parent="props" name="onClick" type="function">
-        处理点击事件的回调。减少选中内容的缩进并聚焦编辑器。
+        处理点击事件的回调。取消选定内容的缩进并聚焦编辑器。
       </APISubListItem>
     </APISubList>
   </APIItem>

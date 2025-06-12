@@ -1,0 +1,146 @@
+---
+title: 块占位符
+description: 当块为空时显示占位内容。
+---
+
+<ComponentPreview name="block-placeholder-demo" />
+
+<PackageInfo>
+
+## 特性
+
+- 为空白块添加可自定义的占位文本
+- 根据块类型显示不同的占位内容
+- 使用查询函数配置可见性规则
+
+</PackageInfo>
+
+## 套件使用方式
+
+<Steps>
+
+### 安装
+
+最快速添加块占位符的方式是使用 `BlockPlaceholderKit`，它包含预配置的 `BlockPlaceholderPlugin`。
+
+<ComponentSource name="block-placeholder-kit" />
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BlockPlaceholderKit } from '@/components/editor/plugins/block-placeholder-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...BlockPlaceholderKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用方式
+
+<Steps>
+
+### 安装
+
+块占位符功能已包含在 Plate 核心包中。
+
+```tsx
+import { BlockPlaceholderPlugin } from 'platejs/react';
+```
+
+### 添加插件
+
+```tsx
+import { BlockPlaceholderPlugin } from 'platejs/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    BlockPlaceholderPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+为不同块类型配置占位内容：
+
+```tsx
+import { KEYS } from 'platejs';
+import { BlockPlaceholderPlugin } from 'platejs/react';
+
+BlockPlaceholderPlugin.configure({
+  options: {
+    placeholders: {
+      [KEYS.p]: '输入内容...',
+      [KEYS.h1]: '输入标题...',
+      [KEYS.blockquote]: '输入引用...',
+      [KEYS.codeBlock]: '输入代码...',
+    },
+  },
+});
+```
+
+### 高级配置
+
+自定义外观和可见性规则：
+
+```tsx
+import { KEYS } from 'platejs';
+import { BlockPlaceholderPlugin } from 'platejs/react';
+
+BlockPlaceholderPlugin.configure({
+  options: {
+    className: 'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
+    placeholders: {
+      [KEYS.p]: '输入内容...',
+    },
+    query: ({ path }) => {
+      // 仅在最外层块显示占位符
+      return path.length === 1;
+    },
+  },
+});
+```
+
+- `placeholders`: 块类型与占位文本的映射
+- `className`: 应用于带占位符块的 CSS 类
+- `query`: 决定哪些块应显示占位符的函数
+
+</Steps>
+
+## 插件
+
+### `BlockPlaceholderPlugin`
+
+用于在空白块中显示占位文本的插件。
+
+当满足以下所有条件时，插件会显示占位符：
+
+1. 块为空（不含内容）
+2. 编辑器不为空（有其他内容）
+3. 编辑器处于聚焦状态
+4. 块符合查询函数条件
+5. 块类型匹配 placeholders 映射中的键
+
+<API name="BlockPlaceholderPlugin">
+<APIOptions>
+  <APIItem name="placeholders" type="Record<string, string>">
+    插件键与占位文本字符串的映射
+    - **默认值:** `{ [KEYS.p]: '输入内容...' }`
+  </APIItem>
+  <APIItem name="query" type="(context: PlatePluginContext & { node: TElement; path: Path }) => boolean">
+    决定块是否应显示占位符的函数
+    - **默认值:** 对最外层块返回 true (`path.length === 1`)
+  </APIItem>
+  <APIItem name="className" type="string" optional>
+    应用于带占位符块的 CSS 类
+  </APIItem>
+</APIOptions>
+</API>

@@ -1,20 +1,19 @@
 ---
 title: TypeScript
-description: Configure TypeScript (tsconfig) for using Plate, including module resolution solutions.
+description: 配置 TypeScript (tsconfig) 以使用 Plate，包括模块解析解决方案。
 ---
 
-Plate provides ESM packages, which require certain TypeScript (and bundler) configurations to ensure compatibility, especially when importing subpath modules like `platejs/react`. Below are several solutions and workarounds to make TypeScript happy.
+Plate 提供 ESM 格式的包，这需要特定的 TypeScript（和打包工具）配置来确保兼容性，特别是在导入子路径模块如 `platejs/react` 时。以下是几种解决方案和变通方法，以确保 TypeScript 正常工作。
 
-## Quick Summary
+## 快速总结
 
-1. **Recommended (Easiest):** Use TypeScript **5.0+** and set `"moduleResolution": "bundler"` in your `tsconfig.json`.
-2. **Alternate (Node resolution):** Keep `"moduleResolution": "node"` and map paths to `dist/react` (and potentially alias them in your bundler config).
-3. **Up-to-date Packages:** Ensure all `@platejs/*` dependencies share the same major/minor version.
+1. **推荐（最简单）：** 使用 TypeScript **5.0+** 并在 `tsconfig.json` 中设置 `"moduleResolution": "bundler"`。
+2. **替代方案（Node 解析）：** 保留 `"moduleResolution": "node"` 并将路径映射到 `dist/react`（并可能在打包工具配置中添加别名）。
+3. **更新依赖包：** 使用 `depset` 升级 Plate 依赖项。
 
+## 推荐方案：`"moduleResolution": "bundler"`
 
-## Recommended: `"moduleResolution": "bundler"`
-
-The simplest approach for modern bundlers (Vite, Next.js 14, etc.) is to enable the new TypeScript "bundler" resolution mode. Example:
+对于现代打包工具（如 Vite、Next.js 14 等），最简单的方法是启用 TypeScript 新的 "bundler" 解析模式。示例：
 
 ```jsonc
 // tsconfig.json
@@ -28,7 +27,7 @@ The simplest approach for modern bundlers (Vite, Next.js 14, etc.) is to enable 
 }
 ```
 
-This aligns TypeScript's resolution logic more closely with modern bundlers and ESM packages. Below is a working excerpt from [Plate template](https://github.com/udecode/plate-template):
+这使 TypeScript 的解析逻辑更接近现代打包工具和 ESM 包的行为。以下是 [Plate 模板](https://github.com/udecode/plate-template) 中的一个工作示例：
 
 ```jsonc
 {
@@ -80,8 +79,8 @@ This aligns TypeScript's resolution logic more closely with modern bundlers and 
 }
 ```
 
-- **`"moduleResolution": "bundler"`** was introduced in TypeScript 5.0.
-- If your TS version is older than 5.0, you **must** upgrade or stick to `"moduleResolution": "node"` plus manual path aliases.
+- **`"moduleResolution": "bundler"`** 是在 TypeScript 5.0 中引入的。
+- 如果你的 TypeScript 版本低于 5.0，**必须**升级或继续使用 `"moduleResolution": "node"` 并手动配置路径别名。
 
 ```jsonc
 // package.json
@@ -92,17 +91,17 @@ This aligns TypeScript's resolution logic more closely with modern bundlers and 
 }
 ```
 
-If you see an error like `TS5023: Unknown compiler option 'moduleResolution'` (for `bundler`), it likely means your TypeScript version is below 5.0.
+如果看到类似 `TS5023: Unknown compiler option 'moduleResolution'` 的错误（针对 `bundler`），很可能是因为你的 TypeScript 版本低于 5.0。
 
-## Workaround: `"moduleResolution": "node"` + Path Aliases
+## 替代方案：`"moduleResolution": "node"` + 路径别名
 
-If upgrading your entire project to TS 5.0 or changing the resolution mode is not possible:
+如果无法升级到 TS 5.0 或更改解析模式：
 
-1. Keep `"moduleResolution": "node"`.
-2. Map each Plate subpath import to its `dist/react` types in `tsconfig.json` using `paths`.
-3. Alias these paths in your bundler config.
+1. 保留 `"moduleResolution": "node"`。
+2. 在 `tsconfig.json` 中使用 `paths` 将每个 Plate 子路径导入映射到其 `dist/react` 类型。
+3. 在打包工具配置中为这些路径添加别名。
 
-### Example `tsconfig.json`
+### 示例 `tsconfig.json`
 
 ```jsonc
 {
@@ -118,13 +117,13 @@ If upgrading your entire project to TS 5.0 or changing the resolution mode is no
       "@platejs/list/react": [
         "./node_modules/@platejs/list/dist/react/index.d.ts"
       ]
-      // ...repeat for all @platejs/*/react packages
+      // ...为所有 @platejs/*/react 包重复此操作
     }
   }
 }
 ```
 
-### Example `vite.config.ts`
+### 示例 `vite.config.ts`
 
 ```ts
 import { defineConfig } from 'vite';
@@ -146,7 +145,7 @@ export default defineConfig({
         'node_modules/@platejs/list/dist/react'
       ),
 
-      // Non-/react base aliases:
+      // 非 /react 基础别名：
       'platejs': path.resolve(
         __dirname,
         'node_modules/platejs'
@@ -164,37 +163,51 @@ export default defineConfig({
 });
 ```
 
-**Note:**  
-- You must do this for every `@platejs/*/react` import you use.  
-- For testing/Jest, replicate these aliases via `moduleNameMapper` or similar.
+**注意：**
+- 你需要为每一个使用的 `@platejs/*/react` 导入都进行此操作。  
+- 对于测试/Jest，需要通过 `moduleNameMapper` 或类似方式复制这些别名。
 
-## Ensure Matching Plate Versions
+## 确保 Plate 版本一致
 
-Say you're upgrading one package to `42.0.3`, double-check that all your `@platejs/*` packages are on the **latest version up to 42.0.3** (one package could stay at `42.0.2` if it has no `42.0.3` release). Mixing versions often leads to mismatches.
+假设你正在升级一个包到 `42.0.3`，请确保所有 `platejs*` 包都升级到 **最新版本（最高到 `42.0.3`）**（如果某个包没有 `42.0.3` 版本，可以保持在 `42.0.2`）。版本混用通常会导致不兼容问题。
 
-## FAQ
+为了轻松管理和同步你的 `platejs*` 包版本，可以使用 `depset` CLI。例如，确保所有 `@udecode` 作用域的包都对齐到与 `42.x.y` 兼容的最新版本：
 
-> I updated `moduleResolution` to `bundler` but it broke my older imports."
+```bash
+npx depset@latest @udecode 42
+```
 
-If your codebase has older TS usage or relies on `node` resolution, try the path alias approach or fully migrate to a TS 5+ / ESM environment.
+或者，指定特定版本如 `42.0.3`（如果可用，这将把所有包设置为 `42.0.3`，否则设置为之前的最新版本）：
 
-> "I'm seeing `TS2305` about missing exports. Is that a resolution error or a real missing export?"  
+```bash
+npx depset@latest @udecode 42.0.3
+```
 
-It can be either:
-- If the entire package is "not found," it's likely a resolution issue.  
-- If it's specifically "no exported member," double-check that you spelled the import correctly (no typos) and that your installed version actually has that export.
+这有助于防止版本冲突，确保所有相关的 Plate 包都使用兼容的版本。
 
-> "Which minimum TS version do I need for `moduleResolution: bundler`?"  
+## 常见问题
 
-TypeScript 5.0 or higher.
+> 我将 `moduleResolution` 改为 `bundler`，但旧的导入出错了。
 
-> "We switched to bundler resolution, but some older libraries in our project break."  
+如果你的代码库有旧的 TypeScript 用法或依赖 `node` 解析，可以尝试路径别名方案，或者完全迁移到 TS 5+ / ESM 环境。
 
-If your older libraries aren't ESM-friendly, you might stick to `node` resolution and do manual path aliases. Some large codebases gradually upgrade or create separate build pipelines for legacy code.
+> 我看到 `TS2305` 错误，提示缺少导出。这是解析错误还是真的缺少导出？  
 
-> "We see the error in Jest but not in Vite."  
+可能是两者之一：
+- 如果整个包“找不到”，可能是解析问题。  
+- 如果是“没有导出的成员”，请检查导入拼写是否正确（没有拼写错误），并确认你安装的版本确实包含该导出。
 
-You'll need to replicate your alias/resolution changes for Jest. For example:
+> `moduleResolution: bundler` 需要的最低 TS 版本是多少？  
+
+TypeScript 5.0 或更高版本。
+
+> 我们切换到 bundler 解析模式，但项目中的一些旧库出错了。  
+
+如果你的旧库不支持 ESM，可以继续使用 `node` 解析模式并手动配置路径别名。一些大型代码库会逐步升级或为遗留代码创建单独的构建管道。
+
+> 在 Jest 中看到错误，但在 Vite 中没有。  
+
+你需要在 Jest 中复制别名/解析配置。例如：
 
 ```js
 // jest.config.js

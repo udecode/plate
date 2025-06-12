@@ -1,33 +1,33 @@
 ---
-title: 列表
+title: 经典列表
 docs:
   - route: /docs/components/list-classic-node
-    title: 列表元素
+    title: 列表节点
   - route: /docs/components/list-classic-toolbar-button
     title: 列表工具栏按钮
 ---
 
 <ComponentPreview name="list-classic-demo" />
 
-<Callout>
+<Callout type="info" title="选择您的列表插件">
+  Plate 提供两种实现列表的方法：
 
-Plate 提供了两种实现列表的方式：
+  1. **此经典列表插件** - 具有严格嵌套规则的传统 HTML 规范列表：
+     - 遵循标准 HTML 列表结构（`ul`/`ol` > `li`）
+     - 保持一致的列表层次结构
+     - 最适合可能导出为 HTML/markdown 的内容
+     - 复杂度最高
 
-1. **此列表插件** - 遵循 HTML 规范的列表，具有严格的嵌套规则：
-   - 遵循标准的 HTML 列表结构（`ul`/`ol` > `li`）
-   - 保持一致的列表层次结构
-   - 最适合可能导出为 HTML/markdown 的内容
-   - 复杂度最高
+  2. [**列表插件**](/docs/list) - 灵活的基于缩进的列表：
+     - 更像 Word/Google Docs 的行为
+     - 任何块都可以缩进以创建类似列表的结构
+     - 在 [AI 编辑器](/editors#editor-ai) 中使用
+     - 支持嵌套待办事项列表
+     - 更适合自由形式的内容组织
 
-2. [**缩进列表插件**](/docs/list) - 灵活的基于缩进的列表：
-   - 更像 Word/Google Docs 的行为
-   - 任何块都可以缩进以创建类似列表的结构
-   - 在 [AI 编辑器](/editors#editor-ai) 中使用
-   - 更适合自由形式的内容组织
-
-根据您的需求选择：
-- 当您需要标准的 HTML 列表兼容性时，使用 **列表插件**
-- 当您想要更灵活的缩进行为时，使用 **缩进列表插件**
+  根据您的需求选择：
+  - 当您需要标准 HTML 列表兼容性时，使用**经典列表插件**
+  - 当您想要更灵活的缩进行为时，使用**列表插件**
 
 </Callout>
 
@@ -35,8 +35,8 @@ Plate 提供了两种实现列表的方式：
 
 ## 功能
 
-- **符合 HTML 规范的列表**：
-  - 标准的 `ul`/`ol` > `li` 结构
+- **符合 HTML 的列表**：
+  - 标准 `ul`/`ol` > `li` 结构
   - 正确的嵌套和层次结构
   - SEO 友好的标记
   - 干净的 HTML/markdown 导出
@@ -44,48 +44,158 @@ Plate 提供了两种实现列表的方式：
 - **列表类型**：
   - 无序（项目符号）列表
   - 有序（编号）列表
-  - 带有复选框的待办事项列表
   - 嵌套子列表
 
 - **拖放**：
   - 目前仅支持根级列表项
-  - 兄弟和嵌套项的拖放尚不支持
+  - 同级和嵌套项拖放尚未支持
 
 - **快捷键**：
   - 结合自动格式化插件，使用 markdown 快捷键（**`-`**、**`*`**、**`1.`**）创建列表
   - Tab/Shift+Tab 用于缩进控制
 
-- **限制（使用 [缩进列表](/docs/list) 实现这些功能）**：
+- **限制（使用 [列表插件](/docs/list) 获取这些功能）**：
   - 拖放仅支持根级列表
   - 列表项无法对齐
 
-如需更灵活的、类似 Word 的方式，请参阅 [缩进列表插件](/docs/list)。
+对于更灵活的、类似 Word 的方法，请参阅[列表插件](/docs/list)。
 
 </PackageInfo>
 
-## 安装
+## 套件使用
 
-```bash
-npm install @platejs/list
-```
+<Steps>
 
-## 使用
+### 安装
+
+添加列表功能的最快方法是使用 `ListKit`，它包含预配置的列表插件，带有 [Plate UI](/docs/installation/plate-ui) 组件和键盘快捷键。
+
+<ComponentSource name="list-classic-kit" />
+
+- [`BulletedListElement`](/docs/components/list-classic-node)：渲染无序列表元素。
+- [`NumberedListElement`](/docs/components/list-classic-node)：渲染有序列表元素。
+
+### 添加套件
+
+将套件添加到您的插件中：
 
 ```tsx
-import { ListPlugin } from '@platejs/list/react';
+import { createPlateEditor } from 'platejs/react';
+import { ListKit } from '@/components/editor/plugins/list-classic-kit';
 
-const plugins = [
-  // ...其他插件
-  ListPlugin,
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...ListKit,
+  ],
+});
 ```
 
-## 快捷键
+</Steps>
 
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + Opt + 4">插入编号列表。</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + Shift + 4">插入编号列表。</KeyTableItem>
-</KeyTable>
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/list-classic
+```
+
+### 添加插件
+
+在创建编辑器时，将列表插件包含在您的 Plate 插件数组中。
+
+```tsx
+import { ListPlugin, BulletedListPlugin, NumberedListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ListPlugin,
+    BulletedListPlugin,
+    NumberedListPlugin,
+    ListItemPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+使用自定义组件和键盘快捷键配置插件。
+
+```tsx
+import { ListPlugin, BulletedListPlugin, NumberedListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
+import { createPlateEditor } from 'platejs/react';
+import { BulletedListElement, NumberedListElement } from '@/components/ui/list-classic-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ListPlugin,
+    BulletedListPlugin.configure({
+      node: { component: BulletedListElement },
+      shortcuts: { toggle: { keys: 'mod+alt+5' } },
+    }),
+    NumberedListPlugin.configure({
+      node: { component: NumberedListElement },
+      shortcuts: { toggle: { keys: 'mod+alt+6' } },
+    }),
+    ListItemPlugin,
+  ],
+});
+```
+
+- `node.component`：分配 [`BulletedListElement`](/docs/components/list-classic-node) 和 [`NumberedListElement`](/docs/components/list-classic-node) 来渲染列表元素。
+- `shortcuts.toggle`：定义键盘[快捷键](/docs/plugin-shortcuts)来切换列表类型（`mod+alt+5` 用于项目符号，`mod+alt+6` 用于编号）。
+
+### 添加工具栏按钮
+
+您可以将 [`ListToolbarButton`](/docs/components/list-classic-toolbar-button) 添加到您的[工具栏](/docs/toolbar)中以创建和管理列表。
+
+### 转换为工具栏按钮
+
+您可以将这些项目添加到[转换为工具栏按钮](/docs/toolbar#turn-into-toolbar-button)中以将块转换为列表：
+
+```tsx
+{
+  icon: <ListIcon />,
+  label: '项目符号列表',
+  value: KEYS.ul,
+}
+```
+
+```tsx
+{
+  icon: <ListOrderedIcon />,
+  label: '编号列表',
+  value: KEYS.ol,
+}
+```
+
+### 插入工具栏按钮
+
+您可以将这些项目添加到[插入工具栏按钮](/docs/toolbar#insert-toolbar-button)中以插入列表元素：
+
+```tsx
+{
+  icon: <ListIcon />,
+  label: '项目符号列表',
+  value: KEYS.ul,
+}
+```
+
+```tsx
+{
+  icon: <ListOrderedIcon />,
+  label: '编号列表',
+  value: KEYS.ol,
+}
+```
+
+</Steps>
 
 ## 插件
 
@@ -103,7 +213,7 @@ const plugins = [
     列表项的有效子节点类型（除了 `p` 和 `ul`）。
   </APIItem>
   <APIItem name="enableResetOnShiftTab" type="boolean" optional>
-    是否在按下 Shift+Tab 时重置列表缩进级别。
+    是否应该用 Shift+Tab 重置列表缩进级别。
   </APIItem>
 </APIOptions>
 </API>
@@ -124,24 +234,26 @@ const plugins = [
 
 用于列表项内容的插件。
 
+## 转换
+
+### `tf.ul.toggle()`
+
+切换项目符号列表（ul）。
+
+示例快捷键：`Mod+Alt+5`
+
+### `tf.ol.toggle()`
+
+切换编号列表（ol）。
+
+示例快捷键：`Mod+Alt+6`
+
 ## API
-
-### `tf.toggle.list`
-
-在编辑器中切换列表。
-
-<API name="toggle.list">
-<APIOptions type="object">
-  <APIItem name="type" type="string">
-    要切换的列表类型。
-  </APIItem>
-</APIOptions>
-</API>
 
 ### `getHighestEmptyList`
 
-查找可以删除的最高级结束列表。列表的路径应与 `diffListPath` 不同。如果最高级结束列表有 2 个或更多项，则返回 `liPath`。它会向上遍历父列表，直到：
-- 列表的项少于 2 个
+查找可以删除的最高端列表。列表的路径应该与 `diffListPath` 不同。如果最高端列表有 2 个或更多项目，则返回 `liPath`。它会向上遍历父列表，直到：
+- 列表的项目少于 2 个
 - 其路径不等于 `diffListPath`
 
 <API name="getHighestEmptyList">
@@ -155,24 +267,24 @@ const plugins = [
 </APIOptions>
 
 <APIReturns type="Path | undefined">
-  可删除的最高级结束列表的路径。
+  最高可删除端列表的路径。
 </APIReturns>
 </API>
 
 ### `getListItemEntry`
 
-返回给定路径（`默认 = 选择`）的最近 `li` 和 `ul`/`ol` 包裹节点entry。
+返回给定路径的最近 `li` 和 `ul`/`ol` 包装节点条目（`默认 = 选择`）。
 
 <API name="getListItemEntry">
 <APIOptions type="object">
   <APIItem name="at" type="Location | null" optional>
-    从中获取entry的位置。
-    - **默认值：** `editor.selection`
+    获取条目的位置。
+    - **默认：** `editor.selection`
   </APIItem>
 </APIOptions>
 
 <APIReturns type="ElementEntry | undefined">
-  最近的 `li` 和 `ul`/`ol` 包裹节点entry。
+  最近的 `li` 和 `ul`/`ol` 包装节点条目。
 </APIReturns>
 </API>
 
@@ -184,12 +296,12 @@ const plugins = [
 <APIParameters>
   <APIItem name="at" type="Path | TRange | Point | null" optional>
     开始搜索的位置。
-    - **默认值：** `editor.selection`
+    - **默认：** `editor.selection`
   </APIItem>
 </APIParameters>
 
 <APIReturns type="ElementEntry | undefined">
-  根列表元素entry。
+  根列表元素条目。
 </APIReturns>
 </API>
 
@@ -199,7 +311,7 @@ const plugins = [
 
 <API name="getListTypes">
 <APIReturns type="string[]">
-  支持的列表类型数组。
+  Array of supported list types.
 </APIReturns>
 </API>
 
@@ -224,12 +336,12 @@ const plugins = [
 
 ### `removeFirstListItem`
 
-如果不是嵌套项且不是第一个子项，则删除第一个列表项。
+如果未嵌套且不是第一个子项，则删除第一个列表项。
 
 <API name="removeFirstListItem">
 <APIOptions type="options">
   <APIItem name="list" type="ElementEntry">
-    包含项的列表entry。
+    包含项的列表条目。
   </APIItem>
   <APIItem name="listItem" type="ElementEntry">
     要删除的列表项。
@@ -237,36 +349,36 @@ const plugins = [
 </APIOptions>
 
 <APIReturns type="boolean">
-  是否删除了项。
+  项是否被删除。
 </APIReturns>
 </API>
 
 ### `removeListItem`
 
-删除列表项并将子列表移动到父列表（如果有）。
+删除列表项，如果有子列表则移动到父级。
 
 <API name="removeListItem">
 <APIOptions type="RemoveListItemOptions">
   <APIItem name="list" type="ElementEntry">
-    包含项的列表entry。
+    包含项的列表条目。
   </APIItem>
   <APIItem name="listItem" type="ElementEntry">
     要删除的列表项。
   </APIItem>
   <APIItem name="reverse" type="boolean" optional>
     是否反转子列表项。
-    - **默认值：** `true`
+    - **默认：** `true`
   </APIItem>
 </APIOptions>
 
 <APIReturns type="boolean">
-  是否删除了项。
+  项是否被删除。
 </APIReturns>
 </API>
 
 ### `someList`
 
-检查选择是否在特定类型的列表中。
+检查选择是否在特定类型的列表内。
 
 <API name="someList">
 <APIParameters>
@@ -286,36 +398,36 @@ const plugins = [
 
 <API name="unindentListItems">
 <APIOptions type="UnindentListItemsOptions">
-    用于减少缩进的目标路径。
+    取消缩进的目标路径。
 </APIOptions>
 </API>
 
 ### `unwrapList`
 
-从选定的项中移除列表格式。
+移除选中项的列表格式。
 
 <API name="unwrapList">
 <APIOptions type="options">
   <APIItem name="at" type="Path" optional>
-    用于移除格式的目标路径。
+    取消包装的目标路径。
   </APIItem>
 </APIOptions>
 </API>
 
-## 钩子
+## Hooks
 
 ### `useListToolbarButton`
 
-用于列表工具栏按钮的行为钩子。
+列表工具栏按钮的行为钩子。
 
 <API name="useListToolbarButton">
 <APIState>
   <APIItem name="pressed" type="boolean">
-    按钮的按下状态。
+    按钮按下状态。
   </APIItem>
   <APIItem name="nodeType" type="string">
     列表节点类型。
-    - **默认值：** `BulletedListPlugin.key`
+    - **默认：** `BulletedListPlugin.key`
   </APIItem>
 </APIState>
 
@@ -325,61 +437,10 @@ const plugins = [
   </APIItem>
   <APISubList>
     <APISubListItem parent="props" name="pressed" type="boolean">
-      按钮的按下状态。
+      按钮按下状态。
     </APISubListItem>
     <APISubListItem parent="props" name="onClick" type="function">
-      切换列表并聚焦编辑器的处理程序。
-    </APISubListItem>
-  </APISubList>
-</APIReturns>
-</API>
-
-## 待办事项列表 API
-
-### `getTodoListItemEntry`
-
-获取最近的待办事项列表和项entry。
-
-<API name="getTodoListItemEntry">
-<APIOptions type="options">
-  <APIItem name="at" type="Location | null" optional>
-    开始搜索的位置。
-    - **默认值：** `editor.selection`
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="{ list: ElementEntry, listItem: ElementEntry } | undefined">
-  如果找到，返回待办事项列表和项entry。
-</APIReturns>
-</API>
-
-### `useTodoListElement`
-
-用于待办事项列表项元素的行为钩子。
-
-<API name="useTodoListElement">
-<APIState>
-  <APIItem name="checked" type="boolean">
-    待办事项项的选中状态。
-  </APIItem>
-  <APIItem name="readOnly" type="boolean">
-    项是否为只读。
-  </APIItem>
-  <APIItem name="element" type="TElement">
-    待办事项列表项元素。
-  </APIItem>
-</APIState>
-
-<APIReturns type="object">
-  <APIItem name="checkboxProps" type="object">
-    复选框的属性。
-  </APIItem>
-  <APISubList>
-    <APISubListItem parent="checkboxProps" name="checked" type="boolean">
-      复选框的选中状态。
-    </APISubListItem>
-    <APISubListItem parent="checkboxProps" name="onCheckedChange" type="function">
-      复选框状态变化的处理程序。
+      切换列表并聚焦编辑器的处理函数。
     </APISubListItem>
   </APISubList>
 </APIReturns>

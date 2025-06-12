@@ -13,6 +13,7 @@ export function registryToNav(registry: Registry['items']): SidebarNavItem[] {
             keywords: item.meta.keywords,
             label: item.meta.label,
             title: getRegistryTitle(item).replace(' Demo', ''),
+            titleCn: getRegistryTitle(item).replace(' Demo', ''),
           }
         : (null as never)
     )

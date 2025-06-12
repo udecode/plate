@@ -1,7 +1,7 @@
 ---
 title: Excalidraw
 docs:
-  - route: /docs/components/excalidraw-element
+  - route: /docs/components/excalidraw-node
     title: Excalidraw 元素
 ---
 
@@ -9,9 +9,9 @@ docs:
 
 <PackageInfo>
 
-## 功能
+## 功能特性
 
-- 集成 Excalidraw 库，用于创建绘图和图表。
+- 集成 Excalidraw 库用于创建绘图和图表
 
 </PackageInfo>
 
@@ -21,19 +21,27 @@ docs:
 npm install @platejs/excalidraw
 ```
 
-## 使用
+## 使用方式
 
 ```tsx
 import { ExcalidrawPlugin } from '@platejs/excalidraw/react';
-import { SelectOnBackspace, KEYS } from 'platejs';
 
 const plugins = [
   // ...其他插件
   ExcalidrawPlugin,
-  SelectOnBackspace.configure({
-    options: { query: { allow: [KEYS.excalidraw] } },
-  }),
 ];
+```
+
+### 插入工具栏按钮
+
+可以将此项添加到[插入工具栏按钮](/docs/toolbar#insert-toolbar-button)来插入 Excalidraw 元素：
+
+```tsx
+{
+  icon: <PenToolIcon />,
+  label: 'Excalidraw',
+  value: KEYS.excalidraw,
+}
 ```
 
 ## 插件
@@ -42,24 +50,24 @@ const plugins = [
 
 Excalidraw 空元素插件。
 
-## API
+## API 接口
 
 ### `insertExcalidraw`
 
-将 Excalidraw 元素插入到编辑器中。
+向编辑器中插入 Excalidraw 元素。
 
 <API name="insertExcalidraw">
 <APIParameters>
   <APIItem name="props" type="NodeProps<TExcalidrawElement>" optional>
-    Excalidraw 元素的属性。
+    Excalidraw 元素的属性参数
   </APIItem>
   <APIItem name="options" type="InsertNodesOptions" optional>
-    插入 Excalidraw 元素的选项。
+    插入 Excalidraw 元素的配置选项
   </APIItem>
 </APIParameters>
 </API>
 
-## 钩子
+## 钩子函数
 
 ### `useExcalidrawElement`
 
@@ -68,24 +76,24 @@ Excalidraw 组件的行为钩子。
 <API name="useExcalidrawElement">
 <APIState>
   <APIItem name="element" type="TExcalidrawElement">
-    Excalidraw 元素。
+    Excalidraw 元素
   </APIItem>
   <APIItem name="libraryItems" type="LibraryItems" optional>
-    在 Excalidraw 组件中显示的库项目。
+    在 Excalidraw 组件中显示的库项目
     - **默认值:** `[]`
   </APIItem>
   <APIItem name="scrollToContent" type="boolean" optional>
-    是否滚动到 Excalidraw 组件内部的内容。
+    是否滚动到 Excalidraw 组件内部内容
     - **默认值:** `true`
   </APIItem>
 </APIState>
 
 <APIReturns type="object">
   <APIItem name="Excalidraw" type="any">
-    Excalidraw 组件。
+    Excalidraw 组件
   </APIItem>
   <APIItem name="excalidrawProps" type="ExcalidrawProps">
-    传递给 Excalidraw 组件的属性。
+    传递给 Excalidraw 组件的属性参数
   </APIItem>
 </APIReturns>
 </API>

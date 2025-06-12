@@ -1,5 +1,6 @@
 ---
 title: Copilot
+description: AI 驱动的文本补全建议。
 docs:
   - route: /docs/components/ghost-text
     title: 幽灵文本
@@ -15,179 +16,459 @@ docs:
 
 - 在输入时渲染幽灵文本建议
 - 两种触发模式：
-  - 快捷键（`Ctrl+Space`）。再次按下可获取替代建议。
-  - 防抖模式：在段落结尾输入空格后自动触发
-- 通过Tab键接受建议，或使用`Cmd+→`逐词接受
-- 内置支持Vercel AI SDK的补全API
+  - 快捷键（如 `Ctrl+Space`）。再次按下可获取替代建议。
+  - 防抖模式：在段落末尾空格后自动触发
+- 使用 Tab 接受建议或使用 `Cmd+→` 逐词接受
+- 内置支持 Vercel AI SDK 补全 API
 
 </PackageInfo>
 
-## 安装
+## 套件使用
+
+<Steps>
+
+### 安装
+
+添加 Copilot 功能最快的方式是使用 `CopilotKit`，它包含预配置的 `CopilotPlugin` 以及 `MarkdownKit` 和它们的 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="copilot-kit" />
+
+- [`GhostText`](/docs/components/ghost-text): 渲染幽灵文本建议。
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { CopilotKit } from '@/components/editor/plugins/copilot-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...CopilotKit,
+    // 将使用 Tab 键的插件放在 CopilotKit 之后以避免冲突
+    // IndentPlugin,
+    // TabbablePlugin,
+  ],
+});
+```
+
+**Tab 键处理**: Copilot 插件使用 Tab 键来接受建议。为避免与其他使用 Tab 的插件（如 `IndentPlugin` 或 `TabbablePlugin`）冲突，请确保 `CopilotKit` 在插件配置中位于它们之前。
+
+### 添加 API 路由
+
+Copilot 需要一个服务器端 API 端点来与 AI 模型通信。添加预配置的 Copilot API 路由：
+
+<ComponentSource name="copilot-api" />
+
+### 配置环境
+
+确保您的 OpenAI API 密钥已设置在环境变量中：
+
+```bash title=".env.local"
+OPENAI_API_KEY="您的-api-密钥"
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
 
 ```bash
 npm install @platejs/ai @platejs/markdown
 ```
 
-## 使用方式
+### 添加插件
 
 ```tsx
 import { CopilotPlugin } from '@platejs/ai/react';
-import {
-  MarkdownPlugin,
-  serializeMdNodes,
-  stripMarkdown,
-} from '@platejs/markdown';
+import { MarkdownPlugin } from '@platejs/markdown';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    MarkdownPlugin,
+    CopilotPlugin,
+    // 将使用 Tab 键的插件放在 CopilotPlugin 之后以避免冲突
+    // IndentPlugin,
+    // TabbablePlugin,
+  ],
+});
 ```
 
+- `MarkdownPlugin`: 用于将编辑器内容序列化为提示词发送。
+- `CopilotPlugin`: 启用 AI 驱动的文本补全。
+
+**Tab 键处理**: Copilot 插件使用 Tab 键来接受建议。为避免与其他使用 Tab 的插件（如 `IndentPlugin` 或 `TabbablePlugin`）冲突，请确保 `CopilotPlugin` 在插件配置中位于它们之前。
+
+### 配置插件
+
 ```tsx
+import { CopilotPlugin } from '@platejs/ai/react';
+import { serializeMd, stripMarkdown } from '@platejs/markdown';
+import { GhostText } from '@/components/ui/ghost-text';
+
 const plugins = [
-  // ...其他插件
+  // ...其他插件,
   MarkdownPlugin.configure({
     options: {
       remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
     },
-  }), 
+  }),
   CopilotPlugin.configure(({ api }) => ({
     options: {
-    completeOptions: {
-      api: '/api/你的API端点',
-      body: {
-        system: `你是一个高级AI写作助手，类似于VSCode Copilot但适用于通用文本。你的任务是根据给定上下文预测并生成文本的下一部分。
+      completeOptions: {
+        api: '/api/ai/copilot',
+        onError: () => {
+          // 模拟 API 响应。在实现路由 /api/ai/copilot 后移除
+          api.copilot.setBlockSuggestion({
+            text: stripMarkdown('这是一个模拟建议。'),
+          });
+        },
+        onFinish: (_, completion) => {
+          if (completion === '0') return;
 
-规则：
-- 自然延续文本直到下一个标点符号（., ,, ;, :, ?, 或 !）。
-- 保持风格和语气。不要重复给定文本。
-- 对于不明确的上下文，提供最可能的延续。
-- 如果需要，处理代码片段、列表或结构化文本。
-- 不要在响应中包含"""。
-- 关键：始终以标点符号结尾。
-- 关键：避免开始新块。不要使用块格式化如>, #, 1., 2., -等。建议应继续在与上下文相同的块中。
-- 如果没有提供上下文或无法生成延续，直接返回"0"而不解释。`,
+          api.copilot.setBlockSuggestion({
+            text: stripMarkdown(completion),
+          });
+        },
       },
-      onFinish: (_, completion) => {
-        if (completion === '0') return;
-
-        api.copilot.setBlockSuggestion({
-          //stripMarkdownBlocks加上GhostText
-          text: stripMarkdown(completion),
-        });
-      },
+      debounceDelay: 500,
+      renderGhostText: GhostText,
     },
-    debounceDelay: 500,
-    getPrompt: ({ editor }) => {
-      const contextEntry = getAncestorNode(editor);
-
-      if (!contextEntry) return '';
-
-      const prompt = serializeMdNodes([contextEntry[0] as TElement]);
-
-      return `延续文本直到下一个标点符号：
-"""
-${prompt}
-"""`;
+    shortcuts: {
+      accept: { keys: 'tab' },
+      acceptNextWord: { keys: 'mod+right' },
+      reject: { keys: 'escape' },
+      triggerSuggestion: { keys: 'ctrl+space' },
     },
-    renderGhostText: GhostText,
-  },
-}));
-```
-
-- [幽灵文本](/docs/components/ghost-text)
-
-## Tab键处理
-
-Copilot插件使用Tab键来接受建议。为避免与其他使用Tab键的插件（如`IndentPlugin`或`TabbablePlugin`）冲突，请确保`CopilotPlugin`在插件配置中位于它们之前。这样当有建议时，Copilot可以优先处理Tab键事件。
-
-```tsx
-const plugins = [
-  // ...其他插件
-  CopilotPlugin,
-  // 将使用Tab键的插件放在Copilot之后
-  IndentPlugin,
-  TabbablePlugin,
+  })),
 ];
 ```
 
-## 示例
+- `completeOptions`: 配置 Vercel AI SDK `useCompletion` 钩子。
+  - `api`: AI 补全路由的端点。
+  - `onError`: 处理错误的回调（用于开发期间的模拟）。
+  - `onFinish`: 处理完成建议的回调。此处将建议设置到编辑器中。
+- `debounceDelay`: 用户停止输入后自动触发建议的延迟时间（毫秒）。
+- `renderGhostText`: 用于内联显示建议的 React 组件。
+- `shortcuts`: 定义与 Copilot 建议交互的键盘快捷键。
 
-### Plate UI
+### 添加 API 路由
 
-参考上方预览。
+在 `app/api/ai/copilot/route.ts` 创建 API 路由处理程序来处理 AI 请求。此端点将接收来自编辑器的提示词并调用 AI 模型。
 
-### Plate Plus
+```tsx title="app/api/ai/copilot/route.ts"
+import type { NextRequest } from 'next/server';
+
+import { createOpenAI } from '@ai-sdk/openai';
+import { generateText } from 'ai';
+import { NextResponse } from 'next/server';
+
+export async function POST(req: NextRequest) {
+  const {
+    apiKey: key,
+    model = 'gpt-4o-mini',
+    prompt,
+    system,
+  } = await req.json();
+
+  const apiKey = key || process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: '缺少 OpenAI API 密钥。' },
+      { status: 401 }
+    );
+  }
+
+  const openai = createOpenAI({ apiKey });
+
+  try {
+    const result = await generateText({
+      abortSignal: req.signal,
+      maxTokens: 50,
+      model: openai(model),
+      prompt: prompt,
+      system,
+      temperature: 0.7,
+    });
+
+    return NextResponse.json(result);
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      return NextResponse.json(null, { status: 408 });
+    }
+
+    return NextResponse.json(
+      { error: '处理 AI 请求失败' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+然后，在 `.env.local` 中设置您的 `OPENAI_API_KEY`。
+
+### 系统提示词
+
+系统提示词定义了 AI 的角色和行为。修改 `completeOptions` 中的 `body.system` 属性：
+
+```tsx
+CopilotPlugin.configure(({ api }) => ({
+  options: {
+    completeOptions: {
+      api: '/api/ai/copilot',
+      body: {
+        system: {
+          system: `您是一个高级 AI 写作助手，类似于 VSCode Copilot，但适用于通用文本。您的任务是根据给定上下文预测并生成文本的下一部分。
+
+规则：
+- 自然地继续文本直到下一个标点符号（., ,, ;, :, ? 或 !）。
+- 保持风格和语气。不要重复给定文本。
+- 对于不明确的上下文，提供最可能的延续。
+- 如果需要，处理代码片段、列表或结构化文本。
+- 不要在响应中包含 """。
+- 关键：始终以标点符号结尾。
+- 关键：避免开始新块。不要使用块格式化如 >, #, 1., 2., - 等。建议应继续在与上下文相同的块中。
+- 如果未提供上下文或无法生成延续，返回 "0" 而不解释。`,
+        },
+      },
+      // ... 其他选项
+    },
+    // ... 其他插件选项
+  },
+})),
+```
+
+### 用户提示词
+
+用户提示词（通过 `getPrompt`）决定发送给 AI 的上下文内容。您可以自定义它以包含更多上下文或以不同方式格式化：
+
+```tsx
+CopilotPlugin.configure(({ api }) => ({
+  options: {
+    getPrompt: ({ editor }) => {
+        const contextEntry = editor.api.block({ highest: true });
+
+        if (!contextEntry) return '';
+
+        const prompt = serializeMd(editor, {
+          value: [contextEntry[0] as TElement],
+        });
+
+        return `继续文本直到下一个标点符号：
+"""
+${prompt}
+"""`;
+      },
+    // ... 其他选项
+  },
+})),
+```
+
+</Steps>
+
+## Plate Plus
 
 <ComponentPreviewPro name="copilot-pro" />
 
-## 键盘快捷键
+## 自定义
 
-<KeyTable>
-  <KeyTableItem hotkey="Ctrl + 空格">
-    触发建议。再次按下获取替代建议。
-  </KeyTableItem>
-  <KeyTableItem hotkey="Tab">接受整个建议。</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + →">
-    接受建议的下一个单词。
-  </KeyTableItem>
-  <KeyTableItem hotkey="Esc">取消当前建议。</KeyTableItem>
-</KeyTable>
+### 切换 AI 模型
+
+在 API 路由中配置不同的 AI 模型和 provider：
+
+```tsx title="app/api/ai/copilot/route.ts"
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+
+export async function POST(req: NextRequest) {
+  const { 
+    model = 'gpt-4o-mini', 
+    provider = 'openai',
+    prompt,
+    system 
+  } = await req.json();
+
+  let aiProvider;
+  
+  switch (provider) {
+    case 'anthropic':
+      aiProvider = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      break;
+    case 'openai':
+    default:
+      aiProvider = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      break;
+  }
+
+  const result = await generateText({
+    model: aiProvider(model),
+    prompt,
+    system,
+    maxTokens: 50,
+    temperature: 0.7,
+  });
+
+  return NextResponse.json(result);
+}
+```
+
+在 `CopilotPlugin` 中配置模型：
+
+```tsx
+CopilotPlugin.configure(({ api }) => ({
+  options: {
+    completeOptions: {
+      api: '/api/ai/copilot',
+      body: {
+        model: 'claude-3-haiku-20240307', // 用于补全的快速模型
+        provider: 'anthropic',
+        system: '您的系统提示词...',
+      },
+    },
+    // ... 其他选项
+  },
+})),
+```
+
+更多 AI provider 和模型，请参阅 [Vercel AI SDK 文档](https://sdk.vercel.ai/providers/ai-sdk-providers)。
+
+### 自定义触发条件
+
+控制何时自动触发建议：
+
+```tsx
+CopilotPlugin.configure(({ api }) => ({
+  options: {
+    triggerQuery: ({ editor }) => {
+      // 仅在段落块中触发
+      const block = editor.api.block();
+      if (!block || block[0].type !== 'p') return false;
+      
+      // 标准检查
+      return editor.selection && 
+             !editor.api.isExpanded() && 
+             editor.api.isAtEnd();
+    },
+    autoTriggerQuery: ({ editor }) => {
+      // 自动触发的自定义条件
+      const block = editor.api.block();
+      if (!block) return false;
+      
+      const text = editor.api.string(block[0]);
+      
+      // 在疑问词后触发
+      return /\b(what|how|why|when|where)\s*$/i.test(text);
+    },
+    // ... 其他选项
+  },
+})),
+```
+
+### 安全考虑
+
+为 Copilot API 实施安全最佳实践：
+
+```tsx title="app/api/ai/copilot/route.ts"
+export async function POST(req: NextRequest) {
+  const { prompt, system } = await req.json();
+
+  // 验证提示词长度
+  if (!prompt || prompt.length > 1000) {
+    return NextResponse.json({ error: '无效提示词' }, { status: 400 });
+  }
+
+  // 速率限制（使用您偏好的解决方案实现）
+  // await rateLimit(req);
+
+  // 敏感内容过滤
+  if (containsSensitiveContent(prompt)) {
+    return NextResponse.json({ error: '内容被过滤' }, { status: 400 });
+  }
+
+  // 处理 AI 请求...
+}
+```
+
+**安全指南:**
+- **输入验证**: 限制提示词长度并验证内容
+- **速率限制**: 通过请求限制防止滥用
+- **内容过滤**: 过滤敏感或不适当内容
+- **API 密钥安全**: 切勿在客户端暴露 API 密钥
+- **超时处理**: 优雅处理请求超时
 
 ## 插件
 
 ### `CopilotPlugin`
 
-提供AI驱动的文本补全建议功能。
+用于 AI 驱动的文本补全建议的插件。
 
 <API name="CopilotPlugin">
 <APIOptions>
   <APIItem name="autoTriggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
-    自动触发copilot的附加条件。
-    - **默认值:** 检查：
+    自动触发 copilot 的附加条件。
+    - **默认:** 检查：
       - 上方块不为空
       - 上方块以空格结尾
-      - 没有现有建议
+      - 无现有建议
   </APIItem>
   <APIItem name="completeOptions" type="Partial<CompleteOptions>">
-    AI补全配置选项。参见[AI SDK useCompletion参数](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters)。
+    AI 补全配置选项。参见 [AI SDK useCompletion 参数](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters)。
   </APIItem>
   <APIItem name="debounceDelay" type="number" optional>
     自动触发建议的防抖延迟。
-    - **默认值:** `0`
+    - **默认:** `0`
   </APIItem>
   <APIItem name="getNextWord" type="(options: { text: string }) => { firstWord: string; remainingText: string }" optional>
     从建议文本中提取下一个单词的函数。
   </APIItem>
   <APIItem name="getPrompt" type="(options: { editor: PlateEditor }) => string" optional>
-    生成AI补全提示的函数。
-    - **默认值:** 使用祖先节点的markdown序列化
+    生成 AI 补全提示词的函数。
+    - **默认:** 使用祖先节点的 markdown 序列化
   </APIItem>
   <APIItem name="renderGhostText" type="(() => React.ReactNode) | null" optional>
     渲染幽灵文本建议的组件。
   </APIItem>
   <APIItem name="triggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
-    触发copilot的条件。
-    - **默认值:** 检查：
+    触发 copilot 的条件。
+    - **默认:** 检查：
       - 选择未展开
-      - 选择位于块结尾
+      - 选择在块末尾
   </APIItem>
 </APIOptions>
 </API>
 
-## API
+## 转换
 
-### `api.copilot.accept()`
+### `tf.copilot.accept()`
 
 接受当前建议并将其应用到编辑器内容中。
 
-### `api.copilot.acceptNextWord()`
+默认快捷键: `Tab`
+
+### `tf.copilot.acceptNextWord()`
 
 仅接受当前建议的下一个单词，允许逐步接受建议。
 
-### `api.copilot.reset()`
+示例快捷键: `Cmd + →`
+
+## API
+
+### `api.copilot.reject()`
 
 将插件状态重置为初始条件：
+默认快捷键: `Escape`
 
-- 中止任何进行中的API请求
-- 清除当前补全
-- 清除建议节点ID和文本
+### `api.copilot.triggerSuggestion()`
+
+触发新的建议请求。请求可能会根据插件配置进行防抖。
+
+示例快捷键: `Ctrl + Space`
 
 ### `api.copilot.setBlockSuggestion()`
 
@@ -205,20 +486,16 @@ const plugins = [
     要设置的建议文本。
   </APIItem>
   <APIItem name="id" type="string" optional>
-    目标块ID。
-    - **默认值:** 当前块
+    目标块 ID。
+    - **默认:** 当前块
   </APIItem>
 </APIOptions>
 </API>
 
 ### `api.copilot.stop()`
 
-停止进行中的建议请求并进行清理：
+停止正在进行的建议请求并清理：
 
-- 取消防抖触发的调用
-- 中止当前API请求
+- 取消防抖的触发调用
+- 中止当前 API 请求
 - 重置中止控制器
-
-### `api.copilot.triggerSuggestion()`
-
-触发新的建议请求。根据插件配置，请求可能会被防抖处理。

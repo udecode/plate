@@ -11,6 +11,7 @@ export interface NavItem {
   keywords?: string[];
   label?: string[] | string;
   title?: string;
+  titleCn?: string;
   value?: string;
 }
 

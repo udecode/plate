@@ -1,0 +1,110 @@
+---
+title: 上标
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: 标记工具栏按钮
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## 特性
+
+- 将文本格式化为上标，适用于数学表达式或脚注
+- 支持键盘快捷键快速格式化
+- 默认渲染为 `<sup>` HTML 元素
+
+</PackageInfo>
+
+## 套件使用方式
+
+<Steps>
+
+### 安装
+
+最快捷添加上标插件的方式是使用 `BasicMarksKit`，它包含预配置的 `SuperscriptPlugin` 以及其他基础标记和它们的 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="basic-marks-kit" />
+
+### 添加套件
+
+将套件添加到你的插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...BasicMarksKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用方式
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### 添加插件
+
+在创建编辑器时，将 `SuperscriptPlugin` 包含到 Plate 插件数组中。
+
+```tsx
+import { SuperscriptPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    SuperscriptPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+你可以为 `SuperscriptPlugin` 配置自定义键盘快捷键。
+
+```tsx
+import { SuperscriptPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    SuperscriptPlugin.configure({
+      shortcuts: { toggle: { keys: 'mod+period' } },
+    }),
+  ],
+});
+```
+
+- `shortcuts.toggle`: 定义用于切换上标格式的键盘[快捷键](/docs/plugin-shortcuts)。
+
+### 添加工具栏按钮
+
+你可以向[工具栏](/docs/toolbar)添加 [`MarkToolbarButton`](/docs/components/mark-toolbar-button) 来切换上标格式。
+
+</Steps>
+
+## 插件
+
+### `SuperscriptPlugin`
+
+用于上标文本格式化的插件。默认渲染为 `<sup>` HTML 元素。
+
+## 转换操作
+
+### `tf.superscript.toggle`
+
+为选中的文本切换上标格式。

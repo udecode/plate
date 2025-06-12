@@ -1,57 +1,102 @@
 ---
 title: 提示框
 docs:
-  - route: https://pro.platejs.org/docs/components/callout-element
+  - route: /docs/components/callout
+    title: 提示框元素
+  - route: https://pro.platejs.org/docs/components/callout-node
     title: 提示框元素
 ---
 
+<ComponentPreview name="callout-demo" />
+
 <PackageInfo>
 
-## 特性
+## 功能特性
 
-- 可自定义的提示框块，用于突出显示重要信息
-- 支持不同的提示框变体（例如，信息、警告、错误）
-- 可以为提示框设置自定义图标或表情符号
+- 可自定义的提示框区块，用于突出显示重要信息
+- 支持不同类型的提示框变体（如信息、警告、错误）
+- 可为提示框设置自定义图标或表情符号
 
 </PackageInfo>
 
-## 安装
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快添加提示框插件的方式是使用 `CalloutKit`，它包含预配置的 `CalloutPlugin` 和 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="callout-kit" />
+
+- [`CalloutElement`](/docs/components/callout-node): 渲染提示框元素
+
+### 添加套件
+
+将套件添加到你的插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { CalloutKit } from '@/components/editor/plugins/callout-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...CalloutKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
 
 ```bash
 npm install @platejs/callout
 ```
 
-## 使用
+### 添加插件
+
+在创建编辑器时，将 `CalloutPlugin` 包含到 Plate 插件数组中。
 
 ```tsx
 import { CalloutPlugin } from '@platejs/callout/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    CalloutPlugin,
+  ],
+});
 ```
+
+### 配置插件
+
+你可以通过自定义组件来配置 `CalloutPlugin` 以渲染提示框元素。
 
 ```tsx
-const plugins = [
-  // ...其他插件,
-  CalloutPlugin,
-]
+import { CalloutPlugin } from '@platejs/callout/react';
+import { createPlateEditor } from 'platejs/react';
+import { CalloutElement } from '@/components/ui/callout-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    CalloutPlugin.withComponent(CalloutElement),
+  ],
+});
 ```
 
-```tsx
-import { KEYS } from 'platejs';
+- `withComponent`: 指定 [`CalloutElement`](/docs/components/callout-node) 来渲染提示框元素
 
-const components = {
-  // ...其他组件,
-  [KEYS.callout]: CalloutElement,
-}
-```
+</Steps>
 
-- [CalloutElement](https://pro.platejs.org/docs/components/callout-element) (Plus)
-
-## 示例
-
-### Plate UI
-
-开发中。
-
-### Plate Plus
+## Plate Plus
 
 <ComponentPreviewPro name="callout-pro" />
 
@@ -61,19 +106,19 @@ const components = {
 
 提示框元素插件。
 
-## 转换
+## 转换器
 
 ### `tf.insert.callout`
 
-向编辑器中插入一个提示框元素。
+向编辑器中插入提示框元素。
 
 <API name="callout">
 <APIOptions type="object">
   <APIItem name="variant" type="string" optional>
-    要插入的提示框变体。
+    要插入的提示框变体类型
   </APIItem>
   <APIItem name="...InsertNodesOptions" type="InsertNodesOptions<V>">
-    来自 `InsertNodesOptions` 的其他选项。
+    来自 `InsertNodesOptions` 的其他选项
   </APIItem>
 </APIOptions>
 </API>
@@ -87,36 +132,36 @@ const components = {
 <API name="useCalloutEmojiPicker">
 <APIOptions type="UseCalloutEmojiPickerOptions">
   <APIItem name="isOpen" type="boolean">
-    表情符号选择器是否打开。
+    表情符号选择器是否打开
   </APIItem>
   <APIItem name="setIsOpen" type="(isOpen: boolean) => void">
-    设置表情符号选择器打开状态的函数。
+    设置表情符号选择器打开状态的函数
   </APIItem>
 </APIOptions>
 
 <APIReturns type="object">
   <APIItem name="emojiToolbarDropdownProps" type="object">
-    表情符号工具栏下拉菜单的属性。
+    表情符号工具栏下拉框的属性
     <APISubList>
       <APISubListItem parent="emojiToolbarDropdownProps" name="isOpen" type="boolean">
-        表情符号选择器是否打开。
+        表情符号选择器是否打开
       </APISubListItem>
       <APISubListItem parent="emojiToolbarDropdownProps" name="setIsOpen" type="(v: boolean) => void">
-        设置表情符号选择器打开状态的函数，尊重只读模式。
+        设置表情符号选择器打开状态的函数，会考虑只读模式
       </APISubListItem>
     </APISubList>
   </APIItem>
   <APIItem name="props" type="object">
-    表情符号选择器组件的属性。
+    表情符号选择器组件的属性
     <APISubList>
       <APISubListItem parent="props" name="isOpen" type="boolean">
-        表情符号选择器是否打开。
+        表情符号选择器是否打开
       </APISubListItem>
       <APISubListItem parent="props" name="setIsOpen" type="(isOpen: boolean) => void">
-        设置表情符号选择器打开状态的函数。
+        设置表情符号选择器打开状态的函数
       </APISubListItem>
       <APISubListItem parent="props" name="onSelectEmoji" type="(options: { emojiValue?: any; icon?: any }) => void">
-        选择表情符号时调用的函数。它会更新提示框的图标并关闭选择器。
+        当选择表情符号时调用的函数。它会更新提示框的图标并关闭选择器
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -137,10 +182,10 @@ interface TCalloutElement extends TElement {
 <API name="TCalloutElement">
 <APIAttributes>
   <APIItem name="variant" type="string" optional>
-    提示框的变体。
+    提示框的变体类型
   </APIItem>
   <APIItem name="icon" type="string" optional>
-    要显示的图标或表情符号。
+    要显示的图标或表情符号
   </APIItem>
 </APIAttributes>
 </API>

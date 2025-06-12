@@ -1,0 +1,110 @@
+---
+title: Subscript
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Format text as subscript for mathematical expressions or chemical formulas
+- Keyboard shortcut support for quick formatting
+- Renders as `<sub>` HTML element by default
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add the subscript plugin is with the `BasicMarksKit`, which includes pre-configured `SubscriptPlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="basic-marks-kit" />
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicMarksKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### Add Plugin
+
+Include `SubscriptPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { SubscriptPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    SubscriptPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+You can configure the `SubscriptPlugin` with custom keyboard shortcuts.
+
+```tsx
+import { SubscriptPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    SubscriptPlugin.configure({
+      shortcuts: { toggle: { keys: 'mod+comma' } },
+    }),
+  ],
+});
+```
+
+- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle subscript formatting.
+
+### Add Toolbar Button
+
+You can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle subscript formatting.
+
+</Steps>
+
+## Plugins
+
+### `SubscriptPlugin`
+
+Plugin for subscript text formatting. Renders as `<sub>` HTML element by default.
+
+## Transforms
+
+### `tf.subscript.toggle`
+
+Toggles the subscript formatting for the selected text. 

@@ -3,141 +3,9 @@ title: Plate 工具集
 description: \@platejs/utils 的 API 参考文档。
 ---
 
-`@platejs/utils` 包含 Plate 的实用工具函数。
+`@platejs/utils` 包含用于 Plate 的实用工具函数。
 
-## 组件
-
-### `<PlateElement>`
-
-用于渲染 element 的通用组件。
-
-<API name="PlateElement">
-<APIProps>
-  <APIItem name="className" type="string" optional>
-    应用于组件的 CSS 类名。
-  </APIItem>
-  <APIItem name="nodeProps" type="AnyObject" optional>
-    传递给组件的额外属性。
-  </APIItem>
-  <APIItem name="editor" type="E">
-    编辑器实例。也可以通过 `useEditorRef` 钩子获取。
-  </APIItem>
-  <APIItem name="element" type="TElement">
-    element 节点。也可以通过 `useElement` 钩子获取。
-  </APIItem>
-  <APIItem name="path" type="Path">
-    element 在编辑器树中的路径。也可以通过 `usePath` 钩子获取。
-  </APIItem>
-  <APIItem name="attributes" type="object">
-    需要应用到顶层 element 的属性。
-    <APISubList>
-      <APISubListItem parent="attributes" name="data-slate-node" type="'element'">
-        固定为 `'element'`。
-      </APISubListItem>
-      <APISubListItem parent="attributes" name="data-slate-inline" type="boolean" optional />
-      <APISubListItem parent="attributes" name="data-slate-void" type="boolean" optional />
-      <APISubListItem parent="attributes" name="dir" type="string" optional />
-      <APISubListItem parent="attributes" name="ref" type="any">
-        element 的引用。如果使用自定义引用，需要与此引用合并。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="children" type="any">
-    用于渲染子节点的必要属性。
-  </APIItem>
-  <APIItem name="elementToAttributes" type="(element: N) => any" optional>
-    从 Slate element 获取 HTML 属性。可作为 `PlatePlugin.props` 的替代方案。
-  </APIItem>
-  <APIItem name="as" type="React.ElementType" optional>
-    渲染使用的组件类型。
-    - **默认值:** `'div'`
-  </APIItem>
-  <APIItem name="asChild" type="boolean" optional>
-    如果为 true，则将其属性合并到直接子组件上。
-  </APIItem>
-</APIProps>
-</API>
-
-### `<PlateLeaf>`
-
-用于渲染 leaf 的通用组件。
-
-<API name="PlateLeaf">
-<APIProps>
-  <APIItem name="className" type="string" optional>
-    应用于组件的 CSS 类名。
-  </APIItem>
-  <APIItem name="editor" type="E">
-    编辑器上下文。
-  </APIItem>
-  <APIItem name="nodeProps" type="AnyObject" optional>
-    传递给组件的额外属性。
-  </APIItem>
-  <APIItem name="children" type="any">
-    用于渲染子节点的必要属性。
-  </APIItem>
-  <APIItem name="leaf" type="TText">
-    leaf 节点。
-  </APIItem>
-  <APIItem name="text" type="TText">
-    text 节点。
-  </APIItem>
-  <APIItem name="attributes" type="object">
-    需要应用到顶层 leaf 的属性。
-    <APISubList>
-      <APISubListItem parent="attributes" name="data-slate-leaf" type="true">
-        固定为 `true`。
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="leafToAttributes" type="(leaf: N) => any" optional>
-    从 Slate leaf 获取 HTML 属性。可作为 `PlatePlugin.props` 的替代方案。
-  </APIItem>
-  <APIItem name="as" type="React.ElementType" optional>
-    渲染使用的组件类型。
-    - **默认值:** `'span'`
-  </APIItem>
-  <APIItem name="asChild" type="boolean" optional>
-    如果为 true，则将其属性合并到直接子组件上。
-  </APIItem>
-</APIProps>
-</API>
-
-### `<PlateText>`
-
-用于渲染文本的通用组件。
-
-<API name="PlateText">
-<APIProps>
-  <APIItem name="className" type="string" optional>
-    应用于组件的 CSS 类名。
-  </APIItem>
-  <APIItem name="nodeProps" type="AnyObject" optional>
-    传递给组件的额外属性。
-  </APIItem>
-  <APIItem name="text" type="TText">
-    text 节点。
-  </APIItem>
-  <APIItem name="attributes" type="object" optional>
-    需要应用到顶层文本的属性。
-  </APIItem>
-  <APIItem name="children" type="any">
-    用于渲染子节点的必要属性。
-  </APIItem>
-  <APIItem name="textToAttributes" type="(text: T) => any" optional>
-    从 Slate text 获取 HTML 属性。可作为 `PlatePlugin.props` 的替代方案。
-  </APIItem>
-  <APIItem name="as" type="React.ElementType" optional>
-    渲染使用的组件类型。
-    - **默认值:** `'span'`
-  </APIItem>
-  <APIItem name="asChild" type="boolean" optional>
-    如果为 true，则将其属性合并到直接子组件上。
-  </APIItem>
-</APIProps>
-</API>
-
-## 钩子
+## Hooks
 
 ### `useEditorString`
 
@@ -154,10 +22,10 @@ description: \@platejs/utils 的 API 参考文档。
 <API name="useMarkToolbarButtonState">
 <APIParameters>
   <APIItem name="nodeType" type="string">
-    需要检查活动标记的节点类型。
+    要检查活动标记的节点类型。
   </APIItem>
   <APIItem name="clear" type="string | string[]" optional>
-    应用标记时需要清除的节点类型或类型数组。
+    应用标记时要清除的节点类型或类型数组。
   </APIItem>
 </APIParameters>
 
@@ -169,14 +37,14 @@ description: \@platejs/utils 的 API 参考文档。
     节点类型。
   </APIItem>
   <APIItem name="clear" type="string | string[]" optional>
-    切换此标记时需要清除的类型或类型数组。
+    切换此标记时要清除的类型或类型数组。
   </APIItem>
 </APIReturns>
 </API>
 
 ### `useMarkToolbarButton`
 
-使用 `useMarkToolbarButtonState` 生成的状态来生成标记工具栏按钮的属性。
+使用 `useMarkToolbarButtonState` 创建的状态生成标记工具栏按钮的属性。
 
 <API name="useMarkToolbarButton">
 <APIParameters>
@@ -199,39 +67,14 @@ description: \@platejs/utils 的 API 参考文档。
 </APIReturns>
 </API>
 
-### `usePlaceholderState`
-
-生成编辑器中占位符的状态。
-
-<API name="usePlaceholderState">
-<APIParameters>
-  <APIItem name="hideOnBlur" type="boolean" optional>
-    如果为 true，当编辑器失去焦点时隐藏占位符。
-    - **默认值:** `true`
-  </APIItem>
-  <APIItem name="query" type="QueryNodeOptions" optional>
-    如果定义，只有当节点匹配查询时才显示占位符。
-  </APIItem>
-  <APIItem name="element" type="PlateElementProps">
-    显示占位符的 element。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="object">
-  <APIItem name="enabled" type="boolean">
-    是否应该显示占位符。
-  </APIItem>
-</APIReturns>
-</API>
-
 ### `useRemoveNodeButton`
 
-生成按钮属性，点击该按钮会从编辑器中移除节点。
+生成用于移除编辑器中节点的按钮属性。
 
 <API name="useRemoveNodeButton">
 <APIParameters>
   <APIItem name="element" type="TElement">
-    需要移除的节点 element。
+    要移除的节点元素。
   </APIItem>
 </APIParameters>
 

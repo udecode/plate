@@ -1,0 +1,134 @@
+---
+title: 引用块
+docs:
+  - route: /docs/components/blockquote-node
+    title: 引用块元素
+---
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## 功能特点
+
+- 创建引用块以强调重要信息或突出显示来自外部来源的引用。
+- 默认渲染为 `<blockquote>` HTML 元素。
+
+</PackageInfo>
+
+## Kit 使用
+
+<Steps>
+
+### 安装
+
+添加引用块插件最快的方法是使用 `BasicBlocksKit`，它包含预配置的 `BlockquotePlugin` 以及其他基本块元素及其 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="basic-blocks-kit" />
+
+- [`BlockquoteElement`](/docs/components/blockquote-node): 渲染引用块元素。
+
+### 添加 Kit
+
+将 kit 添加到你的插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...BasicBlocksKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### 添加插件
+
+在创建编辑器时，将 `BlockquotePlugin` 包含在你的 Plate 插件数组中。
+
+```tsx
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    BlockquotePlugin,
+  ],
+});
+```
+
+### 配置插件
+
+你可以使用特定渲染组件或自定义键盘快捷键等选项来配置 `BlockquotePlugin`。
+
+```tsx
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+import { BlockquoteElement } from '@/components/ui/blockquote-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    BlockquotePlugin.configure({
+      node: { component: BlockquoteElement },
+      shortcuts: { toggle: 'mod+shift+.' },
+    }),
+  ],
+});
+```
+
+- `node.component`: 分配 [`BlockquoteElement`](/docs/components/blockquote-node) 来渲染引用块元素。
+- `shortcuts.toggle`: 定义用于切换引用块格式的键盘[快捷键](/docs/plugin-shortcuts)。
+
+### 转换为工具栏按钮
+
+你可以将引用块添加到[转换为工具栏按钮](/docs/toolbar#turn-into-toolbar-button)以切换引用块：
+
+```tsx
+{
+  icon: <QuoteIcon />,
+  label: '引用',
+  value: KEYS.blockquote,
+}
+```
+
+### 插入工具栏按钮
+
+你可以将引用块添加到[插入工具栏按钮](/docs/toolbar#insert-toolbar-button)以插入引用块：
+
+```tsx
+{
+  icon: <QuoteIcon />,
+  label: '引用',
+  value: KEYS.blockquote,
+}
+```
+
+</Steps>
+
+## 插件
+
+### `BlockquotePlugin`
+
+用于引用块元素的插件。默认渲染为 `<blockquote>` HTML 元素。
+
+## 转换
+
+### `tf.blockquote.toggle`
+
+在当前块和段落之间切换引用块。如果该块已经是引用块，则恢复为段落。如果是段落或其他块类型，则转换为引用块。

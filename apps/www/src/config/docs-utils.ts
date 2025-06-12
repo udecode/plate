@@ -13,11 +13,31 @@ import { pluginNavMap, pluginsNavItems } from '@/config/docs-plugins';
 export const docSections: SidebarNavItem[] = [
   {
     items: [
-      { href: '/docs', title: 'Guides', value: 'guide' },
-      { href: '/docs/plugins', title: 'Plugins', value: 'plugin' },
-      { href: '/docs/components', title: 'Components', value: 'component' },
-      { href: '/docs/examples', title: 'Examples', value: 'example' },
-      { href: '/docs/api', title: 'API Reference', value: 'api' },
+      { href: '/docs', title: 'Guides', titleCn: '指南', value: 'guide' },
+      {
+        href: '/docs/plugins',
+        title: 'Plugins',
+        titleCn: '插件',
+        value: 'plugin',
+      },
+      {
+        href: '/docs/components',
+        title: 'Components',
+        titleCn: '组件',
+        value: 'component',
+      },
+      {
+        href: '/docs/examples',
+        title: 'Examples',
+        titleCn: '示例',
+        value: 'example',
+      },
+      {
+        href: '/docs/api',
+        title: 'API Reference',
+        titleCn: 'API 参考',
+        value: 'api',
+      },
     ],
   },
 ];
@@ -40,17 +60,19 @@ export const categoryNavGroups = {
   component: componentNavGroups,
   example: [{ items: docsExamples }],
   guide: [
-    { items: gettingStartedNavItems, title: 'Overview' },
-    { items: installationNavItems, title: 'Installation' },
-    { items: guidesNavItems, title: 'Guides' },
+    { items: gettingStartedNavItems, title: 'Overview', titleCn: '概览' },
+    { items: installationNavItems, title: 'Installation', titleCn: '安装' },
+    { items: guidesNavItems, title: 'Guides', titleCn: '指南' },
     {
       items: [
         {
           href: '/docs/migration/slate-to-plate',
           title: 'From Slate to Plate',
+          titleCn: '从 Slate 到 Plate',
         },
       ],
       title: 'Migration',
+      titleCn: '迁移',
     },
   ],
   plugin: [{ items: pluginsNavItems }],

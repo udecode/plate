@@ -1,0 +1,441 @@
+---
+title: 主要版本更新
+---
+
+<Callout type="info">
+  本文档涵盖 Plate 直至 v48 版本的**重大破坏性变更**。最新迁移指南请参阅[最新迁移文档](/docs/migration)。补丁和次要版本变更请参考各包的 `CHANGELOG.md` 文件或访问 [GitHub Releases](https://github.com/udecode/plate/releases) 页面。
+</Callout>
+
+# 48.0.0
+
+## @udecode/plate-core@48.0.0
+
+- [#4281](https://github.com/udecode/plate/pull/4281) by [@zbeyens](https://github.com/zbeyens) –
+
+  - `PlateElement`、`PlateLeaf` 和 `PlateText` 的 HTML 属性从顶层 props 移至 `attributes` prop，除了 `className`、`style` 和 `as`。迁移方式：
+
+  ```tsx
+  // 之前
+  <PlateElement
+    {...props}
+    ref={ref}
+    contentEditable={false}
+  >
+    {children}
+  </PlateElement>
+
+  // 之后
+  <PlateElement
+    {...props}
+    ref={ref}
+    attributes={{
+      ...props.attributes,
+      contentEditable: false,
+    }}
+  >
+    {children}
+  </PlateElement>
+  ```
+
+  - 移除 `PlateElement`、`PlateLeaf`、`PlateText` 的 `nodeProps` prop，已合并至 `attributes` prop。
+  - 插件的 `node.props` 应直接返回 props 而非包裹在 `nodeProps` 对象中。迁移方式：
+
+  ```ts
+  // 之前
+  node: {
+    props: ({ element }) => ({
+      nodeProps: {
+        colSpan: element?.attributes?.colspan,
+        rowSpan: element?.attributes?.rowspan,
+      },
+    });
+  }
+
+  // 之后
+  node: {
+    props: ({ element }) => ({
+      colSpan: element?.attributes?.colspan,
+      rowSpan: element?.attributes?.rowspan,
+    });
+  }
+  ```
+
+  - 移除 `PlateElement`、`PlateLeaf`、`PlateText` 的 `asChild` prop，改用 `as` prop。
+  - 移除 `PlateElement`、`PlateLeaf`、`PlateText` 的 `elementToAttributes`、`leafToAttributes`、`textToAttributes` props。
+  - 移除 `DefaultElement`、`DefaultLeaf`、`DefaultText`，改用 `PlateElement`、`PlateLeaf`、`PlateText`。
+  - 类型：移除 `PlateRenderElementProps`、`PlateRenderLeafProps`、`PlateRenderTextProps`，改用 `PlateElementProps`、`PlateLeafProps`、`PlateTextProps`。
+
+## @udecode/plate-utils@48.0.0
+
+- [#4281](https://github.com/udecode/plate/pull/4281) by [@zbeyens](https://github.com/zbeyens) –
+  - 将 `PlateElement`、`PlateLeaf`、`PlateText` 移至 `@udecode/plate-core`。若从 `@udecode/plate` 导入则无需迁移。
+
+## @udecode/plate-yjs@48.0.0
+
+- [#4225](https://github.com/udecode/plate/pull/4225) by [@bbyiringiro](<https://github.com/[bbyiringiro](https://github.com/bbyiringiro)>) –
+
+  - 新增多 provider 支持以增强协作功能：现可同时使用 Hocuspocus 和 WebRTC，共享同一个 Y.Doc。
+    - **迁移**：将 `hocuspocusProviderOptions` 替换为新的 `providers` 数组。示例如下。
+
+  **之前：**
+
+  ```tsx
+  YjsPlugin.configure({
+    options: {
+      cursorOptions: {
+        /* ... */
+      },
+      hocuspocusProviderOptions: {
+        url: 'wss://hocuspocus.example.com',
+        name: 'document-1',
+        // ... 其他 Hocuspocus 选项
+      },
+    },
+  });
+  ```
+
+  **之后（仅 Hocuspocus）：**
+
+  ```tsx
+  YjsPlugin.configure({
+    options: {
+      cursors: {
+        /* ... */
+      },
+      providers: [
+        {
+          type: 'hocuspocus',
+          options: {
+            url: 'wss://hocuspocus.example.com',
+            name: 'document-1',
+            // ... 其他 Hocuspocus 选项
+          },
+        },
+      ],
+    },
+  });
+  ```
+
+  **之后（Hocuspocus + WebRTC）：**
+
+  ```tsx
+  YjsPlugin.configure({
+    options: {
+      cursors: {
+        /* ... */
+      },
+      providers: [
+        {
+          type: 'hocuspocus',
+          options: {
+            url: 'wss://hocuspocus.example.com',
+            name: 'document-1',
+          },
+        },
+        {
+          type: 'webrtc',
+          options: {
+            roomName: 'document-1',
+            // signaling: ['wss://signaling.example.com'], // 可选
+          },
+        },
+      ],
+    },
+  });
+  ```
+
+  - 引入 `UnifiedProvider` 接口，支持自定义 provider 实现（如 IndexedDB 用于离线持久化）。
+  - 将 `cursorOptions` 重命名为 `cursors`。
+  - 将 `yjsOptions` 合并至 `options`。
+    - **迁移**：将原先位于 `yjsOptions` 下的选项直接移至主 `options` 对象。
+  - 移除 `YjsAboveEditable`。现在需要手动调用 `init` 和 `destroy`：
+
+  ```tsx
+  React.useEffect(() => {
+    if (!mounted) return;
+
+    // 初始化 Yjs 连接和同步
+    editor.getApi(YjsPlugin).yjs.init({
+      id: roomName, // 或你的文档标识符
+      value: INITIAL_VALUE, // 编辑器初始内容
+    });
+
+    // 组件卸载时销毁连接
+    return () => {
+      editor.getApi(YjsPlugin).yjs.destroy();
+    };
+  }, [editor, mounted, roomName]); // 添加相关依赖
+  ```
+
+# 47.0.0
+
+## @udecode/plate-markdown
+
+- [#4174](https://github.com/udecode/plate/pull/4174) by [@felixfeng33](https://github.com/felixfeng33) – #### 新特性
+
+  - 新增数学类型反序列化支持
+  - 默认下划线标记序列化为 `<u>underline</u>`
+  - 改进序列化流程：
+    - 现采用两步流程：`slate nodes => MDAST nodes => markdown string`
+    - 之前：直接从 Slate 节点转换为 markdown 字符串
+    - 结果更可靠且健壮
+  - 新增节点过滤选项：
+    - `allowedNodes`：白名单特定节点
+    - `disallowedNodes`：黑名单特定节点
+    - `allowNode`：自定义过滤函数
+  - 新增 `rules` 选项用于自定义序列化和反序列化规则，包括**自定义 mdx** 支持
+  - 新增 `remarkPlugins` 选项以使用 [remark 插件](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins)
+
+  #### 破坏性变更
+
+  **插件选项**
+
+  移除的选项：
+
+  - `elementRules` 改用 `rules`
+  - `textRules` 改用 `rules`
+  - `indentList` 现自动检测是否使用了 IndentList 插件
+  - `splitLineBreaks` 仅用于反序列化
+
+  ##### 反序列化
+
+  - 移除 `elementRules` 和 `textRules` 选项
+    - 改用 `rules.key.deserialize`
+    - 参见 [节点文档](https://platejs.org/docs/markdown)
+
+  迁移示例：
+
+  ```tsx
+  export const markdownPlugin = MarkdownPlugin.configure({
+    options: {
+      disallowedNodes: [SuggestionPlugin.key],
+      rules: {
+        // 对应 textRules
+        [BoldPlugin.key]: {
+          mark: true,
+          deserialize: (mdastNode) => ({
+            bold: true,
+            text: node.value || '',
+          }),
+        },
+        // 对应 elementRules
+        [EquationPlugin.key]: {
+          deserialize: (mdastNode, options) => ({
+            children: [{ text: '' }],
+            texExpression: node.value,
+            type: EquationPlugin.key,
+          }),
+        },
+      },
+      remarkPlugins: [remarkMath, remarkGfm],
+    },
+  });
+  ```
+
+  - 移除 `editor.api.markdown.deserialize` 中的 processor
+    - 改用 `remarkPlugins`
+
+  ##### 序列化
+
+  - 移除 `serializeMdNodes`
+    - 改用 `editor.markdown.serialize({ value: nodes })`
+  - 移除 `SerializeMdOptions` 因采用新序列化流程
+    - 之前流程：`slate nodes => md`
+    - 新流程：`slate nodes => md-ast => md`
+  - 移除的选项：
+    - `nodes`
+    - `breakTag`
+    - `customNodes`
+    - `ignoreParagraphNewline`
+    - `listDepth`
+    - `markFormats`
+    - `ulListStyleTypes`
+    - `ignoreSuggestionType`
+
+  迁移 `SerializeMdOptions.customNodes` 和 `SerializeMdOptions.nodes` 的示例：
+
+  ```tsx
+  export const markdownPlugin = MarkdownPlugin.configure({
+    options: {
+      rules: {
+        // 忽略所有 `insert` 类型的建议
+        [SuggestionPlugin.key]: {
+          mark: true,
+          serialize: (slateNode: TSuggestionText, options): mdast.Text => {
+            const suggestionData = options.editor
+              .getApi(SuggestionPlugin)
+              .suggestion.suggestionData(node);
+
+            return suggestionData?.type === 'insert'
+              ? { type: 'text', value: '' }
+              : { type: 'text', value: node.text };
+          },
+        },
+        // 对应 elementRules
+        [EquationPlugin.key]: {
+          serialize: (slateNode) => ({
+            type: 'math',
+            value: node.texExpression,
+          }),
+        },
+      },
+      remarkPlugins: [remarkMath, remarkGfm],
+    },
+  });
+  ```
+
+# 46.0.0
+
+## @udecode/plate-code-block@46.0.0
+
+- [#4122](https://github.com/udecode/plate/pull/4122) by [@zbeyens](https://github.com/zbeyens) – 从 `prismjs` 迁移至 `highlight.js` + `lowlight` 实现语法高亮。
+
+  - 修复多行标记的高亮问题。之前是按行计算标记，现在是对整个代码块一次性计算。
+  - 显著减少包体积。
+  - `CodeBlockPlugin`：移除 `prism` 选项，改用 `lowlight` 选项：
+
+  ```tsx
+  import { all, createLowlight } from 'lowlight';
+
+  const lowlight = createLowlight(all);
+
+  CodeBlockPlugin.configure({
+    options: {
+      lowlight,
+    },
+  });
+  ```
+
+  - 新增选项：`defaultLanguage`
+  - 移除 `syntax` 选项。省略 `lowlight` 选项即可禁用语法高亮。
+  - 移除 `syntaxPopularFirst` 选项。在自定义组件中控制此行为。
+  - 修复在代码块内粘贴代码的问题。
+  - 移除 `useCodeBlockCombobox`、`useCodeBlockElement`、`useCodeSyntaxLeaf`、`useToggleCodeBlockButton`。相关逻辑已移至组件中。
+
+# 45.0.0
+
+## @udecode/plate-comments@45.0.0
+
+- [#4064](https://github.com/udecode/plate/pull/4064) by [@felixfeng33](https://github.com/felixfeng33) – 本次重写移除了评论插件的 UI 逻辑（无头化）。
+
+  **插件选项**
+
+  - 移除插件选项中的配置项，改为组件级控制：
+    - `options.comments`
+    - `options.myUserId`
+    - `options.users`
+
+  **组件**
+
+  - 移除旧组件：
+    - `CommentDeleteButton`
+    - `CommentEditActions`
+    - `CommentEditButton`
+    - `CommentEditCancelButton`
+    - `CommentEditSaveButton`
+    - `CommentEditTextarea`
+    - `CommentNewSubmitButton`
+    - `CommentNewTextarea`
+    - `CommentResolveButton`
+    - `CommentsPositioner`
+    - `CommentUserName`
+
+  **API**
+
+  - 移除以下函数，改用新 API 方法：
+    - `findCommentNode` → `api.comment.node()`
+    - `findCommentNodeById` → `api.comment.node({ id })`
+    - `getCommentNodeEntries` → `api.comment.nodes()`
+    - `getCommentNodesById` → `api.comment.nodes({ id })`
+    - `removeCommentMark` → `tf.comment.remove()`
+    - `unsetCommentNodesById` → `tf.comment.unsetMark({ id })`
+  - 移除未使用的函数：
+    - `getCommentFragment`
+    - `getCommentUrl`
+    - `getElementAbsolutePosition`
+    - `getCommentPosition`
+  - 更新 `getCommentCount` 以排除草稿评论
+
+  **状态管理**
+
+  - 移除 `CommentProvider` - 用户应自行实现状态管理 – `block-discussion.tsx`
+  - 将 `useHooksComments` 移至 UI 注册表 – `comments-plugin.tsx`
+  - 移除新 UI 不再需要的钩子：
+    - `useActiveCommentNode`
+    - `useCommentsResolved`
+    - `useCommentAddButton`
+    - `useCommentItemContent`
+    - `useCommentLeaf`
+    - `useCommentsShowResolvedButton`
+    - `useFloatingCommentsContentState`
+    - `useFloatingCommentsState`
+
+  **类型**
+
+  - 移除 `CommentUser`
+  - 将 `TComment` 移至 UI 注册表 – `comment.tsx`
+
+## @udecode/plate-suggestion@45.0.0
+
+- [#4064](https://github.com/udecode/plate/pull/4064) by [@felixfeng33](https://github.com/felixfeng33) – 注意：此插件目前处于实验阶段，可能在不升级主版本的情况下引入破坏性变更。
+
+  - 新增 Suggestion UI
+  - 移除：`findSuggestionNode` 改用 `findSuggestionProps.ts`
+  - 移除 `addSuggestionMark.ts`
+  - 移除 `useHooksSuggestion.ts` 因我们已更新 activeId 逻辑不再依赖 useEditorSelector
+
+# 44.0.1
+
+## @udecode/plate-core@44.0.0
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) –
+
+  - 支持 React 19
+  - 升级至 `zustand-x@6`
+    - `eventEditorSelectors` -> `EventEditorStore.get`
+    - `eventEditorActions` -> `EventEditorStore.set`
+    - `useEventEditorSelectors` -> `useEventEditorValue(key)`
+  - 升级至 `jotai-x@2`
+    - `usePlateEditorStore` -> `usePlateStore`
+    - `usePlateActions` -> `usePlateSet`
+    - 移除 `editor.setPlateState`，改用 `usePlateSet`
+    - `usePlateSelectors` -> `usePlateValue`
+    - `usePlateStates` -> `usePlateState`
+  - 将插件选项钩子拆分为独立钩子以兼容 React Compiler
+    - `editor.useOption`, `ctx.useOption` -> `usePluginOption(plugin, key, ...args)`
+    - `editor.useOptions`, `ctx.useOptions` -> `usePluginOption(plugin, 'state')`
+    - 新钩子 `usePluginOptions(plugin, selector)` 用于选择插件选项（Zustand 方式）。
+  - 我们之前支持通过 `extendOptions` 向插件添加选择器。这些选择器与选项状态混合，可能导致冲突和混淆。
+    - 插件方法重命名为 `extendSelectors`
+    - 选择器现在内部存储在 `plugin.selectors` 而非 `plugin.options` 中，但访问方式不变：使用 `editor.getOption(plugin, 'selectorName')`、`ctx.getOption('selectorName')` 或上述钩子。
+    - 选择器类型不再位于 `PluginConfig` 的第二个泛型参数中，我们新增第五个泛型参数用于此。
+
+  ```ts
+  // 之前：
+  export type BlockSelectionConfig = PluginConfig<
+    'blockSelection',
+    { selectedIds?: Set<string>; } & BlockSelectionSelectors,
+  >;
+
+  // 之后：
+  export type BlockSelectionConfig = PluginConfig<
+    'blockSelection',
+    { selectedIds?: Set<string>; },
+    {}, // API
+    {}, // Transforms
+    BlockSelectionSelectors, // Selectors
+  }>
+  ```
+
+## @udecode/plate-comments@44.0.0
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – 升级至 `jotai-x@2`。[迁移](https://github.com/udecode/jotai-x/blob/main/packages/jotai-x/CHANGELOG.md#211)仅在使用 `useCommentStore` 时需要
+
+## @udecode/plate-media@44.0.0
+
+- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – 升级至 `zustand-x@2`。[迁移](https://github.com/udecode/zustand-x/blob/main/packages/zustand-x/CHANGELOG.md#600)仅在使用以下存储时需要：
+
+  - `ImagePreviewStore`
+  - `FloatingMediaStore`
+
+- [#4048](https://github.com/udecode/plate/pull

@@ -1,0 +1,110 @@
+---
+title: 删除线
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: 标记工具栏按钮
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 应用删除线格式标记已删除或过时内容
+- 支持快捷键快速格式化
+- 默认渲染为 `<s>` HTML 元素
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的添加删除线插件方式是使用 `BasicMarksKit`，它包含预配置的 `StrikethroughPlugin` 以及其他基础标记和它们的 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="basic-marks-kit" />
+
+### 添加套件
+
+将套件添加到插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...BasicMarksKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### 添加插件
+
+在创建编辑器时将 `StrikethroughPlugin` 包含到 Plate 插件数组中。
+
+```tsx
+import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    StrikethroughPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+您可以自定义 `StrikethroughPlugin` 的键盘快捷键。
+
+```tsx
+import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    StrikethroughPlugin.configure({
+      shortcuts: { toggle: { keys: 'mod+shift+x' } },
+    }),
+  ],
+});
+```
+
+- `shortcuts.toggle`: 定义切换删除线格式的键盘[快捷键](/docs/plugin-shortcuts)
+
+### 添加工具栏按钮
+
+您可以在[工具栏](/docs/toolbar)中添加 [`MarkToolbarButton`](/docs/components/mark-toolbar-button) 来切换删除线格式。
+
+</Steps>
+
+## 插件
+
+### `StrikethroughPlugin`
+
+删除线文本格式插件。默认渲染为 `<s>` HTML 元素。
+
+## 转换方法
+
+### `tf.strikethrough.toggle`
+
+切换所选文本的删除线格式。

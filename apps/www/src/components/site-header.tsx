@@ -8,6 +8,7 @@ import { siteConfig } from '@/config/site';
 import { CommandMenu } from './command-menu';
 import { Icons } from './icons';
 import { LanguagesDropdownMenu } from './languages-dropdown-menu';
+import { Logo } from './logo';
 import { MainNav } from './main-nav';
 import { SetupMCPDialog } from './mcp-dialog';
 import { MobileNav } from './mobile-nav';
@@ -42,17 +43,7 @@ export function SiteHeader() {
           />
 
           {/* Desktop only */}
-          <Button
-            asChild
-            size="icon"
-            variant="ghost"
-            className="hidden size-8 md:flex"
-          >
-            <Link href="/">
-              <Icons.logo className="size-5" />
-              <span className="sr-only">{siteConfig.name}</span>
-            </Link>
-          </Button>
+          <Logo />
           <MainNav className="hidden md:flex" items={siteConfig.navItems} />
 
           {/* Header end */}
