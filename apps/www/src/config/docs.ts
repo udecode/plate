@@ -199,7 +199,7 @@ export const guidesNavItems: SidebarNavItem[] = [
     href: '/docs/playwright',
     title: 'Playwright Testing',
     titleCn: 'Playwright 测试',
-  },  
+  },
   {
     href: '/docs/troubleshooting',
     keywords: ['depset'],

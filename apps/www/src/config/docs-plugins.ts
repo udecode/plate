@@ -25,7 +25,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
     })),
     label: 'New',
     title: 'AI',
-  },  
+  },
   {
     href: '/docs/discussion',
     items: [
@@ -429,7 +429,7 @@ export const pluginsNavItems: SidebarNavItem[] = [
         titleCn: 'Markdown',
       },
     ],
-    title: 'Serializing', 
+    title: 'Serializing',
     titleCn: 'Serializing',
   },
 ];

@@ -13,11 +13,31 @@ import { pluginNavMap, pluginsNavItems } from '@/config/docs-plugins';
 export const docSections: SidebarNavItem[] = [
   {
     items: [
-      { href: '/docs', title: 'Guides',titleCn: '指南', value: 'guide' },
-      { href: '/docs/plugins', title: 'Plugins', titleCn: '插件', value: 'plugin' },
-      { href: '/docs/components', title: 'Components', titleCn: '组件', value: 'component' },
-      { href: '/docs/examples', title: 'Examples', titleCn: '示例', value: 'example' },
-      { href: '/docs/api', title: 'API Reference', titleCn: 'API 参考', value: 'api' },
+      { href: '/docs', title: 'Guides', titleCn: '指南', value: 'guide' },
+      {
+        href: '/docs/plugins',
+        title: 'Plugins',
+        titleCn: '插件',
+        value: 'plugin',
+      },
+      {
+        href: '/docs/components',
+        title: 'Components',
+        titleCn: '组件',
+        value: 'component',
+      },
+      {
+        href: '/docs/examples',
+        title: 'Examples',
+        titleCn: '示例',
+        value: 'example',
+      },
+      {
+        href: '/docs/api',
+        title: 'API Reference',
+        titleCn: 'API 参考',
+        value: 'api',
+      },
     ],
   },
 ];

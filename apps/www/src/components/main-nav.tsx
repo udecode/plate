@@ -48,7 +48,7 @@ export function MainNav({
             className={cn(pathname === item.href && 'text-primary')}
             href={getLocalizedPath(locale, item.href!)}
           >
-            {locale === 'cn' ? item.labelCn || item.label : item.label}
+            {locale === 'cn' ? (item as any).labelCn || item.label : item.label}
           </Link>
         </Button>
       ))}

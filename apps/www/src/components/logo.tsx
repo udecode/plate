@@ -8,8 +8,6 @@ import { getLocalizedPath, useLocale } from '@/hooks/useLocale';
 
 import { Icons } from './icons';
 
-
-
 export function Logo() {
   const locale = useLocale();
 
