@@ -3663,7 +3663,7 @@ __metadata:
     "@udecode/utils": "npm:47.2.7"
     is-plain-object: "npm:^5.0.0"
     lodash: "npm:^4.17.21"
-    slate: "npm:0.116.0"
+    slate: "npm:0.117.0"
     slate-dom: "npm:0.116.0"
   languageName: unknown
   linkType: soft
@@ -19475,13 +19475,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate@npm:0.116.0":
-  version: 0.116.0
-  resolution: "slate@npm:0.116.0"
+"slate@npm:0.117.0":
+  version: 0.117.0
+  resolution: "slate@npm:0.117.0"
   dependencies:
     immer: "npm:^10.0.3"
     tiny-warning: "npm:^1.0.3"
-  checksum: 10c0/703b7f6b244e1fecee47fbee3fab857c3249e8440a4e7c3a8ed8392efc650eb46a7979162e7913c35cde286175f22a81f965a8c75065ae7c911da1f60d7c433b
+  checksum: 10c0/7e1251bc814a7237a7b6d2f0c631a8f7ee5317d9fdb6ffa1b1d97178adc5648789d6b2059a3fb2590967799b3e6105832c4d160aa68723929ce85320a7c18701
   languageName: node
   linkType: hard
 
