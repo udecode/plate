@@ -1,5 +1,11 @@
 # @platejs/date
 
+## 49.0.2
+
+### Patch Changes
+
+- [#4351](https://github.com/udecode/plate/pull/4351) by [@felixfeng33](https://github.com/felixfeng33) – Delete the code that is no longer in use.
+
 ## 49.0.0
 
 ### Major Changes

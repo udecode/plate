@@ -1,6 +1,6 @@
 {
   "name": "@platejs/date",
-  "version": "49.0.0",
+  "version": "49.0.2",
   "description": "Date plugin for Plate",
   "keywords": [
     "plate",
@@ -53,7 +53,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=49.0.0",
+    "platejs": ">=49.0.2",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
