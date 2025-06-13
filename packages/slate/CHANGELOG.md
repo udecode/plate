@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 49.0.2
+
+### Patch Changes
+
+- [#4351](https://github.com/udecode/plate/pull/4351) by [@felixfeng33](https://github.com/felixfeng33) – upgrade slate
+
 ## 49.0.0
 
 ### Major Changes

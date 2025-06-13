@@ -1,5 +1,7 @@
 # @platejs/core
 
+## 49.0.2
+
 ## 49.0.0
 
 ### Major Changes

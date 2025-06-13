@@ -1,6 +1,6 @@
 {
   "name": "@platejs/test-utils",
-  "version": "49.0.0",
+  "version": "49.0.2",
   "description": "Testing utilities for Plate",
   "keywords": [
     "plate",
@@ -45,7 +45,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate": "49.0.0",
+    "@platejs/slate": "49.0.2",
     "slate-hyperscript": "0.100.0"
   },
   "publishConfig": {
