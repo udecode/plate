@@ -33,6 +33,7 @@ import {
   isKeyboardEventTriggeredByInput,
   isScopeActive,
   maybePreventDefault,
+  maybeStopPropagation,
 } from './validators';
 
 const stopPropagation = (e: KeyboardEvent): void => {
@@ -168,6 +169,7 @@ export default function useHotkeys<T extends HTMLElement>(
 
           // DIFF: after callback
           maybePreventDefault(e, hotkey, memoisedOptions?.preventDefault);
+          maybeStopPropagation(e, hotkey, memoisedOptions?.stopPropagation);
 
           if (!isKeyUp) {
             hasTriggeredRef.current = true;
