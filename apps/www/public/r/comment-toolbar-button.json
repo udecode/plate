@@ -27,9 +27,9 @@
       }
     ],
     "examples": [
-      "comment-demo",
+      "discussion-demo",
       "floating-toolbar-demo",
-      "comment-pro"
+      "discussion-pro"
     ]
   }
 }

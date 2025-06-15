@@ -562,19 +562,19 @@ export const demoExamples: Registry['items'] = (
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
         {
-          path: 'examples/values/comment-value.tsx',
+          path: 'examples/values/discussion-value.tsx',
           type: 'registry:example',
         },
       ],
       meta: {
         docs: [
           {
-            route: '/docs/comment',
-            title: 'Comments',
+            route: '/docs/discussion',
+            title: 'Discussion',
           },
         ],
       },
-      name: 'comment-demo',
+      name: 'discussion-demo',
       registryDependencies: [
         'comment-kit',
         'discussion-kit',

@@ -7,7 +7,6 @@ import { basicNodesValue } from './basic-nodes-value';
 import { blockMenuValue } from './block-menu-value';
 import { blockSelectionValue } from './block-selection-value';
 import { columnValue } from './column-value';
-import { commentValue } from './comment-value';
 import { copilotValue } from './copilot-value';
 import { cursorOverlayValue } from './cursor-overlay-value';
 import { dateValue } from './date-value';
@@ -15,6 +14,7 @@ import { deserializeCsvValue } from './deserialize-csv-value';
 import { deserializeDocxValue } from './deserialize-docx-value';
 import { deserializeHtmlValue } from './deserialize-html-value';
 import { deserializeMdValue } from './deserialize-md-value';
+import { commentValue } from './discussion-value';
 import { dndValue } from './dnd-value';
 import { editableVoidsValue } from './editable-voids-value';
 import { emojiValue } from './emoji-value';
@@ -34,7 +34,6 @@ import { mentionValue } from './mention-value';
 import { placeholderValue } from './placeholder-value';
 import { previewMdValue } from './preview-md-value';
 import { slashCommandValue } from './slash-command-value';
-import { suggestionValue } from './suggestion-value';
 import { tabbableValue } from './tabbable-value';
 import { tableValue } from './table-value';
 import { tocValue } from './toc-value';
@@ -81,7 +80,6 @@ const values = {
   placeholder: placeholderValue,
   'preview-markdown': previewMdValue,
   'slash-command': slashCommandValue,
-  suggestion: suggestionValue,
   tabbable: tabbableValue,
   table: tableValue,
   'text-align': alignValue,

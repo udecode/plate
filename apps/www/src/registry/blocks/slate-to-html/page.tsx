@@ -15,7 +15,7 @@ import { alignValue } from '@/registry/examples/values/align-value';
 import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 import { columnValue } from '@/registry/examples/values/column-value';
-import { commentValue } from '@/registry/examples/values/comment-value';
+import { discussionValue } from '@/registry/examples/values/discussion-value';
 import { dateValue } from '@/registry/examples/values/date-value';
 import { equationValue } from '@/registry/examples/values/equation-value';
 import { fontValue } from '@/registry/examples/values/font-value';
@@ -48,7 +48,7 @@ export default async function SlateToHtmlBlock() {
     ...mentionValue,
     ...dateValue,
     ...fontValue,
-    ...commentValue,
+    ...discussionValue,
     ...alignValue,
     ...lineHeightValue,
     ...indentValue,

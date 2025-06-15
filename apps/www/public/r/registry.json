@@ -369,9 +369,9 @@
           }
         ],
         "examples": [
-          "comment-demo",
+          "discussion-demo",
           "floating-toolbar-demo",
-          "comment-pro"
+          "discussion-pro"
         ]
       }
     },
@@ -433,8 +433,8 @@
           }
         ],
         "examples": [
-          "comment-demo",
-          "comment-pro"
+          "discussion-demo",
+          "discussion-pro"
         ]
       }
     },
@@ -1124,7 +1124,7 @@
         ],
         "examples": [
           "media-demo",
-          "media-toolbar-pro"
+          "media-pro"
         ]
       }
     },
@@ -1158,7 +1158,7 @@
         ],
         "examples": [
           "media-demo",
-          "upload-pro"
+          "media-pro"
         ]
       }
     },
@@ -1186,7 +1186,7 @@
         ],
         "examples": [
           "media-demo",
-          "upload-pro"
+          "media-pro"
         ]
       }
     },
@@ -1266,7 +1266,7 @@
         ],
         "examples": [
           "media-demo",
-          "media-toolbar-pro"
+          "media-pro"
         ]
       }
     },
@@ -1429,8 +1429,8 @@
           }
         ],
         "examples": [
-          "comment-demo",
-          "comment-pro"
+          "discussion-demo",
+          "discussion-pro"
         ]
       }
     },
@@ -1699,8 +1699,8 @@
           }
         ],
         "examples": [
-          "comment-demo",
-          "comment-pro"
+          "discussion-demo",
+          "discussion-pro"
         ]
       }
     },
@@ -1732,8 +1732,8 @@
           }
         ],
         "examples": [
-          "comment-demo",
-          "comment-pro"
+          "discussion-demo",
+          "discussion-pro"
         ]
       }
     },
@@ -2052,7 +2052,7 @@
         ],
         "examples": [
           "media-demo",
-          "media-toolbar-pro"
+          "media-pro"
         ]
       }
     },
@@ -2082,7 +2082,7 @@
         ],
         "examples": [
           "media-demo",
-          "media-toolbar-pro"
+          "media-pro"
         ]
       }
     },
@@ -2209,7 +2209,7 @@
         ],
         "examples": [
           "media-demo",
-          "upload-pro"
+          "media-pro"
         ]
       }
     },
@@ -2249,7 +2249,7 @@
         ],
         "examples": [
           "media-demo",
-          "upload-pro"
+          "media-pro"
         ]
       }
     },
@@ -2286,7 +2286,7 @@
         ],
         "examples": [
           "media-demo",
-          "upload-pro"
+          "media-pro"
         ]
       }
     },
@@ -2319,7 +2319,7 @@
         ],
         "examples": [
           "media-demo",
-          "upload-pro"
+          "media-pro"
         ]
       }
     },
@@ -2363,7 +2363,7 @@
         ],
         "examples": [
           "media-demo",
-          "upload-pro"
+          "media-pro"
         ]
       }
     },
@@ -2486,7 +2486,7 @@
         ],
         "examples": [
           "slash-command-demo",
-          "slash-menu-pro"
+          "slash-command-pro"
         ]
       }
     },
@@ -4027,7 +4027,7 @@
           "type": "registry:example"
         },
         {
-          "path": "src/registry/examples/values/comment-value.tsx",
+          "path": "src/registry/examples/values/discussion-value.tsx",
           "type": "registry:example"
         },
         {
