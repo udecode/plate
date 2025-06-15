@@ -63,6 +63,7 @@ export const CopilotKit = [
     shortcuts: {
       accept: {
         keys: 'tab',
+        stopPropagation: true,
       },
       acceptNextWord: {
         keys: 'mod+right',

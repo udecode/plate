@@ -64,6 +64,8 @@ export type Options = {
   scopes?: Scopes;
   // Character to split keys in hotkeys combinations. (Default: +)
   splitKey?: string;
+  // Stop propagation of the event? (Default: false)
+  stopPropagation?: Trigger;
   // Listen to the produced key instead of the code. (Default: false)
   useKey?: boolean;
   // Ignore evenets based on a condition (Default: undefined)

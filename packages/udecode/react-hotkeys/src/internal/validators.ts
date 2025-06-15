@@ -16,6 +16,19 @@ export function maybePreventDefault(
   }
 }
 
+export function maybeStopPropagation(
+  e: KeyboardEvent,
+  hotkey: Hotkey,
+  stopPropagation?: Trigger
+): void {
+  if (
+    (typeof stopPropagation === 'function' && stopPropagation(e, hotkey)) ||
+    stopPropagation === true
+  ) {
+    e.stopPropagation();
+  }
+}
+
 export function isHotkeyEnabled(
   e: KeyboardEvent,
   hotkey: Hotkey,
