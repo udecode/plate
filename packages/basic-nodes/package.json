@@ -53,7 +53,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=49.0.2",
+    "platejs": ">=49.0.3",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
