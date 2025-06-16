@@ -82,6 +82,10 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
       </APISubListItem>
     </APISubList>
   </APIItem>
+  <APIItem name="chunking" type="((ancestor: Ancestor) => number | null) | boolean" optional>
+   Determine whether chunking is enabled for the editor. When set to true, top-level children will be chunked with the default chunk size. You can also provide a function to determine the chunk size for each ancestor, or null if the ancestor's children should not be chunked. [Learn more about chunking.](https://docs.slatejs.org/walkthroughs/09-performance)
+    - **Default:** `true`
+  </APIItem>
   <APIItem name="selection" type="TSelection" optional>
     Initial selection for the editor.
   </APIItem>
