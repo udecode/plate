@@ -84,8 +84,6 @@ export type EditorApi<V extends Value = Value> = {
     at?: At | null,
     options?: EditorFragmentOptions
   ) => N[];
-  /** Determine whether chunking is enabled for an ancestor. */
-  getChunkSize: <N extends AncestorIn<V>>(ancestor: N) => number | null;
   /** Get the dirty paths of the editor. */
   getDirtyPaths: <N extends DescendantIn<V>>(operation: Operation<N>) => Path[];
   /**

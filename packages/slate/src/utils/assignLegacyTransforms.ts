@@ -64,7 +64,6 @@ const LEGACY_API = new Set([
   'findPath',
   'first',
   'fragment',
-  'getChunkSize',
   'getDirtyPaths',
   'getFragment',
   'getMarks',

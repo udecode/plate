@@ -10,7 +10,6 @@ import type { Value } from './editor-type';
 
 export type LegacyEditorApi<V extends Value = Value> = Pick<
   EditorApi<V>,
-  | 'getChunkSize'
   | 'getDirtyPaths'
   | 'getFragment'
   | 'isElementReadOnly'
