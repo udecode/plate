@@ -70,6 +70,7 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
 export function Draggable(props: PlateElementProps) {
   const { children, editor, element, path } = props;
   const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
+
   const { isDragging, previewRef, handleRef } = useDraggable({
     element,
     onDropHandler: (_, { dragItem }) => {
@@ -85,49 +86,116 @@ export function Draggable(props: PlateElementProps) {
   const isInTable = path.length === 4;
 
   const [distance, setDistance] = React.useState(0);
-  const [mouseOver, setMouseOver] = React.useState(false);
+  const [isMultiple, setIsMultiple] = React.useState(false);
 
+  const multiplePreviewRef = React.useRef<HTMLDivElement>(null);
+
+  // clear up virtual multiple preview when drag end
   React.useEffect(() => {
-    if (!mouseOver) return;
-
-    const child = editor.api.toDOMNode(element)!;
-    const editable = editor.api.toDOMNode(editor)!;
-    const firstSelectedChild = editor.api.node({
-      at: [],
-      match: (n) => blockSelectionApi.has(n.id as string),
-    })!;
-
-    const firstDomNode = editor.api.toDOMNode(firstSelectedChild[0])!;
-
-    const first_distance =
-      firstDomNode.getBoundingClientRect().top -
-      editable.getBoundingClientRect().top -
-      16;
-
-    const firstMarginTopString =
-      window.getComputedStyle(firstDomNode).marginTop;
-    const marginTop = Number(firstMarginTopString.replace('px', ''));
-
-    const cur_distance = Math.round(
-      child.getBoundingClientRect().top -
-        editable.getBoundingClientRect().top -
-        16
-    );
-
-    console.log(cur_distance - first_distance + marginTop, 'res distance');
-    setDistance(cur_distance - first_distance + marginTop);
-    setMouseOver(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mouseOver]);
-
-  React.useEffect(() => {
-    if (!isDragging) {
-      previewRef.current?.classList.add('hidden');
-      previewRef.current?.replaceChildren();
+    if (!isDragging && isMultiple) {
+      multiplePreviewRef.current?.replaceChildren();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
 
+  const onMouseEnter = () => {
+    const isSelected = blockSelectionApi.has(props.element.id as string);
+
+    if (isSelected) {
+      const child = editor.api.toDOMNode(element)!;
+      const editable = editor.api.toDOMNode(editor)!;
+      const firstSelectedChild = editor.api.node({
+        at: [],
+        match: (n) => blockSelectionApi.has(n.id as string),
+      })!;
+
+      const firstDomNode = editor.api.toDOMNode(firstSelectedChild[0])!;
+
+      const first_distance =
+        firstDomNode.getBoundingClientRect().top -
+        editable.getBoundingClientRect().top -
+        16;
+
+      const firstMarginTopString =
+        window.getComputedStyle(firstDomNode).marginTop;
+      const marginTop = Number(firstMarginTopString.replace('px', ''));
+
+      const cur_distance = Math.round(
+        child.getBoundingClientRect().top -
+          editable.getBoundingClientRect().top -
+          16
+      );
+
+      setDistance(cur_distance - first_distance + marginTop);
+      setIsMultiple(true);
+    } else {
+      setIsMultiple(false);
+    }
+  };
+
+  const onMouseDown = () => {
+    if (!isMultiple) return;
+
+    let height = 0;
+
+    const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+
+    const elements: HTMLElement[] = [];
+    let index = 0;
+    if (selectedIds && selectedIds.size > 0) {
+      // Convert Set to Array and sort by original position
+      const sortedIds = Array.from(selectedIds).sort((a, b) => {
+        const elementA = document.querySelector(`[data-block-id="${a}"]`);
+        const elementB = document.querySelector(`[data-block-id="${b}"]`);
+
+        if (!elementA || !elementB) return 0;
+
+        const rectA = elementA.getBoundingClientRect();
+        const rectB = elementB.getBoundingClientRect();
+        return rectA.top - rectB.top;
+      });
+
+      sortedIds.forEach((id) => {
+        const element = document.querySelector(`[data-block-id="${id}"]`);
+        if (element) {
+          if (index < 2) {
+            height += element.clientHeight;
+            index++;
+          }
+
+          // Clone the element instead of using the original
+          const clonedElement = element.parentElement!.cloneNode(
+            true
+          ) as HTMLElement;
+
+          const removeDataAttributes = (element: HTMLElement) => {
+            // Remove data attributes from current element
+            Array.from(element.attributes).forEach((attr) => {
+              if (
+                attr.name.startsWith('data-slate') ||
+                attr.name.startsWith('data-block-id')
+              ) {
+                element.removeAttribute(attr.name);
+              }
+            });
+
+            // Recursively process child elements
+            Array.from(element.children).forEach((child) => {
+              removeDataAttributes(child as HTMLElement);
+            });
+          };
+
+          removeDataAttributes(clonedElement);
+
+          elements.push(clonedElement);
+        }
+      });
+    }
+
+    multiplePreviewRef.current!.append(...elements);
+
+    multiplePreviewRef.current?.classList.remove('hidden');
+  };
   return (
     <div
       className={cn(
@@ -138,15 +206,6 @@ export function Draggable(props: PlateElementProps) {
           : 'group'
       )}
     >
-      <div
-        ref={previewRef}
-        className={cn('absolute left-0 z-50 hidden w-full')}
-        style={{ top: `${-distance}px` }}
-        onDragOver={(e) => e.preventDefault()}
-        contentEditable={false}
-        draggable={false}
-      />
-
       {!isInTable && (
         <Gutter>
           <div
@@ -174,84 +233,8 @@ export function Draggable(props: PlateElementProps) {
                 ref={handleRef}
                 variant="ghost"
                 className="h-6 w-4.5 p-0"
-                onMouseDown={() => {
-                  let height = 0;
-                  previewRef.current?.replaceChildren();
-
-                  const selectedIds = editor.getOption(
-                    BlockSelectionPlugin,
-                    'selectedIds'
-                  );
-
-                  const elements: HTMLElement[] = [];
-                  let index = 0;
-                  if (selectedIds && selectedIds.size > 0) {
-                    // Convert Set to Array and sort by original position
-                    const sortedIds = Array.from(selectedIds).sort((a, b) => {
-                      const elementA = document.querySelector(
-                        `[data-block-id="${a}"]`
-                      );
-                      const elementB = document.querySelector(
-                        `[data-block-id="${b}"]`
-                      );
-
-                      if (!elementA || !elementB) return 0;
-
-                      const rectA = elementA.getBoundingClientRect();
-                      const rectB = elementB.getBoundingClientRect();
-                      return rectA.top - rectB.top;
-                    });
-
-                    sortedIds.forEach((id) => {
-                      const element = document.querySelector(
-                        `[data-block-id="${id}"]`
-                      );
-                      if (element) {
-                        if (index < 2) {
-                          height += element.clientHeight;
-                          index++;
-                        }
-
-                        // Clone the element instead of using the original
-                        const clonedElement = element.parentElement!.cloneNode(
-                          true
-                        ) as HTMLElement;
-
-                        const removeDataAttributes = (element: HTMLElement) => {
-                          // Remove data attributes from current element
-                          Array.from(element.attributes).forEach((attr) => {
-                            if (
-                              attr.name.startsWith('data-slate') ||
-                              attr.name.startsWith('data-block-id')
-                            ) {
-                              element.removeAttribute(attr.name);
-                            }
-                          });
-
-                          // Recursively process child elements
-                          Array.from(element.children).forEach((child) => {
-                            removeDataAttributes(child as HTMLElement);
-                          });
-                        };
-
-                        removeDataAttributes(clonedElement);
-
-                        elements.push(clonedElement);
-                      }
-                    });
-                  }
-
-                  previewRef.current!.append(...elements);
-
-                  previewRef.current?.classList.remove('hidden');
-                }}
-                onMouseEnter={() => {
-                  if (
-                    !editor.getOption(BlockSelectionPlugin, 'isSelectingSome')
-                  )
-                    return;
-                  setMouseOver(true);
-                }}
+                onMouseDown={onMouseDown}
+                onMouseEnter={onMouseEnter}
                 data-plate-prevent-deselect
               >
                 <DragHandle />
@@ -261,7 +244,14 @@ export function Draggable(props: PlateElementProps) {
         </Gutter>
       )}
 
-      <div className="slate-blockWrapper">
+      <div ref={previewRef} className="slate-blockWrapper">
+        <div
+          ref={multiplePreviewRef}
+          className={cn('absolute -left-0 hidden w-full')}
+          style={{ top: `${-distance}px` }}
+          contentEditable={false}
+        />
+
         <MemoizedChildren>{children}</MemoizedChildren>
         <DropLine />
       </div>

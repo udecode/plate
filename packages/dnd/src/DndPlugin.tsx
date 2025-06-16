@@ -66,7 +66,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
         id &&
           editor
             .getApi({ key: KEYS.blockSelection })
-            .blockSelection?.addSelectedRow?.(id);
+            .blockSelection?.add?.(id);
       }, 0);
 
       return getOptions().isDragging;
