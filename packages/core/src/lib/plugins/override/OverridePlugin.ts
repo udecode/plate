@@ -21,6 +21,7 @@ export const withOverrides: OverrideEditor = ({
   const inlineTypes = editor.meta.pluginCache.node.isInline;
   const markableVoidTypes = editor.meta.pluginCache.node.isMarkableVoid;
   const notSelectableTypes = editor.meta.pluginCache.node.isNotSelectable;
+  const types = editor.meta.pluginCache.node.types;
 
   return {
     api: {
@@ -42,7 +43,7 @@ export const withOverrides: OverrideEditor = ({
           : isSelectable(element);
       },
       isVoid(element) {
-        return voidTypes.includes(element.type as any) ? true : isVoid(element);
+        return voidTypes.includes(types[element.type] as any) ? true : isVoid(element);
       },
       markableVoid(element) {
         return markableVoidTypes.includes(element.type)
