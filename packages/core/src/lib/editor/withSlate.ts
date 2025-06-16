@@ -1,4 +1,5 @@
 import {
+  type Ancestor,
   type AncestorIn,
   type Editor,
   type TSelection,
@@ -55,6 +56,16 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * - `'start'`: Select the start of the editor
    */
   autoSelect?: boolean | 'end' | 'start';
+  /**
+   * Determine whether chunking is enabled for the editor. When set to true,
+   * top-level children will be chunked with the default chunk size. You can
+   * also provide a function to determine the chunk size for each ancestor, or
+   * null if the ancestor's children should not be chunked.
+   *
+   * @default true
+   * @see https://docs.slatejs.org/walkthroughs/09-performance
+   */
+  chunking?: ((ancestor: Ancestor) => number | null) | boolean;
   /** Specifies the component for each plugin key. */
   components?: NodeComponents;
   /** Specifies the component for each plugin key. */
@@ -138,16 +149,6 @@ export type WithSlateOptions<
     | 'override'
     | 'transforms'
   > & {
-    /**
-     * Determine whether chunking is enabled for the editor. When set to true,
-     * top-level children will be chunked with the default chunk size. You can
-     * also provide a function to determine the chunk size for each ancestor, or
-     * null if the ancestor's children should not be chunked.
-     *
-     * @default true
-     * @see https://docs.slatejs.org/walkthroughs/09-performance
-     */
-    chunking?: ((ancestor: AncestorIn<V>) => number | null) | boolean;
     // override?: {
     //   /** Enable or disable plugins */
     //   enabled?: Partial<Record<KeyofPlugins<InferPlugins<P[]>>, boolean>>;
