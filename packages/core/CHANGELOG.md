@@ -1,5 +1,15 @@
 # @platejs/core
 
+## 49.0.3
+
+### Patch Changes
+
+- [#4369](https://github.com/udecode/plate/pull/4369) by [@zbeyens](https://github.com/zbeyens) – Fixes #4367
+
+- [#4365](https://github.com/udecode/plate/pull/4365) by [@felixfeng33](https://github.com/felixfeng33) – stopPropagation when the shortcut key is triggered.
+
+- [`b40df0a`](https://github.com/udecode/plate/commit/b40df0a59440e612f495534cb1e0a5d2477e8682) by [@zbeyens](https://github.com/zbeyens) – Fixes #4362
+
 ## 49.0.2
 
 ## 49.0.0

@@ -19,16 +19,18 @@ export const pipeRenderLeaf = (
   const renderLeafs: RenderLeaf[] = [];
   const leafPropsPlugins: AnyEditorPlatePlugin[] = [];
 
-  editor.meta.pluginList.forEach((plugin) => {
-    if (
-      plugin.node.isLeaf &&
-      (plugin.node.isDecoration === true || plugin.render.leaf)
-    ) {
-      renderLeafs.push(pluginRenderLeaf(editor, plugin));
-    }
+  editor.meta.pluginCache.node.isLeaf.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
 
-    if (plugin.node.leafProps) {
-      leafPropsPlugins.push(plugin);
+    if (plugin) {
+      renderLeafs.push(pluginRenderLeaf(editor, plugin as any));
+    }
+  });
+
+  editor.meta.pluginCache.node.leafProps.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
+    if (plugin) {
+      leafPropsPlugins.push(plugin as any);
     }
   });
 
@@ -45,7 +47,7 @@ export const pipeRenderLeaf = (
     });
 
     leafPropsPlugins.forEach((plugin) => {
-      if (props.leaf[plugin.node.type ?? plugin.key]) {
+      if (props.leaf[plugin.node.type]) {
         const pluginLeafProps =
           typeof plugin.node.leafProps === 'function'
             ? plugin.node.leafProps(props as any)

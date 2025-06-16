@@ -5,7 +5,7 @@ import * as React from 'react';
 import { useDraggable, useDropLine } from '@platejs/dnd';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
-import { getContainerTypes, isType, KEYS } from 'platejs';
+import { getPluginByType, isType, KEYS } from 'platejs';
 import {
   type PlateElementProps,
   type RenderNodeWrapper,
@@ -89,7 +89,7 @@ function Draggable(props: PlateElementProps) {
       className={cn(
         'relative',
         isDragging && 'opacity-50',
-        getContainerTypes(editor).includes(element.type)
+        getPluginByType(editor, element.type)?.node.isContainer
           ? 'group/container'
           : 'group'
       )}
@@ -162,7 +162,7 @@ function Gutter({
       className={cn(
         'slate-gutterLeft',
         'absolute top-0 z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
-        getContainerTypes(editor).includes(element.type)
+        getPluginByType(editor, element.type)?.node.isContainer
           ? 'group-hover/container:opacity-100'
           : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',

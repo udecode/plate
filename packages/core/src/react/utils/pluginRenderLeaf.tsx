@@ -29,7 +29,7 @@ export const pluginRenderLeaf = (
 
     if (isEditOnly(readOnly, plugin, 'render')) return children;
 
-    if (leaf[plugin.node.type ?? plugin.key]) {
+    if (leaf[plugin.node.type]) {
       const Component = leafComponent ?? node;
       const Leaf = Component ?? PlateLeaf;
 

@@ -6,7 +6,7 @@ import {
 
 import type { SlateEditor } from '../../../editor';
 
-import { getPluginTypes } from '../../../plugin/getSlatePlugin';
+import { getPluginByType } from '../../../plugin/getSlatePlugin';
 
 export type InsertExitBreakOptions = {
   match?: EditorAboveOptions['match'];
@@ -47,10 +47,7 @@ export const insertExitBreak = (
         p.length === 1 ||
         (p.length > 1 &&
           !!n.type &&
-          !getPluginTypes(
-            editor,
-            editor.meta.pluginCache.node.isStrictSiblings
-          ).includes(n.type as string)),
+          !getPluginByType(editor, n.type as string)?.node.isStrictSiblings),
       { match }
     ),
   });

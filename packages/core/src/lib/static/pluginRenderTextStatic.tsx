@@ -55,13 +55,18 @@ export const pipeRenderTextStatic = (
   const renderTexts: SlateRenderText[] = [];
   const textPropsPlugins: SlatePlugin[] = [];
 
-  editor.meta.pluginList.forEach((plugin) => {
-    if (plugin.node.isLeaf && plugin.node.isDecoration === false) {
-      renderTexts.push(pluginRenderTextStatic(editor, plugin));
-    }
+  editor.meta.pluginCache.node.isText.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
 
-    if (plugin.node.textProps) {
-      textPropsPlugins.push(plugin);
+    if (plugin) {
+      renderTexts.push(pluginRenderTextStatic(editor, plugin as any));
+    }
+  });
+
+  editor.meta.pluginCache.node.textProps.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
+    if (plugin) {
+      textPropsPlugins.push(plugin as any);
     }
   });
 
