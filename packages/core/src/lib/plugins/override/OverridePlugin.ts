@@ -1,5 +1,4 @@
-import type { OverrideEditor } from '../../plugin';
-
+import { type OverrideEditor, getPluginByType } from '../../plugin';
 import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 import { BaseParagraphPlugin } from '../paragraph';
 import { withBreakRules } from './withBreakRules';
@@ -17,11 +16,6 @@ export const withOverrides: OverrideEditor = ({
   editor,
 }) => {
   // Use pre-computed arrays from plugin resolution
-  const voidTypes = editor.meta.pluginCache.node.isVoid;
-  const inlineTypes = editor.meta.pluginCache.node.isInline;
-  const markableVoidTypes = editor.meta.pluginCache.node.isMarkableVoid;
-  const notSelectableTypes = editor.meta.pluginCache.node.isNotSelectable;
-
   return {
     api: {
       create: {
@@ -32,20 +26,24 @@ export const withOverrides: OverrideEditor = ({
         }),
       },
       isInline(element) {
-        return inlineTypes.includes(element.type as any)
+        return getPluginByType(editor, element.type as string)?.node.isInline
           ? true
           : isInline(element);
       },
       isSelectable(element) {
-        return notSelectableTypes.includes(element.type)
+        return getPluginByType(editor, element.type as string)?.node
+          .isSelectable === false
           ? false
           : isSelectable(element);
       },
       isVoid(element) {
-        return voidTypes.includes(element.type as any) ? true : isVoid(element);
+        return getPluginByType(editor, element.type as string)?.node.isVoid
+          ? true
+          : isVoid(element);
       },
       markableVoid(element) {
-        return markableVoidTypes.includes(element.type)
+        return getPluginByType(editor, element.type as string)?.node
+          .isMarkableVoid
           ? true
           : markableVoid(element);
       },

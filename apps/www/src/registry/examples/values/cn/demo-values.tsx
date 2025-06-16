@@ -14,7 +14,7 @@ import { deserializeCsvValue } from './deserialize-csv-value';
 import { deserializeDocxValue } from './deserialize-docx-value';
 import { deserializeHtmlValue } from './deserialize-html-value';
 import { deserializeMdValue } from './deserialize-md-value';
-import { commentValue } from './discussion-value';
+import { discussionValue } from './discussion-value';
 import { dndValue } from './dnd-value';
 import { editableVoidsValue } from './editable-voids-value';
 import { emojiValue } from './emoji-value';
@@ -49,11 +49,11 @@ const values = {
   'block-selection': blockSelectionValue,
   // callout: calloutValue,
   column: columnValue,
-  comment: commentValue,
   copilot: copilotValue,
   csv: deserializeCsvValue,
   'cursor-overlay': cursorOverlayValue,
   date: dateValue,
+  discussion: discussionValue,
   dnd: dndValue,
   docx: deserializeDocxValue,
   'editable-voids': editableVoidsValue,
