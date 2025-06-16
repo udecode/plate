@@ -439,6 +439,21 @@
       }
     },
     {
+      "name": "chunk",
+      "type": "registry:ui",
+      "title": "Chunk",
+      "description": "A chunk component for use with Slate's chunking performance optimization.",
+      "dependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "src/registry/ui/chunk.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {}
+    },
+    {
       "name": "cursor-overlay",
       "type": "registry:ui",
       "title": "Cursor Overlay",
@@ -511,7 +526,9 @@
       "title": "Editor",
       "description": "A container for the editor content and styling.",
       "dependencies": [],
-      "registryDependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/chunk"
+      ],
       "files": [
         {
           "path": "src/registry/ui/editor.tsx",

@@ -1,8 +1,10 @@
 import {
+  type AncestorIn,
   type Editor,
   type TSelection,
   type Value,
   createEditor,
+  NodeApi,
 } from '@platejs/slate';
 import { nanoid } from 'nanoid';
 
@@ -15,6 +17,8 @@ import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
 import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
+
+export const DEFAULT_CHUNK_SIZE = 1000;
 
 export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   /**
@@ -134,6 +138,16 @@ export type WithSlateOptions<
     | 'override'
     | 'transforms'
   > & {
+    /**
+     * Determine whether chunking is enabled for the editor. When set to true,
+     * top-level children will be chunked with the default chunk size. You can
+     * also provide a function to determine the chunk size for each ancestor, or
+     * null if the ancestor's children should not be chunked.
+     *
+     * @default true
+     * @see https://docs.slatejs.org/walkthroughs/09-performance
+     */
+    chunking?: ((ancestor: AncestorIn<V>) => number | null) | boolean;
     // override?: {
     //   /** Enable or disable plugins */
     //   enabled?: Partial<Record<KeyofPlugins<InferPlugins<P[]>>, boolean>>;
@@ -181,6 +195,7 @@ export const withSlate = <
     id,
     affinity = true,
     autoSelect,
+    chunking = true,
     maxLength,
     nodeId,
     plugins = [],
@@ -311,6 +326,16 @@ export const withSlate = <
     return normalizeNode(...args);
   };
   editor.normalizeNode = editor.tf.normalizeNode;
+
+  if (chunking) {
+    const getChunkSize =
+      chunking === true
+        ? (node: AncestorIn<V>) =>
+            NodeApi.isEditor(node) ? DEFAULT_CHUNK_SIZE : null
+        : chunking;
+
+    editor.getChunkSize = getChunkSize;
+  }
 
   if (!skipInitialization) {
     void editor.tf.init({

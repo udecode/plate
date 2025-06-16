@@ -28,8 +28,9 @@ export const useEditableProps = ({
   const store = usePlateStore(id);
   const versionDecorate = useAtomStoreValue(store, 'versionDecorate');
   const storeDecorate = useAtomStoreValue(store, 'decorate');
-  const storeRenderLeaf = useAtomStoreValue(store, 'renderLeaf');
+  const storeRenderChunk = useAtomStoreValue(store, 'renderChunk');
   const storeRenderElement = useAtomStoreValue(store, 'renderElement');
+  const storeRenderLeaf = useAtomStoreValue(store, 'renderLeaf');
   const storeRenderText = useAtomStoreValue(store, 'renderText');
 
   const decorateMemo = React.useMemo(() => {
@@ -44,6 +45,8 @@ export const useEditableProps = ({
 
     return (entry) => decorateMemo(entry);
   }, [decorateMemo, versionDecorate]);
+
+  const renderChunk = storeRenderChunk ?? editableProps?.renderChunk;
 
   const renderElement = React.useMemo(() => {
     return pipeRenderElement(
@@ -63,6 +66,7 @@ export const useEditableProps = ({
   const props: EditableProps = useDeepCompareMemo(() => {
     const _props: EditableProps = {
       decorate,
+      renderChunk,
       renderElement,
       renderLeaf,
       renderText,
@@ -77,12 +81,20 @@ export const useEditableProps = ({
     });
 
     return _props;
-  }, [decorate, editableProps, renderElement, renderLeaf, renderText]);
+  }, [
+    decorate,
+    editableProps,
+    renderChunk,
+    renderElement,
+    renderLeaf,
+    renderText,
+  ]);
 
   return useDeepCompareMemo(
     () => ({
       ...omit(editableProps, [
         ...DOM_HANDLERS,
+        'renderChunk',
         'renderElement',
         'renderLeaf',
         'renderText',
