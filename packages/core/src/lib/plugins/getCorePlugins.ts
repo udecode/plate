@@ -17,12 +17,15 @@ import {
   type SlateExtensionConfig,
   SlateExtensionPlugin,
 } from './slate-extension';
+import { type ChunkingConfig, ChunkingPlugin } from './chunking/ChunkingPlugin';
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 
 export type GetCorePluginsOptions = {
   /** Enable mark/element affinity. */
   affinity?: boolean;
+  /** Configure Slate's chunking optimization. */
+  chunking?: ChunkingConfig['options'] | boolean;
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
   /** Configure the node id plugin. */
@@ -33,6 +36,7 @@ export type GetCorePluginsOptions = {
 
 export const getCorePlugins = ({
   affinity,
+  chunking,
   maxLength,
   nodeId,
   plugins = [],
@@ -61,6 +65,10 @@ export const getCorePlugins = ({
     }),
     AffinityPlugin.configure({ enabled: affinity }),
     BaseParagraphPlugin,
+    ChunkingPlugin.configure({
+      enabled: chunking !== false,
+      options: typeof chunking === 'boolean' ? undefined : chunking,
+    }),
   ];
 
   // Create a map for quick lookup of custom plugins

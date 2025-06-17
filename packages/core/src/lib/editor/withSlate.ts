@@ -1,16 +1,14 @@
 import {
-  type Ancestor,
-  type AncestorIn,
   type Editor,
   type TSelection,
   type Value,
   createEditor,
-  NodeApi,
 } from '@platejs/slate';
 import { nanoid } from 'nanoid';
 
 import type { AnyPluginConfig, NodeComponents } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
+import type { ChunkingConfig } from '../plugins/chunking';
 import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
@@ -18,8 +16,6 @@ import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
 import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
-
-export const DEFAULT_CHUNK_SIZE = 1000;
 
 export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   /**
@@ -57,15 +53,13 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    */
   autoSelect?: boolean | 'end' | 'start';
   /**
-   * Determine whether chunking is enabled for the editor. When set to true,
-   * top-level children will be chunked with the default chunk size. You can
-   * also provide a function to determine the chunk size for each ancestor, or
-   * null if the ancestor's children should not be chunked.
+   * Configure Slate's chunking optimization, which reduces latency while
+   * typing. Set to `false` to disable.
    *
    * @default true
    * @see https://docs.slatejs.org/walkthroughs/09-performance
    */
-  chunking?: ((ancestor: Ancestor) => number | null) | boolean;
+  chunking?: ChunkingConfig['options'] | boolean;
   /** Specifies the component for each plugin key. */
   components?: NodeComponents;
   /** Specifies the component for each plugin key. */
@@ -291,6 +285,7 @@ export const withSlate = <
   // Plugin initialization code
   const corePlugins = getCorePlugins({
     affinity,
+    chunking,
     maxLength,
     nodeId,
     plugins,
@@ -327,16 +322,6 @@ export const withSlate = <
     return normalizeNode(...args);
   };
   editor.normalizeNode = editor.tf.normalizeNode;
-
-  if (chunking) {
-    const getChunkSize =
-      chunking === true
-        ? (node: AncestorIn<V>) =>
-            NodeApi.isEditor(node) ? DEFAULT_CHUNK_SIZE : null
-        : chunking;
-
-    editor.getChunkSize = getChunkSize;
-  }
 
   if (!skipInitialization) {
     void editor.tf.init({

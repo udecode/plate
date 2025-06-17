@@ -5,11 +5,12 @@ import { useAtomStoreValue } from 'jotai-x';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
-import type { EditableProps } from '../../lib';
 import type { PlateProps } from '../components';
 
+import { type EditableProps, ChunkingPlugin } from '../../lib';
 import { pipeDecorate } from '../../lib/static/utils/pipeDecorate';
-import { useEditorRef, usePlateStore } from '../stores';
+import { ContentVisibilityChunk } from '../components';
+import { useEditorRef, usePlateStore, usePluginOption } from '../stores';
 import { DOM_HANDLERS } from '../utils/dom-attributes';
 import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
@@ -46,7 +47,15 @@ export const useEditableProps = ({
     return (entry) => decorateMemo(entry);
   }, [decorateMemo, versionDecorate]);
 
-  const renderChunk = storeRenderChunk ?? editableProps?.renderChunk;
+  const defaultRenderChunk = usePluginOption(
+    ChunkingPlugin,
+    'contentVisibilityAuto'
+  )
+    ? ContentVisibilityChunk
+    : undefined;
+
+  const renderChunk =
+    storeRenderChunk ?? editableProps?.renderChunk ?? defaultRenderChunk;
 
   const renderElement = React.useMemo(() => {
     return pipeRenderElement(
