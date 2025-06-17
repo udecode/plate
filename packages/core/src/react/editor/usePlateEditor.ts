@@ -55,6 +55,14 @@ export function usePlateEditor<
     ? TPlateEditor<V, P>
     : TPlateEditor<V, P> | null {
   const [, forceRender] = React.useState({});
+  const isMountedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   return React.useMemo(
     (): any => {
@@ -63,7 +71,7 @@ export function usePlateEditor<
       const editor = createPlateEditor({
         ...options,
         onReady: (ctx) => {
-          if (ctx.isAsync) {
+          if (ctx.isAsync && isMountedRef.current) {
             forceRender({});
           }
           options.onReady?.(ctx);

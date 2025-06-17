@@ -56,16 +56,10 @@ export default function MyEditorPage() {
       const savedValue = localStorage.getItem(
         `nextjs-plate-value-demo-${new Date().toISOString().split('T')[0]}`
       );
-      if (savedValue) {
-        return JSON.parse(savedValue);
-      }
-      return initialValue;
+
+      return savedValue ? JSON.parse(savedValue) : initialValue;
     },
   });
-
-  if (typeof window === 'undefined') {
-    return null;
-  }
 
   return (
     <Plate

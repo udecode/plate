@@ -42,7 +42,7 @@ const App = withHoc(PlateController, () => {
   const mainEditor = useEditorRef('main');
   
   useEffect(() => {
-    if (!mainEditor.isFallback) {
+    if (!mainEditor.meta.isFallback) {
       console.info('Editor mounted', mainEditor);
     }
   }, [mainEditor]);
@@ -116,7 +116,7 @@ const App = withHoc(PlateController, () => {
   const activeEditor = useEditorRef();
   
   const toggleBold = () => {
-    if (activeEditor.isFallback) return;
+    if (activeEditor.meta.isFallback) return;
     activeEditor.tf.toggleMark(KEYS.bold);
   };
   

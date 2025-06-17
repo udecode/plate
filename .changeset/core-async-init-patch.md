@@ -2,6 +2,8 @@
 '@platejs/core': patch
 ---
 
+- Fixes #4374
+- Prevent rendering the editor until the value is loaded (when value is async or `skipInitialization` is true).
 - Added support for both synchronous and asynchronous functions in the `value` option for `createPlateEditor` and `usePlateEditor`. If async, `usePlateEditor` will trigger a re-render when the value is loaded.
 - Added `onReady` callback option to `createPlateEditor` and `usePlateEditor` called after (async) editor initialization.
 
@@ -13,7 +15,7 @@ const editor = usePlateEditor({
     return data.content;
   },
   onReady: ({ editor, value }) => {
-    console.log('Editor ready with value:', value);
+    console.info('Editor ready with value:', value);
   },
 });
 ```
