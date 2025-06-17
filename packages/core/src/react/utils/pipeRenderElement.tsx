@@ -1,12 +1,11 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import React from 'react';
 
-import type { EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 
+import { type EditableProps, getPluginByType } from '../../lib';
 import { PlateElement } from '../components';
 import { useNodePath } from '../hooks';
-import { getPlugin } from '../plugin';
 import { useReadOnly } from '../slate-react';
 import { ElementProvider } from '../stores';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -18,25 +17,23 @@ export const pipeRenderElement = (
   renderElementProp?: EditableProps['renderElement']
 ): EditableProps['renderElement'] => {
   return function render(props) {
-    let element;
-
     const readOnly = useReadOnly();
 
     const path = useNodePath(props.element)!;
 
-    editor.meta.pluginCache.node.isElement.some((key) => {
-      element = pluginRenderElement(
+    const plugin = getPluginByType(editor, props.element.type);
+
+    // We could deprecate isElement (unneeded check)
+    if (plugin?.node.isElement) {
+      return pluginRenderElement(
         editor,
-        getPlugin(editor, { key })
+        plugin as any
       )({
         ...props,
         path,
-      } as any);
+      } as any) as any;
+    }
 
-      return !!element;
-    });
-
-    if (element) return element;
     if (renderElementProp) {
       return renderElementProp({ ...props, path } as any);
     }

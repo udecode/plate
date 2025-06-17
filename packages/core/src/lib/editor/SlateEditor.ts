@@ -63,13 +63,10 @@ export type BaseEditor = EditorBase & {
       };
       node: {
         isContainer: string[];
-        isElement: string[];
-        isInline: string[];
         isLeaf: string[];
-        isMarkableVoid: string[];
-        isNotSelectable: string[];
-        isStrictSiblings: string[];
-        isVoid: string[];
+        isText: string[];
+        leafProps: string[];
+        textProps: string[];
         /** Node types to plugin keys. */
         types: Record<string, string>;
       };

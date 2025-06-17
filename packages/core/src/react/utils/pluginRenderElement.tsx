@@ -109,16 +109,14 @@ export const pluginRenderElement = (
   function render(props) {
     const { element, path } = props;
 
-    if (element.type === plugin.node.type) {
-      return (
-        <ElementProvider
-          element={element}
-          entry={[element, path]}
-          path={path}
-          scope={plugin.key}
-        >
-          <ElementContent editor={editor} plugin={plugin} {...(props as any)} />
-        </ElementProvider>
-      );
-    }
+    return (
+      <ElementProvider
+        element={element}
+        entry={[element, path]}
+        path={path}
+        scope={plugin.key}
+      >
+        <ElementContent editor={editor} plugin={plugin} {...(props as any)} />
+      </ElementProvider>
+    );
   };
