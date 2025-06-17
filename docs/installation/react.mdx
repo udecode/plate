@@ -215,7 +215,7 @@ export default function App() {
 
 To make the editor content persistent, let's integrate `localStorage` to save and load the editor's value.
 
-```tsx showLineNumbers title="src/App.tsx" {55-61,67-69,79-85}
+```tsx showLineNumbers title="src/App.tsx" {55-58,64-66,76-82}
 import * as React from 'react';
 import type { Value } from 'platejs';
 
@@ -272,10 +272,7 @@ export default function App() {
     ],
     value: () => {
       const savedValue = localStorage.getItem('installation-react-demo');
-      if (savedValue) {
-        return JSON.parse(savedValue);
-      }
-      return initialValue;
+      return savedValue ? JSON.parse(savedValue) : initialValue;
     },
   });
 

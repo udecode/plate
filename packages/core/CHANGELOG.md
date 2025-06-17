@@ -1,5 +1,29 @@
 # @platejs/core
 
+## 49.0.4
+
+### Patch Changes
+
+- [#4373](https://github.com/udecode/plate/pull/4373) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fixes #4374
+  - Prevent rendering the editor until the value is loaded (when value is async or `skipInitialization` is true).
+  - Added support for both synchronous and asynchronous functions in the `value` option for `createPlateEditor` and `usePlateEditor`. If async, `usePlateEditor` will trigger a re-render when the value is loaded.
+  - Added `onReady` callback option to `createPlateEditor` and `usePlateEditor` called after (async) editor initialization.
+
+  ```ts
+  const editor = usePlateEditor({
+    value: async () => {
+      const response = await fetch('/api/document');
+      const data = await response.json();
+      return data.content;
+    },
+    onReady: ({ editor, value }) => {
+      console.info('Editor ready with value:', value);
+    },
+  });
+  ```
+
 ## 49.0.3
 
 ### Patch Changes

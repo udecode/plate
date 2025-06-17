@@ -73,6 +73,11 @@ const PlateContent = React.forwardRef(
     const editableRef = useRef<HTMLDivElement | null>(null);
     const combinedRef = useComposedRef(ref, editableRef);
 
+    // Don't render if editor is not ready (e.g., async value still loading)
+    if (!editor.children || editor.children.length === 0) {
+      return null;
+    }
+
     const editable = <Editable ref={combinedRef} {...(editableProps as any)} />;
 
     let afterEditable: React.ReactNode = null;
