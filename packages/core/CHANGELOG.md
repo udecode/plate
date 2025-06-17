@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.0.5
+
+### Patch Changes
+
+- [#4371](https://github.com/udecode/plate/pull/4371) by [@12joan](https://github.com/12joan) – Enable [chunking](https://docs.slatejs.org/walkthroughs/09-performance) by default. To disable it, use `chunking: false` when creating the editor.
+
 ## 49.0.4
 
 ### Patch Changes

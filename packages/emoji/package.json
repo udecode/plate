@@ -58,7 +58,7 @@
   },
   "peerDependencies": {
     "@emoji-mart/data": ">=1.2.0",
-    "platejs": ">=49.0.4",
+    "platejs": ">=49.0.5",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
