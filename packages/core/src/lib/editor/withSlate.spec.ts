@@ -21,6 +21,7 @@ import {
   ParserPlugin,
   SlateExtensionPlugin,
   withSlate,
+  ChunkingPlugin,
 } from '../index';
 
 const coreKeys = [
@@ -36,6 +37,7 @@ const coreKeys = [
   AstPlugin.key,
   AffinityPlugin.key,
   ParagraphPlugin.key,
+  ChunkingPlugin.key,
   EventEditorPlugin.key,
 ];
 

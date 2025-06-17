@@ -5,11 +5,12 @@ import { useAtomStoreValue } from 'jotai-x';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
-import type { EditableProps } from '../../lib';
 import type { PlateProps } from '../components';
 
+import { type EditableProps, ChunkingPlugin } from '../../lib';
 import { pipeDecorate } from '../../lib/static/utils/pipeDecorate';
-import { useEditorRef, usePlateStore } from '../stores';
+import { ContentVisibilityChunk } from '../components';
+import { useEditorRef, usePlateStore, usePluginOption } from '../stores';
 import { DOM_HANDLERS } from '../utils/dom-attributes';
 import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
@@ -28,8 +29,9 @@ export const useEditableProps = ({
   const store = usePlateStore(id);
   const versionDecorate = useAtomStoreValue(store, 'versionDecorate');
   const storeDecorate = useAtomStoreValue(store, 'decorate');
-  const storeRenderLeaf = useAtomStoreValue(store, 'renderLeaf');
+  const storeRenderChunk = useAtomStoreValue(store, 'renderChunk');
   const storeRenderElement = useAtomStoreValue(store, 'renderElement');
+  const storeRenderLeaf = useAtomStoreValue(store, 'renderLeaf');
   const storeRenderText = useAtomStoreValue(store, 'renderText');
 
   const decorateMemo = React.useMemo(() => {
@@ -44,6 +46,16 @@ export const useEditableProps = ({
 
     return (entry) => decorateMemo(entry);
   }, [decorateMemo, versionDecorate]);
+
+  const defaultRenderChunk = usePluginOption(
+    ChunkingPlugin,
+    'contentVisibilityAuto'
+  )
+    ? ContentVisibilityChunk
+    : undefined;
+
+  const renderChunk =
+    storeRenderChunk ?? editableProps?.renderChunk ?? defaultRenderChunk;
 
   const renderElement = React.useMemo(() => {
     return pipeRenderElement(
@@ -63,6 +75,7 @@ export const useEditableProps = ({
   const props: EditableProps = useDeepCompareMemo(() => {
     const _props: EditableProps = {
       decorate,
+      renderChunk,
       renderElement,
       renderLeaf,
       renderText,
@@ -77,12 +90,20 @@ export const useEditableProps = ({
     });
 
     return _props;
-  }, [decorate, editableProps, renderElement, renderLeaf, renderText]);
+  }, [
+    decorate,
+    editableProps,
+    renderChunk,
+    renderElement,
+    renderLeaf,
+    renderText,
+  ]);
 
   return useDeepCompareMemo(
     () => ({
       ...omit(editableProps, [
         ...DOM_HANDLERS,
+        'renderChunk',
         'renderElement',
         'renderLeaf',
         'renderText',

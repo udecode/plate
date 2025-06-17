@@ -8,6 +8,7 @@ import { nanoid } from 'nanoid';
 
 import type { AnyPluginConfig, NodeComponents } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
+import type { ChunkingConfig } from '../plugins/chunking';
 import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
@@ -51,6 +52,14 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * - `'start'`: Select the start of the editor
    */
   autoSelect?: boolean | 'end' | 'start';
+  /**
+   * Configure Slate's chunking optimization, which reduces latency while
+   * typing. Set to `false` to disable.
+   *
+   * @default true
+   * @see https://docs.slatejs.org/walkthroughs/09-performance
+   */
+  chunking?: ChunkingConfig['options'] | boolean;
   /** Specifies the component for each plugin key. */
   components?: NodeComponents;
   /** Specifies the component for each plugin key. */
@@ -190,6 +199,7 @@ export const withSlate = <
     id,
     affinity = true,
     autoSelect,
+    chunking = true,
     maxLength,
     nodeId,
     plugins = [],
@@ -285,6 +295,7 @@ export const withSlate = <
   // Plugin initialization code
   const corePlugins = getCorePlugins({
     affinity,
+    chunking,
     maxLength,
     nodeId,
     plugins,

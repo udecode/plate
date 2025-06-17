@@ -6,8 +6,8 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-const HEADINGS = 100;
-const PARAGRAPHS = 7;
+const HEADINGS = 300;
+const PARAGRAPHS = 10;
 
 export const createHugeDocumentValue = () => {
   const hugeDocument: Descendant[] = [];

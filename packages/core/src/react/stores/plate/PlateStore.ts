@@ -24,6 +24,7 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
   primary: boolean;
   //  Whether the editor is read-only.
   readOnly: boolean;
+  renderChunk: NonNullable<EditableProps['renderChunk']>;
   renderElement: NonNullable<EditableProps['renderElement']>;
   renderLeaf: NonNullable<EditableProps['renderLeaf']>;
   renderText: NonNullable<EditableProps['renderText']>;

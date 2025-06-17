@@ -3,6 +3,7 @@
  */
 
 export * from './EditableProps';
+export * from './RenderChunkProps';
 export * from './RenderElementProps';
 export * from './RenderLeafProps';
 export * from './RenderTextProps';

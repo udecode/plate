@@ -10,6 +10,7 @@ import { clsx } from 'clsx';
 import type {
   AnyPluginConfig,
   PluginConfig,
+  RenderChunkProps,
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
@@ -27,6 +28,8 @@ export const useNodeAttributes = (props: any, ref?: any) => {
     style: { ...(props.attributes as any).style, ...props.style },
   };
 };
+
+export type PlateChunkProps = RenderChunkProps;
 
 export type PlateElementProps<
   N extends TElement = TElement,
