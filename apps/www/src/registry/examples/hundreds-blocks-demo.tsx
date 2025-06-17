@@ -9,6 +9,7 @@ import {
   BasicMarksPlugin,
 } from '@platejs/basic-nodes/react';
 import {
+  ContentVisibilityChunk,
   Editable,
   Plate,
   Slate,
@@ -18,7 +19,6 @@ import {
 import { createEditor } from 'slate';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
-import { Chunk } from '@/registry/ui/chunk';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 const value = createHugeDocumentValue();
@@ -70,7 +70,7 @@ function WithoutPlate() {
       initialValue={initialValue}
     >
       <Editable
-        renderChunk={Chunk}
+        renderChunk={ContentVisibilityChunk}
         renderElement={renderElement}
         spellCheck={false}
       />

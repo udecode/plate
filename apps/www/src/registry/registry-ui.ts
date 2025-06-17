@@ -257,17 +257,6 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: [],
-    description:
-      "A chunk component for use with Slate's chunking performance optimization.",
-    files: [{ path: 'ui/chunk.tsx', type: 'registry:ui' }],
-    meta: {},
-    name: 'chunk',
-    registryDependencies: [],
-    title: 'Chunk',
-    type: 'registry:ui',
-  },
-  {
     dependencies: ['@platejs/selection'],
     description: 'A visual overlay for cursors and selections.',
     files: [{ path: 'ui/cursor-overlay.tsx', type: 'registry:ui' }],
@@ -319,7 +308,7 @@ export const uiComponents: Registry['items'] = [
       examples: ['editor-default', 'editor-disabled', 'editor-full-width'],
     },
     name: 'editor',
-    registryDependencies: ['chunk'],
+    registryDependencies: [],
     title: 'Editor',
     type: 'registry:ui',
   },

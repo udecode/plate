@@ -223,23 +223,6 @@ export const Index: Record<string, any> = {
     }),
     meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/block-discussion"}],"examples":["discussion-demo","discussion-pro"]},
   },
-  "chunk": {
-    name: "chunk",
-    description: "A chunk component for use with Slate's chunking performance optimization.",
-    type: "registry:ui",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/ui/chunk.tsx",
-      type: "registry:ui",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/ui/chunk.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {},
-  },
   "cursor-overlay": {
     name: "cursor-overlay",
     description: "A visual overlay for cursors and selections.",
@@ -278,7 +261,7 @@ export const Index: Record<string, any> = {
     name: "editor",
     description: "A container for the editor content and styling.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/chunk"],
+    registryDependencies: [],
     files: [{
       path: "src/registry/ui/editor.tsx",
       type: "registry:ui",
