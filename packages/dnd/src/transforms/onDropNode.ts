@@ -122,8 +122,26 @@ export const onDropNode = (
 
   const { dragPath, to } = result;
 
-  editor.tf.moveNodes({
-    at: dragPath,
-    to,
-  });
+  // Check if we're dragging multiple nodes
+  if (dragItem.ids && dragItem.ids.length > 1 && dragItem.elements) {
+    // Handle multi-node drop
+    const sortedElements = [...dragItem.elements].sort((a, b) => {
+      const pathA = editor.api.findPath(a);
+      const pathB = editor.api.findPath(b);
+      if (!pathA || !pathB) return 0;
+      return PathApi.compare(pathA, pathB);
+    });
+
+    editor.tf.moveNodes({
+      at: [],
+      to,
+      match: (n) => sortedElements.some((element) => element.id === n.id),
+    });
+  } else {
+    // Single node drop
+    editor.tf.moveNodes({
+      at: dragPath,
+      to,
+    });
+  }
 };

@@ -2,10 +2,18 @@
 
 import * as React from 'react';
 
-import { useDraggable, useDropLine } from '@platejs/dnd';
+import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
-import { getContainerTypes, isType, KEYS } from 'platejs';
+import {
+  type TElement,
+  type TTableElement,
+  getContainerTypes,
+  isType,
+  KEYS,
+  NodeApi,
+  PathApi,
+} from 'platejs';
 import {
   type PlateElementProps,
   type RenderNodeWrapper,
@@ -74,11 +82,36 @@ export function Draggable(props: PlateElementProps) {
   const { isDragging, previewRef, handleRef } = useDraggable({
     element,
     onDropHandler: (_, { dragItem }) => {
+      const ids = (dragItem as { ids?: string[] }).ids;
       const id = (dragItem as { id: string }).id;
 
-      if (blockSelectionApi && id) {
-        blockSelectionApi.set(id);
+      if (blockSelectionApi) {
+        if (ids && ids.length > 1) {
+          // Re-select all dragged nodes
+          blockSelectionApi.clear();
+          ids.forEach((nodeId) => {
+            const nodeEntry = editor.api.node({ id: nodeId, at: [] });
+
+            if (nodeEntry && nodeEntry[0].type === KEYS.table) {
+              const tableNode = nodeEntry[0] as TTableElement;
+              const trs = tableNode.children.filter(
+                (child) => child.type === KEYS.tr
+              );
+
+              trs.forEach((tr) => {
+                blockSelectionApi.add(tr.id as string);
+              });
+
+              return;
+            }
+
+            blockSelectionApi.add(nodeId);
+          });
+        } else if (id) {
+          blockSelectionApi.set(id);
+        }
       }
+      multiplePreviewRef.current?.replaceChildren();
     },
   });
 
@@ -98,10 +131,12 @@ export function Draggable(props: PlateElementProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
 
-  const onMouseEnter = () => {
-    const isSelected = blockSelectionApi.has(props.element.id as string);
+  const calculateTopDistance = () => {
+    if (isDragging) return;
 
-    if (isSelected) {
+    const ids = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+
+    if (ids && ids.size > 0 && ids.has(element.id as string)) {
       const child = editor.api.toDOMNode(element)!;
       const editable = editor.api.toDOMNode(editor)!;
       const firstSelectedChild = editor.api.node({
@@ -111,91 +146,94 @@ export function Draggable(props: PlateElementProps) {
 
       const firstDomNode = editor.api.toDOMNode(firstSelectedChild[0])!;
 
-      const first_distance =
+      // Get editor's top padding
+      const editorPaddingTop = Number(
+        window.getComputedStyle(editable).paddingTop.replace('px', '')
+      );
+
+      // Calculate distance from first selected node to editor top
+      const firstNodeToEditorDistance =
         firstDomNode.getBoundingClientRect().top -
         editable.getBoundingClientRect().top -
-        16;
+        editorPaddingTop;
 
+      // Get margin top of first selected node
       const firstMarginTopString =
         window.getComputedStyle(firstDomNode).marginTop;
       const marginTop = Number(firstMarginTopString.replace('px', ''));
 
-      const cur_distance = Math.round(
+      // Calculate distance from current node to editor top
+      const currentToEditorDistance =
         child.getBoundingClientRect().top -
-          editable.getBoundingClientRect().top -
-          16
-      );
+        editable.getBoundingClientRect().top -
+        editorPaddingTop;
 
-      setDistance(cur_distance - first_distance + marginTop);
+      const previewElementsTopDistance =
+        currentToEditorDistance - firstNodeToEditorDistance + marginTop;
+
+      setDistance(previewElementsTopDistance);
       setIsMultiple(true);
     } else {
       setIsMultiple(false);
     }
   };
 
-  const onMouseDown = () => {
-    if (!isMultiple) return;
+  const createDragPreviewElements = () => {
+    if (!isMultiple) return editor.setOption(DndPlugin, 'draggingIds', null);
 
-    let height = 0;
-
-    const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+    const sortedNodes = blockSelectionApi.getNodes({ sort: true });
 
     const elements: HTMLElement[] = [];
-    let index = 0;
-    if (selectedIds && selectedIds.size > 0) {
-      // Convert Set to Array and sort by original position
-      const sortedIds = Array.from(selectedIds).sort((a, b) => {
-        const elementA = document.querySelector(`[data-block-id="${a}"]`);
-        const elementB = document.querySelector(`[data-block-id="${b}"]`);
+    const ids: string[] = [];
 
-        if (!elementA || !elementB) return 0;
-
-        const rectA = elementA.getBoundingClientRect();
-        const rectB = elementB.getBoundingClientRect();
-        return rectA.top - rectB.top;
-      });
-
-      sortedIds.forEach((id) => {
-        const element = document.querySelector(`[data-block-id="${id}"]`);
-        if (element) {
-          if (index < 2) {
-            height += element.clientHeight;
-            index++;
-          }
-
-          // Clone the element instead of using the original
-          const clonedElement = element.parentElement!.cloneNode(
-            true
-          ) as HTMLElement;
-
-          const removeDataAttributes = (element: HTMLElement) => {
-            // Remove data attributes from current element
-            Array.from(element.attributes).forEach((attr) => {
-              if (
-                attr.name.startsWith('data-slate') ||
-                attr.name.startsWith('data-block-id')
-              ) {
-                element.removeAttribute(attr.name);
-              }
-            });
-
-            // Recursively process child elements
-            Array.from(element.children).forEach((child) => {
-              removeDataAttributes(child as HTMLElement);
-            });
-          };
-
-          removeDataAttributes(clonedElement);
-
-          elements.push(clonedElement);
+    const removeDataAttributes = (element: HTMLElement) => {
+      // Remove data attributes from current element
+      Array.from(element.attributes).forEach((attr) => {
+        if (
+          attr.name.startsWith('data-slate') ||
+          attr.name.startsWith('data-block-id')
+        ) {
+          element.removeAttribute(attr.name);
         }
       });
-    }
+      // Recursively process child elements
+      Array.from(element.children).forEach((child) => {
+        removeDataAttributes(child as HTMLElement);
+      });
+    };
 
-    multiplePreviewRef.current!.append(...elements);
+    const resolveElement = (node: TElement) => {
+      const domNode = editor.api
+        .toDOMNode(node)!
+        .cloneNode(true) as HTMLElement;
+      ids.push(node.id as string);
+      removeDataAttributes(domNode);
+      elements.push(domNode);
+    };
 
+    sortedNodes.forEach(([node, path]) => {
+      if (node.type === KEYS.tr) {
+        const isLastChild = NodeApi.isLastChild(editor, path);
+
+        if (isLastChild) {
+          const tablePath = PathApi.parent(path);
+          const [tableNode] = editor.api.node<TTableElement>(tablePath)!;
+
+          resolveElement(tableNode);
+        }
+
+        return;
+      }
+
+      resolveElement(node);
+    });
+
+    editor.setOption(DndPlugin, 'draggingIds', ids);
+
+    multiplePreviewRef.current?.append(...elements);
     multiplePreviewRef.current?.classList.remove('hidden');
   };
+
   return (
     <div
       className={cn(
@@ -233,8 +271,8 @@ export function Draggable(props: PlateElementProps) {
                 ref={handleRef}
                 variant="ghost"
                 className="h-6 w-4.5 p-0"
-                onMouseDown={onMouseDown}
-                onMouseEnter={onMouseEnter}
+                onMouseDown={createDragPreviewElements}
+                onMouseEnter={calculateTopDistance}
                 data-plate-prevent-deselect
               >
                 <DragHandle />

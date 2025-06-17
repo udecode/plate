@@ -10,7 +10,7 @@ import type {
   TIdElement,
 } from 'platejs';
 
-import { bindFirst, KEYS } from 'platejs';
+import { bindFirst, KEYS, PathApi } from 'platejs';
 import { createTPlatePlugin } from 'platejs/react';
 
 import type { PartialSelectionOptions } from '../internal';
@@ -72,7 +72,7 @@ export type BlockSelectionConfig = PluginConfig<
       /** Focus block selection – that differs from the editor focus */
       focus: () => void;
       /** Get selected blocks */
-      getNodes: () => NodeEntry<TIdElement>[];
+      getNodes: (options?: { sort?: boolean }) => NodeEntry<TIdElement>[];
       /** Check if a block is selected. */
       has: (id: string[] | string) => boolean;
       /** Check if a block is selectable. */
@@ -197,13 +197,21 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
           shadowInputRef.current.focus({ preventScroll: true });
         }
       },
-      getNodes: () => {
+      getNodes: (options) => {
         const selectedIds = getOption('selectedIds');
 
-        return editor.api.blocks<TIdElement>({
+        const nodes = editor.api.blocks<TIdElement>({
           at: [],
           match: (n) => !!n.id && selectedIds?.has(n.id as string),
         });
+
+        if (options?.sort) {
+          return nodes.sort(([, pathA], [, pathB]) => {
+            return PathApi.compare(pathA, pathB);
+          });
+        }
+
+        return nodes;
       },
       has: (id) => {
         if (Array.isArray(id)) {

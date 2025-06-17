@@ -20,6 +20,8 @@ export type DndConfig = PluginConfig<
   'dnd',
   {
     draggingId?: string | null;
+    /** All IDs being dragged (for multi-node drag) */
+    draggingIds?: string[] | null;
     dropTarget?: {
       id: string | null;
       line: DropLineDirection;
@@ -59,21 +61,13 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       editor.setOption(plugin, 'draggingId', id);
       editor.setOption(plugin, 'isDragging', true);
     },
-    onDrop: ({ editor, getOptions }) => {
-      const id = getOptions().draggingId;
-
-      setTimeout(() => {
-        id &&
-          editor
-            .getApi({ key: KEYS.blockSelection })
-            .blockSelection?.add?.(id);
-      }, 0);
-
+    onDrop: ({ getOptions }) => {
       return getOptions().isDragging;
     },
   },
   options: {
     draggingId: null,
+    draggingIds: null,
     dropTarget: { id: null, line: '' },
     isDragging: false,
   },
