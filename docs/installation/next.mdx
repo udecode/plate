@@ -221,7 +221,7 @@ export default function MyEditorPage() {
 
 To make the editor content persistent, let's integrate `localStorage` to save and load the editor's value client-side.
 
-```tsx showLineNumbers title="app/editor/page.tsx" {57-65,68-71,76-78,88-94}
+```tsx showLineNumbers title="app/editor/page.tsx" {57-60,66-68,78-84}
 'use client';
 
 import * as React from 'react';
@@ -279,20 +279,10 @@ export default function MyEditorPage() {
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
     value: () => {
-      if (typeof window !== 'undefined') {
-        const savedValue = localStorage.getItem('installation-next-demo');
-        if (savedValue) {
-          return JSON.parse(savedValue);
-        }
-      }
-      return initialValue;
+      const savedValue = localStorage.getItem('installation-next-demo');
+      return savedValue ? JSON.parse(savedValue) : initialValue;
     },
   });
-
-  // Prevent SSR from rendering the editor
-  if (typeof window === 'undefined') {
-    return null;
-  }
 
   return (
     <Plate

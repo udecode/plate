@@ -159,6 +159,15 @@ export type WithSlateOptions<
     value?: ((editor: SlateEditor) => Promise<V> | V) | V | string | null;
     /** Function to configure the root plugin */
     rootPlugin?: (plugin: AnySlatePlugin) => AnySlatePlugin;
+    /**
+     * Callback called when the editor is ready (after initialization
+     * completes).
+     */
+    onReady?: (ctx: {
+      editor: SlateEditor;
+      isAsync: boolean;
+      value: V;
+    }) => void;
   };
 
 /**
@@ -190,6 +199,7 @@ export const withSlate = <
     shouldNormalizeEditor,
     skipInitialization,
     value,
+    onReady,
     ...pluginConfig
   }: WithSlateOptions<V, P> = {}
 ): TSlateEditor<V, InferPlugins<P[]>> => {
@@ -313,11 +323,12 @@ export const withSlate = <
   editor.normalizeNode = editor.tf.normalizeNode;
 
   if (!skipInitialization) {
-    void editor.tf.init({
+    editor.tf.init({
       autoSelect,
       selection,
       shouldNormalizeEditor,
       value,
+      onReady: onReady as any,
     });
   }
 
