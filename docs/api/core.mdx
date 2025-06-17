@@ -82,9 +82,22 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
       </APISubListItem>
     </APISubList>
   </APIItem>
-  <APIItem name="chunking" type="((ancestor: Ancestor) => number | null) | boolean" optional>
-   Determine whether chunking is enabled for the editor. When set to true, top-level children will be chunked with the default chunk size. You can also provide a function to determine the chunk size for each ancestor, or null if the ancestor's children should not be chunked. [Learn more about chunking.](https://docs.slatejs.org/walkthroughs/09-performance)
-    - **Default:** `true`
+  <APIItem name="chunking" type="object | boolean" optional>
+    Configure Slate's chunking optimization, which reduces latency while typing. Set to `false` to disable. [Learn more about chunking.](https://docs.slatejs.org/walkthroughs/09-performance)
+    <APISubList>
+      <APISubListItem parent="chunking" name="chunkSize" type="number" optional>
+        The number of blocks per chunk.
+        - **Default:** 1000
+      </APISubListItem>
+      <APISubListItem parent="chunking" name="contentVisibilityAuto" type="boolean" optional>
+        Whether to render each chunk as a DOM element with `content-visibility: auto`, which optimizes DOM painting. When set to `false`, no DOM element will be rendered for each chunk.
+        - **Default:** `true`
+      </APISubListItem>
+      <APISubListItem parent="chunking" name="query" type="(ancestor: Ancestor) => boolean" optional>
+        Determine which ancestors should have chunking applied to their children. Only blocks containing other blocks can have chunking applied.
+        - **Default:** `NodeApi.isEditor`
+      </APISubListItem>
+    </APISubList>
   </APIItem>
   <APIItem name="selection" type="TSelection" optional>
     Initial selection for the editor.
