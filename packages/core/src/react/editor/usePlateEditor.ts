@@ -54,11 +54,21 @@ export function usePlateEditor<
   : TEnabled extends true | undefined
     ? TPlateEditor<V, P>
     : TPlateEditor<V, P> | null {
+  const [, forceRender] = React.useState({});
+
   return React.useMemo(
     (): any => {
       if (options.enabled === false) return null;
 
-      const editor = createPlateEditor(options);
+      const editor = createPlateEditor({
+        ...options,
+        onReady: (ctx) => {
+          if (ctx.isAsync) {
+            forceRender({});
+          }
+          options.onReady?.(ctx);
+        },
+      });
 
       return editor;
     },

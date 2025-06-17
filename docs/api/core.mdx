@@ -20,8 +20,11 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   <APIItem name="plugins" type="P[]" optional>
     An array of editor plugins.
   </APIItem>
-  <APIItem name="value" type="V" optional>
-    Initial value of the editor.
+  <APIItem name="value" type="V | string | ((editor: PlateEditor) => V | Promise<V>)" optional>
+    Initial value of the editor. Can be:
+    - A static value array
+    - An HTML string to be deserialized
+    - A function that returns a value (can be async)
   </APIItem>
   <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
     Select the editor after initialization.
@@ -29,6 +32,9 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
     - `true` | 'end': Select the end of the editor
     - `false`: Do not select anything
     - `'start'`: Select the start of the editor
+  </APIItem>
+  <APIItem name="onReady" type="(ctx: { editor: PlateEditor; isAsync: boolean; value: V }) => void" optional>
+    Callback called when the editor initialization completes. The `isAsync` flag indicates whether the value was loaded asynchronously.
   </APIItem>
   <APIItem name="maxLength" type="number" optional>
     Specifies the maximum number of characters allowed in the editor.
@@ -215,6 +221,35 @@ Explicitly typed version of `toPlatePlugin`.
 
 <APIReturns type="PlatePlugin<C>">
   A new plugin instance with precise type control.
+</APIReturns>
+</API>
+
+### `usePlateEditor`
+
+Creates a memoized Plate editor for React components.
+
+<API name="usePlateEditor">
+<APIParameters>
+  <APIItem name="options" type="CreatePlateEditorOptions & { enabled?: boolean; onReady?: (ctx: { editor: PlateEditor; isAsync: boolean; value: V }) => void }" optional>
+    Configuration options for creating the Plate editor. All options from `createPlateEditor` are supported, plus:
+    <APISubList>
+      <APISubListItem parent="options" name="enabled" type="boolean" optional>
+        Whether the editor should be created. When `false`, returns `null`.
+        - **Default:** `true`
+      </APISubListItem>
+      <APISubListItem parent="options" name="onReady" type="(ctx: { editor: PlateEditor; isAsync: boolean; value: V }) => void" optional>
+        Callback called when the editor initialization completes. The `isAsync` flag indicates whether the value was loaded asynchronously.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="deps" type="React.DependencyList" optional>
+    Additional dependencies for the useMemo hook.
+    - **Default:** `[]`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlateEditor | null">
+  A memoized Plate editor instance. Returns `null` if `enabled` is `false`.
 </APIReturns>
 </API>
 

@@ -23,36 +23,58 @@ Alternatively, you can use `editor.tf.reset()` to reset the editor state, which 
 
 ### Async Initial Value
 
-You can use `skipInitialization` to delay editor initialization until your async data is ready. Then, call `editor.tf.init` with your value:
+You can pass an async function directly to the `value` option. The editor will handle the async loading automatically:
 
 ```tsx
 function AsyncControlledEditor() {
-  const [initialValue, setInitialValue] = React.useState();
-  const [loading, setLoading] = React.useState(true);
   const editor = usePlateEditor({
-    skipInitialization: true,
+    value: async () => {
+      // Simulate fetching data from an API
+      const response = await fetch('/api/document');
+      const data = await response.json();
+      return data.content;
+    },
+    autoSelect: 'end',
+  });
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+For more control over initialization timing, you can use `shouldInitialize: false` and manually call `editor.tf.init`:
+
+```tsx
+function AsyncControlledEditor() {
+  const [data, setData] = React.useState(null);
+  const editor = usePlateEditor({
+    shouldInitialize: false,
   });
 
   React.useEffect(() => {
-    // Simulate async fetch
-    setTimeout(() => {
-      setInitialValue([
-        {
-          type: 'p',
-          children: [{ text: 'Loaded async value!' }],
+    const loadData = async () => {
+      const response = await fetch('/api/document');
+      const data = await response.json();
+      setData(data);
+      
+      editor.tf.init({
+        value: data.content,
+        autoSelect: 'end',
+        onReady: ({ editor, value }) => {
+          console.log('Editor ready with value:', value);
         },
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
+      });
+    };
+    
+    loadData();
+  }, [editor]);
 
-  React.useEffect(() => {
-    if (!loading && initialValue) {
-      editor.tf.init({ value: initialValue, autoSelect: 'end' });
-    }
-  }, [loading, initialValue, editor]);
-
-  if (loading) return <div>Loading…</div>;
+  if (!data) return <div>Loading…</div>;
 
   return (
     <Plate editor={editor}>

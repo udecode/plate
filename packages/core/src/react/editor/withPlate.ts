@@ -50,6 +50,11 @@ export type WithPlateOptions<
     // };
     value?: ((editor: PlateEditor) => V) | V | string;
     rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
+    onReady?: (ctx: {
+      editor: PlateEditor;
+      isAsync: boolean;
+      value: V;
+    }) => void;
   };
 
 /**
