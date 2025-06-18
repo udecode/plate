@@ -28,6 +28,7 @@ export type DndConfig = PluginConfig<
     };
     enableScroller?: boolean;
     isDragging?: boolean;
+    isOver?: boolean;
     scrollerProps?: Partial<ScrollerProps>;
     onDropFiles?: (props: {
       id: string;
@@ -60,8 +61,12 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
 
       editor.setOption(plugin, 'draggingId', id);
       editor.setOption(plugin, 'isDragging', true);
+      editor.setOption(plugin, 'isOver', true);
     },
-    onDrop: ({ getOptions }) => {
+    onDrop: ({ getOptions, setOption }) => {
+      setOption('isOver', false);
+      setOption('dropTarget', undefined);
+
       return getOptions().isDragging;
     },
   },
@@ -70,6 +75,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
     draggingIds: null,
     dropTarget: { id: null, line: '' },
     isDragging: false,
+    isOver: false,
   },
 }).extend(({ getOptions }) => ({
   render: {
