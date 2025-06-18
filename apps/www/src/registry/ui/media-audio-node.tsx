@@ -17,7 +17,7 @@ export const AudioElement = withHOC(
     const { align = 'center', readOnly, unsafeUrl } = useMediaState();
 
     return (
-      <PlateElement {...props} className="mb-1">
+      <PlateElement {...props}>
         <figure
           className="group relative cursor-default"
           contentEditable={false}

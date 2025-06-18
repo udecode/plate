@@ -29,7 +29,7 @@ export function TocElement(props: PlateElementProps) {
   const { headingList } = state;
 
   return (
-    <PlateElement {...props} className="mb-1 p-0">
+    <PlateElement {...props} className="p-0">
       <div contentEditable={false}>
         {headingList.length > 0 ? (
           headingList.map((item) => (
