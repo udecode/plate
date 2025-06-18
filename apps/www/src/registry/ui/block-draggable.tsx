@@ -6,6 +6,7 @@ import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
 import {
+  type Path,
   type TElement,
   type TTableElement,
   getContainerTypes,
@@ -291,7 +292,7 @@ export function Draggable(props: PlateElementProps) {
         />
 
         <MemoizedChildren>{children}</MemoizedChildren>
-        <DropLine />
+        <DropLine element={element} path={path} />
       </div>
     </div>
   );
@@ -379,7 +380,7 @@ const DragHandle = React.memo(function DragHandle() {
 const DropLine = React.memo(function DropLine({
   className,
   ...props
-}: React.ComponentProps<'div'>) {
+}: React.ComponentProps<'div'> & { element: TElement; path: Path }) {
   const { dropLine } = useDropLine();
 
   if (!dropLine) return null;
