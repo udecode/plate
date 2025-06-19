@@ -43,7 +43,17 @@ export type PlateEditor = BaseEditor & {
 export type TPlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
-> = PlateEditor & {
+> = Omit<
+  PlateEditor,
+  | 'api'
+  | 'children'
+  | 'getApi'
+  | 'getTransforms'
+  | 'meta'
+  | 'plugins'
+  | 'tf'
+  | 'transforms'
+> & {
   api: EditorApi<V> & UnionToIntersection<InferApi<P | PlateCorePlugin>>;
   children: V;
   meta: BaseEditor['meta'] & {
