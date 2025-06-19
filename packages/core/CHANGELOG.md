@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.0.6
+
+### Patch Changes
+
+- [#4382](https://github.com/udecode/plate/pull/4382) by [@delijah](https://github.com/delijah) – Omit duplicate keys on TPlateEditor to avoid wrong union types
+
 ## 49.0.5
 
 ### Patch Changes
