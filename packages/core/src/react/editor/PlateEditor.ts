@@ -40,10 +40,14 @@ export type PlateEditor = BaseEditor & {
   uid?: string;
 };
 
+type FilterKeys<T, K extends keyof T> = {
+  [P in keyof T as Exclude<P, K>]: T[P];
+};
+
 export type TPlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
-> = PlateEditor & {
+> = FilterKeys<PlateEditor, 'children'> & {
   api: EditorApi<V> & UnionToIntersection<InferApi<P | PlateCorePlugin>>;
   children: V;
   meta: BaseEditor['meta'] & {
