@@ -57,7 +57,11 @@ export const useDragNode = (
         let elements: TElement[] = [];
         let ids: string[] = [];
 
-        if (selectedIds && selectedIds.length > 1 && selectedIds.includes(elementId)) {
+        if (
+          selectedIds &&
+          selectedIds.length > 1 &&
+          selectedIds.includes(elementId)
+        ) {
           // Multiple selection including current element
           ids = Array.from(selectedIds);
           elements = [];

@@ -11,6 +11,7 @@ import {
   type SlatePlugin,
   AffinityPlugin,
   AstPlugin,
+  ChunkingPlugin,
   createSlatePlugin,
   DebugPlugin,
   DOMPlugin,
@@ -21,7 +22,6 @@ import {
   ParserPlugin,
   SlateExtensionPlugin,
   withSlate,
-  ChunkingPlugin,
 } from '../index';
 
 const coreKeys = [
