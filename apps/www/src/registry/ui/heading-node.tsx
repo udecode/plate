@@ -27,14 +27,14 @@ const DropMarginFix = ({
   height: string;
   position: 'bottom' | 'top';
 }) => {
-  const isOver = usePluginOption({ key: 'dnd' }, 'isOver');
+  const isDragging = usePluginOption({ key: 'dnd' }, 'isDragging');
 
   return (
     <div
       className="absolute left-0 w-full"
       style={{
         height,
-        pointerEvents: isOver ? 'auto' : 'none',
+        pointerEvents: isDragging ? 'auto' : 'none',
         [position]: `-${height}`,
       }}
       contentEditable={false}

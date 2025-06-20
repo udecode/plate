@@ -4,7 +4,10 @@ import type { Path, PluginConfig } from 'platejs';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { KEYS } from 'platejs';
-import { type PlateEditor, createTPlatePlugin } from 'platejs/react';
+import {
+  type PlateEditor,
+  createTPlatePlugin,
+} from 'platejs/react';
 
 import type {
   DragItemNode,
@@ -19,6 +22,7 @@ export const DRAG_ITEM_BLOCK = 'block';
 export type DndConfig = PluginConfig<
   'dnd',
   {
+    _isOver?: boolean;
     draggingId?: string | null;
     /** All IDs being dragged (for multi-node drag) */
     draggingIds?: string[] | null;
@@ -28,7 +32,6 @@ export type DndConfig = PluginConfig<
     };
     enableScroller?: boolean;
     isDragging?: boolean;
-    isOver?: boolean;
     scrollerProps?: Partial<ScrollerProps>;
     onDropFiles?: (props: {
       id: string;
@@ -50,7 +53,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       editor.setOption(plugin, 'dropTarget', { id: null, line: '' });
     },
     onDragEnter: ({ editor, plugin }) => {
-      editor.setOption(plugin, 'isOver', true);
+      editor.setOption(plugin, '_isOver', true);
     },
     onDragStart: ({ editor, event, plugin }) => {
       const target = event.target as HTMLElement;
@@ -65,21 +68,21 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
 
       editor.setOption(plugin, 'draggingId', id);
       editor.setOption(plugin, 'isDragging', true);
-      editor.setOption(plugin, 'isOver', true);
+      editor.setOption(plugin, '_isOver', true);
     },
     onDrop: ({ getOptions, setOption }) => {
-      setOption('isOver', false);
+      setOption('_isOver', false);
       setOption('dropTarget', undefined);
 
       return getOptions().isDragging;
     },
   },
   options: {
+    _isOver: false,
     draggingId: null,
     draggingIds: null,
     dropTarget: { id: null, line: '' },
     isDragging: false,
-    isOver: false,
   },
 }).extend(({ getOptions }) => ({
   render: {

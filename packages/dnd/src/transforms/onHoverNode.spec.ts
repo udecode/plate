@@ -47,8 +47,8 @@ describe('onHoverNode', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (editor.getOptions as jest.Mock).mockReturnValue({
+      _isOver: true,
       dropTarget: { id: null, line: '' },
-      isOver: true,
     });
   });
 

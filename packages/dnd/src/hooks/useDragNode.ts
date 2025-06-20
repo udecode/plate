@@ -45,7 +45,7 @@ export const useDragNode = (
       },
       item(monitor) {
         editor.setOption(DndPlugin, 'isDragging', true);
-        editor.setOption(DndPlugin, 'isOver', true);
+        editor.setOption(DndPlugin, '_isOver', true);
         document.body.classList.add('dragging');
 
         const _item = typeof item === 'function' ? item(monitor) : item;
