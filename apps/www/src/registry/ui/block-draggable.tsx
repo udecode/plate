@@ -136,6 +136,8 @@ function Draggable(props: PlateElementProps) {
   const [dragButtonTop, setDragButtonTop] = React.useState(0);
 
   const calcDragButtonTop = () => {
+    if (isDragging) return;
+
     const child = editor.api.toDOMNode(element)!;
 
     const currentMarginTopString = window.getComputedStyle(child).marginTop;
@@ -225,8 +227,11 @@ function Draggable(props: PlateElementProps) {
         .toDOMNode(node)!
         .cloneNode(true) as HTMLElement;
       ids.push(node.id as string);
+      const wrapper = document.createElement('div');
+      wrapper.append(domNode);
+      wrapper.style.display = 'flow-root';
       removeDataAttributes(domNode);
-      elements.push(domNode);
+      elements.push(wrapper);
     };
 
     sortedNodes.forEach(([node, path]) => {
