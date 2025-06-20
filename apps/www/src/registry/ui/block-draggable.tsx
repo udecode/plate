@@ -251,13 +251,13 @@ export function Draggable(props: PlateElementProps) {
             className={cn(
               'slate-blockToolbarWrapper',
               'flex h-[1.5em]',
-              isType(editor, element, [
-                KEYS.h1,
-                KEYS.h2,
-                KEYS.h3,
-                KEYS.h4,
-                KEYS.h5,
-              ]) && 'h-[1.3em]',
+              // isType(editor, element, [
+              //   KEYS.h1,
+              //   KEYS.h2,
+              //   KEYS.h3,
+              //   KEYS.h4,
+              //   KEYS.h5,
+              // ]) && 'h-[1.3em]',
               isInColumn && 'h-4'
             )}
           >
@@ -327,11 +327,11 @@ function Gutter({
           : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',
         !selected && 'opacity-0',
-        isNodeType(KEYS.h1) && 'pb-1 text-[1.875em] pt-[1.9em]',
-        isNodeType(KEYS.h2) && 'pb-1 text-[1.5em] pt-[1.4em]',
-        isNodeType(KEYS.h3) && 'pt-[2px] pb-1 text-[1.25em] pt-[1.1em]',
-        isNodeType([KEYS.h4, KEYS.h5]) && 'pt-1 pb-0 text-[1.1em] pt-[1em]',
-        isNodeType(KEYS.h6) && 'pb-0',
+        // isNodeType(KEYS.h1) && 'pb-1 text-[1.875em] pt-[1.9em]',
+        // isNodeType(KEYS.h2) && 'pb-1 text-[1.5em] pt-[1.4em]',
+        // isNodeType(KEYS.h3) && 'pt-[2px] pb-1 text-[1.25em] pt-[1.1em]',
+        // isNodeType([KEYS.h4, KEYS.h5]) && 'pt-1 pb-0 text-[1.1em] pt-[1em]',
+        // isNodeType(KEYS.h6) && 'pb-0',
         isNodeType(KEYS.p) && 'pt-1 pb-0',
         isNodeType(KEYS.blockquote) && 'pb-0',
         isNodeType(KEYS.codeBlock) && 'pt-6 pb-0',

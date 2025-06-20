@@ -5,32 +5,73 @@ import * as React from 'react';
 import type { PlateElementProps } from 'platejs/react';
 
 import { type VariantProps, cva } from 'class-variance-authority';
-import { PlateElement } from 'platejs/react';
+import { PlateElement, usePluginOption } from 'platejs/react';
 
-const headingVariants = cva('relative pb-1', {
+const headingVariants = cva('relative mb-1', {
   variants: {
     variant: {
-      h1: 'pt-[1.6em] pb-1 font-heading text-4xl font-bold',
-      h2: 'pt-[1.4em] pb-px font-heading text-2xl font-semibold tracking-tight',
-      h3: 'pt-[1em] pb-px font-heading text-xl font-semibold tracking-tight',
-      h4: 'pt-[0.75em] font-heading text-lg font-semibold tracking-tight',
-      h5: 'pt-[0.75em] text-lg font-semibold tracking-tight',
-      h6: 'pt-[0.75em] text-base font-semibold tracking-tight',
+      h1: 'mt-[1.6em] pb-1 font-heading text-4xl font-bold',
+      h2: 'mt-[1.4em] pb-px font-heading text-2xl font-semibold tracking-tight',
+      h3: 'mt-[1em] pb-px font-heading text-xl font-semibold tracking-tight',
+      h4: 'mt-[0.75em] font-heading text-lg font-semibold tracking-tight',
+      h5: 'mt-[0.75em] text-lg font-semibold tracking-tight',
+      h6: 'mt-[0.75em] text-base font-semibold tracking-tight',
     },
   },
 });
+
+const DropMarginFix = ({
+  height,
+  position,
+}: {
+  height: string;
+  position: 'bottom' | 'top';
+}) => {
+  const isOver = usePluginOption({ key: 'dnd' }, 'isOver');
+
+  return (
+    <div
+      className="absolute left-0 w-full"
+      style={{
+        height,
+        pointerEvents: isOver ? 'auto' : 'none',
+        [position]: `-${height}`,
+      }}
+      contentEditable={false}
+    />
+  );
+};
 
 export function HeadingElement({
   variant = 'h1',
   ...props
 }: PlateElementProps & VariantProps<typeof headingVariants>) {
+  const height = (() => {
+    switch (variant) {
+      case 'h1': {
+        return '1.6em';
+      }
+      case 'h2': {
+        return '1.4em';
+      }
+      case 'h3': {
+        return '1em';
+      }
+      default: {
+        return '0.75em';
+      }
+    }
+  })();
+
   return (
     <PlateElement
       as={variant!}
       className={headingVariants({ variant })}
       {...props}
     >
+      <DropMarginFix height={height} position="top" />
       {props.children}
+      <DropMarginFix height="0.25em" position="bottom" />
     </PlateElement>
   );
 }
