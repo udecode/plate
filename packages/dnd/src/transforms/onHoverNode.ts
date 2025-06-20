@@ -27,7 +27,7 @@ export const onHoverNode = (
     'canDropNode' | 'element' | 'nodeRef' | 'orientation'
   >
 ) => {
-  const { dropTarget } = editor.getOptions(DndPlugin);
+  const { dropTarget, isOver } = editor.getOptions(DndPlugin);
   const currentId = dropTarget?.id ?? null;
   const currentLine = dropTarget?.line ?? '';
 
@@ -57,8 +57,7 @@ export const onHoverNode = (
   if (newDropTarget.id !== currentId || newDropTarget.line !== currentLine) {
     // Only set if there's a real change
 
-    if (!editor.getOption(DndPlugin, 'isOver')) {
-      console.log(1, 'fj');
+    if (!isOver) {
       return;
     }
 

@@ -48,6 +48,7 @@ describe('onHoverNode', () => {
     jest.clearAllMocks();
     (editor.getOptions as jest.Mock).mockReturnValue({
       dropTarget: { id: null, line: '' },
+      isOver: true,
     });
   });
 
@@ -77,7 +78,7 @@ describe('onHoverNode', () => {
   it('should collapse selection and focus editor if direction is returned and selection is expanded', () => {
     const { getDropPath } = require('./onDropNode');
     getDropPath.mockReturnValueOnce({
-      direction: 'top',
+      direction: 'bottom',
       dragPath: [0],
       to: [1],
     });
