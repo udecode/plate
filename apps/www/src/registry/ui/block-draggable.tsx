@@ -118,7 +118,7 @@ export function Draggable(props: PlateElementProps) {
   const isInColumn = path.length === 3;
   const isInTable = path.length === 4;
 
-  const [distance, setDistance] = React.useState(0);
+  const [multiplePreviewTop, setMultiplePreviewTop] = React.useState(0);
   const [isMultiple, setIsMultiple] = React.useState(false);
 
   const multiplePreviewRef = React.useRef<HTMLDivElement>(null);
@@ -130,6 +130,16 @@ export function Draggable(props: PlateElementProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
+
+  const [dragButtonTop, setDragButtonTop] = React.useState(0);
+
+  const calcDragButtonTop = () => {
+    const child = editor.api.toDOMNode(element)!;
+
+    const currentMarginTopString = window.getComputedStyle(child).marginTop;
+    const currentMarginTop = Number(currentMarginTopString.replace('px', ''));
+    setDragButtonTop(currentMarginTop);
+  };
 
   const calculateTopDistance = () => {
     if (isDragging) return;
@@ -168,10 +178,16 @@ export function Draggable(props: PlateElementProps) {
         editable.getBoundingClientRect().top -
         editorPaddingTop;
 
-      const previewElementsTopDistance =
-        currentToEditorDistance - firstNodeToEditorDistance + marginTop;
+      const currentMarginTopString = window.getComputedStyle(child).marginTop;
+      const currentMarginTop = Number(currentMarginTopString.replace('px', ''));
 
-      setDistance(previewElementsTopDistance);
+      const previewElementsTopDistance =
+        currentToEditorDistance -
+        firstNodeToEditorDistance +
+        marginTop -
+        currentMarginTop;
+
+      setMultiplePreviewTop(previewElementsTopDistance);
       setIsMultiple(true);
     } else {
       setIsMultiple(false);
@@ -243,6 +259,7 @@ export function Draggable(props: PlateElementProps) {
           ? 'group/container'
           : 'group'
       )}
+      onMouseEnter={calcDragButtonTop}
     >
       {!isInTable && (
         <Gutter>
@@ -255,7 +272,7 @@ export function Draggable(props: PlateElementProps) {
           >
             <div
               className={cn(
-                'slate-blockToolbar',
+                'slate-blockToolbar relative w-4.5',
                 'pointer-events-auto mr-1 flex items-center',
                 isInColumn && 'mr-1.5'
               )}
@@ -263,7 +280,8 @@ export function Draggable(props: PlateElementProps) {
               <Button
                 ref={handleRef}
                 variant="ghost"
-                className="h-6 w-4.5 p-0"
+                className="absolute -left-0 h-6 w-full p-0"
+                style={{ top: `${dragButtonTop + 4}px` }}
                 onMouseDown={createDragPreviewElements}
                 onMouseEnter={calculateTopDistance}
                 data-plate-prevent-deselect
@@ -275,11 +293,11 @@ export function Draggable(props: PlateElementProps) {
         </Gutter>
       )}
 
-      <div ref={previewRef} className="slate-blockWrapper">
+      <div ref={previewRef} className="slate-blockWrapper flow-root">
         <div
           ref={multiplePreviewRef}
           className={cn('absolute -left-0 hidden w-full')}
-          style={{ top: `${-distance}px` }}
+          style={{ top: `${-multiplePreviewTop}px` }}
           contentEditable={false}
         />
 
@@ -304,10 +322,6 @@ function Gutter({
   );
   const selected = useSelected();
 
-  const isNodeType = (keys: string[] | string) => isType(editor, element, keys);
-
-  const isInColumn = path.length === 3;
-
   return (
     <div
       {...props}
@@ -319,23 +333,6 @@ function Gutter({
           : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',
         !selected && 'opacity-0',
-        isNodeType(KEYS.h1) && 'pb-1 text-[1.875em]',
-        isNodeType(KEYS.h2) && 'pb-1 text-[1.5em]',
-        isNodeType(KEYS.h3) && 'pt-[2px] pb-1 text-[1.25em]',
-        isNodeType([KEYS.h4, KEYS.h5]) && 'pt-1 pb-0 text-[1.1em]',
-        isNodeType(KEYS.h6) && 'pb-0',
-        isNodeType(KEYS.p) && 'pt-1 pb-0',
-        isNodeType(KEYS.blockquote) && 'pb-0',
-        isNodeType(KEYS.codeBlock) && 'pt-6 pb-0',
-        isNodeType([
-          KEYS.img,
-          KEYS.mediaEmbed,
-          KEYS.excalidraw,
-          KEYS.toggle,
-          KEYS.column,
-        ]) && 'py-0',
-        isNodeType([KEYS.placeholder, KEYS.table]) && 'pt-3 pb-0',
-        isInColumn && 'mt-2 h-4 pt-0',
         className
       )}
       contentEditable={false}
