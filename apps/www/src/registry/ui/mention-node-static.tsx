@@ -16,14 +16,17 @@ export function MentionElementStatic(
 
   return (
     <SlateElement
+      {...props}
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm font-medium',
         element.children[0][KEYS.bold] === true && 'font-bold',
         element.children[0][KEYS.italic] === true && 'italic',
         element.children[0][KEYS.underline] === true && 'underline'
       )}
-      data-slate-value={element.value}
-      {...props}
+      attributes={{
+        ...props.attributes,
+        'data-slate-value': element.value,
+      }}
     >
       {IS_APPLE ? (
         // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490

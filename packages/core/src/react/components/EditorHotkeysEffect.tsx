@@ -67,6 +67,7 @@ function HotkeyEffect({
       ) {
         // Prevent default if handler returns false and preventDefault is true
         event.preventDefault();
+        event.stopPropagation?.();
       }
     },
     {

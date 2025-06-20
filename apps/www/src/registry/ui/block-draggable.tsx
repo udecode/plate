@@ -8,7 +8,7 @@ import { GripVertical } from 'lucide-react';
 import {
   type TElement,
   type TTableElement,
-  getContainerTypes,
+  getPluginByType,
   isType,
   KEYS,
   NodeApi,
@@ -39,6 +39,8 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
   const { editor, element, path } = props;
 
   const enabled = React.useMemo(() => {
+    if (editor.dom.readOnly) return false;
+
     if (path.length === 1 && !isType(editor, element, UNDRAGGABLE_KEYS)) {
       return true;
     }
@@ -75,7 +77,7 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
   return (props) => <Draggable {...props} />;
 };
 
-export function Draggable(props: PlateElementProps) {
+function Draggable(props: PlateElementProps) {
   const { children, editor, element, path } = props;
   const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
 
@@ -255,7 +257,7 @@ export function Draggable(props: PlateElementProps) {
       className={cn(
         'relative',
         isDragging && 'opacity-50',
-        getContainerTypes(editor).includes(element.type)
+        getPluginByType(editor, element.type)?.node.isContainer
           ? 'group/container'
           : 'group'
       )}
@@ -328,7 +330,7 @@ function Gutter({
       className={cn(
         'slate-gutterLeft',
         'absolute top-0 z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
-        getContainerTypes(editor).includes(element.type)
+        getPluginByType(editor, element.type)?.node.isContainer
           ? 'group-hover/container:opacity-100'
           : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',

@@ -9,6 +9,7 @@ import {
   BasicMarksPlugin,
 } from '@platejs/basic-nodes/react';
 import {
+  ContentVisibilityChunk,
   Editable,
   Plate,
   Slate,
@@ -24,6 +25,7 @@ const value = createHugeDocumentValue();
 
 function WithPlate() {
   const editor = usePlateEditor({
+    nodeId: false,
     plugins: [BasicBlocksPlugin, BasicMarksPlugin],
     value,
   });
@@ -51,7 +53,11 @@ function Element({ attributes, children, element }: RenderElementProps) {
 function WithoutPlate() {
   const [initialValue, setValue] = React.useState(value);
   const renderElement = React.useCallback((p: any) => <Element {...p} />, []);
-  const editor = React.useMemo(() => withReact(createEditor()), []);
+  const editor = React.useMemo(() => {
+    const e = withReact(createEditor());
+    e.getChunkSize = (node) => (node === e ? 1000 : null);
+    return e;
+  }, []);
   const onChange = React.useCallback(
     (newValue: Value) => setValue(newValue),
     []
@@ -63,7 +69,11 @@ function WithoutPlate() {
       editor={editor}
       initialValue={initialValue}
     >
-      <Editable renderElement={renderElement} spellCheck={false} />
+      <Editable
+        renderChunk={ContentVisibilityChunk}
+        renderElement={renderElement}
+        spellCheck={false}
+      />
     </Slate>
   );
 }

@@ -245,7 +245,7 @@ export default function App() {
 
 To make the editor's content persistent, let's integrate state management to save and load the editor's value.
 
-```tsx showLineNumbers title="src/App.tsx" {81-87,93-95}
+```tsx showLineNumbers title="src/App.tsx" {81-84,90-92}
 import React from 'react';
 import type { Value } from 'platejs';
 
@@ -328,10 +328,7 @@ export default function App() {
     ],
     value: () => {
       const savedValue = localStorage.getItem('plate-manual-demo');
-      if (savedValue) {
-        return JSON.parse(savedValue);
-      }
-      return initialValue;
+      return savedValue ? JSON.parse(savedValue) : initialValue;
     },
   });
 

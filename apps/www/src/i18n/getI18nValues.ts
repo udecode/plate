@@ -15,7 +15,6 @@ import { basicNodesValue as basicNodesValueCn } from '@/registry/examples/values
 import { blockMenuValue as blockMenuValueCn } from '@/registry/examples/values/cn/block-menu-value';
 import { blockSelectionValue as blockSelectionValueCn } from '@/registry/examples/values/cn/block-selection-value';
 import { columnValue as columnValueCn } from '@/registry/examples/values/cn/column-value';
-import { commentValue as commentValueCn } from '@/registry/examples/values/cn/comment-value';
 import { copilotValue as copilotValueCn } from '@/registry/examples/values/cn/copilot-value';
 import { cursorOverlayValue as cursorOverlayValueCn } from '@/registry/examples/values/cn/cursor-overlay-value';
 import { dateValue as dateValueCn } from '@/registry/examples/values/cn/date-value';
@@ -23,6 +22,7 @@ import { deserializeCsvValue as deserializeCsvValueCn } from '@/registry/example
 import { deserializeDocxValue as deserializeDocxValueCn } from '@/registry/examples/values/cn/deserialize-docx-value';
 import { deserializeHtmlValue as deserializeHtmlValueCn } from '@/registry/examples/values/cn/deserialize-html-value';
 import { deserializeMdValue as deserializeMdValueCn } from '@/registry/examples/values/cn/deserialize-md-value';
+import { discussionValue as discussionValueCn } from '@/registry/examples/values/cn/discussion-value';
 import { dndValue as dndValueCn } from '@/registry/examples/values/cn/dnd-value';
 import { editableVoidsValue as editableVoidsValueCn } from '@/registry/examples/values/cn/editable-voids-value';
 import { emojiValue as emojiValueCn } from '@/registry/examples/values/cn/emoji-value';
@@ -49,13 +49,11 @@ import { placeholderValue as placeholderValueCn } from '@/registry/examples/valu
 import { playgroundValue as playgroundValueCn } from '@/registry/examples/values/cn/playground-value';
 import { previewMdValue as previewMdValueCn } from '@/registry/examples/values/cn/preview-md-value';
 import { slashCommandValue as slashCommandValueCn } from '@/registry/examples/values/cn/slash-command-value';
-import { suggestionValue as suggestionValueCn } from '@/registry/examples/values/cn/suggestion-value';
 import { tabbableValue as tabbableValueCn } from '@/registry/examples/values/cn/tabbable-value';
 import { tableValue as tableValueCn } from '@/registry/examples/values/cn/table-value';
 import { tocValue as tocValueCn } from '@/registry/examples/values/cn/toc-value';
 import { toggleValue as toggleValueCn } from '@/registry/examples/values/cn/toggle-value';
 import { columnValue as columnValueEn } from '@/registry/examples/values/column-value';
-import { commentValue as commentValueEn } from '@/registry/examples/values/comment-value';
 import { copilotValue as copilotValueEn } from '@/registry/examples/values/copilot-value';
 import { cursorOverlayValue as cursorOverlayValueEn } from '@/registry/examples/values/cursor-overlay-value';
 import { dateValue as dateValueEn } from '@/registry/examples/values/date-value';
@@ -63,6 +61,7 @@ import { deserializeCsvValue as deserializeCsvValueEn } from '@/registry/example
 import { deserializeDocxValue as deserializeDocxValueEn } from '@/registry/examples/values/deserialize-docx-value';
 import { deserializeHtmlValue as deserializeHtmlValueEn } from '@/registry/examples/values/deserialize-html-value';
 import { deserializeMdValue as deserializeMdValueEn } from '@/registry/examples/values/deserialize-md-value';
+import { discussionValue as commentValueEn } from '@/registry/examples/values/discussion-value';
 import { dndValue as dndValueEn } from '@/registry/examples/values/dnd-value';
 import { editableVoidsValue as editableVoidsValueEn } from '@/registry/examples/values/editable-voids-value';
 import { emojiValue as emojiValueEn } from '@/registry/examples/values/emoji-value';
@@ -102,7 +101,6 @@ const i18n = {
     blockMenu: blockMenuValueCn,
     blockSelection: blockSelectionValueCn,
     column: columnValueCn,
-    comment: commentValueCn,
     copilot: copilotValueCn,
     cursorOverlay: cursorOverlayValueCn,
     date: dateValueCn,
@@ -110,6 +108,7 @@ const i18n = {
     deserializeDocx: deserializeDocxValueCn,
     deserializeHtml: deserializeHtmlValueCn,
     deserializeMd: deserializeMdValueCn,
+    discussion: discussionValueCn,
     dnd: dndValueCn,
     editableVoids: editableVoidsValueCn,
     emoji: emojiValueCn,
@@ -131,7 +130,6 @@ const i18n = {
     playground: playgroundValueCn,
     previewMd: previewMdValueCn,
     slashCommand: slashCommandValueCn,
-    suggestion: suggestionValueCn,
     tabbable: tabbableValueCn,
     table: tableValueCn,
     'text-align': alignValueCn,

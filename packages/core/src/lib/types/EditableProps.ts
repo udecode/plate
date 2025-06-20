@@ -2,6 +2,7 @@ import type { JSX } from 'react';
 
 import type { DOMRange, Editor, NodeEntry, TRange } from '@platejs/slate';
 
+import type { RenderChunkFn } from './RenderChunkProps';
 import type { RenderElementFn } from './RenderElementProps';
 import type { RenderLeafFn } from './RenderLeafProps';
 import type { RenderTextFn } from './RenderTextProps';
@@ -12,6 +13,7 @@ export type EditableProps = {
   disableDefaultStyles?: boolean;
   placeholder?: string;
   readOnly?: boolean;
+  renderChunk?: RenderChunkFn;
   renderElement?: RenderElementFn;
   renderLeaf?: RenderLeafFn;
   renderText?: RenderTextFn;

@@ -135,7 +135,7 @@ export const registryBlocks: Registry['items'] = [
         type: 'registry:example',
       },
       {
-        path: 'examples/values/comment-value.tsx',
+        path: 'examples/values/discussion-value.tsx',
         type: 'registry:example',
       },
       {

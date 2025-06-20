@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { SlateEditor } from '../editor';
 
+import { getPluginByType } from '../plugin';
 import { SlateElement } from './components/slate-nodes';
 import {
   type SlateRenderElement,
@@ -18,17 +19,12 @@ export const pipeRenderElementStatic = (
   } = {}
 ): SlateRenderElement => {
   return function render(props) {
-    let element;
+    const plugin = getPluginByType(editor, props.element.type);
 
-    editor.meta.pluginCache.node.isElement.some((key) => {
-      const plugin = editor.getPlugin({ key });
+    if (plugin?.node.isElement) {
+      return pluginRenderElementStatic(editor, plugin)(props as any);
+    }
 
-      element = pluginRenderElementStatic(editor, plugin)(props as any);
-
-      return !!element;
-    });
-
-    if (element) return element;
     if (renderElementProp) {
       return renderElementProp(props);
     }

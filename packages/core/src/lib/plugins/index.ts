@@ -7,6 +7,7 @@ export * from './HistoryPlugin';
 export * from './ParserPlugin';
 export * from './getCorePlugins';
 export * from './affinity/index';
+export * from './chunking/index';
 export * from './debug/index';
 export * from './dom/index';
 export * from './html/index';

@@ -196,7 +196,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/comment-toolbar-button"}],"examples":["comment-demo","floating-toolbar-demo","comment-pro"]},
+    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/comment-toolbar-button"}],"examples":["discussion-demo","floating-toolbar-demo","discussion-pro"]},
   },
   "block-discussion": {
     name: "block-discussion",
@@ -221,7 +221,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/block-discussion"}],"examples":["comment-demo","comment-pro"]},
+    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/block-discussion"}],"examples":["discussion-demo","discussion-pro"]},
   },
   "cursor-overlay": {
     name: "cursor-overlay",
@@ -599,7 +599,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/media"}],"examples":["media-demo","media-toolbar-pro"]},
+    meta: {"docs":[{"route":"/docs/media"}],"examples":["media-demo","media-pro"]},
   },
   "media-toolbar-button": {
     name: "media-toolbar-button",
@@ -616,7 +616,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/media"}],"examples":["media-demo","upload-pro"]},
+    meta: {"docs":[{"route":"/docs/media"}],"examples":["media-demo","media-pro"]},
   },
   "media-upload-toast": {
     name: "media-upload-toast",
@@ -633,7 +633,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/media"}],"examples":["media-demo","upload-pro"]},
+    meta: {"docs":[{"route":"/docs/media"}],"examples":["media-demo","media-pro"]},
   },
   "mode-toolbar-button": {
     name: "mode-toolbar-button",
@@ -684,7 +684,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/api/resizable"},{"route":"https://pro.platejs.org/docs/components/resizable"}],"examples":["media-demo","media-toolbar-pro"]},
+    meta: {"docs":[{"route":"/docs/api/resizable"},{"route":"https://pro.platejs.org/docs/components/resizable"}],"examples":["media-demo","media-pro"]},
   },
   "table-toolbar-button": {
     name: "table-toolbar-button",
@@ -790,7 +790,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/suggestion"}],"examples":["comment-demo","comment-pro"]},
+    meta: {"docs":[{"route":"/docs/suggestion"}],"examples":["discussion-demo","discussion-pro"]},
   },
   "ai-node": {
     name: "ai-node",
@@ -954,7 +954,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/comment-node"}],"examples":["comment-demo","comment-pro"]},
+    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/comment-node"}],"examples":["discussion-demo","discussion-pro"]},
   },
   "suggestion-node": {
     name: "suggestion-node",
@@ -975,7 +975,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/suggestion"}],"examples":["comment-demo","comment-pro"]},
+    meta: {"docs":[{"route":"/docs/suggestion"}],"examples":["discussion-demo","discussion-pro"]},
   },
   "date-node": {
     name: "date-node",
@@ -1169,7 +1169,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/media"},{"route":"/docs/api/resizable"},{"route":"https://pro.platejs.org/docs/components/image-node"}],"examples":["media-demo","media-toolbar-pro"]},
+    meta: {"docs":[{"route":"/docs/media"},{"route":"/docs/api/resizable"},{"route":"https://pro.platejs.org/docs/components/image-node"}],"examples":["media-demo","media-pro"]},
   },
   "media-preview-dialog": {
     name: "media-preview-dialog",
@@ -1186,7 +1186,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/media"},{"route":"https://pro.platejs.org/docs/components/image-preview"}],"examples":["media-demo","media-toolbar-pro"]},
+    meta: {"docs":[{"route":"/docs/media"},{"route":"https://pro.platejs.org/docs/components/image-preview"}],"examples":["media-demo","media-pro"]},
   },
   "kbd-node": {
     name: "kbd-node",
@@ -1266,7 +1266,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/media"},{"route":"https://pro.platejs.org/docs/components/media-audio-node"}],"examples":["media-demo","upload-pro"]},
+    meta: {"docs":[{"route":"/docs/media"},{"route":"https://pro.platejs.org/docs/components/media-audio-node"}],"examples":["media-demo","media-pro"]},
   },
   "media-embed-node": {
     name: "media-embed-node",
@@ -1283,7 +1283,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/media"},{"route":"/docs/api/resizable"},{"route":"https://pro.platejs.org/docs/components/media-embed-node"}],"examples":["media-demo","upload-pro"]},
+    meta: {"docs":[{"route":"/docs/media"},{"route":"/docs/api/resizable"},{"route":"https://pro.platejs.org/docs/components/media-embed-node"}],"examples":["media-demo","media-pro"]},
   },
   "media-file-node": {
     name: "media-file-node",
@@ -1304,7 +1304,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/media"},{"route":"https://pro.platejs.org/docs/components/media-file-node"}],"examples":["media-demo","upload-pro"]},
+    meta: {"docs":[{"route":"/docs/media"},{"route":"https://pro.platejs.org/docs/components/media-file-node"}],"examples":["media-demo","media-pro"]},
   },
   "media-placeholder-node": {
     name: "media-placeholder-node",
@@ -1321,7 +1321,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/media"},{"route":"https://pro.platejs.org/docs/components/media-placeholder-node"}],"examples":["media-demo","upload-pro"]},
+    meta: {"docs":[{"route":"/docs/media"},{"route":"https://pro.platejs.org/docs/components/media-placeholder-node"}],"examples":["media-demo","media-pro"]},
   },
   "media-video-node": {
     name: "media-video-node",
@@ -1342,7 +1342,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/media"},{"route":"/docs/api/resizable"},{"route":"https://pro.platejs.org/docs/components/media-video-node"}],"examples":["media-demo","upload-pro"]},
+    meta: {"docs":[{"route":"/docs/media"},{"route":"/docs/api/resizable"},{"route":"https://pro.platejs.org/docs/components/media-video-node"}],"examples":["media-demo","media-pro"]},
   },
   "mention-node": {
     name: "mention-node",
@@ -1418,7 +1418,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/slash-command","title":"Slash"},{"route":"https://pro.platejs.org/docs/components/slash-node"}],"examples":["slash-command-demo","slash-menu-pro"]},
+    meta: {"docs":[{"route":"/docs/slash-command","title":"Slash"},{"route":"https://pro.platejs.org/docs/components/slash-node"}],"examples":["slash-command-demo","slash-command-pro"]},
   },
   "table-node": {
     name: "table-node",
@@ -2800,7 +2800,7 @@ export const Index: Record<string, any> = {
       type: "registry:example",
       target: ""
     },{
-      path: "src/registry/examples/values/comment-value.tsx",
+      path: "src/registry/examples/values/discussion-value.tsx",
       type: "registry:example",
       target: ""
     },{
@@ -3542,8 +3542,8 @@ export const Index: Record<string, any> = {
     }),
     meta: {"docs":[{"route":"/docs/callout","title":"Callout"}],"registry":false},
   },
-  "comment-demo": {
-    name: "comment-demo",
+  "discussion-demo": {
+    name: "discussion-demo",
     description: "Adding and displaying comments within content.",
     type: "registry:example",
     registryDependencies: ["https://platejs.org/r/comment-kit","https://platejs.org/r/discussion-kit","https://platejs.org/r/comment-node","https://platejs.org/r/editor-kit"],
@@ -3552,7 +3552,7 @@ export const Index: Record<string, any> = {
       type: "registry:example",
       target: ""
     },{
-      path: "src/registry/examples/values/comment-value.tsx",
+      path: "src/registry/examples/values/discussion-value.tsx",
       type: "registry:example",
       target: ""
     }],
@@ -3561,7 +3561,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/comment","title":"Comments"}],"registry":false},
+    meta: {"docs":[{"route":"/docs/discussion","title":"Discussion"}],"registry":false},
   },
   "cursor-overlay-demo": {
     name: "cursor-overlay-demo",

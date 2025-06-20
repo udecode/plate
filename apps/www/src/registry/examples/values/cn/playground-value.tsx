@@ -81,19 +81,19 @@ export const playgroundValue: Value = [
       },
       { text: '。使用 ' },
       {
-        children: [{ comment: true, comment_discussion4: true, text: '评论' }],
+        children: [{ comment: true, comment_discussion1: true, text: '评论' }],
         type: 'a',
         url: '/docs/comment',
       },
       {
         comment: true,
-        comment_discussion4: true,
+        comment_discussion1: true,
         text: ' 讨论多个文本段落的变更',
       },
       { text: '。你甚至可以有 ' },
       {
         comment: true,
-        comment_discussion6: true,
+        comment_discussion2: true,
         suggestion: true,
         suggestion_playground3: {
           id: 'playground3',

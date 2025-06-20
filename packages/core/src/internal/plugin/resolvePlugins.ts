@@ -39,13 +39,10 @@ export const resolvePlugins = (
     },
     node: {
       isContainer: [],
-      isElement: [],
-      isInline: [],
       isLeaf: [],
-      isMarkableVoid: [],
-      isNotSelectable: [],
-      isStrictSiblings: [],
-      isVoid: [],
+      isText: [],
+      leafProps: [],
+      textProps: [],
       types: {},
     },
     normalizeInitialValue: [],
@@ -100,32 +97,23 @@ export const resolvePlugins = (
       editor.meta.components[plugin.key] = plugin.render.node;
     }
 
-    if (plugin.node?.isLeaf) {
+    if (
+      plugin.node?.isLeaf &&
+      (plugin.node?.isDecoration === true || plugin.render.leaf)
+    ) {
       editor.meta.pluginCache.node.isLeaf.push(plugin.key);
     }
 
-    if (plugin.node?.isElement) {
-      editor.meta.pluginCache.node.isElement.push(plugin.key);
+    if (plugin.node.isLeaf && plugin.node.isDecoration === false) {
+      editor.meta.pluginCache.node.isText.push(plugin.key);
     }
 
-    if (plugin.node?.isInline) {
-      editor.meta.pluginCache.node.isInline.push(plugin.key);
+    if (plugin.node?.leafProps) {
+      editor.meta.pluginCache.node.leafProps.push(plugin.key);
     }
 
-    if (plugin.node?.isVoid) {
-      editor.meta.pluginCache.node.isVoid.push(plugin.key);
-    }
-
-    if (plugin.node?.isMarkableVoid) {
-      editor.meta.pluginCache.node.isMarkableVoid.push(plugin.key);
-    }
-
-    if (plugin.node?.isStrictSiblings) {
-      editor.meta.pluginCache.node.isStrictSiblings.push(plugin.key);
-    }
-
-    if (plugin.node?.isSelectable === false) {
-      editor.meta.pluginCache.node.isNotSelectable.push(plugin.key);
+    if (plugin.node.textProps) {
+      editor.meta.pluginCache.node.textProps.push(plugin.key);
     }
 
     if (plugin.render.aboveEditable) {

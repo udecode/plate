@@ -104,7 +104,6 @@ export const TableElement = withHOC(
       'isSelectionAreaVisible'
     );
     const hasControls = !readOnly && !isSelectionAreaVisible;
-    const selected = useSelected();
     const {
       isSelectingCell,
       marginLeft,
@@ -134,7 +133,7 @@ export const TableElement = withHOC(
       </PlateElement>
     );
 
-    if (readOnly || !selected) {
+    if (readOnly) {
       return content;
     }
 
@@ -147,14 +146,18 @@ function TableFloatingToolbar({
   ...props
 }: React.ComponentProps<typeof PopoverContent>) {
   const { tf } = useEditorPlugin(TablePlugin);
+  const selected = useSelected();
   const element = useElement<TTableElement>();
   const { props: buttonProps } = useRemoveNodeButton({ element });
-  const collapsed = useEditorSelector((editor) => !editor.api.isExpanded(), []);
+  const collapsedInside = useEditorSelector(
+    (editor) => selected && editor.api.isCollapsed(),
+    [selected]
+  );
 
   const { canMerge, canSplit } = useTableMergeState();
 
   return (
-    <Popover open={canMerge || canSplit || collapsed} modal={false}>
+    <Popover open={canMerge || canSplit || collapsedInside} modal={false}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
         asChild
@@ -201,7 +204,7 @@ function TableFloatingToolbar({
               </DropdownMenuPortal>
             </DropdownMenu>
 
-            {collapsed && (
+            {collapsedInside && (
               <ToolbarGroup>
                 <ToolbarButton tooltip="Delete table" {...buttonProps}>
                   <Trash2Icon />
@@ -210,7 +213,7 @@ function TableFloatingToolbar({
             )}
           </ToolbarGroup>
 
-          {collapsed && (
+          {collapsedInside && (
             <ToolbarGroup>
               <ToolbarButton
                 onClick={() => {
@@ -242,7 +245,7 @@ function TableFloatingToolbar({
             </ToolbarGroup>
           )}
 
-          {collapsed && (
+          {collapsedInside && (
             <ToolbarGroup>
               <ToolbarButton
                 onClick={() => {

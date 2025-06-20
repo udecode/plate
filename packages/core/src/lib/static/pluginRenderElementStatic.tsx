@@ -17,64 +17,62 @@ export const pluginRenderElementStatic = (
   plugin: AnyEditorPlugin
 ): SlateRenderElement =>
   function render(nodeProps) {
-    if (nodeProps.element.type === plugin.node.type) {
-      const element = nodeProps.element;
+    const element = nodeProps.element;
 
-      const Component = editor.meta.components?.[plugin.key] as any;
-      const Element = Component ?? SlateElement;
+    const Component = editor.meta.components?.[plugin.key] as any;
+    const Element = Component ?? SlateElement;
 
-      let { children } = nodeProps;
+    let { children } = nodeProps;
 
-      const dataAttributes = getPluginDataAttributes(editor, plugin, element);
+    const dataAttributes = getPluginDataAttributes(editor, plugin, element);
 
-      nodeProps = getRenderNodeStaticProps({
-        attributes: {
-          ...(element.attributes as any),
-          ...dataAttributes,
-        },
-        editor,
-        node: element,
-        plugin,
-        props: nodeProps as any,
-      }) as any;
+    nodeProps = getRenderNodeStaticProps({
+      attributes: {
+        ...(element.attributes as any),
+        ...dataAttributes,
+      },
+      editor,
+      node: element,
+      plugin,
+      props: nodeProps as any,
+    }) as any;
 
-      editor.meta.pluginCache.render.belowNodes.forEach((key) => {
-        const hoc = editor.getPlugin({ key }).render.belowNodes!({
-          ...nodeProps,
-          key,
-        } as any);
+    editor.meta.pluginCache.render.belowNodes.forEach((key) => {
+      const hoc = editor.getPlugin({ key }).render.belowNodes!({
+        ...nodeProps,
+        key,
+      } as any);
 
-        if (hoc) {
-          children = hoc({ ...nodeProps, children } as any);
-        }
-      });
+      if (hoc) {
+        children = hoc({ ...nodeProps, children } as any);
+      }
+    });
 
-      const defaultProps = Component ? {} : { as: plugin.render?.as };
+    const defaultProps = Component ? {} : { as: plugin.render?.as };
 
-      let component: React.ReactNode = (
-        <Element {...defaultProps} {...nodeProps}>
-          {children}
+    let component: React.ReactNode = (
+      <Element {...defaultProps} {...nodeProps}>
+        {children}
 
-          {editor.meta.pluginCache.render.belowRootNodes.map((key) => {
-            const plugin = editor.getPlugin({ key }) as any;
-            const Component = plugin.render.belowRootNodes;
+        {editor.meta.pluginCache.render.belowRootNodes.map((key) => {
+          const plugin = editor.getPlugin({ key }) as any;
+          const Component = plugin.render.belowRootNodes;
 
-            return <Component key={key} {...defaultProps} {...nodeProps} />;
-          })}
-        </Element>
-      );
+          return <Component key={key} {...defaultProps} {...nodeProps} />;
+        })}
+      </Element>
+    );
 
-      editor.meta.pluginCache.render.aboveNodes.forEach((key) => {
-        const hoc = editor.getPlugin({ key }).render.aboveNodes!({
-          ...nodeProps,
-          key,
-        } as any);
+    editor.meta.pluginCache.render.aboveNodes.forEach((key) => {
+      const hoc = editor.getPlugin({ key }).render.aboveNodes!({
+        ...nodeProps,
+        key,
+      } as any);
 
-        if (hoc) {
-          component = hoc({ ...nodeProps, children: component } as any);
-        }
-      });
+      if (hoc) {
+        component = hoc({ ...nodeProps, children: component } as any);
+      }
+    });
 
-      return component;
-    }
+    return component;
   };

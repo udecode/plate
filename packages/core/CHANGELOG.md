@@ -1,5 +1,51 @@
 # @platejs/core
 
+## 49.0.6
+
+### Patch Changes
+
+- [#4382](https://github.com/udecode/plate/pull/4382) by [@delijah](https://github.com/delijah) – Omit duplicate keys on TPlateEditor to avoid wrong union types
+
+## 49.0.5
+
+### Patch Changes
+
+- [#4371](https://github.com/udecode/plate/pull/4371) by [@12joan](https://github.com/12joan) – Enable [chunking](https://docs.slatejs.org/walkthroughs/09-performance) by default. To disable it, use `chunking: false` when creating the editor.
+
+## 49.0.4
+
+### Patch Changes
+
+- [#4373](https://github.com/udecode/plate/pull/4373) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fixes #4374
+  - Prevent rendering the editor until the value is loaded (when value is async or `skipInitialization` is true).
+  - Added support for both synchronous and asynchronous functions in the `value` option for `createPlateEditor` and `usePlateEditor`. If async, `usePlateEditor` will trigger a re-render when the value is loaded.
+  - Added `onReady` callback option to `createPlateEditor` and `usePlateEditor` called after (async) editor initialization.
+
+  ```ts
+  const editor = usePlateEditor({
+    value: async () => {
+      const response = await fetch('/api/document');
+      const data = await response.json();
+      return data.content;
+    },
+    onReady: ({ editor, value }) => {
+      console.info('Editor ready with value:', value);
+    },
+  });
+  ```
+
+## 49.0.3
+
+### Patch Changes
+
+- [#4369](https://github.com/udecode/plate/pull/4369) by [@zbeyens](https://github.com/zbeyens) – Fixes #4367
+
+- [#4365](https://github.com/udecode/plate/pull/4365) by [@felixfeng33](https://github.com/felixfeng33) – stopPropagation when the shortcut key is triggered.
+
+- [`b40df0a`](https://github.com/udecode/plate/commit/b40df0a59440e612f495534cb1e0a5d2477e8682) by [@zbeyens](https://github.com/zbeyens) – Fixes #4362
+
 ## 49.0.2
 
 ## 49.0.0

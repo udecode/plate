@@ -39,9 +39,14 @@ export const proExamples: Registry['items'] = [
   - Alignment options
   - Caption support
   - View original source
+- Floating toolbar appears at the top right of media elements:
+  - Alignment dropdown menu
+  - Caption button
+  - Expand button
+  - Download button
 - Beautifully crafted UI
 `,
-    name: 'upload-pro',
+    name: 'media-pro',
     type: 'registry:example',
   },
   {
@@ -66,7 +71,7 @@ export const proExamples: Registry['items'] = [
 - Floating comments & suggestions UI with better user experience
 - Comment rendered with Plate editor
 - Discussion list in the sidebar`,
-    name: 'comment-pro',
+    name: 'discussion-pro',
     type: 'registry:example',
   },
   {
@@ -99,7 +104,7 @@ export const proExamples: Registry['items'] = [
 - Trigger slash menu by click the + button on the left gutter
 - Item groups
 - Beautifully crafted UI`,
-    name: 'slash-menu-pro',
+    name: 'slash-command-pro',
     type: 'registry:example',
   },
   {
@@ -151,17 +156,6 @@ export const proExamples: Registry['items'] = [
   - A "Block Menu" button to access additional options and actions.
 - Beautifully crafted UI`,
     name: 'basic-nodes-pro',
-    type: 'registry:example',
-  },
-  {
-    categories: ['pro'],
-    description: `- Floating toolbar appears at the top right of media elements
-- Alignment dropdown menu
-- Caption button
-- Expand button
-- Download button
-- Beautifully crafted UI`,
-    name: 'media-toolbar-pro',
     type: 'registry:example',
   },
   //   {

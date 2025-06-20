@@ -48,8 +48,13 @@ export type WithPlateOptions<
     //     >
     //   >;
     // };
-    value?: ((editor: PlateEditor) => V) | V | string;
+    value?: ((editor: PlateEditor) => Promise<V> | V) | V | string;
     rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
+    onReady?: (ctx: {
+      editor: PlateEditor;
+      isAsync: boolean;
+      value: V;
+    }) => void;
   };
 
 /**

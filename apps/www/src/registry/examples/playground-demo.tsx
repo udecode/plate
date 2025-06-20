@@ -55,7 +55,12 @@ export default function PlaygroundDemo({
   return (
     <Plate editor={editor}>
       <EditorContainer className={className}>
-        <Editor variant="demo" className="pb-[20vh]" spellCheck={false} />
+        <Editor
+          variant="demo"
+          className="pb-[20vh]"
+          placeholder="Type something..."
+          spellCheck={false}
+        />
       </EditorContainer>
     </Plate>
   );

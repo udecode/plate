@@ -573,4 +573,121 @@ describe('Plate', () => {
       }).not.toThrow();
     });
   });
+
+  describe('async value', () => {
+    it('should handle async value loading and prevent rendering until ready', async () => {
+      const asyncValue: Value = [
+        {
+          children: [{ text: 'Async loaded content' }],
+          type: 'p',
+        },
+      ];
+
+      const onReadyMock = jest.fn();
+
+      const AsyncEditor = () => {
+        const editor = usePlateEditor({
+          value: () =>
+            new Promise<Value>((resolve) => {
+              setTimeout(() => {
+                resolve(asyncValue);
+              }, 0);
+            }),
+          onReady: onReadyMock,
+        });
+
+        return (
+          <Plate editor={editor}>
+            <PlateContent data-testid="plate-content" />
+          </Plate>
+        );
+      };
+
+      const { getByTestId, queryByTestId, rerender } = render(<AsyncEditor />);
+
+      // PlateContent should not be rendered initially (returns null)
+      expect(queryByTestId('plate-content')).not.toBeInTheDocument();
+      expect(onReadyMock).not.toHaveBeenCalled();
+
+      // Wait for async value to resolve and trigger a rerender
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      rerender(<AsyncEditor />);
+
+      // Now PlateContent should be rendered and onReady should have been called
+      expect(getByTestId('plate-content')).toBeInTheDocument();
+      expect(onReadyMock).toHaveBeenCalledWith({
+        editor: expect.any(Object),
+        isAsync: true,
+        value: asyncValue,
+      });
+    });
+
+    it('should handle synchronous functions in value option', () => {
+      const syncValue: Value = [
+        {
+          children: [{ text: 'Sync content' }],
+          type: 'p',
+        },
+      ];
+
+      const onReadyMock = jest.fn();
+
+      const SyncEditor = () => {
+        const editor = usePlateEditor({
+          value: () => syncValue,
+          onReady: onReadyMock,
+        });
+
+        return (
+          <Plate editor={editor}>
+            <PlateContent data-testid="plate-content" />
+          </Plate>
+        );
+      };
+
+      const { getByTestId } = render(<SyncEditor />);
+
+      // PlateContent should be rendered immediately for sync values
+      expect(getByTestId('plate-content')).toBeInTheDocument();
+      expect(onReadyMock).toHaveBeenCalledWith({
+        editor: expect.any(Object),
+        isAsync: false,
+        value: syncValue,
+      });
+    });
+
+    it('should handle static values with onReady callback', () => {
+      const staticValue: Value = [
+        {
+          children: [{ text: 'Static content' }],
+          type: 'p',
+        },
+      ];
+
+      const onReadyMock = jest.fn();
+
+      const StaticEditor = () => {
+        const editor = usePlateEditor({
+          value: staticValue,
+          onReady: onReadyMock,
+        });
+
+        return (
+          <Plate editor={editor}>
+            <PlateContent data-testid="plate-content" />
+          </Plate>
+        );
+      };
+
+      const { getByTestId } = render(<StaticEditor />);
+
+      // PlateContent should be rendered immediately for static values
+      expect(getByTestId('plate-content')).toBeInTheDocument();
+      expect(onReadyMock).toHaveBeenCalledWith({
+        editor: expect.any(Object),
+        isAsync: false,
+        value: staticValue,
+      });
+    });
+  });
 });

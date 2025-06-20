@@ -57,7 +57,7 @@ const editorVariants = cva(
     'group/editor',
     'relative w-full cursor-text overflow-x-hidden break-words whitespace-pre-wrap select-text',
     'rounded-md ring-offset-background focus-visible:outline-none',
-    'placeholder:text-muted-foreground/80 **:data-slate-placeholder:top-[auto_!important] **:data-slate-placeholder:text-muted-foreground/80 **:data-slate-placeholder:opacity-100!',
+    'placeholder:text-muted-foreground/80 **:data-slate-placeholder:!top-1/2 **:data-slate-placeholder:-translate-y-1/2 **:data-slate-placeholder:text-muted-foreground/80 **:data-slate-placeholder:opacity-100!',
     '[&_strong]:font-bold'
   ),
   {

@@ -12,7 +12,7 @@ import {
   type registryItemFileSchema,
   registryItemSchema,
 } from 'shadcn/registry';
-import { type SourceFile, Project, ScriptKind } from 'ts-morph';
+import { Project, ScriptKind } from 'ts-morph';
 
 import registryShadcnData from '../../registry-shadcn.json';
 import { Index } from '../__registry__';
@@ -420,10 +420,6 @@ async function createTempSourceFile(filename: string) {
   const dir = await fs.mkdtemp(path.join(tmpdir(), 'shadcn-'));
 
   return path.join(dir, filename);
-}
-
-function removeVariable(sourceFile: SourceFile, name: string) {
-  sourceFile.getVariableDeclaration(name)?.remove();
 }
 
 function fixFilePaths(files: z.infer<typeof registryItemSchema>['files']) {

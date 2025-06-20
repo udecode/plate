@@ -21,7 +21,7 @@ export const pluginRenderLeafStatic = (
   function render(props) {
     const { children, leaf } = props;
 
-    if (leaf[plugin.node.type ?? plugin.key]) {
+    if (leaf[plugin.node.type]) {
       const Component = (plugin.render.leaf ??
         editor.meta.components?.[plugin.key]) as any;
       const Leaf = Component ?? SlateLeaf;
@@ -54,16 +54,18 @@ export const pipeRenderLeafStatic = (
   const renderLeafs: SlateRenderLeaf[] = [];
   const leafPropsPlugins: SlatePlugin[] = [];
 
-  editor.meta.pluginList.forEach((plugin) => {
-    if (
-      plugin.node.isLeaf &&
-      (plugin.node.isDecoration === true || plugin.render.leaf)
-    ) {
-      renderLeafs.push(pluginRenderLeafStatic(editor, plugin));
-    }
+  editor.meta.pluginCache.node.isLeaf.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
 
-    if (plugin.node.leafProps) {
-      leafPropsPlugins.push(plugin);
+    if (plugin) {
+      renderLeafs.push(pluginRenderLeafStatic(editor, plugin as any));
+    }
+  });
+
+  editor.meta.pluginCache.node.leafProps.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
+    if (plugin) {
+      leafPropsPlugins.push(plugin as any);
     }
   });
 
@@ -77,7 +79,7 @@ export const pipeRenderLeafStatic = (
     });
 
     leafPropsPlugins.forEach((plugin) => {
-      if (props.leaf[plugin.node.type ?? plugin.key]) {
+      if (props.leaf[plugin.node.type]) {
         const pluginLeafProps =
           typeof plugin.node.leafProps === 'function'
             ? plugin.node.leafProps(props as any)

@@ -26,18 +26,8 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
   if (isEditOnly(readOnly, plugin, 'render')) return null;
 
   const { children: _children } = props;
-  const key = plugin.key;
   const Component = plugin.render?.node;
   const Element = Component ?? (PlateElement as any);
-
-  const aboveNodes = editor.meta.pluginList.flatMap((o) => {
-    if (isEditOnly(readOnly, o, 'render')) return [];
-    return o.render?.aboveNodes ?? [];
-  });
-  const belowNodes = editor.meta.pluginList.flatMap((o) => {
-    if (isEditOnly(readOnly, o, 'render')) return [];
-    return o.render?.belowNodes ?? [];
-  });
 
   props = getRenderNodeProps({
     attributes: element.attributes as any,
@@ -49,10 +39,14 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
 
   let children = _children;
 
-  belowNodes.forEach((withHOC) => {
+  editor.meta.pluginCache.render.belowNodes.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
+    const withHOC = plugin.render.belowNodes!;
+
+    // belowNodes can have hooks
     const hoc = withHOC({ ...props, key } as any);
 
-    if (hoc) {
+    if (hoc && !isEditOnly(readOnly, plugin, 'render')) {
       children = hoc({ ...props, children } as any);
     }
   });
@@ -67,10 +61,14 @@ function ElementContent({ editor, plugin, ...props }: PlateElementProps) {
     </Element>
   );
 
-  aboveNodes.forEach((withHOC) => {
+  editor.meta.pluginCache.render.aboveNodes.forEach((key) => {
+    const plugin = editor.getPlugin({ key });
+    const withHOC = plugin.render.aboveNodes!;
+
+    // aboveNodes can have hooks
     const hoc = withHOC({ ...props, key } as any);
 
-    if (hoc) {
+    if (hoc && !isEditOnly(readOnly, plugin, 'render')) {
       component = hoc({ ...props, children: component } as any);
     }
   });
@@ -109,16 +107,14 @@ export const pluginRenderElement = (
   function render(props) {
     const { element, path } = props;
 
-    if (element.type === plugin.node.type) {
-      return (
-        <ElementProvider
-          element={element}
-          entry={[element, path]}
-          path={path}
-          scope={plugin.key}
-        >
-          <ElementContent editor={editor} plugin={plugin} {...(props as any)} />
-        </ElementProvider>
-      );
-    }
+    return (
+      <ElementProvider
+        element={element}
+        entry={[element, path]}
+        path={path}
+        scope={plugin.key}
+      >
+        <ElementContent editor={editor} plugin={plugin} {...(props as any)} />
+      </ElementProvider>
+    );
   };
