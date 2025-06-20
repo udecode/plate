@@ -4,10 +4,7 @@ import type { Path, PluginConfig } from 'platejs';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { KEYS } from 'platejs';
-import {
-  type PlateEditor,
-  createTPlatePlugin,
-} from 'platejs/react';
+import { type PlateEditor, createTPlatePlugin } from 'platejs/react';
 
 import type {
   DragItemNode,
@@ -75,6 +72,11 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       setOption('dropTarget', undefined);
 
       return getOptions().isDragging;
+    },
+    onFocus: ({ editor, plugin }) => {
+      editor.setOption(plugin, 'isDragging', false);
+      editor.setOption(plugin, 'dropTarget', { id: null, line: '' });
+      editor.setOption(plugin, '_isOver', false);
     },
   },
   options: {

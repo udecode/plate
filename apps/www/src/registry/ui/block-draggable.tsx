@@ -141,7 +141,7 @@ export function Draggable(props: PlateElementProps) {
     setDragButtonTop(currentMarginTop);
   };
 
-  const calculateTopDistance = () => {
+  const calculatePreviewTop = () => {
     if (isDragging) return;
 
     const ids = editor.getOption(BlockSelectionPlugin, 'selectedIds');
@@ -281,9 +281,9 @@ export function Draggable(props: PlateElementProps) {
                 ref={handleRef}
                 variant="ghost"
                 className="absolute -left-0 h-6 w-full p-0"
-                style={{ top: `${dragButtonTop + 4}px` }}
+                style={{ top: `${dragButtonTop + 3}px` }}
                 onMouseDown={createDragPreviewElements}
-                onMouseEnter={calculateTopDistance}
+                onMouseEnter={calculatePreviewTop}
                 data-plate-prevent-deselect
               >
                 <DragHandle />
