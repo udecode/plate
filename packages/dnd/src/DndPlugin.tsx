@@ -47,6 +47,10 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
       editor.setOption(plugin, 'isDragging', false);
+      editor.setOption(plugin, 'dropTarget', { id: null, line: '' });
+    },
+    onDragEnter: ({ editor, plugin }) => {
+      editor.setOption(plugin, 'isOver', true);
     },
     onDragStart: ({ editor, event, plugin }) => {
       const target = event.target as HTMLElement;
