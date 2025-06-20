@@ -43,26 +43,11 @@ const DropMarginFix = ({
 };
 
 export function HeadingElement({
+  height,
   variant = 'h1',
   ...props
-}: PlateElementProps & VariantProps<typeof headingVariants>) {
-  const height = (() => {
-    switch (variant) {
-      case 'h1': {
-        return '1.6em';
-      }
-      case 'h2': {
-        return '1.4em';
-      }
-      case 'h3': {
-        return '1em';
-      }
-      default: {
-        return '0.75em';
-      }
-    }
-  })();
-
+}: PlateElementProps &
+  VariantProps<typeof headingVariants> & { height: string }) {
   return (
     <PlateElement
       as={variant!}
@@ -71,31 +56,30 @@ export function HeadingElement({
     >
       <DropMarginFix height={height} position="top" />
       {props.children}
-      <DropMarginFix height="0.25em" position="bottom" />
     </PlateElement>
   );
 }
 
 export function H1Element(props: PlateElementProps) {
-  return <HeadingElement variant="h1" {...props} />;
+  return <HeadingElement variant="h1" {...props} height="1.6em" />;
 }
 
 export function H2Element(props: PlateElementProps) {
-  return <HeadingElement variant="h2" {...props} />;
+  return <HeadingElement variant="h2" {...props} height="1.4em" />;
 }
 
 export function H3Element(props: PlateElementProps) {
-  return <HeadingElement variant="h3" {...props} />;
+  return <HeadingElement variant="h3" {...props} height="1em" />;
 }
 
 export function H4Element(props: PlateElementProps) {
-  return <HeadingElement variant="h4" {...props} />;
+  return <HeadingElement variant="h4" {...props} height="0.75em" />;
 }
 
 export function H5Element(props: PlateElementProps) {
-  return <HeadingElement variant="h5" {...props} />;
+  return <HeadingElement variant="h5" {...props} height="0.75em" />;
 }
 
 export function H6Element(props: PlateElementProps) {
-  return <HeadingElement variant="h6" {...props} />;
+  return <HeadingElement variant="h6" {...props} height="0.75em" />;
 }
