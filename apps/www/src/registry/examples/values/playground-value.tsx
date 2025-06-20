@@ -3,12 +3,10 @@ import type { Value } from 'platejs';
 export const playgroundValue: Value = [
   // Intro
   {
-    id: '1',
     children: [{ text: 'Welcome to the Plate Playground!' }],
     type: 'h1',
   },
   {
-    id: '2',
     children: [
       { text: 'Experience a modern rich-text editor built with ' },
       { children: [{ text: 'Slate' }], type: 'a', url: 'https://slatejs.org' },
@@ -28,7 +26,6 @@ export const playgroundValue: Value = [
   },
   // Suggestions & Comments Section
   {
-    id: '3',
     children: [{ text: 'Collaborative Editing' }],
     type: 'h2',
   },

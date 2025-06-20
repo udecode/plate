@@ -6,7 +6,6 @@ import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
 import {
-  type Path,
   type TElement,
   type TTableElement,
   getContainerTypes,
@@ -251,13 +250,6 @@ export function Draggable(props: PlateElementProps) {
             className={cn(
               'slate-blockToolbarWrapper',
               'flex h-[1.5em]',
-              // isType(editor, element, [
-              //   KEYS.h1,
-              //   KEYS.h2,
-              //   KEYS.h3,
-              //   KEYS.h4,
-              //   KEYS.h5,
-              // ]) && 'h-[1.3em]',
               isInColumn && 'h-4'
             )}
           >
@@ -292,7 +284,7 @@ export function Draggable(props: PlateElementProps) {
         />
 
         <MemoizedChildren>{children}</MemoizedChildren>
-        <DropLine element={element} path={path} />
+        <DropLine />
       </div>
     </div>
   );
@@ -327,11 +319,11 @@ function Gutter({
           : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',
         !selected && 'opacity-0',
-        // isNodeType(KEYS.h1) && 'pb-1 text-[1.875em]',
-        // isNodeType(KEYS.h2) && 'pb-1 text-[1.5em]',
-        // isNodeType(KEYS.h3) && 'pt-[2px] pb-1 text-[1.25em]',
-        // isNodeType([KEYS.h4, KEYS.h5]) && 'pt-1 pb-0 text-[1.1em]',
-        // isNodeType(KEYS.h6) && 'pb-0',
+        isNodeType(KEYS.h1) && 'pb-1 text-[1.875em]',
+        isNodeType(KEYS.h2) && 'pb-1 text-[1.5em]',
+        isNodeType(KEYS.h3) && 'pt-[2px] pb-1 text-[1.25em]',
+        isNodeType([KEYS.h4, KEYS.h5]) && 'pt-1 pb-0 text-[1.1em]',
+        isNodeType(KEYS.h6) && 'pb-0',
         isNodeType(KEYS.p) && 'pt-1 pb-0',
         isNodeType(KEYS.blockquote) && 'pb-0',
         isNodeType(KEYS.codeBlock) && 'pt-6 pb-0',
@@ -380,7 +372,7 @@ const DragHandle = React.memo(function DragHandle() {
 const DropLine = React.memo(function DropLine({
   className,
   ...props
-}: React.ComponentProps<'div'> & { element: TElement; path: Path }) {
+}: React.ComponentProps<'div'>) {
   const { dropLine } = useDropLine();
 
   if (!dropLine) return null;
