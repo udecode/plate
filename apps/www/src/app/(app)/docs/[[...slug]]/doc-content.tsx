@@ -11,10 +11,12 @@ import { ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { DocsTableOfContents } from '@/components/docs-toc';
+import { LLMCopyButton } from '@/components/llm-copy-button';
 import { OpenInPlus } from '@/components/open-in-plus';
 import { getPagerForDoc } from '@/components/pager';
 import { badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ViewOptions } from '@/components/view-options';
 import { categoryNavGroups, docSections } from '@/config/docs-utils';
 import { useDedupeNavItems } from '@/hooks/use-dedupe-nav-items';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
@@ -123,6 +125,19 @@ export function DocContent({
                 </p>
               )}
             </div>
+
+            {/* Copy Markdown and View Options */}
+            {doc?.slug && doc?.body?.raw && (
+              <div className="flex flex-row items-center gap-2">
+                <LLMCopyButton content={doc.body.raw} />
+                <ViewOptions
+                  title={title}
+                  content={doc.body.raw}
+                  docUrl={`https://platejs.org${doc.slug}`}
+                />
+              </div>
+            )}
+
             {/* {links ? (
               <div className="flex items-center space-x-2 pt-4">
                 {links?.doc && (
@@ -142,7 +157,7 @@ export function DocContent({
               </div>
             ) : null} */}
             {doc?.links || doc?.docs ? (
-              <div className="flex flex-wrap items-center gap-1 pt-4">
+              <div className="flex flex-wrap items-center gap-1">
                 {doc?.links?.doc && (
                   <Link
                     className={cn(
