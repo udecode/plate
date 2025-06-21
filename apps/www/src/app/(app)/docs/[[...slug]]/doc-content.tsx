@@ -129,7 +129,11 @@ export function DocContent({
             {/* Copy Markdown and View Options */}
             {doc?.slug && doc?.body?.raw && (
               <div className="flex flex-row items-center gap-2">
-                <LLMCopyButton content={doc.body.raw} />
+                <LLMCopyButton
+                  title={title}
+                  content={doc.body.raw}
+                  docUrl={`https://platejs.org${doc.slug}`}
+                />
                 <ViewOptions
                   title={title}
                   content={doc.body.raw}

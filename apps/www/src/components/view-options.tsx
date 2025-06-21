@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { getPlateCopyMarkdown } from '@/lib/llm-context';
 
 interface ViewOptionsProps {
   content: string;
@@ -17,12 +18,7 @@ interface ViewOptionsProps {
 }
 
 export function ViewOptions({ content, docUrl, title }: ViewOptionsProps) {
-  const q = `I'm going to ask questions from the Plate documentation "${title}" (${docUrl}).
-All Plate docs: https://platejs.org/r/registry-docs.json
-
----
-
-${content}`;
+  const q = getPlateCopyMarkdown({ content, docUrl, title });
 
   const claude = `https://claude.ai/new?${new URLSearchParams({
     q,

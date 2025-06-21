@@ -4,17 +4,22 @@ import { Check, Copy } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { getPlateCopyMarkdown } from '@/lib/llm-context';
 import { cn } from '@/lib/utils';
 
 interface LLMCopyButtonProps {
   content: string;
+  docUrl: string;
+  title: string;
 }
 
-export function LLMCopyButton({ content }: LLMCopyButtonProps) {
+export function LLMCopyButton({ content, docUrl, title }: LLMCopyButtonProps) {
   const { copyToClipboard, isCopied } = useCopyToClipboard({ timeout: 2000 });
 
   const handleCopy = () => {
-    copyToClipboard(content);
+    const enrichedContent = getPlateCopyMarkdown({ content, docUrl, title });
+
+    copyToClipboard(enrichedContent);
   };
 
   return (
