@@ -5,15 +5,7 @@ import * as React from 'react';
 import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
-import {
-  type TElement,
-  type TTableElement,
-  getPluginByType,
-  isType,
-  KEYS,
-  NodeApi,
-  PathApi,
-} from 'platejs';
+import { type TElement, getPluginByType, isType, KEYS } from 'platejs';
 import {
   type PlateElementProps,
   type RenderNodeWrapper,
@@ -88,30 +80,7 @@ function Draggable(props: PlateElementProps) {
       const id = (dragItem as { id: string }).id;
 
       if (blockSelectionApi) {
-        if (ids && ids.length > 1) {
-          // Re-select all dragged nodes
-          blockSelectionApi.clear();
-          ids.forEach((nodeId) => {
-            const nodeEntry = editor.api.node({ id: nodeId, at: [] });
-
-            if (nodeEntry && nodeEntry[0].type === KEYS.table) {
-              const tableNode = nodeEntry[0] as TTableElement;
-              const trs = tableNode.children.filter(
-                (child) => child.type === KEYS.tr
-              );
-
-              trs.forEach((tr) => {
-                blockSelectionApi.add(tr.id as string);
-              });
-
-              return;
-            }
-
-            blockSelectionApi.add(nodeId);
-          });
-        } else if (id) {
-          blockSelectionApi.set(id);
-        }
+        blockSelectionApi.add(ids ?? id);
       }
       multiplePreviewRef.current?.replaceChildren();
     },
@@ -201,7 +170,10 @@ function Draggable(props: PlateElementProps) {
   const createDragPreviewElements = () => {
     if (!isMultiple) return editor.setOption(DndPlugin, 'draggingIds', null);
 
-    const sortedNodes = blockSelectionApi.getNodes({ sort: true });
+    const sortedNodes = blockSelectionApi.getNodes({
+      collapseTableRows: true,
+      sort: true,
+    });
 
     const elements: HTMLElement[] = [];
     const ids: string[] = [];
@@ -234,22 +206,7 @@ function Draggable(props: PlateElementProps) {
       elements.push(wrapper);
     };
 
-    sortedNodes.forEach(([node, path]) => {
-      if (node.type === KEYS.tr) {
-        const isLastChild = NodeApi.isLastChild(editor, path);
-
-        if (isLastChild) {
-          const tablePath = PathApi.parent(path);
-          const [tableNode] = editor.api.node<TTableElement>(tablePath)!;
-
-          resolveElement(tableNode);
-        }
-
-        return;
-      }
-
-      resolveElement(node);
-    });
+    sortedNodes.forEach(([node]) => resolveElement(node));
 
     editor.setOption(DndPlugin, 'draggingIds', ids);
 

@@ -8,9 +8,10 @@ import type {
   PluginConfig,
   TElement,
   TIdElement,
+  TTableElement,
 } from 'platejs';
 
-import { bindFirst, KEYS, PathApi } from 'platejs';
+import { bindFirst, KEYS, NodeApi, PathApi } from 'platejs';
 import { createTPlatePlugin } from 'platejs/react';
 
 import type { PartialSelectionOptions } from '../internal';
@@ -71,8 +72,17 @@ export type BlockSelectionConfig = PluginConfig<
       deselect: () => void;
       /** Focus block selection – that differs from the editor focus */
       focus: () => void;
-      /** Get selected blocks */
-      getNodes: (options?: { sort?: boolean }) => NodeEntry<TIdElement>[];
+      /**
+       * Get selected blocks
+       *
+       * @param options.sort - Sort the nodes by path
+       * @param options.collapseTableRows - If all table rows are selected,
+       *   return the table node instead, do not return the table rows anymore.
+       */
+      getNodes: (options?: {
+        collapseTableRows?: boolean;
+        sort?: boolean;
+      }) => NodeEntry<TIdElement>[];
       /** Check if a block is selected. */
       has: (id: string[] | string) => boolean;
       /** Check if a block is selectable. */
@@ -164,10 +174,29 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       add: (id) => {
         const next = new Set(getOptions().selectedIds!);
 
+        const processId = (singleId: string) => {
+          const nodeEntry = editor.api.node({ id: singleId, at: [] });
+
+          if (nodeEntry && nodeEntry[0].type === KEYS.table) {
+            const tableNode = nodeEntry[0] as TTableElement;
+            const trs = tableNode.children.filter(
+              (child) => child.type === KEYS.tr
+            );
+
+            trs.forEach((tr) => {
+              next.add(tr.id as string);
+            });
+
+            return;
+          }
+
+          next.add(singleId);
+        };
+
         if (Array.isArray(id)) {
-          id.forEach((i) => next.add(i));
+          id.forEach(processId);
         } else {
-          next.add(id);
+          processId(id);
         }
 
         setOption('selectedIds', next);
@@ -200,15 +229,39 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       getNodes: (options) => {
         const selectedIds = getOption('selectedIds');
 
-        const nodes = editor.api.blocks<TIdElement>({
+        let nodes = [];
+
+        nodes = editor.api.blocks<TIdElement>({
           at: [],
           match: (n) => !!n.id && selectedIds?.has(n.id as string),
         });
 
         if (options?.sort) {
-          return nodes.sort(([, pathA], [, pathB]) => {
+          nodes.sort(([, pathA], [, pathB]) => {
             return PathApi.compare(pathA, pathB);
           });
+        }
+
+        if (options?.collapseTableRows) {
+          const collapsedNodes: NodeEntry<TIdElement>[] = [];
+
+          nodes.forEach(([node, path]) => {
+            if (node.type === KEYS.tr) {
+              const isLastChild = NodeApi.isLastChild(editor, path);
+
+              if (isLastChild) {
+                const tablePath = PathApi.parent(path);
+                const tableNodeEntry = editor.api.node<TIdElement>(tablePath)!;
+
+                collapsedNodes.push(tableNodeEntry);
+              }
+              return;
+            }
+
+            collapsedNodes.push([node, path]);
+          });
+
+          return collapsedNodes;
         }
 
         return nodes;
