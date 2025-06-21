@@ -178,8 +178,11 @@ function Draggable(props: PlateElementProps) {
     const elements: HTMLElement[] = [];
     const ids: string[] = [];
 
+    /**
+     * Remove data attributes from the element to avoid recognized as slate
+     * elements incorrectly.
+     */
     const removeDataAttributes = (element: HTMLElement) => {
-      // Remove data attributes from current element
       Array.from(element.attributes).forEach((attr) => {
         if (
           attr.name.startsWith('data-slate') ||
@@ -188,7 +191,7 @@ function Draggable(props: PlateElementProps) {
           element.removeAttribute(attr.name);
         }
       });
-      // Recursively process child elements
+
       Array.from(element.children).forEach((child) => {
         removeDataAttributes(child as HTMLElement);
       });
