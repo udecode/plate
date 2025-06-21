@@ -20,9 +20,7 @@ export type DndConfig = PluginConfig<
   'dnd',
   {
     _isOver?: boolean;
-    draggingId?: string | null;
-    /** All IDs being dragged (for multi-node drag) */
-    draggingIds?: string[] | null;
+    draggingId?: string[] | string | null;
     dropTarget?: {
       id: string | null;
       line: DropLineDirection;
@@ -82,7 +80,6 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
   options: {
     _isOver: false,
     draggingId: null,
-    draggingIds: null,
     dropTarget: { id: null, line: '' },
     isDragging: false,
   },

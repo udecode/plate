@@ -40,7 +40,6 @@ export const getHoverDirection = ({
   // For multiple node drag, don't show drop line if hovering over any selected element
   const elementDragItem = dragItem as ElementDragItemNode;
   if (elementDragItem.ids?.includes(element.id as string)) return;
-  if (elementDragItem.elements?.some((el) => el.id === element.id)) return;
 
   // Determine rectangle on screen
   const hoverBoundingRect = nodeRef.current?.getBoundingClientRect();

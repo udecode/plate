@@ -11,8 +11,6 @@ export interface ElementDragItemNode {
   id: string;
   [key: string]: unknown;
   element: TElement;
-  /** Additional elements being dragged (for multi-node drag) */
-  elements?: TElement[];
   /** All IDs being dragged (for multi-node drag) */
   ids?: string[];
 }

@@ -168,7 +168,7 @@ function Draggable(props: PlateElementProps) {
   };
 
   const createDragPreviewElements = () => {
-    if (!isMultiple) return editor.setOption(DndPlugin, 'draggingIds', null);
+    if (!isMultiple) return editor.setOption(DndPlugin, 'draggingId', null);
 
     const sortedNodes = blockSelectionApi.getNodes({
       collapseTableRows: true,
@@ -211,7 +211,7 @@ function Draggable(props: PlateElementProps) {
 
     sortedNodes.forEach(([node]) => resolveElement(node));
 
-    editor.setOption(DndPlugin, 'draggingIds', ids);
+    editor.setOption(DndPlugin, 'draggingId', ids);
 
     multiplePreviewRef.current?.append(...elements);
     multiplePreviewRef.current?.classList.remove('hidden');
