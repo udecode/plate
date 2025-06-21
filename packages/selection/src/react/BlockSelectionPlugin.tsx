@@ -175,9 +175,9 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         const next = new Set(getOptions().selectedIds!);
 
         const processId = (singleId: string) => {
-          const nodeEntry = editor.api.node({ id: singleId, at: [] });
+          const nodeEntry = editor.api.node({ id: singleId, at: [] })!;
 
-          if (nodeEntry && nodeEntry[0].type === KEYS.table) {
+          if (nodeEntry[0].type === KEYS.table) {
             const tableNode = nodeEntry[0] as TTableElement;
             const trs = tableNode.children.filter(
               (child) => child.type === KEYS.tr
