@@ -79,7 +79,8 @@ export type BlockSelectionConfig = PluginConfig<
        *
        * @param options.sort - Sort the nodes by path
        * @param options.collapseTableRows - If all table rows are selected,
-       *   return the table node with all selected rows instead, do not return the table rows anymore.
+       *   return the table node with all selected rows instead, do not return
+       *   the table rows anymore.
        */
       getNodes: (options?: {
         collapseTableRows?: boolean;

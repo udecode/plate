@@ -8,7 +8,7 @@ export type DropLineDirection = '' | 'bottom' | 'left' | 'right' | 'top';
 
 export interface ElementDragItemNode {
   /** Required to identify the node(s). */
-  id: string | string[];
+  id: string[] | string;
   [key: string]: unknown;
   element: TElement;
 }

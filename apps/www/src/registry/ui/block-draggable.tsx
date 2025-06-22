@@ -74,7 +74,7 @@ function Draggable(props: PlateElementProps) {
   const { children, editor, element, path } = props;
   const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
 
-  const { isDragging, previewRef, handleRef } = useDraggable({
+  const { isDragging, multiplePreviewRef, nodeRef, handleRef } = useDraggable({
     element,
     onDropHandler: (_, { dragItem }) => {
       const ids = (dragItem as { ids?: string[] }).ids;
@@ -92,8 +92,6 @@ function Draggable(props: PlateElementProps) {
 
   const [multiplePreviewTop, setMultiplePreviewTop] = React.useState(0);
   const [isMultiple, setIsMultiple] = React.useState(false);
-
-  const multiplePreviewRef = React.useRef<HTMLDivElement>(null);
 
   // clear up virtual multiple preview when drag end
   React.useEffect(() => {
@@ -140,7 +138,9 @@ function Draggable(props: PlateElementProps) {
                 variant="ghost"
                 className="absolute -left-0 h-6 w-full p-0"
                 style={{ top: `${dragButtonTop + 3}px` }}
-                onMouseDown={() => {
+                onMouseDown={(e) => {
+                  if (e.button !== 0 || e.shiftKey) return; // Only left mouse button
+
                   if (isMultiple) {
                     const elements = createDragPreviewElements(editor);
                     multiplePreviewRef.current?.append(...elements);
@@ -176,14 +176,14 @@ function Draggable(props: PlateElementProps) {
         </Gutter>
       )}
 
-      <div ref={previewRef} className="slate-blockWrapper flow-root">
-        <div
-          ref={multiplePreviewRef}
-          className={cn('absolute -left-0 hidden w-full')}
-          style={{ top: `${-multiplePreviewTop}px` }}
-          contentEditable={false}
-        />
+      <div
+        ref={multiplePreviewRef}
+        className={cn('absolute -left-0 hidden w-full')}
+        style={{ top: `${-multiplePreviewTop}px` }}
+        contentEditable={false}
+      />
 
+      <div ref={nodeRef} className="slate-blockWrapper flow-root">
         <MemoizedChildren>{children}</MemoizedChildren>
         <DropLine />
       </div>
@@ -301,17 +301,38 @@ const createDragPreviewElements = (editor: PlateEditor): HTMLElement[] => {
     });
   };
 
-  const resolveElement = (node: TElement) => {
-    const domNode = editor.api.toDOMNode(node)!.cloneNode(true) as HTMLElement;
+  const resolveElement = (node: TElement, index: number) => {
+    const domNode = editor.api.toDOMNode(node)!;
+
+    const newDomNode = domNode.cloneNode(true) as HTMLElement;
+
     ids.push(node.id as string);
     const wrapper = document.createElement('div');
-    wrapper.append(domNode);
+    wrapper.append(newDomNode);
     wrapper.style.display = 'flow-root';
-    removeDataAttributes(domNode);
+
+    const lastDomNode = sortedNodes[index - 1];
+
+    if (lastDomNode) {
+      const lastDomNodeRect = editor.api
+        .toDOMNode(lastDomNode[0])!
+        .parentElement!.getBoundingClientRect();
+
+      const domNodeRect = domNode.parentElement!.getBoundingClientRect();
+
+      const distance = domNodeRect.top - lastDomNodeRect.bottom;
+
+      // Check if the two elements are adjacent (touching each other)
+      if (distance > 15) {
+        wrapper.style.marginTop = `${distance}px`;
+      }
+    }
+
+    removeDataAttributes(newDomNode);
     elements.push(wrapper);
   };
 
-  sortedNodes.forEach(([node]) => resolveElement(node));
+  sortedNodes.forEach(([node], index) => resolveElement(node, index));
 
   editor.setOption(DndPlugin, 'draggingId', ids);
 

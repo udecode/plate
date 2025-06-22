@@ -124,7 +124,7 @@ export const onDropNode = (
 
   // Check if we're dragging multiple nodes
   const draggedIds = Array.isArray(dragItem.id) ? dragItem.id : [dragItem.id];
-  
+
   if (draggedIds.length > 1) {
     // Handle multi-node drop - get elements by their IDs and sort them
     const elements: TElement[] = [];

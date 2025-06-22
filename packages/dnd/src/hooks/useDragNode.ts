@@ -54,7 +54,7 @@ export const useDragNode = (
         // Check if multiple nodes are selected
         const currentDraggingId = editor.getOption(DndPlugin, 'draggingId');
 
-        let id: string | string[];
+        let id: string[] | string;
 
         if (
           Array.isArray(currentDraggingId) &&
