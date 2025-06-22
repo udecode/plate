@@ -1,5 +1,13 @@
 # @platejs/dnd
 
+## 49.0.7
+
+### Patch Changes
+
+- [#4385](https://github.com/udecode/plate/pull/4385) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Fixed an issue where drag and drop functionality would not work properly with multiple selected blocks.
+  - Added logic to ensure only one drop position exists between any two nodes to prevent visual blinking during drag operations.
+
 ## 49.0.0
 
 ### Major Changes
