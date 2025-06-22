@@ -137,38 +137,15 @@ function Draggable(props: PlateElementProps) {
                 variant="ghost"
                 className="absolute -left-0 h-6 w-full p-0"
                 style={{ top: `${dragButtonTop + 3}px` }}
-                onMouseDown={(e) => {
-                  if (e.button !== 0 || e.shiftKey) return; // Only left mouse button
-
-                  if (isMultiple) {
-                    const elements = createDragPreviewElements(editor);
-                    multiplePreviewRef.current?.append(...elements);
-                    multiplePreviewRef.current?.classList.remove('hidden');
-                  } else {
-                    editor.setOption(DndPlugin, 'draggingId', null);
-                    return;
-                  }
-                }}
-                onMouseEnter={() => {
-                  if (isDragging) return;
-
-                  const isSelected = editor.getOption(
-                    BlockSelectionPlugin,
-                    'isSelected',
-                    element.id as string
-                  );
-
-                  if (isSelected) {
-                    const previewTop = calculatePreviewTop(editor, element);
-                    setMultiplePreviewTop(previewTop);
-                    setIsMultiple(true);
-                  } else {
-                    setIsMultiple(false);
-                  }
-                }}
                 data-plate-prevent-deselect
               >
-                <DragHandle />
+                <DragHandle
+                  isDragging={isDragging}
+                  isMultiple={isMultiple}
+                  multiplePreviewRef={multiplePreviewRef}
+                  setIsMultiple={setIsMultiple}
+                  setMultiplePreviewTop={setMultiplePreviewTop}
+                />
               </Button>
             </div>
           </div>
@@ -224,7 +201,19 @@ function Gutter({
   );
 }
 
-const DragHandle = React.memo(function DragHandle() {
+const DragHandle = React.memo(function DragHandle({
+  isDragging,
+  isMultiple,
+  multiplePreviewRef,
+  setIsMultiple,
+  setMultiplePreviewTop,
+}: {
+  isDragging: boolean;
+  isMultiple: boolean;
+  multiplePreviewRef: React.RefObject<HTMLDivElement | null>;
+  setIsMultiple: (isMultiple: boolean) => void;
+  setMultiplePreviewTop: (top: number) => void;
+}) {
   const editor = useEditorRef();
   const element = useElement();
 
@@ -237,6 +226,39 @@ const DragHandle = React.memo(function DragHandle() {
             editor
               .getApi(BlockSelectionPlugin)
               .blockSelection.set(element.id as string);
+          }}
+          onMouseDown={(e) => {
+            if (e.button !== 0 || e.shiftKey) return; // Only left mouse button
+
+            if (isMultiple) {
+              const elements = createDragPreviewElements(editor);
+              multiplePreviewRef.current?.append(...elements);
+              multiplePreviewRef.current?.classList.remove('hidden');
+            } else {
+              editor.setOption(DndPlugin, 'draggingId', null);
+              return;
+            }
+          }}
+          onMouseEnter={() => {
+            if (isDragging) return;
+
+            const isSelected = editor.getOption(
+              BlockSelectionPlugin,
+              'isSelected',
+              element.id as string
+            );
+
+            if (isSelected) {
+              const previewTop = calculatePreviewTop(editor, element);
+              setMultiplePreviewTop(previewTop);
+              setIsMultiple(true);
+            } else {
+              setIsMultiple(false);
+            }
+          }}
+          onMouseUp={() => {
+            multiplePreviewRef.current?.replaceChildren();
+            setIsMultiple(false);
           }}
           role="button"
         >
