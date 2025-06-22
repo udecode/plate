@@ -110,6 +110,8 @@ export const TableElement = withHOC(
       props: tableProps,
     } = useTableElement();
 
+    const isSelectingTable = useBlockSelected(props.element.id as string);
+
     const content = (
       <PlateElement
         {...props}
@@ -129,6 +131,10 @@ export const TableElement = withHOC(
           >
             <tbody className="min-w-full">{children}</tbody>
           </table>
+
+          {isSelectingTable && (
+            <div className={blockSelectionVariants()} contentEditable={false} />
+          )}
         </div>
       </PlateElement>
     );

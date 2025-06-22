@@ -45,15 +45,35 @@ export const useDragNode = (
       },
       item(monitor) {
         editor.setOption(DndPlugin, 'isDragging', true);
+        editor.setOption(DndPlugin, '_isOver', true);
         document.body.classList.add('dragging');
 
         const _item = typeof item === 'function' ? item(monitor) : item;
         const [element] = editor.api.node<TElement>({ id: elementId, at: [] })!;
 
+        // Check if multiple nodes are selected
+        const currentDraggingId = editor.getOption(DndPlugin, 'draggingId');
+
+        let ids: string[] = [];
+
+        if (
+          Array.isArray(currentDraggingId) &&
+          currentDraggingId.length > 1 &&
+          currentDraggingId.includes(elementId)
+        ) {
+          // Multiple selection including current element
+          ids = Array.from(currentDraggingId);
+        } else {
+          // Single element drag
+          ids = [elementId];
+          editor.setOption(DndPlugin, 'draggingId', elementId);
+        }
+
         return {
           id: elementId,
           editorId: editor.id,
           element,
+          ids,
           ..._item,
         };
       },

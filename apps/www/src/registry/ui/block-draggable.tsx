@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 
-import { useDraggable, useDropLine } from '@platejs/dnd';
+import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
-import { getPluginByType, isType, KEYS } from 'platejs';
+import { type TElement, getPluginByType, isType, KEYS } from 'platejs';
 import {
   type PlateElementProps,
   type RenderNodeWrapper,
@@ -72,19 +72,150 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
 function Draggable(props: PlateElementProps) {
   const { children, editor, element, path } = props;
   const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
+
   const { isDragging, previewRef, handleRef } = useDraggable({
     element,
     onDropHandler: (_, { dragItem }) => {
+      const ids = (dragItem as { ids?: string[] }).ids;
       const id = (dragItem as { id: string }).id;
 
-      if (blockSelectionApi && id) {
-        blockSelectionApi.set(id);
+      if (blockSelectionApi) {
+        blockSelectionApi.add(ids ?? id);
       }
+      multiplePreviewRef.current?.replaceChildren();
     },
   });
 
   const isInColumn = path.length === 3;
   const isInTable = path.length === 4;
+
+  const [multiplePreviewTop, setMultiplePreviewTop] = React.useState(0);
+  const [isMultiple, setIsMultiple] = React.useState(false);
+
+  const multiplePreviewRef = React.useRef<HTMLDivElement>(null);
+
+  // clear up virtual multiple preview when drag end
+  React.useEffect(() => {
+    if (!isDragging && isMultiple) {
+      multiplePreviewRef.current?.replaceChildren();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDragging]);
+
+  const [dragButtonTop, setDragButtonTop] = React.useState(0);
+
+  const calcDragButtonTop = () => {
+    if (isDragging) return;
+
+    const child = editor.api.toDOMNode(element)!;
+
+    const currentMarginTopString = window.getComputedStyle(child).marginTop;
+    const currentMarginTop = Number(currentMarginTopString.replace('px', ''));
+    setDragButtonTop(currentMarginTop);
+  };
+
+  const calculatePreviewTop = () => {
+    if (isDragging) return;
+
+    const ids = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+
+    if (ids && ids.size > 0 && ids.has(element.id as string)) {
+      const child = editor.api.toDOMNode(element)!;
+      const editable = editor.api.toDOMNode(editor)!;
+      const firstSelectedChild = editor.api.node({
+        at: [],
+        match: (n) => blockSelectionApi.has(n.id as string),
+      })!;
+
+      const firstDomNode = editor.api.toDOMNode(firstSelectedChild[0])!;
+
+      // Get editor's top padding
+      const editorPaddingTop = Number(
+        window.getComputedStyle(editable).paddingTop.replace('px', '')
+      );
+
+      // Calculate distance from first selected node to editor top
+      const firstNodeToEditorDistance =
+        firstDomNode.getBoundingClientRect().top -
+        editable.getBoundingClientRect().top -
+        editorPaddingTop;
+
+      // Get margin top of first selected node
+      const firstMarginTopString =
+        window.getComputedStyle(firstDomNode).marginTop;
+      const marginTop = Number(firstMarginTopString.replace('px', ''));
+
+      // Calculate distance from current node to editor top
+      const currentToEditorDistance =
+        child.getBoundingClientRect().top -
+        editable.getBoundingClientRect().top -
+        editorPaddingTop;
+
+      const currentMarginTopString = window.getComputedStyle(child).marginTop;
+      const currentMarginTop = Number(currentMarginTopString.replace('px', ''));
+
+      const previewElementsTopDistance =
+        currentToEditorDistance -
+        firstNodeToEditorDistance +
+        marginTop -
+        currentMarginTop;
+
+      setMultiplePreviewTop(previewElementsTopDistance);
+      setIsMultiple(true);
+    } else {
+      setIsMultiple(false);
+    }
+  };
+
+  const createDragPreviewElements = () => {
+    if (!isMultiple) return editor.setOption(DndPlugin, 'draggingId', null);
+
+    const sortedNodes = blockSelectionApi.getNodes({
+      collapseTableRows: true,
+      sort: true,
+    });
+
+    const elements: HTMLElement[] = [];
+    const ids: string[] = [];
+
+    /**
+     * Remove data attributes from the element to avoid recognized as slate
+     * elements incorrectly.
+     */
+    const removeDataAttributes = (element: HTMLElement) => {
+      Array.from(element.attributes).forEach((attr) => {
+        if (
+          attr.name.startsWith('data-slate') ||
+          attr.name.startsWith('data-block-id')
+        ) {
+          element.removeAttribute(attr.name);
+        }
+      });
+
+      Array.from(element.children).forEach((child) => {
+        removeDataAttributes(child as HTMLElement);
+      });
+    };
+
+    const resolveElement = (node: TElement) => {
+      const domNode = editor.api
+        .toDOMNode(node)!
+        .cloneNode(true) as HTMLElement;
+      ids.push(node.id as string);
+      const wrapper = document.createElement('div');
+      wrapper.append(domNode);
+      wrapper.style.display = 'flow-root';
+      removeDataAttributes(domNode);
+      elements.push(wrapper);
+    };
+
+    sortedNodes.forEach(([node]) => resolveElement(node));
+
+    editor.setOption(DndPlugin, 'draggingId', ids);
+
+    multiplePreviewRef.current?.append(...elements);
+    multiplePreviewRef.current?.classList.remove('hidden');
+  };
 
   return (
     <div
@@ -95,6 +226,7 @@ function Draggable(props: PlateElementProps) {
           ? 'group/container'
           : 'group'
       )}
+      onMouseEnter={calcDragButtonTop}
     >
       {!isInTable && (
         <Gutter>
@@ -102,19 +234,12 @@ function Draggable(props: PlateElementProps) {
             className={cn(
               'slate-blockToolbarWrapper',
               'flex h-[1.5em]',
-              isType(editor, element, [
-                KEYS.h1,
-                KEYS.h2,
-                KEYS.h3,
-                KEYS.h4,
-                KEYS.h5,
-              ]) && 'h-[1.3em]',
               isInColumn && 'h-4'
             )}
           >
             <div
               className={cn(
-                'slate-blockToolbar',
+                'slate-blockToolbar relative w-4.5',
                 'pointer-events-auto mr-1 flex items-center',
                 isInColumn && 'mr-1.5'
               )}
@@ -122,7 +247,10 @@ function Draggable(props: PlateElementProps) {
               <Button
                 ref={handleRef}
                 variant="ghost"
-                className="h-6 w-4.5 p-0"
+                className="absolute -left-0 h-6 w-full p-0"
+                style={{ top: `${dragButtonTop + 3}px` }}
+                onMouseDown={createDragPreviewElements}
+                onMouseEnter={calculatePreviewTop}
                 data-plate-prevent-deselect
               >
                 <DragHandle />
@@ -132,7 +260,14 @@ function Draggable(props: PlateElementProps) {
         </Gutter>
       )}
 
-      <div ref={previewRef} className="slate-blockWrapper">
+      <div ref={previewRef} className="slate-blockWrapper flow-root">
+        <div
+          ref={multiplePreviewRef}
+          className={cn('absolute -left-0 hidden w-full')}
+          style={{ top: `${-multiplePreviewTop}px` }}
+          contentEditable={false}
+        />
+
         <MemoizedChildren>{children}</MemoizedChildren>
         <DropLine />
       </div>
@@ -154,10 +289,6 @@ function Gutter({
   );
   const selected = useSelected();
 
-  const isNodeType = (keys: string[] | string) => isType(editor, element, keys);
-
-  const isInColumn = path.length === 3;
-
   return (
     <div
       {...props}
@@ -169,23 +300,6 @@ function Gutter({
           : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',
         !selected && 'opacity-0',
-        isNodeType(KEYS.h1) && 'pb-1 text-[1.875em]',
-        isNodeType(KEYS.h2) && 'pb-1 text-[1.5em]',
-        isNodeType(KEYS.h3) && 'pt-[2px] pb-1 text-[1.25em]',
-        isNodeType([KEYS.h4, KEYS.h5]) && 'pt-1 pb-0 text-[1.1em]',
-        isNodeType(KEYS.h6) && 'pb-0',
-        isNodeType(KEYS.p) && 'pt-1 pb-0',
-        isNodeType(KEYS.blockquote) && 'pb-0',
-        isNodeType(KEYS.codeBlock) && 'pt-6 pb-0',
-        isNodeType([
-          KEYS.img,
-          KEYS.mediaEmbed,
-          KEYS.excalidraw,
-          KEYS.toggle,
-          KEYS.column,
-        ]) && 'py-0',
-        isNodeType([KEYS.placeholder, KEYS.table]) && 'pt-3 pb-0',
-        isInColumn && 'mt-2 h-4 pt-0',
         className
       )}
       contentEditable={false}

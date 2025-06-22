@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { getEmptyImage, NativeTypes } from 'react-dnd-html5-backend';
 
 import type { ConnectDragSource, DropTargetMonitor } from 'react-dnd';
@@ -7,7 +6,7 @@ import { type PlateEditor, useEditorRef } from 'platejs/react';
 
 import type { DragItemNode } from '../types';
 
-import { DndPlugin, DRAG_ITEM_BLOCK } from '../DndPlugin';
+import { DRAG_ITEM_BLOCK } from '../DndPlugin';
 import { type UseDragNodeOptions, useDragNode } from './useDragNode';
 import { type UseDropNodeOptions, useDropNode } from './useDropNode';
 
@@ -86,12 +85,6 @@ export const useDndNode = ({
   } else {
     preview(drop(nodeRef));
   }
-
-  useEffect(() => {
-    if (!isOver && editor.getOptions(DndPlugin).dropTarget?.id) {
-      editor.setOption(DndPlugin, 'dropTarget', { id: null, line: '' });
-    }
-  }, [isOver, editor]);
 
   return {
     dragRef,

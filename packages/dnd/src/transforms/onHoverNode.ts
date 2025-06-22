@@ -1,6 +1,8 @@
 import type { PlateEditor } from 'platejs/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
+import { NodeApi, PathApi } from 'platejs';
+
 import type { UseDropNodeOptions } from '../hooks/useDropNode';
 import type { DragItemNode } from '../types';
 
@@ -25,7 +27,7 @@ export const onHoverNode = (
     'canDropNode' | 'element' | 'nodeRef' | 'orientation'
   >
 ) => {
-  const { dropTarget } = editor.getOptions(DndPlugin);
+  const { _isOver, dropTarget } = editor.getOptions(DndPlugin);
   const currentId = dropTarget?.id ?? null;
   const currentLine = dropTarget?.line ?? '';
 
@@ -54,6 +56,28 @@ export const onHoverNode = (
 
   if (newDropTarget.id !== currentId || newDropTarget.line !== currentLine) {
     // Only set if there's a real change
+
+    if (!_isOver) {
+      return;
+    }
+
+    if (newDropTarget.line === 'top') {
+      const previousPath = PathApi.previous(editor.api.findPath(element)!);
+
+      if (!previousPath) {
+        return editor.setOption(DndPlugin, 'dropTarget', newDropTarget);
+      }
+
+      const nextNode = NodeApi.get(editor, previousPath!);
+
+      editor.setOption(DndPlugin, 'dropTarget', {
+        id: nextNode?.id as string,
+        line: 'bottom',
+      });
+
+      return;
+    }
+
     editor.setOption(DndPlugin, 'dropTarget', newDropTarget);
   }
   if (direction && editor.api.isExpanded()) {

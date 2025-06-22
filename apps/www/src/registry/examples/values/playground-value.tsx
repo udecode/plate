@@ -488,6 +488,8 @@ export const playgroundValue: Value = [
         type: 'tr',
       },
     ],
+
+    colSizes: [160, 170, 200],
     type: 'table',
   },
   // Media Section
