@@ -9,7 +9,7 @@ export type DraggableState = {
   /** The ref of the multiple preview element */
   multiplePreviewRef: React.RefObject<HTMLDivElement | null>;
   /** The ref of the draggable element */
-  nodeRef: React.RefObject<HTMLDivElement | null>;
+  previewRef: React.RefObject<HTMLDivElement | null>;
   /** The ref of the draggable handle */
   handleRef: (
     elementOrNode:
@@ -48,7 +48,7 @@ export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
   return {
     isDragging,
     multiplePreviewRef,
-    nodeRef,
+    previewRef: nodeRef,
     handleRef: dragRef,
   };
 };

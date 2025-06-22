@@ -73,17 +73,18 @@ function Draggable(props: PlateElementProps) {
   const { children, editor, element, path } = props;
   const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
 
-  const { isDragging, multiplePreviewRef, nodeRef, handleRef } = useDraggable({
-    element,
-    onDropHandler: (_, { dragItem }) => {
-      const id = (dragItem as { id: string[] | string }).id;
+  const { isDragging, multiplePreviewRef, previewRef, handleRef } =
+    useDraggable({
+      element,
+      onDropHandler: (_, { dragItem }) => {
+        const id = (dragItem as { id: string[] | string }).id;
 
-      if (blockSelectionApi) {
-        blockSelectionApi.add(id);
-      }
-      multiplePreviewRef.current?.replaceChildren();
-    },
-  });
+        if (blockSelectionApi) {
+          blockSelectionApi.add(id);
+        }
+        multiplePreviewRef.current?.replaceChildren();
+      },
+    });
 
   const isInColumn = path.length === 3;
   const isInTable = path.length === 4;
@@ -158,7 +159,7 @@ function Draggable(props: PlateElementProps) {
         contentEditable={false}
       />
 
-      <div ref={nodeRef} className="slate-blockWrapper flow-root">
+      <div ref={previewRef} className="slate-blockWrapper flow-root">
         <MemoizedChildren>{children}</MemoizedChildren>
         <DropLine />
       </div>
