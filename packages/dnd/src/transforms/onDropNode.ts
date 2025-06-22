@@ -123,11 +123,13 @@ export const onDropNode = (
   const { dragPath, to } = result;
 
   // Check if we're dragging multiple nodes
-  if (dragItem.ids && dragItem.ids.length > 1) {
+  const draggedIds = Array.isArray(dragItem.id) ? dragItem.id : [dragItem.id];
+  
+  if (draggedIds.length > 1) {
     // Handle multi-node drop - get elements by their IDs and sort them
     const elements: TElement[] = [];
 
-    dragItem.ids.forEach((id) => {
+    draggedIds.forEach((id) => {
       const entry = editor.api.node<TElement>({ id, at: [] });
       if (entry) {
         elements.push(entry[0]);

@@ -7,12 +7,10 @@ export type DropDirection = 'bottom' | 'left' | 'right' | 'top' | undefined;
 export type DropLineDirection = '' | 'bottom' | 'left' | 'right' | 'top';
 
 export interface ElementDragItemNode {
-  /** Required to identify the node. */
-  id: string;
+  /** Required to identify the node(s). */
+  id: string | string[];
   [key: string]: unknown;
   element: TElement;
-  /** All IDs being dragged (for multi-node drag) */
-  ids?: string[];
 }
 
 export interface FileDragItemNode {

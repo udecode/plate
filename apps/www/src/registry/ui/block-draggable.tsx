@@ -7,6 +7,7 @@ import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
 import { type TElement, getPluginByType, isType, KEYS } from 'platejs';
 import {
+  type PlateEditor,
   type PlateElementProps,
   type RenderNodeWrapper,
   MemoizedChildren,
@@ -104,119 +105,6 @@ function Draggable(props: PlateElementProps) {
 
   const [dragButtonTop, setDragButtonTop] = React.useState(0);
 
-  const calcDragButtonTop = () => {
-    if (isDragging) return;
-
-    const child = editor.api.toDOMNode(element)!;
-
-    const currentMarginTopString = window.getComputedStyle(child).marginTop;
-    const currentMarginTop = Number(currentMarginTopString.replace('px', ''));
-    setDragButtonTop(currentMarginTop);
-  };
-
-  const calculatePreviewTop = () => {
-    if (isDragging) return;
-
-    const ids = editor.getOption(BlockSelectionPlugin, 'selectedIds');
-
-    if (ids && ids.size > 0 && ids.has(element.id as string)) {
-      const child = editor.api.toDOMNode(element)!;
-      const editable = editor.api.toDOMNode(editor)!;
-      const firstSelectedChild = editor.api.node({
-        at: [],
-        match: (n) => blockSelectionApi.has(n.id as string),
-      })!;
-
-      const firstDomNode = editor.api.toDOMNode(firstSelectedChild[0])!;
-
-      // Get editor's top padding
-      const editorPaddingTop = Number(
-        window.getComputedStyle(editable).paddingTop.replace('px', '')
-      );
-
-      // Calculate distance from first selected node to editor top
-      const firstNodeToEditorDistance =
-        firstDomNode.getBoundingClientRect().top -
-        editable.getBoundingClientRect().top -
-        editorPaddingTop;
-
-      // Get margin top of first selected node
-      const firstMarginTopString =
-        window.getComputedStyle(firstDomNode).marginTop;
-      const marginTop = Number(firstMarginTopString.replace('px', ''));
-
-      // Calculate distance from current node to editor top
-      const currentToEditorDistance =
-        child.getBoundingClientRect().top -
-        editable.getBoundingClientRect().top -
-        editorPaddingTop;
-
-      const currentMarginTopString = window.getComputedStyle(child).marginTop;
-      const currentMarginTop = Number(currentMarginTopString.replace('px', ''));
-
-      const previewElementsTopDistance =
-        currentToEditorDistance -
-        firstNodeToEditorDistance +
-        marginTop -
-        currentMarginTop;
-
-      setMultiplePreviewTop(previewElementsTopDistance);
-      setIsMultiple(true);
-    } else {
-      setIsMultiple(false);
-    }
-  };
-
-  const createDragPreviewElements = () => {
-    if (!isMultiple) return editor.setOption(DndPlugin, 'draggingId', null);
-
-    const sortedNodes = blockSelectionApi.getNodes({
-      collapseTableRows: true,
-      sort: true,
-    });
-
-    const elements: HTMLElement[] = [];
-    const ids: string[] = [];
-
-    /**
-     * Remove data attributes from the element to avoid recognized as slate
-     * elements incorrectly.
-     */
-    const removeDataAttributes = (element: HTMLElement) => {
-      Array.from(element.attributes).forEach((attr) => {
-        if (
-          attr.name.startsWith('data-slate') ||
-          attr.name.startsWith('data-block-id')
-        ) {
-          element.removeAttribute(attr.name);
-        }
-      });
-
-      Array.from(element.children).forEach((child) => {
-        removeDataAttributes(child as HTMLElement);
-      });
-    };
-
-    const resolveElement = (node: TElement) => {
-      const domNode = editor.api
-        .toDOMNode(node)!
-        .cloneNode(true) as HTMLElement;
-      ids.push(node.id as string);
-      const wrapper = document.createElement('div');
-      wrapper.append(domNode);
-      wrapper.style.display = 'flow-root';
-      removeDataAttributes(domNode);
-      elements.push(wrapper);
-    };
-
-    sortedNodes.forEach(([node]) => resolveElement(node));
-
-    editor.setOption(DndPlugin, 'draggingId', ids);
-
-    multiplePreviewRef.current?.append(...elements);
-    multiplePreviewRef.current?.classList.remove('hidden');
-  };
-
   return (
     <div
       className={cn(
@@ -226,7 +114,10 @@ function Draggable(props: PlateElementProps) {
           ? 'group/container'
           : 'group'
       )}
-      onMouseEnter={calcDragButtonTop}
+      onMouseEnter={() => {
+        if (isDragging) return;
+        setDragButtonTop(calcDragButtonTop(editor, element));
+      }}
     >
       {!isInTable && (
         <Gutter>
@@ -249,8 +140,33 @@ function Draggable(props: PlateElementProps) {
                 variant="ghost"
                 className="absolute -left-0 h-6 w-full p-0"
                 style={{ top: `${dragButtonTop + 3}px` }}
-                onMouseDown={createDragPreviewElements}
-                onMouseEnter={calculatePreviewTop}
+                onMouseDown={() => {
+                  if (isMultiple) {
+                    const elements = createDragPreviewElements(editor);
+                    multiplePreviewRef.current?.append(...elements);
+                    multiplePreviewRef.current?.classList.remove('hidden');
+                  } else {
+                    editor.setOption(DndPlugin, 'draggingId', null);
+                    return;
+                  }
+                }}
+                onMouseEnter={() => {
+                  if (isDragging) return;
+
+                  const isSelected = editor.getOption(
+                    BlockSelectionPlugin,
+                    'isSelected',
+                    element.id as string
+                  );
+
+                  if (isSelected) {
+                    const previewTop = calculatePreviewTop(editor, element);
+                    setMultiplePreviewTop(previewTop);
+                    setIsMultiple(true);
+                  } else {
+                    setIsMultiple(false);
+                  }
+                }}
                 data-plate-prevent-deselect
               >
                 <DragHandle />
@@ -355,3 +271,102 @@ const DropLine = React.memo(function DropLine({
     />
   );
 });
+
+const createDragPreviewElements = (editor: PlateEditor): HTMLElement[] => {
+  const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
+
+  const sortedNodes = blockSelectionApi.getNodes({
+    sort: true,
+  });
+
+  const elements: HTMLElement[] = [];
+  const ids: string[] = [];
+
+  /**
+   * Remove data attributes from the element to avoid recognized as slate
+   * elements incorrectly.
+   */
+  const removeDataAttributes = (element: HTMLElement) => {
+    Array.from(element.attributes).forEach((attr) => {
+      if (
+        attr.name.startsWith('data-slate') ||
+        attr.name.startsWith('data-block-id')
+      ) {
+        element.removeAttribute(attr.name);
+      }
+    });
+
+    Array.from(element.children).forEach((child) => {
+      removeDataAttributes(child as HTMLElement);
+    });
+  };
+
+  const resolveElement = (node: TElement) => {
+    const domNode = editor.api.toDOMNode(node)!.cloneNode(true) as HTMLElement;
+    ids.push(node.id as string);
+    const wrapper = document.createElement('div');
+    wrapper.append(domNode);
+    wrapper.style.display = 'flow-root';
+    removeDataAttributes(domNode);
+    elements.push(wrapper);
+  };
+
+  sortedNodes.forEach(([node]) => resolveElement(node));
+
+  editor.setOption(DndPlugin, 'draggingId', ids);
+
+  return elements;
+};
+
+const calculatePreviewTop = (
+  editor: PlateEditor,
+  element: TElement
+): number => {
+  const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
+
+  const child = editor.api.toDOMNode(element)!;
+  const editable = editor.api.toDOMNode(editor)!;
+  const firstSelectedChild = editor.api.node(blockSelectionApi.first()![0])!;
+
+  const firstDomNode = editor.api.toDOMNode(firstSelectedChild[0])!;
+  // Get editor's top padding
+  const editorPaddingTop = Number(
+    window.getComputedStyle(editable).paddingTop.replace('px', '')
+  );
+
+  // Calculate distance from first selected node to editor top
+  const firstNodeToEditorDistance =
+    firstDomNode.getBoundingClientRect().top -
+    editable.getBoundingClientRect().top -
+    editorPaddingTop;
+
+  // Get margin top of first selected node
+  const firstMarginTopString = window.getComputedStyle(firstDomNode).marginTop;
+  const marginTop = Number(firstMarginTopString.replace('px', ''));
+
+  // Calculate distance from current node to editor top
+  const currentToEditorDistance =
+    child.getBoundingClientRect().top -
+    editable.getBoundingClientRect().top -
+    editorPaddingTop;
+
+  const currentMarginTopString = window.getComputedStyle(child).marginTop;
+  const currentMarginTop = Number(currentMarginTopString.replace('px', ''));
+
+  const previewElementsTopDistance =
+    currentToEditorDistance -
+    firstNodeToEditorDistance +
+    marginTop -
+    currentMarginTop;
+
+  return previewElementsTopDistance;
+};
+
+const calcDragButtonTop = (editor: PlateEditor, element: TElement): number => {
+  const child = editor.api.toDOMNode(element)!;
+
+  const currentMarginTopString = window.getComputedStyle(child).marginTop;
+  const currentMarginTop = Number(currentMarginTopString.replace('px', ''));
+
+  return currentMarginTop;
+};

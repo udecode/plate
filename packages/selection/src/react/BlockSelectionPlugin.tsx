@@ -11,7 +11,7 @@ import type {
   TTableElement,
 } from 'platejs';
 
-import { bindFirst, KEYS, NodeApi, PathApi } from 'platejs';
+import { bindFirst, KEYS, PathApi } from 'platejs';
 import { createTPlatePlugin } from 'platejs/react';
 
 import type { PartialSelectionOptions } from '../internal';
@@ -70,6 +70,8 @@ export type BlockSelectionConfig = PluginConfig<
       delete: (id: string[] | string) => void;
       /** Deselect all blocks */
       deselect: () => void;
+      /** Get the first selected block */
+      first: () => NodeEntry<TIdElement> | null;
       /** Focus block selection – that differs from the editor focus */
       focus: () => void;
       /**
@@ -77,7 +79,7 @@ export type BlockSelectionConfig = PluginConfig<
        *
        * @param options.sort - Sort the nodes by path
        * @param options.collapseTableRows - If all table rows are selected,
-       *   return the table node instead, do not return the table rows anymore.
+       *   return the table node with all selected rows instead, do not return the table rows anymore.
        */
       getNodes: (options?: {
         collapseTableRows?: boolean;
@@ -167,7 +169,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     isSelectingSome: () => getOptions().selectedIds!.size > 0,
   }))
   .extendApi<Partial<BlockSelectionConfig['api']['blockSelection']>>(
-    ({ editor, getOption, getOptions, setOption }) => ({
+    ({ api, editor, getOption, getOptions, setOption }) => ({
       moveSelection: bindFirst(moveSelection, editor),
       setSelectedIds: bindFirst(setSelectedIds, editor),
       shiftSelection: bindFirst(shiftSelection, editor),
@@ -219,6 +221,16 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         setOption('selectedIds', new Set());
         setOption('isSelecting', false);
       },
+      first: () => {
+        const selectedIds = getOption('selectedIds');
+
+        if (!selectedIds || selectedIds.size === 0) return null;
+
+        return editor.api.node({
+          at: [],
+          match: (n) => selectedIds.has(n.id as string),
+        })!;
+      },
       focus: () => {
         const shadowInputRef = getOption('shadowInputRef');
 
@@ -247,13 +259,28 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
 
           nodes.forEach(([node, path]) => {
             if (node.type === KEYS.tr) {
-              const isLastChild = NodeApi.isLastChild(editor, path);
+              const tablePath = PathApi.parent(path);
+              const tableNodeEntry = editor.api.node<TIdElement>(tablePath)!;
 
-              if (isLastChild) {
-                const tablePath = PathApi.parent(path);
-                const tableNodeEntry = editor.api.node<TIdElement>(tablePath)!;
+              // Check if table already exists in collapsedNodes
+              const existingTableIndex = collapsedNodes.findIndex(
+                ([existingNode]) =>
+                  existingNode.type === tableNodeEntry[0].type &&
+                  existingNode.id === tableNodeEntry[0].id
+              );
 
-                collapsedNodes.push(tableNodeEntry);
+              if (existingTableIndex === -1) {
+                // Create new table with this row
+                const tableNodeCopy = {
+                  ...tableNodeEntry[0],
+                  children: [node],
+                };
+
+                collapsedNodes.push([tableNodeCopy, tableNodeEntry[1]]);
+              } else {
+                // Add the row to existing table
+                const existingTable = collapsedNodes[existingTableIndex][0];
+                existingTable.children.push(node);
               }
               return;
             }

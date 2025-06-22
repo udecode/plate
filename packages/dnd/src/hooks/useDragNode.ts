@@ -54,7 +54,7 @@ export const useDragNode = (
         // Check if multiple nodes are selected
         const currentDraggingId = editor.getOption(DndPlugin, 'draggingId');
 
-        let ids: string[] = [];
+        let id: string | string[];
 
         if (
           Array.isArray(currentDraggingId) &&
@@ -62,18 +62,17 @@ export const useDragNode = (
           currentDraggingId.includes(elementId)
         ) {
           // Multiple selection including current element
-          ids = Array.from(currentDraggingId);
+          id = Array.from(currentDraggingId);
         } else {
           // Single element drag
-          ids = [elementId];
+          id = elementId;
           editor.setOption(DndPlugin, 'draggingId', elementId);
         }
 
         return {
-          id: elementId,
+          id,
           editorId: editor.id,
           element,
-          ids,
           ..._item,
         };
       },
