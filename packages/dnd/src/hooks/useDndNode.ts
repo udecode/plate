@@ -89,10 +89,15 @@ export const useDndNode = ({
   } else if (previewOptions.ref) {
     preview(previewOptions.ref);
   } else {
-    const isMultipleSelection = editor.getOption(
+    const selectedIds = editor.getOption(
       { key: 'blockSelection' },
-      'isSelectingSome'
+      'selectedIds'
     );
+
+    const isMultipleSelection =
+      selectedIds &&
+      selectedIds.size > 1 &&
+      selectedIds.has(element.id as string);
 
     if (isMultipleSelection && multiplePreviewRef?.current) {
       // Use multiplePreviewRef for preview when dragging multiple blocks
