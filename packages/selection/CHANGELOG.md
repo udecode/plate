@@ -1,5 +1,15 @@
 # @platejs/selection
 
+## 49.0.7
+
+### Patch Changes
+
+- [#4385](https://github.com/udecode/plate/pull/4385) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Added `sort` and `collapseTableRows` options to `editor.blockSelection.getNodes()` method.
+  - Added `editor.blockSelection.first` to get the first selected node.
+  - Added `normalize` function to handle table selection logic in `useSelectionArea` hook for improved table row and table element selection behavior.
+    - It is now possible to select the entire table (table), but the rows (tr) will only be selected if your selection box is within the table.
+
 ## 49.0.1
 
 ### Patch Changes
