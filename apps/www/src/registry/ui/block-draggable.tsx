@@ -77,11 +77,10 @@ function Draggable(props: PlateElementProps) {
   const { isDragging, multiplePreviewRef, nodeRef, handleRef } = useDraggable({
     element,
     onDropHandler: (_, { dragItem }) => {
-      const ids = (dragItem as { ids?: string[] }).ids;
-      const id = (dragItem as { id: string }).id;
+      const id = (dragItem as { id: string[] | string }).id;
 
       if (blockSelectionApi) {
-        blockSelectionApi.add(ids ?? id);
+        blockSelectionApi.add(id);
       }
       multiplePreviewRef.current?.replaceChildren();
     },
