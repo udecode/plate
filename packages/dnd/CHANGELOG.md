@@ -1,5 +1,12 @@
 # @platejs/dnd
 
+## 49.0.8
+
+### Patch Changes
+
+- [#4393](https://github.com/udecode/plate/pull/4393) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Fix the drag preview display error.
+
 ## 49.0.7
 
 ### Patch Changes
