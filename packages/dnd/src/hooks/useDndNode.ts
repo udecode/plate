@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { getEmptyImage, NativeTypes } from 'react-dnd-html5-backend';
 
 import type { ConnectDragSource, DropTargetMonitor } from 'react-dnd';
@@ -7,12 +6,14 @@ import { type PlateEditor, useEditorRef } from 'platejs/react';
 
 import type { DragItemNode } from '../types';
 
-import { DndPlugin, DRAG_ITEM_BLOCK } from '../DndPlugin';
+import { DRAG_ITEM_BLOCK } from '../DndPlugin';
 import { type UseDragNodeOptions, useDragNode } from './useDragNode';
 import { type UseDropNodeOptions, useDropNode } from './useDropNode';
 
 export type UseDndNodeOptions = Pick<UseDropNodeOptions, 'element'> &
-  Partial<Pick<UseDropNodeOptions, 'canDropNode' | 'nodeRef'>> &
+  Partial<
+    Pick<UseDropNodeOptions, 'canDropNode' | 'multiplePreviewRef' | 'nodeRef'>
+  > &
   Partial<Pick<UseDragNodeOptions, 'type'>> & {
     /** Options passed to the drag hook. */
     drag?: Partial<Omit<UseDragNodeOptions, 'type'>>;
@@ -49,6 +50,7 @@ export const useDndNode = ({
   drag: dragOptions,
   drop: dropOptions,
   element,
+  multiplePreviewRef,
   nodeRef,
   orientation = 'vertical',
   preview: previewOptions = {},
@@ -71,27 +73,35 @@ export const useDndNode = ({
     accept: [type, NativeTypes.FILE],
     canDropNode,
     element,
+    multiplePreviewRef,
     nodeRef,
     orientation,
     onDropHandler,
     ...dropOptions,
   });
 
+  // Always use nodeRef for the drop target (actual DOM element)
+  drop(nodeRef);
+
+  // Handle preview based on options and whether we're dragging multiple nodes
   if (previewOptions.disable) {
-    drop(nodeRef);
     preview(getEmptyImage(), { captureDraggingState: true });
   } else if (previewOptions.ref) {
-    drop(nodeRef);
     preview(previewOptions.ref);
   } else {
-    preview(drop(nodeRef));
-  }
+    const isMultipleSelection = editor.getOption(
+      { key: 'blockSelection' },
+      'isSelectingSome'
+    );
 
-  useEffect(() => {
-    if (!isOver && editor.getOptions(DndPlugin).dropTarget?.id) {
-      editor.setOption(DndPlugin, 'dropTarget', { id: null, line: '' });
+    if (isMultipleSelection && multiplePreviewRef?.current) {
+      // Use multiplePreviewRef for preview when dragging multiple blocks
+      preview(multiplePreviewRef);
+    } else {
+      // Use nodeRef for preview when dragging a single block
+      preview(nodeRef);
     }
-  }, [isOver, editor]);
+  }
 
   return {
     dragRef,

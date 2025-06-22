@@ -6,6 +6,8 @@ import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 
 export type DraggableState = {
   isDragging: boolean;
+  /** The ref of the multiple preview element */
+  multiplePreviewRef: React.RefObject<HTMLDivElement | null>;
   /** The ref of the draggable element */
   previewRef: React.RefObject<HTMLDivElement | null>;
   /** The ref of the draggable handle */
@@ -29,10 +31,13 @@ export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
 
   const nodeRef = React.useRef<HTMLDivElement>(null);
 
+  const multiplePreviewRef = React.useRef<HTMLDivElement>(null);
+
   if (!editor.plugins.dnd) return {} as any;
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { dragRef, isDragging } = useDndNode({
+    multiplePreviewRef,
     nodeRef,
     orientation,
     type,
@@ -42,6 +47,7 @@ export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
 
   return {
     isDragging,
+    multiplePreviewRef,
     previewRef: nodeRef,
     handleRef: dragRef,
   };

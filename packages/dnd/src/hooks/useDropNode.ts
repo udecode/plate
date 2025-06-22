@@ -32,6 +32,9 @@ export interface UseDropNodeOptions
   /** The reference to the node being dragged. */
   nodeRef: any;
 
+  /** The reference to the multiple preview element */
+  multiplePreviewRef: any;
+
   /**
    * Intercepts the drop handling. If `false` is returned, the default drop
    * behavior is called after. If `true` is returned, the default behavior is

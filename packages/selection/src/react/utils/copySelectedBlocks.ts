@@ -8,7 +8,7 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
   const { selectedIds } = editor.getOptions(BlockSelectionPlugin);
   const selectedEntries = editor
     .getApi(BlockSelectionPlugin)
-    .blockSelection.getNodes();
+    .blockSelection.getNodes({ collapseTableRows: true });
   const selectedFragment = selectedEntries.map(([node]) => node);
 
   copyToClipboard(' ', {

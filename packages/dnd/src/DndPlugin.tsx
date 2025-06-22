@@ -19,7 +19,8 @@ export const DRAG_ITEM_BLOCK = 'block';
 export type DndConfig = PluginConfig<
   'dnd',
   {
-    draggingId?: string | null;
+    _isOver?: boolean;
+    draggingId?: string[] | string | null;
     dropTarget?: {
       id: string | null;
       line: DropLineDirection;
@@ -44,6 +45,10 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
       editor.setOption(plugin, 'isDragging', false);
+      editor.setOption(plugin, 'dropTarget', { id: null, line: '' });
+    },
+    onDragEnter: ({ editor, plugin }) => {
+      editor.setOption(plugin, '_isOver', true);
     },
     onDragStart: ({ editor, event, plugin }) => {
       const target = event.target as HTMLElement;
@@ -58,21 +63,22 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
 
       editor.setOption(plugin, 'draggingId', id);
       editor.setOption(plugin, 'isDragging', true);
+      editor.setOption(plugin, '_isOver', true);
     },
-    onDrop: ({ editor, getOptions }) => {
-      const id = getOptions().draggingId;
-
-      setTimeout(() => {
-        id &&
-          editor
-            .getApi({ key: KEYS.blockSelection })
-            .blockSelection?.addSelectedRow?.(id);
-      }, 0);
+    onDrop: ({ getOptions, setOption }) => {
+      setOption('_isOver', false);
+      setOption('dropTarget', undefined);
 
       return getOptions().isDragging;
     },
+    onFocus: ({ editor, plugin }) => {
+      editor.setOption(plugin, 'isDragging', false);
+      editor.setOption(plugin, 'dropTarget', { id: null, line: '' });
+      editor.setOption(plugin, '_isOver', false);
+    },
   },
   options: {
+    _isOver: false,
     draggingId: null,
     dropTarget: { id: null, line: '' },
     isDragging: false,

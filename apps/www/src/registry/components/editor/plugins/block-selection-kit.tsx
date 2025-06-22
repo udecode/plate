@@ -13,7 +13,6 @@ export const BlockSelectionKit = [
         return !getPluginTypes(editor, [
           KEYS.column,
           KEYS.codeLine,
-          KEYS.table,
           KEYS.td,
         ]).includes(element.type);
       },
