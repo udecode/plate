@@ -13,7 +13,6 @@ import {
   MemoizedChildren,
   useEditorRef,
   useElement,
-  usePath,
   usePluginOption,
 } from 'platejs/react';
 import { useSelected } from 'platejs/react';
@@ -174,7 +173,6 @@ function Gutter({
 }: React.ComponentProps<'div'>) {
   const editor = useEditorRef();
   const element = useElement();
-  const path = usePath();
   const isSelectionAreaVisible = usePluginOption(
     BlockSelectionPlugin,
     'isSelectionAreaVisible'
