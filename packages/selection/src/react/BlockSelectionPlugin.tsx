@@ -8,7 +8,6 @@ import type {
   PluginConfig,
   TElement,
   TIdElement,
-  TTableElement,
 } from 'platejs';
 
 import { bindFirst, KEYS, PathApi } from 'platejs';
@@ -177,29 +176,10 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       add: (id) => {
         const next = new Set(getOptions().selectedIds!);
 
-        const processId = (singleId: string) => {
-          const nodeEntry = editor.api.node({ id: singleId, at: [] })!;
-
-          if (nodeEntry[0].type === KEYS.table) {
-            const tableNode = nodeEntry[0] as TTableElement;
-            const trs = tableNode.children.filter(
-              (child) => child.type === KEYS.tr
-            );
-
-            trs.forEach((tr) => {
-              next.add(tr.id as string);
-            });
-
-            return;
-          }
-
-          next.add(singleId);
-        };
-
         if (Array.isArray(id)) {
-          id.forEach(processId);
+          id.forEach((singleId) => next.add(singleId));
         } else {
-          processId(id);
+          next.add(id);
         }
 
         setOption('selectedIds', next);
