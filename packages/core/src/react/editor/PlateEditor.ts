@@ -1,4 +1,10 @@
-import type { EditorApi, EditorTransforms, Value } from '@platejs/slate';
+import type {
+  DescendantIn,
+  EditorApi,
+  EditorTransforms,
+  Operation,
+  Value,
+} from '@platejs/slate';
 import type { UnionToIntersection } from '@udecode/utils';
 
 import type {
@@ -47,13 +53,14 @@ type FilterKeys<T, K extends keyof T> = {
 export type TPlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
-> = FilterKeys<PlateEditor, 'children'> & {
+> = FilterKeys<PlateEditor, 'children' | 'operations'> & {
   api: EditorApi<V> & UnionToIntersection<InferApi<P | PlateCorePlugin>>;
   children: V;
   meta: BaseEditor['meta'] & {
     pluginList: P[];
     shortcuts: Shortcuts;
   };
+  operations: Operation<DescendantIn<V>>[];
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
   tf: EditorTransforms<V> &
     UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
