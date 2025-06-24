@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.0.9
+
+### Patch Changes
+
+- [#4396](https://github.com/udecode/plate/pull/4396) by [@delijah](https://github.com/delijah) – Use custom type for operations on TPlateEditor
+
 ## 49.0.6
 
 ### Patch Changes
