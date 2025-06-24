@@ -19,6 +19,7 @@ export const BasicBlocksKit = [
   H1Plugin.configure({
     node: {
       component: H1Element,
+      type: 'heading1',
     },
     rules: {
       break: { empty: 'reset' },

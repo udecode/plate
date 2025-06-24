@@ -1,0 +1,13 @@
+{
+  "allowedTools": [
+    "Bash(grep:*)",
+    "Bash(rg:*)",
+    "Bash(npx tsc:*)",
+    "Edit",
+    "Bash(task-master *)",
+    "Bash(git commit:*)",
+    "Bash(git add:*)",
+    "Bash(npm run *)",
+    "mcp__task_master_ai__*"
+  ]
+}

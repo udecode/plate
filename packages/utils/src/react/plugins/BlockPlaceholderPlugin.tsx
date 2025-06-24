@@ -72,6 +72,27 @@ export const BlockPlaceholderPlugin =
 
         const [element, path] = entry;
 
+        // const getPlaceholder = (node: TElement) => {
+        //   if (node?.listStyleType) {
+        //     switch (node.listStyleType) {
+        //       case 'disc':
+        //         return 'List';
+        //         break;
+        //       case 'decimal':
+        //         return 'List';
+        //         break;
+        //       case 'todo':
+        //         return 'To-do';
+        //         break;
+        //     }
+        //   }
+
+        //   const key = getPluginKey(editor, node.type);
+        //   if (!key) return;
+
+        //   return placeholders?.[key];
+        // }
+
         const placeholder = Object.keys(placeholders).find(
           (key) => editor.getType(key) === element.type
         );
