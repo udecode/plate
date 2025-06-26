@@ -7,7 +7,25 @@ import { htmlBrToNewLine } from './htmlBrToNewLine';
 import { htmlElementToElement } from './htmlElementToElement';
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { htmlTextNodeToString } from './htmlTextNodeToString';
+import { inlineTagNames } from './inlineTagNames';
 import { isHtmlElement } from './isHtmlElement';
+
+/** Check if an element is a block-level element. */
+const isBlockElement = (element: Element | null): boolean => {
+  if (!element) return false;
+  
+  return !inlineTagNames.has(element.tagName);
+};
+
+/** Check if a BR tag is between two block elements. */
+const isBrBetweenBlocks = (node: HTMLElement): boolean => {
+  if (node.nodeName !== 'BR') return false;
+
+  const prevSibling = node.previousElementSibling;
+  const nextSibling = node.nextElementSibling;
+
+  return isBlockElement(prevSibling) && isBlockElement(nextSibling);
+};
 
 /** Deserialize HTML element or child node. */
 export const deserializeHtmlNode =
@@ -17,6 +35,9 @@ export const deserializeHtmlNode =
 
     if (textNode) return textNode;
     if (!isHtmlElement(node)) return null;
+
+    // Skip BR tags between block elements (e.g., from Google Docs)
+    if (isBrBetweenBlocks(node)) return null;
 
     // break line
     const breakLine = htmlBrToNewLine(node);
