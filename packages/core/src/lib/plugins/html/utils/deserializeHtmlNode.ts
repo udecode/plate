@@ -40,7 +40,7 @@ export const deserializeHtmlNode =
     if (isBrBetweenBlocks(node)) {
       return {
         children: [{ text: '' }],
-        type: 'p',
+        type: editor.getType('p'),
       };
     }
 
