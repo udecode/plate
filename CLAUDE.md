@@ -39,9 +39,13 @@
 
 ### Development
 
-- `pnpm typecheck` - Run TypeScript type checking (must pass without errors)
-- `pnpm lint` - Run ESLint
-- DO NOT run `pnpm dev` or `pnpm build` or `pnpm start` - these are manual commands
+- `yarn typecheck` - Run TypeScript type checking (must pass without errors)
+- `yarn lint` - Run ESLint
+- `yarn test` - Run tests
+- `yarn build` - Build all packages
+- `yarn dev` - Start the development server. NEVER run this command, this is done by the user.
+
+These are root commands, but if you modified just a few packages, it's more efficient to run those commands in the modified packages.
 
 ### Database
 

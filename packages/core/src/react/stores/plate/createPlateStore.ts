@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { atom } from 'jotai';
 import { useAtomStoreSet, useAtomStoreState, useAtomStoreValue } from 'jotai-x';
@@ -94,6 +94,8 @@ const {
   usePlateValue: usePlateLocalValue,
 } = createPlateStore();
 
+const { usePlateStore: useFallbackPlateStore } = createPlateStore();
+
 export { plateStore, PlateStoreProvider, usePlateLocalStore };
 
 export const usePlateStore = (id?: string) => {
@@ -122,7 +124,7 @@ export const usePlateStore = (id?: string) => {
    * case, return a fallback store until an editor becomes active.
    */
   const plateControllerExists = usePlateControllerExists();
-  const fallbackStore = useMemo(createPlateStore, []).usePlateStore();
+  const fallbackStore = useFallbackPlateStore();
 
   if (!store) {
     if (plateControllerExists) {
