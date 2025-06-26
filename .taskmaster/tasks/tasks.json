@@ -1,0 +1,18 @@
+{
+  "master": {
+    "tasks": [],
+    "metadata": {
+      "created": "2025-06-22T13:38:45.420Z",
+      "updated": "2025-06-22T22:10:07.199Z",
+      "description": "Tasks for master context"
+    }
+  },
+  "app-design-document": {
+    "tasks": [],
+    "metadata": {
+      "created": "2025-06-22T22:11:31.835Z",
+      "updated": "2025-06-23T10:16:48.937Z",
+      "description": "Tasks for app-design-document context"
+    }
+  }
+}

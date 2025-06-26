@@ -1,0 +1,45 @@
+name: Claude Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    # Only run for PRs from specific authors
+    if: |
+      github.event.pull_request.user.login == 'zbeyens' ||
+      github.event.pull_request.user.login == 'felixfeng33'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Review PR
+        uses: grll/claude-code-action@beta
+        with:
+          use_oauth: true
+          claude_access_token: ${{ secrets.CLAUDE_ACCESS_TOKEN }}
+          claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
+          claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
+          timeout_minutes: '60'
+          direct_prompt: |
+            Please provide a thorough review of this pull request.
+
+            Since this is from a specific author that requires careful review,
+            please pay extra attention to:
+            - Adherence to project coding standards
+            - Proper error handling
+            - Security best practices
+            - Test coverage
+            - Documentation
+            - Changeset required when updating packages
+            - Updating `docs/components/changelog.mdx` is required when updating `apps/www/src/registry`
+
+            Provide detailed feedback and suggestions for improvement.
