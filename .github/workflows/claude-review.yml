@@ -2,14 +2,33 @@ name: Claude Review
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, ready_for_review]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   review:
-    # Only run for PRs from specific authors
+    # Auto-review zbeyens/felix PRs OR @claude mentions by zbeyens/felix
     if: |
-      github.event.pull_request.user.login == 'zbeyens' ||
-      github.event.pull_request.user.login == 'felixfeng33'
+      (
+        (
+          (github.event_name == 'pull_request') &&
+          (github.event.pull_request.draft == false) &&
+          (github.event.pull_request.user.login == 'zbeyens' ||
+           github.event.pull_request.user.login == 'felixfeng33')
+        ) ||
+        (
+          (
+            (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+            (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
+          ) && (
+            github.actor == 'zbeyens' ||
+            github.actor == 'felixfeng33'
+          )
+        )
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -32,14 +51,15 @@ jobs:
           direct_prompt: |
             Please provide a thorough review of this pull request.
 
-            Since this is from a specific author that requires careful review,
-            please pay extra attention to:
+            Please pay extra attention to:
             - Adherence to project coding standards
             - Proper error handling
-            - Security best practices
-            - Test coverage
+            - Security best practices (if applicable)
+            - Unit test coverage (no integration/e2e tests)
             - Documentation
             - Changeset required when updating packages
             - Updating `docs/components/changelog.mdx` is required when updating `apps/www/src/registry`
 
-            Provide detailed feedback and suggestions for improvement.
+            Provide detailed feedback and suggestions for improvement. 
+
+            Writing style: easy to read (average english user), and to the point.
