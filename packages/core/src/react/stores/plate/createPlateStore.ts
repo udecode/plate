@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 
 import { atom } from 'jotai';
 import { useAtomStoreSet, useAtomStoreState, useAtomStoreValue } from 'jotai-x';
