@@ -189,8 +189,12 @@ enableTelemetry: false
 
 ### Type Checking
 
+**Important**: Before running `yarn typecheck`, you must first run `yarn install && yarn build` to ensure all packages are built and type definitions are available.
+
 ```bash
-# Type checking commands
+# Required sequence for type checking
+yarn install          # Install all dependencies
+yarn build            # Build all packages (generates type definitions)
 yarn typecheck        # Check all packages
 ```
 
@@ -214,13 +218,18 @@ yarn typecheck        # Check all packages
 
 ### Development Workflow
 
+**Important**: For monorepo type checking, always build packages first.
+
 ```bash
-# Common development commands
-yarn dev              # Start development server.
-yarn build            # Build all packages
+# Required sequence for development
+yarn install          # Install dependencies
+yarn build            # Build all packages first
+yarn typecheck        # Type checking (requires built packages)
+
+# Other development commands
+yarn dev              # Start development server
 yarn test             # Run tests
 yarn lint             # Run ESLint
-yarn typecheck        # Type checking
 ```
 
 These are root commands, but if you modified just a few packages, it's more efficient to run those commands in the modified packages.
