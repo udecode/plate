@@ -1,0 +1,70 @@
+name: Claude Translate
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  translate-docs:
+    # Only respond to /translate mentions from authorized users in PRs
+    if: |
+      (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/translate') && github.event.issue.pull_request)
+      ) && (
+        github.actor == 'zbeyens' ||
+        github.actor == 'felixfeng33'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history to allow the action to determine changes
+          fetch-depth: 0
+
+      - name: Translate Documentation
+        uses: grll/claude-code-action@beta
+        with:
+          use_oauth: true
+          claude_access_token: ${{ secrets.CLAUDE_ACCESS_TOKEN }}
+          claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
+          claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
+          timeout_minutes: '60'
+          direct_prompt: |
+            You are a professional translator. Your task is to synchronize MDX documentation from English to Chinese (`.cn.mdx`) based on the changes in this pull request.
+
+            Please follow these guidelines, referencing `.claude/commands/translate.md`:
+
+            **Primary Task:**
+            1.  Analyze the changed files in this PR.
+            2.  For every English file (`<name>.mdx`) that has been modified, you must update its corresponding Chinese translation (`<name>.cn.mdx`).
+            3.  If a `*.cn.mdx` file doesn't exist for a modified `*.mdx` file, create it.
+
+            **Translation Rules:**
+            - **Preserve Structure:** Keep all Markdown formatting, code blocks, and JSX component tags (e.g., `<APIItem>`) exactly as they are.
+            - **Translate Text Only:** Only translate the narrative text content.
+            - **Do Not Translate Code:** Do not translate anything inside code blocks, variable names, or function names.
+            - **Do Not Translate Component Names:** React component names like `<CodeBlock>` or `<APIItem>` must remain in English.
+
+            **Example from `.claude/commands/translate.md`:**
+
+            *Original English:*
+            ```mdx
+            <APIItem name="extendApi" type="function">
+            xxxx content
+            </APIItem>
+            ```
+
+            *Correct Chinese Translation:*
+            ```mdx
+            <APIItem name="extendApi" type="function">
+            xxxx 内容
+            </APIItem>
+            ```
+
+            Please review the PR's changes and apply the translations to the `.cn.mdx` files.

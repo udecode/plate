@@ -7,7 +7,7 @@
     "Bash(task-master *)",
     "Bash(git commit:*)",
     "Bash(git add:*)",
-    "Bash(npm run *)",
+    "Bash(yarn *)",
     "mcp__task_master_ai__*"
   ]
 }
