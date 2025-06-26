@@ -46,10 +46,10 @@
 1. `yarn install` - Install all dependencies
 2. `yarn build` - Build all packages (generates type definitions)
 3. `yarn typecheck` - Run TypeScript type checking (must pass without errors)
+4. `yarn lint:fix` - Formats and auto-fixes linting issues (replaces need for `yarn lint`)
 
 **Other commands:**
 
-- `yarn lint` - Run ESLint
 - `yarn test` - Run tests
 - `yarn dev` - Start the development server. NEVER run this command, this is done by the user.
 
