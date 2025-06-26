@@ -27,11 +27,17 @@ describe('deserializeHtml - Google Docs', () => {
     const output = (
       <editor>
         <hp>Hello world</hp>
-        <hp text></hp>
+        <hp>
+          <htext />
+        </hp>
         <hp>Hello World</hp>
-        <hp text></hp>
+        <hp>
+          <htext />
+        </hp>
         <hp>Hello World</hp>
-        <hp text></hp>
+        <hp>
+          <htext />
+        </hp>
         <hp>Hello World</hp>
       </editor>
     ) as any;
