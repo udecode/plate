@@ -8,7 +8,7 @@ import { deserializeHtml } from './deserializeHtml';
 jsxt;
 
 describe('deserializeHtml - Google Docs', () => {
-  it('should not create extra paragraphs from BR tags between paragraphs', () => {
+  it('should create single empty paragraphs from BR tags between paragraphs', () => {
     const editor = createPlateEditor({ plugins: [] });
 
     // HTML structure from Google Docs with BR tags between paragraphs
@@ -27,8 +27,11 @@ describe('deserializeHtml - Google Docs', () => {
     const output = (
       <editor>
         <hp>Hello world</hp>
+        <hp text></hp>
         <hp>Hello World</hp>
+        <hp text></hp>
         <hp>Hello World</hp>
+        <hp text></hp>
         <hp>Hello World</hp>
       </editor>
     ) as any;
@@ -83,12 +86,20 @@ describe('deserializeHtml - Google Docs', () => {
     const element = getHtmlDocument(html).body;
     const result = deserializeHtml(editor, { element });
 
-    // Should have exactly 4 paragraphs, not 8
-    expect(result).toHaveLength(4);
+    // Should have 7 elements: 4 paragraphs with content + 3 empty paragraphs from BR tags
+    expect(result).toHaveLength(7);
     expect(result[0].type).toBe('p');
     expect(result[1].type).toBe('p');
     expect(result[2].type).toBe('p');
     expect(result[3].type).toBe('p');
+    expect(result[4].type).toBe('p');
+    expect(result[5].type).toBe('p');
+    expect(result[6].type).toBe('p');
+
+    // Check that empty paragraphs are at the right positions
+    expect((result[1] as any).children[0].text).toBe('');
+    expect((result[3] as any).children[0].text).toBe('');
+    expect((result[5] as any).children[0].text).toBe('');
   });
 
   it('should preserve BR tags within paragraphs as separate text nodes', () => {

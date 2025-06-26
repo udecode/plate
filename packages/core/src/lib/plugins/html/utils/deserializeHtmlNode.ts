@@ -36,8 +36,21 @@ export const deserializeHtmlNode =
     if (textNode) return textNode;
     if (!isHtmlElement(node)) return null;
 
-    // Skip BR tags between block elements (e.g., from Google Docs)
-    if (isBrBetweenBlocks(node)) return null;
+    // Convert BR tags between block elements to empty paragraphs (e.g., from Google Docs)
+    if (isBrBetweenBlocks(node)) {
+      return {
+        children: [{ text: '' }],
+        type: 'p',
+      };
+    }
+
+    // Skip Apple-interchange-newline BR tags
+    if (
+      node.nodeName === 'BR' &&
+      (node as HTMLBRElement).className === 'Apple-interchange-newline'
+    ) {
+      return null;
+    }
 
     // break line
     const breakLine = htmlBrToNewLine(node);
