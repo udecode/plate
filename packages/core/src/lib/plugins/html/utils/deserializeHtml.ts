@@ -26,10 +26,10 @@ export const deserializeHtml = (
   if (typeof element === 'string') {
     element = htmlStringToDOMNode(element);
   }
-  
+
   // Preprocess to remove BR tags between block elements (e.g., from Google Docs)
   element = preprocessGoogleDocsBr(element);
-  
+
   if (shouldCollapseWhiteSpace) {
     element = collapseWhiteSpace(element);
   }

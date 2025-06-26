@@ -34,7 +34,7 @@ describe('deserializeHtml - Google Docs', () => {
     ) as any;
 
     const result = deserializeHtml(editor, { element });
-    
+
     expect(result).toEqual(output.children);
   });
 
@@ -51,7 +51,7 @@ describe('deserializeHtml - Google Docs', () => {
     ) as any;
 
     const result = deserializeHtml(editor, { element });
-    
+
     expect(result).toEqual(output.children);
   });
 
@@ -98,14 +98,14 @@ describe('deserializeHtml - Google Docs', () => {
     const element = getHtmlDocument(html).body;
 
     const result = deserializeHtml(editor, { element });
-    
+
     // BR tags are converted to newline text nodes
     // Note: Text nodes are not merged during deserialization
     expect(result).toHaveLength(1);
-    expect(result[0].type).toBe('p');
-    expect(result[0].children).toHaveLength(3);
-    expect(result[0].children[0].text).toBe('Hello');
-    expect(result[0].children[1].text).toBe('\n');
-    expect(result[0].children[2].text).toBe('World');
+    expect((result[0] as any).type).toBe('p');
+    expect((result[0] as any).children).toHaveLength(3);
+    expect((result[0] as any).children[0].text).toBe('Hello');
+    expect((result[0] as any).children[1].text).toBe('\n');
+    expect((result[0] as any).children[2].text).toBe('World');
   });
 });
