@@ -1,0 +1,73 @@
+name: Claude Docs
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  update-docs:
+    # Only respond to @claude docs mentions from authorized users in PRs
+    if: |
+      (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude docs') && github.event.issue.pull_request) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude docs')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude docs'))
+      ) && (
+        github.actor == 'zbeyens' ||
+        github.actor == 'felixfeng33'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Update Documentation
+        uses: grll/claude-code-action@beta
+        with:
+          use_oauth: true
+          claude_access_token: ${{ secrets.CLAUDE_ACCESS_TOKEN }}
+          claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
+          claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
+          timeout_minutes: '60'
+          direct_prompt: |
+            You are tasked with updating Plate documentation. Please follow these guidelines:
+
+            **Primary References:**
+            - Follow the Plugin Documentation Guide (.claude/commands/docs-plugin.md) for structure and style if documenting a plugin. Otherwise, just use a similar style.
+            - Use the Translation Command (.claude/commands/translate.md) for any localization needs
+
+            **Documentation Standards:**
+            - Maintain "shadcn-like straight to the point" writing style
+            - Keep documentation headless - don't assume users are using Plate UI directly
+            - Follow the standard section order: Kit Usage → Manual Usage → Plugins → API → Transforms
+            - Preserve existing API formatting (don't change <APIOptions> to <APIParameters>)
+            - Link to Plate UI components as examples with proper documentation links
+            - Focus on actual plugin capabilities confirmed from source code
+
+            **Specific Tasks:**
+            1. Analyze any changed plugin files to identify documentation updates needed
+            2. Update corresponding documentation files in docs/(plugins)/ directories
+            3. Ensure all code examples use current syntax and patterns
+            4. Add or update Chinese translations (.cn.mdx files) following translate.md guidelines
+            5. Update changelog.mdx if registry components were modified
+            6. Maintain consistency with existing documentation style
+
+            **Writing Style:** Easy to read for the average English developer. Avoid multiple paragraphs in a row.
+
+            **File Organization:**
+            - Plugin docs: docs/(plugins)/(category)/plugin-name.mdx
+            - Chinese versions: docs/(plugins)/(category)/plugin-name.cn.mdx
+            - Component docs: update docs/components/changelog.mdx only if apps/www/src/registry components got changes
+
+            Please review the changes in this PR/issue and update the relevant documentation accordingly.

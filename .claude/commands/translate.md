@@ -3,7 +3,27 @@ Preserve all Markdown formatting, code blocks, and component tags. Do not transl
 Filename for <name>.mdx (English) = <name>.cn.mdx (Chinese)
 The content is in .mdx format, which combines Markdown with JSX components.
 
-- Do not translate the provider as 提供者, just keep it as provider.
-- Do not translate the entry as 条目, just keep it as entry.
-- Do not translate the leaf as 叶子, just keep it as leaf.
-- Do not translate the element as 元素, just keep it as element.
+# Important Notice
+
+1.DONOT remove any content.
+2.You can translate the title markdown ## Plugin Context.
+
+For Example:
+<APIItem name="extendApi" type="function">
+xxxx content
+
+```ts
+(api: (ctx: PlatePluginContext<AnyPluginConfig>) => any) => PlatePlugin<C>;
+```
+
+</APIItem>
+
+After translate:
+<APIItem name="extendApi" type="function">
+xxxx 内容
+
+```ts
+(api: (ctx: PlatePluginContext<AnyPluginConfig>) => any) => PlatePlugin<C>;
+```
+
+</APIItem>

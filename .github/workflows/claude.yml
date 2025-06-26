@@ -44,3 +44,13 @@ jobs:
           claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
           claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
           timeout_minutes: '60'
+          direct_prompt: |
+            Writing style: easy to read for the average English developer. Avoid multiple paragraphs in a row.
+            Only if you're going to open a PR, please pay extra attention to:
+            - Adherence to project coding standards
+            - Proper error handling
+            - Security best practices (if applicable)
+            - Unit test coverage for package changes. We don't do integration/e2e testing. UI/React testing is optional.
+            - Documentation
+            - Changeset required when updating packages
+            - Updating `docs/components/changelog.mdx` is required when updating `apps/www/src/registry`
