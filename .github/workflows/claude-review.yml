@@ -11,11 +11,13 @@ on:
 jobs:
   review:
     # Auto-review zbeyens/felix PRs OR @claude mentions by zbeyens/felix
+    # Exclude branches starting with "claude/"
     if: |
       (
         (
           (github.event_name == 'pull_request') &&
           (github.event.pull_request.draft == false) &&
+          (!startsWith(github.event.pull_request.head.ref, 'claude/')) &&
           (github.event.pull_request.user.login == 'zbeyens' ||
            github.event.pull_request.user.login == 'felixfeng33')
         ) ||
@@ -55,7 +57,7 @@ jobs:
             - Adherence to project coding standards
             - Proper error handling
             - Security best practices (if applicable)
-            - Unit test coverage (no integration/e2e tests)
+            - Unit test coverage for package changes. We don't do integration/e2e testing. UI/React testing is optional.
             - Documentation
             - Changeset required when updating packages
             - Updating `docs/components/changelog.mdx` is required when updating `apps/www/src/registry`
