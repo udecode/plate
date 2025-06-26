@@ -2,10 +2,12 @@ import {
   type Path,
   type SlateEditor,
   type TTableCellElement,
-  PathApi,
+  type TTableElement,
+  KEYS,
 } from 'platejs';
 
-import { getCellTypes } from '../utils/index';
+import { getCellTypes, getCellIndices } from '../utils/index';
+import { findCellByIndexes } from '../merge/findCellByIndexes';
 
 // Get cell to the top of the current cell
 export const getTopTableCell = (
@@ -24,17 +26,38 @@ export const getTopTableCell = (
     if (!cellPath) return;
   }
 
-  const cellIndex = cellPath.at(-1)!;
-  const rowIndex = cellPath.at(-2)!;
+  // Get the current cell
+  const cellEntry = editor.api.node<TTableCellElement>(cellPath);
+  if (!cellEntry) return;
 
-  // If the current cell is in the first row, there is no cell above it
-  if (rowIndex === 0) return;
+  const [cell] = cellEntry;
 
-  const cellAbovePath = [
-    ...PathApi.parent(PathApi.parent(cellPath)),
-    rowIndex - 1,
-    cellIndex,
-  ];
+  // Get the table
+  const tableEntry = editor.api.above<TTableElement>({
+    at: cellPath,
+    match: { type: editor.getType(KEYS.table) },
+  });
 
-  return editor.api.node<TTableCellElement>(cellAbovePath);
+  if (!tableEntry) return;
+
+  const [table] = tableEntry;
+
+  // Get cell indices
+  const indices = getCellIndices(editor, cell);
+  if (!indices) return;
+
+  const { row } = indices;
+
+  // If we're at the topmost row, there's no cell above
+  if (row === 0) return;
+
+  // Find the cell that actually occupies the position above
+  const topCell = findCellByIndexes(editor, table, row - 1, indices.col);
+  if (!topCell) return;
+
+  // Get the path of the found cell
+  const topCellPath = editor.api.findPath(topCell);
+  if (!topCellPath) return;
+
+  return [topCell, topCellPath] as const;
 };

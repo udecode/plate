@@ -1,8 +1,9 @@
-import type { Path, SlateEditor, TTableCellElement } from 'platejs';
+import type { Path, SlateEditor, TTableCellElement, TTableElement } from 'platejs';
 
-import { PathApi } from 'platejs';
+import { KEYS } from 'platejs';
 
-import { getCellTypes } from '../utils';
+import { getCellTypes, getCellIndices } from '../utils';
+import { findCellByIndexes } from '../merge/findCellByIndexes';
 
 // Get cell to the left of the current cell
 export const getLeftTableCell = (
@@ -21,11 +22,38 @@ export const getLeftTableCell = (
     if (!cellPath) return;
   }
 
-  const cellIndex = cellPath.at(-1);
+  // Get the current cell
+  const cellEntry = editor.api.node<TTableCellElement>(cellPath);
+  if (!cellEntry) return;
 
-  if (!cellIndex) return;
+  const [cell] = cellEntry;
 
-  const prevCellPath = PathApi.previous(cellPath)!;
+  // Get the table
+  const tableEntry = editor.api.above<TTableElement>({
+    at: cellPath,
+    match: { type: editor.getType(KEYS.table) },
+  });
 
-  return editor.api.node<TTableCellElement>(prevCellPath);
+  if (!tableEntry) return;
+
+  const [table] = tableEntry;
+
+  // Get cell indices
+  const indices = getCellIndices(editor, cell);
+  if (!indices) return;
+
+  const { col } = indices;
+
+  // If we're at the leftmost column, there's no cell to the left
+  if (col === 0) return;
+
+  // Find the cell that actually occupies the position to the left
+  const leftCell = findCellByIndexes(editor, table, indices.row, col - 1);
+  if (!leftCell) return;
+
+  // Get the path of the found cell
+  const leftCellPath = editor.api.findPath(leftCell);
+  if (!leftCellPath) return;
+
+  return [leftCell, leftCellPath] as const;
 };
