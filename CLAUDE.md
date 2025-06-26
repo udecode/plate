@@ -39,14 +39,14 @@
 
 ### Development
 
-**CRITICAL**: Before running `yarn typecheck`, you must first run `yarn install && yarn build` to ensure all packages are built and type definitions are available.
+**CRITICAL**: Before running `yarn typecheck`, you must first run `yarn install --mode=update-lockfile && yarn build` to ensure all packages are built and type definitions are available.
 
 **Required sequence for type checking:**
 
-1. `yarn install` - Install all dependencies
+1. `yarn install --mode=update-lockfile` - Install all dependencies and update lockfile if needed
 2. `yarn build` - Build all packages (generates type definitions)
 3. `yarn typecheck` - Run TypeScript type checking (must pass without errors)
-4. `yarn lint:fix` - Formats and auto-fixes linting issues (replaces need for `yarn lint`)
+4. `yarn lint:fix` - Auto-fix linting issues (replaces need for `yarn lint`)
 
 **Other commands:**
 
