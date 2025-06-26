@@ -7,6 +7,7 @@ import { normalizeDescendantsToDocumentFragment } from '../../../utils/normalize
 import { collapseWhiteSpace } from './collapse-white-space';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 import { htmlStringToDOMNode } from './htmlStringToDOMNode';
+import { preprocessGoogleDocsBr } from './preprocessGoogleDocsBr';
 
 /** Deserialize HTML element to a valid document fragment. */
 export const deserializeHtml = (
@@ -25,6 +26,10 @@ export const deserializeHtml = (
   if (typeof element === 'string') {
     element = htmlStringToDOMNode(element);
   }
+  
+  // Preprocess to remove BR tags between block elements (e.g., from Google Docs)
+  element = preprocessGoogleDocsBr(element);
+  
   if (shouldCollapseWhiteSpace) {
     element = collapseWhiteSpace(element);
   }
