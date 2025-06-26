@@ -11,11 +11,12 @@ on:
     types: [opened]
     paths:
       - 'packages/**'
+      - 'apps/www/src/registry/**'
 
 jobs:
   create-changeset:
     # Only respond to @claude changeset mentions from authorized users in PRs
-    # OR when packages are modified without changesets
+    # OR when packages/registry are modified without changesets/changelog updates
     if: |
       (
         (
@@ -42,33 +43,47 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check for package changes without changesets
+      - name: Check for package/registry changes without updates
         id: check-changes
         if: github.event_name == 'pull_request'
         run: |
-          # Get list of modified package files
+          # Get list of modified files
           PACKAGE_CHANGES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^packages/')
+          REGISTRY_CHANGES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^apps/www/src/registry/')
 
+          NEEDS_CHANGESET="false"
+          NEEDS_CHANGELOG="false"
+
+          # Check package changes
           if [ -n "$PACKAGE_CHANGES" ]; then
             # Check if any changeset files were created
             CHANGESET_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^.changeset/')
             
             if [ -z "$CHANGESET_FILES" ]; then
-              echo "::set-output name=needs_changeset::true"
+              NEEDS_CHANGESET="true"
               echo "Found package changes without corresponding changeset files"
-            else
-              echo "::set-output name=needs_changeset::false"
-              echo "Changeset files already exist"
             fi
-          else
-            echo "::set-output name=needs_changeset::false"
-            echo "No package changes detected"
           fi
 
-      - name: Create Changeset
+          # Check registry changes
+          if [ -n "$REGISTRY_CHANGES" ]; then
+            # Check if changelog was updated
+            CHANGELOG_CHANGES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^docs/components/changelog.mdx')
+            
+            if [ -z "$CHANGELOG_CHANGES" ]; then
+              NEEDS_CHANGELOG="true"
+              echo "Found registry changes without changelog update"
+            fi
+          fi
+
+          # Set outputs
+          echo "::set-output name=needs_changeset::$NEEDS_CHANGESET"
+          echo "::set-output name=needs_changelog::$NEEDS_CHANGELOG"
+
+      - name: Create Changeset/Update Changelog
         if: |
           github.event_name != 'pull_request' ||
-          (github.event_name == 'pull_request' && steps.check-changes.outputs.needs_changeset == 'true')
+          (github.event_name == 'pull_request' && (steps.check-changes.outputs.needs_changeset == 'true' || steps.check-changes.outputs.needs_changelog == 'true'))
         uses: grll/claude-code-action@beta
         with:
           use_oauth: true
@@ -77,12 +92,13 @@ jobs:
           claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
           timeout_minutes: '60'
           direct_prompt: |
-            You are tasked with creating changesets for the Plate project. Please follow these guidelines:
+            You are tasked with creating changesets and updating the changelog for the Plate project. Please follow these guidelines:
 
             **Primary Reference:**
             - Follow the Changeset Guide (.claude/commands/changeset.md) for structure, naming, and writing style
+            - For registry changes, update docs/components/changelog.mdx
 
-            **Changeset Standards:**
+            **Changeset Standards (for package changes):**
             - Use descriptive file naming: `[package]-[change-type].md`
             - Include proper YAML frontmatter with affected packages and change types
             - Write clear, concise descriptions using past tense verbs
@@ -90,6 +106,13 @@ jobs:
             - Provide migration guidance for breaking changes
             - Use code blocks to show "Before" and "After" examples
             - Create separate changeset files for each distinct change type (major/minor/patch)
+
+            **Changelog Standards (for registry changes):**
+            - Update docs/components/changelog.mdx
+            - Follow the existing format and style
+            - Document component changes, additions, or removals
+            - Include any breaking changes or migration notes
+            - Use consistent version numbering
 
             **Change Type Guidelines:**
             - **major**: Breaking changes requiring user code updates
@@ -107,5 +130,6 @@ jobs:
             - Create changeset files in `.changeset/` directory
             - Use descriptive names that indicate package and change type
             - One file per distinct change to enable proper SemVer bumping
+            - Update changelog.mdx for registry component changes
 
-            Please analyze the changes in this PR and create appropriate changeset files following the guide.
+            Please analyze the changes in this PR and create appropriate changeset files and/or update the changelog following the guide.

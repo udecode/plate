@@ -15,13 +15,15 @@ jobs:
     # Only respond to @claude mentions from authorized users
     if: |
       (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-        (github.event_name == 'issues' && contains(github.event.issue.body, '@claude')) ||
-        (github.event_name == 'discussion' && contains(github.event.discussion.body, '@claude')) ||
-        (github.event_name == 'discussion_comment' && contains(github.event.comment.body, '@claude'))
-      ) && (
-        github.actor == 'zbeyens' ||
-        github.actor == 'felixfeng33'
+        (
+          (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude changeset') && !contains(github.event.comment.body, '@claude docs')) ||
+          (github.event_name == 'issues' && contains(github.event.issue.body, '@claude')) ||
+          (github.event_name == 'discussion' && contains(github.event.discussion.body, '@claude')) ||
+          (github.event_name == 'discussion_comment' && contains(github.event.comment.body, '@claude'))
+        ) && (
+          github.actor == 'zbeyens' ||
+          github.actor == 'felixfeng33'
+        )
       )
     runs-on: ubuntu-latest
     permissions:
