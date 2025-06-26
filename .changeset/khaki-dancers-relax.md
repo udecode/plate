@@ -2,4 +2,4 @@
 '@platejs/core': patch
 ---
 
-PERF: Do not call `createPlateStore` on every hook call for the purposes of the fallback store
+Improve rendering performance, including the initial render and operations that add new elements, such as pasting.
