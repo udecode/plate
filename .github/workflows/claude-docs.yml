@@ -3,19 +3,13 @@ name: Claude Docs
 on:
   issue_comment:
     types: [created]
-  pull_request_review_comment:
-    types: [created]
-  pull_request_review:
-    types: [submitted]
 
 jobs:
   update-docs:
-    # Only respond to @claude docs mentions from authorized users in PRs
+    # Only respond to /docs mentions from authorized users in PRs
     if: |
       (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude docs') && github.event.issue.pull_request) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude docs')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude docs'))
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/docs') && github.event.issue.pull_request)
       ) && (
         github.actor == 'zbeyens' ||
         github.actor == 'felixfeng33'

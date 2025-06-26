@@ -44,11 +44,21 @@ The frontmatter is enclosed by ---` lines. It lists each affected package and it
 **Important Note on SemVer Bumping and Multiple Changesets:**
 
 - Each distinct change (breaking, feature, fix) for a package **MUST** have its own changeset file.
+- A single changeset file **MUST** contain only ONE package in its frontmatter.
 - For example, if you make a breaking API change, add a new feature, and fix a bug in `@platejs/core` for an upcoming release, you will create **three separate changeset files**:
   1.  One file marked `major` for `@platejs/core` detailing only the breaking change.
   2.  One file marked `minor` for `@platejs/core` detailing only the new feature.
   3.  One file marked `patch` for `@platejs/core` detailing only the bug fix.
 - The versioning tool will look at all pending changesets for a package. If there's at least one `major` file, the package gets a major version bump, and all changes (from major, minor, and patch files) are included in that release. If no `major` but at least one `minor`, it gets a minor bump, and so on.
+
+**Example: Multiple Changes, Multiple Packages**
+
+- If a PR adds a `minor` feature to `@platejs/core` and a `patch` fix to `@platejs/utils`, you MUST create TWO separate files:
+
+  1.  `core-minor.md` (containing only `'@platejs/core': minor`)
+  2.  `utils-patch.md` (containing only `'@platejs/utils': patch`)
+
+- If a PR adds `minor` features to both `@platejs/core` and `@platejs/utils`, you MUST create TWO separate `minor` changeset files, one for each package. DO NOT group them in a single file.
 
 **Example (Illustrating multiple files for one package):**
 
@@ -144,29 +154,4 @@ This section explains **what changed for the user** and **how they should adapt*
         ```
         `
 
-- **New Features / Enhancements (`minor` changeset):**
-
-  - - Added `useNewHook()` for managing X.
-    ```ts
-    const value = useNewHook(editor);
-    ```
-  - - Added `newOption` to `PluginName` options for Y.
-  - - Added `editor.meta.containerTypes`: an array of container node types derived from enabled plugins that have `plugin.node.isContainer = true`.
-  - - Updated `editor.api.fragment` to automatically use `editor.meta.containerTypes` as a default for the `containerTypes` option when not explicitly provided.
-
-- **Bug Fixes (`patch` changeset):**
-
-  - - Fixed an issue where typing at the end of a link would not extend the link mark.
-  - - Corrected the behavior of `someFunction()` to prevent crashes with empty inputs.
-
-- **Removals (Always `major`):**
-  - - Removed `obsoleteFunction()` from `**PackageName**`. There is no direct replacement.
-  - - Removed default shortcuts for `**SomePlugin**`. Configure them via `editor.configure(SomePlugin, { shortcuts: { ... } })` if needed.
-
-**Writing Style:**
-
-- **Clarity and Precision:** Be unambiguous.
-- **Action-Oriented:** Use past tense verbs to describe changes. Use imperative mood for migration steps (e.g., "- Replace...", "- Update...").
-- **User-Focused:** Prioritize information crucial for developers integrating the changes.
-
-By strictly following these guidelines, we will maintain a high-quality, accurate, and developer-friendly changelog where each change is distinctly categorized.
+- \*\*New Features / Enhancements (`

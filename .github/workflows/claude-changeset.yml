@@ -3,10 +3,6 @@ name: Claude Changeset
 on:
   issue_comment:
     types: [created]
-  pull_request_review_comment:
-    types: [created]
-  pull_request_review:
-    types: [submitted]
   pull_request:
     types: [opened]
     paths:
@@ -15,14 +11,12 @@ on:
 
 jobs:
   create-changeset:
-    # Only respond to @claude changeset mentions from authorized users in PRs
+    # Only respond to /changeset mentions from authorized users in PRs
     # OR when packages/registry are modified without changesets/changelog updates
     if: |
       (
         (
-          (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude changeset') && github.event.issue.pull_request) ||
-          (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude changeset')) ||
-          (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude changeset'))
+          (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/changeset') && github.event.issue.pull_request)
         ) && (
           github.actor == 'zbeyens' ||
           github.actor == 'felixfeng33'
@@ -98,6 +92,13 @@ jobs:
             - Follow the Changeset Guide (.claude/commands/changeset.md) for structure, naming, and writing style
             - For registry changes, update docs/components/changelog.mdx
 
+            **Critical Requirement: Separate Changesets**
+            - You MUST create a separate changeset file for EACH package AND EACH change type (major, minor, patch).
+            - A single changeset file MUST contain only ONE package in its frontmatter.
+            - **Example 1:** If a PR adds a `minor` feature to `@platejs/core` and a `patch` fix to `@platejs/utils`, you MUST create TWO files: one for `@platejs/core` (minor) and one for `@platejs/utils` (patch).
+            - **Example 2:** If a PR adds `minor` features to both `@platejs/core` and `@platejs/utils`, you MUST create TWO separate `minor` changeset files, one for each package.
+            - This is essential for correct semantic versioning. DO NOT group multiple packages in one file.
+
             **Changeset Standards (for package changes):**
             - Use descriptive file naming: `[package]-[change-type].md`
             - Include proper YAML frontmatter with affected packages and change types
@@ -131,5 +132,9 @@ jobs:
             - Use descriptive names that indicate package and change type
             - One file per distinct change to enable proper SemVer bumping
             - Update changelog.mdx for registry component changes
+
+            **Changeset required when updating packages**
+            - Updating `docs/components/changelog.mdx` is required when updating `apps/www/src/registry`
+            - Use `/docs` command to update documentation
 
             Please analyze the changes in this PR and create appropriate changeset files and/or update the changelog following the guide.
