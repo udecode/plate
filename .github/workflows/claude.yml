@@ -46,6 +46,15 @@ jobs:
           claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
           claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
           timeout_minutes: '60'
+          allowed_tools: |
+            Bash
+            Edit
+            mcp__task_master_ai__*
+            mcp__plate__*
+            mcp_browser-tools_*
+            mcp_memory_*
+            mcp_github_*
+            mcp_filesystem_*
           direct_prompt: |
             Writing style: easy to read for the average English developer. Avoid multiple paragraphs in a row.
             Only if you're going to open a PR, please pay extra attention to:

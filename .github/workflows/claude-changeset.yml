@@ -85,6 +85,15 @@ jobs:
           claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
           claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
           timeout_minutes: '60'
+          allowed_tools: |
+            Bash
+            Edit
+            mcp__task_master_ai__*
+            mcp__plate__*
+            mcp_browser-tools_*
+            mcp_memory_*
+            mcp_github_*
+            mcp_filesystem_*
           direct_prompt: |
             You are tasked with creating changesets and updating the changelog for the Plate project. Please follow these guidelines:
 
