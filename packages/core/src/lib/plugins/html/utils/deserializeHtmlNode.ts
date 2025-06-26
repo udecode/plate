@@ -18,7 +18,7 @@ const isBlockElement = (element: Element | null): boolean => {
 };
 
 /** Check if a BR tag is between two block elements. */
-const isBrBetweenBlocks = (node: HTMLElement): boolean => {
+const isBrBetweenBlocks = (node: Element): boolean => {
   if (node.nodeName !== 'BR') return false;
 
   const prevSibling = node.previousElementSibling;
