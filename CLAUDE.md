@@ -39,13 +39,21 @@
 
 ### Development
 
-- `yarn typecheck` - Run TypeScript type checking (must pass without errors)
+**CRITICAL**: Before running `yarn typecheck`, you must first run `yarn install && yarn build` to ensure all packages are built and type definitions are available.
+
+**Required sequence for type checking:**
+
+1. `yarn install` - Install all dependencies
+2. `yarn build` - Build all packages (generates type definitions)
+3. `yarn typecheck` - Run TypeScript type checking (must pass without errors)
+
+**Other commands:**
+
 - `yarn lint` - Run ESLint
 - `yarn test` - Run tests
-- `yarn build` - Build all packages
 - `yarn dev` - Start the development server. NEVER run this command, this is done by the user.
 
-These are root commands, but if you modified just a few packages, it's more efficient to run those commands in the modified packages.
+These are root commands, but if you modified just a few packages, it's more efficient to run those commands in the modified packages, where `yarn install` and `yarn build` were already run.
 
 ### Database
 

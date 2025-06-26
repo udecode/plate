@@ -65,3 +65,5 @@ jobs:
             - Documentation
             - Changeset required when updating packages
             - Updating `docs/components/changelog.mdx` is required when updating `apps/www/src/registry`
+            - (only once) Run `yarn install && yarn build` to ensure all packages are built and type definitions are available.
+            - Validate your changes with `yarn workspace <name> typecheck`, `yarn workspace <name> lint`, `yarn workspace <name> test`
