@@ -1,13 +1,12 @@
 {
   "allowedTools": [
-    "Bash(grep:*)",
-    "Bash(rg:*)",
-    "Bash(npx tsc:*)",
+    "Bash",
     "Edit",
-    "Bash(task-master *)",
-    "Bash(git commit:*)",
-    "Bash(git add:*)",
-    "Bash(yarn *)",
-    "mcp__task_master_ai__*"
+    "mcp__task_master_ai__*",
+    "mcp__plate__*",
+    "mcp_browser-tools_*",
+    "mcp_memory_*",
+    "mcp_github_*",
+    "mcp_filesystem_*"
   ]
 }
