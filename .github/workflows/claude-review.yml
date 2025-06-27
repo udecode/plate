@@ -3,14 +3,12 @@ name: Claude Review
 on:
   pull_request:
     types: [opened, ready_for_review]
-  pull_request_review_comment:
+  issue_comment:
     types: [created]
-  pull_request_review:
-    types: [submitted]
 
 jobs:
   review:
-    # Auto-review zbeyens/felix PRs OR @claude mentions by zbeyens/felix
+    # Auto-review zbeyens/felix PRs OR /review mentions by zbeyens/felix
     # Exclude branches starting with "claude/"
     if: |
       (
@@ -22,10 +20,8 @@ jobs:
            github.event.pull_request.user.login == 'felixfeng33')
         ) ||
         (
+          (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/review') && github.event.issue.pull_request) &&
           (
-            (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-            (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
-          ) && (
             github.actor == 'zbeyens' ||
             github.actor == 'felixfeng33'
           )
@@ -49,7 +45,17 @@ jobs:
           claude_access_token: ${{ secrets.CLAUDE_ACCESS_TOKEN }}
           claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
           claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
+          secrets_admin_pat: ${{ secrets.SECRETS_ADMIN_PAT }}
           timeout_minutes: '60'
+          allowed_tools: |
+            Bash
+            Edit
+            mcp__task_master_ai__*
+            mcp__plate__*
+            mcp_browser-tools_*
+            mcp_memory_*
+            mcp_github_*
+            mcp_filesystem_*
           direct_prompt: |
             Please provide a thorough review of this pull request.
 

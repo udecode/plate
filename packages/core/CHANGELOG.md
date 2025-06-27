@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.0.10
+
+### Patch Changes
+
+- [#4410](https://github.com/udecode/plate/pull/4410) by [@12joan](https://github.com/12joan) – PERF: Do not call `createPlateStore` on every hook call for the purposes of the fallback store
+
 ## 49.0.9
 
 ### Patch Changes

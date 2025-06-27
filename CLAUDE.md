@@ -39,9 +39,21 @@
 
 ### Development
 
-- `pnpm typecheck` - Run TypeScript type checking (must pass without errors)
-- `pnpm lint` - Run ESLint
-- DO NOT run `pnpm dev` or `pnpm build` or `pnpm start` - these are manual commands
+**CRITICAL**: Before running `yarn typecheck`, you must first run `yarn install --frozen-lockfile && yarn build` to ensure all packages are built and type definitions are available.
+
+**Required sequence for type checking:**
+
+1. `yarn install --frozen-lockfile` - Install all dependencies and update lockfile if needed
+2. `yarn build` - Build all packages (generates type definitions)
+3. `yarn typecheck` - Run TypeScript type checking (must pass without errors)
+4. `yarn lint:fix` - Auto-fix linting issues (replaces need for `yarn lint`)
+
+**Other commands:**
+
+- `yarn test` - Run tests
+- `yarn dev` - Start the development server. NEVER run this command, this is done by the user.
+
+These are root commands, but if you modified just a few packages, it's more efficient to run those commands in the modified packages, where `yarn install` and `yarn build` were already run.
 
 ### Database
 
@@ -52,9 +64,9 @@
 
 ### Testing
 
-<!-- Run /create-tech-stack to document your testing commands -->
-<!-- Example: -->
-<!-- - `pnpm test` - Run all tests -->
+- `yarn test` - Run all unit tests
+- `yarn workspace <package-name> test` - Run tests for a specific package
+- See **@.cursor/rules/unit-testing.mdc** for comprehensive testing guidelines
 
 ## Development Rules
 
@@ -86,6 +98,12 @@ The @.cursor/rules/ references below tell Claude Code to follow the same rules t
 - Context: Continuously improving rules based on emerging code patterns and best practices
 - Applies to: \*_/_
 - Pattern recognition, rule updates, quality checks, and documentation maintenance
+
+**@.cursor/rules/unit-testing.mdc**
+
+- Context: Writing unit tests using Jest, React Testing Library, and Slate Hyperscript JSX
+- Applies to: packages/**/*.spec.{ts,tsx}, packages/**/*.test.{ts,tsx}
+- Comprehensive testing patterns including plugin testing, transforms, mocking, and test utilities
 
 ### Task Management & Workflow
 

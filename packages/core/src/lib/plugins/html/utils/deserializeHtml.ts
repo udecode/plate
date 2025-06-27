@@ -25,6 +25,7 @@ export const deserializeHtml = (
   if (typeof element === 'string') {
     element = htmlStringToDOMNode(element);
   }
+
   if (shouldCollapseWhiteSpace) {
     element = collapseWhiteSpace(element);
   }
