@@ -69,8 +69,8 @@ jobs:
             - Documentation
             - Changeset required when updating packages
             - Updating `docs/components/changelog.mdx` is required when updating `apps/www/src/registry`
-            - (only once) Run `yarn install --mode=update-lockfile`, then `yarn build` to ensure all packages are built and type definitions are available.
+            - (only once) Run `yarn install --frozen-lockfile`, then `yarn build` to ensure all packages are built and type definitions are available.
             - Validate your changes with `yarn workspace <name> typecheck`, `yarn workspace <name> lint:fix`, `yarn workspace <name> test`
             **Important Development Sequence:**
-            - Before running `yarn typecheck`, you must first run `yarn install --mode=update-lockfile ` yarn build`
+            - Before running `yarn typecheck`, you must first run `yarn install --frozen-lockfile` and `yarn build`
             - Always end development work with `yarn lint:fix` to auto-fix linting issues
