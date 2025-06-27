@@ -730,7 +730,7 @@ export const defaultRules: MdRules = {
         }
 
         if (child.text === '') {
-          return { text: '\u200B' };
+          return { ...child, text: '\u200B' };
         }
 
         return child;
