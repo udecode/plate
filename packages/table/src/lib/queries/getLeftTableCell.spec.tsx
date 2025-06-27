@@ -4,13 +4,13 @@ import { jsxt } from '@platejs/test-utils';
 import { type Value, createSlateEditor } from 'platejs';
 
 import { getTestTablePlugins } from '../withNormalizeTable.spec';
-import { getTopTableCell } from './getTopTableCell';
+import { getLeftTableCell } from './getLeftTableCell';
 
 jsxt;
 
-describe('getTopTableCell', () => {
+describe('getLeftTableCell', () => {
   describe('when cell has no spans', () => {
-    it('should return top cell', () => {
+    it('should return left cell', () => {
       const input = (
         <fragment>
           <htable>
@@ -49,14 +49,14 @@ describe('getTopTableCell', () => {
         value: input,
       });
 
-      const result = getTopTableCell(editor);
+      const result = getLeftTableCell(editor);
       expect(result).toBeDefined();
       
       const [cell] = result!;
-      expect(cell.id).toBe('12');
+      expect(cell.id).toBe('21');
     });
 
-    it('should return undefined when at topmost row', () => {
+    it('should return undefined when at leftmost column', () => {
       const input = (
         <fragment>
           <htable>
@@ -71,14 +71,6 @@ describe('getTopTableCell', () => {
                 <hp>12</hp>
               </htd>
             </htr>
-            <htr>
-              <htd id="21">
-                <hp>21</hp>
-              </htd>
-              <htd id="22">
-                <hp>22</hp>
-              </htd>
-            </htr>
           </htable>
         </fragment>
       ) as any as Value;
@@ -89,13 +81,13 @@ describe('getTopTableCell', () => {
         value: input,
       });
 
-      const result = getTopTableCell(editor);
+      const result = getLeftTableCell(editor);
       expect(result).toBeUndefined();
     });
   });
 
   describe('when cell has colSpan', () => {
-    it('should find cell that spans into top position', () => {
+    it('should find cell that spans into left position', () => {
       const input = (
         <fragment>
           <htable>
@@ -133,32 +125,103 @@ describe('getTopTableCell', () => {
         value: input,
       });
 
-      const result = getTopTableCell(editor);
+      const result = getLeftTableCell(editor);
+      expect(result).toBeDefined();
+      
+      const [cell] = result!;
+      expect(cell.id).toBe('21');
+    });
+
+    it('should find merged cell that occupies left position', () => {
+      const input = (
+        <fragment>
+          <htable>
+            <htr>
+              <htd id="11" attributes={{ colspan: 2 }}>
+                <hp>11 (spans 2 cols)</hp>
+              </htd>
+              <htd id="13">
+                <hp>
+                  <cursor />
+                  13
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as any as Value;
+
+      const editor = createSlateEditor({
+        nodeId: true,
+        plugins: getTestTablePlugins(undefined, (plugin) =>
+          plugin.withComponent(() => plugin)
+        ),
+        value: input,
+      });
+
+      const result = getLeftTableCell(editor);
       expect(result).toBeDefined();
       
       const [cell] = result!;
       expect(cell.id).toBe('11');
     });
+  });
 
-    it('should find correct cell when multiple cells span', () => {
+  describe('when cell has rowSpan', () => {
+    it('should find cell that spans into left position from above', () => {
       const input = (
         <fragment>
           <htable>
             <htr>
-              <htd id="11">
-                <hp>11</hp>
+              <htd id="11" attributes={{ rowspan: 2 }}>
+                <hp>11 (spans 2 rows)</hp>
               </htd>
-              <htd id="12" attributes={{ colspan: 2 }}>
-                <hp>12 (spans 2 cols)</hp>
+              <htd id="12">
+                <hp>12</hp>
               </htd>
             </htr>
             <htr>
-              <htd id="21">
-                <hp>21</hp>
-              </htd>
               <htd id="22">
-                <hp>22</hp>
+                <hp>
+                  <cursor />
+                  22
+                </hp>
               </htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as any as Value;
+
+      const editor = createSlateEditor({
+        nodeId: true,
+        plugins: getTestTablePlugins(undefined, (plugin) =>
+          plugin.withComponent(() => plugin)
+        ),
+        value: input,
+      });
+
+      const result = getLeftTableCell(editor);
+      expect(result).toBeDefined();
+      
+      const [cell] = result!;
+      expect(cell.id).toBe('11');
+    });
+  });
+
+  describe('when cell has both colSpan and rowSpan', () => {
+    it('should find complex merged cell', () => {
+      const input = (
+        <fragment>
+          <htable>
+            <htr>
+              <htd id="11" attributes={{ colspan: 2, rowspan: 2 }}>
+                <hp>11 (2x2)</hp>
+              </htd>
+              <htd id="13">
+                <hp>13</hp>
+              </htd>
+            </htr>
+            <htr>
               <htd id="23">
                 <hp>
                   <cursor />
@@ -178,161 +241,11 @@ describe('getTopTableCell', () => {
         value: input,
       });
 
-      const result = getTopTableCell(editor);
-      expect(result).toBeDefined();
-      
-      const [cell] = result!;
-      expect(cell.id).toBe('12');
-    });
-  });
-
-  describe('when cell has rowSpan', () => {
-    it('should find cell that spans from above', () => {
-      const input = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd id="11">
-                <hp>11</hp>
-              </htd>
-              <htd id="12" attributes={{ rowspan: 2 }}>
-                <hp>12 (spans 2 rows)</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd id="21">
-                <hp>21</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd id="31">
-                <hp>31</hp>
-              </htd>
-              <htd id="32">
-                <hp>
-                  <cursor />
-                  32
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as any as Value;
-
-      const editor = createSlateEditor({
-        nodeId: true,
-        plugins: getTestTablePlugins(undefined, (plugin) =>
-          plugin.withComponent(() => plugin)
-        ),
-        value: input,
-      });
-
-      const result = getTopTableCell(editor);
-      expect(result).toBeDefined();
-      
-      const [cell] = result!;
-      expect(cell.id).toBe('12');
-    });
-  });
-
-  describe('when cell has both colSpan and rowSpan', () => {
-    it('should find complex merged cell', () => {
-      const input = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd id="11" attributes={{ colspan: 2, rowspan: 2 }}>
-                <hp>11 (2x2)</hp>
-              </htd>
-              <htd id="13">
-                <hp>13</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd id="23">
-                <hp>23</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd id="31">
-                <hp>
-                  <cursor />
-                  31
-                </hp>
-              </htd>
-              <htd id="32">
-                <hp>32</hp>
-              </htd>
-              <htd id="33">
-                <hp>33</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as any as Value;
-
-      const editor = createSlateEditor({
-        nodeId: true,
-        plugins: getTestTablePlugins(undefined, (plugin) =>
-          plugin.withComponent(() => plugin)
-        ),
-        value: input,
-      });
-
-      const result = getTopTableCell(editor);
+      const result = getLeftTableCell(editor);
       expect(result).toBeDefined();
       
       const [cell] = result!;
       expect(cell.id).toBe('11');
-    });
-
-    it('should handle adjacent merged cells correctly', () => {
-      const input = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd id="11" attributes={{ colspan: 2, rowspan: 2 }}>
-                <hp>11 (2x2)</hp>
-              </htd>
-              <htd id="13" attributes={{ colspan: 2, rowspan: 2 }}>
-                <hp>13 (2x2)</hp>
-              </htd>
-            </htr>
-            <htr />
-            <htr>
-              <htd id="31">
-                <hp>31</hp>
-              </htd>
-              <htd id="32">
-                <hp>32</hp>
-              </htd>
-              <htd id="33">
-                <hp>
-                  <cursor />
-                  33
-                </hp>
-              </htd>
-              <htd id="34">
-                <hp>34</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as any as Value;
-
-      const editor = createSlateEditor({
-        nodeId: true,
-        plugins: getTestTablePlugins(undefined, (plugin) =>
-          plugin.withComponent(() => plugin)
-        ),
-        value: input,
-      });
-
-      const result = getTopTableCell(editor);
-      expect(result).toBeDefined();
-      
-      const [cell] = result!;
-      expect(cell.id).toBe('13');
     });
   });
 
@@ -370,11 +283,11 @@ describe('getTopTableCell', () => {
       // Get cell 22 path
       const cellPath = [0, 1, 1];
       
-      const result = getTopTableCell(editor, { at: cellPath });
+      const result = getLeftTableCell(editor, { at: cellPath });
       expect(result).toBeDefined();
       
       const [cell] = result!;
-      expect(cell.id).toBe('12');
+      expect(cell.id).toBe('21');
     });
   });
 });
