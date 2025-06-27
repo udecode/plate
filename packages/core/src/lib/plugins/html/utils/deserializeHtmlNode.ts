@@ -29,14 +29,14 @@ const shouldBrBecomeEmptyParagraph = (node: Element): boolean => {
   // Check if BR has text node siblings
   const hasTextSiblings = () => {
     let sibling: Node | null = node.previousSibling;
-    
+
     while (sibling) {
       if (sibling.nodeType === Node.TEXT_NODE && sibling.textContent?.trim()) {
         return true;
       }
       sibling = sibling.previousSibling;
     }
-    
+
     sibling = node.nextSibling;
     while (sibling) {
       if (sibling.nodeType === Node.TEXT_NODE && sibling.textContent?.trim()) {
@@ -44,7 +44,7 @@ const shouldBrBecomeEmptyParagraph = (node: Element): boolean => {
       }
       sibling = sibling.nextSibling;
     }
-    
+
     return false;
   };
 
