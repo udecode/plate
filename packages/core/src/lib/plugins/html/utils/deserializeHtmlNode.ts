@@ -26,47 +26,47 @@ const shouldBrBecomeEmptyParagraph = (node: Element): boolean => {
     return false;
   }
 
-  // Check if BR has text node siblings
-  const hasTextSiblings = () => {
-    let sibling: Node | null = node.previousSibling;
+  const parent = node.parentElement;
+  if (!parent) return false;
 
+  // Check immediate parent for text-containing elements
+  // BR tags inside P or SPAN should remain as line breaks
+  if (parent.tagName === 'P' || parent.tagName === 'SPAN') {
+    return false;
+  }
+
+  // Check if BR has adjacent text content at the same DOM level
+  const hasAdjacentText = () => {
+    // Check previous siblings for direct text nodes only
+    let sibling: Node | null = node.previousSibling;
     while (sibling) {
       if (sibling.nodeType === Node.TEXT_NODE && sibling.textContent?.trim()) {
         return true;
       }
+      // Don't check element content, only direct text nodes
       sibling = sibling.previousSibling;
     }
 
+    // Check next siblings for direct text nodes only
     sibling = node.nextSibling;
     while (sibling) {
       if (sibling.nodeType === Node.TEXT_NODE && sibling.textContent?.trim()) {
         return true;
       }
+      // Don't check element content, only direct text nodes
       sibling = sibling.nextSibling;
     }
 
     return false;
   };
 
-  // If BR has text siblings, it should be a newline
-  if (hasTextSiblings()) {
+  // If BR has adjacent text, it should be a line break
+  if (hasAdjacentText()) {
     return false;
   }
 
-  // Check if BR is within inline content
-  const parent = node.parentElement;
-  if (!parent) return false;
-
-  // If parent is a paragraph or other text container, BR should be a newline
-  if (
-    parent.tagName === 'P' ||
-    parent.tagName === 'SPAN' ||
-    inlineTagNames.has(parent.tagName)
-  ) {
-    return false;
-  }
-
-  // BR tags without text siblings and in block context should become empty paragraphs
+  // For Google Docs: standalone BR tags inside structural elements (B, TD, DIV, etc.)
+  // should become empty paragraphs
   return true;
 };
 
