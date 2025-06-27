@@ -14,6 +14,7 @@ export type SerializeMdOptions = {
   allowNode?: AllowNodeConfig;
   disallowedNodes?: PlateType[] | null;
   editor?: SlateEditor;
+  preserveEmptyParagraphs?: boolean;
   remarkPlugins?: Plugin[];
   rules?: MdRules;
   value?: Descendant[];

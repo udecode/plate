@@ -729,7 +729,7 @@ export const defaultRules: MdRules = {
           } as any;
         }
 
-        if (child.text === '') {
+        if (child.text === '' && options.preserveEmptyParagraphs !== false) {
           return { ...child, text: '\u200B' };
         }
 
