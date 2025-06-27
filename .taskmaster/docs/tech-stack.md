@@ -189,11 +189,11 @@ enableTelemetry: false
 
 ### Type Checking
 
-**Important**: Before running `yarn typecheck`, you must first run `yarn install --mode=update-lockfile`, then `yarn build` to ensure all packages are built and type definitions are available.
+**Important**: Before running `yarn typecheck`, you must first run `yarn install --frozen-lockfile`, then `yarn build` to ensure all packages are built and type definitions are available.
 
 ```bash
 # Required sequence for type checking
-yarn install --mode=update-lockfile  # Install all dependencies and update lockfile if needed
+yarn install --frozen-lockfile  # Install all dependencies and update lockfile if needed
 yarn build            # Build all packages (generates type definitions)
 yarn typecheck        # Check all packages
 ```
@@ -222,7 +222,7 @@ yarn typecheck        # Check all packages
 
 ```bash
 # Required sequence for development
-yarn install --mode=update-lockfile  # Install dependencies and update lockfile if needed
+yarn install --frozen-lockfile  # Install dependencies and update lockfile if needed
 yarn build            # Build all packages first
 yarn typecheck        # Type checking (requires built packages)
 
