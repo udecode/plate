@@ -28,6 +28,9 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
             focus: editor.api.end(path)!,
           });
 
+          // Bugfix: If the selected content is empty, do not copy it; otherwise, editor.tf.setFragmentData will output the content from the last copy
+          if (!editor.api.string()?.trim()) return;
+
           // set data from selection
           editor.tf.setFragmentData(data);
 
