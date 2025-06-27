@@ -211,12 +211,12 @@ describe('deserializeHtml - Google Docs', () => {
 
     // Should have 8 elements: 3 paragraphs with content + 5 empty paragraphs from BR tags
     expect(result).toHaveLength(8);
-    
+
     // Check content paragraphs
     expect((result[0] as any).children[0].text).toBe('Content 1');
     expect((result[3] as any).children[0].text).toBe('Content 2');
     expect((result[7] as any).children[0].text).toBe('Content 3');
-    
+
     // Check empty paragraphs from BR tags
     expect((result[1] as any).children[0].text).toBe('');
     expect((result[2] as any).children[0].text).toBe('');
