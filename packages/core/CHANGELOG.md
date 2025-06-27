@@ -1,5 +1,12 @@
 # @platejs/core
 
+## 49.0.11
+
+### Patch Changes
+
+- [#4411](https://github.com/udecode/plate/pull/4411) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed BR tags between block elements from Google Docs creating two empty paragraphs instead of one. The deserialization now correctly converts BR tags between blocks to single empty paragraphs.
+
 ## 49.0.10
 
 ### Patch Changes
