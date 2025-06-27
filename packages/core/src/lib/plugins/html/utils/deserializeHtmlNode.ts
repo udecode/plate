@@ -26,7 +26,34 @@ const shouldBrBecomeEmptyParagraph = (node: Element): boolean => {
     return false;
   }
 
-  // Check if BR is in block context (not within inline content)
+  // Check if BR has text node siblings
+  const hasTextSiblings = () => {
+    let sibling: Node | null = node.previousSibling;
+    
+    while (sibling) {
+      if (sibling.nodeType === Node.TEXT_NODE && sibling.textContent?.trim()) {
+        return true;
+      }
+      sibling = sibling.previousSibling;
+    }
+    
+    sibling = node.nextSibling;
+    while (sibling) {
+      if (sibling.nodeType === Node.TEXT_NODE && sibling.textContent?.trim()) {
+        return true;
+      }
+      sibling = sibling.nextSibling;
+    }
+    
+    return false;
+  };
+
+  // If BR has text siblings, it should be a newline
+  if (hasTextSiblings()) {
+    return false;
+  }
+
+  // Check if BR is within inline content
   const parent = node.parentElement;
   if (!parent) return false;
 
@@ -39,7 +66,7 @@ const shouldBrBecomeEmptyParagraph = (node: Element): boolean => {
     return false;
   }
 
-  // BR tags in block context (like between paragraphs) should become empty paragraphs
+  // BR tags without text siblings and in block context should become empty paragraphs
   return true;
 };
 
