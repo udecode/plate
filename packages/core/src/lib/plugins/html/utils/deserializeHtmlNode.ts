@@ -21,8 +21,17 @@ const isBlockElement = (element: Element | null): boolean => {
 const isBrBetweenBlocks = (node: Element): boolean => {
   if (node.nodeName !== 'BR') return false;
 
-  const prevSibling = node.previousElementSibling;
-  const nextSibling = node.nextElementSibling;
+  // Find the nearest non-BR previous sibling
+  let prevSibling = node.previousElementSibling;
+  while (prevSibling && prevSibling.nodeName === 'BR') {
+    prevSibling = prevSibling.previousElementSibling;
+  }
+
+  // Find the nearest non-BR next sibling
+  let nextSibling = node.nextElementSibling;
+  while (nextSibling && nextSibling.nodeName === 'BR') {
+    nextSibling = nextSibling.nextElementSibling;
+  }
 
   return isBlockElement(prevSibling) && isBlockElement(nextSibling);
 };

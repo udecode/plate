@@ -125,4 +125,103 @@ describe('deserializeHtml - Google Docs', () => {
     expect((result[0] as any).children[1].text).toBe('\n');
     expect((result[0] as any).children[2].text).toBe('World');
   });
+
+  it('should handle two consecutive BR tags between paragraphs', () => {
+    const editor = createPlateEditor({ plugins: [] });
+
+    const html = `
+      <p>First paragraph</p>
+      <br />
+      <br />
+      <p>Second paragraph</p>
+    `;
+
+    const element = getHtmlDocument(html).body;
+
+    const output = (
+      <editor>
+        <hp>First paragraph</hp>
+        <hp>
+          <htext />
+        </hp>
+        <hp>
+          <htext />
+        </hp>
+        <hp>Second paragraph</hp>
+      </editor>
+    ) as any;
+
+    const result = deserializeHtml(editor, { element });
+
+    expect(result).toEqual(output.children);
+  });
+
+  it('should handle three consecutive BR tags between paragraphs', () => {
+    const editor = createPlateEditor({ plugins: [] });
+
+    const html = `
+      <p>First paragraph</p>
+      <br />
+      <br />
+      <br />
+      <p>Second paragraph</p>
+    `;
+
+    const element = getHtmlDocument(html).body;
+
+    const output = (
+      <editor>
+        <hp>First paragraph</hp>
+        <hp>
+          <htext />
+        </hp>
+        <hp>
+          <htext />
+        </hp>
+        <hp>
+          <htext />
+        </hp>
+        <hp>Second paragraph</hp>
+      </editor>
+    ) as any;
+
+    const result = deserializeHtml(editor, { element });
+
+    expect(result).toEqual(output.children);
+  });
+
+  it('should handle multiple consecutive BR tags in complex Google Docs HTML', () => {
+    const editor = createPlateEditor({ plugins: [] });
+
+    const html = `
+      <b style="font-weight:normal;">
+        <p dir="ltr">Content 1</p>
+        <br />
+        <br />
+        <p dir="ltr">Content 2</p>
+        <br />
+        <br />
+        <br />
+        <p dir="ltr">Content 3</p>
+      </b>
+    `;
+
+    const element = getHtmlDocument(html).body;
+    const result = deserializeHtml(editor, { element });
+
+    // Should have 8 elements: 3 paragraphs with content + 5 empty paragraphs from BR tags
+    expect(result).toHaveLength(8);
+    
+    // Check content paragraphs
+    expect((result[0] as any).children[0].text).toBe('Content 1');
+    expect((result[3] as any).children[0].text).toBe('Content 2');
+    expect((result[7] as any).children[0].text).toBe('Content 3');
+    
+    // Check empty paragraphs from BR tags
+    expect((result[1] as any).children[0].text).toBe('');
+    expect((result[2] as any).children[0].text).toBe('');
+    expect((result[4] as any).children[0].text).toBe('');
+    expect((result[5] as any).children[0].text).toBe('');
+    expect((result[6] as any).children[0].text).toBe('');
+  });
 });
