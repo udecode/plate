@@ -224,4 +224,59 @@ describe('deserializeHtml - Google Docs', () => {
     expect((result[5] as any).children[0].text).toBe('');
     expect((result[6] as any).children[0].text).toBe('');
   });
+
+  it('should handle three consecutive BR tags not between blocks', () => {
+    const editor = createPlateEditor({ plugins: [] });
+
+    // 3 BR tags at the start, not between blocks
+    const html = `
+      <br />
+      <br />
+      <br />
+    `;
+
+    const element = getHtmlDocument(html).body;
+
+    const output = (
+      <editor>
+        <hp>
+          <htext />
+        </hp>
+        <hp>
+          <htext />
+        </hp>
+        <hp>
+          <htext />
+        </hp>
+      </editor>
+    ) as any;
+
+    const result = deserializeHtml(editor, { element });
+
+    expect(result).toEqual(output.children);
+  });
+
+  it('should handle BR tags in various contexts within a div', () => {
+    const editor = createPlateEditor({ plugins: [] });
+
+    const html = `
+      <div>
+        <br />
+        <br />
+        <br />
+        <p>Content</p>
+      </div>
+    `;
+
+    const element = getHtmlDocument(html).body;
+
+    const result = deserializeHtml(editor, { element });
+
+    // Should have 4 elements: 3 empty paragraphs from BR tags + 1 paragraph with content
+    expect(result).toHaveLength(4);
+    expect((result[0] as any).children[0].text).toBe('');
+    expect((result[1] as any).children[0].text).toBe('');
+    expect((result[2] as any).children[0].text).toBe('');
+    expect((result[3] as any).children[0].text).toBe('Content');
+  });
 });

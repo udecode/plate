@@ -17,23 +17,30 @@ const isBlockElement = (element: Element | null): boolean => {
   return !inlineTagNames.has(element.tagName);
 };
 
-/** Check if a BR tag is between two block elements. */
-const isBrBetweenBlocks = (node: Element): boolean => {
+/** Check if a BR tag should be converted to an empty paragraph. */
+const shouldBrBecomeEmptyParagraph = (node: Element): boolean => {
   if (node.nodeName !== 'BR') return false;
 
-  // Find the nearest non-BR previous sibling
-  let prevSibling = node.previousElementSibling;
-  while (prevSibling && prevSibling.nodeName === 'BR') {
-    prevSibling = prevSibling.previousElementSibling;
+  // Skip Apple-interchange-newline BR tags
+  if ((node as HTMLBRElement).className === 'Apple-interchange-newline') {
+    return false;
   }
 
-  // Find the nearest non-BR next sibling
-  let nextSibling = node.nextElementSibling;
-  while (nextSibling && nextSibling.nodeName === 'BR') {
-    nextSibling = nextSibling.nextElementSibling;
+  // Check if BR is in block context (not within inline content)
+  const parent = node.parentElement;
+  if (!parent) return false;
+
+  // If parent is a paragraph or other text container, BR should be a newline
+  if (
+    parent.tagName === 'P' ||
+    parent.tagName === 'SPAN' ||
+    inlineTagNames.has(parent.tagName)
+  ) {
+    return false;
   }
 
-  return isBlockElement(prevSibling) && isBlockElement(nextSibling);
+  // BR tags in block context (like between paragraphs) should become empty paragraphs
+  return true;
 };
 
 /** Deserialize HTML element or child node. */
@@ -45,15 +52,15 @@ export const deserializeHtmlNode =
     if (textNode) return textNode;
     if (!isHtmlElement(node)) return null;
 
-    // Convert BR tags between block elements to empty paragraphs (e.g., from Google Docs)
-    if (isBrBetweenBlocks(node)) {
+    // Convert BR tags to empty paragraphs when appropriate (e.g., from Google Docs)
+    if (shouldBrBecomeEmptyParagraph(node)) {
       return {
         children: [{ text: '' }],
         type: editor.getType('p'),
       };
     }
 
-    // Skip Apple-interchange-newline BR tags
+    // Skip Apple-interchange-newline BR tags (already handled in shouldBrBecomeEmptyParagraph)
     if (
       node.nodeName === 'BR' &&
       (node as HTMLBRElement).className === 'Apple-interchange-newline'
