@@ -22,6 +22,7 @@ export type DeserializeMdOptions = {
   editor?: SlateEditor;
   memoize?: boolean;
   parser?: ParseMarkdownBlocksOptions;
+  preserveEmptyParagraphs?: boolean;
   remarkPlugins?: Plugin[];
   rules?: MdRules | null;
   splitLineBreaks?: boolean;

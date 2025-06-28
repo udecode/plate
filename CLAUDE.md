@@ -43,7 +43,7 @@
 
 **Required sequence for type checking modified packages:**
 
-1. `yarn install --frozen-lockfile` - Install all dependencies and update lockfile if needed
+1. `yarn install` - Install all dependencies and update lockfile if needed
 2. `yarn turbo build --filter=./packages/modified-package` - Build only the modified package and its dependencies
 3. `yarn turbo typecheck --filter=./packages/modified-package` - Run TypeScript type checking for modified package
 4. `yarn turbo lint:fix --filter=./packages/modified-package` - Auto-fix linting issues for modified package
@@ -93,7 +93,7 @@ yarn workspace @platejs/core lint:fix
 
 - `yarn test` - Run all unit tests
 - `yarn workspace <package-name> test` - Run tests for a specific package
-- See **@.cursor/rules/unit-testing.mdc** for comprehensive testing guidelines
+- See **@.cursor/rules/testing.mdc** for comprehensive testing guidelines
 
 ## Development Rules
 
@@ -126,7 +126,7 @@ The @.cursor/rules/ references below tell Claude Code to follow the same rules t
 - Applies to: \*_/_
 - Pattern recognition, rule updates, quality checks, and documentation maintenance
 
-**@.cursor/rules/unit-testing.mdc**
+**@.cursor/rules/testing.mdc**
 
 - Context: Writing unit tests using Jest, React Testing Library, and Slate Hyperscript JSX
 - Applies to: packages/**/\*.spec.{ts,tsx}, packages/**/\*.test.{ts,tsx}

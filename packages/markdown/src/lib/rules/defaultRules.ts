@@ -656,6 +656,12 @@ export const defaultRules: MdRules = {
         }
       };
 
+      children.forEach((c) => {
+        if (c.text === '\u200B') {
+          c.text = '';
+        }
+      });
+
       children.forEach((child, index, children) => {
         const { type } = child as { type?: string };
 
@@ -724,6 +730,11 @@ export const defaultRules: MdRules = {
             type: 'break',
           } as any;
         }
+
+        if (child.text === '' && options.preserveEmptyParagraphs !== false) {
+          return { ...child, text: '\u200B' };
+        }
+
         return child;
       });
 
