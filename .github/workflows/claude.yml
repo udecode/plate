@@ -73,9 +73,14 @@ jobs:
             - Unit test coverage for package changes. We don't do integration/e2e testing. UI/React testing is optional.
             - Documentation
             - Changeset required when updating packages
-            - Updating `docs/components/changelog.mdx` is required when updating `apps/www/src/registry`
-            - (only once) Run `yarn install --frozen-lockfile`, then `yarn build` to ensure all packages are built and type definitions are available.
-            - Validate your changes with `yarn workspace <name> typecheck`, `yarn workspace <name> lint:fix`, `yarn workspace <name> test`
+            - Updating `docs/components/changelog.mdx` is required only when updating `apps/www/src/registry`
+            - (only once) Run `yarn install --frozen-lockfile`, then build only modified packages with their dependencies
+            - Validate your package changes efficiently using turbo filtering for modified packages
             **Important Development Sequence:**
-            - Before running `yarn typecheck`, you must first run `yarn install --frozen-lockfile` and `yarn build`
-            - Always end development work with `yarn lint:fix` to auto-fix linting issues
+            - Before running type checking, you must first run `yarn install --frozen-lockfile` and build affected packages
+            - Use `yarn turbo build --filter=./packages/modified-package` to build only modified packages and their dependencies
+            - Use `yarn turbo typecheck --filter=./packages/modified-package` for type checking modified packages
+            - Use `yarn turbo lint:fix --filter=./packages/modified-package` for linting modified packages
+            - For multiple packages: `yarn turbo build --filter=./packages/core --filter=./packages/utils`
+            - Always end development work with `yarn turbo lint:fix --filter=./packages/modified-package` to auto-fix linting issues
+            - Avoid full project commands (`yarn build`, `yarn typecheck`, `yarn lint:fix`), these are very slow
