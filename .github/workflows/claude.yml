@@ -50,7 +50,7 @@ jobs:
           claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
           secrets_admin_pat: ${{ secrets.SECRETS_ADMIN_PAT }}
           timeout_minutes: '60'
-          max_turns: '50'
+          max_turns: '100'
           # Fix for bash command timeouts - increase timeout to 15 minutes (900000ms)
           claude_env: |
             BASH_DEFAULT_TIMEOUT_MS: "900000"
