@@ -8,9 +8,9 @@ type PossibleRef<T> = React.Ref<T> | undefined;
  */
 const setRef = <T>(ref: PossibleRef<T>, value: T) => {
   if (typeof ref === 'function') {
-    ref(value);
+    return ref(value);
   } else if (ref !== null && ref !== undefined) {
-    (ref as React.MutableRefObject<T>).current = value;
+    (ref as React.RefObject<T>).current = value;
   }
 };
 
@@ -20,8 +20,10 @@ const setRef = <T>(ref: PossibleRef<T>, value: T) => {
  */
 export const composeRefs =
   <T>(...refs: PossibleRef<T>[]) =>
-  (node: T) =>
-    refs.forEach((ref) => setRef(ref, node));
+  (node: T) => {
+    const unrefs = refs.map((ref) => setRef(ref, node)).filter(unref => unref !== undefined);
+    return () => unrefs.forEach(unref => unref());
+  }
 
 /**
  * A custom hook that composes multiple refs Accepts callback refs and
