@@ -39,21 +39,48 @@
 
 ### Development
 
-**CRITICAL**: Before running `yarn typecheck`, you must first run `yarn install --frozen-lockfile && yarn build` to ensure all packages are built and type definitions are available.
+**CRITICAL**: Before running type checking, you must first install dependencies and build the affected packages and their dependencies.
 
-**Required sequence for type checking:**
+**Required sequence for type checking modified packages:**
 
 1. `yarn install --frozen-lockfile` - Install all dependencies and update lockfile if needed
-2. `yarn build` - Build all packages (generates type definitions)
-3. `yarn typecheck` - Run TypeScript type checking (must pass without errors)
-4. `yarn lint:fix` - Auto-fix linting issues (replaces need for `yarn lint`)
+2. `yarn turbo build --filter=./packages/modified-package` - Build only the modified package and its dependencies
+3. `yarn turbo typecheck --filter=./packages/modified-package` - Run TypeScript type checking for modified package
+4. `yarn turbo lint:fix --filter=./packages/modified-package` - Auto-fix linting issues for modified package
 
-**Other commands:**
+**For multiple modified packages:**
 
-- `yarn test` - Run tests
-- `yarn dev` - Start the development server. NEVER run this command, this is done by the user.
+```bash
+# Build multiple specific packages and their dependencies
+yarn turbo build --filter=./packages/core --filter=./packages/utils
 
-These are root commands, but if you modified just a few packages, it's more efficient to run those commands in the modified packages, where `yarn install` and `yarn build` were already run.
+# Typecheck multiple packages
+yarn turbo typecheck --filter=./packages/core --filter=./packages/utils
+
+# Lint multiple packages
+yarn turbo lint:fix --filter=./packages/core --filter=./packages/utils
+```
+
+**Alternative approaches:**
+
+```bash
+# Build since last commit (useful for PR changes)
+yarn turbo build --filter='[HEAD^1]'
+
+# Build all changed packages in current branch
+yarn turbo build --filter='...[origin/main]'
+
+# For workspace-specific operations
+yarn workspace @platejs/core build
+yarn workspace @platejs/core typecheck
+yarn workspace @platejs/core lint:fix
+```
+
+**Full project commands (use only if needed, these are very slow):**
+
+- `yarn build` - Build all packages (only use when necessary)
+
+- `yarn test` - Run tests (or `turbo test --filter=./packages/modified-package` for specific packages)
 
 ### Database
 
@@ -102,7 +129,7 @@ The @.cursor/rules/ references below tell Claude Code to follow the same rules t
 **@.cursor/rules/unit-testing.mdc**
 
 - Context: Writing unit tests using Jest, React Testing Library, and Slate Hyperscript JSX
-- Applies to: packages/**/*.spec.{ts,tsx}, packages/**/*.test.{ts,tsx}
+- Applies to: packages/**/\*.spec.{ts,tsx}, packages/**/\*.test.{ts,tsx}
 - Comprehensive testing patterns including plugin testing, transforms, mocking, and test utilities
 
 ### Task Management & Workflow
