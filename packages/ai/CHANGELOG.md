@@ -1,5 +1,12 @@
 # @platejs/ai
 
+## 49.0.12
+
+### Patch Changes
+
+- [#4416](https://github.com/udecode/plate/pull/4416) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed AI streaming compatibility with markdown serialization changes. Streaming functions now explicitly set `preserveEmptyParagraphs: false` to prevent zero-width space interference during real-time streaming operations.
+
 ## 49.0.7
 
 ## 49.0.1
