@@ -2,8 +2,17 @@
 
 export type * as unistLib from 'unist';
 
-import type { NodeKey, Nullable, TElement, TNodeMap, TText } from 'platejs';
 import type { StrictExtract } from 'ts-essentials';
+
+import {
+  type NodeKey,
+  type Nullable,
+  type SlateEditor,
+  type TElement,
+  type TNodeMap,
+  type TText,
+  getPluginKey,
+} from 'platejs';
 
 import type { DeserializeMdOptions } from './deserializer';
 import type {
@@ -319,8 +328,12 @@ const MDAST_TO_PLATE = {
  * Get plate node type from mdast node type if the mdast is mdast only return
  * the mdast type itself.
  */
-export const mdastToPlate = <T extends StrictMdType>(mdastType: T) => {
-  return MDAST_TO_PLATE[mdastType] ?? mdastType;
+export const mdastToPlate = <T extends StrictMdType>(
+  editor: SlateEditor,
+  mdastType: T
+) => {
+  const plateKey = MDAST_TO_PLATE[mdastType];
+  return getPluginKey(editor, plateKey) ?? mdastType;
 };
 
 /**

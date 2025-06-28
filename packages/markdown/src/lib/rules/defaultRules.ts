@@ -1,8 +1,10 @@
 import {
+  type SlateEditor,
   type TElement,
   type TListElement,
   type TMentionElement,
   type TText,
+  getPluginKey,
   KEYS,
 } from 'platejs';
 
@@ -638,7 +640,7 @@ export const defaultRules: MdRules = {
     deserialize: (node, deco, options) => {
       const isKeepLineBreak = options.splitLineBreaks;
       const children = convertChildrenDeserialize(node.children, deco, options);
-      const paragraphType = mdastToPlate('paragraph');
+      const paragraphType = mdastToPlate(options.editor!, 'paragraph');
       const splitBlockTypes = new Set(['img']);
 
       const elements: any[] = [];
@@ -912,4 +914,16 @@ export const defaultRules: MdRules = {
   ...fontRules,
   ...mediaRules,
   ...columnRules,
+};
+
+export const rebuildRules = (editor: SlateEditor) => {
+  const keys = Object.keys(defaultRules);
+
+  const newRules: Record<string, any> = {};
+  keys.forEach((key) => {
+    const pluginKey = getPluginKey(editor, key);
+    newRules[pluginKey ?? key] = defaultRules[key];
+  });
+
+  return newRules;
 };

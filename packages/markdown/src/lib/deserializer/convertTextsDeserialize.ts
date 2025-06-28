@@ -14,7 +14,7 @@ export const convertTextsDeserialize = (
     acc.push(
       ...buildSlateNode(
         n,
-        { ...deco, [mdastToPlate(mdastNode.type)]: true },
+        { ...deco, [mdastToPlate(options.editor!, mdastNode.type)]: true },
         options
       )
     );

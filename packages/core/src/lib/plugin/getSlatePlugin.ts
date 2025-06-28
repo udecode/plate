@@ -47,6 +47,13 @@ export const getPluginKey = (
   type: string
 ): string | undefined => editor.meta.pluginCache.node.types[type];
 
+export const getPluginKeys = (editor: SlateEditor, keys: string[]): string[] => {
+  return keys.map((key) => {
+    const pluginKey = getPluginKey(editor, key);
+    return pluginKey ?? key;
+  }).filter(Boolean);
+};
+
 export const getPluginByType = (editor: SlateEditor, type: string) => {
   const key = getPluginKey(editor, type);
   if (!key) return null;

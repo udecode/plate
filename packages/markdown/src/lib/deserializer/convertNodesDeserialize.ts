@@ -36,7 +36,7 @@ export const buildSlateNode = (
     return Array.isArray(result) ? result : [result];
   }
 
-  const type = mdastToPlate(mdastNode.type);
+  const type = mdastToPlate(options.editor!, mdastNode.type);
 
   const nodeParser = getDeserializerByKey(type, options);
 
@@ -55,7 +55,7 @@ const shouldIncludeNode = (
 
   if (!node.type) return true;
 
-  const type = mdastToPlate(node.type);
+  const type = mdastToPlate(options.editor!, node.type);
 
   // First check allowedNodes/disallowedNodes
   if (

@@ -18,7 +18,7 @@ export const customMdxDeserialize = (
 
   if (customJsxElementKey) {
     const nodeParserDeserialize = getDeserializerByKey(
-      mdastToPlate(customJsxElementKey as any),
+      mdastToPlate(options.editor!, customJsxElementKey as any),
       options
     );
 
