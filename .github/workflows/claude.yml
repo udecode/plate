@@ -74,10 +74,10 @@ jobs:
             - Documentation
             - Changeset required when updating packages
             - Updating `docs/components/changelog.mdx` is required only when updating `apps/www/src/registry`
-            - (only once) Run `yarn install --frozen-lockfile`, then build only modified packages with their dependencies
+            - (only once) Run `yarn install`, then build only modified packages with their dependencies
             - Validate your package changes efficiently using turbo filtering for modified packages
             **Important Development Sequence:**
-            - Before running type checking, you must first run `yarn install --frozen-lockfile` and build affected packages
+            - Before running type checking, you must first run `yarn install` and build affected packages
             - Use `yarn turbo build --filter=./packages/modified-package` to build only modified packages and their dependencies
             - Use `yarn turbo typecheck --filter=./packages/modified-package` for type checking modified packages
             - Use `yarn turbo lint:fix --filter=./packages/modified-package` for linting modified packages
