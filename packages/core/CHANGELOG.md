@@ -1,5 +1,12 @@
 # @platejs/core
 
+## 49.0.14
+
+### Patch Changes
+
+- [#4420](https://github.com/udecode/plate/pull/4420) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Add **`getPluginKeys`** (internal)
+
 ## 49.0.13
 
 ## 49.0.11

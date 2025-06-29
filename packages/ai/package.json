@@ -1,6 +1,6 @@
 {
   "name": "@platejs/ai",
-  "version": "49.0.12",
+  "version": "49.0.14",
   "description": "Text AI plugin for Plate",
   "keywords": [
     "plate",
@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/markdown": "49.0.12",
+    "@platejs/markdown": "49.0.14",
     "@platejs/selection": "49.0.7",
     "lodash": "^4.17.21"
   },
@@ -59,7 +59,7 @@
     "ai": "4.3.16"
   },
   "peerDependencies": {
-    "platejs": ">=49.0.0",
+    "platejs": ">=49.0.14",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

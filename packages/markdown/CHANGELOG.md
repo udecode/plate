@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 49.0.14
+
+### Patch Changes
+
+- [#4420](https://github.com/udecode/plate/pull/4420) by [@felixfeng33](https://github.com/felixfeng33) – Added support for custom node types in markdown serialization and deserialization
+
 ## 49.0.12
 
 ### Patch Changes
