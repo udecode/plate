@@ -22,7 +22,9 @@ export const serializeInlineMd = (
 
   if (options?.value?.length === 0) return '';
 
-  const convertedTexts = convertTextsSerialize(mergedOptions.value as any, {});
+  const convertedTexts = convertTextsSerialize(mergedOptions.value as any, {
+    editor,
+  });
 
   // Serialize the content
   const serializedContent = toRemarkProcessor.stringify({

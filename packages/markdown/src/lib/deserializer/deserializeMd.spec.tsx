@@ -1,8 +1,14 @@
 /** @jsx jsxt */
 
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
+import {
+  BulletedListPlugin,
+  ListItemPlugin,
+  ListPlugin,
+  NumberedListPlugin,
+} from '@platejs/list-classic/react';
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { MarkdownPlugin } from '../MarkdownPlugin';
@@ -436,6 +442,16 @@ Paragraph 2 line 1`;
 });
 
 describe('deserializeMd list', () => {
+  const editor = createPlateEditor({
+    plugins: [
+      ListPlugin,
+      BulletedListPlugin,
+      NumberedListPlugin,
+      ListItemPlugin,
+      MarkdownPlugin,
+    ],
+  });
+
   it('should deserialize unordered lists', () => {
     const input = '- List item 1\n- List item 2';
 
@@ -585,10 +601,6 @@ describe('deserializeMd mentions', () => {
 });
 
 describe('deserializeMd options', () => {
-  const editor = createSlateEditor({
-    plugins: [MarkdownPlugin],
-  });
-
   describe('when memoize is true', () => {
     it('should add _memo property to elements', () => {
       const input = '# Heading\n> Quote\n```\nCode\n```';
