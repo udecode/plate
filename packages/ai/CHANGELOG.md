@@ -1,5 +1,7 @@
 # @platejs/ai
 
+## 49.0.14
+
 ## 49.0.12
 
 ### Patch Changes
