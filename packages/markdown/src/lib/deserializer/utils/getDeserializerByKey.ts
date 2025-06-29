@@ -1,6 +1,6 @@
 import type { DeserializeMdOptions } from '../deserializeMd';
 
-import { rebuildRules } from '../../rules/defaultRules';
+import { buildRules } from '../../rules/defaultRules';
 
 export const getDeserializerByKey = (
   key: string,
@@ -9,6 +9,6 @@ export const getDeserializerByKey = (
   const rules = options.rules;
 
   return rules?.[key]?.deserialize === undefined
-    ? rebuildRules(options.editor!)[key]?.deserialize
+    ? buildRules(options.editor!)[key]?.deserialize
     : rules?.[key]?.deserialize;
 };

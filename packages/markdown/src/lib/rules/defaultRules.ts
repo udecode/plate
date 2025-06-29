@@ -927,7 +927,7 @@ export const defaultRules: MdRules = {
   ...columnRules,
 };
 
-export const rebuildRules = (editor: SlateEditor) => {
+export const buildRules = (editor: SlateEditor) => {
   const keys = Object.keys(defaultRules);
 
   const newRules: Record<string, any> = {};

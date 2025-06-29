@@ -1,6 +1,6 @@
 import type { SerializeMdOptions } from '../serializeMd';
 
-import { rebuildRules } from '../../rules/defaultRules';
+import { buildRules } from '../../rules/defaultRules';
 
 export const getSerializerByKey = (
   key: string,
@@ -9,6 +9,6 @@ export const getSerializerByKey = (
   const nodes = options.rules;
 
   return nodes?.[key]?.serialize === undefined
-    ? rebuildRules(options.editor!)[key]?.serialize
+    ? buildRules(options.editor!)[key]?.serialize
     : nodes?.[key]?.serialize;
 };

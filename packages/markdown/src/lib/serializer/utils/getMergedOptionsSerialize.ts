@@ -3,7 +3,7 @@ import type { SlateEditor } from 'platejs';
 import type { SerializeMdOptions } from '../serializeMd';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
-import { rebuildRules } from '../../rules';
+import { buildRules } from '../../rules';
 
 /**
  * Merges Markdown configurations, following the principle that options take
@@ -27,7 +27,7 @@ export const getMergedOptionsSerialize = (
 
   const mergedRules = Object.assign(
     {},
-    rebuildRules(editor),
+    buildRules(editor),
     options?.rules ?? PluginRules
   );
 

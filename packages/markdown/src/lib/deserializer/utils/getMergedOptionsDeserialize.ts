@@ -3,7 +3,7 @@ import type { SlateEditor } from 'platejs';
 import type { DeserializeMdOptions } from '../deserializeMd';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
-import { rebuildRules } from '../../rules';
+import { buildRules } from '../../rules';
 import { getRemarkPluginsWithoutMdx } from '../../utils/getRemarkPluginsWithoutMdx';
 
 /**
@@ -28,7 +28,7 @@ export const getMergedOptionsDeserialize = (
 
   const mergedRules = Object.assign(
     {},
-    rebuildRules(editor),
+    buildRules(editor),
     options?.rules ?? PluginRules
   );
 
