@@ -1,8 +1,5 @@
 ---
-"@platejs/core": minor
+"@platejs/core": patch
 ---
 
-Added **`getPluginKey`** and **`getPluginKeys`** exports to support dynamic plugin key resolution
-
-- **`getPluginKey`**: Maps node types to their corresponding plugin keys based on editor configuration
-- **`getPluginKeys`**: Batch version that maps multiple types to their plugin keys
+- Add **`getPluginKeys`** (internal)
