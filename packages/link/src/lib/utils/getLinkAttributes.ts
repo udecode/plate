@@ -1,6 +1,9 @@
+import type React from 'react';
+
 import {
   type SlateEditor,
   type TLinkElement,
+  type UnknownObject,
   KEYS,
   sanitizeUrl,
 } from 'platejs';
@@ -25,5 +28,9 @@ export const getLinkAttributes = (editor: SlateEditor, link: TLinkElement) => {
     attributes.target = link.target;
   }
 
-  return attributes;
+  return attributes as Pick<
+    React.AnchorHTMLAttributes<HTMLAnchorElement>,
+    'href' | 'target'
+  > &
+    UnknownObject;
 };
