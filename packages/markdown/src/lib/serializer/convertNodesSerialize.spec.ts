@@ -2,10 +2,13 @@ import type { Descendant } from 'platejs';
 
 import type { SerializeMdOptions } from './serializeMd';
 
+import { createTestEditor } from '../__tests__/createTestEditor';
 import { defaultRules } from '../rules';
 import { convertNodesSerialize } from './convertNodesSerialize';
 
 describe('convertNodesSerialize', () => {
+  const editor = createTestEditor();
+
   const mockParagraphNodeSlate: Descendant = {
     children: [{ text: 'Hello' }],
     type: 'p',
@@ -64,6 +67,7 @@ describe('convertNodesSerialize', () => {
   ];
 
   const baseOptions: SerializeMdOptions = {
+    editor,
     rules: defaultRules,
   };
 

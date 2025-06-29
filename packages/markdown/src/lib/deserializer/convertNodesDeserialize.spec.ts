@@ -1,10 +1,14 @@
+
 import type { MdHeading, MdRootContent } from '../mdast';
 import type { DeserializeMdOptions } from './deserializeMd';
 
+import { createTestEditor } from '../__tests__/createTestEditor';
 import { defaultRules } from '../rules';
 import { convertNodesDeserialize } from './convertNodesDeserialize';
 
 describe('convertNodesDeserialize', () => {
+  const editor = createTestEditor();
+
   const mockParagraphNode: MdRootContent = {
     children: [{ type: 'text', value: 'Hello' }],
     type: 'paragraph',
@@ -36,6 +40,7 @@ describe('convertNodesDeserialize', () => {
   ];
 
   const baseOptions: DeserializeMdOptions = {
+    editor,
     rules: defaultRules,
   };
 
