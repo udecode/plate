@@ -36,6 +36,7 @@ export type PlateElementProps<
   C extends AnyPluginConfig = PluginConfig,
 > = PlateNodeProps<C> &
   RenderElementProps<N> & {
+    attributes: UnknownObject;
     path: Path;
   } & DeprecatedNodeProps;
 
@@ -67,8 +68,7 @@ export type PlateHTMLProps<
   T extends keyof HTMLElementTagNameMap = 'div',
 > = PlateNodeProps<C> & {
   /** HTML attributes to pass to the underlying HTML element */
-  attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
-    UnknownObject;
+  attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]>;
   as?: T;
   /** Class to be merged with `attributes.className` */
   className?: string;
@@ -134,7 +134,11 @@ export const PlateElement = React.forwardRef(function PlateElement(
 export type PlateTextProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-> = PlateNodeProps<C> & RenderTextProps<N> & DeprecatedNodeProps;
+> = PlateNodeProps<C> &
+  RenderTextProps<N> &
+  DeprecatedNodeProps & {
+    attributes: UnknownObject;
+  };
 
 export type StyledPlateTextProps<
   N extends TText = TText,
@@ -163,7 +167,7 @@ export type PlateLeafProps<
   C extends AnyPluginConfig = PluginConfig,
 > = PlateNodeProps<C> &
   RenderLeafProps<N> &
-  DeprecatedNodeProps & { inset?: boolean };
+  DeprecatedNodeProps & { attributes: UnknownObject; inset?: boolean };
 
 export type StyledPlateLeafProps<
   N extends TText = TText,
