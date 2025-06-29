@@ -1,5 +1,11 @@
 # @udecode/react-utils
 
+## 49.0.13
+
+### Patch Changes
+
+- [#4423](https://github.com/udecode/plate/pull/4423) by [@yf-yang](https://github.com/yf-yang) – Add react 19 unref callback return in composeRef
+
 ## 47.3.1
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @udecode/cn
 
+## 49.0.13
+
 ## 48.0.3
 
 ### Patch Changes
