@@ -1,5 +1,5 @@
 ---
-"@platejs/core": minor
+"@platejs/core": patch
 ---
 
 Added copy functionality to **PlateStatic** component. When users copy content from a static Plate editor, the selection is now properly serialized with the `x-slate-fragment` data format, enabling seamless paste operations into other Slate editors while preserving the rich structure of the content.
