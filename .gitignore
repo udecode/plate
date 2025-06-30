@@ -4,7 +4,6 @@
 !.*
 
 apps/www/src/app/api/ai
-apps/www/src/app/dev
 apps/www/public/rd
 **/tsconfig.tsbuildinfo
 templates/my-app
