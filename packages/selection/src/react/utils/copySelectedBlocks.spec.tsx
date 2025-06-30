@@ -57,7 +57,7 @@ describe('copySelectedBlocks', () => {
       );
     });
 
-    it('should skip empty blocks and not call setFragmentData for them', () => {
+    it('should copy empty blocks but not call setFragmentData for them', () => {
       const mockDataTransfer = {
         getData: jest.fn((type: string) => {
           if (type === 'text/plain') return 'mock plain text';
@@ -113,10 +113,19 @@ describe('copySelectedBlocks', () => {
         'text/plain',
         expect.any(String)
       );
-      expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'text/html',
-        expect.any(String)
+      
+      // Verify HTML includes empty paragraphs for empty blocks
+      const htmlCall = mockDataTransfer.setData.mock.calls.find(
+        call => call[0] === 'text/html'
       );
+      expect(htmlCall).toBeDefined();
+      const htmlContent = htmlCall![1];
+      // Should have 4 divs (one for each block)
+      const divCount = (htmlContent.match(/<div>/g) || []).length;
+      expect(divCount).toBe(4);
+      // Should have empty paragraphs for empty blocks
+      expect(htmlContent).toContain('<p></p>');
+      
       expect(mockDataTransfer.setData).toHaveBeenCalledWith(
         'application/x-slate-fragment',
         expect.any(String)
