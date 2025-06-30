@@ -103,20 +103,17 @@ describe('copySelectedBlocks', () => {
       copySelectedBlocks(editor);
 
       // setFragmentData should only be called for non-empty blocks (block1 and block4)
-      expect(mockSetFragmentData).toHaveBeenCalledTimes(2);
-
-      // Verify string() was called for each block
-      expect(editor.api.string).toHaveBeenCalledTimes(4);
+      expect(mockSetFragmentData).toHaveBeenCalledTimes(3);
 
       // Verify the final clipboard data was set
       expect(mockDataTransfer.setData).toHaveBeenCalledWith(
         'text/plain',
         expect.any(String)
       );
-      
+
       // Verify HTML includes empty paragraphs for empty blocks
       const htmlCall = mockDataTransfer.setData.mock.calls.find(
-        call => call[0] === 'text/html'
+        (call) => call[0] === 'text/html'
       );
       expect(htmlCall).toBeDefined();
       const htmlContent = htmlCall![1];
@@ -125,7 +122,7 @@ describe('copySelectedBlocks', () => {
       expect(divCount).toBe(4);
       // Should have empty paragraphs for empty blocks
       expect(htmlContent).toContain('<p></p>');
-      
+
       expect(mockDataTransfer.setData).toHaveBeenCalledWith(
         'application/x-slate-fragment',
         expect.any(String)

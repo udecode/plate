@@ -28,30 +28,38 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
             focus: editor.api.end(path)!,
           });
 
-          const selectedText = editor.api.string();
-          
-          // For empty blocks, manually add empty content instead of calling setFragmentData
-          // This prevents the duplication bug while still copying empty blocks
-          if (!selectedText?.trim()) {
-            // Add empty line for plain text
-            textPlain += '\n';
-            
-            // Add empty paragraph for HTML
-            const divChild = document.createElement('div');
-            divChild.innerHTML = '<p></p>';
-            div.append(divChild);
-          } else {
-            // set data from selection for non-empty blocks
-            editor.tf.setFragmentData(data);
+          const isEmpty = editor.api.isEmpty(path);
 
-            // get plain text
-            textPlain += `${data.getData('text/plain')}\n`;
+          if (isEmpty) {
+            const after = editor.api.after(editor.selection!);
 
-            // get html text
-            const divChild = document.createElement('div');
-            divChild.innerHTML = data.getData('text/html');
-            div.append(divChild);
+            editor.tf.select({
+              anchor: editor.api.start(path)!,
+              focus: after!,
+            });
           }
+
+          if (!isEmpty) {
+            editor.tf.setFragmentData(data);
+          }
+
+          // get plain text
+          if (isEmpty) {
+            textPlain += '\n';
+          } else {
+            textPlain += `${data.getData('text/plain')}\n`;
+          }
+
+          // get html text
+          const divChild = document.createElement('div');
+          if (isEmpty) {
+            // Does not support empty non-paragraph blocks yet
+            divChild.innerHTML = '<p></p>';
+          } else {
+            divChild.innerHTML = data.getData('text/html');
+          }
+
+          div.append(divChild);
         });
 
         // deselect and select back selectedIds
