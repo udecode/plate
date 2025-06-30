@@ -6,7 +6,7 @@
       "command": "npx",
       "args": ["-y", "shadcn@canary", "registry:mcp"],
       "env": {
-        "REGISTRY_URL": "http://localhost:3000/rd/registry.json"
+        "REGISTRY_URL": "http://localhost:3000/r/registry.json"
       }
     }
   }
