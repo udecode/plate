@@ -8,7 +8,12 @@ type PossibleRef<T> = React.Ref<T> | undefined;
  */
 const setRef = <T>(ref: PossibleRef<T>, value: T) => {
   if (typeof ref === 'function') {
-    return ref(value);
+    const result = ref(value);
+    // Ignore if callback ref returns a function (not allowed by React)
+    if (typeof result === 'function') {
+      return undefined;
+    }
+    return result;
   } else if (ref !== null && ref !== undefined) {
     (ref as React.RefObject<T>).current = value;
   }
@@ -21,9 +26,10 @@ const setRef = <T>(ref: PossibleRef<T>, value: T) => {
 export const composeRefs =
   <T>(...refs: PossibleRef<T>[]) =>
   (node: T) => {
-    const unrefs = refs.map((ref) => setRef(ref, node)).filter(unref => unref !== undefined);
-    return () => unrefs.forEach(unref => unref());
-  }
+    refs.forEach((ref) => setRef(ref, node));
+    // Don't return a function - React doesn't allow callback refs to return functions
+    return undefined;
+  };
 
 /**
  * A custom hook that composes multiple refs Accepts callback refs and
