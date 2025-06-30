@@ -1,5 +1,12 @@
 # @platejs/core
 
+## 49.0.15
+
+### Patch Changes
+
+- [#4428](https://github.com/udecode/plate/pull/4428) by [@zbeyens](https://github.com/zbeyens) –
+  - Updated `SlateElementProps`, `SlateTextProps`, `SlateLeafProps`, `PlateElementProps`, `PlateTextProps`, and `PlateLeafProps` to properly type the `attributes` property to unknown object.
+
 ## 49.0.14
 
 ### Patch Changes
