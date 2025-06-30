@@ -236,7 +236,10 @@ export function PlateStatic(props: PlateStaticProps) {
       onCopy={
         typeof window === 'undefined'
           ? undefined
-          : (e) => setFragmentDataStatic(editor, e)
+          : (e) => {
+              if (setFragmentDataStatic(editor, e.clipboardData))
+                e.preventDefault();
+            }
       }
       data-slate-editor
       data-slate-node="value"

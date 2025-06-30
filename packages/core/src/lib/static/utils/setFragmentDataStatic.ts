@@ -10,31 +10,37 @@ import {
 
 export const setFragmentDataStatic = (
   editor: SlateEditor,
-  e: React.ClipboardEvent<HTMLDivElement>
-) => {
+  data: Pick<DataTransfer, 'getData' | 'setData'>
+): boolean => {
   const domBlocks = getSelectedDomBlocks();
 
   // only crossing multiple blocks
   if (domBlocks && domBlocks.length > 0) {
-    e.preventDefault();
-
     const fragment: Descendant[] = [];
 
     Array.from(domBlocks).forEach((node: any) => {
       const blockId = node.dataset.slateId;
-      const block = editor.api.node({ id: blockId, at: [] })!;
-      fragment.push(block[0]);
+      const block = editor.api.node({ id: blockId, at: [] });
+
+      // prevent inline elements like link and table cells.
+      if (block && block[1].length === 1) {
+        fragment.push(block[0]);
+      }
     });
 
     const string = JSON.stringify(fragment);
     const encoded = window.btoa(encodeURIComponent(string));
 
-    e.clipboardData.setData('application/x-slate-fragment', encoded);
+    data.setData('application/x-slate-fragment', encoded);
 
     const html = getSelectedDomNode();
     if (html) {
-      e.clipboardData.setData('text/html', html.innerHTML);
-      e.clipboardData.setData('text/plain', getPlainText(html));
+      data.setData('text/html', html.innerHTML);
+      data.setData('text/plain', getPlainText(html));
     }
+
+    return true;
   }
+
+  return false;
 };
