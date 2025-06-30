@@ -8,12 +8,7 @@ type PossibleRef<T> = React.Ref<T> | undefined;
  */
 const setRef = <T>(ref: PossibleRef<T>, value: T) => {
   if (typeof ref === 'function') {
-    const result = ref(value);
-    // Ignore if callback ref returns a function (not allowed by React)
-    if (typeof result === 'function') {
-      return undefined;
-    }
-    return result;
+    return ref(value);
   } else if (ref !== null && ref !== undefined) {
     (ref as React.RefObject<T>).current = value;
   }
@@ -26,9 +21,21 @@ const setRef = <T>(ref: PossibleRef<T>, value: T) => {
 export const composeRefs =
   <T>(...refs: PossibleRef<T>[]) =>
   (node: T) => {
-    refs.forEach((ref) => setRef(ref, node));
-    // Don't return a function - React doesn't allow callback refs to return functions
-    return undefined;
+    const cleanups: ((() => void) | undefined)[] = [];
+
+    refs.forEach((ref) => {
+      const cleanup = setRef(ref, node);
+      if (typeof cleanup === 'function') {
+        cleanups.push(cleanup);
+      }
+    });
+
+    // Return a cleanup function if any refs returned cleanup functions
+    if (cleanups.length > 0) {
+      return () => {
+        cleanups.forEach((cleanup) => cleanup?.());
+      };
+    }
   };
 
 /**

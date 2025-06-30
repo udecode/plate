@@ -68,11 +68,10 @@ describe('useComposedRef', () => {
     expect(ref.current).toBe(element);
   });
 
-  it('should not return a function that returns a function (React 18 rule)', () => {
-    // This is the test that should fail with the current implementation
+  it('should not return a function when no cleanup functions are returned', () => {
     const ref = React.createRef<HTMLDivElement>();
     const callbackRef = jest.fn((node: HTMLDivElement | null) => {
-      // Callback refs should not return anything
+      // Callback ref without cleanup
     });
 
     const composedRef = composeRefs(ref, callbackRef);
@@ -80,28 +79,69 @@ describe('useComposedRef', () => {
 
     const result = composedRef(element);
 
-    // React expects callback refs to not return a function
-    // If this returns a function, React will throw the warning:
-    // "Unexpected return value from a callback ref"
-    expect(typeof result).not.toBe('function');
+    // When no refs return cleanup functions, composed ref should return undefined
+    expect(result).toBeUndefined();
   });
 
-  it('should handle callback refs that return functions (edge case)', () => {
-    // This simulates a broken callback ref that returns a function
-    const brokenCallbackRef = jest.fn(() => {
-      // This is incorrect - callback refs should not return functions
-      return () => console.log('cleanup');
+  it('should compose cleanup functions from callback refs', () => {
+    const cleanup1 = jest.fn();
+    const cleanup2 = jest.fn();
+    
+    const callbackRef1 = jest.fn((node: HTMLDivElement | null) => {
+      if (node) {
+        return cleanup1;
+      }
+    });
+    
+    const callbackRef2 = jest.fn((node: HTMLDivElement | null) => {
+      if (node) {
+        return cleanup2;
+      }
     });
 
     const normalRef = React.createRef<HTMLDivElement>();
 
-    const composedRef = composeRefs(normalRef, brokenCallbackRef);
+    const composedRef = composeRefs(normalRef, callbackRef1, callbackRef2);
     const element = document.createElement('div');
 
     const result = composedRef(element);
 
-    // The composed ref should not return a function even if one of the refs does
-    expect(typeof result).not.toBe('function');
+    // The composed ref should return a cleanup function
+    expect(typeof result).toBe('function');
     expect(normalRef.current).toBe(element);
+    
+    // When cleanup is called, both cleanup functions should be called
+    result!();
+    expect(cleanup1).toHaveBeenCalled();
+    expect(cleanup2).toHaveBeenCalled();
+  });
+
+  it('should handle mixed refs with some returning cleanup functions', () => {
+    const cleanup = jest.fn();
+    
+    const callbackRefWithCleanup = jest.fn((node: HTMLDivElement | null) => {
+      if (node) {
+        return cleanup;
+      }
+    });
+    
+    const callbackRefWithoutCleanup = jest.fn((node: HTMLDivElement | null) => {
+      // No cleanup returned
+    });
+
+    const normalRef = React.createRef<HTMLDivElement>();
+
+    const composedRef = composeRefs(normalRef, callbackRefWithCleanup, callbackRefWithoutCleanup);
+    const element = document.createElement('div');
+
+    const result = composedRef(element);
+
+    // Should still return a cleanup function since one ref has cleanup
+    expect(typeof result).toBe('function');
+    expect(normalRef.current).toBe(element);
+    
+    // When cleanup is called, only the cleanup function should be called
+    result!();
+    expect(cleanup).toHaveBeenCalled();
   });
 });
