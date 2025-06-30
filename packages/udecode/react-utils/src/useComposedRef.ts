@@ -21,9 +21,22 @@ const setRef = <T>(ref: PossibleRef<T>, value: T) => {
 export const composeRefs =
   <T>(...refs: PossibleRef<T>[]) =>
   (node: T) => {
-    const unrefs = refs.map((ref) => setRef(ref, node)).filter(unref => unref !== undefined);
-    return () => unrefs.forEach(unref => unref());
-  }
+    const cleanups: ((() => void) | undefined)[] = [];
+
+    refs.forEach((ref) => {
+      const cleanup = setRef(ref, node);
+      if (typeof cleanup === 'function') {
+        cleanups.push(cleanup);
+      }
+    });
+
+    // Return a cleanup function if any refs returned cleanup functions
+    if (cleanups.length > 0) {
+      return () => {
+        cleanups.forEach((cleanup) => cleanup?.());
+      };
+    }
+  };
 
 /**
  * A custom hook that composes multiple refs Accepts callback refs and
