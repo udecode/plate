@@ -1,0 +1,56 @@
+name: Claude Test
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  update-tests:
+    # Only respond to /test mentions from authorized users in PRs
+    if: |
+      (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/test') && github.event.issue.pull_request)
+      ) && (
+        github.actor == 'zbeyens' ||
+        github.actor == 'felixfeng33'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Update Tests
+        uses: grll/claude-code-action@beta
+        with:
+          use_oauth: true
+          claude_access_token: ${{ secrets.CLAUDE_ACCESS_TOKEN }}
+          claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
+          claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
+          secrets_admin_pat: ${{ secrets.SECRETS_ADMIN_PAT }}
+          timeout_minutes: '60'
+          allowed_tools: |
+            Bash
+            Edit
+            mcp__task_master_ai__*
+            mcp__plate__*
+            mcp_browser-tools_*
+            mcp_memory_*
+            mcp_github_*
+            mcp_filesystem_*
+          direct_prompt: |
+            CRITICAL: First read .cursor/rules/testing.mdc to understand all testing patterns and requirements.
+
+            Please analyze the changes in this PR/issue and create or update the relevant tests accordingly.
+            **Important Development Sequence:**
+            - Before running type checking, you must first run `yarn install` and build affected packages
+            - Use `yarn turbo build --filter=./packages/modified-package` to build only modified packages and their dependencies
+            - Use `yarn turbo typecheck --filter=./packages/modified-package` for type checking modified packages
+            - Use `yarn turbo lint:fix --filter=./packages/modified-package` for linting modified packages.
+            - Avoid full project commands (`yarn build`, `yarn typecheck`, `yarn lint:fix`), these are very slow

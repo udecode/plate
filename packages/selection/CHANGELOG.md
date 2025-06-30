@@ -1,5 +1,11 @@
 # @platejs/selection
 
+## 49.0.15
+
+### Patch Changes
+
+- [#4415](https://github.com/udecode/plate/pull/4415) by [@zbeyens](https://github.com/zbeyens) – fix(selection): skip empty blocks in copySelectedBlocks to prevent duplication
+
 ## 49.0.7
 
 ### Patch Changes

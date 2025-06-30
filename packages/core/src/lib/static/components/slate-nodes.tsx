@@ -32,6 +32,7 @@ export type SlateElementProps<
   C extends AnyPluginConfig = PluginConfig,
 > = SlateNodeProps<C> &
   RenderElementProps<N> & {
+    attributes: UnknownObject;
     path: Path;
   } & DeprecatedNodeProps;
 
@@ -114,7 +115,11 @@ export const SlateElement = React.forwardRef(function SlateElement(
 export type SlateTextProps<
   N extends TText = TText,
   C extends AnyPluginConfig = PluginConfig,
-> = SlateNodeProps<C> & RenderTextProps<N> & DeprecatedNodeProps;
+> = SlateNodeProps<C> &
+  RenderTextProps<N> &
+  DeprecatedNodeProps & {
+    attributes: UnknownObject;
+  };
 
 export type StyledSlateTextProps<
   N extends TText = TText,
@@ -143,7 +148,10 @@ export type SlateLeafProps<
   C extends AnyPluginConfig = PluginConfig,
 > = SlateNodeProps<C> &
   RenderLeafProps<N> &
-  DeprecatedNodeProps & { inset?: boolean };
+  DeprecatedNodeProps & {
+    attributes: UnknownObject;
+    inset?: boolean;
+  };
 
 export type StyledSlateLeafProps<
   N extends TText = TText,
