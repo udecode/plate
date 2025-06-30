@@ -41,9 +41,9 @@ jobs:
         id: check-changes
         if: github.event_name == 'pull_request'
         run: |
-          # Get list of modified files
-          PACKAGE_CHANGES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^packages/')
-          REGISTRY_CHANGES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^apps/www/src/registry/')
+          # Get list of modified files (using || true to prevent grep from failing the script)
+          PACKAGE_CHANGES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^packages/' || true)
+          REGISTRY_CHANGES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^apps/www/src/registry/' || true)
 
           NEEDS_CHANGESET="false"
           NEEDS_CHANGELOG="false"
@@ -51,7 +51,7 @@ jobs:
           # Check package changes
           if [ -n "$PACKAGE_CHANGES" ]; then
             # Check if any changeset files were created
-            CHANGESET_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^.changeset/')
+            CHANGESET_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^.changeset/' || true)
             
             if [ -z "$CHANGESET_FILES" ]; then
               NEEDS_CHANGESET="true"
@@ -62,7 +62,7 @@ jobs:
           # Check registry changes
           if [ -n "$REGISTRY_CHANGES" ]; then
             # Check if changelog was updated
-            CHANGELOG_CHANGES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^docs/components/changelog.mdx')
+            CHANGELOG_CHANGES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^docs/components/changelog.mdx' || true)
             
             if [ -z "$CHANGELOG_CHANGES" ]; then
               NEEDS_CHANGELOG="true"
@@ -70,9 +70,9 @@ jobs:
             fi
           fi
 
-          # Set outputs
-          echo "::set-output name=needs_changeset::$NEEDS_CHANGESET"
-          echo "::set-output name=needs_changelog::$NEEDS_CHANGELOG"
+          # Set outputs using modern GitHub Actions syntax
+          echo "needs_changeset=$NEEDS_CHANGESET" >> $GITHUB_OUTPUT
+          echo "needs_changelog=$NEEDS_CHANGELOG" >> $GITHUB_OUTPUT
 
       - name: Create Changeset/Update Changelog
         if: |

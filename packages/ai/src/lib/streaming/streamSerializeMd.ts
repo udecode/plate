@@ -55,6 +55,7 @@ export const streamSerializeMd = (
   let result = '';
 
   result = editor.getApi(MarkdownPlugin).markdown.serialize({
+    preserveEmptyParagraphs: false,
     value: value,
     ...restOptions,
   });
@@ -72,11 +73,23 @@ export const streamSerializeMd = (
   // clean HTML spaces and zero-width characters
   result = result.replace(/&#x20;/g, ' ');
   result = result.replace(/&#x200B;/g, ' ');
+  result = result.replace(/\u200B/g, '');
 
   // remove extra \n but not include \n itself
   // FIXME maybe failed when chunk is more than two'\n'
   if (trimmedChunk !== '\n\n') {
     result = result.trimEnd() + trimmedChunk;
+  }
+
+  // Handle empty paragraph case for streaming
+  if (chunk.endsWith('\n\n')) {
+    if (result === '\n') {
+      // Single empty paragraph case
+      result = '';
+    } else if (result.endsWith('\n\n')) {
+      // Multiple paragraphs ending with empty paragraph
+      result = result.slice(0, -1);
+    }
   }
 
   // replace &#x20; to real space
