@@ -19,15 +19,11 @@ import type { SlateEditor } from '../../editor';
 import type { EditableProps } from '../../types/EditableProps';
 import type { SlateRenderElementProps } from '../types';
 
-import { getPlainText } from '../internal/getPlainText';
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
 import { pipeRenderTextStatic } from '../pluginRenderTextStatic';
-import {
-  getSelectedDomBlocks,
-  getSelectedDomNode,
-} from '../utils/getSelectedDomBlocks';
 import { pipeDecorate } from '../utils/pipeDecorate';
+import { setFragmentDataStatic } from '../utils/setFragmentDataStatic';
 
 function BaseElementStatic({
   decorate,
@@ -234,38 +230,14 @@ export function PlateStatic(props: PlateStaticProps) {
     }
   });
 
-  const onCopy = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    const domBlocks = getSelectedDomBlocks();
-
-    // only crossing multiple blocks
-    if (domBlocks && domBlocks.length > 0) {
-      e.preventDefault();
-
-      const fragment: Descendant[] = [];
-
-      Array.from(domBlocks).forEach((node: any) => {
-        const blockId = node.dataset.slateId;
-        const block = editor.api.node({ id: blockId, at: [] })!;
-        fragment.push(block[0]);
-      });
-
-      const string = JSON.stringify(fragment);
-      const encoded = window.btoa(encodeURIComponent(string));
-
-      e.clipboardData.setData('application/x-slate-fragment', encoded);
-
-      const html = getSelectedDomNode();
-      if (html) {
-        e.clipboardData.setData('text/html', html.innerHTML);
-        e.clipboardData.setData('text/plain', getPlainText(html));
-      }
-    }
-  };
-
   const content = (
     <div
       className={clsx('slate-editor', className)}
-      onCopy={typeof window === 'undefined' ? undefined : onCopy}
+      onCopy={
+        typeof window === 'undefined'
+          ? undefined
+          : (e) => setFragmentDataStatic(editor, e)
+      }
       data-slate-editor
       data-slate-node="value"
       {...rest}
