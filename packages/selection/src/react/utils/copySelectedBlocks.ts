@@ -28,16 +28,30 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
             focus: editor.api.end(path)!,
           });
 
-          // set data from selection
-          editor.tf.setFragmentData(data);
+          const selectedText = editor.api.string();
+          
+          // For empty blocks, manually add empty content instead of calling setFragmentData
+          // This prevents the duplication bug while still copying empty blocks
+          if (!selectedText?.trim()) {
+            // Add empty line for plain text
+            textPlain += '\n';
+            
+            // Add empty paragraph for HTML
+            const divChild = document.createElement('div');
+            divChild.innerHTML = '<p></p>';
+            div.append(divChild);
+          } else {
+            // set data from selection for non-empty blocks
+            editor.tf.setFragmentData(data);
 
-          // get plain text
-          textPlain += `${data.getData('text/plain')}\n`;
+            // get plain text
+            textPlain += `${data.getData('text/plain')}\n`;
 
-          // get html text
-          const divChild = document.createElement('div');
-          divChild.innerHTML = data.getData('text/html');
-          div.append(divChild);
+            // get html text
+            const divChild = document.createElement('div');
+            divChild.innerHTML = data.getData('text/html');
+            div.append(divChild);
+          }
         });
 
         // deselect and select back selectedIds
