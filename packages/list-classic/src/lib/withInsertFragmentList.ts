@@ -16,7 +16,7 @@ import {
 
 import type { ListConfig } from './BaseListPlugin';
 
-import { getPropsIfCheckListLiNode, isListRoot } from './queries';
+import { getPropsIfTaskListLiNode, isListRoot } from './queries';
 
 export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
   editor,
@@ -131,7 +131,7 @@ export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
     const [first, ...rest] = fragment.flatMap(trimList).map((v) =>
       wrapNodeIntoListItem(
         v,
-        getPropsIfCheckListLiNode(editor, {
+        getPropsIfTaskListLiNode(editor, {
           inherit: true,
           liNode: liEntry[0],
         })

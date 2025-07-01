@@ -7,7 +7,7 @@ import {
   PathApi,
 } from 'platejs';
 
-import { getPropsIfCheckListLiNode, hasListChild } from '../queries';
+import { getPropsIfTaskListLiNode, hasListChild } from '../queries';
 import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
@@ -59,7 +59,7 @@ export const removeListItem = (
               type: editor.getType(KEYS.lic),
             },
           ],
-          ...getPropsIfCheckListLiNode(editor, {
+          ...getPropsIfTaskListLiNode(editor, {
             inherit: true,
             liNode: previousLi[0],
           }),

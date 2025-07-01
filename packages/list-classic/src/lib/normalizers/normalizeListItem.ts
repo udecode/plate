@@ -61,7 +61,7 @@ export const normalizeListItem = (
   let changed = false;
 
   const allValidLiChildrenTypes = new Set([
-    editor.getType(KEYS.checklist),
+    editor.getType(KEYS.tasklist),
     editor.getType(KEYS.lic),
     editor.getType(KEYS.olClassic),
     editor.getType(KEYS.ulClassic),

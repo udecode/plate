@@ -11,7 +11,7 @@ import { BaseListPlugin } from '../BaseListPlugin';
 import {
   getListItemEntry,
   getListTypes,
-  getPropsIfCheckList,
+  getPropsIfTaskList,
 } from '../queries/index';
 import { unwrapList } from './unwrapList';
 
@@ -70,7 +70,7 @@ const _toggleList = (
 
         const listItem = {
           children: [],
-          ...getPropsIfCheckList(editor, type, { checked }),
+          ...getPropsIfTaskList(editor, type, { checked }),
           type: editor.getType(KEYS.li),
         };
 
@@ -155,7 +155,7 @@ const _toggleList = (
 
             const listItem = {
               children: [],
-              ...getPropsIfCheckList(editor, type, { checked }),
+              ...getPropsIfTaskList(editor, type, { checked }),
               type: editor.getType(KEYS.li),
             };
             editor.tf.wrapNodes<TElement>(listItem, {
@@ -176,10 +176,10 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
 export const toggleBulletedList = (editor: SlateEditor) =>
   toggleList(editor, { type: editor.getType(KEYS.ulClassic) });
 
-export const toggleCheckList = (editor: SlateEditor, defaultChecked = false) =>
+export const toggleTaskList = (editor: SlateEditor, defaultChecked = false) =>
   _toggleList(editor, {
     checked: defaultChecked,
-    type: editor.getType(KEYS.checklist),
+    type: editor.getType(KEYS.tasklist),
   });
 
 export const toggleNumberedList = (editor: SlateEditor) =>

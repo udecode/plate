@@ -46,7 +46,7 @@ export function NumberedListElement(props: PlateElementProps) {
   return <ListElement variant="ol" {...props} />;
 }
 
-export function CheckListElement(props: PlateElementProps) {
+export function TaskListElement(props: PlateElementProps) {
   return (
     <PlateElement as="ul" className="m-0 list-none ps-6" {...props}>
       {props.children}
@@ -55,10 +55,10 @@ export function CheckListElement(props: PlateElementProps) {
 }
 
 export function ListItemElement(props: PlateElementProps) {
-  const isChecklist = 'checked' in props.element;
+  const isTasklist = 'checked' in props.element;
 
-  if (isChecklist) {
-    return <CheckListItemElement {...props} />;
+  if (isTasklist) {
+    return <TaskListItemElement {...props} />;
   }
 
   return <BaseListItemElement {...props} />;
@@ -72,7 +72,7 @@ export function BaseListItemElement(props: PlateElementProps) {
   );
 }
 
-export function CheckListItemElement(props: PlateElementProps) {
+export function TaskListItemElement(props: PlateElementProps) {
   const { element } = props;
   const state = useTodoListElementState({ element });
   const { checkboxProps } = useTodoListElement(state);

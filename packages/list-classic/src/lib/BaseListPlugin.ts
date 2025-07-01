@@ -9,7 +9,7 @@ import {
 
 import {
   toggleBulletedList,
-  toggleCheckList,
+  toggleTaskList,
   toggleList,
   toggleNumberedList,
 } from './transforms';
@@ -30,7 +30,7 @@ export type ListConfig = PluginConfig<
   {
     toggle: {
       bulletedList: OmitFirst<typeof toggleBulletedList>;
-      checklist: OmitFirst<typeof toggleCheckList>;
+      tasklist: OmitFirst<typeof toggleTaskList>;
       list: OmitFirst<typeof toggleList>;
       numberedList: OmitFirst<typeof toggleNumberedList>;
     };
@@ -69,8 +69,8 @@ export const BaseNumberedListPlugin = createSlatePlugin({
   },
 }));
 
-export const BaseCheckListPlugin = createSlatePlugin({
-  key: KEYS.checklist,
+export const BaseTaskListPlugin = createSlatePlugin({
+  key: KEYS.tasklist,
   node: { isContainer: true, isElement: true },
   options: {
     inheritCheckStateOnLineEndBreak: false,
@@ -79,7 +79,7 @@ export const BaseCheckListPlugin = createSlatePlugin({
   render: { as: 'ul' },
 }).extendTransforms(({ editor }) => ({
   toggle: () => {
-    toggleCheckList(editor);
+    toggleTaskList(editor);
   },
 }));
 
@@ -114,7 +114,7 @@ export const BaseListPlugin = createTSlatePlugin<ListConfig>({
   plugins: [
     BaseBulletedListPlugin,
     BaseNumberedListPlugin,
-    BaseCheckListPlugin,
+    BaseTaskListPlugin,
     BaseListItemPlugin,
     BaseListItemContentPlugin,
   ],
@@ -123,7 +123,7 @@ export const BaseListPlugin = createTSlatePlugin<ListConfig>({
   .extendEditorTransforms(({ editor }) => ({
     toggle: {
       bulletedList: bindFirst(toggleBulletedList, editor),
-      checklist: bindFirst(toggleCheckList, editor),
+      tasklist: bindFirst(toggleTaskList, editor),
       list: bindFirst(toggleList, editor),
       numberedList: bindFirst(toggleNumberedList, editor),
     },

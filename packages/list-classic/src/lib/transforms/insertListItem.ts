@@ -31,7 +31,7 @@ export const insertListItem = (
 
   if (listItemNode.type !== liType) return false;
 
-  const optionalChecklistProps =
+  const optionalTasklistProps =
     'checked' in listItemNode ? { checked: false } : undefined;
 
   let success = false;
@@ -49,14 +49,14 @@ export const insertListItem = (
 
     /** If start, insert a list item before */
     if (isStart) {
-      if (optionalChecklistProps && options.inheritCheckStateOnLineStartBreak) {
-        optionalChecklistProps.checked = listItemNode.checked as boolean;
+      if (optionalTasklistProps && options.inheritCheckStateOnLineStartBreak) {
+        optionalTasklistProps.checked = listItemNode.checked as boolean;
       }
 
       editor.tf.insertNodes(
         {
           children: [{ children: [{ text: '' }], type: licType }],
-          ...optionalChecklistProps,
+          ...optionalTasklistProps,
           type: liType,
         },
         { at: listItemPath }
@@ -75,13 +75,13 @@ export const insertListItem = (
       const marks = editor.api.marks() || {};
 
       if (optionalChecklistProps && options.inheritCheckStateOnLineEndBreak) {
-        optionalChecklistProps.checked = listItemNode.checked as boolean;
+        optionalTasklistProps.checked = listItemNode.checked as boolean;
       }
 
       editor.tf.insertNodes(
         {
           children: [{ children: [{ text: '', ...marks }], type: licType }],
-          ...optionalChecklistProps,
+          ...optionalTasklistProps,
           type: liType,
         },
         { at: nextListItemPath }
@@ -93,7 +93,7 @@ export const insertListItem = (
         editor.tf.wrapNodes<TElement>(
           {
             children: [],
-            ...optionalChecklistProps,
+            ...optionalTasklistProps,
             type: liType,
           },
           { at: nextParagraphPath }
