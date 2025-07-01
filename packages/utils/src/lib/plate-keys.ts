@@ -6,6 +6,7 @@ export const NODES = {
   blockquote: 'blockquote',
   bold: 'bold',
   callout: 'callout',
+  checklist: 'todoClassic',
   code: 'code',
   codeBlock: 'code_block',
   codeLine: 'code_line',
