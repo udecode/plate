@@ -48,6 +48,7 @@ export const ParserPlugin = createSlatePlugin({
             ...getEditorPlugin(editor, plugin),
             data,
             dataTransfer,
+            mimeType,
           });
 
           if (!fragment?.length) continue;

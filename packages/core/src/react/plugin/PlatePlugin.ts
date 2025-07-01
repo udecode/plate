@@ -284,7 +284,7 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   mimeTypes?: string[];
   /** Deserialize data to fragment */
   deserialize?: (
-    options: ParserOptions & PlatePluginContext<C>
+    options: ParserOptions & PlatePluginContext<C> & { mimeType: string }
   ) => Descendant[] | undefined;
   /**
    * Function called on `editor.tf.insertData` just before
