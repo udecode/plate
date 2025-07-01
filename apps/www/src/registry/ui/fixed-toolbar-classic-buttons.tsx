@@ -103,8 +103,9 @@ export function FixedToolbarButtons() {
           <ToolbarGroup>
             <AlignToolbarButton />
 
-            <ListToolbarButton nodeType={KEYS.ul} />
-            <ListToolbarButton nodeType={KEYS.ol} />
+            <ListToolbarButton nodeType={KEYS.ulClassic} />
+            <ListToolbarButton nodeType={KEYS.olClassic} />
+            <ListToolbarButton nodeType={KEYS.taskList} />
             <ToggleToolbarButton />
           </ToolbarGroup>
 

@@ -6,20 +6,7 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import type { TElement } from 'platejs';
 
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
-import {
-  CheckIcon,
-  ChevronRightIcon,
-  Columns3Icon,
-  FileCodeIcon,
-  Heading1Icon,
-  Heading2Icon,
-  Heading3Icon,
-  ListIcon,
-  ListOrderedIcon,
-  PilcrowIcon,
-  QuoteIcon,
-  SquareIcon,
-} from 'lucide-react';
+import { CheckIcon, ListIcon, ListOrderedIcon, SquareIcon } from 'lucide-react';
 import { KEYS } from 'platejs';
 import { useEditorRef, useSelectionFragmentProp } from 'platejs/react';
 
@@ -38,12 +25,12 @@ import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 import { turnIntoItems as baseTurnIntoItems } from './turn-into-toolbar-button';
 
 // Map standard list items to classic versions
-const listItemsMap: Record<string, any> = {
-  [KEYS.ul]: {
-    icon: <ListIcon />,
-    keywords: ['unordered', 'ul', '-'],
-    label: 'Bulleted list',
-    value: KEYS.ulClassic,
+const listItemsMap: Record<string, (typeof baseTurnIntoItems)[number]> = {
+  [KEYS.listTodo]: {
+    icon: <SquareIcon />,
+    keywords: ['checklist', 'task', 'checkbox', '[]'],
+    label: 'To-do list',
+    value: KEYS.taskList,
   },
   [KEYS.ol]: {
     icon: <ListOrderedIcon />,
@@ -51,11 +38,11 @@ const listItemsMap: Record<string, any> = {
     label: 'Numbered list',
     value: KEYS.olClassic,
   },
-  [KEYS.listTodo]: {
-    icon: <SquareIcon />,
-    keywords: ['checklist', 'task', 'checkbox', '[]'],
-    label: 'To-do list',
-    value: KEYS.taskList,
+  [KEYS.ul]: {
+    icon: <ListIcon />,
+    keywords: ['unordered', 'ul', '-'],
+    label: 'Bulleted list',
+    value: KEYS.ulClassic,
   },
 };
 
