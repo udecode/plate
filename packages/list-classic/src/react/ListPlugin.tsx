@@ -2,6 +2,7 @@ import { toPlatePlugin } from 'platejs/react';
 
 import {
   BaseBulletedListPlugin,
+  BaseCheckListPlugin,
   BaseListItemContentPlugin,
   BaseListItemPlugin,
   BaseListPlugin,
@@ -9,6 +10,8 @@ import {
 } from '../lib';
 
 export const BulletedListPlugin = toPlatePlugin(BaseBulletedListPlugin);
+
+export const CheckListPlugin = toPlatePlugin(BaseCheckListPlugin);
 
 export const NumberedListPlugin = toPlatePlugin(BaseNumberedListPlugin);
 
@@ -23,6 +26,7 @@ export const ListItemPlugin = toPlatePlugin(BaseListItemPlugin);
 export const ListPlugin = toPlatePlugin(BaseListPlugin, {
   plugins: [
     BulletedListPlugin,
+    CheckListPlugin,
     NumberedListPlugin,
     ListItemPlugin,
     ListItemContentPlugin,

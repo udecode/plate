@@ -9,6 +9,7 @@ import {
 
 import {
   toggleBulletedList,
+  toggleCheckList,
   toggleList,
   toggleNumberedList,
 } from './transforms';
@@ -18,6 +19,10 @@ export type ListConfig = PluginConfig<
   'listClassic',
   {
     enableResetOnShiftTab?: boolean;
+    /** Inherit the checked state of above node after insert break at the end */
+    inheritCheckStateOnLineEndBreak?: boolean;
+    /** Inherit the checked state of below node after insert break at the start */
+    inheritCheckStateOnLineStartBreak?: boolean;
     /** Valid children types for list items, in addition to p and ul types. */
     validLiChildrenTypes?: string[];
   },
@@ -25,6 +30,7 @@ export type ListConfig = PluginConfig<
   {
     toggle: {
       bulletedList: OmitFirst<typeof toggleBulletedList>;
+      checklist: OmitFirst<typeof toggleCheckList>;
       list: OmitFirst<typeof toggleList>;
       numberedList: OmitFirst<typeof toggleNumberedList>;
     };
@@ -63,6 +69,20 @@ export const BaseNumberedListPlugin = createSlatePlugin({
   },
 }));
 
+export const BaseCheckListPlugin = createSlatePlugin({
+  key: KEYS.checklist,
+  node: { isContainer: true, isElement: true },
+  options: {
+    inheritCheckStateOnLineEndBreak: false,
+    inheritCheckStateOnLineStartBreak: false,
+  },
+  render: { as: 'ul' },
+}).extendTransforms(({ editor }) => ({
+  toggle: () => {
+    toggleCheckList(editor);
+  },
+}));
+
 export const BaseListItemPlugin = createSlatePlugin({
   key: KEYS.li,
   inject: {
@@ -94,6 +114,7 @@ export const BaseListPlugin = createTSlatePlugin<ListConfig>({
   plugins: [
     BaseBulletedListPlugin,
     BaseNumberedListPlugin,
+    BaseCheckListPlugin,
     BaseListItemPlugin,
     BaseListItemContentPlugin,
   ],
@@ -102,6 +123,7 @@ export const BaseListPlugin = createTSlatePlugin<ListConfig>({
   .extendEditorTransforms(({ editor }) => ({
     toggle: {
       bulletedList: bindFirst(toggleBulletedList, editor),
+      checklist: bindFirst(toggleCheckList, editor),
       list: bindFirst(toggleList, editor),
       numberedList: bindFirst(toggleNumberedList, editor),
     },
