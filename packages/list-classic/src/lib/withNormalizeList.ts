@@ -42,28 +42,28 @@ export const withNormalizeList: OverrideEditor<ListConfig> = ({
           );
         }
 
-        // add "checked" prop to list-item nodes if they have a tasklist parent but no "checked" prop
-        // remove "checked" prop from list-item nodes if they do not have a tasklist parent but a "checked" prop
+        // add "checked" prop to list-item nodes if they have a taskList parent but no "checked" prop
+        // remove "checked" prop from list-item nodes if they do not have a taskList parent but a "checked" prop
         if (node.type === editor.getType(KEYS.taskList)) {
-          const nonTasklistItems = Array.from(
+          const nonTaskListItems = Array.from(
             NodeApi.children(editor, path)
           ).filter(([child]) => child.type === liType && !('checked' in child));
 
-          if (nonTasklistItems.length > 0) {
+          if (nonTaskListItems.length > 0) {
             return editor.tf.withoutNormalizing(() =>
-              nonTasklistItems.forEach(([, itemPath]) => {
+              nonTaskListItems.forEach(([, itemPath]) => {
                 editor.tf.setNodes({ checked: false }, { at: itemPath });
               })
             );
           }
         } else {
-          const tasklistItems = Array.from(
+          const taskListItems = Array.from(
             NodeApi.children(editor, path)
           ).filter(([child]) => child.type === liType && 'checked' in child);
 
-          if (tasklistItems.length > 0) {
+          if (taskListItems.length > 0) {
             return editor.tf.withoutNormalizing(() =>
-              tasklistItems.forEach(([, itemPath]) => {
+              taskListItems.forEach(([, itemPath]) => {
                 editor.tf.unsetNodes('checked', { at: itemPath });
               })
             );
