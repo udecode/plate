@@ -105,34 +105,37 @@ const turnIntoItems = [
   },
 ];
 
-const turnIntoItemsClassic = [
+const turnIntoItemsClassicMap: Record<string, (typeof turnIntoItems)[number]> =
   {
-    icon: <ListIcon />,
-    keywords: ['unordered', 'ul', '-'],
-    label: 'Bulleted list',
-    value: KEYS.ulClassic,
-  },
-  {
-    icon: <ListOrderedIcon />,
-    keywords: ['ordered', 'ol', '1'],
-    label: 'Numbered list',
-    value: KEYS.olClassic,
-  },
-  {
-    icon: <SquareIcon />,
-    keywords: ['checklist', 'task', 'checkbox', '[]'],
-    label: 'To-do list',
-    value: KEYS.checklist,
-  },
-];
+    [KEYS.listTodo]: {
+      icon: <SquareIcon />,
+      keywords: ['checklist', 'task', 'checkbox', '[]'],
+      label: 'To-do list',
+      value: KEYS.checklist,
+    },
+    [KEYS.ol]: {
+      icon: <ListOrderedIcon />,
+      keywords: ['ordered', 'ol', '1'],
+      label: 'Numbered list',
+      value: KEYS.olClassic,
+    },
+    [KEYS.ul]: {
+      icon: <ListIcon />,
+      keywords: ['unordered', 'ul', '-'],
+      label: 'Bulleted list',
+      value: KEYS.ulClassic,
+    },
+  };
 
 const getTurnIntoItems = (editor: PlateEditor) => {
-  const listKeys = new Set<string>([KEYS.listTodo, KEYS.ol, KEYS.ul]);
   if (editor.meta.pluginList.some(({ key }) => key === KEYS.listClassic)) {
-    return turnIntoItems
-      .filter((item) => !listKeys.has(item.value))
-      .concat(turnIntoItemsClassic);
+    return turnIntoItems.map((item) =>
+      item.value in turnIntoItemsClassicMap
+        ? turnIntoItemsClassicMap[item.value]
+        : item
+    );
   }
+
   return turnIntoItems;
 };
 

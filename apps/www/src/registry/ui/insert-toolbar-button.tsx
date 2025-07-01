@@ -211,39 +211,39 @@ const groups: Group[] = [
   },
 ];
 
-const listClassicGroupItems: Item[] = [
-  {
-    icon: <ListIcon />,
-    label: 'Bulleted list',
-    value: KEYS.ulClassic,
-    onSelect: insertBlock,
-  },
-  {
-    icon: <ListOrderedIcon />,
-    label: 'Numbered list',
-    value: KEYS.olClassic,
-    onSelect: insertBlock,
-  },
-  {
+const listClassicGroupItemsMap: Record<string, Item> = {
+  [KEYS.listTodo]: {
     icon: <SquareIcon />,
     label: 'To-do list',
     value: KEYS.checklist,
     onSelect: insertBlock,
   },
-];
+  [KEYS.ol]: {
+    icon: <ListOrderedIcon />,
+    label: 'Numbered list',
+    value: KEYS.olClassic,
+    onSelect: insertBlock,
+  },
+  [KEYS.ul]: {
+    icon: <ListIcon />,
+    label: 'Bulleted list',
+    value: KEYS.ulClassic,
+    onSelect: insertBlock,
+  },
+};
 
 const getGroups = (editor: PlateEditor) => {
-  const listKeys = new Set<string>([KEYS.listTodo, KEYS.ol, KEYS.ul]);
-
   if (editor.meta.pluginList.some(({ key }) => key === KEYS.listClassic)) {
     const index = groups.findIndex((g) => g.group === 'Lists');
     const group = groups[index];
 
     return groups.toSpliced(index, 1, {
       ...group,
-      items: group.items
-        .filter((item) => !listKeys.has(item.value))
-        .concat(listClassicGroupItems),
+      items: group.items.map((item) =>
+        item.value in listClassicGroupItemsMap
+          ? listClassicGroupItemsMap[item.value]
+          : item
+      ),
     });
   }
 
