@@ -7,7 +7,6 @@ import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { insertDate } from '@platejs/date';
 import { insertColumnGroup, toggleColumnGroup } from '@platejs/layout';
 import { triggerFloatingLink } from '@platejs/link/react';
-import { toggleList } from '@platejs/list-classic';
 import { insertEquation, insertInlineEquation } from '@platejs/math';
 import {
   insertAudioPlaceholder,
@@ -28,7 +27,7 @@ import {
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 
-const insertList = (editor: PlateEditor, type: string) => {
+export const insertList = (editor: PlateEditor, type: string) => {
   editor.tf.insertNodes(
     editor.api.create.block({
       indent: 1,
@@ -105,7 +104,7 @@ export const insertInlineElement = (editor: PlateEditor, type: string) => {
   }
 };
 
-const setList = (
+export const setList = (
   editor: PlateEditor,
   type: string,
   entry: NodeEntry<TElement>
@@ -130,12 +129,6 @@ const setBlockMap: Record<
   [KEYS.ul]: setList,
   [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { columns: 3 }),
   [KEYS.codeBlock]: (editor) => toggleCodeBlock(editor),
-  [KEYS.olClassic]: (editor) =>
-    toggleList(editor, { type: editor.getType(KEYS.olClassic) }),
-  [KEYS.taskList]: (editor) =>
-    toggleList(editor, { type: editor.getType(KEYS.taskList) }),
-  [KEYS.ulClassic]: (editor) =>
-    toggleList(editor, { type: editor.getType(KEYS.ulClassic) }),
 };
 
 export const setBlockType = (

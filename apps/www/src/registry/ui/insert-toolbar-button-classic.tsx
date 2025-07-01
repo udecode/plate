@@ -27,7 +27,7 @@ import {
   TableOfContentsIcon,
 } from 'lucide-react';
 import { KEYS } from 'platejs';
-import { type PlateEditor, useEditorRef } from 'platejs/react';
+import { useEditorRef } from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -38,7 +38,7 @@ import {
 import {
   insertBlock,
   insertInlineElement,
-} from '@/registry/components/editor/transforms';
+} from '@/registry/components/editor/transforms-classic';
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 
@@ -50,7 +50,7 @@ type Group = {
 interface Item {
   icon: React.ReactNode;
   value: string;
-  onSelect: (editor: PlateEditor, value: string) => void;
+  onSelect: (editor: any, value: string) => void;
   focusEditor?: boolean;
   label?: string;
 }
@@ -112,17 +112,17 @@ const groups: Group[] = [
       {
         icon: <ListIcon />,
         label: 'Bulleted list',
-        value: KEYS.ul,
+        value: KEYS.ulClassic,
       },
       {
         icon: <ListOrderedIcon />,
         label: 'Numbered list',
-        value: KEYS.ol,
+        value: KEYS.olClassic,
       },
       {
         icon: <SquareIcon />,
         label: 'To-do list',
-        value: KEYS.listTodo,
+        value: KEYS.taskList,
       },
       {
         icon: <ChevronRightIcon />,

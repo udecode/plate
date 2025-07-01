@@ -4,7 +4,6 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import type { TElement } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
 
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
 import {
@@ -33,77 +32,36 @@ import {
 import {
   getBlockType,
   setBlockType,
-} from '@/registry/components/editor/transforms';
+} from '@/registry/components/editor/transforms-classic';
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
+import { turnIntoItems as baseTurnIntoItems } from './turn-into-toolbar-button';
 
-export const turnIntoItems = [
-  {
-    icon: <PilcrowIcon />,
-    keywords: ['paragraph'],
-    label: 'Text',
-    value: KEYS.p,
-  },
-  {
-    icon: <Heading1Icon />,
-    keywords: ['title', 'h1'],
-    label: 'Heading 1',
-    value: 'h1',
-  },
-  {
-    icon: <Heading2Icon />,
-    keywords: ['subtitle', 'h2'],
-    label: 'Heading 2',
-    value: 'h2',
-  },
-  {
-    icon: <Heading3Icon />,
-    keywords: ['subtitle', 'h3'],
-    label: 'Heading 3',
-    value: 'h3',
-  },
-  {
+// Map standard list items to classic versions
+const listItemsMap: Record<string, any> = {
+  [KEYS.ul]: {
     icon: <ListIcon />,
     keywords: ['unordered', 'ul', '-'],
     label: 'Bulleted list',
-    value: KEYS.ul,
+    value: KEYS.ulClassic,
   },
-  {
+  [KEYS.ol]: {
     icon: <ListOrderedIcon />,
     keywords: ['ordered', 'ol', '1'],
     label: 'Numbered list',
-    value: KEYS.ol,
+    value: KEYS.olClassic,
   },
-  {
+  [KEYS.listTodo]: {
     icon: <SquareIcon />,
     keywords: ['checklist', 'task', 'checkbox', '[]'],
     label: 'To-do list',
-    value: KEYS.listTodo,
+    value: KEYS.taskList,
   },
-  {
-    icon: <ChevronRightIcon />,
-    keywords: ['collapsible', 'expandable'],
-    label: 'Toggle list',
-    value: KEYS.toggle,
-  },
-  {
-    icon: <FileCodeIcon />,
-    keywords: ['```'],
-    label: 'Code',
-    value: KEYS.codeBlock,
-  },
-  {
-    icon: <QuoteIcon />,
-    keywords: ['citation', 'blockquote', '>'],
-    label: 'Quote',
-    value: KEYS.blockquote,
-  },
-  {
-    icon: <Columns3Icon />,
-    label: '3 columns',
-    value: 'action_three_columns',
-  },
-];
+};
+
+const turnIntoItems = baseTurnIntoItems.map((item) =>
+  item.value in listItemsMap ? listItemsMap[item.value] : item
+);
 
 export function TurnIntoToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
@@ -117,7 +75,7 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
     () =>
       turnIntoItems.find((item) => item.value === (value ?? KEYS.p)) ??
       turnIntoItems[0],
-    [value, turnIntoItems]
+    [value]
   );
 
   return (
