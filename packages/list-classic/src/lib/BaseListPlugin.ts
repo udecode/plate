@@ -30,7 +30,7 @@ export type ListConfig = PluginConfig<
   {
     toggle: {
       bulletedList: OmitFirst<typeof toggleBulletedList>;
-      tasklist: OmitFirst<typeof toggleTaskList>;
+      taskList: OmitFirst<typeof toggleTaskList>;
       list: OmitFirst<typeof toggleList>;
       numberedList: OmitFirst<typeof toggleNumberedList>;
     };
@@ -70,7 +70,7 @@ export const BaseNumberedListPlugin = createSlatePlugin({
 }));
 
 export const BaseTaskListPlugin = createSlatePlugin({
-  key: KEYS.tasklist,
+  key: KEYS.taskList,
   node: { isContainer: true, isElement: true },
   options: {
     inheritCheckStateOnLineEndBreak: false,
@@ -123,7 +123,7 @@ export const BaseListPlugin = createTSlatePlugin<ListConfig>({
   .extendEditorTransforms(({ editor }) => ({
     toggle: {
       bulletedList: bindFirst(toggleBulletedList, editor),
-      tasklist: bindFirst(toggleTaskList, editor),
+      taskList: bindFirst(toggleTaskList, editor),
       list: bindFirst(toggleList, editor),
       numberedList: bindFirst(toggleNumberedList, editor),
     },

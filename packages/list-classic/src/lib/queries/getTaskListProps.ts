@@ -18,6 +18,6 @@ export const getPropsIfTaskList = (
   type: string,
   partial: { checked?: boolean } = {}
 ) =>
-  editor.getType(KEYS.tasklist) === type
+  editor.getType(KEYS.taskList) === type
     ? { checked: false, ...partial }
     : undefined;

@@ -44,7 +44,7 @@ export const withNormalizeList: OverrideEditor<ListConfig> = ({
 
         // add "checked" prop to list-item nodes if they have a tasklist parent but no "checked" prop
         // remove "checked" prop from list-item nodes if they do not have a tasklist parent but a "checked" prop
-        if (node.type === editor.getType(KEYS.tasklist)) {
+        if (node.type === editor.getType(KEYS.taskList)) {
           const nonTasklistItems = Array.from(
             NodeApi.children(editor, path)
           ).filter(([child]) => child.type === liType && !('checked' in child));

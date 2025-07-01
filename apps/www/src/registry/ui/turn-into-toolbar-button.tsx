@@ -111,7 +111,7 @@ const turnIntoItemsClassicMap: Record<string, (typeof turnIntoItems)[number]> =
       icon: <SquareIcon />,
       keywords: ['checklist', 'task', 'checkbox', '[]'],
       label: 'To-do list',
-      value: KEYS.tasklist,
+      value: KEYS.taskList,
     },
     [KEYS.ol]: {
       icon: <ListOrderedIcon />,

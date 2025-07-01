@@ -212,13 +212,13 @@ const autoformatLists: AutoformatRule[] = [
   {
     match: '[] ',
     mode: 'block',
-    type: KEYS.tasklist,
+    type: KEYS.taskList,
     format: (editor) => formatTaskList(editor, false),
   },
   {
     match: '[x] ',
     mode: 'block',
-    type: KEYS.tasklist,
+    type: KEYS.taskList,
     format: (editor) => formatTaskList(editor, true),
   },
 ];

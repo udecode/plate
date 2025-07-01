@@ -74,7 +74,7 @@ export const insertListItem = (
       /** If end, insert a list item after and select it */
       const marks = editor.api.marks() || {};
 
-      if (optionalChecklistProps && options.inheritCheckStateOnLineEndBreak) {
+      if (optionalTasklistProps && options.inheritCheckStateOnLineEndBreak) {
         optionalTasklistProps.checked = listItemNode.checked as boolean;
       }
 

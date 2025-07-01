@@ -215,7 +215,7 @@ const listClassicGroupItemsMap: Record<string, Item> = {
   [KEYS.listTodo]: {
     icon: <SquareIcon />,
     label: 'To-do list',
-    value: KEYS.tasklist,
+    value: KEYS.taskList,
     onSelect: insertBlock,
   },
   [KEYS.ol]: {

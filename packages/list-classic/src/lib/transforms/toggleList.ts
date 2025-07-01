@@ -179,7 +179,7 @@ export const toggleBulletedList = (editor: SlateEditor) =>
 export const toggleTaskList = (editor: SlateEditor, defaultChecked = false) =>
   _toggleList(editor, {
     checked: defaultChecked,
-    type: editor.getType(KEYS.tasklist),
+    type: editor.getType(KEYS.taskList),
   });
 
 export const toggleNumberedList = (editor: SlateEditor) =>
