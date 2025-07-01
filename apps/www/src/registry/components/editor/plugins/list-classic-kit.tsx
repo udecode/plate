@@ -2,6 +2,7 @@
 
 import {
   BulletedListPlugin,
+  CheckListPlugin,
   ListItemPlugin,
   ListPlugin,
   NumberedListPlugin,
@@ -9,6 +10,8 @@ import {
 
 import {
   BulletedListElement,
+  CheckListElement,
+  ListItemElement,
   NumberedListElement,
 } from '@/registry/ui/list-classic-node';
 
@@ -22,5 +25,9 @@ export const ListKit = [
     node: { component: NumberedListElement },
     shortcuts: { toggle: { keys: 'mod+alt+6' } },
   }),
-  ListItemPlugin,
+  CheckListPlugin.configure({
+    node: { component: CheckListElement },
+    shortcuts: { toggle: { keys: 'mod+alt+7' } },
+  }),
+  ListItemPlugin.withComponent(ListItemElement),
 ];

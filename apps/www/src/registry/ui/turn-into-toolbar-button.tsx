@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import type { TElement } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
 import {
@@ -104,9 +105,41 @@ const turnIntoItems = [
   },
 ];
 
+const turnIntoItemsClassic = [
+  {
+    icon: <ListIcon />,
+    keywords: ['unordered', 'ul', '-'],
+    label: 'Bulleted list',
+    value: KEYS.ulClassic,
+  },
+  {
+    icon: <ListOrderedIcon />,
+    keywords: ['ordered', 'ol', '1'],
+    label: 'Numbered list',
+    value: KEYS.olClassic,
+  },
+  {
+    icon: <SquareIcon />,
+    keywords: ['checklist', 'task', 'checkbox', '[]'],
+    label: 'To-do list',
+    value: KEYS.checklist,
+  },
+];
+
+const getTurnIntoItems = (editor: PlateEditor) => {
+  const listKeys = new Set<string>([KEYS.listTodo, KEYS.ol, KEYS.ul]);
+  if (editor.meta.pluginList.some(({ key }) => key === KEYS.listClassic)) {
+    return turnIntoItems
+      .filter((item) => !listKeys.has(item.value))
+      .concat(turnIntoItemsClassic);
+  }
+  return turnIntoItems;
+};
+
 export function TurnIntoToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
   const [open, setOpen] = React.useState(false);
+  const turnIntoItems = React.useMemo(() => getTurnIntoItems(editor), [editor]);
 
   const value = useSelectionFragmentProp({
     defaultValue: KEYS.p,
@@ -116,7 +149,7 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
     () =>
       turnIntoItems.find((item) => item.value === (value ?? KEYS.p)) ??
       turnIntoItems[0],
-    [value]
+    [value, turnIntoItems]
   );
 
   return (

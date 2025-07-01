@@ -211,9 +211,49 @@ const groups: Group[] = [
   },
 ];
 
+const listClassicGroupItems: Item[] = [
+  {
+    icon: <ListIcon />,
+    label: 'Bulleted list',
+    value: KEYS.ulClassic,
+    onSelect: insertBlock,
+  },
+  {
+    icon: <ListOrderedIcon />,
+    label: 'Numbered list',
+    value: KEYS.olClassic,
+    onSelect: insertBlock,
+  },
+  {
+    icon: <SquareIcon />,
+    label: 'To-do list',
+    value: KEYS.checklist,
+    onSelect: insertBlock,
+  },
+];
+
+const getGroups = (editor: PlateEditor) => {
+  const listKeys = new Set<string>([KEYS.listTodo, KEYS.ol, KEYS.ul]);
+
+  if (editor.meta.pluginList.some(({ key }) => key === KEYS.listClassic)) {
+    const index = groups.findIndex((g) => g.group === 'Lists');
+    const group = groups[index];
+
+    return groups.toSpliced(index, 1, {
+      ...group,
+      items: group.items
+        .filter((item) => !listKeys.has(item.value))
+        .concat(listClassicGroupItems),
+    });
+  }
+
+  return groups;
+};
+
 export function InsertToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
   const [open, setOpen] = React.useState(false);
+  const groups = React.useMemo(() => getGroups(editor), [editor]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
