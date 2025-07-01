@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 
-import { PlateStatic } from '@platejs/core';
-import { usePlateEditor } from 'platejs/react';
+import { usePlateViewEditor } from '@platejs/core/react';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { playgroundValue } from '@/registry/examples/values/playground-value';
+import { EditorView } from '@/registry/ui/editor';
+import { EditorStatic } from '@/registry/ui/editor-static';
 
 export default function DevPage() {
   const [isClient, setIsClient] = useState(false);
@@ -15,7 +16,8 @@ export default function DevPage() {
     setIsClient(true);
   }, []);
 
-  const editor = usePlateEditor(
+  // const editor = createStaticEditor({ plugins: BaseEditorKit });
+  const editor = usePlateViewEditor(
     {
       plugins: BaseEditorKit,
       value: playgroundValue,
@@ -29,7 +31,11 @@ export default function DevPage() {
 
   return (
     <main>
-      <PlateStatic editor={editor} />
+      <EditorView editor={editor} />
+
+      <h1>123</h1>
+
+      <EditorStatic editor={editor} />
     </main>
   );
 }

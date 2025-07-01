@@ -1,0 +1,54 @@
+import { type Editor, type Value, createEditor } from '@platejs/slate';
+
+import type { AnyPluginConfig } from '../../plugin';
+import type { CorePlugin } from '../../plugins';
+
+import {
+  type CreateSlateEditorOptions,
+  type WithSlateOptions,
+  withSlate,
+} from '../../editor';
+import { getStaticPlugins } from '../plugins/getStaticPlugins';
+
+type CreateStaticEditorOptions<
+  V extends Value = Value,
+  P extends AnyPluginConfig = CorePlugin,
+> = CreateSlateEditorOptions<V, P> & {
+  /** Enable copy plugin. */
+  copyPlugin?: boolean;
+};
+
+type WithStaticOptions<
+  V extends Value = Value,
+  P extends AnyPluginConfig = CorePlugin,
+> = WithSlateOptions<V, P> & {
+  copyPlugin?: boolean;
+};
+
+const withStatic = <
+  V extends Value = Value,
+  P extends AnyPluginConfig = CorePlugin,
+>(
+  editor: Editor,
+  options: WithStaticOptions<V, P> = {}
+) => {
+  const { plugins = [], ...rest } = options;
+
+  const staticPlugins = getStaticPlugins({
+    copyPlugin: options.copyPlugin,
+  }) as any;
+
+  options.plugins = [...staticPlugins, ...plugins];
+
+  return withSlate<V, P>(editor, options);
+};
+
+export const createStaticEditor = <
+  V extends Value = Value,
+  P extends AnyPluginConfig = CorePlugin,
+>({
+  editor = createEditor(),
+  ...options
+}: CreateStaticEditorOptions<V, P> = {}) => {
+  return withStatic<V, P>(editor, options);
+};

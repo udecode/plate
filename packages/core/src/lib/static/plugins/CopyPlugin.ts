@@ -1,21 +1,28 @@
 import type { Descendant } from '@platejs/slate';
 
-import type { SlateEditor } from '../../editor';
+import type { SlateEditor } from '../..';
 
+import { createTSlatePlugin } from '../../plugin';
 import { getPlainText } from '../internal/getPlainText';
-import {
-  getSelectedDomBlocks,
-  getSelectedDomNode,
-} from './getSelectedDomBlocks';
+import { getSelectedDomBlocks } from '../utils/getSelectedDomBlocks';
+import { getSelectedDomNode } from '../utils/getSelectedDomNode';
+import { isSelectOutside } from '../utils/isSelectOutside';
 
 export const setFragmentDataStatic = (
   editor: SlateEditor,
   data: Pick<DataTransfer, 'getData' | 'setData'>
-): boolean => {
+) => {
   const domBlocks = getSelectedDomBlocks();
+  const html = getSelectedDomNode();
+
+  if (!html || !domBlocks) return;
+
+  const selectOutside = isSelectOutside(html);
+
+  if (selectOutside) return;
 
   // only crossing multiple blocks
-  if (domBlocks && domBlocks.length > 0) {
+  if (domBlocks.length > 0) {
     const fragment: Descendant[] = [];
 
     Array.from(domBlocks).forEach((node: any) => {
@@ -32,15 +39,18 @@ export const setFragmentDataStatic = (
     const encoded = window.btoa(encodeURIComponent(string));
 
     data.setData('application/x-slate-fragment', encoded);
-
-    const html = getSelectedDomNode();
-    if (html) {
-      data.setData('text/html', html.innerHTML);
-      data.setData('text/plain', getPlainText(html));
-    }
-
-    return true;
+    data.setData('text/html', html.innerHTML);
+    data.setData('text/plain', getPlainText(html));
   }
-
-  return false;
 };
+
+export const CopyPlugin = createTSlatePlugin({
+  key: 'copy',
+  options: {},
+}).overrideEditor(({ editor }) => ({
+  transforms: {
+    setFragmentData(fragment) {
+      return setFragmentDataStatic(editor, fragment);
+    },
+  },
+}));

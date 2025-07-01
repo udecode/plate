@@ -23,7 +23,6 @@ import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
 import { pipeRenderTextStatic } from '../pluginRenderTextStatic';
 import { pipeDecorate } from '../utils/pipeDecorate';
-import { setFragmentDataStatic } from '../utils/setFragmentDataStatic';
 
 function BaseElementStatic({
   decorate,
@@ -233,14 +232,6 @@ export function PlateStatic(props: PlateStaticProps) {
   const content = (
     <div
       className={clsx('slate-editor', className)}
-      onCopy={
-        typeof window === 'undefined'
-          ? undefined
-          : (e) => {
-              if (setFragmentDataStatic(editor, e.clipboardData))
-                e.preventDefault();
-            }
-      }
       data-slate-editor
       data-slate-node="value"
       {...rest}
