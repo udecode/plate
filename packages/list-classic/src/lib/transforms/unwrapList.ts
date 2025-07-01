@@ -56,10 +56,7 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
       editor.tf.unwrapNodes({
         at,
         match: {
-          type: [
-            editor.getType(KEYS.ulClassic),
-            editor.getType(KEYS.olClassic),
-          ],
+          type: getListTypes(editor),
         },
         split: true,
       });

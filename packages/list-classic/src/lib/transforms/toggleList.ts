@@ -8,10 +8,19 @@ import {
 } from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
-import { getListItemEntry, getListTypes } from '../queries/index';
+import {
+  getListItemEntry,
+  getListTypes,
+  getPropsIfCheckList,
+} from '../queries/index';
 import { unwrapList } from './unwrapList';
 
-export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
+type ToggleListOptions = { type: string; checked?: boolean };
+
+const _toggleList = (
+  editor: SlateEditor,
+  { checked = false, type }: ToggleListOptions
+) =>
   editor.tf.withoutNormalizing(() => {
     if (!editor.selection) {
       return;
@@ -61,6 +70,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
 
         const listItem = {
           children: [],
+          ...getPropsIfCheckList(editor, type, { checked }),
           type: editor.getType(KEYS.li),
         };
 
@@ -145,6 +155,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
 
             const listItem = {
               children: [],
+              ...getPropsIfCheckList(editor, type, { checked }),
               type: editor.getType(KEYS.li),
             };
             editor.tf.wrapNodes<TElement>(listItem, {
@@ -159,8 +170,17 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
     }
   });
 
+export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
+  _toggleList(editor, { type });
+
 export const toggleBulletedList = (editor: SlateEditor) =>
   toggleList(editor, { type: editor.getType(KEYS.ulClassic) });
+
+export const toggleCheckList = (editor: SlateEditor, defaultChecked = false) =>
+  _toggleList(editor, {
+    checked: defaultChecked,
+    type: editor.getType(KEYS.checklist),
+  });
 
 export const toggleNumberedList = (editor: SlateEditor) =>
   toggleList(editor, { type: editor.getType(KEYS.olClassic) });
