@@ -7,6 +7,7 @@ import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { insertDate } from '@platejs/date';
 import { insertColumnGroup, toggleColumnGroup } from '@platejs/layout';
 import { triggerFloatingLink } from '@platejs/link/react';
+import { toggleList } from '@platejs/list-classic';
 import { insertEquation, insertInlineEquation } from '@platejs/math';
 import {
   insertAudioPlaceholder,
@@ -128,7 +129,13 @@ const setBlockMap: Record<
   [KEYS.ol]: setList,
   [KEYS.ul]: setList,
   [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { columns: 3 }),
+  [KEYS.checklist]: (editor) =>
+    toggleList(editor, { type: editor.getType(KEYS.checklist) }),
   [KEYS.codeBlock]: (editor) => toggleCodeBlock(editor),
+  [KEYS.olClassic]: (editor) =>
+    toggleList(editor, { type: editor.getType(KEYS.olClassic) }),
+  [KEYS.ulClassic]: (editor) =>
+    toggleList(editor, { type: editor.getType(KEYS.ulClassic) }),
 };
 
 export const setBlockType = (
