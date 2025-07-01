@@ -18,6 +18,7 @@ export type SerializeMdOptions = {
   remarkPlugins?: Plugin[];
   rules?: MdRules;
   value?: Descendant[];
+  spread?: boolean;
 };
 
 /** Serialize the editor value to Markdown. */

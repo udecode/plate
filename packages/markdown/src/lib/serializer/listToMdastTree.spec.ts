@@ -52,6 +52,7 @@ describe('listToMdastTree', () => {
       ordered: false,
       start: 1,
       type: 'list',
+      spread: false,
     });
   });
 
@@ -119,6 +120,7 @@ describe('listToMdastTree', () => {
               ordered: false,
               start: 1,
               type: 'list',
+              spread: false,
             },
           ],
           type: 'listItem',
@@ -127,6 +129,7 @@ describe('listToMdastTree', () => {
       ordered: false,
       start: 1,
       type: 'list',
+      spread: false,
     });
   });
 
@@ -178,6 +181,7 @@ describe('listToMdastTree', () => {
       ordered: true,
       start: 1,
       type: 'list',
+      spread: false,
     });
   });
 
@@ -273,8 +277,13 @@ describe('listToMdastTree', () => {
     }) as any;
 
     expect(result.ordered).toBe(false);
+    expect(result.spread).toBe(false);
     expect(result.children[0].children[1].ordered).toBe(true);
+    expect(result.children[0].children[1].spread).toBe(false);
     expect(result.children[0].children[1].children[1].children[1].ordered).toBe(
+      false
+    );
+    expect(result.children[0].children[1].children[1].children[1].spread).toBe(
       false
     );
   });
@@ -430,5 +439,85 @@ describe('listToMdastTree', () => {
     }) as any;
 
     expect(result).toMatchSnapshot();
+  });
+
+  it('should handle spread option correctly', () => {
+    const nodes = [
+      {
+        children: [{ text: 'list1' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'list2' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+    ];
+
+    // Test with spread: false (default)
+    const resultCompact = listToMdastTree(nodes as any, {
+      editor,
+      spread: false,
+    });
+
+    expect(resultCompact).toMatchObject({
+      type: 'list',
+      spread: false,
+    });
+
+    // Test with spread: true
+    const resultSpread = listToMdastTree(nodes as any, {
+      editor,
+      spread: true,
+    });
+
+    expect(resultSpread).toMatchObject({
+      type: 'list',
+      spread: true,
+    });
+
+    // Test default behavior (should be false)
+    const resultDefault = listToMdastTree(nodes as any, {
+      editor,
+    });
+
+    expect(resultDefault).toMatchObject({
+      type: 'list',
+      spread: false,
+    });
+  });
+
+  it('should apply spread option to nested lists', () => {
+    const nodes = [
+      {
+        children: [{ text: 'list1' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'nested1' }],
+        indent: 2,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+    ];
+
+    const result = listToMdastTree(nodes as any, {
+      editor,
+      spread: true,
+    }) as any;
+
+    // Root list should have spread: true
+    expect(result.spread).toBe(true);
+    // Nested list should also have spread: true
+    expect(result.children[0].children[1].spread).toBe(true);
   });
 });

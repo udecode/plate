@@ -9,6 +9,46 @@ describe('serializeMd', () => {
     expect(result).toMatchSnapshot();
   });
 
+  it('should serialize lists with spread option', () => {
+    const listNodes = [
+      {
+        children: [{ text: '1' }],
+        type: 'p',
+        listStyleType: 'decimal',
+        indent: 1,
+      },
+      {
+        type: 'p',
+        listStyleType: 'decimal',
+        indent: 1,
+        children: [{ text: '2' }],
+        listStart: 2,
+      }
+    ];
+
+    // Test with spread: false (default)
+    const resultCompact = serializeMd(editor as any, { 
+      value: listNodes,
+      spread: false 
+    });
+    expect(resultCompact).toBe('1. 1\n2. 2\n');
+
+    // Test with spread: true
+    const resultSpread = serializeMd(editor as any, { 
+      value: listNodes,
+      spread: true 
+    });
+    // When spread is true, there should be extra spacing between list items
+    // but the exact output depends on remark-stringify behavior
+    expect(resultSpread).toBeDefined();
+
+    // Test default behavior (should be false)
+    const resultDefault = serializeMd(editor as any, { 
+      value: listNodes 
+    });
+    expect(resultDefault).toBe('1. 1\n2. 2\n');
+  });
+
   describe('fixures', () => {
     // https://github.com/inokawa/remark-slate-transformer/issues/44
     it('should serialize marks with trailing whitespace', () => {

@@ -18,6 +18,7 @@ export function listToMdastTree(
     ordered: nodes[0].listStyleType === 'decimal',
     start: nodes[0].listStart,
     type: 'list',
+    spread: options.spread ?? false,
   };
 
   // Stack to track parent nodes at different indentation levels
@@ -76,6 +77,7 @@ export function listToMdastTree(
         ordered: nextNode.listStyleType === 'decimal',
         start: nextNode.listStart,
         type: 'list',
+        spread: options.spread ?? false,
       };
 
       // Add the nested list to the current list item
