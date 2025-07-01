@@ -12,16 +12,14 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ### July 3 #24.2
 
-**Task list support for list-classic**
-
-- NEW `list-classic-node`: Added task list (checklist) functionality with `checked` state
-- NEW `transforms-classic`: Classic-specific transforms with task list support
-- NEW `insert-toolbar-classic-button`: Insert button with classic list and task list support
-- NEW `turn-into-toolbar-classic-button`: Turn into button with classic list and task list support
-- NEW `floating-toolbar-classic-buttons`: Floating toolbar buttons for classic lists
-- NEW `floating-toolbar-classic-kit`: Floating toolbar kit using classic buttons
-- `autoformat-classic-kit`: Added autoformat support for task lists
-- `fixed-toolbar-classic-buttons`: Updated to use new -classic button variants
+- **Task list support in list-classic**: Added task list functionality with checkboxes to the list-classic plugin
+  - `list-classic-kit`: Added `TaskListPlugin` with `TaskListElement` component
+  - `list-classic-node`: Added `TaskListElement` and `TaskListItemElement` components with checkbox support
+  - `transforms-classic`: New file for classic list transforms
+  - `insert-toolbar-classic-button`: New component for inserting classic list types (bulleted, numbered, task)
+  - `turn-into-toolbar-classic-button`: New component for converting blocks to classic list types
+  - `floating-toolbar-classic-buttons`: New component for floating toolbar with classic list support
+  - `floating-toolbar-classic-kit`: New kit that includes classic list toolbar buttons
 
 ### July 2 #24.1
 - `editor`: Added `EditorView` component using the new `PlateView` from `@platejs/core/react` for static editor rendering with copy functionality
