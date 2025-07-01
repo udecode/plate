@@ -14,7 +14,7 @@ import { PlateElement } from 'platejs/react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 
-const listVariants = cva('m-0 ps-6', {
+const listVariants = cva('m-0 py-1 ps-6', {
   variants: {
     variant: {
       ol: 'list-decimal',
@@ -48,16 +48,16 @@ export function NumberedListElement(props: PlateElementProps) {
 
 export function TaskListElement(props: PlateElementProps) {
   return (
-    <PlateElement as="ul" className="m-0 list-none ps-6" {...props}>
+    <PlateElement as="ul" className="m-0 list-none py-1 ps-6" {...props}>
       {props.children}
     </PlateElement>
   );
 }
 
 export function ListItemElement(props: PlateElementProps) {
-  const isTasklist = 'checked' in props.element;
+  const isTaskList = 'checked' in props.element;
 
-  if (isTasklist) {
+  if (isTaskList) {
     return <TaskListItemElement {...props} />;
   }
 
