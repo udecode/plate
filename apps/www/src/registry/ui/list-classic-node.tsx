@@ -90,7 +90,7 @@ export function CheckListItemElement(props: PlateElementProps) {
         )}
       >
         <div
-          className="-ms-5 me-1.5 flex w-fit items-center justify-center pt-[0.1875em] select-none"
+          className="-ms-5 me-1.5 flex w-fit items-start justify-center pt-[0.275em] select-none"
           contentEditable={false}
         >
           <Checkbox {...checkboxProps} />
