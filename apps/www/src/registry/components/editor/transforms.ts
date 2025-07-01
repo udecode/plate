@@ -27,7 +27,7 @@ import {
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 
-export const insertList = (editor: PlateEditor, type: string) => {
+const insertList = (editor: PlateEditor, type: string) => {
   editor.tf.insertNodes(
     editor.api.create.block({
       indent: 1,
@@ -104,7 +104,7 @@ export const insertInlineElement = (editor: PlateEditor, type: string) => {
   }
 };
 
-export const setList = (
+const setList = (
   editor: PlateEditor,
   type: string,
   entry: NodeEntry<TElement>

@@ -26,8 +26,6 @@ import {
   PathApi,
 } from 'platejs';
 
-import { insertList, setList } from './transforms';
-
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 
 export const insertBlock = (editor: PlateEditor, type: string) => {
@@ -53,12 +51,15 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
           select: true,
           type: KEYS.mediaEmbed,
         }),
-      [KEYS.olClassic]: () => insertList(editor, KEYS.olClassic),
+      [KEYS.olClassic]: () =>
+        toggleList(editor, { type: editor.getType(KEYS.olClassic) }),
       [KEYS.table]: () =>
         editor.getTransforms(TablePlugin).insert.table({}, { select: true }),
-      [KEYS.taskList]: () => insertList(editor, KEYS.taskList),
+      [KEYS.taskList]: () =>
+        toggleList(editor, { type: editor.getType(KEYS.taskList) }),
       [KEYS.toc]: () => insertToc(editor, { select: true }),
-      [KEYS.ulClassic]: () => insertList(editor, KEYS.ulClassic),
+      [KEYS.ulClassic]: () =>
+        toggleList(editor, { type: editor.getType(KEYS.ulClassic) }),
       [KEYS.video]: () => insertVideoPlaceholder(editor, { select: true }),
     };
 
