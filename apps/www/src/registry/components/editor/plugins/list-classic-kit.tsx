@@ -2,17 +2,17 @@
 
 import {
   BulletedListPlugin,
-  TaskListPlugin,
   ListItemPlugin,
   ListPlugin,
   NumberedListPlugin,
+  TaskListPlugin,
 } from '@platejs/list-classic/react';
 
 import {
   BulletedListElement,
-  TaskListElement,
   ListItemElement,
   NumberedListElement,
+  TaskListElement,
 } from '@/registry/ui/list-classic-node';
 
 export const ListKit = [

@@ -2,11 +2,11 @@ import { toPlatePlugin } from 'platejs/react';
 
 import {
   BaseBulletedListPlugin,
-  BaseTaskListPlugin,
   BaseListItemContentPlugin,
   BaseListItemPlugin,
   BaseListPlugin,
   BaseNumberedListPlugin,
+  BaseTaskListPlugin,
 } from '../lib';
 
 export const BulletedListPlugin = toPlatePlugin(BaseBulletedListPlugin);

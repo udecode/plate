@@ -9,9 +9,9 @@ import {
 
 import {
   toggleBulletedList,
-  toggleTaskList,
   toggleList,
   toggleNumberedList,
+  toggleTaskList,
 } from './transforms';
 import { withList } from './withList';
 
@@ -30,9 +30,9 @@ export type ListConfig = PluginConfig<
   {
     toggle: {
       bulletedList: OmitFirst<typeof toggleBulletedList>;
-      taskList: OmitFirst<typeof toggleTaskList>;
       list: OmitFirst<typeof toggleList>;
       numberedList: OmitFirst<typeof toggleNumberedList>;
+      taskList: OmitFirst<typeof toggleTaskList>;
     };
   }
 >;
@@ -123,8 +123,8 @@ export const BaseListPlugin = createTSlatePlugin<ListConfig>({
   .extendEditorTransforms(({ editor }) => ({
     toggle: {
       bulletedList: bindFirst(toggleBulletedList, editor),
-      taskList: bindFirst(toggleTaskList, editor),
       list: bindFirst(toggleList, editor),
       numberedList: bindFirst(toggleNumberedList, editor),
+      taskList: bindFirst(toggleTaskList, editor),
     },
   }));

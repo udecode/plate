@@ -129,11 +129,11 @@ const setBlockMap: Record<
   [KEYS.ol]: setList,
   [KEYS.ul]: setList,
   [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { columns: 3 }),
-  [KEYS.taskList]: (editor) =>
-    toggleList(editor, { type: editor.getType(KEYS.taskList) }),
   [KEYS.codeBlock]: (editor) => toggleCodeBlock(editor),
   [KEYS.olClassic]: (editor) =>
     toggleList(editor, { type: editor.getType(KEYS.olClassic) }),
+  [KEYS.taskList]: (editor) =>
+    toggleList(editor, { type: editor.getType(KEYS.taskList) }),
   [KEYS.ulClassic]: (editor) =>
     toggleList(editor, { type: editor.getType(KEYS.ulClassic) }),
 };

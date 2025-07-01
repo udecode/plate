@@ -13,7 +13,7 @@ import {
   autoformatSmartQuotes,
 } from '@platejs/autoformat';
 import { insertEmptyCodeBlock } from '@platejs/code-block';
-import { toggleTaskList, toggleList, unwrapList } from '@platejs/list-classic';
+import { toggleList, toggleTaskList, unwrapList } from '@platejs/list-classic';
 import { ElementApi, isType, KEYS } from 'platejs';
 
 const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
