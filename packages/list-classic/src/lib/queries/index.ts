@@ -6,6 +6,7 @@ export * from './getHighestEmptyList';
 export * from './getListItemEntry';
 export * from './getListRoot';
 export * from './getListTypes';
+export * from './getCheckListProps';
 export * from './getTodoListItemEntry';
 export * from './hasListChild';
 export * from './isAcrossListItems';
