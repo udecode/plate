@@ -2,4 +2,4 @@
 '@platejs/core': patch
 ---
 
-Expose mimeType to deserialize function of plugin parser
+Expose mimeType to plugin parser functions
