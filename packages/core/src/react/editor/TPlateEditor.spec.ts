@@ -2,9 +2,10 @@ import { type Value, createEditor } from '@platejs/slate';
 
 import type { InferPlugins } from '../../lib/editor/SlateEditor';
 
-import { createSlatePlugin } from '../../lib/plugin';
-import { DebugPlugin, someHtmlElement } from '../../lib/plugins';
-import { createPlateEditor, withPlate } from '../index';
+import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
+import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
+import { someHtmlElement } from '../../lib/plugins/html/utils/findHtmlElement';
+import { createPlateEditor, withPlate } from './withPlate';
 
 describe('TPlateEditor', () => {
   const MyCustomPlugin = createSlatePlugin({

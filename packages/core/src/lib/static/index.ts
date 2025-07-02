@@ -10,4 +10,6 @@ export * from './serializeHtml';
 export * from './types';
 export * from './components/index';
 export * from './deserialize/index';
+export * from './editor/index';
+export * from './plugins/index';
 export * from './utils/index';

@@ -1,4 +1,3 @@
-
 import type { MdHeading, MdRootContent } from '../mdast';
 import type { DeserializeMdOptions } from './deserializeMd';
 
