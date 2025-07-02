@@ -1,5 +1,5 @@
 ---
-"@platejs/markdown": minor
+"@platejs/markdown": patch
 ---
 
 Added `spread` option to control list spacing in markdown serialization.
