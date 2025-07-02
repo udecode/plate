@@ -1,17 +1,12 @@
 import type { SlateEditor } from '../../lib/editor';
 
-import { createSlatePlugin } from '../../lib/plugin';
-import { DebugPlugin } from '../../lib/plugins';
-import { createPlateEditor } from '../../react';
+import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
+import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
+import { createPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
 import { resolvePluginTest } from './resolveCreatePluginTest';
-import {
-  applyPluginsToEditor,
-  resolveAndSortPlugins,
-  resolvePluginOverrides,
-  resolvePlugins,
-} from './resolvePlugins';
+import { applyPluginsToEditor, resolveAndSortPlugins, resolvePluginOverrides, resolvePlugins } from './resolvePlugins';
 
 describe('resolvePlugins', () => {
   let editor: SlateEditor;
