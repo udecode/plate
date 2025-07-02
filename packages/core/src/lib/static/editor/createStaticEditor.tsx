@@ -13,17 +13,12 @@ import { getStaticPlugins } from '../plugins/getStaticPlugins';
 type CreateStaticEditorOptions<
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
-> = CreateSlateEditorOptions<V, P> & {
-  /** Enable copy plugin. */
-  copyPlugin?: boolean;
-};
+> = CreateSlateEditorOptions<V, P> & {};
 
 type WithStaticOptions<
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
-> = WithSlateOptions<V, P> & {
-  copyPlugin?: boolean;
-};
+> = WithSlateOptions<V, P> & {};
 
 const withStatic = <
   V extends Value = Value,
@@ -34,9 +29,7 @@ const withStatic = <
 ) => {
   const { plugins = [], ...rest } = options;
 
-  const staticPlugins = getStaticPlugins({
-    copyPlugin: options.copyPlugin,
-  }) as any;
+  const staticPlugins = getStaticPlugins() as any;
 
   options.plugins = [...staticPlugins, ...plugins];
 

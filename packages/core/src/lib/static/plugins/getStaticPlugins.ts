@@ -1,14 +1,7 @@
-import { CopyPlugin } from './CopyPlugin';
+import { ViewPlugin } from './ViewPlugin';
 
-export type GetStaticPluginsOptions = {
-  /** Enable copy plugin. */
-  copyPlugin?: boolean;
-};
-
-export const getStaticPlugins = ({
-  copyPlugin = true,
-}: GetStaticPluginsOptions) => {
-  const staticPlugins = [CopyPlugin.configure({ enabled: copyPlugin })];
+export const getStaticPlugins = () => {
+  const staticPlugins = [ViewPlugin];
 
   return [...staticPlugins];
 };

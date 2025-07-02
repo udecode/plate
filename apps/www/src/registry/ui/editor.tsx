@@ -118,7 +118,12 @@ export function EditorView({
   variant,
   ...props
 }: PlateViewProps & VariantProps<typeof editorVariants>) {
-  return <PlateView {...props} />;
+  return (
+    <PlateView
+      {...props}
+      className={cn(editorVariants({ variant }), className)}
+    />
+  );
 }
 
 EditorView.displayName = 'EditorView';
