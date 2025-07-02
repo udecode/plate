@@ -34,6 +34,7 @@ export const ParserPlugin = createSlatePlugin({
             !pipeInsertDataQuery(editor, injectedPlugins, {
               data,
               dataTransfer,
+              mimeType,
             })
           ) {
             continue;
@@ -42,6 +43,7 @@ export const ParserPlugin = createSlatePlugin({
           data = pipeTransformData(editor, injectedPlugins, {
             data,
             dataTransfer,
+            mimeType,
           });
 
           let fragment = deserialize?.({
@@ -57,6 +59,7 @@ export const ParserPlugin = createSlatePlugin({
             data,
             dataTransfer,
             fragment,
+            mimeType,
           });
 
           if (fragment.length === 0) continue;
@@ -65,6 +68,7 @@ export const ParserPlugin = createSlatePlugin({
             data,
             dataTransfer,
             fragment,
+            mimeType,
           });
 
           return true;

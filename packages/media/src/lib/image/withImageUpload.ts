@@ -24,7 +24,8 @@ export const withImageUpload: OverrideEditor<ImageConfig> = ({
         return insertData(dataTransfer);
       }
 
-      const text = dataTransfer.getData('text/plain');
+      const mimeType = 'text/plain';
+      const text = dataTransfer.getData(mimeType);
       const { files } = dataTransfer;
 
       if (!text && files && files.length > 0) {
@@ -34,6 +35,7 @@ export const withImageUpload: OverrideEditor<ImageConfig> = ({
           !pipeInsertDataQuery(editor, injectedPlugins, {
             data: text,
             dataTransfer,
+            mimeType,
           })
         ) {
           return insertData(dataTransfer);
