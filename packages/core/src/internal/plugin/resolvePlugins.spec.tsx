@@ -6,7 +6,12 @@ import { createPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
 import { resolvePluginTest } from './resolveCreatePluginTest';
-import { applyPluginsToEditor, resolveAndSortPlugins, resolvePluginOverrides, resolvePlugins } from './resolvePlugins';
+import {
+  applyPluginsToEditor,
+  resolveAndSortPlugins,
+  resolvePluginOverrides,
+  resolvePlugins,
+} from './resolvePlugins';
 
 describe('resolvePlugins', () => {
   let editor: SlateEditor;

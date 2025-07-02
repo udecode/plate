@@ -19,8 +19,8 @@ describe('isSelectOutside', () => {
     it('should return true when element contains data-slate-editor attribute', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
-      editorElement.setAttribute('data-slate-editor', 'true');
-      mockDiv.appendChild(editorElement);
+      editorElement.dataset.slateEditor = 'true';
+      mockDiv.append(editorElement);
 
       const result = isSelectOutside(mockDiv);
 
@@ -32,7 +32,7 @@ describe('isSelectOutside', () => {
       const mockDiv = document.createElement('div');
       const innerElement = document.createElement('p');
       innerElement.textContent = 'Some text';
-      mockDiv.appendChild(innerElement);
+      mockDiv.append(innerElement);
 
       const result = isSelectOutside(mockDiv);
 
@@ -53,9 +53,9 @@ describe('isSelectOutside', () => {
       const mockDiv = document.createElement('div');
       const wrapper = document.createElement('div');
       const editorElement = document.createElement('div');
-      editorElement.setAttribute('data-slate-editor', 'true');
-      wrapper.appendChild(editorElement);
-      mockDiv.appendChild(wrapper);
+      editorElement.dataset.slateEditor = 'true';
+      wrapper.append(editorElement);
+      mockDiv.append(wrapper);
 
       const result = isSelectOutside(mockDiv);
 
@@ -67,8 +67,8 @@ describe('isSelectOutside', () => {
     it('should call getSelectedDomNode and return true if selection contains editor', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
-      editorElement.setAttribute('data-slate-editor', 'true');
-      mockDiv.appendChild(editorElement);
+      editorElement.dataset.slateEditor = 'true';
+      mockDiv.append(editorElement);
       mockGetSelectedDomNode.mockReturnValue(mockDiv);
 
       // Need to re-import after mocking
@@ -76,7 +76,9 @@ describe('isSelectOutside', () => {
       jest.doMock('./getSelectedDomNode', () => ({
         getSelectedDomNode: mockGetSelectedDomNode,
       }));
-      const { isSelectOutside: isSelectOutsideWithMock } = require('./isSelectOutside');
+      const {
+        isSelectOutside: isSelectOutsideWithMock,
+      } = require('./isSelectOutside');
 
       const result = isSelectOutsideWithMock();
 
@@ -92,7 +94,9 @@ describe('isSelectOutside', () => {
       jest.doMock('./getSelectedDomNode', () => ({
         getSelectedDomNode: mockGetSelectedDomNode,
       }));
-      const { isSelectOutside: isSelectOutsideWithMock } = require('./isSelectOutside');
+      const {
+        isSelectOutside: isSelectOutsideWithMock,
+      } = require('./isSelectOutside');
 
       const result = isSelectOutsideWithMock();
 
@@ -108,7 +112,9 @@ describe('isSelectOutside', () => {
       jest.doMock('./getSelectedDomNode', () => ({
         getSelectedDomNode: mockGetSelectedDomNode,
       }));
-      const { isSelectOutside: isSelectOutsideWithMock } = require('./isSelectOutside');
+      const {
+        isSelectOutside: isSelectOutsideWithMock,
+      } = require('./isSelectOutside');
 
       const result = isSelectOutsideWithMock();
 
@@ -120,7 +126,7 @@ describe('isSelectOutside', () => {
       const mockDiv = document.createElement('div');
       const paragraph = document.createElement('p');
       paragraph.textContent = 'Regular content';
-      mockDiv.appendChild(paragraph);
+      mockDiv.append(paragraph);
       mockGetSelectedDomNode.mockReturnValue(mockDiv);
 
       // Need to re-import after mocking
@@ -128,7 +134,9 @@ describe('isSelectOutside', () => {
       jest.doMock('./getSelectedDomNode', () => ({
         getSelectedDomNode: mockGetSelectedDomNode,
       }));
-      const { isSelectOutside: isSelectOutsideWithMock } = require('./isSelectOutside');
+      const {
+        isSelectOutside: isSelectOutsideWithMock,
+      } = require('./isSelectOutside');
 
       const result = isSelectOutsideWithMock();
 
@@ -148,7 +156,7 @@ describe('isSelectOutside', () => {
 
       // The function doesn't catch the error, so it will throw
       expect(() => isSelectOutside(mockDiv)).toThrow('Invalid selector');
-      
+
       // Restore original method
       mockDiv.querySelector = originalQuerySelector;
     });
@@ -158,8 +166,8 @@ describe('isSelectOutside', () => {
       const editorElement = document.createElement('div');
       // The querySelector in the source has a missing closing bracket: '[data-slate-editor="true"'
       // This means it will match any element with data-slate-editor that starts with "true"
-      editorElement.setAttribute('data-slate-editor', 'true');
-      mockDiv.appendChild(editorElement);
+      editorElement.dataset.slateEditor = 'true';
+      mockDiv.append(editorElement);
 
       const result = isSelectOutside(mockDiv);
 
@@ -170,8 +178,8 @@ describe('isSelectOutside', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
       // Due to the missing closing bracket, this won't match
-      editorElement.setAttribute('data-slate-editor', 'false');
-      mockDiv.appendChild(editorElement);
+      editorElement.dataset.slateEditor = 'false';
+      mockDiv.append(editorElement);
 
       const result = isSelectOutside(mockDiv);
 
@@ -181,11 +189,11 @@ describe('isSelectOutside', () => {
     it('should handle multiple editor elements', () => {
       const mockDiv = document.createElement('div');
       const editor1 = document.createElement('div');
-      editor1.setAttribute('data-slate-editor', 'true');
+      editor1.dataset.slateEditor = 'true';
       const editor2 = document.createElement('div');
-      editor2.setAttribute('data-slate-editor', 'true');
-      mockDiv.appendChild(editor1);
-      mockDiv.appendChild(editor2);
+      editor2.dataset.slateEditor = 'true';
+      mockDiv.append(editor1);
+      mockDiv.append(editor2);
 
       const result = isSelectOutside(mockDiv);
 

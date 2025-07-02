@@ -166,7 +166,11 @@ describe('usePlateViewEditor', () => {
     it('should not recreate editor when non-dependency options change', () => {
       const { rerender, result } = renderHook(
         ({ value }) => usePlateViewEditor({ value }),
-        { initialProps: { value: [{ children: [{ text: 'Initial' }], type: 'p' }] } }
+        {
+          initialProps: {
+            value: [{ children: [{ text: 'Initial' }], type: 'p' }],
+          },
+        }
       );
 
       const firstEditor = result.current;
@@ -194,7 +198,9 @@ describe('usePlateViewEditor', () => {
     });
 
     it('should create editor on remount', () => {
-      const { rerender, result, unmount } = renderHook(() => usePlateViewEditor());
+      const { rerender, result, unmount } = renderHook(() =>
+        usePlateViewEditor()
+      );
 
       const firstEditor = result.current;
       expect(mockCreateStaticEditor).toHaveBeenCalledTimes(1);
@@ -243,7 +249,12 @@ describe('usePlateViewEditor', () => {
     it('should handle rapid prop changes', () => {
       const { rerender, result } = renderHook(
         ({ id, enabled }) => usePlateViewEditor({ id, enabled }),
-        { initialProps: { id: 'editor-1', enabled: true as boolean | undefined } }
+        {
+          initialProps: {
+            id: 'editor-1',
+            enabled: true as boolean | undefined,
+          },
+        }
       );
 
       // Rapid changes

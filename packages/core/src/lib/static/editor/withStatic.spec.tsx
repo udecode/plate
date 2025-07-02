@@ -214,8 +214,8 @@ describe('withStatic', () => {
       const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
 
       // ViewPlugin (static) should come before custom plugins
-      const viewPluginIndex = pluginKeys.findIndex(key =>
-        editor.meta.pluginList.find(p => p.key === key && p === ViewPlugin)
+      const viewPluginIndex = pluginKeys.findIndex((key) =>
+        editor.meta.pluginList.find((p) => p.key === key && p === ViewPlugin)
       );
       const customIndex = pluginKeys.indexOf('custom');
 
