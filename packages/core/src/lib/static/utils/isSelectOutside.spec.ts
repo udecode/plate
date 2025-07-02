@@ -1,19 +1,26 @@
-import { getSelectedDomNode } from './getSelectedDomNode';
 import { isSelectOutside } from './isSelectOutside';
 
-jest.mock('./getSelectedDomNode');
-
 describe('isSelectOutside', () => {
-  const mockGetSelectedDomNode = getSelectedDomNode as jest.MockedFunction<typeof getSelectedDomNode>;
+  let mockGetSelectedDomNode: jest.Mock;
 
   beforeEach(() => {
+    mockGetSelectedDomNode = jest.fn();
+    jest.doMock('./getSelectedDomNode', () => ({
+      getSelectedDomNode: mockGetSelectedDomNode,
+    }));
+  });
+
+  afterEach(() => {
+    jest.resetModules();
     jest.clearAllMocks();
   });
 
-  describe('with provided HTML element', () => {
-    it('should return true if element contains data-slate-editor', () => {
+  describe('when HTML element is provided', () => {
+    it('should return true when element contains data-slate-editor attribute', () => {
       const mockDiv = document.createElement('div');
-      mockDiv.innerHTML = '<div data-slate-editor="true">Editor content</div>';
+      const editorElement = document.createElement('div');
+      editorElement.setAttribute('data-slate-editor', 'true');
+      mockDiv.appendChild(editorElement);
 
       const result = isSelectOutside(mockDiv);
 
@@ -21,9 +28,11 @@ describe('isSelectOutside', () => {
       expect(mockGetSelectedDomNode).not.toHaveBeenCalled();
     });
 
-    it('should return false if element does not contain data-slate-editor', () => {
+    it('should return false when element does not contain data-slate-editor attribute', () => {
       const mockDiv = document.createElement('div');
-      mockDiv.innerHTML = '<p>Regular content</p>';
+      const innerElement = document.createElement('p');
+      innerElement.textContent = 'Some text';
+      mockDiv.appendChild(innerElement);
 
       const result = isSelectOutside(mockDiv);
 
@@ -31,9 +40,22 @@ describe('isSelectOutside', () => {
       expect(mockGetSelectedDomNode).not.toHaveBeenCalled();
     });
 
-    it('should handle nested data-slate-editor attribute', () => {
+    it('should return false for empty element', () => {
       const mockDiv = document.createElement('div');
-      mockDiv.innerHTML = '<div><span><div data-slate-editor="true">Editor</div></span></div>';
+
+      const result = isSelectOutside(mockDiv);
+
+      expect(result).toBe(false);
+      expect(mockGetSelectedDomNode).not.toHaveBeenCalled();
+    });
+
+    it('should check nested elements for data-slate-editor attribute', () => {
+      const mockDiv = document.createElement('div');
+      const wrapper = document.createElement('div');
+      const editorElement = document.createElement('div');
+      editorElement.setAttribute('data-slate-editor', 'true');
+      wrapper.appendChild(editorElement);
+      mockDiv.appendChild(wrapper);
 
       const result = isSelectOutside(mockDiv);
 
@@ -41,33 +63,74 @@ describe('isSelectOutside', () => {
     });
   });
 
-  describe('without provided HTML element', () => {
-    it('should use getSelectedDomNode and return true if editor found', () => {
+  describe('when HTML element is not provided', () => {
+    it('should call getSelectedDomNode and return true if selection contains editor', () => {
       const mockDiv = document.createElement('div');
-      mockDiv.innerHTML = '<div data-slate-editor="true">Editor content</div>';
+      const editorElement = document.createElement('div');
+      editorElement.setAttribute('data-slate-editor', 'true');
+      mockDiv.appendChild(editorElement);
       mockGetSelectedDomNode.mockReturnValue(mockDiv);
 
-      const result = isSelectOutside();
+      // Need to re-import after mocking
+      jest.resetModules();
+      jest.doMock('./getSelectedDomNode', () => ({
+        getSelectedDomNode: mockGetSelectedDomNode,
+      }));
+      const { isSelectOutside: isSelectOutsideWithMock } = require('./isSelectOutside');
+
+      const result = isSelectOutsideWithMock();
 
       expect(result).toBe(true);
       expect(mockGetSelectedDomNode).toHaveBeenCalled();
     });
 
-    it('should use getSelectedDomNode and return false if no editor found', () => {
-      const mockDiv = document.createElement('div');
-      mockDiv.innerHTML = '<p>Regular content</p>';
-      mockGetSelectedDomNode.mockReturnValue(mockDiv);
+    it('should return false when getSelectedDomNode returns null', () => {
+      mockGetSelectedDomNode.mockReturnValue(null);
 
-      const result = isSelectOutside();
+      // Need to re-import after mocking
+      jest.resetModules();
+      jest.doMock('./getSelectedDomNode', () => ({
+        getSelectedDomNode: mockGetSelectedDomNode,
+      }));
+      const { isSelectOutside: isSelectOutsideWithMock } = require('./isSelectOutside');
+
+      const result = isSelectOutsideWithMock();
 
       expect(result).toBe(false);
       expect(mockGetSelectedDomNode).toHaveBeenCalled();
     });
 
-    it('should return false if getSelectedDomNode returns undefined', () => {
+    it('should return false when getSelectedDomNode returns undefined', () => {
       mockGetSelectedDomNode.mockReturnValue(undefined);
 
-      const result = isSelectOutside();
+      // Need to re-import after mocking
+      jest.resetModules();
+      jest.doMock('./getSelectedDomNode', () => ({
+        getSelectedDomNode: mockGetSelectedDomNode,
+      }));
+      const { isSelectOutside: isSelectOutsideWithMock } = require('./isSelectOutside');
+
+      const result = isSelectOutsideWithMock();
+
+      expect(result).toBe(false);
+      expect(mockGetSelectedDomNode).toHaveBeenCalled();
+    });
+
+    it('should return false when selection does not contain editor', () => {
+      const mockDiv = document.createElement('div');
+      const paragraph = document.createElement('p');
+      paragraph.textContent = 'Regular content';
+      mockDiv.appendChild(paragraph);
+      mockGetSelectedDomNode.mockReturnValue(mockDiv);
+
+      // Need to re-import after mocking
+      jest.resetModules();
+      jest.doMock('./getSelectedDomNode', () => ({
+        getSelectedDomNode: mockGetSelectedDomNode,
+      }));
+      const { isSelectOutside: isSelectOutsideWithMock } = require('./isSelectOutside');
+
+      const result = isSelectOutsideWithMock();
 
       expect(result).toBe(false);
       expect(mockGetSelectedDomNode).toHaveBeenCalled();
@@ -75,29 +138,55 @@ describe('isSelectOutside', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle malformed selector query', () => {
+    it('should handle malformed selector gracefully', () => {
       const mockDiv = document.createElement('div');
-      mockDiv.innerHTML = '<div data-slate-editor="true>Unclosed quote</div>';
+      // Override querySelector to throw an error
+      const originalQuerySelector = mockDiv.querySelector;
+      mockDiv.querySelector = jest.fn(() => {
+        throw new Error('Invalid selector');
+      });
 
-      // The querySelector with unclosed quote should find the element
+      // The function doesn't catch the error, so it will throw
+      expect(() => isSelectOutside(mockDiv)).toThrow('Invalid selector');
+      
+      // Restore original method
+      mockDiv.querySelector = originalQuerySelector;
+    });
+
+    it('should handle elements with data-slate-editor attribute', () => {
+      const mockDiv = document.createElement('div');
+      const editorElement = document.createElement('div');
+      // The querySelector in the source has a missing closing bracket: '[data-slate-editor="true"'
+      // This means it will match any element with data-slate-editor that starts with "true"
+      editorElement.setAttribute('data-slate-editor', 'true');
+      mockDiv.appendChild(editorElement);
+
       const result = isSelectOutside(mockDiv);
 
       expect(result).toBe(true);
     });
 
-    it('should handle empty element', () => {
+    it('should not match elements with data-slate-editor set to other values', () => {
       const mockDiv = document.createElement('div');
+      const editorElement = document.createElement('div');
+      // Due to the missing closing bracket, this won't match
+      editorElement.setAttribute('data-slate-editor', 'false');
+      mockDiv.appendChild(editorElement);
 
       const result = isSelectOutside(mockDiv);
 
       expect(result).toBe(false);
     });
 
-    it('should handle data-slate-editor with different values', () => {
+    it('should handle multiple editor elements', () => {
       const mockDiv = document.createElement('div');
-      mockDiv.innerHTML = '<div data-slate-editor="false">Not an editor</div>';
+      const editor1 = document.createElement('div');
+      editor1.setAttribute('data-slate-editor', 'true');
+      const editor2 = document.createElement('div');
+      editor2.setAttribute('data-slate-editor', 'true');
+      mockDiv.appendChild(editor1);
+      mockDiv.appendChild(editor2);
 
-      // querySelector looks for the attribute presence, not value
       const result = isSelectOutside(mockDiv);
 
       expect(result).toBe(true);

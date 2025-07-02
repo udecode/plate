@@ -1,107 +1,307 @@
 import { getSelectedDomBlocks } from './getSelectedDomBlocks';
 
 describe('getSelectedDomBlocks', () => {
-  const mockGetSelection = jest.fn();
-  const mockGetRangeAt = jest.fn();
-  const mockCloneContents = jest.fn();
+  let mockSelection: Selection;
+  let mockRange: Range;
+  let originalGetSelection: typeof window.getSelection;
 
   beforeEach(() => {
+    // Store original getSelection
+    originalGetSelection = window.getSelection;
+
+    // Create mock range
+    mockRange = {
+      cloneContents: jest.fn(),
+    } as any;
+
+    // Create mock selection
+    mockSelection = {
+      getRangeAt: jest.fn(() => mockRange),
+      rangeCount: 1,
+    } as any;
+
+    // Mock window.getSelection
+    window.getSelection = jest.fn(() => mockSelection);
+  });
+
+  afterEach(() => {
+    // Restore original getSelection
+    window.getSelection = originalGetSelection;
     jest.clearAllMocks();
-    global.window.getSelection = mockGetSelection;
   });
 
-  it('should return undefined if no selection', () => {
-    mockGetSelection.mockReturnValue(null);
+  describe('when selection exists', () => {
+    it('should return array of slate blocks with data attributes', () => {
+      const mockFragment = document.createDocumentFragment();
 
-    const result = getSelectedDomBlocks();
+      // Create slate blocks
+      const block1 = document.createElement('div');
+      block1.dataset.slateNode = 'element';
+      block1.dataset.slateId = 'block-1';
+      block1.textContent = 'First block';
 
-    expect(result).toBeUndefined();
-  });
+      const block2 = document.createElement('div');
+      block2.dataset.slateNode = 'element';
+      block2.dataset.slateId = 'block-2';
+      block2.textContent = 'Second block';
 
-  it('should return undefined if selection has no ranges', () => {
-    mockGetSelection.mockReturnValue({ rangeCount: 0 });
+      mockFragment.append(block1);
+      mockFragment.append(block2);
 
-    const result = getSelectedDomBlocks();
+      mockRange.cloneContents = jest.fn(() => mockFragment);
 
-    expect(result).toBeUndefined();
-  });
+      const result = getSelectedDomBlocks();
 
-  it('should return array of DOM blocks from selection', () => {
-    const mockBlock1 = document.createElement('div');
-    mockBlock1.setAttribute('data-slate-node', 'element');
-    mockBlock1.setAttribute('data-slate-id', '1');
-
-    const mockBlock2 = document.createElement('div');
-    mockBlock2.setAttribute('data-slate-node', 'element');
-    mockBlock2.setAttribute('data-slate-id', '2');
-
-    const mockFragment = document.createDocumentFragment();
-    mockFragment.appendChild(mockBlock1);
-    mockFragment.appendChild(mockBlock2);
-
-    mockCloneContents.mockReturnValue(mockFragment);
-    mockGetRangeAt.mockReturnValue({ cloneContents: mockCloneContents });
-    mockGetSelection.mockReturnValue({
-      rangeCount: 1,
-      getRangeAt: mockGetRangeAt,
+      expect(result).toBeDefined();
+      expect(result).toHaveLength(2);
+      expect(result?.[0]).toBe(block1);
+      expect(result?.[1]).toBe(block2);
+      expect((result?.[0] as HTMLElement).dataset.slateId).toBe('block-1');
+      expect((result?.[1] as HTMLElement).dataset.slateId).toBe('block-2');
     });
 
-    const result = getSelectedDomBlocks();
+    it('should filter out non-slate elements', () => {
+      const mockFragment = document.createDocumentFragment();
 
-    expect(result).toBeDefined();
-    expect(result).toHaveLength(2);
-    expect(result?.[0]).toBe(mockBlock1);
-    expect(result?.[1]).toBe(mockBlock2);
-  });
+      // Create mixed elements
+      const regularDiv = document.createElement('div');
+      regularDiv.textContent = 'Regular div';
 
-  it('should only return elements with both data-slate-node="element" and data-slate-id', () => {
-    const mockBlock1 = document.createElement('div');
-    mockBlock1.setAttribute('data-slate-node', 'element');
-    mockBlock1.setAttribute('data-slate-id', '1');
+      const slateBlock = document.createElement('div');
+      slateBlock.dataset.slateNode = 'element';
+      slateBlock.dataset.slateId = 'block-1';
 
-    const mockBlock2 = document.createElement('div');
-    mockBlock2.setAttribute('data-slate-node', 'text'); // Not an element
-    mockBlock2.setAttribute('data-slate-id', '2');
+      const paragraph = document.createElement('p');
+      paragraph.textContent = 'Regular paragraph';
 
-    const mockBlock3 = document.createElement('div');
-    mockBlock3.setAttribute('data-slate-node', 'element');
-    // No data-slate-id
+      mockFragment.append(regularDiv);
+      mockFragment.append(slateBlock);
+      mockFragment.append(paragraph);
 
-    const mockFragment = document.createDocumentFragment();
-    mockFragment.appendChild(mockBlock1);
-    mockFragment.appendChild(mockBlock2);
-    mockFragment.appendChild(mockBlock3);
+      mockRange.cloneContents = jest.fn(() => mockFragment);
 
-    mockCloneContents.mockReturnValue(mockFragment);
-    mockGetRangeAt.mockReturnValue({ cloneContents: mockCloneContents });
-    mockGetSelection.mockReturnValue({
-      rangeCount: 1,
-      getRangeAt: mockGetRangeAt,
+      const result = getSelectedDomBlocks();
+
+      expect(result).toBeDefined();
+      expect(result).toHaveLength(1);
+      expect(result?.[0]).toBe(slateBlock);
     });
 
-    const result = getSelectedDomBlocks();
+    it('should handle nested slate blocks', () => {
+      const mockFragment = document.createDocumentFragment();
 
-    expect(result).toBeDefined();
-    expect(result).toHaveLength(1);
-    expect(result?.[0]).toBe(mockBlock1);
-  });
+      const parentBlock = document.createElement('div');
+      parentBlock.dataset.slateNode = 'element';
+      parentBlock.dataset.slateId = 'parent-1';
 
-  it('should return empty array if no matching blocks found', () => {
-    const mockFragment = document.createDocumentFragment();
-    const mockDiv = document.createElement('div');
-    mockDiv.textContent = 'Some text';
-    mockFragment.appendChild(mockDiv);
+      const childBlock = document.createElement('div');
+      childBlock.dataset.slateNode = 'element';
+      childBlock.dataset.slateId = 'child-1';
 
-    mockCloneContents.mockReturnValue(mockFragment);
-    mockGetRangeAt.mockReturnValue({ cloneContents: mockCloneContents });
-    mockGetSelection.mockReturnValue({
-      rangeCount: 1,
-      getRangeAt: mockGetRangeAt,
+      parentBlock.append(childBlock);
+      mockFragment.append(parentBlock);
+
+      mockRange.cloneContents = jest.fn(() => mockFragment);
+
+      const result = getSelectedDomBlocks();
+
+      expect(result).toBeDefined();
+      expect(result).toHaveLength(2);
+      expect(result?.[0]).toBe(parentBlock);
+      expect(result?.[1]).toBe(childBlock);
     });
 
-    const result = getSelectedDomBlocks();
+    it('should return empty array when no slate blocks found', () => {
+      const mockFragment = document.createDocumentFragment();
 
-    expect(result).toBeDefined();
-    expect(result).toHaveLength(0);
+      const regularDiv = document.createElement('div');
+      regularDiv.textContent = 'No slate attributes';
+
+      mockFragment.append(regularDiv);
+
+      mockRange.cloneContents = jest.fn(() => mockFragment);
+
+      const result = getSelectedDomBlocks();
+
+      expect(result).toBeDefined();
+      expect(result).toHaveLength(0);
+    });
+
+    it('should handle blocks with only data-slate-node attribute', () => {
+      const mockFragment = document.createDocumentFragment();
+
+      const block = document.createElement('div');
+      block.dataset.slateNode = 'element';
+      // Missing data-slate-id
+
+      mockFragment.append(block);
+
+      mockRange.cloneContents = jest.fn(() => mockFragment);
+
+      const result = getSelectedDomBlocks();
+
+      // Should not include blocks without data-slate-id
+      expect(result).toBeDefined();
+      expect(result).toHaveLength(0);
+    });
+
+    it('should handle blocks with only data-slate-id attribute', () => {
+      const mockFragment = document.createDocumentFragment();
+
+      const block = document.createElement('div');
+      block.dataset.slateId = 'block-1';
+      // Missing data-slate-node="element"
+
+      mockFragment.append(block);
+
+      mockRange.cloneContents = jest.fn(() => mockFragment);
+
+      const result = getSelectedDomBlocks();
+
+      // Should not include blocks without data-slate-node="element"
+      expect(result).toBeDefined();
+      expect(result).toHaveLength(0);
+    });
+
+    it('should handle empty fragment', () => {
+      const mockFragment = document.createDocumentFragment();
+      mockRange.cloneContents = jest.fn(() => mockFragment);
+
+      const result = getSelectedDomBlocks();
+
+      expect(result).toBeDefined();
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('when selection does not exist', () => {
+    it('should return undefined when getSelection returns null', () => {
+      window.getSelection = jest.fn(() => null);
+
+      const result = getSelectedDomBlocks();
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined when rangeCount is 0', () => {
+      (mockSelection as any).rangeCount = 0;
+
+      const result = getSelectedDomBlocks();
+
+      expect(result).toBeUndefined();
+      expect(mockSelection.getRangeAt).not.toHaveBeenCalled();
+    });
+
+    it('should handle negative rangeCount', () => {
+      (mockSelection as any).rangeCount = -1;
+      // Mock cloneContents to return a valid fragment
+      const mockFragment = document.createDocumentFragment();
+      mockRange.cloneContents = jest.fn(() => mockFragment);
+
+      const result = getSelectedDomBlocks();
+
+      // The function doesn't check for negative rangeCount, so it will try to getRangeAt(0)
+      // and process normally, returning an empty array since fragment has no matching elements
+      expect(result).toBeDefined();
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should handle slate blocks with different node types', () => {
+      const mockFragment = document.createDocumentFragment();
+
+      const textNode = document.createElement('span');
+      textNode.dataset.slateNode = 'text';
+      textNode.dataset.slateId = 'text-1';
+
+      const elementNode = document.createElement('div');
+      elementNode.dataset.slateNode = 'element';
+      elementNode.dataset.slateId = 'element-1';
+
+      mockFragment.append(textNode);
+      mockFragment.append(elementNode);
+
+      mockRange.cloneContents = jest.fn(() => mockFragment);
+
+      const result = getSelectedDomBlocks();
+
+      // Should only return elements with data-slate-node="element"
+      expect(result).toBeDefined();
+      expect(result).toHaveLength(1);
+      expect(result?.[0]).toBe(elementNode);
+    });
+
+    it('should handle getRangeAt throwing an error', () => {
+      mockSelection.getRangeAt = jest.fn(() => {
+        throw new Error('Index out of bounds');
+      });
+
+      // The function doesn't catch the error, so it will throw
+      expect(() => getSelectedDomBlocks()).toThrow('Index out of bounds');
+    });
+
+    it('should handle cloneContents throwing an error', () => {
+      mockRange.cloneContents = jest.fn(() => {
+        throw new Error('Failed to clone');
+      });
+
+      // The function doesn't catch the error, so it will throw
+      expect(() => getSelectedDomBlocks()).toThrow('Failed to clone');
+    });
+
+    it('should handle complex DOM structures', () => {
+      const mockFragment = document.createDocumentFragment();
+
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = `
+        <div data-slate-node="element" data-slate-id="1">
+          <p>Content</p>
+          <div data-slate-node="element" data-slate-id="2">
+            <span>Nested</span>
+          </div>
+        </div>
+        <div data-slate-node="element" data-slate-id="3">
+          Another block
+        </div>
+      `;
+
+      // Move children to fragment
+      while (wrapper.firstChild) {
+        mockFragment.append(wrapper.firstChild);
+      }
+
+      mockRange.cloneContents = jest.fn(() => mockFragment);
+
+      const result = getSelectedDomBlocks();
+
+      expect(result).toBeDefined();
+      expect(result).toHaveLength(3);
+      expect((result?.[0] as HTMLElement).dataset.slateId).toBe('1');
+      expect((result?.[1] as HTMLElement).dataset.slateId).toBe('2');
+      expect((result?.[2] as HTMLElement).dataset.slateId).toBe('3');
+    });
+
+    it('should preserve order of blocks', () => {
+      const mockFragment = document.createDocumentFragment();
+
+      for (let i = 1; i <= 5; i++) {
+        const block = document.createElement('div');
+        block.dataset.slateNode = 'element';
+        block.dataset.slateId = `block-${i}`;
+        mockFragment.append(block);
+      }
+
+      mockRange.cloneContents = jest.fn(() => mockFragment);
+
+      const result = getSelectedDomBlocks();
+
+      expect(result).toHaveLength(5);
+      for (let i = 0; i < 5; i++) {
+        expect((result?.[i] as HTMLElement).dataset.slateId).toBe(
+          `block-${i + 1}`
+        );
+      }
+    });
   });
 });
