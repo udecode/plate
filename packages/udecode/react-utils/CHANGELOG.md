@@ -1,5 +1,11 @@
 # @udecode/react-utils
 
+## 49.0.15
+
+### Patch Changes
+
+- [#4434](https://github.com/udecode/plate/pull/4434) by [@zbeyens](https://github.com/zbeyens) – Critical fix for 49.0.13
+
 ## 49.0.13
 
 ### Patch Changes
