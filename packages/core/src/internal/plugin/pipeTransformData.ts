@@ -8,7 +8,7 @@ import { getEditorPlugin } from '../../lib/plugin';
 export const pipeTransformData = (
   editor: SlateEditor,
   plugins: Partial<AnyEditorPlugin>[],
-  { data, dataTransfer }: ParserOptions
+  { data, ...options }: ParserOptions
 ) => {
   plugins.forEach((p) => {
     const transformData = p.parser?.transformData;
@@ -18,7 +18,7 @@ export const pipeTransformData = (
     data = transformData({
       ...getEditorPlugin(editor, p as any),
       data,
-      dataTransfer,
+      ...options,
     });
   });
 
