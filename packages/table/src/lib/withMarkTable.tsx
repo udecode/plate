@@ -1,4 +1,4 @@
-import { type OverrideEditor, TextApi } from 'platejs';
+import { type OverrideEditor, RangeApi, TextApi } from 'platejs';
 
 import type { TableConfig } from '.';
 
@@ -51,20 +51,29 @@ export const withMarkTable: OverrideEditor<TableConfig> = ({
 
       const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
-      if (matchesCell.length <= 1) return addMark(key, value);
+      if (matchesCell.length === 0) return addMark(key, value);
 
+      // Handle both single and multiple cells with cell-scoped operations
       matchesCell.forEach(([_cell, cellPath]) => {
-        editor.tf.setNodes(
-          {
-            [key]: value,
-          },
-          {
-            at: cellPath,
-            split: true,
-            voids: true,
-            match: (n) => TextApi.isText(n),
-          }
-        );
+        // Get the range for this specific cell
+        const cellRange = editor.api.range(cellPath);
+        
+        // Get the intersection of the selection with the cell
+        const intersection = RangeApi.intersection(selection, cellRange);
+        
+        if (intersection) {
+          editor.tf.setNodes(
+            {
+              [key]: value,
+            },
+            {
+              at: intersection,
+              split: true,
+              voids: true,
+              match: (n) => TextApi.isText(n),
+            }
+          );
+        }
       });
     },
 
@@ -77,13 +86,22 @@ export const withMarkTable: OverrideEditor<TableConfig> = ({
 
       if (matchesCell.length === 0) return removeMark(key);
 
+      // Handle both single and multiple cells with cell-scoped operations
       matchesCell.forEach(([_cell, cellPath]) => {
-        editor.tf.unsetNodes(key, {
-          at: cellPath,
-          split: true,
-          voids: true,
-          match: (n) => TextApi.isText(n),
-        });
+        // Get the range for this specific cell
+        const cellRange = editor.api.range(cellPath);
+        
+        // Get the intersection of the selection with the cell
+        const intersection = RangeApi.intersection(selection, cellRange);
+        
+        if (intersection) {
+          editor.tf.unsetNodes(key, {
+            at: intersection,
+            split: true,
+            voids: true,
+            match: (n) => TextApi.isText(n),
+          });
+        }
       });
     },
   },
