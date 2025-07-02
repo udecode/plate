@@ -50,6 +50,7 @@ describe('listToMdastTree', () => {
         },
       ],
       ordered: false,
+      spread: false,
       start: 1,
       type: 'list',
     });
@@ -117,6 +118,7 @@ describe('listToMdastTree', () => {
                 },
               ],
               ordered: false,
+              spread: false,
               start: 1,
               type: 'list',
             },
@@ -125,6 +127,7 @@ describe('listToMdastTree', () => {
         },
       ],
       ordered: false,
+      spread: false,
       start: 1,
       type: 'list',
     });
@@ -176,6 +179,7 @@ describe('listToMdastTree', () => {
         },
       ],
       ordered: true,
+      spread: false,
       start: 1,
       type: 'list',
     });
@@ -430,5 +434,39 @@ describe('listToMdastTree', () => {
     }) as any;
 
     expect(result).toMatchSnapshot();
+  });
+
+  it('should handle spread option correctly', () => {
+    const nodes = [
+      {
+        children: [{ text: 'list1' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'list2' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+    ];
+
+    // Test with spread: false (default)
+    const resultNoSpread = listToMdastTree(nodes as any, {
+      editor,
+    });
+
+    expect(resultNoSpread.spread).toBe(false);
+
+    // Test with spread: true
+    const resultWithSpread = listToMdastTree(nodes as any, {
+      editor,
+      spread: true,
+    });
+
+    expect(resultWithSpread.spread).toBe(true);
   });
 });

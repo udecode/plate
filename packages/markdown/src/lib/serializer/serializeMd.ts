@@ -17,6 +17,7 @@ export type SerializeMdOptions = {
   preserveEmptyParagraphs?: boolean;
   remarkPlugins?: Plugin[];
   rules?: MdRules;
+  spread?: boolean;
   value?: Descendant[];
 };
 
