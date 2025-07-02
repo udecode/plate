@@ -86,13 +86,13 @@ describe('useComposedRef', () => {
   it('should compose cleanup functions from callback refs', () => {
     const cleanup1 = jest.fn();
     const cleanup2 = jest.fn();
-    
+
     const callbackRef1 = jest.fn((node: HTMLDivElement | null) => {
       if (node) {
         return cleanup1;
       }
     });
-    
+
     const callbackRef2 = jest.fn((node: HTMLDivElement | null) => {
       if (node) {
         return cleanup2;
@@ -109,7 +109,7 @@ describe('useComposedRef', () => {
     // The composed ref should return a cleanup function
     expect(typeof result).toBe('function');
     expect(normalRef.current).toBe(element);
-    
+
     // When cleanup is called, both cleanup functions should be called
     result!();
     expect(cleanup1).toHaveBeenCalled();
@@ -118,20 +118,24 @@ describe('useComposedRef', () => {
 
   it('should handle mixed refs with some returning cleanup functions', () => {
     const cleanup = jest.fn();
-    
+
     const callbackRefWithCleanup = jest.fn((node: HTMLDivElement | null) => {
       if (node) {
         return cleanup;
       }
     });
-    
+
     const callbackRefWithoutCleanup = jest.fn((node: HTMLDivElement | null) => {
       // No cleanup returned
     });
 
     const normalRef = React.createRef<HTMLDivElement>();
 
-    const composedRef = composeRefs(normalRef, callbackRefWithCleanup, callbackRefWithoutCleanup);
+    const composedRef = composeRefs(
+      normalRef,
+      callbackRefWithCleanup,
+      callbackRefWithoutCleanup
+    );
     const element = document.createElement('div');
 
     const result = composedRef(element);
@@ -139,7 +143,7 @@ describe('useComposedRef', () => {
     // Should still return a cleanup function since one ref has cleanup
     expect(typeof result).toBe('function');
     expect(normalRef.current).toBe(element);
-    
+
     // When cleanup is called, only the cleanup function should be called
     result!();
     expect(cleanup).toHaveBeenCalled();

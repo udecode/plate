@@ -8,7 +8,7 @@ import { getEditorPlugin } from '../plugin';
 export const pipeInsertDataQuery = (
   editor: SlateEditor,
   plugins: Partial<AnyEditorPlugin>[],
-  { data, dataTransfer }: ParserOptions
+  options: ParserOptions
 ) =>
   plugins.every((p) => {
     const query = p.parser?.query;
@@ -17,8 +17,7 @@ export const pipeInsertDataQuery = (
       !query ||
       query({
         ...getEditorPlugin(editor, p as any),
-        data,
-        dataTransfer,
+        ...options,
       })
     );
   });

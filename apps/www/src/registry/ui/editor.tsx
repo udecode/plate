@@ -3,10 +3,10 @@
 import * as React from 'react';
 
 import type { VariantProps } from 'class-variance-authority';
-import type { PlateContentProps } from 'platejs/react';
+import type { PlateContentProps, PlateViewProps } from 'platejs/react';
 
 import { cva } from 'class-variance-authority';
-import { PlateContainer, PlateContent } from 'platejs/react';
+import { PlateContainer, PlateContent, PlateView } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
@@ -112,3 +112,18 @@ export const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
 );
 
 Editor.displayName = 'Editor';
+
+export function EditorView({
+  className,
+  variant,
+  ...props
+}: PlateViewProps & VariantProps<typeof editorVariants>) {
+  return (
+    <PlateView
+      {...props}
+      className={cn(editorVariants({ variant }), className)}
+    />
+  );
+}
+
+EditorView.displayName = 'EditorView';

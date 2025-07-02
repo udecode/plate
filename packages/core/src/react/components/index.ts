@@ -12,5 +12,6 @@ export * from './PlateContent';
 export * from './PlateControllerEffect';
 export * from './PlateSlate';
 export * from './PlateTest';
+export * from './PlateView';
 export * from './plate-nodes';
 export * from './withHOC';
