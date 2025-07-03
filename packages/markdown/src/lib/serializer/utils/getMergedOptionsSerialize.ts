@@ -38,6 +38,7 @@ export const getMergedOptionsSerialize = (
     editor,
     remarkPlugins: options?.remarkPlugins ?? PluginRemarkPlugins ?? [],
     rules: mergedRules,
+    spread: options?.spread,
     value: options?.value ?? editor.children,
   };
 };

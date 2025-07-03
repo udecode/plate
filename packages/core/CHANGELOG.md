@@ -1,5 +1,49 @@
 # @platejs/core
 
+## 49.0.18
+
+### Patch Changes
+
+- [#4447](https://github.com/udecode/plate/pull/4447) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Added `getSelectedDomFragment` utility function that returns Slate nodes from DOM selection.
+  - Deprecated `getSelectedDomBlocks`. Use `getSelectedDomFragment` instead.
+
+## 49.0.16
+
+### Patch Changes
+
+- [#4441](https://github.com/udecode/plate/pull/4441) by [@delijah](https://github.com/delijah) – Expose mimeType to plugin parser functions
+
+- [#4431](https://github.com/udecode/plate/pull/4431) by [@felixfeng33](https://github.com/felixfeng33) – Added comprehensive copy functionality and view editor support for static rendering.
+
+  **New Components:**
+
+  - Added `PlateView` component for static editor rendering with copy support
+  - Added `usePlateViewEditor` hook for creating memoized static editors
+
+  **Static Editor Enhancements:**
+
+  - Added `withStatic` HOC to enhance editors with static rendering capabilities
+  - Added `ViewPlugin` that enables copy operations in static editors
+  - Added `getStaticPlugins` to configure plugins for static rendering
+  - Added `onCopy` handler that properly serializes content with `x-slate-fragment` format
+
+  **New Utilities:**
+
+  - Added `getSelectedDomBlocks` to extract selected DOM elements with Slate metadata
+  - Added `getSelectedDomNode` to get DOM nodes from browser selection
+  - Added `isSelectOutside` to check if selection is outside editor bounds
+  - Added `getPlainText` to recursively extract plain text from DOM nodes
+
+  This enables seamless copy operations from static Plate editors, allowing content to be pasted into other Slate editors while preserving rich formatting and structure.
+
+## 49.0.15
+
+### Patch Changes
+
+- [#4428](https://github.com/udecode/plate/pull/4428) by [@zbeyens](https://github.com/zbeyens) –
+  - Updated `SlateElementProps`, `SlateTextProps`, `SlateLeafProps`, `PlateElementProps`, `PlateTextProps`, and `PlateLeafProps` to properly type the `attributes` property to unknown object.
+
 ## 49.0.14
 
 ### Patch Changes

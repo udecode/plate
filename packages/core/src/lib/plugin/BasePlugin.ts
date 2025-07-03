@@ -549,7 +549,11 @@ export type NodeComponent<T = any> = React.FC<T>;
 
 export type NodeComponents = Record<string, NodeComponent>;
 
-export type ParserOptions = { data: string; dataTransfer: DataTransfer };
+export type ParserOptions = {
+  data: string;
+  dataTransfer: DataTransfer;
+  mimeType: string;
+};
 
 export type PluginConfig<
   K extends string = any,

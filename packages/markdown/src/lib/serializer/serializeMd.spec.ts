@@ -5,7 +5,10 @@ const editor = createTestEditor();
 
 describe('serializeMd', () => {
   it('should serialize a simple paragraph', () => {
-    const result = serializeMd(editor as any, { value: testValue });
+    const result = serializeMd(editor as any, {
+      spread: true,
+      value: testValue,
+    });
     expect(result).toMatchSnapshot();
   });
 
@@ -266,4 +269,33 @@ describe('serializeMd', () => {
       ).toMatchSnapshot();
     }
   );
+
+  it('should serialize lists with spread option correctly', () => {
+    const listFragment = [
+      {
+        children: [{ text: '1' }],
+        indent: 1,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: '2' }],
+        indent: 1,
+        listStart: 2,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+    ];
+
+    // Test with default (spread: false)
+    const resultDefault = serializeMd(editor as any, { value: listFragment });
+    expect(resultDefault).toBe('1. 1\n2. 2\n');
+
+    // Test with spread: true
+    const resultWithSpread = serializeMd(editor as any, {
+      spread: true,
+      value: listFragment,
+    });
+    expect(resultWithSpread).toBe('1. 1\n\n2. 2\n');
+  });
 });

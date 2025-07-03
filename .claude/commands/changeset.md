@@ -2,6 +2,24 @@
 
 This guide outlines the structure and writing style for creating changeset files in the Plate project, aiming for clarity and conciseness similar to the Radix UI changelog style.
 
+## Registry Changes: Changelog Updates
+
+**When changes are made to `apps/www/src/registry/` components**, you MUST also update `docs/components/changelog.mdx` to document component changes, additions, or removals.
+
+**Changelog Standards:**
+
+- Update `docs/components/changelog.mdx` following the existing format and style
+- Document component changes, additions, or removals
+- Include any breaking changes or migration notes for registry components
+- Use consistent version numbering
+- Follow the existing changelog structure and writing style
+
+**Note:** Registry component changes require changelog updates, NOT changeset files, since registry components are not published as npm packages.
+
+## Package Changes: Changeset Files
+
+For changes to packages in the `packages/` directory, create changeset files as described below.
+
 ## File Naming Convention
 
 Changeset files should be named descriptively, indicating the affected package/area and the nature of the change.

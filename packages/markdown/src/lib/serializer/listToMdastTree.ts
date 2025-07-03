@@ -16,6 +16,7 @@ export function listToMdastTree(
   const root: MdList = {
     children: [],
     ordered: nodes[0].listStyleType === 'decimal',
+    spread: options.spread ?? false,
     start: nodes[0].listStart,
     type: 'list',
   };
@@ -57,7 +58,12 @@ export function listToMdastTree(
         },
       ],
       type: 'listItem',
-    };
+    } as any;
+
+    // Add spread property to list items when spread is true
+    if (options.spread) {
+      (listItem as any).spread = true;
+    }
 
     // Add checked property for todo lists
     if (node.listStyleType === 'todo' && node.checked !== undefined) {
@@ -74,6 +80,7 @@ export function listToMdastTree(
       const nestedList: MdList = {
         children: [],
         ordered: nextNode.listStyleType === 'decimal',
+        spread: options.spread ?? false,
         start: nextNode.listStart,
         type: 'list',
       };

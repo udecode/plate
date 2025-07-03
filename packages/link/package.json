@@ -1,6 +1,6 @@
 {
   "name": "@platejs/link",
-  "version": "49.0.0",
+  "version": "49.0.15",
   "description": "Link plugin for Plate",
   "keywords": [
     "plate",
@@ -56,7 +56,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=49.0.14",
+    "platejs": ">=49.0.18",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

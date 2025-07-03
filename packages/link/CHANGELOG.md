@@ -1,5 +1,19 @@
 # @platejs/link
 
+## 49.0.15
+
+### Patch Changes
+
+- [#4428](https://github.com/udecode/plate/pull/4428) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Improved return type of `getLinkAttributes` to be more specific and type-safe.
+
+  ```ts
+  // The function now returns a properly typed object
+  const attributes = getLinkAttributes(editor, linkElement);
+  // attributes is now properly typed as Pick<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'target'> & UnknownObject
+  ```
+
 ## 49.0.0
 
 ### Major Changes

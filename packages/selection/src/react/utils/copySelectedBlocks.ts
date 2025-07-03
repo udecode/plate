@@ -28,15 +28,37 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
             focus: editor.api.end(path)!,
           });
 
-          // set data from selection
-          editor.tf.setFragmentData(data);
+          const isEmpty = editor.api.isEmpty(path);
+
+          if (isEmpty) {
+            const after = editor.api.after(editor.selection!);
+
+            editor.tf.select({
+              anchor: editor.api.start(path)!,
+              focus: after!,
+            });
+          }
+
+          if (!isEmpty) {
+            editor.tf.setFragmentData(data);
+          }
 
           // get plain text
-          textPlain += `${data.getData('text/plain')}\n`;
+          if (isEmpty) {
+            textPlain += '\n';
+          } else {
+            textPlain += `${data.getData('text/plain')}\n`;
+          }
 
           // get html text
           const divChild = document.createElement('div');
-          divChild.innerHTML = data.getData('text/html');
+          if (isEmpty) {
+            // Does not support empty non-paragraph blocks yet
+            divChild.innerHTML = '<p></p>';
+          } else {
+            divChild.innerHTML = data.getData('text/html');
+          }
+
           div.append(divChild);
         });
 
