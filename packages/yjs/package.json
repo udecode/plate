@@ -59,7 +59,7 @@
   },
   "peerDependencies": {
     "@hocuspocus/provider": "^2.15.2",
-    "platejs": ">=49.0.16",
+    "platejs": ">=49.0.18",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "y-webrtc": "10.3.0"
