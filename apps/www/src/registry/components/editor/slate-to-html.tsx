@@ -3,8 +3,7 @@
 import * as React from 'react';
 
 import { useTheme } from 'next-themes';
-import { createStaticEditor } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { EditorKit } from '@/registry/components/editor/editor-kit';
@@ -116,8 +115,7 @@ export const EditorViewDemo = ({ value }: { value: any }) => {
 
 
 
-  // const editor = createStaticEditor({ plugins: BaseEditorKit });
-  const editor = createStaticEditor(
+  const editor = usePlateViewEditor(
     {
       plugins: BaseEditorKit,
       value: value,
