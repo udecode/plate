@@ -21,7 +21,9 @@ export const validateUrl = (editor: SlateEditor, url: string): boolean => {
     return true; // This is an anchor link
   }
 
-  if (isUrl && !isUrl(url)) return false;
+  if (isUrl) {
+    return isUrl(url);
+  }
   if (
     !dangerouslySkipSanitization &&
     !sanitizeUrl(url, {
