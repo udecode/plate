@@ -4,7 +4,7 @@ import { BaseLinkPlugin } from '../BaseLinkPlugin';
 import { validateUrl } from './validateUrl';
 
 describe('validateUrl', () => {
-  const createTestEditor = (options?: typeof BaseLinkPlugin['_spec']['options']) =>
+  const createTestEditor = (options?: any) =>
     createSlateEditor({
       plugins: [BaseLinkPlugin.configure({ options })],
     });
