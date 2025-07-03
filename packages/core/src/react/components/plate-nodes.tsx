@@ -177,7 +177,7 @@ export type StyledPlateLeafProps<
   PlateHTMLProps<C, T>;
 
 const NonBreakingSpace = () => (
-  <span style={{ fontSize: 0 }} contentEditable={false}>
+  <span style={{ fontSize: 0, lineHeight: 0 }} contentEditable={false}>
     {String.fromCodePoint(160)}
   </span>
 );
