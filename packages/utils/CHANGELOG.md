@@ -1,5 +1,11 @@
 # @platejs/utils
 
+## 49.0.19
+
+### Patch Changes
+
+- [#4437](https://github.com/udecode/plate/pull/4437) by [@calebpitan](https://github.com/calebpitan) – Added `taskList` to **KEYS** constant.
+
 ## 49.0.18
 
 ## 49.0.16
