@@ -108,30 +108,11 @@ export function EditorClient({ value }: { value: any }) {
   );
 }
 
+export const EditorViewClient = ({ value }: { value: any }) => {
+  const editor = usePlateViewEditor({
+    plugins: BaseEditorKit,
+    value: value,
+  });
 
-export const EditorViewDemo = ({ value }: { value: any }) => {
-
-  const [isClient, setIsClient] = React.useState(false);
-
-
-
-  const editor = usePlateViewEditor(
-    {
-      plugins: BaseEditorKit,
-      value: value,
-    }
-  );
-
-  React.useEffect(() => {
-    setIsClient(true);
-  }, [editor]);
-
-
-  if (!isClient) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <EditorView variant="none" editor={editor} />
-  );
-}
+  return <EditorView variant="none" editor={editor} />;
+};

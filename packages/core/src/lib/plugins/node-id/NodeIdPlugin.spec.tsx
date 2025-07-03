@@ -9,7 +9,7 @@ import { jsxt } from '@platejs/test-utils';
 
 import { ParagraphPlugin } from '../../../react';
 import { type SlateEditor, createSlateEditor } from '../../editor';
-import { NodeIdPlugin } from './NodeIdPlugin';
+import { NodeIdPlugin, normalizeNodeId } from './NodeIdPlugin';
 
 jsxt;
 
@@ -950,5 +950,55 @@ describe('when merging nodes', () => {
 
       expect(editor.children).toEqual(output.children);
     });
+  });
+});
+
+describe('normalizeNodeId', () => {
+  it('should add IDs to elements', () => {
+    const input = [{ children: [{ text: 'test' }], type: 'p' }];
+
+    const output = normalizeNodeId(input, {
+      idCreator: getIdFactory(),
+    }) as any;
+
+    expect(output[0].id).toBe(1);
+  });
+
+  it('should preserve existing IDs', () => {
+    const input = [
+      { id: 10, children: [{ text: 'test1' }], type: 'p' },
+      { children: [{ text: 'test2' }], type: 'p' },
+    ];
+
+    const output = normalizeNodeId(input, {
+      idCreator: getIdFactory(),
+    }) as any;
+
+    expect(output[0].id).toBe(10);
+    expect(output[1].id).toBe(1);
+  });
+
+  it('should use custom idKey', () => {
+    const input = [{ children: [{ text: 'test' }], type: 'p' }];
+
+    const output = normalizeNodeId(input, {
+      idCreator: getIdFactory(),
+      idKey: 'foo',
+    }) as any;
+
+    expect(output[0].foo).toBe(1);
+    expect(output[0].id).toBeUndefined();
+  });
+
+  it('should not mutate original value', () => {
+    const input = [{ children: [{ text: 'test' }], type: 'p' }];
+
+    const output = normalizeNodeId(input, {
+      idCreator: getIdFactory(),
+    }) as any;
+
+    expect((input[0] as any).id).toBeUndefined();
+    expect(output[0].id).toBe(1);
+    expect(output).not.toBe(input);
   });
 });
