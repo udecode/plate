@@ -1,5 +1,11 @@
 # @platejs/table
 
+## 49.0.19
+
+### Patch Changes
+
+- [#4446](https://github.com/udecode/plate/pull/4446) by [@AissaSemaoui](https://github.com/AissaSemaoui) – Fixes ##3660
+
 ## 49.0.1
 
 ### Patch Changes
