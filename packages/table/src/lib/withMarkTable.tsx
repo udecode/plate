@@ -85,7 +85,7 @@ export const withMarkTable: OverrideEditor<TableConfig> = ({
 
       const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
-      if (matchesCell.length === 0) return removeMark(key);
+      if (matchesCell.length <= 1) return removeMark(key);
 
       matchesCell.forEach(([_cell, cellPath]) => {
         editor.tf.unsetNodes(key, {
