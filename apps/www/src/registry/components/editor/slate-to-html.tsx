@@ -3,11 +3,14 @@
 import * as React from 'react';
 
 import { useTheme } from 'next-themes';
+import { createStaticEditor, ViewPlugin } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { EditorKit } from '@/registry/components/editor/editor-kit';
-import { Editor } from '@/registry/ui/editor';
+import { Editor, EditorView } from '@/registry/ui/editor';
+
+import { BaseEditorKit } from './editor-base-kit';
 
 function useThemedHtml(html: string, serverTheme?: string) {
   const { resolvedTheme } = useTheme();
@@ -103,5 +106,36 @@ export function EditorClient({ value }: { value: any }) {
     <Plate readOnly editor={editor}>
       <Editor variant="none" />
     </Plate>
+  );
+}
+
+
+export const EditorViewDemo = ({ value }: { value: any }) => {
+
+  const [isClient, setIsClient] = React.useState(false);
+
+
+
+  // const editor = createStaticEditor({ plugins: BaseEditorKit });
+  const editor = createStaticEditor(
+    {
+      plugins: BaseEditorKit,
+      value: value,
+    }
+  );
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, [editor]);
+
+
+  if (!isClient) {
+    return <div>Loading...</div>;
+  }
+
+  editor.getApi(ViewPlugin).getFragment()
+
+  return (
+    <EditorView variant="none" editor={editor} />
   );
 }

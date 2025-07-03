@@ -8,6 +8,7 @@ import { type Value, createSlateEditor, serializeHtml } from 'platejs';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import {
   EditorClient,
+  EditorViewDemo,
   ExportHtmlButton,
   HtmlIframe,
 } from '@/registry/components/editor/slate-to-html';
@@ -91,7 +92,7 @@ export default async function SlateToHtmlBlock() {
 
       <div className="p-2">
         <h3 className={headingVariants()}>EditorStatic</h3>
-        <EditorStatic editor={editor} />
+        <EditorViewDemo value={createValue()} />
       </div>
 
       <div className="relative p-2">
