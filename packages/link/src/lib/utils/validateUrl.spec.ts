@@ -4,7 +4,7 @@ import { BaseLinkPlugin } from '../BaseLinkPlugin';
 import { validateUrl } from './validateUrl';
 
 describe('validateUrl', () => {
-  const createTestEditor = (options?: BaseLinkPlugin['_spec']['options']) =>
+  const createTestEditor = (options?: typeof BaseLinkPlugin['_spec']['options']) =>
     createSlateEditor({
       plugins: [BaseLinkPlugin.configure({ options })],
     });
@@ -74,7 +74,7 @@ describe('validateUrl', () => {
 
     it('should validate URLs with custom isUrl function', () => {
       const editor = createTestEditor({
-        isUrl: (url) => url.startsWith('custom://'),
+        isUrl: (url: string) => url.startsWith('custom://'),
       });
       expect(validateUrl(editor, 'custom://example')).toBe(true);
       expect(validateUrl(editor, 'http://example.com')).toBe(false);
