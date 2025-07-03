@@ -6,20 +6,7 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import type { TElement } from 'platejs';
 
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
-import {
-  CheckIcon,
-  ChevronRightIcon,
-  Columns3Icon,
-  FileCodeIcon,
-  Heading1Icon,
-  Heading2Icon,
-  Heading3Icon,
-  ListIcon,
-  ListOrderedIcon,
-  PilcrowIcon,
-  QuoteIcon,
-  SquareIcon,
-} from 'lucide-react';
+import { CheckIcon, ListIcon, ListOrderedIcon, SquareIcon } from 'lucide-react';
 import { KEYS } from 'platejs';
 import { useEditorRef, useSelectionFragmentProp } from 'platejs/react';
 
@@ -32,77 +19,36 @@ import {
 import {
   getBlockType,
   setBlockType,
-} from '@/registry/components/editor/transforms';
+} from '@/registry/components/editor/transforms-classic';
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
+import { turnIntoItems as baseTurnIntoItems } from './turn-into-toolbar-button';
 
-export const turnIntoItems = [
-  {
-    icon: <PilcrowIcon />,
-    keywords: ['paragraph'],
-    label: 'Text',
-    value: KEYS.p,
-  },
-  {
-    icon: <Heading1Icon />,
-    keywords: ['title', 'h1'],
-    label: 'Heading 1',
-    value: 'h1',
-  },
-  {
-    icon: <Heading2Icon />,
-    keywords: ['subtitle', 'h2'],
-    label: 'Heading 2',
-    value: 'h2',
-  },
-  {
-    icon: <Heading3Icon />,
-    keywords: ['subtitle', 'h3'],
-    label: 'Heading 3',
-    value: 'h3',
-  },
-  {
-    icon: <ListIcon />,
-    keywords: ['unordered', 'ul', '-'],
-    label: 'Bulleted list',
-    value: KEYS.ul,
-  },
-  {
-    icon: <ListOrderedIcon />,
-    keywords: ['ordered', 'ol', '1'],
-    label: 'Numbered list',
-    value: KEYS.ol,
-  },
-  {
+// Map standard list items to classic versions
+const listItemsMap: Record<string, (typeof baseTurnIntoItems)[number]> = {
+  [KEYS.listTodo]: {
     icon: <SquareIcon />,
     keywords: ['checklist', 'task', 'checkbox', '[]'],
     label: 'To-do list',
-    value: KEYS.listTodo,
+    value: KEYS.taskList,
   },
-  {
-    icon: <ChevronRightIcon />,
-    keywords: ['collapsible', 'expandable'],
-    label: 'Toggle list',
-    value: KEYS.toggle,
+  [KEYS.ol]: {
+    icon: <ListOrderedIcon />,
+    keywords: ['ordered', 'ol', '1'],
+    label: 'Numbered list',
+    value: KEYS.olClassic,
   },
-  {
-    icon: <FileCodeIcon />,
-    keywords: ['```'],
-    label: 'Code',
-    value: KEYS.codeBlock,
+  [KEYS.ul]: {
+    icon: <ListIcon />,
+    keywords: ['unordered', 'ul', '-'],
+    label: 'Bulleted list',
+    value: KEYS.ulClassic,
   },
-  {
-    icon: <QuoteIcon />,
-    keywords: ['citation', 'blockquote', '>'],
-    label: 'Quote',
-    value: KEYS.blockquote,
-  },
-  {
-    icon: <Columns3Icon />,
-    label: '3 columns',
-    value: 'action_three_columns',
-  },
-];
+};
+
+const turnIntoItems = baseTurnIntoItems.map((item) =>
+  item.value in listItemsMap ? listItemsMap[item.value] : item
+);
 
 export function TurnIntoToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();

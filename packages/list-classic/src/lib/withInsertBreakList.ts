@@ -8,6 +8,7 @@ import { moveListItemUp } from './transforms/moveListItemUp';
 
 export const withInsertBreakList: OverrideEditor<ListConfig> = ({
   editor,
+  getOptions,
   tf: { insertBreak },
 }) => ({
   transforms: {
@@ -44,7 +45,7 @@ export const withInsertBreakList: OverrideEditor<ListConfig> = ({
 
         /** If selection is in li > p, insert li. */
         if (!moved) {
-          const inserted = insertListItem(editor);
+          const inserted = insertListItem(editor, getOptions());
 
           if (inserted) return true;
         }

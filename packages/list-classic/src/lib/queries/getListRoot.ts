@@ -7,7 +7,7 @@ import type {
   TRange,
 } from 'platejs';
 
-import { KEYS } from 'platejs';
+import { getListTypes } from './getListTypes';
 
 /** Searches upward for the root list element */
 export const getListRoot = (
@@ -19,7 +19,7 @@ export const getListRoot = (
   const parentList = editor.api.above<TElement>({
     at,
     match: {
-      type: [editor.getType(KEYS.olClassic), editor.getType(KEYS.ulClassic)],
+      type: getListTypes(editor),
     },
   });
 

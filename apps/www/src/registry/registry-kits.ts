@@ -667,6 +667,18 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    dependencies: [],
+    files: [
+      {
+        path: 'components/editor/plugins/floating-toolbar-classic-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'floating-toolbar-classic-kit',
+    registryDependencies: ['floating-toolbar', 'floating-toolbar-classic-buttons'],
+    type: 'registry:component',
+  },
+  {
     dependencies: ['@platejs/basic-styles'],
     files: [
       {

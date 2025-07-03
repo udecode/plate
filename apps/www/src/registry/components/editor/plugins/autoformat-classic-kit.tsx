@@ -13,7 +13,7 @@ import {
   autoformatSmartQuotes,
 } from '@platejs/autoformat';
 import { insertEmptyCodeBlock } from '@platejs/code-block';
-import { toggleList, unwrapList } from '@platejs/list-classic';
+import { toggleList, toggleTaskList, unwrapList } from '@platejs/list-classic';
 import { ElementApi, isType, KEYS } from 'platejs';
 
 const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
@@ -31,6 +31,10 @@ const format = (editor: SlateEditor, customFormatting: any) => {
       customFormatting();
     }
   }
+};
+
+const formatTaskList = (editor: SlateEditor, defaultChecked = false) => {
+  format(editor, () => toggleTaskList(editor, defaultChecked));
 };
 
 const formatList = (editor: SlateEditor, elementType: string) => {
@@ -208,19 +212,14 @@ const autoformatLists: AutoformatRule[] = [
   {
     match: '[] ',
     mode: 'block',
-    type: KEYS.listTodoClassic,
+    type: KEYS.taskList,
+    format: (editor) => formatTaskList(editor, false),
   },
   {
     match: '[x] ',
     mode: 'block',
-    type: KEYS.listTodoClassic,
-    format: (editor) =>
-      editor.tf.setNodes(
-        { checked: true, type: KEYS.listTodoClassic },
-        {
-          match: (n) => editor.api.isBlock(n),
-        }
-      ),
+    type: KEYS.taskList,
+    format: (editor) => formatTaskList(editor, true),
   },
 ];
 

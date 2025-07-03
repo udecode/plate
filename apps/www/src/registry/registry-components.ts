@@ -106,6 +106,27 @@ export const registryComponents: Registry['items'] = [
   },
   {
     dependencies: [
+      '@platejs/callout',
+      '@platejs/code-block',
+      '@platejs/date',
+      '@platejs/layout',
+      '@platejs/link',
+      '@platejs/list-classic',
+      '@platejs/math',
+      '@platejs/media',
+      '@platejs/table',
+    ],
+    files: [
+      {
+        path: 'components/editor/transforms-classic.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'transforms-classic',
+    type: 'registry:component',
+  },
+  {
+    dependencies: [
       '@platejs/comment',
       '@platejs/excalidraw',
       '@platejs/link',

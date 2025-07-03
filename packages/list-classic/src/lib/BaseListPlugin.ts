@@ -11,6 +11,7 @@ import {
   toggleBulletedList,
   toggleList,
   toggleNumberedList,
+  toggleTaskList,
 } from './transforms';
 import { withList } from './withList';
 
@@ -18,6 +19,10 @@ export type ListConfig = PluginConfig<
   'listClassic',
   {
     enableResetOnShiftTab?: boolean;
+    /** Inherit the checked state of above node after insert break at the end */
+    inheritCheckStateOnLineEndBreak?: boolean;
+    /** Inherit the checked state of below node after insert break at the start */
+    inheritCheckStateOnLineStartBreak?: boolean;
     /** Valid children types for list items, in addition to p and ul types. */
     validLiChildrenTypes?: string[];
   },
@@ -27,6 +32,7 @@ export type ListConfig = PluginConfig<
       bulletedList: OmitFirst<typeof toggleBulletedList>;
       list: OmitFirst<typeof toggleList>;
       numberedList: OmitFirst<typeof toggleNumberedList>;
+      taskList: OmitFirst<typeof toggleTaskList>;
     };
   }
 >;
@@ -63,6 +69,20 @@ export const BaseNumberedListPlugin = createSlatePlugin({
   },
 }));
 
+export const BaseTaskListPlugin = createSlatePlugin({
+  key: KEYS.taskList,
+  node: { isContainer: true, isElement: true },
+  options: {
+    inheritCheckStateOnLineEndBreak: false,
+    inheritCheckStateOnLineStartBreak: false,
+  },
+  render: { as: 'ul' },
+}).extendTransforms(({ editor }) => ({
+  toggle: () => {
+    toggleTaskList(editor);
+  },
+}));
+
 export const BaseListItemPlugin = createSlatePlugin({
   key: KEYS.li,
   inject: {
@@ -94,6 +114,7 @@ export const BaseListPlugin = createTSlatePlugin<ListConfig>({
   plugins: [
     BaseBulletedListPlugin,
     BaseNumberedListPlugin,
+    BaseTaskListPlugin,
     BaseListItemPlugin,
     BaseListItemContentPlugin,
   ],
@@ -104,5 +125,6 @@ export const BaseListPlugin = createTSlatePlugin<ListConfig>({
       bulletedList: bindFirst(toggleBulletedList, editor),
       list: bindFirst(toggleList, editor),
       numberedList: bindFirst(toggleNumberedList, editor),
+      taskList: bindFirst(toggleTaskList, editor),
     },
   }));
