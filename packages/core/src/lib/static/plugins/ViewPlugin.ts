@@ -1,8 +1,6 @@
-import type { Descendant } from '@platejs/slate';
-
 import { DOMPlugin } from '../../plugins';
 import { getPlainText } from '../internal/getPlainText';
-import { getSelectedDomBlocks } from '../utils/getSelectedDomBlocks';
+import { getSelectedDomFragment } from '../utils/getSelectedDomFragment';
 import { getSelectedDomNode } from '../utils/getSelectedDomNode';
 import { isSelectOutside } from '../utils/isSelectOutside';
 
@@ -12,29 +10,17 @@ export const ViewPlugin = DOMPlugin.overrideEditor(
       setFragmentData(data, originEvent) {
         if (originEvent !== 'copy') return setFragmentData(data, originEvent);
 
-        const domBlocks = getSelectedDomBlocks();
+        const fragment = getSelectedDomFragment(editor);
         const html = getSelectedDomNode();
 
-        if (!html || !domBlocks) return;
+        if (!html || !fragment) return;
 
         const selectOutside = isSelectOutside(html);
 
         if (selectOutside) return;
 
         // only crossing multiple blocks
-        if (domBlocks.length > 0) {
-          const fragment: Descendant[] = [];
-
-          Array.from(domBlocks).forEach((node: any) => {
-            const blockId = node.dataset.slateId;
-            const block = editor.api.node({ id: blockId, at: [] });
-
-            // prevent inline elements like link and table cells.
-            if (block && block[1].length === 1) {
-              fragment.push(block[0]);
-            }
-          });
-
+        if (fragment.length > 0) {
           const string = JSON.stringify(fragment);
           const encoded = window.btoa(encodeURIComponent(string));
 
