@@ -1,5 +1,13 @@
 # @platejs/core
 
+## 49.0.18
+
+### Patch Changes
+
+- [#4447](https://github.com/udecode/plate/pull/4447) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Added `getSelectedDomFragment` utility function that returns Slate nodes from DOM selection.
+  - Deprecated `getSelectedDomBlocks`. Use `getSelectedDomFragment` instead.
+
 ## 49.0.16
 
 ### Patch Changes

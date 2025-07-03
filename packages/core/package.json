@@ -1,6 +1,6 @@
 {
   "name": "@platejs/core",
-  "version": "49.0.16",
+  "version": "49.0.18",
   "description": "The core of Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
