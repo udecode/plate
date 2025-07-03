@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import { useTheme } from 'next-themes';
-import { createStaticEditor, ViewPlugin } from 'platejs';
+import { createStaticEditor } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
@@ -132,8 +132,6 @@ export const EditorViewDemo = ({ value }: { value: any }) => {
   if (!isClient) {
     return <div>Loading...</div>;
   }
-
-  editor.getApi(ViewPlugin).getFragment()
 
   return (
     <EditorView variant="none" editor={editor} />
