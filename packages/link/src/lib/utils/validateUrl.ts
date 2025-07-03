@@ -21,17 +21,21 @@ export const validateUrl = (editor: SlateEditor, url: string): boolean => {
     return true; // This is an anchor link
   }
 
-  if (isUrl) {
-    return isUrl(url);
+  // Check custom validator first if provided
+  if (isUrl && !isUrl(url)) {
+    return false;
   }
+
+  // Always sanitize unless explicitly skipped
   if (
     !dangerouslySkipSanitization &&
     !sanitizeUrl(url, {
       allowedSchemes,
       permitInvalid: true,
     })
-  )
+  ) {
     return false;
+  }
 
   return true;
 };

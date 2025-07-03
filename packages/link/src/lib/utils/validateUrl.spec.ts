@@ -74,10 +74,32 @@ describe('validateUrl', () => {
 
     it('should validate URLs with custom isUrl function', () => {
       const editor = createTestEditor({
+        allowedSchemes: ['http', 'https', 'mailto', 'tel', 'custom'],
         isUrl: (url: string) => url.startsWith('custom://'),
       });
       expect(validateUrl(editor, 'custom://example')).toBe(true);
       expect(validateUrl(editor, 'http://example.com')).toBe(false);
+    });
+
+    it('should still sanitize URLs even with custom isUrl function', () => {
+      const editor = createTestEditor({
+        allowedSchemes: ['http', 'https', 'mailto', 'tel', 'custom'],
+        isUrl: (url: string) =>
+          url.startsWith('javascript:') || url.startsWith('custom://'),
+      });
+      // Custom isUrl accepts javascript: URLs, but sanitizeUrl should still block them
+      expect(validateUrl(editor, 'javascript:alert("XSS")')).toBe(false);
+      // Valid custom URLs should pass both checks (custom is in allowedSchemes)
+      expect(validateUrl(editor, 'custom://example')).toBe(true);
+    });
+
+    it('should skip sanitization when dangerouslySkipSanitization is true', () => {
+      const editor = createTestEditor({
+        dangerouslySkipSanitization: true,
+        isUrl: (url: string) => url.startsWith('javascript:'),
+      });
+      // With sanitization skipped, even dangerous URLs pass if custom validator accepts them
+      expect(validateUrl(editor, 'javascript:alert("XSS")')).toBe(true);
     });
   });
 
