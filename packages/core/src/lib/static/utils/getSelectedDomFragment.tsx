@@ -16,21 +16,21 @@ export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
 
   const domBlocks = Array.from(_domBlocks);
 
-  if (domBlocks.length > 0) {
-    const fragment: Descendant[] = [];
 
-    domBlocks.forEach((node: any) => {
-      const blockId = node.dataset.slateId;
-      const block = editor.api.node({ id: blockId, at: [] });
+  if (domBlocks.length === 0) return [];
 
-      // prevent inline elements like link and table cells.
-      if (block && block[1].length === 1) {
-        fragment.push(block[0]);
-      }
-    });
+  const nodes: Descendant[] = [];
 
-    return fragment;
-  }
+  domBlocks.forEach((node: any) => {
+    const blockId = (node as HTMLElement).dataset.slateId;
+    const block = editor.api.node({ id: blockId, at: [] });
 
-  return []
+    // prevent inline elements like link and table cells.
+    if (block && block[1].length === 1) {
+      nodes.push(block[0]);
+    }
+  });
+
+
+  return nodes;
 };
