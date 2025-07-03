@@ -109,10 +109,21 @@ export function EditorClient({ value }: { value: any }) {
 }
 
 export const EditorViewClient = ({ value }: { value: any }) => {
+  const [loading, setLoading] = React.useState(false);
+
   const editor = usePlateViewEditor({
     plugins: BaseEditorKit,
     value: value,
   });
 
+  React.useEffect(() => {
+    setLoading(true);
+  }, []);
+
+  if (!loading) {
+    return <div>Loading...</div>;
+  }
+
   return <EditorView variant="none" editor={editor} />;
+
 };
