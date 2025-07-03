@@ -6,9 +6,12 @@ import {
   BaseListItemPlugin,
   BaseListPlugin,
   BaseNumberedListPlugin,
+  BaseTaskListPlugin,
 } from '../lib';
 
 export const BulletedListPlugin = toPlatePlugin(BaseBulletedListPlugin);
+
+export const TaskListPlugin = toPlatePlugin(BaseTaskListPlugin);
 
 export const NumberedListPlugin = toPlatePlugin(BaseNumberedListPlugin);
 
@@ -23,6 +26,7 @@ export const ListItemPlugin = toPlatePlugin(BaseListItemPlugin);
 export const ListPlugin = toPlatePlugin(BaseListPlugin, {
   plugins: [
     BulletedListPlugin,
+    TaskListPlugin,
     NumberedListPlugin,
     ListItemPlugin,
     ListItemContentPlugin,

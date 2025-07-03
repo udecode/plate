@@ -17,9 +17,11 @@ export const withMarkTable: OverrideEditor<TableConfig> = ({
 
       const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
-      if (matchesCell.length === 0) return marks();
+      if (matchesCell.length <= 1) return marks();
 
+      const markCounts: Record<string, number> = {};
       const totalMarks: Record<string, any> = {};
+      let totalNodes = 0;
 
       matchesCell.forEach(([_cell, cellPath]) => {
         const textNodeEntry = editor.api.nodes({
@@ -28,6 +30,7 @@ export const withMarkTable: OverrideEditor<TableConfig> = ({
         });
 
         Array.from(textNodeEntry, (item) => item[0]).forEach((item) => {
+          totalNodes++;
           const keys = Object.keys(item);
 
           if (keys.length === 1) return;
@@ -35,9 +38,16 @@ export const withMarkTable: OverrideEditor<TableConfig> = ({
           keys.splice(keys.indexOf('text'), 1);
 
           keys.forEach((k) => {
+            markCounts[k] = (markCounts[k] || 0) + 1;
             totalMarks[k] = item[k];
           });
         });
+      });
+
+      Object.keys(markCounts).forEach((mark) => {
+        if (markCounts[mark] !== totalNodes) {
+          delete totalMarks[mark];
+        }
       });
 
       return totalMarks;
@@ -75,7 +85,7 @@ export const withMarkTable: OverrideEditor<TableConfig> = ({
 
       const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
-      if (matchesCell.length === 0) return removeMark(key);
+      if (matchesCell.length <= 1) return removeMark(key);
 
       matchesCell.forEach(([_cell, cellPath]) => {
         editor.tf.unsetNodes(key, {

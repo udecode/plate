@@ -5,11 +5,14 @@ import {
   ListItemPlugin,
   ListPlugin,
   NumberedListPlugin,
+  TaskListPlugin,
 } from '@platejs/list-classic/react';
 
 import {
   BulletedListElement,
+  ListItemElement,
   NumberedListElement,
+  TaskListElement,
 } from '@/registry/ui/list-classic-node';
 
 export const ListKit = [
@@ -22,5 +25,9 @@ export const ListKit = [
     node: { component: NumberedListElement },
     shortcuts: { toggle: { keys: 'mod+alt+6' } },
   }),
-  ListItemPlugin,
+  TaskListPlugin.configure({
+    node: { component: TaskListElement },
+    shortcuts: { toggle: { keys: 'mod+alt+7' } },
+  }),
+  ListItemPlugin.withComponent(ListItemElement),
 ];

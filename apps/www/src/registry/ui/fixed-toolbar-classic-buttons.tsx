@@ -22,7 +22,7 @@ import { CommentToolbarButton } from './comment-toolbar-button';
 import { EmojiToolbarButton } from './emoji-toolbar-button';
 import { FontColorToolbarButton } from './font-color-toolbar-button';
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
-import { InsertToolbarButton } from './insert-toolbar-button';
+import { InsertToolbarButton } from './insert-toolbar-classic-button';
 import { LineHeightToolbarButton } from './line-height-toolbar-button';
 import { LinkToolbarButton } from './link-toolbar-button';
 import {
@@ -36,7 +36,7 @@ import { MoreToolbarButton } from './more-toolbar-button';
 import { TableToolbarButton } from './table-toolbar-button';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
 import { ToolbarGroup } from './toolbar';
-import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
+import { TurnIntoToolbarButton } from './turn-into-toolbar-classic-button';
 
 export function FixedToolbarButtons() {
   const readOnly = useEditorReadOnly();
@@ -103,8 +103,9 @@ export function FixedToolbarButtons() {
           <ToolbarGroup>
             <AlignToolbarButton />
 
-            <ListToolbarButton nodeType={KEYS.ul} />
-            <ListToolbarButton nodeType={KEYS.ol} />
+            <ListToolbarButton nodeType={KEYS.ulClassic} />
+            <ListToolbarButton nodeType={KEYS.olClassic} />
+            <ListToolbarButton nodeType={KEYS.taskList} />
             <ToggleToolbarButton />
           </ToolbarGroup>
 

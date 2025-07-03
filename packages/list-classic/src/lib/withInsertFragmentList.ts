@@ -16,7 +16,7 @@ import {
 
 import type { ListConfig } from './BaseListPlugin';
 
-import { isListRoot } from './queries';
+import { getPropsIfTaskListLiNode, isListRoot } from './queries';
 
 export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
   editor,
@@ -89,11 +89,15 @@ export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
     return [...findListItemsWithContent(first), ...rest];
   };
 
-  const wrapNodeIntoListItem = (node: Descendant): TElement => {
+  const wrapNodeIntoListItem = (
+    node: Descendant,
+    props?: Record<string, any>
+  ): TElement => {
     return node.type === listItemType
       ? (node as TElement)
       : ({
           children: [node],
+          ...props,
           type: listItemType,
         } as TElement);
   };
@@ -124,9 +128,15 @@ export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
     const [, liPath] = liEntry;
     const [licNode, licPath] = licEntry;
     const isEmptyNode = !NodeApi.string(licNode);
-    const [first, ...rest] = fragment
-      .flatMap(trimList)
-      .map(wrapNodeIntoListItem);
+    const [first, ...rest] = fragment.flatMap(trimList).map((v) =>
+      wrapNodeIntoListItem(
+        v,
+        getPropsIfTaskListLiNode(editor, {
+          inherit: true,
+          liNode: liEntry[0],
+        })
+      )
+    );
     let textNode: TText;
     let listItemNodes: TElement[];
 
