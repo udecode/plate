@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/list-classic-kit.tsx",
-      "content": "'use client';\n\nimport {\n  BulletedListPlugin,\n  ListItemPlugin,\n  ListPlugin,\n  NumberedListPlugin,\n} from '@platejs/list-classic/react';\n\nimport {\n  BulletedListElement,\n  NumberedListElement,\n} from '@/registry/ui/list-classic-node';\n\nexport const ListKit = [\n  ListPlugin,\n  BulletedListPlugin.configure({\n    node: { component: BulletedListElement },\n    shortcuts: { toggle: { keys: 'mod+alt+5' } },\n  }),\n  NumberedListPlugin.configure({\n    node: { component: NumberedListElement },\n    shortcuts: { toggle: { keys: 'mod+alt+6' } },\n  }),\n  ListItemPlugin,\n];\n",
+      "content": "'use client';\n\nimport {\n  BulletedListPlugin,\n  ListItemPlugin,\n  ListPlugin,\n  NumberedListPlugin,\n  TaskListPlugin,\n} from '@platejs/list-classic/react';\n\nimport {\n  BulletedListElement,\n  ListItemElement,\n  NumberedListElement,\n  TaskListElement,\n} from '@/registry/ui/list-classic-node';\n\nexport const ListKit = [\n  ListPlugin,\n  BulletedListPlugin.configure({\n    node: { component: BulletedListElement },\n    shortcuts: { toggle: { keys: 'mod+alt+5' } },\n  }),\n  NumberedListPlugin.configure({\n    node: { component: NumberedListElement },\n    shortcuts: { toggle: { keys: 'mod+alt+6' } },\n  }),\n  TaskListPlugin.configure({\n    node: { component: TaskListElement },\n    shortcuts: { toggle: { keys: 'mod+alt+7' } },\n  }),\n  ListItemPlugin.withComponent(ListItemElement),\n];\n",
       "type": "registry:component"
     }
   ]

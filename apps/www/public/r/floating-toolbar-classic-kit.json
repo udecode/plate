@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "floating-toolbar-classic-kit",
+  "type": "registry:component",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/floating-toolbar",
+    "https://platejs.org/r/floating-toolbar-classic-buttons"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx",
+      "content": "'use client';\n\nimport { createPlatePlugin } from 'platejs/react';\n\nimport { FloatingToolbar } from '@/registry/ui/floating-toolbar';\nimport { FloatingToolbarButtons } from '@/registry/ui/floating-toolbar-classic-buttons';\n\nexport const FloatingToolbarKit = [\n  createPlatePlugin({\n    key: 'floating-toolbar',\n    render: {\n      afterEditable: () => (\n        <FloatingToolbar>\n          <FloatingToolbarButtons />\n        </FloatingToolbar>\n      ),\n    },\n  }),\n];",
+      "type": "registry:component"
+    }
+  ]
+}

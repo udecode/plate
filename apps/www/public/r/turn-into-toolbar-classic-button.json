@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "turn-into-toolbar-classic-button",
+  "type": "registry:ui",
+  "title": "Turn Into Toolbar Classic Button",
+  "description": "A dropdown to convert block types with classic list support.",
+  "dependencies": [],
+  "registryDependencies": [
+    "dropdown-menu",
+    "https://platejs.org/r/toolbar",
+    "https://platejs.org/r/transforms-classic"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/turn-into-toolbar-classic-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';\nimport type { TElement } from 'platejs';\n\nimport { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';\nimport { CheckIcon, ListIcon, ListOrderedIcon, SquareIcon } from 'lucide-react';\nimport { KEYS } from 'platejs';\nimport { useEditorRef, useSelectionFragmentProp } from 'platejs/react';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuRadioItem,\n  DropdownMenuTrigger,\n} from '@/components/ui/dropdown-menu';\nimport {\n  getBlockType,\n  setBlockType,\n} from '@/registry/components/editor/transforms-classic';\n\nimport { ToolbarButton, ToolbarMenuGroup } from './toolbar';\nimport { turnIntoItems as baseTurnIntoItems } from './turn-into-toolbar-button';\n\n// Map standard list items to classic versions\nconst listItemsMap: Record<string, (typeof baseTurnIntoItems)[number]> = {\n  [KEYS.listTodo]: {\n    icon: <SquareIcon />,\n    keywords: ['checklist', 'task', 'checkbox', '[]'],\n    label: 'To-do list',\n    value: KEYS.taskList,\n  },\n  [KEYS.ol]: {\n    icon: <ListOrderedIcon />,\n    keywords: ['ordered', 'ol', '1'],\n    label: 'Numbered list',\n    value: KEYS.olClassic,\n  },\n  [KEYS.ul]: {\n    icon: <ListIcon />,\n    keywords: ['unordered', 'ul', '-'],\n    label: 'Bulleted list',\n    value: KEYS.ulClassic,\n  },\n};\n\nconst turnIntoItems = baseTurnIntoItems.map((item) =>\n  item.value in listItemsMap ? listItemsMap[item.value] : item\n);\n\nexport function TurnIntoToolbarButton(props: DropdownMenuProps) {\n  const editor = useEditorRef();\n  const [open, setOpen] = React.useState(false);\n\n  const value = useSelectionFragmentProp({\n    defaultValue: KEYS.p,\n    getProp: (node) => getBlockType(node as TElement),\n  });\n  const selectedItem = React.useMemo(\n    () =>\n      turnIntoItems.find((item) => item.value === (value ?? KEYS.p)) ??\n      turnIntoItems[0],\n    [value]\n  );\n\n  return (\n    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>\n      <DropdownMenuTrigger asChild>\n        <ToolbarButton\n          className=\"min-w-[125px]\"\n          pressed={open}\n          tooltip=\"Turn into\"\n          isDropdown\n        >\n          {selectedItem.label}\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent\n        className=\"ignore-click-outside/toolbar min-w-0\"\n        onCloseAutoFocus={(e) => {\n          e.preventDefault();\n          editor.tf.focus();\n        }}\n        align=\"start\"\n      >\n        <ToolbarMenuGroup\n          value={value}\n          onValueChange={(type) => {\n            setBlockType(editor, type);\n          }}\n          label=\"Turn into\"\n        >\n          {turnIntoItems.map(({ icon, label, value: itemValue }) => (\n            <DropdownMenuRadioItem\n              key={itemValue}\n              className=\"min-w-[180px] pl-2 *:first:[span]:hidden\"\n              value={itemValue}\n            >\n              <span className=\"pointer-events-none absolute right-2 flex size-3.5 items-center justify-center\">\n                <DropdownMenuItemIndicator>\n                  <CheckIcon />\n                </DropdownMenuItemIndicator>\n              </span>\n              {icon}\n              {label}\n            </DropdownMenuRadioItem>\n          ))}\n        </ToolbarMenuGroup>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "examples": [
+      "list-classic-demo"
+    ]
+  }
+}

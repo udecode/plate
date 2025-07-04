@@ -333,7 +333,7 @@ export const Index: Record<string, any> = {
     name: "fixed-toolbar-classic-buttons",
     description: "",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/toolbar","https://platejs.org/r/ai-toolbar-button","https://platejs.org/r/align-toolbar-button","https://platejs.org/r/font-color-toolbar-button","https://platejs.org/r/comment-toolbar-button","https://platejs.org/r/emoji-toolbar-button","https://platejs.org/r/insert-toolbar-button","https://platejs.org/r/line-height-toolbar-button","https://platejs.org/r/list-classic-toolbar-button","https://platejs.org/r/link-toolbar-button","https://platejs.org/r/mark-toolbar-button","https://platejs.org/r/media-toolbar-button","https://platejs.org/r/mode-toolbar-button","https://platejs.org/r/more-toolbar-button","https://platejs.org/r/table-toolbar-button","https://platejs.org/r/toggle-toolbar-button","https://platejs.org/r/turn-into-toolbar-button"],
+    registryDependencies: ["https://platejs.org/r/toolbar","https://platejs.org/r/ai-toolbar-button","https://platejs.org/r/align-toolbar-button","https://platejs.org/r/font-color-toolbar-button","https://platejs.org/r/comment-toolbar-button","https://platejs.org/r/emoji-toolbar-button","https://platejs.org/r/insert-toolbar-classic-button","https://platejs.org/r/line-height-toolbar-button","https://platejs.org/r/list-classic-toolbar-button","https://platejs.org/r/link-toolbar-button","https://platejs.org/r/mark-toolbar-button","https://platejs.org/r/media-toolbar-button","https://platejs.org/r/mode-toolbar-button","https://platejs.org/r/more-toolbar-button","https://platejs.org/r/table-toolbar-button","https://platejs.org/r/toggle-toolbar-button","https://platejs.org/r/turn-into-toolbar-classic-button"],
     files: [{
       path: "src/registry/ui/fixed-toolbar-classic-buttons.tsx",
       type: "registry:ui",
@@ -379,6 +379,23 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"docs":[{"route":"/docs/api/floating"},{"route":"https://pro.platejs.org/docs/components/floating-toolbar-buttons"}],"examples":["floating-toolbar-demo","floating-toolbar-pro"]},
+  },
+  "floating-toolbar-classic-buttons": {
+    name: "floating-toolbar-classic-buttons",
+    description: "A set of commonly used formatting buttons for the floating toolbar with classic list support.",
+    type: "registry:ui",
+    registryDependencies: ["https://platejs.org/r/toolbar","https://platejs.org/r/ai-toolbar-button","https://platejs.org/r/comment-toolbar-button","https://platejs.org/r/equation-toolbar-button","https://platejs.org/r/link-toolbar-button","https://platejs.org/r/mark-toolbar-button","https://platejs.org/r/more-toolbar-button","https://platejs.org/r/suggestion-toolbar-button","https://platejs.org/r/turn-into-toolbar-classic-button"],
+    files: [{
+      path: "src/registry/ui/floating-toolbar-classic-buttons.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/ui/floating-toolbar-classic-buttons.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"examples":["list-classic-demo"]},
   },
   "floating-toolbar": {
     name: "floating-toolbar",
@@ -498,6 +515,23 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"examples":["basic-nodes-demo"]},
+  },
+  "insert-toolbar-classic-button": {
+    name: "insert-toolbar-classic-button",
+    description: "A menu for inserting different types of blocks with classic list support.",
+    type: "registry:ui",
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar","https://platejs.org/r/transforms-classic"],
+    files: [{
+      path: "src/registry/ui/insert-toolbar-classic-button.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/ui/insert-toolbar-classic-button.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"examples":["list-classic-demo"]},
   },
   "line-height-toolbar-button": {
     name: "line-height-toolbar-button",
@@ -740,6 +774,23 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"docs":[{"route":"https://pro.platejs.org/docs/components/turn-into-toolbar-button"}],"examples":["basic-nodes-demo","basic-nodes-pro"]},
+  },
+  "turn-into-toolbar-classic-button": {
+    name: "turn-into-toolbar-classic-button",
+    description: "A dropdown to convert block types with classic list support.",
+    type: "registry:ui",
+    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar","https://platejs.org/r/transforms-classic"],
+    files: [{
+      path: "src/registry/ui/turn-into-toolbar-classic-button.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/ui/turn-into-toolbar-classic-button.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"examples":["list-classic-demo"]},
   },
   "remote-cursor-overlay": {
     name: "remote-cursor-overlay",
@@ -2303,6 +2354,23 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
+  "floating-toolbar-classic-kit": {
+    name: "floating-toolbar-classic-kit",
+    description: "",
+    type: "registry:component",
+    registryDependencies: ["https://platejs.org/r/floating-toolbar","https://platejs.org/r/floating-toolbar-classic-buttons"],
+    files: [{
+      path: "src/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx",
+      type: "registry:component",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
   "font-kit": {
     name: "font-kit",
     description: "",
@@ -2681,6 +2749,23 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/transforms.ts")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
+  "transforms-classic": {
+    name: "transforms-classic",
+    description: "",
+    type: "registry:component",
+    registryDependencies: undefined,
+    files: [{
+      path: "src/registry/components/editor/transforms-classic.ts",
+      type: "registry:component",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/components/editor/transforms-classic.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
