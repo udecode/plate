@@ -613,7 +613,7 @@ export const uiComponents: Registry['items'] = [
     },
     name: 'insert-toolbar-classic-button',
     registryDependencies: ['shadcn/dropdown-menu', 'toolbar', 'transforms-classic'],
-    title: 'Insert Toolbar Button Classic',
+    title: 'Insert Toolbar Classic Button',
     type: 'registry:ui',
   },
   {
@@ -854,7 +854,7 @@ export const uiComponents: Registry['items'] = [
     },
     name: 'turn-into-toolbar-classic-button',
     registryDependencies: ['shadcn/dropdown-menu', 'toolbar', 'transforms-classic'],
-    title: 'Turn Into Toolbar Button Classic',
+    title: 'Turn Into Toolbar Classic Button',
     type: 'registry:ui',
   },
   {
