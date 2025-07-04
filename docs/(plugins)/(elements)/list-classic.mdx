@@ -310,31 +310,6 @@ Gets array of supported list types.
 </APIReturns>
 </API>
 
-### `getTaskListProps`
-
-Returns properties for task list items based on the provided type.
-
-<API name="getTaskListProps">
-<APIParameters>
-  <APIItem name="type" type="string">
-    List type to check.
-  </APIItem>
-  <APIItem name="options" type="object" optional>
-    Options for task list.
-  </APIItem>
-  <APISubList>
-    <APISubListItem parent="options" name="checked" type="boolean">
-      Whether the task item should be checked.
-      - **Default:** `false`
-    </APISubListItem>
-  </APISubList>
-</APIParameters>
-
-<APIReturns type="object | undefined">
-  Object with `checked` property if type is a task list, otherwise `undefined`.
-</APIReturns>
-</API>
-
 ### `moveListSiblingsAfterCursor`
 
 Moves list siblings after cursor to specified path.

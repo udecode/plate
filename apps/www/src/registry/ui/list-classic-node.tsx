@@ -18,7 +18,7 @@ const listVariants = cva('m-0 py-1 ps-6', {
   variants: {
     variant: {
       ol: 'list-decimal',
-      ul: 'list-disc [&_ul_ul:not(.slate-todoClassic)]:list-[square] [&_ul:not(.slate-todoClassic)]:list-[circle]',
+      ul: 'list-disc [&_ul]:list-[circle] [&_ul_ul]:list-[square]',
     },
   },
 });
@@ -48,7 +48,7 @@ export function NumberedListElement(props: PlateElementProps) {
 
 export function TaskListElement(props: PlateElementProps) {
   return (
-    <PlateElement as="ul" className="m-0 list-none py-1 ps-6" {...props}>
+    <PlateElement as="ul" className="m-0 list-none! py-1 ps-6" {...props}>
       {props.children}
     </PlateElement>
   );
