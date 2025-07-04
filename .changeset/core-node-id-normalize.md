@@ -29,7 +29,6 @@
 
 **usePlateViewEditor**:
 
-- Added `'use client'` directive for Next.js client component compatibility
 - Added `onReady` handler support for async rendering with automatic re-render when `isAsync` is true
 
 ```typescript
