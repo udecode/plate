@@ -10,8 +10,22 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## July 2025 #24
 
-### July 3 #24.2
+### July 3 #24.4
 - `slate-to-html`: Added `EditorViewDemo` component for static editor rendering using `createStaticEditor`
+### July 4 #24.3
+
+- `list-classic-node`: Fix styling that affects `TaskListElement` by force overriding list-style-type (set to none).
+
+### July 3 #24.2
+
+- **Task list support in list-classic**: Added task list functionality with checkboxes to the list-classic plugin
+  - `list-classic-kit`: Added `TaskListPlugin` with `TaskListElement` component
+  - `list-classic-node`: Added `TaskListElement` and `TaskListItemElement` components with checkbox support
+  - `transforms-classic`: New file for classic list transforms
+  - `insert-toolbar-classic-button`: New component for inserting classic list types (bulleted, numbered, task)
+  - `turn-into-toolbar-classic-button`: New component for converting blocks to classic list types
+  - `floating-toolbar-classic-buttons`: New component for floating toolbar with classic list support
+  - `floating-toolbar-classic-kit`: New kit that includes classic list toolbar buttons
 
 ### July 2 #24.1
 - `editor`: Added `EditorView` component using the new `PlateView` from `@platejs/core/react` for static editor rendering with copy functionality

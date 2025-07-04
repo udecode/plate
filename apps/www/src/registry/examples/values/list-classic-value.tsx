@@ -1,6 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import { KEYS } from 'platejs';
 
 jsx;
 
@@ -49,14 +50,14 @@ export const listValue: any = (
           </hli>
           <hli>
             <hlic>Dark blue</hlic>
-            <hol>
-              <hli>
+            <hul type={KEYS.taskList}>
+              <hli checked>
                 <hlic>Navy blue</hlic>
               </hli>
               <hli>
                 <hlic>Turquoise blue</hlic>
               </hli>
-            </hol>
+            </hul>
           </hli>
         </hul>
       </hli>

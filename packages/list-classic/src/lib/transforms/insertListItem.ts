@@ -1,7 +1,15 @@
 import { type SlateEditor, type TElement, KEYS, PathApi } from 'platejs';
 
+export type InsertListItemOptions = {
+  inheritCheckStateOnLineEndBreak?: boolean;
+  inheritCheckStateOnLineStartBreak?: boolean;
+};
+
 /** Insert list item if selection in li>p. TODO: test */
-export const insertListItem = (editor: SlateEditor): boolean => {
+export const insertListItem = (
+  editor: SlateEditor,
+  options: InsertListItemOptions = {}
+): boolean => {
   const liType = editor.getType(KEYS.li);
   const licType = editor.getType(KEYS.lic);
 
@@ -23,6 +31,9 @@ export const insertListItem = (editor: SlateEditor): boolean => {
 
   if (listItemNode.type !== liType) return false;
 
+  const optionalTasklistProps =
+    'checked' in listItemNode ? { checked: false } : undefined;
+
   let success = false;
 
   editor.tf.withoutNormalizing(() => {
@@ -38,9 +49,14 @@ export const insertListItem = (editor: SlateEditor): boolean => {
 
     /** If start, insert a list item before */
     if (isStart) {
+      if (optionalTasklistProps && options.inheritCheckStateOnLineStartBreak) {
+        optionalTasklistProps.checked = listItemNode.checked as boolean;
+      }
+
       editor.tf.insertNodes(
         {
           children: [{ children: [{ text: '' }], type: licType }],
+          ...optionalTasklistProps,
           type: liType,
         },
         { at: listItemPath }
@@ -57,9 +73,15 @@ export const insertListItem = (editor: SlateEditor): boolean => {
     if (isEnd) {
       /** If end, insert a list item after and select it */
       const marks = editor.api.marks() || {};
+
+      if (optionalTasklistProps && options.inheritCheckStateOnLineEndBreak) {
+        optionalTasklistProps.checked = listItemNode.checked as boolean;
+      }
+
       editor.tf.insertNodes(
         {
           children: [{ children: [{ text: '', ...marks }], type: licType }],
+          ...optionalTasklistProps,
           type: liType,
         },
         { at: nextListItemPath }
@@ -71,6 +93,7 @@ export const insertListItem = (editor: SlateEditor): boolean => {
         editor.tf.wrapNodes<TElement>(
           {
             children: [],
+            ...optionalTasklistProps,
             type: liType,
           },
           { at: nextParagraphPath }

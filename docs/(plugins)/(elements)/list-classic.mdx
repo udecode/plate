@@ -45,6 +45,7 @@ docs:
 - **List types**:
   - Unordered (bulleted) lists
   - Ordered (numbered) lists
+  - Task lists with checkboxes
   - Nested sublists
 
 - **Drag & drop**:
@@ -52,7 +53,7 @@ docs:
   - Sibling and nested items drag & drop not yet supported
 
 - **Shortcuts**:
-  - Combined with the autoformat plugin, use markdown shortcuts (**`-`**, **`*`**, **`1.`**) to create lists
+  - Combined with the autoformat plugin, use markdown shortcuts (**`-`**, **`*`**, **`1.`**, **`[ ]`**) to create lists
   - Tab/Shift+Tab for indentation control
 
 - **Limitations (use the [List plugin](/docs/list) for these features)**:
@@ -75,6 +76,7 @@ The fastest way to add list functionality is with the `ListKit`, which includes 
 
 - [`BulletedListElement`](/docs/components/list-classic-node): Renders unordered list elements.
 - [`NumberedListElement`](/docs/components/list-classic-node): Renders ordered list elements.
+- [`TaskListElement`](/docs/components/list-classic-node): Renders task list elements with checkboxes.
 
 ### Add Kit
 
@@ -109,7 +111,7 @@ npm install @platejs/list-classic
 Include the list plugins in your Plate plugins array when creating the editor.
 
 ```tsx
-import { ListPlugin, BulletedListPlugin, NumberedListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
+import { ListPlugin, BulletedListPlugin, NumberedListPlugin, TaskListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
@@ -118,6 +120,7 @@ const editor = createPlateEditor({
     ListPlugin,
     BulletedListPlugin,
     NumberedListPlugin,
+    TaskListPlugin,
     ListItemPlugin,
   ],
 });
@@ -128,9 +131,9 @@ const editor = createPlateEditor({
 Configure the plugins with custom components and keyboard shortcuts.
 
 ```tsx
-import { ListPlugin, BulletedListPlugin, NumberedListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
+import { ListPlugin, BulletedListPlugin, NumberedListPlugin, TaskListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
 import { createPlateEditor } from 'platejs/react';
-import { BulletedListElement, NumberedListElement } from '@/components/ui/list-classic-node';
+import { BulletedListElement, NumberedListElement, TaskListElement } from '@/components/ui/list-classic-node';
 
 const editor = createPlateEditor({
   plugins: [
@@ -144,13 +147,17 @@ const editor = createPlateEditor({
       node: { component: NumberedListElement },
       shortcuts: { toggle: { keys: 'mod+alt+6' } },
     }),
+    TaskListPlugin.configure({
+      node: { component: TaskListElement },
+      shortcuts: { toggle: { keys: 'mod+alt+7' } },
+    }),
     ListItemPlugin,
   ],
 });
 ```
 
-- `node.component`: Assigns [`BulletedListElement`](/docs/components/list-classic-node) and [`NumberedListElement`](/docs/components/list-classic-node) to render list elements.
-- `shortcuts.toggle`: Defines keyboard [shortcuts](/docs/plugin-shortcuts) to toggle list types (`mod+alt+5` for bulleted, `mod+alt+6` for numbered).
+- `node.component`: Assigns [`BulletedListElement`](/docs/components/list-classic-node), [`NumberedListElement`](/docs/components/list-classic-node), and [`TaskListElement`](/docs/components/list-classic-node) to render list elements.
+- `shortcuts.toggle`: Defines keyboard [shortcuts](/docs/plugin-shortcuts) to toggle list types (`mod+alt+5` for bulleted, `mod+alt+6` for numbered, `mod+alt+7` for task lists).
 
 ### Add Toolbar Button
 
@@ -158,43 +165,11 @@ You can add [`ListToolbarButton`](/docs/components/list-classic-toolbar-button) 
 
 ### Turn Into Toolbar Button
 
-You can add these items to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into lists:
-
-```tsx
-{
-  icon: <ListIcon />,
-  label: 'Bulleted list',
-  value: KEYS.ulClassic,
-}
-```
-
-```tsx
-{
-  icon: <ListOrderedIcon />,
-  label: 'Numbered list',
-  value: KEYS.olClassic,
-}
-```
+When using the `ListPlugin`, use the [`turn-into-toolbar-classic-button`](/docs/components/turn-into-toolbar-classic-button) which includes all list types (bulleted, numbered, and task lists).
 
 ### Insert Toolbar Button
 
-You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert list elements:
-
-```tsx
-{
-  icon: <ListIcon />,
-  label: 'Bulleted list',
-  value: KEYS.ulClassic,
-}
-```
-
-```tsx
-{
-  icon: <ListOrderedIcon />,
-  label: 'Numbered list',
-  value: KEYS.olClassic,
-}
-```
+When using the `ListPlugin`, use the [`insert-toolbar-classic-button`](/docs/components/insert-toolbar-classic-button) which includes all list types (bulleted, numbered, and task lists).
 
 </Steps>
 
@@ -206,6 +181,7 @@ You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-tool
 Contains the following element plugins:
 - `BulletedListPlugin`
 - `NumberedListPlugin`
+- `TaskListPlugin`
 - `ListItemPlugin`
 - `ListItemContentPlugin`
 
@@ -215,6 +191,14 @@ Contains the following element plugins:
   </APIItem>
   <APIItem name="enableResetOnShiftTab" type="boolean" optional>
     Whether Shift+Tab should reset list indent level.
+  </APIItem>
+  <APIItem name="inheritCheckStateOnLineEndBreak" type="boolean" optional>
+    Whether to inherit the checked state of above node after insert break at the end. Only applies to task lists.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="inheritCheckStateOnLineStartBreak" type="boolean" optional>
+    Whether to inherit the checked state of below node after insert break at the start. Only applies to task lists.
+    - **Default:** `false`
   </APIItem>
 </APIOptions>
 </API>
@@ -226,6 +210,10 @@ Plugin for unordered (bulleted) lists.
 ### `NumberedListPlugin`
 
 Plugin for ordered (numbered) lists.
+
+### `TaskListPlugin`
+
+Plugin for task lists with checkboxes.
 
 ### `ListItemPlugin`
 
@@ -248,6 +236,12 @@ Example Shortcut: `Mod+Alt+5`
 Toggles an ordered list (ol).
 
 Example Shortcut: `Mod+Alt+6`
+
+### `tf.taskList.toggle()`
+
+Toggles a task list with checkboxes.
+
+Example Shortcut: `Mod+Alt+7`
 
 ## API
 
@@ -444,5 +438,53 @@ A behavior hook for a list toolbar button.
       Handler to toggle list and focus editor.
     </APISubListItem>
   </APISubList>
+</APIReturns>
+</API>
+
+### `useTodoListElementState`
+
+Hook to manage task list item state.
+
+<API name="useTodoListElementState">
+<APIState>
+  <APIItem name="element" type="TTodoListItemElement">
+    Task list item element.
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="checked" type="boolean">
+    Whether the task item is checked.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    Whether the editor is in read-only mode.
+  </APIItem>
+  <APIItem name="onCheckedChange" type="function">
+    Handler to toggle the checked state.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useTodoListElement`
+
+Hook to get props for task list item checkbox.
+
+<API name="useTodoListElement">
+<APIState>
+  <APIItem name="checked" type="boolean">
+    Whether the task item is checked.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    Whether the editor is in read-only mode.
+  </APIItem>
+  <APIItem name="onCheckedChange" type="function">
+    Handler to toggle the checked state.
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="checkboxProps" type="object">
+    Props to be spread on the checkbox component.
+  </APIItem>
 </APIReturns>
 </API>

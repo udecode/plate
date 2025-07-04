@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.1.2
+
+### Patch Changes
+
+- [#4459](https://github.com/udecode/plate/pull/4459) by [@delijah](https://github.com/delijah) – Fix jumpy non-breaking-space
+
 ## 49.0.18
 
 ### Patch Changes
