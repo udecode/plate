@@ -1,5 +1,7 @@
 # @platejs/utils
 
+## 49.1.2
+
 ## 49.0.19
 
 ### Patch Changes
