@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.1.4
+
+### Patch Changes
+
+- [#4463](https://github.com/udecode/plate/pull/4463) by [@felixfeng33](https://github.com/felixfeng33) – Fixed `getSelectedDomFragment` to correctly handle partial text selections at the beginning or end of selected blocks by deserializing only the selected portion instead of the entire block.
+
 ## 49.1.3
 
 ### Patch Changes
