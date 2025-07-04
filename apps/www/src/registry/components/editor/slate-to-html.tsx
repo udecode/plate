@@ -3,11 +3,13 @@
 import * as React from 'react';
 
 import { useTheme } from 'next-themes';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { EditorKit } from '@/registry/components/editor/editor-kit';
-import { Editor } from '@/registry/ui/editor';
+import { Editor, EditorView } from '@/registry/ui/editor';
+
+import { BaseEditorKit } from './editor-base-kit';
 
 function useThemedHtml(html: string, serverTheme?: string) {
   const { resolvedTheme } = useTheme();
@@ -105,3 +107,13 @@ export function EditorClient({ value }: { value: any }) {
     </Plate>
   );
 }
+
+export const EditorViewClient = ({ value }: { value: any }) => {
+  const editor = usePlateViewEditor({
+    plugins: BaseEditorKit,
+    value: value,
+  });
+
+  return <EditorView variant="none" editor={editor} />;
+
+};

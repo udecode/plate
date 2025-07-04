@@ -3,11 +3,17 @@ import * as React from 'react';
 import { cva } from 'class-variance-authority';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { type Value, createSlateEditor, serializeHtml } from 'platejs';
+import {
+  type Value,
+  createStaticEditor,
+  normalizeNodeId,
+  serializeHtml,
+} from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import {
   EditorClient,
+  EditorViewClient,
   ExportHtmlButton,
   HtmlIframe,
 } from '@/registry/components/editor/slate-to-html';
@@ -37,26 +43,27 @@ const getCachedTailwindCss = React.cache(async () => {
 });
 
 export default async function SlateToHtmlBlock() {
-  const createValue = (): Value => [
-    ...basicBlocksValue,
-    ...basicMarksValue,
-    ...tocPlaygroundValue,
-    ...linkValue,
-    ...tableValue,
-    ...equationValue,
-    ...columnValue,
-    ...mentionValue,
-    ...dateValue,
-    ...fontValue,
-    ...discussionValue,
-    ...alignValue,
-    ...lineHeightValue,
-    ...indentValue,
-    ...listValue,
-    ...mediaValue,
-  ];
+  const createValue = (): Value =>
+    normalizeNodeId([
+      ...basicBlocksValue,
+      ...basicMarksValue,
+      ...tocPlaygroundValue,
+      ...linkValue,
+      ...tableValue,
+      ...equationValue,
+      ...columnValue,
+      ...mentionValue,
+      ...dateValue,
+      ...fontValue,
+      ...discussionValue,
+      ...alignValue,
+      ...lineHeightValue,
+      ...indentValue,
+      ...listValue,
+      ...mediaValue,
+    ]);
 
-  const editor = createSlateEditor({
+  const editor = createStaticEditor({
     plugins: BaseEditorKit,
     value: createValue(),
   });
@@ -90,8 +97,8 @@ export default async function SlateToHtmlBlock() {
       </div>
 
       <div className="p-2">
-        <h3 className={headingVariants()}>EditorStatic</h3>
-        <EditorStatic editor={editor} />
+        <h3 className={headingVariants()}>EditorView</h3>
+        <EditorViewClient value={createValue()} />
       </div>
 
       <div className="relative p-2">

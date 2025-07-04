@@ -180,16 +180,87 @@ export default async function MyStaticPage() {
 
 </Steps>
 
-## `PlateStatic` vs. `Plate` + `readOnly`
+## Client-Side Alternative: `PlateView`
 
-| Aspect                | `<PlateStatic>`                                       | `<Plate>` + `readOnly`                                 |
-| --------------------- | ----------------------------------------------------- | ------------------------------------------------------ |
-| **Interactivity**     | No (server-safe)                                      | Some interactive features can run (browser-only)       |
-| **Browser APIs**      | Not used; safe for SSR/RSC                            | Minimal use, client-side context required            |
-| **Performance**       | Optimized for static rendering, minimal overhead      | Heavier, includes more editor internals                |
-| **Partial Re-render** | Memoized sub-trees for efficient updates              | Supports partial re-renders, but with client overhead  |
-| **Use Cases**         | Server rendering, HTML serialization, static previews | Browser-based read-only states, interactive features |
-| **Recommendation**    | SSR/RSC without editing or complex interactions     | Client-side read-only states with interactive needs    |
+For cases where you need **minimal interactivity** with static content, use `<PlateView>`. This component wraps `<PlateStatic>` and adds client-side event handlers for user interactions while maintaining the performance benefits of static rendering.
+
+### Example: Server Component with Both Static Views
+
+```tsx title="app/document/page.tsx"
+import { createStaticEditor } from 'platejs';
+import { PlateStatic } from 'platejs';
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { InteractiveViewer } from './interactive-viewer';
+
+export default async function DocumentPage() {
+  const content = await fetchDocument(); // Your document data
+  
+  // Server-side static editor
+  const editor = createStaticEditor({
+    plugins: BaseEditorKit,
+    value: content,
+  });
+
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      {/* Pure static rendering - no interactivity */}
+      <div>
+        <h2>Static View (Server Rendered)</h2>
+        <PlateStatic editor={editor} />
+      </div>
+
+      {/* Interactive view - rendered on client */}
+      <div>
+        <h2>Interactive View</h2>
+        <InteractiveViewer value={content} />
+      </div>
+    </div>
+  );
+}
+```
+
+### Example: Client Component with PlateView
+
+```tsx title="app/document/interactive-viewer.tsx"
+'use client';
+
+import { usePlateViewEditor } from 'platejs/react';
+import { PlateView } from 'platejs/react';
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+
+export function InteractiveViewer({ value }) {
+  const editor = usePlateViewEditor({
+    plugins: BaseEditorKit,
+    value,
+  });
+
+  return <PlateView editor={editor} />;
+}
+```
+
+### Key Features of `PlateView`
+
+- **Client-side only**: Requires `'use client'` directive
+- **Adds interactivity**: Enables user interactions with the content (e.g., text selection, copying, future interactions like tooltips, highlights, etc.)
+- **Minimal overhead**: Still uses `PlateStatic` internally for rendering
+- **Use with `usePlateViewEditor`**: Creates a static editor optimized for view-only React components
+- **ViewPlugin included**: The static editor automatically includes `ViewPlugin` which provides event handling capabilities
+
+<Callout type="warning" title="Server Component Compatibility">
+  `PlateView` cannot be used in Server Components. If you're passing an editor from a server component to a client component, you'll encounter serialization errors. Use `PlateStatic` on the server side, or create the editor client-side with `usePlateViewEditor`.
+</Callout>
+
+## `PlateStatic` vs. `PlateView` vs. `Plate` + `readOnly`
+
+| Aspect                | `<PlateStatic>`                                       | `<PlateView>`                                          | `<Plate>` + `readOnly`                                 |
+| --------------------- | ----------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ |
+| **Environment**       | Server/Client (SSR/RSC safe)                          | Client-only                                            | Client-only                                            |
+| **Interactivity**     | None                                                  | Minimal (selection, copy, toolbar, etc.)     | Full interactive features (browser-only)               |
+| **Browser APIs**      | Not used                                              | Minimal (event handlers)                               | Full usage                                             |
+| **Performance**       | Best - static HTML only                               | Good - static rendering + event delegation             | Heavier - full editor internals                        |
+| **Bundle Size**       | Smallest                                              | Small                                                  | Largest                                                |
+| **Use Cases**         | Server rendering, HTML export                         | Client-side content with basic interactions            | Full read-only editor with all features                |
+| **Recommendation**    | SSR/RSC without any interactions                      | Client-side content needing light interactivity        | Client-side with complex interactive needs             |
 
 ## RSC/SSR Example
 

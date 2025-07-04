@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import type { SlateElementProps, TMentionElement } from 'platejs';
 
-import { IS_APPLE, KEYS, SlateElement } from 'platejs';
+import { KEYS, SlateElement } from 'platejs';
 
 import { cn } from '@/lib/utils';
 
@@ -28,21 +28,11 @@ export function MentionElementStatic(
         'data-slate-value': element.value,
       }}
     >
-      {IS_APPLE ? (
-        // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490
-        <React.Fragment>
-          {props.children}
-          {prefix}
-          {element.value}
-        </React.Fragment>
-      ) : (
-        // Others like Android https://github.com/ianstormtaylor/slate/pull/5360
-        <React.Fragment>
-          {prefix}
-          {element.value}
-          {props.children}
-        </React.Fragment>
-      )}
+      <React.Fragment>
+        {props.children}
+        {prefix}
+        {element.value}
+      </React.Fragment>
     </SlateElement>
   );
 }
