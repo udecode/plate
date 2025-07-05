@@ -2,4 +2,4 @@
 '@platejs/core': patch
 ---
 
-Fix `getSelectedDomFragment` when select void.
+Fix `getSelectedDomFragment` when selecting void.
