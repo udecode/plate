@@ -1,4 +1,4 @@
-import { type Descendant, NodeApi } from "@platejs/slate";
+import { type Descendant, ElementApi, NodeApi } from "@platejs/slate";
 
 import type { SlateEditor } from "../../editor";
 
@@ -37,6 +37,7 @@ export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
     if (
       (index === 0 || index === domBlocks.length - 1) &&
       node.textContent?.trim() !== NodeApi.string(block[0])
+      && ElementApi.isElement(block[0]) && !editor.api.isVoid(block[0])
     ) {
       const html = document.createElement('div');
       html.append(node);
