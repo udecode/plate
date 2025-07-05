@@ -26,8 +26,7 @@ export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
     const block = editor.api.node({ id: blockId, at: [] });
 
     // prevent inline elements like link and table cells.
-    if (!block || block[1].length === 1) return
-
+    if (!block || block[1].length !== 1) return
 
     /**
      * If the selection don't cover the all first or last block, we
