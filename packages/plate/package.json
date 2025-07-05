@@ -1,6 +1,6 @@
 {
   "name": "platejs",
-  "version": "49.1.4",
+  "version": "49.1.5",
   "description": "Plate – a framework for building rich text editors on the web",
   "keywords": [
     "contentEditable",
@@ -56,9 +56,9 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/core": "49.1.4",
+    "@platejs/core": "49.1.5",
     "@platejs/slate": "49.0.2",
-    "@platejs/utils": "49.1.4",
+    "@platejs/utils": "49.1.5",
     "@udecode/react-hotkeys": "37.0.0",
     "@udecode/react-utils": "49.0.15",
     "@udecode/utils": "47.2.7"
