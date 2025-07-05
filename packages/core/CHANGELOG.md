@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.1.5
+
+### Patch Changes
+
+- [#4465](https://github.com/udecode/plate/pull/4465) by [@felixfeng33](https://github.com/felixfeng33) – Fix `getSelectedDomFragment` when selecting void.
+
 ## 49.1.4
 
 ### Patch Changes
