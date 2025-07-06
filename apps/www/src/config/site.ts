@@ -26,6 +26,11 @@ export const siteConfig = {
       label: 'Editors',
       labelCn: '编辑器',
     },
+    {
+      href: '/blog',
+      label: 'Blog',
+      labelCn: '博客',
+    },
   ],
   ogImage: 'https://platejs.org/og.png',
   registryUrl:
