@@ -39,7 +39,7 @@ export const remarkMention: Plugin = function () {
         // Check if this is a mention link
         if (node.url?.startsWith('mention:')) {
           let username = node.url.slice('mention:'.length);
-          // Decode URL-encoded spaces
+          // Decode URL-encoded spaces and special characters
           username = decodeURIComponent(username);
           const displayText = node.children?.[0]?.value || username;
 

@@ -606,7 +606,7 @@ const slateValue = editor.api.markdown.deserialize(markdown);
 
 const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 // Mentions without spaces: @alice
-// Mentions with spaces: [John Doe](mention:John Doe)
+// Mentions with spaces: [John Doe](mention:John%20Doe)
 ```
 
 The `remarkMention` plugin supports two formats:
