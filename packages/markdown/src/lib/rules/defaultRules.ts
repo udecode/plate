@@ -631,10 +631,29 @@ export const defaultRules: MdRules = {
       type: 'mention',
       value: node.username,
     }),
-    serialize: (node: TMentionElement) => ({
-      type: 'text',
-      value: `@${node.value.replaceAll(' ', '_')}`,
-    }),
+    serialize: (node: TMentionElement) => {
+      // For mentions with spaces or special characters, return as a link node
+      if (
+        node.value.includes(' ') ||
+        node.value.includes('(') ||
+        node.value.includes(')')
+      ) {
+        // Encode the value to create a valid URL, manually encoding parentheses
+        const encodedValue = encodeURIComponent(node.value)
+          .replace(/\(/g, '%28')
+          .replace(/\)/g, '%29');
+        return {
+          children: [{ type: 'text', value: node.value }],
+          type: 'link',
+          url: `mention:${encodedValue}`,
+        };
+      }
+      // Use simple @username format for values without spaces
+      return {
+        type: 'text',
+        value: `@${node.value}`,
+      };
+    },
   },
   p: {
     deserialize: (node, deco, options) => {

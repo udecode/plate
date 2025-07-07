@@ -569,6 +569,52 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 // markdownOutput will contain $...$ and $$...$$ syntax.
 ```
 
+### Using Mentions with Spaces (`remarkMention`)
+
+Enable @mention syntax with support for mentions containing spaces.
+
+**Plugin Configuration:**
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin, remarkMention } from '@platejs/markdown';
+import { MentionPlugin } from '@platejs/mention/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...other plugins
+    MentionPlugin,
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkMention],
+      },
+    }),
+  ],
+});
+```
+
+**Supported Formats:**
+```tsx
+const markdown = `
+Simple mention: @alice
+Mention with spaces: [John Doe](mention:john_doe)
+Full name with ID: [Jane Smith](mention:user_123)
+`;
+
+// Assuming `editor` is your configured Plate editor instance
+const slateValue = editor.api.markdown.deserialize(markdown);
+// Creates mention nodes with value: 'alice', 'john_doe', 'user_123'
+
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+// Mentions without spaces: @alice
+// Mentions with spaces: [John Doe](mention:John Doe)
+```
+
+The `remarkMention` plugin supports two formats:
+- **@username** - Traditional mention format (no spaces allowed)
+- **[display text](mention:id)** - Markdown link-style format that supports spaces and custom display text
+
+When serializing, mentions containing spaces automatically use the link format to preserve the full value.
+
 </Steps>
 
 ## Remark Plugins
