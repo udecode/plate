@@ -1,5 +1,5 @@
 ---
-'@platejs/markdown': minor
+'@platejs/markdown': patch
 ---
 
 Add support for [display text](mention:id) markdown format for mentions
