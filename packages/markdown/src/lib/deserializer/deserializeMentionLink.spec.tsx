@@ -1,26 +1,15 @@
-import { createPlateEditor } from '@platejs/core/react';
-import { BaseMentionPlugin } from '@platejs/mention';
 /** @jsx jsx */
+import { BaseMentionPlugin } from '@platejs/mention';
 import { jsx } from '@platejs/test-utils';
 
-import { MarkdownPlugin } from '../MarkdownPlugin';
-import { remarkMention } from '../plugins/remarkMention';
+import { createTestEditor } from '../__tests__/createTestEditor';
 import { deserializeMd } from './deserializeMd';
 
 jsx;
 
 describe('deserializeMd - mention link format', () => {
   it('should deserialize [display text](mention:id) format', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        BaseMentionPlugin,
-        MarkdownPlugin.configure({
-          options: {
-            remarkPlugins: [remarkMention],
-          },
-        }),
-      ],
-    });
+    const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown = 'Hello [John Doe](mention:john_doe), how are you?';
     const value = deserializeMd(editor, markdown);
@@ -37,16 +26,7 @@ describe('deserializeMd - mention link format', () => {
   });
 
   it('should deserialize mentions with spaces in ID', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        BaseMentionPlugin,
-        MarkdownPlugin.configure({
-          options: {
-            remarkPlugins: [remarkMention],
-          },
-        }),
-      ],
-    });
+    const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown = 'CC: [Jane Smith](mention:jane%20smith)';
     const value = deserializeMd(editor, markdown);
@@ -62,16 +42,7 @@ describe('deserializeMd - mention link format', () => {
   });
 
   it('should deserialize mixed mention formats', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        BaseMentionPlugin,
-        MarkdownPlugin.configure({
-          options: {
-            remarkPlugins: [remarkMention],
-          },
-        }),
-      ],
-    });
+    const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown =
       '@alice mentioned [Bob Johnson](mention:bob_johnson) and @charlie';
@@ -95,16 +66,7 @@ describe('deserializeMd - mention link format', () => {
   });
 
   it('should handle multiple link mentions in one paragraph', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        BaseMentionPlugin,
-        MarkdownPlugin.configure({
-          options: {
-            remarkPlugins: [remarkMention],
-          },
-        }),
-      ],
-    });
+    const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown =
       '[Team Lead](mention:team_lead) assigned this to [QA Team](mention:qa_team)';
@@ -124,16 +86,7 @@ describe('deserializeMd - mention link format', () => {
   });
 
   it('should handle special characters in mention IDs', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        BaseMentionPlugin,
-        MarkdownPlugin.configure({
-          options: {
-            remarkPlugins: [remarkMention],
-          },
-        }),
-      ],
-    });
+    const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown =
       '[User 123](mention:user-123) and [Dev Team](mention:dev.team)';

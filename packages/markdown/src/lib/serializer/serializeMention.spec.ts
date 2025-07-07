@@ -1,101 +1,72 @@
-import { createPlateEditor } from '@platejs/core/react';
 import { BaseMentionPlugin } from '@platejs/mention';
 
-import { MarkdownPlugin } from '../MarkdownPlugin';
-import { remarkMention } from '../plugins/remarkMention';
+import { createTestEditor } from '../__tests__/createTestEditor';
 import { serializeMd } from './serializeMd';
 
 describe('serializeMd - mention', () => {
   it('should serialize mentions to @username format', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        BaseMentionPlugin,
-        MarkdownPlugin.configure({
-          options: {
-            remarkPlugins: [remarkMention],
+    const editor = createTestEditor([BaseMentionPlugin]);
+    editor.children = [
+      {
+        children: [
+          { text: 'Hello ' },
+          {
+            children: [{ text: '' }],
+            type: 'mention',
+            value: 'alice',
           },
-        }),
-      ],
-      value: [
-        {
-          children: [
-            { text: 'Hello ' },
-            {
-              children: [{ text: '' }],
-              type: 'mention',
-              value: 'alice',
-            },
-            { text: ' how are you?' },
-          ],
-          type: 'p',
-        },
-      ],
-    });
+          { text: ' how are you?' },
+        ],
+        type: 'p',
+      },
+    ];
 
     const markdown = serializeMd(editor);
     expect(markdown).toBe('Hello @alice how are you?\n');
   });
 
   it('should serialize multiple mentions', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        BaseMentionPlugin,
-        MarkdownPlugin.configure({
-          options: {
-            remarkPlugins: [remarkMention],
+    const editor = createTestEditor([BaseMentionPlugin]);
+    editor.children = [
+      {
+        children: [
+          {
+            children: [{ text: '' }],
+            type: 'mention',
+            value: 'bob',
           },
-        }),
-      ],
-      value: [
-        {
-          children: [
-            {
-              children: [{ text: '' }],
-              type: 'mention',
-              value: 'bob',
-            },
-            { text: ' mentioned ' },
-            {
-              children: [{ text: '' }],
-              type: 'mention',
-              value: 'charlie',
-            },
-            { text: ' in the discussion' },
-          ],
-          type: 'p',
-        },
-      ],
-    });
+          { text: ' mentioned ' },
+          {
+            children: [{ text: '' }],
+            type: 'mention',
+            value: 'charlie',
+          },
+          { text: ' in the discussion' },
+        ],
+        type: 'p',
+      },
+    ];
 
     const markdown = serializeMd(editor);
     expect(markdown).toBe('@bob mentioned @charlie in the discussion\n');
   });
 
   it('should serialize mentions with spaces using link format', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        BaseMentionPlugin,
-        MarkdownPlugin.configure({
-          options: {
-            remarkPlugins: [remarkMention],
+    const editor = createTestEditor([BaseMentionPlugin]);
+    editor.children = [
+      {
+        children: [
+          { text: 'Hey ' },
+          {
+            children: [{ text: '' }],
+            type: 'mention',
+            value: 'John Doe',
           },
-        }),
-      ],
-      value: [
-        {
-          children: [
-            { text: 'Hey ' },
-            {
-              children: [{ text: '' }],
-              type: 'mention',
-              value: 'John Doe',
-            },
-            { text: ' check this out' },
-          ],
-          type: 'p',
-        },
-      ],
-    });
+          { text: ' check this out' },
+        ],
+        type: 'p',
+      },
+    ];
 
     const markdown = serializeMd(editor);
     expect(markdown).toBe(
@@ -104,16 +75,7 @@ describe('serializeMd - mention', () => {
   });
 
   it('should round-trip mentions correctly', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        BaseMentionPlugin,
-        MarkdownPlugin.configure({
-          options: {
-            remarkPlugins: [remarkMention],
-          },
-        }),
-      ],
-    });
+    const editor = createTestEditor([BaseMentionPlugin]);
 
     const originalMarkdown =
       'Hello [Jane Smith](mention:Jane%20Smith) and @bob!';
@@ -127,35 +89,26 @@ describe('serializeMd - mention', () => {
   });
 
   it('should serialize complex mentions with special characters', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        BaseMentionPlugin,
-        MarkdownPlugin.configure({
-          options: {
-            remarkPlugins: [remarkMention],
+    const editor = createTestEditor([BaseMentionPlugin]);
+    editor.children = [
+      {
+        children: [
+          { text: 'Assigned to ' },
+          {
+            children: [{ text: '' }],
+            type: 'mention',
+            value: 'QA Team (US)',
           },
-        }),
-      ],
-      value: [
-        {
-          children: [
-            { text: 'Assigned to ' },
-            {
-              children: [{ text: '' }],
-              type: 'mention',
-              value: 'QA Team (US)',
-            },
-            { text: ' and ' },
-            {
-              children: [{ text: '' }],
-              type: 'mention',
-              value: 'dev-team',
-            },
-          ],
-          type: 'p',
-        },
-      ],
-    });
+          { text: ' and ' },
+          {
+            children: [{ text: '' }],
+            type: 'mention',
+            value: 'dev-team',
+          },
+        ],
+        type: 'p',
+      },
+    ];
 
     const markdown = serializeMd(editor);
     expect(markdown).toBe(
