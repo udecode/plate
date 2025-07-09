@@ -74,17 +74,38 @@ describe('serializeMd - mention', () => {
     );
   });
 
+  it('should use key for URL when both key and value are present', () => {
+    const editor = createTestEditor([BaseMentionPlugin]);
+    editor.children = [
+      {
+        children: [
+          { text: 'Hey ' },
+          {
+            key: 'john_doe',
+            children: [{ text: '' }],
+            type: 'mention',
+            value: 'John Doe',
+          },
+          { text: ' check this out' },
+        ],
+        type: 'p',
+      },
+    ];
+
+    const markdown = serializeMd(editor);
+    expect(markdown).toBe('Hey [John Doe](mention:john_doe) check this out\n');
+  });
+
   it('should round-trip mentions correctly', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
-    const originalMarkdown =
-      'Hello [Jane Smith](mention:Jane%20Smith) and @bob!';
+    const originalMarkdown = 'Hello [Jane Smith](mention:jane_smith) and @bob!';
     const value = editor.api.markdown.deserialize(originalMarkdown);
     editor.children = value;
     const serializedMarkdown = serializeMd(editor);
 
     expect(serializedMarkdown).toBe(
-      'Hello [Jane Smith](mention:Jane%20Smith) and @bob!\n'
+      'Hello [Jane Smith](mention:jane_smith) and @bob!\n'
     );
   });
 

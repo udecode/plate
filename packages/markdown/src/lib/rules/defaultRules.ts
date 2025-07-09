@@ -629,29 +629,33 @@ export const defaultRules: MdRules = {
     deserialize: (node: MentionNode): TMentionElement => ({
       children: [{ text: '' }],
       type: 'mention',
-      value: node.username,
+      value: node.displayText || node.username,
+      ...(node.displayText && { key: node.username }),
     }),
     serialize: (node: TMentionElement) => {
+      const mentionId = node.key || node.value;
+      const displayText = node.value;
+
       // For mentions with spaces or special characters, return as a link node
       if (
-        node.value.includes(' ') ||
-        node.value.includes('(') ||
-        node.value.includes(')')
+        displayText.includes(' ') ||
+        displayText.includes('(') ||
+        displayText.includes(')')
       ) {
-        // Encode the value to create a valid URL, manually encoding parentheses
-        const encodedValue = encodeURIComponent(node.value)
+        // Encode the mention ID to create a valid URL, manually encoding parentheses
+        const encodedId = encodeURIComponent(String(mentionId))
           .replace(/\(/g, '%28')
           .replace(/\)/g, '%29');
         return {
-          children: [{ type: 'text', value: node.value }],
+          children: [{ type: 'text', value: displayText }],
           type: 'link',
-          url: `mention:${encodedValue}`,
+          url: `mention:${encodedId}`,
         };
       }
       // Use simple @username format for values without spaces
       return {
         type: 'text',
-        value: `@${node.value}`,
+        value: `@${mentionId}`,
       };
     },
   },

@@ -17,7 +17,7 @@ describe('deserializeMd - mention link format', () => {
     expect(value).toEqual([
       <hp>
         <htext>Hello </htext>
-        <hmention value="john_doe">
+        <hmention key="john_doe" value="John Doe">
           <htext></htext>
         </hmention>
         <htext>, how are you?</htext>
@@ -34,7 +34,7 @@ describe('deserializeMd - mention link format', () => {
     expect(value).toEqual([
       <hp>
         <htext>CC: </htext>
-        <hmention value="jane smith">
+        <hmention key="jane smith" value="Jane Smith">
           <htext></htext>
         </hmention>
       </hp>,
@@ -54,7 +54,7 @@ describe('deserializeMd - mention link format', () => {
           <htext></htext>
         </hmention>
         <htext> mentioned </htext>
-        <hmention value="bob_johnson">
+        <hmention key="bob_johnson" value="Bob Johnson">
           <htext></htext>
         </hmention>
         <htext> and </htext>
@@ -74,11 +74,11 @@ describe('deserializeMd - mention link format', () => {
 
     expect(value).toEqual([
       <hp>
-        <hmention value="team_lead">
+        <hmention key="team_lead" value="Team Lead">
           <htext></htext>
         </hmention>
         <htext> assigned this to </htext>
-        <hmention value="qa_team">
+        <hmention key="qa_team" value="QA Team">
           <htext></htext>
         </hmention>
       </hp>,
@@ -94,11 +94,11 @@ describe('deserializeMd - mention link format', () => {
 
     expect(value).toEqual([
       <hp>
-        <hmention value="user-123">
+        <hmention key="user-123" value="User 123">
           <htext></htext>
         </hmention>
         <htext> and </htext>
-        <hmention value="dev.team">
+        <hmention key="dev.team" value="Dev Team">
           <htext></htext>
         </hmention>
       </hp>,
