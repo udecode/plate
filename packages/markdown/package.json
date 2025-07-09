@@ -57,13 +57,6 @@
     "unified": "^11.0.5"
   },
   "devDependencies": {
-    "@platejs/basic-nodes": "workspace:^",
-    "@platejs/code-block": "workspace:^",
-    "@platejs/layout": "workspace:^",
-    "@platejs/list-classic": "workspace:^",
-    "@platejs/mention": "workspace:^",
-    "@platejs/table": "workspace:^",
-    "@platejs/test-utils": "workspace:^",
     "@types/mdast": "^4.0.4",
     "@types/unist": "^3.0.3",
     "platejs": "workspace:^"
