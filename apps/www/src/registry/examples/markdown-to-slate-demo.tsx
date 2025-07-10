@@ -53,7 +53,10 @@ Advanced marks: <kbd>⌘ + B</kbd>,<u>underlined</u>, <mark>highlighted</mark> t
 
 Superscript like E=mc<sup>2</sup> and subscript like H<sub>2</sub>O demonstrate mathematical and chemical notation capabilities.
 
-Add mentions like @BB-8, dates (<date>2025-05-08</date>), and math formulas ($E=mc^2$).
+Add mentions like [Aayla Sxecura](mention:mention_id) 12312
+
+
+, dates (<date>2025-05-08</date>), and math formulas ($E=mc^2$).
 
 The table of contents feature automatically generates document structure for easy navigation.
 
