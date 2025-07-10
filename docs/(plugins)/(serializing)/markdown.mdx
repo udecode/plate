@@ -569,6 +569,49 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 // markdownOutput will contain $...$ and $$...$$ syntax.
 ```
 
+### Using Mentions (`remarkMention`)
+
+Enable mention syntax using the link format for consistency and special character support.
+
+**Plugin Configuration:**
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin, remarkMention } from '@platejs/markdown';
+import { MentionPlugin } from '@platejs/mention/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...other plugins
+    MentionPlugin,
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkMention],
+      },
+    }),
+  ],
+});
+```
+
+**Supported Format:**
+```tsx
+const markdown = `
+Mention: [Alice](mention:alice)
+Mention with spaces: [John Doe](mention:john_doe)
+Full name with ID: [Jane Smith](mention:user_123)
+`;
+
+// Assuming `editor` is your configured Plate editor instance
+const slateValue = editor.api.markdown.deserialize(markdown);
+// Creates mention nodes with appropriate values and display text
+
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+// All mentions use the link format: [Alice](mention:alice), [John Doe](mention:john_doe), etc.
+```
+
+The `remarkMention` plugin uses the **[display text](mention:id)** format - a Markdown link-style format that supports spaces and custom display text.
+
+When serializing, all mentions use the link format to ensure consistency and support for special characters.
+
 </Steps>
 
 ## Remark Plugins
@@ -806,7 +849,7 @@ Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages
 | `<span style="color: ...">`       | `color` (mark)          |                                            |
 | `<span style="background-color: ...">` | `backgroundColor` (mark)|                                            |
 | `<date>...</date>`      | `date`                    | Custom Date element                        |
-| `@mention`              | `mention`                 | Custom Mention element                       |
+| `[text](mention:id)`    | `mention`                 | Custom Mention element                       |
 | `<file name="..." />` | `file`                    | Custom File element                        |
 | `<audio src="..." />`   | `audio`                   | Custom Audio element                       |
 | `<video src="..." />`   | `video`                   | Custom Video element                       |

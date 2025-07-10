@@ -126,7 +126,7 @@ Text with custom line height
   </column>
 </column_group>
 
-Mention: @User
+Mention: [User](mention:User)
 
 Date: <date>2024-01-01</date>
 

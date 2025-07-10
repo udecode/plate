@@ -629,12 +629,24 @@ export const defaultRules: MdRules = {
     deserialize: (node: MentionNode): TMentionElement => ({
       children: [{ text: '' }],
       type: 'mention',
-      value: node.username,
+      value: node.displayText || node.username,
+      ...(node.displayText && { key: node.username }),
     }),
-    serialize: (node: TMentionElement) => ({
-      type: 'text',
-      value: `@${node.value.replaceAll(' ', '_')}`,
-    }),
+    serialize: (node: TMentionElement) => {
+      const mentionId = node.key || node.value;
+      const displayText = node.value;
+
+      // Always use link format for all mentions
+      // Encode the mention ID to create a valid URL, manually encoding parentheses
+      const encodedId = encodeURIComponent(String(mentionId))
+        .replace(/\(/g, '%28')
+        .replace(/\)/g, '%29');
+      return {
+        children: [{ type: 'text', value: displayText }],
+        type: 'link',
+        url: `mention:${encodedId}`,
+      };
+    },
   },
   p: {
     deserialize: (node, deco, options) => {
