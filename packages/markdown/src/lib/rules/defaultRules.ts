@@ -636,26 +636,15 @@ export const defaultRules: MdRules = {
       const mentionId = node.key || node.value;
       const displayText = node.value;
 
-      // For mentions with spaces or special characters, return as a link node
-      if (
-        displayText.includes(' ') ||
-        displayText.includes('(') ||
-        displayText.includes(')')
-      ) {
-        // Encode the mention ID to create a valid URL, manually encoding parentheses
-        const encodedId = encodeURIComponent(String(mentionId))
-          .replace(/\(/g, '%28')
-          .replace(/\)/g, '%29');
-        return {
-          children: [{ type: 'text', value: displayText }],
-          type: 'link',
-          url: `mention:${encodedId}`,
-        };
-      }
-      // Use simple @username format for values without spaces
+      // Always use link format for all mentions
+      // Encode the mention ID to create a valid URL, manually encoding parentheses
+      const encodedId = encodeURIComponent(String(mentionId))
+        .replace(/\(/g, '%28')
+        .replace(/\)/g, '%29');
       return {
-        type: 'text',
-        value: `@${mentionId}`,
+        children: [{ type: 'text', value: displayText }],
+        type: 'link',
+        url: `mention:${encodedId}`,
       };
     },
   },
