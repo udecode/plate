@@ -30,7 +30,7 @@ import {
   BaseTablePlugin,
   BaseTableRowPlugin,
 } from '@platejs/table';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
+// import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
 import { MarkdownKit } from '../../../../../apps/www/src/registry/components/editor/plugins/markdown-kit';
 
 export const createTestEditor = (plugins: any[] = []) =>
@@ -50,8 +50,8 @@ export const createTestEditor = (plugins: any[] = []) =>
       BaseTableRowPlugin,
       BaseTableCellPlugin,
       BaseTableCellHeaderPlugin,
-      BaseColumnPlugin,
-      BaseColumnItemPlugin,
+      // BaseColumnPlugin,
+      // BaseColumnItemPlugin,
       BaseBoldPlugin,
       BaseItalicPlugin,
       BaseUnderlinePlugin,

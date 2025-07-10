@@ -63,7 +63,8 @@ export const remarkMention: Plugin = function () {
         if (!parent || typeof index !== 'number') return;
 
         // Pattern for @username mentions (no spaces)
-        const atMentionPattern = /(?:^|\s)@([^\s]+)/g;
+        // Matches @username but excludes trailing punctuation
+        const atMentionPattern = /(?:^|\s)@([a-zA-Z0-9_-]+)(?=[\s.,;:!?)]|$)/g;
 
         const parts: (MentionNode | Text)[] = [];
         let lastIndex = 0;
