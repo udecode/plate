@@ -5,12 +5,15 @@ import {
   H1Plugin,
   H2Plugin,
   H3Plugin,
+  H4Plugin,
+  H5Plugin,
+  H6Plugin,
   HorizontalRulePlugin,
 } from '@platejs/basic-nodes/react';
 import { ParagraphPlugin } from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/ui/blockquote-node';
-import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
+import { H1Element, H2Element, H3Element, H4Element, H5Element, H6Element } from '@/components/ui/heading-node';
 import { HrElement } from '@/components/ui/hr-node';
 import { ParagraphElement } from '@/components/ui/paragraph-node';
 
@@ -42,6 +45,33 @@ export const BasicBlocksKit = [
       break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+3' } },
+  }),
+  H4Plugin.configure({
+    node: {
+      component: H4Element,
+    },
+    rules: {
+      break: { empty: "reset" },
+    },
+    shortcuts: { toggle: { keys: 'mod+alt+4' } },
+  }),
+  H5Plugin.configure({
+    node: {
+      component: H5Element,
+    },
+    rules: {
+      break: { empty: "reset" },
+    },
+    shortcuts: { toggle: { keys: 'mod+alt+5' } },
+  }),
+  H6Plugin.configure({
+    node: {
+      component: H6Element,
+    },
+    rules: {
+      break: { empty: "reset" },
+    },
+    shortcuts: { toggle: { keys: 'mod+alt+6' } },
   }),
   BlockquotePlugin.configure({
     node: { component: BlockquoteElement },
