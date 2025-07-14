@@ -73,7 +73,7 @@ function Draggable(props: PlateElementProps) {
   const { children, editor, element, path } = props;
   const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
 
-  const { isDragging, multiplePreviewRef: previewRef, nodeRef, handleRef } =
+  const { isDragging, nodeRef, previewRef, handleRef } =
     useDraggable({
       element,
       onDropHandler: (_, { dragItem }) => {

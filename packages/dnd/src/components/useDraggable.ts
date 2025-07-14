@@ -6,10 +6,10 @@ import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 
 export type DraggableState = {
   isDragging: boolean;
-  /** The ref of the multiple preview element */
-  multiplePreviewRef: React.RefObject<HTMLDivElement | null>;
   /** The ref of the draggable element */
   nodeRef: React.RefObject<HTMLDivElement | null>;
+  /** The ref of the multiple preview element */
+  previewRef: React.RefObject<HTMLDivElement | null>;
   /** The ref of the draggable handle */
   handleRef: (
     elementOrNode:
@@ -47,8 +47,8 @@ export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
 
   return {
     isDragging,
-    multiplePreviewRef,
     nodeRef,
+    previewRef: multiplePreviewRef,
     handleRef: dragRef,
   };
 };
