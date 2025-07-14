@@ -94,7 +94,7 @@
     },
     {
       "path": "src/registry/examples/values/mention-value.tsx",
-      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test-utils';\n\njsx;\n\nexport const mentionValue: any = (\n  <fragment>\n    <hh2>Mention</hh2>\n    <hp>\n      Mention and reference other users or entities within your text using\n      @-mentions.\n    </hp>\n    <hp>\n      Try mentioning{' '}\n      <hmention value=\"BB-8\">\n        <htext />\n      </hmention>{' '}\n      or{' '}\n      <hmention value=\"Boba Fett\">\n        <htext />\n      </hmention>\n      .\n    </hp>\n  </fragment>\n);\n",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test-utils';\n\njsx;\n\nexport const mentionValue: any = (\n  <fragment>\n    <hh2>Mention</hh2>\n    <hp>\n      Mention and reference other users or entities within your text using\n      @-mentions.\n    </hp>\n    <hp>\n      Try mentioning{' '}\n      <hmention key=\"mention_id_1\" value=\"BB-8\">\n        <htext />\n      </hmention>{' '}\n      or{' '}\n      <hmention key=\"mention_id_2\" value=\"Boba Fett\">\n        <htext />\n      </hmention>\n      .\n    </hp>\n  </fragment>\n);\n",
       "type": "registry:example"
     },
     {
