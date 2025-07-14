@@ -82,7 +82,7 @@ function Draggable(props: PlateElementProps) {
         if (blockSelectionApi) {
           blockSelectionApi.add(id);
         }
-        previewRef.current?.replaceChildren();
+        resetPreview();
       },
     });
 
@@ -91,10 +91,16 @@ function Draggable(props: PlateElementProps) {
 
   const [previewTop, setPreviewTop] = React.useState(0);
 
+  const resetPreview = () => {
+    if (previewRef.current) {
+      previewRef.current.replaceChildren();
+    }
+  }
+
   // clear up virtual multiple preview when drag end
   React.useEffect(() => {
     if (!isDragging) {
-      previewRef.current?.replaceChildren();
+      resetPreview();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
