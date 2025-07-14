@@ -1,5 +1,14 @@
 # @platejs/dnd
 
+## 49.1.7
+
+### Patch Changes
+
+- [#4481](https://github.com/udecode/plate/pull/4481) by [@felixfeng33](https://github.com/felixfeng33) – Added support for dragging multiple blocks using editor's native selection
+
+  - Multiple blocks can now be dragged using the editor's native selection, not just with block-selection
+  - Simplified `useDndNode` hook implementation by removing complex preview logic
+
 ## 49.0.8
 
 ### Patch Changes
