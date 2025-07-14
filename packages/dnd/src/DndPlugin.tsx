@@ -27,6 +27,7 @@ export type DndConfig = PluginConfig<
     };
     enableScroller?: boolean;
     isDragging?: boolean;
+    multiplePreviewRef?: React.RefObject<HTMLDivElement | null> | null;
     scrollerProps?: Partial<ScrollerProps>;
     onDropFiles?: (props: {
       id: string;
@@ -75,6 +76,9 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       editor.setOption(plugin, 'isDragging', false);
       editor.setOption(plugin, 'dropTarget', { id: null, line: '' });
       editor.setOption(plugin, '_isOver', false);
+      editor
+        .getOption(plugin, 'multiplePreviewRef')
+        ?.current?.replaceChildren();
     },
   },
   options: {
@@ -82,6 +86,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
     draggingId: null,
     dropTarget: { id: null, line: '' },
     isDragging: false,
+    multiplePreviewRef: null,
   },
 }).extend(({ getOptions }) => ({
   render: {
