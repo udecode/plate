@@ -1,6 +1,6 @@
 ---
-title: Fixing Cursor Jumping at Style Boundaries with Plate.js - One Line of Code for Precise Input
-description: Traditional rich text editors often fail when handling cursor movement at boundaries between styled and unstyled content. For example, pressing ← near code blocks or bold text may unexpectedly jump the cursor into styled regions, causing unintended formatting and interrupting the writing flow. Even major tools like Notion and Google Docs haven't solved this problem well.
+title: Precise Cursor Control - Solving Style Boundary Jumping with Plate.js
+description: Traditional rich text editors often provide a poor experience when moving the cursor across style boundaries. With just one line of configuration, Plate.js delivers a more natural and controllable input experience. This article explains the principles and usage in detail.
 date: 2025-01-10
 author: Felix Feng
 published: true
@@ -8,33 +8,31 @@ published: true
 
 ## Introduction
 
-When pressing ← from the right side of the letter H, the cursor jumps directly into the code block below, because there's only one position to stop between them.
+When you press ← to the right of the letter x below, the cursor jumps directly into the code block below, because there is only one position where the cursor can stop between them.
 
-This creates a very practical problem:
+This brings up a very practical problem:
 
-I just want to add some regular text after the H, but the cursor jumps into the code block, and the input content automatically gets code styling.
+> I just want to add some plain text after the code, but the cursor jumps into the code, and what I type is automatically styled as code.
 
-The user has no clear intention to enter the code block, but the editor forcibly switches context, causing a fragmented writing experience.
+The user did not intend to enter the code block, but the editor forcibly switched the context, resulting in a fragmented writing experience.
 
-Even more surprisingly: even top-tier editors like Notion or Google Docs haven't solved this problem well.
+Surprisingly, even top editors like Notion or Google Docs haven't solved this problem well.
 
-![CleanShot 2025-06-12 at 22.50.14.gif](https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/99fc147a191d48cc97b58ad01da73d9c~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5LiA5YOP57Sg55qE5omn552A:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiNjcxMTcxNTcxMzY0OTQ4In0%3D&rk3s=f64ab15b&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1752328534&x-orig-sign=%2BRAJ76T%2BdK9drODWMahQaDja11w%3D)
+![Code block cursor affinity demo](/blog/affinity/1.gif)
 
-Similar problems also exist in **bold** text.
+A similar issue exists with bold text.
 
-When my cursor is at the boundary between bold and regular text, how should the editor determine:
+When my cursor is at the boundary between bold and normal text, how should the editor determine:
 
-Am I going to input bold content next, or regular styled content?
+Will I type bold content next, or plain styled content?
 
-Most editors handle this by: can't tell, so it's all about "trial and error."
+Most editors handle this by inheriting the style from the left, even if the user wants to type plain text.
 
-![CleanShot 2025-06-12 at 22.58.27.gif](https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/af641be46db44359918b68b1891e0892~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5LiA5YOP57Sg55qE5omn552A:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiNjcxMTcxNTcxMzY0OTQ4In0%3D&rk3s=f64ab15b&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1752328534&x-orig-sign=3WiWY9JUtk4LVagQsaNVw7aenRM%3D)
+![Bold text cursor affinity demo](/blog/affinity/2.gif)
 
 ## Solution
 
-Fortunately, [plate.js](https://platejs.org/) provides a very elegant solution.
-
-With just one line of configuration, you can completely solve the problem of uncontrollable cursor "jumping in and out" at block element boundaries:
+But in Plate v4, you can completely solve the uncontrollable "jumping in and out" of the cursor at block element boundaries with just one line of configuration:
 
 ```tsx
 createSlatePlugin({
@@ -42,54 +40,56 @@ createSlatePlugin({
 })
 ```
 
-After setting this up, when you use arrow keys to move the cursor around code markers (like `const a = 1;`), the system will clearly distinguish:
+With this setting, when you use the arrow keys around a code mark (like `const a = 1;`), the system clearly distinguishes:
 
-Moving from outside in → first stop at the edge;
-Press once more → then enter inside the code.
+Entering from outside → the first time, the cursor stops at the edge;  
+Press again → only then does it enter the code.
 
-This is like adding a "buffer layer" to the cursor, avoiding accidental style activation and making input more precise and predictable.
+It's like adding a "buffer layer" to the cursor, preventing accidental style switches and making input more precise and predictable.
 
-As shown in the image below, there are independent cursor positions on both sides of the code, no longer the traditional editor's "boundary equals jump."
+As shown below, there is a separate cursor position on each side of the code, no longer the "boundary means jump" behavior of traditional editors.
 
-![CleanShot 2025-06-12 at 23.04.28.gif](https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/1364cc08b15442508d09dbd7f95396ae~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5LiA5YOP57Sg55qE5omn552A:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiNjcxMTcxNTcxMzY0OTQ4In0%3D&rk3s=f64ab15b&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1752328534&x-orig-sign=pvf7rFpiHx3CSEpw1GLbCZ28l1c%3D)
+![Cursor affinity demo](/blog/affinity/3.gif)
 
-### What is Affinity?
+### Affinity: 'directional'
 
-However, when it comes to **bold** text, things are a bit different.
+But when it comes to bold text, things are a bit different.
 
-Since bold text has no padding on either side, when your cursor approaches the boundary, the first arrow press actually works, but users see no visual feedback, creating an illusion:
+Since there is no padding on either side of bold, when your cursor approaches the boundary, the first arrow key press actually takes effect, but the user sees no visual feedback, creating the illusion:
 
-"I pressed the left arrow, but the cursor doesn't seem to have moved?"
+"I pressed the left arrow, but the cursor didn't move?"
 
-This also means that if we use `affinity: 'hard'` on bold text, it would make users feel like the keyboard is "broken."
+This means that if we use affinity: 'hard' on bold, it may make users feel like the keyboard is "unresponsive".
 
-To solve this problem, Plate.js provides another strategy, still just one line of code:
+To solve this, Plate.js provides another strategy—still just one line of code:
 
 ```ts
 rules: { selection: { affinity: 'directional' } },
 ```
 
-After using `affinity: 'directional'`, cursor behavior will intelligently judge based on movement direction:
+With affinity: 'directional', cursor behavior is intelligently determined by movement direction:
 
-Moving from right to left leaving text → new input will inherit regular styling;
-Moving from left to right leaving bold → input will be bold styling.
+* Move left out of text → new input will inherit plain style;
+* Move right out of bold → input will be bold style.
 
-![CleanShot 2025-06-12 at 23.10.33.gif](https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/82ec5b95304b45d5a06529ea4025d3b6~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5LiA5YOP57Sg55qE5omn552A:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiNjcxMTcxNTcxMzY0OTQ4In0%3D&rk3s=f64ab15b&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1752328534&x-orig-sign=Kx28Oqi1lhUd38yTgSlKKrBG8ZI%3D)
+![Cursor affinity demo](/blog/affinity/4.gif)
 
-This strategy leverages user intent, making input behavior more natural and predictable while avoiding visual "stuttering."
+This strategy leverages user intent, making input behavior more natural and predictable, while avoiding visual "stuttering".
+
+By default, we only enable the directional strategy for Link. See [Rules](https://platejs.org/docs/plugin-rules#rulesselection) for details.
 
 ## Conclusion
 
-Most importantly:
-Complete control over all of this is entirely in your hands.
+Most importantly:  
+You have full control over all of this.
 
-Whether it's bold, italic, code, or links—
-You can specify the most suitable cursor behavior strategy for every style (Mark), even every inline element.
+Whether it's bold, italic, code, or link—  
+You can specify the most suitable cursor behavior strategy for each style (Mark), or even for each inline element.
 
-Choose `hard` to give the cursor a clear sense of boundaries?
-Or choose `directional` to intelligently judge input styling based on direction?
-Or simply maintain default behavior, following the editor's standard strategy?
+Choose 'hard' for clear boundary feeling?  
+Or 'directional' for smart style selection based on direction?  
+Or just keep the default, using the editor's standard strategy?
 
-The choice is yours. Each strategy requires just one line of configuration to enable.
+The choice is yours. Each strategy can be enabled with just one line of configuration.
 
-Plate.js gives you not just functionality, but control.
+Plate.js gives you not just features, but a sense of control.

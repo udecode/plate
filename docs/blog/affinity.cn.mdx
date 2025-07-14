@@ -1,6 +1,6 @@
 ---
-title: 用 Plate.js 修复样式边界处的光标跳跃：一行代码实现精确输入
-description: 传统富文本编辑器在处理样式内容和非样式内容边界处的光标移动时经常失败。例如，在代码块或粗体文本附近按 ← 可能会意外地将光标跳转到样式区域内，导致意外的格式化和写作流程中断。即使是 Notion 和 Google Docs 这样的主要工具也没有很好地解决这个问题。
+title: 精准掌控光标行为：用 Plate.js 解决样式边界跳跃问题
+description: 传统富文本编辑器在样式边界的光标移动上体验不佳，Plate.js 仅用一行配置即可带来更自然、可控的输入体验。本文详解其原理与用法。
 date: 2025-01-10
 author: Felix Feng
 published: true
@@ -8,17 +8,17 @@ published: true
 
 ## 前言
 
-从字母 H 的右侧按下 ←，光标会直接跳进下方的代码块，因为两者之间 只有一个可停留的位置。
+在下面字母x的右侧按下 ←，光标会直接跳进下方的代码块，因为两者之间 只有一个可停留的位置。
 
 这带来了一个很实际的问题：
 
-我只是想在 H 的后面补充几段普通文本，结果光标跳进了 code，输入的内容却自动套上了代码样式。
+> 我只是想在 code 的后面补充一些普通文本，结果光标跳进了 code，输入的内容却自动套上了代码样式。
 
 用户并没有明确意图进入代码块，但编辑器却强行切换了上下文，导致写作体验割裂。
 
 更令人意外的是：即便是像 Notion 或 Google Docs 这样的顶级编辑器，也没有很好地解决这个问题
 
-![CleanShot 2025-06-12 at 22.50.14.gif](https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/99fc147a191d48cc97b58ad01da73d9c~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5LiA5YOP57Sg55qE5omn552A:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiNjcxMTcxNTcxMzY0OTQ4In0%3D&rk3s=f64ab15b&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1752328534&x-orig-sign=%2BRAJ76T%2BdK9drODWMahQaDja11w%3D)
+![代码块光标亲和力演示](/blog/affinity/1.gif)
 
 类似的问题也存在于 加粗（bold）文本中。
 
@@ -26,15 +26,13 @@ published: true
 
 我接下来要输入的是加粗的内容，还是普通样式的内容？
 
-大多数编辑器的处理是：看不出来，结果全靠"试试看"。
+大多数编辑器的处理是：继承左侧的样式，即便用户希望输入的是普通文本。
 
-![CleanShot 2025-06-12 at 22.58.27.gif](https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/af641be46db44359918b68b1891e0892~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5LiA5YOP57Sg55qE5omn552A:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiNjcxMTcxNTcxMzY0OTQ4In0%3D&rk3s=f64ab15b&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1752328534&x-orig-sign=3WiWY9JUtk4LVagQsaNVw7aenRM%3D)
+![加粗文本光标亲和力演示](/blog/affinity/2.gif)
 
 ## 解决方案
 
-幸运的是，[plate.js](https://platejs.org/) 提供了一个非常优雅的解决方案。
-
-只需要一行配置，你就可以彻底解决光标在块级元素边界"跳进跳出不可控"的问题：
+不过在 plate v4 中，只需要一行配置，你就可以彻底解决光标在块级元素边界"跳进跳出不可控"的问题：
 
 ```tsx
 createSlatePlugin({
@@ -51,9 +49,9 @@ createSlatePlugin({
 
 如下图所示，code 的左右两侧各有一个独立的光标位置，不再是传统编辑器中的"边界即跳转"。
 
-![CleanShot 2025-06-12 at 23.04.28.gif](https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/1364cc08b15442508d09dbd7f95396ae~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5LiA5YOP57Sg55qE5omn552A:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiNjcxMTcxNTcxMzY0OTQ4In0%3D&rk3s=f64ab15b&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1752328534&x-orig-sign=pvf7rFpiHx3CSEpw1GLbCZ28l1c%3D)
+![光标亲和力演示](/blog/affinity/3.gif)
 
-### 何为亲和力（Affinity）？
+### Affinity: 'directional'
 
 不过回到 加粗文本（bold） 的情况，事情又有点不同。
 
@@ -71,12 +69,14 @@ rules: { selection: { affinity: 'directional' } },
 
 使用 affinity: 'directional' 后，光标行为将根据移动方向智能判断：
 
-从右往左离开 text → 新输入会继承 普通样式；
-从左往右离开 bold → 输入将是bold样式。
+* 从右往左离开 text → 新输入会继承 普通样式；
+* 从左往右离开 bold → 输入将是bold样式。
 
-![CleanShot 2025-06-12 at 23.10.33.gif](https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/82ec5b95304b45d5a06529ea4025d3b6~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAg5LiA5YOP57Sg55qE5omn552A:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiNjcxMTcxNTcxMzY0OTQ4In0%3D&rk3s=f64ab15b&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1752328534&x-orig-sign=Kx28Oqi1lhUd38yTgSlKKrBG8ZI%3D)
+![光标亲和力演示](/blog/affinity/4.gif)
 
 这个策略利用了用户的操作意图，让输入行为更加自然和可预测，同时避免了视觉"卡顿"。
+
+不过默认我们只为 Link 开启了 directional 策略，详情见 [Rules](https://platejs.org/docs/plugin-rules#rulesselection)
 
 ## 最后
 
