@@ -89,23 +89,7 @@ export const useDndNode = ({
   } else if (previewOptions.ref) {
     preview(previewOptions.ref);
   } else {
-    const selectedIds = editor.getOption(
-      { key: 'blockSelection' },
-      'selectedIds'
-    );
-
-    const isMultipleSelection =
-      selectedIds &&
-      selectedIds.size > 1 &&
-      selectedIds.has(element.id as string);
-
-    if (isMultipleSelection && multiplePreviewRef?.current) {
-      // Use multiplePreviewRef for preview when dragging multiple blocks
-      preview(multiplePreviewRef);
-    } else {
-      // Use nodeRef for preview when dragging a single block
-      preview(nodeRef);
-    }
+    preview(multiplePreviewRef);
   }
 
   return {
