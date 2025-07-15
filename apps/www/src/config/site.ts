@@ -27,7 +27,7 @@ export const siteConfig = {
       labelCn: '编辑器',
     },
     {
-      href: '/blog',
+      href: '/blogs',
       label: 'Blog',
       labelCn: '博客',
     },
