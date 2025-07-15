@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "jsx": "preserve",
-    "incremental": true,
+    "incremental": true,1
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
