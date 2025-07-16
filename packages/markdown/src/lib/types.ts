@@ -2,15 +2,17 @@
 
 export type * as unistLib from 'unist';
 
-import type {
-  NodeKey,
-  Nullable,
-  SlateEditor,
-  TElement,
-  TNodeMap,
-  TText,
-} from 'platejs';
 import type { StrictExtract } from 'ts-essentials';
+
+import {
+  type NodeKey,
+  type Nullable,
+  type SlateEditor,
+  type TElement,
+  type TNodeMap,
+  type TText,
+  getPluginKey,
+} from 'platejs';
 
 import type { DeserializeMdOptions } from './deserializer';
 import type {
@@ -43,8 +45,6 @@ import type {
   MdYaml,
 } from './mdast';
 import type { SerializeMdOptions } from './serializer';
-
-import { getPluginKeyByType } from './utils/getPluginKeyByType';
 
 import 'mdast-util-mdx';
 
@@ -334,7 +334,7 @@ export const mdastToPlate = <T extends StrictMdType>(
 ) => {
   const plateKey = MDAST_TO_PLATE[mdastType];
   
-  return getPluginKeyByType(editor, plateKey) ?? plateKey ?? mdastType;
+  return getPluginKey(editor, plateKey) ?? plateKey ?? mdastType;
 };
 
 /**

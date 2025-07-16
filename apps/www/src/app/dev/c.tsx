@@ -101,6 +101,7 @@ export const EditorViewClient = () => {
     },
   });
 
+
   return <>
     <EditorView variant="none" className="px-10" editor={editor} />
 

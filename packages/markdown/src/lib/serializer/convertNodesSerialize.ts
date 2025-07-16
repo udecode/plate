@@ -2,6 +2,7 @@ import {
   type Descendant,
   type TElement,
   type TText,
+  getPluginKey,
   KEYS,
   TextApi,
 } from 'platejs';
@@ -9,7 +10,6 @@ import {
 import type { unistLib } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
 
-import { getPluginKeyByType } from '../utils/getPluginKeyByType';
 import { convertTextsSerialize } from './convertTextsSerialize';
 import { listToMdastTree } from './listToMdastTree';
 import { unreachable } from './utils';
@@ -76,7 +76,7 @@ export const convertNodesSerialize = (
 export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
   const editor = options.editor!;
 
-  let key = getPluginKeyByType(editor, node.type);
+  let key = getPluginKey(editor, node.type) ?? node.type;
 
   if (KEYS.heading.includes(key)) {
     key = 'heading';
