@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 49.1.8
+
+### Patch Changes
+
+- [#4486](https://github.com/udecode/plate/pull/4486) by [@felixfeng33](https://github.com/felixfeng33) – Fix custom plugin key handling in markdown serialization/deserialization. Ensures plugin keys are properly resolved throughout the conversion process for custom plugin configurations.
+
 ## 49.1.6
 
 ### Patch Changes
