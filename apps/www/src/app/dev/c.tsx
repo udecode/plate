@@ -12,6 +12,8 @@ import { BaseEditorKit } from "@/registry/components/editor/editor-base-kit";
 import { MarkdownKit } from "@/registry/components/editor/plugins/markdown-kit";
 import { basicBlocksValue } from "@/registry/examples/values/basic-blocks-value";
 import { basicMarksValue } from "@/registry/examples/values/basic-marks-value";
+import { codeBlockValue } from "@/registry/examples/values/code-block-value";
+import { tableValue } from "@/registry/examples/values/table-value";
 import { EditorView } from "@/registry/ui/editor";
 
 
@@ -62,7 +64,9 @@ let index = 0
 
 const value = normalizeNodeId([
   ...withCustomType(basicBlocksValue),
-  ...withCustomType(basicMarksValue)
+  ...withCustomType(basicMarksValue),
+  ...withCustomType(tableValue),
+  ...withCustomType(codeBlockValue),
 ], {
   idCreator() {
     return 'id-' + index++;
@@ -72,6 +76,7 @@ const value = normalizeNodeId([
 
 
 export const EditorViewClient = () => {
+
   const editor = usePlateViewEditor({
     plugins: [
       ...withCustomPlugins(BaseEditorKit),

@@ -848,13 +848,13 @@ export const defaultRules: MdRules = {
                   type: cellType,
                 };
               }) || [],
-            type: 'tr',
+            type: getPluginType(options.editor!, KEYS.tr),
           };
         }) || [];
 
       return {
         children: rows,
-        type: 'table',
+        type: getPluginType(options.editor!, KEYS.table),
       };
     },
     serialize: (node, options) => {
