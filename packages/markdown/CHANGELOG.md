@@ -1,5 +1,12 @@
 # @platejs/markdown
 
+## 49.1.9
+
+### Patch Changes
+
+- [#4493](https://github.com/udecode/plate/pull/4493) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Fixed markdown serialization of indented lists when using custom paragraph node types. The serializer now correctly identifies custom paragraph nodes instead of only looking for the default 'p' type.
+
 ## 49.1.8
 
 ### Patch Changes
