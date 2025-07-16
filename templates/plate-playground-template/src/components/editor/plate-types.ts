@@ -66,6 +66,18 @@ export interface MyH3Element extends MyTextBlockElement {
   type: typeof KEYS.h3;
 }
 
+export interface MyH4Element extends MyTextBlockElement {
+  type: typeof KEYS.h4;
+}
+
+export interface MyH5Element extends MyTextBlockElement {
+  type: typeof KEYS.h5;
+}
+
+export interface MyH6Element extends MyTextBlockElement {
+  type: typeof KEYS.h6;
+}
+
 export interface MyHrElement extends MyBlockElement {
   children: [EmptyText];
   type: typeof KEYS.hr;
@@ -139,6 +151,9 @@ export type MyValue = (
   | MyH1Element
   | MyH2Element
   | MyH3Element
+  | MyH4Element
+  | MyH5Element
+  | MyH6Element
   | MyHrElement
   | MyImageElement
   | MyMediaEmbedElement
