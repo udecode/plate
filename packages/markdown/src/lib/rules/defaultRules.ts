@@ -5,6 +5,7 @@ import {
   type TMentionElement,
   type TText,
   getPluginKey,
+  getPluginType,
   KEYS,
 } from 'platejs';
 
@@ -30,7 +31,6 @@ import {
   convertTextsDeserialize,
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
-import { mdastToPlate } from '../types';
 import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
@@ -50,7 +50,7 @@ export const defaultRules: MdRules = {
     deserialize: (mdastNode, deco, options) => {
       return {
         children: convertChildrenDeserialize(mdastNode.children, deco, options),
-        type: 'a',
+        type: getPluginType(options.editor!, KEYS.a),
         url: mdastNode.url,
       };
     },
@@ -106,7 +106,7 @@ export const defaultRules: MdRules = {
 
       return {
         children: flattenedChildren,
-        type: 'blockquote',
+        type: getPluginType(options.editor!, KEYS.blockquote),
       };
     },
     serialize: (node, options) => {
@@ -176,7 +176,7 @@ export const defaultRules: MdRules = {
     deserialize: (mdastNode, deco, options) => {
       return {
         children: convertChildrenDeserialize(mdastNode.children, deco, options),
-        type: 'callout',
+        type: getPluginType(options.editor!, KEYS.callout),
       };
     },
     serialize(slateNode, options): MdMdxJsxFlowElement {
@@ -203,10 +203,10 @@ export const defaultRules: MdRules = {
       return {
         children: (mdastNode.value || '').split('\n').map((line) => ({
           children: [{ text: line } as TText],
-          type: 'code_line',
+          type: getPluginType(options.editor!, KEYS.codeLine),
         })),
         lang: mdastNode.lang ?? undefined,
-        type: 'code_block',
+        type: getPluginType(options.editor!, KEYS.codeBlock),
       };
     },
     serialize: (node) => {
@@ -229,7 +229,7 @@ export const defaultRules: MdRules = {
       return {
         children: [{ text: '' }],
         date: dateValue,
-        type: 'date',
+        type: getPluginType(options.editor!, KEYS.date),
       };
     },
     serialize({ date }): MdMdxJsxTextElement {
@@ -257,7 +257,7 @@ export const defaultRules: MdRules = {
       return {
         children: [{ text: '' }],
         texExpression: mdastNode.value,
-        type: 'equation',
+        type: getPluginType(options.editor!, KEYS.equation),
       };
     },
     serialize: (node) => {
@@ -284,7 +284,7 @@ export const defaultRules: MdRules = {
 
       return {
         children: flattenedChildren,
-        type: KEYS.p,
+        type: getPluginType(options.editor!, KEYS.p),
       };
     },
   },
@@ -300,9 +300,13 @@ export const defaultRules: MdRules = {
         6: 'h6',
       };
 
+      const defaultType = headingType[mdastNode.depth];
+
+      const type = getPluginType(options.editor!, defaultType);
+
       return {
         children: convertChildrenDeserialize(mdastNode.children, deco, options),
-        type: headingType[mdastNode.depth],
+        type,
       };
     },
     serialize: (node, options) => {
@@ -344,10 +348,10 @@ export const defaultRules: MdRules = {
     },
   },
   hr: {
-    deserialize: () => {
+    deserialize: (_, __, options) => {
       return {
         children: [{ text: '' } as TText],
-        type: 'hr',
+        type: getPluginType(options.editor!, KEYS.hr),
       };
     },
     serialize: () => {
@@ -366,7 +370,7 @@ export const defaultRules: MdRules = {
       return {
         caption: [{ text: mdastNode.alt } as TText],
         children: [{ text: '' } as TText],
-        type: 'img',
+        type: getPluginType(options.editor!, KEYS.img),
         url: mdastNode.url,
       };
     },
@@ -385,11 +389,11 @@ export const defaultRules: MdRules = {
     },
   },
   inline_equation: {
-    deserialize(mdastNode) {
+    deserialize(mdastNode, _, options) {
       return {
         children: [{ text: '' }],
         texExpression: mdastNode.value,
-        type: 'inline_equation',
+        type: getPluginType(options.editor!, KEYS.inlineEquation),
       };
     },
     serialize: (node) => {
@@ -424,11 +428,7 @@ export const defaultRules: MdRules = {
     },
   },
   list: {
-    deserialize: (
-      mdastNode: MdList,
-      deco,
-      options
-    ): ({ type: 'ol' | 'ul' } & TElement) | TListElement[] => {
+    deserialize: (mdastNode: MdList, deco, options) => {
       // Handle standard list
       const isIndentList = !!options.editor?.plugins.list;
 
@@ -446,7 +446,7 @@ export const defaultRules: MdRules = {
                       deco,
                       options
                     ),
-                    type: 'lic',
+                    type: getPluginType(options.editor!, KEYS.lic),
                   };
                 }
                 return convertChildrenDeserialize(
@@ -455,7 +455,7 @@ export const defaultRules: MdRules = {
                   options
                 )[0];
               }),
-              type: 'li',
+              type: getPluginType(options.editor!, KEYS.li),
             };
           }
           return convertChildrenDeserialize([child], deco, options)[0];
@@ -463,21 +463,26 @@ export const defaultRules: MdRules = {
 
         return {
           children,
-          type: mdastNode.ordered ? 'ol' : 'ul',
+          type: getPluginType(
+            options.editor!,
+            mdastNode.ordered ? KEYS.olClassic : KEYS.ulClassic
+          ),
         };
       }
 
       const parseListItems = (listNode: MdList, indent = 1, startIndex = 1) => {
         const items: any[] = [];
         const isOrdered = !!listNode.ordered;
-        let listStyleType = isOrdered ? 'decimal' : 'disc';
+        let listStyleType = isOrdered
+          ? getPluginType(options.editor!, KEYS.ol)
+          : getPluginType(options.editor!, KEYS.ul);
 
         listNode.children?.forEach((listItem, index) => {
           if (listItem.type !== 'listItem') return;
 
           const isTodoList = isBoolean(listItem.checked);
 
-          if (isTodoList) listStyleType = 'todo';
+          if (isTodoList) listStyleType = getPluginType(options.editor!, KEYS.listTodo);
 
           // Handle the main content of the list item
           const [paragraph, ...subLists] = listItem.children || [];
@@ -485,7 +490,10 @@ export const defaultRules: MdRules = {
           // Create list item from paragraph content
           const result = paragraph
             ? buildSlateNode(paragraph, deco, options)
-            : { children: [{ text: '' }], type: KEYS.p };
+            : {
+                children: [{ text: '' }],
+                type: getPluginType(options.editor!, KEYS.p),
+              };
 
           // Convert result to array if it's not already
           const itemNodes = Array.isArray(result) ? result : [result];
@@ -495,7 +503,7 @@ export const defaultRules: MdRules = {
             const itemContent: TListElement = {
               ...node,
               indent,
-              type: (node.type || 'p') as string,
+              type: getPluginType(options.editor!, KEYS.p),
             };
 
             // Only add listStyleType and listStart for appropriate cases
@@ -607,7 +615,7 @@ export const defaultRules: MdRules = {
         if (child.type === 'paragraph') {
           return {
             children: convertChildrenDeserialize(child.children, deco, options),
-            type: 'lic',
+            type: getPluginType(options.editor!, KEYS.lic),
           };
         }
         return convertChildrenDeserialize([child], deco, options)[0];
@@ -615,7 +623,7 @@ export const defaultRules: MdRules = {
 
       return {
         children,
-        type: 'li',
+        type: getPluginType(options.editor!, KEYS.li),
       };
     },
     serialize: (node, options) => {
@@ -626,9 +634,9 @@ export const defaultRules: MdRules = {
     },
   },
   mention: {
-    deserialize: (node: MentionNode): TMentionElement => ({
+    deserialize: (node: MentionNode, deco, options): TMentionElement => ({
       children: [{ text: '' }],
-      type: 'mention',
+      type: getPluginType(options.editor!, KEYS.mention),
       value: node.displayText || node.username,
       ...(node.displayText && { key: node.username }),
     }),
@@ -652,7 +660,6 @@ export const defaultRules: MdRules = {
     deserialize: (node, deco, options) => {
       const isKeepLineBreak = options.splitLineBreaks;
       const children = convertChildrenDeserialize(node.children, deco, options);
-      const paragraphType = mdastToPlate(options.editor!, 'paragraph');
       const splitBlockTypes = new Set(['img']);
 
       const elements: any[] = [];
@@ -662,7 +669,7 @@ export const defaultRules: MdRules = {
         if (inlineNodes.length > 0) {
           elements.push({
             children: inlineNodes,
-            type: paragraphType,
+            type: getPluginType(options.editor!, KEYS.p),
           });
           inlineNodes = [];
         }
@@ -831,7 +838,7 @@ export const defaultRules: MdRules = {
                     if (!child.type) {
                       return {
                         children: [child],
-                        type: KEYS.p,
+                        type: getPluginType(options.editor!, KEYS.p),
                       };
                     }
 
@@ -893,7 +900,7 @@ export const defaultRules: MdRules = {
     deserialize: (mdastNode, deco, options) => {
       return {
         children: convertChildrenDeserialize(mdastNode.children, deco, options),
-        type: 'toc',
+        type: getPluginType(options.editor!, KEYS.toc),
       };
     },
     serialize: (node, options): MdMdxJsxFlowElement => {

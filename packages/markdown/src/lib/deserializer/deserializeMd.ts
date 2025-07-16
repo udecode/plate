@@ -1,7 +1,13 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type Descendant, type SlateEditor, KEYS, TextApi } from 'platejs';
+import {
+  type Descendant,
+  type SlateEditor,
+  getPluginKey,
+  KEYS,
+  TextApi,
+} from 'platejs';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
@@ -92,7 +98,7 @@ export const deserializeMd = (
     TextApi.isText(item)
       ? {
           children: [item],
-          type: editor.getType(KEYS.p),
+          type: getPluginKey(editor, KEYS.p) ?? KEYS.p,
         }
       : item
   );

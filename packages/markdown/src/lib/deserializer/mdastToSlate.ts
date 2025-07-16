@@ -1,6 +1,6 @@
 import type { Root } from 'mdast';
 
-import { type Descendant, KEYS } from 'platejs';
+import { type Descendant, getPluginKey, KEYS } from 'platejs';
 
 import type { MdRoot } from '../mdast';
 import type { DeserializeMdOptions } from './deserializeMd';
@@ -40,7 +40,9 @@ const buildSlateRoot = (
       results.push(
         ...Array.from({ length: count }).map(() => ({
           children: [{ text: '' }],
-          type: KEYS.p,
+          type: options.editor
+            ? (getPluginKey(options.editor, KEYS.p) ?? KEYS.p)
+            : KEYS.p,
         }))
       );
     }

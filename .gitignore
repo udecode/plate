@@ -2,7 +2,6 @@
 
 # Allow claude to read these files
 !.*
-apps/www/src/app/dev
 apps/www/src/app/api/ai
 apps/www/public/rd
 **/tsconfig.tsbuildinfo
