@@ -10,14 +10,38 @@ describe('defaultRules', () => {
   it('should serialize custom keys', () => {
     const nodes = [
       {
-        children: [
-          { text: 'Heading 1' },
-          { 'custom-bold': true, text: 'text' },
-        ],
+        children: [{ text: 'Heading 1' }],
         type: 'custom-h1',
       },
       {
         children: [{ text: 'Paragraph' }],
+        type: 'custom-p',
+      },
+    ];
+
+    const editor = createPlateEditor({
+      plugins: [
+        MarkdownPlugin,
+        H1Plugin.configure({
+          node: { type: 'custom-h1' },
+        }),
+        ParagraphPlugin.configure({
+          node: { type: 'custom-p' },
+        }),
+      ],
+    });
+
+    const result = serializeMd(editor, { value: nodes });
+    expect(result).toMatchSnapshot();
+  });
+
+  it('should serialize custom mark', () => {
+    const nodes = [
+      {
+        children: [
+          { text: 'Paragraph' },
+          { 'custom-bold': true, text: 'text' },
+        ],
         type: 'custom-p',
       },
     ];
@@ -38,7 +62,7 @@ describe('defaultRules', () => {
     });
 
     const result = serializeMd(editor, { value: nodes });
-    expect(result).toEqual('# Heading 1**text**\n\nParagraph\n');
+    expect(result).toMatchSnapshot();
   });
 
   it('should deserialize custom keys', () => {
@@ -48,7 +72,38 @@ describe('defaultRules', () => {
         type: 'custom-h1',
       },
       {
-        children: [{ text: 'Paragraph' }, { 'custom-bold': true, text: 'text' }],
+        children: [{ text: 'Paragraph' }],
+        type: 'custom-p',
+      },
+    ];
+
+    const editor = createPlateEditor({
+      plugins: [
+        MarkdownPlugin,
+        H1Plugin.configure({
+          node: { type: 'custom-h1' },
+        }),
+        ParagraphPlugin.configure({
+          node: { type: 'custom-p' },
+        }),
+      ],
+    });
+
+    const result = deserializeMd(editor, '# Heading 1\nParagraph');
+    expect(result).toEqual(nodes);
+  });
+
+  it('should deserialize custom mark', () => {
+    const nodes = [
+      {
+        children: [{ text: 'Heading 1' }],
+        type: 'custom-h1',
+      },
+      {
+        children: [
+          { text: 'Paragraph' },
+          { 'custom-bold': true, text: 'text' },
+        ],
         type: 'custom-p',
       },
     ];

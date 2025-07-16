@@ -7,8 +7,10 @@ import { ElementApi, normalizeNodeId, TextApi } from "platejs";
 import { usePlateViewEditor } from "platejs/react";
 import { useFilePicker } from "use-file-picker";
 
+import { Button } from "@/components/ui/button";
 import { BaseEditorKit } from "@/registry/components/editor/editor-base-kit";
 import { MarkdownKit } from "@/registry/components/editor/plugins/markdown-kit";
+import { basicBlocksValue } from "@/registry/examples/values/basic-blocks-value";
 import { basicMarksValue } from "@/registry/examples/values/basic-marks-value";
 import { EditorView } from "@/registry/ui/editor";
 
@@ -59,16 +61,13 @@ const withCustomPlugins = (plugins: any[]): any[] => {
 let index = 0
 
 const value = normalizeNodeId([
-  // ...withCustomType(basicBlocksValue),
+  ...withCustomType(basicBlocksValue),
   ...withCustomType(basicMarksValue)
 ], {
   idCreator() {
     return 'id-' + index++;
   },
 });
-
-
-
 
 
 
@@ -80,11 +79,6 @@ export const EditorViewClient = () => {
     ],
     value: value,
   });
-
-  // const markdown = editor.getApi(MarkdownPlugin).markdown.serialize()
-
-  // console.log("🚀 ~ EditorViewClient ~ markdown:", markdown)
-
 
   const getFileNodes = (text: string,) => {
 
@@ -104,6 +98,17 @@ export const EditorViewClient = () => {
 
   return <>
     <EditorView variant="none" className="px-10" editor={editor} />
-    <button onClick={openMdFilePicker}>Import</button>
+
+
+    <div className="mt-10 px-10">
+      <Button className="mr-10" onClick={
+        () => {
+          console.log(editor.getApi(MarkdownPlugin).markdown.serialize());
+        }
+      }>Serialize</Button>
+
+
+      <Button onClick={openMdFilePicker}>Deserialize</Button>
+    </div>
   </>
 };
