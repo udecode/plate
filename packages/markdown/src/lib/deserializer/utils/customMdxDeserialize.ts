@@ -1,6 +1,6 @@
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
-import { KEYS } from 'platejs';
+import { getPluginType, KEYS } from 'platejs';
 
 import type { MdDecoration } from '../../types';
 import type { DeserializeMdOptions } from '../deserializeMd';
@@ -67,7 +67,7 @@ export const customMdxDeserialize = (
             text: `\n</${tagName}>`,
           },
         ],
-        type: KEYS.p,
+        type: getPluginType(options.editor!, KEYS.p),
       },
     ];
   }

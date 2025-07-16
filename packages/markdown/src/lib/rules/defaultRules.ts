@@ -559,14 +559,15 @@ export const defaultRules: MdRules = {
       return parseListItems(mdastNode, 1, startIndex);
     },
     serialize: (node: { type: 'ol' | 'ul' } & TElement, options): MdList => {
-      const isOrdered = node.type === 'ol';
+      const editor = options.editor!;
+      const isOrdered = getPluginKey(editor, node.type) === KEYS.olClassic;
 
       const serializeListItems = (children: any[]): any[] => {
         const items = [];
         let currentItem: any = null;
 
         for (const child of children) {
-          if (child.type === 'li') {
+          if (getPluginKey(editor, child.type) === 'li') {
             if (currentItem) {
               items.push(currentItem);
             }
@@ -577,15 +578,18 @@ export const defaultRules: MdRules = {
             };
 
             for (const liChild of child.children) {
-              if (liChild.type === 'lic') {
+              if (getPluginKey(editor, liChild.type) === 'lic') {
                 currentItem.children.push({
                   children: convertNodesSerialize(liChild.children, options),
                   type: 'paragraph',
                 });
-              } else if (liChild.type === 'ol' || liChild.type === 'ul') {
+              } else if (
+                getPluginKey(editor, liChild.type) === 'ol' ||
+                getPluginKey(editor, liChild.type) === 'ul'
+              ) {
                 currentItem.children.push({
                   children: serializeListItems(liChild.children),
-                  ordered: liChild.type === 'ol',
+                  ordered: getPluginKey(editor, liChild.type) === 'ol',
                   spread: false,
                   type: 'list',
                 });

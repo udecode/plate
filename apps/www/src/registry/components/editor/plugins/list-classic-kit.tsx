@@ -2,8 +2,8 @@
 
 import {
   BulletedListPlugin,
+  ListItemContentPlugin,
   ListItemPlugin,
-  ListPlugin,
   NumberedListPlugin,
   TaskListPlugin,
 } from '@platejs/list-classic/react';
@@ -16,7 +16,8 @@ import {
 } from '@/registry/ui/list-classic-node';
 
 export const ListKit = [
-  ListPlugin,
+  ListItemPlugin,
+  ListItemContentPlugin,
   BulletedListPlugin.configure({
     node: { component: BulletedListElement },
     shortcuts: { toggle: { keys: 'mod+alt+5' } },
