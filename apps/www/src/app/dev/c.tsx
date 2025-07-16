@@ -13,6 +13,7 @@ import { MarkdownKit } from "@/registry/components/editor/plugins/markdown-kit";
 import { basicBlocksValue } from "@/registry/examples/values/basic-blocks-value";
 import { basicMarksValue } from "@/registry/examples/values/basic-marks-value";
 import { codeBlockValue } from "@/registry/examples/values/code-block-value";
+import { listValue } from "@/registry/examples/values/list-value";
 import { tableValue } from "@/registry/examples/values/table-value";
 import { EditorView } from "@/registry/ui/editor";
 
@@ -21,9 +22,11 @@ import { EditorView } from "@/registry/ui/editor";
 const withCustomType = (value: any) => {
   const addCustomType = (item: any): any => {
     if (ElementApi.isElement(item)) {
+      const { children, type, ...rest } = item
       return {
-        children: item.children.map(addCustomType),
-        type: 'custom-' + item.type
+        children: children.map(addCustomType),
+        type: 'custom-' + type,
+        ...rest
       }
     }
     if (TextApi.isText(item)) {
@@ -67,6 +70,7 @@ const value = normalizeNodeId([
   ...withCustomType(basicMarksValue),
   ...withCustomType(tableValue),
   ...withCustomType(codeBlockValue),
+  ...withCustomType(listValue),
 ], {
   idCreator() {
     return 'id-' + index++;
