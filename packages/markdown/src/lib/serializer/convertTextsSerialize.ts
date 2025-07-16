@@ -1,4 +1,4 @@
-import type { TText } from 'platejs';
+import { type TText, getPluginType } from 'platejs';
 
 import type { MdMark } from '../types';
 import type { SerializeMdOptions } from './serializeMd';
@@ -39,13 +39,15 @@ export const convertTextsSerialize = (
         // exclude repeated marks
         ...customLeaf.filter((k) => !basicMarkdownMarks.includes(k)),
       ] as const
-    ).forEach((k) => {
-      if (cur[k]) {
-        if (!prev?.[k]) {
-          starts.push(k);
+    ).forEach((key) => {
+      const nodeType = getPluginType(options.editor!, key);
+
+      if (cur[nodeType]) {
+        if (!prev?.[nodeType]) {
+          starts.push(key);
         }
-        if (!next?.[k]) {
-          ends.push(k);
+        if (!next?.[nodeType]) {
+          ends.push(key);
         }
       }
     });

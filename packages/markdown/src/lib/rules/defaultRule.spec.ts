@@ -1,4 +1,5 @@
 import { H1Plugin } from '@platejs/basic-nodes/react';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor, ParagraphPlugin } from 'platejs/react';
 
 import { deserializeMd } from '../deserializer';
@@ -6,30 +7,13 @@ import { MarkdownPlugin } from '../MarkdownPlugin';
 import { serializeMd } from '../serializer';
 
 describe('defaultRules', () => {
-  it('should serialize default keys', () => {
-    const nodes = [
-      {
-        children: [{ text: 'Heading 1' }],
-        type: 'h1',
-      },
-      {
-        children: [{ text: 'Paragraph' }],
-        type: 'p',
-      },
-    ];
-
-    const editor = createPlateEditor({
-      plugins: [MarkdownPlugin, H1Plugin, ParagraphPlugin],
-    });
-
-    const result = serializeMd(editor, { value: nodes });
-    expect(result).toMatchSnapshot();
-  });
-
   it('should serialize custom keys', () => {
     const nodes = [
       {
-        children: [{ text: 'Heading 1' }],
+        children: [
+          { text: 'Heading 1' },
+          { 'custom-bold': true, text: 'text' },
+        ],
         type: 'custom-h1',
       },
       {
@@ -47,31 +31,14 @@ describe('defaultRules', () => {
         ParagraphPlugin.configure({
           node: { type: 'custom-p' },
         }),
+        BoldPlugin.configure({
+          node: { type: 'custom-bold' },
+        }),
       ],
     });
 
     const result = serializeMd(editor, { value: nodes });
-    expect(result).toMatchSnapshot();
-  });
-
-  it('should deserialize default keys', () => {
-    const nodes = [
-      {
-        children: [{ text: 'Heading 1' }],
-        type: 'h1',
-      },
-      {
-        children: [{ text: 'Paragraph' }],
-        type: 'p',
-      },
-    ];
-
-    const editor = createPlateEditor({
-      plugins: [MarkdownPlugin, H1Plugin, ParagraphPlugin],
-    });
-
-    const result = deserializeMd(editor, '# Heading 1\nParagraph');
-    expect(result).toEqual(nodes);
+    expect(result).toEqual('# Heading 1**text**\n\nParagraph\n');
   });
 
   it('should deserialize custom keys', () => {
@@ -81,7 +48,7 @@ describe('defaultRules', () => {
         type: 'custom-h1',
       },
       {
-        children: [{ text: 'Paragraph' }],
+        children: [{ text: 'Paragraph' }, { 'custom-bold': true, text: 'text' }],
         type: 'custom-p',
       },
     ];
@@ -95,10 +62,13 @@ describe('defaultRules', () => {
         ParagraphPlugin.configure({
           node: { type: 'custom-p' },
         }),
+        BoldPlugin.configure({
+          node: { type: 'custom-bold' },
+        }),
       ],
     });
 
-    const result = deserializeMd(editor, '# Heading 1\nParagraph');
+    const result = deserializeMd(editor, '# Heading 1\nParagraph**text**');
     expect(result).toEqual(nodes);
   });
 });

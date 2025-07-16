@@ -193,7 +193,7 @@ export const defaultRules: MdRules = {
     deserialize: (mdastNode, deco, options) => {
       return {
         ...deco,
-        code: true,
+        [getPluginType(options.editor!, KEYS.code) as 'code']: true,
         text: mdastNode.value,
       };
     },
@@ -246,7 +246,7 @@ export const defaultRules: MdRules = {
     deserialize: (mdastNode, deco, options) => {
       return convertChildrenDeserialize(
         mdastNode.children,
-        { strikethrough: true, ...deco },
+        { [getPluginType(options.editor!, KEYS.strikethrough)]: true, ...deco },
         options
       ) as any;
     },
@@ -334,7 +334,7 @@ export const defaultRules: MdRules = {
     deserialize: (mdastNode, deco, options) => {
       return convertChildrenDeserialize(
         mdastNode.children,
-        { highlight: true, ...deco },
+        { [getPluginType(options.editor!, KEYS.highlight)]: true, ...deco },
         options
       ) as any;
     },
@@ -414,7 +414,7 @@ export const defaultRules: MdRules = {
     deserialize: (mdastNode, deco, options) => {
       return convertChildrenDeserialize(
         mdastNode.children,
-        { kbd: true, ...deco },
+        { [getPluginType(options.editor!, KEYS.kbd)]: true, ...deco },
         options
       ) as any;
     },
@@ -482,7 +482,8 @@ export const defaultRules: MdRules = {
 
           const isTodoList = isBoolean(listItem.checked);
 
-          if (isTodoList) listStyleType = getPluginType(options.editor!, KEYS.listTodo);
+          if (isTodoList)
+            listStyleType = getPluginType(options.editor!, KEYS.listTodo);
 
           // Handle the main content of the list item
           const [paragraph, ...subLists] = listItem.children || [];
@@ -789,7 +790,7 @@ export const defaultRules: MdRules = {
     deserialize: (mdastNode, deco, options) => {
       return convertChildrenDeserialize(
         mdastNode.children,
-        { subscript: true, ...deco },
+        { [getPluginType(options.editor!, KEYS.sub)]: true, ...deco },
         options
       ) as any;
     },
@@ -807,7 +808,7 @@ export const defaultRules: MdRules = {
     deserialize: (mdastNode, deco, options) => {
       return convertChildrenDeserialize(
         mdastNode.children,
-        { superscript: true, ...deco },
+        { [getPluginType(options.editor!, KEYS.sup)]: true, ...deco },
         options
       ) as any;
     },
@@ -928,7 +929,7 @@ export const defaultRules: MdRules = {
     deserialize: (mdastNode, deco, options) => {
       return convertChildrenDeserialize(
         mdastNode.children,
-        { underline: true, ...deco },
+        { [getPluginType(options.editor!, KEYS.underline)]: true, ...deco },
         options
       ) as any;
     },
