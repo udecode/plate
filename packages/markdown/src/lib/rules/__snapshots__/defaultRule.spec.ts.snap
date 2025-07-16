@@ -7,9 +7,7 @@ Paragraph
 "
 `;
 
-exports[`defaultRules should serialize default keys 1`] = `
-"# Heading 1
-
-Paragraph
+exports[`defaultRules should serialize custom mark 1`] = `
+"Paragraph**text**
 "
 `;

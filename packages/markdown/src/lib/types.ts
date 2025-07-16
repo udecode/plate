@@ -333,6 +333,7 @@ export const mdastToPlate = <T extends StrictMdType>(
   mdastType: T
 ) => {
   const plateKey = MDAST_TO_PLATE[mdastType];
+  
   return getPluginKey(editor, plateKey) ?? plateKey ?? mdastType;
 };
 

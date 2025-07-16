@@ -1,3 +1,5 @@
+import { getPluginType } from 'platejs';
+
 import type { MdDelete, MdEmphasis, MdStrong } from '../mdast';
 import type { MdDecoration } from '../types';
 import type { DeserializeMdOptions } from './deserializeMd';
@@ -11,10 +13,13 @@ export const convertTextsDeserialize = (
   options: DeserializeMdOptions
 ) => {
   return mdastNode.children.reduce((acc: any, n: any) => {
+    const key = mdastToPlate(options.editor!, mdastNode.type)
+    const type = getPluginType(options.editor!, key)
+
     acc.push(
       ...buildSlateNode(
         n,
-        { ...deco, [mdastToPlate(options.editor!, mdastNode.type)]: true },
+        { ...deco, [type]: true },
         options
       )
     );
