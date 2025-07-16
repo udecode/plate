@@ -9,7 +9,6 @@ import { BaseDateKit } from './plugins/date-base-kit';
 import { BaseFontKit } from './plugins/font-base-kit';
 import { BaseLineHeightKit } from './plugins/line-height-base-kit';
 import { BaseLinkKit } from './plugins/link-base-kit';
-import { BaseListKit } from './plugins/list-base-kit';
 import { MarkdownKit } from './plugins/markdown-kit';
 import { BaseMathKit } from './plugins/math-base-kit';
 import { BaseMediaKit } from './plugins/media-base-kit';
@@ -34,7 +33,7 @@ export const BaseEditorKit = [
   ...BaseMentionKit,
   ...BaseBasicMarksKit,
   ...BaseFontKit,
-  ...BaseListKit,
+  // ...BaseListKit,
   ...BaseAlignKit,
   ...BaseLineHeightKit,
   ...BaseCommentKit,

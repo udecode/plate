@@ -4,18 +4,15 @@ import React from "react";
 
 import { MarkdownPlugin } from "@platejs/markdown";
 import { ElementApi, normalizeNodeId, TextApi } from "platejs";
-import { usePlateViewEditor } from "platejs/react";
+import { Plate, usePlateEditor } from "platejs/react";
 import { useFilePicker } from "use-file-picker";
 
 import { Button } from "@/components/ui/button";
 import { BaseEditorKit } from "@/registry/components/editor/editor-base-kit";
+import { ListKit } from "@/registry/components/editor/plugins/list-classic-kit";
 import { MarkdownKit } from "@/registry/components/editor/plugins/markdown-kit";
-import { basicBlocksValue } from "@/registry/examples/values/basic-blocks-value";
-import { basicMarksValue } from "@/registry/examples/values/basic-marks-value";
-import { codeBlockValue } from "@/registry/examples/values/code-block-value";
-import { listValue } from "@/registry/examples/values/list-value";
-import { tableValue } from "@/registry/examples/values/table-value";
-import { EditorView } from "@/registry/ui/editor";
+import { listValue } from "@/registry/examples/values/list-classic-value";
+import { Editor, EditorContainer } from "@/registry/ui/editor";
 
 
 
@@ -66,11 +63,12 @@ const withCustomPlugins = (plugins: any[]): any[] => {
 let index = 0
 
 const value = normalizeNodeId([
-  ...withCustomType(basicBlocksValue),
-  ...withCustomType(basicMarksValue),
-  ...withCustomType(tableValue),
-  ...withCustomType(codeBlockValue),
+  // ...withCustomType(basicBlocksValue),
+  // ...withCustomType(basicMarksValue),
+  // ...withCustomType(tableValue),
+  // ...withCustomType(codeBlockValue),
   ...withCustomType(listValue),
+  // ...listValue,
 ], {
   idCreator() {
     return 'id-' + index++;
@@ -81,9 +79,9 @@ const value = normalizeNodeId([
 
 export const EditorViewClient = () => {
 
-  const editor = usePlateViewEditor({
+  const editor = usePlateEditor({
     plugins: [
-      ...withCustomPlugins(BaseEditorKit),
+      ...withCustomPlugins([...BaseEditorKit, ...ListKit,]),
       ...MarkdownKit
     ],
     value: value,
@@ -107,7 +105,17 @@ export const EditorViewClient = () => {
 
 
   return <>
-    <EditorView variant="none" className="px-10" editor={editor} />
+
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor
+          variant="demo"
+          className="pb-[20vh]"
+          placeholder="Type something..."
+          spellCheck={false}
+        />
+      </EditorContainer>
+    </Plate>
 
 
     <div className="mt-10 px-10">
