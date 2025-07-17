@@ -3,21 +3,30 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import * as Typography from '@/components/typography';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { blogsSource } from '@/lib/blogs-source';
 import { hrefWithLocale } from '@/lib/withLocale';
 
 import { getMDXComponents } from '../_components/mdx-components';
 
+const AuthorAvatar: Record<string, string> = {
+  "Felix Feng": "https://avatars.githubusercontent.com/u/164472012?v=4",
+  "Ziad Beyens": "https://avatars.githubusercontent.com/u/19695832?v=4"
+}
+
 const i18n = {
   cn: {
     backToBlog: '返回博客',
     blog: '博客',
-    blogDescription: '关于 Plate - React 富文本编辑器框架的最新更新、教程和见解。',
+    blogDescription:
+      '关于 Plate - React 富文本编辑器框架的最新更新、教程和见解。',
   },
   en: {
     backToBlog: 'Back to Blog',
     blog: 'Blog',
-    blogDescription: 'Latest updates, tutorials, and insights about Plate - the rich-text editor framework for React.',
+    blogDescription:
+      'Latest updates, tutorials, and insights about Plate - the rich-text editor framework for React.',
   },
 };
 
@@ -25,7 +34,8 @@ const i18n = {
 function BlogIndex({ locale }: { locale: keyof typeof i18n }) {
   const content = i18n[locale];
 
-  const blogPosts = blogsSource.getPages()
+  const blogPosts = blogsSource
+    .getPages()
     .filter((page) => {
       // Filter based on locale
       const isChinese = page.path.endsWith('.cn.mdx');
@@ -35,7 +45,7 @@ function BlogIndex({ locale }: { locale: keyof typeof i18n }) {
       date: page.data.date,
       description: page.data.description || '',
       path: page.path,
-      slug: page.slugs.join('/').replace(/\.cn$/, ''),  // Remove .cn suffix from slug
+      slug: page.slugs.join('/').replace(/\.cn$/, ''), // Remove .cn suffix from slug
       title: page.data.title,
     }))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -45,7 +55,9 @@ function BlogIndex({ locale }: { locale: keyof typeof i18n }) {
   return (
     <div className="container max-w-(--breakpoint-md) py-12">
       <div className="mb-12">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight">{content.blog}</h1>
+        <h1 className="mb-4 text-4xl font-bold tracking-tight">
+          {content.blog}
+        </h1>
         <p className="text-lg text-muted-foreground">
           {content.blogDescription}
         </p>
@@ -57,15 +69,16 @@ function BlogIndex({ locale }: { locale: keyof typeof i18n }) {
             key={post.slug}
             className="group relative rounded-lg border p-6 transition-colors hover:bg-muted/50"
           >
-            <Link className="absolute inset-0" href={hrefWithLocale(`/blogs/${post.slug}`, locale)} />
+            <Link
+              className="absolute inset-0"
+              href={hrefWithLocale(`/blogs/${post.slug}`, locale)}
+            />
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 space-y-2">
                 <h2 className="text-2xl font-semibold tracking-tight group-hover:underline">
                   {post.title}
                 </h2>
-                <p className="text-muted-foreground">
-                  {post.description}
-                </p>
+                <p className="text-muted-foreground">{post.description}</p>
                 <time className="text-sm text-muted-foreground">
                   {new Date(post.date).toLocaleDateString(dateLocale, {
                     day: 'numeric',
@@ -83,6 +96,8 @@ function BlogIndex({ locale }: { locale: keyof typeof i18n }) {
   );
 }
 
+
+
 export type SearchParams = Promise<{
   locale?: string;
 }>;
@@ -92,7 +107,8 @@ export default async function Page(props: {
   searchParams: SearchParams;
 }) {
   const params = await props.params;
-  const locale = ((await props.searchParams).locale || 'en') as keyof typeof i18n;
+  const locale = ((await props.searchParams).locale ||
+    'en') as keyof typeof i18n;
   const content = i18n[locale];
   const dateLocale = locale === 'cn' ? 'zh-CN' : 'en-US';
 
@@ -103,6 +119,7 @@ export default async function Page(props: {
 
   // Try to get language-specific blog post
   let page = null;
+
   const baseSlug = params.slug.join('/');
 
   if (locale === 'cn') {
@@ -135,25 +152,60 @@ export default async function Page(props: {
         {content.backToBlog}
       </Link>
 
-      <article className="prose prose-gray dark:prose-invert prose-blog max-w-(--breakpoint-md)!">
-        <header className="mb-8 not-prose">
-          <h1 className="mb-4 text-4xl font-bold tracking-tight">
-            {page.data.title}
-          </h1>
+      <article className="prose-gray dark:prose-invert prose-blog prose max-w-(--breakpoint-md)!">
+        <header className="not-prose mb-8">
+          <div className="mb-4 flex items-center gap-4">
+            <h1 className="text-4xl font-bold tracking-tight">
+              {page.data.title}
+            </h1>
+            {page.data.badgeLink && (
+              <Badge asChild variant="secondary">
+                <Link href={page.data.badgeLink.href}>
+                  {page.data.badgeLink.text}
+                </Link>
+              </Badge>
+            )}
+          </div>
           {page.data.description && (
-            <p className="text-lg text-muted-foreground">
+            <p className="mb-4 text-lg text-muted-foreground">
               {page.data.description}
             </p>
           )}
-          {(page.data as any).date && (
-            <time className="text-sm text-muted-foreground">
-              {new Date((page.data as any).date).toLocaleDateString(dateLocale, {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </time>
-          )}
+          <div className="flex items-center gap-4">
+            {page.data.author && (
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    alt={page.data.author}
+                    src={AuthorAvatar[page.data.author]}
+                  />
+                  <AvatarFallback>
+                    {page.data.author
+                      .split(' ')
+                      .map((name: string) => name[0])
+                      .join('')
+                      .toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm text-muted-foreground">
+                  {page.data.author}
+                </span>
+              </div>
+            )}
+
+            {page.data.date && (
+              <time className="text-sm text-muted-foreground">
+                {new Date(page.data.date).toLocaleDateString(
+                  dateLocale,
+                  {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  }
+                )}
+              </time>
+            )}
+          </div>
         </header>
 
         <MDXContent
@@ -184,7 +236,8 @@ export async function generateMetadata(props: {
   searchParams: SearchParams;
 }) {
   const params = await props.params;
-  const locale = ((await props.searchParams).locale || 'en') as keyof typeof i18n;
+  const locale = ((await props.searchParams).locale ||
+    'en') as keyof typeof i18n;
   const content = i18n[locale];
 
   if (!params.slug || params.slug.length === 0) {
