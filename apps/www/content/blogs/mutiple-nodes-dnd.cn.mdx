@@ -1,38 +1,47 @@
 ---
-title: 拖拽体验全面升级：Plate.js 49.0.8 新特性详解
-description: 在 Plate.js 49.0.8 版本之后，支持了多块拖拽以及改进拖了拽体验。本文将详解此次更新背后的关键变动，并指出当前仍需改进的地方。
+title: 拖拽体验全面升级：@platejs/dnd@49.1.7 新特性详解
+description: "@platejs/dnd@49.1.7 版本带来了多块拖拽和拖拽体验的显著提升。本文将详细解析本次更新的核心改动，并探讨后续可优化的方向。"
 date: 2025-07-14
 author: Felix Feng
 published: true
 ---
 
-## 拖拽体验的升级点
+## 拖拽体验全面升级
 
-### 修复 在 margin-top 上 drop 会失败
+> 本次更新新增多块同时拖拽，并修复了 margin-top 区域无法放置的问题，显著提升了拖拽体验。
 
-这个问题在之前的版本中存在：如果目标块(例如 heading)上方有明显的 `margin-top`，用户以为可以在该区域 drop，但实际会被忽略，导致体验不佳。
+### 1. 支持多块同时拖拽
 
-原因是插入位置的检测仅考虑了 block 的实际边界，没有覆盖视觉上的 margin 区域。
+你可以通过以下**两种方式**选中多个块：
 
-**现状：**
-在最新版本中，已经修复了该问题。现在，drop 区域会感知到 margin，用户可以在 margin-top 区域顺利完成拖拽和插入操作，体验更加自然。
+- **方式一：使用 block-selection**  
+  通过 block-selection 功能，选中多个块后一起拖动：
 
-### 支持多块同时拖拽
+  ![block-selection](/blog/multiple-nodes-dnd/1.gif)
 
-现在已经支持多个块的同时拖拽。
+- **方式二：利用编辑器原生 selection**  
+  直接用编辑器的原生 selection 选中多块内容，再一次性拖拽：
 
-1. 你可以通过 block-selection 选中多个块，
-![Code block cursor affinity demo](/blog/multiple-nodes-dnd/1.gif)
+  ![selection](/blog/multiple-nodes-dnd/2.gif)
 
-2. 或者利用编辑器原生的 selection 选中多个块，然后一次性进行拖拽操作。
+---
 
-## 小结
+### 2. 修复 margin-top 区域无法 drop 的问题
 
-Plate.js 49.0.8 的拖拽系统已经跨出关键一步，让整体体验更贴近主流富文本编辑器（如 Notion）。
+此前，当目标块上方存在 `margin-top` 时，用户无法在该区域完成 drop 操作，影响了拖拽的流畅性：
 
-但要真正做到“随心所欲”的拖拽，还需要：
+![issue](/blog/multiple-nodes-dnd/3.gif)
 
-- 对边缘空白区 drop 的支持；
-- 多块 selection + 拖动的能力；
-- 更自然的插入动画与过渡效果。
+在新版本中，这一问题已**被修复**。现在，drop 区域能够正确识别 margin，用户可以在 margin-top 区域顺利完成拖拽和插入，体验更加自然：
+
+![fixed issue](/blog/multiple-nodes-dnd/4.gif)
+
+
+
+## 展望
+
+本次更新，让整体拖拽体验更加顺滑自然。但要实现“随心所欲”的拖拽，还需进一步完善：
+
+- 支持在编辑器外 drop
+- 优化 hover 表格边框时 drop line 的位置
 

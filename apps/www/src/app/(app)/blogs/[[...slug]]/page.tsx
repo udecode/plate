@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import * as Typography from '@/components/typography';
 import { blogsSource } from '@/lib/blogs-source';
 import { hrefWithLocale } from '@/lib/withLocale';
 
@@ -34,7 +35,7 @@ function BlogIndex({ locale }: { locale: keyof typeof i18n }) {
       date: page.data.date,
       description: page.data.description || '',
       path: page.path,
-      slug: page.slugs.join('/'),
+      slug: page.slugs.join('/').replace(/\.cn$/, ''),  // Remove .cn suffix from slug
       title: page.data.title,
     }))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -42,7 +43,7 @@ function BlogIndex({ locale }: { locale: keyof typeof i18n }) {
   const dateLocale = locale === 'cn' ? 'zh-CN' : 'en-US';
 
   return (
-    <div className="container max-w-4xl py-12">
+    <div className="container max-w-(--breakpoint-md) py-12">
       <div className="mb-12">
         <h1 className="mb-4 text-4xl font-bold tracking-tight">{content.blog}</h1>
         <p className="text-lg text-muted-foreground">
@@ -100,7 +101,26 @@ export default async function Page(props: {
     return <BlogIndex locale={locale} />;
   }
 
-  const page = blogsSource.getPage(params.slug);
+  // Try to get language-specific blog post
+  let page = null;
+  const baseSlug = params.slug.join('/');
+
+  if (locale === 'cn') {
+    // Try to find Chinese version first
+    const cnSlug = baseSlug.endsWith('.cn') ? baseSlug : `${baseSlug}.cn`;
+    page = blogsSource.getPage(cnSlug.split('/'));
+
+    // If no Chinese version, fall back to English
+    if (!page) {
+      const enSlug = baseSlug.replace(/\.cn$/, '');
+      page = blogsSource.getPage(enSlug.split('/'));
+    }
+  } else {
+    // For English, ensure we're not loading the Chinese version
+    const enSlug = baseSlug.replace(/\.cn$/, '');
+    page = blogsSource.getPage(enSlug.split('/'));
+  }
+
   if (!page) notFound();
 
   const MDXContent = page.data.body;
@@ -137,7 +157,15 @@ export default async function Page(props: {
         </header>
 
         <MDXContent
-          components={getMDXComponents()}
+          components={getMDXComponents({
+            h1: Typography.H1,
+            h2: Typography.H2,
+            h3: Typography.H3,
+            h4: Typography.H4,
+            h5: Typography.H5,
+            h6: Typography.H6,
+            hr: Typography.HR,
+          })}
         />
       </article>
     </div>
@@ -166,7 +194,26 @@ export async function generateMetadata(props: {
     };
   }
 
-  const page = blogsSource.getPage(params.slug);
+  // Try to get language-specific blog post
+  let page = null;
+  const baseSlug = params.slug.join('/');
+
+  if (locale === 'cn') {
+    // Try to find Chinese version first
+    const cnSlug = baseSlug.endsWith('.cn') ? baseSlug : `${baseSlug}.cn`;
+    page = blogsSource.getPage(cnSlug.split('/'));
+
+    // If no Chinese version, fall back to English
+    if (!page) {
+      const enSlug = baseSlug.replace(/\.cn$/, '');
+      page = blogsSource.getPage(enSlug.split('/'));
+    }
+  } else {
+    // For English, ensure we're not loading the Chinese version
+    const enSlug = baseSlug.replace(/\.cn$/, '');
+    page = blogsSource.getPage(enSlug.split('/'));
+  }
+
   if (!page) notFound();
 
   return {
