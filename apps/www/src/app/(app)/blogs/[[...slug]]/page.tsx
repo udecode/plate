@@ -10,9 +10,18 @@ import { hrefWithLocale } from '@/lib/withLocale';
 
 import { getMDXComponents } from '../_components/mdx-components';
 
-const AuthorAvatar: Record<string, string> = {
-  "Felix Feng": "https://avatars.githubusercontent.com/u/164472012?v=4",
-  "Ziad Beyens": "https://avatars.githubusercontent.com/u/19695832?v=4"
+const AuthorAvatar: Record<string, {
+  avatar: string;
+  link: string;
+}> = {
+  "Felix Feng": {
+    avatar: "https://avatars.githubusercontent.com/u/164472012?v=4",
+    link: "https://github.com/felixfeng33"
+  },
+  "Ziad Beyens": {
+    avatar: "https://avatars.githubusercontent.com/u/19695832?v=4",
+    link: "https://github.com/zbeyens"
+  }
 }
 
 const i18n = {
@@ -174,22 +183,24 @@ export default async function Page(props: {
           <div className="flex items-center gap-4">
             {page.data.author && (
               <div className="flex items-center gap-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage
-                    alt={page.data.author}
-                    src={AuthorAvatar[page.data.author]}
-                  />
-                  <AvatarFallback>
-                    {page.data.author
-                      .split(' ')
-                      .map((name: string) => name[0])
-                      .join('')
-                      .toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm text-muted-foreground">
-                  {page.data.author}
-                </span>
+                <Link className="flex items-center gap-2 group" href={AuthorAvatar[page.data.author].link} target="_blank">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      alt={page.data.author}
+                      src={AuthorAvatar[page.data.author].avatar}
+                    />
+                    <AvatarFallback>
+                      {page.data.author
+                        .split(' ')
+                        .map((name: string) => name[0])
+                        .join('')
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm text-muted-foreground group-hover:underline underline-offset-4">
+                    {page.data.author}
+                  </span>
+                </Link>
               </div>
             )}
 
