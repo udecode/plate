@@ -21,7 +21,7 @@ The user did not intend to enter the code block, but the editor forcibly switche
 
 Surprisingly, even top editors like Notion or Google Docs haven't solved this problem well.
 
-![Code block cursor affinity demo](/blog/affinity/1.gif)
+<Image src="/blog/affinity/1.gif" alt="Code block cursor affinity demo" width={1000} height={1000} />
 
 A similar issue exists with bold text.
 
@@ -31,7 +31,7 @@ Will I type bold content next, or plain styled content?
 
 Most editors handle this by inheriting the style from the left, even if the user wants to type plain text.
 
-![Bold text cursor affinity demo](/blog/affinity/2.gif)
+<Image src="/blog/affinity/2.gif" alt="Bold text cursor affinity demo" width={1000} height={1000} />
 
 ## Solution
 
@@ -52,7 +52,7 @@ It's like adding a "buffer layer" to the cursor, preventing accidental style swi
 
 As shown below, there is a separate cursor position on each side of the code, no longer the "boundary means jump" behavior of traditional editors.
 
-![Cursor affinity demo](/blog/affinity/3.gif)
+<Image src="/blog/affinity/3.gif" alt="Cursor affinity demo" width={1000} height={1000} />
 
 ### Affinity: 'directional'
 
@@ -75,7 +75,7 @@ With affinity: 'directional', cursor behavior is intelligently determined by mov
 * Move left out of text → new input will inherit plain style;
 * Move right out of bold → input will be bold style.
 
-![Cursor affinity demo](/blog/affinity/4.gif)
+<Image src="/blog/affinity/4.gif" alt="Cursor affinity demo" width={1000} height={1000} />
 
 This strategy leverages user intent, making input behavior more natural and predictable, while avoiding visual "stuttering".
 

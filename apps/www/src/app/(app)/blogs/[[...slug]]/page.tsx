@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -228,6 +229,12 @@ export default async function Page(props: {
             h5: Typography.H5,
             h6: Typography.H6,
             hr: Typography.HR,
+            Image: (props: any) => {
+              return <Image className='border rounded-lg' {...props} />;
+            },
+            img: (props: any) => {
+              return <Image className='border rounded-lg' {...props} />;
+            },
           })}
         />
       </article>

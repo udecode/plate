@@ -21,7 +21,7 @@ badgeLink:
 
 更令人意外的是：即便是像 Notion 或 Google Docs 这样的顶级编辑器，也没有很好地解决这个问题
 
-![代码块光标亲和力演示](/blog/affinity/1.gif)
+<Image src="/blog/affinity/1.gif" alt="代码块光标亲和力演示" width={1000} height={1000} />
 
 类似的问题也存在于 加粗（bold）文本中。
 
@@ -31,7 +31,7 @@ badgeLink:
 
 大多数编辑器的处理是：继承左侧的样式，即便用户希望输入的是普通文本。
 
-![加粗文本光标亲和力演示](/blog/affinity/2.gif)
+<Image src="/blog/affinity/2.gif" alt="加粗文本光标亲和力演示" width={1000} height={1000} />
 
 ## 解决方案
 
@@ -52,7 +52,7 @@ createSlatePlugin({
 
 如下图所示，code 的左右两侧各有一个独立的光标位置，不再是传统编辑器中的"边界即跳转"。
 
-![光标亲和力演示](/blog/affinity/3.gif)
+<Image src="/blog/affinity/3.gif" alt="光标亲和力演示" width={1000} height={1000} />
 
 ### Affinity: 'directional'
 
@@ -75,7 +75,7 @@ rules: { selection: { affinity: 'directional' } },
 * 从右往左离开 text → 新输入会继承 普通样式；
 * 从左往右离开 bold → 输入将是bold样式。
 
-![光标亲和力演示](/blog/affinity/4.gif)
+<Image src="/blog/affinity/4.gif" alt="光标亲和力演示" width={1000} height={1000} />
 
 这个策略利用了用户的操作意图，让输入行为更加自然和可预测，同时避免了视觉"卡顿"。
 
