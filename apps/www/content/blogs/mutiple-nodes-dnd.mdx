@@ -1,0 +1,69 @@
+---
+title: Comprehensive Upgrade to Drag-and-Drop Experience - Plate.js 49.0.8 New Features Explained
+description: After Plate.js version 49.0.8, block-level drag-and-drop has become more stable and smoother. This article details the key changes behind this update and points out areas that still need improvement.
+date: 2025-07-14
+author: Felix Feng
+published: true
+---
+
+## Introduction
+
+In rich text editors, the drag-and-drop feature is often overlooked, yet it is crucial.
+
+A good drag-and-drop interaction can significantly improve the efficiency of organizing and restructuring content. On the other hand, a poor experience may cause users to abandon the editor altogether.
+
+Since Plate.js 49.0.8, the feel and success rate of drag-and-drop have improved significantly. However, some edge cases still reveal shortcomings in handling.
+
+This article will take you through an in-depth analysis of the changes brought by this upgrade, as well as directions for future improvements.
+
+## Upgrades to the Drag-and-Drop Experience
+
+### More Stable Drag-and-Drop Logic
+
+In previous versions, dragging block elements between other blocks often resulted in **failed drops or cursor misplacement**.
+
+In 49.0.8, after a series of adjustments, drop zone detection has become smarter—especially when adjacent blocks have similar heights, the judgment is much more precise, and failed drags are now rare.
+
+### Smoother Interaction
+
+Compared to the previous "laggy" experience where you had to try dragging several times, the new drag-and-drop feels much closer to Notion. You can clearly preview the insertion point, and feedback is immediate.
+
+![New Drag-and-Drop Demo](/blog/multiple-nodes-dnd/1.gif)
+
+## Two Issues That Still Need Improvement
+
+### Issue 1: Drops Fail on Margin-Top Areas
+
+Currently, if there is a noticeable `margin-top` above the target block, users visually expect to be able to drop in that area, but the drop is actually ignored, breaking the experience.
+
+This is because the insertion detection uses the actual block boundary, not its visible area.
+
+**Suggested Solution:**
+Consider incorporating margin perception when detecting drop positions, or allow the drop zone to extend outward by a few pixels.
+
+### Issue 2: No Support for Dragging Multiple Blocks
+
+The current version **only supports dragging a single block at a time**, which is insufficient when users need to quickly move a section (such as an H2 + paragraph + image).
+
+Although you can work around this by temporarily grouping blocks, this is not an ideal experience.
+
+**Ideal Behavior:**
+- Select multiple blocks and drag them at once;
+- Highlight the entire selection during the drag;
+- After dropping, retain the original order and styles.
+
+## Summary
+
+Plate.js 49.0.8's drag-and-drop system has taken a key step forward, making the overall experience much closer to mainstream rich text editors like Notion.
+
+However, to achieve truly "free and intuitive" drag-and-drop, it still needs:
+
+- Support for dropping in edge whitespace areas;
+- The ability to select and drag multiple blocks;
+- More natural insertion animations and transitions.
+
+If future versions continue to optimize these aspects, Plate's editing experience will move even closer to true WYSIWYG.
+
+---
+
+What you want to control is not just the content, but also the flow of its structure. Drag-and-drop interaction is the embodiment of that sense of control.
