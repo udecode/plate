@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx",
-      "content": "'use client';\n\nimport { createPlatePlugin } from 'platejs/react';\n\nimport { FloatingToolbar } from '@/registry/ui/floating-toolbar';\nimport { FloatingToolbarButtons } from '@/registry/ui/floating-toolbar-classic-buttons';\n\nexport const FloatingToolbarKit = [\n  createPlatePlugin({\n    key: 'floating-toolbar',\n    render: {\n      afterEditable: () => (\n        <FloatingToolbar>\n          <FloatingToolbarButtons />\n        </FloatingToolbar>\n      ),\n    },\n  }),\n];",
+      "content": "'use client';\n\nimport { createPlatePlugin } from 'platejs/react';\n\nimport { FloatingToolbar } from '@/registry/ui/floating-toolbar';\nimport { FloatingToolbarButtons } from '@/registry/ui/floating-toolbar-classic-buttons';\n\nexport const FloatingToolbarKit = [\n  createPlatePlugin({\n    key: 'floating-toolbar',\n    render: {\n      afterEditable: () => (\n        <FloatingToolbar>\n          <FloatingToolbarButtons />\n        </FloatingToolbar>\n      ),\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]
