@@ -55,7 +55,6 @@ const insertBlockMap: Record<
   [KEYS.video]: (editor) => insertVideoPlaceholder(editor, { select: true }),
 };
 
-
 const insertInlineMap: Record<
   string,
   (editor: PlateEditor, type: string) => void
@@ -93,16 +92,18 @@ export const insertInlineElement = (editor: PlateEditor, type: string) => {
   }
 };
 
-const setBlockMap: Record<string, (editor: PlateEditor, type: string) => void> = {
-  [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { columns: 3 }),
-  [KEYS.codeBlock]: (editor) => toggleCodeBlock(editor),
-  [KEYS.olClassic]: (editor) =>
-    toggleList(editor, { type: editor.getType(KEYS.olClassic) }),
-  [KEYS.taskList]: (editor) =>
-    toggleList(editor, { type: editor.getType(KEYS.taskList) }),
-  [KEYS.ulClassic]: (editor) =>
-    toggleList(editor, { type: editor.getType(KEYS.ulClassic) }),
-};
+const setBlockMap: Record<string, (editor: PlateEditor, type: string) => void> =
+  {
+    [ACTION_THREE_COLUMNS]: (editor) =>
+      toggleColumnGroup(editor, { columns: 3 }),
+    [KEYS.codeBlock]: (editor) => toggleCodeBlock(editor),
+    [KEYS.olClassic]: (editor) =>
+      toggleList(editor, { type: editor.getType(KEYS.olClassic) }),
+    [KEYS.taskList]: (editor) =>
+      toggleList(editor, { type: editor.getType(KEYS.taskList) }),
+    [KEYS.ulClassic]: (editor) =>
+      toggleList(editor, { type: editor.getType(KEYS.ulClassic) }),
+  };
 
 export const setBlockType = (
   editor: PlateEditor,

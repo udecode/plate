@@ -13,7 +13,14 @@ import {
 import { ParagraphPlugin } from 'platejs/react';
 
 import { BlockquoteElement } from '@/registry/ui/blockquote-node';
-import { H1Element, H2Element, H3Element, H4Element, H5Element, H6Element } from '@/registry/ui/heading-node';
+import {
+  H1Element,
+  H2Element,
+  H3Element,
+  H4Element,
+  H5Element,
+  H6Element,
+} from '@/registry/ui/heading-node';
 import { HrElement } from '@/registry/ui/hr-node';
 import { ParagraphElement } from '@/registry/ui/paragraph-node';
 

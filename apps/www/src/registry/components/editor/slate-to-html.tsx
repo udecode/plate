@@ -115,5 +115,4 @@ export const EditorViewClient = ({ value }: { value: any }) => {
   });
 
   return <EditorView variant="none" editor={editor} />;
-
 };
