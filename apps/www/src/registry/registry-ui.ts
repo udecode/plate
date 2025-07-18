@@ -464,7 +464,8 @@ export const uiComponents: Registry['items'] = [
   },
   {
     dependencies: [],
-    description: 'A set of commonly used formatting buttons for the floating toolbar with classic list support.',
+    description:
+      'A set of commonly used formatting buttons for the floating toolbar with classic list support.',
     files: [
       {
         path: 'ui/floating-toolbar-classic-buttons.tsx',
@@ -606,13 +607,20 @@ export const uiComponents: Registry['items'] = [
   },
   {
     dependencies: [],
-    description: 'A menu for inserting different types of blocks with classic list support.',
-    files: [{ path: 'ui/insert-toolbar-classic-button.tsx', type: 'registry:ui' }],
+    description:
+      'A menu for inserting different types of blocks with classic list support.',
+    files: [
+      { path: 'ui/insert-toolbar-classic-button.tsx', type: 'registry:ui' },
+    ],
     meta: {
       examples: ['list-classic-demo'],
     },
     name: 'insert-toolbar-classic-button',
-    registryDependencies: ['shadcn/dropdown-menu', 'toolbar', 'transforms-classic'],
+    registryDependencies: [
+      'shadcn/dropdown-menu',
+      'toolbar',
+      'transforms-classic',
+    ],
     title: 'Insert Toolbar Classic Button',
     type: 'registry:ui',
   },
@@ -848,12 +856,18 @@ export const uiComponents: Registry['items'] = [
   {
     dependencies: [],
     description: 'A dropdown to convert block types with classic list support.',
-    files: [{ path: 'ui/turn-into-toolbar-classic-button.tsx', type: 'registry:ui' }],
+    files: [
+      { path: 'ui/turn-into-toolbar-classic-button.tsx', type: 'registry:ui' },
+    ],
     meta: {
       examples: ['list-classic-demo'],
     },
     name: 'turn-into-toolbar-classic-button',
-    registryDependencies: ['shadcn/dropdown-menu', 'toolbar', 'transforms-classic'],
+    registryDependencies: [
+      'shadcn/dropdown-menu',
+      'toolbar',
+      'transforms-classic',
+    ],
     title: 'Turn Into Toolbar Classic Button',
     type: 'registry:ui',
   },

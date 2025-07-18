@@ -19,11 +19,12 @@ import { useEditorRef } from 'platejs/react';
 
 import { ToolbarButton } from './toolbar';
 
-const nodeTypeMap: Record<string, { icon: React.JSX.Element; label: string }> = {
-  [KEYS.olClassic]: { icon: <ListOrdered />, label: 'Numbered List' },
-  [KEYS.taskList]: { icon: <ListTodo />, label: 'Task List' },
-  [KEYS.ulClassic]: { icon: <List />, label: 'Bulleted List' },
-};
+const nodeTypeMap: Record<string, { icon: React.JSX.Element; label: string }> =
+  {
+    [KEYS.olClassic]: { icon: <ListOrdered />, label: 'Numbered List' },
+    [KEYS.taskList]: { icon: <ListTodo />, label: 'Task List' },
+    [KEYS.ulClassic]: { icon: <List />, label: 'Bulleted List' },
+  };
 
 export function ListToolbarButton({
   nodeType = KEYS.ulClassic,

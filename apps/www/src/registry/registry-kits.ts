@@ -675,7 +675,10 @@ export const registryKits: Registry['items'] = [
       },
     ],
     name: 'floating-toolbar-classic-kit',
-    registryDependencies: ['floating-toolbar', 'floating-toolbar-classic-buttons'],
+    registryDependencies: [
+      'floating-toolbar',
+      'floating-toolbar-classic-buttons',
+    ],
     type: 'registry:component',
   },
   {

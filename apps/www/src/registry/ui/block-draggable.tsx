@@ -73,18 +73,17 @@ function Draggable(props: PlateElementProps) {
   const { children, editor, element, path } = props;
   const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
 
-  const { isDragging, nodeRef, previewRef, handleRef } =
-    useDraggable({
-      element,
-      onDropHandler: (_, { dragItem }) => {
-        const id = (dragItem as { id: string[] | string }).id;
+  const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
+    element,
+    onDropHandler: (_, { dragItem }) => {
+      const id = (dragItem as { id: string[] | string }).id;
 
-        if (blockSelectionApi) {
-          blockSelectionApi.add(id);
-        }
-        resetPreview();
-      },
-    });
+      if (blockSelectionApi) {
+        blockSelectionApi.add(id);
+      }
+      resetPreview();
+    },
+  });
 
   const isInColumn = path.length === 3;
   const isInTable = path.length === 4;
@@ -95,7 +94,7 @@ function Draggable(props: PlateElementProps) {
     if (previewRef.current) {
       previewRef.current.replaceChildren();
     }
-  }
+  };
 
   // clear up virtual multiple preview when drag end
   React.useEffect(() => {
@@ -147,6 +146,7 @@ function Draggable(props: PlateElementProps) {
                 <DragHandle
                   isDragging={isDragging}
                   previewRef={previewRef}
+                  resetPreview={resetPreview}
                   setPreviewTop={setPreviewTop}
                 />
               </Button>
@@ -162,7 +162,15 @@ function Draggable(props: PlateElementProps) {
         contentEditable={false}
       />
 
-      <div ref={nodeRef} className="slate-blockWrapper flow-root">
+      <div
+        ref={nodeRef}
+        className="slate-blockWrapper flow-root"
+        onContextMenu={() =>
+          editor
+            .getApi(BlockSelectionPlugin)
+            .blockSelection.set(element.id as string)
+        }
+      >
         <MemoizedChildren>{children}</MemoizedChildren>
         <DropLine />
       </div>
@@ -206,10 +214,12 @@ function Gutter({
 const DragHandle = React.memo(function DragHandle({
   isDragging,
   previewRef,
+  resetPreview,
   setPreviewTop,
 }: {
   isDragging: boolean;
   previewRef: React.RefObject<HTMLDivElement | null>;
+  resetPreview: () => void;
   setPreviewTop: (top: number) => void;
 }) {
   const editor = useEditorRef();
@@ -226,9 +236,12 @@ const DragHandle = React.memo(function DragHandle({
               .blockSelection.set(element.id as string);
           }}
           onMouseDown={(e) => {
+            resetPreview();
             if (e.button !== 0 || e.shiftKey) return; // Only left mouse button
 
-            const elements = createDragPreviewElements(editor, { currentBlock: element });
+            const elements = createDragPreviewElements(editor, {
+              currentBlock: element,
+            });
             previewRef.current?.append(...elements);
             previewRef.current?.classList.remove('hidden');
             editor.setOption(DndPlugin, 'multiplePreviewRef', previewRef);
@@ -240,14 +253,12 @@ const DragHandle = React.memo(function DragHandle({
               .getApi(BlockSelectionPlugin)
               .blockSelection.getNodes({ sort: true });
 
-
             const selectedBlocks =
               blockSelection.length > 0
                 ? blockSelection
                 : editor.api.blocks({ mode: 'highest' });
 
             const ids = selectedBlocks.map((block) => block[0].id as string);
-
 
             if (ids.length > 1 && ids.includes(element.id as string)) {
               const previewTop = calculatePreviewTop(editor, {
@@ -292,18 +303,28 @@ const DropLine = React.memo(function DropLine({
   );
 });
 
-const createDragPreviewElements = (editor: PlateEditor, { currentBlock }: { currentBlock: TElement }): HTMLElement[] => {
-  const blockSelection = editor.getApi(BlockSelectionPlugin).blockSelection.getNodes({ sort: true });
+const createDragPreviewElements = (
+  editor: PlateEditor,
+  { currentBlock }: { currentBlock: TElement }
+): HTMLElement[] => {
+  const blockSelection = editor
+    .getApi(BlockSelectionPlugin)
+    .blockSelection.getNodes({ sort: true });
 
-  const selectionNodes = blockSelection.length > 0 ? blockSelection : editor.api.blocks({ mode: 'highest' });
+  const selectionNodes =
+    blockSelection.length > 0
+      ? blockSelection
+      : editor.api.blocks({ mode: 'highest' });
 
   const includes = selectionNodes.some(([node]) => node.id === currentBlock.id);
 
-  const sortedNodes = includes ? selectionNodes.map(([node]) => node) : [currentBlock];
+  const sortedNodes = includes
+    ? selectionNodes.map(([node]) => node)
+    : [currentBlock];
 
   if (blockSelection.length === 0) {
     editor.tf.blur();
-    editor.tf.collapse()
+    editor.tf.collapse();
   }
 
   const elements: HTMLElement[] = [];
@@ -376,10 +397,9 @@ const calculatePreviewTop = (
     element: TElement;
   }
 ): number => {
-
   const child = editor.api.toDOMNode(element)!;
   const editable = editor.api.toDOMNode(editor)!;
-  const firstSelectedChild = blocks[0]
+  const firstSelectedChild = blocks[0];
 
   const firstDomNode = editor.api.toDOMNode(firstSelectedChild)!;
   // Get editor's top padding
