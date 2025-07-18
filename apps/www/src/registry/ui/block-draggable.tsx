@@ -147,6 +147,7 @@ function Draggable(props: PlateElementProps) {
                 <DragHandle
                   isDragging={isDragging}
                   previewRef={previewRef}
+                  resetPreview={resetPreview}
                   setPreviewTop={setPreviewTop}
                 />
               </Button>
@@ -162,11 +163,13 @@ function Draggable(props: PlateElementProps) {
         contentEditable={false}
       />
 
-      <div ref={nodeRef} className="slate-blockWrapper flow-root">
+      <div ref={nodeRef} className="slate-blockWrapper flow-root"
+        onContextMenu={() => editor.getApi(BlockSelectionPlugin).blockSelection.set(element.id as string)}
+      >
         <MemoizedChildren>{children}</MemoizedChildren>
         <DropLine />
       </div>
-    </div>
+    </div >
   );
 }
 
@@ -206,10 +209,12 @@ function Gutter({
 const DragHandle = React.memo(function DragHandle({
   isDragging,
   previewRef,
+  resetPreview,
   setPreviewTop,
 }: {
   isDragging: boolean;
   previewRef: React.RefObject<HTMLDivElement | null>;
+  resetPreview: () => void;
   setPreviewTop: (top: number) => void;
 }) {
   const editor = useEditorRef();
@@ -226,6 +231,7 @@ const DragHandle = React.memo(function DragHandle({
               .blockSelection.set(element.id as string);
           }}
           onMouseDown={(e) => {
+            resetPreview();
             if (e.button !== 0 || e.shiftKey) return; // Only left mouse button
 
             const elements = createDragPreviewElements(editor, { currentBlock: element });
