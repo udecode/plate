@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next';
 
+import { createMDX } from 'fumadocs-mdx/next';
 import { globSync } from 'glob';
+const withMDX = createMDX();
 
 const nextConfig = async (phase: string) => {
   const config: NextConfig = {
@@ -31,9 +33,9 @@ const nextConfig = async (phase: string) => {
       '/docs/*': ['./src/registry/**/*'],
       '/docs/examples/slate-to-html': ['./public/tailwind.css'],
     },
+    reactStrictMode: true,
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
-    reactStrictMode: true,
 
     staticPageGenerationTimeout: 1200,
 
@@ -124,7 +126,7 @@ const nextConfig = async (phase: string) => {
     ];
   }
 
-  return config;
+  return withMDX(config);
 };
 
 export default nextConfig;

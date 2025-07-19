@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import 'shadcn-prose';
 @import "./themes.css";
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
 
 @plugin 'tailwind-scrollbar-hide';
 
@@ -36,7 +38,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  
+
   --breakpoint-3xl: 1600px;
   --breakpoint-4xl: 2000px;
   --color-sidebar: var(--sidebar);
@@ -120,8 +122,10 @@
   --color-blue-700: oklch(0.488 0.243 264.376);
   --color-blue-800: oklch(0.419 0.243 267.218);
 
-  --brand: oklch(0.623 0.214 259.815);   /* Blue 500 */
-  --highlight: oklch(0.852 0.199 91.936);   /* Yellow 400 */
+  --brand: oklch(0.623 0.214 259.815);
+  /* Blue 500 */
+  --highlight: oklch(0.852 0.199 91.936);
+  /* Yellow 400 */
 }
 
 .dark {
@@ -165,14 +169,17 @@
   --selection: oklch(0.922 0 0);
   --selection-foreground: oklch(0.205 0 0);
 
-  --brand: oklch(0.707 0.165 254.624);   /* Blue 400 */
-  --highlight: oklch(0.852 0.199 91.936);   /* Yellow 400 */
+  --brand: oklch(0.707 0.165 254.624);
+  /* Blue 400 */
+  --highlight: oklch(0.852 0.199 91.936);
+  /* Yellow 400 */
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   /* ::selection {
     @apply bg-selection text-selection-foreground;
   } */
@@ -196,18 +203,21 @@
   button:active {
     @apply opacity-60 md:opacity-100;
   }
-  
+
   /* Custom scrollbar styling (remove after sync). */
   ::-webkit-scrollbar {
     width: 5px;
   }
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
     border-radius: 5px;
   }
+
   * {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--border)) transparent;
@@ -236,13 +246,13 @@
 
 @utility container-wrapper {
   /* @apply 3xl:fixed:max-w-[calc(var(--breakpoint-2xl)+2rem)] mx-auto w-full px-2; */
-  
+
   @apply px-2 mx-auto w-full max-w-[calc(var(--breakpoint-xl)+2rem)];
 }
 
 @utility container {
   /* @apply 3xl:max-w-screen-2xl mx-auto max-w-[1400px] px-4 lg:px-8; */
-  
+
   @apply mx-auto max-w-[calc(var(--breakpoint-xl)+2rem)] px-4 xl:px-6;
 }
 
@@ -281,15 +291,15 @@
       @apply !mt-0;
     }
 
-    &:first-child > h3:first-child {
+    &:first-child>h3:first-child {
       @apply !mt-0;
     }
 
-    > h3 {
+    >h3 {
       @apply !mt-16;
     }
 
-    > h3 + p {
+    >h3+p {
       @apply !mt-2;
     }
   }
@@ -382,11 +392,9 @@
       width: 2px;
       height: 100%;
       content: "";
-      background-color: color-mix(
-        in oklab,
-        var(--muted-foreground) 50%,
-        transparent
-      );
+      background-color: color-mix(in oklab,
+          var(--muted-foreground) 50%,
+          transparent);
     }
   }
 
@@ -436,7 +444,7 @@
     @apply px-2;
   }
 
-  [data-rehype-pretty-code-fragment] [data-line-numbers] > .line::before {
+  [data-rehype-pretty-code-fragment] [data-line-numbers]>.line::before {
     @apply text-xs text-zinc-50/40;
     counter-increment: line;
     content: counter(line);
@@ -466,7 +474,7 @@
     @apply mt-2 px-4 pt-6 text-sm font-medium text-foreground;
   }
 
-  [data-rehype-pretty-code-title] + pre {
+  [data-rehype-pretty-code-title]+pre {
     @apply !mt-2;
   }
 }

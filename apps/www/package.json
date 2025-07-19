@@ -25,7 +25,8 @@
     "start": "next start",
     "test:r": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/test-registry.mts",
     "typecheck": "yarn prebuild && tsc --noEmit",
-    "typecheck:watch": "yarn typecheck --watch"
+    "typecheck:watch": "yarn typecheck --watch",
+    "postinstall": "fumadocs-mdx"
   },
   "browserslist": {
     "production": [
@@ -123,7 +124,9 @@
     "date-fns": "4.1.0",
     "dotenv": "16.5.0",
     "framer-motion": "12.17.0",
-    "fumadocs-core": "15.5.1",
+    "fumadocs-core": "15.6.3",
+    "fumadocs-mdx": "11.6.11",
+    "fumadocs-ui": "15.6.3",
     "fzf": "0.5.2",
     "html2canvas-pro": "1.5.11",
     "jotai": "2.8.4",

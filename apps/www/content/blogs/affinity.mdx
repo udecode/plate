@@ -1,0 +1,98 @@
+---
+title: Precise Cursor Control - Solving Style Boundary Jumping with Plate.js
+description: Traditional rich text editors often provide a poor experience when moving the cursor across style boundaries. With just one line of configuration, Plate.js delivers a more natural and controllable input experience. This article explains the principles and usage in detail.
+date: 2025-06-12
+author: Ziad Beyens
+published: true
+badgeLink:
+  href: "/docs/plugin-rules#rulesselection"
+  text: "View Docs"
+---
+
+## Introduction
+
+When you press ← to the right of the letter x below, the cursor jumps directly into the code block below, because there is only one position where the cursor can stop between them.
+
+This brings up a very practical problem:
+
+> I just want to add some plain text after the code, but the cursor jumps into the code, and what I type is automatically styled as code.
+
+The user did not intend to enter the code block, but the editor forcibly switched the context, resulting in a fragmented writing experience.
+
+Surprisingly, even top editors like Notion or Google Docs haven't solved this problem well.
+
+<Image src="/blog/affinity/1.gif" alt="Code block cursor affinity demo" width={1000} height={1000} />
+
+A similar issue exists with bold text.
+
+When my cursor is at the boundary between bold and normal text, how should the editor determine:
+
+Will I type bold content next, or plain styled content?
+
+Most editors handle this by inheriting the style from the left, even if the user wants to type plain text.
+
+<Image src="/blog/affinity/2.gif" alt="Bold text cursor affinity demo" width={1000} height={1000} />
+
+## Solution
+
+But in Plate v49, you can completely solve the uncontrollable "jumping in and out" of the cursor at block element boundaries with just one line of configuration:
+
+```tsx
+createSlatePlugin({
+  rules: { selection: { affinity: 'hard' } },
+})
+```
+
+With this setting, when you use the arrow keys around a code mark (like `const a = 1;`), the system clearly distinguishes:
+
+Entering from outside → the first time, the cursor stops at the edge;  
+Press again → only then does it enter the code.
+
+It's like adding a "buffer layer" to the cursor, preventing accidental style switches and making input more precise and predictable.
+
+As shown below, there is a separate cursor position on each side of the code, no longer the "boundary means jump" behavior of traditional editors.
+
+<Image src="/blog/affinity/3.gif" alt="Cursor affinity demo" width={1000} height={1000} />
+
+### Affinity: 'directional'
+
+But when it comes to bold text, things are a bit different.
+
+Since there is no padding on either side of bold, when your cursor approaches the boundary, the first arrow key press actually takes effect, but the user sees no visual feedback, creating the illusion:
+
+"I pressed the left arrow, but the cursor didn't move?"
+
+This means that if we use affinity: 'hard' on bold, it may make users feel like the keyboard is "unresponsive".
+
+To solve this, Plate.js provides another strategy—still just one line of code:
+
+```ts
+rules: { selection: { affinity: 'directional' } },
+```
+
+With affinity: 'directional', cursor behavior is intelligently determined by movement direction:
+
+* Move left out of text → new input will inherit plain style;
+* Move right out of bold → input will be bold style.
+
+<Image src="/blog/affinity/4.gif" alt="Cursor affinity demo" width={1000} height={1000} />
+
+This strategy leverages user intent, making input behavior more natural and predictable, while avoiding visual "stuttering".
+
+By default, we only enable the directional strategy for Link. See [Rules](https://platejs.org/docs/plugin-rules#rulesselection) for details.
+
+## Conclusion
+
+Most importantly:  
+You have full control over all of this.
+
+Whether it's bold, italic, code, or link—  
+You can specify the most suitable cursor behavior strategy for each style (Mark), or even for each inline element.
+
+Choose 'hard' for clear boundary feeling?  
+Or 'directional' for smart style selection based on direction?  
+Or just keep the default, using the editor's standard strategy?
+
+The choice is yours. Each strategy can be enabled with just one line of configuration.
+
+Plate.js gives you not just features, but a sense of control.

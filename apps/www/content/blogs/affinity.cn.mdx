@@ -1,0 +1,98 @@
+---
+title: 精准掌控光标行为：用 Plate.js 解决样式边界跳跃问题
+description: 传统富文本编辑器在样式边界的光标移动上体验不佳，Plate.js 仅用一行配置即可带来更自然、可控的输入体验。本文详解其原理与用法。
+date: 2025-06-12
+author: Ziad Beyens
+published: true
+badgeLink:
+  href: "/docs/plugin-rules#rulesselection"
+  text: "查看文档"
+---
+
+## 前言
+
+在下面字母x的右侧按下 ←，光标会直接跳进下方的代码块，因为两者之间 只有一个可停留的位置。
+
+这带来了一个很实际的问题：
+
+> 我只是想在 code 的后面补充一些普通文本，结果光标跳进了 code，输入的内容却自动套上了代码样式。
+
+用户并没有明确意图进入代码块，但编辑器却强行切换了上下文，导致写作体验割裂。
+
+更令人意外的是：即便是像 Notion 或 Google Docs 这样的顶级编辑器，也没有很好地解决这个问题
+
+<Image src="/blog/affinity/1.gif" alt="代码块光标亲和力演示" width={1000} height={1000} />
+
+类似的问题也存在于 加粗（bold）文本中。
+
+当我的光标落在加粗和普通文本之间的边界时，编辑器该如何判断：
+
+我接下来要输入的是加粗的内容，还是普通样式的内容？
+
+大多数编辑器的处理是：继承左侧的样式，即便用户希望输入的是普通文本。
+
+<Image src="/blog/affinity/2.gif" alt="加粗文本光标亲和力演示" width={1000} height={1000} />
+
+## 解决方案
+
+不过在 plate v49 中，只需要一行配置，你就可以彻底解决光标在块级元素边界"跳进跳出不可控"的问题：
+
+```tsx
+createSlatePlugin({
+  rules: { selection: { affinity: 'hard' } },
+})
+```
+
+这样设置之后，当你使用方向键在 code 标记（如 const a = 1;）周围移动光标时，系统会明确区分：
+
+从外部移入 → 第一次停在边缘；
+再按一次 → 才进入 code 内部。
+
+这就像是给光标加了一道"缓冲层"，避免误触样式，让输入变得更精准、更符合预期。
+
+如下图所示，code 的左右两侧各有一个独立的光标位置，不再是传统编辑器中的"边界即跳转"。
+
+<Image src="/blog/affinity/3.gif" alt="光标亲和力演示" width={1000} height={1000} />
+
+### Affinity: 'directional'
+
+不过回到 加粗文本（bold） 的情况，事情又有点不同。
+
+由于 bold 的左右两边 没有任何 padding，当你光标靠近边界时，第一下箭头其实已经起作用了，但用户看不到任何视觉反馈，这就造成了一种错觉：
+
+"我按下了左箭头，但光标好像没动？"
+
+这也意味着，如果我们在 bold 上使用 affinity: 'hard'，反而会让用户觉得键盘"失灵"了。
+
+为了解决这个问题，Plate.js 提供了另一种策略 还是一行代码：
+
+```ts
+rules: { selection: { affinity: 'directional' } },
+```
+
+使用 affinity: 'directional' 后，光标行为将根据移动方向智能判断：
+
+* 从右往左离开 text → 新输入会继承 普通样式；
+* 从左往右离开 bold → 输入将是bold样式。
+
+<Image src="/blog/affinity/4.gif" alt="光标亲和力演示" width={1000} height={1000} />
+
+这个策略利用了用户的操作意图，让输入行为更加自然和可预测，同时避免了视觉"卡顿"。
+
+不过默认我们只为 Link 开启了 directional 策略，详情见 [Rules](https://platejs.org/docs/plugin-rules#rulesselection)
+
+## 最后
+
+最重要的是：
+这一切的控制权，完全掌握在你手里。
+
+无论是 bold、italic、code，还是 link——
+你都可以为每一个样式（Mark），甚至每一个内联元素，指定最适合的光标行为策略。
+
+是选择 hard，让光标拥有明确的边界感？
+还是选择 directional，根据方向智能判断输入样式？
+还是干脆保持默认行为，沿用编辑器的标准策略？
+
+选择权在你手上。每一种策略，都只需一行配置即可启用。
+
+Plate.js 给你的不只是功能，而是掌控感。

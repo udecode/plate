@@ -61,7 +61,7 @@ import {
 } from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
-const components = {
+export const components = {
   a: Link,
   Accordion,
   AccordionContent,
@@ -318,13 +318,13 @@ function Callout({
   title?: ReactNode;
   /** @defaultValue info */
   type?:
-    | 'destructive'
-    | 'error'
-    | 'info'
-    | 'note'
-    | 'success'
-    | 'warn'
-    | 'warning';
+  | 'destructive'
+  | 'error'
+  | 'info'
+  | 'note'
+  | 'success'
+  | 'warn'
+  | 'warning';
 }) {
   if (type === 'warning') type = 'warn';
   if (type === 'note') type = 'info';
