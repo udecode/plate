@@ -3179,9 +3179,9 @@ __metadata:
   linkType: hard
 
 "@opentelemetry/semantic-conventions@npm:^1.21.0":
-  version: 1.34.0
-  resolution: "@opentelemetry/semantic-conventions@npm:1.34.0"
-  checksum: 10c0/a51a32a5cf5c803bd2125a680d0abacbff632f3b255d0fe52379dac191114a0e8d72a34f9c46c5483ccfe91c4061c309f3cf61a19d11347e2a69779e82cfefd0
+  version: 1.36.0
+  resolution: "@opentelemetry/semantic-conventions@npm:1.36.0"
+  checksum: 10c0/edc8a6fe3ec4fc0c67ba3a92b86fb3dcc78fe1eb4f19838d8013c3232b9868540a034dd25cfe0afdd5eae752c5f0e9f42272ff46da144a2d5b35c644478e1c62
   languageName: node
   linkType: hard
 
@@ -3954,7 +3954,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@platejs/yjs@workspace:packages/yjs":
+"@platejs/yjs@workspace:^, @platejs/yjs@workspace:packages/yjs":
   version: 0.0.0-use.local
   resolution: "@platejs/yjs@workspace:packages/yjs"
   dependencies:
@@ -6351,12 +6351,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:24.0.0, @types/node@npm:>=13.7.0":
+"@types/node@npm:*, @types/node@npm:24.0.0":
   version: 24.0.0
   resolution: "@types/node@npm:24.0.0"
   dependencies:
     undici-types: "npm:~7.8.0"
   checksum: 10c0/075f3129aa88932a0b4c3c9c28486f93a8d295151138b1fdd590cbbb59ec92d59b66201f99a0f061a7c8955a09d06ecc3fa070ed3c438a521a9890d1a3460958
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:>=13.7.0":
+  version: 24.0.15
+  resolution: "@types/node@npm:24.0.15"
+  dependencies:
+    undici-types: "npm:~7.8.0"
+  checksum: 10c0/39ead0c0ff25dde29357630b5eaa7dd73cf3af796dbd0f01ed439a8af01cbddfa6b68aa9d67fb3243962836170a4463ff856c47fa822250c585987f707eb42b3
   languageName: node
   linkType: hard
 
@@ -11883,7 +11892,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gray-matter@npm:^4.0.3":
+"gray-matter@npm:4.0.3, gray-matter@npm:^4.0.3":
   version: 4.0.3
   resolution: "gray-matter@npm:4.0.3"
   dependencies:
@@ -22534,6 +22543,7 @@ __metadata:
     "@platejs/test-utils": "workspace:^"
     "@platejs/toc": "workspace:^"
     "@platejs/toggle": "workspace:^"
+    "@platejs/yjs": "workspace:^"
     "@radix-ui/react-accordion": "npm:1.2.11"
     "@radix-ui/react-alert-dialog": "npm:1.1.14"
     "@radix-ui/react-aspect-ratio": "npm:1.1.7"
@@ -22581,6 +22591,7 @@ __metadata:
     fumadocs-ui: "npm:15.6.3"
     fzf: "npm:0.5.2"
     glob: "npm:11.0.2"
+    gray-matter: "npm:4.0.3"
     html2canvas-pro: "npm:1.5.11"
     jotai: "npm:2.8.4"
     kleur: "npm:4.1.5"
@@ -22814,10 +22825,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.25.61, zod@npm:^3.20.2, zod@npm:^3.22.4, zod@npm:^3.23.8, zod@npm:^3.24.1":
+"zod@npm:3.25.61, zod@npm:^3.20.2, zod@npm:^3.23.8, zod@npm:^3.24.1":
   version: 3.25.61
   resolution: "zod@npm:3.25.61"
   checksum: 10c0/45386e88c52b5946dbe22c95fe45f3e7c1c90c4fba8cd7b8ce4e6cf0a79c987026990cbb082c54bb2926be35ed49947f351f05b35d6507aa17c23c088a5f4667
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.22.4":
+  version: 3.25.76
+  resolution: "zod@npm:3.25.76"
+  checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c
   languageName: node
   linkType: hard
 
