@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { BaseEditorKit } from "@/registry/components/editor/editor-base-kit";
 import { ListKit } from "@/registry/components/editor/plugins/list-classic-kit";
 import { MarkdownKit } from "@/registry/components/editor/plugins/markdown-kit";
-import { listValue } from "@/registry/examples/values/list-classic-value";
+import { basicBlocksValue } from "@/registry/examples/values/basic-blocks-value";
 import { Editor, EditorContainer } from "@/registry/ui/editor";
 
 
@@ -63,11 +63,11 @@ const withCustomPlugins = (plugins: any[]): any[] => {
 let index = 0
 
 const value = normalizeNodeId([
-  // ...withCustomType(basicBlocksValue),
+  ...withCustomType(basicBlocksValue),
   // ...withCustomType(basicMarksValue),
   // ...withCustomType(tableValue),
   // ...withCustomType(codeBlockValue),
-  ...withCustomType(listValue),
+  // ...withCustomType(listValue),
   // ...listValue,
 ], {
   idCreator() {
