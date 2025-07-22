@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 49.1.10
+
+### Patch Changes
+
+- [#4505](https://github.com/udecode/plate/pull/4505) by [@felixfeng33](https://github.com/felixfeng33) – Fix custom headings node type.
+
 ## 49.1.9
 
 ### Patch Changes
