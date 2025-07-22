@@ -310,7 +310,7 @@ export const defaultRules: MdRules = {
       };
     },
     serialize: (node, options) => {
-      const key = getPluginKey(options.editor!, node.type);
+      const key = getPluginKey(options.editor!, node.type) ?? node.type;
       const depthMap = {
         h1: 1,
         h2: 2,
