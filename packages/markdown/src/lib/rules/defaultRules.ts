@@ -310,6 +310,7 @@ export const defaultRules: MdRules = {
       };
     },
     serialize: (node, options) => {
+      const key = getPluginKey(options.editor!, node.type);
       const depthMap = {
         h1: 1,
         h2: 2,
@@ -324,7 +325,7 @@ export const defaultRules: MdRules = {
           node.children,
           options
         ) as MdHeading['children'],
-        depth: depthMap[node.type as keyof typeof depthMap] as any,
+        depth: depthMap[key as keyof typeof depthMap] as any,
         type: 'heading',
       };
     },
