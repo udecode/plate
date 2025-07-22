@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 49.1.11
+
+### Patch Changes
+
+- [`c0857bf`](https://github.com/udecode/plate/commit/c0857bf9739f948c43a6f7fc603f81e02cccde95) by [@felixfeng33](https://github.com/felixfeng33) – Fix tests when custom headings
+
 ## 49.1.10
 
 ### Patch Changes
