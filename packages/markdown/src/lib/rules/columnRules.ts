@@ -1,3 +1,5 @@
+import { getPluginType, KEYS } from 'platejs';
+
 import type { MdRules } from '../types';
 
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
@@ -8,14 +10,13 @@ export const columnRules: MdRules = {
   column: {
     deserialize: (mdastNode, deco, options) => {
       const props = parseAttributes(mdastNode.attributes);
-
       return {
         children: convertChildrenDeserialize(
           mdastNode.children,
           { ...deco },
           options
         ) as any,
-        type: 'column',
+        type: getPluginType(options.editor!, KEYS.column),
         ...props,
       } as any;
     },
@@ -40,7 +41,7 @@ export const columnRules: MdRules = {
           { ...deco },
           options
         ) as any,
-        type: 'column_group',
+        type: getPluginType(options.editor!, KEYS.columnGroup) as any,
         ...props,
       };
     },
