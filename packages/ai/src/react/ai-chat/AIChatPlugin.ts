@@ -11,6 +11,7 @@ import {
   type SlateEditor,
   bindFirst,
   ElementApi,
+  getPluginType,
   KEYS,
 } from 'platejs';
 import { createTPlatePlugin } from 'platejs/react';
@@ -143,13 +144,13 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
             at: path,
             mode: 'lowest',
             reverse: true,
-            match: (t) => !!t.ai,
+            match: (t) => !!t[getPluginType(editor, KEYS.ai)],
             ...rest,
           });
         }
 
         return editor.api.node({
-          match: (n) => n.ai,
+          match: (n) => n[getPluginType(editor, KEYS.ai)],
           ...rest,
         });
       },
