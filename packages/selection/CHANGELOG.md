@@ -1,5 +1,11 @@
 # @platejs/selection
 
+## 49.1.12
+
+### Patch Changes
+
+- [#4508](https://github.com/udecode/plate/pull/4508) by [@felixfeng33](https://github.com/felixfeng33) – Add `addOnContextMenu` API method to BlockSelectionPlugin for cleaner context menu handling
+
 ## 49.0.15
 
 ### Patch Changes
