@@ -18,7 +18,7 @@ import type { PartialSelectionOptions } from '../internal';
 import { selectBlocks } from '../internal/transforms/selectBlocks';
 import { BlockMenuPlugin } from './BlockMenuPlugin';
 import { BlockSelectionAfterEditable } from './components/BlockSelectionAfterEditable';
-import { useBlockSelectable } from './hooks/useBlockSelectable';
+import { addOnContextMenu, useBlockSelectable } from './hooks/useBlockSelectable';
 import { moveSelection } from './internal/api/moveSelection';
 import { addSelectedRow, setSelectedIds } from './internal/api/setSelectedIds';
 import { shiftSelection } from './internal/api/shiftSelection';
@@ -50,6 +50,8 @@ export type BlockSelectionConfig = PluginConfig<
   },
   {
     blockSelection: {
+      /** Add block selection when right click on a block. */
+      addOnContextMenu: OmitFirst<typeof addOnContextMenu>;
       /** Set selected block ids */
       setSelectedIds: OmitFirst<typeof setSelectedIds>;
       /** Add a block to the selection. */
@@ -170,6 +172,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   }))
   .extendApi<Partial<BlockSelectionConfig['api']['blockSelection']>>(
     ({ api, editor, getOption, getOptions, setOption }) => ({
+      addOnContextMenu: bindFirst(addOnContextMenu, editor),
       moveSelection: bindFirst(moveSelection, editor),
       setSelectedIds: bindFirst(setSelectedIds, editor),
       shiftSelection: bindFirst(shiftSelection, editor),

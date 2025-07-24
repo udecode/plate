@@ -165,16 +165,12 @@ function Draggable(props: PlateElementProps) {
       <div
         ref={nodeRef}
         className="slate-blockWrapper flow-root"
-        onContextMenu={() =>
-          editor
-            .getApi(BlockSelectionPlugin)
-            .blockSelection.set(element.id as string)
-        }
+        onContextMenu={(event) => editor.getApi(BlockSelectionPlugin).blockSelection.addOnContextMenu({ element, event })}
       >
         <MemoizedChildren>{children}</MemoizedChildren>
         <DropLine />
       </div>
-    </div>
+    </div >
   );
 }
 
@@ -269,6 +265,9 @@ const DragHandle = React.memo(function DragHandle({
             } else {
               setPreviewTop(0);
             }
+          }}
+          onMouseUp={() => {
+            resetPreview();
           }}
           role="button"
         >
