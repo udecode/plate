@@ -1,12 +1,30 @@
 {
-  "allowedTools": [
-    "Bash",
-    "Edit",
-    "mcp__task_master_ai__*",
-    "mcp__plate__*",
-    "mcp_browser-tools_*",
-    "mcp_memory_*",
-    "mcp_github_*",
-    "mcp_filesystem_*"
-  ]
+  "permissions": {
+    "allow": ["Bash", "Edit", "mcp__task_master_ai__*"]
+  },
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DATA=$(cat); TRANSCRIPT=$(echo \"$DATA\" | jq -r '.transcript_path'); TITLE=$(grep -m1 '\"type\":\"summary\"' \"$TRANSCRIPT\" 2>/dev/null | jq -r '.summary' 2>/dev/null || echo \"Claude Code\"); terminal-notifier -message \"Claude finished responding\" -title \"$TITLE\" -sound Ping"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DATA=$(cat); TRANSCRIPT=$(echo \"$DATA\" | jq -r '.transcript_path'); TITLE=$(grep -m1 '\"type\":\"summary\"' \"$TRANSCRIPT\" 2>/dev/null | jq -r '.summary' 2>/dev/null || echo \"Claude Code\"); terminal-notifier -message \"Compacting conversation...\" -title \"$TITLE\" -sound Bottle"
+          }
+        ]
+      }
+    ]
+  }
 }
