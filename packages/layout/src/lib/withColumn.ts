@@ -9,10 +9,13 @@ import {
 
 export const withColumn: OverrideEditor = ({
   editor,
-  tf: { normalizeNode, selectAll },
+  tf: { apply, normalizeNode, selectAll },
   type,
 }) => ({
   transforms: {
+    apply: (operation) => {
+      return apply(operation);
+    },
     normalizeNode([n, path]) {
       // If it's a column group, ensure it has valid children
       if (
@@ -20,6 +23,15 @@ export const withColumn: OverrideEditor = ({
         n.type === editor.getType(KEYS.columnGroup)
       ) {
         const node = n as TColumnGroupElement;
+
+        // If the first child is a p, unwrap it
+        const firstChild = node.children[0];
+        if (
+          node.children.length === 1 &&
+          firstChild.type === editor.getType(KEYS.p)
+        ) {
+          editor.tf.unwrapNodes({ at: PathApi.child(path, 0) });
+        }
 
         // If no columns found, unwrap the column group
         if (
@@ -73,6 +85,17 @@ export const withColumn: OverrideEditor = ({
       // If it's a column, ensure it has at least one block (optional)
       if (ElementApi.isElement(n) && n.type === type) {
         const node = n as TColumnElement;
+
+        // node.children.forEach((child, index) => {
+        //   if (TextApi.isText(child)) {
+        //     editor.tf.wrapNodes(
+        //       { children: [], type: editor.getType(KEYS.p) },
+        //       {
+        //         at: PathApi.child(path, index),
+        //       }
+        //     );
+        //   }
+        // });
 
         if (node.children.length === 0) {
           editor.tf.removeNodes({ at: path });

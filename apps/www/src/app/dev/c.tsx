@@ -1,17 +1,17 @@
 'use client';
-
 import React from "react";
 
 import { MarkdownPlugin } from "@platejs/markdown";
-import { ElementApi, normalizeNodeId, TextApi } from "platejs";
-import { Plate, usePlateEditor } from "platejs/react";
+import { ElementApi, TextApi } from "platejs";
+import { createTPlatePlugin, Plate, usePlateEditor } from "platejs/react";
 import { useFilePicker } from "use-file-picker";
 
 import { Button } from "@/components/ui/button";
-import { BaseEditorKit } from "@/registry/components/editor/editor-base-kit";
-import { ListKit } from "@/registry/components/editor/plugins/list-classic-kit";
+import { EditorKit } from "@/registry/components/editor/editor-kit";
+import { CopilotKit } from "@/registry/components/editor/plugins/copilot-kit";
 import { MarkdownKit } from "@/registry/components/editor/plugins/markdown-kit";
 import { basicBlocksValue } from "@/registry/examples/values/basic-blocks-value";
+import { AIChatEditor } from "@/registry/ui/ai-chat-editor";
 import { Editor, EditorContainer } from "@/registry/ui/editor";
 
 
@@ -60,20 +60,15 @@ const withCustomPlugins = (plugins: any[]): any[] => {
 }
 
 
-let index = 0
 
-const value = normalizeNodeId([
+const value = [
   ...withCustomType(basicBlocksValue),
   // ...withCustomType(basicMarksValue),
   // ...withCustomType(tableValue),
   // ...withCustomType(codeBlockValue),
   // ...withCustomType(listValue),
   // ...listValue,
-], {
-  idCreator() {
-    return 'id-' + index++;
-  },
-});
+]
 
 
 
@@ -81,11 +76,25 @@ export const EditorViewClient = () => {
 
   const editor = usePlateEditor({
     plugins: [
-      ...withCustomPlugins([...BaseEditorKit, ...ListKit,]),
+      ...withCustomPlugins([
+        ...CopilotKit,
+        ...EditorKit,
+      ]),
+      createTPlatePlugin({
+        key: 'ai-test',
+        render: {
+          afterEditable: () => <AIChatEditor content={`| Element          | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| Third-level Headings | Provide further content structure and hierarchy.                           |
+| Blockquotes      | Perfect for highlighting important information, quotes from external sources, or emphasizing key points in your content. |
+| Headings         | Create a clear document structure that helps readers navigate your content effectively. |
+| Combination      | Use headings with blockquotes to emphasize important information.             |`} />
+        }
+      }),
       ...MarkdownKit
     ],
     value: value,
-  });
+  }, []);
 
   const getFileNodes = (text: string,) => {
 
@@ -118,8 +127,8 @@ export const EditorViewClient = () => {
     </Plate>
 
 
-    <div className="mt-10 px-10">
-      <Button className="mr-10" onClick={
+    <div className="mt-10 px-10 gap-10 flex">
+      <Button onClick={
         () => {
           console.log(editor.getApi(MarkdownPlugin).markdown.serialize());
         }
@@ -127,6 +136,10 @@ export const EditorViewClient = () => {
 
 
       <Button onClick={openMdFilePicker}>Deserialize</Button>
-    </div>
+
+      <Button onClick={() => {
+        console.log(editor.children)
+      }}>Current Value</Button>
+    </div >
   </>
 };
