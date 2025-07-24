@@ -94,6 +94,14 @@ export const Doc = defineDocumentType(() => ({
       required: false,
       type: 'boolean',
     },
+    date: {
+      type: 'date',
+      required: false,
+    },
+    author: {
+      type: 'string',
+      required: false,
+    },
   },
   filePathPattern: `**/*.mdx`,
   name: 'Doc',

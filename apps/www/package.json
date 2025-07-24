@@ -25,7 +25,8 @@
     "start": "next start",
     "test:r": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/test-registry.mts",
     "typecheck": "yarn prebuild && tsc --noEmit",
-    "typecheck:watch": "yarn typecheck --watch"
+    "typecheck:watch": "yarn typecheck --watch",
+    "postinstall": "fumadocs-mdx"
   },
   "browserslist": {
     "production": [
@@ -86,6 +87,7 @@
     "@platejs/test-utils": "workspace:^",
     "@platejs/toc": "workspace:^",
     "@platejs/toggle": "workspace:^",
+    "@platejs/yjs": "workspace:^",
     "@radix-ui/react-accordion": "1.2.11",
     "@radix-ui/react-alert-dialog": "1.1.14",
     "@radix-ui/react-aspect-ratio": "1.1.7",
@@ -123,8 +125,11 @@
     "date-fns": "4.1.0",
     "dotenv": "16.5.0",
     "framer-motion": "12.17.0",
-    "fumadocs-core": "15.5.1",
+    "fumadocs-core": "15.6.3",
+    "fumadocs-mdx": "11.6.11",
+    "fumadocs-ui": "15.6.3",
     "fzf": "0.5.2",
+    "gray-matter": "4.0.3",
     "html2canvas-pro": "1.5.11",
     "jotai": "2.8.4",
     "lodash": "4.17.21",

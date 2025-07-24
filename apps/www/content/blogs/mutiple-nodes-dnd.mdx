@@ -1,0 +1,49 @@
+---
+title: Comprehensive Drag-and-Drop Upgrade - @platejs/dnd@49.1.7 New Features Explained
+description: "@platejs/dnd@49.1.7 introduces significant improvements to multi-block drag-and-drop and overall drag-and-drop experience. This article details the core changes in this update and discusses potential future enhancements."
+date: 2025-07-14
+author: Felix Feng
+published: true
+badgeLink:
+  href: "/docs/dnd"
+  text: "View Docs"
+---
+
+## Comprehensive Drag-and-Drop Upgrade
+
+> This update adds multi-block drag-and-drop and fixes the issue where dropping was not possible in the margin-top area, greatly enhancing the drag-and-drop experience.
+
+### 1. Multi-block Drag-and-Drop Support
+
+You can select multiple blocks using **two methods**:
+
+- **Method 1: Using block-selection**  
+  Use the block-selection feature to select multiple blocks and drag them together:
+
+  ![block-selection](/blog/multiple-nodes-dnd/1.gif)
+
+- **Method 2: Using the editor's native selection**  
+  Directly use the editor's native selection to select multiple blocks and drag them all at once:
+
+  ![selection](/blog/multiple-nodes-dnd/2.gif)
+
+---
+
+### 2. Fixed the Issue with Dropping in margin-top Areas
+
+- Previously, when there was a `margin-top` above the target block, users could not drop in that area, which affected the smoothness of the drag-and-drop experience:
+
+  ![issue](/blog/multiple-nodes-dnd/3.gif)
+
+- In the new version, this issue has **been fixed**. Now, the drop area correctly recognizes margins, allowing users to drag and insert blocks smoothly in the margin-top area for a more natural experience:
+
+  ![fixed issue](/blog/multiple-nodes-dnd/4.gif)
+
+
+
+## Looking Ahead
+
+This update makes the overall drag-and-drop experience smoother and more natural. However, to achieve truly "freeform" drag-and-drop, further improvements are needed:
+
+- Support dropping outside the editor
+- Optimize the position of the drop line when hovering over table borders
