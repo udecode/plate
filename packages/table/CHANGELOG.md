@@ -1,5 +1,12 @@
 # @platejs/table
 
+## 49.1.13
+
+### Patch Changes
+
+- [#4512](https://github.com/udecode/plate/pull/4512) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed table cell selection "remove marks" and "set nodes" transforms (e.g. align, list)
+
 ## 49.0.19
 
 ### Patch Changes
