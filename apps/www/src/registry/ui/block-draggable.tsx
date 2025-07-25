@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
+import { expandListItemsWithChildren } from '@platejs/list';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
 import { type TElement, getPluginByType, isType, KEYS } from 'platejs';
@@ -165,12 +166,16 @@ function Draggable(props: PlateElementProps) {
       <div
         ref={nodeRef}
         className="slate-blockWrapper flow-root"
-        onContextMenu={(event) => editor.getApi(BlockSelectionPlugin).blockSelection.addOnContextMenu({ element, event })}
+        onContextMenu={(event) =>
+          editor
+            .getApi(BlockSelectionPlugin)
+            .blockSelection.addOnContextMenu({ element, event })
+        }
       >
         <MemoizedChildren>{children}</MemoizedChildren>
         <DropLine />
       </div>
-    </div >
+    </div>
   );
 }
 
@@ -254,11 +259,17 @@ const DragHandle = React.memo(function DragHandle({
                 ? blockSelection
                 : editor.api.blocks({ mode: 'highest' });
 
-            const ids = selectedBlocks.map((block) => block[0].id as string);
+            // Process selection to include list children
+            const processedBlocks = expandListItemsWithChildren(
+              editor,
+              selectedBlocks
+            );
+
+            const ids = processedBlocks.map((block) => block[0].id as string);
 
             if (ids.length > 1 && ids.includes(element.id as string)) {
               const previewTop = calculatePreviewTop(editor, {
-                blocks: selectedBlocks.map((block) => block[0]),
+                blocks: processedBlocks.map((block) => block[0]),
                 element,
               });
               setPreviewTop(previewTop);
@@ -310,16 +321,20 @@ const createDragPreviewElements = (
     .getApi(BlockSelectionPlugin)
     .blockSelection.getNodes({ sort: true });
 
-  const selectionNodes =
+  let selectionNodes =
     blockSelection.length > 0
       ? blockSelection
       : editor.api.blocks({ mode: 'highest' });
 
-  const includes = selectionNodes.some(([node]) => node.id === currentBlock.id);
+  // If current block is not in selection, use it as the starting point
+  if (!selectionNodes.some(([node]) => node.id === currentBlock.id)) {
+    selectionNodes = [[currentBlock, editor.api.findPath(currentBlock)!]];
+  }
 
-  const sortedNodes = includes
-    ? selectionNodes.map(([node]) => node)
-    : [currentBlock];
+  // Process selection nodes to include list children
+  const sortedNodes = expandListItemsWithChildren(editor, selectionNodes).map(
+    ([node]) => node
+  );
 
   if (blockSelection.length === 0) {
     editor.tf.blur();
