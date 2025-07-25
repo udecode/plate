@@ -1,5 +1,12 @@
 # @platejs/list
 
+## 49.1.13
+
+### Patch Changes
+
+- [#4512](https://github.com/udecode/plate/pull/4512) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed `toggleList` to respect list plugin's inject match when applying list transforms.
+
 ## 49.0.0
 
 ### Major Changes
