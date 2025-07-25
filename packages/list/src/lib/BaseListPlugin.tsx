@@ -80,6 +80,7 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
         },
       },
     },
+    targetPlugins: [KEYS.p],
   },
   options: {
     getListStyleType: (element) => element.style.listStyleType as ListStyleType,

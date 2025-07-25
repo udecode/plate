@@ -1,7 +1,7 @@
 import type { Editor } from '../interfaces/editor/editor-type';
 import type { NodeOf, TNode } from '../interfaces/node';
 
-import { type Path, TextApi } from '../interfaces/index';
+import { type Path, ElementApi, PathApi, TextApi } from '../interfaces/index';
 import { getAt } from './getAt';
 
 export type Predicate<T extends TNode> = PredicateFn<T> | PredicateObj;
@@ -119,5 +119,40 @@ export const combineMatchOptions = <E extends Editor>(
     const match2 = getMatch(editor, options);
 
     return (!match1 || match1(node, path)) && (!match2 || match2(node, path));
+  };
+};
+
+/** Used by liftNodes, moveNodes, removeNodes, setNodes, unwrapNodes */
+export const combineTransformMatchOptions = <E extends Editor>(
+  editor: Editor,
+  match1?: PredicateFn<NodeOf<E>>,
+  options?: any
+): Predicate<TNode> => {
+  return (node: NodeOf<E>, path: Path) => {
+    const getDefaultMatch = () => {
+      if (!options?.match) {
+        if (options?.at && PathApi.isPath(options.at)) {
+          // matchPath: match the specific node at the path
+          const [node] = editor.api.node(options.at) ?? [];
+          return (n: TNode) => {
+            return n === node;
+          };
+        } else {
+          // Default: match block elements
+          return (n: TNode) => {
+            return ElementApi.isElement(n) && editor.api.isBlock(n);
+          };
+        }
+      }
+
+      return getMatch(editor, options);
+    };
+
+    const defaultMatch = getDefaultMatch();
+
+    return (
+      (!match1 || match1(node, path)) &&
+      (!defaultMatch || defaultMatch(node, path))
+    );
   };
 };

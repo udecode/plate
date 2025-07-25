@@ -27,7 +27,9 @@ export type EditorBase<V extends Value = Value> = {
    * Editor metadata. Use this for custom fields instead of extending the editor
    * directly.
    */
-  meta: UnknownObject;
+  meta: UnknownObject & {
+    isNormalizing?: boolean;
+  };
   /** Operations that have been applied to the editor. */
   operations: Operation<DescendantIn<V>>[];
   /** The current selection of the editor. */

@@ -11,7 +11,7 @@ export * from './withDeleteTable';
 export * from './withGetFragmentTable';
 export * from './withInsertFragmentTable';
 export * from './withInsertTextTable';
-export * from './withMarkTable';
+export * from './withTableCellSelection';
 export * from './withNormalizeTable';
 export * from './withSetFragmentDataTable';
 export * from './withTable';

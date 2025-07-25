@@ -13,9 +13,9 @@ import { withDeleteTable } from './withDeleteTable';
 import { withGetFragmentTable } from './withGetFragmentTable';
 import { withInsertFragmentTable } from './withInsertFragmentTable';
 import { withInsertTextTable } from './withInsertTextTable';
-import { withMarkTable } from './withMarkTable';
 import { withNormalizeTable } from './withNormalizeTable';
 import { withSetFragmentDataTable } from './withSetFragmentDataTable';
+import { withTableCellSelection } from './withTableCellSelection';
 
 export const withTable: OverrideEditor<TableConfig> = (ctx) => {
   const {
@@ -23,13 +23,13 @@ export const withTable: OverrideEditor<TableConfig> = (ctx) => {
     tf: { selectAll, tab },
     type,
   } = ctx;
-  const mark = withMarkTable(ctx);
+  const cellSelection = withTableCellSelection(ctx);
 
   return {
     api: {
       // getFragment
       ...withGetFragmentTable(ctx).api,
-      ...mark.api,
+      ...cellSelection.api,
     },
     transforms: {
       selectAll: () => {
@@ -119,8 +119,8 @@ export const withTable: OverrideEditor<TableConfig> = (ctx) => {
       ...withApplyTable(ctx).transforms,
       // setFragmentData
       ...withSetFragmentDataTable(ctx).transforms,
-      // addMark, removeMark
-      ...mark.transforms,
+      // addMark, removeMark, setNodes, unsetNodes
+      ...cellSelection.transforms,
     },
   };
 };
