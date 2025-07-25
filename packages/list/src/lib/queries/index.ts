@@ -3,7 +3,9 @@
  */
 
 export * from './areEqListStyleType';
+export * from './expandListItemsWithChildren';
 export * from './getListAbove';
+export * from './getListChildren';
 export * from './getListSiblings';
 export * from './getNextList';
 export * from './getPreviousList';
