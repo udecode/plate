@@ -1,5 +1,13 @@
 # @platejs/list
 
+## 49.2.0
+
+### Minor Changes
+
+- [#4514](https://github.com/udecode/plate/pull/4514) by [@zbeyens](https://github.com/zbeyens) –
+  - Added `expandListItemsWithChildren` to automatically include list item children when selecting blocks for operations like drag-and-drop.
+  - Added `getListChildren` to get all child list items (with bigger indent) of a given list item.
+
 ## 49.1.13
 
 ### Patch Changes
