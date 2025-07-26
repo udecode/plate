@@ -1,5 +1,6 @@
 import type { Editor, TCodeBlockElement } from 'platejs';
 
+import { resetCodeBlockDecorations } from '../setCodeBlockToDecorations';
 import { formatJson, isValidJson } from './jsonFormatter';
 
 const supportedLanguages = new Set(['json']);
@@ -41,6 +42,16 @@ export const formatCodeBlock = (
   if (isValidSyntax(code, lang)) {
     const formattedCode = formatCode(code, lang);
     editor.tf.insertText(formattedCode, { at: element });
+
+    // Reset decorations to trigger re-highlighting
+    resetCodeBlockDecorations(element);
+
+    // Force the editor to re-render by slightly changing the selection
+    // This triggers the decorate function to run again
+    const { selection } = editor;
+    if (selection) {
+      editor.tf.setSelection(selection);
+    }
   }
 };
 
