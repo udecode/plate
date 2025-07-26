@@ -1,7 +1,7 @@
 import type { PlateEditor } from 'platejs/react';
 
 import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
-import { type TElement, KEYS, TextApi } from 'platejs';
+import { type TElement, getPluginType, KEYS, TextApi } from 'platejs';
 
 import { AIChatPlugin } from '../../react';
 import { getChunkTrimmed } from './utils';
@@ -115,12 +115,16 @@ const withoutDeserializeInMdx = (editor: PlateEditor, input: string) => {
               text: input,
             },
           ],
-          type: 'p',
+          type: getPluginType(editor, KEYS.p),
         },
       ];
     }
   } else {
     const newMdxName = statMdxTagRegex.exec(input)?.[1];
-    editor.setOption(AIChatPlugin, '_mdxName', newMdxName ?? null);
+
+    // Avoid incorrect detection in the code block
+    if (input.startsWith(`<${newMdxName}`)) {
+      editor.setOption(AIChatPlugin, '_mdxName', newMdxName ?? null);
+    }
   }
 };

@@ -1,7 +1,7 @@
 import type { PlateEditor } from 'platejs/react';
 
 import { type SerializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
-import { type Descendant, ElementApi, getPluginType, KEYS, TextApi } from 'platejs';
+import { type Descendant, ElementApi, getPluginKey, KEYS, TextApi } from 'platejs';
 
 import { getChunkTrimmed, isCompleteCodeBlock, isCompleteMath } from './utils';
 
@@ -16,7 +16,7 @@ const trimEndHeading = (
 
   if (
     lastBlock &&
-    headingKeys.has(getPluginType(editor, lastBlock.type as string) as any) &&
+    headingKeys.has(getPluginKey(editor, lastBlock.type as string) as any) &&
     ElementApi.isElement(lastBlock)
   ) {
     const lastTextNode = lastBlock.children.at(-1);

@@ -43,8 +43,7 @@ import { Editor, EditorContainer } from "@/registry/ui/editor";
 const testScenarios = {
   // Basic markdown with complete elements
   columns: [
-    "<",
-    "column",
+    "paragraph\n\n<column",
     "_group",
     ">\n",
     " ",
@@ -113,7 +112,7 @@ const testScenarios = {
     "</",
     "column",
     "_group",
-    ">",
+    ">\n\nparagraph",
   ],
   listWithImage: [
     "## ",
@@ -124,6 +123,64 @@ const testScenarios = {
     "to OpenA",
     "I](https://www.openai.com)\n",
     "- ![Sample Image](https://via.placeholder.com/150)\n\n",
+  ],
+  nestedStructureBlock: [
+    "```",
+    "javascript",
+    "\n",
+    "import",
+    " React",
+    " from",
+    " '",
+    "react",
+    "';\n",
+    "import",
+    " {",
+    " Plate",
+    " }",
+    " from",
+    " '@",
+    "ud",
+    "ecode",
+    "/",
+    "plate",
+    "';\n\n",
+    "const",
+    " Basic",
+    "Editor",
+    " =",
+    " ()",
+    " =>",
+    " {\n",
+    " ",
+    " return",
+    " (\n",
+    "   ",
+    " <",
+    "Plate",
+    ">\n",
+    "     ",
+    " {/*",
+    " Add",
+    " your",
+    " plugins",
+    " and",
+    " components",
+    " here",
+    " */}\n",
+    "   ",
+    " </",
+    "Plate",
+    ">\n",
+    " ",
+    " );\n",
+    "};\n\n",
+    "export",
+    " default",
+    " Basic",
+    "Editor",
+    ";\n",
+    "```",
   ]
 };
 
@@ -255,6 +312,7 @@ export const MarkdownStreamDemo = () => {
 
       const chunk = transformedCurrentChunks[i]
 
+
       streamInsertChunk(editor, chunk, {
         textProps: {
           [getPluginType(editor, KEYS.ai)]: true,
@@ -284,6 +342,7 @@ export const MarkdownStreamDemo = () => {
           >
             <option value="columns">Columns</option>
             <option value="listWithImage">List with Image</option>
+            <option value="nestedStructureBlock">Nested Structure Block</option>
           </select>
         </div>
 
