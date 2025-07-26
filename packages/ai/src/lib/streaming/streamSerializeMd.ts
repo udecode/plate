@@ -16,7 +16,7 @@ const trimEndHeading = (
 
   if (
     lastBlock &&
-    headingKeys.has(getPluginType(editor, KEYS.p) as any) &&
+    headingKeys.has(getPluginType(editor, lastBlock.type as string) as any) &&
     ElementApi.isElement(lastBlock)
   ) {
     const lastTextNode = lastBlock.children.at(-1);
