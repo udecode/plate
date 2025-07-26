@@ -1,21 +1,22 @@
 import type { PlateEditor } from 'platejs/react';
 
 import { type SerializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
-import { type Descendant, ElementApi, TextApi } from 'platejs';
+import { type Descendant, ElementApi, getPluginType, KEYS, TextApi } from 'platejs';
 
 import { getChunkTrimmed, isCompleteCodeBlock, isCompleteMath } from './utils';
 
 // fixes test: should serialize heading with tailing line break
 // fixes test: incomplete line breaks
 const trimEndHeading = (
+  editor: PlateEditor,
   value: Descendant[]
 ): { trimmedText: string; value: Descendant[] } => {
-  const headingKeys = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+  const headingKeys = new Set([KEYS.h1, KEYS.h2, KEYS.h3, KEYS.h4, KEYS.h5, KEYS.h6]);
   const lastBlock = value.at(-1);
 
   if (
     lastBlock &&
-    headingKeys.has(lastBlock.type as string) &&
+    headingKeys.has(getPluginType(editor, KEYS.p) as any) &&
     ElementApi.isElement(lastBlock)
   ) {
     const lastTextNode = lastBlock.children.at(-1);
@@ -50,7 +51,7 @@ export const streamSerializeMd = (
   chunk: string
 ) => {
   const { value: optionsValue, ...restOptions } = options;
-  const { value } = trimEndHeading(optionsValue ?? editor.children);
+  const { value } = trimEndHeading(editor, optionsValue ?? editor.children);
 
   let result = '';
 

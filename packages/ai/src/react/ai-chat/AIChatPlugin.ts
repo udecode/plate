@@ -34,9 +34,10 @@ import { withAIChat } from './withAIChat';
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
   {
-    /** @private Using For streamInsertChunk */
     _blockChunks: string;
     _blockPath: Path | null;
+    /** @private Using For streamInsertChunk */
+    _mdxName: string | null;
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
     chat: Partial<UseChatHelpers>;
@@ -101,6 +102,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   options: {
     _blockChunks: '',
     _blockPath: null,
+    _mdxName: null,
     aiEditor: null,
     chat: { messages: [] } as any,
     experimental_lastTextId: null,
