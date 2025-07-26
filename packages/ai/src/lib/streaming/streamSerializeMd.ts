@@ -1,7 +1,13 @@
 import type { PlateEditor } from 'platejs/react';
 
 import { type SerializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
-import { type Descendant, ElementApi, getPluginKey, KEYS, TextApi } from 'platejs';
+import {
+  type Descendant,
+  ElementApi,
+  getPluginKey,
+  KEYS,
+  TextApi,
+} from 'platejs';
 
 import { getChunkTrimmed, isCompleteCodeBlock, isCompleteMath } from './utils';
 
@@ -11,12 +17,21 @@ const trimEndHeading = (
   editor: PlateEditor,
   value: Descendant[]
 ): { trimmedText: string; value: Descendant[] } => {
-  const headingKeys = new Set([KEYS.h1, KEYS.h2, KEYS.h3, KEYS.h4, KEYS.h5, KEYS.h6]);
+  const headingKeys = new Set([
+    KEYS.h1,
+    KEYS.h2,
+    KEYS.h3,
+    KEYS.h4,
+    KEYS.h5,
+    KEYS.h6,
+  ]);
   const lastBlock = value.at(-1);
 
   if (
     lastBlock &&
-    headingKeys.has(getPluginKey(editor, lastBlock.type as string) as any) &&
+    headingKeys.has(
+      (getPluginKey(editor, lastBlock.type as string) ?? lastBlock.type) as any
+    ) &&
     ElementApi.isElement(lastBlock)
   ) {
     const lastTextNode = lastBlock.children.at(-1);
