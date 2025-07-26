@@ -177,7 +177,6 @@ export const MarkdownStreamDemo = () => {
   const [activeIndex, setActiveIndex] = useState<number>(0)
   const isPauseRef = useRef(false);
   const streamSessionRef = useRef(0);
-  const [showComparison, setShowComparison] = useState(true);
 
   const editor = usePlateEditor({
     plugins: [
@@ -334,9 +333,18 @@ export const MarkdownStreamDemo = () => {
             }
           }}>Next</Button>
 
-          <Button onClick={() => setShowComparison(!showComparison)}>
-            {showComparison ? 'Hide' : 'Show'} Raw Comparison
-          </Button>
+
+          <Button onClick={(() => {
+            editor.setOption(AIChatPlugin, 'streaming', false);
+            editor.setOption(AIChatPlugin, '_blockChunks', '');
+            editor.setOption(AIChatPlugin, '_blockPath', null);
+
+            streamInsertChunk(editor, 'test', {
+              textProps: {
+                [getPluginType(editor, KEYS.ai)]: true,
+              },
+            });
+          })}>Test Button</Button>
         </div>
 
       </div>
@@ -362,26 +370,22 @@ export const MarkdownStreamDemo = () => {
         </div>
       </div>
 
-      {showComparison && (
-        <>
-          <h2 className="text-xl font-semibold mt-8 mb-4">Raw Token Comparison</h2>
-          <div className="flex gap-10 my-2">
-            <div className="w-1/2">
-              <h3 className="font-semibold mb-2">Original Chunks</h3>
-              <Tokens activeIndex={0} chunks={splitChunksByLinebreak(currentChunks)} />
-            </div>
+      <h2 className="text-xl font-semibold mt-8 mb-4">Raw Token Comparison</h2>
+      <div className="flex gap-10 my-2">
+        <div className="w-1/2">
+          <h3 className="font-semibold mb-2">Original Chunks</h3>
+          <Tokens activeIndex={0} chunks={splitChunksByLinebreak(currentChunks)} />
+        </div>
 
-            <div className="w-1/2">
-              <h3 className="font-semibold mb-2">Raw Markdown Text</h3>
-              <textarea
-                className={cn("w-full border rounded h-[500px] overflow-y-auto p-4 font-mono text-sm")}
-                readOnly
-                value={currentChunks.join('')}
-              />
-            </div>
-          </div>
-        </>
-      )}
+        <div className="w-1/2">
+          <h3 className="font-semibold mb-2">Raw Markdown Text</h3>
+          <textarea
+            className={cn("w-full border rounded h-[500px] overflow-y-auto p-4 font-mono text-sm")}
+            readOnly
+            value={currentChunks.join('')}
+          />
+        </div>
+      </div>
     </section>
   );
 };
@@ -396,13 +400,6 @@ type TChunks = {
     text: string;
   }[];
   linebreaks: number;
-}
-
-// Helper function to run a quick test of the transform
-function runTransformTest(name: string, chunks: string[], expected: string[]): { actual: string[]; pass: boolean; } {
-  const actual = transformedChunks(chunks);
-  const pass = JSON.stringify(actual) === JSON.stringify(expected);
-  return { actual, pass };
 }
 
 function splitChunksByLinebreak(chunks: string[]) {

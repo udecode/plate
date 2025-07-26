@@ -8,6 +8,7 @@ import { useFilePicker } from "use-file-picker";
 
 import { Button } from "@/components/ui/button";
 import { EditorKit } from "@/registry/components/editor/editor-kit";
+import { BlockPlaceholderKit } from "@/registry/components/editor/plugins/block-placeholder-kit";
 import { CopilotKit } from "@/registry/components/editor/plugins/copilot-kit";
 import { MarkdownKit } from "@/registry/components/editor/plugins/markdown-kit";
 import { basicBlocksValue } from "@/registry/examples/values/basic-blocks-value";
@@ -80,6 +81,8 @@ export const EditorViewClient = () => {
         ...CopilotKit,
         ...EditorKit,
       ]),
+      ...BlockPlaceholderKit,
+
       createTPlatePlugin({
         key: 'ai-test',
         render: {

@@ -32,6 +32,7 @@ import {
 } from '@platejs/table';
 // import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
 import { MarkdownKit } from '../../../../../apps/www/src/registry/components/editor/plugins/markdown-kit';
+import { BaseListPlugin } from '@platejs/list';
 
 export const createTestEditor = (plugins: any[] = []) =>
   createPlateEditor({
@@ -61,6 +62,7 @@ export const createTestEditor = (plugins: any[] = []) =>
       BaseSuperscriptPlugin,
       BaseHighlightPlugin,
       BaseKbdPlugin,
+      BaseListPlugin,
       ...MarkdownKit,
       ...plugins,
     ],

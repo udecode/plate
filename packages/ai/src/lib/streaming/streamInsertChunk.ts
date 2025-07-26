@@ -1,6 +1,13 @@
 import type { PlateEditor } from 'platejs/react';
 
-import { type SlateEditor, NodeApi, PathApi } from 'platejs';
+import {
+  type Path,
+  type SlateEditor,
+  getPluginType,
+  KEYS,
+  NodeApi,
+  PathApi,
+} from 'platejs';
 
 import { AIChatPlugin } from '../../react';
 import { streamDeserializeInlineMd } from './streamDeserializeInlineMd';
@@ -25,8 +32,11 @@ export function streamInsertChunk(
   if (_blockPath === null) {
     const blocks = streamDeserializeMd(editor, chunk);
     const path = getCurrentBlockPath(editor);
+    const startBlock = editor.api.node(path)![0];
+
     const startInEmptyParagraph =
-      NodeApi.string(editor.api.node(path)![0]).length === 0;
+      NodeApi.string(startBlock).length === 0 &&
+      startBlock.type === getPluginType(editor, KEYS.p);
 
     // if start in empty paragraph, remove it
     if (startInEmptyParagraph) {
@@ -144,9 +154,9 @@ export function streamInsertChunk(
             AIChatPlugin,
             '_blockChunks',
             // one block includes multiple children
-            tempBlocks[0].type === 'code_block' ||
-              tempBlocks[0].type === 'table' ||
-              tempBlocks[0].type === 'equation'
+            tempBlocks[0].type === getPluginType(editor, KEYS.codeBlock) ||
+              tempBlocks[0].type === getPluginType(editor, KEYS.table) ||
+              tempBlocks[0].type === getPluginType(editor, KEYS.equation)
               ? tempBlockChunks
               : serializedBlock
           );
@@ -206,11 +216,32 @@ export function streamInsertChunk(
 }
 
 export const getCurrentBlockPath = (editor: SlateEditor) => {
-  const anchorNode = editor.getApi(AIChatPlugin).aiChat.node({ anchor: true });
+  const getAnchorPreviousPath = (editor: SlateEditor): Path | undefined => {
+    const anchorNode = editor
+      .getApi(AIChatPlugin)
+      .aiChat.node({ anchor: true });
 
-  if (anchorNode) {
-    return PathApi.previous(anchorNode[1])!;
+    if (anchorNode) {
+      return PathApi.previous(anchorNode[1])!;
+    }
+  };
+
+  const getFocusPath = (editor: SlateEditor): Path | undefined => {
+    return editor.selection?.focus.path.slice(0, 1);
+  };
+
+  const path = getAnchorPreviousPath(editor) ?? getFocusPath(editor) ?? [0];
+
+  const entry = editor.api.node(path);
+
+  // streaming in table or columns shouldn't remove them
+  if (
+    entry &&
+    (entry[0].type === getPluginType(editor, KEYS.columnGroup) ||
+      entry[0].type === getPluginType(editor, KEYS.table))
+  ) {
+    return editor.api.above()?.[1] ?? path;
   }
 
-  return editor.selection?.focus.path.slice(0, 1) ?? [0];
+  return path;
 };
