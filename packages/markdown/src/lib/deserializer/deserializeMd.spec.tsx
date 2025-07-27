@@ -656,4 +656,11 @@ describe('fixures', () => {
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
+
+  it.skip('should deserialize image within list', () => {
+    const input = '- ![alt text](https://example.com/image.png)';
+
+    const result = deserializeMd(editor, input);
+    console.log(JSON.stringify(result));
+  });
 });

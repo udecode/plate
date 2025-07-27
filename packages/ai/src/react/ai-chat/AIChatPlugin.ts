@@ -11,6 +11,7 @@ import {
   type SlateEditor,
   bindFirst,
   ElementApi,
+  getPluginType,
   KEYS,
 } from 'platejs';
 import { createTPlatePlugin } from 'platejs/react';
@@ -33,9 +34,10 @@ import { withAIChat } from './withAIChat';
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
   {
-    /** @private Using For streamInsertChunk */
     _blockChunks: string;
     _blockPath: Path | null;
+    /** @private Using For streamInsertChunk */
+    _mdxName: string | null;
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
     chat: Partial<UseChatHelpers>;
@@ -100,6 +102,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   options: {
     _blockChunks: '',
     _blockPath: null,
+    _mdxName: null,
     aiEditor: null,
     chat: { messages: [] } as any,
     experimental_lastTextId: null,
@@ -143,13 +146,13 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
             at: path,
             mode: 'lowest',
             reverse: true,
-            match: (t) => !!t.ai,
+            match: (t) => !!t[getPluginType(editor, KEYS.ai)],
             ...rest,
           });
         }
 
         return editor.api.node({
-          match: (n) => n.ai,
+          match: (n) => n[getPluginType(editor, KEYS.ai)],
           ...rest,
         });
       },

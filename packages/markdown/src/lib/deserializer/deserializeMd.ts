@@ -36,6 +36,19 @@ export type DeserializeMdOptions = {
   onError?: (error: Error) => void;
 };
 
+export const markdownToAstProcessor = (
+  editor: SlateEditor,
+  data: string,
+  options?: DeserializeMdOptions
+) => {
+  const mergedOptions = getMergedOptionsDeserialize(editor, options);
+
+  return unified()
+    .use(remarkParse)
+    .use(mergedOptions.remarkPlugins ?? [])
+    .parse(data);
+};
+
 export const markdownToSlateNodes = (
   editor: SlateEditor,
   data: string,

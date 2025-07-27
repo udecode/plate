@@ -22,6 +22,7 @@ export type {
   ListItem as MdListItem,
   // Basic node types
   Paragraph as MdParagraph,
+  PhrasingContent as MDPhrasingContent,
   Root as MdRoot,
   RootContent as MdRootContent,
   Strong as MdStrong,

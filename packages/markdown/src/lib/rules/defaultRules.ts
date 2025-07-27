@@ -850,7 +850,7 @@ export const defaultRules: MdRules = {
 
                     return child;
                   }),
-                  type: cellType,
+                  type: getPluginType(options.editor!, cellType),
                 };
               }) || [],
             type: getPluginType(options.editor!, KEYS.tr),

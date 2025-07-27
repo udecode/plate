@@ -1,11 +1,12 @@
+import { MarkdownStreamDemo } from "./markdownStreamDemo";
 
 
-import { EditorViewClient } from './c';
 
 export default async function DevPage() {
   return (
     <main>
-      <EditorViewClient />
+      {/* <EditorViewClient /> */}
+      <MarkdownStreamDemo />
     </main>
   );
 }

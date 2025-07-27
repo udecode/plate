@@ -1,10 +1,13 @@
 import type { PlateEditor } from 'platejs/react';
 
 import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
-import { type TElement, KEYS, TextApi } from 'platejs';
+import { type TElement, getPluginType, KEYS, TextApi } from 'platejs';
 
+import { AIChatPlugin } from '../../react';
 import { getChunkTrimmed } from './utils';
 import { escapeInput } from './utils/escapeInput';
+
+const statMdxTagRegex = /<([A-Za-z][A-Za-z0-9\-_]*)>/;
 
 export const streamDeserializeMd = (
   editor: PlateEditor,
@@ -12,6 +15,10 @@ export const streamDeserializeMd = (
   options?: DeserializeMdOptions
 ) => {
   const input = escapeInput(data);
+
+  const value = withoutDeserializeInMdx(editor, input);
+
+  if (Array.isArray(value)) return value;
 
   let blocks = [];
 
@@ -89,4 +96,35 @@ export const streamDeserializeMd = (
   }
 
   return result;
+};
+
+const withoutDeserializeInMdx = (editor: PlateEditor, input: string) => {
+  const mdxName = editor.getOption(AIChatPlugin, '_mdxName');
+
+  if (mdxName) {
+    const isMdxEnd = input.includes(`</${mdxName}>`);
+
+    if (isMdxEnd) {
+      editor.setOption(AIChatPlugin, '_mdxName', null);
+      return false;
+    } else {
+      return [
+        {
+          children: [
+            {
+              text: input,
+            },
+          ],
+          type: getPluginType(editor, KEYS.p),
+        },
+      ];
+    }
+  } else {
+    const newMdxName = statMdxTagRegex.exec(input)?.[1];
+
+    // Avoid incorrect detection in the code block
+    if (input.startsWith(`<${newMdxName}`)) {
+      editor.setOption(AIChatPlugin, '_mdxName', newMdxName ?? null);
+    }
+  }
 };
