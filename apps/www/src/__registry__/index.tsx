@@ -2656,7 +2656,7 @@ export const Index: Record<string, any> = {
     name: "ai-api",
     description: "",
     type: "registry:file",
-    registryDependencies: ["https://platejs.org/r/copilot-api"],
+    registryDependencies: ["https://platejs.org/r/copilot-api","https://platejs.org/r/markdown-joiner-transform"],
     files: [{
       path: "src/registry/app/api/ai/command/route.ts",
       type: "registry:file",
@@ -2957,6 +2957,23 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
+  "markdown-joiner-transform": {
+    name: "markdown-joiner-transform",
+    description: "",
+    type: "registry:hook",
+    registryDependencies: undefined,
+    files: [{
+      path: "src/registry/lib/markdown-joiner-transform.ts",
+      type: "registry:lib",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/lib/markdown-joiner-transform.ts")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
   "tailwind-scrollbar-hide": {
     name: "tailwind-scrollbar-hide",
     description: "",
@@ -3202,6 +3219,23 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/examples/markdown-to-slate-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
+  "markdown-streaming-demo": {
+    name: "markdown-streaming-demo",
+    description: "",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/copilot-kit","https://platejs.org/r/editor-kit","https://platejs.org/r/markdown-joiner-transform"],
+    files: [{
+      path: "src/registry/examples/markdown-streaming-demo.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/markdown-streaming-demo.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

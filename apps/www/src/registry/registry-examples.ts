@@ -162,6 +162,22 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
+    dependencies: [],
+    files: [
+      {
+        path: 'examples/markdown-streaming-demo.tsx',
+        type: 'registry:example',
+      },
+    ],
+    name: 'markdown-streaming-demo',
+    registryDependencies: [
+      'copilot-kit',
+      'editor-kit',
+      'markdown-joiner-transform',
+    ],
+    type: 'registry:example',
+  },
+  {
     dependencies: ['@platejs/yjs', 'nanoid'],
     description: 'Real-time collaboration with cursors and selections.',
     files: [

@@ -7,10 +7,10 @@ import { getPluginType, KEYS } from "platejs";
 import { Plate, usePlateEditor } from "platejs/react";
 
 import { Button } from "@/components/ui/button";
-import { MarkdownJoiner } from "@/lib/markdown-joiner-transform";
 import { cn } from "@/lib/utils";
 import { EditorKit } from "@/registry/components/editor/editor-kit";
 import { CopilotKit } from "@/registry/components/editor/plugins/copilot-kit";
+import { MarkdownJoiner } from "@/registry/lib/markdown-joiner-transform";
 import { Editor, EditorContainer } from "@/registry/ui/editor";
 const testScenarios = {
   // Basic markdown with complete elements
@@ -289,7 +289,7 @@ const testScenarios = {
 
 
 
-export const MarkdownStreamDemo = () => {
+export default function MarkdownStreamingDemo() {
   const [selectedScenario, setSelectedScenario] = useState<keyof typeof testScenarios>('columns');
   const [activeIndex, setActiveIndex] = useState<number>(0)
   const isPauseRef = useRef(false);
@@ -347,7 +347,7 @@ export const MarkdownStreamDemo = () => {
 
 
   return (
-    <section className="p-20 ">
+    <section className="p-20 h-full overflow-y-auto">
       <div className="mb-10">
         {/* Scenario Selection */}
         <div className="mb-4">
