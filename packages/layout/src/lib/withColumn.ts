@@ -13,9 +13,6 @@ export const withColumn: OverrideEditor = ({
   type,
 }) => ({
   transforms: {
-    apply: (operation) => {
-      return apply(operation);
-    },
     normalizeNode([n, path]) {
       // If it's a column group, ensure it has valid children
       if (
