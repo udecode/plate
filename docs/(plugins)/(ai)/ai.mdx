@@ -21,7 +21,7 @@ docs:
   - **Chat Mode**: Preview responses with accept/reject options
   - **Insert Mode**: Direct content insertion with markdown streaming
 - **Smart Content Processing**: Optimized chunking for tables, code blocks, and complex structures
-- **Streaming Responses**: Real-time AI content generation with enhanced support for:
+- **Streaming Responses**: Real-time AI content generation with support for:
   - **Table Streaming**: Seamless streaming into table cells
   - **Column Streaming**: Direct streaming into column layouts
   - **MDX Tag Handling**: Proper preservation of custom MDX elements during streaming
@@ -1046,14 +1046,14 @@ Special undo operation for AI changes:
 
 ### Enhanced Empty Paragraph Handling
 
-The AI streaming system now intelligently handles empty paragraphs:
+The AI streaming system intelligently handles empty paragraphs:
 - Only removes truly empty paragraphs when starting to stream
 - Preserves paragraphs containing only whitespace or formatting marks
 - Prevents accidental content loss during streaming initialization
 
 ### Table and Column Support
 
-AI streaming now seamlessly works within complex structures:
+AI streaming seamlessly works within complex structures:
 
 **Tables:**
 - Streams directly into table cells without disrupting table structure
@@ -1067,7 +1067,7 @@ AI streaming now seamlessly works within complex structures:
 
 ### MDX Tag Preservation
 
-During streaming, the system now:
+During streaming, the system:
 - Detects and preserves custom MDX tags
 - Prevents MDX content from being incorrectly parsed as Markdown
 - Maintains proper nesting of MDX elements

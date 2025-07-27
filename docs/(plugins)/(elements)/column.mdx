@@ -13,7 +13,6 @@ docs:
 
 - Add columns to your document.
 - Choose from a variety of column layouts using `column-group-node` toolbar.
-- Automatic width normalization ensures columns always sum to 100%.
 - [ ] Resizable columns
 
 </PackageInfo>
@@ -249,16 +248,3 @@ Update the column layout of an existing column group.
   Whether the popover is open.
 </APIReturns>
 </API>
-
-## Width Normalization
-
-The column plugin automatically normalizes column widths to ensure they always sum to 100%. This feature:
-
-- **Maintains Layout Integrity**: Prevents broken layouts from manual width adjustments
-- **Automatic Adjustment**: When column widths don't sum to 100%, the difference is distributed equally among all columns
-- **Handles Dynamic Changes**: Works seamlessly when adding or removing columns
-- **Preserves Relative Proportions**: Maintains the relative size differences between columns while ensuring the total is 100%
-
-### Example
-
-If you have three columns with widths `30%`, `40%`, and `20%` (total 90%), the plugin will automatically adjust them to approximately `33.33%`, `43.33%`, and `23.33%` to reach 100%.
