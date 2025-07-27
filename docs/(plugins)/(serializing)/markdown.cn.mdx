@@ -812,8 +812,8 @@ Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages
 | `<video src="..." />`   | `video`                   | Custom Video element                       |
 | `<toc />`               | `toc`                     | Table of Contents                          |
 | `<callout>...</callout>`| `callout`                 | Callout block                              |
-| `<column_group>...`| `column_group`            | Multi-column layout                      |
-| `<column>...`       | `column`                  | Single column (part of column_group)       |
+| `<column_group>...</column_group>`| `column_group`            | 多列布局容器                              |
+| `<column width="50%">...</column>`| `column`                  | 单列，带有可选的宽度属性                    |
 
 ## Appendix C: Components for Rendering
 
@@ -896,6 +896,63 @@ export function PlateMarkdown({
 <Callout type="info" title="Initial Value">
   This `PlateMarkdown` component provides a **read-only** view. For full editing, see the [Installation guides](/docs/installation).
 </Callout>
+
+## 使用分栏
+
+通过 MDX 支持为多列文档启用列布局。
+
+**插件配置：**
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
+import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ColumnPlugin,
+    ColumnItemPlugin,
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkMdx], // 列 MDX 语法所需
+      },
+    }),
+  ],
+});
+```
+
+**支持的格式：**
+```tsx
+const markdown = `
+<column_group>
+  <column width="50%">
+    50% 宽度的左列内容
+  </column>
+  <column width="50%">
+    50% 宽度的右列内容
+  </column>
+</column_group>
+
+<column_group>
+  <column width="33%">第一列</column>
+  <column width="33%">第二列</column>
+  <column width="34%">第三列</column>
+</column_group>
+`;
+
+// 假设 `editor` 是您配置的 Plate 编辑器实例
+const slateValue = editor.api.markdown.deserialize(markdown);
+// 创建带有嵌套列元素的 column_group
+
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+// 保留带有宽度属性的列结构
+```
+
+**列功能：**
+- 支持任意数量的列
+- 宽度属性是可选的（默认平均分配）
+- 完全支持列内嵌套内容
+- 宽度标准化确保列总和始终为 100%
 
 ## Security Considerations
 
