@@ -7,10 +7,10 @@ import { getPluginType, KEYS } from "platejs";
 import { Plate, usePlateEditor } from "platejs/react";
 
 import { Button } from "@/components/ui/button";
+import { MarkdownJoiner } from "@/lib/markdown-joiner-transform";
 import { cn } from "@/lib/utils";
 import { EditorKit } from "@/registry/components/editor/editor-kit";
 import { CopilotKit } from "@/registry/components/editor/plugins/copilot-kit";
-import { MarkdownJoiner } from "@/registry/lib/markdown-joiner-transform";
 import { Editor, EditorContainer } from "@/registry/ui/editor";
 const testScenarios = {
   // Basic markdown with complete elements

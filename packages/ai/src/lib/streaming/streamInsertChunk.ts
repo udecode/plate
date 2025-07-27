@@ -21,6 +21,15 @@ export interface SteamInsertChunkOptions {
   textProps?: any;
 }
 
+const getNextPath = (path: Path, length: number) => {
+  let result = path;
+   
+  for (let i = 0; i < length; i++) {
+    result = PathApi.next(result);
+  }
+  return result;
+};
+
 /** @experimental */
 export function streamInsertChunk(
   editor: PlateEditor,
@@ -50,6 +59,7 @@ export function streamInsertChunk(
         select: true,
       });
 
+
       editor.setOption(AIChatPlugin, '_blockPath', getCurrentBlockPath(editor));
       editor.setOption(AIChatPlugin, '_blockChunks', chunk);
 
@@ -64,9 +74,7 @@ export function streamInsertChunk(
           select: true,
         });
 
-        const lastBlock =
-          editor.api.node(nextBlocks.at(-1)) ??
-          editor.api.node([nextPath[0] + nextBlocks.length])!;
+        const lastBlock = editor.api.node(getNextPath(nextPath, nextBlocks.length))!;
 
         editor.setOption(AIChatPlugin, '_blockPath', lastBlock[1]);
 
@@ -187,7 +195,7 @@ export function streamInsertChunk(
       });
 
       if (tempBlocks.length > 1) {
-        const newEndBlockPath = [_blockPath[0] + tempBlocks.length - 1];
+        const newEndBlockPath = getNextPath(_blockPath, tempBlocks.length - 1);
 
         editor.tf.insertNodes(
           nodesWithProps(editor, tempBlocks.slice(1), options),
