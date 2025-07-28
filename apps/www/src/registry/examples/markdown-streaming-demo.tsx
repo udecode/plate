@@ -1,17 +1,21 @@
 'use client'
-import { type HTMLAttributes, useCallback, useRef, useState } from "react";
+import { type HTMLAttributes, useCallback, useReducer, useRef, useState } from "react";
 
 import { streamInsertChunk } from "@platejs/ai";
 import { AIChatPlugin } from "@platejs/ai/react";
+import { deserializeMd } from "@platejs/markdown";
+import { ChevronFirstIcon, ChevronLastIcon, PauseIcon, PlayIcon, RotateCcwIcon } from "lucide-react";
 import { getPluginType, KEYS } from "platejs";
-import { Plate, usePlateEditor } from "platejs/react";
+import { Plate, usePlateEditor, usePlateViewEditor } from "platejs/react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { EditorKit } from "@/registry/components/editor/editor-kit";
 import { CopilotKit } from "@/registry/components/editor/plugins/copilot-kit";
 import { MarkdownJoiner } from "@/registry/lib/markdown-joiner-transform";
-import { Editor, EditorContainer } from "@/registry/ui/editor";
+import { Editor, EditorContainer, EditorView } from "@/registry/ui/editor";
+
+import { BaseEditorKit } from "../components/editor/editor-base-kit";
 const testScenarios = {
   // Basic markdown with complete elements
   columns: [
@@ -294,6 +298,9 @@ export default function MarkdownStreamingDemo() {
   const [activeIndex, setActiveIndex] = useState<number>(0)
   const isPauseRef = useRef(false);
   const streamSessionRef = useRef(0);
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  const [streaming, setStreaming] = useState(false);
+  const [isPlateStatic, setIsPlateStatic] = useState(false);
 
   const editor = usePlateEditor({
     plugins: [
@@ -303,11 +310,17 @@ export default function MarkdownStreamingDemo() {
     value: [],
   }, []);
 
+  const editorStatic = usePlateViewEditor({
+    plugins: BaseEditorKit
+  }, [])
+
+
 
   const currentChunks = testScenarios[selectedScenario];
   const transformedCurrentChunks = transformedChunks(currentChunks);
 
   const onStreaming = useCallback(async () => {
+    setStreaming(true);
     streamSessionRef.current += 1;
     const sessionId = streamSessionRef.current;
 
@@ -343,7 +356,75 @@ export default function MarkdownStreamingDemo() {
 
       if (sessionId !== streamSessionRef.current) return;
     }
+    setStreaming(false);
   }, [editor, transformedCurrentChunks]);
+
+
+  const onStreamingStatic = useCallback(async () => {
+    let output = ""
+    setStreaming(true);
+    streamSessionRef.current += 1;
+
+    for (const chunk of transformedCurrentChunks) {
+      output += chunk.chunk;
+      editorStatic.children = deserializeMd(editorStatic, output)
+      setActiveIndex(prev => prev + 1);
+      forceUpdate()
+      await new Promise(resolve => setTimeout(resolve, chunk.delayInMs));
+    }
+    setStreaming(false);
+
+
+  }, [editorStatic, transformedCurrentChunks]);
+
+
+  const onReset = useCallback(() => {
+    setActiveIndex(0);
+    if (isPlateStatic) {
+      editorStatic.children = []
+      forceUpdate()
+    } else {
+      editor.tf.setValue([]);
+      editor.setOption(AIChatPlugin, 'streaming', false);
+      editor.setOption(AIChatPlugin, '_blockChunks', '');
+      editor.setOption(AIChatPlugin, '_blockPath', null);
+    }
+  }, [editor, editorStatic, isPlateStatic]);
+
+  const onNavigate = useCallback((targetIndex: number) => {
+    // Check if navigation is possible
+    if (targetIndex < 0 || targetIndex > transformedCurrentChunks.length) return;
+
+    if (isPlateStatic) {
+      let output = ""
+      for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
+        output += chunk.chunk
+      }
+
+      editorStatic.children = deserializeMd(editorStatic, output)
+      setActiveIndex(targetIndex);
+      forceUpdate()
+
+    } else {
+      editor.tf.setValue([])
+
+      editor.setOption(AIChatPlugin, 'streaming', false);
+      editor.setOption(AIChatPlugin, '_blockChunks', '');
+      editor.setOption(AIChatPlugin, '_blockPath', null);
+
+      for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
+        streamInsertChunk(editor, chunk.chunk, {
+          textProps: {
+            [getPluginType(editor, KEYS.ai)]: true,
+          },
+        });
+      }
+      setActiveIndex(targetIndex);
+    }
+  }, [editor, editorStatic, isPlateStatic, transformedCurrentChunks]);
+
+  const onPrev = useCallback(() => onNavigate(activeIndex - 1), [onNavigate, activeIndex]);
+  const onNext = useCallback(() => onNavigate(activeIndex + 1), [onNavigate, activeIndex]);
 
 
   return (
@@ -371,92 +452,97 @@ export default function MarkdownStreamingDemo() {
 
         {/* Control Buttons */}
         <div className="flex gap-2 mb-4">
-          <Button onClick={onStreaming}>Start Streaming</Button>
 
-          <Button onClick={() => isPauseRef.current = !isPauseRef.current}>
-            {isPauseRef.current ? 'Resume' : 'Pause'}
+
+          <Button onClick={onPrev}>
+            <ChevronFirstIcon />
           </Button>
 
           <Button onClick={() => {
-            if (activeIndex > 0) {
-              editor.tf.setValue([])
-
-              editor.setOption(AIChatPlugin, 'streaming', false);
-              editor.setOption(AIChatPlugin, '_blockChunks', '');
-              editor.setOption(AIChatPlugin, '_blockPath', null);
-
-              for (const chunk of transformedCurrentChunks.slice(0, activeIndex - 1)) {
-                streamInsertChunk(editor, chunk.chunk, {
-                  textProps: {
-                    [getPluginType(editor, KEYS.ai)]: true,
-                  },
-                });
+            if (streaming) {
+              isPauseRef.current = !isPauseRef.current;
+              forceUpdate();
+            } else {
+              if (isPlateStatic) {
+                onStreamingStatic();
+              } else {
+                onStreaming();
               }
-              setActiveIndex(prev => Math.max(0, prev - 1));
             }
-          }}>Prev</Button>
+
+          }}>
+            {isPauseRef.current || !streaming ? <PlayIcon /> : <PauseIcon />}
+          </Button>
+
+
+          <Button onClick={onNext}>
+            <ChevronLastIcon />
+          </Button>
+
+
+          <Button
+            onClick={() => onReset()}>
+            <RotateCcwIcon />
+          </Button>
 
           <Button onClick={() => {
-            if (activeIndex < transformedCurrentChunks.length) {
-              editor.tf.setValue([])
-
-              editor.setOption(AIChatPlugin, 'streaming', false);
-              editor.setOption(AIChatPlugin, '_blockChunks', '');
-              editor.setOption(AIChatPlugin, '_blockPath', null);
-
-              for (const chunk of transformedCurrentChunks.slice(0, activeIndex + 1)) {
-                streamInsertChunk(editor, chunk.chunk, {
-                  textProps: {
-                    [getPluginType(editor, KEYS.ai)]: true,
-                  },
-                });
-              }
-              setActiveIndex(prev => Math.min(transformedCurrentChunks.length, prev + 1));
-            }
-          }}>Next</Button>
-
-
-          <Button onClick={(() => {
-            editor.setOption(AIChatPlugin, 'streaming', false);
-            editor.setOption(AIChatPlugin, '_blockChunks', '');
-            editor.setOption(AIChatPlugin, '_blockPath', null);
-
-            streamInsertChunk(editor, 'test', {
-              textProps: {
-                [getPluginType(editor, KEYS.ai)]: true,
-              },
-            });
-          })}>Test Button</Button>
+            setIsPlateStatic(!isPlateStatic);
+            onReset()
+          }}>
+            Switch to {isPlateStatic ? 'Plate' : 'PlateStatic'}
+          </Button>
         </div>
+
+        <div className="w-full h-2 bg-gray-200 rounded my-4">
+          <div
+            className="h-2 bg-primary rounded transition-all duration-300"
+            style={{
+              width: `${(activeIndex / (transformedCurrentChunks.length || 1)) * 100}%`
+            }}
+          />
+        </div>
+
 
       </div>
 
       <div className="flex gap-10 my-2">
         <div className="w-1/2">
           <h3 className="font-semibold mb-2">Transformed Chunks ({activeIndex}/{transformedCurrentChunks.length})</h3>
-          <Tokens activeIndex={activeIndex} chunks={splitChunksByLinebreak(transformedCurrentChunks.map(c => c.chunk))} />
+          <Tokens
+            activeIndex={activeIndex}
+            chunkClick={onNavigate}
+            chunks={splitChunksByLinebreak(transformedCurrentChunks.map(c => c.chunk))} />
         </div>
 
         <div className="w-1/2">
           <h3 className="font-semibold mb-2">Editor Output</h3>
-          <Plate editor={editor}>
-            <EditorContainer className="border rounded h-[500px] overflow-y-auto">
-              <Editor
-                variant="demo"
-                className="pb-[20vh]"
-                placeholder="Type something..."
-                spellCheck={false}
-              />
-            </EditorContainer>
-          </Plate>
-        </div>
-      </div>
+          {
+            isPlateStatic ? (
+              <EditorView variant="none" editor={editorStatic} />
+            ) : (
+              <>
+                <Plate editor={editor}>
+                  <EditorContainer className="border rounded h-[500px] overflow-y-auto">
+                    <Editor
+                      variant="demo"
+                      className="pb-[20vh]"
+                      placeholder="Type something..."
+                      spellCheck={false}
+                    />
+                  </EditorContainer>
+                </Plate>
+              </>
+            )
+          }
+        </div >
+      </div >
 
       <h2 className="text-xl font-semibold mt-8 mb-4">Raw Token Comparison</h2>
       <div className="flex gap-10 my-2">
         <div className="w-1/2">
           <h3 className="font-semibold mb-2">Original Chunks</h3>
-          <Tokens activeIndex={0} chunks={splitChunksByLinebreak(currentChunks)} />
+          <Tokens activeIndex={0}
+            chunks={splitChunksByLinebreak(currentChunks)} />
         </div>
 
         <div className="w-1/2">
@@ -468,7 +554,7 @@ export default function MarkdownStreamingDemo() {
           />
         </div>
       </div>
-    </section>
+    </section >
   );
 };
 
@@ -533,7 +619,7 @@ const transformedChunks = (chunks: string[]): TChunk[] => {
 }
 
 
-const Tokens = ({ activeIndex, chunks, ...props }: { activeIndex: number; chunks: TChunks[] } & HTMLAttributes<HTMLDivElement>) => {
+const Tokens = ({ activeIndex, chunkClick, chunks, ...props }: { activeIndex: number; chunks: TChunks[], chunkClick?: (index: number) => void } & HTMLAttributes<HTMLDivElement>) => {
   return (
     <div className="bg-gray-100 h-[500px] overflow-y-auto my-1 p-4 rounded font-mono " {...props}>
       {
@@ -546,10 +632,12 @@ const Tokens = ({ activeIndex, chunks, ...props }: { activeIndex: number; chunks
                 const space = lineBreak.replaceAll(' ', '␣')
 
                 return (
-                  <span key={j} className={cn(
-                    "inline-block border p-1 mx-1 rounded",
-                    activeIndex && c.index < activeIndex && 'bg-amber-500'
-                  )}>{space}</span>
+                  <span key={j}
+                    className={cn(
+                      "inline-block border p-1 mx-1 rounded",
+                      activeIndex && c.index < activeIndex && 'bg-amber-400'
+                    )}
+                    onClick={() => chunkClick && chunkClick(c.index + 1)}>{space}</span>
                 )
               })
             }
