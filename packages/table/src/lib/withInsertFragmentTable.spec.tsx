@@ -184,8 +184,10 @@ describe('withInsertFragmentTable', () => {
             <htable>
               <htr>
                 <htd>
-                  <anchor />
-                  11
+                  <hp>
+                    <anchor />
+                    11
+                  </hp>
                 </htd>
                 <htd>
                   <hp>12</hp>
@@ -196,8 +198,10 @@ describe('withInsertFragmentTable', () => {
                   <hp>21</hp>
                 </htd>
                 <htd>
-                  22
-                  <focus />
+                  <hp>
+                    22
+                    <focus />
+                  </hp>
                 </htd>
               </htr>
             </htable>

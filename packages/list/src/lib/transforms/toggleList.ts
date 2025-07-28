@@ -1,6 +1,6 @@
 import type { ElementEntryOf, ElementOf, SlateEditor, TElement } from 'platejs';
 
-import { KEYS } from 'platejs';
+import { getInjectMatch, KEYS } from 'platejs';
 
 import type { ListOptions } from './indentList';
 
@@ -61,7 +61,11 @@ export const toggleList = <
       return true;
     }
     if (editor.api.isExpanded()) {
-      const _entries = editor.api.nodes<TElement>({ block: true });
+      const match = getInjectMatch(
+        editor,
+        editor.getPlugin({ key: KEYS.list })
+      );
+      const _entries = editor.api.nodes<TElement>({ block: true, match });
       const entries = [..._entries];
 
       const eqListStyleType = areEqListStyleType(editor, entries, {

@@ -4,7 +4,6 @@ import {
   createEditor as createSlateEditor,
   getDirtyPaths,
   hasPath,
-  normalizeNode,
   setNormalizing,
   shouldNormalize,
 } from 'slate';
@@ -96,6 +95,7 @@ import { last } from './internal/editor/last';
 import { next } from './internal/editor/next';
 import { nodes } from './internal/editor/nodes';
 import { normalizeEditor } from './internal/editor/normalizeEditor';
+import { normalizeNode } from './internal/editor/normalizeNode';
 import { parent } from './internal/editor/parent';
 import { previous } from './internal/editor/previous';
 import { range } from './internal/editor/range';
@@ -258,7 +258,7 @@ export const createEditor = <V extends Value>({
 
   Object.assign(editor, {
     history: { redos: [], undos: [] },
-    meta: {},
+    meta: { isNormalizing: false },
     redo: noop('redo'),
     undo: noop('undo'),
     writeHistory: noop('writeHistory'),
