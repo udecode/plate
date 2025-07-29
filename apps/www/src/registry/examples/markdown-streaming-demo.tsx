@@ -301,6 +301,7 @@ export default function MarkdownStreamingDemo() {
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const [streaming, setStreaming] = useState(false);
   const [isPlateStatic, setIsPlateStatic] = useState(false);
+  const [speed, setSpeed] = useState<number | null>(null);
 
   const editor = usePlateEditor({
     plugins: [
@@ -352,12 +353,12 @@ export default function MarkdownStreamingDemo() {
         },
       });
 
-      await new Promise(resolve => setTimeout(resolve, chunk.delayInMs));
+      await new Promise(resolve => setTimeout(resolve, speed ?? chunk.delayInMs));
 
       if (sessionId !== streamSessionRef.current) return;
     }
     setStreaming(false);
-  }, [editor, transformedCurrentChunks]);
+  }, [editor, transformedCurrentChunks, speed]);
 
 
   const onStreamingStatic = useCallback(async () => {
@@ -370,7 +371,7 @@ export default function MarkdownStreamingDemo() {
       editorStatic.children = deserializeMd(editorStatic, output)
       setActiveIndex(prev => prev + 1);
       forceUpdate()
-      await new Promise(resolve => setTimeout(resolve, chunk.delayInMs));
+      await new Promise(resolve => setTimeout(resolve, speed ?? chunk.delayInMs));
     }
     setStreaming(false);
 
@@ -429,7 +430,7 @@ export default function MarkdownStreamingDemo() {
 
   return (
     <section className="p-20 h-full overflow-y-auto">
-      <div className="mb-10">
+      <div className="mb-10 bg-gray-100 p-4 rounded">
         {/* Scenario Selection */}
         <div className="mb-4">
           <span className="block text-sm font-medium mb-2">Test Scenario:</span>
@@ -451,7 +452,7 @@ export default function MarkdownStreamingDemo() {
         </div>
 
         {/* Control Buttons */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-4 items-center">
 
 
           <Button onClick={onPrev}>
@@ -491,6 +492,23 @@ export default function MarkdownStreamingDemo() {
           }}>
             Switch to {isPlateStatic ? 'Plate' : 'PlateStatic'}
           </Button>
+
+        </div>
+
+        <div className="flex gap-2 mb-4 items-center">
+          <span className="block text-sm font-medium">Speed:</span>
+          <select
+            className="border rounded px-2 py-1"
+            value={speed ?? 'default'}
+            onChange={e => setSpeed(e.target.value === 'default' ? null : Number(e.target.value))}
+          >
+            {['default', 10, 100, 200].map(ms => (
+              <option key={ms} value={ms}>
+                {ms === 'default' ? 'Default' : ms === 10 ? 'Fast(10ms)' : ms === 100 ? 'Medium(100ms)' : ms === 200 ? 'Slow(200ms)' : `${ms}ms`}
+              </option>
+            ))}
+          </select>
+          <span className="text-sm text-muted-foreground">The default speed is 10ms, but it adjusts to 100ms when streaming a table or code block.</span>
         </div>
 
         <div className="w-full h-2 bg-gray-200 rounded my-4">
@@ -502,7 +520,7 @@ export default function MarkdownStreamingDemo() {
           />
         </div>
 
-
+        <span className="text-sm text-muted-foreground">PlateStatic offers more robust and flawless performance.</span>
       </div>
 
       <div className="flex gap-10 my-2">
@@ -518,7 +536,7 @@ export default function MarkdownStreamingDemo() {
           <h3 className="font-semibold mb-2">Editor Output</h3>
           {
             isPlateStatic ? (
-              <EditorView variant="none" editor={editorStatic} />
+              <EditorView className="border rounded h-[500px] overflow-y-auto" editor={editorStatic} />
             ) : (
               <>
                 <Plate editor={editor}>
