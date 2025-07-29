@@ -376,7 +376,7 @@ export default function MarkdownStreamingDemo() {
     setStreaming(false);
 
 
-  }, [editorStatic, transformedCurrentChunks]);
+  }, [editorStatic, speed, transformedCurrentChunks]);
 
 
   const onReset = useCallback(() => {
