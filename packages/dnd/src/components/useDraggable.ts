@@ -5,6 +5,8 @@ import { useEditorRef } from 'platejs/react';
 import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 
 export type DraggableState = {
+  /** True when the element is ready to be dragged (e.g., on mouse down but before drag starts) */
+  isAboutToDrag: boolean;
   isDragging: boolean;
   /** The ref of the draggable element */
   nodeRef: React.RefObject<HTMLDivElement | null>;
@@ -36,7 +38,7 @@ export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
   if (!editor.plugins.dnd) return {} as any;
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { dragRef, isDragging } = useDndNode({
+  const { dragRef, isAboutToDrag, isDragging } = useDndNode({
     multiplePreviewRef,
     nodeRef,
     orientation,
@@ -46,6 +48,7 @@ export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
   });
 
   return {
+    isAboutToDrag,
     isDragging,
     nodeRef,
     previewRef: multiplePreviewRef,

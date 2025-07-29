@@ -74,7 +74,7 @@ function Draggable(props: PlateElementProps) {
   const { children, editor, element, path } = props;
   const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
 
-  const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
+  const { isAboutToDrag, isDragging, nodeRef, previewRef, handleRef } = useDraggable({
     element,
     onDropHandler: (_, { dragItem }) => {
       const id = (dragItem as { id: string[] | string }).id;
@@ -94,6 +94,7 @@ function Draggable(props: PlateElementProps) {
   const resetPreview = () => {
     if (previewRef.current) {
       previewRef.current.replaceChildren();
+      previewRef.current?.classList.add('hidden');
     }
   };
 
@@ -104,6 +105,13 @@ function Draggable(props: PlateElementProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
+
+  React.useEffect(() => {
+    if (isAboutToDrag) {
+      previewRef.current?.classList.remove('opacity-0');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAboutToDrag]);
 
   const [dragButtonTop, setDragButtonTop] = React.useState(0);
 
@@ -245,6 +253,7 @@ const DragHandle = React.memo(function DragHandle({
             });
             previewRef.current?.append(...elements);
             previewRef.current?.classList.remove('hidden');
+            previewRef.current?.classList.add('opacity-0');
             editor.setOption(DndPlugin, 'multiplePreviewRef', previewRef);
           }}
           onMouseEnter={() => {
@@ -335,6 +344,8 @@ const createDragPreviewElements = (
   const sortedNodes = expandListItemsWithChildren(editor, selectionNodes).map(
     ([node]) => node
   );
+
+  console.log("🚀 ~ createDragPreviewElements ~ sortedNodes:", sortedNodes)
 
   if (blockSelection.length === 0) {
     editor.tf.blur();
