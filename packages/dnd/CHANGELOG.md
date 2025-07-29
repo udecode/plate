@@ -1,5 +1,11 @@
 # @platejs/dnd
 
+## 49.2.2
+
+### Patch Changes
+
+- [#4528](https://github.com/udecode/plate/pull/4528) by [@felixfeng33](https://github.com/felixfeng33) – Fix dnd preview behavior by adding `isAboutToDrag` state for better preview handling
+
 ## 49.1.7
 
 ### Patch Changes
