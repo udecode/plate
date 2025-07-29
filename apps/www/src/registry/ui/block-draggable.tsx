@@ -345,8 +345,6 @@ const createDragPreviewElements = (
     ([node]) => node
   );
 
-  console.log("🚀 ~ createDragPreviewElements ~ sortedNodes:", sortedNodes)
-
   if (blockSelection.length === 0) {
     editor.tf.blur();
     editor.tf.collapse();
