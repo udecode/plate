@@ -58,12 +58,13 @@ export const useDndNode = ({
   onDropHandler,
 }: UseDndNodeOptions): {
   dragRef: ConnectDragSource;
+  isAboutToDrag: boolean;
   isDragging: boolean;
   isOver: boolean;
 } => {
   const editor = useEditorRef();
 
-  const [{ isDragging }, dragRef, preview] = useDragNode(editor, {
+  const [{ isAboutToDrag, isDragging }, dragRef, preview] = useDragNode(editor, {
     element,
     type,
     ...dragOptions,
@@ -94,6 +95,7 @@ export const useDndNode = ({
 
   return {
     dragRef,
+    isAboutToDrag,
     isDragging,
     isOver,
   };
