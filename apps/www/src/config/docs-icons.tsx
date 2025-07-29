@@ -203,6 +203,7 @@ export const DocIcons = {
   'list-toolbar-button': ListIcon,
   'mark-toolbar-button': BoldIcon,
   markdown: SquareMIcon,
+  'markdown-streaming': SquareMIcon,
   'markdown-to-slate': SquareMIcon,
   media: ImageIcon,
   'media-audio-node': AudioLinesIcon,

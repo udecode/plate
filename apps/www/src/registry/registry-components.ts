@@ -18,7 +18,7 @@ const registryApi: Registry['items'] = [
       },
     ],
     name: 'ai-api',
-    registryDependencies: ['copilot-api'],
+    registryDependencies: ['copilot-api', 'markdown-joiner-transform'],
     type: 'registry:file',
   },
   {

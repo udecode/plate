@@ -505,7 +505,9 @@ export const defaultRules: MdRules = {
             const itemContent: TListElement = {
               ...node,
               indent,
-              type: getPluginType(options.editor!, KEYS.p),
+              type: node.type === getPluginType(options.editor!, KEYS.img) 
+                ? node.type 
+                : getPluginType(options.editor!, KEYS.p),
             };
 
             // Only add listStyleType and listStart for appropriate cases
@@ -850,7 +852,7 @@ export const defaultRules: MdRules = {
 
                     return child;
                   }),
-                  type: cellType,
+                  type: getPluginType(options.editor!, cellType),
                 };
               }) || [],
             type: getPluginType(options.editor!, KEYS.tr),

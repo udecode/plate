@@ -9,6 +9,8 @@ import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { Icons } from './icons';
 
+const BlockExamples = new Set(['markdown-streaming-demo'])
+
 interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
   __dependencies__?: string;
@@ -81,7 +83,7 @@ export function ComponentPreview({
   return (
     <div className="mt-4 mb-12">
       <BlockViewer
-        block={false}
+        block={BlockExamples.has(item.name)}
         dependencies={
           props.dependencies ?? JSON.parse(props.__dependencies__ ?? '[]')
         }

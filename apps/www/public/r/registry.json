@@ -3836,7 +3836,8 @@
         "@ai-sdk/provider-utils"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/copilot-api"
+        "https://platejs.org/r/copilot-api",
+        "https://platejs.org/r/markdown-joiner-transform"
       ],
       "files": [
         {
@@ -4214,6 +4215,19 @@
       ]
     },
     {
+      "name": "markdown-joiner-transform",
+      "type": "registry:hook",
+      "dependencies": [
+        "ai"
+      ],
+      "files": [
+        {
+          "path": "src/registry/lib/markdown-joiner-transform.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
       "name": "tailwind-scrollbar-hide",
       "type": "registry:style",
       "dependencies": [
@@ -4468,6 +4482,22 @@
       "files": [
         {
           "path": "src/registry/examples/markdown-to-slate-demo.tsx",
+          "type": "registry:example"
+        }
+      ]
+    },
+    {
+      "name": "markdown-streaming-demo",
+      "type": "registry:example",
+      "dependencies": [],
+      "registryDependencies": [
+        "https://platejs.org/r/copilot-kit",
+        "https://platejs.org/r/editor-kit",
+        "https://platejs.org/r/markdown-joiner-transform"
+      ],
+      "files": [
+        {
+          "path": "src/registry/examples/markdown-streaming-demo.tsx",
           "type": "registry:example"
         }
       ]

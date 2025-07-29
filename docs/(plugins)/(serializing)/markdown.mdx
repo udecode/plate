@@ -612,6 +612,63 @@ The `remarkMention` plugin uses the **[display text](mention:id)** format - a Ma
 
 When serializing, all mentions use the link format to ensure consistency and support for special characters.
 
+### Using Columns
+
+Enable column layouts with MDX support for multi-column documents.
+
+**Plugin Configuration:**
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
+import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...other plugins
+    ColumnPlugin,
+    ColumnItemPlugin,
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkMdx], // Required for column MDX syntax
+      },
+    }),
+  ],
+});
+```
+
+**Supported Format:**
+```tsx
+const markdown = `
+<column_group>
+  <column width="50%">
+    Left column content with 50% width
+  </column>
+  <column width="50%">
+    Right column content with 50% width
+  </column>
+</column_group>
+
+<column_group>
+  <column width="33%">First</column>
+  <column width="33%">Second</column>
+  <column width="34%">Third</column>
+</column_group>
+`;
+
+// Assuming `editor` is your configured Plate editor instance
+const slateValue = editor.api.markdown.deserialize(markdown);
+// Creates column_group with nested column elements
+
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+// Preserves column structure with width attributes
+```
+
+**Column Features:**
+- Supports arbitrary number of columns
+- Width attributes are optional (defaults to equal distribution)
+- Nested content fully supported within columns
+- Width normalization ensures columns always sum to 100%
+
 </Steps>
 
 ## Remark Plugins
@@ -855,8 +912,8 @@ Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages
 | `<video src="..." />`   | `video`                   | Custom Video element                       |
 | `<toc />`               | `toc`                     | Table of Contents                          |
 | `<callout>...</callout>`| `callout`                 | Callout block                              |
-| `<column_group>...`| `column_group`            | Multi-column layout                      |
-| `<column>...`       | `column`                  | Single column (part of column_group)       |
+| `<column_group>...</column_group>`| `column_group`            | Multi-column layout container              |
+| `<column width="50%">...</column>`| `column`                  | Single column with optional width attribute|
 
 ## Appendix C: Components for Rendering
 

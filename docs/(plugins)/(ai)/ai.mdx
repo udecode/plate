@@ -21,7 +21,10 @@ docs:
   - **Chat Mode**: Preview responses with accept/reject options
   - **Insert Mode**: Direct content insertion with markdown streaming
 - **Smart Content Processing**: Optimized chunking for tables, code blocks, and complex structures
-- **Streaming Responses**: Real-time AI content generation
+- **Streaming Responses**: Real-time AI content generation with support for:
+  - **Table Streaming**: Seamless streaming into table cells
+  - **Column Streaming**: Direct streaming into column layouts
+  - **MDX Tag Handling**: Proper preservation of custom MDX elements during streaming
 - **Markdown Integration**: Full support for Markdown syntax in AI responses
 - **Customizable Prompts**: Template system for user and system prompts
 - **Built-in Vercel AI SDK Support**: Ready-to-use chat API integration
@@ -493,6 +496,11 @@ You can add [`AIToolbarButton`](/docs/components/ai-toolbar-button) to your [Too
   </KeyTableItem>
   <KeyTableItem hotkey="Escape">Close AI menu</KeyTableItem>
 </KeyTable>
+
+## Streaming Example
+
+<ComponentPreview name="markdown-streaming-demo" />
+
 
 ## Plate Plus
 
@@ -1038,6 +1046,37 @@ Removes nodes that have the AI mark.
 Special undo operation for AI changes:
 - Undoes the last operation if it was AI-generated
 - Removes the redo stack entry to prevent redoing AI operations
+
+## Streaming Behavior
+
+### Enhanced Empty Paragraph Handling
+
+The AI streaming system intelligently handles empty paragraphs:
+- Only removes truly empty paragraphs when starting to stream
+- Preserves paragraphs containing only whitespace or formatting marks
+- Prevents accidental content loss during streaming initialization
+
+### Table and Column Support
+
+AI streaming seamlessly works within complex structures:
+
+**Tables:**
+- Streams directly into table cells without disrupting table structure
+- Maintains table formatting during streaming
+- Properly handles cell boundaries
+
+**Columns:**
+- Supports streaming into column layouts
+- Preserves column width and structure
+- Enables AI content generation within multi-column documents
+
+### MDX Tag Preservation
+
+During streaming, the system:
+- Detects and preserves custom MDX tags
+- Prevents MDX content from being incorrectly parsed as Markdown
+- Maintains proper nesting of MDX elements
+- Supports streaming of content containing MDX components
 
 ## Hooks
 

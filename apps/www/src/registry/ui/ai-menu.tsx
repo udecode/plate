@@ -313,7 +313,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Insert below',
     value: 'insertBelow',
     onSelect: ({ aiEditor, editor }) => {
-      void editor.getTransforms(AIChatPlugin).aiChat.insertBelow(aiEditor);
+      /** format: 'none'  Fix insert table */
+      void editor.getTransforms(AIChatPlugin).aiChat.insertBelow(aiEditor, { format: 'none' });
     },
   },
   makeLonger: {

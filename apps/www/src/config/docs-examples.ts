@@ -51,6 +51,12 @@ export const docsExamples: SidebarNavItem[] = [
     titleCn: '数百个编辑器',
   },
   {
+    description: 'Streaming markdown to editor.',
+    href: '/docs/examples/markdown-streaming',
+    title: 'Markdown Streaming',
+    titleCn: 'Markdown 流式',
+  },
+  {
     description: 'Decorate texts with markdown preview.',
     href: '/docs/examples/preview-markdown',
     title: 'Preview Markdown',

@@ -1,6 +1,6 @@
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
-import { getPluginType, KEYS } from 'platejs';
+import { getPluginKey, getPluginType, KEYS } from 'platejs';
 
 import type { MdDecoration } from '../../types';
 import type { DeserializeMdOptions } from '../deserializeMd';
@@ -16,15 +16,18 @@ export const customMdxDeserialize = (
 ) => {
   const customJsxElementKey = mdastNode.name;
 
-  if (customJsxElementKey) {
+  const key =
+    getPluginKey(options.editor!, customJsxElementKey as any) ?? mdastNode.name;
+
+  if (key) {
     const nodeParserDeserialize = getDeserializerByKey(
-      mdastToPlate(options.editor!, customJsxElementKey as any),
+      mdastToPlate(options.editor!, key as any),
       options
     );
 
     if (nodeParserDeserialize)
       return nodeParserDeserialize(mdastNode, deco, options) as any;
-  } else {
+  } else {  
     console.warn(
       'This MDX node does not have a parser for deserialization',
       mdastNode
