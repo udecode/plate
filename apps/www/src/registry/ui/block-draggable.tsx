@@ -263,10 +263,15 @@ const DragHandle = React.memo(function DragHandle({
               .getApi(BlockSelectionPlugin)
               .blockSelection.getNodes({ sort: true });
 
-            const selectedBlocks =
+            let selectedBlocks =
               blockSelection.length > 0
                 ? blockSelection
                 : editor.api.blocks({ mode: 'highest' });
+
+            // If current block is not in selection, use it as the starting point
+            if (!selectedBlocks.some(([node]) => node.id === element.id)) {
+              selectedBlocks = [[element, editor.api.findPath(element)!]];
+            }
 
             // Process selection to include list children
             const processedBlocks = expandListItemsWithChildren(
@@ -375,7 +380,7 @@ const createDragPreviewElements = (
   const resolveElement = (node: TElement, index: number) => {
     const domNode = editor.api.toDOMNode(node)!;
     const newDomNode = domNode.cloneNode(true) as HTMLElement;
-    
+
     // Apply visual compensation for horizontal scroll
     const applyScrollCompensation = (original: Element, cloned: HTMLElement) => {
       const scrollLeft = original.scrollLeft;
@@ -384,36 +389,27 @@ const createDragPreviewElements = (
         const scrollWrapper = document.createElement('div');
         scrollWrapper.style.overflow = 'hidden';
         scrollWrapper.style.width = `${original.clientWidth}px`;
-        
+
         // Create inner container with the full content
         const innerContainer = document.createElement('div');
         innerContainer.style.transform = `translateX(-${scrollLeft}px)`;
         innerContainer.style.width = `${original.scrollWidth}px`;
-        
+
         // Move all children to the inner container
         while (cloned.firstChild) {
           innerContainer.append(cloned.firstChild);
         }
-        
+
         // Apply the original element's styles to maintain appearance
         const originalStyles = window.getComputedStyle(original);
         cloned.style.padding = '0';
         innerContainer.style.padding = originalStyles.padding;
-        
+
         scrollWrapper.append(innerContainer);
         cloned.append(scrollWrapper);
       }
-      
-      // // Recursively apply to all scrollable children
-      // const originalChildren = original.querySelectorAll('*');
-      // const clonedChildren = cloned.querySelectorAll('*');
-      // originalChildren.forEach((child, i) => {
-      //   if (child.scrollLeft > 0 && clonedChildren[i] && child !== original) {
-      //     applyScrollCompensation(child, clonedChildren[i] as HTMLElement);
-      //   }
-      // });
     };
-    
+
     applyScrollCompensation(domNode, newDomNode);
 
     ids.push(node.id as string);
