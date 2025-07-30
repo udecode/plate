@@ -4,7 +4,6 @@ export default defineConfig(
   {
     ignores: [
       'scripts/**/*',
-      '**/.contentlayer/*',
       '**/__registry__/*',
       '**/build-registry.mts',
       'packages/cli/src',

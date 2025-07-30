@@ -1,4 +1,4 @@
-import type { Doc } from 'contentlayer/generated';
+import type { Doc } from '@/types/doc';
 
 import type { Metadata } from 'next';
 

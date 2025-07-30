@@ -1,5 +1,5 @@
+import type { Doc } from '@/types/doc';
 import type { NavItem, NavItemWithChildren } from '@/types/nav';
-import type { Doc } from 'contentlayer/generated';
 
 import { docsConfig } from '@/config/docs';
 

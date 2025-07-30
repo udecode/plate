@@ -5,7 +5,6 @@
 **/index.ts
 **/*.mdx
 **/__tests__/**/*.html
-**/.contentlayer
 **/__registry__
 **/og
 apps/www/src/app/globals.css

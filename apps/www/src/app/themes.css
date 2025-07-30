@@ -219,8 +219,8 @@
     box-shadow: none;
   }
 
-  [data-slot='toggle-group'],
-  [data-slot='toggle-group-item'] {
+  [data-slot="toggle-group"],
+  [data-slot="toggle-group-item"] {
     @apply !rounded-none !shadow-none;
   }
 }
@@ -248,18 +248,18 @@
     --spacing: 0.2rem;
   }
 
-  [data-slot='select-trigger'],
-  [data-slot='toggle-group-item'] {
+  [data-slot="select-trigger"],
+  [data-slot="toggle-group-item"] {
     --spacing: 0.2rem;
   }
 
-  [data-slot='card'] {
+  [data-slot="card"] {
     border-radius: var(--radius);
     padding-block: calc(var(--spacing) * 4);
     gap: calc(var(--spacing) * 2);
   }
 
-  [data-slot='card'].pb-0 {
+  [data-slot="card"].pb-0 {
     padding-bottom: 0;
   }
 }

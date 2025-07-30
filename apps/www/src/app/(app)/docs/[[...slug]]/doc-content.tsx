@@ -3,7 +3,7 @@
 import React from 'react';
 
 import type { TocItem } from '@/lib/toc';
-import type { Doc } from 'contentlayer/generated';
+import type { Doc } from '@/types/doc';
 import type { RegistryItem } from 'shadcn/registry';
 
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
@@ -62,7 +62,8 @@ export function DocContent({
   toc?: TocItem[];
 } & Partial<RegistryItem>) {
   const title = doc?.title ?? getRegistryTitle(file);
-  const hasToc = doc?.toc && toc;
+
+  const hasToc = !!toc;
 
   const docSection = docSections[0].items!.find(
     (item) => item.value === category
@@ -103,6 +104,7 @@ export function DocContent({
                         <span className="sr-only">Previous</span>
                       </Link>
                     </Button>
+
                   )}
                   {neighbours.next?.href && (
                     <Button
@@ -118,6 +120,18 @@ export function DocContent({
                     </Button>
                   )}
                 </div>
+
+{/* 
+                <API name="AIChatPlugin">
+                  <APIOptions>
+                    <APIItem name="mode" type="'chat' | 'insert'" optional>
+                      Specifies how assistant messages are handled:
+                      - `'chat'`: Shows preview with accept/reject options
+                      - `'insert'`: Directly inserts content into editor
+                      - **Default:** `'chat'`
+                    </APIItem>
+                  </APIOptions>
+                </API> */}
               </div>
               {doc.description && (
                 <p className="text-[1.05rem] text-balance text-muted-foreground sm:text-base">
@@ -199,8 +213,8 @@ export function DocContent({
                       })
                     )}
                     href={item.route as any}
-                    // rel={item.route?.includes('https') ? 'noreferrer' : undefined}
-                    // target={item.route?.includes('https') ? '_blank' : undefined}
+                  // rel={item.route?.includes('https') ? 'noreferrer' : undefined}
+                  // target={item.route?.includes('https') ? '_blank' : undefined}
                   >
                     {getDocTitle(item)}
                   </Link>

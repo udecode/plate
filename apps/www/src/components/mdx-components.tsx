@@ -1,18 +1,13 @@
-'use client';
-
 import * as React from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 
 import { cva } from 'class-variance-authority';
-import { Provider } from 'jotai';
 import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
-import { useMDXComponent } from 'next-contentlayer2/hooks';
 import Image from 'next/image';
 
 import { Card, Cards } from '@/components/cards';
 import { CodeTabs } from '@/components/code-tabs';
 import { ComponentInstallation } from '@/components/component-installation';
-import { packageInfoAtom } from '@/hooks/use-package-info';
 import { cn } from '@/lib/utils';
 
 import {
@@ -32,14 +27,14 @@ import {
   APITransforms,
 } from './api-list';
 import { BadgeList, BadgePopover } from './badge-popover';
-import { Code } from './code';
-import { CodeBlockWrapper } from './code-block-wrapper';
+import { CodeBlockCommand } from './code-block-command';
 import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
 import { ComponentPreviewPro } from './component-preview-pro';
 import { ComponentSource } from './component-source';
-import { HydrateAtoms } from './context/hydrate-atoms';
+import { CopyButton } from './copy-button';
 import { FrameworkDocs } from './framework-docs';
+import { getIconForLanguageExtension } from './icons';
 import { Link } from './link';
 import { PackageInfo } from './package-info';
 import * as Typography from './typography';
@@ -61,7 +56,7 @@ import {
 } from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
-export const components = {
+export const mdxComponents = {
   a: Link,
   Accordion,
   AccordionContent,
@@ -92,7 +87,6 @@ export const components = {
   Callout,
   Card,
   Cards,
-  code: Code,
   CodeTabs,
   ComponentExample,
   ComponentInstallation,
@@ -106,13 +100,12 @@ export const components = {
   h5: Typography.H5,
   h6: Typography.H6,
   hr: Typography.HR,
-  Image,
-  img: Typography.Image,
+  Image: Image,
+  img: Image,
   li: Typography.LI,
   ol: Typography.OL,
   p: Typography.P,
   PackageInfo,
-  pre: Typography.Pre,
   Step: Typography.Step,
   Steps: Typography.Steps,
   table: Typography.Table,
@@ -120,9 +113,83 @@ export const components = {
   th: Typography.TH,
   tr: Typography.TR,
   ul: Typography.UL,
-  CodeBlockWrapper: ({ ...props }) => (
-    <CodeBlockWrapper className="rounded-md border" {...props} />
-  ),
+  code: ({
+    __bun__,
+    __npm__,
+    __pnpm__,
+    __raw__,
+    __src__,
+    __yarn__,
+    className,
+    ...props
+  }: React.ComponentProps<"code"> & {
+    __bun__?: string
+    __npm__?: string
+    __pnpm__?: string
+    __raw__?: string
+    __src__?: string
+    __yarn__?: string
+  }) => {
+    // Inline Code.
+    if (typeof props.children === "string") {
+      return (
+        <code
+          className={cn(
+            "bg-muted relative rounded-md px-[0.3rem] py-[0.2rem] font-mono text-[0.8rem] outline-none",
+            className
+          )}
+          {...props}
+        />
+      )
+    }
+
+    // npm command.
+    const isNpmCommand = __npm__ && __yarn__ && __pnpm__ && __bun__
+    if (isNpmCommand) {
+      return (
+        <CodeBlockCommand
+          __bunCommand__={__bun__}
+          __npmCommand__={__npm__}
+          __pnpmCommand__={__pnpm__}
+          __yarnCommand__={__yarn__}
+        />
+      )
+    }
+
+    // Default codeblock.
+    return (
+      <>
+        {__raw__ && <CopyButton value={__raw__} src={__src__} />}
+        <code {...props} />
+      </>
+    )
+  },
+  figcaption: ({
+    children,
+    className,
+    ...props
+  }: React.ComponentProps<"figcaption">) => {
+    const iconExtension =
+      "data-language" in props && typeof props["data-language"] === "string"
+        ? getIconForLanguageExtension(props["data-language"])
+        : null
+
+    return (
+      <figcaption
+        className={cn(
+          "text-code-foreground [&_svg]:text-code-foreground flex items-center gap-2 [&_svg]:size-4 [&_svg]:opacity-70",
+          className
+        )}
+        {...props}
+      >
+        {iconExtension}
+        {children}
+      </figcaption>
+    )
+  },
+  figure: ({ className, ...props }: React.ComponentProps<"figure">) => {
+    return <figure className={cn(className)} {...props} />
+  },
   FrameworkDocs: ({
     className,
     ...props
@@ -173,6 +240,22 @@ export const components = {
       {...props}
     />
   ),
+  pre: ({ children, className, ...props }: React.ComponentProps<"pre">) => {
+    return (
+      <pre
+        className={cn(
+          "no-scrollbar min-w-0 overflow-x-auto px-4 py-3.5 outline-none has-[[data-highlighted-line]]:px-0 has-[[data-line-numbers]]:px-0 has-[[data-slot=tabs]]:p-0",
+          className
+        )}
+        style={{
+          position: 'relative',
+        }}
+        {...props}
+      >
+        {children}
+      </pre>
+    )
+  },
   Tabs: ({ className, ...props }: React.ComponentProps<typeof Tabs>) => (
     <Tabs className={cn('relative mt-6 w-full', className)} {...props} />
   ),
@@ -213,28 +296,6 @@ export const components = {
     />
   ),
 };
-
-export function Mdx({
-  code,
-  packageInfo,
-}: {
-  code: string;
-  packageInfo?: {
-    gzip: string | null;
-  };
-}) {
-  const Component = useMDXComponent(code);
-
-  return (
-    <div className="typography">
-      <Provider>
-        <HydrateAtoms initialValues={[[packageInfoAtom, packageInfo]]}>
-          <Component components={components as any} />
-        </HydrateAtoms>
-      </Provider>
-    </div>
-  );
-}
 
 // Fumadocs
 function Accordions({

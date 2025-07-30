@@ -1,15 +1,13 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import * as Typography from '@/components/typography';
+import { mdxComponents } from '@/components/mdx-components';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { blogsSource } from '@/lib/blogs-source';
+import { blogsSource } from '@/lib/source';
 import { hrefWithLocale } from '@/lib/withLocale';
 
-import { getMDXComponents } from '../_components/mdx-components';
 
 const AuthorAvatar: Record<string, {
   avatar: string;
@@ -221,21 +219,7 @@ export default async function Page(props: {
         </header>
 
         <MDXContent
-          components={getMDXComponents({
-            h1: Typography.H1,
-            h2: Typography.H2,
-            h3: Typography.H3,
-            h4: Typography.H4,
-            h5: Typography.H5,
-            h6: Typography.H6,
-            hr: Typography.HR,
-            Image: (props: any) => {
-              return <Image className='border rounded-lg' {...props} />;
-            },
-            img: (props: any) => {
-              return <Image className='border rounded-lg' {...props} />;
-            },
-          })}
+          components={mdxComponents}
         />
       </article>
     </div>

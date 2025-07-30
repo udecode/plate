@@ -6,7 +6,6 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "contentlayer/generated": ["./.contentlayer/generated"],
       "registry": ["./public/r/registry.json"],
       "registry-shadcn": ["./registry-shadcn.json"]
     },
@@ -33,7 +32,6 @@
     "**/*.mjs",
     "**/*.mjsx",
     ".next/types/**/*.ts",
-    ".contentlayer/generated",
     "./scripts/**/*.ts",
     "./registry.json"
   ],

@@ -53,6 +53,7 @@ const listTypeToBadgeStyles: Record<string, string> = {
 };
 
 export function API({ children, name }: { children: ReactNode; name: string }) {
+
   return (
     <APIContext.Provider value={{ name }}>
       <Card className="mt-6 mb-16 p-0">
@@ -74,9 +75,9 @@ export function APIItem({
 
   const id = contextName
     ? `${contextName}-${listType ? `${listTypeToId[listType]}-` : ''}${name}`
-        .toLowerCase()
-        .replace(/[^\da-z]+/g, '-')
-        .replace(/^-|-$/g, '')
+      .toLowerCase()
+      .replace(/[^\da-z]+/g, '-')
+      .replace(/^-|-$/g, '')
     : undefined;
 
   return (
@@ -116,6 +117,7 @@ export function APIItem({
     </AccordionItem>
   );
 }
+APIItem.displayName = 'APIItem';
 
 export function APIAttributes({ children, ...props }: APIListProps) {
   return (
@@ -126,6 +128,7 @@ export function APIAttributes({ children, ...props }: APIListProps) {
 }
 
 export function APIOptions({ children, ...props }: APIListProps) {
+
   return (
     <APIList listType="options" {...props}>
       {children}
@@ -205,7 +208,7 @@ export function APIList({
   const { name } = React.useContext(APIContext);
   const childCount = React.Children.count(children);
   const hasItems = React.Children.toArray(children).some(
-    (child) => (child as any)?.type?.name === 'APIItem'
+    (child) => (child as any)?.type?._payload?.value?.displayName === 'APIItem'
   );
   const newValues = Array.from(Array.from({ length: childCount }).keys()).map(
     (i) => i.toString()
@@ -335,9 +338,9 @@ export function APISubListItem({
 
   const id = contextName
     ? `${contextName}-${listType ? `${listTypeToId[listType]}-` : ''}${parent}-${name}`
-        .toLowerCase()
-        .replace(/[^\da-z]+/g, '-')
-        .replace(/^-|-$/g, '')
+      .toLowerCase()
+      .replace(/[^\da-z]+/g, '-')
+      .replace(/^-|-$/g, '')
     : undefined;
 
   return (

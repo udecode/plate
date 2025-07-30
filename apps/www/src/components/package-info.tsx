@@ -3,10 +3,9 @@ import React from 'react';
 import Link from 'next/link';
 
 import { Separator } from '@/components/ui/separator';
-import { usePackageInfo } from '@/hooks/use-package-info';
 
 export function PackageInfo({ children }: { children: React.ReactNode }) {
-  const [packageInfo] = usePackageInfo();
+
 
   return (
     <div className="flex flex-col flex-nowrap items-stretch justify-start not-first:mt-12 md:flex-row md:gap-16">
@@ -15,32 +14,6 @@ export function PackageInfo({ children }: { children: React.ReactNode }) {
       <Separator className="mb-4 md:hidden" />
 
       <nav className="flex w-fit flex-col gap-3">
-        {packageInfo?.gzip && (
-          <div className="text-muted-foreground">Size: {packageInfo.gzip}</div>
-        )}
-
-        {packageInfo?.source && (
-          <div>
-            <Link
-              className="flex gap-2 font-medium underline underline-offset-4"
-              href={packageInfo.source}
-              target="_blank"
-            >
-              View source
-            </Link>
-          </div>
-        )}
-        {packageInfo?.npm && (
-          <div>
-            <Link
-              className="flex gap-2 font-medium underline underline-offset-4"
-              href={packageInfo.npm}
-              target="_blank"
-            >
-              View on npm
-            </Link>
-          </div>
-        )}
         <div>
           <Link
             className="flex gap-2 font-medium underline underline-offset-4"

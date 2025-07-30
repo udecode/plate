@@ -1,6 +1,5 @@
 'use client';
 
-import type { ComponentProps } from 'react';
 import * as React from 'react';
 
 import type { NpmCommands } from '@/types/unist';
@@ -20,65 +19,71 @@ import { type Event, trackEvent } from '@/lib/events';
 import { cn } from '@/lib/utils';
 
 import { Icons } from './icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
-interface CopyButtonProps extends ComponentProps<typeof Button> {
-  value: string;
-  event?: Event['name'];
-  src?: string;
-}
 
 export function copyToClipboardWithMeta(value: string, event?: Event) {
-  void navigator.clipboard.writeText(value);
-
+  navigator.clipboard.writeText(value)
   if (event) {
-    trackEvent(event);
+    trackEvent(event)
   }
 }
 
 export function CopyButton({
   className,
   event,
-  src,
   value,
-  variant = 'ghost',
+  variant = "ghost",
   ...props
-}: CopyButtonProps) {
-  const [hasCopied, setHasCopied] = React.useState(false);
+}: React.ComponentProps<typeof Button> & {
+  value: string
+  event?: Event["name"]
+  src?: string
+}) {
+  const [hasCopied, setHasCopied] = React.useState(false)
 
   React.useEffect(() => {
     setTimeout(() => {
-      setHasCopied(false);
-    }, 2000);
-  }, [hasCopied]);
+      setHasCopied(false)
+    }, 2000)
+  }, [])
 
   return (
-    <Button
-      size="icon"
-      variant={variant}
-      className={cn(
-        'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50 [&_svg]:!size-3',
-        className
-      )}
-      onClick={() => {
-        void copyToClipboardWithMeta(
-          value,
-          event
-            ? {
-                name: event,
-                properties: {
-                  code: value,
-                },
-              }
-            : undefined
-        );
-        setHasCopied(true);
-      }}
-      {...props}
-    >
-      <span className="sr-only">Copy</span>
-      {hasCopied ? <CheckIcon /> : <ClipboardIcon />}
-    </Button>
-  );
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          size="icon"
+          variant={variant}
+          className={cn(
+            "bg-code absolute top-3 right-2 z-10 size-7 hover:opacity-100 focus-visible:opacity-100",
+            className
+          )}
+          onClick={() => {
+            copyToClipboardWithMeta(
+              value,
+              event
+                ? {
+                    name: event,
+                    properties: {
+                      code: value,
+                    },
+                  }
+                : undefined
+            )
+            setHasCopied(true)
+          }}
+          data-slot="copy-button"
+          {...props}
+        >
+          <span className="sr-only">Copy</span>
+          {hasCopied ? <CheckIcon /> : <ClipboardIcon />}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        {hasCopied ? "Copied" : "Copy to Clipboard"}
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 interface CopyNpmCommandButtonProps extends DropdownMenuTriggerProps {

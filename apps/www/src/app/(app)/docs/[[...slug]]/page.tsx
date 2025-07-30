@@ -1,416 +1,202 @@
-import type { PackageInfoType } from '@/hooks/use-package-info';
-import type { RegistryItem } from 'shadcn/registry';
-
-import type { Metadata } from 'next';
-
-import { allDocs } from 'contentlayer/generated';
-import { notFound } from 'next/navigation';
-
-import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
-import { ComponentInstallation } from '@/components/component-installation';
-import { ComponentPreview } from '@/components/component-preview';
-import { Mdx } from '@/components/mdx-components';
-import { docsMap } from '@/config/docs';
-import { slugToCategory } from '@/config/docs-utils';
-import { siteConfig } from '@/config/site';
-import { absoluteUrl } from '@/lib/absoluteUrl';
 import {
-  getCachedDependencies,
-  getCachedFileTree,
-  getCachedHighlightedFiles,
-  getCachedRegistryItem,
-} from '@/lib/registry-cache';
-import { getRegistryTitle } from '@/lib/registry-utils';
-import { getAllDependencies, getAllFiles } from '@/lib/rehype-utils';
-import { getTableOfContents } from '@/lib/toc';
-import { registry } from '@/registry/registry';
-import { registryExamples } from '@/registry/registry-examples';
-import { proExamples } from '@/registry/registry-pro';
-import { registryUI } from '@/registry/registry-ui';
+  IconArrowLeft,
+  IconArrowRight,
+  IconArrowUpRight,
+} from "@tabler/icons-react"
+import { findNeighbour } from "fumadocs-core/server"
+import Link from "next/link"
+import { notFound } from "next/navigation"
 
-interface DocPageProps {
-  params: Promise<{
-    slug: string[];
-  }>;
-  searchParams: Promise<{
-    locale: string;
-  }>;
-}
+import { DocsTableOfContents } from "@/components/docs-toc"
+import { mdxComponents } from "@/components/mdx-components"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { absoluteUrl } from "@/lib/absoluteUrl"
+import { docsSource } from "@/lib/source"
 
-async function getDocFromParams({ params, searchParams }: DocPageProps) {
-  const locale = (await searchParams).locale;
-  const slugParam = (await params).slug;
-
-  let slug = slugParam?.join('/') || '';
-
-  // For Chinese docs, look for .cn.mdx files
-  if (locale === 'cn') {
-    // First try to find the Chinese version with .cn.mdx
-    const cnDoc = allDocs.find((doc) => {
-      return (
-        doc.slugAsParams === `docs/${slug || 'index'}.cn` &&
-        doc._raw.sourceFileName?.endsWith('.cn.mdx')
-      );
-    });
-
-    if (cnDoc) {
-      const path = slugParam?.join('/') || '';
-      cnDoc.slug = '/docs' + (path ? '/' + path : '') + '?locale=cn';
-      return cnDoc;
-    }
-  }
-
-  // Default behavior for non-Chinese or fallback
-  slug = `docs${slug ? '/' + slug : ''}`;
-  const doc = allDocs.find((doc) => doc.slugAsParams === slug);
-
-  if (!doc) {
-    return null;
-  }
-
-  const path = slugParam?.join('/') || '';
-  doc.slug = '/docs' + (path ? '/' + path : '');
-
-  // Only add locale param for Chinese
-  if (locale === 'cn') {
-    doc.slug += `?locale=cn`;
-  }
-
-  return doc;
-}
-
-export async function generateMetadata({
-  params,
-  searchParams,
-}: DocPageProps): Promise<Metadata> {
-  const doc = await getDocFromParams({ params, searchParams });
-  let title: string;
-  let description: string | undefined;
-  let slug: string;
-
-  if (doc) {
-    title = doc.title;
-    description = doc.description;
-    slug = doc.slug;
-  } else {
-    const slugParam = (await params).slug;
-    const category = slugToCategory(slugParam);
-    let docName = slugParam?.at(-1);
-    let file: RegistryItem | undefined;
-
-    if (category === 'component') {
-      file = registryUI.find((c) => c.name === docName);
-    } else if (category === 'example') {
-      docName += '-demo';
-      file = registryExamples.find((c) => c.name === docName);
-    }
-    if (!docName || !file) {
-      return {};
-    }
-
-    const path = slugParam?.join('/') || '';
-    slug = '/docs' + (path ? '/' + path : '');
-    title = file.title || docName;
-    description = file.description;
-  }
-
-  return {
-    description,
-    openGraph: {
-      description,
-      images: [
-        {
-          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(
-            description ?? ''
-          )}`,
-        },
-      ],
-      title,
-      type: 'article',
-      url: absoluteUrl(slug),
-    },
-    title,
-    twitter: {
-      card: 'summary_large_image',
-      creator: '@udecode',
-      description,
-      images: [
-        {
-          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(
-            description ?? ''
-          )}`,
-        },
-      ],
-      title,
-    },
-  };
-}
-
-const registryNames = new Set(registry.items.map((item) => item.name));
+export const revalidate = false
+export const dynamic = "force-static"
+export const dynamicParams = false
 
 export function generateStaticParams() {
-  const docs = allDocs
-    .filter((doc) => {
-      // Include all non-Chinese docs and Chinese docs ending with .cn.mdx
-      return (
-        !doc._raw.sourceFileName?.endsWith('.cn.mdx') ||
-        doc.slugAsParams.startsWith('docs/')
-      );
-    })
-    .map((doc) => ({
-      slug: doc.slugAsParams.split('/'),
-    }));
-
-  return docs;
+  return docsSource.generateParams()
 }
 
-export default async function DocPage(props: DocPageProps) {
-  const params = await props.params;
-  const category = slugToCategory(params.slug);
-
-  const doc = await getDocFromParams(props);
-
-  const packageInfo: PackageInfoType = {
-    gzip: '',
-    name: '',
-    npm: '',
-    source: '',
-  };
-
-  if (!doc) {
-    let docName = params.slug?.at(-1);
-    let file: RegistryItem | undefined;
-
-    if (category === 'component') {
-      file = registryUI.find((c) => c.name === docName);
-    } else if (category === 'example') {
-      docName += '-demo';
-      file = registryExamples.find((c) => c.name === docName);
-    }
-    if (!docName || !file) {
-      notFound();
-    }
-
-    const dependencies = getAllDependencies(docName);
-    const files = getAllFiles(docName);
-
-    const slug = '/docs/' + params.slug?.join('/') || '';
-
-    const docs = getRegistryDocs({
-      docName,
-      file,
-      files,
-      registryNames,
-    });
-
-    const item = await getCachedRegistryItem(docName, true);
-
-    if (!item?.files) {
-      notFound();
-    }
-
-    const [tree, highlightedFiles, componentExamples] = await Promise.all([
-      getCachedFileTree(item.files),
-      getCachedHighlightedFiles(item.files as any),
-      file.meta?.examples
-        ? Promise.all(
-            file.meta.examples.map(
-              async (ex: string) => await getExampleCode(ex)
-            )
-          )
-        : undefined,
-    ]);
-
-    return (
-      <DocContent
-        category={category as any}
-        {...file}
-        doc={{
-          ...file.meta,
-          docs,
-          slug,
-        }}
-      >
-        {category === 'component' ? (
-          <ComponentInstallation
-            name={file.name}
-            dependencies={dependencies}
-            examples={componentExamples?.filter(Boolean) as any}
-            highlightedFiles={highlightedFiles}
-            item={item}
-            tree={tree}
-            usage={file.meta?.usage}
-          />
-        ) : (
-          <ComponentPreview
-            name={file.name}
-            dependencies={dependencies}
-            highlightedFiles={highlightedFiles}
-            item={item}
-            tree={tree}
-          />
-        )}
-      </DocContent>
-    );
-  }
-  if (!doc.description) {
-    doc.description = docsMap[doc.slug]?.description;
-  }
-
-  const toc = await getTableOfContents(doc.body.raw);
-
-  return (
-    <DocContent category={category as any} doc={doc} toc={toc}>
-      <Mdx code={doc.body.code} packageInfo={packageInfo} />
-    </DocContent>
-  );
-}
-
-function getRegistryDocs({
-  docName,
-  file,
-  files,
-  registryNames,
-}: {
-  docName: string;
-  file: RegistryItem;
-  files: { name: string }[];
-  registryNames: Set<string>;
+export async function generateMetadata(props: {
+  params: Promise<{ slug?: string[] }>
 }) {
-  const usedBy = registryUI.filter(
-    (item) =>
-      item.meta &&
-      Array.isArray(item.meta.examples) &&
-      item.meta.examples.includes(docName)
-  );
+  const params = await props.params
+  const page = docsSource.getPage(params.slug)
 
-  const relatedDocs = [
-    ...files
-      .map((f) => f.name.split('/').pop()?.replace('.tsx', ''))
-      .filter(
-        (fileName): fileName is string =>
-          !!fileName && registryNames.has(fileName) && fileName !== docName
-      )
-      .map((fileName) => {
-        const uiItem = registryUI.find((item) => item.name === fileName);
-
-        if (!uiItem) return null;
-
-        return {
-          route: `/docs/${uiItem.type.includes('example') ? 'examples' : 'components'}/${fileName}`,
-          title: getRegistryTitle(uiItem),
-        };
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null),
-    ...usedBy.map((item) => ({
-      route: `/docs/${item.type.includes('example') ? 'examples' : 'components'}/${item.name}`,
-      title: getRegistryTitle(item),
-    })),
-  ]
-    .filter(Boolean)
-    .filter(
-      (doc, index, self) =>
-        index === self.findIndex((d) => d.route === doc.route)
-    );
-
-  const groups = [...(file.meta?.docs || []), ...relatedDocs].reduce(
-    (acc, doc) => {
-      if (doc.route!.startsWith(siteConfig.links.platePro)) {
-        acc.external.push(doc as any);
-      } else if (doc.route!.startsWith('/docs/components')) {
-        acc.components.push(doc as any);
-      } else if (doc.route!.startsWith('/docs/api')) {
-        acc.docs.push({
-          ...doc,
-          title:
-            getRegistryTitle({
-              name: doc.title ?? doc.route?.split('/').pop(),
-            }) + ' API',
-        } as any);
-      } else if (doc.route!.startsWith('/docs/')) {
-        acc.docs.push({
-          ...doc,
-          title:
-            getRegistryTitle({
-              name: doc.title ?? doc.route?.split('/').pop(),
-            }) + ' Plugin',
-        } as any);
-      } else {
-        acc.docs.push(doc as any);
-      }
-
-      return acc;
-    },
-    { components: [], docs: [], external: [] } as Record<
-      string,
-      typeof relatedDocs
-    >
-  );
-
-  return [
-    ...groups.docs.sort((a: any, b: any) => a.title.localeCompare(b.title)),
-    ...groups.components.sort((a: any, b: any) =>
-      a.title.localeCompare(b.title)
-    ),
-    ...groups.external.sort((a: any, b: any) => a.title.localeCompare(b.title)),
-  ];
-}
-
-async function getExampleCode(name?: string) {
-  if (!name) return null;
-  if (name.endsWith('-pro')) {
-    return proExamples.find((ex) => ex.name === name);
+  if (!page) {
+    notFound()
   }
 
-  const example = registryExamples.find((ex) => ex.name === name);
+  const doc = page.data
 
-  if (!example) {
-    throw new Error(`Component ${name} not found`);
-  }
-
-  // Use the same caching pattern
-  const item = await getCachedRegistryItem(name, true);
-  let highlightedFiles: any = [];
-  let tree: any = null;
-  let dependencies: string[] = [];
-
-  if (item?.files) {
-    [tree, highlightedFiles, dependencies] = await Promise.all([
-      getCachedFileTree(item.files),
-      getCachedHighlightedFiles(item.files),
-      getCachedDependencies(name),
-    ]);
+  if (!doc.title || !doc.description) {
+    notFound()
   }
 
   return {
-    dependencies,
-    doc: { title: example.title },
-    highlightedFiles,
-    item,
-    name: example.name,
-    tree,
-  };
+    description: doc.description,
+    openGraph: {
+      description: doc.description,
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(
+            doc.title
+          )}&description=${encodeURIComponent(doc.description)}`,
+        },
+      ],
+      title: doc.title,
+      type: "article",
+      url: absoluteUrl(page.url),
+    },
+    title: doc.title,
+    twitter: {
+      card: "summary_large_image",
+      creator: "@shadcn",
+      description: doc.description,
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(
+            doc.title
+          )}&description=${encodeURIComponent(doc.description)}`,
+        },
+      ],
+      title: doc.title,
+    },
+  }
 }
 
-// const pkg = docToPackage(name);
-// if (pkg) {
-//   const { gzip: gzipNumber } = await getPackageData(pkg.name);
-//   const gzip =
-//     typeof gzipNumber === 'number' ? formatBytes(gzipNumber) : null;
-//
-//   packageInfo.name = pkg.name;
-//   if (gzip) {
-//     packageInfo.gzip = gzip;
-//   }
-//   packageInfo.source =
-//     'https://github.com/udecode/plate/tree/main/packages/' +
-//     pkg.sourcePath +
-//     '/src';
-//   packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
-// }
+export default async function Page(props: {
+  params: Promise<{ slug?: string[] }>
+}) {
+  const params = await props.params
+  const page = docsSource.getPage(params.slug)
+  if (!page) {
+    notFound()
+  }
 
-// let toc: TableOfContents;
-// if (params.slug?.[0] === 'api') {
-//   toc = getAPITableOfContents(doc.body.raw);
-// } else {
-// }
+  const doc = page.data
+  const MDX = doc.body
+  const neighbours = findNeighbour(docsSource.pageTree, page.url)
+
+  // @ts-expect-error - revisit fumadocs types.
+  const links = doc.links
+
+  return (
+    <div
+      className="flex items-stretch text-[1.05rem] sm:text-[15px] xl:w-full"
+      data-slot="docs"
+    >
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="h-(--top-spacing) shrink-0" />
+        <div className="mx-auto flex w-full max-w-2xl min-w-0 flex-1 flex-col gap-8 px-4 py-6 text-neutral-800 md:px-0 lg:py-8 dark:text-neutral-300">
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-start justify-between">
+                <h1 className="scroll-m-20 text-4xl font-semibold tracking-tight sm:text-3xl xl:text-4xl">
+                  {doc.title}
+                </h1>
+                <div className="flex items-center gap-2 pt-1.5">
+                  {neighbours.previous && (
+                    <Button
+                      asChild
+                      size="icon"
+                      variant="secondary"
+                      className="extend-touch-target size-8 shadow-none md:size-7"
+                    >
+                      <Link href={neighbours.previous.url}>
+                        <IconArrowLeft />
+                        <span className="sr-only">Previous</span>
+                      </Link>
+                    </Button>
+                  )}
+                  {neighbours.next && (
+                    <Button
+                      asChild
+                      size="icon"
+                      variant="secondary"
+                      className="extend-touch-target size-8 shadow-none md:size-7"
+                    >
+                      <Link href={neighbours.next.url}>
+                        <span className="sr-only">Next</span>
+                        <IconArrowRight />
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {doc.description && (
+                <p className="text-muted-foreground text-[1.05rem] text-balance sm:text-base">
+                  {doc.description}
+                </p>
+              )}
+            </div>
+            {links ? (
+              <div className="flex items-center space-x-2 pt-4">
+                {links?.doc && (
+                  <Badge asChild variant="secondary">
+                    <Link href={links.doc} rel="noreferrer" target="_blank">
+                      Docs <IconArrowUpRight />
+                    </Link>
+                  </Badge>
+                )}
+                {links?.api && (
+                  <Badge asChild variant="secondary">
+                    <Link href={links.api} rel="noreferrer" target="_blank">
+                      API Reference <IconArrowUpRight />
+                    </Link>
+                  </Badge>
+                )}
+              </div>
+            ) : null}
+          </div>
+          <div className="w-full flex-1 *:data-[slot=alert]:first:mt-0">
+            <MDX components={mdxComponents} />
+          </div>
+        </div>
+        <div className="mx-auto flex h-16 w-full max-w-2xl items-center gap-2 px-4 md:px-0">
+          {neighbours.previous && (
+            <Button
+              asChild
+              size="sm"
+              variant="secondary"
+              className="shadow-none"
+            >
+              <Link href={neighbours.previous.url}>
+                <IconArrowLeft /> {neighbours.previous.name}
+              </Link>
+            </Button>
+          )}
+          {neighbours.next && (
+            <Button
+              asChild
+              size="sm"
+              variant="secondary"
+              className="ml-auto shadow-none"
+            >
+              <Link href={neighbours.next.url}>
+                {neighbours.next.name} <IconArrowRight />
+              </Link>
+            </Button>
+          )}
+        </div>
+      </div>
+      <div className="sticky top-[calc(var(--header-height)+1px)] z-30 ml-auto hidden h-[calc(100svh-var(--header-height)-var(--footer-height))] w-72 flex-col gap-4 overflow-hidden overscroll-none pb-8 xl:flex">
+        <div className="h-(--top-spacing) shrink-0" />
+        {doc.toc?.length ? (
+          <div className="no-scrollbar overflow-y-auto px-8">
+            <DocsTableOfContents toc={doc.toc} />
+            <div className="h-12" />
+          </div>
+        ) : null}
+        <div className="flex flex-1 flex-col gap-12 px-6">
+
+        </div>
+      </div>
+    </div>
+  )
+}
