@@ -65,10 +65,16 @@ export type PlateNodeProps<C extends AnyPluginConfig = PluginConfig> =
 
 export type PlateHTMLProps<
   C extends AnyPluginConfig = PluginConfig,
-  T extends keyof HTMLElementTagNameMap = 'div',
+  T extends React.ComponentType | keyof HTMLElementTagNameMap = 'div',
 > = PlateNodeProps<C> & {
   /** HTML attributes to pass to the underlying HTML element */
-  attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]>;
+  attributes: React.PropsWithoutRef<
+    T extends React.ComponentType
+      ? React.ComponentProps<T>
+      : T extends keyof HTMLElementTagNameMap
+        ? React.JSX.IntrinsicElements[T]
+        : never
+  >;
   as?: T;
   /** Class to be merged with `attributes.className` */
   className?: string;
