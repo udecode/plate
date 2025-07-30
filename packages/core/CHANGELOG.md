@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.2.3
+
+### Patch Changes
+
+- [#4531](https://github.com/udecode/plate/pull/4531) by [@delijah](https://github.com/delijah) – Allow to pass react components to `as`-prop of PlateElement
+
 ## 49.1.13
 
 ## 49.1.5
