@@ -1,0 +1,796 @@
+---
+title: Plate 核心
+description: \@platejs/core 的 API 参考文档。
+---
+
+## API
+
+### `createPlateEditor`
+
+生成一个新的 `PlateEditor` 实例，使用一组插件及其配置进行初始化。
+
+<API name="createPlateEditor">
+<APIOptions type="CreatePlateEditorOptions">
+  <APIItem name="id" type="any" optional>
+    编辑器的唯一标识符。
+  </APIItem>
+  <APIItem name="editor" type="E" optional>
+    未应用 `withPlate` 的初始编辑器。
+  </APIItem>
+  <APIItem name="plugins" type="P[]" optional>
+    编辑器插件数组。
+  </APIItem>
+  <APIItem name="value" type="V" optional>
+    编辑器的初始值。
+  </APIItem>
+  <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
+    初始化后是否选中编辑器。
+    - **默认值:** `false`
+    - `true` | 'end': 选中编辑器末尾
+    - `false`: 不选中任何内容
+    - `'start'`: 选中编辑器开头
+  </APIItem>
+  <APIItem name="maxLength" type="number" optional>
+    指定编辑器中允许的最大字符数。
+  </APIItem>
+  <APIItem name="nodeId" type="object | boolean" optional>
+    自动节点 ID 生成和管理的配置。
+    <APISubList>
+      <APISubListItem parent="nodeId" name="disableInsertOverrides" type="boolean" optional>
+        插入节点时禁用使用现有 ID。
+        - 当 `false`: 如果文档中不存在则保留现有 ID
+        - 当 `true`: 总是生成新 ID
+        - **默认值:** `false`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="filterInline" type="boolean" optional>
+        过滤内联 Element 节点不接收 ID。
+        - **默认值:** `true`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="filterText" type="boolean" optional>
+        过滤 Text 节点不接收 ID。
+        - **默认值:** `true`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="idCreator" type="() => any" optional>
+        生成唯一 ID 的函数。
+        - **默认值:** `() => nanoid(10)`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="idKey" type="string" optional>
+        用于存储节点 ID 的属性键。
+        - **默认值:** `'id'`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="normalizeInitialValue" type="boolean" optional>
+        是否规范化初始值中的所有节点。
+        - 当 `false`: 仅检查第一个和最后一个节点
+        - 当 `true`: 规范化所有节点
+        - **默认值:** `false`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="reuseId" type="boolean" optional>
+        在撤销/重做和复制/粘贴时重用 ID。
+        - 当 `true`: 如果文档中不存在则保留 ID
+        - 当 `false`: 总是生成新 ID (跨文档更安全)
+        - **默认值:** `false`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="allow" type="string[]" optional>
+        应接收 ID 的节点类型。
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="exclude" type="string[]" optional>
+        不应接收 ID 的节点类型。
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="filter" type="(node: NodeEntry) => boolean" optional>
+        自定义过滤函数，确定哪些节点应接收 ID。
+        - **默认值:** `() => true`
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="selection" type="TSelection" optional>
+    编辑器的初始选区。
+  </APIItem>
+  <APIItem name="shouldNormalizeEditor" type="boolean" optional>
+    当 `true` 时，将规范化传递给 `editor` 的初始 `value`。
+    - **默认值:** `false`
+  </APIItem>
+  <APIItem name="rootPlugin" type="(plugin: AnyPlatePlugin) => AnyPlatePlugin" optional>
+    配置根插件的函数。
+  </APIItem>
+  <APIItem name="api" type="object" optional>
+    编辑器的 API 方法。
+  </APIItem>
+  <APIItem name="decorate" type="function" optional>
+    编辑器的装饰函数。
+  </APIItem>
+  <APIItem name="extendEditor" type="function" optional>
+    扩展编辑器的函数。
+  </APIItem>
+  <APIItem name="handlers" type="object" optional>
+    编辑器的事件处理器。
+  </APIItem>
+  <APIItem name="inject" type="object" optional>
+    编辑器的注入配置。
+  </APIItem>
+  <APIItem name="normalizeInitialValue" type="function" optional>
+    规范化初始值的函数。
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    编辑器的附加选项。
+  </APIItem>
+  <APIItem name="override" type="object" optional>
+    编辑器的覆盖配置。
+  </APIItem>
+  <APIItem name="priority" type="number" optional>
+    编辑器插件的优先级。
+  </APIItem>
+  <APIItem name="readOnly" type="boolean" optional>
+    编辑器的只读初始状态。对于动态值，使用 `Plate.readOnly` 属性。
+  </APIItem>
+  <APIItem name="render" type="object" optional>
+    编辑器的渲染函数。
+  </APIItem>
+  <APIItem name="shortcuts" type="object" optional>
+    编辑器的键盘快捷键。
+  </APIItem>
+  <APIItem name="transforms" type="object" optional>
+    编辑器的转换函数。
+  </APIItem>
+  <APIItem name="useHooks" type="function" optional>
+    与编辑器一起使用的钩子。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="PlateEditor">
+  应用了插件和配置的编辑器实例。
+</APIReturns>
+</API>
+
+有关编辑器配置的更多详情，请参阅[编辑器配置](/docs/editor)指南。
+
+### `createPlatePlugin`
+
+使用给定配置创建一个新的 Plate 插件，支持扩展、嵌套插件操作和运行时配置。
+
+<API name="createPlatePlugin">
+<APIParameters>
+  <APIItem name="config" type="PlatePluginConfig | ((editor: PlateEditor) => PlatePluginConfig)">
+    插件的配置对象，或返回配置的函数。如果提供函数，将在解析插件时使用编辑器执行该函数。
+
+    有关 `PlatePluginConfig` 类型的详情，请参阅[PlatePlugin API](/docs/api/core/plate-plugin#plugin-properties)。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlatePlugin">
+  一个新的插件实例。
+</APIReturns>
+</API>
+
+### `createTPlatePlugin`
+
+`createPlatePlugin` 的显式类型版本。
+
+<API name="createTPlatePlugin">
+<APIParameters>
+  <APIItem name="config" type="TPlatePluginConfig<C> | ((editor: PlateEditor) => TPlatePluginConfig<C>)">
+    插件的配置对象，或返回配置的函数。此版本需要显式类型参数 `C` 扩展 `AnyPluginConfig`。
+
+    有关 `TPlatePluginConfig` 类型的详情，请参阅[PlatePlugin API](/docs/api/core/plate-plugin#plugin-properties)。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlatePlugin<C>">
+  一个新的插件实例。
+</APIReturns>
+</API>
+
+### `toPlatePlugin`
+
+扩展 SlatePlugin 以创建 React PlatePlugin。
+
+<API name="toPlatePlugin">
+<APIParameters>
+  <APIItem name="basePlugin" type="SlatePlugin">
+    要扩展的基础 SlatePlugin。
+  </APIItem>
+  <APIItem name="extendConfig" type="PlatePluginConfig | ((ctx: PlatePluginContext<C>) => PlatePluginConfig)" optional>
+    提供扩展配置的函数或对象。如果是函数，它接收插件上下文并应返回部分 PlatePlugin。如果是对象，它应是部分 PlatePlugin 配置。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlatePlugin">
+  一个新的插件实例，结合了基础 SlatePlugin 功能和扩展配置中定义的 React 特定特性。
+</APIReturns>
+</API>
+
+### `toTPlatePlugin`
+
+`toPlatePlugin` 的显式类型版本。
+
+<API name="toTPlatePlugin">
+<APIParameters>
+  <APIItem name="basePlugin" type="SlatePlugin<TContext>">
+    要扩展的基础 SlatePlugin。
+  </APIItem>
+  <APIItem name="extendConfig" type="ExtendPluginConfig<C> | ((ctx: PlatePluginContext<TContext>) => ExtendPluginConfig<C>)" optional>
+    提供扩展配置的函数或对象。此版本需要为基本插件配置(`TContext`)和扩展配置(`C`)提供显式类型参数。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlatePlugin<C>">
+  具有精确类型控制的新插件实例。
+</APIReturns>
+</API>
+
+### `useEditorContainerRef`
+
+<API name="useEditorContainerRef">
+<APIReturns type="React.RefObject<HTMLDivElement>">
+  编辑器容器的 DOM 引用。
+</APIReturns>
+</API>
+
+### `useEditorScrollRef`
+
+<API name="useEditorScrollRef">
+<APIReturns type="React.RefObject<HTMLDivElement>">
+  编辑器滚动容器的 DOM 引用。
+</APIReturns>
+</API>
+
+### `useScrollRef`
+
+<API name="useScrollRef">
+<APIReturns type="React.RefObject<HTMLDivElement>">
+编辑器滚动容器引用。如果存在滚动引用则返回它，否则返回容器引用。
+</APIReturns>
+</API>
+
+### `useEditorPlugin`
+
+获取编辑器和插件上下文。
+
+<API name="useEditorPlugin">
+<APIParameters>
+  <APIItem name="p" type="WithRequiredKey<P>">
+    具有必需键的插件或插件配置。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlatePluginContext">
+  <APIItem name="editor" type="PlateEditor">
+      当前编辑器实例。
+  </APIItem>
+  <APIItem name="plugin" type="PlatePlugin">
+      插件实例。
+  </APIItem>
+  <APIItem name="getOption" type="function">
+      获取特定选项值的函数。
+  </APIItem>
+  <APIItem name="getOptions" type="function">
+      获取插件所有选项的函数。
+  </APIItem>
+  <APIItem name="setOption" type="function">
+      设置特定选项值的函数。
+  </APIItem>
+  <APIItem name="setOptions" type="function">
+      设置多个选项的函数。
+  </APIItem>
+  <APIItem name="store" type="PlateStore">
+      编辑器的 Plate 存储。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useEditorRef`
+
+获取 Plate 编辑器引用而不重新渲染。返回的编辑器对象增强了 `store` 属性，提供对 Plate 存储的访问。
+
+<API name="useEditorRef">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    用于访问嵌套编辑器的编辑器 ID。未提供时，返回 React 树中最近的编辑器实例。仅在处理嵌套编辑器时使用此参数以定位特定范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlateEditor & { store: PlateStore }">
+  带有附加存储的编辑器引用。
+</APIReturns>
+</API>
+
+### `useEditorSelector`
+
+订阅编辑器的特定属性。
+
+<API name="useEditorSelector">
+<APIParameters>
+  <APIItem name="selector" type="(editor: PlateEditor<V>, prev?: T) => T">
+    选择器函数。
+  </APIItem>
+  <APIItem name="deps" type="DependencyList">
+    选择器函数的依赖项列表。
+  </APIItem>
+  <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
+    选择器函数的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。仅在嵌套编辑器时有用。默认使用最近的编辑器 id。
+  </APIItem>
+  <APIItem name="equalityFn" type="(a: T, b: T) => boolean" optional>
+    确定选择器函数结果是否已更改的相等性函数。默认为 `(a, b) => a === b`。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="T">
+  选择器函数的返回值。
+</APIReturns>
+</API>
+
+### `useEditorState`
+
+获取带重新渲染的 Plate 编辑器引用。
+
+<API name="useEditorState">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。默认使用最近的编辑器 id。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="PlateEditor">
+  编辑器引用。
+</APIReturns>
+</API>
+
+### `useEditorComposing`
+
+获取编辑器的 `composing` 状态。
+
+<API name="useEditorComposing">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  编辑器是否正在组合。
+</APIReturns>
+</API>
+
+### `useEditorReadOnly`
+
+获取编辑器的 `readOnly` 状态。
+<API name="useEditorReadOnly">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  编辑器是否为只读。
+</APIReturns>
+</API>
+
+### `useEditorMounted`
+
+获取编辑器的 `isMounted` 状态。
+
+<API name="useEditorMounted">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  编辑器是否已挂载。
+</APIReturns>
+</API>
+
+### `useEditorSelection`
+
+获取编辑器的选区。已记忆化，如果范围相同则不会重新渲染。
+
+<API name="useEditorSelection">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns type="TRange | null">
+编辑器中的当前选区。
+</APIReturns>
+</API>
+
+### `useEditorVersion`
+
+获取编辑器值的版本。每次编辑器更改时该版本都会递增。
+
+<API name="useEditorVersion">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns type="number">
+编辑器值的当前版本。
+</APIReturns>
+</API>  
+
+### `useSelectionVersion`
+
+获取编辑器选区的版本。每次选区更改(范围不同)时该版本都会递增。
+
+<API name="useSelectionVersion">
+<APIParameters>
+  <APIItem name="id" type="string" optional>
+    plate 编辑器的 ID。
+  </APIItem>
+</APIParameters>
+<APIReturns type="number">
+编辑器选区的当前版本。
+</APIReturns>
+</API>
+
+### `useSelectionCollapsed`
+
+<API name="useSelectionCollapsed">
+<APIReturns type="boolean">
+当前选区是否折叠。
+</APIReturns>
+</API>
+
+### `useSelectionExpanded`
+
+<API name="useSelectionExpanded">
+<APIReturns type="boolean">
+当前选区是否展开。
+</APIReturns>
+</API>
+
+### `useSelectionWithinBlock`
+
+<API name="useSelectionWithinBlock">
+<APIReturns type="boolean">
+当前选区是否在单个块内。
+</APIReturns>
+</API>
+
+### `useSelectionAcrossBlocks`
+
+<API name="useSelectionAcrossBlocks">
+<APIReturns type="boolean">
+当前选区是否跨越多个块。
+</APIReturns>
+</API>
+
+### `useSelectionFragment`
+
+返回当前选区的片段，可选择解构结构节点。
+
+<API name="useSelectionFragment">
+<APIReturns type="TElement[]">
+  当前选区的片段。如果选区未展开或未找到片段，则返回空数组。
+</APIReturns>
+</API>
+
+### `useSelectionFragmentProp`
+
+返回从当前选区片段派生的属性值。
+    
+<API name="useSelectionFragmentProp">
+<APIOptions type="GetSelectionFragmentOptions & GetFragmentPropOptions" optional>
+<APIItem name="key" type="string" optional>
+要从每个节点提取的属性键。
+</APIItem>
+<APIItem name="defaultValue" type="string" optional>
+如果未找到有效属性则返回的默认值。
+</APIItem>
+<APIItem name="getProp" type="(node: TElement | TText) => any" optional>
+从节点提取属性值的自定义函数。
+</APIItem>
+<APIItem name="mode" type="'all' | 'block' | 'text'" optional>
+确定如何遍历片段:
+- 'all': 检查块节点和文本节点
+- 'block': 仅检查块节点
+- 'text': 仅检查文本节点
+  
+- **默认值**: `'block'`
+</APIItem>
+</APIOptions>
+
+<APIReturns>
+从片段节点派生的值，如果在指定节点中未找到一致值则为 undefined。
+</APIReturns>
+</API>
+
+### `useNodePath`
+
+返回编辑器中节点的路径。
+
+<API name="useNodePath">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    要查找路径的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  表示节点在编辑器树结构中位置的记忆化 Path 数组。
+</APIReturns>
+</API>
+
+### `usePath`
+
+获取最近元素的记忆化路径。
+
+<API name="usePath">
+<APIParameters>
+  <APIItem name="pluginKey" type="string" optional>
+    要获取路径的插件键。
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  元素的路径，如果在节点组件上下文之外使用则返回 `undefined`。
+</APIReturns>
+</API>  
+
+### `usePluginOption`
+
+用于从插件存储访问插件选项的 Hook。用于 `<Plate>` 内部。
+
+<API name="usePluginOption">
+<APIParameters>
+  <APIItem name="plugin" type="PlatePlugin">
+    要获取选项的插件。
+  </APIItem>
+  <APIItem name="key" type="keyof (InferOptions<C> | InferSelectors<C>) | 'state'">
+    要访问的选项或选择器的键。
+  </APIItem>
+  <APIItem name="...args" type="any[]" optional>
+    附加参数:
+    - 对于选择器: 选择器参数
+    - 最后一个参数可以是相等函数 `(a: T, b: T) => boolean`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="T">
+  选项或选择器结果的值:
+  - 对于 'state': 返回整个状态对象
+  - 对于选择器键: 返回选择器的返回值
+  - 对于选项键: 返回选项值
+</APIReturns>
+
+```tsx
+// 访问简单选项
+const value = usePluginOption(plugin, 'value');
+// 使用参数访问选择器
+const doubleValue = usePluginOption(plugin, 'doubleValue', 2);
+// 使用相等函数访问
+const value = usePluginOption(plugin, 'value', (a, b) => a === b);
+// 访问整个状态
+const state = usePluginOption(plugin, 'state');
+```
+
+</API>
+
+### `useEditorPluginOption`
+
+用于从插件存储访问插件选项的 Hook。用于 `<Plate>` 外部。
+
+<API name="useEditorPluginOption">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    编辑器实例。
+  </APIItem>
+  <APIItem name="plugin" type="PlatePlugin">
+    要获取选项的插件。
+  </APIItem>
+  <APIItem name="key" type="keyof (InferOptions<C> | InferSelectors<C>) | 'state'">
+    要访问的选项或选择器的键。
+  </APIItem>
+  <APIItem name="...args" type="any[]" optional>
+    附加参数:
+    - 对于选择器: 选择器参数
+    - 最后一个参数可以是相等函数 `(a: T, b: T) => boolean`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="T">
+  选项或选择器结果的值:
+  - 对于 'state': 返回整个状态对象
+  - 对于选择器键: 返回选择器的返回值
+  - 对于选项键: 返回选项值
+</APIReturns>
+
+```tsx
+// 访问简单选项
+const value = useEditorPluginOption(editor, plugin, 'value');
+// 使用参数访问选择器
+const doubleValue = useEditorPluginOption(editor, plugin, 'doubleValue', 2);
+// 使用相等函数访问
+const value = useEditorPluginOption(editor, plugin, 'value', (a, b) => a === b);
+// 访问整个状态
+const state = useEditorPluginOption(editor, plugin, 'state');
+```
+</API>
+
+### `useElement`
+
+通过插件键获取元素。
+
+<API name="useElement">
+<APIParameters>
+  <APIItem name="pluginKey" type="string" optional>
+    要获取元素的插件键。
+    - **默认值:** `'element'`
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  类型为 `T extends TElement` 的元素，如果在节点组件上下文之外使用则返回空对象。
+</APIReturns>
+</API>
+
+## 核心插件
+
+### `DebugPlugin`
+提供具有可配置日志级别和错误处理功能的调试功能。
+
+查看[调试](/docs/debugging)了解更多详情。
+
+### `SlateExtensionPlugin & SlateReactExtensionPlugin`
+扩展核心 API 并改进默认功能。
+
+### `DOMPlugin & ReactPlugin`
+将 React 特定功能集成到编辑器中。
+
+### `HistoryPlugin`
+为编辑器启用撤销和重做功能。
+
+### `InlineVoidPlugin`
+管理编辑器中的内联和空元素。
+
+### `ParserPlugin`
+处理编辑器内容的解析。
+
+### `LengthPlugin`
+强制执行编辑器内容的最大长度限制。
+
+### `HtmlPlugin`
+启用 HTML 序列化和反序列化。
+
+### `AstPlugin`
+处理编辑器的抽象语法树(AST)操作。
+
+### `ParagraphPlugin`
+提供段落格式化功能。
+
+### `EventEditorPlugin`
+管理编辑器事件，如焦点和失焦。
+
+## 工具函数
+
+### `isType`
+
+检查节点是否匹配提供的类型。
+
+<API name="isType">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor<V>">
+    节点所在的编辑器。
+  </APIItem>
+  <APIItem name="node" type="any">
+    要检查的节点。
+  </APIItem>
+  <APIItem name="key" type="string | string[]" optional>
+    要与节点匹配的类型或类型数组。可以是字符串或字符串数组。
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  表示节点的类型是否匹配提供的类型或类型的布尔值。
+</APIReturns>
+</API>
+
+## 组件
+
+### `<PlateElement>`
+
+用于渲染元素的通用组件。
+
+<API name="PlateElement">
+<APIProps>
+  <APIItem name="className" type="string" optional>
+    应用于组件的 CSS 类。
+  </APIItem>
+  <APIItem name="editor" type="E">
+    编辑器实例。也可使用 `useEditorRef` hook 获取。
+  </APIItem>
+  <APIItem name="element" type="TElement">
+    元素节点。也可使用 `useElement` hook 获取。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    元素在编辑器树中的路径。也可使用 `usePath` hook 获取。
+  </APIItem>
+  <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
+    要应用到顶层元素的元素属性。
+    <APISubList>
+      <APISubListItem parent="attributes" name="data-slate-node" type="'element'">
+        始终设置为 `'element'`。
+      </APISubListItem>
+      <APISubListItem parent="attributes" name="data-slate-inline" type="boolean" optional />
+      <APISubListItem parent="attributes" name="data-slate-void" type="boolean" optional />
+      <APISubListItem parent="attributes" name="dir" type="string" optional />
+      <APISubListItem parent="attributes" name="ref" type="any">
+        元素的引用。如果使用自己的引用，请与此引用合并。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="children" type="any">
+    渲染节点子元素所必需。
+  </APIItem>
+  <APIItem name="as" type="React.ElementType" optional>
+    要渲染的组件类型。
+    - **默认值:** `'div'`
+  </APIItem>
+</APIProps>
+</API>
+
+### `<PlateLeaf>`
+
+用于渲染叶节点的通用组件。
+
+<API name="PlateLeaf">
+<APIProps>
+  <APIItem name="className" type="string" optional>
+    应用于组件的 CSS 类。
+  </APIItem>
+  <APIItem name="editor" type="E">
+    编辑器上下文。
+  </APIItem>
+  <APIItem name="children" type="any">
+    渲染节点子元素所必需。
+  </APIItem>
+  <APIItem name="leaf" type="TText">
+    叶节点。
+  </APIItem>
+  <APIItem name="text" type="TText">
+    文本节点。
+  </APIItem>
+  <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
+    要应用到顶层元素的叶节点属性。
+    <APISubList>
+      <APISubListItem parent="attributes" name="data-slate-leaf" type="true">
+        始终设置为 `true`。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="as" type="React.ElementType" optional>
+    要渲染的组件类型。
+    - **默认值:** `'span'`
+  </APIItem>
+</APIProps>
+</API>
+
+### `<PlateText>`
+
+用于渲染文本的通用组件。
+
+<API name="PlateText">
+<APIProps>
+  <APIItem name="className" type="string" optional>
+    应用于组件的 CSS 类。
+  </APIItem>
+  <APIItem name="text" type="TText">
+    文本节点。
+  </APIItem>
+  <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
+    要应用到顶层元素的文本属性。
+  </APIItem>
+  <APIItem name="children" type="any">
+    渲染节点子元素所必需。
+  </APIItem>
+  <APIItem name="as" type="React.ElementType" optional>
+    要渲染的组件类型。
+    - **默认值:** `'span'`
+  </APIItem>
+</APIProps>
+</API>

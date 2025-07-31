@@ -1,0 +1,173 @@
+---
+title: 块菜单
+docs:
+  - route: /docs/components/block-context-menu
+    title: 块上下文菜单
+  
+  - route: https://pro.platejs.org/docs/components/block-menu
+    title: 块菜单
+
+  - route: https://pro.platejs.org/docs/components/block-context-menu
+    title: 块上下文菜单
+
+---
+
+<ComponentPreview name="block-menu-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 右键点击块元素可打开上下文菜单
+- 支持对块元素执行多种操作：转换类型、复制或删除等
+- 可自定义菜单项和操作行为
+- 支持键盘导航
+- 与块选择功能集成
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的方式是使用 `BlockMenuKit`，它包含预配置的 `BlockMenuPlugin` 以及 `BlockSelectionPlugin` 和它们的 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="block-menu-kit" />
+
+- [`BlockContextMenu`](/docs/components/block-context-menu): 渲染上下文菜单界面
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BlockMenuKit } from '@/components/editor/plugins/block-menu-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...BlockMenuKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装依赖
+
+```bash
+npm install @platejs/selection
+```
+
+### 添加插件
+
+块菜单功能需要同时安装 `BlockSelectionPlugin` 和 `BlockMenuPlugin` 才能正常工作。
+
+```tsx
+import { BlockSelectionPlugin, BlockMenuPlugin } from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    BlockSelectionPlugin.configure({
+      options: {
+        enableContextMenu: true,
+      },
+    }),
+    BlockMenuPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+通过上下文菜单组件配置块菜单：
+
+```tsx
+import { BlockSelectionPlugin, BlockMenuPlugin } from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
+import { BlockContextMenu } from '@/components/ui/block-context-menu';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    BlockSelectionPlugin.configure({
+      options: {
+        enableContextMenu: true,
+      },
+    }),
+    BlockMenuPlugin.configure({
+      render: { aboveEditable: BlockContextMenu },
+    }),
+  ],
+});
+```
+
+- `BlockSelectionPlugin.options.enableContextMenu`: 启用上下文菜单功能
+- `BlockMenuPlugin.render.aboveEditable`: 指定 [`BlockContextMenu`](/docs/components/block-context-menu) 组件来渲染上下文菜单
+
+#### 控制上下文菜单行为
+
+通过 `data-plate-open-context-menu` 属性可控制特定元素是否触发上下文菜单：
+
+```tsx
+<PlateElement data-plate-open-context-menu={false} {...props}>
+  {children}
+</PlateElement>
+```
+
+此属性常用于防止在 `<Editor />` 组件的空白区域右键时弹出菜单。
+
+</Steps>
+
+## Plate Plus 专业版
+
+<ComponentPreviewPro name="block-menu-pro" />
+
+## 插件系统
+
+### `BlockMenuPlugin`
+
+用于管理块菜单状态和上下文菜单功能的插件
+
+## API 接口
+
+### `api.blockMenu.hide`
+
+隐藏块菜单
+
+### `api.blockMenu.show`
+
+为指定块显示菜单
+
+<API name="show">
+<APIParameters>
+  <APIItem name="id" type="'context' | string">
+    要显示菜单的块ID，或使用'context'表示上下文菜单
+  </APIItem>
+  <APIItem name="position" type="{ x: number; y: number }" optional>
+    菜单显示位置坐标。若未提供，则仅更新openId状态
+  </APIItem>
+</APIParameters>
+</API>
+
+### `api.blockMenu.showContextMenu`
+
+为指定块显示上下文菜单并自动选中该块
+
+<API name="showContextMenu">
+<APIParameters>
+  <APIItem name="blockId" type="string">
+    要显示上下文菜单的块ID
+  </APIItem>
+  <APIItem name="position" type="{ x: number; y: number }">
+    菜单显示位置坐标
+  </APIItem>
+</APIParameters>
+</API>

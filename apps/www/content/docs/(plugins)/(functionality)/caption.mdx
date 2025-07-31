@@ -1,0 +1,213 @@
+---
+title: Caption
+description: Add captions to media elements like images, videos, and files.
+docs:
+  - route: /docs/components/caption
+    title: Caption
+---
+
+<ComponentPreview name="media-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Add captions to images, videos, audio files, and other media elements.
+- Arrow navigation selects caption within a block.
+- Inline caption editing with textarea component.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add caption functionality is with the `MediaKit`, which includes the pre-configured `CaptionPlugin` along with media plugins and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="media-kit" />
+
+- [`Caption`](/docs/components/caption): Renders caption components for media elements.
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { MediaKit } from '@/components/editor/plugins/media-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...MediaKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/caption
+```
+
+### Add Plugin
+
+```tsx
+import { CaptionPlugin } from '@platejs/caption/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CaptionPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+Configure which media plugins should support captions:
+
+```tsx
+import { KEYS } from 'platejs';
+import { CaptionPlugin } from '@platejs/caption/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  VideoPlugin,
+} from '@platejs/media/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ImagePlugin,
+    VideoPlugin,
+    AudioPlugin,
+    FilePlugin,
+    MediaEmbedPlugin,
+    CaptionPlugin.configure({
+      options: {
+        query: {
+          allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
+        },
+      },
+    }),
+  ],
+});
+```
+
+- `query.allow`: Array of plugin keys that support captions.
+
+</Steps>
+
+## Plugins
+
+### `CaptionPlugin`
+
+Plugin for adding caption functionality to media elements.
+
+<API name="CaptionPlugin">
+<APIOptions>
+  <APIItem name="query" type="{ allow: string[] }" required>
+    Configuration for which plugins support captions.
+    <APISubList>
+      <APISubListItem parent="query" name="allow" type="string[]">
+        Plugin keys of the blocks that can have captions.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="focusEndPath" type="Path" optional>
+    Path to focus at the end of the caption.
+    - **Default:** `null`
+  </APIItem>
+  <APIItem name="focusStartPath" type="Path" optional>
+    Path to focus at the start of the caption.
+    - **Default:** `null`
+  </APIItem>
+  <APIItem name="visibleId" type="string" optional>
+    ID of the currently visible caption.
+    - **Default:** `null`
+  </APIItem>
+</APIOptions>
+</API>
+
+## Types
+
+### `TCaptionElement`
+
+Extends `TElement`.
+
+<API name="TCaptionElement">
+<APIAttributes>
+  <APIItem name="caption" type="Descendant[]" optional>
+    Caption value as an array of descendant nodes.
+  </APIItem>
+</APIAttributes>
+</API>
+
+## Components
+
+### `<Caption>`
+
+<API name="Caption">
+<APIProps>
+  <APIItem name="options" type="object" optional>
+    Options for the caption component.
+  </APIItem>
+  <APIItem name="state" type="object" optional>
+    State for the caption component.
+    <APISubList>
+      <APISubListItem parent="state" name="captionString" type="string" optional>
+        The string representing the caption.
+      </APISubListItem>
+      <APISubListItem parent="state" name="selected" type="boolean" optional>
+        Whether the caption component is selected.
+      </APISubListItem>
+      <APISubListItem parent="state" name="readOnly" type="boolean" optional>
+        Whether the caption component is in read-only mode.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  
+  <APIOptions type="object">
+  <APIItem name="readOnly" type="boolean" optional>
+    Whether the caption component is in read-only mode.
+  </APIItem>
+</APIOptions>
+</APIProps>
+</API>
+
+### `<CaptionTextarea>`
+
+<API name="CaptionTextarea">
+<APIProps>
+  <APIItem name="state" type="object">
+    State for the caption textarea.
+    <APISubList>
+      <APISubListItem parent="state" name="textareaRef" type="Ref">
+        Reference to the textarea element.
+      </APISubListItem>
+      <APISubListItem parent="state" name="captionValue" type="TextareaAutosizeProps['value']">
+        The value of the caption displayed in the textarea.
+      </APISubListItem>
+      <APISubListItem parent="state" name="setCaptionValue" type="(value: TextareaAutosizeProps['value']) => void">
+        Function to update the caption value.
+      </APISubListItem>
+      <APISubListItem parent="state" name="readOnly" type="boolean">
+        Whether the caption component is in read-only mode.
+      </APISubListItem>
+      <APISubListItem parent="state" name="element" type="TCaptionElement">
+        The caption element.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIProps>
+</API>

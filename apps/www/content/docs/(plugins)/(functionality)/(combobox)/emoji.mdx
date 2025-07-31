@@ -1,0 +1,145 @@
+---
+title: Emoji
+docs:
+  - route: /docs/combobox
+    title: Combobox
+  - route: /docs/components/emoji-node
+    title: Emoji Input Element
+  - route: /docs/components/emoji-dropdown-menu
+    title: Emoji Toolbar Button
+---
+
+<ComponentPreview name="emoji-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Insert emojis inline with autocomplete suggestions
+- Triggered by `:` character followed by emoji name (e.g., `:apple:` 🍎)
+- Customizable emoji data source and rendering
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add emoji functionality is with the `EmojiKit`, which includes pre-configured `EmojiPlugin` and `EmojiInputPlugin` along with their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="emoji-kit" />
+
+- [`EmojiInputElement`](/docs/components/emoji-node): Renders the emoji input combobox
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { EmojiKit } from '@/components/editor/plugins/emoji-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...EmojiKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/emoji @emoji-mart/data
+```
+
+### Add Plugins
+
+```tsx
+import { EmojiPlugin, EmojiInputPlugin } from '@platejs/emoji/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    EmojiPlugin,
+    EmojiInputPlugin,
+  ],
+});
+```
+
+### Configure Plugins
+
+```tsx
+import { EmojiPlugin, EmojiInputPlugin } from '@platejs/emoji/react';
+import { createPlateEditor } from 'platejs/react';
+import { EmojiInputElement } from '@/components/ui/emoji-node';
+import emojiMartData from '@emoji-mart/data';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    EmojiPlugin.configure({
+      options: {
+        data: emojiMartData,
+        trigger: ':',
+        triggerPreviousCharPattern: /^\s?$/,
+        createEmojiNode: (emoji) => ({ text: emoji.skins[0].native }),
+      },
+    }),
+    EmojiInputPlugin.withComponent(EmojiInputElement),
+  ],
+});
+```
+
+- `options.data`: Emoji data from @emoji-mart/data package
+- `options.trigger`: Character that triggers the emoji combobox (default: `:`)
+- `options.triggerPreviousCharPattern`: RegExp pattern for character before trigger
+- `options.createEmojiNode`: Function to create the emoji node when selected. Default inserts Unicode character as text
+- `withComponent`: Assigns the UI component for the emoji input combobox
+
+### Add Toolbar Button
+
+You can add [`EmojiToolbarButton`](/docs/components/emoji-toolbar-button) to your [Toolbar](/docs/toolbar) to insert emojis.
+
+</Steps>
+
+## Plugins
+
+### EmojiPlugin
+
+Plugin for emoji functionality. Extends [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions).
+
+<API name="EmojiPlugin">
+<APIOptions>
+  <APIItem name="data" type="EmojiMartData" optional>
+    The emoji data from @emoji-mart/data package.
+    - **Default:** Built-in emoji library
+  </APIItem>
+  <APIItem name="createEmojiNode" type="(emoji: Emoji) => Descendant" optional>
+    Function to specify the node inserted when an emoji is selected.
+    - **Default:** Inserts a text node with the emoji Unicode character
+  </APIItem>
+  <APIItem name="trigger" type="string" optional>
+    Character that triggers the emoji combobox.
+    - **Default:** `':'`
+  </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+    Pattern to match the character before trigger.
+    - **Default:** `/^\s?$/`
+  </APIItem>
+  <APIItem name="createComboboxInput" type="() => TElement" optional>
+    Function to create the input element when trigger is activated.
+  </APIItem>
+</APIOptions>
+</API>
+
+### EmojiInputPlugin
+
+Handles the input behavior for emoji insertion.

@@ -1,0 +1,250 @@
+---
+title: Toolbar
+description: Fixed and floating toolbars for your editor.
+docs:
+  - route: https://pro.platejs.org/docs/examples/floating-toolbar
+    title: Plus
+  - route: /docs/components/fixed-toolbar
+    title: Fixed Toolbar
+  - route: /docs/components/floating-toolbar
+    title: Floating Toolbar
+---
+
+<ComponentPreview name="basic-nodes-demo" />
+
+<PackageInfo>
+
+## Features
+
+- **Fixed Toolbar**: Persistent toolbar that sticks to the top of the editor
+- **Floating Toolbar**: Contextual toolbar that appears on text selection
+- **Customizable Buttons**: Easily add, remove, and reorder toolbar buttons
+- **Responsive Design**: Adapts to different screen sizes and content
+- **Plugin Integration**: Seamless integration with Plate plugins and UI components
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add toolbar functionality is with the `FixedToolbarKit` and `FloatingToolbarKit`, which include pre-configured toolbar plugins along with their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="fixed-toolbar-kit" />
+<ComponentSource name="floating-toolbar-kit" />
+
+- [`FixedToolbar`](/docs/components/fixed-toolbar): Renders a persistent toolbar above the editor
+- [`FixedToolbarButtons`](/docs/components/fixed-toolbar-buttons): Pre-configured button set for the fixed toolbar
+- [`FloatingToolbar`](/docs/components/floating-toolbar): Renders a contextual toolbar on text selection
+- [`FloatingToolbarButtons`](/docs/components/floating-toolbar-buttons): Pre-configured button set for the floating toolbar
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { FixedToolbarKit } from '@/components/editor/plugins/fixed-toolbar-kit';
+import { FloatingToolbarKit } from '@/components/editor/plugins/floating-toolbar-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...FixedToolbarKit,
+    ...FloatingToolbarKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Create Plugins
+
+```tsx
+import { createPlatePlugin } from 'platejs/react';
+import { FixedToolbar } from '@/components/ui/fixed-toolbar';
+import { FixedToolbarButtons } from '@/components/ui/fixed-toolbar-buttons';
+import { FloatingToolbar } from '@/components/ui/floating-toolbar';
+import { FloatingToolbarButtons } from '@/components/ui/floating-toolbar-buttons';
+
+const fixedToolbarPlugin = createPlatePlugin({
+  key: 'fixed-toolbar',
+  render: {
+    beforeEditable: () => (
+      <FixedToolbar>
+        <FixedToolbarButtons />
+      </FixedToolbar>
+    ),
+  },
+});
+
+const floatingToolbarPlugin = createPlatePlugin({
+  key: 'floating-toolbar',
+  render: {
+    afterEditable: () => (
+      <FloatingToolbar>
+        <FloatingToolbarButtons />
+      </FloatingToolbar>
+    ),
+  },
+});
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    fixedToolbarPlugin,
+    floatingToolbarPlugin,
+  ],
+});
+```
+
+- `render.beforeEditable`: Renders [`FixedToolbar`](/docs/components/fixed-toolbar) above the editor content
+- `render.afterEditable`: Renders [`FloatingToolbar`](/docs/components/floating-toolbar) as an overlay after the editor
+
+### Customizing Fixed Toolbar Buttons
+
+The `FixedToolbarButtons` component contains the default set of buttons for the fixed toolbar.
+
+<ComponentSource name="fixed-toolbar-buttons" />
+
+To customize it, you can edit `components/ui/fixed-toolbar-buttons.tsx`.
+
+### Customizing Floating Toolbar Buttons
+
+Similarly, you can customize the floating toolbar by editing `components/ui/floating-toolbar-buttons.tsx`.
+
+<ComponentSource name="floating-toolbar-buttons" />
+
+
+### Creating Custom Button
+
+This example shows a button that inserts custom text into the editor.
+
+```tsx
+import { useEditorRef } from 'platejs/react';
+import { CustomIcon } from 'lucide-react';
+import { ToolbarButton } from '@/components/ui/toolbar';
+
+export function CustomToolbarButton() {
+  const editor = useEditorRef();
+
+  return (
+    <ToolbarButton
+      onClick={() => {
+        // Custom action
+        editor.tf.insertText('Custom text');
+      }}
+      tooltip="Custom Action"
+    >
+      <CustomIcon />
+    </ToolbarButton>
+  );
+}
+```
+
+### Creating Mark Button
+
+For toggling marks like bold or italic, you can use the [`MarkToolbarButton`](/docs/components/mark-toolbar-button) component. It simplifies the process by handling the toggle state and action automatically.
+
+This example creates a "Bold" button.
+
+```tsx
+import { BoldIcon } from 'lucide-react';
+
+import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
+
+export function BoldToolbarButton() {
+  return (
+    <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">
+      <BoldIcon />
+    </MarkToolbarButton>
+  );
+}
+```
+
+- `nodeType`: Specifies the mark to toggle (e.g., `bold`, `italic`).
+- `tooltip`: Provides a helpful tooltip for the button.
+- The `MarkToolbarButton` uses `useMarkToolbarButtonState` to get the toggle state and `useMarkToolbarButton` to get the `onClick` handler and other props.
+
+### Turn Into Toolbar Button
+
+The [`TurnIntoToolbarButton`](/docs/components/turn-into-toolbar-button) provides a dropdown menu to convert the current block into different types (headings, lists, quotes, etc.).
+
+<ComponentSource name="turn-into-toolbar-button" />
+
+To add a new block type to the turn-into options, edit the `turnIntoItems` array:
+
+```tsx
+const turnIntoItems = [
+  // ... existing items
+  {
+    icon: <CustomIcon />,
+    keywords: ['custom', 'special'],
+    label: 'Custom Block',
+    value: 'custom-block',
+  },
+];
+```
+
+### Insert Toolbar Button
+
+The [`InsertToolbarButton`](/docs/components/insert-toolbar-button) provides a dropdown menu to insert various elements (blocks, lists, media, inline elements).
+
+<ComponentSource name="insert-toolbar-button" />
+
+To add a new insertable item, add it to the appropriate group in the `groups` array:
+
+```tsx
+{
+  group: 'Basic blocks',
+  items: [
+    // ... existing items
+    {
+      icon: <CustomIcon />,
+      label: 'Custom Block',
+      value: 'custom-block',
+    },
+  ].map((item) => ({
+    ...item,
+    onSelect: (editor, value) => {
+      insertBlock(editor, value);
+    },
+  })),
+}
+```
+
+</Steps>
+
+## Plate Plus
+
+<ComponentPreviewPro name="floating-toolbar-pro" />
+
+## Plugins
+
+### `FixedToolbarKit`
+
+Plugin that renders a fixed toolbar above the editor content.
+
+<API name="FixedToolbarKit">
+<APIOptions>
+  <APIItem name="render.beforeEditable" type="() => ReactNode">
+    Renders the fixed toolbar before the editor content. Contains FixedToolbarButtons by default.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `FloatingToolbarKit`
+
+Plugin that renders a floating toolbar that appears on text selection.
+
+<API name="FloatingToolbarKit">
+<APIOptions>
+  <APIItem name="render.afterEditable" type="() => ReactNode">
+    Renders the floating toolbar as an overlay after the editor. Contains FloatingToolbarButtons by default.
+  </APIItem>
+</APIOptions>
+</API> 

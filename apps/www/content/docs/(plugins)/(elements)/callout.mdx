@@ -1,0 +1,192 @@
+---
+title: Callout
+docs:
+  - route: https://pro.platejs.org/docs/components/callout-node
+    title: Plus
+  - route: /docs/components/callout
+    title: Callout Element
+---
+
+<ComponentPreview name="callout-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Customizable callout blocks for highlighting important information
+- Support for different callout variants (e.g., info, warning, error)
+- Ability to set custom icons or emojis for callouts
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add the callout plugin is with the `CalloutKit`, which includes pre-configured `CalloutPlugin` with the [Plate UI](/docs/installation/plate-ui) component.
+
+<ComponentSource name="callout-kit" />
+
+- [`CalloutElement`](/docs/components/callout-node): Renders callout elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { CalloutKit } from '@/components/editor/plugins/callout-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...CalloutKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/callout
+```
+
+### Add Plugin
+
+Include `CalloutPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { CalloutPlugin } from '@platejs/callout/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CalloutPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+You can configure the `CalloutPlugin` with a custom component to render callout elements.
+
+```tsx
+import { CalloutPlugin } from '@platejs/callout/react';
+import { createPlateEditor } from 'platejs/react';
+import { CalloutElement } from '@/components/ui/callout-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CalloutPlugin.withComponent(CalloutElement),
+  ],
+});
+```
+
+- `withComponent`: Assigns [`CalloutElement`](/docs/components/callout-node) to render callout elements.
+
+</Steps>
+
+
+## Plate Plus
+
+<ComponentPreviewPro name="callout-pro" />
+
+## Plugins
+
+### `CalloutPlugin`
+
+Callout element plugin.
+
+## Transforms
+
+### `tf.insert.callout`
+
+Insert a callout element into the editor.
+
+<API name="callout">
+<APIOptions type="object">
+  <APIItem name="variant" type="string" optional>
+    The variant of the callout to insert.
+  </APIItem>
+  <APIItem name="...InsertNodesOptions" type="InsertNodesOptions<V>">
+    Other options from `InsertNodesOptions`.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Hooks
+
+### `useCalloutEmojiPicker`
+
+Manage the emoji picker functionality for callouts.
+
+<API name="useCalloutEmojiPicker">
+<APIOptions type="UseCalloutEmojiPickerOptions">
+  <APIItem name="isOpen" type="boolean">
+    Whether the emoji picker is open.
+  </APIItem>
+  <APIItem name="setIsOpen" type="(isOpen: boolean) => void">
+    Function to set the open state of the emoji picker.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="emojiToolbarDropdownProps" type="object">
+    Props for the emoji toolbar dropdown.
+    <APISubList>
+      <APISubListItem parent="emojiToolbarDropdownProps" name="isOpen" type="boolean">
+        Whether the emoji picker is open.
+      </APISubListItem>
+      <APISubListItem parent="emojiToolbarDropdownProps" name="setIsOpen" type="(v: boolean) => void">
+        Function to set the open state of the emoji picker, respecting read-only mode.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="props" type="object">
+    Props for the emoji picker component.
+    <APISubList>
+      <APISubListItem parent="props" name="isOpen" type="boolean">
+        Whether the emoji picker is open.
+      </APISubListItem>
+      <APISubListItem parent="props" name="setIsOpen" type="(isOpen: boolean) => void">
+        Function to set the open state of the emoji picker.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onSelectEmoji" type="(options: { emojiValue?: any; icon?: any }) => void">
+        Function called when an emoji is selected. It updates the callout's icon and closes the picker.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+## Types
+
+### `TCalloutElement`
+
+```typescript
+interface TCalloutElement extends TElement {
+  variant?: string;
+  icon?: string;
+}
+```
+
+<API name="TCalloutElement">
+<APIAttributes>
+  <APIItem name="variant" type="string" optional>
+    The variant of the callout.
+  </APIItem>
+  <APIItem name="icon" type="string" optional>
+    The icon or emoji to display.
+  </APIItem>
+</APIAttributes>
+</API>

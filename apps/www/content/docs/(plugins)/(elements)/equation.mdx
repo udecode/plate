@@ -1,0 +1,156 @@
+---
+title: Equation
+docs:
+  - route: https://pro.platejs.org/docs/examples/equation
+    title: Plus
+  - route: /docs/components/equation-node
+    title: Equation Element
+  - route: /docs/components/equation-toolbar-button
+    title: Equation Toolbar Button
+---
+
+<ComponentPreview name="equation-demo" />
+
+<PackageInfo>
+
+## Features
+
+- LaTeX syntax support for complex mathematical expressions
+- Both inline and block equation formats
+- Real-time rendering of equations using KaTeX
+- Easy editing and navigation within equations
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add equation functionality is with the `MathKit`, which includes pre-configured `EquationPlugin` and `InlineEquationPlugin` with [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="math-kit" />
+
+- [`EquationElement`](/docs/components/equation-node): Renders block equation elements.
+- [`InlineEquationElement`](/docs/components/equation-node): Renders inline equation elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { MathKit } from '@/components/editor/plugins/math-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...MathKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/math
+```
+
+### Add Plugins
+
+Include the equation plugins in your Plate plugins array when creating the editor.
+
+```tsx
+import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    EquationPlugin,
+    InlineEquationPlugin,
+  ],
+});
+```
+
+### Configure Plugins
+
+Configure the plugins with custom components to render equation elements.
+
+```tsx
+import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import { createPlateEditor } from 'platejs/react';
+import { EquationElement, InlineEquationElement } from '@/components/ui/equation-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    EquationPlugin.withComponent(EquationElement),
+    InlineEquationPlugin.withComponent(InlineEquationElement),
+  ],
+});
+```
+
+- `withComponent`: Assigns [`EquationElement`](/docs/components/equation-node) to render block equations and [`InlineEquationElement`](/docs/components/equation-node) to render inline equations.
+
+### Add Toolbar Button
+
+You can add [`EquationToolbarButton`](/docs/components/equation-toolbar-button) to your [Toolbar](/docs/toolbar) to insert equations.
+
+</Steps>
+
+## Plate Plus
+
+<ComponentPreviewPro name="equation-pro" />
+
+## Plugins
+
+### `EquationPlugin`
+
+Plugin for block equation elements.
+
+### `InlineEquationPlugin`
+
+Plugin for inline equation elements.
+
+## Transforms
+
+### `tf.insert.equation`
+
+<API name="insert.equation">
+<APIOptions type="InsertNodesOptions">
+    Options for the insert nodes transform.
+</APIOptions>
+</API>
+
+### `tf.insert.inlineEquation`
+
+Inserts an inline equation.
+
+<API name="insert.inlineEquation">
+<APIParameters>
+  <APIItem name="texExpression" type="string" optional>
+    The LaTeX expression to insert. Empty equation if not provided.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Types
+
+### `TEquationElement`
+
+```typescript
+interface TEquationElement extends TElement {
+  texExpression: string;
+}
+```

@@ -1,0 +1,203 @@
+---
+title: 退出块结构
+---
+
+<ComponentPreview name="exit-break-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 通过快捷键从嵌套块结构（如代码块、表格、列）中退出
+- 根据块层级自动确定合适的退出位置
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的方式是使用 `ExitBreakKit`，它包含预配置的 `ExitBreakPlugin` 及键盘快捷键。
+
+<ComponentSource name="exit-break-kit" />
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { ExitBreakKit } from '@/components/editor/plugins/exit-break-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...ExitBreakKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 添加插件
+
+```tsx
+import { ExitBreakPlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ExitBreakPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+```tsx
+import { ExitBreakPlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ExitBreakPlugin.configure({
+      shortcuts: {
+        insert: { keys: 'mod+enter' },
+        insertBefore: { keys: 'mod+shift+enter' },
+      },
+    }),
+  ],
+});
+```
+
+- `shortcuts.insert`: 定义退出并在之后插入新块的键盘[快捷键](/docs/plugin-shortcuts)
+- `shortcuts.insertBefore`: 定义退出并在之前插入新块的键盘[快捷键](/docs/plugin-shortcuts)
+
+</Steps>
+
+## 快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Enter">
+    退出当前块结构并在之后插入新块
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + Enter">
+    退出当前块结构并在之前插入新块
+  </KeyTableItem>
+</KeyTable>
+
+## 插件
+
+### `ExitBreakPlugin`
+
+提供自动退出嵌套块结构的转换功能。该插件通过查找允许标准块兄弟节点的首个祖先节点来确定合适的退出位置。
+
+<API name="ExitBreakPlugin">
+<APIOptions>
+  <APIItem name="shortcuts" type="object" optional>
+    键盘快捷键配置
+    <APISubList>
+      <APISubListItem parent="shortcuts" name="insert" type="Shortcut" optional>
+        退出并在之后插入块的快捷键
+        - **示例:** `{ keys: 'mod+enter' }`
+      </APISubListItem>
+      <APISubListItem parent="shortcuts" name="insertBefore" type="Shortcut" optional>
+        退出并在之前插入块的快捷键
+        - **示例:** `{ keys: 'mod+shift+enter' }`
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIOptions>
+</API>
+
+## 工作原理
+
+退出块功能使用 [`isStrictSiblings`](/docs/api/core/plate-plugin#isstrictsiblings) 属性来确定退出嵌套结构时新块的插入位置。
+
+### 退出点判定
+
+触发退出块时：
+
+1. 从当前文本块开始（例如表格单元格内的段落）
+2. 向上遍历文档树检查每个祖先节点
+3. 找到第一个 `isStrictSiblings: false` 的祖先节点
+4. 在该祖先节点同级位置插入新段落
+
+### 示例
+
+**代码块：**
+```tsx
+<codeblock>                              // ← 退出点（顶层块）
+  <codeline>代码|</codeline>             // ← 起始位置
+</codeblock>
+<p>|</p>                                 // ← 在此处插入新段落
+```
+
+**列中的表格（在表格层级退出）：**
+```tsx
+// 第一次退出
+<column_group>                           
+  <column>                               
+    <table>                              // ← 退出点（isStrictSiblings: false）
+      <tr>                               // isStrictSiblings: true
+        <td>                             // isStrictSiblings: true
+          <p>内容|</p>                   // ← 起始位置
+        </td>
+      </tr>
+    </table>
+    <p>|</p>                             // ← 在此处插入新段落
+  </column>
+</column_group>
+
+// 第二次退出
+<column_group>                           // ← 退出点（isStrictSiblings: false）
+  <column>                               // isStrictSiblings: true
+    <table>                              
+      <tr>                               
+        <td>                             
+          <p>内容</p>
+        </td>
+      </tr>
+    </table>
+    <p>|</p>                             // ← 起始位置
+  </column>
+</column_group>
+<p>|</p>                                 // ← 在此处插入新段落
+```
+
+### 自定义插件配置
+
+为自定义插件配置 [`isStrictSiblings`](/docs/api/core/plate-plugin#isstrictsiblings)：
+
+```tsx
+// 表格结构
+const CustomTablePlugin = createSlatePlugin({
+  key: 'table',
+  node: {
+    isElement: true,
+    // isStrictSiblings: false (默认值) - 允许段落兄弟节点
+  },
+});
+
+const CustomTableRowPlugin = createSlatePlugin({
+  key: 'tr',
+  node: {
+    isElement: true,
+    isStrictSiblings: true, // 仅允许 tr 兄弟节点
+  },
+});
+
+const CustomTableCellPlugin = createSlatePlugin({
+  key: 'td',
+  node: {
+    isElement: true,
+    isStrictSiblings: true, // 仅允许 td/th 兄弟节点
+  },
+});
+```

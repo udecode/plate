@@ -148,10 +148,10 @@ export const mdxComponents = {
     if (isNpmCommand) {
       return (
         <CodeBlockCommand
-          __bunCommand__={__bun__}
-          __npmCommand__={__npm__}
-          __pnpmCommand__={__pnpm__}
-          __yarnCommand__={__yarn__}
+          __bun__={__bun__}
+          __npm__={__npm__}
+          __pnpm__={__pnpm__}
+          __yarn__={__yarn__}
         />
       )
     }

@@ -1,0 +1,190 @@
+---
+title: Cursor Overlay
+description: Visual feedback for selections and cursor positions when editor loses focus.
+docs:
+  - route: /docs/components/cursor-overlay
+    title: Cursor Overlay
+---
+
+<ComponentPreview name="cursor-overlay-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Maintains selection highlight when another element is focused.
+- Dynamic selection display (e.g., during AI streaming).
+- Shows cursor position during drag operations.
+- Customizable styling for cursors and selections.
+- Essential for external UI interactions (e.g., link toolbar, AI combobox).
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add cursor overlay functionality is with the `CursorOverlayKit`, which includes the pre-configured `CursorOverlayPlugin` and the [`CursorOverlay`](/docs/components/cursor-overlay) UI component.
+
+<ComponentSource name="cursor-overlay-kit" />
+
+- [`CursorOverlay`](/docs/components/cursor-overlay): Renders cursor and selection overlays.
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { CursorOverlayKit } from '@/components/editor/plugins/cursor-overlay-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...CursorOverlayKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/selection
+```
+
+### Add Plugin
+
+```tsx
+import { CursorOverlayPlugin } from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CursorOverlayPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+Configure the cursor overlay with a component to render overlays:
+
+```tsx
+import { CursorOverlayPlugin } from '@platejs/selection/react';
+import { CursorOverlay } from '@/components/ui/cursor-overlay';
+
+CursorOverlayPlugin.configure({
+  render: {
+    afterEditable: () => <CursorOverlay />,
+  },
+});
+```
+
+- `render.afterEditable`: Assigns [`CursorOverlay`](/docs/components/cursor-overlay) to render after the editable content.
+
+### Editor Container Setup
+
+The cursor overlay requires a container component to ensure correct positioning. If you're using the [Editor](/docs/components/editor) component, this is handled automatically through `EditorContainer`.
+
+For custom setups, ensure your editor is wrapped with a container that has the editor's unique ID:
+
+```tsx
+import { PlateContainer } from 'platejs/react';
+
+export function EditorContainer(props: React.HTMLAttributes<HTMLDivElement>) {
+  return <PlateContainer {...props} />;
+}
+```
+
+### Preserving Selection Focus
+
+To maintain the editor's selection state when focusing UI elements, add the `data-plate-focus="true"` attribute to those elements:
+
+```tsx
+<ToolbarButton data-plate-focus="true">
+  {/* toolbar content */}
+</ToolbarButton>
+```
+
+This prevents the cursor overlay from disappearing when interacting with toolbar buttons or other UI elements.
+
+</Steps>
+
+## Plugins
+
+### `CursorOverlayPlugin`
+
+Plugin that manages cursor and selection overlays for visual feedback.
+
+<API name="CursorOverlayPlugin">
+<APIOptions>
+  <APIItem name="cursors" type="Record<string, CursorState<CursorData>>">
+    Object containing cursor states with their unique identifiers.
+    - **Default:** `{}`
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `api.cursorOverlay.addCursor`
+
+Adds a cursor overlay with the specified key and state.
+
+<API name="addCursor">
+<APIParameters>
+  <APIItem name="key" type="string">
+    Unique identifier for the cursor (e.g., 'blur', 'drag', 'custom').
+  </APIItem>
+  <APIItem name="cursor" type="CursorState<CursorData>">
+    The cursor state including selection and optional styling data.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `api.cursorOverlay.removeCursor`
+
+Removes a cursor overlay by its key.
+
+<API name="removeCursor">
+<APIParameters>
+  <APIItem name="key" type="string">
+    The key of the cursor to remove.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Hooks
+
+### `useCursorOverlay`
+
+A hook that manages cursor and selection overlay states, providing real-time cursor positions and selection rectangles.
+
+<API name="useCursorOverlay">
+<APIOptions type="object">
+  <APIItem name="minSelectionWidth" type="number" optional>
+    Minimum width in pixels for a selection rectangle. Useful for making cursor carets more visible.
+    - **Default:** `1`
+  </APIItem>
+  <APIItem name="refreshOnResize" type="boolean" optional>
+    Whether to recalculate cursor positions when the container is resized.
+    - **Default:** `true`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="object">
+  <APIItem name="cursors" type="CursorOverlayState<TCursorData>[]">
+    Array of cursor states with their corresponding selection rectangles and styling data.
+  </APIItem>
+  <APIItem name="refresh" type="() => void">
+    Function to manually trigger a recalculation of cursor positions.
+  </APIItem>
+</APIReturns>
+</API>

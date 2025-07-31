@@ -1,0 +1,228 @@
+---
+title: Discussion
+docs:
+  - route: https://pro.platejs.org/docs/examples/discussion
+    title: Plus
+  - route: /docs/components/block-discussion
+    title: Block Discussion
+---
+
+<ComponentPreview name="discussion-demo" />
+
+<PackageInfo>
+
+## Features
+
+- **User Management**: Store and manage user data with avatars and names
+- **Discussion Threads**: Manage discussion data structures with comments
+- **Current User Tracking**: Track the current active user for collaboration
+- **Data Storage**: Pure UI plugin for storing collaboration state
+- **Selector API**: Easy access to user data through plugin selectors
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add discussion functionality is with the `DiscussionKit`, which includes the pre-configured `discussionPlugin` along with its [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="discussion-kit" />
+
+- [`BlockDiscussion`](/docs/components/block-discussion): Renders discussion UI above nodes
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { DiscussionKit } from '@/components/editor/plugins/discussion-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...DiscussionKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/comment @platejs/suggestion
+```
+
+### Create Plugin
+
+```tsx
+import { createPlatePlugin } from 'platejs/react';
+import { BlockDiscussion } from '@/components/ui/block-discussion';
+
+export interface TDiscussion {
+  id: string;
+  comments: TComment[];
+  createdAt: Date;
+  isResolved: boolean;
+  userId: string;
+  documentContent?: string;
+}
+
+const usersData = {
+  alice: {
+    id: 'alice',
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
+    name: 'Alice',
+  },
+  bob: {
+    id: 'bob', 
+    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
+    name: 'Bob',
+  },
+};
+
+export const discussionPlugin = createPlatePlugin({
+  key: 'discussion',
+  options: {
+    currentUserId: 'alice',
+    discussions: [],
+    users: usersData,
+  },
+})
+  .configure({
+    render: { aboveNodes: BlockDiscussion },
+  })
+  .extendSelectors(({ getOption }) => ({
+    currentUser: () => getOption('users')[getOption('currentUserId')],
+    user: (id: string) => getOption('users')[id],
+  }));
+```
+
+- `options.currentUserId`: ID of the current active user
+- `options.discussions`: Array of discussion data structures  
+- `options.users`: Object mapping user IDs to user data
+- `render.aboveNodes`: Renders [`BlockDiscussion`](/docs/components/block-discussion) above nodes for discussion UI
+- `selectors.currentUser`: Gets the current user data
+- `selectors.user`: Gets user data by ID
+
+### Add Plugin
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    discussionPlugin,
+  ],
+});
+```
+
+</Steps>
+
+## Plate Plus
+
+<ComponentPreviewPro name="discussion-pro" />
+
+## Plugins
+
+### `discussionPlugin`
+
+Pure UI plugin for managing collaboration state including users and discussion data.
+
+<API name="discussionPlugin">
+<APIOptions>
+  <APIItem name="currentUserId" type="string">
+    ID of the current active user in the collaboration session.
+  </APIItem>
+  <APIItem name="discussions" type="TDiscussion[]">
+    Array of discussion objects containing comments and metadata.
+  </APIItem>
+  <APIItem name="users" type="Record<string, UserData>">
+    Object mapping user IDs to user information including name and avatar.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Selectors
+
+### `currentUser`
+
+Gets the current user data.
+
+<API name="currentUser">
+<APIReturns type="UserData">
+  The current user's data including id, name, and avatarUrl.
+</APIReturns>
+</API>
+
+### `user`
+
+Gets user data by ID.
+
+<API name="user">
+<APIParameters>
+  <APIItem name="id" type="string">
+    The user ID to look up.
+  </APIItem>
+</APIParameters>
+<APIReturns type="UserData | undefined">
+  The user data if found, undefined otherwise.
+</APIReturns>
+</API>
+
+## Types
+
+### `TDiscussion`
+
+Discussion data structure containing comments and metadata.
+
+<API name="TDiscussion">
+<APIAttributes>
+  <APIItem name="id" type="string">
+    Unique identifier for the discussion.
+  </APIItem>
+  <APIItem name="comments" type="TComment[]">
+    Array of comments in the discussion thread.
+  </APIItem>
+  <APIItem name="createdAt" type="Date">
+    When the discussion was created.
+  </APIItem>
+  <APIItem name="isResolved" type="boolean">
+    Whether the discussion has been resolved.
+  </APIItem>
+  <APIItem name="userId" type="string">
+    ID of the user who created the discussion.
+  </APIItem>
+  <APIItem name="documentContent" type="string" optional>
+    Content from the document related to this discussion.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `UserData`
+
+User information structure for collaboration.
+
+<API name="UserData">
+<APIAttributes>
+  <APIItem name="id" type="string">
+    Unique identifier for the user.
+  </APIItem>
+  <APIItem name="name" type="string">
+    Display name of the user.
+  </APIItem>
+  <APIItem name="avatarUrl" type="string">
+    URL for the user's avatar image.
+  </APIItem>
+  <APIItem name="hue" type="number" optional>
+    Optional color hue for user identification.
+  </APIItem>
+</APIAttributes>
+</API> 

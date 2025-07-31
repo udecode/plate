@@ -1,0 +1,59 @@
+---
+title: 单行/单块限制
+---
+
+<ComponentPreview name="single-block-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- **SingleLinePlugin**: 将编辑器限制为单行文本，自动移除所有换行符
+- **SingleBlockPlugin**: 将编辑器限制为单个块，换行符转为软换行
+- 通过标准化处理防止创建多个块
+- 过滤粘贴内容中的换行字符
+- 适用于标题、标签、评论或受限文本输入场景
+
+</PackageInfo>
+
+## 手动使用
+
+<Steps>
+
+### 添加插件
+
+```tsx
+import { SingleLinePlugin, SingleBlockPlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    SingleLinePlugin, // 用于单行文本
+    // 或
+    SingleBlockPlugin, // 用于支持软换行的单块文本
+  ],
+});
+```
+
+</Steps>
+
+## 插件说明
+
+### `SingleLinePlugin`
+
+通过移除所有换行符并合并多个块，将编辑器内容限制为单行文本的插件。
+
+**核心行为:**
+- 阻止`insertBreak`和`insertSoftBreak`操作
+- 过滤换行字符
+- 将多个块合并到首个块中（无分隔符）
+
+### `SingleBlockPlugin`
+
+在保留换行符的同时，将编辑器内容限制为单个块的插件。
+
+**核心行为:**
+- 将`insertBreak`转换为`insertSoftBreak`
+- 用`\n`分隔符合并多个块到首个块
+- 保留文本内容中现有的换行字符

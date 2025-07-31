@@ -1,0 +1,115 @@
+---
+title: Highlight
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Highlight important text with background colors
+- Keyboard shortcut support for quick formatting
+- Renders as `<mark>` HTML element by default
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add the highlight plugin is with the `BasicMarksKit`, which includes pre-configured `HighlightPlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="basic-marks-kit" />
+
+- [`HighlightLeaf`](/docs/components/highlight-node): Renders highlighted text elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicMarksKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### Add Plugin
+
+Include `HighlightPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { HighlightPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    HighlightPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+You can configure the `HighlightPlugin` with a custom component and keyboard shortcuts.
+
+```tsx
+import { HighlightPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+import { HighlightLeaf } from '@/components/ui/highlight-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    HighlightPlugin.configure({
+      node: { component: HighlightLeaf },
+      shortcuts: { toggle: { keys: 'mod+shift+h' } },
+    }),
+  ],
+});
+```
+
+- `node.component`: Assigns [`HighlightLeaf`](/docs/components/highlight-node) to render highlighted text elements.
+- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle highlight formatting.
+
+### Add Toolbar Button
+
+You can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle highlight formatting.
+
+</Steps>
+
+## Plugins
+
+### `HighlightPlugin`
+
+Plugin for highlight text formatting. Renders as `<mark>` HTML element by default.
+
+## Transforms
+
+### `tf.highlight.toggle`
+
+Toggles the highlight formatting for the selected text. 

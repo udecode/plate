@@ -1,0 +1,212 @@
+---
+title: 可聚焦元素 (Tabbable)
+---
+
+<ComponentPreview name="tabbable-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 确保编辑器中可聚焦元素之间的标签顺序一致
+- 管理空元素与外部DOM元素之间的焦点切换
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的方式是使用 `TabbableKit`，它包含预配置的 `TabbablePlugin` 和智能查询逻辑，可避免与其他插件冲突。
+
+<ComponentSource name="tabbable-kit" />
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { TabbableKit } from '@/components/editor/plugins/tabbable-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...TabbableKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/tabbable
+```
+
+### 添加插件
+
+```tsx
+import { TabbablePlugin } from '@platejs/tabbable/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    TabbablePlugin,
+  ],
+});
+```
+
+### 配置插件
+
+```tsx
+import { TabbablePlugin } from '@platejs/tabbable/react';
+import { createPlateEditor } from 'platejs/react';
+import { KEYS } from 'platejs';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    TabbablePlugin.configure({
+      options: {
+        query: (event) => {
+          // 在列表或代码块中禁用
+          const inList = editor.api.some({ match: { type: KEYS.li } });
+          const inCodeBlock = editor.api.some({ match: { type: KEYS.codeBlock } });
+          return !inList && !inCodeBlock;
+        },
+        globalEventListener: true,
+        isTabbable: (tabbableEntry) => 
+          editor.api.isVoid(tabbableEntry.slateNode),
+      },
+    }),
+  ],
+});
+```
+
+- `options.query`: 根据编辑器状态动态启用/禁用插件的函数
+- `options.globalEventListener`: 为`true`时，将事件监听器添加到document而非编辑器
+- `options.isTabbable`: 判断哪些元素应包含在标签顺序中的函数
+
+</Steps>
+
+## 高级用法
+
+### 与其他插件的冲突
+
+Tabbable插件可能会与处理`Tab`键的其他插件产生冲突，例如：
+
+- 列表插件
+- 代码块插件
+- 缩进插件
+
+使用`query`选项在`Tab`键应由其他插件处理时禁用Tabbable插件：
+
+```tsx
+query: (event) => {
+  const inList = editor.api.some({ match: { type: KEYS.li } });
+  const inCodeBlock = editor.api.some({ match: { type: KEYS.codeBlock } });
+  return !inList && !inCodeBlock;
+},
+```
+
+如果使用缩进插件，可以仅在选中特定类型节点(如void节点)时启用Tabbable插件：
+
+```tsx
+query: (event) => !!editor.api.some({
+  match: (node) => editor.api.isVoid(node),
+}),
+```
+
+### 非空Slate节点
+
+将为编辑器中的每个可聚焦DOM元素创建一个`TabbableEntry`，使用[tabbable](https://www.npmjs.com/package/tabbable) NPM包确定。然后使用`isTabbable`过滤可聚焦列表。
+
+默认情况下，`isTabbable`仅对void Slate节点内的entry返回true。可以覆盖`isTabbable`以支持其他类型Slate节点中包含的DOM元素：
+
+```tsx
+// 启用CUSTOM_ELEMENT内的可聚焦DOM元素
+isTabbable: (tabbableEntry) => (
+  tabbableEntry.slateNode.type === CUSTOM_ELEMENT ||
+  editor.api.isVoid(tabbableEntry.slateNode)
+),
+```
+
+### 编辑器外部的DOM元素
+
+某些情况下，可能需要允许用户从编辑器切换到外部渲染的DOM元素(如交互式弹出框)。
+
+为此，覆盖`insertTabbableEntries`返回`TabbableEntry`对象数组，每个对象对应一个要包含在可聚焦列表中的外部DOM元素。`TabbableEntry`的`slateNode`和`path`应引用当DOM元素可聚焦时用户光标所在的Slate节点。
+
+将`globalEventListener`选项设为`true`以确保Tabbable插件能将用户焦点返回到编辑器。
+
+例如，如果DOM元素在选中链接时出现，`slateNode`和`path`应为该链接的节点。
+
+```tsx
+// 将.my-popover内的按钮添加到可聚焦列表
+globalEventListener: true,
+insertTabbableEntries: (event) => {
+  const [selectedNode, selectedNodePath] = editor.api.node(editor.selection);
+
+  return [
+    ...document.querySelectorAll('.my-popover > button'),
+  ].map((domNode) => ({
+    domNode,
+    slateNode: selectedNode,
+    path: selectedNodePath,
+  }));
+},
+```
+
+## 插件
+
+### TabbablePlugin
+
+管理可聚焦元素间标签顺序的插件。
+
+<API name="TabbablePlugin">
+<APIOptions>
+  <APIItem name="query" type="(event: KeyboardEvent) => boolean" optional>
+    动态启用/禁用插件。
+    - **默认值:** `() => true`
+  </APIItem>
+  <APIItem name="globalEventListener" type="boolean" optional>
+    将事件监听器添加到document而非编辑器。
+    - **默认值:** `false`
+  </APIItem>
+  <APIItem name="insertTabbableEntries" type="(event: KeyboardEvent) => TabbableEntry[]" optional>
+    添加编辑器外的额外可聚焦entry。
+    - **默认值:** `() => []`
+  </APIItem>
+  <APIItem name="isTabbable" type="(tabbableEntry: TabbableEntry) => boolean" optional>
+    判断元素是否应可聚焦。
+    - **默认值:** `(tabbableEntry) => editor.api.isVoid(tabbableEntry.slateNode)`
+  </APIItem>
+</APIOptions>
+</API>
+
+## 类型
+
+### TabbableEntry
+
+定义可聚焦entry的属性。
+
+<API name="TabbableEntry">
+<APIAttributes>
+  <APIItem name="domNode" type="HTMLElement">
+    表示可聚焦entry的HTML元素。
+  </APIItem>
+  <APIItem name="slateNode" type="TNode">
+    对应的Slate节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    文档中Slate节点的路径。
+  </APIItem>
+</APIAttributes>
+</API>

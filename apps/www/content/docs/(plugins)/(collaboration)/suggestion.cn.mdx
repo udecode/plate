@@ -1,0 +1,461 @@
+---
+title: 建议功能
+docs:
+  - route: /docs/components/suggestion-node
+    title: 建议文本节点
+  - route: /docs/components/suggestion-toolbar-button
+    title: 建议工具栏按钮
+  - route: /docs/components/block-suggestion
+    title: 区块建议
+  - route: /docs/components/block-discussion
+    title: 区块讨论
+---
+
+<ComponentPreview name="discussion-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- **文本建议**：以内联标注形式添加文本标记建议
+- **区块建议**：为整个内容区块创建建议
+- **状态追踪**：追踪建议状态和用户交互
+- **撤销/重做支持**：完整支持建议变更的撤销/重做
+- **讨论集成**：与讨论插件协同工作实现完整协作
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的添加建议功能方式是使用 `SuggestionKit`，它包含预配置的 `SuggestionPlugin` 及相关组件，以及它们的 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="suggestion-kit" />
+
+- [`SuggestionLeaf`](/docs/components/suggestion-node)：渲染建议文本标记
+- [`BlockSuggestion`](/docs/components/block-suggestion)：渲染区块级建议
+- [`SuggestionLineBreak`](/docs/components/suggestion-node)：处理建议中的换行符
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { SuggestionKit } from '@/components/editor/plugins/suggestion-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...SuggestionKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/suggestion
+```
+
+### 扩展建议插件
+
+创建带有状态管理扩展配置的建议插件：
+
+```tsx
+import {
+  type ExtendConfig,
+  type Path,
+  isSlateEditor,
+  isSlateElement,
+  isSlateString,
+} from 'platejs';
+import {
+  type BaseSuggestionConfig,
+  BaseSuggestionPlugin,
+} from '@platejs/suggestion';
+import { createPlatePlugin, toTPlatePlugin } from 'platejs/react';
+import { BlockSuggestion } from '@/components/ui/block-suggestion';
+import { SuggestionLeaf } from '@/components/ui/suggestion-node';
+
+export type SuggestionConfig = ExtendConfig<
+  BaseSuggestionConfig,
+  {
+    activeId: string | null;
+    hoverId: string | null;
+    uniquePathMap: Map<string, Path>;
+  }
+>;
+
+export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
+  BaseSuggestionPlugin,
+  ({ editor }) => ({
+    options: {
+      activeId: null,
+      currentUserId: 'alice', // 设置当前用户ID
+      hoverId: null,
+      uniquePathMap: new Map(),
+    },
+    render: {
+      node: SuggestionLeaf,
+      belowRootNodes: ({ api, element }) => {
+        if (!api.suggestion!.isBlockSuggestion(element)) {
+          return null;
+        }
+
+        return <BlockSuggestion element={element} />;
+      },
+    },
+  })
+);
+```
+
+- `options.activeId`：当前活跃建议ID，用于视觉高亮
+- `options.currentUserId`：创建建议的当前用户ID  
+- `options.hoverId`：当前悬停建议ID，用于悬停效果
+- `options.uniquePathMap`：追踪建议解析唯一路径的映射表
+- `render.node`：指定 [`SuggestionLeaf`](/docs/components/suggestion-node) 渲染建议文本标记
+- `render.belowRootNodes`：为区块级建议渲染 [`BlockSuggestion`](/docs/components/block-suggestion)
+
+### 添加点击处理器
+
+添加点击处理以管理活跃建议状态：
+
+```tsx
+export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
+  BaseSuggestionPlugin,
+  ({ editor }) => ({
+    handlers: {
+      // 当点击建议外部时取消活跃建议
+      onClick: ({ api, event, setOption, type }) => {
+        let leaf = event.target as HTMLElement;
+        let isSet = false;
+
+        const unsetActiveSuggestion = () => {
+          setOption('activeId', null);
+          isSet = true;
+        };
+
+        if (!isSlateString(leaf)) unsetActiveSuggestion();
+
+        while (
+          leaf.parentElement &&
+          !isSlateElement(leaf.parentElement) &&
+          !isSlateEditor(leaf.parentElement)
+        ) {
+          if (leaf.classList.contains(`slate-${type}`)) {
+            const suggestionEntry = api.suggestion!.node({ isText: true });
+
+            if (!suggestionEntry) {
+              unsetActiveSuggestion();
+              break;
+            }
+
+            const id = api.suggestion!.nodeId(suggestionEntry[0]);
+            setOption('activeId', id ?? null);
+            isSet = true;
+            break;
+          }
+
+          leaf = leaf.parentElement;
+        }
+
+        if (!isSet) unsetActiveSuggestion();
+      },
+    },
+    // ... 之前的选项和渲染配置
+  })
+);
+```
+
+点击处理器追踪当前活跃建议：
+- **检测建议点击**：遍历DOM查找建议元素
+- **设置活跃状态**：点击建议时更新 `activeId`
+- **清除状态**：点击建议外部时取消 `activeId`
+- **视觉反馈**：在建议组件中启用悬停/活跃样式
+
+### 添加插件
+
+```tsx
+import { createPlateEditor, createPlatePlugin } from 'platejs/react';
+import { SuggestionLineBreak } from '@/components/ui/suggestion-node';
+
+const suggestionLineBreakPlugin = createPlatePlugin({
+  key: 'suggestionLineBreak',
+  render: { belowNodes: SuggestionLineBreak as any },
+});
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    suggestionPlugin,
+    suggestionLineBreakPlugin,
+  ],
+});
+```
+
+- `render.belowNodes`：渲染 [`SuggestionLineBreak`](/docs/components/suggestion-node) 处理建议中的换行符
+
+### 启用建议模式
+
+使用插件API控制建议模式：
+
+```tsx
+import { useEditorRef, usePluginOption } from 'platejs/react';
+
+function SuggestionToolbar() {
+  const editor = useEditorRef();
+  const isSuggesting = usePluginOption(suggestionPlugin, 'isSuggesting');
+
+  const toggleSuggesting = () => {
+    editor.setOption(suggestionPlugin, 'isSuggesting', !isSuggesting);
+  };
+
+  return (
+    <button onClick={toggleSuggesting}>
+      {isSuggesting ? '停止建议' : '开始建议'}
+    </button>
+  );
+}
+```
+
+### 添加工具栏按钮
+
+您可以在[工具栏](/docs/toolbar)中添加 [`SuggestionToolbarButton`](/docs/components/suggestion-toolbar-button) 来切换编辑器的建议模式。
+
+### 讨论集成
+
+建议插件与[讨论插件](/docs/discussion)协同工作实现完整协作：
+
+```tsx
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    discussionPlugin,
+    suggestionPlugin.configure({
+      options: {
+        currentUserId: 'alice',
+      },
+    }),
+    suggestionLineBreakPlugin,
+  ],
+});
+```
+
+</Steps>
+
+## 键盘快捷键
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Shift + S">
+    在选中文本上添加建议
+  </KeyTableItem>
+</KeyTable>
+
+## Plate Plus
+
+<ComponentPreviewPro name="comment-pro" />
+
+## 插件
+
+### `SuggestionPlugin`
+
+用于创建和管理文本及区块建议的插件，具有状态追踪和讨论集成功能。
+
+<API name="SuggestionPlugin">
+<APIOptions>
+  <APIItem name="currentUserId" type="string | null">
+    创建建议的当前用户ID。正确归属建议所必需。
+  </APIItem>
+  <APIItem name="isSuggesting" type="boolean">
+    编辑器当前是否处于建议模式。内部用于追踪状态。
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `api.suggestion.dataList`
+
+从文本节点获取建议数据。
+
+<API name="dataList">
+<APIParameters>
+  <APIItem name="node" type="TSuggestionText">
+    建议文本节点。
+  </APIItem>
+</APIParameters>
+<APIReturns type="TInlineSuggestionData[]">
+  建议数据数组。
+</APIReturns>
+</API>
+
+### `api.suggestion.isBlockSuggestion`
+
+检查节点是否为区块建议元素。
+
+<API name="isBlockSuggestion">
+<APIParameters>
+  <APIItem name="node" type="TElement">
+    要检查的节点。
+  </APIItem>
+</APIParameters>
+<APIReturns type="node is TSuggestionElement">
+  是否为区块建议。
+</APIReturns>
+</API>
+
+### `api.suggestion.node`
+
+获取建议节点条目。
+
+<API name="node">
+<APIOptions type="EditorNodesOptions & { id?: string; isText?: boolean }" optional>
+  查找节点的选项。
+</APIOptions>
+<APIReturns type="NodeEntry<TSuggestionElement | TSuggestionText> | undefined">
+  找到的建议节点条目。
+</APIReturns>
+</API>
+
+### `api.suggestion.nodeId`
+
+从节点获取建议ID。
+
+<API name="nodeId">
+<APIParameters>
+  <APIItem name="node" type="TElement | TSuggestionText">
+    要获取ID的节点。
+  </APIItem>
+</APIParameters>
+<APIReturns type="string | undefined">
+  找到的建议ID。
+</APIReturns>
+</API>
+
+### `api.suggestion.nodes`
+
+获取所有匹配选项的建议节点条目。
+
+<API name="nodes">
+<APIOptions type="EditorNodesOptions" optional>
+  查找节点的选项。
+</APIOptions>
+<APIReturns type="NodeEntry<TElement | TSuggestionText>[]">
+  建议节点条目数组。
+</APIReturns>
+</API>
+
+### `api.suggestion.suggestionData`
+
+从节点获取建议数据。
+
+<API name="suggestionData">
+<APIParameters>
+  <APIItem name="node" type="TElement | TSuggestionText">
+    要获取建议数据的节点。
+  </APIItem>
+</APIParameters>
+<APIReturns type="TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined">
+  找到的建议数据。
+</APIReturns>
+</API>
+
+### `api.suggestion.withoutSuggestions`
+
+在执行函数时临时禁用建议。
+
+<API name="withoutSuggestions">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    要执行的函数。
+  </APIItem>
+</APIParameters>
+</API>
+
+## 类型
+
+### `TSuggestionText`
+
+可包含建议的文本节点。
+
+<API name="TSuggestionText">
+<APIAttributes>
+  <APIItem name="suggestion" type="boolean" optional>
+    是否为建议。
+  </APIItem>
+  <APIItem name="suggestion_<id>" type="TInlineSuggestionData" optional>
+    建议数据。单个文本节点可包含多个建议。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `TSuggestionElement`
+
+包含建议元数据的区块元素。
+
+<API name="TSuggestionElement">
+<APIAttributes>
+  <APIItem name="suggestion" type="TSuggestionData">
+    区块级建议数据，包括类型、用户和时间信息。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `TInlineSuggestionData`
+
+内联文本建议的数据结构。
+
+<API name="TInlineSuggestionData">
+<APIAttributes>
+  <APIItem name="id" type="string">
+    建议的唯一标识符。
+  </APIItem>
+  <APIItem name="userId" type="string">
+    创建建议的用户ID。
+  </APIItem>
+  <APIItem name="createdAt" type="number">
+    建议创建的时间戳。
+  </APIItem>
+  <APIItem name="type" type="'insert' | 'remove' | 'update'">
+    建议操作类型。
+  </APIItem>
+  <APIItem name="newProperties" type="object" optional>
+    对于更新建议，建议的新标记属性。
+  </APIItem>
+  <APIItem name="properties" type="object" optional>
+    对于更新建议，先前的标记属性。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `TSuggestionData`
+
+区块级建议的数据结构。
+
+<API name="TSuggestionData">
+<APIAttributes>
+  <APIItem name="id" type="string">
+    建议的唯一标识符。
+  </APIItem>
+  <APIItem name="userId" type="string">
+    创建建议的用户ID。
+  </APIItem>
+  <APIItem name="createdAt" type="number">
+    建议创建的时间戳。
+  </APIItem>
+  <APIItem name="type" type="'insert' | 'remove'">
+    区块建议操作类型。
+  </APIItem>
+  <APIItem name="isLineBreak" type="boolean" optional>
+    该建议是否代表换行符插入。
+  </APIItem>
+</APIAttributes>
+</API>

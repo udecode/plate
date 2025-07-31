@@ -1,0 +1,97 @@
+---
+title: Trailing Block
+---
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Ensures a specific block type is always present at the end of the document
+
+</PackageInfo>
+
+## Manual Usage
+
+<Steps>
+
+### Add Plugin
+
+```tsx
+import { TrailingBlockPlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    TrailingBlockPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+The plugin works out of the box with sensible defaults, but can be configured for specific use cases:
+
+```tsx
+import { TrailingBlockPlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    TrailingBlockPlugin.configure({
+      options: {
+        type: 'p', // Paragraph block
+        exclude: ['blockquote'], // Don't add after these types
+      },
+    }),
+  ],
+});
+```
+
+**Configuration options:**
+- `type`: The block type to insert as the trailing block (defaults to paragraph)
+- `exclude`: Array of block types that should not trigger trailing block insertion
+- `allow`: Array of block types that are allowed (alternative to exclude)
+- `filter`: Custom function to determine when to add trailing blocks
+
+</Steps>
+
+## Plugins
+
+### `TrailingBlockPlugin`
+
+Plugin that ensures a specific block type is always present at the end of the document or at a specified nesting level.
+
+**Key behaviors:**
+- Automatically adds a trailing block when the last node doesn't match the expected type
+- Works through editor normalization to maintain document structure
+- Supports nested structures by configuring the `level` option
+- Prevents empty documents by ensuring at least one block exists
+- Respects filtering options to control when trailing blocks are added
+
+<API name="TrailingBlockPlugin">
+<APIOptions>
+  <APIItem name="level" type="number" optional>
+    Level where the trailing node should be added, with the first level being 0.
+    - **Default:** `0`
+  </APIItem>
+  <APIItem name="type" type="string" optional>
+    Type of the trailing block to insert.
+    - **Default:** `'p'` (paragraph)
+  </APIItem>
+  <APIItem name="allow" type="string[]" optional>
+    Filter nodes matching these types. Only these types will be considered valid trailing blocks.
+    - **Default:** `[]` (all types allowed)
+  </APIItem>
+  <APIItem name="exclude" type="string[]" optional>
+    Filter nodes not matching these types. These types will not trigger trailing block insertion.
+    - **Default:** `[]` (no types excluded)
+  </APIItem>
+  <APIItem name="filter" type="(node: TNode) => boolean" optional>
+    Custom filter function to determine if a node should trigger trailing block insertion.
+  </APIItem>
+</APIOptions>
+</API>

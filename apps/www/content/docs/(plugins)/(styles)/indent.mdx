@@ -1,0 +1,257 @@
+---
+title: Indent
+docs:
+  - route: /docs/components/indent-toolbar-button
+    title: Indent Toolbar Buttons
+---
+
+<ComponentPreview name="indent-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Add indentation to block elements using Tab/Shift+Tab keyboard shortcuts.
+- Apply consistent indentation with customizable offset and units.
+- Injects an `indent` prop into targeted block elements.
+- Support for maximum indentation depth control.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add indent functionality is with the `IndentKit`, which includes pre-configured `IndentPlugin` targeting paragraph, heading, blockquote, code block, and toggle elements.
+
+<ComponentSource name="indent-kit" />
+
+- Configures `Paragraph`, `Heading`, `Blockquote`, `CodeBlock`, and `Toggle` elements to support the `indent` property.
+- Sets a custom offset of `24px` for indentation spacing.
+- Provides Tab/Shift+Tab keyboard shortcuts for indenting and outdenting.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { IndentKit } from '@/components/editor/plugins/indent-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...IndentKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/indent
+```
+
+### Add Plugin
+
+Include `IndentPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { IndentPlugin } from '@platejs/indent/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+You can configure the `IndentPlugin` to target specific elements and customize indentation behavior.
+
+```tsx
+import { IndentPlugin } from '@platejs/indent/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    IndentPlugin.configure({
+      inject: {
+        nodeProps: {
+          styleKey: 'marginLeft',
+        },
+        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote],
+      },
+      options: {
+        offset: 24,
+        unit: 'px',
+        indentMax: 10,
+      },
+    }),
+  ],
+});
+```
+
+- `inject.nodeProps.styleKey`: Maps the injected prop to the CSS `marginLeft` property.
+- `inject.targetPlugins`: An array of plugin keys indicating which element types can be indented.
+- `options.offset`: Indentation offset in pixels (default: `24`).
+- `options.unit`: Unit for indentation values (default: `'px'`).
+- `options.indentMax`: Maximum number of indentations allowed.
+
+### Add Toolbar Button
+
+You can add [`IndentToolbarButton`](/docs/components/indent-toolbar-button) to your [Toolbar](/docs/toolbar) to control indentation.
+
+</Steps>
+
+## Plugins
+
+### `IndentPlugin`
+
+Plugin for indenting block elements. It injects an `indent` prop into the elements specified by `inject.targetPlugins` and applies `marginLeft` styling.
+
+<API name="IndentPlugin">
+<APIOptions type="object">
+  <APIItem name="inject.nodeProps.nodeKey" type="string" optional>
+    The property name injected into target elements.
+    - **Default:** `'indent'`
+  </APIItem>
+  <APIItem name="inject.nodeProps.styleKey" type="string" optional>
+    CSS property name for styling.
+    - **Default:** `'marginLeft'`
+  </APIItem>
+  <APIItem name="inject.targetPlugins" type="string[]" optional>
+    Array of plugin keys to target for indent injection.
+    - **Default:** `['p']`
+  </APIItem>
+  <APIItem name="options.offset" type="number" optional>
+    Indentation offset used in `(offset * element.indent) + unit`.
+    - **Default:** `24`
+  </APIItem>
+  <APIItem name="options.unit" type="string" optional>
+    Indentation unit used in `(offset * element.indent) + unit`.
+    - **Default:** `'px'`
+  </APIItem>
+  <APIItem name="options.indentMax" type="number" optional>
+    Maximum number of indentations allowed.
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `indent`
+
+Indents the selected block(s) in the editor.
+
+<API name="indent">
+  <APIOptions type="SetIndentOptions" optional>
+    Options for indenting blocks.
+  </APIOptions>
+</API>
+
+### `outdent`
+
+Decrease the indentation of the selected blocks.
+
+<API name="outdent">
+  <APIOptions type="SetIndentOptions" optional>
+    Options for outdenting blocks.
+  </APIOptions>
+</API>
+
+### `setIndent`
+
+Add offset to the indentation of the selected blocks.
+
+<API name="setIndent">
+<APIOptions type="SetIndentOptions">
+  <APIItem name="offset" type="number" optional>
+    Indentation offset used in `(offset * element.indent) + unit`.
+    - **Default:** `1`
+  </APIItem>
+  <APIItem name="getNodesOptions" type="EditorNodesOptions" optional>
+    Options to get nodes to indent.
+  </APIItem>
+  <APIItem name="setNodesProps" type="object" optional>
+    Additional props to set on nodes to indent.
+  </APIItem>
+  <APIItem name="unsetNodesProps" type="string[]" optional>
+    Additional props to unset on nodes to indent.
+    - **Default:** `[]`
+  </APIItem>
+</APIOptions>
+</API>
+
+## Types
+
+### `SetIndentOptions`
+
+Used to provide options for setting the indentation of a block of text.
+
+<API name="SetIndentOptions">
+<APIOptions>
+  <APIItem name="offset" type="number">
+    Change in indentation (1 to indent, -1 to outdent).
+    - **Default:** `1`
+  </APIItem>
+  <APIItem name="getNodesOptions" type="EditorNodesOptions<V>">
+    Additional `getNodes` options.
+  </APIItem>
+  <APIItem name="setNodesProps" type="object">
+    Additional `setNodes` options.
+  </APIItem>
+  <APIItem name="unsetNodesProps" type="string[]">
+    Properties to unset when indentation is 0.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Hooks
+
+### `useIndentButton`
+
+A behavior hook for the indent button component.
+
+<API name="useIndentButton">
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    Props for the indent button.
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="function">
+        Callback to handle click event. Indents selected content and focuses editor.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useOutdentButton`
+
+A behavior hook for the outdent button component.
+
+<API name="useOutdentButton">
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    Props for the outdent button.
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="function">
+        Callback to handle click event. Outdents selected content and focuses editor.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>

@@ -1,0 +1,147 @@
+---
+title: Line Height
+docs:
+  - route: /docs/components/line-height-toolbar-button
+    title: Line Height Toolbar Button
+---
+
+<ComponentPreview name="line-height-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Apply custom line height to block elements like paragraphs and headings.
+- Injects a `lineHeight` prop into targeted block elements.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add line height functionality is with the `LineHeightKit`, which includes pre-configured `LineHeightPlugin` targeting paragraph and heading elements.
+
+<ComponentSource name="line-height-kit" />
+
+- Configures `Paragraph` and `Heading` elements (H1-H6) to support the `lineHeight` property.
+- Provides a default line height of `1.5` and valid values `[1, 1.2, 1.5, 2, 3]`.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { LineHeightKit } from '@/components/editor/plugins/line-height-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...LineHeightKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/basic-styles
+```
+
+### Add Plugin
+
+Include `LineHeightPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { LineHeightPlugin } from '@platejs/basic-styles/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    LineHeightPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+You can configure the `LineHeightPlugin` to target specific elements and define default or valid line height values.
+
+```tsx
+import { LineHeightPlugin } from '@platejs/basic-styles/react';
+import { KEYS } from 'platejs/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    LineHeightPlugin.configure({
+      inject: {
+        nodeProps: {
+          defaultNodeValue: 1.5,
+          validNodeValues: [1, 1.2, 1.5, 2, 3],
+        },
+        targetPlugins: [KEYS.p, KEYS.h1, KEYS.h2, KEYS.h3],
+      },
+    }),
+  ],
+});
+```
+
+- `inject.nodeProps.defaultNodeValue`: Sets a default line height (e.g., `1.5`).
+- `inject.nodeProps.validNodeValues`: Defines a list of common line height values, useful for toolbar dropdowns.
+- `inject.targetPlugins`: An array of plugin keys (e.g., `KEYS.p`, `KEYS.h1`) indicating which element types will receive the `lineHeight` prop.
+
+### Add Toolbar Button
+
+You can add [`LineHeightToolbarButton`](/docs/components/line-height-toolbar-button) to your [Toolbar](/docs/toolbar) to control line height.
+
+</Steps>
+
+## Plugins
+
+### `LineHeightPlugin`
+
+Plugin for setting line height on blocks. It injects a `lineHeight` prop into the elements specified by `inject.targetPlugins`.
+
+<API name="LineHeightPlugin">
+<APIOptions type="object">
+  <APIItem name="inject.nodeProps.defaultNodeValue" type="number" optional>
+    Default line height value.
+  </APIItem>
+  <APIItem name="inject.nodeProps.validNodeValues" type="number[]" optional>
+    Array of valid line height values.
+  </APIItem>
+  <APIItem name="inject.targetPlugins" type="string[]" optional>
+    Array of plugin keys to target for line height injection.
+    - **Default:** `['p']`
+  </APIItem>
+</APIOptions>
+</API>
+
+## Transforms
+
+### `tf.lineHeight.setNodes`
+
+Sets the line height for selected nodes in the editor.
+
+<API name="tf.lineHeight.setNodes">
+<APIParameters>
+<APIItem name="value" type="number">
+The line height value.
+</APIItem>
+<APIItem name="options" type="SetNodesOptions" optional>
+Options for the `setNodes` function.
+</APIItem>
+</APIParameters>
+</API>

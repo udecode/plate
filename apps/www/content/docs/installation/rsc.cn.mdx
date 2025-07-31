@@ -1,0 +1,127 @@
+---
+title: RSC
+description: 安装并配置适用于React Server Components的Plate
+---
+
+本指南演示如何在React Server Components (RSC)中使用Plate进行静态内容生成或服务端数据处理等任务。Plate的核心设计是服务端安全的，允许您在没有浏览器环境的情况下处理编辑器内容。
+
+<Callout type="warning" title="关键RSC限制">
+  在RSC中使用Plate时，**禁止**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`@platejs/basic-nodes`而非`@platejs/basic-nodes/react`）。
+
+  这意味着您不能使用`platejs/react`中的`createPlateEditor`。请改用`platejs`中的`createSlateEditor`。
+</Callout>
+
+<Steps>
+
+### 安装Plate
+
+安装核心Plate包及您需要的特定插件包。
+
+```bash
+npm install platejs @platejs/basic-nodes
+```
+
+### 创建编辑器实例
+
+在RSC环境中，您需要使用`platejs`中的`createSlateEditor`来初始化编辑器实例。该函数不依赖React钩子或客户端特定代码。
+
+以下示例展示如何设置带有各种插件的编辑器，类似于[服务端示例](/docs/examples/server-side)：
+
+```tsx title="app/api/generate-doc/route.ts"
+import { createSlateEditor } from 'platejs';
+import { AutoformatPlugin } from '@platejs/autoformat';
+import { BaseTextAlignPlugin } from '@platejs/basic-styles';
+import {
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseItalicPlugin,
+  BaseBlockquotePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+} from '@platejs/basic-nodes';
+import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+
+// 示例初始值
+const initialValue = [
+  { type: 'h1', children: [{ text: '服务端生成文档' }] },
+  { type: 'p', children: [{ text: '此内容在服务端处理完成。' }] },
+  { type: 'blockquote', children: [{ text: '这是一段引用。' }] },
+  { type: 'p', children: [{ text: '这是加粗文本。', bold: true }] },
+];
+
+// 创建编辑器实例
+const editor = createSlateEditor({
+  plugins: [
+    // 块级插件
+    BaseH1Plugin,
+    BaseH2Plugin,
+    BaseH3Plugin,
+    BaseBlockquotePlugin,
+    BaseTextAlignPlugin,
+    // ... 按需添加更多元素插件
+
+    // 标记插件
+    BaseBoldPlugin,
+    BaseItalicPlugin,
+    BaseCodePlugin,
+    // ... 添加更多标记插件
+
+    // 功能插件
+    AutoformatPlugin,
+    MarkdownPlugin.configure({ // 序列化示例
+      options: {
+        remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+      },
+    }),
+    // ... 添加其他功能插件
+  ],
+  value: initialValue, // 设置初始内容
+});
+
+// 您现在可以使用editor.children, editor.api, editor.tf等
+// 例如获取文本内容：
+const textContent = editor.api.string([]);
+// console.debug('文本内容:', textContent);
+
+// 或序列化为Markdown：
+const markdown = editor.api.markdown.serialize();
+// console.debug('Markdown输出:', markdown);
+
+// 编辑器实例可用于各种服务端任务
+// 完整的使用示例请参阅/docs/examples/server-side页面
+```
+
+<Callout type="info">
+  `createSlateEditor`创建的是原始Plate编辑器实例。它适用于服务端逻辑、数据转换或准备静态渲染内容。查看完整的[服务端示例](/docs/examples/server-side)了解实际应用。
+</Callout>
+
+### 内容操作
+
+Plate在RSC中的主要用例是程序化内容操作：
+
+-   **[`editor.api`](/docs/api/slate/editor-api)**: 访问各种查询编辑器状态的实用函数。例如：
+    -   `editor.api.nodes({ at: [], match })`: 查找特定节点
+    -   `editor.api.string([])`: 提取文本内容
+    -   [HTML序列化](/docs/html)
+    -   [Markdown序列化](/docs/markdown)
+
+-   **[`editor.tf`](/docs/api/slate/editor-transforms)**: 使用转换函数修改编辑器内容。例如：
+    -   `editor.tf.insertNodes(nodes, opts)`: 插入新节点
+    -   `editor.tf.removeNodes(opts)`: 删除节点
+    -   `editor.tf.setNodes(props, opts)`: 更新现有节点属性
+    -   `editor.tf.normalize({ force: true })`: 规范化编辑器
+
+</Steps>
+
+### 后续步骤
+
+在RSC环境中配置好Plate后，您现在可以：
+
+*   构建服务端内容生成和转换管道
+*   对现有Plate文档执行批量更新或转换
+*   验证内容结构或从文档中提取特定数据
+*   与其他后端服务集成进行内容处理
+*   如需生成静态内容，可探索[Markdown序列化](/docs/markdown)、[HTML序列化](/docs/html)和[`PlateStatic`](/docs/plate-static)

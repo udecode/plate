@@ -1,0 +1,155 @@
+---
+title: Date
+docs:
+  - route: /docs/components/date-node
+    title: Date Element
+---
+
+<ComponentPreview name="date-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Insert and display dates within your text using inline date elements.
+- These dates can be easily selected and modified using a calendar interface.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add date functionality is with the `DateKit`, which includes pre-configured `DatePlugin` with [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="date-kit" />
+
+- [`DateElement`](/docs/components/date-node): Renders inline date elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { DateKit } from '@/components/editor/plugins/date-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...DateKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/date
+```
+
+### Add Plugin
+
+Include `DatePlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { DatePlugin } from '@platejs/date/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    DatePlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+Configure the plugin with a custom component to render date elements.
+
+```tsx
+import { DatePlugin } from '@platejs/date/react';
+import { createPlateEditor } from 'platejs/react';
+import { DateElement } from '@/components/ui/date-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    DatePlugin.withComponent(DateElement),
+  ],
+});
+```
+
+- `withComponent`: Assigns [`DateElement`](/docs/components/date-node) to render inline date elements.
+
+### Insert Toolbar Button
+
+You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert date elements:
+
+```tsx
+{
+  focusEditor: true,
+  icon: <CalendarIcon />,
+  label: 'Date',
+  value: KEYS.date,
+}
+```
+
+</Steps>
+
+## Plugins
+
+### `DatePlugin`
+
+Plugin for adding date elements to your document.
+
+## API
+
+### `isPointNextToNode`
+
+Check if a point is next to a specific node type.
+
+<API name="isPointNextToNode">
+<APIParameters>
+  <APIItem name="nodeType" type="string">
+    The type of node to check for adjacency (e.g. 'date' for inline date elements).
+  </APIItem>
+  <APIItem name="options" type="object">
+    Options for checking adjacency.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="at" type="Point" optional>
+    Position to check from. Uses current selection anchor if not provided.
+  </APIItem>
+  <APIItem name="reverse" type="boolean">
+    Direction to check. If true, checks previous node; if false, checks next node.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Transforms
+
+### `tf.insert.date`
+
+<API name="insert.date">
+<APIParameters>
+  <APIItem name="date" type="string" optional>
+    The date string to insert in 'YYYY-MM-DD' format.
+    - **Default:** Current date
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Options for inserting nodes.
+  </APIItem>
+</APIParameters>
+</API>

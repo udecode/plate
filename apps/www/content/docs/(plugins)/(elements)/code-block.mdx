@@ -1,0 +1,276 @@
+---
+title: Code Block
+docs:
+  - route: https://pro.platejs.org/docs/components/code-block-node
+    title: Plus
+  - route: /docs/components/code-block-node
+    title: Code Block Element
+---
+
+<ComponentPreview name="code-block-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Syntax highlighting for code blocks
+- Support for multiple programming languages
+- Customizable language selection
+- Proper indentation handling
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add code block functionality is with the `CodeBlockKit`, which includes pre-configured `CodeBlockPlugin`, `CodeLinePlugin`, and `CodeSyntaxPlugin` with syntax highlighting and [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="code-block-kit" />
+
+- [`CodeBlockElement`](/docs/components/code-block-node): Renders code block containers.
+- [`CodeLineElement`](/docs/components/code-block-node): Renders individual code lines.
+- [`CodeSyntaxLeaf`](/docs/components/code-block-node): Renders syntax highlighted text.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { CodeBlockKit } from '@/components/editor/plugins/code-block-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...CodeBlockKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/code-block lowlight
+```
+
+### Add Plugins
+
+Include the code block plugins in your Plate plugins array when creating the editor.
+
+```tsx
+import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CodeBlockPlugin,
+    CodeLinePlugin,
+    CodeSyntaxPlugin,
+  ],
+});
+```
+
+### Configure Plugins
+
+Configure the plugins with syntax highlighting and custom components.
+
+**Basic Setup with All Languages:**
+
+```tsx
+import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
+import { all, createLowlight } from 'lowlight';
+import { createPlateEditor } from 'platejs/react';
+import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/ui/code-block-node';
+
+// Create a lowlight instance with all languages
+const lowlight = createLowlight(all);
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CodeBlockPlugin.configure({
+      node: { component: CodeBlockElement },
+      options: { lowlight },
+      shortcuts: { toggle: { keys: 'mod+alt+8' } },
+    }),
+    CodeLinePlugin.withComponent(CodeLineElement),
+    CodeSyntaxPlugin.withComponent(CodeSyntaxLeaf),
+  ],
+});
+```
+
+**Custom Language Setup (Optimized Bundle):**
+
+For optimized bundle size, you can register only specific languages:
+
+```tsx
+import { createLowlight } from 'lowlight';
+import css from 'highlight.js/lib/languages/css';
+import js from 'highlight.js/lib/languages/javascript';
+import ts from 'highlight.js/lib/languages/typescript';
+import html from 'highlight.js/lib/languages/xml';
+
+// Create a lowlight instance
+const lowlight = createLowlight();
+
+// Register only the languages you need
+lowlight.register('html', html);
+lowlight.register('css', css);
+lowlight.register('js', js);
+lowlight.register('ts', ts);
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CodeBlockPlugin.configure({
+      node: { component: CodeBlockElement },
+      options: {
+        lowlight,
+        defaultLanguage: 'js', // Set default language (optional)
+      },
+      shortcuts: { toggle: { keys: 'mod+alt+8' } },
+    }),
+    CodeLinePlugin.withComponent(CodeLineElement),
+    CodeSyntaxPlugin.withComponent(CodeSyntaxLeaf),
+  ],
+});
+```
+
+- `node.component`: Assigns [`CodeBlockElement`](/docs/components/code-block-node) to render code block containers.
+- `options.lowlight`: Lowlight instance for syntax highlighting.
+- `options.defaultLanguage`: Default language when no language is specified.
+- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code blocks.
+- `withComponent`: Assigns components for code lines and syntax highlighting.
+
+### Turn Into Toolbar Button
+
+You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into code blocks:
+
+```tsx
+{
+  icon: <FileCodeIcon />,
+  label: 'Code',
+  value: KEYS.codeBlock,
+}
+```
+
+### Insert Toolbar Button
+
+You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert code block elements:
+
+```tsx
+{
+  icon: <FileCodeIcon />,
+  label: 'Code',
+  value: KEYS.codeBlock,
+}
+```
+
+</Steps>
+
+## Plugins
+
+### `CodeBlockPlugin`
+
+<API name="CodeBlockPlugin">
+<APIOptions>
+  <APIItem name="defaultLanguage" type="string | null" optional>
+    Default language to use when no language is specified. Set to null to disable syntax highlighting by default.
+  </APIItem>
+  <APIItem name="lowlight" type="ReturnType<typeof createLowlight> | null" optional>
+    Lowlight instance to use for highlighting. If not provided, syntax highlighting will be disabled.
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `isCodeBlockEmpty`
+
+<API name="isCodeBlockEmpty">
+<APIReturns type="boolean">
+  Whether the selection is in an empty code block.
+</APIReturns>
+</API>
+
+### `isSelectionAtCodeBlockStart`
+
+<API name="isSelectionAtCodeBlockStart">
+<APIReturns type="boolean">
+  Whether the selection is at the start of the first code line in a code block.
+</APIReturns>
+</API>
+
+### `indentCodeLine`
+
+Indents the code line if the selection is expanded or there are no non-whitespace characters at left of the cursor. The indentation is 2 spaces by default.
+
+<API name="indentCodeLine">
+<APIOptions type="IndentCodeLineOptions">
+  <APIItem name="codeLine" type="ElementEntry">
+    The code line to be indented.
+  </APIItem>
+  <APIItem name="indentDepth" type="number">
+    The size of indentation for the code line.
+    - **Default:** `2`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `insertCodeBlock`
+
+Inserts a code block by setting the node to code line and wrapping it with a code block. If the cursor is not at the block start, it inserts a break before the code block.
+
+<API name="insertCodeBlock">
+<APIParameters>
+  <APIItem name="insertNodesOptions" type="Omit<InsertNodesOptions, 'match'>" optional>
+    Options for inserting nodes.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `insertCodeLine`
+
+Inserts a code line starting with the specified indentation depth.
+
+<API name="insertCodeLine">
+<APIParameters>
+  <APIItem name="indentDepth" type="number" optional>
+    The depth of indentation for the code line.
+    - **Default:** `0`
+  </APIItem>
+</APIParameters>
+</API>
+
+### `outdentCodeLine`
+
+Outdents a code line, removing two whitespace characters if present.
+
+<API name="outdentCodeLine">
+<APIOptions type="OutdentCodeLineOptions">
+  <APIItem name="codeLine" type="ElementEntry">
+    The code line to be outdented.
+  </APIItem>
+  <APIItem name="codeBlock" type="ElementEntry">
+    The code block containing the code line to be outdented.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `toggleCodeBlock`
+
+Toggles the code block in the editor.
+
+### `unwrapCodeBlock`
+
+Unwraps the code block in the editor. 

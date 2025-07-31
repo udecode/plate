@@ -1,0 +1,89 @@
+---
+title: Troubleshooting
+description: Solutions for common issues when working with Plate.
+---
+
+## Dependency Conflicts
+
+A common source of issues in projects using Plate is mismatched or conflicting versions of dependencies. This section outlines how to identify and resolve such conflicts.
+
+### Managing Plate Package Versions with `depset`
+
+The recommended way to ensure all your ``@udecode/*`` packages (including Plate and its related plugins) are synchronized to a consistent and compatible set of versions is by using the [`depset`](https://npmjs.com/package/depset) command-line tool.
+
+**Why `depset`?**
+- It simplifies upgrading or aligning multiple packages within the ``@udecode`` scope.
+- It helps prevent issues caused by having some Plate packages on one version and others on a different, potentially incompatible, version.
+
+**Usage:**
+
+To upgrade or align all packages in the ``@udecode`` scope to a specific target version (e.g., ``45.0.1``), run the following in your project root:
+```bash
+npx depset@latest @udecode 45.0.1
+```
+
+To upgrade all ``@udecode`` packages to the latest versions that are less than major version ``46`` (e.g., if ``45.x.y`` are the latest releases, it will pick those):
+```bash
+npx depset@latest @udecode 45
+```
+
+- Replace ``<target_version>`` (e.g., ``45.0.1`` or ``45``) with your desired version specifier.
+- ``depset`` will update your ``package.json``.
+
+### Example: Multiple Plate Instances
+
+**Problem:** Unexpected behavior or "hooks can only be called inside a component" errors.
+
+**Root Cause:** Having incompatible versions of Plate packages in your project. This often means different ``platejs*`` packages or ``@platejs/core`` are at different versions that weren't designed to work together.
+
+**Diagnosis:** Check for multiple Plate package versions:
+
+```bash
+# npm
+npm ls platejs @platejs/core
+
+# pnpm or yarn
+pnpm why platejs
+pnpm why @platejs/core
+```
+
+**Solution:**
+The primary solution is to ensure all your ``@udecode/*`` packages are updated to their latest respective versions that are compatible and designed to work together. This prevents mismatches where one Plate package might be too old or too new for others in your project. Use the ``depset`` tool as described above.
+
+### Example: Multiple Slate Instances
+
+**Problem:** Editor features may not work correctly.
+
+**Root Cause:** Package managers sometimes install mismatched versions of Slate dependencies. For example, `pnpm` might install `slate` version 0.112.2 instead of the required 0.111.0.
+
+**Diagnosis:** Check for multiple Slate versions:
+
+```bash
+# npm
+npm ls slate slate-react slate-dom
+
+# pnpm or yarn
+pnpm why slate
+pnpm why slate-react
+pnpm why slate-dom
+```
+
+**Solution:** Try these solutions in the order they are listed:
+
+1. Remove `slate*` dependencies from your `package.json` if any. Plate is managing those.
+
+2. Use the ``depset`` tool as described above.
+
+2. Force consistent Slate dependency versions:
+
+```jsonc
+// package.json
+{
+  "resolutions": {
+    "slate": "0.114.0",
+    "slate-dom": "0.114.0",
+    "slate-react": "0.114.2"
+  }
+}
+```
+

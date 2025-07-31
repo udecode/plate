@@ -1,0 +1,176 @@
+---
+title: Node.js
+description: 在Node.js环境中安装和配置Plate
+---
+
+本指南演示如何在Node.js环境中使用Plate。这对于后端任务非常有用，例如数据处理、内容迁移、验证，或任何需要在不使用浏览器或完整React前端的情况下与Plate编辑器内容交互的场景。
+
+<Callout type="warning" title="Node.js关键限制">
+  在Node.js环境中使用Plate时，**绝对不要**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`@platejs/basic-nodes`而不是`@platejs/basic-nodes/react`）。
+
+  这意味着你不能使用`platejs/react`中的`createPlateEditor`。应改用`platejs`中的`createSlateEditor`。
+</Callout>
+
+<Steps>
+
+### 安装Plate
+
+安装核心Plate包以及数据处理所需的特定插件包。
+
+```bash
+npm install platejs @platejs/basic-nodes
+```
+
+-   `platejs`: Plate编辑器的核心功能
+-   `@platejs/basic-nodes`: 提供基础节点（如标题、粗体、斜体、下划线等）的插件
+
+### 创建编辑器实例
+
+在Node.js脚本中，使用`platejs`的`createSlateEditor`初始化编辑器实例。此函数与框架无关，不依赖React或浏览器API。
+
+```typescript title="scripts/process-content.ts"
+import { createSlateEditor } from 'platejs';
+import {
+  BaseBoldPlugin,
+  BaseItalicPlugin,
+  BaseUnderlinePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseBlockquotePlugin,
+} from '@platejs/basic-nodes';
+
+const initialValue = [
+  {
+    type: 'h3',
+    children: [{ text: '文档标题' }],
+  },
+  {
+    type: 'blockquote',
+    children: [{ text: '这是一段引用。' }],
+  },
+  {
+    type: 'p',
+    children: [
+      { text: '包含一些' },
+      { text: '粗体', bold: true },
+      { text: '强调文本！' },
+    ],
+  },
+];
+
+const editor = createSlateEditor({
+  plugins: [
+    BaseBoldPlugin,
+    BaseItalicPlugin,
+    BaseUnderlinePlugin,
+    BaseH1Plugin,
+    BaseH2Plugin,
+    BaseH3Plugin,
+    BaseBlockquotePlugin,
+  ],
+  value: initialValue,
+});
+
+// 现在可以使用editor.children、editor.api、editor.tf等
+console.debug('编辑器内容:', editor.children);
+```
+
+<Callout type="info">
+  `createSlateEditor`创建一个原始的Plate编辑器实例，适用于服务端逻辑、数据转换或准备静态渲染内容。它提供与React版本相同的API，但没有浏览器依赖。
+</Callout>
+
+### 内容操作
+
+Plate在Node.js中的主要用例是程序化内容操作：
+
+```typescript title="scripts/transform-content.ts"
+import { createSlateEditor } from 'platejs';
+import {
+  BaseBoldPlugin,
+  BaseItalicPlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseBlockquotePlugin,
+} from '@platejs/basic-nodes';
+
+async function processDocument(value: any[]) {
+  const editor = createSlateEditor({
+    plugins: [
+      BaseBoldPlugin,
+      BaseItalicPlugin,
+      BaseH1Plugin,
+      BaseH2Plugin,
+      BaseH3Plugin,
+      BaseBlockquotePlugin,
+    ],
+    value,
+  });
+
+  // 提取文本内容
+  const textContent = editor.api.string([]);
+  console.debug('提取的文本:', textContent);
+
+  // 将所有H1转换为H2
+  editor.tf.setNodes(
+    { type: 'h2' },
+    { at: [], match: (n) => n.type === 'h1' }
+  );
+
+  // 在末尾添加新段落
+  editor.tf.insertNodes(
+    [{ type: 'p', children: [{ text: '由Node.js脚本添加！' }] }],
+    { at: [editor.children.length] }
+  );
+
+  return {
+    textContent,
+    transformedValue: editor.children,
+  };
+}
+
+// 使用示例
+const mySlateValue = [
+  { type: 'h1', children: [{ text: '原始文档标题' }] },
+  { type: 'p', children: [{ text: '段落内容。' }] },
+  {
+    type: 'p',
+    children: [
+      { text: '包含' },
+      { text: '粗体', bold: true },
+      { text: '格式的文本。' },
+    ],
+  },
+];
+
+processDocument(mySlateValue).then(result => {
+  console.debug('处理完成:', result);
+});
+```
+
+### 可用API
+
+-   **[`editor.api`](/docs/api/slate/editor-api)**: 访问查询编辑器状态的各种实用函数：
+    -   `editor.api.nodes({ at: [], match })`: 查找特定节点
+    -   `editor.api.string([])`: 提取文本内容
+    -   [HTML序列化](/docs/html)
+    -   [Markdown序列化](/docs/markdown)
+
+-   **[`editor.tf`](/docs/api/slate/editor-transforms)**: 使用转换函数修改编辑器内容：
+    -   `editor.tf.insertNodes(nodes, opts)`: 插入新节点
+    -   `editor.tf.removeNodes(opts)`: 删除节点
+    -   `editor.tf.setNodes(props, opts)`: 更新现有节点属性
+    -   `editor.tf.normalize({ force: true })`: 规范化编辑器
+
+</Steps>
+
+### 后续步骤
+
+在Node.js环境中配置好Plate后，您可以：
+
+*   **构建内容管道**: 创建脚本将其他系统的内容迁移到Plate格式
+*   **批量操作**: 对现有Plate文档执行批量更新或转换
+*   **数据提取**: 验证内容结构或从文档中提取特定数据
+*   **后端集成**: 与其他后端服务集成构建内容处理管道
+*   **静态生成**: 探索[Markdown序列化](/docs/markdown)、[HTML序列化](/docs/html)和[`PlateStatic`](/docs/plate-static)生成静态内容

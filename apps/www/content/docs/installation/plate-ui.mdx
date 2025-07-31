@@ -1,0 +1,207 @@
+---
+title: Plate UI Installation
+description: How to set up Plate UI in your project.
+---
+
+This guide details how to install Plate UI, the component layer for Plate. Choose the method that suits your project:
+
+*   **CLI Installation (Recommended):** Quick setup using the shadcn CLI.
+*   **Manual Installation:** For more control over the setup process.
+
+## CLI Installation (Recommended)
+
+This is the fastest way to integrate Plate UI's core dependencies and base styles.
+
+<Steps>
+
+### Install Plate UI
+
+<Callout type="info">
+  If you are not using Next.js, refer to the official [shadcn/ui installation guides](https://ui.shadcn.com/docs/installation) for your specific framework before proceeding.
+</Callout>
+
+```bash
+npx shadcn@latest add https://platejs.org/r/plate-ui
+```
+
+### Basic Usage 
+
+With Plate UI's core installed, proceed to the guide specific to your framework:
+
+*   **[Next.js Guide](./next)** - For server-side rendered applications (Next, Remix, etc.)
+*   **[React Guide](./react)** - For single-page applications (Vite, React Router, etc.)
+
+</Steps>
+
+## Manual Installation
+
+If you prefer a step-by-step approach or are not using the shadcn CLI, follow these steps:
+
+<Steps>
+
+### Install Plate
+
+```bash
+npm install platejs
+```
+
+<Callout type="note" title="Plugin Dependencies">
+  When manually installing Plate, you'll need to add the specific packages for each plugin you want to use. For example, if you want to use the `AIMenu` component, you would need `@platejs/ai` and its dependencies. Check each component's documentation for its required packages, or use the CLI to automatically install the required packages.
+</Callout>
+
+### Configure CSS Variables
+
+Add the following CSS variables to your global stylesheet:
+
+```css title="app/globals.css"
+:root {
+  /* Base brand color for Plate UI components */
+  --brand: oklch(0.623 0.214 259.815);
+}
+
+.dark {
+  --brand: oklch(0.707 0.165 254.624);
+}
+```
+
+### Add Components
+
+With Plate UI's core installed, you can now add individual Plate UI components to build your editor interface. For example, to add the `FixedToolbar` and a `MarkToolbarButton`:
+
+```bash
+npx shadcn@latest add https://platejs.org/r/fixed-toolbar https://platejs.org/r/mark-toolbar-button
+```
+
+Import and use them in your editor:
+
+```tsx showLineNumbers title="components/editor.tsx"
+import { Plate } from "platejs/react";
+import { FixedToolbar } from "@/components/ui/fixed-toolbar";
+import { MarkToolbarButton } from "@/components/ui/mark-toolbar-button";
+// ... other imports
+
+export function MyEditor() {
+  // ... editor setup
+  return (
+    <Plate editor={editor}>
+      <FixedToolbar>
+        <MarkToolbarButton nodeType="bold" tooltip="Bold">B</MarkToolbarButton>
+        {/* ... other toolbar buttons ... */}
+      </FixedToolbar>
+      {/* ... Editor component ... */}
+    </Plate>
+  );
+}
+```
+
+Explore the available [UI Components](/docs/components) and [Plugin Components](/docs/plugin-components) to customize your editor nodes (like paragraphs, headings, etc.) and build a feature-rich editing experience.
+
+### Basic Usage 
+
+With Plate UI's core installed, proceed to the guide specific to your framework:
+
+*   **[Next.js Guide](./next)** - For server-side rendered applications (Next, Remix, etc.)
+*   **[React Guide](./react)** - For single-page applications (Vite, React Router, etc.)
+
+</Steps>
+
+## Component Types
+
+When installing Plate UI components, you'll encounter different types of components with consistent naming patterns. Here's what they mean:
+
+### Feature Kits
+
+Feature kits are the easiest way to add complete functionality to your editor. They bundle all necessary plugin configurations, UI components (including node renderers and toolbar items), and their underlying npm dependencies for a specific feature.
+
+```bash
+# Install the complete AI feature suite, including configuration and UI
+npx shadcn@latest add https://platejs.org/r/ai-kit
+
+# Install drag and drop functionality with all its parts
+npx shadcn@latest add https://platejs.org/r/dnd-kit
+```
+
+<Callout type="note">
+  When in doubt about what individual components you need, start with a feature kit. It's designed to provide a working feature out-of-the-box. You can always customize or remove parts later.
+</Callout>
+
+### Components
+
+#### Node Components
+
+These components are responsible for rendering specific types of content (elements or leaves) in your editor. If you need to create your own or customize existing ones, see the [Plugin Components guide](/docs/plugin-components).
+
+```bash
+# Install the component for rendering blockquotes
+npx shadcn@latest add https://platejs.org/r/blockquote-node
+
+# Install the component for rendering code text
+npx shadcn@latest add https://platejs.org/r/code-node
+```
+
+#### Toolbar Components
+
+Toolbar components add interactive controls like buttons and dropdowns to your editor's toolbar.
+
+```bash
+# Add an alignment dropdown for your toolbar
+npx shadcn@latest add https://platejs.org/r/align-toolbar-button
+
+# Add a toolbar button for AI features
+npx shadcn@latest add https://platejs.org/r/ai-toolbar-button
+
+# Add a color picker dropdown for your toolbar
+npx shadcn@latest add https://platejs.org/r/font-color-toolbar-button
+```
+
+#### Other Components
+
+Finally, Plate UI includes more advanced editor components as overlays, menus, block wrappers, etc.
+
+```bash
+# Install a menu for AI features
+npx shadcn@latest add https://platejs.org/r/ai-menu
+
+# Install a draggable component for reordering blocks
+npx shadcn@latest add https://platejs.org/r/block-draggable
+```
+
+These components are typically included as part of their respective Feature Kits but can be installed individually for custom setups.
+
+### Editor Templates
+
+These are pre-configured editor setups, often tailored for specific use cases or as a comprehensive starting point. You can explore all available [Editor Templates](/editors).
+
+```bash
+# Install an AI-enabled editor template
+npx shadcn@latest add https://platejs.org/r/editor-ai
+
+# Install a basic editor template
+npx shadcn@latest add https://platejs.org/r/editor-basic
+```
+
+### API Routes
+
+These items provide server-side components or API route handlers necessary for certain features.
+
+```bash
+# Install AI-related API routes
+npx shadcn@latest add https://platejs.org/r/ai-api
+
+# Install file upload API routes (e.g., for UploadThing)
+npx shadcn@latest add https://platejs.org/r/media-uploadthing-api
+```
+
+### Documentation
+
+Documentation files for various Plate features, guides, and API references can also be added to your local project. This is especially useful for keeping version-specific documentation alongside your code and for providing context to AI tools through MCP. Learn more about [setting up local documentation](/installation/docs).
+
+```bash
+# Add AI documentation
+npx shadcn@latest add https://platejs.org/r/ai-docs
+
+# Add Plate Plugin documentation
+npx shadcn@latest add https://platejs.org/r/plugin-docs
+```
+
+These items consists of Markdown files, which can be integrated into your own documentation system or made available for local search and AI consumption.

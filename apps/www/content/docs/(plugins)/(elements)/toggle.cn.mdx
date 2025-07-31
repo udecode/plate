@@ -1,0 +1,287 @@
+---
+title: 折叠开关
+docs:
+  - route: /docs/components/toggle-node
+    title: 折叠元素
+  - route: /docs/components/toggle-toolbar-button
+    title: 折叠按钮
+---
+
+<ComponentPreview name="toggle-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 在文档中添加可折叠内容
+- 折叠项默认收起，点击可展开显示内部内容
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的方式是使用 `ToggleKit`，它包含预配置的 `TogglePlugin`（支持缩进）及其 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="toggle-kit" />
+
+- [`IndentKit`](/docs/indent): 为折叠元素提供缩进支持
+- [`ToggleElement`](/docs/components/toggle-node): 渲染折叠元素
+
+### 添加套件
+
+将套件加入插件列表：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { ToggleKit } from '@/components/editor/plugins/toggle-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...ToggleKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装依赖
+
+```bash
+npm install @platejs/indent @platejs/toggle
+```
+
+### 添加插件
+
+在创建编辑器时，将 `TogglePlugin` 和 `IndentPlugin` 加入插件数组。
+
+```tsx
+import { IndentPlugin } from '@platejs/indent/react';
+import { TogglePlugin } from '@platejs/toggle/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    IndentPlugin,
+    TogglePlugin,
+  ],
+});
+```
+
+### 配置插件
+
+为 `IndentPlugin` 和 `TogglePlugin` 配置目标元素和组件分配。
+
+```tsx
+import { IndentPlugin } from '@platejs/indent/react';
+import { TogglePlugin } from '@platejs/toggle/react';
+import { createPlateEditor } from 'platejs/react';
+import { ToggleElement } from '@/components/ui/toggle-node';
+import { KEYS } from 'platejs';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    IndentPlugin.configure({
+      inject: {
+        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.toggle],
+      },
+    }),
+    TogglePlugin.withComponent(ToggleElement),
+  ],
+});
+```
+
+- `withComponent`: 指定 [`ToggleElement`](/docs/components/toggle-node) 渲染折叠元素
+- `IndentPlugin.inject.targetPlugins`: 配置支持缩进的元素类型（包括折叠项）
+
+### 添加工具栏按钮
+
+可在[工具栏](/docs/toolbar)中添加 [`ToggleToolbarButton`](/docs/components/toggle-toolbar-button) 来插入折叠元素。
+
+### 转换工具栏按钮
+
+将此选项加入[转换工具栏按钮](/docs/toolbar#turn-into-toolbar-button)可将区块转为折叠项：
+
+```tsx
+{
+  icon: <ChevronRightIcon />,
+  label: '折叠列表',
+  value: KEYS.toggle,
+}
+```
+
+### 插入工具栏按钮
+
+将此选项加入[插入工具栏按钮](/docs/toolbar#insert-toolbar-button)可插入折叠元素：
+
+```tsx
+{
+  icon: <ChevronRightIcon />,
+  label: '折叠列表',
+  value: KEYS.toggle,
+}
+```
+
+</Steps>
+
+## 插件
+
+### `TogglePlugin`
+
+管理折叠功能的插件。
+
+<API name="TogglePlugin">
+<APIOptions type="object">
+  <APIItem name="openIds" type="Set<string>" optional>
+    当前展开的折叠项ID集合
+    - **默认值:** `new Set()`
+  </APIItem>
+  <APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
+    检查折叠项是否展开的函数
+    - **默认值:** `(id) => openIds.has(id)`
+  </APIItem>
+  <APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
+    检查是否存在收起状态的折叠项
+    - **默认值:** `(ids) => ids.some(id => !isOpen(id))`
+  </APIItem>
+</APIOptions>
+</API>
+
+## API接口
+
+### `api.toggle.toggleIds`
+
+切换指定折叠项的展开状态。
+
+<API name="editor.api.toggle.toggleIds">
+切换折叠项展开状态
+
+<APIParameters>
+  <APIItem name="ids" type="string[]">
+    需要切换的元素ID数组
+  </APIItem>
+  <APIItem name="force" type="boolean | null" optional>
+    强制切换状态：
+    - `true`: 展开所有
+    - `false`: 收起所有
+    - `null`: 切换当前状态
+  </APIItem>
+</APIParameters>
+</API>
+
+### `openNextToggles`
+
+将当前选区所在区块标记为展开的折叠项。
+
+## 钩子函数
+
+### `useToggleToolbarButtonState`
+
+获取折叠工具栏按钮状态的钩子。
+
+<API name="useToggleToolbarButtonState">
+<APIReturns type="object">
+  <APIItem name="pressed" type="boolean">
+    按钮是否处于按下状态
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useToggleToolbarButton`
+
+处理折叠工具栏按钮行为的钩子。
+
+<API name="useToggleToolbarButton">
+<APIState>
+  <APIItem name="pressed" type="boolean">
+    按钮是否处于按下状态
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    折叠按钮属性
+    <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        是否按下状态
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        切换节点类型并聚焦编辑器
+      </APISubListItem>
+      <APISubListItem parent="props" name="onMouseDown" type="function">
+        防止点击时失去焦点
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useToggleButtonState`
+
+获取折叠按钮状态的钩子。
+
+<API name="useToggleButtonState">
+获取折叠按钮状态
+
+<APIParameters>
+  <APIItem name="toggleId" type="string">
+    折叠元素ID
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="object">
+  <APIItem name="toggleId" type="string">
+    折叠元素ID
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    是否处于展开状态
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useToggleButton`
+
+处理折叠按钮行为的钩子。
+
+<API name="useToggleButton">
+处理折叠按钮行为
+
+<APIParameters>
+  <APIItem name="toggleId" type="string">
+    折叠元素ID
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    是否展开状态
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="object">
+  <APIItem name="toggleId" type="string">
+    折叠元素ID
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    是否展开状态
+  </APIItem>
+  <APIItem name="buttonProps" type="object">
+    折叠按钮属性
+    <APISubList>
+      <APISubListItem parent="buttonProps" name="onClick" type="function">
+        切换展开状态
+      </APISubListItem>
+      <APISubListItem parent="buttonProps" name="onMouseDown" type="function">
+        防止点击时失去焦点
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>

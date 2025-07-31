@@ -1,0 +1,557 @@
+---
+title: 协作编辑
+description: 使用 Yjs 实现实时协作
+toc: true
+---
+
+<ComponentPreview name="collaboration-demo" />
+
+<PackageInfo>
+
+## 核心特性
+
+- **多提供者支持**：通过 [Yjs](https://github.com/yjs/yjs) 和 [slate-yjs](https://docs.slate-yjs.dev/) 实现实时协作。支持多个同步提供者（如 Hocuspocus + WebRTC）同时操作共享的 `Y.Doc`。
+- **内置提供者**：开箱即用支持 [Hocuspocus](https://tiptap.dev/hocuspocus)（服务端方案）和 [WebRTC](https://github.com/yjs/y-webrtc)（点对点方案）。
+- **自定义提供者**：通过实现 `UnifiedProvider` 接口可扩展自定义提供者（如 IndexedDB 离线存储）。
+- **状态感知与光标**：集成 Yjs Awareness 协议共享光标位置等临时状态，包含 [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) 组件渲染远程光标。
+- **可定制光标**：通过 `cursors` 配置光标外观（名称、颜色）。
+- **手动生命周期**：提供明确的 `init` 和 `destroy` 方法管理 Yjs 连接。
+
+</PackageInfo>
+
+## 使用指南
+
+<Steps>
+
+### 安装
+
+安装核心 Yjs 插件和所需提供者包：
+
+```bash
+npm install @platejs/yjs
+```
+
+Hocuspocus 服务端方案：
+
+```bash
+npm install @hocuspocus/provider
+```
+
+WebRTC 点对点方案：
+
+```bash
+npm install y-webrtc
+```
+
+### 添加插件
+
+```tsx
+import { YjsPlugin } from '@platejs/yjs/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    YjsPlugin,
+  ],
+  // 重要：使用 Yjs 时需跳过 Plate 的默认初始化
+  skipInitialization: true,
+});
+```
+
+<Callout type="warning" title="必要编辑器配置">
+  创建编辑器时必须设置 `skipInitialization: true`。Yjs 负责管理初始文档状态，跳过 Plate 的默认值初始化可避免冲突。
+</Callout>
+
+### 配置 YjsPlugin
+
+配置插件提供者和光标设置：
+
+```tsx
+import { YjsPlugin } from '@platejs/yjs/react';
+import { createPlateEditor } from 'platejs/react';
+import { RemoteCursorOverlay } from '@/components/ui/remote-cursor-overlay';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    YjsPlugin.configure({
+      render: {
+        afterEditable: RemoteCursorOverlay,
+      },
+      options: {
+        // 配置本地用户光标外观
+        cursors: {
+          data: {
+            name: '用户名', // 替换为动态用户名
+            color: '#aabbcc', // 替换为动态用户颜色
+          },
+        },
+        // 配置提供者（所有提供者共享同一个 Y.Doc 和 Awareness 实例）
+        providers: [
+          // Hocuspocus 提供者示例
+          {
+            type: 'hocuspocus',
+            options: {
+              name: '我的文档ID', // 文档唯一标识
+              url: 'ws://localhost:8888', // Hocuspocus 服务地址
+            },
+          },
+          // WebRTC 提供者示例（可与 Hocuspocus 同时使用）
+          {
+            type: 'webrtc',
+            options: {
+              roomName: '我的文档ID', // 需与文档标识一致
+              signaling: ['ws://localhost:4444'], // 可选：信令服务器地址
+            },
+          },
+        ],
+      },
+    }),
+  ],
+  skipInitialization: true,
+});
+```
+
+- `render.afterEditable`：指定 [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) 渲染远程用户光标。
+- `cursors.data`：配置本地用户光标显示名称和颜色。
+- `providers`：协作提供者数组（Hocuspocus、WebRTC 或自定义提供者）。
+
+### 添加编辑器容器
+
+`RemoteCursorOverlay` 需要定位容器包裹编辑器内容，使用 [`EditorContainer`](/docs/components/editor) 或 `platejs/react` 的 `PlateContainer`：
+
+```tsx
+import { Plate } from 'platejs/react';
+import { EditorContainer } from '@/components/ui/editor';
+
+return (
+  <Plate editor={editor}>
+    <EditorContainer>
+      <Editor />
+    </EditorContainer>
+  </Plate>
+);
+```
+
+### 初始化 Yjs 连接
+
+Yjs 连接和状态需手动初始化（通常在 `useEffect` 中处理）：
+
+```tsx
+import React, { useEffect } from 'react';
+import { YjsPlugin } from '@platejs/yjs/react';
+import { useMounted } from '@/hooks/use-mounted'; // 或自定义挂载检查
+
+const MyEditorComponent = ({ documentId, initialValue }) => {
+  const editor = usePlateEditor(/** 前文配置 **/);
+  const mounted = useMounted();
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    // 初始化 Yjs 连接并设置初始状态
+    editor.getApi(YjsPlugin).yjs.init({
+      id: documentId,          // Yjs 文档唯一标识
+      value: initialValue,     // Y.Doc 为空时的初始内容
+    });
+
+    // 清理：组件卸载时销毁连接
+    return () => {
+      editor.getApi(YjsPlugin).yjs.destroy();
+    };
+  }, [editor, mounted]);
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+};
+```
+
+<Callout>
+  **初始值**：`init` 的 `value` 仅在后台/对等网络中文档完全空时生效。若文档已存在，将同步现有内容并忽略该值。
+  
+  **生命周期管理**：必须调用 `editor.api.yjs.init()` 建立连接，并在组件卸载时调用 `editor.api.yjs.destroy()` 清理资源。
+</Callout>
+
+### 监控连接状态（可选）
+
+访问提供者状态并添加事件监听：
+
+```tsx
+import React from 'react';
+import { YjsPlugin } from '@platejs/yjs/react';
+import { usePluginOption } from 'platejs/react';
+
+function EditorStatus() {
+  // 直接访问提供者状态（只读）
+  const providers = usePluginOption(YjsPlugin, '_providers');
+  const isConnected = usePluginOption(YjsPlugin, '_isConnected');
+
+  return (
+    <div>
+      {providers.map((provider) => (
+        <span key={provider.type}>
+          {provider.type}: {provider.isConnected ? '已连接' : '未连接'} ({provider.isSynced ? '已同步' : '同步中'})
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// 添加连接事件处理器：
+YjsPlugin.configure({
+  options: {
+    // ... 其他配置
+    onConnect: ({ type }) => console.debug(`${type} 提供者已连接！`),
+    onDisconnect: ({ type }) => console.debug(`${type} 提供者已断开`),
+    onSyncChange: ({ type, isSynced }) => console.debug(`${type} 提供者同步状态: ${isSynced}`),
+    onError: ({ type, error }) => console.error(`${type} 提供者错误:`, error),
+  },
+});
+```
+
+</Steps>
+
+## 提供者类型
+
+### Hocuspocus 提供者
+
+基于 [Hocuspocus](https://tiptap.dev/hocuspocus) 的服务端方案，需运行 Hocuspocus 服务。
+
+```tsx
+type HocuspocusProviderConfig = {
+  type: 'hocuspocus',
+  options: {
+    name: string;     // 文档标识
+    url: string;      // WebSocket 服务地址
+    token?: string;   // 认证令牌
+  }
+}
+```
+
+### WebRTC 提供者
+
+基于 [y-webrtc](https://github.com/yjs/y-webrtc) 的点对点方案。
+
+```tsx
+type WebRTCProviderConfig = {
+  type: 'webrtc',
+  options: {
+    roomName: string;      // 协作房间名
+    signaling?: string[];  // 信令服务器地址
+    password?: string;     // 房间密码
+    maxConns?: number;    // 最大连接数
+    peerOpts?: object;    // WebRTC 对等选项
+  }
+}
+```
+
+### 自定义提供者
+
+通过实现 `UnifiedProvider` 接口创建自定义提供者：
+
+```typescript
+interface UnifiedProvider {
+  awareness: Awareness;
+  document: Y.Doc;
+  type: string;
+  connect: () => void;
+  destroy: () => void;
+  disconnect: () => void;
+  isConnected: boolean;
+  isSynced: boolean;
+}
+```
+
+直接在提供者数组中使用：
+
+```tsx
+const customProvider = new MyCustomProvider({ doc: ydoc, awareness });
+
+YjsPlugin.configure({
+  options: {
+    providers: [customProvider],
+  },
+});
+```
+
+## 后端配置
+
+### Hocuspocus 服务
+
+搭建 [Hocuspocus 服务](https://tiptap.dev/hocuspocus/getting-started)，确保提供者配置中的 `url` 和 `name` 与服务端匹配。
+
+### WebRTC 配置
+
+#### 信令服务器
+
+WebRTC 需信令服务器进行节点发现。测试可使用公共服务器，生产环境建议自建：
+
+```bash
+npm install y-webrtc
+PORT=4444 node ./node_modules/y-webrtc/bin/server.js
+```
+
+客户端配置自定义信令：
+
+```tsx
+{
+  type: 'webrtc',
+  options: {
+    roomName: '文档-1',
+    signaling: ['ws://您的信令服务器:4444'],
+  },
+}
+```
+
+#### TURN 服务器
+
+<Callout type="warning">
+  WebRTC 连接可能因防火墙失败。生产环境建议使用 TURN 服务器或结合 Hocuspocus。
+</Callout>
+
+配置 TURN 服务器提升连接可靠性：
+
+```tsx
+{
+  type: 'webrtc',
+  options: {
+    roomName: '文档-1',
+    signaling: ['ws://您的信令服务器:4444'],
+    peerOpts: {
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          {
+            urls: 'turn:您的TURN服务器:3478',
+            username: '用户名',
+            credential: '密码'
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+## 安全实践
+
+**认证与授权：**
+- 使用 Hocuspocus 的 `onAuthenticate` 钩子验证用户
+- 后端实现文档级访问控制
+- 通过 `token` 选项传递认证令牌
+
+**传输安全：**
+- 生产环境使用 `wss://` 加密通信
+- 配置 `turns://` 协议的 TURN 服务器
+
+**WebRTC 安全：**
+- 使用 `password` 选项控制房间访问
+- 配置安全信令服务器
+
+安全配置示例：
+
+```tsx
+YjsPlugin.configure({
+  options: {
+    providers: [
+      {
+        type: 'hocuspocus',
+        options: {
+          name: '安全文档ID',
+          url: 'wss://您的Hocuspocus服务',
+          token: '用户认证令牌',
+        },
+      },
+      {
+        type: 'webrtc',
+        options: {
+          roomName: '安全文档ID',
+          password: '高强度房间密码',
+          signaling: ['wss://您的安全信令服务'],
+          peerOpts: {
+            config: {
+              iceServers: [
+                {
+                  urls: 'turns:您的TURN服务器:443?transport=tcp',
+                  username: '用户',
+                  credential: '密码'
+                }
+              ]
+            }
+          }
+        },
+      },
+    ],
+  },
+});
+```
+
+## 问题排查
+
+### 连接问题
+
+**检查地址与名称：**
+- 确认 Hocuspocus 的 `url` 和 WebRTC 的 `signaling` 地址正确
+- 确保所有协作者的 `name` 或 `roomName` 完全一致
+- 开发环境使用 `ws://`，生产环境使用 `wss://`
+
+**服务状态：**
+- 确认 Hocuspocus 和信令服务正常运行
+- 检查服务端日志错误
+- WebRTC 需测试 TURN 服务器连通性
+
+**网络问题：**
+- 防火墙可能阻止 WebSocket/WebRTC 流量
+- 配置 TCP 443 端口的 TURN 服务器提升穿透能力
+- 浏览器控制台查看提供者错误
+
+### 多文档处理
+
+**独立实例：**
+- 每个文档创建独立的 `Y.Doc` 实例
+- 使用唯一的文档标识作为 `name`/`roomName`
+- 为每个编辑器传递独立的 `ydoc` 和 `awareness` 实例
+
+### 同步问题
+
+**编辑器初始化：**
+- 创建编辑器时始终设置 `skipInitialization: true`
+- 使用 `editor.api.yjs.init({ value })` 设置初始内容
+- 确保所有提供者使用完全相同的文档标识
+
+**内容冲突：**
+- 避免手动操作共享的 `Y.Doc`
+- 所有文档操作通过编辑器由 Yjs 处理
+
+### 光标问题
+
+**悬浮层配置：**
+- 插件配置中包含 [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay)
+- 使用定位容器（`EditorContainer` 或 `PlateContainer`）
+- 确认本地用户的 `cursors.data`（名称、颜色）配置正确
+
+## 相关资源
+
+- [Yjs](https://github.com/yjs/yjs) - 协作 CRDT 框架
+- [slate-yjs](https://docs.slate-yjs.dev/) - Slate 的 Yjs 绑定
+- [Hocuspocus](https://tiptap.dev/hocuspocus) - Yjs 后端服务
+- [y-webrtc](https://github.com/yjs/y-webrtc) - WebRTC 提供者
+- [RemoteCursorOverlay](/docs/components/remote-cursor-overlay) - 远程光标组件
+- [EditorContainer](/docs/components/editor) - 编辑器容器组件
+
+## 插件
+
+### `YjsPlugin`
+
+通过 Yjs 实现实时协作，支持多提供者和远程光标。
+
+<API name="YjsPlugin">
+<APIOptions>
+  <APIItem name="providers" type="(UnifiedProvider | YjsProviderConfig)[]">
+    提供者配置数组或已实例化的提供者。插件会根据配置创建实例或直接使用现有实例。所有提供者共享同一个 Y.Doc 和 Awareness。每个配置对象需指定提供者 `type`（如 `'hocuspocus'`、`'webrtc'`）及其专属 `options`。自定义提供者实例需符合 `UnifiedProvider` 接口。
+  </APIItem>
+  <APIItem name="cursors" type="WithCursorsOptions | null" optional>
+    远程光标配置。设为 `null` 显式禁用光标。未指定时，若配置了提供者则默认启用。参数传递给 `withTCursors`，详见 [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors)。包含本地用户信息的 `data` 和默认 `true` 的 `autoSend`。
+  </APIItem>
+  <APIItem name="ydoc" type="Y.Doc" optional>
+    可选共享 Y.Doc 实例。未提供时插件会内部创建。需与其他 Yjs 工具集成或管理多文档时建议自行提供。
+  </APIItem>
+  <APIItem name="awareness" type="Awareness" optional>
+    可选共享 Awareness 实例。未提供时插件会内部创建。
+  </APIItem>
+  <APIItem name="onConnect" type="(props: { type: YjsProviderType }) => void" optional>
+    任一提供者成功连接时的回调。
+  </APIItem>
+  <APIItem name="onDisconnect" type="(props: { type: YjsProviderType }) => void" optional>
+    任一提供者断开连接时的回调。
+  </APIItem>
+  <APIItem name="onError" type="(props: { error: Error; type: YjsProviderType }) => void" optional>
+    任一提供者发生错误（如连接失败）时的回调。
+  </APIItem>
+  <APIItem name="onSyncChange" type="(props: { isSynced: boolean; type: YjsProviderType }) => void" optional>
+    任一提供者同步状态 (`provider.isSynced`) 变化时的回调。
+  </APIItem>
+</APIOptions>
+<APIAttributes>
+  {/* 内部状态，通常使用 options 或事件处理器替代 */}
+  <APIItem name="_isConnected" type="boolean">
+    内部状态：至少一个提供者已连接时为 true。
+  </APIItem>
+  <APIItem name="_isSynced" type="boolean">
+    内部状态：反映整体同步状态。
+  </APIItem>
+  <APIItem name="_providers" type="UnifiedProvider[]">
+    内部状态：所有活跃提供者实例数组。
+  </APIItem>
+</APIAttributes>
+</API>
+
+## API
+
+### `api.yjs.init`
+
+初始化 Yjs 连接，将其绑定到编辑器，根据插件配置设置提供者，可能填充 Y.Doc 的初始内容，并连接提供者。**必须在编辑器挂载后调用。**
+
+<API name="editor.api.yjs.init">
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    初始化配置对象。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="id" type="string" optional>
+    Yjs 文档的唯一标识符（如房间名、文档 ID）。未提供时使用 `editor.id`。确保协作者连接到同一文档状态的关键。
+  </APIItem>
+  <APIItem name="value" type="Value | string | ((editor: PlateEditor) => Value | Promise<Value>)" optional>
+    编辑器的初始内容。**仅当共享状态（后端/对等端）中与 `id` 关联的 Y.Doc 完全为空时应用。**如果文档已存在，将同步其内容并忽略此值。可以是 Plate JSON（`Value`）、HTML 字符串或返回/解析为 `Value` 的函数。如果省略或为空，且 Y.Doc 为新文档，则使用默认空段落初始化。
+  </APIItem>
+  <APIItem name="autoConnect" type="boolean" optional>
+    是否在初始化期间自动调用所有配置提供者的 `provider.connect()`。默认：`true`。如果要使用 `editor.api.yjs.connect()` 手动管理连接，请设置为 `false`。
+  </APIItem>
+  <APIItem name="autoSelect" type="'start' | 'end'" optional>
+    如果设置，在初始化和同步后自动聚焦编辑器并将光标放置在文档的 'start' 或 'end' 位置。
+  </APIItem>
+  <APIItem name="selection" type="Location" optional>
+    初始化后设置选择的具体 Plate `Location`，覆盖 `autoSelect`。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Promise<void>">
+  初始设置（包括潜在的异步 `value` 解析和 YjsEditor 绑定）完成时解析。注意提供者连接和同步是异步进行的。
+</APIReturns>
+</API>
+
+### `api.yjs.destroy`
+
+断开所有提供者连接，清理 Yjs 绑定（将编辑器从 Y.Doc 分离），并销毁 awareness 实例。**必须在编辑器组件卸载时调用**以防止内存泄漏和过时连接。
+
+### `api.yjs.connect`
+
+手动连接到提供者。在 `init` 期间使用 `autoConnect: false` 时很有用。
+
+<API name="editor.api.yjs.connect">
+<APIParameters>
+ <APIItem name="type" type="YjsProviderType | YjsProviderType[]" optional>
+   如果提供，仅连接到指定类型的提供者。如果省略，连接到所有尚未连接的已配置提供者。
+ </APIItem>
+</APIParameters>
+</API>
+
+### `api.yjs.disconnect`
+
+手动断开与提供者的连接。
+
+<API name="editor.api.yjs.disconnect">
+<APIParameters>
+ <APIItem name="type" type="YjsProviderType | YjsProviderType[]" optional>
+   如果提供，仅断开与指定类型提供者的连接。如果省略，断开与所有当前已连接提供者的连接。
+ </APIItem>
+</APIParameters>
+</API>

@@ -1,0 +1,935 @@
+---
+title: Markdown
+description: Convert Plate content to Markdown and vice-versa.
+toc: true
+---
+
+The `@platejs/markdown` package provides robust, two-way conversion between Markdown and Plate's content structure.
+
+<ComponentPreview name="markdown-to-slate-demo" />
+
+<ComponentPreview name="markdown-demo" />
+
+<PackageInfo>
+
+## Features
+
+-   **Markdown to Plate JSON:** Convert Markdown strings to Plate's editable format (`deserialize`).
+-   **Plate JSON to Markdown:** Convert Plate content back to Markdown strings (`serialize`).
+-   **Safe by Default:** Handles Markdown conversion without `dangerouslySetInnerHTML`.
+-   **Customizable Rules:** Define how specific Markdown syntax or custom Plate elements are converted using `rules`. Supports MDX.
+-   **Extensible:** Utilize [remark plugins](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins) via the `remarkPlugins` option.
+-   **Compliant:** Supports CommonMark, with GFM (GitHub Flavored Markdown) available via [`remark-gfm`](https://github.com/remarkjs/remark-gfm).
+-   **Round-Trip Serialization:** Preserves custom elements through MDX syntax during conversion cycles.
+
+</PackageInfo>
+
+## Why Use Plate Markdown?
+
+While libraries like `react-markdown` render Markdown to React elements, `@platejs/markdown` offers deeper integration with the Plate ecosystem:
+
+-   **Rich Text Editing:** Enables advanced editing features by converting Markdown to Plate's structured format.
+-   **WYSIWYG Experience:** Edit content in a rich text view and serialize it back to Markdown.
+-   **Custom Elements & Data:** Handles complex custom Plate elements (mentions, embeds) by converting them to/from MDX.
+-   **Extensibility:** Leverages Plate's plugin system and the unified/remark ecosystem for powerful customization.
+
+<Callout type="note">
+  If you only need to display Markdown as HTML without editing or custom elements, `react-markdown` might be sufficient. For a rich text editor with Markdown import/export and custom content, `@platejs/markdown` is the integrated solution.
+</Callout>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add Markdown functionality is with the `MarkdownKit`, which includes pre-configured `MarkdownPlugin` with essential remark plugins for [Plate UI](/docs/installation/plate-ui) compatibility.
+
+<ComponentSource name="markdown-kit" />
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...MarkdownKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs @platejs/markdown
+```
+
+### Add Plugin
+
+```tsx
+import { MarkdownPlugin } from '@platejs/markdown';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    MarkdownPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+Configuring `MarkdownPlugin` is recommended to enable Markdown paste handling and set default conversion `rules`.
+
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin, remarkMention, remarkMdx } from '@platejs/markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...other Plate plugins
+    MarkdownPlugin.configure({
+      options: {
+        // Add remark plugins for syntax extensions (GFM, Math, MDX)
+        remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
+        // Define custom rules if needed
+        rules: {
+          // date: { /* ... rule implementation ... */ },
+        },
+      },
+    }),
+  ],
+});
+
+// To disable Markdown paste handling:
+const editorWithoutPaste = createPlateEditor({
+  plugins: [
+    // ...other Plate plugins
+    MarkdownPlugin.configure(() => ({ parser: null })),
+  ],
+});
+```
+
+<Callout type="info">
+  If you don't use `MarkdownPlugin` with `configure`, you can still use `editor.api.markdown.deserialize` and `editor.api.markdown.serialize` directly, but without plugin-configured default rules or paste handling.
+</Callout>
+
+### Markdown to Plate (Deserialization)
+
+Use `editor.api.markdown.deserialize` to convert a Markdown string into a Plate `Value` (an array of nodes). This is often used for the editor's initial content.
+
+```tsx title="components/my-editor.tsx"
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin } from '@platejs/markdown';
+// ... import other necessary Plate plugins for rendering elements
+
+const markdownString = '# Hello, *Plate*!';
+
+const editor = createPlateEditor({
+  plugins: [
+    // MarkdownPlugin must be included
+    MarkdownPlugin,
+    // ... other plugins needed to render the deserialized elements (e.g., HeadingPlugin, ItalicPlugin)
+  ],
+  // Use deserialize in the value factory for initial content
+  value: (editor) => editor.getApi(MarkdownPlugin).markdown.deserialize(markdownString),
+});
+```
+
+<Callout type="warning" title="Plugin Requirements">
+  Ensure all Plate plugins required to render the deserialized Markdown (e.g., `HeadingPlugin` for `#`, `TablePlugin` for tables) are included in your editor's `plugins` array.
+</Callout>
+
+### Plate to Markdown (Serialization)
+
+Use `editor.api.markdown.serialize` to convert the current editor content (or a specific array of nodes) into a Markdown string.
+
+**Serializing Current Editor Content:**
+
+```tsx
+// Assuming `editor` is your Plate editor instance with content
+const markdownOutput = editor.api.markdown.serialize();
+console.info(markdownOutput);
+```
+
+**Serializing Specific Nodes:**
+
+```tsx
+const specificNodes = [
+  { type: 'p', children: [{ text: 'Serialize just this paragraph.' }] },
+  { type: 'h1', children: [{ text: 'And this heading.' }] }
+];
+
+// Assuming `editor` is your Plate editor instance
+const partialMarkdownOutput = editor.api.markdown.serialize({
+  value: specificNodes,
+});
+console.info(partialMarkdownOutput);
+```
+
+### Round-Trip Serialization with Custom Elements (MDX)
+
+A key feature is handling custom Plate elements that lack standard Markdown representation (e.g., underline, mentions). `@platejs/markdown` converts these to [MDX][github-mdx] elements during serialization and parses them back during deserialization.
+
+**Example:** Handling a custom `date` element.
+
+**Plate Node Structure:**
+```ts
+{
+  type: 'p',
+  children: [
+    { text: 'Today is ' },
+    { type: 'date', date: '2025-03-31', children: [{ text: '' }] } // Leaf elements need a text child
+  ],
+}
+```
+
+**Plugin Configuration with `rules`:**
+```tsx title="lib/plate-editor.ts"
+import type { MdMdxJsxTextElement } from '@platejs/markdown';
+import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
+// ... other imports
+
+MarkdownPlugin.configure({
+  options: {
+    rules: {
+      // Key matches:
+      // 1. Plate element's plugin 'key' or 'type'.
+      // 2. mdast node type.
+      // 3. MDX tag name.
+      date: {
+        // Markdown -> Plate
+        deserialize(mdastNode: MdMdxJsxTextElement, deco, options) {
+          const dateValue = (mdastNode.children?.[0] as any)?.value || '';
+          return {
+            type: 'date', // Your Plate element type
+            date: dateValue,
+            children: [{ text: '' }], // Valid Plate structure
+          };
+        },
+        // Plate -> Markdown (MDX)
+        serialize: (slateNode): MdMdxJsxTextElement => {
+          return {
+            type: 'mdxJsxTextElement',
+            name: 'date', // MDX tag name
+            attributes: [], // Optional: [{ type: 'mdxJsxAttribute', name: 'date', value: slateNode.date }]
+            children: [{ type: 'text', value: slateNode.date || '1999-01-01' }],
+          };
+        },
+      },
+      // ... rules for other custom elements
+    },
+    remarkPlugins: [remarkMdx /*, ... other remark plugins like remarkGfm */],
+  },
+});
+```
+
+**Conversion Process:**
+
+1.  **Serialization (Plate → Markdown):** The Plate `date` node becomes `<date>2025-03-31</date>`.
+2.  **Deserialization (Markdown → Plate):** The MDX tag `<date>2025-03-31</date>` converts back to the Plate `date` node.
+
+</Steps>
+
+## API Reference
+
+### `MarkdownPlugin`
+
+The core plugin configuration object. Use `MarkdownPlugin.configure({ options: {} })` to set global options for Markdown processing.
+
+<API name="MarkdownPlugin">
+<APIOptions>
+  <APIItem name="allowedNodes" type="PlateType | null">
+    Whitelist specific node types (Plate types and Markdown AST types like `strong`). Cannot be used with `disallowedNodes`. If set, only listed types are processed. Default: `null` (all allowed).
+  </APIItem>
+  <APIItem name="disallowedNodes" type="PlateType | null">
+    Blacklist specific node types. Cannot be used with `allowedNodes`. Listed types are filtered out. Default: `null`.
+  </APIItem>
+  <APIItem name="allowNode" type="AllowNodeConfig">
+    Fine-grained node filtering with custom functions, applied *after* `allowedNodes`/`disallowedNodes`.
+    - `deserialize?: (mdastNode: any) => boolean`: Filter for Markdown → Plate. Return `true` to keep.
+    - `serialize?: (slateNode: any) => boolean`: Filter for Plate → Markdown. Return `true` to keep.
+    Default: `null`.
+  </APIItem>
+  <APIItem name="rules" type="MdRules | null">
+    Custom conversion rules between Markdown AST and Plate elements. See [Round-Trip Serialization](#round-trip-serialization-with-custom-elements-mdx) and [Customizing Conversion Rules](#appendix-b-customizing-conversion-rules). For marks/leaves, ensure the rule object has `mark: true`. Default: `null` (uses internal `defaultRules`).
+  </APIItem>
+  <APIItem name="remarkPlugins" type="Plugin[]">
+    Array of [remark plugins](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins) (e.g., `remark-gfm`, `remark-math`, `remark-mdx`). Operates on Markdown AST (`mdast`). Default: `[]`.
+  </APIItem>
+</APIOptions>
+<APIAttributes>
+  <APIItem name="parser" type="Parser | null">
+    Configuration for pasted content. Set to `null` to disable Markdown paste handling. Default enables pasting `text/plain` as Markdown. See [PlatePlugin API > parser](/docs/api/core/plate-plugin#parser).
+  </APIItem>
+</APIAttributes>
+</API>
+
+---
+
+### `api.markdown.deserialize`
+
+Converts a Markdown string into a Plate `Value` (`Descendant[]`).
+
+<API name="deserialize">
+<APIParameters>
+  <APIItem name="markdown" type="string">
+    The Markdown string to deserialize.
+  </APIItem>
+  <APIItem name="options" type="DeserializeMdOptions" optional>
+    Options for this call, overriding plugin defaults.
+  </APIItem>
+</APIParameters>
+<APIOptions type="DeserializeMdOptions">
+  <APIItem name="allowedNodes" type="PlateType" optional>
+    Override plugin `allowedNodes`.
+  </APIItem>
+  <APIItem name="disallowedNodes" type="PlateType" optional>
+    Override plugin `disallowedNodes`.
+  </APIItem>
+  <APIItem name="allowNode" type="AllowNodeConfig" optional>
+    Override plugin `allowNode`.
+  </APIItem>
+  <APIItem name="memoize" type="boolean" optional>
+    Adds `_memo` property with raw Markdown to top-level blocks for memoization (e.g., with `PlateStatic`). Default: `false`.
+  </APIItem>
+  <APIItem name="rules" type="MdRules | null" optional>
+    Override plugin `rules`.
+  </APIItem>
+  <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
+    Options for the underlying Markdown block parser (`parseMarkdownBlocks`). See below.
+  </APIItem>
+  <APIItem name="remarkPlugins" type="Plugin[]" optional>
+    Override plugin `remarkPlugins`.
+  </APIItem>
+  <APIItem name="splitLineBreaks" type="boolean" optional>
+    If `true`, single line breaks (`\\n`) in paragraphs become paragraph breaks. Default: `false`.
+  </APIItem>
+</APIOptions>
+<APIReturns type="Descendant[]">
+  An array of Plate nodes.
+</APIReturns>
+</API>
+
+---
+
+### `api.markdown.serialize`
+
+Converts a Plate `Value` (`Descendant[]`) into a Markdown string.
+
+<API name="serialize">
+<APIParameters>
+  <APIItem name="options" type="SerializeMdOptions" optional>
+    Options for this call, overriding plugin defaults.
+  </APIItem>
+</APIParameters>
+<APIOptions type="SerializeMdOptions">
+ <APIItem name="value" type="Descendant[]" optional>
+    Plate nodes to serialize. Defaults to `editor.children`.
+  </APIItem>
+  <APIItem name="allowedNodes" type="PlateType" optional>
+    Override plugin `allowedNodes`.
+  </APIItem>
+  <APIItem name="disallowedNodes" type="PlateType" optional>
+    Override plugin `disallowedNodes`.
+  </APIItem>
+  <APIItem name="allowNode" type="AllowNodeConfig" optional>
+    Override plugin `allowNode`.
+  </APIItem>
+  <APIItem name="rules" type="MdRules | null" optional>
+    Override plugin `rules`.
+  </APIItem>
+  <APIItem name="remarkPlugins" type="Plugin[]" optional>
+    Override plugin `remarkPlugins` (affects stringification).
+  </APIItem>
+</APIOptions>
+<APIReturns type="string">
+  A Markdown string.
+</APIReturns>
+</API>
+
+---
+
+### `parseMarkdownBlocks`
+
+Utility to parse a Markdown string into block-level tokens (used by `deserialize`, useful with `memoize`).
+
+<API name="parseMarkdownBlocks">
+<APIParameters>
+  <APIItem name="markdown" type="string">
+    The Markdown string.
+  </APIItem>
+  <APIItem name="options" type="ParseMarkdownBlocksOptions" optional>
+    Parsing options.
+  </APIItem>
+</APIParameters>
+<APIOptions type="ParseMarkdownBlocksOptions">
+  <APIItem name="exclude" type="string[]" optional>
+    Marked token types (e.g., `'space'`) to exclude. Default: `['space']`.
+  </APIItem>
+  <APIItem name="trim" type="boolean" optional>
+    Trim trailing whitespace from input. Default: `true`.
+  </APIItem>
+</APIOptions>
+<APIReturns type="Token[]">
+  Array of marked `Token` objects with raw Markdown.
+</APIReturns>
+</API>
+
+## Examples
+
+<Steps>
+
+### Using a Remark Plugin (GFM)
+
+Add support for GitHub Flavored Markdown (tables, strikethrough, task lists, autolinks).
+
+**Plugin Configuration:**
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin } from '@platejs/markdown';
+import remarkGfm from 'remark-gfm';
+// Import Plate plugins for GFM elements
+import { TablePlugin } from '@platejs/table/react';
+import { TodoListPlugin } from '@platejs/list-classic/react'; // Ensure this is the correct List plugin for tasks
+import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
+import { LinkPlugin } from '@platejs/link/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...other plugins
+    TablePlugin,
+    TodoListPlugin, // Or your specific task list plugin
+    StrikethroughPlugin,
+    LinkPlugin,
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkGfm],
+      },
+    }),
+  ],
+});
+```
+
+**Usage:**
+```tsx
+const markdown = `
+A table:
+
+| a | b |
+| - | - |
+
+~~Strikethrough~~
+
+- [x] Task list item
+
+Visit https://platejs.org
+`;
+
+// Assuming `editor` is your configured Plate editor instance
+const slateValue = editor.api.markdown.deserialize(markdown);
+// editor.tf.setValue(slateValue); // To set editor content
+
+const markdownOutput = editor.api.markdown.serialize();
+// markdownOutput will contain GFM syntax
+```
+
+### Customizing Rendering (Syntax Highlighting)
+
+This example shows two approaches: customizing the rendering component (common for UI changes) and customizing the conversion rule (advanced, for changing Plate structure).
+
+**Background:**
+-   `@platejs/markdown` converts Markdown fenced code blocks (e.g., \`\`\`js ... \`\`\`) to Plate `code_block` elements with `code_line` children.
+-   The Plate `CodeBlockElement` (often from `@platejs/code-block/react`) renders this structure.
+-   Syntax highlighting typically occurs within `CodeBlockElement` using a library like `lowlight` (via `CodeBlockPlugin`). See [Code Block Plugin](/docs/plugins/code-block) for details.
+
+**Approach 1: Customizing Rendering Component (Recommended for UI)**
+
+To change how code blocks appear, customize the component for the `code_block` plugin key.
+
+```tsx title="components/my-editor.tsx"
+import { createPlateEditor } from 'platejs/react';
+import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
+import { MarkdownPlugin } from '@platejs/markdown';
+import { MyCustomCodeBlockElement } from './my-custom-code-block'; // Your custom component
+
+const editor = createPlateEditor({
+  plugins: [
+    CodeBlockPlugin.withComponent(MyCustomCodeBlockElement), // Base plugin for structure/logic
+    CodeLinePlugin.withComponent(MyCustomCodeLineElement),
+    CodeSyntaxPlugin.withComponent(MyCustomCodeSyntaxElement),
+    MarkdownPlugin,  // For Markdown conversion
+    // ... other plugins
+  ],
+});
+
+// MyCustomCodeBlockElement.tsx would then implement the desired rendering
+// (e.g., using react-syntax-highlighter), consuming props from PlateElement.
+```
+Refer to the [Code Block Plugin documentation](/docs/plugins/code-block) for complete examples.
+
+**Approach 2: Customizing Conversion Rule (Advanced - Changing Plate Structure)**
+
+To fundamentally alter the Plate JSON for code blocks (e.g., storing code as a single string prop), override the `deserialize` rule.
+
+```tsx title="lib/plate-editor.ts"
+import { MarkdownPlugin } from '@platejs/markdown';
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+
+MarkdownPlugin.configure({
+  options: {
+    rules: {
+      // Override deserialization for mdast 'code' type
+      code: {
+        deserialize: (mdastNode, deco, options) => {
+          return {
+            type: KEYS.codeBlock, // Use Plate's type
+            lang: mdastNode.lang ?? undefined,
+            rawCode: mdastNode.value || '', // Store raw code directly
+            children: [{ text: '' }], // Plate Element needs a dummy text child
+          };
+        },
+      },
+      // A custom `serialize` rule for `code_block` would also be needed
+      // to convert `rawCode` back to an mdast 'code' node.
+      [KEYS.codeBlock]: {
+          serialize: (slateNode, options) => {
+             return { // mdast 'code' node
+                type: 'code',
+                lang: slateNode.lang,
+                value: slateNode.rawCode,
+             };
+          },
+      },
+    },
+    // remarkPlugins: [...]
+  },
+});
+
+// Your custom rendering component (MyCustomCodeBlockElement) would then
+// need to read the code from the `rawCode` property.
+```
+Choose based on whether you're changing UI (Approach 1) or data structure (Approach 2).
+
+### Using Remark Plugins for Math (`remark-math`)
+
+Enable TeX math syntax (`$inline$`, `$$block$$`).
+
+**Plugin Configuration:**
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin } from '@platejs/markdown';
+import remarkMath from 'remark-math';
+// Import Plate math plugins for rendering
+import { MathPlugin } from '@platejs/math/react'; // Main Math plugin
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...other plugins
+    MathPlugin, // Renders block and inline equations
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkMath],
+        // Default rules handle 'math' and 'inlineMath' mdast types from remark-math,
+        // converting them to Plate's 'equation' and 'inline_equation' types.
+      },
+    }),
+  ],
+});
+```
+
+**Usage:**
+```tsx
+const markdown = `
+Inline math: $E=mc^2$
+
+Block math:
+$$
+\\int_a^b f(x) dx = F(b) - F(a)
+$$
+`;
+
+// Assuming `editor` is your configured Plate editor instance
+const slateValue = editor.api.markdown.deserialize(markdown);
+// slateValue will contain 'inline_equation' and 'equation' nodes.
+
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+// markdownOutput will contain $...$ and $$...$$ syntax.
+```
+
+</Steps>
+
+## Remark Plugins
+
+`@platejs/markdown` leverages the [unified][github-unified] / [remark][github-remark] ecosystem. Extend its capabilities by adding remark plugins via the `remarkPlugins` option in `MarkdownPlugin.configure`. These plugins operate on the [mdast (Markdown Abstract Syntax Tree)][github-mdast].
+
+**Finding Plugins:**
+-   [List of remark plugins][github-remark-plugins] (Official)
+-   [`remark-plugin` topic on GitHub][github-topic-remark-plugin]
+-   [Awesome Remark][github-awesome-remark]
+
+**Common Uses:**
+-   **Syntax Extensions:** `remark-gfm` (tables, etc.), `remark-math` (TeX), `remark-frontmatter`, `remark-mdx`.
+-   **Linting/Formatting:** `remark-lint` (often separate tooling).
+-   **Custom Transformations:** Custom plugins to modify mdast.
+
+<Callout type="info" title="Remark vs. Rehype">
+  Plate components (e.g., `TableElement`, `CodeBlockElement`) render Plate JSON. `remarkPlugins` modify the Markdown AST. Unlike some renderers, `rehypePlugins` (for HTML AST) are generally not needed for Plate rendering, but can be used within the remark pipeline for complex HTML transformations (e.g., with `rehype-raw`).
+</Callout>
+
+## Syntax Support
+
+`@platejs/markdown` uses [`remark-parse`][github-remark-parse], adhering to [CommonMark][commonmark-spec]. Enable GFM or other syntaxes via `remarkPlugins`.
+
+-   **Learn Markdown:** [CommonMark Help][commonmark-help]
+-   **GFM Spec:** [GitHub Flavored Markdown Spec][gfm-spec]
+
+## Architecture Overview
+
+`@platejs/markdown` bridges Markdown strings and Plate's editor format using the unified/remark ecosystem.
+
+```
+                                             @platejs/markdown
+          +--------------------------------------------------------------------------------------------+
+          |                                                                                            |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |  |           |        |                |        |               |      |           |       |
+ markdown-+->+ remark    +-mdast->+ remark plugins +-mdast->+ mdast-to-slate+----->+   nodes   +-plate-+->react elements 
+          |  |           |        |                |        |               |      |           |       |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |       ^                                                                      |             |
+          |       |                                                                      v             |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |  |           |        |                |        |               |      |           |       |
+          |  | stringify |<-mdast-+ remark plugins |<-mdast-+ slate-to-mdast+<-----+ serialize |       |
+          |  |           |        |                |        |               |      |           |       |
+          |  +-----------+        +----------------+        +---------------+      +-----------+       |
+          |                                                                                            |
+          +--------------------------------------------------------------------------------------------+
+```
+
+**Key Steps:**
+
+1.  **Parse (Deserialization):**
+    -   Markdown string → `remark-parse` → mdast.
+    -   `remarkPlugins` transform mdast (e.g., `remark-gfm`).
+    -   `mdast-to-slate` converts mdast to Plate nodes using `rules`.
+    -   Plate renders nodes via its component system.
+2.  **Stringify (Serialization):**
+    -   Plate nodes → `slate-to-mdast` (using `rules`) → mdast.
+    -   `remarkPlugins` transform mdast.
+    -   `remark-stringify` converts mdast to Markdown string.
+
+<Callout type="note" title="Comparison with react-markdown">
+  -   **Direct Node Rendering:** Plate directly renders its nodes via components, unlike `react-markdown` which often uses rehype to convert Markdown to HTML, then to React elements.
+  -   **Bidirectional:** Plate's Markdown processor is fully bidirectional.
+  -   **Rich Text Integration:** Nodes are integrated with Plate's editing capabilities.
+  -   **Plugin System:** Components are managed via Plate's plugin system.
+</Callout>
+
+## Migrating from `react-markdown`
+
+Migrating involves mapping `react-markdown` concepts to Plate's architecture.
+
+**Key Differences:**
+1.  **Rendering Pipeline:** `react-markdown` (MD → mdast → hast → React) vs. `@platejs/markdown` (MD ↔ mdast ↔ Plate JSON; Plate components render Plate JSON).
+2.  **Component Customization:**
+    -   `react-markdown`: `components` prop replaces HTML tag renderers.
+    -   Plate:
+        -   `MarkdownPlugin` `rules`: Customize mdast ↔ Plate JSON conversion.
+        -   `createPlateEditor` `components`: Customize React components for Plate node types. See [Appendix C](#appendix-c-components).
+3.  **Plugin Ecosystem:** `@platejs/markdown` primarily uses `remarkPlugins`. `rehypePlugins` are less common.
+
+**Mapping Options:**
+
+| `react-markdown` Prop         | `@platejs/markdown` Equivalent/Concept                                | Notes                                                                                                                                                 |
+| :---------------------------- | :---------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `children` (string)           | Pass to `editor.api.markdown.deserialize(string)`                             | Input for deserialization; often in `createPlateEditor` `value` option.                                                                             |
+| `remarkPlugins`               | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] }})`              | Direct mapping; operates on mdast.                                                                                                                    |
+| `rehypePlugins`               | Usually **not needed**. Use `remarkPlugins` for syntax.                       | Plate components handle rendering. For raw HTML, use `rehype-raw` via `remarkPlugins`.                                                            |
+| `components={{ h1: MyH1 }}`   | `createPlateEditor({ components: { h1: MyH1 } })`         | Configures Plate rendering component. Key depends on `HeadingPlugin` config.                                                                        |
+| `components={{ code: MyCode }}` | 1. **Conversion**: `MarkdownPlugin > rules > code`. 2. **Rendering**: `components: { [KEYS.codeBlock]: MyCode }` | `rules` for mdast (`code`) to Plate (`code_block`). `components` for Plate rendering.                                                                 |
+| `allowedElements`             | `MarkdownPlugin.configure({ options: { allowedNodes: [...] }})`              | Filters nodes during conversion (mdast/Plate types).                                                                                                  |
+| `disallowedElements`          | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] }})`            | Filters nodes during conversion.                                                                                                                      |
+| `unwrapDisallowed`            | No direct equivalent. Filtering removes nodes.                                | Custom `rules` could implement unwrapping.                                                                                                          |
+| `skipHtml`                    | Default behavior strips most HTML.                                            | Use `rehype-raw` via `remarkPlugins` for HTML processing.                                                                                       |
+| `urlTransform`                | Customize via `rules` for `link` (deserialize) or plugin type (serialize).  | Handle URL transformations in conversion rules.                                                                                                     |
+| `allowElement`                | `MarkdownPlugin.configure({ options: { allowNode: { ... } } })`               | Function-based filtering during conversion.                                                                                                         |
+
+
+## Appendix A: HTML in Markdown
+
+By default, `@platejs/markdown` does **not** process raw HTML tags for security. Standard Markdown generating HTML (e.g., `*emphasis*` → `<em>`) is handled.
+
+To process raw HTML in a **trusted environment**:
+1.  **Include `remark-mdx`:** Add to `remarkPlugins`.
+2.  **Use `rehype-raw`:** Add [`rehype-raw`][github-rehype-raw] to `remarkPlugins`.
+3.  **Configure Rules:** May need `rules` for parsed HTML `hast` nodes to Plate structures.
+
+```tsx title="lib/plate-editor.ts"
+import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
+import rehypeRaw from 'rehype-raw'; // May require VFile, ensure compatibility
+// import { VFile } from 'vfile'; // If needed by rehype-raw setup
+
+MarkdownPlugin.configure({
+  options: {
+    remarkPlugins: [
+      remarkMdx,
+      // Using rehype plugins within remark pipeline can be complex.
+      [rehypeRaw, { /* options, e.g., pass vfile */ }],
+    ],
+    rules: {
+      // Example: Rule for HTML tags parsed by rehype-raw.
+      // mdastNode structure depends on rehype-raw output.
+      element: { // Generic rule for 'element' nodes from rehype-raw
+        deserialize: (mdastNode, deco, options) => {
+          // Simplified: Needs proper handling based on mdastNode.tagName and attributes.
+          // You'll likely need specific rules per HTML tag.
+          if (mdastNode.tagName === 'div') {
+            return {
+              type: 'html_div', // Example: Map to a custom 'html_div' Plate element
+              children: convertChildrenDeserialize(mdastNode.children, deco, options),
+            };
+          }
+          // Fallback or handle other tags
+          return convertChildrenDeserialize(mdastNode.children, deco, options);
+        },
+      },
+      // Add serialization rules if outputting raw HTML from Plate.
+    },
+  },
+});
+```
+
+<Callout type="destructive" title="Security Warning">
+  Enabling raw HTML rendering increases XSS risk if the Markdown source isn't trusted. Use [`rehype-sanitize`][github-rehype-sanitize] after `rehype-raw` to whitelist HTML elements/attributes.
+</Callout>
+
+## Appendix B: Customizing Conversion Rules (`rules`)
+
+The `rules` option in `MarkdownPlugin.configure` offers fine-grained control over mdast ↔ Plate JSON conversion. Keys in the `rules` object match node types.
+
+-   **Deserialization (Markdown → Plate):** Keys are `mdast` node types (e.g., `paragraph`, `heading`, `strong`, `link`, MDX types like `mdxJsxTextElement`). The `deserialize` function takes `(mdastNode, deco, options)` and returns a Plate `Descendant` or `Descendant[]`.
+-   **Serialization (Plate → Markdown):** Keys are Plate element/text types (e.g., `p`, `h1`, `a`, `code_block`, `bold`). The `serialize` function takes `(slateNode, options)` and returns an `mdast` node.
+
+**Example: Overriding Link Deserialization**
+```tsx title="lib/plate-editor.ts"
+MarkdownPlugin.configure({
+  options: {
+    rules: {
+      // Rule for mdast 'link' type
+      link: {
+        deserialize: (mdastNode, deco, options) => {
+          // Default creates { type: 'a', url: ..., children: [...] }
+          // Add a custom property:
+          return {
+            type: 'a', // Plate link element type
+            url: mdastNode.url,
+            title: mdastNode.title,
+            customProp: 'added-during-deserialize',
+            children: convertChildrenDeserialize(mdastNode.children, deco, options),
+          };
+        },
+      },
+      // Rule for Plate 'a' type (if serialization needs override for customProp)
+      a: { // Assuming 'a' is the Plate type for links
+         serialize: (slateNode, options) => {
+           // Default creates mdast 'link'
+           // Handle customProp if needed in MDX attributes or similar
+           return {
+             type: 'link', // mdast type
+             url: slateNode.url,
+             title: slateNode.title,
+             // customProp: slateNode.customProp, // MDX attribute?
+             children: convertNodesSerialize(slateNode.children, options),
+           };
+         },
+      },
+    },
+    // ... remarkPlugins ...
+  },
+});
+```
+
+**Default Rules Summary:**
+Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages/markdown/src/lib/rules/defaultRules.ts) for the complete list. Key conversions include:
+
+| Markdown (mdast)  | Plate Type            | Notes                                                       |
+| :---------------- | :-------------------- | :---------------------------------------------------------- |
+| `paragraph`       | `p`                   |                                                             |
+| `heading` (depth) | `h1` - `h6`           | Based on depth.                                             |
+| `blockquote`      | `blockquote`          |                                                             |
+| `list` (ordered)  | `ol` / `p`\*          | `ol`/`li`/`lic` or `p` with list indent props.              |
+| `list` (unordered)| `ul` / `p`\*          | `ul`/`li`/`lic` or `p` with list indent props.              |
+| `code` (fenced)   | `code_block`          | Contains `code_line` children.                              |
+| `inlineCode`      | `code` (mark)         | Applied to text.                                            |
+| `strong`          | `bold` (mark)         | Applied to text.                                            |
+| `emphasis`        | `italic` (mark)       | Applied to text.                                            |
+| `delete`          | `strikethrough` (mark)| Applied to text.                                            |
+| `link`            | `a`                   |                                                             |
+| `image`           | `img`                 | Wraps in paragraph during serialization.                    |
+| `thematicBreak`   | `hr`                  |                                                             |
+| `table`           | `table`               | Contains `tr`.                                              |
+| `math` (block)    | `equation`            | Requires `remark-math`.                                     |
+| `inlineMath`      | `inline_equation`     | Requires `remark-math`.                                     |
+| `mdxJsxFlowElement`| *Custom*              | Requires `remark-mdx` and custom `rules`.                   |
+| `mdxJsxTextElement`| *Custom*              | Requires `remark-mdx` and custom `rules`.                   |
+
+\* List conversion depends on `ListPlugin` detection.
+
+---
+
+**Default MDX Conversions (with `remark-mdx`):**
+
+| MDX (mdast)           | Plate Type                | Notes                                      |
+| :-------------------- | :------------------------ | :----------------------------------------- |
+| `<del>...</del>`      | `strikethrough` (mark)    | Alt for `~~strikethrough~~`                |
+| `<sub>...</sub>`      | `subscript` (mark)        | H<sub>2</sub>O                             |
+| `<sup>...</sup>`      | `superscript` (mark)      | E=mc<sup>2</sup>                           |
+| `<u>...</u>`        | `underline` (mark)        | <u>Underlined</u>                          |
+| `<mark>...</mark>`     | `highlight` (mark)        | <mark>Highlighted</mark>                   |
+| `<span style="font-family: ...">` | `fontFamily` (mark)    |                                            |
+| `<span style="font-size: ...">`   | `fontSize` (mark)       |                                            |
+| `<span style="font-weight: ...">` | `fontWeight` (mark)     |                                            |
+| `<span style="color: ...">`       | `color` (mark)          |                                            |
+| `<span style="background-color: ...">` | `backgroundColor` (mark)|                                            |
+| `<date>...</date>`      | `date`                    | Custom Date element                        |
+| `@mention`              | `mention`                 | Custom Mention element                       |
+| `<file name="..." />` | `file`                    | Custom File element                        |
+| `<audio src="..." />`   | `audio`                   | Custom Audio element                       |
+| `<video src="..." />`   | `video`                   | Custom Video element                       |
+| `<toc />`               | `toc`                     | Table of Contents                          |
+| `<callout>...</callout>`| `callout`                 | Callout block                              |
+| `<column_group>...`| `column_group`            | Multi-column layout                      |
+| `<column>...`       | `column`                  | Single column (part of column_group)       |
+
+## Appendix C: Components for Rendering
+
+While `rules` handle MD ↔ Plate conversion, Plate uses React components to *render* Plate nodes. Configure these in `createPlateEditor` via the `components` option or plugin `withComponent` method.
+
+**Example:**
+```tsx title="components/my-editor.tsx"
+import { createPlateEditor, ParagraphPlugin, PlateLeaf } from 'platejs/react';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { ParagraphElement } from '@/components/ui/paragraph-node'; // Example UI component
+import { CodeBlockElement } from '@/components/ui/code-block-node'; // Example UI component
+
+const editor = createPlateEditor({
+  plugins: [
+    ParagraphPlugin.withComponent(ParagraphElement),
+    CodeBlockPlugin.withComponent(CodeBlockElement),
+    BoldPlugin,
+    /* ... */
+  ],
+});
+```
+Refer to [Plugin Components](/docs/plugin-components) for more on creating/registering components.
+
+## Appendix D: `PlateMarkdown` Component (Read-Only Display)
+
+For a `react-markdown`-like component for read-only display:
+
+```tsx title="components/plate-markdown.tsx"
+import React, { useEffect } from 'react';
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+import { MarkdownPlugin } from '@platejs/markdown';
+// Import necessary Plate plugins for common Markdown features
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
+// ... include other plugins like BlockquotePlugin, CodeBlockPlugin, ListPlugin, etc.
+// ... and mark plugins like BoldPlugin, ItalicPlugin, etc.
+
+export interface PlateMarkdownProps {
+  children: string; // Markdown content
+  remarkPlugins?: any[];
+  components?: Record<string, React.ComponentType<any>>; // Plate component overrides
+  className?: string;
+}
+
+export function PlateMarkdown({
+  children,
+  remarkPlugins = [],
+  components = {},
+  className,
+}: PlateMarkdownProps) {
+  const editor = usePlateEditor({
+    plugins: [ // Include all plugins needed to render your Markdown
+      HeadingPlugin, /* ... other plugins ... */
+      MarkdownPlugin.configure({ options: { remarkPlugins } }),
+    ],
+    components, // Pass through component overrides
+  });
+
+  useEffect(() => {
+    editor.tf.reset(); // Clear previous content
+    editor.tf.setValue(
+      editor.getApi(MarkdownPlugin).markdown.deserialize(children)
+    );
+  }, [children, editor, remarkPlugins]); // Re-deserialize if markdown or plugins change
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent readOnly className={className} />
+    </Plate>
+  );
+}
+
+// Usage Example:
+// const markdownString = "# Hello\nThis is *Markdown*.";
+// <PlateMarkdown className="prose dark:prose-invert">
+//   {markdownString}
+// </PlateMarkdown>
+```
+
+<Callout type="info" title="Initial Value">
+  This `PlateMarkdown` component provides a **read-only** view. For full editing, see the [Installation guides](/docs/installation).
+</Callout>
+
+## Security Considerations
+
+`@platejs/markdown` prioritizes safety by converting Markdown to a structured Plate format, avoiding direct HTML rendering. However, security depends on:
+
+-   **Custom `rules`:** Ensure `deserialize` rules don't introduce unsafe data.
+-   **`remarkPlugins`:** Vet third-party remark plugins for potential security risks.
+-   **Raw HTML Processing:** If `rehype-raw` is used, always sanitize with [`rehype-sanitize`][github-rehype-sanitize] if the source is untrusted.
+-   **Plugin Responsibility:** URL validation in `LinkPlugin` ([`isUrl`](/docs/plugins/link#linkplugin)) or `MediaEmbedPlugin` ([`parseMediaUrl`](/docs/plugins/media#parsemediaurl)) is crucial.
+
+**Recommendation:** Treat untrusted Markdown input cautiously. Sanitize if allowing complex features or raw HTML.
+
+## Related Links
+
+-   **[remark][github-remark]:** Markdown processor.
+-   **[unified][github-unified]:** Core processing engine.
+-   **[MDX][github-mdx]:** JSX in Markdown.
+-   **[react-markdown][github-react-markdown]:** Alternative React Markdown component.
+-   **[remark-slate-transformer][github-remark-slate-transformer]:** Initial mdast ↔ Plate conversion work by [inokawa](https://github.com/inokawa).
+
+[commonmark-help]: https://commonmark.org/help/
+[commonmark-spec]: https://spec.commonmark.org/
+[gfm-spec]: https://github.github.com/gfm/
+[github-awesome-remark]: https://github.com/remarkjs/awesome-remark
+[github-mdast]: https://github.com/syntax-tree/mdast
+[github-mdx]: https://mdxjs.com/
+[github-react-markdown]: https://github.com/remarkjs/react-markdown
+[github-remark-slate-transformer]: https://github.com/inokawa/remark-slate-transformer
+[github-rehype-raw]: https://github.com/rehypejs/rehype-raw
+[github-rehype-sanitize]: https://github.com/rehypejs/rehype-sanitize
+[github-remark]: https://github.com/remarkjs/remark
+[github-remark-gfm]: https://github.com/remarkjs/remark-gfm
+[github-remark-parse]: https://github.com/remarkjs/remark/tree/main/packages/remark-parse
+[github-remark-plugins]: https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins
+[github-remark-stringify]: https://github.com/remarkjs/remark/tree/main/packages/remark-stringify
+[github-topic-remark-plugin]: https://github.com/topics/remark-plugin
+[github-unified]: https://github.com/unifiedjs/unified

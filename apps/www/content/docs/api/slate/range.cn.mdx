@@ -1,0 +1,293 @@
+---
+title: Range
+description: Plate 文档中范围（Range）的 API 参考。
+---
+
+Range（范围）是一组指向 Plate 文档特定跨度的点集合。它可以定义单个节点内的范围，也可以跨越多个节点。一个范围由两个点组成：锚点（起点）和焦点（终点）。
+
+```typescript
+type TRange = {
+  anchor: Point
+  focus: Point
+}
+```
+
+- [Point](/docs/api/slate/point)
+
+## `RangeAPI`
+
+### `transform`
+
+通过操作转换范围。
+
+<API name="transform">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要转换的范围。
+  </APIItem>
+  <APIItem name="op" type="Operation">
+    应用于范围的操作。
+  </APIItem>
+  <APIItem name="options" type="RangeTransformOptions" optional>
+    范围转换的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="RangeTransformOptions">
+  <APIItem name="affinity" type="RangeDirection | null" optional>
+    转换范围时首选的方向。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="TRange | null">
+  转换后的范围，如果范围被删除则返回 `null`。
+</APIReturns>
+</API>
+
+### `edges`
+
+获取范围的起点和终点。
+
+<API name="edges">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要获取边界的范围。
+  </APIItem>
+  <APIItem name="options" type="RangeEdgesOptions" optional>
+    获取边界的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="RangeEdgesOptions">
+  <APIItem name="reverse" type="boolean" optional>
+    如果为 true，则以相反顺序返回点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="[Point, Point]">
+  表示起点和终点的点元组。
+</APIReturns>
+</API>
+
+### `end`
+
+获取范围的终点。
+
+<API name="end">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要获取终点的范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Point">
+  范围的终点。
+</APIReturns>
+</API>
+
+### `equals`
+
+检查两个范围是否完全相等。
+
+<API name="equals">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要比较的第一个范围。
+  </APIItem>
+  <APIItem name="another" type="TRange">
+    要比较的第二个范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果范围完全相等则为 `true`。
+</APIReturns>
+</API>
+
+### `includes`
+
+检查范围是否包含路径、点或另一个范围的部分。
+
+<API name="includes">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要检查的范围。
+  </APIItem>
+  <APIItem name="target" type="Path | Point | TRange">
+    要检查是否包含的目标。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果范围包含目标则为 `true`。
+</APIReturns>
+</API>
+
+### `intersection`
+
+获取两个范围的交集。
+
+<API name="intersection">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    第一个范围。
+  </APIItem>
+  <APIItem name="another" type="TRange">
+    第二个范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="TRange | null">
+  交集范围，如果没有交集则返回 `null`。
+</APIReturns>
+</API>
+
+### `isBackward`
+
+检查范围是否为反向（锚点出现在焦点之后）。
+
+<API name="isBackward">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要检查的范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果范围为反向则为 `true`。
+</APIReturns>
+</API>
+
+### `isCollapsed`
+
+检查范围是否折叠（两个点指向同一位置）。
+
+<API name="isCollapsed">
+<APIParameters>
+  <APIItem name="range" type="TRange | null" optional>
+    要检查的范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果范围存在且折叠则为 `true`。
+</APIReturns>
+</API>
+
+### `isExpanded`
+
+检查范围是否展开（未折叠）。
+
+<API name="isExpanded">
+<APIParameters>
+  <APIItem name="range" type="TRange | null" optional>
+    要检查的范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果范围存在且展开则为 `true`。
+</APIReturns>
+</API>
+
+### `isForward`
+
+检查范围是否为正向（锚点出现在焦点之前）。
+
+<API name="isForward">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要检查的范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果范围为正向则为 `true`。
+</APIReturns>
+</API>
+
+### `isRange`
+
+检查值是否实现了 `TRange` 接口。
+
+<API name="isRange">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值是范围则为 `true`。
+</APIReturns>
+</API>
+
+### `points`
+
+遍历范围内的所有点条目。
+
+<API name="points">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要遍历的范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Generator<PointEntry, void, undefined>">
+  生成点条目的生成器。
+</APIReturns>
+</API>
+
+### `start`
+
+获取范围的起点。
+
+<API name="start">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要获取起点的范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Point">
+  范围的起点。
+</APIReturns>
+</API>
+
+### `surrounds`
+
+检查范围是否完全包围另一个范围。
+
+<API name="surrounds">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    可能包围目标的范围。
+  </APIItem>
+  <APIItem name="target" type="TRange">
+    可能被包围的目标范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果范围包围目标则为 `true`。
+</APIReturns>
+</API>
+
+## 类型
+
+### `TRange`
+
+`TRange` 对象是一组指向 Plate 文档特定跨度的点集合。它可以定义单个节点内的范围，也可以跨越多个节点。
+
+`Range` 是 `TRange` 的类型别名。
+
+<API name="TRange">
+<APIAttributes>
+  <APIItem name="anchor" type="Point">
+    范围的起点。
+  </APIItem>
+  <APIItem name="focus" type="Point">
+    范围的终点。
+  </APIItem>
+</APIAttributes>
+</API>

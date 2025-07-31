@@ -1,0 +1,72 @@
+---
+title: Feature Kits
+description: Understand how to use Feature Kits for rapid editor setup with pre-configured plugins and UI components.
+---
+
+Feature Kits bundle related plugins and their UI components. They provide the fastest way to add editor features.
+
+## What are Feature Kits?
+
+Feature Kits are pre-assembled packages. They include multiple plugins and components for specific editor features.
+
+For example, `BasicBlocksKit` includes plugins for paragraphs, headings, blockquotes, and horizontal rules. It also includes their UI components.
+
+## Benefits of Using Kits
+
+- **Fast setup**: Add multiple features with one import
+- **Best practices**: Kits use sensible defaults and configurations
+- **UI included**: Most kits include [Plate UI](/docs/installation/plate-ui) components
+- **Simple dependencies**: Kits handle plugin dependencies automatically
+
+## Kit Usage vs Manual Usage
+
+Plugin documentation shows two approaches:
+
+- **Kit Usage**: Use a pre-configured kit. This is the recommended approach for most users.
+- **Manual Usage**: Install and configure each plugin individually. Use this when you need:
+  - Custom plugin options beyond kit defaults
+  - Different UI components or no UI (headless)
+  - Only specific plugins from a kit
+
+Kits are mostly the same as manual setup, but pre-configured.
+
+## Finding Available Kits
+
+Look for "Kit Usage" sections in plugin documentation. These sections show which kit to use and include the kit's source code.
+
+## Example: BasicBlocksKit
+
+The [`BasicBlocksKit`](/docs/basic-blocks#installation) includes these plugins and components:
+
+- `ParagraphPlugin` with `ParagraphElement`
+- `H1Plugin` with `H1Element`
+- `H2Plugin` with `H2Element`
+- `H3Plugin` with `H3Element`
+- `BlockquotePlugin` with `BlockquoteElement`
+- `HorizontalRulePlugin` with `HrElement`
+
+Instead of adding each plugin separately, use the kit:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicBlocksKit,
+  ],
+});
+```
+
+This adds all block elements with their UI components.
+
+## When to Use Manual Setup
+
+Use manual setup when you need:
+
+- **Custom options**: Kit defaults don't meet your needs
+- **Custom UI**: You're not using [Plate UI](/docs/installation/plate-ui) components
+- **Minimal setup**: You only need one or two plugins from a kit
+- **Learning**: You want to understand how plugins work together
+

@@ -1,0 +1,115 @@
+---
+title: Code
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Format inline code snippets and technical terms
+- Keyboard shortcut support for quick formatting
+- Renders as `<code>` HTML element by default
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add the code plugin is with the `BasicMarksKit`, which includes pre-configured `CodePlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="basic-marks-kit" />
+
+- [`CodeLeaf`](/docs/components/code-node): Renders inline code elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicMarksKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### Add Plugin
+
+Include `CodePlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { CodePlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CodePlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+You can configure the `CodePlugin` with a custom component and keyboard shortcuts.
+
+```tsx
+import { CodePlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+import { CodeLeaf } from '@/components/ui/code-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CodePlugin.configure({
+      node: { component: CodeLeaf },
+      shortcuts: { toggle: { keys: 'mod+e' } },
+    }),
+  ],
+});
+```
+
+- `node.component`: Assigns [`CodeLeaf`](/docs/components/code-node) to render inline code elements.
+- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code formatting.
+
+### Add Toolbar Button
+
+You can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle code formatting.
+
+</Steps>
+
+## Plugins
+
+### `CodePlugin`
+
+Plugin for inline code text formatting. Renders as `<code>` HTML element by default.
+
+## Transforms
+
+### `tf.code.toggle`
+
+Toggles the code formatting for the selected text. 

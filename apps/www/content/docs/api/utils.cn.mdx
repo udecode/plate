@@ -1,0 +1,90 @@
+---
+title: Plate 工具集
+description: \@platejs/utils 的 API 参考文档。
+---
+
+`@platejs/utils` 包含用于 Plate 的实用工具函数。
+
+## Hooks
+
+### `useEditorString`
+
+<API name="useEditorString">
+<APIReturns type="string">
+  编辑器中所有文本节点拼接后的文本内容。
+</APIReturns>
+</API>
+
+### `useMarkToolbarButtonState`
+
+生成标记工具栏按钮的状态。
+
+<API name="useMarkToolbarButtonState">
+<APIParameters>
+  <APIItem name="nodeType" type="string">
+    要检查活动标记的节点类型。
+  </APIItem>
+  <APIItem name="clear" type="string | string[]" optional>
+    应用标记时要清除的节点类型或类型数组。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="object">
+  <APIItem name="pressed" type="boolean">
+    当前选中内容中 `nodeType` 标记是否处于活动状态。
+  </APIItem>
+  <APIItem name="nodeType" type="string">
+    节点类型。
+  </APIItem>
+  <APIItem name="clear" type="string | string[]" optional>
+    切换此标记时要清除的类型或类型数组。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useMarkToolbarButton`
+
+使用 `useMarkToolbarButtonState` 创建的状态生成标记工具栏按钮的属性。
+
+<API name="useMarkToolbarButton">
+<APIParameters>
+  <APIItem name="state" type="ReturnType<typeof useMarkToolbarButtonState>">
+    由 `useMarkToolbarButtonState` 生成的标记工具栏按钮状态。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        标记工具栏按钮是否处于活动状态。
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="React.MouseEventHandler<HTMLButtonElement>">
+        切换标记并聚焦编辑器。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useRemoveNodeButton`
+
+生成用于移除编辑器中节点的按钮属性。
+
+<API name="useRemoveNodeButton">
+<APIParameters>
+  <APIItem name="element" type="TElement">
+    要移除的节点元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="() => void">
+        移除节点并聚焦编辑器。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>

@@ -1,0 +1,213 @@
+---
+title: 标题组件
+description: 为图片、视频、文件等媒体元素添加标题说明。
+docs:
+  - route: /docs/components/caption
+    title: 标题组件
+---
+
+<ComponentPreview name="media-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 为图片、视频、音频文件等媒体元素添加标题说明
+- 通过方向键在区块内选择标题
+- 使用文本区域组件进行内联标题编辑
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的方式是使用`MediaKit`套件，它包含预配置的`CaptionPlugin`以及媒体插件和它们的[Plate UI](/docs/installation/plate-ui)组件。
+
+<ComponentSource name="media-kit" />
+
+- [`Caption`](/docs/components/caption): 为媒体元素渲染标题组件
+
+### 添加套件
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { MediaKit } from '@/components/editor/plugins/media-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...MediaKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/caption
+```
+
+### 添加插件
+
+```tsx
+import { CaptionPlugin } from '@platejs/caption/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    CaptionPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+配置哪些媒体插件应支持标题功能：
+
+```tsx
+import { KEYS } from 'platejs';
+import { CaptionPlugin } from '@platejs/caption/react';
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  VideoPlugin,
+} from '@platejs/media/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ImagePlugin,
+    VideoPlugin,
+    AudioPlugin,
+    FilePlugin,
+    MediaEmbedPlugin,
+    CaptionPlugin.configure({
+      options: {
+        query: {
+          allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
+        },
+      },
+    }),
+  ],
+});
+```
+
+- `query.allow`: 支持标题功能的插件键名数组
+
+</Steps>
+
+## 插件
+
+### `CaptionPlugin`
+
+为媒体元素添加标题功能的插件。
+
+<API name="CaptionPlugin">
+<APIOptions>
+  <APIItem name="query" type="{ allow: string[] }" required>
+    配置哪些插件支持标题功能
+    <APISubList>
+      <APISubListItem parent="query" name="allow" type="string[]">
+        可添加标题的区块插件键名
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="focusEndPath" type="Path" optional>
+    标题末尾的聚焦路径
+    - **默认值:** `null`
+  </APIItem>
+  <APIItem name="focusStartPath" type="Path" optional>
+    标题起始的聚焦路径
+    - **默认值:** `null`
+  </APIItem>
+  <APIItem name="visibleId" type="string" optional>
+    当前可见标题的ID
+    - **默认值:** `null`
+  </APIItem>
+</APIOptions>
+</API>
+
+## 类型
+
+### `TCaptionElement`
+
+继承自`TElement`。
+
+<API name="TCaptionElement">
+<APIAttributes>
+  <APIItem name="caption" type="Descendant[]" optional>
+    标题值，由子节点数组构成
+  </APIItem>
+</APIAttributes>
+</API>
+
+## 组件
+
+### `<Caption>`
+
+<API name="Caption">
+<APIProps>
+  <APIItem name="options" type="object" optional>
+    标题组件的配置选项
+  </APIItem>
+  <APIItem name="state" type="object" optional>
+    标题组件的状态
+    <APISubList>
+      <APISubListItem parent="state" name="captionString" type="string" optional>
+        表示标题的字符串
+      </APISubListItem>
+      <APISubListItem parent="state" name="selected" type="boolean" optional>
+        标题组件是否被选中
+      </APISubListItem>
+      <APISubListItem parent="state" name="readOnly" type="boolean" optional>
+        标题组件是否处于只读模式
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  
+  <APIOptions type="object">
+  <APIItem name="readOnly" type="boolean" optional>
+    标题组件是否处于只读模式
+  </APIItem>
+</APIOptions>
+</APIProps>
+</API>
+
+### `<CaptionTextarea>`
+
+<API name="CaptionTextarea">
+<APIProps>
+  <APIItem name="state" type="object">
+    标题文本区域的状态
+    <APISubList>
+      <APISubListItem parent="state" name="textareaRef" type="Ref">
+        文本区域元素的引用
+      </APISubListItem>
+      <APISubListItem parent="state" name="captionValue" type="TextareaAutosizeProps['value']">
+        文本区域中显示的标题值
+      </APISubListItem>
+      <APISubListItem parent="state" name="setCaptionValue" type="(value: TextareaAutosizeProps['value']) => void">
+        更新标题值的函数
+      </APISubListItem>
+      <APISubListItem parent="state" name="readOnly" type="boolean">
+        标题组件是否处于只读模式
+      </APISubListItem>
+      <APISubListItem parent="state" name="element" type="TCaptionElement">
+        标题元素
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIProps>
+</API>

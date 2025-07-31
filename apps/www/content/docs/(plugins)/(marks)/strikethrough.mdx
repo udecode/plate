@@ -1,0 +1,110 @@
+---
+title: Strikethrough
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Apply strikethrough formatting to indicate deleted or outdated content
+- Keyboard shortcut support for quick formatting
+- Renders as `<s>` HTML element by default
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add the strikethrough plugin is with the `BasicMarksKit`, which includes pre-configured `StrikethroughPlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="basic-marks-kit" />
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicMarksKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### Add Plugin
+
+Include `StrikethroughPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    StrikethroughPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+You can configure the `StrikethroughPlugin` with custom keyboard shortcuts.
+
+```tsx
+import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    StrikethroughPlugin.configure({
+      shortcuts: { toggle: { keys: 'mod+shift+x' } },
+    }),
+  ],
+});
+```
+
+- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle strikethrough formatting.
+
+### Add Toolbar Button
+
+You can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle strikethrough formatting.
+
+</Steps>
+
+## Plugins
+
+### `StrikethroughPlugin`
+
+Plugin for strikethrough text formatting. Renders as `<s>` HTML element by default.
+
+## Transforms
+
+### `tf.strikethrough.toggle`
+
+Toggles the strikethrough formatting for the selected text.

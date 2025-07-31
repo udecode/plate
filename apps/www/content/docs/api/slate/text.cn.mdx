@@ -1,0 +1,213 @@
+---
+title: 文本节点
+description: Plate 文档中文本节点的 API 参考。
+---
+
+文本节点（Text）包含 Plate 文档的实际文本内容及任何格式化属性。它们始终是文档树中的叶子节点，因为不能包含任何子节点。
+
+```ts
+type TText = {
+  text: string
+  [key: string]: unknown
+}
+```
+
+## `TextApi`
+
+### `decorations`
+
+<API name="decorations">
+<APIParameters>
+  <APIItem name="node" type="TText">
+    要获取叶子的文本节点。
+  </APIItem>
+  <APIItem name="decorations" type="DecoratedRange[]">
+    要应用的装饰范围数组。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="{ leaf: TText, position?: LeafPosition }[]">
+  返回叶子及其位置的数组。如果只有一个叶子，则位置为 undefined。
+</APIReturns>
+</API>
+
+### `equals`
+
+<API name="equals">
+<APIParameters>
+  <APIItem name="text" type="TText">
+    要比较的第一个文本节点。
+  </APIItem>
+  <APIItem name="another" type="TText">
+    要比较的第二个文本节点。
+  </APIItem>
+  <APIItem name="options" type="TextEqualsOptions" optional>
+    额外的比较选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="TextEqualsOptions">
+  <APIItem name="loose" type="boolean" optional>
+    如果为 `true`，则不比较文本内容。这用于检查兄弟文本节点是否可以仅基于其格式化属性进行合并。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  如果根据比较规则文本节点相等，则返回 `true`。
+</APIReturns>
+</API>
+
+### `isText`
+
+<API name="isText">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值是有效的文本节点，则返回 `true`。
+</APIReturns>
+</API>
+
+### `isTextList`
+
+<API name="isTextList">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值是文本节点数组，则返回 `true`。
+</APIReturns>
+</API>
+
+### `isTextProps`
+
+<API name="isTextProps">
+<APIParameters>
+  <APIItem name="props" type="any">
+    要检查的属性。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果属性匹配部分文本节点结构，则返回 `true`。
+</APIReturns>
+</API>
+
+### `matches`
+
+<API name="matches">
+<APIParameters>
+  <APIItem name="text" type="TText">
+    要检查的文本节点。
+  </APIItem>
+  <APIItem name="props" type="Partial<TText>">
+    要匹配的属性。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果文本节点匹配属性，则返回 `true`。
+</APIReturns>
+</API>
+
+## 类型
+
+### `TText`
+
+`Text` 是 `TText` 的类型别名。
+
+<API name="TText">
+<APIAttributes>
+  <APIItem name="text" type="string">
+    节点的文本内容。
+  </APIItem>
+  <APIItem name="[key: string]" type="unknown">
+    可以添加到文本节点的额外格式化属性。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `TextEntry` 
+
+文本条目表示一个文本节点及其路径。
+
+<API name="TextEntry">
+<APIAttributes>
+  <APIItem name="0" type="TText">
+    文本节点。
+  </APIItem>
+  <APIItem name="1" type="Path">
+    文本节点的路径。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `DecoratedRange`
+
+包含装饰信息的范围对象。用于对文档中的特定文本范围应用格式化或样式。
+
+### `TextOf<N>`
+
+一个实用类型，从根节点类型中提取所有可能的文本节点类型。
+
+<API name="TextOf">
+<APIParameters>
+  <APIItem name="N" type="TNode">
+    要提取文本类型的根节点类型。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `TextIn<V>`
+
+一个实用类型，从 `Value` 类型中提取所有文本节点类型。
+
+<API name="TextIn">
+<APIParameters>
+  <APIItem name="V" type="Value">
+    要提取文本类型的 `Value` 类型。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `MarksOf<N>`
+
+一个实用类型，从根节点类型中提取所有可能的标记类型。标记是可以应用于文本节点的格式化属性。
+
+<API name="MarksOf">
+<APIParameters>
+  <APIItem name="N" type="TNode">
+    要提取标记类型的根节点类型。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `MarksIn<V>`
+
+一个实用类型，从 `Value` 类型中提取所有标记类型。类似于 `MarksOf`，但专门用于编辑器 `Value` 类型。
+
+<API name="MarksIn">
+<APIParameters>
+  <APIItem name="V" type="Value">
+    要提取标记类型的 `Value` 类型。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `MarkKeysOf<N>`
+
+一个实用类型，从节点类型中提取所有可能的标记属性键。
+
+<API name="MarkKeysOf">
+<APIParameters>
+  <APIItem name="N" type="TNode">
+    要提取标记键的节点类型。
+  </APIItem>
+</APIParameters>
+</API>

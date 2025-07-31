@@ -1,0 +1,320 @@
+---
+title: Combobox
+docs:
+  - route: /docs/components/inline-combobox
+    title: Inline Combobox
+---
+
+<Cards>
+
+<Card icon="mention" title="Mention" href="/docs/mention">
+Insert mentions for users, pages, or any reference with `@`
+</Card>
+
+<Card icon="slash-command" title="Slash Command" href="/docs/slash-command">
+Quick access to editor commands and blocks with `/`
+</Card>
+
+<Card icon="emoji" title="Emoji" href="/docs/emoji">
+Insert emojis with autocomplete using `:`
+</Card>
+
+</Cards>
+
+<PackageInfo>
+
+## Features
+
+- Utilities for creating trigger-based combobox functionality
+- Configurable trigger characters and patterns
+- Keyboard navigation and selection handling
+
+</PackageInfo>
+
+## Create a Combobox Plugin
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/combobox
+```
+
+### Create Input Plugin
+
+First, create an input plugin that will be inserted when the trigger is activated:
+
+```tsx
+import { createSlatePlugin } from 'platejs';
+
+const TagInputPlugin = createSlatePlugin({
+  key: 'tag_input',
+  editOnly: true,
+  node: {
+    isElement: true,
+    isInline: true,
+    isVoid: true,
+  },
+});
+```
+
+### Create Main Plugin
+
+Create your main plugin using `withTriggerCombobox`:
+
+```tsx
+import { createTSlatePlugin, type PluginConfig } from 'platejs';
+import { 
+  type TriggerComboboxPluginOptions, 
+  withTriggerCombobox 
+} from '@platejs/combobox';
+
+type TagConfig = PluginConfig<'tag', TriggerComboboxPluginOptions>;
+
+export const TagPlugin = createTSlatePlugin<TagConfig>({
+  key: 'tag',
+  node: { isElement: true, isInline: true, isVoid: true },
+  options: {
+    trigger: '#',
+    triggerPreviousCharPattern: /^\s?$/,
+    createComboboxInput: () => ({
+      children: [{ text: '' }],
+      type: 'tag_input',
+    }),
+  },
+  plugins: [TagInputPlugin],
+}).overrideEditor(withTriggerCombobox);
+```
+
+- `node.isElement`: Defines this as an element node (not text)
+- `node.isInline`: Makes the tag element inline (not block)
+- `node.isVoid`: Prevents editing inside the tag element
+- `options.trigger`: Character that triggers the combobox (in this case `#`)
+- `options.triggerPreviousCharPattern`: RegExp pattern that must match the character before the trigger. `/^\s?$/` allows the trigger at the start of a line or after whitespace
+- `options.createComboboxInput`: Function that creates the input element node when the trigger is activated
+
+### Create Component
+
+Create the input element component using `InlineCombobox`:
+
+```tsx
+import { PlateElement, useFocused, useReadOnly, useSelected } from 'platejs/react';
+import {
+  InlineCombobox,
+  InlineComboboxContent,
+  InlineComboboxEmpty,
+  InlineComboboxInput,
+  InlineComboboxItem,
+} from '@/components/ui/inline-combobox';
+import { cn } from '@/lib/utils';
+
+const tags = [
+  { id: 'frontend', name: 'Frontend', color: 'blue' },
+  { id: 'backend', name: 'Backend', color: 'green' },
+  { id: 'design', name: 'Design', color: 'purple' },
+  { id: 'urgent', name: 'Urgent', color: 'red' },
+];
+
+export function TagInputElement({ element, ...props }) {
+  return (
+    <PlateElement as="span" {...props}>
+      <InlineCombobox element={element} trigger="#">
+        <InlineComboboxInput />
+        
+        <InlineComboboxContent>
+          <InlineComboboxEmpty>No tags found</InlineComboboxEmpty>
+          
+          {tags.map((tag) => (
+            <InlineComboboxItem
+              key={tag.id}
+              value={tag.name}
+              onClick={() => {
+                // Insert actual tag element
+                editor.tf.insertNodes({
+                  type: 'tag',
+                  tagId: tag.id,
+                  children: [{ text: tag.name }],
+                });
+              }}
+            >
+              <span 
+                className={`w-3 h-3 rounded-full bg-${tag.color}-500 mr-2`}
+              />
+              #{tag.name}
+            </InlineComboboxItem>
+          ))}
+        </InlineComboboxContent>
+      </InlineCombobox>
+      
+      {props.children}
+    </PlateElement>
+  );
+}
+
+export function TagElement({ element, ...props }) {
+  const selected = useSelected();
+  const focused = useFocused();
+  const readOnly = useReadOnly();
+
+  return (
+    <PlateElement
+      {...props}
+      className={cn(
+        'inline-block rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline text-sm font-medium text-primary',
+        !readOnly && 'cursor-pointer',
+        selected && focused && 'ring-2 ring-ring'
+      )}
+      attributes={{
+        ...props.attributes,
+        contentEditable: false,
+        'data-slate-value': element.value,
+      }}
+    >
+      #{element.value}
+      {props.children}
+    </PlateElement>
+  );
+}
+```
+
+### Add to Editor
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { TagPlugin, TagInputPlugin } from './tag-plugin';
+import { TagElement, TagInputElement } from './tag-components';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    TagPlugin.configure({
+      options: {
+        triggerQuery: (editor) => {
+          // Disable in code blocks
+          return !editor.api.some({ match: { type: 'code_block' } });
+        },
+      },
+    }).withComponent(TagElement),
+    TagInputPlugin.withComponent(TagInputElement),
+  ],
+});
+```
+
+- `options.triggerQuery`: Optional function to conditionally enable/disable the trigger based on editor state
+
+</Steps>
+
+## Examples
+
+<ComponentPreview name="mention-demo" />
+<ComponentPreview name="slash-command-demo" />
+<ComponentPreview name="emoji-demo" />
+
+## Options
+
+### TriggerComboboxPluginOptions
+
+Configuration options for trigger-based combobox plugins.
+
+<API name="TriggerComboboxPluginOptions">
+<APIOptions>
+  <APIItem name="createComboboxInput" type="(trigger: string) => TElement">
+    Function to create the input node when trigger is activated.
+  </APIItem>
+  <APIItem name="trigger" type="RegExp | string[] | string">
+    Character(s) that trigger the combobox. Can be:
+    - A single character (e.g. '@')
+    - An array of characters
+    - A regular expression
+  </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+    Pattern to match the character before trigger.
+    - **Example:** `/^\s?$/` matches start of line or space
+  </APIItem>
+  <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>
+    Custom query function to control when trigger is active.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Hooks
+
+### useComboboxInput
+
+Hook for managing combobox input behavior and keyboard interactions.
+
+<API name="useComboboxInput">
+<APIOptions>
+  <APIItem name="ref" type="RefObject<HTMLElement>">
+    Reference to the input element.
+  </APIItem>
+  <APIItem name="autoFocus" type="boolean" optional>
+    Auto focus the input when mounted.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnArrowLeftRight" type="boolean" optional>
+    Cancel on arrow keys.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnBackspace" type="boolean" optional>
+    Cancel on backspace at start.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnBlur" type="boolean" optional>
+    Cancel on blur.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnDeselect" type="boolean" optional>
+    Cancel when deselected.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cancelInputOnEscape" type="boolean" optional>
+    Cancel on escape key.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="cursorState" type="ComboboxInputCursorState" optional>
+    Current cursor position state.
+  </APIItem>
+  <APIItem name="forwardUndoRedoToEditor" type="boolean" optional>
+    Forward undo/redo to editor.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="onCancelInput" type="(cause: CancelComboboxInputCause) => void" optional>
+    Callback when input is cancelled.
+  </APIItem>
+</APIOptions>
+
+<APIReturns>
+  <APIItem name="cancelInput" type="(cause?: CancelComboboxInputCause, focusEditor?: boolean) => void">
+    Function to cancel the input.
+  </APIItem>
+  <APIItem name="props" type="object">
+    Props for the input element.
+  </APIItem>
+  <APIItem name="removeInput" type="(focusEditor?: boolean) => void">
+    Function to remove the input node.
+  </APIItem>
+</APIReturns>
+</API>
+
+### useHTMLInputCursorState
+
+Hook for tracking cursor position in an HTML input element.
+
+<API name="useHTMLInputCursorState">
+<APIParameters>
+  <APIItem name="ref" type="RefObject<HTMLInputElement>">
+    Reference to the input element to track.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="atStart" type="boolean">
+    Whether cursor is at the start of input.
+  </APIItem>
+  <APIItem name="atEnd" type="boolean">
+    Whether cursor is at the end of input.
+  </APIItem>
+</APIReturns>
+</API>

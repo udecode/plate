@@ -1,0 +1,170 @@
+---
+title: Plate 编辑器
+description: Plate 编辑器的 API 参考文档。
+---
+
+一个自定义编辑器接口，扩展了基础的 **`Editor`** 接口，并包含 Plate 库特有的额外属性和方法。
+
+## 核心属性
+
+<API name="Properties">
+<APIAttributes>
+  <APIItem name="id" type="any">
+    编辑器的唯一标识符。
+  </APIItem>
+  <APIItem name="dom" type="object">
+    包含编辑器 DOM 状态的对象。
+    <APISubList>
+      <APISubListItem parent="dom" name="composing" type="boolean">
+        编辑器当前是否正在输入文本（例如在 IME 输入期间）。
+      </APISubListItem>
+      <APISubListItem parent="dom" name="currentKeyboardEvent" type="KeyboardEventLike | null">
+        编辑器当前正在处理的键盘事件，如果没有事件正在处理则为 null。
+      </APISubListItem>
+      <APISubListItem parent="dom" name="focused" type="boolean">
+        编辑器当前是否获得焦点。
+      </APISubListItem>
+      <APISubListItem parent="dom" name="prevSelection" type="TRange | null">
+        编辑器中之前的选择范围。
+      </APISubListItem>
+      <APISubListItem parent="dom" name="readOnly" type="boolean">
+        编辑器是否处于只读模式。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
+    按插件键名索引的插件记录。
+  </APIItem>
+  <APIItem name="meta" type="object">
+    包含编辑器元数据的对象，通常来自插件或编辑器配置。
+    <APISubList>
+      <APISubListItem parent="meta" name="components" type="Record<string, React.FC<any>>">
+        按插件键名索引的插件组件。
+      </APISubListItem>
+      <APISubListItem parent="meta" name="node.isContainer" type="string[]">
+        设置了 `plugin.node.isContainer = true` 的插件键名数组。
+      </APISubListItem>
+      <APISubListItem parent="meta" name="isFallback" type="boolean">
+        编辑器是否为回退编辑器。
+        
+        - **默认值:** `false`
+      </APISubListItem>
+      <APISubListItem parent="meta" name="key" type="any">
+        可用于唯一标识编辑器的键。
+      </APISubListItem>
+      <APISubListItem parent="meta" name="pluginList" type="AnyEditorPlatePlugin[]">
+        编辑器当前正在使用的插件数组。
+      </APISubListItem>
+      <APISubListItem parent="meta" name="shortcuts" type="Record<string, any>">
+        按快捷键名称索引的编辑器快捷键配置。
+      </APISubListItem>
+      <APISubListItem parent="meta" name="uid" type="any">
+        从 RSC 到客户端水合过程中保持一致的稳定唯一标识符。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIAttributes>
+</API>
+
+## API 方法
+
+<API name="API">
+<APIMethods>
+  <APIItem name="getApi" type="(plugin: PlatePlugin) => EditorApi & PlatePlugin['api']">
+    获取插件的类型化 API。
+  </APIItem>
+  <APIItem name="getTransforms" type="(plugin: PlatePlugin) => EditorTransforms & PlatePlugin['transforms']">
+    获取插件的类型化转换方法。
+  </APIItem>
+  <APIItem name="getPlugin" type="(plugin: PlatePlugin) => PlatePlugin">
+    通过键名或基础插件获取编辑器插件实例。
+  </APIItem>
+  <APIItem name="getType" type="(plugin: PlatePlugin) => string">
+    获取与插件关联的节点类型。
+  </APIItem>
+  <APIItem name="init" type="(options: InitOptions) => Promise<void>">
+    初始化编辑器值、选择和规范化。接受自动选择、选择、规范化和值的选项。
+  </APIItem>
+</APIMethods>
+</API>
+
+## 选项方法
+
+<API name="Options">
+<APIMethods>
+  <APIItem name="getOption" type="(plugin: PlatePlugin, optionKey: string) => any">
+    获取插件的特定选项值。
+  </APIItem>
+  <APIItem name="getOptions" type="(plugin: PlatePlugin) => any">
+    获取插件的所有选项。
+  </APIItem>
+  <APIItem name="setOption" type="(plugin: PlatePlugin, optionKey: string, value: any) => void">
+    设置插件的特定选项值。
+  </APIItem>
+  <APIItem name="setOptions" type="(plugin: PlatePlugin, options: (draft: object) => void | Partial<object>) => void">
+    设置插件的多个选项。
+  </APIItem>
+  <APIItem name="getOptionsStore" type="(plugin: PlatePlugin) => any">
+    获取插件的 zustand-x 选项存储。
+  </APIItem>
+</APIMethods>
+</API>
+
+## 核心插件 API
+
+### `DebugPlugin`
+
+<API name="DebugPlugin">
+<APIListAPI>
+  <APIItem name="editor.api.debug.log" type="(...args: any[]) => void">
+    在 'log' 级别记录消息。
+  </APIItem>
+  <APIItem name="editor.api.debug.info" type="(...args: any[]) => void">
+    在 'info' 级别记录消息。
+  </APIItem>
+  <APIItem name="editor.api.debug.warn" type="(...args: any[]) => void">
+    在 'warn' 级别记录消息。
+  </APIItem>
+  <APIItem name="editor.api.debug.error" type="(...args: any[]) => void">
+    在 'error' 级别记录消息。
+  </APIItem>
+</APIListAPI>
+</API>
+
+### `HtmlPlugin`
+
+<API name="HtmlPlugin">
+<APIListAPI>
+  <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement }) => Descendant[]">
+    将 HTML 内容反序列化为 Plate 节点。
+  </APIItem>
+</APIListAPI>
+</API>
+
+### `ReactPlugin`
+
+<API name="ReactPlugin">
+<APITransforms>
+  <APIItem name="editor.tf.reset" type="() => void">
+    重置编辑器状态，如果编辑器之前有焦点则保持焦点。
+  </APIItem>
+</APITransforms>
+</API>
+
+### `SlateReactExtensionPlugin`
+
+<API name="SlateReactExtensionPlugin">
+<APIListAPI>
+  <APIItem name="editor.api.redecorate" type="() => void">
+    重新装饰编辑器。
+  </APIItem>
+</APIListAPI>
+
+<APITransforms>
+  <APIItem name="editor.tf.setValue" type="(value: Value) => void">
+    替换编辑器值。更多信息请参阅[受控值](/docs/controlled)。
+  </APIItem>
+</APITransforms>
+
+
+</API>

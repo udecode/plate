@@ -1,0 +1,132 @@
+---
+title: Horizontal Rule
+docs:
+  - route: /docs/components/hr-node
+    title: Hr Element
+---
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Insert horizontal lines to separate content or indicate topic shifts
+- Type three dashes (`---`) at a new line start to transform into a horizontal rule
+- Renders as `<hr>` HTML element by default
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add the horizontal rule plugin is with the `BasicBlocksKit`, which includes pre-configured `HorizontalRulePlugin` along with other basic block elements and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="basic-blocks-kit" />
+
+- [`HrElement`](/docs/components/hr-node): Renders horizontal rule elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicBlocksKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### Add Plugin
+
+Include `HorizontalRulePlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    HorizontalRulePlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+You can configure the `HorizontalRulePlugin` with autoformat rules to automatically convert typed patterns like `---` into horizontal rules.
+
+```tsx
+import { insertNodes, setNodes, KEYS } from 'platejs';
+import { AutoformatPlugin } from '@platejs/autoformat';
+import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    HorizontalRulePlugin,
+    AutoformatPlugin.configure({
+      options: {
+        rules: [
+          {
+            mode: 'block',
+            type: KEYS.hr,
+            match: ['---', '—-', '___ '],
+            format: (editor) => {
+              setNodes(editor, { type: KEYS.hr });
+              insertNodes(editor, {
+                type: KEYS.p,
+                children: [{ text: '' }],
+              });
+            },
+          },
+        ],
+      },
+    }),
+  ],
+});
+```
+
+- `AutoformatPlugin`: Automatically converts typed patterns (like `---`) into horizontal rules.
+
+### Insert Toolbar Button
+
+You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert horizontal rules:
+
+```tsx
+{
+  icon: <MinusIcon />,
+  label: 'Divider',
+  value: KEYS.hr,
+}
+```
+
+</Steps>
+
+## Plugins
+
+### `HorizontalRulePlugin`
+
+Plugin for inserting horizontal rules to separate content. Horizontal rules are void elements that render as `<hr>` tags by default.

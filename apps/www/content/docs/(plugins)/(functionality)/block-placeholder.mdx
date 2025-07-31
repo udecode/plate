@@ -1,0 +1,146 @@
+---
+title: Block Placeholder
+description: Show placeholder when a block is empty.
+---
+
+<ComponentPreview name="block-placeholder-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Add customizable placeholder text to empty blocks.
+- Show different placeholders based on block type.
+- Configurable visibility rules using query functions.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add block placeholders is with the `BlockPlaceholderKit`, which includes the pre-configured `BlockPlaceholderPlugin`.
+
+<ComponentSource name="block-placeholder-kit" />
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BlockPlaceholderKit } from '@/components/editor/plugins/block-placeholder-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BlockPlaceholderKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+Block placeholders are included in the core Plate package.
+
+```tsx
+import { BlockPlaceholderPlugin } from 'platejs/react';
+```
+
+### Add Plugin
+
+```tsx
+import { BlockPlaceholderPlugin } from 'platejs/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    BlockPlaceholderPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+Configure placeholders for different block types:
+
+```tsx
+import { KEYS } from 'platejs';
+import { BlockPlaceholderPlugin } from 'platejs/react';
+
+BlockPlaceholderPlugin.configure({
+  options: {
+    placeholders: {
+      [KEYS.p]: 'Type something...',
+      [KEYS.h1]: 'Enter heading...',
+      [KEYS.blockquote]: 'Enter quote...',
+      [KEYS.codeBlock]: 'Enter code...',
+    },
+  },
+});
+```
+
+### Advanced Configuration
+
+Customize appearance and visibility rules:
+
+```tsx
+import { KEYS } from 'platejs';
+import { BlockPlaceholderPlugin } from 'platejs/react';
+
+BlockPlaceholderPlugin.configure({
+  options: {
+    className: 'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
+    placeholders: {
+      [KEYS.p]: 'Type something...',
+    },
+    query: ({ path }) => {
+      // Only show placeholders in root-level blocks
+      return path.length === 1;
+    },
+  },
+});
+```
+
+- `placeholders`: Map of block types to placeholder text.
+- `className`: CSS classes applied to blocks with placeholders.
+- `query`: Function to determine which blocks should show placeholders.
+
+</Steps>
+
+## Plugins
+
+### `BlockPlaceholderPlugin`
+
+Plugin for displaying placeholder text in empty blocks.
+
+The plugin shows placeholders when all of these conditions are met:
+
+1. The block is empty (contains no content)
+2. The editor is not empty (has other content)
+3. The editor is focused
+4. The block matches the query function
+5. The block type matches a key in the placeholders map
+
+<API name="BlockPlaceholderPlugin">
+<APIOptions>
+  <APIItem name="placeholders" type="Record<string, string>">
+    A map of plugin keys to placeholder text strings.
+    - **Default:** `{ [KEYS.p]: 'Type something...' }`
+  </APIItem>
+  <APIItem name="query" type="(context: PlatePluginContext & { node: TElement; path: Path }) => boolean">
+    A function that determines whether a block should show a placeholder.
+    - **Default:** Returns true for root-level blocks (`path.length === 1`)
+  </APIItem>
+  <APIItem name="className" type="string" optional>
+    CSS class to apply to blocks with placeholders.
+  </APIItem>
+</APIOptions>
+</API>

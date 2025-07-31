@@ -1,0 +1,947 @@
+---
+title: Media
+docs:
+  - route: https://pro.platejs.org/docs/examples/media
+    title: Plus
+  - route: /docs/components/media-image-node
+    title: Image Element
+  - route: /docs/components/media-video-node
+    title: Video Element
+  - route: /docs/components/media-audio-node
+    title: Audio Element
+  - route: /docs/components/media-file-node
+    title: File Element
+  - route: /docs/components/media-embed-node
+    title: Media Embed Element
+  - route: /docs/components/media-toolbar
+    title: Media Popover
+  - route: /docs/components/media-placeholder-node
+    title: Media Placeholder Element
+  - route: /docs/components/media-upload-toast
+    title: Media Upload Toast
+  - route: /docs/components/media-toolbar-button
+    title: Media Toolbar Button
+---
+
+<ComponentPreview name="media-demo" />
+
+<PackageInfo>
+
+## Features
+
+### Media Support
+- **File types**: 
+  - Image
+  - Video
+  - Audio
+  - Others (PDF, Word, etc.)
+- **Video providers**:
+  - Local video files
+  - YouTube, Vimeo, Dailymotion, Youku, Coub
+- **Embed providers**: 
+  - Tweets
+
+### Media Features
+- Editable captions
+- Resizable elements
+
+### Upload
+- **Multiple upload methods**:
+  - Toolbar button with file picker
+  - Drag and drop from file system
+  - Paste from clipboard (images)
+  - URL embedding for external media
+- **Upload experience**:
+  - Real-time progress tracking
+  - Preview during upload
+  - Automatically converts the placeholder to the appropriate media element (image, video, audio, file) once the upload or embed is submitted
+  - Error handling
+  - File size validation
+  - Type validation
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add comprehensive media support is with the `MediaKit`, which includes pre-configured `ImagePlugin`, `VideoPlugin`, `AudioPlugin`, `FilePlugin`, `MediaEmbedPlugin`, `PlaceholderPlugin`, and `CaptionPlugin` with their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="media-kit" />
+
+- [`ImageElement`](/docs/components/media-image-node): Renders image elements.
+- [`VideoElement`](/docs/components/media-video-node): Renders video elements.
+- [`AudioElement`](/docs/components/media-audio-node): Renders audio elements.
+- [`FileElement`](/docs/components/media-file-node): Renders file elements.
+- [`MediaEmbedElement`](/docs/components/media-embed-node): Renders embedded media.
+- [`PlaceholderElement`](/docs/components/media-placeholder-node): Renders upload placeholders.
+- [`MediaUploadToast`](/docs/components/media-upload-toast): Shows upload progress notifications.
+- [`MediaPreviewDialog`](/docs/components/media-preview-dialog): Provides media preview functionality.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { MediaKit } from '@/components/editor/plugins/media-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...MediaKit,
+  ],
+});
+```
+
+### Add API Routes
+
+<ComponentInstallation name="media-uploadthing-api" inline />
+
+### Environment Setup
+
+Get your secret key from [UploadThing](https://uploadthing.com/dashboard/settings) and add it to `.env`:
+
+```bash title=".env"
+UPLOADTHING_TOKEN=xxx
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/media
+```
+
+### Add Plugins
+
+Include the media plugins in your Plate plugins array when creating the editor.
+
+```tsx
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+  VideoPlugin,
+} from '@platejs/media/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ImagePlugin,
+    VideoPlugin,
+    AudioPlugin,
+    FilePlugin,
+    MediaEmbedPlugin,
+    PlaceholderPlugin,
+  ],
+});
+```
+
+### Configure Plugins
+
+Configure the plugins with custom components and upload settings.
+
+```tsx
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+  VideoPlugin,
+} from '@platejs/media/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+import { 
+  AudioElement, 
+  FileElement, 
+  ImageElement, 
+  MediaEmbedElement, 
+  PlaceholderElement, 
+  VideoElement 
+} from '@/components/ui/media-nodes';
+import { MediaUploadToast } from '@/components/ui/media-upload-toast';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ImagePlugin.withComponent(ImageElement),
+    VideoPlugin.withComponent(VideoElement),
+    AudioPlugin.withComponent(AudioElement),
+    FilePlugin.withComponent(FileElement),
+    MediaEmbedPlugin.withComponent(MediaEmbedElement),
+    PlaceholderPlugin.configure({
+      options: { disableEmptyPlaceholder: true },
+      render: { afterEditable: MediaUploadToast, node: PlaceholderElement },
+    }),
+  ],
+});
+```
+
+- `withComponent`: Assigns custom components to render each media type.
+- `options.disableEmptyPlaceholder`: Prevents showing placeholder when no file is uploading.
+- `render.afterEditable`: Renders upload progress toast outside the editor.
+
+### Caption Support
+
+To enable media captions, add the [Caption Plugin](/docs/caption):
+
+```tsx
+import { CaptionPlugin } from '@platejs/caption/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    // ...media plugins,
+    CaptionPlugin.configure({
+      options: {
+        query: {
+          allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],
+        },
+      },
+    }),
+  ],
+});
+```
+
+### Custom Upload Implementation
+
+For custom upload implementations, create an upload hook that matches this interface:
+
+```ts
+interface UseUploadFileProps {
+  onUploadComplete?: (file: UploadedFile) => void;
+  onUploadError?: (error: unknown) => void;
+  headers?: Record<string, string>;
+  onUploadBegin?: (fileName: string) => void;
+  onUploadProgress?: (progress: { progress: number }) => void;
+  skipPolling?: boolean;
+}
+
+interface UploadedFile {
+  key: string;    // Unique identifier
+  url: string;    // Public URL of the uploaded file
+  name: string;   // Original filename
+  size: number;   // File size in bytes
+  type: string;   // MIME type
+}
+```
+
+Example implementation with S3 presigned URLs:
+
+```ts
+export function useUploadFile({ 
+  onUploadComplete, 
+  onUploadError, 
+  onUploadProgress 
+}: UseUploadFileProps = {}) {
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile>();
+  const [uploadingFile, setUploadingFile] = useState<File>();
+  const [progress, setProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
+  async function uploadFile(file: File) {
+    setIsUploading(true);
+    setUploadingFile(file);
+
+    try {
+      // Get presigned URL and final URL from your backend
+      const { presignedUrl, fileUrl, fileKey } = await fetch('/api/upload', {
+        method: 'POST',
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type,
+        }),
+      }).then(r => r.json());
+
+      // Upload to S3 using presigned URL
+      await axios.put(presignedUrl, file, {
+        headers: { 'Content-Type': file.type },
+        onUploadProgress: (progressEvent) => {
+          const progress = (progressEvent.loaded / progressEvent.total) * 100;
+          setProgress(progress);
+          onUploadProgress?.({ progress });
+        },
+      });
+
+      const uploadedFile = {
+        key: fileKey,
+        url: fileUrl,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      };
+
+      setUploadedFile(uploadedFile);
+      onUploadComplete?.(uploadedFile);
+      
+      return uploadedFile;
+    } catch (error) {
+      onUploadError?.(error);
+      throw error;
+    } finally {
+      setProgress(0);
+      setIsUploading(false);
+      setUploadingFile(undefined);
+    }
+  }
+
+  return {
+    isUploading,
+    progress,
+    uploadFile,
+    uploadedFile,
+    uploadingFile,
+  };
+}
+```
+
+Then integrate your custom upload hook with the media components:
+
+```tsx
+import { useUploadFile } from '@/hooks/use-upload-file'; // Your custom hook
+
+// In your PlaceholderElement component
+export function PlaceholderElement({ className, children, element, ...props }) {
+  const { uploadFile, isUploading, progress } = useUploadFile({
+    onUploadComplete: (uploadedFile) => {
+      // Replace placeholder with actual media element
+      const { url, type } = uploadedFile;
+      
+      // Transform placeholder to appropriate media type
+      editor.tf.replace.placeholder({
+        id: element.id,
+        url,
+        type: getMediaType(type), // image, video, audio, file
+      });
+    },
+    onUploadError: (error) => {
+      console.error('Upload failed:', error);
+      // Handle upload error, maybe show toast
+    },
+  });
+
+  // Use uploadFile when files are dropped or selected
+  // This integrates with the PlaceholderPlugin's file handling
+}
+```
+
+### Add Toolbar Button
+
+You can add [`MediaToolbarButton`](/docs/components/media-toolbar-button) to your [Toolbar](/docs/toolbar) to upload and insert media.
+
+### Insert Toolbar Button
+
+You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert media elements:
+
+```tsx
+{
+  icon: <ImageIcon />,
+  label: 'Image',
+  value: KEYS.img,
+}
+```
+
+</Steps>
+
+## Plate Plus
+
+<ComponentPreviewPro name="media-pro" />
+
+## Plugins
+
+### `ImagePlugin`
+
+Plugin for void image elements.
+
+<API name="ImagePlugin">
+<APIOptions type="ImagePluginOptions">
+  <APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
+    Function to upload image to a server. Receives:
+    - Data URL (string) from `FileReader.readAsDataURL`
+    - ArrayBuffer from clipboard data
+    Returns:
+    - URL string to uploaded image
+    - Original data URL/ArrayBuffer if no upload needed
+    - **Default:** Returns original input
+  </APIItem>
+  <APIItem name="disableUploadInsert" type="boolean" optional>
+    Disables file upload on data insertion.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="disableEmbedInsert" type="boolean" optional>
+    Disables URL embed on data insertion.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="isUrl" type="function" optional>
+    A function to check whether a text string is a URL.
+  </APIItem>
+  <APIItem name="transformUrl" type="function" optional>
+    A function to transform the URL.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `VideoPlugin`
+
+Plugin for void video elements. Extends `MediaPluginOptions`.
+
+### `AudioPlugin`
+
+Plugin for void audio elements. Extends `MediaPluginOptions`.
+
+### `FilePlugin`
+
+Plugin for void file elements. Extends `MediaPluginOptions`.
+
+### `MediaEmbedPlugin`
+
+Plugin for void media embed elements. Extends `MediaPluginOptions`.
+
+### `PlaceholderPlugin`
+
+Plugin for managing media placeholders during upload. Handles file uploads, drag & drop, and clipboard paste events.
+
+<API name="PlaceholderPlugin">
+<APIOptions type="object">
+  <APIItem name="uploadConfig" type="Partial<Record<AllowedFileType, MediaItemConfig>>" optional>
+Configuration for different file types. Default configuration:
+```ts
+{
+  audio: {
+    maxFileCount: 1,
+    maxFileSize: '8MB',
+    mediaType: KEYS.audio,
+    minFileCount: 1,
+  },
+  blob: {
+    maxFileCount: 1,
+    maxFileSize: '8MB',
+    mediaType: KEYS.file,
+    minFileCount: 1,
+  },
+  image: {
+    maxFileCount: 3,
+    maxFileSize: '4MB',
+    mediaType: KEYS.image,
+    minFileCount: 1,
+  },
+  pdf: {
+    maxFileCount: 1,
+    maxFileSize: '4MB',
+    mediaType: KEYS.file,
+    minFileCount: 1,
+  },
+  text: {
+    maxFileCount: 1,
+    maxFileSize: '64KB',
+    mediaType: KEYS.file,
+    minFileCount: 1,
+  },
+  video: {
+    maxFileCount: 1,
+    maxFileSize: '16MB',
+    mediaType: KEYS.video,
+    minFileCount: 1,
+  },
+}
+```
+Supported file types: `'image' | 'video' | 'audio' | 'pdf' | 'text' | 'blob'`
+<APISubList>
+  <APISubListItem parent="uploadConfig" name="mediaType" type="MediaKeys">
+    The media plugin keys that this config is for: `'audio' | 'file' | 'image' | 'video'`
+  </APISubListItem>
+  <APISubListItem parent="uploadConfig" name="maxFileCount" type="number" optional>
+    The maximum number of files of this type that can be uploaded.
+  </APISubListItem>
+  <APISubListItem parent="uploadConfig" name="maxFileSize" type="FileSize" optional>
+    The maximum file size for a file of this type. Format: `${1|2|4|8|16|32|64|128|256|512|1024}${B|KB|MB|GB}`
+  </APISubListItem>
+  <APISubListItem parent="uploadConfig" name="minFileCount" type="number" optional>
+    The minimum number of files of this type that must be uploaded.
+  </APISubListItem>
+</APISubList>
+</APIItem>
+<APIItem name="disableEmptyPlaceholder" type="boolean" optional>
+Disable empty placeholder when no file is uploading.
+- **Default:** `false`
+</APIItem>
+<APIItem name="disableFileDrop" type="boolean" optional>
+Disable drag and drop file upload functionality.
+- **Default:** `false`
+</APIItem>
+<APIItem name="maxFileCount" type="number" optional>
+Maximum number of files that can be uploaded at once, if not specified by `uploadConfig`.
+- **Default:** `5`
+</APIItem>
+<APIItem name="multiple" type="boolean" optional>
+Allow multiple files of the same type to be uploaded.
+- **Default:** `true`
+</APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `api.placeholder.addUploadingFile`
+
+Tracks a file that is currently being uploaded.
+
+<API name="addUploadingFile">
+<APIParameters>
+  <APIItem name="id" type="string">
+    Unique identifier for the placeholder element.
+  </APIItem>
+  <APIItem name="file" type="File">
+    The file being uploaded.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `api.placeholder.getUploadingFile`
+
+Gets a file that is currently being uploaded.
+
+<API name="getUploadingFile">
+<APIParameters>
+  <APIItem name="id" type="string">
+    Unique identifier for the placeholder element.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="File | undefined">
+    The uploading file if found, undefined otherwise.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.placeholder.removeUploadingFile`
+
+Removes a file from the uploading tracking state after upload completes or fails.
+
+<API name="removeUploadingFile">
+<APIParameters>
+  <APIItem name="id" type="string">
+    Unique identifier for the placeholder element to remove.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Transforms
+
+### `tf.insert.media`
+
+Inserts media files into the editor with upload placeholders.
+
+<API name="insertMedia">
+<APIParameters>
+  <APIItem name="files" type="FileList">
+    Files to upload. Validates against configured file types and limits.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="at" type="Path" optional>
+    Location to insert the media. Defaults to current selection.
+  </APIItem>
+  <APIItem name="nextBlock" type="boolean" optional>
+    Whether to insert a new block after the media.
+    - **Default:** `true`
+  </APIItem>
+</APIOptions>
+</API>
+
+Validates files against configured limits (size, count, type), creates placeholder elements for each file, handles multiple file uploads sequentially, maintains upload history for undo/redo operations, and triggers error handling if validation fails.
+
+Error codes:
+```ts
+enum UploadErrorCode {
+  INVALID_FILE_TYPE = 400,
+  TOO_MANY_FILES = 402,
+  INVALID_FILE_SIZE = 403,
+  TOO_LESS_FILES = 405,
+  TOO_LARGE = 413,
+}
+```
+
+### `tf.insert.imagePlaceholder`
+
+Inserts a placeholder that converts to an image element when completed.
+
+### `tf.insert.videoPlaceholder`
+
+Inserts a placeholder that converts to a video element when completed.
+
+### `tf.insert.audioPlaceholder`
+
+Inserts a placeholder that converts to an audio element when completed.
+
+### `tf.insert.filePlaceholder`
+
+Inserts a placeholder that converts to a file element when completed.
+
+### `tf.insert.image`
+
+Inserts an image element into the editor.
+
+<API name="insertImage">
+<APIParameters>
+  <APIItem name="url" type="string | ArrayBuffer">
+    The URL or ArrayBuffer of the image.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Additional options for inserting the image element.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="InsertImageOptions">
+  <APIItem name="nextBlock" type="boolean" optional>
+    If true, the image will be inserted in the next block.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `tf.insert.mediaEmbed`
+
+Inserts a media embed element at the current selection.
+
+<API name="insertMediaEmbed">
+<APIOptions type="InsertMediaEmbedOptions">
+  <APIItem name="url" type="string" optional>
+    The URL of the media embed.
+    - **Default:** `''`
+  </APIItem>
+  <APIItem name="key" type="string" optional>
+    The key of the media embed element.
+    - **Default:** `KEYS.mediaEmbed`
+  </APIItem>
+  <APIItem name="insertNodesOptions" type="InsertNodesOptions" optional>
+    Additional options for inserting nodes.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Hooks
+
+### `useResizable`
+
+Handles the resizable properties of a media element.
+
+<API name="useResizable">
+<APIState>
+  <APIItem name="align" type="'left' | 'center' | 'right'">
+    The alignment of the content within the resizable element.
+  </APIItem>
+  <APIItem name="minWidth" type="ResizeLength">
+    The minimum width that the resizable element can be adjusted to.
+  </APIItem>
+  <APIItem name="maxWidth" type="ResizeLength">
+    The maximum width that the resizable element can be adjusted to.
+  </APIItem>
+  <APIItem name="setNodeWidth" type="(width: number | string) => void">
+    Function to set the width of the node when resizing.
+  </APIItem>
+  <APIItem name="setWidth" type="(width: number | string) => void">
+    Function to set the width of the resizable element directly.
+  </APIItem>
+  <APIItem name="width" type="Property.Width<string | number> | undefined">
+    The current width of the resizable element (percentage, 'auto', or pixels).
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="wrapperRef" type="React.RefObject<HTMLDivElement>">
+    React reference to the outermost wrapper div.
+  </APIItem>
+  <APIItem name="wrapperProps.style" type="CSSProperties">
+    CSS styles for the wrapper div.
+  </APIItem>
+  <APIItem name="props.style" type="CSSProperties">
+    CSS styles for the resizable element.
+  </APIItem>
+  <APIItem name="context.onResize" type="() => void">
+    Callback function called when the element is resized.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useMediaState`
+
+A state hook for a media element.
+
+<API name="useMediaState">
+<APIParameters>
+  <APIItem name="options.urlParsers" type="EmbedUrlParser[]" optional>
+    Array of URL parsers to parse the media element URL.
+  
+    - **`EmbedUrlParser`:** `(url: string) => EmbedUrlData | undefined`
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="object">
+  <APIItem name="align" type="string">
+    The alignment of the media element.
+  </APIItem>
+  <APIItem name="focus" type="boolean">
+    Whether the media element is currently focused.
+  </APIItem>
+  <APIItem name="selected" type="boolean">
+    Whether the media element is currently selected.
+  </APIItem>
+  <APIItem name="readOnly" type="boolean">
+    Whether the editor is in read-only mode.
+  </APIItem>
+  <APIItem name="embed" type="EmbedUrlData">
+    The parsed embed data of the media element.
+  </APIItem>
+  <APIItem name="isTweet" type="boolean">
+    Whether the media element is a tweet.
+  </APIItem>
+  <APIItem name="isVideo" type="boolean">
+    Whether the media element is a video.
+  </APIItem>
+  <APIItem name="isYoutube" type="boolean">
+    Whether the media element is a YouTube video.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useMediaToolbarButton`
+
+A behavior hook for a media toolbar button.
+
+<API name="useMediaToolbarButton">
+<APIParameters>
+  <APIItem name="options.nodeType" type="string" optional>
+    The type of media node to insert.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="object">
+  <APIItem name="props.onClick" type="() => void">
+    Callback function that inserts the media node and focuses the editor.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useFloatingMediaEditButton`
+
+Handles the floating media edit button.
+
+<API name="useFloatingMediaEditButton">
+<APIReturns type="object">
+  <APIItem name="props.onClick" type="() => void">
+    Callback function to handle the button click.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useFloatingMediaUrlInput`
+
+Handles the URL input field for media elements.
+
+<API name="useFloatingMediaUrlInput">
+<APIProps>
+  <APIItem name="defaultValue" type="string">
+    The default value for the URL input field.
+  </APIItem>
+</APIProps>
+
+<APIReturns type="object">
+  <APIItem name="props.onChange" type="() => void">
+    Callback function to handle input changes.
+  </APIItem>
+  <APIItem name="props.autoFocus" type="boolean">
+    Whether the URL input field should be focused on mount.
+  </APIItem>
+  <APIItem name="props.defaultValue" type="string">
+    The default value for the URL input field.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useImage`
+
+A hook for image elements.
+
+<API name="useImage">
+<APIReturns type="object">
+  <APIItem name="props.src" type="string">
+    The URL of the media element.
+  </APIItem>
+  <APIItem name="props.alt" type="string">
+    The caption string for the image.
+  </APIItem>
+  <APIItem name="props.draggable" type="boolean">
+    Whether the image is draggable.
+  </APIItem>
+</APIReturns>
+</API>
+
+## Utilities
+
+### `parseMediaUrl`
+
+Parses a media URL for plugin-specific handling.
+
+<API name="parseMediaUrl">
+<APIParameters>
+  <APIItem name="options.pluginKey" type="string">
+    The key of the media plugin.
+  </APIItem>
+  <APIItem name="options.url" type="string" optional>
+    The URL of the media to be parsed.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `parseVideoUrl`
+
+Parses a video URL and extracts the video ID and provider-specific embed URL.
+
+<API name="parseVideoUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    The video URL to parse.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="EmbedUrlData | undefined">
+  An object containing the video ID and provider if parsing is successful, undefined if URL is invalid or unsupported.
+</APIReturns>
+</API>
+
+### `parseTwitterUrl`
+
+Parses a Twitter URL and extracts the tweet ID.
+
+<API name="parseTwitterUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    The Twitter URL.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="EmbedUrlData | undefined">
+    An object containing the tweet ID and provider if the parsing is successful.
+    Returns undefined if the URL is not valid or does not match any supported video providers.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `parseIframeUrl`
+
+Parses the URL of an iframe embed.
+
+<API name="parseIframeUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    The URL or embed code of the iframe.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `isImageUrl`
+
+Checks if a URL is a valid image URL.
+
+<API name="isImageUrl">
+<APIParameters>
+  <APIItem name="url" type="string">
+    The URL to check.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  Whether the URL is a valid image URL.
+</APIReturns>
+</API>
+
+### `submitFloatingMedia`
+
+Submits a floating media element.
+
+<API name="submitFloatingMedia">
+<APIParameters>
+  <APIItem name="options.element" type="TMediaElement">
+    The floating media element to be submitted.
+  </APIItem>
+  <APIItem name="options.pluginKey" type="string" optional>
+    The key of the media plugin.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withImageUpload`
+
+Enhances the editor instance with image upload functionality.
+
+<API name="withImageUpload">
+<APIParameters>
+  <APIItem name="plugin" type="PlatePlugin">
+    The plate plugin.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `withImageEmbed`
+
+Enhances the editor instance with image-related functionality.
+
+<API name="withImageEmbed">
+<APIParameters>
+  <APIItem name="plugin" type="PlatePlugin">
+    The plate plugin.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Types
+
+### `TMediaElement`
+
+```tsx
+export interface TMediaElement extends TElement {
+  url: string;
+  id?: string;
+  align?: 'center' | 'left' | 'right';
+  isUpload?: boolean;
+  name?: string;
+  placeholderId?: string;
+}
+```
+
+### `TPlaceholderElement`
+
+```tsx
+export interface TPlaceholderElement extends TElement {
+  mediaType: string;
+}
+```
+
+### `EmbedUrlData`
+
+```tsx
+export interface EmbedUrlData {
+  url?: string;
+  provider?: string;
+  id?: string;
+  component?: React.FC<EmbedUrlData>;
+}
+```

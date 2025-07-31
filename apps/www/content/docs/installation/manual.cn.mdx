@@ -1,0 +1,398 @@
+---
+title: 手动安装指南
+description: 在不依赖UI组件库的情况下，在React项目中安装配置Plate编辑器。
+---
+
+本指南将带您从头开始搭建Plate编辑器，让您完全掌控样式和组件渲染。如果您没有使用类似shadcn/ui或Tailwind CSS这样的UI库，这种方式尤为理想。
+
+<Steps>
+
+### 创建项目
+
+<Callout type="info">
+本指南使用**Vite**演示初始项目搭建。Plate是框架无关的，可以无缝集成到Next.js或Remix等其他React环境中。您可以根据所选框架调整通用设置原则。
+</Callout>
+
+使用Vite创建新项目，选择**React + TypeScript**模板：
+
+```bash
+npm create vite@latest
+```
+
+### 安装核心依赖
+
+首先安装必要的Plate包。这些包提供了编辑器核心功能、React集成以及基础的标记和元素插件。
+
+```bash
+npm install platejs @platejs/basic-nodes
+```
+
+-   `platejs`: Plate核心引擎和React组件
+-   `@platejs/basic-nodes`: 基础节点插件（如标题、加粗、斜体、下划线等）
+
+### TypeScript配置
+
+Plate提供ESM格式的包。如果使用TypeScript，请确保`tsconfig.json`配置正确。推荐使用TypeScript 5.0+并设置`"moduleResolution": "bundler"`：
+
+```jsonc
+// tsconfig.json
+{
+  "compilerOptions": {
+    // ... 其他选项
+    "module": "esnext", // 如果您的环境需要也可以使用commonjs（需处理ESM互操作）
+    "moduleResolution": "bundler",
+    // ... 其他选项
+  },
+}
+```
+
+<Callout type="info">
+  如果无法使用`"moduleResolution": "bundler"`或使用旧版TypeScript，请参阅我们的[完整TypeScript指南](/docs/typescript)了解使用路径别名的替代配置方案。
+</Callout>
+
+### 创建第一个编辑器
+
+从创建基础编辑器组件开始。以下示例搭建了一个简单编辑器：
+
+```tsx title="src/App.tsx"
+import React from 'react';
+import type { Value } from 'platejs';
+import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+
+export default function App() {
+  const editor = usePlateEditor();
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent 
+        style={{ padding: '16px 64px', minHeight: '100px' }}
+        placeholder="在这里输入您的内容..."
+      />
+    </Plate>
+  );
+}
+```
+
+<Callout type="info">
+  `usePlateEditor`会创建记忆化的编辑器实例，确保在重新渲染时保持稳定。如需非记忆化版本，可使用`platejs/react`中的`createPlateEditor`。
+</Callout>
+
+<ComponentPreview name="installation-next-01-editor-demo" height="200px" />
+
+此时您将获得一个能显示和编辑纯文本的基础编辑器。
+
+### 添加基础标记
+
+现在添加对基础文本格式（如加粗、斜体和下划线）的支持。
+
+```tsx showLineNumbers title="src/App.tsx" {4-8,32}
+import React from 'react';
+import type { Value } from 'platejs';
+
+import {
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@platejs/basic-nodes/react';
+import {
+  Plate,
+  PlateContent,
+  usePlateEditor,
+} from 'platejs/react';
+
+const initialValue: Value = [
+  {
+    type: 'p',
+    children: [
+      { text: '您好！试试' },
+      { text: '加粗', bold: true },
+      { text: '、' },
+      { text: '斜体', italic: true },
+      { text: '和' },
+      { text: '下划线', underline: true },
+      { text: '效果。' },
+    ],
+  },
+];
+
+export default function App() {
+  const editor = usePlateEditor({
+    plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin],
+    value: initialValue,
+  });
+
+  return (
+    <Plate editor={editor}>
+      {/* 通常这里需要添加工具栏来切换标记 */}
+      <PlateContent style={{ padding: '16px 64px', minHeight: '100px' }} />
+    </Plate>
+  );
+}
+```
+
+<Callout type="info" title="默认组件">
+  标记插件如`BoldPlugin`、`ItalicPlugin`和`UnderlinePlugin`自带默认组件，分别渲染为`<strong>`、`<em>`和`<u>`元素。除非需要自定义外观，否则无需注册自定义组件。
+</Callout>
+
+<ComponentPreview name="installation-next-02-marks-demo" height="200px" />
+
+您需要自行实现工具栏来应用这些标记。例如切换加粗效果：`editor.tf.bold.toggle()`。
+
+### 添加基础元素
+
+现在添加对块级元素（如标题和引用块）的支持。
+
+```tsx showLineNumbers title="src/App.tsx" {5,7-9,76-79}
+import React from 'react';
+import type { Value } from 'platejs';
+
+import {
+  BlockquotePlugin,
+  BoldPlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@platejs/basic-nodes/react';
+import {
+  Plate,
+  PlateContent,
+  PlateElement,
+  usePlateEditor,
+  type PlateElementProps,
+} from 'platejs/react';
+
+const initialValue: Value = [
+  {
+    children: [{ text: '标题' }],
+    type: 'h3',
+  },
+  {
+    children: [{ text: '这是引用内容。' }],
+    type: 'blockquote',
+  },
+  {
+    children: [
+      { text: '包含一些' },
+      { bold: true, text: '加粗' },
+      { text: '强调文本！' },
+    ],
+    type: 'p',
+  },
+];
+
+// 定义元素组件
+function H1Element(props: PlateElementProps) {
+  return <PlateElement as="h1" {...props} />;
+}
+
+function H2Element(props: PlateElementProps) {
+  return <PlateElement as="h2" {...props} />;
+}
+
+function H3Element(props: PlateElementProps) {
+  return <PlateElement as="h3" {...props} />;
+}
+
+function BlockquoteElement(props: PlateElementProps) {
+  return (
+    <PlateElement
+      as="blockquote"
+      style={{
+        borderLeft: '2px solid #eee',
+        marginLeft: 0,
+        marginRight: 0,
+        paddingLeft: '24px',
+        color: '#666',
+        fontStyle: 'italic',
+      }}
+      {...props}
+    />
+  );
+}
+
+export default function App() {
+  const editor = usePlateEditor({
+    plugins: [
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      H1Plugin.withComponent(H1Element),
+      H2Plugin.withComponent(H2Element),
+      H3Plugin.withComponent(H3Element),
+      BlockquotePlugin.withComponent(BlockquoteElement),
+    ],
+    value: initialValue,
+  });
+
+  return (
+    <Plate editor={editor}>
+      {/* 通常这里需要添加工具栏来切换元素和标记 */}
+      <PlateContent style={{ padding: '16px 64px', minHeight: '100px' }} />
+    </Plate>
+  );
+}
+```
+
+<Callout type="note">
+  注意我们如何使用`Plugin.withComponent(Component)`为标题和引用块等块元素插件注册组件。当需要自定义样式或行为时，这是关联React组件与Plate插件的推荐方式。
+</Callout>
+
+<ComponentPreview name="installation-next-03-elements-demo" height="200px" />
+
+### 处理编辑器值
+
+为了实现编辑器内容的持久化，我们集成状态管理来保存和加载编辑器值。
+
+```tsx showLineNumbers title="src/App.tsx" {81-87,93-95}
+import React from 'react';
+import type { Value } from 'platejs';
+
+import {
+  BlockquotePlugin,
+  BoldPlugin,
+  H1Plugin,
+  H2Plugin,
+  H3Plugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+} from '@platejs/basic-nodes/react';
+import {
+  Plate,
+  PlateContent,
+  PlateElement,
+  usePlateEditor,
+  type PlateElementProps,
+} from 'platejs/react';
+
+const initialValue: Value = [
+  {
+    children: [{ text: '标题' }],
+    type: 'h3',
+  },
+  {
+    children: [{ text: '这是引用内容。' }],
+    type: 'blockquote',
+  },
+  {
+    children: [
+      { text: '包含一些' },
+      { bold: true, text: '加粗' },
+      { text: '强调文本！' },
+    ],
+    type: 'p',
+  },
+];
+
+// 定义元素组件
+function H1Element(props: PlateElementProps) {
+  return <PlateElement as="h1" {...props} />;
+}
+
+function H2Element(props: PlateElementProps) {
+  return <PlateElement as="h2" {...props} />;
+}
+
+function H3Element(props: PlateElementProps) {
+  return <PlateElement as="h3" {...props} />;
+}
+
+function BlockquoteElement(props: PlateElementProps) {
+  return (
+    <PlateElement
+      as="blockquote"
+      style={{
+        borderLeft: '2px solid #eee',
+        marginLeft: 0,
+        marginRight: 0,
+        paddingLeft: '24px',
+        color: '#666',
+        fontStyle: 'italic',
+      }}
+      {...props}
+    />
+  );
+}
+
+export default function App() {
+  const editor = usePlateEditor({
+    plugins: [
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      H1Plugin.withComponent(H1Element),
+      H2Plugin.withComponent(H2Element),
+      H3Plugin.withComponent(H3Element),
+      BlockquotePlugin.withComponent(BlockquoteElement),
+    ],
+    value: () => {
+      const savedValue = localStorage.getItem('plate-manual-demo');
+      if (savedValue) {
+        return JSON.parse(savedValue);
+      }
+      return initialValue;
+    },
+  });
+
+  return (
+    <Plate
+      editor={editor}
+      onChange={({ value }) => {
+        localStorage.setItem('plate-manual-demo', JSON.stringify(value));
+      }}
+    >
+      {/* 工具栏放置位置 */}
+      <div style={{ padding: '8px 0' }}>
+        <button
+          onClick={() => editor.tf.setValue(initialValue)}
+          style={{
+            padding: '4px 8px',
+            margin: '0 4px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          重置
+        </button>
+      </div>
+      <PlateContent
+        style={{
+          padding: '16px 64px',
+          minHeight: '100px',
+          border: '1px solid #eee',
+          borderRadius: '4px',
+        }}
+        placeholder="在这里输入您的内容..."
+      />
+    </Plate>
+  );
+}
+```
+
+<Callout type="info" title="值管理">
+  上例演示了管理编辑器值的基础模式：
+  - 通过`usePlateEditor`的`value`选项设置初始值
+  - 通过`<Plate>`的`onChange`属性处理变化
+  - 重置按钮使用`editor.tf.setValue()`恢复初始值
+  - 如需控制值，请参阅[受控值](/docs/controlled)
+</Callout>
+
+<ComponentPreview name="installation-next-demo" />
+
+### 后续步骤
+
+您已完成Plate编辑器的基础手动配置！接下来可以：
+
+*   **添加样式：**
+    *   如需快速使用预制组件，考虑使用[Plate UI](/docs/installation/plate-ui)
+    *   或继续使用CSS、CSS-in-JS库或您偏好的样式解决方案手动设置样式
+*   **[添加插件](/docs/plugins):** Plate拥有丰富的插件生态（如表单、提及、图片、列表等）。安装对应包（如`@platejs/table`）并添加到`plugins`数组
+*   **[构建工具栏](/docs/toolbar):** 创建使用[编辑器转换](/docs/transforms)应用格式的工具栏按钮组件（如`editor.tf.bold.toggle()`、`editor.tf.h1.toggle()`）。您也可以结合[编辑器API](/docs/api)使用编辑器状态
+*   **深入学习：**
+    *   [编辑器配置](/docs/editor)
+    *   [插件配置](/docs/plugin)
+    *   [插件组件](/docs/plugin-components)
+
+</Steps>

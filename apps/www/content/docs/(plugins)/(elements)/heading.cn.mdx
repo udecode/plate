@@ -1,0 +1,200 @@
+---
+title: 标题
+docs:
+  - route: /docs/components/heading-node
+    title: 标题元素
+---
+
+<ComponentPreview name="basic-blocks-demo" />
+
+<PackageInfo>
+
+## 功能特点
+
+- 创建不同级别的标题（H1 到 H6）来构建内容结构。
+- 默认渲染为相应的 HTML 标题标签（`<h1>` 到 `<h6>`）。
+
+</PackageInfo>
+
+## Kit 使用
+
+<Steps>
+
+### 安装
+
+添加标题插件最快的方法是使用 `BasicBlocksKit`，它包含预配置的 `H1Plugin`、`H2Plugin` 和 `H3Plugin` 以及其他基本块元素及其 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="basic-blocks-kit" />
+
+- [`H1Element`](/docs/components/heading-node): 渲染 H1 元素。
+- [`H2Element`](/docs/components/heading-node): 渲染 H2 元素。
+- [`H3Element`](/docs/components/heading-node): 渲染 H3 元素。
+
+### 添加 Kit
+
+将 kit 添加到你的插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...BasicBlocksKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### 添加插件
+
+当你需要更多控制或想要包含特定标题级别时，添加单独的标题插件。
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { H1Plugin, H2Plugin, H3Plugin } from '@platejs/basic-nodes/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    H1Plugin,
+    H2Plugin,
+    H3Plugin,
+    // 根据需要添加 H4Plugin、H5Plugin、H6Plugin
+  ],
+});
+```
+
+### 配置插件
+
+使用自定义组件或快捷键配置单独的标题插件。
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { H1Plugin, H2Plugin, H3Plugin } from '@platejs/basic-nodes/react';
+import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    H1Plugin.configure({
+      node: { component: H1Element },
+      shortcuts: { toggle: { keys: 'mod+alt+1' } },
+    }),
+    H2Plugin.configure({
+      node: { component: H2Element },
+      shortcuts: { toggle: { keys: 'mod+alt+2' } },
+    }),
+    H3Plugin.configure({
+      node: { component: H3Element },
+      shortcuts: { toggle: { keys: 'mod+alt+3' } },
+    }),
+    // 类似地配置 H4Plugin、H5Plugin、H6Plugin
+  ],
+});
+```
+
+- `node.component`: 分配自定义 React 组件如 [`H1Element`](/docs/components/heading-node) 来渲染特定级别的标题。
+- `shortcuts.toggle`: 定义键盘[快捷键](/docs/plugin-shortcuts)（例如 `mod+alt+1`）来切换相应的标题级别。
+
+### 转换为工具栏按钮
+
+你可以将这些项目添加到[转换为工具栏按钮](/docs/toolbar#turn-into-toolbar-button)以将块转换为标题：
+
+```tsx
+{
+  icon: <Heading1Icon />,
+  label: '标题 1',
+  value: 'h1',
+}
+```
+
+```tsx
+{
+  icon: <Heading2Icon />,
+  label: '标题 2',
+  value: 'h2',
+}
+```
+
+```tsx
+{
+  icon: <Heading3Icon />,
+  label: '标题 3',
+  value: 'h3',
+}
+```
+
+### 插入工具栏按钮
+
+你可以将这些项目添加到[插入工具栏按钮](/docs/toolbar#insert-toolbar-button)以插入标题元素：
+
+```tsx
+{
+  icon: <Heading1Icon />,
+  label: '标题 1',
+  value: 'h1',
+}
+```
+
+```tsx
+{
+  icon: <Heading2Icon />,
+  label: '标题 2',
+  value: 'h2',
+}
+```
+
+```tsx
+{
+  icon: <Heading3Icon />,
+  label: '标题 3',
+  value: 'h3',
+}
+```
+
+</Steps>
+
+## 插件
+
+### `H1Plugin`
+
+用于 H1 标题元素的插件。
+
+### `H2Plugin`
+
+用于 H2 标题元素的插件。
+
+### `H3Plugin`
+
+用于 H3 标题元素的插件。
+
+### `H4Plugin`
+
+用于 H4 标题元素的插件。
+
+### `H5Plugin`
+
+用于 H5 标题元素的插件。
+
+### `H6Plugin`
+
+用于 H6 标题元素的插件。
+
+## 转换
+
+### `tf.h1.toggle`
+
+切换所选块类型为标题。

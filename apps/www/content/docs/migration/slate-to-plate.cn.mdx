@@ -1,0 +1,219 @@
+---
+title: 从 Slate 迁移到 Plate
+description: 学习如何从 Slate 迁移到 Plate。
+---
+
+Plate 构建于 Slate 之上，因此从纯 Slate 实现迁移到 Plate 相对简单。本指南将帮助您将基于 Slate 的编辑器过渡到 Plate。
+
+## 1. 安装 Plate
+
+首先，安装必要的 Plate 包。如果您是 Plate 的新用户，可以先阅读[介绍](/docs/installation)了解库的概况。
+
+```bash
+npm install platejs
+```
+
+## 2. 替换 Slate 导入
+
+将您的 Slate 导入替换为 Plate 导入。Plate 重新导出了大多数 Slate 类型和函数：
+
+```ts
+// 之前
+import { createEditor } from 'slate';
+import { Slate, Editable, withReact } from 'slate-react';
+
+// 之后
+import { createPlateEditor, Plate, PlateContent } from 'platejs/react';
+```
+
+## 3. 创建 Plate 编辑器
+
+将 `createEditor`、`withHistory` 和 `withReact` 替换为 `createPlateEditor`：
+
+```ts
+// 之前
+const editor = useMemo(() => withReact(withHistory(createEditor()))), []);
+
+// 之后
+const editor = createPlateEditor({
+  value,
+  plugins: [
+    // 在此处添加其他插件
+  ],
+});
+```
+
+有关编辑器配置的更多详情，请查看[编辑器配置指南](/docs/editor)。
+
+## 4. 替换 Slate 和 Editable 组件
+
+将 `Slate` 和 `Editable` 组件替换为 Plate 的 `Plate` 组件：
+
+```tsx
+// 之前
+<Slate editor={editor} value={value}>
+  <Editable className="p-4" />
+</Slate>
+
+// 之后
+<Plate editor={editor}>
+  <PlateContent className="p-4" />
+</Plate>
+```
+
+## 5. 转换自定义元素和叶子
+
+对于自定义元素和叶子，创建 Plate 插件：
+
+```tsx
+// 之前
+const renderElement = useCallback(({ attributes, children, element }) => {
+  switch (element.type) {
+    case 'paragraph':
+      return <p {...attributes}>{children}</p>;
+    // ... 其他情况
+  }
+}, []);
+
+// 之后
+import { type PlateElement, type PlateElementProps } from 'platejs/react';
+import { cn } from '@/lib/utils';
+
+export function ParagraphElement(props: PlateElementProps) {
+  return (
+    <PlateElement {...props} className="m-0 px-0 py-1'">
+      {props.children}
+    </PlateElement>
+  );
+}
+
+const ParagraphPlugin = createPlatePlugin({
+  key: 'p',
+  node: {
+    isElement: true,
+    type: 'paragraph',
+    component: ParagraphElement,
+  },
+});
+```
+
+在[插件配置指南](/docs/plugin)和[插件组件指南](/docs/plugin-components)中了解更多关于创建插件的信息。
+
+## 6. 将 Slate 插件转换为 Plate 插件
+
+如果您有自定义 Slate 插件，将它们转换为 Plate 插件：
+
+```ts
+// 之前
+const withMyPlugin = (editor) => {
+  const { insertText } = editor;
+  editor.insertText = (text) => {
+    // 自定义逻辑
+    insertText(text);
+  };
+  return editor;
+};
+
+// 之后
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).overrideEditor(({ editor, tf: { insertText } }) => ({
+  transforms: {
+    insertText(text, options) {
+      // 自定义逻辑
+      insertText(text, options);
+    },
+  }
+}));
+
+// 添加新方法：
+const MyOtherPlugin = createPlatePlugin({
+  key: 'myOtherPlugin',
+}).extendEditorTransforms(({ editor }) => ({
+  newMethod(text) {
+    // 添加新功能
+  }
+}));
+```
+
+有关插件上下文的更多信息，请参阅[插件上下文指南](/docs/plugin-context)。
+
+## 7. 更新事件处理程序
+
+更新您的事件处理程序以使用 Plate 的插件系统：
+
+```ts
+// 之前
+const onKeyDown = (event) => {
+  if (event.key === 'Tab') {
+    // 处理 Tab 键
+  }
+};
+
+// 之后
+const TabPlugin = createPlatePlugin({
+  key: 'tab',
+  handlers: {
+    onKeyDown: ({ editor, event }) => {
+      if (event.key === 'Tab') {
+        // 处理 Tab 键
+      }
+    },
+  },
+});
+```
+
+或者，您可以使用 Plate 强大的快捷键系统：
+
+```ts
+const TabPlugin = createPlatePlugin({
+  key: 'tab',
+  shortcuts: {
+    indent: {
+      handler: ({ editor }) => {
+        // 处理 Tab 键
+      },
+      keys: ['Tab'],
+    },
+  },
+});
+```
+
+有关使用快捷键的更多详情，请查看[插件快捷键指南](/docs/plugin-shortcuts)。
+
+## 8. 适应 Plate 的 API
+
+熟悉 Plate 的 API 并使用其工具和钩子：
+
+```ts
+// 使用 Plate 的 transforms
+editor.tf.toggleMark('bold');
+
+// 使用 Plate 的调试 API
+editor.api.debug.log('Hello, Plate!');
+```
+
+有关编辑器方法的完整列表，请参阅[编辑器方法指南](/docs/editor-methods)。
+
+## 9. 利用 Plate 的内置插件
+
+Plate 提供了许多内置插件，您可以在侧边栏中查看。使用它们快速添加功能：
+
+```ts
+import { BoldPlugin, ItalicPlugin, UnderlinePlugin } from 'platejs/react';
+
+const plugins = [
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+  // ... 其他插件
+];
+
+const editor = createPlateEditor({ plugins });
+```
+
+## 10. 测试和优化
+
+迁移完成后，彻底测试您的编辑器以确保所有功能按预期工作。使用 Plate 的功能和最佳实践进行优化。
+
+有关调试技巧和策略，请查看我们的[调试指南](/docs/debugging)。

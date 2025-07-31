@@ -1,0 +1,311 @@
+---
+title: 操作
+description: Plate 中操作相关的 API 参考。
+---
+
+操作（Operation）是 Plate 编辑器用来修改其内部状态的最底层指令。将所有变更表示为操作，使得 Plate 编辑器能够轻松实现历史记录、协作编辑等功能。
+
+```typescript
+export type Operation<N extends Descendant = Descendant> =
+  | NodeOperation<N>
+  | SelectionOperation
+  | TextOperation;
+```
+
+## `OperationApi`
+
+### `isNodeOperation`
+
+检查一个值是否为 `NodeOperation` 对象。
+
+<API name="isNodeOperation">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果是节点操作则返回 `true`。
+</APIReturns>
+</API>
+
+### `inverse`
+
+反转操作，返回一个新操作，当应用该操作时将完全撤销原始操作。
+
+<API name="inverse">
+<APIParameters>
+  <APIItem name="op" type="Operation">
+    要反转的操作。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Operation">
+  一个能撤销原始操作的新操作。
+</APIReturns>
+</API>
+
+### `isOperation`
+
+检查一个值是否为 `Operation` 对象。
+
+<API name="isOperation">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果是操作则返回 `true`。
+</APIReturns>
+</API>
+
+### `isOperationList`
+
+检查一个值是否为 `Operation` 对象列表。
+
+<API name="isOperationList">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果是操作数组则返回 `true`。
+</APIReturns>
+</API>
+
+### `isSelectionOperation`
+
+检查一个值是否为 `SelectionOperation` 对象。
+
+<API name="isSelectionOperation">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果是选区操作则返回 `true`。
+</APIReturns>
+</API>
+
+### `isTextOperation`
+
+检查一个值是否为 `TextOperation` 对象。
+
+<API name="isTextOperation">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果是文本操作则返回 `true`。
+</APIReturns>
+</API>
+
+## 类型
+
+### `Operation`
+
+```ts
+export type Operation<N extends Descendant = Descendant> =
+  | NodeOperation<N>
+  | SelectionOperation
+  | TextOperation;
+```
+
+### `NodeOperation`
+
+节点操作用于修改节点。
+
+```ts
+export type NodeOperation<N extends Descendant = Descendant> =
+  | InsertNodeOperation<N>
+  | MergeNodeOperation<N>
+  | MoveNodeOperation
+  | RemoveNodeOperation<N>
+  | SetNodeOperation<N>
+  | SplitNodeOperation<N>;
+```
+
+### `SelectionOperation`
+
+选区操作用于修改选区。
+
+```ts
+export type SelectionOperation = SetSelectionOperation;
+```
+
+### `TextOperation`
+
+文本操作用于修改文本内容。
+
+```ts
+export type TextOperation = InsertTextOperation | RemoveTextOperation;
+```
+
+### `InsertNodeOperation`
+
+<API name="InsertNodeOperation">
+<APIAttributes>
+  <APIItem name="node" type="N">
+    要插入的节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    插入位置的路径。
+  </APIItem>
+  <APIItem name="type" type="'insert_node'">
+    操作类型。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `MergeNodeOperation`
+
+<API name="MergeNodeOperation">
+<APIAttributes>
+  <APIItem name="path" type="Path">
+    要合并节点的路径。
+  </APIItem>
+  <APIItem name="position" type="number">
+    合并位置。
+  </APIItem>
+  <APIItem name="properties" type="Partial<NodeProps<N>>">
+    合并后节点的属性。
+  </APIItem>
+  <APIItem name="type" type="'merge_node'">
+    操作类型。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `MoveNodeOperation`
+
+<API name="MoveNodeOperation">
+<APIAttributes>
+  <APIItem name="newPath" type="Path">
+    移动目标路径。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    要移动节点的路径。
+  </APIItem>
+  <APIItem name="type" type="'move_node'">
+    操作类型。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `RemoveNodeOperation`
+
+<API name="RemoveNodeOperation">
+<APIAttributes>
+  <APIItem name="node" type="N">
+    要移除的节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    节点的路径。
+  </APIItem>
+  <APIItem name="type" type="'remove_node'">
+    操作类型。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `SetNodeOperation`
+
+<API name="SetNodeOperation">
+<APIAttributes>
+  <APIItem name="newProperties" type="Partial<NodeProps<N1>>">
+    要设置的新属性。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    节点的路径。
+  </APIItem>
+  <APIItem name="properties" type="Partial<NodeProps<N2>>">
+    旧属性。
+  </APIItem>
+  <APIItem name="type" type="'set_node'">
+    操作类型。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `SplitNodeOperation`
+
+<API name="SplitNodeOperation">
+<APIAttributes>
+  <APIItem name="path" type="Path">
+    要拆分节点的路径。
+  </APIItem>
+  <APIItem name="position" type="number">
+    拆分位置。
+  </APIItem>
+  <APIItem name="properties" type="Partial<NodeProps<N>>">
+    拆分后新节点的属性。
+  </APIItem>
+  <APIItem name="type" type="'split_node'">
+    操作类型。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `SetSelectionOperation`
+
+<API name="SetSelectionOperation">
+<APIAttributes>
+  <APIItem name="newProperties" type="Partial<TRange> | TRange | null">
+    新选区属性。
+  </APIItem>
+  <APIItem name="properties" type="Partial<TRange> | TRange | null">
+    旧选区属性。
+  </APIItem>
+  <APIItem name="type" type="'set_selection'">
+    操作类型。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `InsertTextOperation`
+
+<API name="InsertTextOperation">
+<APIAttributes>
+  <APIItem name="offset" type="number">
+    插入位置的偏移量。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    文本节点的路径。
+  </APIItem>
+  <APIItem name="text" type="string">
+    要插入的文本。
+  </APIItem>
+  <APIItem name="type" type="'insert_text'">
+    操作类型。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `RemoveTextOperation`
+
+<API name="RemoveTextOperation">
+<APIAttributes>
+  <APIItem name="offset" type="number">
+    移除位置的偏移量。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    文本节点的路径。
+  </APIItem>
+  <APIItem name="text" type="string">
+    被移除的文本。
+  </APIItem>
+  <APIItem name="type" type="'remove_text'">
+    操作类型。
+  </APIItem>
+</APIAttributes>
+</API>

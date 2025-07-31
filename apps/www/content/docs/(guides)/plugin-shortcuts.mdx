@@ -1,0 +1,254 @@
+---
+title: Plugin Shortcuts
+description: Learn how to configure keyboard shortcuts.
+---
+
+Keyboard shortcuts are essential for a fast and productive editing workflow. Plate allows you to easily define and customize shortcuts for your editor plugins.
+
+## Defining Shortcuts
+
+You can add or modify shortcuts for any plugin when you create or configure it (e.g., using `createPlatePlugin().extend({...})` or `ExistingPlugin.configure({...})`). Shortcuts are defined within the `shortcuts` field of your plugin configuration.
+
+There are two primary ways to define what a shortcut does:
+
+### 1. Linking to Plugin Methods (Recommended)
+
+The most straightforward way to create a shortcut is by linking it to an existing method within your plugin. This can be either a [transform method](/docs/plugin-methods#extendtransforms) or an [API method](/docs/plugin-methods#extendapi). Transforms are functions that modify the editor's state (e.g., toggling a mark, inserting an element), while API methods provide other functionality.
+
+To do this:
+1.  Ensure the name of your shortcut in the `shortcuts` configuration object matches the name of the method (e.g., a shortcut named `toggle` will look for a transform named `toggle`, or if no transform exists, an API method named `toggle`).
+2.  Provide the `keys` (the key combination) for the shortcut.
+
+Plate will automatically find and call the corresponding method when the specified keys are pressed.
+
+```tsx title="plugins/my-document-plugin.ts"
+import { createPlatePlugin, Key } from 'platejs/react';
+
+// Example: A simplified plugin with both transforms and API
+export const MyDocumentPlugin = createPlatePlugin({
+  key: 'doc',
+})
+// Define editor.tf.doc.format()
+.extendTransforms(({ editor, type }) => ({
+  format: () => {
+    editor.tf.normalize({ force: true });
+  },
+}))
+// Define editor.api.doc.format()
+.extendApi(({ editor, type }) => ({
+  save: async () => {
+    // Save the document
+    // await fetch(...);
+  },
+}))
+.extend({ // Or .configure() if extending an existing plugin
+  shortcuts: {
+    // This will call editor.tf.doc.format()
+    format: {
+      keys: [[Key.Mod, Key.Shift, 'f']], // e.g., Cmd/Ctrl + Shift + F
+    },
+    // This will call editor.api.doc.save()
+    save: {
+      keys: [[Key.Mod, 's']], // e.g., Cmd/Ctrl + S
+    },
+  },
+});
+```
+
+<Callout type="info">
+  The name of the shortcut (e.g., `toggle` in the example) is crucial as Plate uses it to locate the matching method on the plugin. It first looks for a transform method, then falls back to an API method if no transform exists with that name.
+</Callout>
+
+### 2. Using a Custom Handler
+
+For actions that require more complex logic, depends on the keyboard event, or if there isn't a direct one-to-one mapping with an existing transform name, you can provide a custom `handler` function. This function will be executed when the shortcut is activated.
+
+```tsx title="plugins/custom-logger-plugin.ts"
+import { createPlatePlugin, Key } from 'platejs/react';
+
+export const CustomLoggerPlugin = createPlatePlugin({
+  key: 'customLogger',
+}).extend({
+  shortcuts: {
+    logEditorState: {
+      keys: [[Key.Mod, Key.Alt, 's']], // e.g., Cmd/Ctrl + Alt + S
+      handler: ({ editor, event, eventDetails }) => {
+        // 'editor' is the PlateEditor instance
+        // 'event' is the raw KeyboardEvent
+        // 'eventDetails' provides more context from the hotkey library
+        console.info('Current editor value:', editor.children);
+        console.info('Pressed keys:', eventDetails.keys);
+        // You might want to prevent other actions or browser defaults
+        // event.preventDefault();
+      },
+    },
+  },
+});
+```
+
+## Shortcut Configuration Properties
+
+When defining or configuring a shortcut, you can use the following properties in its configuration object:
+
+-   `keys`: **Required.** The key combination(s) that trigger the shortcut.
+    -   This can be a string like `'mod+b'` or an array using the `Key` enum for more explicit control (e.g., `[[Key.Mod, Key.Shift, 'x']]`).
+    -   `Key.Mod` is a convenient way to specify `Cmd` on macOS and `Ctrl` on other operating systems.
+-   `handler`: (Optional) A function that is called when the shortcut is activated. Its signature is:
+    `({ editor: PlateEditor; event: KeyboardEvent; eventDetails: HotkeysEvent; }) => void;`
+    If you omit the `handler`, Plate will attempt to call a matching transform based on the shortcut's name.
+    **Note**: If your transform or handler returns `false` (e.g. not handled), `preventDefault` will NOT be called, allowing other handlers or browser defaults to take over. Any other return value will use the default `preventDefault` behavior.
+-   `preventDefault`: (Optional) A boolean. If set to `true`, it prevents the browser's default action for that key combination (e.g., `Mod+B` typically bolds text in the browser itself). **Defaults to `true`**. This is suitable for most editor-specific shortcuts. Set to `false` if you need to allow the browser's default action or enable other handlers to process the event, especially if your handler might not always perform an action (e.g., an indent command that doesn't apply in the current context).
+-   `priority`: (Optional) A number. If multiple plugins define shortcuts for the exact same `keys`, the shortcut with the higher `priority` number will take precedence. This is useful for resolving conflicts.
+-   *(Other options)*: You can also include other options compatible with the underlying `useHotkeys` hook from the `@udecode/react-hotkeys` library, such as `enabled`, `enableOnContentEditable`, etc., to fine-tune behavior.
+
+## Default Shortcuts in Plate Plugins
+
+Many official Plate plugins come with pre-configured shortcuts for their common actions. These defaults typically link to the plugin's internal transform methods. Currently, the following basic mark plugins include default shortcuts:
+
+-   **BoldPlugin**: `Mod+B`
+-   **ItalicPlugin**: `Mod+I`
+-   **UnderlinePlugin**: `Mod+U`
+
+Other plugins, like `CodePlugin`, `StrikethroughPlugin`, etc., provide transforms that can be easily linked to shortcuts (e.g., a `toggle` shortcut will link to `editor.tf.<pluginKey>.toggle()`), but you need to define the shortcut `keys` for them explicitly.
+
+<Callout type="note">
+  The specific default key combinations for Bold, Italic, and Underline are defined within each plugin's default configuration. You can always override these defaults or define shortcuts for other plugins if they don't fit your needs (see "Overriding and Disabling Shortcuts" below).
+</Callout>
+
+## Managing Multiple Shortcuts
+
+A single plugin isn't limited to one shortcut; you can define as many as needed:
+
+```tsx title="plugins/my-formatting-tools.ts"
+import { createPlatePlugin, Key } from 'platejs/react';
+
+export const MyFormattingTools = createPlatePlugin({
+  key: 'myFormatting',
+  // Assuming transforms like editor.tf.myFormatting.applyHeader
+  // and editor.tf.myFormatting.applyCodeStyle exist.
+})
+.extend({
+  shortcuts: {
+    applyHeader: {
+      keys: [[Key.Mod, Key.Alt, '1']],
+    },
+    applyCodeStyle: {
+      keys: [[Key.Mod, Key.Alt, 'c']],
+    },
+    // A shortcut with a custom handler
+    logSomething: {
+      keys: [[Key.Mod, 'l']],
+      handler: () => console.info('Logging from MyFormattingTools!'),
+    },
+  },
+});
+```
+
+## Shortcut Priority
+
+If multiple shortcuts (potentially from different plugins) are configured to use the exact same key combination (e.g., `Mod+Shift+P`), the `priority` property on the shortcut configuration object determines which shortcut's action is executed. 
+
+A higher number indicates higher priority. If `priority` is not explicitly set on a shortcut, the `priority` of its parent plugin is used as a fallback. This allows fine-grained control over which action takes precedence when key combinations overlap.
+
+```tsx
+const PluginA = createPlatePlugin({ key: 'pluginA', priority: 10 }).extend({
+  shortcuts: {
+    doSomethingImportant: {
+      keys: 'mod+shift+p',
+      handler: () => console.info('Plugin A: Important action on Mod+Shift+P!'),
+      priority: 100, // Explicit, high priority for this specific shortcut
+    }
+  }
+});
+
+const PluginB = createPlatePlugin({ key: 'pluginB', priority: 20 }).extend({
+  shortcuts: {
+    doSomethingLessImportant: {
+      keys: 'mod+shift+p', // Same key combination as PluginA's shortcut
+      handler: () => console.info('Plugin B: Less important action on Mod+Shift+P.'),
+      // No explicit shortcut priority, will use PluginB's priority (20)
+    }
+  }
+});
+
+// If both plugins are active, pressing Mod+Shift+P will execute PluginA's handler
+// for 'doSomethingImportant' because its shortcut has a higher priority (100 vs 20).
+```
+
+## Overriding and Disabling Shortcuts
+
+You can change or disable shortcuts for a specific plugin when you configure it.
+
+**To change a plugin's shortcut:**
+When you configure a plugin (e.g., `BoldPlugin.configure({ ... })`), you can define a shortcut by its name (like `toggle`). If the plugin already has a shortcut with that name (perhaps a default one), your new configuration for `toggle` will be used for that plugin. You can change its `keys`, provide a new `handler`, or adjust other properties.
+
+```tsx
+import { BoldPlugin, Key } from '@platejs/basic-nodes/react';
+
+// BoldPlugin has a default shortcut named 'toggle' (typically Mod+B).
+// Let's change its key combination to Mod+Shift+B for BoldPlugin.
+const MyCustomBoldPlugin = BoldPlugin.configure({
+  shortcuts: {
+    toggle: { // This re-configures BoldPlugin's 'toggle' shortcut
+      keys: [[Key.Mod, Key.Shift, 'b']], // New key combination
+      // The original handler (linking to the 'toggle' transform) is often preserved
+      // unless a new 'handler' is specified here.
+    },
+  },
+});
+```
+
+**To disable a plugin's shortcut:**
+Set the shortcut's configuration to `null` in that plugin's `shortcuts` object. This will remove that specific shortcut (e.g., `toggle` for `ItalicPlugin`).
+
+```tsx
+import { ItalicPlugin } from '@platejs/basic-nodes/react';
+
+// Example: Disable the 'toggle' shortcut for the ItalicPlugin
+const MyCustomItalicPlugin = ItalicPlugin.configure({
+  shortcuts: {
+    toggle: null, // This will remove/disable the ItalicPlugin's 'toggle' shortcut.
+  },
+});
+```
+
+## Global Shortcuts (Editor Level)
+
+In addition to plugin-specific shortcuts, you can define global shortcuts directly on the editor instance when you create it using `createPlateEditor`. These shortcuts behave similarly to plugin shortcuts.
+
+```tsx title="editor-config.ts"
+import { createPlateEditor, Key } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [/* ...your array of plugins... */],
+  shortcuts: {
+    // A global shortcut, perhaps for saving the document
+    saveDocument: {
+      keys: [[Key.Mod, 's']],
+      handler: ({ editor, event }) => {
+        console.info('Attempting to save document content:', editor.children);
+        // Since preventDefault is set to false for this shortcut,
+        // the browser's save dialog will appear by default.
+        // If you want to conditionally prevent the default browser behavior
+        // (for example, only prevent saving if certain conditions are met),
+        // you can call event.preventDefault() inside your handler as needed:
+        // if (shouldPrevent) event.preventDefault();
+      },
+      preventDefault: false,
+    },
+    anotherGlobalAction: {
+      keys: [[Key.Ctrl, Key.Alt, 'g']],
+      handler: () => alert('Global action triggered!'),
+    }
+  },
+});
+```
+Editor-level shortcuts generally have a high default priority but can still be influenced by the `priority` settings of individual plugin shortcuts if there are conflicts.
+
+## Best Practices
+
+-   **Link to Transforms**: For clarity and to keep your code DRY, link shortcuts to existing transform methods by matching the shortcut name to the transform name.
+-   **`preventDefault`**: Most editor shortcuts should prevent the browser's default action for the key combination. Plate handles this by defaulting `preventDefault` to `true`. You generally don't need to set it explicitly. However, if your shortcut handler conditionally performs an action (e.g., an indent command that only applies if certain conditions are met), and you want other handlers or the browser's default behavior to take over if your action doesn't run, set `preventDefault: false` for that shortcut.
+-   **Maintain Consistency**: Strive for intuitive and consistent key combinations. Consider standard shortcuts found in popular text editors or those that make logical sense within your application's context.
+-   **Manage Priorities for Conflicts**: If you anticipate or encounter situations where multiple plugins might try to handle the same key combination, use the `priority` property to explicitly define which shortcut should take precedence.
+-   **Provide User Feedback**: For actions triggered by shortcuts that aren't immediately visible (like a "Save" action), consider providing some form of user feedback, such as a brief [toast](https://ui.shadcn.com/docs/components/sonner) notification.

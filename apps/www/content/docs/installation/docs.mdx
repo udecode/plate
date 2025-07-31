@@ -1,0 +1,156 @@
+---
+title: Local Docs
+description: Set up Plate's documentation locally for version-controlled, AI-enhanced development.
+---
+
+Host Plate's documentation locally to integrate it directly with your project. This setup ensures your team works with documentation that matches your Plate version while enabling AI tools to better understand and assist with your codebase.
+
+## Why Host Documentation Locally?
+
+Local documentation provides distinct advantages over external sites:
+
+*   **Version Lock-In:** Keep documentation synchronized with your project's Plate version. Avoid confusion from features or APIs in newer, unadopted Plate releases.
+*   **AI-Ready Development:**
+    *   **Better than `llms.txt`:** While dumping docs into a single text file is common for LLM context, this breaks down with large documentation (exceeding typical 100k token limits). Our structured, local setup lets AI tools access exactly what they need.
+    *   **Direct Access for AI Tools:** Your AI-assisted IDE gets direct access to version-specific documentation, enabling accurate code generation and contextual help with your Plate setup.
+    *   **Structured for AI Tasks:** AI tools can help with tasks like translating docs, creating summaries, or updating documentation between Plate versions.
+*   **Customization & Control:** Modify documentation appearance and structure to match your project needs.
+*   **Easy Updates:** Treat documentation like code - review, update, and version control it with your codebase.
+*   **Fast Access:** Get reliable, quick access to documentation.
+*   **Central Hub:** Keep Plate docs alongside documentation for other libraries in one place.
+
+## Setup Guide
+
+There are two ways to set up local documentation:
+
+### Option 1: Docs App
+
+This option sets up a complete documentation site using Fumadocs, providing a searchable, navigable interface.
+
+<Steps>
+
+#### Create Fumadocs App
+
+Set up a [Fumadocs app](https://fumadocs.dev/docs/ui#automatic-installation). Fumadocs provides the Next.js-based framework for your documentation site.
+
+```bash
+pnpm create fumadocs-app
+```
+
+Name your documentation directory. This guide will assume it's `docs`.
+For detailed Fumadocs setup, see the [Fumadocs UI documentation](https://fumadocs.dev/docs/ui).
+
+#### Create `components.json`
+
+Create the configuration file:
+
+```bash
+echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "new-york",\n  "rsc": true,\n  "tsx": true,\n  "tailwind": {\n    "config": "",\n    "css": "app/global.css",\n    "baseColor": "neutral",\n    "cssVariables": true,\n    "prefix": ""\n  },\n  "aliases": {\n    "components": "@/components",\n    "utils": "@/lib/utils",\n    "ui": "@/components/ui",\n    "lib": "@/lib",\n    "hooks": "@/hooks"\n  },\n  "iconLibrary": "lucide"\n}' > components.json
+```
+
+<Callout type="note">
+  Alternatively, you can run `npx shadcn@latest init -c docs` to customize the configuration.
+</Callout>
+
+#### Add Plate Documentation
+
+Use the shadcn CLI to fetch Plate documentation files and necessary MDX components.
+
+```bash
+npx shadcn@latest add https://platejs.org/r/fumadocs -c docs
+```
+
+<Callout type="warning" title="Version-Specific Documentation">
+  The command above installs the **latest** Plate documentation. For projects on older Plate versions (minimum `v48.0.0`), specify your version:
+
+  1.  Go to [Plate's public registry on GitHub](https://github.com/udecode/plate/tree/main/apps/www/public/r).
+  2.  Use the tag switcher to select your Plate version.
+  3.  Copy the versioned URL (e.g., [v48](https://github.com/udecode/plate/tree/%40udecode/plate%4048.0.5/apps/www/public/r)).
+  4.  Replace `https://platejs.org/r/` in the `shadcn` command with this URL.
+</Callout>
+
+This populates `content/docs/plate` and installs the required MDX components.
+
+#### Run Fumadocs App
+
+Navigate to the docs directory, then start the development server:
+
+```bash
+pnpm run dev
+```
+
+Access your local Plate documentation, typically at `http://localhost:3000/docs/plate`.
+
+#### Customize
+
+Enhance your docs with [Fumadocs features](https://fumadocs.dev/docs/ui#writing-content).
+
+</Steps>
+
+### Option 2: MDX Files Only
+
+If you just want the documentation files without setting up a full site:
+
+```bash
+npx shadcn@latest add https://platejs.org/r/docs
+```
+
+This will install only the MDX documentation files in your project. You can:
+- Reference them directly in your codebase
+- Use them with your existing documentation setup
+- Make them available to AI tools for better context
+
+## Advanced Integration
+
+### MCP Integration
+
+Enable AI tools to work with your local documentation by adding the Plate server to your `.cursor/mcp.json` (or equivalent).
+
+```json
+{
+  "mcpServers": {
+    "plate": {
+      "description": "Plate editors, plugins, components and documentation",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "shadcn@canary", "registry:mcp"],
+      "env": {
+        "REGISTRY_URL": "https://platejs.org/r/registry.json"
+      }
+    }
+  }
+}
+```
+
+Your AI tools can then:
+*   Access documentation context for better code assistance
+*   Help manage and update documentation
+*   Generate code with proper imports and configurations
+*   Assist with editor setup and feature integration
+
+See the [MCP Guide](/docs/installation/mcp) for more details.
+
+<Callout>
+  Once configured, try asking your AI:
+  ```bash
+  "Help me understand how the Plate AI plugin works"
+  "How to create a custom plugin?"
+  "What's new in the latest Plate version?"
+  ```
+</Callout>
+
+### Centralizing Multiple Documentations
+
+Your `content/docs/` directory can host documentation for multiple libraries. Replicate the process for Plate to add docs for other internal or external tools:
+
+```plaintext
+content/
+└── docs/
+    ├── plate/         # Plate documentation
+    │   └── ...
+    ├── other-library/ # Documentation for another library
+    │   └── ...
+    └── index.mdx      # Main landing page for all docs
+```
+
+This creates a unified, version-controlled knowledge base for your project stack.

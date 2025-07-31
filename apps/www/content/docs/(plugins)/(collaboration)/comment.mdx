@@ -1,0 +1,488 @@
+---
+title: Comment
+docs:
+  - route: https://pro.platejs.org/docs/examples/discussion
+    title: Plus
+  - route: /docs/components/comment-node
+    title: Comment Leaf
+  - route: /docs/components/comment-toolbar-button
+    title: Comment Toolbar Button
+  - route: /docs/components/block-discussion
+    title: Block Discussion
+---
+
+<ComponentPreview name="discussion-demo" />
+
+<PackageInfo>
+
+## Features
+
+- **Text Comments:** Add comments as text marks with inline annotations
+- **Overlapping Comments:** Support multiple comments on the same text
+- **Draft Comments:** Create draft comments before finalizing
+- **State Tracking:** Track comment state and user interactions
+- **Discussion Integration:** Works with discussion plugin for complete collaboration
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add comment functionality is with the `CommentKit`, which includes pre-configured `commentPlugin` and related components along with their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="comment-kit" />
+
+- [`CommentLeaf`](/docs/components/comment-node): Renders comment text marks
+- [`BlockDiscussion`](/docs/components/block-discussion): Renders discussion UI with comments integration
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { CommentKit } from '@/components/editor/plugins/comment-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...CommentKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/comment
+```
+
+### Extend Comment Plugin
+
+Create the comment plugin with extended configuration for state management:
+
+```tsx
+import {
+  type ExtendConfig,
+  type Path,
+  isSlateString,
+} from 'platejs';
+import {
+  type BaseCommentConfig,
+  BaseCommentPlugin,
+  getDraftCommentKey,
+} from '@platejs/comment';
+import { toTPlatePlugin } from 'platejs/react';
+import { CommentLeaf } from '@/components/ui/comment-node';
+
+type CommentConfig = ExtendConfig<
+  BaseCommentConfig,
+  {
+    activeId: string | null;
+    commentingBlock: Path | null;
+    hoverId: string | null;
+    uniquePathMap: Map<string, Path>;
+  }
+>;
+
+export const commentPlugin = toTPlatePlugin<CommentConfig>(
+  BaseCommentPlugin,
+  ({ editor }) => ({
+    options: {
+      activeId: null,
+      commentingBlock: null,
+      hoverId: null,
+      uniquePathMap: new Map(),
+    },
+    render: {
+      node: CommentLeaf,
+    },
+  })
+);
+```
+
+- `options.activeId`: Currently active comment ID for visual highlighting
+- `options.commentingBlock`: Path of the block currently being commented
+- `options.hoverId`: Currently hovered comment ID for hover effects
+- `options.uniquePathMap`: Map tracking unique paths for comment resolution
+- `render.node`: Assigns [`CommentLeaf`](/docs/components/comment-node) to render comment text marks
+
+### Add Click Handler
+
+Add click handling to manage active comment state:
+
+```tsx
+export const commentPlugin = toTPlatePlugin<CommentConfig>(
+  BaseCommentPlugin,
+  ({ editor }) => ({
+    handlers: {
+      // Set active comment when clicking on comment marks
+      onClick: ({ api, event, setOption, type }) => {
+        let leaf = event.target as HTMLElement;
+        let isSet = false;
+
+        const unsetActiveComment = () => {
+          setOption('activeId', null);
+          isSet = true;
+        };
+
+        if (!isSlateString(leaf)) unsetActiveComment();
+
+        while (leaf.parentElement) {
+          if (leaf.classList.contains(`slate-${type}`)) {
+            const commentsEntry = api.comment.node();
+
+            if (!commentsEntry) {
+              unsetActiveComment();
+              break;
+            }
+
+            const id = api.comment.nodeId(commentsEntry[0]);
+            setOption('activeId', id ?? null);
+            isSet = true;
+            break;
+          }
+
+          leaf = leaf.parentElement;
+        }
+
+        if (!isSet) unsetActiveComment();
+      },
+    },
+    // ... previous options and render
+  })
+);
+```
+
+The click handler tracks which comment is currently active:
+- **Detects comment clicks**: Traverses DOM to find comment elements
+- **Sets active state**: Updates `activeId` when clicking on comments
+- **Clears state**: Unsets `activeId` when clicking outside comments
+- **Visual feedback**: Enables hover/active styling in comment components
+
+### Extend Transforms
+
+Extend the `setDraft` transform for enhanced functionality:
+
+```tsx
+export const commentPlugin = toTPlatePlugin<CommentConfig>(
+  BaseCommentPlugin,
+  ({ editor }) => ({
+    // ... previous configuration
+  })
+)
+  .extendTransforms(
+    ({
+      editor,
+      setOption,
+      tf: {
+        comment: { setDraft },
+      },
+    }) => ({
+      setDraft: () => {
+        if (editor.api.isCollapsed()) {
+          editor.tf.select(editor.api.block()![1]);
+        }
+
+        setDraft();
+
+        editor.tf.collapse();
+        setOption('activeId', getDraftCommentKey());
+        setOption('commentingBlock', editor.selection!.focus.path.slice(0, 1));
+      },
+    })
+  )
+  .configure({
+    node: { component: CommentLeaf },
+    shortcuts: {
+      setDraft: { keys: 'mod+shift+m' },
+    },
+  });
+```
+
+### Add Toolbar Button
+
+You can add [`CommentToolbarButton`](/docs/components/comment-toolbar-button) to your [Toolbar](/docs/toolbar) to add comments on selected text.
+
+### Add Plugins
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    commentPlugin,
+  ],
+});
+```
+
+### Discussion Integration
+
+The comment plugin works with the [discussion plugin](/docs/discussion) for complete collaboration:
+
+```tsx
+import { discussionPlugin } from '@/components/editor/plugins/discussion-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    discussionPlugin,
+    commentPlugin,
+  ],
+});
+```
+
+</Steps>
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Shift + M">
+    Add a comment on the selected text.
+  </KeyTableItem>
+</KeyTable>
+
+## Plate Plus
+
+<ComponentPreviewPro name="discussion-pro" />
+
+## Plugins
+
+### `CommentPlugin`
+
+Plugin for creating and managing text comments with state tracking and discussion integration.
+
+<API name="CommentPlugin">
+<APIOptions>
+  <APIItem name="activeId" type="string | null">
+    Currently active comment ID for visual highlighting. Used internally to track state.
+  </APIItem>
+  <APIItem name="commentingBlock" type="Path | null">
+    Path of the block currently being commented on.
+  </APIItem>
+  <APIItem name="hoverId" type="string | null">
+    Currently hovered comment ID for hover effects.
+  </APIItem>
+  <APIItem name="uniquePathMap" type="Map<string, Path>">
+    Map tracking unique paths for comment resolution.
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `api.comment.has`
+
+Checks if a comment with the given ID exists in the editor.
+
+<API name="has">
+<APIParameters>
+  <APIItem name="options" type="{ id: string }">
+    Options containing the comment ID to check.
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  Whether the comment exists.
+</APIReturns>
+</API>
+
+### `api.comment.node`
+
+Gets a comment node entry.
+
+<API name="node">
+<APIOptions type="EditorNodesOptions & { id?: string; isDraft?: boolean }" optional>
+  Options for finding the node.
+</APIOptions>
+<APIReturns type="NodeEntry<TCommentText> | undefined">
+  The comment node entry if found.
+</APIReturns>
+</API>
+
+### `api.comment.nodeId`
+
+Gets the ID of a comment from a leaf node.
+
+<API name="nodeId">
+<APIParameters>
+  <APIItem name="leaf" type="TCommentText">
+    The comment leaf node.
+  </APIItem>
+</APIParameters>
+<APIReturns type="string | undefined">
+  The comment ID if found.
+</APIReturns>
+</API>
+
+### `api.comment.nodes`
+
+Gets all comment node entries matching the options.
+
+<API name="nodes">
+<APIOptions type="EditorNodesOptions & { id?: string; isDraft?: boolean }" optional>
+  Options for finding the nodes.
+</APIOptions>
+<APIReturns type="NodeEntry<TCommentText>[]">
+  Array of comment node entries.
+</APIReturns>
+</API>
+
+## Transforms
+
+### `tf.comment.removeMark`
+
+Removes the comment mark from the current selection or a specified location.
+
+<API name="removeMark" />
+
+### `tf.comment.setDraft`
+
+Sets a draft comment mark at the current selection.
+
+<API name="setDraft">
+<APIOptions type="SetNodesOptions" optional>
+  Options for setting the draft comment.
+</APIOptions>
+</API>
+
+### `tf.comment.unsetMark`
+
+Unsets comment nodes with the specified ID from the editor.
+
+<API name="unsetMark">
+<APIParameters>
+  <APIItem name="options" type="{ id: string }">
+    Options containing the comment ID to unset.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Utilities
+
+### `getCommentCount`
+
+Gets the count of non-draft comments in a comment node.
+
+<API name="getCommentCount">
+<APIParameters>
+  <APIItem name="node" type="TCommentText">
+    The comment node.
+  </APIItem>
+</APIParameters>
+<APIReturns type="number">
+  The count of comments.
+</APIReturns>
+</API>
+
+### `getCommentKey`
+
+Generates a comment key based on the provided ID.
+
+<API name="getCommentKey">
+<APIParameters>
+  <APIItem name="id" type="string">
+    The ID of the comment.
+  </APIItem>
+</APIParameters>
+<APIReturns type="string">
+  The generated comment key.
+</APIReturns>
+</API>
+
+### `getCommentKeyId`
+
+Extracts the comment ID from a comment key.
+
+<API name="getCommentKeyId">
+<APIParameters>
+  <APIItem name="key" type="string">
+    The comment key.
+  </APIItem>
+</APIParameters>
+<APIReturns type="string">
+  The extracted comment ID.
+</APIReturns>
+</API>
+
+### `getCommentKeys`
+
+Returns an array of comment keys present in the given node.
+
+<API name="getCommentKeys">
+<APIParameters>
+  <APIItem name="node" type="TCommentText">
+    The node to check for comment keys.
+  </APIItem>
+</APIParameters>
+<APIReturns type="string[]">
+  Array of comment keys.
+</APIReturns>
+</API>
+
+### `getDraftCommentKey`
+
+Gets the key used for draft comments.
+
+<API name="getDraftCommentKey">
+<APIReturns type="string">
+  The draft comment key.
+</APIReturns>
+</API>
+
+### `isCommentKey`
+
+Checks if a given key is a comment key.
+
+<API name="isCommentKey">
+<APIParameters>
+  <APIItem name="key" type="string">
+    The key to check.
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  Whether the key is a comment key.
+</APIReturns>
+</API>
+
+### `isCommentNodeById`
+
+Checks if a given node is a comment with the specified ID.
+
+<API name="isCommentNodeById">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    The node to check.
+  </APIItem>
+  <APIItem name="id" type="string">
+    The ID of the comment.
+  </APIItem>
+</APIParameters>
+<APIReturns type="boolean">
+  Whether the node is a comment with the specified ID.
+</APIReturns>
+</API>
+
+## Types
+
+### `TCommentText`
+
+Text nodes that can contain comments.
+
+<API name="TCommentText">
+<APIAttributes>
+  <APIItem name="comment" type="boolean" optional>
+    Whether this text node contains comments.
+  </APIItem>
+  <APIItem name="comment_<id>" type="boolean" optional>
+    Comment data keyed by comment ID. Multiple comments can exist in one text node.
+  </APIItem>
+</APIAttributes>
+</API>

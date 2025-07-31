@@ -1,0 +1,560 @@
+---
+title: Collaboration
+description: Real-time collaboration with Yjs
+toc: true
+---
+
+<ComponentPreview name="collaboration-demo" />
+
+<PackageInfo>
+
+## Features
+
+- **Multi-Provider Support:** Enables real-time collaboration using [Yjs](https://github.com/yjs/yjs) and [slate-yjs](https://docs.slate-yjs.dev/). Supports multiple synchronization providers simultaneously (e.g., Hocuspocus + WebRTC) working on a shared `Y.Doc`.
+- **Built-in Providers:** Includes support for [Hocuspocus](https://tiptap.dev/hocuspocus) (server-based) and [WebRTC](https://github.com/yjs/y-webrtc) (peer-to-peer) providers out-of-the-box.
+- **Custom Providers:** Extensible architecture allows adding custom providers (e.g., for offline storage like IndexedDB) by implementing the `UnifiedProvider` interface.
+- **Awareness & Cursors:** Integrates Yjs Awareness protocol for sharing cursor locations and other ephemeral state between users. Includes [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) for rendering remote cursors.
+- **Customizable Cursors:** Cursor appearance (name, color) can be customized via `cursors`.
+- **Manual Lifecycle:** Provides explicit `init` and `destroy` methods for managing the Yjs connection lifecycle.
+
+</PackageInfo>
+
+## Usage
+
+<Steps>
+
+### Installation
+
+Install the core Yjs plugin and the specific provider packages you intend to use:
+
+```bash
+npm install @platejs/yjs
+```
+
+For Hocuspocus server-based collaboration:
+
+```bash
+npm install @hocuspocus/provider
+```
+
+For WebRTC peer-to-peer collaboration:
+
+```bash
+npm install y-webrtc
+```
+
+### Add Plugin
+
+```tsx
+import { YjsPlugin } from '@platejs/yjs/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    YjsPlugin,
+  ],
+  // Important: Skip Plate's default initialization when using Yjs
+  skipInitialization: true,
+});
+```
+
+<Callout type="warning" title="Required Editor Configuration">
+  It's crucial to set `skipInitialization: true` when creating the editor. Yjs manages the initial document state, so Plate's default value initialization should be skipped to avoid conflicts.
+</Callout>
+
+### Configure YjsPlugin
+
+Configure the plugin with providers and cursor settings:
+
+```tsx
+import { YjsPlugin } from '@platejs/yjs/react';
+import { createPlateEditor } from 'platejs/react';
+import { RemoteCursorOverlay } from '@/components/ui/remote-cursor-overlay';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    YjsPlugin.configure({
+      render: {
+        afterEditable: RemoteCursorOverlay,
+      },
+      options: {
+        // Configure local user cursor appearance
+        cursors: {
+          data: {
+            name: 'User Name', // Replace with dynamic user name
+            color: '#aabbcc', // Replace with dynamic user color
+          },
+        },
+        // Configure providers. All providers share the same Y.Doc and Awareness instance.
+        providers: [
+          // Example: Hocuspocus provider
+          {
+            type: 'hocuspocus',
+            options: {
+              name: 'my-document-id', // Unique identifier for the document
+              url: 'ws://localhost:8888', // Your Hocuspocus server URL
+            },
+          },
+          // Example: WebRTC provider (can be used alongside Hocuspocus)
+          {
+            type: 'webrtc',
+            options: {
+              roomName: 'my-document-id', // Must match the document identifier
+              signaling: ['ws://localhost:4444'], // Optional: Your signaling server URLs
+            },
+          },
+        ],
+      },
+    }),
+  ],
+  skipInitialization: true,
+});
+```
+
+- `render.afterEditable`: Assigns [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) to render remote user cursors.
+- `cursors.data`: Configures the local user's cursor appearance with name and color.
+- `providers`: Array of collaboration providers to use (Hocuspocus, WebRTC, or custom providers).
+
+### Add Editor Container
+
+The `RemoteCursorOverlay` requires a positioned container around the editor content. Use [`EditorContainer`](/docs/components/editor) component or `PlateContainer` from `platejs/react`:
+
+```tsx
+import { Plate } from 'platejs/react';
+import { EditorContainer } from '@/components/ui/editor';
+
+return (
+  <Plate editor={editor}>
+    <EditorContainer>
+      <Editor />
+    </EditorContainer>
+  </Plate>
+);
+```
+
+### Initialize Yjs Connection
+
+Yjs connection and state initialization are handled manually, typically within a `useEffect` hook:
+
+```tsx
+import React, { useEffect } from 'react';
+import { YjsPlugin } from '@platejs/yjs/react';
+import { useMounted } from '@/hooks/use-mounted'; // Or your own mounted check
+
+const MyEditorComponent = ({ documentId, initialValue }) => {
+  const editor = usePlateEditor(/** editor config from previous steps **/);
+  const mounted = useMounted();
+
+  useEffect(() => {
+    // Ensure component is mounted and editor is ready
+    if (!mounted) return;
+
+    // Initialize Yjs connection, sync document, and set initial editor state
+    editor.getApi(YjsPlugin).yjs.init({
+      id: documentId,          // Unique identifier for the Yjs document
+      value: initialValue,     // Initial content if the Y.Doc is empty
+    });
+
+    // Clean up: Destroy connection when component unmounts
+    return () => {
+      editor.getApi(YjsPlugin).yjs.destroy();
+    };
+  }, [editor, mounted]);
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+};
+```
+
+<Callout>
+  **Initial Value**: The `value` passed to `init` is only used to populate the Y.Doc if it's completely empty on the backend/peer network. If the document already exists, its content will be synced, and this initial value will be ignored.
+  
+  **Lifecycle Management**: You **must** call `editor.api.yjs.init()` to establish the connection and `editor.api.yjs.destroy()` on component unmount to clean up resources.
+</Callout>
+
+### Monitor Connection Status (Optional)
+
+Access provider states and add event handlers for connection monitoring:
+
+```tsx
+import React from 'react';
+import { YjsPlugin } from '@platejs/yjs/react';
+import { usePluginOption } from 'platejs/react';
+
+function EditorStatus() {
+  // Access provider states directly (read-only)
+  const providers = usePluginOption(YjsPlugin, '_providers');
+  const isConnected = usePluginOption(YjsPlugin, '_isConnected');
+
+  return (
+    <div>
+      {providers.map((provider) => (
+        <span key={provider.type}>
+          {provider.type}: {provider.isConnected ? 'Connected' : 'Disconnected'} ({provider.isSynced ? 'Synced' : 'Syncing'})
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// Add event handlers for connection events:
+YjsPlugin.configure({
+  options: {
+    // ... other options
+    onConnect: ({ type }) => console.debug(`Provider ${type} connected!`),
+    onDisconnect: ({ type }) => console.debug(`Provider ${type} disconnected.`),
+    onSyncChange: ({ type, isSynced }) => console.debug(`Provider ${type} sync status: ${isSynced}`),
+    onError: ({ type, error }) => console.error(`Error in provider ${type}:`, error),
+  },
+});
+```
+
+</Steps>
+
+## Provider Types
+
+### Hocuspocus Provider
+
+Server-based collaboration using [Hocuspocus](https://tiptap.dev/hocuspocus). Requires a running Hocuspocus server.
+
+```tsx
+type HocuspocusProviderConfig = {
+  type: 'hocuspocus',
+  options: {
+    name: string;     // Document identifier
+    url: string;      // WebSocket server URL
+    token?: string;   // Authentication token
+  }
+}
+```
+
+### WebRTC Provider
+
+Peer-to-peer collaboration using [y-webrtc](https://github.com/yjs/y-webrtc).
+
+```tsx
+type WebRTCProviderConfig = {
+  type: 'webrtc',
+  options: {
+    roomName: string;      // Room name for collaboration
+    signaling?: string[];  // Signaling server URLs
+    password?: string;     // Room password
+    maxConns?: number;     // Max connections
+    peerOpts?: object;     // WebRTC peer options
+  }
+}
+```
+
+### Custom Provider
+
+Create custom providers by implementing the `UnifiedProvider` interface:
+
+```typescript
+interface UnifiedProvider {
+  awareness: Awareness;
+  document: Y.Doc;
+  type: string;
+  connect: () => void;
+  destroy: () => void;
+  disconnect: () => void;
+  isConnected: boolean;
+  isSynced: boolean;
+}
+```
+
+Use custom providers directly in the providers array:
+
+```tsx
+const customProvider = new MyCustomProvider({ doc: ydoc, awareness });
+
+YjsPlugin.configure({
+  options: {
+    providers: [customProvider],
+  },
+});
+```
+
+## Backend Setup
+
+### Hocuspocus Server
+
+Set up a [Hocuspocus server](https://tiptap.dev/hocuspocus/getting-started) for server-based collaboration. Ensure the `url` and `name` in your provider options match your server configuration.
+
+### WebRTC Setup
+
+#### Signaling Server
+
+WebRTC requires signaling servers for peer discovery. Public servers work for testing but use your own for production:
+
+```bash
+npm install y-webrtc
+PORT=4444 node ./node_modules/y-webrtc/bin/server.js
+```
+
+Configure your client to use custom signaling:
+
+```tsx
+{
+  type: 'webrtc',
+  options: {
+    roomName: 'document-1',
+    signaling: ['ws://your-signaling-server.com:4444'],
+  },
+}
+```
+
+#### TURN Servers
+
+<Callout type="warning">
+  WebRTC connections can fail due to firewalls. Use TURN servers or combine with Hocuspocus for production reliability.
+</Callout>
+
+Configure TURN servers for reliable connections:
+
+```tsx
+{
+  type: 'webrtc',
+  options: {
+    roomName: 'document-1',
+    signaling: ['ws://your-signaling-server.com:4444'],
+    peerOpts: {
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          {
+            urls: 'turn:your-turn-server.com:3478',
+            username: 'username',
+            credential: 'password'
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+## Security
+
+**Authentication & Authorization:**
+- Use Hocuspocus's `onAuthenticate` hook to validate users
+- Implement document-level access control on your backend
+- Pass authentication tokens via the `token` option
+
+**Transport Security:**
+- Use `wss://` URLs in production for encrypted communication
+- Configure secure TURN servers with the `turns://` protocol
+
+**WebRTC Security:**
+- Use the `password` option for basic room access control
+- Configure secure signaling servers
+
+Example secure configuration:
+
+```tsx
+YjsPlugin.configure({
+  options: {
+    providers: [
+      {
+        type: 'hocuspocus',
+        options: {
+          name: 'secure-document-id',
+          url: 'wss://your-hocuspocus-server.com',
+          token: 'user-auth-token',
+        },
+      },
+      {
+        type: 'webrtc',
+        options: {
+          roomName: 'secure-document-id',
+          password: 'strong-room-password',
+          signaling: ['wss://your-secure-signaling.com'],
+          peerOpts: {
+            config: {
+              iceServers: [
+                {
+                  urls: 'turns:your-turn-server.com:443?transport=tcp',
+                  username: 'user',
+                  credential: 'pass'
+                }
+              ]
+            }
+          }
+        },
+      },
+    ],
+  },
+});
+```
+
+## Troubleshooting
+
+### Connection Issues
+
+**Check URLs and Names:**
+- Verify `url` (Hocuspocus) and `signaling` URLs (WebRTC) are correct
+- Ensure `name` or `roomName` matches exactly across all collaborators
+- Use `ws://` for local development, `wss://` for production
+
+**Server Status:**
+- Verify Hocuspocus and signaling servers are running
+- Check server logs for errors
+- Test TURN server connectivity if using WebRTC
+
+**Network Issues:**
+- Firewalls may block WebSocket or WebRTC traffic
+- Use TURN servers configured for TCP (port 443) for better traversal
+- Check browser console for provider errors
+
+### Multiple Documents
+
+**Separate Instances:**
+- Create separate `Y.Doc` instances for each document
+- Use unique document identifiers for `name`/`roomName`
+- Pass unique `ydoc` and `awareness` instances to each editor
+
+### Sync Issues
+
+**Editor Initialization:**
+- Always set `skipInitialization: true` when creating the editor
+- Use `editor.api.yjs.init({ value })` for initial content
+- Ensure all providers use the exact same document identifier
+
+**Content Conflicts:**
+- Avoid manually manipulating the shared `Y.Doc`
+- Let Yjs handle all document operations through the editor
+
+### Cursor Issues
+
+**Overlay Setup:**
+- Include [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) in plugin render config
+- Use positioned container (`EditorContainer` or `PlateContainer`)
+- Verify `cursors.data` (name, color) is set correctly for local user
+
+## Related
+
+- [Yjs](https://github.com/yjs/yjs) - CRDT framework for collaboration
+- [slate-yjs](https://docs.slate-yjs.dev/) - Yjs bindings for Slate
+- [Hocuspocus](https://tiptap.dev/hocuspocus) - Backend server for Yjs
+- [y-webrtc](https://github.com/yjs/y-webrtc) - WebRTC provider
+- [RemoteCursorOverlay](/docs/components/remote-cursor-overlay) - Remote cursor component
+- [EditorContainer](/docs/components/editor) - Editor container component
+
+## Plugins
+
+### `YjsPlugin`
+
+Enables real-time collaboration using Yjs with support for multiple providers and remote cursors.
+
+<API name="YjsPlugin">
+<APIOptions>
+  <APIItem name="providers" type="(UnifiedProvider | YjsProviderConfig)[]">
+    Array of provider configurations or pre-instantiated provider instances. The plugin will create instances from configurations and use existing instances directly. All providers will share the same Y.Doc and Awareness. Each configuration object specifies a provider `type` (e.g., `'hocuspocus'`,
+    `'webrtc'`) and its specific `options`. Custom provider instances must conform to the
+    `UnifiedProvider` interface.
+  </APIItem>
+  <APIItem name="cursors" type="WithCursorsOptions | null" optional>
+    Configuration for remote cursors. Set to `null` to explicitly disable cursors. If omitted, cursors are enabled by default if providers are specified. Passed to `withTCursors`. See [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors). Includes `data` for local user info and `autoSend` (default `true`).
+  </APIItem>
+  <APIItem name="ydoc" type="Y.Doc" optional>
+    Optional shared Y.Doc instance. If not provided, a new one will be created internally by the plugin. Provide your own if integrating with other Yjs tools or managing multiple documents.
+  </APIItem>
+  <APIItem name="awareness" type="Awareness" optional>
+    Optional shared Awareness instance. If not provided, a new one will be created.
+  </APIItem>
+  <APIItem name="onConnect" type="(props: { type: YjsProviderType }) => void" optional>
+    Callback fired when any provider successfully connects.
+  </APIItem>
+  <APIItem name="onDisconnect" type="(props: { type: YjsProviderType }) => void" optional>
+    Callback fired when any provider disconnects.
+  </APIItem>
+  <APIItem name="onError" type="(props: { error: Error; type: YjsProviderType }) => void" optional>
+    Callback fired when any provider encounters an error (e.g., connection failure).
+  </APIItem>
+  <APIItem name="onSyncChange" type="(props: { isSynced: boolean; type: YjsProviderType }) => void" optional>
+    Callback fired when the sync status (`provider.isSynced`) of any individual provider changes.
+  </APIItem>
+</APIOptions>
+<APIAttributes>
+  {/* Attributes are internal state, generally use options or event handlers instead */}
+  <APIItem name="_isConnected" type="boolean">
+    Internal state: Whether at least one provider is currently connected.
+  </APIItem>
+  <APIItem name="_isSynced" type="boolean">
+    Internal state: Reflects overall sync status.
+  </APIItem>
+  <APIItem name="_providers" type="UnifiedProvider[]">
+    Internal state: Array of all active, instantiated provider instances.
+  </APIItem>
+</APIAttributes>
+</API>
+
+## API
+
+### `api.yjs.init`
+
+Initializes the Yjs connection, binds it to the editor, sets up providers based on plugin configuration, potentially populates the Y.Doc with initial content, and connects providers. **Must be called after the editor is mounted.**
+
+<API name="editor.api.yjs.init">
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    Configuration object for initialization.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="id" type="string" optional>
+    A unique identifier for the Yjs document (e.g., room name, document ID). If not provided, `editor.id` is used. Essential for ensuring collaborators connect to the same document state.
+  </APIItem>
+  <APIItem name="value" type="Value | string | ((editor: PlateEditor) => Value | Promise<Value>)" optional>
+    The initial content for the editor. **This is only applied if the Y.Doc associated with the `id` is completely empty in the shared state (backend/peers).** If the document already exists, its content will be synced, ignoring this value. Can be Plate JSON (`Value`), an HTML string, or a function returning/resolving to `Value`. If omitted or empty, a default empty paragraph is used for initialization if the Y.Doc is new.
+  </APIItem>
+  <APIItem name="autoConnect" type="boolean" optional>
+    Whether to automatically call `provider.connect()` for all configured providers during initialization. Default: `true`. Set to `false` if you want to manage connections manually using `editor.api.yjs.connect()`.
+  </APIItem>
+  <APIItem name="autoSelect" type="'start' | 'end'" optional>
+    If set, automatically focuses the editor and places the cursor at the 'start' or 'end' of the document after initialization and sync.
+  </APIItem>
+  <APIItem name="selection" type="Location" optional>
+    Specific Plate `Location` to set the selection to after initialization, overriding `autoSelect`.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Promise<void>">
+  Resolves when the initial setup (including potential async `value` resolution and YjsEditor binding) is complete. Note that provider connection and synchronization happen asynchronously.
+</APIReturns>
+</API>
+
+### `api.yjs.destroy`
+
+Disconnects all providers, cleans up Yjs bindings (detaches editor from Y.Doc), and destroys the awareness instance. **Must be called when the editor component unmounts** to prevent memory leaks and stale connections.
+
+### `api.yjs.connect`
+
+Manually connects to providers. Useful if `autoConnect: false` was used during `init`.
+
+<API name="editor.api.yjs.connect">
+<APIParameters>
+ <APIItem name="type" type="YjsProviderType | YjsProviderType[]" optional>
+   If provided, only connects to providers of the specified type(s). If omitted, connects to all configured providers that are not already connected.
+ </APIItem>
+</APIParameters>
+</API>
+
+### `api.yjs.disconnect`
+
+Manually disconnects from providers.
+
+<API name="editor.api.yjs.disconnect">
+<APIParameters>
+ <APIItem name="type" type="YjsProviderType | YjsProviderType[]" optional>
+   If provided, only disconnects from providers of the specified type(s). If omitted, disconnects from all currently connected providers.
+ </APIItem>
+</APIParameters>
+</API>

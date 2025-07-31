@@ -1,0 +1,247 @@
+---
+title: 字体
+description: 为文档内容提供扩展的格式化选项。
+docs:
+  - route: /docs/components/font-color-toolbar-button
+    title: 字体颜色工具栏按钮
+  - route: /docs/components/font-size-toolbar-button
+    title: 字体大小工具栏按钮
+---
+
+<ComponentPreview name="font-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 为选中的文本应用字体样式，包括大小、字体、颜色、背景色和粗细。
+- 支持自定义字体、大小、颜色和粗细。
+
+## 插件
+
+- `FontBackgroundColorPlugin`: 使用 `background-color` 样式控制背景色
+- `FontColorPlugin`: 使用 `color` 样式控制字体颜色
+- `FontFamilyPlugin`: 使用内联元素和 `font-family` 样式更改字体
+- `FontSizePlugin`: 使用 CSS 类或 `font-size` 样式控制字体大小
+- `FontWeightPlugin`: 使用 `font-weight` 样式控制字体粗细
+
+</PackageInfo>
+
+## Kit 使用
+
+<Steps>
+
+### 安装
+
+添加字体样式功能最快的方式是使用 `FontKit`，它包含了预配置的字体插件及其 [Plate UI](/docs/installation/plate-ui) 组件。
+
+<ComponentSource name="font-kit" />
+
+- 包含所有字体插件（`FontColorPlugin`、`FontBackgroundColorPlugin`、`FontSizePlugin`、`FontFamilyPlugin`），并具有合理的默认值。
+
+### 添加 Kit
+
+将 kit 添加到你的插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { FontKit } from '@/components/editor/plugins/font-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...FontKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/basic-styles
+```
+
+### 添加插件
+
+在创建编辑器时，将字体插件包含在你的 Plate 插件数组中。
+
+```tsx
+import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  FontFamilyPlugin,
+  FontSizePlugin,
+} from '@platejs/basic-styles/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    FontColorPlugin,
+    FontBackgroundColorPlugin,
+    FontFamilyPlugin,
+    FontSizePlugin,
+  ],
+});
+```
+
+### 配置插件
+
+你可以使用自定义选项和目标元素来配置各个字体插件。
+
+```tsx
+import {
+  FontColorPlugin,
+  FontBackgroundColorPlugin,
+  FontSizePlugin,
+  FontFamilyPlugin,
+} from '@platejs/basic-styles/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    FontColorPlugin.configure({
+      inject: {
+        nodeProps: {
+          defaultNodeValue: 'black',
+        },
+        targetPlugins: [KEYS.p],
+      },
+    }),
+    FontSizePlugin.configure({
+      inject: {
+        targetPlugins: [KEYS.p],
+      },
+    }),
+    FontBackgroundColorPlugin.configure({
+      inject: {
+        targetPlugins: [KEYS.p],
+      },
+    }),
+    FontFamilyPlugin.configure({
+      inject: {
+        targetPlugins: [KEYS.p],
+      },
+    }),
+  ],
+});
+```
+
+- `inject.nodeProps.defaultNodeValue`: 设置默认字体颜色值。
+- `inject.targetPlugins`: 指定哪些元素类型可以接收字体样式（影响 HTML 解析）。
+
+### 添加工具栏按钮
+
+你可以将 [`FontColorToolbarButton`](/docs/components/font-color-toolbar-button) 和 [`FontSizeToolbarButton`](/docs/components/font-size-toolbar-button) 添加到你的 [Toolbar](/docs/toolbar) 中，以控制字体颜色和大小。
+
+</Steps>
+
+## 插件
+
+### `FontBackgroundColorPlugin`
+
+用于字体背景色格式化的插件。将 `background-color` 样式应用于选中的文本。
+
+### `FontColorPlugin`
+
+用于字体颜色格式化的插件。将 `color` 样式应用于选中的文本。
+
+### `FontFamilyPlugin`
+
+用于字体格式化的插件。将 `font-family` 样式应用于选中的文本。
+
+### `FontSizePlugin`
+
+用于字体大小格式化的插件。将 `font-size` 样式应用于选中的文本。
+
+### `FontWeightPlugin`
+
+用于字体粗细格式化的插件。将 `font-weight` 样式应用于选中的文本。
+
+## 转换
+
+### `tf.backgroundColor.addMark`
+
+在选中的文本上设置字体背景色标记。
+
+<API name="tf.backgroundColor.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    要设置的背景色值（例如：`'#ff0000'`、`'red'`）。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.color.addMark`
+
+在选中的文本上设置字体颜色标记。
+
+<API name="tf.color.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    要设置的颜色值（例如：`'#0000ff'`、`'blue'`）。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.fontFamily.addMark`
+
+在选中的文本上设置字体标记。
+
+<API name="tf.fontFamily.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    要设置的字体值（例如：`'Arial'`、`'Times New Roman'`）。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.fontSize.addMark`
+
+在选中的文本上设置字体大小标记。
+
+<API name="tf.fontSize.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    要设置的字体大小值（例如：`'16px'`、`'1.2em'`）。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.fontWeight.addMark`
+
+在选中的文本上设置字体粗细标记。
+
+<API name="tf.fontWeight.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    要设置的字体粗细值（例如：`'bold'`、`'400'`、`'600'`）。
+  </APIItem>
+</APIParameters>
+</API>
+
+## API
+
+### `toUnitLess`
+
+将字体大小值转换为无单位值。
+
+<API name="toUnitLess">
+<APIParameters>
+  <APIItem name="fontSize" type="string">
+    要转换的字体大小值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="string">
+  无单位的字体大小值。
+</APIReturns>
+</API>

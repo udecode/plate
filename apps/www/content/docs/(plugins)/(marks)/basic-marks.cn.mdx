@@ -1,0 +1,93 @@
+---
+title: 基础标记
+description: 常用的文本样式功能。
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: 标记工具栏按钮
+---
+
+<Cards>
+
+<Card icon="bold" title="加粗" href="/docs/bold">
+应用加粗格式来强调重要文本。
+</Card>
+
+<Card icon="italic" title="斜体" href="/docs/italic">
+应用斜体格式以实现强调或风格效果。
+</Card>
+
+<Card icon="underline" title="下划线" href="/docs/underline">
+为文本添加下划线格式。
+</Card>
+
+<Card icon="strikethrough" title="删除线" href="/docs/strikethrough">
+应用删除线格式表示已删除内容。
+</Card>
+
+<Card icon="code" title="代码" href="/docs/code">
+格式化内联代码片段和技术术语。
+</Card>
+
+<Card icon="subscript" title="下标" href="/docs/subscript">
+将文本格式化为下标用于数学表达式。
+</Card>
+
+<Card icon="superscript" title="上标" href="/docs/superscript">
+将文本格式化为上标用于数学表达式。
+</Card>
+
+<Card icon="kbd" title="键盘键" href="/docs/kbd">
+显示键盘快捷键和组合键。
+</Card>
+
+<Card icon="highlight" title="高亮" href="/docs/highlight">
+用背景色高亮重要文本。
+</Card>
+
+</Cards>
+
+<ComponentPreview name="basic-marks-demo" />
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+`BasicMarksKit` 集成了加粗、斜体、下划线、删除线、代码、下标、上标、高亮和键盘键标记的插件，以及来自 [Plate UI](/docs/installation/plate-ui) 的相应 UI 组件。
+
+<ComponentSource name="basic-marks-kit" />
+
+- [`CodeLeaf`](/docs/components/code-node): 渲染内联代码元素。
+- [`HighlightLeaf`](/docs/components/highlight-node): 渲染高亮文本元素。
+- [`KbdLeaf`](/docs/components/kbd-node): 渲染键盘快捷键元素。
+
+### 添加套件
+
+将套件添加到你的插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...BasicMarksKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### 添加工具栏按钮
+
+你可以将 [`MarkToolbarButton`](/docs/components/mark-toolbar-button) 添加到 [工具栏](/docs/toolbar) 来控制文本格式标记。
+
+如需单个插件的设置和配置，请参阅上方链接的特定插件文档页面。

@@ -1,0 +1,158 @@
+---
+title: 数学公式
+docs:
+  - route: /docs/components/equation-node
+    title: 公式元素
+  - route: /docs/components/equation-toolbar-button
+    title: 公式工具栏按钮
+  - route: https://pro.platejs.org/docs/components/equation-node
+    title: 公式元素
+  - route: https://pro.platejs.org/docs/components/equation-toolbar-button
+    title: 公式工具栏按钮
+---
+
+<ComponentPreview name="equation-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 支持LaTeX语法编写复杂数学表达式
+- 提供行内公式和块级公式两种格式
+- 使用KaTeX实时渲染公式
+- 便捷的公式编辑和导航功能
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的方式是使用`MathKit`套件，它包含预配置的`EquationPlugin`和`InlineEquationPlugin`以及[Plate UI](/docs/installation/plate-ui)组件。
+
+<ComponentSource name="math-kit" />
+
+- [`EquationElement`](/docs/components/equation-node): 渲染块级公式元素
+- [`InlineEquationElement`](/docs/components/equation-node): 渲染行内公式元素
+
+### 添加套件
+
+将套件添加到插件中:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { MathKit } from '@/components/editor/plugins/math-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...MathKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/math
+```
+
+### 添加插件
+
+在创建编辑器时将公式插件包含到Plate插件数组中。
+
+```tsx
+import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    EquationPlugin,
+    InlineEquationPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+使用自定义组件配置插件来渲染公式元素。
+
+```tsx
+import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import { createPlateEditor } from 'platejs/react';
+import { EquationElement, InlineEquationElement } from '@/components/ui/equation-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    EquationPlugin.withComponent(EquationElement),
+    InlineEquationPlugin.withComponent(InlineEquationElement),
+  ],
+});
+```
+
+- `withComponent`: 指定[`EquationElement`](/docs/components/equation-node)渲染块级公式，[`InlineEquationElement`](/docs/components/equation-node)渲染行内公式。
+
+### 添加工具栏按钮
+
+您可以在[工具栏](/docs/toolbar)中添加[`EquationToolbarButton`](/docs/components/equation-toolbar-button)来插入公式。
+
+</Steps>
+
+## Plate Plus
+
+<ComponentPreviewPro name="equation-pro" />
+
+## 插件
+
+### `EquationPlugin`
+
+用于块级公式元素的插件。
+
+### `InlineEquationPlugin`
+
+用于行内公式元素的插件。
+
+## 转换方法
+
+### `tf.insert.equation`
+
+<API name="insert.equation">
+<APIOptions type="InsertNodesOptions">
+    插入节点的转换选项
+</APIOptions>
+</API>
+
+### `tf.insert.inlineEquation`
+
+插入一个行内公式。
+
+<API name="insert.inlineEquation">
+<APIParameters>
+  <APIItem name="texExpression" type="string" optional>
+    要插入的LaTeX表达式。如未提供则为空公式。
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    插入节点的转换选项
+  </APIItem>
+</APIParameters>
+</API>
+
+## 类型定义
+
+### `TEquationElement`
+
+```typescript
+interface TEquationElement extends TElement {
+  texExpression: string;
+}
+```

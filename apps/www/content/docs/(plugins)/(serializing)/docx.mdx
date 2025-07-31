@@ -1,0 +1,115 @@
+---
+title: Serializing Docx
+---
+
+<ComponentPreview name="docx-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Convert pasted DOCX content to Plate format
+- Clean and normalize DOCX HTML content for Plate compatibility
+- Support for list styles and nested indentation from Word documents
+
+<Callout className="my-4" type="note">
+  Converting a Plate value to DOCX is not yet supported.
+</Callout>
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add DOCX import functionality is with the `DocxKit`, which includes pre-configured `DocxPlugin` and `JuicePlugin` for handling DOCX content and CSS processing.
+
+<ComponentSource name="docx-kit" />
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { DocxKit } from '@/components/editor/plugins/docx-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...DocxKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/docx @platejs/juice
+```
+
+### Add Plugins
+
+```tsx
+import { DocxPlugin } from '@platejs/docx';
+import { JuicePlugin } from '@platejs/juice';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    DocxPlugin,
+    JuicePlugin,
+  ],
+});
+```
+
+### Configure Plugins
+
+```tsx
+import { DocxPlugin } from '@platejs/docx';
+import { JuicePlugin } from '@platejs/juice';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    DocxPlugin, // Handles DOCX content transformation
+    JuicePlugin, // Inlines CSS properties into style attributes
+  ],
+});
+```
+
+- `DocxPlugin`: Processes pasted DOCX content and converts it to Plate format
+- `JuicePlugin`: Inlines CSS properties into the `style` attribute for better compatibility
+
+</Steps>
+
+## Usage
+
+### DOCX to Plate
+
+When users paste content from Microsoft Word, the DOCX plugin automatically:
+
+1. Detects DOCX content in the clipboard
+2. Cleans and normalizes the HTML structure
+3. Preserves indentation and list formatting
+4. Converts DOCX-specific elements to Plate format
+
+The plugin works seamlessly with the paste functionality - no additional code is needed once installed.
+
+## Plugins
+
+### DocxPlugin
+
+Plugin for processing DOCX content during paste operations.
+
+### JuicePlugin
+
+Plugin for inlining CSS properties into HTML elements. Converts external CSS styles to inline `style` attributes. This is essential for DOCX processing as it ensures styling information is preserved when content is pasted from Word documents.

@@ -1,0 +1,194 @@
+---
+title: Point
+description: Plate 文档中点的 API 参考。
+---
+
+Point 表示 Plate 文档中的特定位置。它由指向文本节点的路径和该文本节点内容中的偏移量组成。
+
+```typescript
+type Point = {
+  path: Path
+  offset: number
+}
+```
+
+- [Path](/docs/api/slate/path)
+
+## `PointAPI`
+
+### `get`
+
+从位置获取点。
+
+<API name="get">
+<APIParameters>
+  <APIItem name="at" type="At | null" optional>
+    要获取点的位置。可以是 `TRange`、`Point` 或 `Path`。
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    获取点的附加选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="focus" type="boolean" optional>
+    如果为 true 且位置是范围，则返回焦点点而非锚点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Point | undefined">
+  指定位置的点，如果未找到则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `transform`
+
+通过操作变换点。
+
+<API name="transform">
+<APIParameters>
+  <APIItem name="point" type="Point">
+    要变换的点。
+  </APIItem>
+  <APIItem name="op" type="Operation">
+    要应用的操作。
+  </APIItem>
+  <APIItem name="options" type="PointTransformOptions" optional>
+    变换点的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="PointTransformOptions">
+  <APIItem name="affinity" type="TextDirection | null" optional>
+    变换点时首选的方向。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Point | null">
+  变换后的点，如果点被删除则返回 `null`。
+</APIReturns>
+</API>
+
+### `compare`
+
+比较两个点。
+
+<API name="compare">
+<APIParameters>
+  <APIItem name="point" type="Point">
+    要比较的第一个点。
+  </APIItem>
+  <APIItem name="another" type="Point">
+    要比较的第二个点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="-1 | 0 | 1">
+  如果第一个点在前面返回 `-1`，相同位置返回 `0`，在后面返回 `1`。
+</APIReturns>
+</API>
+
+### `equals`
+
+检查两个点是否完全相等。
+
+<API name="equals">
+<APIParameters>
+  <APIItem name="point" type="Point">
+    要比较的第一个点。
+  </APIItem>
+  <APIItem name="another" type="Point">
+    要比较的第二个点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果点相等返回 `true`，否则返回 `false`。
+</APIReturns>
+</API>
+
+### `isAfter`
+
+检查一个点是否在另一个点之后。
+
+<API name="isAfter">
+<APIParameters>
+  <APIItem name="point" type="Point">
+    要检查的点。
+  </APIItem>
+  <APIItem name="another" type="Point">
+    要比较的点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果第一个点在第二个点之后返回 `true`。
+</APIReturns>
+</API>
+
+### `isBefore`
+
+检查一个点是否在另一个点之前。
+
+<API name="isBefore">
+<APIParameters>
+  <APIItem name="point" type="Point">
+    要检查的点。
+  </APIItem>
+  <APIItem name="another" type="Point">
+    要比较的点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果第一个点在第二个点之前返回 `true`。
+</APIReturns>
+</API>
+
+### `isPoint`
+
+检查值是否实现了 `Point` 接口。
+
+<API name="isPoint">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值是点则返回 `true`。
+</APIReturns>
+</API>
+
+## 类型
+
+### `Point`
+
+点表示 Plate 文档中的特定位置。
+
+<API name="Point">
+<APIAttributes>
+  <APIItem name="offset" type="number">
+    文本节点中字符的索引。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    指向文本节点的路径。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `PointEntry`
+
+点条目在迭代属于范围的 `Point` 对象时返回。
+
+<API name="PointEntry">
+<APIAttributes>
+  <APIItem name="[0]" type="Point">
+    点位置。
+  </APIItem>
+  <APIItem name="[1]" type="'anchor' | 'focus'">
+    指示此点是范围的锚点还是焦点。
+  </APIItem>
+</APIAttributes>
+</API>

@@ -1,0 +1,168 @@
+---
+title: Block Menu
+docs:
+  - route: https://pro.platejs.org/docs/examples/block-menu
+    title: Plus
+  - route: /docs/components/block-context-menu
+    title: Block Context Menu
+---
+
+<ComponentPreview name="block-menu-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Right-click on blocks to open a context menu.
+- Perform actions on blocks such as turning into different types, duplicating, or deleting.
+- Customizable menu items and actions.
+- Keyboard navigation support.
+- Block selection integration.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add the block menu is with the `BlockMenuKit`, which includes the pre-configured `BlockMenuPlugin` along with `BlockSelectionPlugin` and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="block-menu-kit" />
+
+- [`BlockContextMenu`](/docs/components/block-context-menu): Renders the context menu interface.
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BlockMenuKit } from '@/components/editor/plugins/block-menu-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BlockMenuKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/selection
+```
+
+### Add Plugins
+
+The block menu requires both `BlockSelectionPlugin` and `BlockMenuPlugin` to function properly.
+
+```tsx
+import { BlockSelectionPlugin, BlockMenuPlugin } from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    BlockSelectionPlugin.configure({
+      options: {
+        enableContextMenu: true,
+      },
+    }),
+    BlockMenuPlugin,
+  ],
+});
+```
+
+### Configure Plugins
+
+Configure the block menu with a context menu component:
+
+```tsx
+import { BlockSelectionPlugin, BlockMenuPlugin } from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
+import { BlockContextMenu } from '@/components/ui/block-context-menu';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    BlockSelectionPlugin.configure({
+      options: {
+        enableContextMenu: true,
+      },
+    }),
+    BlockMenuPlugin.configure({
+      render: { aboveEditable: BlockContextMenu },
+    }),
+  ],
+});
+```
+
+- `BlockSelectionPlugin.options.enableContextMenu`: Enables the context menu functionality.
+- `BlockMenuPlugin.render.aboveEditable`: Assigns [`BlockContextMenu`](/docs/components/block-context-menu) to render the context menu.
+
+#### Controlling Context Menu Behavior
+
+To control the opening of the context menu for specific elements, use the `data-plate-open-context-menu` attribute:
+
+```tsx
+<PlateElement data-plate-open-context-menu={false} {...props}>
+  {children}
+</PlateElement>
+```
+
+This is commonly used to prevent right-clicking on the padding of the `<Editor />` component from opening the menu.
+
+</Steps>
+
+## Plate Plus
+
+<ComponentPreviewPro name="block-menu-pro" />
+
+## Plugins
+
+### `BlockMenuPlugin`
+
+Plugin for block menu state management and context menu functionality.
+
+## API
+
+### `api.blockMenu.hide`
+
+Hides the block menu.
+
+### `api.blockMenu.show`
+
+Shows the block menu for a specific block.
+
+<API name="show">
+<APIParameters>
+  <APIItem name="id" type="'context' | string">
+    The ID of the block to show the menu for, or 'context' for the context menu.
+  </APIItem>
+  <APIItem name="position" type="{ x: number; y: number }" optional>
+    The position to show the menu at. If not provided, only the openId is updated.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `api.blockMenu.showContextMenu`
+
+Shows the context menu for a specific block and automatically selects that block.
+
+<API name="showContextMenu">
+<APIParameters>
+  <APIItem name="blockId" type="string">
+    The ID of the block to show the context menu for.
+  </APIItem>
+  <APIItem name="position" type="{ x: number; y: number }">
+    The position to show the context menu at.
+  </APIItem>
+</APIParameters>
+</API>

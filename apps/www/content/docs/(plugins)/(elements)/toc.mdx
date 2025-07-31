@@ -1,0 +1,329 @@
+---
+title: Table of Contents
+docs:
+  - route: https://pro.platejs.org/docs/examples/toc
+    title: Plus
+  - route: components/toc-node
+    title: Toc Element
+---
+
+<ComponentPreview name="toc-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Automatically generates a table of contents from document headings
+- Smooth scrolling to headings
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add table of contents functionality is with the `TocKit`, which includes pre-configured `TocPlugin` with the [Plate UI](/docs/installation/plate-ui) component.
+
+<ComponentSource name="toc-kit" />
+
+- [`TocElement`](/docs/components/toc-node): Renders table of contents elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { TocKit } from '@/components/editor/plugins/toc-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...TocKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/basic-nodes @platejs/toc
+```
+
+### Add Plugins
+
+Include `TocPlugin` and `HnPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { TocPlugin } from '@platejs/toc/react';
+import { H1Plugin, H2Plugin, H3Plugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    H1Plugin,
+    H2Plugin,
+    H3Plugin,
+    TocPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+Configure the `TocPlugin` with custom component and scroll options.
+
+```tsx
+import { TocPlugin } from '@platejs/toc/react';
+import { H1Plugin, H2Plugin, H3Plugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+import { TocElement } from '@/components/ui/toc-node';
+import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    H1Plugin.withComponent(H1Element),
+    H2Plugin.withComponent(H2Element),
+    H3Plugin.withComponent(H3Element),
+    TocPlugin.configure({
+      node: { component: TocElement },
+      options: {
+        topOffset: 80,
+        isScroll: true,
+      },
+    }),
+  ],
+});
+```
+
+- `node.component`: Assigns [`TocElement`](/docs/components/toc-node) to render table of contents elements.
+- `options.topOffset`: Sets the top offset when scrolling to headings.
+- `options.isScroll`: Enables scrolling behavior to headings.
+
+### Insert Toolbar Button
+
+You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert table of contents elements:
+
+```tsx
+{
+  icon: <TableOfContentsIcon />,
+  label: 'Table of contents',
+  value: KEYS.toc,
+}
+```
+
+### Scroll Container Setup
+
+- If your scrolling element is [EditorContainer](/docs/components/editor), you can skip this step.
+- If your scrolling element is the editor container, pass `useEditorContainerRef()` as the `ref` prop. For example:
+
+```tsx
+// Below <Plate> component
+function EditorContainer({ children }: { children: React.ReactNode }) {
+  const containerRef = useEditorContainerRef();
+
+  return <div ref={containerRef}>{children}</div>;
+}
+```
+
+- If your scrolling element is an ancestor of the editor container, pass `useEditorScrollRef()` as the `ref` prop. For example:
+
+```tsx
+// Below <Plate> component
+function Layout() {
+  const scrollRef = useEditorScrollRef();
+
+  return (
+    <main ref={scrollRef}>
+      <EditorContainer>
+        <PlateContent />
+      </EditorContainer>
+    </main>
+  );
+}
+```
+
+</Steps>
+
+## Plate Plus
+
+<ComponentPreviewPro name="toc-pro" />
+
+## Plugins
+
+### `TocPlugin`
+
+Plugin for generating table of contents.
+
+<API name="TocPlugin">
+<APIOptions>
+  <APIItem name="isScroll" type="boolean" optional>
+    Enable scrolling behavior.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="topOffset" type="number" optional>
+    Top offset when scrolling to heading.
+    - **Default:** `80`
+  </APIItem>
+  <APIItem name="queryHeading" type="(editor: SlateEditor) => Heading[]" optional>
+    Custom function to query headings.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Transforms
+
+### `tf.insertToc`
+
+Insert table of contents element.
+
+<API name="insertToc">
+<APIOptions type="InsertNodesOptions<SlateEditor>">
+    Node insertion options.
+</APIOptions>
+</API>
+
+## Hooks
+
+### `useTocElementState`
+
+Manage TOC element state.
+
+<API name="useTocElementState">
+<APIReturns>
+  <APIItem name="headingList" type="Heading[]">
+    Document headings array.
+  </APIItem>
+  <APIItem name="onContentScroll" type="(el: HTMLElement, id: string, behavior: ScrollBehavior) => void">
+    Heading scroll handler.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useTocElement`
+
+Handle TOC element interactions.
+
+<API name="useTocElement">
+
+<APIParameters>
+  <APIItem name="onContentScroll" type="(el: HTMLElement, id: string, behavior: ScrollBehavior) => void">
+    Scroll handler from useTocElementState.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    Props for TOC element.
+  </APIItem>
+  <APISubList>
+    <APISubListItem parent="props" name="onClick" type="(e: React.MouseEvent, item: Heading, behavior: ScrollBehavior) => void">
+      TOC item click handler.
+    </APISubListItem>
+  </APISubList>
+</APIReturns>
+</API>
+
+### `useTocSideBarState`
+
+Manage TOC sidebar state.
+
+<API name="useTocSideBarState">
+<APIParameters>
+  <APIItem name="open" type="boolean" optional>
+    Initial open state.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="rootMargin" type="string" optional>
+    Intersection Observer root margin.
+    - **Default:** `'0px 0px 0px 0px'`
+  </APIItem>
+  <APIItem name="topOffset" type="number" optional>
+    Scroll top offset.
+    - **Default:** `0`
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="activeContentId" type="string">
+    Active section ID.
+  </APIItem>
+  <APIItem name="headingList" type="Heading[]">
+    Document headings.
+  </APIItem>
+  <APIItem name="mouseInToc" type="boolean">
+    Mouse over TOC state.
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    Sidebar open state.
+  </APIItem>
+  <APIItem name="setIsObserve" type="React.Dispatch<React.SetStateAction<boolean>>">
+    Set observation state.
+  </APIItem>
+  <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
+    Set mouse over state.
+  </APIItem>
+  <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
+    TOC element ref.
+  </APIItem>
+  <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
+    Content scroll handler.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `useTocSideBar`
+
+This hook provides props and handlers for the TOC sidebar component.
+
+<API name="useTocSideBar">
+<APIParameters>
+  <APIItem name="mouseInToc" type="boolean">
+    Mouse over TOC state.
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    Sidebar open state.
+  </APIItem>
+  <APIItem name="setIsObserve" type="React.Dispatch<React.SetStateAction<boolean>>">
+    Set observation state.
+  </APIItem>
+  <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
+    Set mouse over state.
+  </APIItem>
+  <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
+    TOC element ref.
+  </APIItem>
+  <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
+    Content scroll handler.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="navProps" type="object">
+    Navigation element props.
+  </APIItem>
+  <APISubList type="navProps">
+    <APISubListItem parent="navProps" name="ref" type="React.RefObject<HTMLElement>">
+      TOC element ref.
+    </APISubListItem>
+    <APISubListItem parent="navProps" name="onMouseEnter" type="() => void">
+      Mouse enter handler.
+    </APISubListItem>
+    <APISubListItem parent="navProps" name="onMouseLeave" type="(e: React.MouseEvent<HTMLElement, MouseEvent>) => void">
+      Mouse leave handler.
+    </APISubListItem>
+  </APISubList>
+  <APISubListItem parent="navProps" name="onContentClick" type="(e: React.MouseEvent<HTMLElement, MouseEvent>, item: Heading, behavior?: ScrollBehavior) => void">
+    TOC item click handler.
+  </APISubListItem>
+</APIReturns>
+</API>

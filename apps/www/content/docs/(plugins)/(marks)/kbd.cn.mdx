@@ -1,0 +1,111 @@
+---
+title: Kbd
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<ComponentPreview name="basic-marks-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Display keyboard shortcuts and key combinations
+- Keyboard shortcut support for quick formatting
+- Renders as `<kbd>` HTML element by default
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add the kbd plugin is with the `BasicMarksKit`, which includes pre-configured `KbdPlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="basic-marks-kit" />
+
+- [`KbdLeaf`](/docs/components/kbd-node): Renders keyboard shortcut elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicMarksKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### Add Plugin
+
+Include `KbdPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { KbdPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    KbdPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+You can configure the `KbdPlugin` with a custom component.
+
+```tsx
+import { KbdPlugin } from '@platejs/basic-nodes/react';
+import { createPlateEditor } from 'platejs/react';
+import { KbdLeaf } from '@/components/ui/kbd-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    KbdPlugin.withComponent(KbdLeaf),
+  ],
+});
+```
+
+- `withComponent`: Assigns [`KbdLeaf`](/docs/components/kbd-node) to render keyboard shortcut elements.
+
+### Add Toolbar Button
+
+You can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle kbd formatting.
+
+</Steps>
+
+## Plugins
+
+### `KbdPlugin`
+
+Plugin for keyboard input text formatting. Renders as `<kbd>` HTML element by default.
+
+## Transforms
+
+### `tf.kbd.toggle`
+
+Toggles the kbd formatting for the selected text. 

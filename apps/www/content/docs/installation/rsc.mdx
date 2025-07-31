@@ -1,0 +1,128 @@
+---
+title: RSC
+description: Install and configure Plate for React Server Components
+---
+
+This guide demonstrates how to use Plate in React Server Components (RSC) for tasks like static content generation or server-side data processing. Plate's core is designed to be server-safe, allowing you to work with editor content without a browser environment.
+
+<Callout type="warning" title="Key RSC Constraint">
+  When using Plate in RSC, you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `@platejs/basic-nodes` instead of `@platejs/basic-nodes/react`).
+
+  This means you cannot use `createPlateEditor` from `platejs/react`. Instead, use `createSlateEditor` from `platejs`.
+</Callout>
+
+<Steps>
+
+### Install Plate
+
+Install the core Plate package and any specific plugin packages you need.
+
+```bash
+npm install platejs @platejs/basic-nodes
+```
+
+### Create an Editor Instance
+
+In an RSC environment, you use `createSlateEditor` from `platejs` to initialize an editor instance. This function doesn't rely on React hooks or client-side specific code.
+
+Here's an example demonstrating how to set up an editor with various plugins, similar to the [Server-Side Example](/docs/examples/server-side):
+
+```tsx title="app/api/generate-doc/route.ts"
+import { createSlateEditor } from 'platejs';
+import { AutoformatPlugin } from '@platejs/autoformat';
+import { BaseTextAlignPlugin } from '@platejs/basic-styles';
+import {
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseItalicPlugin,
+  BaseBlockquotePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+} from '@platejs/basic-nodes';
+import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+
+// Example initial value
+const initialValue = [
+  { type: 'h1', children: [{ text: 'Server-Generated Document' }] },
+  { type: 'p', children: [{ text: 'This content was processed on the server.' }] },
+  { type: 'blockquote', children: [{ text: 'This is a quote.' }] },
+  { type: 'p', children: [{ text: 'And this is bold.', bold: true }] },
+];
+
+// Create the editor instance
+const editor = createSlateEditor({
+  plugins: [
+    // Block plugins
+    BaseH1Plugin,
+    BaseH2Plugin,
+    BaseH3Plugin,
+    BaseBlockquotePlugin,
+    BaseTextAlignPlugin,
+    // ... add more element plugins as needed
+
+    // Mark plugins
+    BaseBoldPlugin,
+    BaseItalicPlugin,
+    BaseCodePlugin,
+    // ... add more mark plugins
+
+    // Functionality plugins
+    AutoformatPlugin,
+    MarkdownPlugin.configure({ // For serialization example
+      options: {
+        remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+      },
+    }),
+    // ... add other functional plugins
+  ],
+  value: initialValue, // Set initial content
+});
+
+// You can now use editor.children, editor.api, editor.tf, etc.
+// For example, to get the text content:
+const textContent = editor.api.string([]);
+// console.debug('Text Content:', textContent);
+
+// Or to serialize to Markdown:
+const markdown = editor.api.markdown.serialize();
+// console.debug('Markdown Output:', markdown);
+
+// The editor instance can be used for various server-side tasks.
+// For a complete example of using this in an RSC page for rendering,
+// see the /docs/examples/server-side page.
+```
+
+<Callout type="info">
+  `createSlateEditor` creates a raw Plate editor instance. It's suitable for server-side logic, data transformation, or preparing content for static rendering. Check out the full [Server-Side Example](/docs/examples/server-side) to see it in action.
+</Callout>
+
+### Content Manipulation
+
+The primary use case for Plate in RSC is programmatic content manipulation:
+
+-   **[`editor.api`](/docs/api/slate/editor-api)**: Access various utility functions for querying the editor state. For example:
+    -   `editor.api.nodes({ at: [], match })`: Find specific nodes.
+    -   `editor.api.string([])`: Extract text content.
+    -   [HTML Serialization](/docs/html)
+    -   [Markdown Serialization](/docs/markdown)
+
+-   **[`editor.tf`](/docs/api/slate/editor-transforms)**: Use transform functions to modify the editor content. For example:
+    -   `editor.tf.insertNodes(nodes, opts)`: Insert new nodes.
+    -   `editor.tf.removeNodes(opts)`: Delete nodes.
+    -   `editor.tf.setNodes(props, opts)`: Update properties of existing nodes.
+    -   `editor.tf.normalize({ force: true })`: Normalize the editor.
+
+</Steps>
+
+### Next Steps
+
+With Plate configured in your RSC environment, you can now:
+
+*   Build server-side content generation and transformation pipelines.
+*   Perform bulk updates or transformations on your existing Plate documents.
+*   Validate content structure or extract specific data from your documents.
+*   Integrate with other backend services for content processing.
+*   Explore [Markdown Serialization](/docs/markdown), [HTML Serialization](/docs/html), and [`PlateStatic`](/docs/plate-static) if you need to generate static content.

@@ -1,0 +1,140 @@
+---
+title: Serializing CSV
+---
+
+<ComponentPreview name="csv-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Convert CSV content to Plate table format
+- Configurable error tolerance for parsing malformed CSV data
+
+<Callout className="my-4" type="note">
+  Converting a Plate value to CSV is not yet supported.
+</Callout>
+
+</PackageInfo>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/csv
+```
+
+### Add Plugin
+
+```tsx
+import { CsvPlugin } from '@platejs/csv';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CsvPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+```tsx
+import { CsvPlugin } from '@platejs/csv';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CsvPlugin.configure({
+      options: {
+        errorTolerance: 0.1,
+        parseOptions: {
+          header: true,
+          skipEmptyLines: true,
+          delimiter: ',',
+        },
+      },
+    }),
+  ],
+});
+```
+
+- `options.errorTolerance`: Percentage of rows that can contain errors (default: `0.25` for 25%)
+- `options.parseOptions`: Configuration passed to PapaParse library for CSV parsing
+- `options.parseOptions.header`: Treat first row as headers (default: `true`)
+
+</Steps>
+
+## Usage
+
+### CSV to Plate
+
+Use the API method to deserialize CSV data:
+
+```tsx
+// Deserialize CSV string to Plate format
+const csvData = `Name,Age,City
+John,30,New York
+Jane,25,Boston`;
+
+const nodes = editor.api.csv.deserialize({ data: csvData });
+```
+
+## Plugins
+
+### CsvPlugin
+
+Plugin for CSV deserialization functionality.
+
+<API name="CsvPlugin">
+<APIOptions>
+  <APIItem name="errorTolerance" type="number" optional>
+    The tolerance for errors in the CSV data, represented as a percentage in decimal form. This value is calculated as the ratio of errors to the total number of rows.
+
+    - **Default:** `0.25` (This indicates that up to 25% of the rows can contain errors.)
+  </APIItem>
+  <APIItem name="parseOptions" type="ParseConfig" optional>
+    Options to be passed to the PapaParse library for parsing CSV data.
+
+    - **Default:** `{ header: true }` (Indicating that the first row of the CSV data should be treated as a header.)
+    - See [PapaParse documentation](https://www.papaparse.com/docs#config) for more details about these options.
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### api.csv.deserialize
+
+Takes a CSV (Comma Separated Values) string and converts it into a Plate compatible format. This function uses the `papaparse` library to parse the CSV data.
+
+<API name="deserialize">
+<APIParameters>
+  <APIItem name="data" type="string">
+    The CSV data string to be deserialized.
+  </APIItem>
+  <APIItem name="errorTolerance" type="number" optional>
+    Percentage in decimal form, from 0 to ∞, 0 for no errors allowed. Percentage is based on number of errors compared to number of rows.
+    - **Default:** `0.25`
+  </APIItem>
+  <APIItem name="parseOptions" type="ParseConfig">
+    Options to be passed to the PapaParse library for parsing CSV data.
+    - **Default:** `{ header: true }`
+    - See [PapaParse documentation](https://www.papaparse.com/docs#config)
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Descendant[]">
+  Array of `Descendant` nodes representing the CSV data in Plate format. Returns `undefined` if parsing fails.
+</APIReturns>
+</API>
+
+Creates a table representation of the CSV data:
+- Headers (if present) become the first row
+- Each CSV row becomes a table row
+- Uses plugins: `TablePlugin`, `TableCellHeaderPlugin`, `TableRowPlugin`, and `TableCellPlugin`

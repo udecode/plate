@@ -1,0 +1,248 @@
+---
+title: Font
+description: Provide extended formatting options for document content.
+docs:
+  - route: /docs/components/font-color-toolbar-button
+    title: Font Color Toolbar Button
+  - route: /docs/components/font-size-toolbar-button
+    title: Font Size Toolbar Button
+---
+
+<ComponentPreview name="font-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Apply font styling to selected text including size, family, color, background color, and weight.
+- Supports custom font families, sizes, colors, and weights.
+
+## Plugins
+
+- `FontBackgroundColorPlugin`: Control background color with `background-color` style
+- `FontColorPlugin`: Control font color with `color` style
+- `FontFamilyPlugin`: Change font family using inline elements with `font-family` style
+- `FontSizePlugin`: Control font size with CSS class or `font-size` style
+- `FontWeightPlugin`: Control font weight with `font-weight` style
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add font styling functionality is with the `FontKit`, which includes pre-configured font plugins with their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="font-kit" />
+
+- Includes all font plugins (`FontColorPlugin`, `FontBackgroundColorPlugin`, `FontSizePlugin`, `FontFamilyPlugin`) with sensible defaults.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { FontKit } from '@/components/editor/plugins/font-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...FontKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/basic-styles
+```
+
+### Add Plugins
+
+Include the font plugins in your Plate plugins array when creating the editor.
+
+```tsx
+import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  FontFamilyPlugin,
+  FontSizePlugin,
+} from '@platejs/basic-styles/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    FontColorPlugin,
+    FontBackgroundColorPlugin,
+    FontFamilyPlugin,
+    FontSizePlugin,
+  ],
+});
+```
+
+### Configure Plugins
+
+You can configure individual font plugins with custom options and target elements.
+
+```tsx
+import {
+  FontColorPlugin,
+  FontBackgroundColorPlugin,
+  FontSizePlugin,
+  FontFamilyPlugin,
+} from '@platejs/basic-styles/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    FontColorPlugin.configure({
+      inject: {
+        nodeProps: {
+          defaultNodeValue: 'black',
+        },
+        targetPlugins: [KEYS.p],
+      },
+    }),
+    FontSizePlugin.configure({
+      inject: {
+        targetPlugins: [KEYS.p],
+      },
+    }),
+    FontBackgroundColorPlugin.configure({
+      inject: {
+        targetPlugins: [KEYS.p],
+      },
+    }),
+    FontFamilyPlugin.configure({
+      inject: {
+        targetPlugins: [KEYS.p],
+      },
+    }),
+  ],
+});
+```
+
+- `inject.nodeProps.defaultNodeValue`: Sets the default font color value.
+- `inject.targetPlugins`: Specifies which element types can receive font styling (affects HTML parsing).
+
+### Add Toolbar Button
+
+You can add [`FontColorToolbarButton`](/docs/components/font-color-toolbar-button) and [`FontSizeToolbarButton`](/docs/components/font-size-toolbar-button) to your [Toolbar](/docs/toolbar) to control font color and size.
+
+</Steps>
+
+## Plugins
+
+### `FontBackgroundColorPlugin`
+
+Plugin for font background color formatting. Applies `background-color` style to selected text.
+
+### `FontColorPlugin`
+
+Plugin for font color formatting. Applies `color` style to selected text.
+
+### `FontFamilyPlugin`
+
+Plugin for font family formatting. Applies `font-family` style to selected text.
+
+### `FontSizePlugin`
+
+Plugin for font size formatting. Applies `font-size` style to selected text.
+
+### `FontWeightPlugin`
+
+Plugin for font weight formatting. Applies `font-weight` style to selected text.
+
+## Transforms
+
+### `tf.backgroundColor.addMark`
+
+Set the font background color mark on the selected text.
+
+<API name="tf.backgroundColor.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    The background color value to set (e.g., `'#ff0000'`, `'red'`).
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.color.addMark`
+
+Set the font color mark on the selected text.
+
+<API name="tf.color.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    The color value to set (e.g., `'#0000ff'`, `'blue'`).
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.fontFamily.addMark`
+
+Set the font family mark on the selected text.
+
+<API name="tf.fontFamily.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    The font family value to set (e.g., `'Arial'`, `'Times New Roman'`).
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.fontSize.addMark`
+
+Set the font size mark on the selected text.
+
+<API name="tf.fontSize.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    The font size value to set (e.g., `'16px'`, `'1.2em'`).
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.fontWeight.addMark`
+
+Set the font weight mark on the selected text.
+
+<API name="tf.fontWeight.addMark">
+<APIParameters>
+  <APIItem name="value" type="string">
+    The font weight value to set (e.g., `'bold'`, `'400'`, `'600'`).
+  </APIItem>
+</APIParameters>
+</API>
+
+## API
+
+### `toUnitLess`
+
+Convert a font size value to a unitless value.
+
+<API name="toUnitLess">
+<APIParameters>
+  <APIItem name="fontSize" type="string">
+    The font size value to convert.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="string">
+  The font size value without units.
+</APIReturns>
+</API>
+

@@ -1,0 +1,369 @@
+---
+title: 编辑器配置
+description: 学习如何配置和自定义Plate编辑器。
+---
+
+本指南涵盖Plate编辑器的配置选项，包括基础设置、插件管理和高级配置技巧。
+
+## 基础编辑器配置
+
+创建基础Plate编辑器可以使用`createPlateEditor`函数，或在React组件中使用`usePlateEditor`：
+
+```ts
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [HeadingPlugin],
+});
+```
+
+### 初始值
+
+设置编辑器的初始内容：
+
+```ts
+const editor = createPlateEditor({
+  value: [
+    {
+      type: 'p',
+      children: [{ text: '你好，Plate!' }],
+    },
+  ],
+});
+```
+
+也可以使用HTML字符串和关联插件初始化编辑器：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [BoldPlugin, ItalicPlugin],
+  value: '<p>这是<b>加粗</b>和<i>斜体</i>文本！</p>',
+});
+```
+
+支持HTML字符串反序列化的完整插件列表，请参阅[插件反序列化规则](/docs/html#plugin-deserialization-rules)部分。
+
+### 异步初始值
+
+如果需要异步获取初始值（例如从API），可以使用`skipInitialization`选项并在数据就绪后调用`editor.tf.init`：
+
+```tsx
+function AsyncEditor() {
+  const [initialValue, setInitialValue] = React.useState();
+  const [loading, setLoading] = React.useState(true);
+  const editor = usePlateEditor({
+    skipInitialization: true,
+  });
+
+  React.useEffect(() => {
+    // 模拟异步获取
+    setTimeout(() => {
+      setInitialValue([
+        {
+          type: 'p',
+          children: [{ text: '异步加载的值！' }],
+        },
+      ]);
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  React.useEffect(() => {
+    if (!loading && initialValue) {
+      editor.tf.init({ value: initialValue });
+    }
+  }, [loading, initialValue, editor]);
+
+  if (loading) return <div>加载中…</div>;
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+这种模式适用于需要等待数据才能初始化编辑器的情况，例如从服务器或数据库加载内容时。
+
+### 添加插件
+
+通过`plugins`数组添加插件：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [HeadingPlugin, ListPlugin],
+});
+```
+
+### 最大长度
+
+设置编辑器的最大长度：
+
+```ts
+const editor = createPlateEditor({
+  maxLength: 100,
+});
+```
+
+## 高级配置
+
+### 编辑器ID
+
+为编辑器设置自定义ID：
+
+```ts
+const editor = createPlateEditor({
+  id: 'my-custom-editor-id',
+});
+```
+
+如果定义了ID，在任何编辑器检索方法中都应该将其作为第一个参数传递。
+
+### 节点ID
+
+Plate内置了为节点自动分配唯一ID的系统，这对于某些插件和依赖稳定标识符的数据持久化策略至关重要。
+
+此功能默认启用。可以通过`nodeId`选项自定义其行为或完全禁用。
+
+#### 配置
+
+创建编辑器时，向`nodeId`属性传递对象来配置节点ID行为：
+
+```ts
+const editor = usePlateEditor({
+  // ... 其他插件和选项
+  nodeId: {
+    // 生成ID的函数（默认：nanoid(10)）
+    idCreator: () => uuidv4(),
+
+    // 排除内联元素获取ID（默认：true）
+    filterInline: true, 
+
+    // 排除文本节点获取ID（默认：true）
+    filterText: true,
+
+    // 在撤销/重做和复制/粘贴时重用ID（默认：false）
+    // 设置为true可使ID在这些操作中保持稳定
+    reuseId: false,
+
+    // 规范化初始值中的所有节点（默认：false - 仅检查首尾）
+    // 设置为true确保所有初始节点在缺失时获取ID
+    normalizeInitialValue: false, 
+    
+    // 禁止覆盖插入节点的现有ID（默认：false）
+    disableInsertOverrides: false,
+
+    // 仅允许特定节点类型获取ID（默认：全部）
+    allow: ['p', 'h1'], 
+
+    // 排除特定节点类型获取ID（默认：[]）
+    exclude: ['code_block'],
+
+    // 自定义过滤函数决定节点是否获取ID
+    filter: ([node, path]) => {
+      // 示例：仅对顶层块分配ID
+      return path.length === 1;
+    },
+  },
+});
+```
+
+<Callout type="note">
+  `NodeIdPlugin`（处理此功能）是核心插件的一部分，已自动包含。只有在需要自定义其默认行为时才需要指定`nodeId`选项。
+</Callout>
+
+#### 禁用节点ID
+
+如果不需要自动节点ID，可以禁用此功能：
+
+```ts
+const editor = usePlateEditor({
+  // ... 其他插件和选项
+  nodeId: false, // 这将禁用NodeIdPlugin
+});
+```
+
+禁用后，依赖节点ID的某些插件将无法正常工作。以下插件需要块ID才能工作：
+
+- **[块选择](/docs/block-selection)** - 需要ID来跟踪选中的块
+- **[块菜单](/docs/block-menu)** - 需要ID显示特定块的上下文菜单  
+- **[拖放](/docs/dnd)** - 使用ID在拖拽操作中识别块
+- **[表格](/docs/table)** - 依赖ID进行单元格选择
+- **[目录](/docs/toc)** - 需要标题ID进行导航和滚动
+- **[折叠](/docs/toggle)** - 使用ID跟踪哪些折叠项是打开/关闭的
+
+### 规范化
+
+控制编辑器是否在初始化时规范化其内容：
+
+```ts
+const editor = createPlateEditor({
+  shouldNormalizeEditor: true,
+});
+```
+
+注意，对于大型文档（如playground值），规范化可能需要几十毫秒。
+
+### 自动选择
+
+配置编辑器自动选择范围：
+
+```ts
+const editor = createPlateEditor({
+  autoSelect: 'end', // 或 'start'，或 true
+});
+```
+
+这与自动聚焦不同：可以在不聚焦编辑器的情况下选择文本。
+
+### 组件覆盖
+
+覆盖插件的默认组件：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [HeadingPlugin],
+  components: {
+    [ParagraphPlugin.key]: CustomParagraphComponent,
+    [HeadingPlugin.key]: CustomHeadingComponent,
+  },
+});
+```
+
+### 插件覆盖
+
+覆盖特定插件配置：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [HeadingPlugin],
+  override: {
+    plugins: {
+      [ParagraphPlugin.key]: {
+        options: {
+          customOption: true,
+        },
+      },
+    },
+  },
+});
+```
+
+### 禁用插件
+
+禁用特定插件：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [HeadingPlugin, ListPlugin],
+  override: {
+    enabled: {
+      [HistoryPlugin.key]: false,
+    },
+  },
+});
+```
+
+### 覆盖插件
+
+可以通过添加具有相同键的插件来覆盖核心插件或先前定义的插件。最后一个具有给定键的插件将生效：
+
+```ts
+const CustomParagraphPlugin = createPlatePlugin({
+  key: 'p',
+  // 自定义实现
+});
+
+const editor = createPlateEditor({
+  plugins: [CustomParagraphPlugin],
+});
+```
+
+### 根插件
+
+从根插件可以配置任何插件：
+
+```ts
+const editor = createPlateEditor({
+  plugins: [HeadingPlugin],
+  rootPlugin: (plugin) =>
+    plugin.configurePlugin(LengthPlugin, {
+    options: {
+        maxLength: 100,
+      },
+    }),
+});
+```
+
+## 类型化编辑器
+
+`createPlateEditor`会根据传递的值和插件自动推断编辑器的类型。要显式创建类型，可以使用泛型：
+
+### 插件类型
+
+```ts
+const editor = createPlateEditor<Value, typeof TablePlugin | typeof LinkPlugin>({
+  plugins: [TablePlugin, LinkPlugin],
+});
+
+// 使用
+editor.tf.insert.tableRow()
+```
+
+### 值类型
+
+对于更复杂的编辑器，可以在单独的文件中定义类型（例如`plate-types.ts`）：
+
+```ts
+import type { TElement, TText } from 'platejs';
+import type { TPlateEditor } from 'platejs/react';
+
+// 定义自定义元素类型
+interface ParagraphElement extends TElement {
+  align?: 'left' | 'center' | 'right' | 'justify';
+  children: RichText[];
+  type: typeof ParagraphPlugin.key;
+}
+
+interface ImageElement extends TElement {
+  children: [{ text: '' }]
+  type: typeof ImagePlugin.key;
+  url: string;
+}
+
+// 定义自定义文本类型
+interface FormattedText extends TText {
+  bold?: boolean;
+  italic?: boolean;
+}
+
+export type MyRootBlock = ParagraphElement | ImageElement;
+
+// 定义编辑器的值类型
+export type MyValue = MyRootBlock[];
+
+// 定义自定义编辑器类型
+export type MyEditor = TPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
+
+export const useMyEditorRef = () => useEditorRef<MyEditor>();
+
+// 使用
+const value: MyValue = [{
+  type: 'p',
+  children: [{ text: '你好，Plate!' }],
+}]
+
+const editorInferred = createPlateEditor({
+  plugins: [TablePlugin, LinkPlugin],
+  value,
+});
+
+// 或 
+const editorExplicit = createPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>({
+  plugins: [TablePlugin, LinkPlugin],
+  value,
+});
+```

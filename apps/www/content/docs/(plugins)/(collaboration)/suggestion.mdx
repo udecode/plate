@@ -1,0 +1,463 @@
+---
+title: Suggestion
+docs:
+  - route: https://pro.platejs.org/docs/examples/discussion
+    title: Plus
+  - route: /docs/components/suggestion-node
+    title: Suggestion Leaf
+  - route: /docs/components/suggestion-toolbar-button
+    title: Suggestion Toolbar Button
+  - route: /docs/components/block-suggestion
+    title: Block suggestion
+  - route: /docs/components/block-discussion
+    title: Block discussion
+---
+
+<ComponentPreview name="discussion-demo" />
+
+<PackageInfo>
+
+## Features
+
+- **Text Suggestions:** Add suggestions as text marks with inline annotations
+- **Block Suggestions:** Create suggestions for entire blocks of content
+- **State Tracking:** Track suggestion state and user interactions
+- **Undo/Redo Support:** Full undo/redo support for suggestion changes
+- **Discussion Integration:** Works with discussion plugin for complete collaboration
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add suggestion functionality is with the `SuggestionKit`, which includes pre-configured `SuggestionPlugin` and related components along with their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="suggestion-kit" />
+
+- [`SuggestionLeaf`](/docs/components/suggestion-node): Renders suggestion text marks
+- [`BlockSuggestion`](/docs/components/block-suggestion): Renders block-level suggestions
+- [`SuggestionLineBreak`](/docs/components/suggestion-node): Handles line breaks in suggestions
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { SuggestionKit } from '@/components/editor/plugins/suggestion-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...SuggestionKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/suggestion
+```
+
+### Extend Suggestion Plugin
+
+Create the suggestion plugin with extended configuration for state management:
+
+```tsx
+import {
+  type ExtendConfig,
+  type Path,
+  isSlateEditor,
+  isSlateElement,
+  isSlateString,
+} from 'platejs';
+import {
+  type BaseSuggestionConfig,
+  BaseSuggestionPlugin,
+} from '@platejs/suggestion';
+import { createPlatePlugin, toTPlatePlugin } from 'platejs/react';
+import { BlockSuggestion } from '@/components/ui/block-suggestion';
+import { SuggestionLeaf } from '@/components/ui/suggestion-node';
+
+export type SuggestionConfig = ExtendConfig<
+  BaseSuggestionConfig,
+  {
+    activeId: string | null;
+    hoverId: string | null;
+    uniquePathMap: Map<string, Path>;
+  }
+>;
+
+export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
+  BaseSuggestionPlugin,
+  ({ editor }) => ({
+    options: {
+      activeId: null,
+      currentUserId: 'alice', // Set your current user ID
+      hoverId: null,
+      uniquePathMap: new Map(),
+    },
+    render: {
+      node: SuggestionLeaf,
+      belowRootNodes: ({ api, element }) => {
+        if (!api.suggestion!.isBlockSuggestion(element)) {
+          return null;
+        }
+
+        return <BlockSuggestion element={element} />;
+      },
+    },
+  })
+);
+```
+
+- `options.activeId`: Currently active suggestion ID for visual highlighting
+- `options.currentUserId`: ID of the current user creating suggestions  
+- `options.hoverId`: Currently hovered suggestion ID for hover effects
+- `options.uniquePathMap`: Map tracking unique paths for suggestion resolution
+- `render.node`: Assigns [`SuggestionLeaf`](/docs/components/suggestion-node) to render suggestion text marks
+- `render.belowRootNodes`: Renders [`BlockSuggestion`](/docs/components/block-suggestion) for block-level suggestions
+
+### Add Click Handler
+
+Add click handling to manage active suggestion state:
+
+```tsx
+export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
+  BaseSuggestionPlugin,
+  ({ editor }) => ({
+    handlers: {
+      // Unset active suggestion when clicking outside of suggestion
+      onClick: ({ api, event, setOption, type }) => {
+        let leaf = event.target as HTMLElement;
+        let isSet = false;
+
+        const unsetActiveSuggestion = () => {
+          setOption('activeId', null);
+          isSet = true;
+        };
+
+        if (!isSlateString(leaf)) unsetActiveSuggestion();
+
+        while (
+          leaf.parentElement &&
+          !isSlateElement(leaf.parentElement) &&
+          !isSlateEditor(leaf.parentElement)
+        ) {
+          if (leaf.classList.contains(`slate-${type}`)) {
+            const suggestionEntry = api.suggestion!.node({ isText: true });
+
+            if (!suggestionEntry) {
+              unsetActiveSuggestion();
+              break;
+            }
+
+            const id = api.suggestion!.nodeId(suggestionEntry[0]);
+            setOption('activeId', id ?? null);
+            isSet = true;
+            break;
+          }
+
+          leaf = leaf.parentElement;
+        }
+
+        if (!isSet) unsetActiveSuggestion();
+      },
+    },
+    // ... previous options and render
+  })
+);
+```
+
+The click handler tracks which suggestion is currently active:
+- **Detects suggestion clicks**: Traverses DOM to find suggestion elements
+- **Sets active state**: Updates `activeId` when clicking on suggestions
+- **Clears state**: Unsets `activeId` when clicking outside suggestions
+- **Visual feedback**: Enables hover/active styling in suggestion components
+
+### Add Plugins
+
+```tsx
+import { createPlateEditor, createPlatePlugin } from 'platejs/react';
+import { SuggestionLineBreak } from '@/components/ui/suggestion-node';
+
+const suggestionLineBreakPlugin = createPlatePlugin({
+  key: 'suggestionLineBreak',
+  render: { belowNodes: SuggestionLineBreak as any },
+});
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    suggestionPlugin,
+    suggestionLineBreakPlugin,
+  ],
+});
+```
+
+- `render.belowNodes`: Renders [`SuggestionLineBreak`](/docs/components/suggestion-node) below nodes to handle line break suggestions
+
+### Enable Suggestion Mode
+
+Use the plugin's API to control suggestion mode:
+
+```tsx
+import { useEditorRef, usePluginOption } from 'platejs/react';
+
+function SuggestionToolbar() {
+  const editor = useEditorRef();
+  const isSuggesting = usePluginOption(suggestionPlugin, 'isSuggesting');
+
+  const toggleSuggesting = () => {
+    editor.setOption(suggestionPlugin, 'isSuggesting', !isSuggesting);
+  };
+
+  return (
+    <button onClick={toggleSuggesting}>
+      {isSuggesting ? 'Stop Suggesting' : 'Start Suggesting'}
+    </button>
+  );
+}
+```
+
+### Add Toolbar Button
+
+You can add [`SuggestionToolbarButton`](/docs/components/suggestion-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle suggestion mode in the editor.
+
+### Discussion Integration
+
+The suggestion plugin works with the [discussion plugin](/docs/discussion) for complete collaboration:
+
+```tsx
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    discussionPlugin,
+    suggestionPlugin.configure({
+      options: {
+        currentUserId: 'alice',
+      },
+    }),
+    suggestionLineBreakPlugin,
+  ],
+});
+```
+
+</Steps>
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Shift + S">
+    Add a suggestion on the selected text.
+  </KeyTableItem>
+</KeyTable>
+
+## Plate Plus
+
+<ComponentPreviewPro name="discussion-pro" />
+
+## Plugins
+
+### `SuggestionPlugin`
+
+Plugin for creating and managing text and block suggestions with state tracking and discussion integration.
+
+<API name="SuggestionPlugin">
+<APIOptions>
+  <APIItem name="currentUserId" type="string | null">
+    ID of the current user creating suggestions. Required for proper suggestion attribution.
+  </APIItem>
+  <APIItem name="isSuggesting" type="boolean">
+    Whether the editor is currently in suggestion mode. Used internally to track state.
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `api.suggestion.dataList`
+
+Gets suggestion data from a text node.
+
+<API name="dataList">
+<APIParameters>
+  <APIItem name="node" type="TSuggestionText">
+    The suggestion text node.
+  </APIItem>
+</APIParameters>
+<APIReturns type="TInlineSuggestionData[]">
+  Array of suggestion data.
+</APIReturns>
+</API>
+
+### `api.suggestion.isBlockSuggestion`
+
+Checks if a node is a block suggestion element.
+
+<API name="isBlockSuggestion">
+<APIParameters>
+  <APIItem name="node" type="TElement">
+    The node to check.
+  </APIItem>
+</APIParameters>
+<APIReturns type="node is TSuggestionElement">
+  Whether the node is a block suggestion.
+</APIReturns>
+</API>
+
+### `api.suggestion.node`
+
+Gets a suggestion node entry.
+
+<API name="node">
+<APIOptions type="EditorNodesOptions & { id?: string; isText?: boolean }" optional>
+  Options for finding the node.
+</APIOptions>
+<APIReturns type="NodeEntry<TSuggestionElement | TSuggestionText> | undefined">
+  The suggestion node entry if found.
+</APIReturns>
+</API>
+
+### `api.suggestion.nodeId`
+
+Gets the ID of a suggestion from a node.
+
+<API name="nodeId">
+<APIParameters>
+  <APIItem name="node" type="TElement | TSuggestionText">
+    The node to get ID from.
+  </APIItem>
+</APIParameters>
+<APIReturns type="string | undefined">
+  The suggestion ID if found.
+</APIReturns>
+</API>
+
+### `api.suggestion.nodes`
+
+Gets all suggestion node entries matching the options.
+
+<API name="nodes">
+<APIOptions type="EditorNodesOptions" optional>
+  Options for finding the nodes.
+</APIOptions>
+<APIReturns type="NodeEntry<TElement | TSuggestionText>[]">
+  Array of suggestion node entries.
+</APIReturns>
+</API>
+
+### `api.suggestion.suggestionData`
+
+Gets suggestion data from a node.
+
+<API name="suggestionData">
+<APIParameters>
+  <APIItem name="node" type="TElement | TSuggestionText">
+    The node to get suggestion data from.
+  </APIItem>
+</APIParameters>
+<APIReturns type="TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined">
+  The suggestion data if found.
+</APIReturns>
+</API>
+
+### `api.suggestion.withoutSuggestions`
+
+Temporarily disables suggestions while executing a function.
+
+<API name="withoutSuggestions">
+<APIParameters>
+  <APIItem name="fn" type="() => void">
+    The function to execute.
+  </APIItem>
+</APIParameters>
+</API>
+
+## Types
+
+### `TSuggestionText`
+
+Text nodes that can contain suggestions.
+
+<API name="TSuggestionText">
+<APIAttributes>
+  <APIItem name="suggestion" type="boolean" optional>
+    Whether this is a suggestion.
+  </APIItem>
+  <APIItem name="suggestion_<id>" type="TInlineSuggestionData" optional>
+    Suggestion data. Multiple suggestions can exist in one text node.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `TSuggestionElement`
+
+Block elements that contain suggestion metadata.
+
+<API name="TSuggestionElement">
+<APIAttributes>
+  <APIItem name="suggestion" type="TSuggestionData">
+    Block-level suggestion data including type, user, and timing information.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `TInlineSuggestionData`
+
+Data structure for inline text suggestions.
+
+<API name="TInlineSuggestionData">
+<APIAttributes>
+  <APIItem name="id" type="string">
+    Unique identifier for the suggestion.
+  </APIItem>
+  <APIItem name="userId" type="string">
+    ID of the user who created the suggestion.
+  </APIItem>
+  <APIItem name="createdAt" type="number">
+    Timestamp when the suggestion was created.
+  </APIItem>
+  <APIItem name="type" type="'insert' | 'remove' | 'update'">
+    Type of suggestion operation.
+  </APIItem>
+  <APIItem name="newProperties" type="object" optional>
+    For update suggestions, the new mark properties being suggested.
+  </APIItem>
+  <APIItem name="properties" type="object" optional>
+    For update suggestions, the previous mark properties.
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `TSuggestionData`
+
+Data structure for block-level suggestions.
+
+<API name="TSuggestionData">
+<APIAttributes>
+  <APIItem name="id" type="string">
+    Unique identifier for the suggestion.
+  </APIItem>
+  <APIItem name="userId" type="string">
+    ID of the user who created the suggestion.
+  </APIItem>
+  <APIItem name="createdAt" type="number">
+    Timestamp when the suggestion was created.
+  </APIItem>
+  <APIItem name="type" type="'insert' | 'remove'">
+    Type of block suggestion operation.
+  </APIItem>
+  <APIItem name="isLineBreak" type="boolean" optional>
+    Whether this suggestion represents a line break insertion.
+  </APIItem>
+</APIAttributes>
+</API>

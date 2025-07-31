@@ -1,0 +1,287 @@
+---
+title: 主要版本更新
+---
+
+<Callout type="info">
+  本页面仅记录**重大破坏性变更**。如需查看补丁和小版本更新，请查阅各包的 `CHANGELOG.md` 文件或访问 [GitHub Releases](https://github.com/udecode/plate/releases) 页面。
+</Callout>
+
+该PR由[Changesets release](https://github.com/changesets/action) GitHub Action自动创建。当您准备发布时，合并此PR即可自动将包发布到npm。如果尚未准备好发布，也无需担心，每当向main分支添加更多changesets时，此PR会自动更新。
+
+# 49.0.0
+
+## platejs@49.0.0
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+    -   包重命名为 `platejs`：
+        -   将所有 `@udecode/plate/react` 替换为 `platejs/react`
+        -   将所有 `'@udecode/plate'` 替换为 `'platejs'`
+
+## @platejs/slate@49.0.0
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+    -   所有 `@udecode/plate-*` 包重命名为 `@platejs/*`。在代码中将 `@udecode/plate-` 替换为 `@platejs/`。
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+    -   将 `editor.api.shouldMergeNodesRemovePrevNode` 替换为 `editor.api.shouldMergeNodes`。`shouldMergeNodes` 现在控制移除 + 合并行为
+
+        -   返回 `true` 表示应应用默认合并行为。
+        -   返回 `false` 表示不应应用默认合并行为。Plate 使用此功能防止删除 void 块，并优先删除空块而非合并。
+
+        ```ts
+        // 之前
+        editor.api.shouldMergeNodesRemovePrevNode(prev, current);
+
+        // 之后
+        editor.api.shouldMergeNodes(prev, current);
+        ```
+
+    -   将 `editor.api.fragment` 选项 `structuralTypes` 替换为 `unwrap`。
+
+        ```ts
+        // 之前
+        editor.api.fragment(editor.selection, { structuralTypes: ['table'] });
+
+        // 之后
+        editor.api.fragment(editor.selection, { unwrap: ['table'] });
+        ```
+
+### 次要变更
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+    -   `editor.tf.insertSoftBreak` 现在插入软换行而非硬换行。
+
+## @platejs/core@49.0.0
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+    -   `editor.getType()` 现在接受 `pluginKey: string` 而非 `plugin: PlatePlugin` 实例。
+        -   示例：使用 `editor.getType(ParagraphPlugin.key)` 而非 `editor.getType(ParagraphPlugin)`。
+    -   没有 `key` 属性的插件将不会被注册到编辑器中。
+    -   向 `PlateContent` 传递 `disabled: true` 属性现在也会在内部将编辑器设置为 `readOnly: true` 状态。
+    -   编辑器 DOM 状态属性已移至 `editor.dom` 命名空间下：
+        -   `editor.currentKeyboardEvent` 现在为 `editor.dom.currentKeyboardEvent`。
+        -   `editor.prevSelection` 现在为 `editor.dom.prevSelection`。
+    -   编辑器元数据属性已移至 `editor.meta` 命名空间下：
+        -   `editor.isFallback` 现在为 `editor.meta.isFallback`
+        -   `editor.key` 现在为 `editor.meta.key`
+        -   `editor.pluginList` 现在为 `editor.meta.pluginList`
+        -   `editor.shortcuts` 现在为 `editor.meta.shortcuts`
+        -   `editor.uid` 现在为 `editor.meta.uid`
+    -   `NodeIdPlugin` 现在作为核心插件默认启用。这会自动为块节点分配唯一ID。
+        -   迁移：如果您之前未使用 `NodeIdPlugin` 并希望保持旧行为（不自动生成ID），请在编辑器配置中显式禁用它：
+            ```ts
+            const editor = usePlateEditor({
+              // ...其他选项
+              nodeId: false, // 禁用自动节点ID生成
+            });
+            ```
+    -   移除了 `serializeHtml` 和 `PlateStatic` 中的 `components` 属性。
+        -   迁移：将 `components` 传递给 `createSlateEditor({ components })` 或各个插件。
+    -   插件快捷键系统变更：
+        -   定义在 `editor.shortcuts` 中的快捷键键现在按插件键命名空间化（例如，`CodePlugin` 的 `code.toggle`）。
+        -   快捷键的 `priority` 属性用于解决多个快捷键共享完全相同键组合时的冲突，而非按名称覆盖快捷键。
+        -   插件快捷键的 `preventDefault` 现在默认为 `true`，除非处理程序返回 `false`（即未处理）。这意味着除非显式允许，否则这些键组合的浏览器默认操作将被阻止。
+            -   迁移：如果需要对特定快捷键允许浏览器默认行为，在其配置中设置 `preventDefault: false`：
+                ```ts
+                MyPlugin.configure({
+                  shortcuts: {
+                    myAction: {
+                      keys: 'mod+s',
+                      preventDefault: false, // 示例：允许浏览器的默认保存对话框
+                    },
+                  },
+                });
+                ```
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+    -   所有 `@udecode/plate-*` 包重命名为 `@platejs/*`。在代码中将 `@udecode/plate-` 替换为 `@platejs/`。
+
+### 次要变更
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+    -   `editor.dom` 下新增编辑器 DOM 状态字段：
+        -   `editor.dom.composing`: 布尔值，如果编辑器当前正在输入文本（如IME输入期间）则为 true。
+        -   `editor.dom.focused`: 布尔值，如果编辑器当前获得焦点则为 true。
+        -   `editor.dom.readOnly`: 布尔值，如果编辑器处于只读模式则为 true。向 `PlateContent` 传递 `readOnly` 属性会将其值同步到此状态和 `useEditorReadOnly` 钩子。
+    -   新增编辑器元数据字段：
+        -   `editor.meta.components` - 按键存储插件组件
+    -   新增钩子 `useEditorComposing`：允许在 `PlateContent` 外部订阅编辑器的 composing 状态（`editor.dom.composing`）。
+    -   `createPlateEditor` 和 `usePlateEditor` 现在接受 `readOnly` 选项以在初始化时将编辑器设置为只读状态。对于初始化后的动态只读变更，继续使用 `<Plate>` 或 `<PlateContent>` 组件上的 `readOnly` 属性。
+    -   新增插件字段：`editOnly`（布尔值或对象）。
+        -   当为 `true` 或对象中特定属性为 true 时，Plate 将在只读模式下禁用某些插件行为（处理程序、渲染、注入），并在编辑器变为可编辑时重新启用它们。
+        -   默认情况下，`render`、`handlers` 和 `inject` 被视为仅编辑（`true`）。`normalizeInitialValue` 默认为始终活动（`false`）。
+        -   示例：`editOnly: { render: false, normalizeInitialValue: true }` 将使渲染始终活动，但仅在编辑模式下进行规范化。
+    -   新增插件字段：`render.as` (`keyof HTMLElementTagNameMap`)。
+        -   指定 `PlateElement`（默认：`'div'`）或 `PlateLeaf`（默认：`'span'`）在渲染节点时使用的默认HTML标签名，但仅当未为插件提供自定义 `node.component` 时。
+        -   示例：`render: { as: 'h1' }` 将使插件默认将其节点渲染为 `<h1>` 标签，而无需提供自定义组件。
+    -   新增插件字段：`node.isContainer`（布尔值）。
+        -   当为 `true` 时，表示插件的元素主要是其他内容的容器。
+    -   新增插件字段：`node.isStrictSiblings`（布尔值）。
+        -   当为 `true` 时，表示元素强制执行严格的兄弟类型约束，仅允许特定兄弟（例如，`td` 只能有 `td` 兄弟，`column` 只能有 `column` 兄弟）。
+        -   由 `editor.tf.insertExitBreak` 功能用于确定嵌套结构中的适当退出点。
+    -   新增插件字段：`rules`（对象）。
+        -   以声明方式配置常见编辑行为，而非覆盖编辑器方法。详见文档。
+        -   `rules.break`: 控制 Enter 键行为（`empty`、`default`、`emptyLineEnd`、`splitReset`）
+        -   `rules.delete`: 控制 Backspace 键行为（`start`、`empty`）
+        -   `rules.merge`: 控制块合并行为（`removeEmpty`）
+        -   `rules.normalize`: 控制规范化行为（`removeEmpty`）
+        -   `rules.selection`: 控制光标定位行为（`affinity`）
+        -   `rules.match`: 基于节点属性的条件规则应用
+    -   插件快捷键现在可以通过指定转换名称自动利用现有插件转换，以及自定义处理程序。
+    -   新增编辑器转换方法用于键盘处理：
+        -   `editor.tf.escape`: 处理 Escape 键事件。如果事件被处理则返回 `true`。
+        -   `editor.tf.moveLine`: 处理 ArrowDown 和 ArrowUp 键事件，`reverse` 选项用于方向。如果事件被处理则返回 `true`。
+        -   `editor.tf.selectAll`: 处理 Ctrl/Cmd+A 键事件以选择所有内容。如果事件被处理则返回 `true`。
+        -   `editor.tf.tab`: 处理 Tab 和 Shift+Tab 键事件，`reverse` 选项用于 Shift+Tab。如果事件被处理则返回 `true`。
+
+## @platejs/utils@49.0.0
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+    -   所有 `@udecode/plate-*` 包重命名为 `@platejs/*`。在代码中将 `@udecode/plate-` 替换为 `@platejs/`。
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+    -   节点类型定义（如 `TImageElement`、`TParagraphElement`）之前与其各自插件包（如 `@udecode/plate-media`）位于同一位置，现在已集中到 `@platejs/utils` 中。这些通常通过主 `platejs` 包重新导出。
+
+        -   迁移：更新这些类型的导入以从 `platejs` 获取。
+
+            ```tsx
+            // 之前
+            // import { TImageElement } from '@udecode/plate-media';
+
+            // 之后
+            import { TImageElement } from 'platejs';
+            ```
+
+    -   从 `useSelectionFragment` 和 `useSelectionFragmentProp` 中移除了 `structuralTypes` 选项。这些钩子现在自动使用启用插件中的 `plugin.node.isContainer`。
+
+    -   移除了：
+        -   `createNodesHOC`
+        -   `createNodesWithHOC`
+        -   `createNodeHOC`
+
+    -   移除了 `usePlaceholderState` 钩子。
+        -   迁移：使用 `BlockPlaceholderPlugin`（通常来自 `platejs`）而非 `withPlaceholders` HOC 和 `usePlaceholderState`。直接在 `BlockPlaceholderPlugin` 选项中配置占位符。
+            ```ts
+            // BlockPlaceholderPlugin 配置示例
+            BlockPlaceholderPlugin.configure({
+              options: {
+                className:
+                  'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
+                placeholders: {
+                  [ParagraphPlugin.key]: '输入内容...',
+                  // ...其他占位符
+                },
+                query: ({ editor, path }) => {
+                  // 示例查询：仅显示顶级空块
+                  return (
+                    path.length === 1 && editor.api.isEmpty(editor.children[path[0]])
+                  );
+                },
+              },
+            });
+            ```
+
+## @platejs/ai@49.0.0
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+    -   Copilot API 方法变更：
+        -   `editor.api.copilot.accept` 现在为 `editor.tf.copilot.accept`。
+        -   `editor.api.copilot.acceptNextWord` 现在为 `editor.tf.copilot.acceptNextWord`。
+        -   `editor.api.copilot.reset` 现在为 `editor.api.copilot.reject`。
+    -   移除了 Copilot 的默认快捷键：
+        -   仅 `accept`（Tab）和 `reject`（Escape）快捷键默认包含在 `CopilotPlugin` 中。
+        -   `acceptNextWord` 和 `triggerSuggestion` 快捷键现在必须在配置插件时使用 `shortcuts` 字段手动配置。
+        -   示例：
+            ```tsx
+            CopilotPlugin.configure({
+              // ... 其他选项
+              shortcuts: {
+                acceptNextWord: {
+                  keys: 'mod+right',
+                },
+                triggerSuggestion: {
+                  keys: 'ctrl+space',
+                },
+              },
+            });
+            ```
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+    -   所有 `@udecode/plate-*` 包重命名为 `@platejs/*`。在代码中将 `@udecode/plate-` 替换为 `@platejs/`。
+
+## @platejs/alignment@49.0.0
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+    -   包 `@udecode/plate-alignment` 已被弃用。
+
+    -   `TextAlignPlugin`（原 `AlignPlugin`）已移至 `@platejs/basic-styles` 包。
+
+    -   迁移：
+
+        -   从依赖中移除 `@udecode/plate-alignment`。
+        -   如果尚未添加，将 `@platejs/basic-styles` 添加到依赖中。
+        -   从 `@platejs/basic-styles/react` 导入 `TextAlignPlugin`。
+
+    -   将 `AlignPlugin` 重命名为 `TextAlignPlugin`，并将插件键从 `'align'` 更改为 `'textAlign'`。
+
+        ```ts
+        // 之前
+        import { AlignPlugin } from '@udecode/plate-alignment/react';
+
+        // 之后
+        import { TextAlignPlugin } from '@platejs/basic-styles/react';
+        ```
+
+    -   `setAlign` 签名变更：
+
+    ```ts
+    // 之前
+    setAlign(editor, { value: 'center', setNodesOptions });
+
+    // 之后
+    setAlign(editor, 'center', setNodesOptions);
+    ```
+
+    -   移除了 `useAlignDropdownMenu` 和 `useAlignDropdownMenuState`。在您自己的代码库中使用它，例如：
+
+    ```tsx
+    export function AlignToolbarButton() {
+      const editor = useEditorRef();
+      const value = useSelectionFragmentProp({
+        defaultValue: 'start',
+        structuralTypes,
+        getProp: (node) => node.align,
+      });
+
+      const onValueChange = (newValue: string) => {
+        editor.tf.textAlign.setNodes(newValue as Alignment);
+        editor.tf.focus();
+      };
+
+      // ...
+    }
+    ```
+
+## @platejs/autoformat@49.0.0
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+    -   将 `BaseAutoformatPlugin` 替换为 `AutoformatPlugin`，后者不再是 React 插件。迁移：将 `@udecode/plate-autoformat/react` 导入替换为 `@udecode/plate-autoformat`。
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+
+    -   以下插件现在默认为 `editOnly: true`。这意味着它们的核心功能（处理程序、渲染注入等）将在编辑器处于只读模式时禁用。要为特定插件覆盖此行为，配置其 `editOnly` 字段。例如，`SomePlugin.configure({ editOnly: false })`。
+
+-   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
+    -   所有 `@udecode/plate-*` 包重命名为 `@platejs/*`。在代码中将 `@udecode/plate-` 替换为 `@platejs/`。
+
+## @platejs/basic-elements@49.0.0
+
+-

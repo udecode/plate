@@ -1,0 +1,202 @@
+---
+title: Exit Break
+---
+
+<ComponentPreview name="exit-break-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Exit from nested block structures (like code blocks, tables, columns) using keyboard shortcuts.
+- Automatically determines the appropriate exit point based on block hierarchy.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add exit break functionality is with the `ExitBreakKit`, which includes pre-configured `ExitBreakPlugin` with keyboard shortcuts.
+
+<ComponentSource name="exit-break-kit" />
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { ExitBreakKit } from '@/components/editor/plugins/exit-break-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...ExitBreakKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Add Plugin
+
+```tsx
+import { ExitBreakPlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ExitBreakPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+```tsx
+import { ExitBreakPlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ExitBreakPlugin.configure({
+      shortcuts: {
+        insert: { keys: 'mod+enter' },
+        insertBefore: { keys: 'mod+shift+enter' },
+      },
+    }),
+  ],
+});
+```
+
+- `shortcuts.insert`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to exit and insert block after.
+- `shortcuts.insertBefore`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to exit and insert block before.
+
+</Steps>
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Cmd + Enter">
+    Exit the current block structure and insert a new block after.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + Shift + Enter">
+    Exit the current block structure and insert a new block before.
+  </KeyTableItem>
+</KeyTable>
+
+## Plugins
+
+### `ExitBreakPlugin`
+
+Provides transforms to exit nested block structures automatically. The plugin determines the appropriate exit point by finding the first ancestor that allows standard block siblings.
+
+<API name="ExitBreakPlugin">
+<APIOptions>
+  <APIItem name="shortcuts" type="object" optional>
+    Keyboard shortcuts configuration.
+    <APISubList>
+      <APISubListItem parent="shortcuts" name="insert" type="Shortcut" optional>
+        Shortcut to exit and insert block after.
+        - **Example:** `{ keys: 'mod+enter' }`
+      </APISubListItem>
+      <APISubListItem parent="shortcuts" name="insertBefore" type="Shortcut" optional>
+        Shortcut to exit and insert block before.
+        - **Example:** `{ keys: 'mod+shift+enter' }`
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIOptions>
+</API>
+
+## How Exit Break Works
+
+Exit break uses the [`isStrictSiblings`](/docs/api/core/plate-plugin#isstrictsiblings) property to determine where to insert new blocks when exiting nested structures.
+
+### Exit Point Determination
+
+When you trigger exit break:
+
+1. Starts from the current text block (e.g., paragraph inside a table cell)
+2. Traverses up the document tree looking at each ancestor
+3. Finds the first ancestor with `isStrictSiblings: false`
+4. Inserts a new paragraph as a sibling to that ancestor
+
+### Examples
+
+**Code Block:**
+```tsx
+<codeblock>                              // ← Exit point (top-level block)
+  <codeline>code|</codeline>             // ← Starting position
+</codeblock>
+<p>|</p>                                 // ← New paragraph inserted here
+```
+
+**Table in Column (exits at table level):**
+```tsx
+// First exit
+<column_group>                           
+  <column>                               
+    <table>                              // ← Exit point (isStrictSiblings: false)
+      <tr>                               // isStrictSiblings: true
+        <td>                             // isStrictSiblings: true
+          <p>content|</p>                // ← Starting position
+        </td>
+      </tr>
+    </table>
+    <p>|</p>                             // ← New paragraph inserted here
+  </column>
+</column_group>
+
+// Second exit
+<column_group>                           // ← Exit point (isStrictSiblings: false)
+  <column>                               // isStrictSiblings: true
+    <table>                              
+      <tr>                               
+        <td>                             
+          <p>content</p>
+        </td>
+      </tr>
+    </table>
+    <p>|</p>                             // ← Starting position
+  </column>
+</column_group>
+<p>|</p>                                 // ← New paragraph inserted here
+```
+
+### Custom Plugin Configuration
+
+Configure [`isStrictSiblings`](/docs/api/core/plate-plugin#isstrictsiblings) for custom plugins:
+
+```tsx
+// Table structure
+const CustomTablePlugin = createSlatePlugin({
+  key: 'table',
+  node: {
+    isElement: true,
+    // isStrictSiblings: false (default) - allows paragraph siblings
+  },
+});
+
+const CustomTableRowPlugin = createSlatePlugin({
+  key: 'tr',
+  node: {
+    isElement: true,
+    isStrictSiblings: true, // Only allows tr siblings
+  },
+});
+
+const CustomTableCellPlugin = createSlatePlugin({
+  key: 'td',
+  node: {
+    isElement: true,
+    isStrictSiblings: true, // Only allows td/th siblings
+  },
+});

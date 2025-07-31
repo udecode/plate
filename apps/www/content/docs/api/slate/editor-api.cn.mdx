@@ -1,0 +1,1756 @@
+---
+title: 编辑器 API
+description: 编辑器 API 的参考文档。
+---
+
+Editor API 提供了一系列辅助函数，用于查询和操作编辑器状态。
+
+## 通用选项
+
+### `At`
+
+编辑器中的位置引用。可以是 Location 或 Node。
+
+```ts
+type At = TLocation | TNode
+```
+
+当传入 Node 时，会使用 [`editor.api.findPath()`](/docs/api/slate/editor-api#findpath) 查找其路径。这样您可以通过以下方式引用位置：
+- [Location](/docs/api/slate/location) ([Path](/docs/api/slate/path), [Point](/docs/api/slate/point), 或 [Range](/docs/api/slate/range))
+- [Node](/docs/api/slate/node)
+
+示例：
+```ts
+// 使用位置
+editor.api.nodes({ at: [0, 0] }) // 路径位置
+editor.api.nodes({ at: { path: [0], offset: 0 } }) // 点位置 
+editor.api.nodes({ at: { anchor: point1, focus: point2 } }) // 范围位置
+
+// 使用节点引用
+const node = editor.children[0]
+editor.api.nodes({ at: node }) // 内部会查找节点的路径
+```
+
+### Match
+
+匹配节点的谓词。谓词可以是：
+- 接收 `node` 和 `path` 并返回 `boolean` 的函数
+- 对象，其中每个键值对必须匹配节点的属性
+  - 值可以是单个值或要匹配的值数组
+
+示例：
+```ts
+// 函数谓词
+editor.api.nodes({
+  match: (node) => node.type === 'p'
+})
+
+// 对象谓词
+editor.api.nodes({
+  match: { type: 'p' }
+})
+
+// 带多个可能值的对象谓词
+editor.api.nodes({
+  match: { type: ['p', 'h1'] }
+})
+```
+
+### `QueryMode`
+
+查询节点层次结构的模式。
+
+<API name="QueryMode">
+<APIOptions type="QueryMode">
+  <APIItem name="mode" type="'all' | 'highest' | 'lowest'" optional>
+    - `'all'` (默认): 返回所有匹配节点
+    - `'highest'`: 在节点层次结构中，仅返回最高级别的匹配节点
+    - `'lowest'`: 在节点层次结构中，仅返回最低级别的匹配节点
+
+    示例：
+    ```ts
+    // 给定结构：
+    // - blockquote (匹配)
+    //   - paragraph (匹配)
+    //     - text
+    
+    // mode: 'all' 返回 blockquote 和 paragraph
+    editor.api.nodes({ match: { type: ['blockquote', 'paragraph'] }, mode: 'all' })
+    
+    // mode: 'highest' 仅返回 blockquote
+    editor.api.nodes({ match: { type: ['blockquote', 'paragraph'] }, mode: 'highest' })
+    
+    // mode: 'lowest' 仅返回 paragraph
+    editor.api.nodes({ match: { type: ['blockquote', 'paragraph'] }, mode: 'lowest' })
+    ```
+  </APIItem>
+</APIOptions>
+</API>
+
+### `QueryOptions`
+
+查询编辑器中节点的通用选项。
+
+<API name="QueryOptions">
+<APIOptions type="QueryOptions<V>">
+  <APIItem name="at" type="At" optional>
+    查询的起始位置。默认为当前编辑器选区。
+  </APIItem>
+  <APIItem name="block" type="boolean" optional>
+    匹配块节点。为 true 时仅匹配块元素。
+  </APIItem>
+  <APIItem name="empty" type="boolean" optional>
+    匹配空/非空节点。
+    - 为 true 时仅匹配空节点
+    - 为 false 时仅匹配非空节点
+  </APIItem>
+  <APIItem name="id" type="boolean | string" optional>
+    按 id 匹配节点。
+    - 为 true 时匹配所有带 id 的节点
+    - 为字符串时匹配特定 id 的节点
+  </APIItem>
+  <APIItem name="match" type="Predicate<NodeIn<V>>" optional>
+    匹配节点的自定义函数或对象。
+    - 函数: `(node, path) => boolean`
+    - 对象: 应与节点匹配的键值对
+  </APIItem>
+  <APIItem name="text" type="boolean" optional>
+    匹配文本节点。为 true 时仅匹配文本节点。
+  </APIItem>
+</APIOptions>
+</API>
+
+## `editor.api`
+
+### `above`
+
+获取文档中位置上方匹配的祖先节点。
+
+<API name="above">
+<APIOptions type="EditorAboveOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    通用查询选项。
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    查询模式选项。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    是否在搜索中包含 void 节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<N> | undefined">
+  包含匹配祖先节点及其路径的元组，未找到则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `block`
+
+获取位置处的块或查找第一个匹配选项的块。  
+块通常是顶级节点，因此这是检索祖先块的常用方式。
+
+```ts
+editor.api.block() // 获取选区上方的块
+editor.api.block({ above: true }) // 获取选区上方的块
+editor.api.block({ at: [0, 0] }) // 获取 [0, 0] 处的块
+editor.api.block({ at: [0, 0], above: true }) // 获取 [0] 处的块
+editor.api.block({ highest: true }) // 获取选区处最高级别的块
+```
+
+<API name="block">
+<APIOptions type="EditorBlockOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    匹配块的通用查询选项。
+  </APIItem>
+  <APIItem name="at" type="At | Span" optional>
+    查询位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="ignoreNonSelectable" type="boolean" optional>
+    遍历时是否忽略不可选节点。
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    是否反向遍历。
+  </APIItem>
+  <APIItem name="universal" type="boolean" optional>
+    是否确保操作在所有节点上通用。
+  </APIItem>
+  <APIItem name="above" type="boolean" optional>
+    为 true 时获取位置上方的块。如果 `at` 不是块路径则忽略。
+  </APIItem>
+  <APIItem name="highest" type="boolean" optional>
+    为 true 时获取位置处的最高块(根级块)。
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    匹配块的查询模式。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    是否在搜索中包含 void 节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<N> | undefined">
+  匹配的块节点条目，未找到则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `blocks`
+
+返回所有匹配的块。
+
+<API name="blocks">
+<APIOptions type="EditorNodesOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    匹配块的通用查询选项。
+  </APIItem>
+  <APIItem name="at" type="At | Span" optional>
+    查询位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="ignoreNonSelectable" type="boolean" optional>
+    遍历时是否忽略不可选节点。
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    是否反向遍历。
+  </APIItem>
+  <APIItem name="universal" type="boolean" optional>
+    是否确保操作在所有节点上通用。
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    匹配块的查询模式。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    是否在搜索中包含 void 节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<ElementIn<V>>[]">
+  匹配块节点条目的数组。
+</APIReturns>
+</API>
+
+### `edgeBlocks`
+
+返回位置上方的边缘块(默认:选区)。  
+用于获取范围的起始和结束块。
+
+<API name="edgeBlocks">
+<APIOptions type="EditorNodesOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    匹配块的通用查询选项。
+  </APIItem>
+  <APIItem name="at" type="At | Span" optional>
+    获取边缘块的位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="ignoreNonSelectable" type="boolean" optional>
+    遍历时是否忽略不可选节点。
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    是否反向遍历。
+  </APIItem>
+  <APIItem name="universal" type="boolean" optional>
+    是否确保操作在所有节点上通用。
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    匹配块的查询模式。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    是否在搜索中包含 void 节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="[NodeEntry<N1>, NodeEntry<N2>] | null">
+  位置上方的 `[startBlock, endBlock]` 元组，未找到则返回 `null`。
+</APIReturns>
+</API>
+
+### `first`
+
+获取位置处的第一个节点。
+
+<API name="first">
+<APIParameters>
+  <APIItem name="at" type="At">
+    获取第一个节点的位置。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry<DescendantIn<V>> | undefined">
+  包含第一个节点及其路径的元组，未找到则返回 undefined。
+</APIReturns>
+</API>
+
+### `fragment`
+
+获取位置或选区处的片段。
+
+<API name="fragment">
+<APIParameters>
+  <APIItem name="at" type="At | null" optional>
+    提取片段的位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="options" type="EditorFragmentOptions" optional>
+    提取和处理片段的选项。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="ElementOrTextIn<V>[] | undefined">
+  位置处的片段。
+</APIReturns>
+</API>
+
+### `getFragment`
+
+返回当前选区处的片段。例如在剪切或复制时使用，获取当前选区的片段。
+
+<API name="getFragment">
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    获取片段的位置。默认为当前选区。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="ElementOrTextIn<V>[]">
+  当前选区处的片段。
+</APIReturns>
+</API>
+
+### `hasBlocks`
+
+检查节点是否有块子节点。
+
+<API name="hasBlocks">
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    要检查的元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果元素有块子节点则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `hasInlines`
+
+检查节点是否有内联和文本子节点。
+
+<API name="hasInlines">
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    要检查的元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果元素有内联和文本子节点则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `hasMark`
+
+检查选区处标记是否激活。
+
+<API name="hasMark">
+<APIParameters>
+  <APIItem name="key" type="keyof MarksIn<V>">
+    要检查的标记键。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果当前选区处标记激活则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `hasPath`
+
+检查路径是否存在于编辑器中。
+
+<API name="hasPath">
+<APIParameters>
+  <APIItem name="path" type="Path">
+    要检查的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果路径存在则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `hasTexts`
+
+检查节点是否有文本子节点。
+
+<API name="hasTexts">
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    要检查的元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果元素有文本子节点则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isAt`
+
+检查位置(点/范围)是否在特定位置。
+
+```ts
+// 对于范围:
+editor.api.isAt({ text: true }) // 检查范围是否在单个文本节点内
+editor.api.isAt({ block: true }) // 检查范围是否在单个块内
+editor.api.isAt({ blocks: true }) // 检查范围是否跨多个块
+editor.api.isAt({ start: true }) // 检查范围是否起始于块起始处
+editor.api.isAt({ end: true }) // 检查范围是否结束于块末尾
+
+// 对于点:
+editor.api.isAt({ word: true }) // 相对于单词边界检查
+editor.api.isAt({ start: true }) // 检查是否在起始处
+editor.api.isAt({ end: true }) // 检查是否在末尾
+```
+
+<API name="isAt">
+<APIOptions type="object">
+  <APIItem name="at" type="At" optional>
+    要检查的位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="text" type="boolean" optional>
+    检查范围是否在单个文本节点内。
+  </APIItem>
+  <APIItem name="block" type="boolean" optional>
+    检查范围是否在单个块内。
+  </APIItem>
+  <APIItem name="blocks" type="boolean" optional>
+    检查范围是否跨多个块。
+  </APIItem>
+  <APIItem name="start" type="boolean" optional>
+    检查是否在起始位置。
+  </APIItem>
+  <APIItem name="end" type="boolean" optional>
+    检查是否在结束位置。
+  </APIItem>
+  <APIItem name="word" type="boolean" optional>
+    相对于单词边界检查。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  如果位置匹配所有指定位置条件则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isCollapsed`
+
+检查选区是否折叠(起始点和结束点相同)。
+
+<API name="isCollapsed">
+<APIReturns type="boolean">
+  如果选区折叠则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isEdge`
+
+检查点是否是位置的边缘。
+
+<API name="isEdge">
+<APIParameters>
+  <APIItem name="point" type="Point">
+    要检查的点。
+  </APIItem>
+  <APIItem name="at" type="At" optional>
+    要检查的位置。默认为当前选区。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果点是位置的边缘则为 true，否则为 false。
+</APIReturns>
+</API>
+
+
+### `isEditorEnd`
+
+检查选区是否在编辑器末尾。
+
+<API name="isEditorEnd">
+<APIReturns type="boolean">
+  如果选区在编辑器末尾则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isEmpty`
+
+检查元素是否为空，考虑 void 节点。
+
+```ts
+editor.api.isEmpty() // 检查编辑器是否为空
+editor.api.isEmpty(at) // 检查位置处的节点是否为空
+editor.api.isEmpty(at, { after: true }) // 检查位置后的文本是否为空
+editor.api.isEmpty(at, { block: true }) // 检查位置上方的块是否为空
+```
+
+<API name="isEmpty">
+<APIParameters>
+  <APIItem name="at" type="At | null" optional>
+    检查是否为空的的位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="options" type="EditorEmptyOptions" optional>
+    确定是否为空的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorEmptyOptions">
+  <APIItem name="...options" type="QueryOptions<V>" optional />
+  <APIItem name="after" type="boolean" optional>
+    检查选区后的文本是否为空。
+  </APIItem>
+  <APIItem name="block" type="boolean" optional>
+    检查位置上方的块是否为空。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean" />
+</API>
+
+### `isEnd`
+
+检查点是否是位置的结束点。
+
+<API name="isEnd">
+<APIParameters>
+  <APIItem name="point" type="Point">
+    要检查的点。
+  </APIItem>
+  <APIItem name="at" type="At" optional>
+    要检查的位置。默认为当前选区。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果点是位置的结束点则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isExpanded`
+
+检查选区是否展开(起始点和结束点不同)。
+
+<API name="isExpanded">
+<APIReturns type="boolean">
+  如果选区展开则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isNormalizing`
+
+检查编辑器当前是否在每个操作后规范化。
+
+<API name="isNormalizing">
+<APIReturns type="boolean">
+  如果编辑器当前正在规范化则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isStart`
+
+Check if a point is the start point of a location.
+
+<API name="isStart">
+<APIParameters>
+  <APIItem name="point" type="Point">
+    The point to check.
+  </APIItem>
+  <APIItem name="at" type="At" optional>
+    The location to check against. Defaults to current selection.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  True if the point is the start point of the location, false otherwise.
+</APIReturns>
+</API>
+
+### `isSelected`
+
+检查路径是否被当前选区选中。
+
+<API name="isSelected">
+<APIParameters>
+  <APIItem name="target" type="Path | TRange">
+    要检查的路径或范围。
+  </APIItem>
+  <APIItem name="options" type="EditorIsSelectedOptions" optional>
+    检查选区的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorIsSelectedOptions">
+  <APIItem name="contains" type="boolean" optional>
+    检查选区是否包含整个路径范围。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  如果路径被选中则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `leaf`
+
+获取位置处的叶子文本节点。
+
+<API name="leaf">
+<APIParameters>
+  <APIItem name="at" type="At">
+    要获取叶子的位置。
+  </APIItem>
+  <APIItem name="options" type="EditorLeafOptions" optional>
+    获取叶子的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorLeafOptions">
+  <APIItem name="depth" type="number" optional>
+    查找叶子时要遍历的深度。
+  </APIItem>
+  <APIItem name="edge" type="LeafEdge" optional>
+    从位置的哪个边缘获取叶子（`'start' | 'end'`）。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<TextIn<V>> | undefined">
+  包含叶子文本节点及其路径的元组，如果未找到则为 undefined。
+</APIReturns>
+</API>
+
+### `levels`
+
+遍历位置处的所有层级。这包括直到根编辑器节点的所有祖先。
+
+<API name="levels">
+<APIOptions type="EditorLevelsOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    匹配层级的通用查询选项。
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    是否反向遍历（自下而上 vs 自上而下）。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    是否在遍历中包含 void 节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Generator<NodeEntry<NodeIn<V>>, void, undefined>">
+  为每个祖先层级生成 [node, path] 元组的生成器。
+</APIReturns>
+</API>
+
+### `last`
+
+获取位置处的最后一个节点。
+
+<API name="last">
+<APIParameters>
+  <APIItem name="at" type="At">
+    要获取最后一个节点的位置。
+  </APIItem>
+  <APIItem name="options" type="EditorLastOptions" optional>
+    获取最后一个节点的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorLastOptions">
+  <APIItem name="level" type="number" optional>
+    在此层级获取最后一个节点（从0开始）。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<DescendantIn<V>> | undefined">
+  包含最后一个节点及其路径的元组，如果未找到则为 undefined。
+</APIReturns>
+</API>
+
+### `mark`
+
+通过键返回选区标记值。
+
+<API name="mark">
+<APIParameters>
+  <APIItem name="key" type="keyof MarksIn<V>">
+    标记键。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="MarksIn<V>[K] | null | undefined">
+  如果存在则返回标记值，如果未设置则为 null，如果存在多个不同的值则为 undefined。
+</APIReturns>
+</API>
+
+### `marks`
+
+获取当前选区处文本将添加的标记。
+
+<API name="marks">
+<APIReturns type="MarksIn<V> | null">
+  当前选区处的标记，如果没有标记则为 null。
+</APIReturns>
+</API>
+
+### `next`
+
+获取文档分支中位置之后的匹配节点。
+
+<API name="next">
+<APIOptions type="EditorNextOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    匹配节点的通用查询选项。
+  </APIItem>
+  <APIItem name="at" type="At | Span" optional>
+    开始搜索的位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    匹配节点的查询模式。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    是否在搜索中包含 void 节点。
+  </APIItem>
+  <APIItem name="from" type="'after' | 'child'" optional>
+    - `'after'`: 从当前位置之后的点开始
+    - `'child'`: 从当前路径的第一个子节点开始
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<DescendantIn<V>> | undefined">
+  包含下一个匹配节点及其路径的元组，如果未找到则为 undefined。
+</APIReturns>
+</API>
+
+### `node`
+
+获取指定位置的节点或查找第一个匹配选项的节点。
+
+<API name="node">
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    要获取节点的位置。
+  </APIItem>
+  <APIItem name="nodeOptions" type="EditorNodeOptions" optional>
+    获取节点的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorNodeOptions">
+  <APIItem name="depth" type="number" optional>
+    查找节点时要遍历的深度。
+  </APIItem>
+  <APIItem name="edge" type="'start' | 'end'" optional>
+    从位置的哪个边缘获取节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<NodeIn<V>> | undefined">
+  包含匹配节点及其路径的元组，如果未找到则为 undefined。
+</APIReturns>
+</API>
+
+### `nodes`
+
+遍历编辑器中所有匹配给定选项的节点。
+
+<API name="nodes">
+<APIOptions type="EditorNodesOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    匹配节点的通用查询选项。
+  </APIItem>
+  <APIItem name="at" type="At | Span" optional>
+    开始遍历的位置。默认为编辑器选区。
+  </APIItem>
+  <APIItem name="ignoreNonSelectable" type="boolean" optional>
+    遍历时是否忽略不可选择的节点。
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    是否反向遍历。
+  </APIItem>
+  <APIItem name="universal" type="boolean" optional>
+    是否确保操作在所有节点上通用。
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    - `'all'`: 返回所有匹配的节点
+    - `'highest'`: 返回最高级别的匹配节点
+    - `'lowest'`: 返回最低级别的匹配节点
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    搜索时是否包含 void 节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Generator<NodeEntry<DescendantIn<V>>, void, undefined>">
+  为每个匹配节点生成 [node, path] 元组的生成器。
+</APIReturns>
+</API>
+
+### `parent`
+
+获取位置的父节点。
+
+<API name="parent">
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    要获取父节点的位置。
+  </APIItem>
+  <APIItem name="options" type="EditorParentOptions" optional>
+    获取父节点的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorParentOptions">
+  <APIItem name="depth" type="number" optional>
+    向上遍历查找父节点的层级数。
+  </APIItem>
+  <APIItem name="edge" type="'start' | 'end'" optional>
+    从位置的哪个边缘获取父节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<AncestorIn<V>> | undefined">
+  包含父节点及其路径的元组，如果未找到则为 undefined。
+</APIReturns>
+</API>
+
+### `previous`
+
+获取文档分支中位置之前的匹配节点。
+
+<API name="previous">
+<APIOptions type="EditorPreviousOptions<V>">
+  <APIItem name="...options" type="QueryOptions<V>" optional>
+    匹配节点的通用查询选项。
+  </APIItem>
+  <APIItem name="at" type="At | Span" optional>
+    开始搜索的位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    匹配节点的查询模式。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    搜索时是否包含 void 节点。
+  </APIItem>
+  <APIItem name="sibling" type="boolean" optional>
+    是否获取前一个兄弟节点而不是任何前一个节点。
+  </APIItem>
+  <APIItem name="from" type="'before' | 'parent'" optional>
+    - `'before'`: 从当前位置之前的点开始
+    - `'parent'`: 从当前位置的父节点开始
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<DescendantIn<V>> | undefined">
+  包含前一个匹配节点及其路径的元组，如果未找到则为 undefined。
+</APIReturns>
+</API>
+
+### `prop`
+
+从节点列表中获取属性值。如果属性值在所有节点中不一致，则返回 `undefined`。
+
+<API name="prop">
+<APIOptions type="EditorPropOptions<V>">
+  <APIItem name="nodes" type="TElement[]">
+    要获取属性值的节点列表。
+  </APIItem>
+  <APIItem name="key" type="string" optional>
+    要从节点获取的属性键。
+  </APIItem>
+  <APIItem name="defaultValue" type="string" optional>
+    如果未找到属性则返回的默认值。
+  </APIItem>
+  <APIItem name="getProp" type="(node: DescendantIn<V>) => any" optional>
+    从节点提取属性值的自定义函数。
+  </APIItem>
+  <APIItem name="mode" type="'all' | 'block' | 'text'" optional>
+    - `'all'`: 从所有节点获取属性
+    - `'block'`: 从第一个块节点获取属性
+    - `'text'`: 从第一个文本节点获取属性
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="string | undefined">
+  所有节点中一致的属性值，如果值不同则为 `undefined`。
+</APIReturns>
+</API>
+
+### `string`
+
+获取位置的文本字符串内容。
+
+<API name="string">
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    要获取文本内容的位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="options" type="EditorStringOptions" optional>
+    获取文本内容的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorStringOptions">
+  <APIItem name="voids" type="boolean" optional>
+    是否包含 void 节点的文本内容。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="string">
+  指定位置的文本内容。
+</APIReturns>
+</API>
+
+### `void`
+
+匹配编辑器当前分支中的 void 节点。
+
+<API name="void">
+<APIOptions type="EditorVoidOptions">
+  <APIItem name="at" type="At" optional>
+    开始搜索的位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    匹配节点的查询模式。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    搜索时是否包含 void 节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry<ElementIn<V>> | undefined">
+  包含 void 节点及其路径的元组，如果未找到则为 undefined。
+</APIReturns>
+</API>
+
+## Location
+
+### `findPath`
+
+查找编辑器中 Plate 节点的路径。
+
+<API name="findPath">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    要在编辑器树中查找路径的节点。
+  </APIItem>
+  <APIItem name="options" type="EditorFindPathOptions" optional>
+    查找节点路径的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorFindPathOptions">
+  <APIItem name="...options" type="QueryOptions<Value>" optional>
+    查找节点的通用查询选项。
+  </APIItem>
+  <APIItem name="ignoreNonSelectable" type="boolean" optional>
+    遍历时是否忽略不可选择的节点。
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    是否反向遍历。
+  </APIItem>
+  <APIItem name="universal" type="boolean" optional>
+    是否确保操作在所有节点上通用。
+  </APIItem>
+  <APIItem name="mode" type="QueryMode" optional>
+    查找节点的查询模式。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    搜索时是否包含 void 节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Path | undefined">
+  如果找到则返回节点的路径，否则为 undefined。
+</APIReturns>
+</API>
+
+### `path`
+
+获取位置的路径。
+
+<API name="path">
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    要获取路径的位置。默认为当前选区。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Path">
+  位置的路径。
+</APIReturns>
+</API>
+
+### `point`
+
+获取位置的 `start` 或 `end`（默认为 `start`）点。
+
+<API name="point">
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    要获取点的位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="options" type="EditorPointOptions" optional>
+    获取点的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorPointOptions">
+  <APIItem name="edge" type="'start' | 'end'" optional>
+    要获取点的位置边缘。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Point">
+  指定位置和边缘的点。
+</APIReturns>
+</API>
+
+### `positions`
+
+遍历文档中所有可能的点位置。
+
+<API name="positions">
+<APIOptions type="EditorPositionsOptions">
+  <APIItem name="at" type="At" optional>
+    开始遍历的位置。默认为编辑器选区。
+  </APIItem>
+  <APIItem name="unit" type="TextUnitAdjustment" optional>
+    - `'offset'`: 移动到下一个偏移点
+    - `'character'`: 移动到下一个字符
+    - `'word'`: 移动到下一个单词后的位置
+    - `'line'` | 'block': 在块边界之间移动
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    为 true 时按相反顺序返回位置。
+  </APIItem>
+  <APIItem name="voids" type="boolean" optional>
+    是否包含 void 节点内的位置。
+  </APIItem>
+  <APIItem name="ignoreNonSelectable" type="boolean" optional>
+    是否跳过不可选择节点中的位置。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Generator<Point, void, undefined>">
+  生成器，用于生成文档中每个有效点位置。
+</APIReturns>
+</API>
+
+### `nodesRange`
+
+返回跨越给定节点条目的范围。
+
+<API name="nodesRange">
+<APIParameters>
+  <APIItem name="nodes" type="NodeEntry[]">
+    要获取范围的节点条目。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="TRange | undefined">
+  跨越节点的范围，如果无法创建有效范围则为 undefined。
+</APIReturns>
+</API>
+
+### `range`
+
+在两个位置之间创建范围。
+
+<API name="range">
+<APIOptions type="EditorRangeOptions">
+  <APIItem name="at" type="At" optional>
+    创建范围的位置。默认为当前选区。
+  </APIItem>
+  <APIItem name="focus" type="Point" optional>
+    范围的焦点（结束）点。
+  </APIItem>
+  <APIItem name="anchor" type="Point" optional>
+    范围的锚点（开始）点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="TRange">
+  指定点之间的新范围。
+</APIReturns>
+</API>
+
+### `start`
+
+获取位置的起始点。
+
+<API name="start">
+<APIParameters>
+  <APIItem name="at" type="At" optional>
+    要获取起始点的位置。
+  </APIItem>
+  <APIItem name="options" type="EditorStartOptions" optional>
+    获取起始点的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorStartOptions">
+  <APIItem name="next" type="boolean" optional>
+    获取下一个节点的起始点，而不是当前节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Point">
+  位置的起始点。
+</APIReturns>
+</API>
+
+### `unhangRange`
+
+将范围转换为非悬挂范围。
+
+"悬挂"范围是由浏览器的"三击"选择行为创建的。当三击一个块时，浏览器会从该块的开始选择到下一个块的开始。因此，该范围"悬挂"到下一个块中。如果给 `unhangRange` 这样的范围，它会将结束点向后移动，直到它位于悬挂块之前的非空文本节点中。
+
+请注意，`unhangRange` 是为修复三击块而设计的，因此目前有一些注意事项：
+
+- 它不会修改范围的开始；只修改结束。例如，它不会"取消悬挂"从上一个块末尾开始的选择。
+- 只有当开始块被完全选中时才会执行任何操作。例如，它不会处理通过双击段落末尾创建的范围（浏览器会从该段落末尾选择到下一个段落的开始）。
+
+<API name="unhangRange">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要取消悬挂的范围。
+  </APIItem>
+  <APIItem name="options" type="EditorUnhangRangeOptions" optional>
+    取消悬挂范围的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorUnhangRangeOptions">
+  <APIItem name="voids" type="boolean" optional>
+    允许将选择的结束点放在 void 节点中。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="TRange">
+  如果结束点悬挂，则返回结束点向后移动的新范围。
+</APIReturns>
+</API>
+
+## Element
+
+### `elementReadOnly`
+
+检查元素是否为只读。
+
+<API name="elementReadOnly">
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    要检查只读状态的元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果元素是只读的则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isBlock`
+
+检查值是否为块级 `Element` 对象。
+
+<API name="isBlock">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值是块级元素则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isInline`
+
+检查值是否为内联 `Element` 对象。
+
+<API name="isInline">
+<APIParameters>
+  <APIItem name="element" type="DescendantIn<V>">
+    要检查的元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果元素是内联的则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isSelectable`
+
+检查值是否为可选择的 `Element` 对象。
+
+<API name="isSelectable">
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    要检查的元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果元素是可选择的则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isVoid`
+
+检查元素是否为 void。
+
+<API name="isVoid">
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    要检查 void 状态的元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果元素是 void 则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `markableVoid`
+
+检查元素是否为可标记的 void 元素。
+
+<API name="markableVoid">
+<APIParameters>
+  <APIItem name="element" type="ElementIn<V>">
+    要检查可标记 void 状态的元素。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果元素是可标记的 void 元素则为 true，否则为 false。
+</APIReturns>
+</API>
+
+## Ref
+
+### `pathRef`
+
+为 `Path` 创建可变引用。
+
+<API name="pathRef">
+<APIParameters>
+  <APIItem name="path" type="Path">
+    要引用的路径。
+  </APIItem>
+  <APIItem name="options" type="EditorPathRefOptions" optional>
+    路径引用的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorPathRefOptions">
+  <APIItem name="affinity" type="TextDirection | null" optional>
+    当不明确时解析引用的方向：
+    - `'forward'`: 解析到下一个有效位置
+    - `'backward'`: 解析到上一个有效位置
+    - `null`: 不解析到任何位置
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="PathRef">
+  一个可变引用，随着操作应用到编辑器而更新其路径。
+</APIReturns>
+</API>
+
+### `pathRefs`
+获取编辑器当前跟踪的路径引用集合。
+
+<API name="pathRefs">
+<APIReturns type="Set<PathRef>">
+  编辑器当前跟踪的路径引用集合。
+</APIReturns>
+</API>
+
+### `pointRef`
+
+为 `Point` 创建可变引用。
+
+<API name="pointRef">
+<APIParameters>
+  <APIItem name="point" type="Point">
+    要引用的点。
+  </APIItem>
+  <APIItem name="options" type="EditorPointRefOptions" optional>
+    点引用的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorPointRefOptions">
+  <APIItem name="affinity" type="TextDirection | null" optional>
+    当不明确时解析引用的方向：
+    - `'forward'`: 解析到下一个有效位置
+    - `'backward'`: 解析到上一个有效位置
+    - `null`: 不解析到任何位置
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="PointRef">
+  一个可变引用，随着操作应用到编辑器而更新其点。
+</APIReturns>
+</API>
+
+### `pointRefs`
+
+获取编辑器当前跟踪的点引用集合。
+
+<API name="pointRefs">
+<APIReturns type="Set<PointRef>">
+  编辑器当前跟踪的点引用集合。
+</APIReturns>
+</API>
+
+### `rangeRef`
+
+为 `Range` 创建可变引用。
+
+<API name="rangeRef">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要引用的范围。
+  </APIItem>
+  <APIItem name="options" type="EditorRangeRefOptions" optional>
+    范围引用的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="EditorRangeRefOptions">
+  <APIItem name="affinity" type="RangeDirection | null" optional>
+    当不明确时解析引用的方向：
+    - `'forward'`: 两个点都向前解析
+    - `'backward'`: 两个点都向后解析
+    - `'outward'`: 起点向后解析，终点向前解析
+    - `'inward'`: 起点向前解析，终点向后解析
+    - `null`: 不解析到任何位置
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="RangeRef">
+  一个可变引用，随着操作应用到编辑器而更新其范围。
+</APIReturns>
+</API>
+
+### `rangeRefs`
+
+获取编辑器当前跟踪的范围引用集合。
+
+<API name="rangeRefs">
+<APIReturns type="Set<RangeRef>">
+  编辑器当前跟踪的范围引用集合。
+</APIReturns>
+</API>
+
+## DOM
+
+### `findDocumentOrShadowRoot`
+
+从编辑器中查找文档或影子根。
+
+<API name="findDocumentOrShadowRoot">
+<APIReturns type="Document | ShadowRoot">
+  包含编辑器的文档或影子根。
+</APIReturns>
+</API>
+
+### `findEventRange`
+
+从 DOM 事件中获取目标范围。
+
+<API name="findEventRange">
+<APIParameters>
+  <APIItem name="event" type="Event">
+    要获取范围的 DOM 事件。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="TRange | null">
+  事件目标处的范围，如果未找到有效范围则为 null。
+</APIReturns>
+</API>
+
+### `findKey`
+
+查找 Plate 节点的键。返回一个 `Key` 实例，形如 `{ id: string }`。
+
+<API name="findKey">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    要查找键的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Key">
+  与节点关联的键。
+</APIReturns>
+</API>
+
+### `getWindow`
+
+从编辑器中获取 window 对象。
+
+<API name="getWindow">
+<APIReturns type="Window">
+  与编辑器关联的 window 对象。
+</APIReturns>
+</API>
+
+### `hasDOMNode`
+
+检查 DOM 节点是否在编辑器内。
+
+<API name="hasDOMNode">
+<APIParameters>
+  <APIItem name="target" type="Node">
+    要检查的 DOM 节点。
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    检查 DOM 节点的选项。
+  </APIItem>
+</APIParameters>
+<APIOptions type="object">
+  <APIItem name="editable" type="boolean" optional>
+    是否检查节点是否在可编辑元素中。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  如果 DOM 节点在编辑器内则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `hasEditableTarget`
+
+检查 DOM 目标是否可编辑。
+
+<API name="hasEditableTarget">
+<APIParameters>
+  <APIItem name="target" type="EventTarget | null">
+    要检查的 DOM 目标。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="target is Node">
+  如果目标是可编辑的则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `hasRange`
+
+检查编辑器是否有范围。
+
+<API name="hasRange">
+<APIParameters>
+  <APIItem name="range" type="TRange">
+    要检查的范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果编辑器有指定范围则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `hasSelectableTarget`
+
+检查 DOM 目标是否可选。
+
+<API name="hasSelectableTarget">
+<APIParameters>
+  <APIItem name="target" type="EventTarget | null">
+    要检查的 DOM 目标。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="target is Node">
+  如果目标是可选的则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `hasTarget`
+
+检查 DOM 目标是否存在。
+
+<API name="hasTarget">
+<APIParameters>
+  <APIItem name="target" type="EventTarget | null">
+    要检查的 DOM 目标。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="target is Node">
+  如果目标存在则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isComposing`
+
+检查用户是否正在编辑器中输入。
+
+<API name="isComposing">
+<APIReturns type="boolean">
+  如果用户正在输入文本则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isFocused`
+
+检查编辑器是否获得焦点。
+
+<API name="isFocused">
+<APIReturns type="boolean">
+  如果编辑器有焦点则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isReadOnly`
+
+检查编辑器是否处于只读模式。
+
+<API name="isReadOnly">
+<APIReturns type="boolean">
+  如果编辑器是只读的则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `toDOMNode`
+
+从 Plate 节点查找原生 DOM 元素。
+
+<API name="toDOMNode">
+<APIOptions type="TNode">
+  <APIItem name="node" type="TNode">
+    要转换为 DOM 元素的 Plate 节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="HTMLElement">
+  Plate 节点对应的 DOM 元素。
+</APIReturns>
+</API>
+
+### `toDOMPoint`
+
+从 Plate 点查找原生 DOM 选择点。
+
+<API name="toDOMPoint">
+<APIOptions type="Point">
+  <APIItem name="point" type="Point">
+    要转换为 DOM 点的 Plate 点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="DOMPoint">
+  表示 DOM 点的 [node, offset] 元组。
+</APIReturns>
+</API>
+
+### `toDOMRange`
+
+从 Plate 范围查找原生 DOM 范围。
+
+<API name="toDOMRange">
+<APIOptions type="TRange">
+  <APIItem name="range" type="TRange">
+    要转换为 DOM 范围的 Plate 范围。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="DOMRange">
+  Plate 范围对应的 DOM 范围。
+</APIReturns>
+</API>
+
+### `toSlateNode`
+
+从原生 DOM 元素查找 Plate 节点。
+
+<API name="toSlateNode">
+<APIOptions type="DOMNode">
+  <APIItem name="domNode" type="DOMNode">
+    要转换为 Plate 节点的 DOM 节点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="TNode | undefined">
+  如果找到则返回对应的 Plate 节点，否则返回 undefined。
+</APIReturns>
+</API>
+
+### `toSlatePoint`
+
+从 DOM 选择点查找 Plate 点。
+
+<API name="toSlatePoint">
+<APIOptions type="DOMPoint">
+  <APIItem name="domPoint" type="DOMPoint">
+    要转换为 Plate 点的 DOM 点。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Point | undefined">
+  如果找到则返回对应的 Plate 点，否则返回 undefined。
+</APIReturns>
+</API>
+
+### `toSlateRange`
+
+从 DOM 范围查找 Plate 范围。
+
+<API name="toSlateRange">
+<APIOptions type="DOMRange">
+  <APIItem name="domRange" type="DOMRange">
+    要转换为 Plate 范围的 DOM 范围。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="TRange | undefined">
+  如果找到则返回对应的 Plate 范围，否则返回 undefined。
+</APIReturns>
+</API>
+
+## Callback
+
+### `onChange`
+
+当编辑器发生变化时调用。
+
+<API name="onChange">
+<APIOptions type="object">
+  <APIItem name="operation" type="Operation" optional>
+    触发变更的操作。
+  </APIItem>
+</APIOptions>
+</API>
+
+## Core
+
+### `getDirtyPaths`
+
+获取操作后需要规范化的路径。
+
+<API name="getDirtyPaths">
+<APIParameters>
+  <APIItem name="operation" type="Operation<N extends DescendantIn<V>>">
+    触发规范化的操作。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Path[]">
+  操作后需要规范化的路径数组。
+</APIReturns>
+</API>
+
+### `shouldNormalizeNode`
+
+重写此方法以阻止规范化特定节点。默认返回 `true`。
+
+<API name="shouldNormalizeNode">
+<APIParameters>
+  <APIItem name="entry" type="NodeEntry">
+    要检查的节点 entry（节点和路径）。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果节点应该被规范化则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `setNormalizing`
+
+手动控制编辑器的规范化状态。
+
+<API name="setNormalizing">
+<APIOptions type="boolean">
+  <APIItem name="isNormalizing" type="boolean">
+    编辑器是否应该在每个操作后进行规范化。
+  </APIItem>
+</APIOptions>
+</API>
+
+### `shouldNormalize`
+
+控制编辑器是否应该在操作后进行规范化。重写此方法以在某些情况下阻止规范化。
+
+<API name="shouldNormalize">
+<APIOptions type="object">
+  <APIItem name="dirtyPaths" type="Path[]">
+    需要规范化的路径。
+  </APIItem>
+  <APIItem name="initialDirtyPathsLength" type="number">
+    规范化开始前的初始脏路径数量。
+  </APIItem>
+  <APIItem name="iteration" type="number">
+    当前规范化迭代计数。
+  </APIItem>
+  <APIItem name="operation" type="Operation" optional>
+    触发规范化的操作。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="boolean">
+  如果编辑器应该规范化则为 true，否则为 false。
+</APIReturns>
+</API>
+
+## History
+
+### `isMerging`
+
+获取合并标志的当前值。
+
+<API name="isMerging">
+<APIReturns type="boolean">
+  如果编辑器当前正在合并操作则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isSaving`
+
+获取保存标志的当前值。
+
+<API name="isSaving">
+<APIReturns type="boolean">
+  如果编辑器当前正在保存则为 true，否则为 false。
+</APIReturns>
+</API>
+
+### `isSplittingOnce`
+
+获取拆分标志的当前值。
+
+<API name="isSplittingOnce">
+<APIReturns type="boolean">
+  如果编辑器当前正在执行单个拆分操作则为 true，否则为 false。
+</APIReturns>
+</API>
+
+## Utils
+
+### `create.block`
+
+创建新块元素的默认块工厂。
+
+<API name="create.block">
+<APIParameters>
+  <APIItem name="node" type="Partial<TElement>" optional>
+    要合并到新块中的部分元素属性。
+  </APIItem>
+  <APIItem name="path" type="Path" optional>
+    新块的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="TElement">
+  新的块元素。
+</APIReturns>
+</API>
+
+### `create.value`
+
+创建新编辑器值的默认值工厂。
+
+<API name="create.value">
+<APIReturns type="Value">
+  新的编辑器值。
+</APIReturns>
+</API>

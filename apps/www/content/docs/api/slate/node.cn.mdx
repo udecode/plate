@@ -1,0 +1,823 @@
+---
+title: Node
+description: Plate 中节点的 API 参考。
+---
+
+节点是 Plate 文档的基本构建块。它可以是编辑器根节点（最高层级）、Element 节点或 Text 节点（最低层级）。此 API 提供了与节点交互的工具，包括遍历、查询和提取数据。
+
+```ts
+type TNode = Editor | TElement | TText;
+
+type Descendant = Element | Text
+type Ancestor = Editor | Element
+```
+
+- [Editor](/docs/api/slate/editor-api)
+- [Element](/docs/api/slate/element)
+- [Text](/docs/api/slate/text)
+
+## `NodeAPI`
+
+### `ancestor`
+
+获取特定路径的节点，并断言它是祖先节点。
+
+<API name="ancestor">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    起始的根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到祖先节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Ancestor | undefined">
+  如果找到则返回祖先节点，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `ancestors`
+
+返回特定路径上方所有祖先节点的生成器。
+
+<API name="ancestors">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    起始的根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    获取祖先的路径。
+  </APIItem>
+  <APIItem name="options" type="NodeAncestorsOptions" optional>
+    获取祖先的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="NodeAncestorsOptions">
+  <APIItem name="reverse" type="boolean" optional>
+    如果为 true，则从上到下返回祖先而非从下到上。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Generator<NodeEntry<Ancestor>, void, undefined>">
+  祖先节点条目的生成器。
+</APIReturns>
+</API>
+
+### `child`
+
+获取节点在特定索引的子节点。
+
+<API name="child">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    父节点。
+  </APIItem>
+  <APIItem name="index" type="number">
+    子节点的索引。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="TNode | undefined">
+  如果找到则返回子节点，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `children`
+
+遍历特定路径节点的子节点。
+
+<API name="children">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到父节点的路径。
+  </APIItem>
+  <APIItem name="options" type="NodeChildrenOptions" optional>
+    遍历子节点的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="NodeChildrenOptions">
+  <APIItem name="reverse" type="boolean" optional>
+    如果为 true，则反向迭代。
+  </APIItem>
+  <APIItem name="from" type="number" optional>
+    起始索引（包含）。
+  </APIItem>
+  <APIItem name="to" type="number" optional>
+    结束索引（不包含）。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Generator<NodeEntry<TNode>, void, undefined>">
+  子节点条目的生成器。
+</APIReturns>
+</API>
+
+### `common`
+
+获取两个路径公共祖先节点的条目。
+
+<API name="common">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    第一个路径。
+  </APIItem>
+  <APIItem name="another" type="Path">
+    第二个路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry<N> | undefined">
+  如果找到则返回公共祖先条目，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `descendant`
+
+获取特定路径的节点，并断言它是后代节点。
+
+<API name="descendant">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到后代的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Descendant | undefined">
+  如果找到则返回后代节点，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `descendants`
+
+返回根节点内所有后代节点条目的生成器。
+
+<API name="descendants">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="options" type="NodeDescendantsOptions" optional>
+    获取后代的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="NodeDescendantsOptions">
+  <APIItem name="from" type="Path" optional>
+    起始路径。
+  </APIItem>
+  <APIItem name="to" type="Path" optional>
+    结束路径。
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    如果为 true，则反向迭代。
+  </APIItem>
+  <APIItem name="pass" type="(node: Descendant) => boolean" optional>
+    过滤后代的函数。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Generator<NodeEntry<Descendant>, void, undefined>">
+  后代节点条目的生成器。
+</APIReturns>
+</API>
+
+### `elements`
+
+返回根节点内所有 Element 节点的生成器。
+
+<API name="elements">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="options" type="NodeElementsOptions" optional>
+    获取 Element 的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="NodeElementsOptions">
+  <APIItem name="pass" type="(node: Element) => boolean" optional>
+    过滤 Element 的函数。
+  </APIItem>
+  <APIItem name="reverse" type="boolean" optional>
+    如果为 true，则反向迭代。
+  </APIItem>
+  <APIItem name="from" type="Path" optional>
+    起始路径。
+  </APIItem>
+  <APIItem name="to" type="Path" optional>
+    结束路径。
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="Generator<NodeEntry<Element>, void, undefined>">
+  Element 条目的生成器。
+</APIReturns>
+</API>
+
+### `first`
+
+从路径获取根节点中的第一个节点条目。
+
+<API name="first">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry<N> | undefined">
+  如果找到则返回第一个节点条目，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `firstChild`
+
+获取节点的第一个子节点条目。
+
+<API name="firstChild">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    父节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到父节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry<N> | undefined">
+  如果找到则返回第一个子节点条目，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `firstText`
+
+获取节点的第一个 Text 节点条目。
+
+<API name="firstText">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    父节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到父节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry<N> | undefined">
+  如果找到则返回第一个 Text 节点条目，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `fragment`
+
+获取根节点内范围所表示的切片片段。
+
+<API name="fragment">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="range" type="TRange">
+    要切片的范围。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="N[]">
+  切片后的片段。
+</APIReturns>
+</API>
+
+### `get`
+
+获取特定路径引用的后代节点。
+
+<API name="get">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="TNode | undefined">
+  如果找到则返回节点，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `last`
+
+从路径获取根节点中的最后一个节点条目。
+
+<API name="last">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry<N> | undefined">
+  如果找到则返回最后一个节点条目，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `lastChild`
+
+获取节点的最后一个子节点条目。
+
+<API name="lastChild">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    父节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到父节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry<N> | undefined">
+  如果找到则返回最后一个子节点条目，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `leaf`
+
+获取特定路径的节点，并确保它是叶子 Text 节点。
+
+<API name="leaf">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="N | undefined">
+  如果找到则返回叶子节点，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `levels`
+
+返回树分支中从特定路径开始的节点生成器。
+
+<API name="levels">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Generator<NodeEntry<N>, void, undefined>">
+  从特定路径开始的树分支中节点条目的生成器。
+</APIReturns>
+</API>
+
+### `nodes`
+
+返回根节点所有节点条目的生成器。
+
+<API name="nodes">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="options" type="NodeTextsOptions" optional>
+    类似 `descendants` 的选项。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Generator<NodeEntry<N>, void, undefined>">
+  节点条目的生成器。
+</APIReturns>
+</API>
+
+### `parent`
+
+获取特定路径节点的父节点。
+
+<API name="parent">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Ancestor | undefined">
+  如果找到则返回父节点，否则返回 `undefined`。
+</APIReturns>
+</API>
+
+### `texts`
+
+返回根节点中所有叶子 Text 节点的生成器。
+
+<API name="texts">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="options" type="NodeTextsOptions" optional>
+    获取 Text 节点的选项。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="Generator<NodeEntry<Text>, void, undefined>">
+  Text 节点条目的生成器。
+</APIReturns>
+</API>
+
+### `extractProps`
+
+获取节点的属性。
+
+<API name="extractProps">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    要提取属性的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeProps<N>">
+  节点的属性。
+</APIReturns>
+</API>
+
+### `has`
+
+检查特定路径是否存在后代节点。
+
+<API name="has">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    要检查的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果指定路径存在节点则返回 `true`，否则返回 `false`。
+</APIReturns>
+</API>
+
+### `hasSingleChild`
+
+检查节点是否只有一个子节点。
+
+<API name="hasSingleChild">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    要检查的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果节点只有一个子节点则返回 `true`。
+</APIReturns>
+</API>
+
+### `isAncestor`
+
+检查值是否实现了 `Ancestor` 接口。
+
+<API name="isAncestor">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值实现了 `Ancestor` 接口则返回 `true`。
+</APIReturns>
+</API>
+
+### `isDescendant`
+
+检查值是否实现了 `Descendant` 接口。
+
+<API name="isDescendant">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值实现了 `Descendant` 接口则返回 `true`。
+</APIReturns>
+</API>
+
+### `isLastChild`
+
+检查节点是否是父节点的最后一个子节点。
+
+<API name="isLastChild">
+<APIParameters>
+  <APIItem name="root" type="TNode">
+    根节点。
+  </APIItem>
+  <APIItem name="path" type="Path">
+    到节点的路径。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果节点是父节点的最后一个子节点则返回 `true`。
+</APIReturns>
+</API>
+
+### `isNode`
+
+检查值是否实现了 `TNode` 接口。
+
+<API name="isNode">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值实现了 `TNode` 接口则返回 `true`。
+</APIReturns>
+</API>
+
+### `isNodeList`
+
+检查值是否是 `Descendant` 对象的列表。
+
+<API name="isNodeList">
+<APIParameters>
+  <APIItem name="value" type="any">
+    要检查的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果值是 `Descendant` 对象的列表则返回 `true`。
+</APIReturns>
+</API>
+
+### `matches`
+
+检查节点是否匹配一组属性。
+
+<API name="matches">
+<APIParameters>
+  <APIItem name="node" type="Descendant">
+    要检查的节点。
+  </APIItem>
+  <APIItem name="props" type="Partial<Descendant>">
+    要匹配的属性。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果节点匹配提供的属性则返回 `true`。
+</APIReturns>
+</API>
+
+### `string`
+
+获取节点内容的连接文本字符串。
+
+<API name="string">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    要获取文本的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="string">
+  连接后的文本内容。
+</APIReturns>
+</API>
+
+## 类型
+
+### `TNode`
+
+`Node` 是 `TNode` 的类型别名。
+
+```ts
+type TNode = Editor | TElement | TText;
+```
+
+### `NodeEntry`
+
+`NodeEntry` 对象在遍历 Plate 文档树中的节点时返回。它们由两个元素的数组组成：`TNode` 及其相对于文档中根节点的 `Path`。
+
+<API name="NodeEntry">
+<APIAttributes>
+  <APIItem name="0" type="TNode">
+    节点本身。
+  </APIItem>
+  <APIItem name="1" type="Path">
+    到节点的路径。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `Descendant`
+
+`Descendant` 联合类型表示树中的后代节点。
+
+```ts
+type Descendant = TElement | TText;
+```
+
+### `Ancestor`
+
+`Ancestor` 联合类型表示树中的祖先节点。
+
+```ts
+type Ancestor = Editor | TElement;
+```
+
+### `NodeOf<N>`
+
+<API name="NodeOf">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    要获取类型的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="N">
+  节点类型。
+</APIReturns>
+</API>
+
+### `NodeIn<V>`
+
+<API name="NodeIn">
+<APIParameters>
+  <APIItem name="value" type="Value">
+    要获取节点类型的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeOf<V[number]>">
+  指定值中所有可能的节点类型。
+</APIReturns>
+</API>
+
+### `TNodeMatch<N>`
+
+<API name="TNodeMatch">
+<APIParameters>
+  <APIItem name="node" type="N">
+    要匹配的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  如果节点匹配谓词则为 `true`。
+</APIReturns>
+</API>
+
+### `DescendantOf<N>`
+
+<API name="DescendantOf">
+<APIParameters>
+  <APIItem name="node" type="N">
+    要获取后代类型的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="DescendantOf<N>">
+  指定根节点中所有可能的后代节点类型。
+</APIReturns>
+</API>
+
+### `DescendantIn<V>`
+
+<API name="DescendantIn">
+<APIParameters>
+  <APIItem name="value" type="Value">
+    要获取后代类型的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="DescendantIn<V>">
+  指定值中所有可能的后代节点类型。
+</APIReturns>
+</API>
+
+### `ChildOf<N>`
+
+<API name="ChildOf">
+<APIParameters>
+  <APIItem name="node" type="N">
+    要获取子节点类型的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="ChildOf<N>">
+  子节点类型。
+</APIReturns>
+</API>
+
+### `AncestorOf<N>`
+
+<API name="AncestorOf">
+<APIParameters>
+  <APIItem name="node" type="N">
+    要获取祖先类型的节点。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="AncestorOf<N>">
+  指定根节点中所有可能的祖先节点类型。
+</APIReturns>
+</API>
+
+### `AncestorIn<V>`
+
+<API name="AncestorIn">
+<APIParameters>
+  <APIItem name="value" type="Value">
+    要获取祖先类型的值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="AncestorIn<V>">
+  指定值中所有可能的祖先节点类型。
+</APIReturns>
+</API>
+
+### `AncestorEntry`
+
+祖先条目表示一个祖先节点（Editor 或 Element）及其路径。
+
+<API name="AncestorEntry">
+<APIAttributes>
+  <APIItem name="0" type="Ancestor">
+    Editor 或 Element 节点。
+  </APIItem>
+  <APIItem name="1" type="Path">
+    到祖先的路径。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `DescendantEntry`
+
+后代条目表示一个后代节点（Element 或 Text）及其路径。
+
+<API name="DescendantEntry">
+<APIAttributes>
+  <APIItem name="0" type="Descendant">
+    Element 或 Text 节点。
+  </APIItem>
+  <APIItem name="1" type="Path">
+    到后代的路径。
+  </APIItem>
+</APIAttributes>
+</API>
+
+### `NodeChildEntry`
+
+节点子条目表示一个子节点及其相对于父节点的路径。
+
+<API name="NodeChildEntry">
+<APIAttributes>
+  <APIItem name="0" type="TNode">
+    子节点。
+  </APIItem>
+  <APIItem name="1" type="Path">
+    到子节点的路径。
+  </APIItem>
+</APIAttributes>
+</API>

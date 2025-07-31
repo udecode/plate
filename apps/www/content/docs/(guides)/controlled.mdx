@@ -1,0 +1,90 @@
+---
+title: Controlled Editor Value
+description: How to control the editor value.
+---
+
+Implementing a fully controlled editor value in Plate is complex due to several factors:
+
+1. The editor state includes more than just the content (`editor.children`). It also includes `editor.selection` and `editor.history`.
+
+2. Directly replacing `editor.children` can break the selection and history, leading to unexpected behavior or crashes.
+
+3. All changes to the editor's value should ideally happen through [Transforms](https://docs.slatejs.org/api/transforms) to maintain consistency with selection and history.
+
+Given these challenges, it's generally recommended to use Plate as an uncontrolled input. However, if you need to make external changes to the editor's content, you can use `editor.tf.setValue(value)` function.
+
+<Callout type="warning" title="Performance Consideration">
+  Using `editor.tf.setValue` will re-render all nodes on each call, so it
+  should be used carefully and sparingly. It may impact performance if used
+  frequently or with large documents.
+</Callout>
+
+Alternatively, you can use `editor.tf.reset()` to reset the editor state, which will reset the selection and history.
+
+### Async Initial Value
+
+You can pass an async function directly to the `value` option. The editor will handle the async loading automatically:
+
+```tsx
+function AsyncControlledEditor() {
+  const editor = usePlateEditor({
+    value: async () => {
+      // Simulate fetching data from an API
+      const response = await fetch('/api/document');
+      const data = await response.json();
+      return data.content;
+    },
+    autoSelect: 'end',
+  });
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+For more control over initialization timing, you can use `shouldInitialize: false` and manually call `editor.tf.init`:
+
+```tsx
+function AsyncControlledEditor() {
+  const [data, setData] = React.useState(null);
+  const editor = usePlateEditor({
+    shouldInitialize: false,
+  });
+
+  React.useEffect(() => {
+    const loadData = async () => {
+      const response = await fetch('/api/document');
+      const data = await response.json();
+      setData(data);
+      
+      editor.tf.init({
+        value: data.content,
+        autoSelect: 'end',
+        onReady: ({ editor, value }) => {
+          console.info('Editor ready with value:', value);
+        },
+      });
+    };
+    
+    loadData();
+  }, [editor]);
+
+  if (!data) return <div>Loading…</div>;
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
+<ComponentPreview name="controlled-demo" padding="md" />
+

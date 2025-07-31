@@ -1,0 +1,62 @@
+---
+title: 快速开始
+description: 选择适合的集成路径，将 Plate 富文本编辑器框架接入您的 React 项目。
+---
+
+Plate 提供多种集成方案以适应不同项目需求。请根据您的开发环境和需求选择合适的接入方式。
+
+## 客户端集成
+
+### 方案一：使用 Plate UI（推荐）
+
+如果您正在使用或计划使用 [shadcn/ui](https://ui.shadcn.com/)，推荐通过 [Plate UI](/docs/plate-ui) 获取开箱即用的富文本编辑器体验。
+
+<Steps>
+
+#### 安装 Plate UI
+
+首先按照 **[Plate UI 安装指南](./installation/plate-ui)** 进行操作。该指南包含核心依赖安装和 Plate UI 组件配置说明。
+
+#### 基础使用
+
+完成 Plate UI 安装后，根据您的 React 应用类型选择对应指南：
+
+*   **[Next.js](./installation/next)** - 服务端渲染应用
+*   **[React](./installation/react)** - 客户端应用（Vite/React Router 等）
+
+</Steps>
+
+### 方案二：手动配置
+
+若项目未使用 shadcn/ui 或 Tailwind CSS，或需要框架无关方案，请参考 **[手动安装指南](./installation/manual)** 获取详细配置说明。
+
+<Callout type="note">
+  后续仍可将 Plate UI 组件集成到手动配置的项目中。
+</Callout>
+
+## 服务端集成
+
+### React 服务端组件
+
+如需在 React 服务端组件（RSC）中使用 Plate 进行静态内容生成或服务端数据处理（无需客户端交互）：
+
+请遵循 **[RSC 指南](./installation/rsc)** 获取详细说明。
+
+### Node.js 环境
+
+若需在 Node.js 环境中使用 Plate 执行后端数据处理、内容迁移或验证等任务：
+
+请遵循 **[Node.js 指南](./installation/node)** 获取详细说明。
+
+## 后续步骤
+
+完成 Plate 安装后，可通过以下资源进一步定制编辑器功能：
+
+-   **配置指南:**
+    -   [编辑器配置](/docs/editor)
+    -   [插件配置](/docs/plugin)
+    -   [插件组件](/docs/plugin-components)
+-   **支持与社区:**
+    -   [问题排查指南](/docs/troubleshooting)
+    -   加入 [Discord 社区](https://discord.gg/mAZRuBzGM3)
+    -   参与 [GitHub 讨论](https://github.com/udecode/plate/discussions)

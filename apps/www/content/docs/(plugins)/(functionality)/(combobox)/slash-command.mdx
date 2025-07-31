@@ -1,0 +1,168 @@
+---
+title: Slash Command
+docs:
+  - route: https://pro.platejs.org/docs/examples/slash-command
+    title: Plus
+  - route: /docs/combobox
+    title: Combobox
+  - route: /docs/components/slash-node
+    title: Slash Nodes
+---
+
+<ComponentPreview name="slash-command-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Quick access to various editor commands
+- Triggered by `/` character
+- Keyboard navigation and filtering
+- Customizable command groups and options
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add slash command functionality is with the `SlashKit`, which includes pre-configured `SlashPlugin` and `SlashInputPlugin` along with their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="slash-kit" />
+
+- [`SlashInputElement`](/docs/components/slash-node): Renders the slash command combobox with predefined options
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { SlashKit } from '@/components/editor/plugins/slash-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...SlashKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/slash-command
+```
+
+### Add Plugins
+
+```tsx
+import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    SlashPlugin,
+    SlashInputPlugin,
+  ],
+});
+```
+
+### Configure Plugins
+
+```tsx
+import { SlashPlugin, SlashInputPlugin } from '@platejs/slash-command/react';
+import { createPlateEditor } from 'platejs/react';
+import { SlashInputElement } from '@/components/ui/slash-node';
+import { KEYS } from 'platejs';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    SlashPlugin.configure({
+      options: {
+        trigger: '/',
+        triggerPreviousCharPattern: /^\s?$/,
+        triggerQuery: (editor) =>
+          !editor.api.some({
+            match: { type: editor.getType(KEYS.codeBlock) },
+          }),
+      },
+    }),
+    SlashInputPlugin.withComponent(SlashInputElement),
+  ],
+});
+```
+
+- `options.trigger`: Character that triggers the slash command combobox (default: `/`)
+- `options.triggerPreviousCharPattern`: RegExp pattern for character before trigger
+- `options.triggerQuery`: Function to determine when slash commands should be enabled
+- `withComponent`: Assigns the UI component for the slash command interface
+
+</Steps>
+
+## Usage
+
+How to use slash commands:
+
+1. Type `/` anywhere in your document to open the slash menu
+2. Start typing to filter options or use arrow keys to navigate
+3. Press Enter or click to select an option
+4. Press Escape to close the menu without selecting
+
+Available options include:
+- Text blocks (paragraphs, headings)
+- Lists (bulleted, numbered, to-do)
+- Advanced blocks (tables, code blocks, callouts)
+- Inline elements (dates, equations)
+
+<Callout type="info">
+  Use keywords to quickly find options. For example, type '/ul' for Bulleted List or '/h1' for Heading 1.
+</Callout>
+
+## Plate Plus
+
+<ComponentPreviewPro name="slash-command-pro" />
+
+## Plugins
+
+### SlashPlugin
+
+Plugin for slash command functionality. Extends [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions).
+
+<API name="SlashPlugin">
+<APIOptions>
+  <APIItem name="trigger" type="string" optional>
+    Character that triggers slash command combobox.
+    - **Default:** `'/'`
+  </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+    RegExp to match character before trigger.
+    - **Default:** `/^\s?$/`
+  </APIItem>
+  <APIItem name="createComboboxInput" type="() => TComboboxInputElement" optional>
+    Function to create combobox input element.
+    - **Default:** 
+    ```tsx
+    () => ({
+      children: [{ text: '' }],
+      type: KEYS.slashInput,
+    });
+    ```
+  </APIItem>
+  <APIItem name="triggerQuery" type="(editor: PlateEditor) => boolean" optional>
+    Function to determine when slash commands should be enabled. Useful for disabling in certain contexts like code blocks.
+  </APIItem>
+</APIOptions>
+</API>
+
+### SlashInputPlugin
+
+Handles the input behavior for slash command insertion.

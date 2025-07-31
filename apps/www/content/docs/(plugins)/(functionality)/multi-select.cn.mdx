@@ -1,0 +1,253 @@
+---
+title: 多选
+docs:
+  - route: /docs/components/tag-node
+  - route: /docs/components/select-editor
+---
+
+<ComponentPreview name="select-editor-demo" />
+
+<PackageInfo>
+
+## 特性
+
+与传统的基于输入的多选不同，该组件构建在 Plate editor 之上，提供：
+
+- 完整的历史记录支持（撤销/重做）
+- 标签之间和标签内的原生光标导航
+- 选择一个或多个标签
+- 复制/粘贴标签
+- 拖放重新排序标签
+- 只读模式
+- 防止重复标签
+- 使用不区分大小写的匹配创建新标签
+- 搜索文本清理和空白修剪
+- 由 [cmdk](https://github.com/pacocoursey/cmdk) 提供支持的模糊搜索
+
+</PackageInfo>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/tag
+```
+
+### 添加插件
+
+```tsx
+import { MultiSelectPlugin } from '@platejs/tag/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    MultiSelectPlugin, // 具有标签功能的多选编辑器
+  ],
+});
+```
+
+### 配置插件
+
+```tsx
+import { MultiSelectPlugin } from '@platejs/tag/react';
+import { createPlateEditor } from 'platejs/react';
+import { TagElement } from '@/components/ui/tag-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    MultiSelectPlugin.withComponent(TagElement),
+  ],
+});
+```
+
+- `MultiSelectPlugin`：扩展 TagPlugin 并将编辑器限制为仅包含标签元素
+- `withComponent`：分配 [`TagElement`](/docs/components/tag-node) 来渲染标签组件
+
+### 添加 SelectEditor
+
+<ComponentInstallation name="select-editor" inline />
+
+### 基本示例
+
+```tsx
+import { MultiSelectPlugin } from '@platejs/tag/react';
+import { TagElement } from '@/components/ui/tag-node';
+import {
+  SelectEditor,
+  SelectEditorContent,
+  SelectEditorInput,
+  SelectEditorCombobox,
+  type SelectItem,
+} from '@/components/ui/select-editor';
+
+// 定义你的项目
+const ITEMS: SelectItem[] = [
+  { value: 'React' },
+  { value: 'TypeScript' },
+  { value: 'JavaScript' },
+];
+
+export default function MySelectEditor() {
+  const [value, setValue] = React.useState<SelectItem[]>([ITEMS[0]]);
+
+  return (
+    <SelectEditor
+      value={value}
+      onValueChange={setValue}
+      items={ITEMS}
+    >
+      <SelectEditorContent>
+        <SelectEditorInput placeholder="选择项目..." />
+        <SelectEditorCombobox />
+      </SelectEditorContent>
+    </SelectEditor>
+  );
+}
+```
+
+### 表单示例
+
+<ComponentSource name="select-editor-demo" />
+
+</Steps>
+
+## 插件
+
+### TagPlugin
+
+用于单个标签功能的内联 void 元素插件。
+
+### MultiSelectPlugin
+
+`TagPlugin` 的扩展，将编辑器限制为仅包含标签元素，启用多选行为，具有自动文本清理和重复预防功能。
+
+## API
+
+### tf.insert.tag
+
+在当前选择处插入新的多选元素。
+
+<API name="tf.insert.tag">
+<APIParameters>
+  <APIItem name="props" type="TTagProps">
+    多选元素的属性。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="TTagProps">
+  <APIItem name="value" type="string">
+    多选元素的唯一值。
+  </APIItem>
+</APIOptions>
+</API>
+
+### getSelectedItems
+
+获取编辑器中的所有标签项目。
+
+<API name="getSelectedItems">
+<APIReturns type="TTagProps[]">
+  编辑器中的标签项目数组。
+</APIReturns>
+</API>
+
+### isEqualTags
+
+比较两组标签是否相等的工具函数，忽略顺序。
+
+<API name="isEqualTags">
+<APIParameters>
+  <APIItem name="newTags" type="TTagProps[]" optional>
+    要与当前编辑器标签比较的新标签。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="boolean">
+  两组是否包含相同的值。
+</APIReturns>
+</API>
+
+## Hooks
+
+### useSelectedItems
+
+获取编辑器中当前选中的标签项目的 Hook。
+
+<API name="useSelectedItems">
+<APIReturns type="TTagProps[]">
+  具有值和属性的选中标签项目数组。
+</APIReturns>
+</API>
+
+### useSelectableItems
+
+获取可选择的可用项目的 Hook，通过搜索过滤并排除已选中的项目。
+
+<API name="useSelectableItems">
+<APIOptions type="options">
+  <APIItem name="allowNew" type="boolean" optional>
+    是否允许创建新项目。
+    - **默认值：** `true`
+  </APIItem>
+  <APIItem name="filter" type="(value: string, search: string) => boolean" optional>
+    项目的自定义过滤函数。
+  </APIItem>
+  <APIItem name="items" type="T[]" optional>
+    可用项目数组。
+  </APIItem>
+  <APIItem name="newItemFilter" type="(search: string) => boolean" optional>
+    新项目的过滤函数。
+  </APIItem>
+  <APIItem name="newItemPosition" type="'end' | 'start'" optional>
+    新项目在列表中的位置。
+    - **默认值：** `'end'`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="T[]">
+  过滤后的可选项目数组。
+</APIReturns>
+</API>
+
+### useSelectEditorCombobox
+
+处理编辑器中组合框行为的 Hook，包括文本清理和项目选择。
+
+<API name="useSelectEditorCombobox">
+<APIOptions type="options">
+  <APIItem name="open" type="boolean">
+    组合框是否打开。
+  </APIItem>
+  <APIItem name="selectFirstItem" type="() => void">
+    选择第一个组合框项目的函数。
+  </APIItem>
+  <APIItem name="onValueChange" type="(items: TTagProps[]) => void" optional>
+    选中项目更改时的回调。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 类型
+
+### TTagElement
+
+```ts
+type TTagElement = TElement & {
+  value: string;
+  [key: string]: unknown;
+};
+```
+
+### TTagProps
+
+```ts
+type TTagProps = {
+  value: string;
+  [key: string]: unknown;
+};
+```

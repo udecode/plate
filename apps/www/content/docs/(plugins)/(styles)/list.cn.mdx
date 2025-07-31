@@ -1,0 +1,329 @@
+---
+title: 列表
+docs:
+  - route: /docs/components/list-toolbar-button
+    title: 列表工具栏按钮
+---
+
+<ComponentPreview name="list-demo" />
+
+<PackageInfo>
+
+## 特性
+
+- **灵活的块缩进**：通过缩进将任何块类型（段落、标题等）转换为列表项。
+- **简化结构**：扁平的DOM结构，每个缩进的块都是独立的，不同于[List Classic插件](/docs/list-classic)。
+- **列表类型**：支持项目符号列表（无序）和编号列表（有序）。
+- **Markdown快捷键**：结合自动格式化插件，使用Markdown快捷键（`-`、`*`、`1.`）创建列表。
+
+有关底层缩进系统的更多信息，请参阅[缩进插件](/docs/indent)。
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+添加列表功能的最快方式是使用`ListKit`，它包含预配置的`ListPlugin`以及必需的[缩进插件](/docs/indent)，针对段落、标题、引用块、代码块和折叠元素。
+
+<ComponentSource name="list-kit" />
+
+- [`BlockList`](/docs/components/block-list)：渲染列表包装元素，支持待办事项列表。
+- 包含[`IndentKit`](/docs/indent)用于底层缩进系统。
+- 配置`Paragraph`、`Heading`、`Blockquote`、`CodeBlock`和`Toggle`元素以支持列表功能。
+
+### 添加套件
+
+将套件添加到插件中：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { ListKit } from '@/components/editor/plugins/list-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    ...ListKit,
+  ],
+});
+```
+
+### 添加工具栏按钮
+
+您可以将[`ListToolbarButton`](/docs/components/list-toolbar-button)添加到[工具栏](/docs/toolbar)以创建和管理列表。
+
+</Steps>
+
+## 转换为工具栏按钮
+
+您可以将以下项添加到[转换为工具栏按钮](/docs/toolbar#turn-into-toolbar-button)中，将块转换为列表：
+
+```tsx
+{
+  icon: <ListIcon />,
+  label: '项目符号列表',
+  value: KEYS.ul,
+}
+```
+
+```tsx
+{
+  icon: <ListOrderedIcon />,
+  label: '编号列表',
+  value: KEYS.ol,
+}
+```
+
+```tsx
+{
+  icon: <SquareIcon />,
+  label: '待办列表',
+  value: KEYS.listTodo,
+}
+```
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/list @platejs/indent
+```
+
+### 添加插件
+
+在创建编辑器时，将`IndentPlugin`和`ListPlugin`都包含在Plate插件数组中。列表插件依赖于缩进插件。
+
+```tsx
+import { IndentPlugin } from '@platejs/indent/react';
+import { ListPlugin } from '@platejs/list/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    IndentPlugin,
+    ListPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+您可以配置这两个插件以针对特定元素并自定义列表行为。
+
+```tsx
+import { IndentPlugin } from '@platejs/indent/react';
+import { ListPlugin } from '@platejs/list/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+import { BlockList } from '@/components/ui/block-list';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    IndentPlugin.configure({
+      inject: {
+        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote, KEYS.codeBlock],
+      },
+    }),
+    ListPlugin.configure({
+      inject: {
+        targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote, KEYS.codeBlock],
+      },
+      render: {
+        belowNodes: BlockList,
+      },
+    }),
+  ],
+});
+```
+
+- `inject.targetPlugins`：插件键的数组，指示哪些元素类型可以成为列表项。
+- `render.belowNodes`：分配[`BlockList`](/docs/components/block-list)以渲染列表包装元素。
+
+</Steps>
+
+## 插件
+
+### `ListPlugin`
+
+用于创建和管理列表的插件。它与[缩进插件](/docs/indent)配合使用，提供灵活的列表功能，任何块都可以通过缩进转换为列表项。
+
+<API name="ListPlugin">
+<APIOptions>
+  <APIItem name="getSiblingListOptions" type="GetSiblingListOptions<TElement>" optional>
+    用于确定兄弟元素缩进列表选项的函数。
+  </APIItem>
+  <APIItem name="getListStyleType" type="(element: HTMLElement) => ListStyleType" optional>
+    将HTML元素映射到列表样式类型的函数。
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `getNextList`
+
+获取具有缩进列表的下一个兄弟entry。
+
+<API name="getNextList">
+<APIParameters>
+  <APIItem name="entry" type="ElementEntryOf">
+    当前元素的entry。
+  </APIItem>
+  <APIItem name="options" type="Partial<GetSiblingListOptions>" optional>
+    获取下一个缩进列表的选项。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry | undefined">
+  具有缩进列表的下一个兄弟entry，如果未找到则为`undefined`。
+</APIReturns>
+</API>
+
+### `getPreviousList`
+
+获取具有缩进列表的上一个兄弟entry。
+
+<API name="getPreviousList">
+<APIParameters>
+  <APIItem name="entry" type="ElementEntryOf">
+    当前元素的entry。
+  </APIItem>
+  <APIItem name="options" type="Partial<GetSiblingListOptions>" optional>
+    获取上一个缩进列表的选项。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="NodeEntry | undefined">
+  具有缩进列表的上一个兄弟entry，如果未找到则为`undefined`。
+</APIReturns>
+</API>
+
+### `indentList`
+
+增加所选块的缩进。
+
+<API name="indentList">
+<APIOptions type="ListOptions">
+  <APIItem name="listStyleType" type="ListStyleType | string" optional>
+    使用的列表样式类型。
+    - **默认值:** `ListStyleType.Disc`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `outdentList`
+
+减少所选块的缩进。
+
+<API name="outdentList">
+<APIOptions type="ListOptions">
+  <APIItem name="listStyleType" type="ListStyleType | string" optional>
+    使用的列表样式类型。
+    - **默认值:** `ListStyleType.Disc`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `someList`
+
+检查所选块是否具有特定的列表样式类型。
+
+<API name="someList">
+<APIParameters>
+  <APIItem name="type" type="string | string[]">
+    要检查的列表样式类型。
+  </APIItem>
+</APIParameters>
+</API>
+
+### `toggleList`
+
+切换缩进列表。
+
+<API name="toggleList">
+<APIOptions type="ListOptions">
+  <APIItem name="listStyleType" type="ListStyleType | string" optional>
+    使用的列表样式类型。
+  </APIItem>
+
+  <APIItem name="listRestart" type="number" optional>
+    覆盖列表项的编号。
+  </APIItem>
+
+  <APIItem name="listRestartPolite" type="number" optional>
+    覆盖列表项的编号，仅在列表项是列表中的第一个时生效。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 类型
+
+### `GetSiblingListOptions`
+
+用于提供在文本块中获取兄弟缩进列表的选项。
+
+<API name="GetSiblingListOptions">
+<APIOptions>
+  <APIItem name="getPreviousEntry" type="function">
+    此函数用于从给定entry获取上一个兄弟entry。
+  </APIItem>
+  <APIItem name="getNextEntry" type="function">
+    此函数用于从给定entry获取下一个兄弟entry。
+  </APIItem>
+  <APIItem name="query" type="function">
+    此函数用于在查找过程中验证兄弟节点。
+    如果返回false，则检查下一个兄弟节点。
+  </APIItem>
+  <APIItem name="eqIndent" type="boolean">
+    指示当兄弟节点具有与当前节点相同的缩进级别时是否中断查找。如果为true，则在找到具有相同缩进级别的兄弟节点时停止查找。
+  </APIItem>
+  <APIItem name="breakQuery" type="(node: TNode) => boolean | undefined">
+    一个函数，接受`TNode`并返回布尔值或undefined。
+    此函数用于指定查找过程应停止的条件。
+  </APIItem>
+  <APIItem name="breakOnLowerIndent" type="boolean">
+    指示当找到具有较低缩进级别的兄弟节点时是否中断查找。如果为true，则在找到具有较低缩进级别的兄弟节点时停止查找。
+  </APIItem>
+  <APIItem name="breakOnEqIndentNeqListStyleType" type="boolean">
+    指示当找到具有相同缩进级别但不同列表样式类型的兄弟节点时是否中断查找。如果为true，则在找到这样的兄弟节点时停止查找。
+  </APIItem>
+</APIOptions>
+</API>
+
+## 钩子
+
+### `useListToolbarButton`
+
+缩进列表工具栏按钮的行为钩子。
+
+<API name="useListToolbarButton">
+<APIState>
+  <APIItem name="nodeType" type="string">
+    列表样式类型。
+  </APIItem>
+  <APIItem name="pressed" type="boolean">
+    按钮是否被按下。
+  </APIItem>
+</APIState>
+
+<APIReturns type="object">
+  <APIItem name="props" type="object">
+    工具栏按钮的属性。
+     <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        按钮是否被按下。
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        处理点击事件的回调。切换指定节点类型的缩进列表并聚焦编辑器。
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+</API>

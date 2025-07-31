@@ -1,0 +1,1096 @@
+---
+title: AI
+description: AI-powered writing assistance.
+docs:
+  - route: https://pro.platejs.org/docs/examples/ai
+    title: Plus
+---
+
+<ComponentPreview name="ai-demo" />
+
+<PackageInfo>
+
+## Features
+
+- **Intelligent Command Menu**: Combobox interface with predefined AI commands for generation and editing
+- **Multiple Trigger Modes**:
+  - **Cursor Mode**: Trigger at block end with space
+  - **Selection Mode**: Trigger with selected text
+  - **Block Selection Mode**: Trigger with selected blocks
+- **Response Modes**:
+  - **Chat Mode**: Preview responses with accept/reject options
+  - **Insert Mode**: Direct content insertion with markdown streaming
+- **Smart Content Processing**: Optimized chunking for tables, code blocks, and complex structures
+- **Streaming Responses**: Real-time AI content generation
+- **Markdown Integration**: Full support for Markdown syntax in AI responses
+- **Customizable Prompts**: Template system for user and system prompts
+- **Built-in Vercel AI SDK Support**: Ready-to-use chat API integration
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add AI functionality is with the `AIKit`, which includes pre-configured `AIPlugin` and `AIChatPlugin` along with cursor overlay and markdown support and their [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="ai-kit" />
+
+- [`AIMenu`](/docs/components/ai-menu): Renders the AI command interface
+- [`AILoadingBar`](/docs/components/ai-loading-bar): Shows AI processing status
+- [`AIAnchorElement`](/docs/components/ai-anchor-element): Anchor element for the AI Menu
+- [`AILeaf`](/docs/components/ai-leaf): Renders AI-generated content with visual distinction
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { AIKit } from '@/components/editor/plugins/ai-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...AIKit,
+  ],
+});
+```
+
+### Add API Route
+
+AI functionality requires a server-side API endpoint. Add the pre-configured AI command route:
+
+<ComponentSource name="ai-api" />
+
+### Configure Environment
+
+Ensure your OpenAI API key is set in your environment variables:
+
+```bash title=".env.local"
+OPENAI_API_KEY="your-api-key"
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/ai @platejs/selection @platejs/markdown @platejs/basic-nodes
+```
+
+### Add Plugins
+
+```tsx
+import { AIPlugin, AIChatPlugin } from '@platejs/ai/react';
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...MarkdownKit, // Required for AI content processing
+    AIPlugin,
+    AIChatPlugin,
+  ],
+});
+```
+
+- [`MarkdownKit`](/docs/markdown): Required for processing AI responses with Markdown syntax and MDX support.
+- `AIPlugin`: Core plugin for AI content management and transforms.
+- `AIChatPlugin`: Handles AI chat interface, streaming, and user interactions.
+
+### Configure Plugins
+
+Create the extended `aiChatPlugin` with basic configuration:
+
+```tsx
+import type { AIChatPluginConfig } from '@platejs/ai/react';
+import type { UseChatOptions } from 'ai/react';
+
+import { KEYS, PathApi } from 'platejs';
+import { streamInsertChunk, withAIBatch } from '@platejs/ai';
+import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
+import { usePluginOption } from 'platejs/react';
+import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
+import { AILoadingBar, AIMenu } from '@/components/ui/ai-menu';
+import { AIAnchorElement, AILeaf } from '@/components/ui/ai-node';
+
+export const aiChatPlugin = AIChatPlugin.extend({
+  options: {
+    chatOptions: {
+      api: '/api/ai/command',
+      body: {},
+    } as UseChatOptions,
+  },
+  render: {
+    afterContainer: AILoadingBar,
+    afterEditable: AIMenu,
+    node: AIAnchorElement,
+  },
+  shortcuts: { show: { keys: 'mod+j' } },
+});
+
+const plugins = [
+  // ...otherPlugins,
+  ...MarkdownKit,
+  AIPlugin.withComponent(AILeaf),
+  aiChatPlugin,
+];
+```
+
+- `chatOptions`: Configuration for the Vercel AI SDK `useChat` hook.
+- `render`: UI components for the AI interface.
+- `shortcuts`: Keyboard shortcuts (`Cmd+J` to show AI menu).
+
+### Add Streaming with useHooks
+
+The `useChatChunk` hook processes streaming AI responses in real-time, handling content insertion and chunk management. It monitors the chat state and processes incoming text chunks, inserting them into the editor as they arrive:
+
+```tsx
+export const aiChatPlugin = AIChatPlugin.extend({
+  // ... previous options
+  useHooks: ({ editor, getOption }) => {
+    const mode = usePluginOption(
+      { key: KEYS.aiChat } as AIChatPluginConfig,
+      'mode'
+    );
+
+    useChatChunk({
+      onChunk: ({ chunk, isFirst, nodes }) => {
+        if (isFirst && mode == 'insert') {
+          editor.tf.withoutSaving(() => {
+            editor.tf.insertNodes(
+              {
+                children: [{ text: '' }],
+                type: KEYS.aiChat,
+              },
+              {
+                at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+              }
+            );
+          });
+          editor.setOption(AIChatPlugin, 'streaming', true);
+        }
+
+        if (mode === 'insert' && nodes.length > 0) {
+          withAIBatch(
+            editor,
+            () => {
+              if (!getOption('streaming')) return;
+              editor.tf.withScrolling(() => {
+                streamInsertChunk(editor, chunk, {
+                  textProps: {
+                    ai: true,
+                  },
+                });
+              });
+            },
+            { split: isFirst }
+          );
+        }
+      },
+      onFinish: () => {
+        editor.setOption(AIChatPlugin, 'streaming', false);
+        editor.setOption(AIChatPlugin, '_blockChunks', '');
+        editor.setOption(AIChatPlugin, '_blockPath', null);
+      },
+    });
+  },
+});
+```
+
+- `onChunk`: Handles each streaming chunk, creating AI nodes on first chunk and inserting content in real-time
+- `onFinish`: Cleans up streaming state when the response completes
+- Uses `withAIBatch` and `streamInsertChunk` for optimized content insertion
+
+### System Prompt
+
+The system prompt defines the AI's role and behavior. You can customize the `systemTemplate` in your extended plugin:
+
+```tsx
+export const customAIChatPlugin = AIChatPlugin.extend({
+  options: {
+    systemTemplate: ({ isBlockSelecting, isSelecting }) => {
+      const customSystem = `You are a technical documentation assistant specialized in code and API documentation.
+
+Rules:
+- Provide accurate, well-structured technical content
+- Use appropriate code formatting and syntax highlighting
+- Include relevant examples and best practices
+- Maintain consistent documentation style
+- CRITICAL: DO NOT remove or modify custom MDX tags unless explicitly requested.
+- CRITICAL: Distinguish between INSTRUCTIONS and QUESTIONS.`;
+
+      return isBlockSelecting
+        ? `${customSystem}
+- <Selection> represents the full blocks of text the user has selected and wants to modify or ask about.
+- Your response should be a direct replacement for the entire <Selection>.
+- Maintain the overall structure and formatting of the selected blocks, unless explicitly instructed otherwise.
+<Selection>
+{block}
+</Selection>`
+        : isSelecting
+          ? `${customSystem}
+- <Block> is the block of text containing the user's selection, providing context.
+- <Selection> is the specific text the user has selected in the block and wants to modify or ask about.
+- Consider the context provided by <Block>, but only modify <Selection>.
+<Block>
+{block}
+</Block>
+<Selection>
+{selection}
+</Selection>`
+          : `${customSystem}
+- <Block> is the current block of text the user is working on.
+
+<Block>
+{block}
+</Block>`;
+    },
+    // ...other options
+  },
+}),
+```
+
+### User Prompt
+
+Customize how user prompts are formatted and contextualized in your extended plugin:
+
+```tsx
+export const customAIChatPlugin = AIChatPlugin.extend({
+  options: {
+    promptTemplate: ({ isBlockSelecting, isSelecting }) => {
+      return isBlockSelecting
+        ? `<Reminder>
+If this is a question, provide a helpful and concise answer about <Selection>.
+If this is an instruction, provide ONLY the content to replace the entire <Selection>. No explanations.
+Analyze and improve the following content blocks maintaining structure and clarity.
+NEVER write <Block> or <Selection>.
+</Reminder>
+{prompt} about <Selection>`
+        : isSelecting
+          ? `<Reminder>
+If this is a question, provide a helpful and concise answer about <Selection>.
+If this is an instruction, provide ONLY the text to replace <Selection>. No explanations.
+Ensure it fits seamlessly within <Block>. If <Block> is empty, write ONE random sentence.
+NEVER write <Block> or <Selection>.
+</Reminder>
+{prompt} about <Selection>`
+          : `<Reminder>
+CRITICAL: NEVER write <Block>.
+Continue or improve the content naturally.
+</Reminder>
+{prompt}`;
+    },
+    // ...other options
+  },
+}),
+```
+
+### Add API Route
+
+Create an API route handler with optimized streaming for different content types:
+
+```tsx title="app/api/ai/command/route.ts"
+import type { TextStreamPart, ToolSet } from 'ai';
+import type { NextRequest } from 'next/server';
+
+import { createOpenAI } from '@ai-sdk/openai';
+import { InvalidArgumentError } from '@ai-sdk/provider';
+import { delay as originalDelay } from '@ai-sdk/provider-utils';
+import { convertToCoreMessages, streamText } from 'ai';
+import { NextResponse } from 'next/server';
+
+const CHUNKING_REGEXPS = {
+  line: /\n+/m,
+  list: /.{8}/m,
+  word: /\S+\s+/m,
+};
+
+export async function POST(req: NextRequest) {
+  const { apiKey: key, messages, system } = await req.json();
+
+  const apiKey = key || process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: 'Missing OpenAI API key.' },
+      { status: 401 }
+    );
+  }
+
+  const openai = createOpenAI({ apiKey });
+
+  let isInCodeBlock = false;
+  let isInTable = false;
+  let isInList = false;
+  let isInLink = false;
+
+  try {
+    const result = streamText({
+      experimental_transform: smoothStream({
+        chunking: (buffer) => {
+          // Detect content types for optimized chunking
+          if (/```[^\s]+/.test(buffer)) {
+            isInCodeBlock = true;
+          } else if (isInCodeBlock && buffer.includes('```')) {
+            isInCodeBlock = false;
+          }
+
+          if (buffer.includes('http')) {
+            isInLink = true;
+          } else if (buffer.includes('https')) {
+            isInLink = true;
+          } else if (buffer.includes('\n') && isInLink) {
+            isInLink = false;
+          }
+
+          if (buffer.includes('*') || buffer.includes('-')) {
+            isInList = true;
+          } else if (buffer.includes('\n') && isInList) {
+            isInList = false;
+          }
+
+          if (!isInTable && buffer.includes('|')) {
+            isInTable = true;
+          } else if (isInTable && buffer.includes('\n\n')) {
+            isInTable = false;
+          }
+
+          // Choose chunking strategy based on content type
+          let match;
+          if (isInCodeBlock || isInTable || isInLink) {
+            match = CHUNKING_REGEXPS.line.exec(buffer);
+          } else if (isInList) {
+            match = CHUNKING_REGEXPS.list.exec(buffer);
+          } else {
+            match = CHUNKING_REGEXPS.word.exec(buffer);
+          }
+
+          if (!match) return null;
+          return buffer.slice(0, match.index) + match?.[0];
+        },
+        delayInMs: () => (isInCodeBlock || isInTable ? 100 : 30),
+      }),
+      maxTokens: 2048,
+      messages: convertToCoreMessages(messages),
+      model: openai('gpt-4o'),
+      system: system,
+    });
+
+    return result.toDataStreamResponse();
+  } catch {
+    return NextResponse.json(
+      { error: 'Failed to process AI request' },
+      { status: 500 }
+    );
+  }
+}
+
+// Smooth streaming implementation for optimized chunking
+function smoothStream<TOOLS extends ToolSet>({
+  _internal: { delay = originalDelay } = {},
+  chunking = 'word',
+  delayInMs = 10,
+}: {
+  _internal?: {
+    delay?: (delayInMs: number | null) => Promise<void>;
+  };
+  chunking?: ChunkDetector | RegExp | 'line' | 'word';
+  delayInMs?: delayer | number | null;
+} = {}): (options: {
+  tools: TOOLS;
+}) => TransformStream<TextStreamPart<TOOLS>, TextStreamPart<TOOLS>> {
+  let detectChunk: ChunkDetector;
+
+  if (typeof chunking === 'function') {
+    detectChunk = (buffer) => {
+      const match = chunking(buffer);
+      if (match == null) return null;
+      if (match.length === 0) {
+        throw new Error(`Chunking function must return a non-empty string.`);
+      }
+      if (!buffer.startsWith(match)) {
+        throw new Error(
+          `Chunking function must return a match that is a prefix of the buffer.`
+        );
+      }
+      return match;
+    };
+  } else {
+    const chunkingRegex =
+      typeof chunking === 'string' ? CHUNKING_REGEXPS[chunking] : chunking;
+
+    if (chunkingRegex == null) {
+      throw new InvalidArgumentError({
+        argument: 'chunking',
+        message: `Chunking must be "word" or "line" or a RegExp. Received: ${chunking}`,
+      });
+    }
+
+    detectChunk = (buffer) => {
+      const match = chunkingRegex.exec(buffer);
+      if (!match) return null;
+      return buffer.slice(0, match.index) + match?.[0];
+    };
+  }
+
+  return () => {
+    let buffer = '';
+
+    return new TransformStream<TextStreamPart<TOOLS>, TextStreamPart<TOOLS>>({
+      async transform(chunk, controller) {
+        if (chunk.type !== 'text-delta') {
+          if (buffer.length > 0) {
+            controller.enqueue({ textDelta: buffer, type: 'text-delta' });
+            buffer = '';
+          }
+          controller.enqueue(chunk);
+          return;
+        }
+
+        buffer += chunk.textDelta;
+        let match;
+
+        while ((match = detectChunk(buffer)) != null) {
+          controller.enqueue({ textDelta: match, type: 'text-delta' });
+          buffer = buffer.slice(match.length);
+
+          const _delayInMs =
+            typeof delayInMs === 'number'
+              ? delayInMs
+              : (delayInMs?.(buffer) ?? 10);
+
+          await delay(_delayInMs);
+        }
+      },
+    });
+  };
+}
+```
+
+Then, set your `OPENAI_API_KEY` in `.env.local`.
+
+### Add Toolbar Button
+
+You can add [`AIToolbarButton`](/docs/components/ai-toolbar-button) to your [Toolbar](/docs/toolbar) to open the AI menu.
+
+</Steps>
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Space">
+    Open AI menu in empty block (cursor mode)
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + J">
+    Open AI menu (cursor or selection mode)
+  </KeyTableItem>
+  <KeyTableItem hotkey="Escape">Close AI menu</KeyTableItem>
+</KeyTable>
+
+## Plate Plus
+
+<ComponentPreviewPro name="ai-pro" />
+
+## Customization
+
+### Adding Custom AI Commands
+
+<ComponentSource name="ai-menu" />
+
+You can extend the AI menu with custom commands by adding new items to the `aiChatItems` object and updating the menu state items.
+
+#### Simple Custom Command
+
+Add a basic command that submits a custom prompt:
+
+```tsx
+// Add to your ai-menu.tsx aiChatItems object
+summarizeInBullets: {
+  icon: <ListIcon />,
+  label: 'Summarize in bullets',
+  value: 'summarizeInBullets',
+  onSelect: ({ editor }) => {
+    void editor.getApi(AIChatPlugin).aiChat.submit({
+      prompt: 'Summarize this content as bullet points',
+    });
+  },
+},
+```
+
+#### Command with Complex Logic
+
+Create commands with client-side logic before submission:
+
+```tsx
+generateTOC: {
+  icon: <BookIcon />,
+  label: 'Generate table of contents',
+  value: 'generateTOC',
+  onSelect: ({ editor }) => {
+    // Check if document has headings
+    const headings = editor.api.nodes({
+      match: (n) => ['h1', 'h2', 'h3'].includes(n.type as string),
+    });
+
+    if (headings.length === 0) {
+      void editor.getApi(AIChatPlugin).aiChat.submit({
+        mode: 'insert',
+        prompt: 'Create a table of contents with sample headings for this document',
+      });
+    } else {
+      void editor.getApi(AIChatPlugin).aiChat.submit({
+        mode: 'insert',
+        prompt: 'Generate a table of contents based on the existing headings',
+      });
+    }
+  },
+},
+```
+
+#### Understanding Menu States
+
+The AI menu adapts to different contexts based on user selection and AI response state:
+
+```tsx
+const menuState = React.useMemo(() => {
+  // If AI has already responded, show suggestion actions
+  if (messages && messages.length > 0) {
+    return isSelecting ? 'selectionSuggestion' : 'cursorSuggestion';
+  }
+  
+  // If no AI response yet, show command actions
+  return isSelecting ? 'selectionCommand' : 'cursorCommand';
+}, [isSelecting, messages]);
+```
+
+**Menu States:**
+- `cursorCommand`: No selection, no AI response → Show generation commands (Continue writing, Summarize, etc.)
+- `selectionCommand`: Text selected, no AI response → Show editing commands (Improve writing, Fix spelling, etc.)  
+- `cursorSuggestion`: No selection, AI responded → Show suggestion actions (Accept, Discard, Try again)
+- `selectionSuggestion`: Text selected, AI responded → Show replacement actions (Replace selection, Insert below, etc.)
+
+#### Update Menu States
+
+Add your custom commands to the appropriate menu states in `menuStateItems`:
+
+```tsx
+const menuStateItems: Record<EditorChatState, { items: any[] }[]> = {
+  cursorCommand: [
+    {
+      items: [
+        aiChatItems.generateTOC,
+        aiChatItems.summarizeInBullets,
+        // ... existing items
+      ],
+    },
+  ],
+  selectionCommand: [
+    {
+      items: [
+        aiChatItems.summarizeInBullets, // Works for selected text too
+        // ... existing items
+      ],
+    },
+  ],
+  // ... other states
+};
+```
+
+### Switching AI Models
+
+Configure different AI models and providers in your API route:
+
+```tsx title="app/api/ai/command/route.ts"
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+
+export async function POST(req: NextRequest) {
+  const { model = 'gpt-4o', provider = 'openai', ...rest } = await req.json();
+
+  let aiProvider;
+  
+  switch (provider) {
+    case 'anthropic':
+      aiProvider = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      break;
+    case 'openai':
+    default:
+      aiProvider = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      break;
+  }
+
+  const result = streamText({
+    model: aiProvider(model),
+    // ... other options
+  });
+
+  return result.toDataStreamResponse();
+}
+```
+
+Configure the model in your `aiChatPlugin`:
+
+```tsx
+export const aiChatPlugin = AIChatPlugin.extend({
+  options: {
+    chatOptions: {
+      api: '/api/ai/command',
+      body: {
+        model: 'gpt-4o-mini', // or 'claude-4-sonnet'
+        provider: 'openai',   // or 'anthropic'
+      },
+    },
+    // ... other options
+  },
+});
+```
+
+For more AI providers and models, see the [Vercel AI SDK documentation](https://sdk.vercel.ai/providers/ai-sdk-providers).
+
+### Custom Streaming Optimization
+
+Optimize streaming performance for specific content types with custom chunking strategies:
+
+```tsx title="app/api/ai/command/route.ts"
+const customChunking = (buffer: string) => {
+  // Detect JSON content for slower chunking
+  if (buffer.includes('{') && buffer.includes('}')) {
+    const jsonMatch = /\{[^}]*\}/g.exec(buffer);
+    if (jsonMatch) {
+      return buffer.slice(0, jsonMatch.index + jsonMatch[0].length);
+    }
+  }
+
+  // Detect code blocks for line-based chunking
+  if (buffer.includes('```')) {
+    const lineMatch = /\n+/m.exec(buffer);
+    return lineMatch ? buffer.slice(0, lineMatch.index + lineMatch[0].length) : null;
+  }
+
+  // Default word chunking
+  const wordMatch = /\S+\s+/m.exec(buffer);
+  return wordMatch ? buffer.slice(0, wordMatch.index + wordMatch[0].length) : null;
+};
+
+// Use in your streamText configuration
+const result = streamText({
+  experimental_transform: smoothStream({
+    chunking: customChunking,
+    delayInMs: (buffer) => {
+      // Slower for complex content, faster for simple text
+      return buffer.includes('```') || buffer.includes('{') ? 80 : 20;
+    },
+  }),
+  // ... other options
+});
+```
+
+### Security Considerations
+
+Implement security best practices for AI functionality:
+
+```tsx title="app/api/ai/command/route.ts"
+export async function POST(req: NextRequest) {
+  const { messages, system } = await req.json();
+
+  // Validate request structure
+  if (!messages || !Array.isArray(messages)) {
+    return NextResponse.json({ error: 'Invalid messages' }, { status: 400 });
+  }
+
+  // Content length validation
+  const totalContent = messages.map(m => m.content).join('');
+  if (totalContent.length > 50000) {
+    return NextResponse.json({ error: 'Content too long' }, { status: 413 });
+  }
+
+  // Rate limiting (implement with your preferred solution)
+  // await rateLimit(req);
+
+  // Content filtering (optional)
+  // const filteredMessages = await filterContent(messages);
+
+  // Process AI request...
+}
+```
+
+**Security Guidelines:**
+- **Validate Input**: Always validate and sanitize user prompts
+- **Rate Limiting**: Implement rate limiting on AI endpoints  
+- **Content Filtering**: Consider content filtering for responses
+- **API Key Security**: Never expose API keys client-side
+- **User Privacy**: Be mindful of data sent to AI models
+
+## Plugins
+
+### `AIPlugin`
+
+Core plugin that extends the editor with AI content management capabilities.
+
+<API name="AIPlugin">
+<APIOptions>
+  <APIItem name="node" type="object">
+    Node configuration for AI leaf elements.
+    - `isLeaf: true`: AI content is treated as leaf nodes
+    - `isDecoration: false`: Not used for decorations
+  </APIItem>
+</APIOptions>
+</API>
+
+### `AIChatPlugin`
+
+Main plugin that enables AI chat operations, streaming, and user interface interactions.
+
+<API name="AIChatPlugin">
+<APIOptions>
+  <APIItem name="chatOptions" type="UseChatOptions">
+    Configuration options for the Vercel AI SDK `useChat` hook.
+    - `api`: API endpoint for AI requests
+    - `body`: Additional request body parameters
+  </APIItem>
+  <APIItem name="mode" type="'chat' | 'insert'" optional>
+    Specifies how assistant messages are handled:
+    - `'chat'`: Shows preview with accept/reject options
+    - `'insert'`: Directly inserts content into editor
+    - **Default:** `'chat'`
+  </APIItem>
+  <APIItem name="open" type="boolean" optional>
+    Whether the AI chat interface is open.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="streaming" type="boolean" optional>
+    Whether AI response is currently streaming.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="promptTemplate" type="(props: EditorPromptParams) => string" optional>
+    Template for generating user prompts. Supports placeholders:
+    - `{block}`: Markdown of blocks in selection
+    - `{editor}`: Markdown of entire editor content
+    - `{selection}`: Markdown of current selection
+    - `{prompt}`: Actual user prompt
+    - **Default:** `'{prompt}'`
+  </APIItem>
+  <APIItem name="systemTemplate" type="(props: EditorPromptParams) => string | void" optional>
+    Template for system messages. Supports same placeholders as `promptTemplate`.
+  </APIItem>
+  <APIItem name="aiEditor" type="SlateEditor | null" optional>
+    The editor instance used to generate AI responses.
+    - **Default:** `null`
+  </APIItem>
+  <APIItem name="chat" type="Partial<UseChatHelpers>" optional>
+    Chat helpers returned by `useChat` hook.
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `api.aiChat.accept()`
+
+Accepts the current AI suggestion:
+- Removes AI marks from the content
+- Hides the AI chat interface
+- Focuses the editor
+
+### `api.aiChat.insertBelow()`
+
+Inserts AI-generated content below the current block.
+
+Handles both block selection and normal selection modes:
+- In block selection: Inserts after the last selected block, applying formatting from the last block
+- In normal selection: Inserts after the current block, applying formatting from the current block
+
+<API name="insertBelow">
+<APIParameters>
+  <APIItem name="sourceEditor" type="PlateEditor">
+    Editor containing the content to insert.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    Options for insertion behavior.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="format" type="'all' | 'none' | 'single'" optional>
+    Format to apply:
+    - `'all'`: Apply formatting to all blocks
+    - `'none'`: Insert without formatting
+    - `'single'`: Apply formatting only to first block
+    - **Default:** `'single'`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `api.aiChat.replaceSelection()`
+
+Replaces the current selection with AI-generated content.
+
+Handles different selection modes:
+- Single block selection: Replaces the selected block, applying its formatting to inserted content based on format option
+- Multiple block selection: Replaces all selected blocks
+  - With `format: 'none'` or `'single'`: Preserves original formatting
+  - With `format: 'all'`: Applies first block's formatting to all content
+- Normal selection: Replaces the current selection while maintaining surrounding context
+
+<API name="replaceSelection">
+<APIParameters>
+  <APIItem name="sourceEditor" type="PlateEditor">
+    Editor containing the replacement content.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    Options for replacement behavior.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="format" type="'all' | 'none' | 'single'" optional>
+    Format to apply:
+    - `'all'`: Apply formatting to all blocks
+    - `'none'`: Replace without formatting
+    - `'single'`: Apply formatting only to first block
+    - **Default:** `'single'`
+  </APIItem>
+</APIOptions>
+</API>
+
+### `api.aiChat.reset()`
+
+Resets the chat state:
+- Stops any ongoing generation
+- Clears chat messages
+- Removes all AI nodes from the editor
+
+### `api.aiChat.node()`
+
+Gets the AI chat node entry.
+
+<API name="node">
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions & { anchor?: boolean; streaming?: boolean }" optional>
+    Options for finding the node.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="EditorNodesOptions & { anchor?: boolean; streaming?: boolean }">
+  <APIItem name="anchor" type="boolean" optional>
+    When true, finds nodes with type matching the plugin type.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="streaming" type="boolean" optional>
+    When true, finds streaming AI nodes.
+    - **Default:** `false`
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="NodeEntry | undefined">
+  The found node entry or undefined if not found.
+</APIReturns>
+</API>
+
+### `api.aiChat.reload()`
+
+Reloads the current AI chat:
+- In insert mode: Undoes previous AI changes
+- Reloads the chat with the current system prompt
+
+### `api.aiChat.show()`
+
+Shows the AI chat interface:
+- Resets the chat state
+- Clears messages
+- Sets the open state to true
+
+### `api.aiChat.hide()`
+
+Hides the AI chat interface:
+- Resets the chat state
+- Sets the open state to false
+- Focuses the editor
+- Removes the AI anchor
+
+### `api.aiChat.stop()`
+
+Stops the current AI generation:
+- Sets streaming state to false
+- Calls the chat stop function
+
+### `api.aiChat.submit()`
+
+Submits a prompt to generate AI content.
+
+<API name="submit">
+<APIParameters>
+  <APIItem name="options" type="SubmitOptions" optional>
+    Options for the submission.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="SubmitOptions">
+  <APIItem name="mode" type="'chat' | 'insert'" optional>
+    Mode to use. In insert mode, undoes previous AI changes before submitting.
+    - **Default:** `'chat'` for selection, `'insert'` otherwise
+  </APIItem>
+  <APIItem name="prompt" type="string" optional>
+    Custom prompt to submit.
+    - **Default:** Uses chat input if not provided
+  </APIItem>
+  <APIItem name="system" type="string" optional>
+    Custom system message for this request.
+  </APIItem>
+</APIOptions>
+</API>
+
+## Transforms
+
+### `tf.aiChat.removeAnchor()`
+
+Removes the AI chat anchor node from the editor.
+
+<API name="removeAnchor">
+<APIParameters>
+  <APIItem name="options" type="EditorNodesOptions" optional>
+    Options for finding nodes to remove.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.aiChat.accept()`
+
+Accepts the current AI suggestion and integrates it into the editor content.
+
+### `tf.aiChat.insertBelow()`
+
+Transform that inserts AI content below the current block.
+
+### `tf.aiChat.replaceSelection()`
+
+Transform that replaces the current selection with AI content.
+
+### `tf.ai.insertNodes()`
+
+Inserts AI-generated nodes with the AI mark.
+
+<API name="tf.ai.insertNodes">
+<APIParameters>
+  <APIItem name="nodes" type="Descendant[]">
+    Nodes to insert with AI mark.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Options for inserting nodes.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="InsertNodesOptions">
+  <APIItem name="target" type="Path" optional>
+    Target path for insertion.
+    - **Default:** Current selection
+  </APIItem>
+</APIOptions>
+</API>
+
+### `tf.ai.removeMarks()`
+
+Removes AI marks from nodes in the specified location.
+
+<API name="tf.ai.removeMarks">
+<APIParameters>
+  <APIItem name="options" type="RemoveMarksOptions" optional>
+    Options for removing marks.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="RemoveMarksOptions">
+  <APIItem name="at" type="Location" optional>
+    Location to remove marks from.
+    - **Default:** Entire document
+  </APIItem>
+</APIOptions>
+</API>
+
+### `tf.ai.removeNodes()`
+
+Removes nodes that have the AI mark.
+
+<API name="tf.ai.removeNodes">
+<APIParameters>
+  <APIItem name="options" type="RemoveNodesOptions" optional>
+    Options for removing nodes.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="RemoveNodesOptions">
+  <APIItem name="at" type="Path" optional>
+    Path to remove nodes from.
+    - **Default:** Entire document
+  </APIItem>
+</APIOptions>
+</API>
+
+### `tf.ai.undo()`
+
+Special undo operation for AI changes:
+- Undoes the last operation if it was AI-generated
+- Removes the redo stack entry to prevent redoing AI operations
+
+## Hooks
+
+### `useAIChatEditor`
+
+A hook that registers an editor in the AI chat plugin and deserializes markdown content with block-level memoization.
+
+<API name="useAIChatEditor">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance to register.
+  </APIItem>
+  <APIItem name="content" type="string">
+    The markdown content to deserialize into the editor.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    Options for content processing.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="memoize" type="boolean" optional>
+    Enable block-level memoization with `_memo` property.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
+    Options for the markdown token parser. Can filter out specific token types.
+  </APIItem>
+  <APIItem name="processor" type="(processor: Processor) => Processor" optional>
+    Function to customize the markdown processor.
+  </APIItem>
+</APIOptions>
+
+```tsx
+const AIChatEditor = ({ content }: { content: string }) => {
+  const aiEditor = usePlateEditor({
+    plugins: [
+      // Your editor plugins
+      MarkdownPlugin,
+      AIPlugin,
+      AIChatPlugin,
+      // etc...
+    ],
+  });
+
+  useAIChatEditor(aiEditor, content, {
+    // Optional markdown parser options
+    parser: {
+      exclude: ['space'],
+    },
+  });
+
+  return <Editor editor={aiEditor} />;
+};
+```
+</API>

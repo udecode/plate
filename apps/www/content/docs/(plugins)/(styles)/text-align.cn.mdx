@@ -1,0 +1,162 @@
+---
+title: 文本对齐
+docs:
+  - route: /docs/components/align-toolbar-button
+    title: 对齐工具栏按钮
+---
+
+<ComponentPreview name="align-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 为段落、标题等块级元素设置文本对齐方式
+- 支持左对齐、右对齐、居中对齐和两端对齐
+- 向目标块元素注入 `align` 属性
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 安装
+
+最快捷的文本对齐实现方式是使用 `AlignKit`，它包含了预配置好的 `TextAlignPlugin`，可作用于段落、标题、图片和媒体元素。
+
+<ComponentSource name="align-kit" />
+
+- 配置 `Paragraph`、`Heading`、`Image` 和 `Media` 元素支持 `align` 属性
+- 提供对齐选项：`start`、`left`、`center`、`right`、`end`、`justify`
+
+### 添加套件
+
+将套件添加到插件列表：
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { AlignKit } from '@/components/editor/plugins/align-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ...AlignKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装
+
+```bash
+npm install @platejs/basic-styles
+```
+
+### 添加插件
+
+在创建编辑器时，将 `TextAlignPlugin` 加入 Plate 插件数组。
+
+```tsx
+import { TextAlignPlugin } from '@platejs/basic-styles/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    TextAlignPlugin,
+  ],
+});
+```
+
+### 配置插件
+
+可以配置 `TextAlignPlugin` 来指定目标元素和定义对齐选项。
+
+```tsx
+import { TextAlignPlugin } from '@platejs/basic-styles/react';
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    TextAlignPlugin.configure({
+      inject: {
+        nodeProps: {
+          nodeKey: 'align',
+          defaultNodeValue: 'start',
+          styleKey: 'textAlign',
+          validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+        },
+        targetPlugins: [...KEYS.heading, KEYS.p],
+      },
+    }),
+  ],
+});
+```
+
+- `inject.nodeProps.nodeKey`: 注入到目标元素的属性名（默认为 `align`）。如需使用其他属性名可设置为 `'textAlign'`
+- `inject.nodeProps.defaultNodeValue`: 设置默认对齐方式（`start`）
+- `inject.nodeProps.styleKey`: 将注入属性映射到 CSS 的 `textAlign` 属性
+- `inject.nodeProps.validNodeValues`: 定义有效的对齐值用于 UI 控制
+- `inject.targetPlugins`: 插件键名数组，指定哪些元素类型会接收对齐属性
+
+### 添加工具栏按钮
+
+可以在[工具栏](/docs/toolbar)中添加 [`AlignToolbarButton`](/docs/components/align-toolbar-button) 来控制文本对齐。
+
+</Steps>
+
+## 插件
+
+### `TextAlignPlugin`
+
+用于设置块级元素内文本对齐的插件。它会向 `inject.targetPlugins` 指定的元素注入 `align` 属性。
+
+<API name="TextAlignPlugin">
+<APIOptions type="object">
+  <APIItem name="inject.nodeProps.nodeKey" type="string" optional>
+    注入到目标元素的属性名
+    - **默认值:** `'align'`
+  </APIItem>
+  <APIItem name="inject.nodeProps.defaultNodeValue" type="string" optional>
+    默认文本对齐值
+    - **默认值:** `'start'`
+  </APIItem>
+  <APIItem name="inject.nodeProps.styleKey" type="string" optional>
+    样式使用的 CSS 属性名
+    - **默认值:** `'textAlign'`
+  </APIItem>
+  <APIItem name="inject.nodeProps.validNodeValues" type="string[]" optional>
+    有效对齐值数组
+    - **默认值:** `['start', 'left', 'center', 'right', 'end', 'justify']`
+  </APIItem>
+  <APIItem name="inject.targetPlugins" type="string[]" optional>
+    需要注入对齐属性的插件键名数组
+    - **默认值:** `['p']`
+  </APIItem>
+</APIOptions>
+</API>
+
+## 转换方法
+
+### `tf.textAlign.setNodes`
+
+为已配置为此插件目标的选定块节点设置对齐方式。
+
+<API name="tf.textAlign.setNodes">
+<APIParameters>
+<APIItem name="value" type="string">
+对齐值（如 `'left'`、`'center'`、`'right'`、`'justify'`）
+</APIItem>
+<APIItem name="options" type="SetNodesOptions" optional>
+`setNodes` 函数的配置选项
+</APIItem>
+</APIParameters>
+</API>

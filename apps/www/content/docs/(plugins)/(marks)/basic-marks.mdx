@@ -1,0 +1,93 @@
+---
+title: Basic Marks
+description: Commonly used text styling features.
+docs:
+  - route: /docs/components/mark-toolbar-button
+    title: Mark Toolbar Button
+---
+
+<Cards>
+
+<Card icon="bold" title="Bold" href="/docs/bold">
+Apply bold formatting to emphasize important text.
+</Card>
+
+<Card icon="italic" title="Italic" href="/docs/italic">
+Apply italic formatting for emphasis or stylistic purposes.
+</Card>
+
+<Card icon="underline" title="Underline" href="/docs/underline">
+Apply underline formatting to text.
+</Card>
+
+<Card icon="strikethrough" title="Strikethrough" href="/docs/strikethrough">
+Apply strikethrough formatting to indicate deleted content.
+</Card>
+
+<Card icon="code" title="Code" href="/docs/code">
+Format inline code snippets and technical terms.
+</Card>
+
+<Card icon="subscript" title="Subscript" href="/docs/subscript">
+Format text as subscript for mathematical expressions.
+</Card>
+
+<Card icon="superscript" title="Superscript" href="/docs/superscript">
+Format text as superscript for mathematical expressions.
+</Card>
+
+<Card icon="kbd" title="Kbd" href="/docs/kbd">
+Display keyboard shortcuts and key combinations.
+</Card>
+
+<Card icon="highlight" title="Highlight" href="/docs/highlight">
+Highlight important text with background colors.
+</Card>
+
+</Cards>
+
+<ComponentPreview name="basic-marks-demo" />
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The `BasicMarksKit` bundles plugins for Bold, Italic, Underline, Strikethrough, Code, Subscript, Superscript, Highlight, and Kbd marks, along with their respective UI components from [Plate UI](/docs/installation/plate-ui).
+
+<ComponentSource name="basic-marks-kit" />
+
+- [`CodeLeaf`](/docs/components/code-node): Renders inline code elements.
+- [`HighlightLeaf`](/docs/components/highlight-node): Renders highlighted text elements.
+- [`KbdLeaf`](/docs/components/kbd-node): Renders keyboard shortcut elements.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BasicMarksKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+```bash
+npm install @platejs/basic-nodes
+```
+
+### Add Toolbar Button
+
+You can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to control text formatting marks.
+
+For individual plugin setup and configuration, see the specific plugin documentation pages linked above.

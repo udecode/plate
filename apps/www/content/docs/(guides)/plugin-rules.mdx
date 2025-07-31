@@ -1,0 +1,930 @@
+---
+title: Plugin Rules
+description: Configure common editing behaviors.
+---
+
+Plugin Rules control how editor nodes respond to common user actions. Instead of overriding the editor methods, you can configure these behaviors directly on a plugin's `rules` property.
+
+This guide shows you how to use `rules.break`, `rules.delete`, `rules.merge`, `rules.normalize`, `rules.selection`
+ and `rules.match` to create intuitive editing experiences.
+
+<ComponentPreview name="plugin-rules-demo" />
+
+## Actions
+
+Plugin rules use specific action names to define behavior:
+
+- **`'default'`**: Default Slate behavior.
+- **`'reset'`**: Changes the current block to a default paragraph, keeping content.
+- **`'exit'`**: Exits the current block, inserting a new paragraph after it. See [Exit Break](/docs/exit-break) to learn more about this behavior.
+- **`'deleteExit'`**: Deletes content then exits the block.
+- **`'lineBreak'`**: Inserts a line break (`\n`) instead of splitting the block.
+
+### `default`
+
+Standard Slate behavior. For `rules.break`, splits the block. For `rules.delete`, merges with the previous block.
+
+```tsx
+<p>
+  Hello world|
+</p>
+```
+
+After pressing `Enter`:
+
+```tsx
+<p>Hello world</p>
+<p>
+  |
+</p>
+```
+
+After pressing `Backspace`:
+
+```tsx
+<p>Hello world|</p>
+```
+
+### `reset`
+
+Converts the current block to a default paragraph while preserving content. Custom properties are removed.
+
+```tsx
+<h3 listStyleType="disc">
+  |
+</h3>
+```
+
+After pressing `Enter` with `rules: { break: { empty: 'reset' } }`:
+
+```tsx
+<p>
+  |
+</p>
+```
+
+### `exit`
+
+Exits the current block structure by inserting a new paragraph after it.
+
+```tsx
+<blockquote>
+  |
+</blockquote>
+```
+
+After pressing `Enter` with `rules: { break: { empty: 'exit' } }`:
+
+```tsx
+<blockquote>
+  <text />
+</blockquote>
+<p>
+  |
+</p>
+```
+
+### `deleteExit`
+
+Deletes content then exits the block.
+
+```tsx
+<blockquote>
+  line1
+  |
+</blockquote>
+```
+
+After pressing `Enter` with `rules: { break: { emptyLineEnd: 'deleteExit' } }`:
+
+```tsx
+<blockquote>line1</blockquote>
+<p>
+  |
+</p>
+```
+
+### `lineBreak`
+
+Inserts a soft line break (`\n`) instead of splitting the block.
+
+```tsx
+<blockquote>
+  Hello|
+</blockquote>
+```
+
+After pressing `Enter` with `rules: { break: { default: 'lineBreak' } }`:
+
+```tsx
+<blockquote>
+  Hello
+  |
+</blockquote>
+```
+
+## `rules.break`
+
+Controls what happens when users press `Enter` within specific block types.
+
+### Configuration
+
+```tsx
+BlockquotePlugin.configure({
+  rules: {
+    break: {
+      // Action when Enter is pressed normally
+      default: 'default' | 'lineBreak' | 'exit' | 'deleteExit',
+      
+      // Action when Enter is pressed in an empty block
+      empty: 'default' | 'reset' | 'exit' | 'deleteExit',
+      
+      // Action when Enter is pressed at end of empty line
+      emptyLineEnd: 'default' | 'exit' | 'deleteExit',
+
+      // If true, the new block after splitting will be reset
+      splitReset: boolean,
+    },
+  },
+});
+```
+
+Each property controls a specific scenario:
+
+- `default`
+  - [`'default'`](#default)
+  - [`'lineBreak'`](#linebreak)
+  - [`'exit'`](#exit)
+  - [`'deleteExit'`](#deleteexit)
+
+- `empty`
+  - [`'default'`](#default)
+  - [`'reset'`](#reset)
+  - [`'exit'`](#exit)
+  - [`'deleteExit'`](#deleteexit)
+
+- `emptyLineEnd`
+  - [`'default'`](#default)
+  - [`'exit'`](#exit)
+  - [`'deleteExit'`](#deleteexit)
+
+- `splitReset`: If `true`, resets the new block to the default type after a split. This is useful for exiting a formatted block like a heading.
+
+### Examples
+
+**Reset heading on break:**
+
+```tsx
+import { H1Plugin } from '@platejs/heading/react';
+
+const plugins = [
+  // ...otherPlugins,
+  H1Plugin.configure({
+    rules: {
+      break: {
+        splitReset: true,
+      },
+    },
+  }),
+];
+```
+
+Before pressing `Enter`:
+
+```tsx
+<h1>
+  Heading|text
+</h1>
+```
+
+After (split and reset):
+
+```tsx
+<h1>
+  Heading
+</h1>
+<p>
+  |text
+</p>
+```
+
+**Blockquote with line breaks and smart exits:**
+
+```tsx
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+
+const plugins = [
+  // ...otherPlugins,
+  BlockquotePlugin.configure({
+    rules: {
+      break: {
+        default: 'lineBreak',
+        empty: 'reset',
+        emptyLineEnd: 'deleteExit',
+      },
+    },
+  }),
+];
+```
+
+Before pressing `Enter` in blockquote:
+```tsx
+<blockquote>
+  Quote text|
+</blockquote>
+```
+
+After (line break):
+```tsx
+<blockquote>
+  Quote text
+  |
+</blockquote>
+```
+
+**Code block with custom empty handling:**
+
+```tsx
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+
+const plugins = [
+  // ...otherPlugins,
+  CodeBlockPlugin.configure({
+    rules: {
+      delete: { empty: 'reset' },
+      match: ({ editor, rule }) => {
+        return rule === 'delete.empty' && isCodeBlockEmpty(editor);
+      },
+    },
+  }),
+];
+```
+
+Before pressing `Backspace` in empty code block:
+```tsx
+<code_block>
+  <code_line>
+    |
+  </code_line>
+</code_block>
+```
+
+After (reset):
+```tsx
+<p>
+  |
+</p>
+```
+
+## `rules.delete`
+
+Controls what happens when users press `Backspace` at specific positions.
+
+### Configuration
+
+```tsx
+HeadingPlugin.configure({
+  rules: {
+    delete: {
+      // Action when Backspace is pressed at block start
+      start: 'default' | 'reset',
+      
+      // Action when Backspace is pressed in empty block
+      empty: 'default' | 'reset',
+    },
+  },
+});
+```
+
+Each property controls a specific scenario:
+
+- `start`
+  - [`'default'`](#default)
+  - [`'reset'`](#reset)
+
+- `empty`
+  - [`'default'`](#default)
+  - [`'reset'`](#reset)
+
+### Examples
+
+**Reset blockquotes at start:**
+
+```tsx
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+
+const plugins = [
+  // ...otherPlugins,
+  BlockquotePlugin.configure({
+    rules: {
+      delete: { start: 'reset' },
+    },
+  }),
+];
+```
+
+Before pressing `Backspace` at start:
+```tsx
+<blockquote>
+  |Quote content
+</blockquote>
+```
+
+After (reset):
+```tsx
+<p>
+  |Quote content
+</p>
+```
+
+**List items with start reset:**
+
+```tsx
+import { ListPlugin } from '@platejs/list/react';
+
+const plugins = [
+  // ...otherPlugins,
+  ListPlugin.configure({
+    rules: {
+      delete: { start: 'reset' },
+      match: ({ rule, node }) => {
+        return rule === 'delete.start' && Boolean(node.listStyleType);
+      },
+    },
+  }),
+];
+```
+
+Before pressing `Backspace` at start of list item:
+```tsx
+<p listStyleType="disc">
+  |List item content
+</p>
+```
+
+After (reset):
+```tsx
+<p>
+  |List item content
+</p>
+```
+
+## `rules.merge`
+
+Controls how blocks behave when merging with previous blocks.
+
+### Configuration
+
+```tsx
+ParagraphPlugin.configure({
+  rules: {
+    merge: {
+      // Whether to remove empty blocks when merging
+      removeEmpty: boolean,
+    },
+  },
+});
+```
+
+### Examples
+
+Only paragraph and heading plugins enable removal by default. Most other plugins use `false`:
+
+```tsx
+import { H1Plugin, ParagraphPlugin } from 'platejs/react';
+
+const plugins = [
+  // ...otherPlugins,
+  H1Plugin, // rules.merge: { removeEmpty: true } by default
+  ParagraphPlugin, // rules.merge: { removeEmpty: true } by default
+];
+```
+
+Before pressing `Backspace` at start:
+```tsx
+<p>
+  <text />
+</p>
+<h1>
+  |Heading content
+</h1>
+```
+
+After (empty paragraph removed):
+```tsx
+<h1>
+  |Heading content
+</h1>
+```
+
+**Blockquote with removal disabled:**
+
+```tsx
+import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+
+const plugins = [
+  // ...otherPlugins,
+  BlockquotePlugin.configure({
+    rules: {
+      merge: { removeEmpty: false }, // Default
+    },
+  }),
+];
+```
+
+Before pressing `Backspace` at start:
+```tsx
+<p>
+  <text />
+</p>
+<blockquote>
+  |Code content
+</blockquote>
+```
+
+After (empty paragraph preserved):
+```tsx
+<p>
+  |Code content
+</p>
+```
+
+**Table cells preserve structure during merge:**
+
+```tsx
+import { TablePlugin } from '@platejs/table/react';
+
+const plugins = [
+  // ...otherPlugins,
+  TablePlugin, // Table cells have rules.merge: { removeEmpty: false }
+];
+```
+
+Before pressing `Delete` at end of paragraph:
+```tsx
+<p>
+  Content|
+</p>
+<table>
+  <tr>
+    <td>
+      <p>Cell data</p>
+    </td>
+    <td>
+      <p>More data</p>
+    </td>
+  </tr>
+</table>
+```
+
+After (cell content merged, structure preserved):
+```tsx
+<p>
+  Content|Cell data
+</p>
+<table>
+  <tr>
+    <td>
+      <p>
+        <text />
+      </p>
+    </td>
+    <td>
+      <p>More data</p>
+    </td>
+  </tr>
+</table>
+```
+
+<Callout>
+Slate's default is `true` since the default block (paragraph) is first-class, while Plate plugins are likely used to define other node behaviors that shouldn't automatically remove empty predecessors.
+</Callout>
+
+## `rules.normalize`
+
+Controls how nodes are normalized during the normalization process.
+
+### Configuration
+
+```tsx
+LinkPlugin.configure({
+  rules: {
+    normalize: {
+      // Whether to remove nodes with empty text
+      removeEmpty: boolean,
+    },
+  },
+});
+```
+
+### Examples
+
+**Remove empty link nodes:**
+
+```tsx
+import { LinkPlugin } from '@platejs/link/react';
+
+const plugins = [
+  // ...otherPlugins,
+  LinkPlugin.configure({
+    rules: {
+      normalize: { removeEmpty: true },
+    },
+  }),
+];
+```
+
+Before normalization:
+```tsx
+<p>
+  <a href="http://google.com">
+    <text />
+  </a>
+  <cursor />
+</p>
+```
+
+After normalization (empty link removed):
+```tsx
+<p>
+  <cursor />
+</p>
+```
+
+## `rules.match`
+
+The `match` function in plugin rules allows you to override the default behavior of specific plugins based on node properties beyond just type matching. This is particularly useful when you want to extend existing node types with new behaviors.
+
+### Examples
+
+**Code block with custom empty detection:**
+
+```tsx
+import { CodeBlockPlugin } from '@platejs/code-block/react';
+
+const plugins = [
+  // ...otherPlugins,
+  CodeBlockPlugin.configure({
+    rules: {
+      delete: { empty: 'reset' },
+      match: ({ rule, node }) => {
+        return rule === 'delete.empty' && isCodeBlockEmpty(editor);
+      },
+    },
+  }),
+];
+```
+
+Since the list plugin extends existing blocks that already have their own plugin configuration (e.g. `ParagraphPlugin`), using `rules.match` allows you to override those behaviors.
+
+**List override for paragraphs:**
+
+```tsx
+import { ListPlugin } from '@platejs/list/react';
+
+const plugins = [
+  // ...otherPlugins,
+  ListPlugin.configure({
+    rules: {
+      match: ({ editor, rule }) => {
+        return rule === 'delete.empty' && isCodeBlockEmpty(editor);
+      },
+    },
+  }),
+];
+```
+
+## Custom Reset Logic
+
+Some plugins need special reset behavior beyond the standard paragraph conversion. You can override the `resetBlock` transform:
+
+**List plugin reset (outdents instead of converting to paragraph):**
+
+```tsx
+const ListPlugin = createPlatePlugin({
+  key: 'list',
+  // ... other config
+}).overrideEditor(({ editor, tf: { resetBlock } }) => ({
+  transforms: {
+    resetBlock(options) {
+      if (editor.api.block(options)?.[0]?.listStyleType) {
+        outdentList();
+        return;
+      }
+      
+      return resetBlock(options);
+    },
+  },
+}));
+```
+
+**Code block reset (unwraps instead of converting):**
+
+```tsx
+const CodeBlockPlugin = createPlatePlugin({
+  key: 'code_block',
+  // ... other config
+}).overrideEditor(({ editor, tf: { resetBlock } }) => ({
+  transforms: {
+    resetBlock(options) {
+      if (editor.api.block({
+        at: options?.at,
+        match: { type: 'code_block' },
+      })) {
+        unwrapCodeBlock();
+        return;
+      }
+      
+      return resetBlock(options);
+    },
+  },
+}));
+```
+
+## Combining Rules
+
+You can combine different rules for comprehensive block behavior:
+
+```tsx
+import { H1Plugin } from '@platejs/heading/react';
+
+const plugins = [
+  // ...otherPlugins,
+  H1Plugin.configure({
+    rules: {
+      break: {
+        empty: 'reset',
+        splitReset: true,
+      },
+      delete: {
+        start: 'reset',
+      },
+    },
+  }),
+];
+```
+
+**Line break behavior (default):**
+```tsx
+<blockquote>
+  Hello|
+</blockquote>
+```
+
+After `Enter`:
+```tsx
+<blockquote>
+  Hello
+  |
+</blockquote>
+```
+
+**Empty reset behavior:**
+```tsx
+<blockquote>
+  |
+</blockquote>
+```
+
+After `Enter`:
+```tsx
+<p>
+  |
+</p>
+```
+
+**Start reset behavior:**
+```tsx
+<blockquote>
+  |Quote content
+</blockquote>
+```
+After `Backspace`:
+```tsx
+<p>
+  |Quote content
+</p>
+```
+
+## Advanced
+
+For complex scenarios beyond simple rules, you can override editor transforms directly using [`.overrideEditor`](/docs/plugin-methods#overrideeditor). This gives you complete control over transforms like [`resetBlock`](/docs/plugin-methods#extendtransforms) and [`insertExitBreak`](/docs/plugin-methods#extendtransforms):
+
+```tsx
+const CustomPlugin = createPlatePlugin({
+  key: 'custom',
+  // ... other config
+}).overrideEditor(({ editor, tf: { insertBreak, deleteBackward, resetBlock } }) => ({
+  transforms: {
+    insertBreak() {
+      const block = editor.api.block();
+      
+      if (/* Custom condition */) {
+        // Custom behavior
+        return;
+      }
+      
+      // Default behavior
+      insertBreak();
+    },
+    
+    deleteBackward(unit) {
+      const block = editor.api.block();
+      
+      if (/* Custom condition */) {
+        // Custom behavior
+        return;
+      }
+      
+      deleteBackward(unit);
+    },
+    
+    resetBlock(options) {
+      if (/* Custom condition */) {
+        // Custom behavior
+        return true;
+      }
+      
+      return resetBlock(options);
+    },
+  },
+}));
+```
+
+## `rules.selection`
+
+Controls how cursor positioning and text insertion behave at node boundaries, particularly for marks and inline elements.
+
+### Configuration
+
+```tsx
+BoldPlugin.configure({
+  rules: {
+    selection: {
+      // Define selection behavior at boundaries
+      affinity: 'default' | 'directional' | 'outward' | 'hard',
+    },
+  },
+});
+```
+
+### Affinity Options
+
+The `affinity` property determines how the cursor behaves when positioned at the boundary between different marks or inline elements:
+
+#### `default`
+
+Uses Slate's default behavior. For marks, the cursor has outward affinity at the start edge (typing before the mark doesn't apply it) and inward affinity at the end edge (typing after the mark extends it).
+
+**At end of mark (inward affinity):**
+```tsx
+<p>
+  <text bold>Bold text|</text><text>Normal text</text>
+</p>
+```
+
+Typing would extend the bold formatting to new text.
+
+**At start of mark (outward affinity):**
+```tsx
+<p>
+  <text>Normal text|</text><text bold>Bold text</text>
+</p>
+```
+
+Typing would not apply bold formatting to new text.
+
+#### `directional`
+
+Selection affinity is determined by the direction of cursor movement. When the cursor moves to a boundary, it maintains the affinity based on where it came from.
+
+```tsx
+import { BoldPlugin } from '@platejs/basic-nodes/react';
+
+const plugins = [
+  // ...otherPlugins,
+  BoldPlugin.configure({
+    rules: {
+      selection: { affinity: 'directional' },
+    },
+  }),
+];
+```
+
+**Movement from right (inward affinity):**
+```tsx
+<p>
+  <text>Normal</text><text bold>B|old text</text>
+</p>
+```
+
+After pressing `←`:
+```tsx
+<p>
+  <text>Normal</text><text bold>|Bold text</text>
+</p>
+```
+
+Typing would extend the bold formatting, which is not possible with `default` affinity.
+
+```tsx
+import { LinkPlugin } from '@platejs/link/react';
+
+const plugins = [
+  // ...otherPlugins,
+  LinkPlugin.configure({
+    rules: {
+      selection: { affinity: 'directional' },
+    },
+  }),
+];
+```
+
+**Movement from right (outward affinity):**
+```tsx
+<p>
+  Visit <a href="https://example.com">our website</a> |for more information text.
+</p>
+```
+
+After pressing `←`:
+```tsx
+<p>
+  Visit <a href="https://example.com">our website</a>| for more information text.
+</p>
+```
+
+Cursor movement direction determines whether new text extends the link or creates new text outside it.
+
+#### `outward`
+
+Forces outward affinity, automatically clearing marks when typing at their boundaries. This creates a natural "exit" behavior from formatted text.
+
+```tsx
+import { CommentPlugin } from '@platejs/comment/react';
+
+const plugins = [
+  // ...otherPlugins,
+  CommentPlugin.configure({
+    rules: {
+      selection: { affinity: 'outward' },
+    },
+  }),
+];
+```
+
+**At end of marked text:**
+```tsx
+<p>
+  <text comment>Commented text|</text><text>Normal</text>
+</p>
+```
+
+After typing:
+```tsx
+<p>
+  <text comment>Commented text</text><text>x|Normal</text>
+</p>
+```
+
+Users automatically exit comment formatting by typing at the end of commented text.
+
+#### `hard`
+
+Creates a "hard" edge that requires two key presses to move across. This provides precise cursor control for elements that need exact positioning.
+
+```tsx
+import { CodePlugin } from '@platejs/basic-nodes/react';
+
+const plugins = [
+  // ...otherPlugins,
+  CodePlugin.configure({
+    rules: {
+      selection: { affinity: 'hard' },
+    },
+  }),
+];
+```
+
+**Moving across hard edges:**
+```tsx
+<p>
+  <text>Before</text><text code>code|</text><text>After</text>
+</p>
+```
+
+First `→` press changes affinity:
+```tsx
+<p>
+  <text>Before</text><text code>code</text>|<text>After</text>
+</p>
+```
+
+Second `→` press moves cursor:
+```tsx
+<p>
+  <text>Before</text><text code>code</text><text>A|fter</text>
+</p>
+```
+
+This allows users to position the cursor precisely at the boundary and choose whether new text should be inside or outside the code formatting.
