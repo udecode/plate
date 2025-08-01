@@ -51,7 +51,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=49.2.3",
+    "platejs": ">=49.2.4",
     "react": ">=18.0.0",
     "react-dnd": ">=14.0.0",
     "react-dnd-html5-backend": ">=14.0.0",

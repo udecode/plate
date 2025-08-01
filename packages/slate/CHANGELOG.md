@@ -1,5 +1,13 @@
 # @udecode/slate
 
+## 49.2.4
+
+### Patch Changes
+
+- [#4537](https://github.com/udecode/plate/pull/4537) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed `duplicateNodes` to allow undefined `at`
+  - Improved error handling by only checking for `nodes` parameter instead of both `nodes` and `at`
+
 ## 49.1.13
 
 ### Patch Changes

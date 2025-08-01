@@ -1,5 +1,15 @@
 # @platejs/selection
 
+## 49.2.4
+
+### Patch Changes
+
+- [#4537](https://github.com/udecode/plate/pull/4537) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed `duplicateBlockSelectionNodes` by removing the `nextBlock: true` option
+  - Added `mod+d` hotkey to duplicate selected blocks
+  - Added character input handling in block selection - typing a character now replaces selected blocks with a new block containing that character
+  - Added support for node and mark operations (bold, italic, etc.)
+
 ## 49.1.12
 
 ### Patch Changes
