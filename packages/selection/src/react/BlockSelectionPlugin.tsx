@@ -11,14 +11,17 @@ import type {
 } from 'platejs';
 
 import { bindFirst, KEYS, PathApi } from 'platejs';
-import { createTPlatePlugin } from 'platejs/react';
+import { type PlatePluginContext, createTPlatePlugin } from 'platejs/react';
 
 import type { PartialSelectionOptions } from '../internal';
 
 import { selectBlocks } from '../internal/transforms/selectBlocks';
 import { BlockMenuPlugin } from './BlockMenuPlugin';
 import { BlockSelectionAfterEditable } from './components/BlockSelectionAfterEditable';
-import { addOnContextMenu, useBlockSelectable } from './hooks/useBlockSelectable';
+import {
+  addOnContextMenu,
+  useBlockSelectable,
+} from './hooks/useBlockSelectable';
 import { moveSelection } from './internal/api/moveSelection';
 import { addSelectedRow, setSelectedIds } from './internal/api/setSelectedIds';
 import { shiftSelection } from './internal/api/shiftSelection';
@@ -343,9 +346,41 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     /** Set texts on selected blocks */
     setTexts: bindFirst(setBlockSelectionTexts, editor),
   }))
-  .overrideEditor(
-    ({ api, editor, getOptions, tf: { escape, selectAll, setSelection } }) => ({
+  .overrideEditor((ctx) => {
+    const {
+      api,
+      api: { nodes },
+      editor,
+      getOption,
+      getOptions,
+      tf: {
+        addMark,
+        escape,
+        focus,
+        selectAll,
+        setNodes,
+        setSelection,
+        toggleMark,
+      },
+    } = ctx;
+
+    return {
+      api: {
+        // turn-into-dropdown-menu
+        nodes(options) {
+          if (!options?.at && getOption('isSelectingSome')) {
+            return api.blockSelection.getNodes();
+          }
+
+          return nodes(options) as any;
+        },
+      },
       transforms: {
+        addMark(key, value) {
+          withBlockSelection(ctx as any, () => {
+            addMark(key, value);
+          });
+        },
         escape: () => {
           const apply = () => {
             const ancestorNode = editor.api.block({ highest: true });
@@ -364,6 +399,10 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
           if (apply()) return true;
 
           return escape();
+        },
+        focus() {
+          if (!editor.meta._forceFocus && getOption('isSelectingSome')) return;
+          focus();
         },
         selectAll: () => {
           const apply = () => {
@@ -392,6 +431,11 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
 
           return selectAll();
         },
+        setNodes(props, options) {
+          withBlockSelection(ctx as any, () => {
+            setNodes(props, options);
+          });
+        },
         setSelection(props) {
           if (
             getOptions().selectedIds!.size > 0 &&
@@ -402,6 +446,33 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
 
           setSelection(props);
         },
+        toggleMark(key, options) {
+          withBlockSelection(ctx as any, () => {
+            toggleMark(key, options);
+          });
+        },
       },
-    })
-  );
+    };
+  });
+
+const withBlockSelection = (
+  { api, editor, getOption }: PlatePluginContext<BlockSelectionConfig>,
+  callback: any
+) => {
+  if (getOption('isSelectingSome')) {
+    editor.tf.withoutNormalizing(() => {
+      const blocks = editor
+        .getApi(BlockSelectionPlugin)
+        .blockSelection.getNodes();
+
+      editor.tf.select(editor.api.nodesRange(blocks));
+
+      callback();
+
+      api.blockSelection.set(blocks.map(([node]) => node.id));
+    });
+    return;
+  }
+
+  callback();
+};

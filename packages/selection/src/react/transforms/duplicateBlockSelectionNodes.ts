@@ -12,8 +12,6 @@ export const duplicateBlockSelectionNodes = (editor: PlateEditor) => {
   if (!lastBlock) return;
 
   editor.tf.duplicateNodes({
-    at: lastBlock[1],
-    nextBlock: true,
     nodes: blocks,
   });
 

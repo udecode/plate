@@ -28,7 +28,12 @@ import {
   X,
 } from 'lucide-react';
 import { type NodeEntry, type SlateEditor, isHotkey, NodeApi } from 'platejs';
-import { useEditorPlugin, useHotkeys, usePluginOption } from 'platejs/react';
+import {
+  useEditorPlugin,
+  useFocusedLast,
+  useHotkeys,
+  usePluginOption,
+} from 'platejs/react';
 import { type PlateEditor, useEditorRef } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
@@ -50,11 +55,11 @@ import { AIChatEditor } from './ai-chat-editor';
 
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
-  const open = usePluginOption(AIChatPlugin, 'open');
   const mode = usePluginOption(AIChatPlugin, 'mode');
   const streaming = usePluginOption(AIChatPlugin, 'streaming');
   const isSelecting = useIsSelecting();
-
+  const isFocusedLast = useFocusedLast();
+  const open = usePluginOption(AIChatPlugin, 'open') && isFocusedLast;
   const [value, setValue] = React.useState('');
 
   const chat = useChat();
@@ -313,8 +318,10 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Insert below',
     value: 'insertBelow',
     onSelect: ({ aiEditor, editor }) => {
-      /** format: 'none'  Fix insert table */
-      void editor.getTransforms(AIChatPlugin).aiChat.insertBelow(aiEditor, { format: 'none' });
+      /** Format: 'none' Fix insert table */
+      void editor
+        .getTransforms(AIChatPlugin)
+        .aiChat.insertBelow(aiEditor, { format: 'none' });
     },
   },
   makeLonger: {

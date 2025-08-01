@@ -22,6 +22,7 @@ export const EventEditorPlugin = createPlatePlugin({
     },
     onFocus: ({ editor }) => {
       EventEditorStore.set('focus', editor.id);
+      EventEditorStore.set('last', editor.id);
 
       document.dispatchEvent(
         new CustomEvent(FOCUS_EDITOR_EVENT, {

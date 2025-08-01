@@ -31,6 +31,49 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   );
   const selectedIds = usePluginOption(BlockSelectionPlugin, 'selectedIds');
 
+  const removeSelectedBlocks = React.useCallback(
+    (options: { selectPrevious?: boolean } = {}) => {
+      const entries = [
+        ...editor.api.nodes({
+          at: [],
+          match: (n) => !!n.id && selectedIds?.has(n.id as string),
+        }),
+      ];
+
+      if (entries.length === 0) return null;
+
+      const firstPath = entries[0]![1];
+
+      editor.tf.withoutNormalizing(() => {
+        for (const [node, path] of [...entries].reverse()) {
+          editor.tf.removeNodes({
+            at: path,
+          });
+          api.blockSelection.delete(node.id as string);
+        }
+
+        if (editor.children.length === 0) {
+          editor.meta._forceFocus = true;
+          editor.tf.focus();
+          editor.meta._forceFocus = false;
+        } else if (options.selectPrevious) {
+          const prevPath = PathApi.previous(firstPath);
+
+          if (prevPath) {
+            const prevEntry = editor.api.block({ at: prevPath });
+
+            if (prevEntry) {
+              setOption('selectedIds', new Set([prevEntry[0].id as string]));
+            }
+          }
+        }
+      });
+
+      return firstPath;
+    },
+    [editor, api.blockSelection, selectedIds, setOption]
+  );
+
   useSelectionArea();
 
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -59,7 +102,6 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
     }
   }, [isSelectingSome]);
 
-  /** KeyDown logic */
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       const isReadonly = editor.api.isReadOnly();
@@ -105,6 +147,12 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
         return;
       }
+      // Mod+D => duplicate selected blocks
+      if (isHotkey('mod+d')(e)) {
+        e.preventDefault();
+        editor.getTransforms(BlockSelectionPlugin).blockSelection.duplicate();
+        return;
+      }
       // Only continue if we have "some" selection
       if (!getOption('isSelectingSome')) return;
       // Enter => focus first selected block
@@ -117,7 +165,9 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
         if (entry) {
           const [, path] = entry;
+          editor.meta._forceFocus = true;
           editor.tf.focus({ at: path, edge: 'end' });
+          delete editor.meta._forceFocus;
           e.preventDefault();
         }
 
@@ -126,44 +176,9 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       // Backspace/Delete => remove selected blocks
       if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
         e.preventDefault();
-        editor.tf.withoutNormalizing(() => {
-          const entries = [
-            ...editor.api.nodes({
-              at: [],
-              match: (n) => !!n.id && selectedIds?.has(n.id as string),
-            }),
-          ];
-
-          for (const [, path] of [...entries].reverse()) {
-            editor.tf.removeNodes({
-              at: path,
-            });
-          }
-
-          const entry = entries[0];
-
-          if (entry) {
-            if (editor.children.length === 0) {
-              editor.tf.focus();
-            } else {
-              const prevPath = isHotkey('backspace')(e)
-                ? PathApi.previous(entry[1])
-                : entry[1];
-
-              if (prevPath) {
-                const prevEntry = editor.api.block({ at: prevPath });
-
-                if (prevEntry) {
-                  setOption(
-                    'selectedIds',
-                    new Set([prevEntry[0].id as string])
-                  );
-                }
-              }
-            }
-          }
+        removeSelectedBlocks({
+          selectPrevious: isHotkey('backspace')(e),
         });
-
         return;
       }
       // If SHIFT not pressed => arrow up/down sets new anchor
@@ -181,8 +196,39 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
         return;
       }
+
+      // Handle character input - remove selected blocks and insert character
+      if (
+        !isReadonly &&
+        e.key.length === 1 && // Only handle single character keys
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey
+      ) {
+        e.preventDefault();
+        const firstPath = removeSelectedBlocks();
+
+        if (firstPath) {
+          editor.meta._forceFocus = true;
+          editor.tf.insertNodes(
+            editor.api.create.block({ children: [{ text: e.key }] }),
+            { at: firstPath }
+          );
+          editor.tf.select(firstPath, { edge: 'end' });
+          editor.meta._forceFocus = false;
+          editor.tf.focus();
+        }
+        return;
+      }
     },
-    [editor, getOptions, getOption, api.blockSelection, selectedIds, setOption]
+    [
+      editor,
+      getOptions,
+      getOption,
+      api.blockSelection,
+      removeSelectedBlocks,
+      selectedIds,
+    ]
   );
 
   /** Handle copy / cut / paste in block selection */
@@ -205,31 +251,11 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         copySelectedBlocks(editor);
 
         if (!editor.api.isReadOnly()) {
-          const entries = [
-            ...editor.api.nodes({
-              at: [],
-              match: (n) => selectedIds?.has(n.id as string),
-            }),
-          ];
-
-          if (entries.length > 0) {
-            editor.tf.withoutNormalizing(() => {
-              for (const [, path] of [...entries].reverse()) {
-                editor.tf.removeNodes({
-                  at: path,
-                });
-              }
-            });
-
-            const prevEntry = editor.api.block({ at: entries[0][1] });
-            if (prevEntry) {
-              setOption('selectedIds', new Set([prevEntry[0].id as string]));
-            }
-          }
+          removeSelectedBlocks();
         }
       }
     },
-    [getOption, editor, selectedIds, setOption]
+    [editor, getOption, removeSelectedBlocks]
   );
 
   const handlePaste = React.useCallback(
