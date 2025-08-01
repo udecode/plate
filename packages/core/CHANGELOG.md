@@ -1,5 +1,13 @@
 # @platejs/core
 
+## 49.2.4
+
+### Patch Changes
+
+- [#4537](https://github.com/udecode/plate/pull/4537) by [@zbeyens](https://github.com/zbeyens) –
+  - Added `useFocusedLast` hook to track the last focused editor
+  - Updated `EventEditorPlugin` to track the last focused editor in `EventEditorStore`
+
 ## 49.2.3
 
 ### Patch Changes
