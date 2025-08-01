@@ -1,5 +1,5 @@
 ---
-'@platejs/selection': minor
+'@platejs/selection': patch
 ---
 
 - Fixed `duplicateBlockSelectionNodes` by removing the `nextBlock: true` option
