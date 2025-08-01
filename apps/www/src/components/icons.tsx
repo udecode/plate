@@ -342,6 +342,7 @@ export const Icons = {
 
 
 export function getIconForLanguageExtension(language: string) {
+  console.log("🚀 ~ getIconForLanguageExtension ~ language:", language)
   switch (language) {
     case "css": {
       return <Icons.css className="fill-foreground" />

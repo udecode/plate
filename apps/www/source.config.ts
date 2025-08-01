@@ -1,5 +1,5 @@
 import { defineConfig, defineDocs } from 'fumadocs-mdx/config';
-import rehypePrettyCode from "rehype-pretty-code"
+import rehypePrettyCode from 'rehype-pretty-code';
 import { z } from 'zod';
 
 import { transformers } from '@/lib/highlight-code';
@@ -48,6 +48,22 @@ export const docs = defineDocs({
   docs: {
     schema: z.object({
       description: z.string().optional(),
+      docs: z
+        .array(
+          z.object({
+            route: z.string().optional(),
+            title: z.string().optional(),
+          })
+        )
+        .optional(),
+      links: z
+        .array(
+          z.object({
+            route: z.string().optional(),
+            title: z.string().optional(),
+          })
+        )
+        .optional(),
       title: z.string(),
     }),
   },

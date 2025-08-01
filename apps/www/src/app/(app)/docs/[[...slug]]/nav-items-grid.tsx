@@ -119,13 +119,13 @@ export function NavItemsGrid({
 
   const filteredItems = showFilter
     ? items
-        .map((group) => ({
-          ...group,
-          items: group.items
-            ? filterItems(group.items, filter.toLowerCase())
-            : undefined,
-        }))
-        .filter((group) => group.items && group.items?.length > 0)
+      .map((group) => ({
+        ...group,
+        items: group.items
+          ? filterItems(group.items, filter.toLowerCase())
+          : undefined,
+      }))
+      .filter((group) => group.items && group.items?.length > 0)
     : items;
 
   return (
@@ -175,9 +175,9 @@ export function NavItemsGrid({
             )}
             <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
               {group.items &&
-                flattenItems(group.items).map((item) => (
+                flattenItems(group.items).map((item, index) => (
                   <NavItemCard
-                    key={item.href}
+                    key={`${item.href}-${index}`}
                     category={category}
                     item={item}
                   />

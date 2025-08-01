@@ -182,7 +182,7 @@ export function CopyNpmCommandButton({
           size="icon"
           variant="ghost"
           className={cn(
-            'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
+            'relative z-10 size-6 text-code-foreground hover:bg-code-highlight hover:text-code-foreground',
             className
           )}
         >

@@ -232,10 +232,10 @@ export const Pre = ({
   if (isNpmCommand) {
     return (
       <CodeBlockCommand
-        __bunCommand__={__bunCommand__}
-        __npmCommand__={__npmCommand__}
-        __pnpmCommand__={__pnpmCommand__}
-        __yarnCommand__={__yarnCommand__}
+        __bun__={__bunCommand__}
+        __npm__={__npmCommand__}
+        __pnpm__={__pnpmCommand__}
+        __yarn__={__yarnCommand__}
       />
     );
   }

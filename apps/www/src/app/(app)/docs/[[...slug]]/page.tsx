@@ -1,90 +1,274 @@
+import type { PackageInfoType } from '@/hooks/use-package-info'
+import type { RegistryItem } from "shadcn/registry"
+
+import type { Metadata } from "next"
+
 import {
   IconArrowLeft,
   IconArrowRight,
-  IconArrowUpRight,
 } from "@tabler/icons-react"
 import { findNeighbour } from "fumadocs-core/server"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
+import { DocContent } from "@/app/(app)/docs/[[...slug]]/doc-content"
+import { ComponentInstallation } from "@/components/component-installation"
+import { ComponentPreview } from "@/components/component-preview"
 import { DocsTableOfContents } from "@/components/docs-toc"
 import { mdxComponents } from "@/components/mdx-components"
-import { Badge } from "@/components/ui/badge"
+import { badgeVariants } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { docsMap } from "@/config/docs"
+import { slugToCategory } from "@/config/docs-utils"
+import { siteConfig } from "@/config/site"
 import { absoluteUrl } from "@/lib/absoluteUrl"
+import {
+  getCachedDependencies,
+  getCachedFileTree,
+  getCachedHighlightedFiles,
+  getCachedRegistryItem,
+} from "@/lib/registry-cache"
+import { getDocTitle, getRegistryTitle } from "@/lib/registry-utils"
+import { getAllDependencies, getAllFiles } from "@/lib/rehype-utils"
 import { docsSource } from "@/lib/source"
+import { cn } from "@/lib/utils"
+import { registry } from "@/registry/registry"
+import { registryExamples } from "@/registry/registry-examples"
+import { proExamples } from "@/registry/registry-pro"
+import { registryUI } from "@/registry/registry-ui"
 
 export const revalidate = false
 export const dynamic = "force-static"
-export const dynamicParams = false
+export const dynamicParams = true
+
+const registryNames = new Set(registry.items.map((item) => item.name))
 
 export function generateStaticParams() {
   return docsSource.generateParams()
 }
 
-export async function generateMetadata(props: {
-  params: Promise<{ slug?: string[] }>
-}) {
-  const params = await props.params
-  const page = docsSource.getPage(params.slug)
 
-  if (!page) {
-    notFound()
+interface DocPageProps {
+  params: Promise<{ slug?: string[] }>
+  searchParams: Promise<{ locale?: string }>
+}
+
+async function getDocFromParams({ params, searchParams }: DocPageProps) {
+  const locale = (await searchParams).locale
+  const slugParam = (await params).slug
+  
+  // Handle index page
+  if (!slugParam || slugParam.length === 0) {
+    if (locale === 'cn') {
+      // Try to find Chinese index
+      const cnPage = docsSource.getPage(['index.cn'])
+      if (cnPage) return cnPage
+    }
+    return docsSource.getPage([])
   }
 
-  const doc = page.data
+  // For Chinese docs, look for .cn.mdx files
+  if (locale === 'cn') {
+    // First try to find the Chinese version with .cn suffix
+    const cnSlug = [...slugParam]
+    cnSlug[cnSlug.length - 1] = `${cnSlug.at(-1)}.cn`
+    const cnPage = docsSource.getPage(cnSlug)
+    if (cnPage) return cnPage
+  }
 
-  if (!doc.title || !doc.description) {
-    notFound()
+  // Default behavior
+  return docsSource.getPage(slugParam)
+}
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: DocPageProps): Promise<Metadata> {
+  const page = await getDocFromParams({ params, searchParams })
+  let title: string
+  let description: string | undefined
+  let slug: string
+
+  if (page) {
+    const doc = page.data
+    title = doc.title
+    description = doc.description
+    slug = page.url
+    
+    // Add locale param for Chinese
+    const locale = (await searchParams).locale
+    if (locale === 'cn') {
+      slug += `?locale=cn`
+    }
+  } else {
+    // Handle component and example pages
+    const slugParam = (await params).slug
+    const category = slugToCategory(slugParam || [])
+    let docName = slugParam?.at(-1)
+    let file: RegistryItem | undefined
+
+    if (category === 'component') {
+      file = registryUI.find((c) => c.name === docName)
+    } else if (category === 'example') {
+      docName += '-demo'
+      file = registryExamples.find((c) => c.name === docName)
+    }
+    
+    if (!docName || !file) {
+      return {}
+    }
+
+
+    const path = slugParam?.join('/') || ''
+    slug = '/docs' + (path ? '/' + path : '')
+    title = file.title || docName
+    description = file.description
   }
 
   return {
-    description: doc.description,
+    description,
     openGraph: {
-      description: doc.description,
+      description,
       images: [
         {
-          url: `/og?title=${encodeURIComponent(
-            doc.title
-          )}&description=${encodeURIComponent(doc.description)}`,
+          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(
+            description ?? ''
+          )}`,
         },
       ],
-      title: doc.title,
-      type: "article",
-      url: absoluteUrl(page.url),
+      title,
+      type: 'article',
+      url: absoluteUrl(slug),
     },
-    title: doc.title,
+    title,
     twitter: {
-      card: "summary_large_image",
-      creator: "@shadcn",
-      description: doc.description,
+      card: 'summary_large_image',
+      creator: '@udecode',
+      description,
       images: [
         {
-          url: `/og?title=${encodeURIComponent(
-            doc.title
-          )}&description=${encodeURIComponent(doc.description)}`,
+          url: `/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(
+            description ?? ''
+          )}`,
         },
       ],
-      title: doc.title,
+      title,
     },
   }
 }
 
-export default async function Page(props: {
-  params: Promise<{ slug?: string[] }>
-}) {
+export default async function Page(props: DocPageProps) {
   const params = await props.params
-  const page = docsSource.getPage(params.slug)
+  const page = await getDocFromParams(props)
+  const searchParams = await props.searchParams
+  const locale = searchParams.locale
+  const category = slugToCategory(params.slug || [])
+
+  const packageInfo: PackageInfoType = {
+    gzip: '',
+    name: '',
+    npm: '',
+    source: '',
+  }
+  
   if (!page) {
-    notFound()
+    // Handle component and example pages from registry when no MDX exists
+    const slugParam = params.slug
+    let docName = slugParam?.at(-1)
+    let file: RegistryItem | undefined
+
+    if (category === 'component') {
+      file = registryUI.find((c) => c.name === docName)
+    } else if (category === 'example') {
+      docName += '-demo'
+      file = registryExamples.find((c) => c.name === docName)
+    }
+    
+    if (!docName || !file) {
+      notFound()
+    }
+
+    const dependencies = getAllDependencies(docName)
+    const files = getAllFiles(docName)
+
+    const slug = '/docs/' + (params.slug?.join('/') || '')
+
+    const docs = getRegistryDocs({
+      docName,
+      file,
+      files,
+      registryNames,
+    })
+
+    const item = await getCachedRegistryItem(docName, true)
+
+    if (!item?.files) {
+      notFound()
+    }
+
+    const [tree, highlightedFiles, componentExamples] = await Promise.all([
+      getCachedFileTree(item.files),
+      getCachedHighlightedFiles(item.files as any),
+      file.meta?.examples
+        ? Promise.all(
+            file.meta.examples.map(
+              async (ex: string) => await getExampleCode(ex)
+            )
+          )
+        : undefined,
+    ])
+
+    return (
+      <DocContent
+        category={category as any}
+        {...file}
+        doc={{
+          ...file.meta,
+          docs,
+          slug,
+        }}
+      >
+        {category === 'component' ? (
+          <ComponentInstallation
+            name={file.name}
+            dependencies={dependencies}
+            examples={componentExamples?.filter(Boolean) as any}
+            highlightedFiles={highlightedFiles}
+            item={item}
+            tree={tree}
+            usage={file.meta?.usage}
+          />
+        ) : (
+          <ComponentPreview
+            name={file.name}
+            dependencies={dependencies}
+            highlightedFiles={highlightedFiles}
+            item={item}
+            tree={tree}
+          />
+        )}
+      </DocContent>
+    )
   }
 
   const doc = page.data
   const MDX = doc.body
   const neighbours = findNeighbour(docsSource.pageTree, page.url)
+  
+  // Add description from docsMap if not present
+  if (!doc.description) {
+    doc.description = docsMap[page.url]?.description
+  }
 
-  // @ts-expect-error - revisit fumadocs types.
-  const links = doc.links
+  const toc = doc.toc || []
+  
+  // Helper to add locale to URLs
+  const addLocaleToUrl = (url: string) => {
+    if (locale === 'cn') {
+      return url.includes('?') ? `${url}&locale=cn` : `${url}?locale=cn`
+    }
+    return url
+  }
 
   return (
     <div
@@ -108,7 +292,7 @@ export default async function Page(props: {
                       variant="secondary"
                       className="extend-touch-target size-8 shadow-none md:size-7"
                     >
-                      <Link href={neighbours.previous.url}>
+                      <Link href={addLocaleToUrl(neighbours.previous.url)}>
                         <IconArrowLeft />
                         <span className="sr-only">Previous</span>
                       </Link>
@@ -121,7 +305,7 @@ export default async function Page(props: {
                       variant="secondary"
                       className="extend-touch-target size-8 shadow-none md:size-7"
                     >
-                      <Link href={neighbours.next.url}>
+                      <Link href={addLocaleToUrl(neighbours.next.url)}>
                         <span className="sr-only">Next</span>
                         <IconArrowRight />
                       </Link>
@@ -135,22 +319,51 @@ export default async function Page(props: {
                 </p>
               )}
             </div>
-            {links ? (
-              <div className="flex items-center space-x-2 pt-4">
-                {links?.doc && (
-                  <Badge asChild variant="secondary">
-                    <Link href={links.doc} rel="noreferrer" target="_blank">
-                      Docs <IconArrowUpRight />
-                    </Link>
-                  </Badge>
+            {doc?.docs ? (
+              <div className="flex flex-wrap items-center gap-1">
+                {/* {doc?.links?.doc && (
+                  <Link
+                    className={cn(
+                      badgeVariants({ variant: 'secondary' }),
+                      'gap-1'
+                    )}
+                    href={doc?.links.doc}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    Docs
+                    <ExternalLinkIcon className="size-3" />
+                  </Link>
                 )}
-                {links?.api && (
-                  <Badge asChild variant="secondary">
-                    <Link href={links.api} rel="noreferrer" target="_blank">
-                      API Reference <IconArrowUpRight />
-                    </Link>
-                  </Badge>
-                )}
+                {doc?.links?.api && (
+                  <Link
+                    className={cn(
+                      badgeVariants({ variant: 'secondary' }),
+                      'gap-1'
+                    )}
+                    href={doc?.links.api}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    API Reference
+                    <ExternalLinkIcon className="size-3" />
+                  </Link>
+                )} */}
+                {doc?.docs?.map((item: any) => (
+                  <Link
+                    key={item.route}
+                    className={cn(
+                      badgeVariants({
+                        variant: getItemVariant(item),
+                      })
+                    )}
+                    href={item.route as any}
+                  // rel={item.route?.includes('https') ? 'noreferrer' : undefined}
+                  // target={item.route?.includes('https') ? '_blank' : undefined}
+                  >
+                    {getDocTitle(item)}
+                  </Link>
+                ))}
               </div>
             ) : null}
           </div>
@@ -166,7 +379,7 @@ export default async function Page(props: {
               variant="secondary"
               className="shadow-none"
             >
-              <Link href={neighbours.previous.url}>
+              <Link href={addLocaleToUrl(neighbours.previous.url)}>
                 <IconArrowLeft /> {neighbours.previous.name}
               </Link>
             </Button>
@@ -178,7 +391,7 @@ export default async function Page(props: {
               variant="secondary"
               className="ml-auto shadow-none"
             >
-              <Link href={neighbours.next.url}>
+              <Link href={addLocaleToUrl(neighbours.next.url)}>
                 {neighbours.next.name} <IconArrowRight />
               </Link>
             </Button>
@@ -194,9 +407,151 @@ export default async function Page(props: {
           </div>
         ) : null}
         <div className="flex flex-1 flex-col gap-12 px-6">
-
         </div>
       </div>
     </div>
   )
 }
+
+function getRegistryDocs({
+  docName,
+  file,
+  files,
+  registryNames,
+}: {
+  docName: string;
+  file: RegistryItem;
+  files: { name: string }[];
+  registryNames: Set<string>;
+}) {
+  const usedBy = registryUI.filter(
+    (item) =>
+      item.meta &&
+      Array.isArray(item.meta.examples) &&
+      item.meta.examples.includes(docName)
+  );
+
+  const relatedDocs = [
+    ...files
+      .map((f) => f.name.split('/').pop()?.replace('.tsx', ''))
+      .filter(
+        (fileName): fileName is string =>
+          !!fileName && registryNames.has(fileName) && fileName !== docName
+      )
+      .map((fileName) => {
+        const uiItem = registryUI.find((item) => item.name === fileName);
+
+        if (!uiItem) return null;
+
+        return {
+          route: `/docs/${uiItem.type.includes('example') ? 'examples' : 'components'}/${fileName}`,
+          title: getRegistryTitle(uiItem),
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null),
+    ...usedBy.map((item) => ({
+      route: `/docs/${item.type.includes('example') ? 'examples' : 'components'}/${item.name}`,
+      title: getRegistryTitle(item),
+    })),
+  ]
+    .filter(Boolean)
+    .filter(
+      (doc, index, self) =>
+        index === self.findIndex((d) => d.route === doc.route)
+    );
+
+  const groups = [...(file.meta?.docs || []), ...relatedDocs].reduce(
+    (acc, doc) => {
+      if (doc.route!.startsWith(siteConfig.links.platePro)) {
+        acc.external.push(doc as any);
+      } else if (doc.route!.startsWith('/docs/components')) {
+        acc.components.push(doc as any);
+      } else if (doc.route!.startsWith('/docs/api')) {
+        acc.docs.push({
+          ...doc,
+          title:
+            getRegistryTitle({
+              name: doc.title ?? doc.route?.split('/').pop(),
+            }) + ' API',
+        } as any);
+      } else if (doc.route!.startsWith('/docs/')) {
+        acc.docs.push({
+          ...doc,
+          title:
+            getRegistryTitle({
+              name: doc.title ?? doc.route?.split('/').pop(),
+            }) + ' Plugin',
+        } as any);
+      } else {
+        acc.docs.push(doc as any);
+      }
+
+      return acc;
+    },
+    { components: [], docs: [], external: [] } as Record<
+      string,
+      typeof relatedDocs
+    >
+  );
+
+  return [
+    ...groups.docs.sort((a: any, b: any) => a.title.localeCompare(b.title)),
+    ...groups.components.sort((a: any, b: any) =>
+      a.title.localeCompare(b.title)
+    ),
+    ...groups.external.sort((a: any, b: any) => a.title.localeCompare(b.title)),
+  ];
+}
+
+async function getExampleCode(name?: string) {
+  if (!name) return null;
+  if (name.endsWith('-pro')) {
+    return proExamples.find((ex) => ex.name === name);
+  }
+
+  const example = registryExamples.find((ex) => ex.name === name);
+
+  if (!example) {
+    throw new Error(`Component ${name} not found`);
+  }
+
+  // Use the same caching pattern
+  const item = await getCachedRegistryItem(name, true);
+  let highlightedFiles: any = [];
+  let tree: any = null;
+  let dependencies: string[] = [];
+
+  if (item?.files) {
+    [tree, highlightedFiles, dependencies] = await Promise.all([
+      getCachedFileTree(item.files),
+      getCachedHighlightedFiles(item.files),
+      getCachedDependencies(name),
+    ]);
+  }
+
+  return {
+    dependencies,
+    doc: { title: example.title },
+    highlightedFiles,
+    item,
+    name: example.name,
+    tree,
+  };
+}
+
+const getItemVariant = (item: any) => {
+  const allowedHosts = ['pro.platejs.org'];
+
+  try {
+    const url = new URL(item.route);
+
+    if (allowedHosts.includes(url.hostname)) return 'plus';
+  } catch (error) {
+    // console.error('Invalid URL:', item.route, error);
+  }
+
+  // if (item.route?.includes('components')) return 'default';
+  if (item.route?.includes('components')) return 'secondary';
+
+  return 'outline';
+};

@@ -59,16 +59,18 @@ import { siteConfig } from '@/config/site';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { cn } from '@/lib/utils';
 
+import { getIconForLanguageExtension } from './icons';
+
 // SYNC
 
 type BlockViewerContext = {
   activeFile: string | null;
   dependencies: string[];
   highlightedFiles:
-    | (z.infer<typeof registryItemFileSchema> & {
-        highlightedContent: string;
-      })[]
-    | null;
+  | (z.infer<typeof registryItemFileSchema> & {
+    highlightedContent: string;
+  })[]
+  | null;
   isLoading: boolean;
   item: z.infer<typeof registryItemSchema> & {
     meta?: {
@@ -456,7 +458,7 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
 
   if (!file?.content && isLoading) {
     return (
-      <div className="mr-[14px] flex h-(--height) overflow-hidden rounded-xl bg-zinc-950 text-white group-data-[view=preview]/block-view-wrapper:hidden">
+      <div className="mr-[14px] flex h-(--height) overflow-hidden rounded-xl bg-zinc-950 text-code-foreground group-data-[view=preview]/block-view-wrapper:hidden">
         <BlockViewerFileTree size={size} />
         <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
           <Spinner />
@@ -469,16 +471,21 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
   }
 
   return (
-    <div className="mr-[14px] flex h-(--height) overflow-hidden rounded-xl bg-zinc-950 text-white group-data-[view=preview]/block-view-wrapper:hidden">
+    <div className="mr-[14px] flex h-(--height) overflow-hidden rounded-xl group-data-[view=preview]/block-view-wrapper:hidden bg-code">
       <BlockViewerFileTree size={size} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex h-12 items-center gap-2 border-b border-zinc-700 bg-zinc-900 px-4 text-sm font-medium">
-          <File className="size-4" />
+        <div className="flex h-12 items-center gap-2 border-b  px-4  rounded-none text-sm font-medium !mt-0"
+          data-rehype-pretty-code-figure
+        >
+          {/* <File className="size-4" /> */}
+          <span className="size-4" >
+            {getIconForLanguageExtension(file.target?.split('.').pop() ?? '')}
+          </span>
           {file.target}
           <div className="ml-auto flex items-center gap-2">
             {dependencies.length > 0 && (
               <CopyNpmCommandButton
-                className="flex h-7 rounded-md bg-inherit px-1.5 text-inherit shadow-none lg:w-auto"
+                className="flex h-7 rounded-md bg-code px-1.5 text-code-foreground shadow-none lg:w-auto"
                 commands={{
                   __bunCommand__: 'bun add ' + deps,
                   __npmCommand__: 'npm install ' + deps,
@@ -494,8 +501,7 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
         </div>
         <div
           key={file?.path}
-          className="relative flex-1 overflow-hidden after:absolute after:inset-y-0 after:left-0 after:w-10 after:bg-zinc-950 [&_.line:before]:sticky [&_.line:before]:left-2 [&_.line:before]:z-10 [&_.line:before]:-translate-y-px [&_.line:before]:pr-1 [&_pre]:h-(--height) [&_pre]:overflow-auto [&_pre]:bg-transparent! [&_pre]:pt-4 [&_pre]:pb-20 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed"
-          data-rehype-pretty-code-fragment
+          className="relative flex-1 overflow-hidden"
           dangerouslySetInnerHTML={{ __html: file?.highlightedContent ?? '' }}
         />
       </div>
@@ -514,10 +520,10 @@ export function BlockViewerFileTree({ size }: { size?: 'default' | 'sm' }) {
     <div className={cn('w-[280px]', size === 'sm' && 'w-[240px]')}>
       <SidebarProvider className="flex min-h-full! flex-col">
         <Sidebar
-          className="w-full flex-1 overflow-x-hidden overflow-y-auto border-r border-zinc-700 bg-zinc-900 text-white"
+          className="w-full flex-1 overflow-x-hidden overflow-y-auto border-r  text-code-foreground bg-code "
           collapsible="none"
         >
-          <SidebarGroupLabel className="sticky top-0 z-10 h-12 rounded-none border-b border-zinc-700 bg-zinc-900 px-4 text-sm text-white">
+          <SidebarGroupLabel className="sticky top-0 z-10 h-12 rounded-none border-b bg-code px-4 text-sm text-code-foreground">
             Files
           </SidebarGroupLabel>
           <SidebarGroup className="p-0">
@@ -543,7 +549,7 @@ function Tree({ index, item }: { index: number; item: FileTree }) {
       <SidebarMenuItem>
         <SidebarMenuButton
           className={cn(
-            'overflow-x-auto rounded-none pl-(--index) whitespace-nowrap hover:bg-zinc-700 hover:text-white focus:bg-zinc-700 focus:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white'
+            'overflow-x-auto rounded-none pl-(--index) whitespace-nowrap hover:bg-code-highlight hover:text-code-foreground focus:bg-code-highlight focus:text-code-foreground focus-visible:bg-code-highlight focus-visible:text-code-foreground active:bg-code-highlight active:text-code-foreground data-[active=true]:bg-code-highlight data-[active=true]:text-code-foreground'
           )}
           style={
             {
@@ -571,7 +577,7 @@ function Tree({ index, item }: { index: number; item: FileTree }) {
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             className={cn(
-              'overflow-x-auto rounded-none pl-(--index) whitespace-nowrap hover:bg-zinc-700 hover:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white data-[state=open]:hover:bg-zinc-700 data-[state=open]:hover:text-white'
+              'overflow-x-auto rounded-none pl-(--index) whitespace-nowrap hover:bg-code-highlight hover:text-code-foreground focus-visible:bg-code-highlight focus-visible:text-code-foreground active:bg-code-highlight active:text-code-foreground data-[active=true]:bg-code-highlight data-[active=true]:text-code-foreground data-[state=open]:hover:bg-code-highlight data-[state=open]:hover:text-code-foreground'
             )}
             style={
               {
@@ -613,7 +619,7 @@ function BlockCopyCodeButton() {
   return (
     <Button
       variant="ghost"
-      className="size-7 shrink-0 rounded-lg p-0 hover:bg-zinc-700 hover:text-white focus:bg-zinc-700 focus:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white [&>svg]:size-3"
+      className="size-7 shrink-0 rounded-lg p-0 hover:bg-code-highlight hover:text-code-foreground focus:bg-code-highlight focus:text-code-foreground focus-visible:bg-code-highlight focus-visible:text-code-foreground active:bg-code-highlight active:text-code-foreground data-[active=true]:bg-code-highlight data-[active=true]:text-code-foreground [&>svg]:size-3"
       onClick={() => {
         copyToClipboard(content);
       }}
