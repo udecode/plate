@@ -74,17 +74,18 @@ function Draggable(props: PlateElementProps) {
   const { children, editor, element, path } = props;
   const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
 
-  const { isAboutToDrag, isDragging, nodeRef, previewRef, handleRef } = useDraggable({
-    element,
-    onDropHandler: (_, { dragItem }) => {
-      const id = (dragItem as { id: string[] | string }).id;
+  const { isAboutToDrag, isDragging, nodeRef, previewRef, handleRef } =
+    useDraggable({
+      element,
+      onDropHandler: (_, { dragItem }) => {
+        const id = (dragItem as { id: string[] | string }).id;
 
-      if (blockSelectionApi) {
-        blockSelectionApi.add(id);
-      }
-      resetPreview();
-    },
-  });
+        if (blockSelectionApi) {
+          blockSelectionApi.add(id);
+        }
+        resetPreview();
+      },
+    });
 
   const isInColumn = path.length === 3;
   const isInTable = path.length === 4;
@@ -239,22 +240,49 @@ const DragHandle = React.memo(function DragHandle({
       <TooltipTrigger asChild>
         <div
           className="flex size-full items-center justify-center"
-          onClick={() => {
-            editor
-              .getApi(BlockSelectionPlugin)
-              .blockSelection.set(element.id as string);
+          onClick={(e) => {
+            e.preventDefault();
+            editor.getApi(BlockSelectionPlugin).blockSelection.focus();
           }}
           onMouseDown={(e) => {
             resetPreview();
-            if (e.button !== 0 || e.shiftKey) return; // Only left mouse button
 
-            const elements = createDragPreviewElements(editor, {
-              currentBlock: element,
-            });
+            if (e.button !== 0 || e.shiftKey) return;
+
+            const blockSelection = editor
+              .getApi(BlockSelectionPlugin)
+              .blockSelection.getNodes({ sort: true });
+
+            let selectionNodes =
+              blockSelection.length > 0
+                ? blockSelection
+                : editor.api.blocks({ mode: 'highest' });
+
+            // If current block is not in selection, use it as the starting point
+            if (!selectionNodes.some(([node]) => node.id === element.id)) {
+              selectionNodes = [[element, editor.api.findPath(element)!]];
+            }
+
+            // Process selection nodes to include list children
+            const blocks = expandListItemsWithChildren(
+              editor,
+              selectionNodes
+            ).map(([node]) => node);
+
+            if (blockSelection.length === 0) {
+              editor.tf.blur();
+              editor.tf.collapse();
+            }
+
+            const elements = createDragPreviewElements(editor, blocks);
             previewRef.current?.append(...elements);
             previewRef.current?.classList.remove('hidden');
             previewRef.current?.classList.add('opacity-0');
             editor.setOption(DndPlugin, 'multiplePreviewRef', previewRef);
+
+            editor
+              .getApi(BlockSelectionPlugin)
+              .blockSelection.set(blocks.map((block) => block.id as string));
           }}
           onMouseEnter={() => {
             if (isDragging) return;
@@ -294,6 +322,7 @@ const DragHandle = React.memo(function DragHandle({
           onMouseUp={() => {
             resetPreview();
           }}
+          data-plate-prevent-deselect
           role="button"
         >
           <GripVertical className="text-muted-foreground" />
@@ -329,32 +358,8 @@ const DropLine = React.memo(function DropLine({
 
 const createDragPreviewElements = (
   editor: PlateEditor,
-  { currentBlock }: { currentBlock: TElement }
+  blocks: TElement[]
 ): HTMLElement[] => {
-  const blockSelection = editor
-    .getApi(BlockSelectionPlugin)
-    .blockSelection.getNodes({ sort: true });
-
-  let selectionNodes =
-    blockSelection.length > 0
-      ? blockSelection
-      : editor.api.blocks({ mode: 'highest' });
-
-  // If current block is not in selection, use it as the starting point
-  if (!selectionNodes.some(([node]) => node.id === currentBlock.id)) {
-    selectionNodes = [[currentBlock, editor.api.findPath(currentBlock)!]];
-  }
-
-  // Process selection nodes to include list children
-  const sortedNodes = expandListItemsWithChildren(editor, selectionNodes).map(
-    ([node]) => node
-  );
-
-  if (blockSelection.length === 0) {
-    editor.tf.blur();
-    editor.tf.collapse();
-  }
-
   const elements: HTMLElement[] = [];
   const ids: string[] = [];
 
@@ -382,8 +387,12 @@ const createDragPreviewElements = (
     const newDomNode = domNode.cloneNode(true) as HTMLElement;
 
     // Apply visual compensation for horizontal scroll
-    const applyScrollCompensation = (original: Element, cloned: HTMLElement) => {
+    const applyScrollCompensation = (
+      original: Element,
+      cloned: HTMLElement
+    ) => {
       const scrollLeft = original.scrollLeft;
+
       if (scrollLeft > 0) {
         // Create a wrapper to handle the scroll offset
         const scrollWrapper = document.createElement('div');
@@ -417,7 +426,7 @@ const createDragPreviewElements = (
     wrapper.append(newDomNode);
     wrapper.style.display = 'flow-root';
 
-    const lastDomNode = sortedNodes[index - 1];
+    const lastDomNode = blocks[index - 1];
 
     if (lastDomNode) {
       const lastDomNodeRect = editor.api
@@ -438,7 +447,7 @@ const createDragPreviewElements = (
     elements.push(wrapper);
   };
 
-  sortedNodes.forEach((node, index) => resolveElement(node, index));
+  blocks.forEach((node, index) => resolveElement(node, index));
 
   editor.setOption(DndPlugin, 'draggingId', ids);
 

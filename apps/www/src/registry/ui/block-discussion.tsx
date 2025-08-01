@@ -22,7 +22,12 @@ import {
   PathApi,
   TextApi,
 } from 'platejs';
-import { useEditorPlugin, useEditorRef, usePluginOption } from 'platejs/react';
+import {
+  useEditorPlugin,
+  useEditorRef,
+  useFocusedLast,
+  usePluginOption,
+} from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -94,7 +99,7 @@ const BlockCommentContent = ({
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[];
 }) => {
   const editor = useEditorRef();
-
+  const isFocusedLast = useFocusedLast();
   const resolvedSuggestions = useResolveSuggestion(suggestionNodes, blockPath);
   const resolvedDiscussions = useResolvedDiscussion(commentNodes, blockPath);
 
@@ -132,9 +137,10 @@ const BlockCommentContent = ({
     !!commentingBlock && PathApi.equals(blockPath, commentingBlock);
 
   const open =
-    _open ||
-    selected ||
-    (isCommenting && !!draftCommentNode && commentingCurrent);
+    isFocusedLast &&
+    (_open ||
+      selected ||
+      (isCommenting && !!draftCommentNode && commentingCurrent));
 
   const anchorElement = React.useMemo(() => {
     let activeNode: NodeEntry | undefined;

@@ -51,6 +51,7 @@ import {
   useEditorRef,
   useEditorSelector,
   useElement,
+  useFocusedLast,
   usePluginOption,
   useReadOnly,
   useRemoveNodeButton,
@@ -159,11 +160,15 @@ function TableFloatingToolbar({
     (editor) => selected && editor.api.isCollapsed(),
     [selected]
   );
+  const isFocusedLast = useFocusedLast();
 
   const { canMerge, canSplit } = useTableMergeState();
 
   return (
-    <Popover open={canMerge || canSplit || collapsedInside} modal={false}>
+    <Popover
+      open={isFocusedLast && (canMerge || canSplit || collapsedInside)}
+      modal={false}
+    >
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
         asChild
@@ -516,10 +521,14 @@ export function TableCellElement({
   const readOnly = useReadOnly();
   const element = props.element;
 
+  const tableId = useElementSelector(([node]) => node.id as string, [], {
+    key: KEYS.table,
+  });
   const rowId = useElementSelector(([node]) => node.id as string, [], {
     key: KEYS.tr,
   });
-  const isSelectingRow = useBlockSelected(rowId);
+  const isSelectingTable = useBlockSelected(tableId);
+  const isSelectingRow = useBlockSelected(rowId) || isSelectingTable;
   const isSelectionAreaVisible = usePluginOption(
     BlockSelectionPlugin,
     'isSelectionAreaVisible'
