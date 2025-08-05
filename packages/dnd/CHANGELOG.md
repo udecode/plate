@@ -1,5 +1,11 @@
 # @platejs/dnd
 
+## 49.2.7
+
+### Patch Changes
+
+- [#4544](https://github.com/udecode/plate/pull/4544) by [@delijah](https://github.com/delijah) – Fix missing target path onDropFiles
+
 ## 49.2.2
 
 ### Patch Changes
