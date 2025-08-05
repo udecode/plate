@@ -1,6 +1,6 @@
 {
   "name": "@platejs/utils",
-  "version": "49.2.4",
+  "version": "49.2.5",
   "description": "Plate utils",
   "keywords": [
     "plate",
@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/core": "49.2.4",
+    "@platejs/core": "49.2.5",
     "@platejs/slate": "49.2.4",
     "@udecode/react-utils": "49.0.15",
     "@udecode/utils": "47.2.7",
