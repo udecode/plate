@@ -2,9 +2,8 @@
 
 import * as React from "react"
 
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
-
-import { Tabs, TabsList, TabsTrigger } from "./ui/tabs"
 
 export function ComponentPreviewTabs({
   align = "center",
@@ -19,7 +18,6 @@ export function ComponentPreviewTabs({
   align?: "center" | "end" | "start"
   hideCode?: boolean
 }) {
-
   const [tab, setTab] = React.useState("code")
 
   return (

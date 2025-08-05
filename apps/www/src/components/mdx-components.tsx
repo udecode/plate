@@ -27,6 +27,7 @@ import {
   APITransforms,
 } from './api-list';
 import { BadgeList, BadgePopover } from './badge-popover';
+import { BlockDisplay } from './block-display';
 import { CodeBlockCommand } from './code-block-command';
 import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
@@ -83,6 +84,7 @@ export const mdxComponents = {
   AspectRatio,
   BadgeList,
   BadgePopover,
+  BlockDisplay,
   blockquote: Typography.Blockquote,
   Callout,
   Card,

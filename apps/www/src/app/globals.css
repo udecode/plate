@@ -1,17 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
+@import 'shadcn-prose';
 @import "./themes.css";
 
-@custom-variant dark (&:is(.dark *));
+@plugin 'tailwind-scrollbar-hide';
 
+@custom-variant dark (&:is(.dark *));
 @custom-variant fixed (&:is(.layout-fixed *));
 
 @theme inline {
-  --breakpoint-3xl: 1600px;
-  --breakpoint-4xl: 2000px;
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -39,6 +36,9 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  
+  --breakpoint-3xl: 1600px;
+  --breakpoint-4xl: 2000px;
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -49,12 +49,26 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-surface: var(--surface);
   --color-surface-foreground: var(--surface-foreground);
-  --color-code: var(--code);
-  --color-code-foreground: var(--code-foreground);
+  --color-code: var(--surface);
+  --color-code-foreground: var(--surface-foreground);
   --color-code-highlight: var(--code-highlight);
   --color-code-number: var(--code-number);
   --color-selection: var(--selection);
   --color-selection-foreground: var(--selection-foreground);
+
+  --color-brand: var(--brand);
+  --color-highlight: var(--highlight);
+
+  --font-heading: 'var(--font-heading)', 'ui-sans-serif', '-apple-system',
+    'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica',
+    'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: 'var(--font-mono)', ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-sans: 'var(--font-sans)', 'ui-sans-serif', '-apple-system',
+    'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica',
+    'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
 :root {
@@ -98,6 +112,16 @@
   --code-number: oklch(0.56 0 0);
   --selection: oklch(0.145 0 0);
   --selection-foreground: oklch(1 0 0);
+
+  /* Blue color scale */
+  --color-blue-300: oklch(0.778 0.108 231.731);
+  --color-blue-500: oklch(0.623 0.214 259.815);
+  --color-blue-600: oklch(0.549 0.234 260.011);
+  --color-blue-700: oklch(0.488 0.243 264.376);
+  --color-blue-800: oklch(0.419 0.243 267.218);
+
+  --brand: oklch(0.623 0.214 259.815);   /* Blue 500 */
+  --highlight: oklch(0.852 0.199 91.936);   /* Yellow 400 */
 }
 
 .dark {
@@ -140,19 +164,24 @@
   --code-number: oklch(0.72 0 0);
   --selection: oklch(0.922 0 0);
   --selection-foreground: oklch(0.205 0 0);
+
+  --brand: oklch(0.707 0.165 254.624);   /* Blue 400 */
+  --highlight: oklch(0.852 0.199 91.936);   /* Yellow 400 */
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  ::selection {
+  /* ::selection {
     @apply bg-selection text-selection-foreground;
-  }
-  html {
+  } */
+  /* html {
     @apply scroll-smooth;
-  }
+  } */
   body {
+    @apply overscroll-none bg-background text-foreground;
+    /* font-feature-settings: "rlig" 1, "calt" 1; */
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
   }
@@ -166,6 +195,30 @@
   a:active,
   button:active {
     @apply opacity-60 md:opacity-100;
+  }
+  
+  /* Custom scrollbar styling (remove after sync). */
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 5px;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  /* Custom prose styling (remove after sync). */
+  .prose {
+    --tw-prose-body: var(--foreground);
+    --tw-prose-bold: inherit;
+    --tw-prose-links: inherit;
+    --tw-prose-bullets: var(--foreground);
   }
 }
 
@@ -182,11 +235,15 @@
 }
 
 @utility container-wrapper {
-  @apply 3xl:fixed:max-w-[calc(var(--breakpoint-2xl)+2rem)] mx-auto w-full px-2;
+  /* @apply 3xl:fixed:max-w-[calc(var(--breakpoint-2xl)+2rem)] mx-auto w-full px-2; */
+  
+  @apply px-2 mx-auto w-full max-w-[calc(var(--breakpoint-xl)+2rem)];
 }
 
 @utility container {
-  @apply 3xl:max-w-screen-2xl mx-auto max-w-[1400px] px-4 lg:px-8;
+  /* @apply 3xl:max-w-screen-2xl mx-auto max-w-[1400px] px-4 lg:px-8; */
+  
+  @apply mx-auto max-w-[calc(var(--breakpoint-xl)+2rem)] px-4 xl:px-6;
 }
 
 @utility no-scrollbar {
@@ -248,7 +305,7 @@
     font-size: var(--text-sm);
     outline: none;
     position: relative;
-    @apply md:-mx-1;
+    @apply md:-mx-4;
 
     &:has([data-rehype-pretty-code-title]) [data-slot="copy-button"] {
       top: calc(var(--spacing) * 1.5) !important;
@@ -256,7 +313,9 @@
   }
 
   [data-rehype-pretty-code-title] {
-    border-bottom: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+    border-bottom: color-mix(in oklab, var(--border) 30%, transparent);
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
     padding-block: calc(var(--spacing) * 2.5);
     padding-inline: calc(var(--spacing) * 4);
     font-size: var(--text-sm);
@@ -337,5 +396,77 @@
     padding-block: 0.1rem;
     font-family: var(--font-mono);
     font-size: 0.8rem;
+  }
+}
+
+/* MDX (remove after sync). */
+
+@layer base {
+  [data-theme='light'] {
+    display: block;
+  }
+
+  [data-theme='dark'] {
+    display: none;
+  }
+
+  .dark [data-theme='light'] {
+    display: none;
+  }
+
+  .dark [data-theme='dark'] {
+    display: block;
+  }
+
+  [data-rehype-pretty-code-fragment] {
+    @apply relative text-white;
+  }
+
+  [data-rehype-pretty-code-fragment] code {
+    @apply grid min-w-full rounded-none border-0 bg-transparent p-0 break-words;
+    counter-reset: line;
+    box-decoration-break: clone;
+  }
+
+  [data-rehype-pretty-code-fragment] .line {
+    @apply inline-block min-h-[1rem] w-full px-4 py-0.5;
+  }
+
+  [data-rehype-pretty-code-fragment] [data-line-numbers] .line {
+    @apply px-2;
+  }
+
+  [data-rehype-pretty-code-fragment] [data-line-numbers] > .line::before {
+    @apply text-xs text-zinc-50/40;
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    width: 1.8rem;
+    margin-right: 1.4rem;
+    text-align: right;
+  }
+
+  [data-rehype-pretty-code-fragment] .line--highlighted {
+    @apply bg-zinc-700/50;
+  }
+
+  [data-rehype-pretty-code-fragment] .line-highlighted span {
+    @apply relative;
+  }
+
+  [data-rehype-pretty-code-fragment] .word--highlighted {
+    @apply rounded-md border-zinc-700/70 bg-zinc-700/50 p-1;
+  }
+
+  .dark [data-rehype-pretty-code-fragment] .word--highlighted {
+    @apply bg-zinc-900;
+  }
+
+  [data-rehype-pretty-code-title] {
+    @apply mt-2 px-4 pt-6 text-sm font-medium text-foreground;
+  }
+
+  [data-rehype-pretty-code-title] + pre {
+    @apply !mt-2;
   }
 }

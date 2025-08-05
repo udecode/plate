@@ -1,8 +1,8 @@
 import Image from "next/image"
 
 import { Index } from "@/__registry__"
-import { ComponentPreviewTabs } from "@/components/component-preview-tabs"
-import { ComponentSource } from "@/components/component-source"
+import { ComponentPreviewTabs } from "@/components/examples/component-preview-tabs"
+import { ComponentSource } from "@/components/examples/component-source"
 
 export function ComponentPreview({
   align = "center",

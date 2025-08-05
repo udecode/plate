@@ -4,15 +4,15 @@ import * as React from 'react';
 
 import type { RegistryItem } from 'shadcn/registry';
 
-import { BlockCode } from '@/components/block-viewer';
-import { ComponentPreviewPro } from '@/components/component-preview-pro';
-import { siteConfig } from '@/config/site';
-import { getRegistryTitle } from '@/lib/registry-utils';
+// import { BlockCode } from '@/components/block-viewer';
+// import { ComponentPreviewPro } from '@/components/component-preview-pro';
+// import { siteConfig } from '@/config/site';
+// import { getRegistryTitle } from '@/lib/registry-utils';
 
-import { CodeBlock } from './codeblock';
-import { ComponentPreview } from './component-preview';
-import { H2, H3, Step, Steps } from './typography';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+// import { CodeBlock } from './codeblock';
+// import { ComponentPreview } from './component-preview';
+// import { H2, H3, Step, Steps } from './typography';
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface ComponentInstallationProps {
   __dependencies__?: string;
@@ -62,103 +62,105 @@ export function ComponentInstallation({
 
   const dependenciesString = dependencies.join(' ');
 
-  return (
-    <div className="mt-4 mb-12">
-      {!inline && <H2>Installation</H2>}
 
-      <Tabs className="relative mt-6 w-full" defaultValue="cli">
-        <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
-          <TabsTrigger
-            className="relative h-9 flex-none rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-            value="cli"
-          >
-            CLI
-          </TabsTrigger>
-          <TabsTrigger
-            className="relative h-9 flex-none rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-            value="manual"
-          >
-            Manual
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="cli">
-          <CodeBlock
-            className="mt-6 mb-4"
-            value={`npx shadcn@latest add ${siteConfig.registryUrl}${name}`}
-            language="bash"
-          />
-        </TabsContent>
-        <TabsContent value="manual">
-          <Steps>
-            {dependenciesString && (
-              <>
-                <Step>Install the following dependencies:</Step>
-                <CodeBlock value={dependenciesString} language="bash" npm />
-              </>
-            )}
-            <Step>Copy and paste the following code into your project.</Step>
+  return null
+  // return (
+  //   <div className="mt-4 mb-12">
+  //     {!inline && <H2>Installation</H2>}
 
-            <BlockCode
-              dependencies={dependencies}
-              highlightedFiles={highlightedFiles}
-              item={item}
-              tree={tree}
-            />
+  //     <Tabs className="relative mt-6 w-full" defaultValue="cli">
+  //       <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
+  //         <TabsTrigger
+  //           className="relative h-9 flex-none rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+  //           value="cli"
+  //         >
+  //           CLI
+  //         </TabsTrigger>
+  //         <TabsTrigger
+  //           className="relative h-9 flex-none rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+  //           value="manual"
+  //         >
+  //           Manual
+  //         </TabsTrigger>
+  //       </TabsList>
+  //       <TabsContent value="cli">
+  //         <CodeBlock
+  //           className="mt-6 mb-4"
+  //           value={`npx shadcn@latest add ${siteConfig.registryUrl}${name}`}
+  //           language="bash"
+  //         />
+  //       </TabsContent>
+  //       <TabsContent value="manual">
+  //         <Steps>
+  //           {dependenciesString && (
+  //             <>
+  //               <Step>Install the following dependencies:</Step>
+  //               <CodeBlock value={dependenciesString} language="bash" npm />
+  //             </>
+  //           )}
+  //           <Step>Copy and paste the following code into your project.</Step>
 
-            <Step>Update the import paths to match your project setup.</Step>
-          </Steps>
-        </TabsContent>
-      </Tabs>
+  //           <BlockCode
+  //             dependencies={dependencies}
+  //             highlightedFiles={highlightedFiles}
+  //             item={item}
+  //             tree={tree}
+  //           />
 
-      {usage?.length && (
-        <>
-          <H2>Usage</H2>
+  //           <Step>Update the import paths to match your project setup.</Step>
+  //         </Steps>
+  //       </TabsContent>
+  //     </Tabs>
 
-          {usage.map((value, index) => (
-            <CodeBlock key={index} value={value} language="tsx" />
-          ))}
-        </>
-      )}
+  //     {usage?.length && (
+  //       <>
+  //         <H2>Usage</H2>
 
-      {!!examples?.length && (
-        <>
-          <H2>Examples</H2>
+  //         {usage.map((value, index) => (
+  //           <CodeBlock key={index} value={value} language="tsx" />
+  //         ))}
+  //       </>
+  //     )}
 
-          <div className="mb-12">
-            {examples.map((example) => {
-              const isPro = example.name.endsWith('-pro');
+  //     {!!examples?.length && (
+  //       <>
+  //         <H2>Examples</H2>
 
-              if (isPro) {
-                return (
-                  <React.Fragment key={example.name}>
-                    <H3>Plate Plus</H3>
+  //         <div className="mb-12">
+  //           {examples.map((example) => {
+  //             const isPro = example.name.endsWith('-pro');
 
-                    <ComponentPreviewPro
-                      id={example.name.replace('-pro', '')}
-                      description={example.description}
-                    />
-                  </React.Fragment>
-                );
-              }
+  //             if (isPro) {
+  //               return (
+  //                 <React.Fragment key={example.name}>
+  //                   <H3>Plate Plus</H3>
 
-              return (
-                <ComponentPreview
-                  id={example.name.replace('-demo', '')}
-                  name={example.name}
-                  key={example.name}
-                  dependencies={example.dependencies}
-                  highlightedFiles={(example as any).highlightedFiles}
-                  item={{
-                    ...(example as any).item,
-                    description: getRegistryTitle(example as any),
-                  }}
-                  tree={(example as any).tree}
-                />
-              );
-            })}
-          </div>
-        </>
-      )}
-    </div>
-  );
+  //                   <ComponentPreviewPro
+  //                     id={example.name.replace('-pro', '')}
+  //                     description={example.description}
+  //                   />
+  //                 </React.Fragment>
+  //               );
+  //             }
+
+  //             return (
+  //               <ComponentPreview
+  //                 id={example.name.replace('-demo', '')}
+  //                 name={example.name}
+  //                 key={example.name}
+  //                 dependencies={example.dependencies}
+  //                 highlightedFiles={(example as any).highlightedFiles}
+  //                 item={{
+  //                   ...(example as any).item,
+  //                   description: getRegistryTitle(example as any),
+  //                 }}
+  //                 tree={(example as any).tree}
+  //               />
+  //             );
+  //           })}
+  //         </div>
+  //       </>
+  //     )}
+  //   </div>
+  // );
 }
