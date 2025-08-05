@@ -39,6 +39,8 @@ export const pipeRenderElement = (
     }
 
     const ctxProps = getRenderNodeProps({
+      // `transformProps` can run hooks, so we need to disable it for default elements.
+      disableInjectNodeProps: true,
       editor,
       props: { ...props, path } as any,
       readOnly,

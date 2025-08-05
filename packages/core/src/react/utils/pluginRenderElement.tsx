@@ -114,12 +114,7 @@ export const pluginRenderElement = (
         path={path}
         scope={plugin.key}
       >
-        <ElementContent
-          key={plugin.key}
-          editor={editor}
-          plugin={plugin}
-          {...(props as any)}
-        />
+        <ElementContent editor={editor} plugin={plugin} {...(props as any)} />
       </ElementProvider>
     );
   };
