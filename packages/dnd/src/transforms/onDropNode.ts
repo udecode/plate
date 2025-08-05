@@ -67,12 +67,12 @@ export const getDropPath = (
 
   // Treat 'right' like 'bottom' (after hovered)
   // Treat 'left' like 'top' (before hovered)
-  if (dragPath && (direction === 'bottom' || direction === 'right')) {
+  if (direction === 'bottom' || direction === 'right') {
     // Insert after hovered node
     dropPath = hoveredPath;
 
     // If the dragged node is already right after hovered node, no change
-    if (PathApi.equals(dragPath, PathApi.next(dropPath))) return;
+    if (dragPath && PathApi.equals(dragPath, PathApi.next(dropPath))) return;
   }
   if (direction === 'top' || direction === 'left') {
     // Insert before hovered node
