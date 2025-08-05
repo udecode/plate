@@ -18,6 +18,7 @@ import { getEditorPlugin } from '../plugin';
  */
 export const getRenderNodeProps = ({
   attributes: nodeAttributes,
+  disableInjectNodeProps,
   editor,
   plugin,
   props,
@@ -26,6 +27,7 @@ export const getRenderNodeProps = ({
   editor: PlateEditor;
   props: PlateHTMLProps;
   attributes?: AnyObject;
+  disableInjectNodeProps?: boolean;
   plugin?: AnyEditorPlatePlugin;
   readOnly?: boolean;
 }): PlateHTMLProps => {
@@ -61,12 +63,14 @@ export const getRenderNodeProps = ({
     },
   };
 
-  newProps = pipeInjectNodeProps(
-    editor,
-    newProps,
-    (node) => editor.api.findPath(node)!,
-    readOnly
-  ) as PlateHTMLProps;
+  if (!disableInjectNodeProps) {
+    newProps = pipeInjectNodeProps(
+      editor,
+      newProps,
+      (node) => editor.api.findPath(node)!,
+      readOnly
+    ) as PlateHTMLProps;
+  }
 
   if (
     newProps.attributes?.style &&
