@@ -202,14 +202,19 @@ function BlockViewerToolbar() {
   )
 }
 
-function BlockViewerIframe({ preview }: { preview?: React.ReactNode; }) {
+function BlockViewerIframe() {
   const { iframeKey, item } = useBlockViewer()
+
+  console.log("🚀 ~ BlockViewerIframe ~ item:", item)
 
 
   const Preview = React.useMemo(() => {
+
+    if(item.meta?.isPro) return null
+
     const Component = Index[item.name]?.component;
 
-    if (!Component) {
+    if (!Component ) {
       return (
         <p className="text-sm text-muted-foreground">
           Component{' '}
@@ -223,7 +228,7 @@ function BlockViewerIframe({ preview }: { preview?: React.ReactNode; }) {
 
     // DIFF
     return <Component id={item.name.replace('-demo', '')} key={iframeKey} />;
-  }, [item.name, iframeKey]);
+  }, [item.name, item.meta?.isPro, iframeKey]);
 
   return (
     Preview ?? <iframe
@@ -237,7 +242,7 @@ function BlockViewerIframe({ preview }: { preview?: React.ReactNode; }) {
   )
 }
 
-function BlockViewerView({ preview }: { preview?: React.ReactNode; }) {
+function BlockViewerView() {
   const { resizablePanelRef } = useBlockViewer()
 
   return (
@@ -254,7 +259,7 @@ function BlockViewerView({ preview }: { preview?: React.ReactNode; }) {
             defaultSize={100}
             minSize={30}
           >
-            <BlockViewerIframe preview={preview} />
+            <BlockViewerIframe />
           </ResizablePanel>
           <ResizableHandle className="after:bg-border relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:translate-x-[-1px] after:-translate-y-1/2 after:rounded-full after:transition-all after:hover:h-10 md:block" />
           <ResizablePanel defaultSize={0} minSize={0} />
@@ -485,7 +490,7 @@ function BlockViewer({
       {...props}
     >
       <BlockViewerToolbar />
-      <BlockViewerView preview={preview} />
+      <BlockViewerView />
       <BlockViewerCode />
       <BlockViewerMobile>{children}</BlockViewerMobile>
     </BlockViewerProvider>

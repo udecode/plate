@@ -1,56 +1,26 @@
 import * as React from "react"
 
-import type { registryItemFileSchema } from "shadcn/registry"
+import type { RegistryItem, registryItemFileSchema } from "shadcn/registry"
 import type { z } from "zod"
 
-import { Index } from "@/__registry__"
 import { BlockViewer } from "@/components/block-viewer"
 import { ComponentPreview } from "@/components/component-preview"
 import { highlightCode } from "@/lib/highlight-code"
 import { createFileTreeForRegistryItemFiles, getRegistryItem } from "@/lib/rehype-utils"
 import { cn } from "@/lib/utils"
 
-import { Icons } from "./icons"
 
-export async function BlockDisplay({ align, name, padding, ...props }: { id: string, name: string, align?: string, padding?: string, }) {
-  const item = await getCachedRegistryItem(name)
+export async function BlockDisplay({ item: itemProp, name, ...props }: { id: string, item: RegistryItem; name: string, block?: boolean, }) {
+  const item = itemProp ?? await getCachedRegistryItem(name)
 
-
-  const Preview = () => {
-    const Component = Index[name]?.component;
-
-    if (!Component) {
-      return (
-        <p className="text-sm text-muted-foreground">
-          Component{' '}
-          <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
-            {name}
-          </code>{' '}
-          not found in registry.
-        </p>
-      );
-    }
-
-    // DIFF
-    return <Component {...props} id={props.id ?? name.replace('-demo', '')} />;
-  }
-
-  const loadingPreview = (
-    <div className="preview flex size-full min-h-[350px] items-center justify-center p-0 text-sm text-muted-foreground">
-      <Icons.spinner className="mr-2 size-4 animate-spin" />
-      Loading...
-    </div>
-  );
-
-
-  if (!item?.files) {
+  if (!item?.files && !item.meta?.isPro) {
     return null
   }
 
-  const [tree, highlightedFiles] = await Promise.all([
+  const [tree, highlightedFiles] = item.files ? await Promise.all([
     getCachedFileTree(item.files),
     getCachedHighlightedFiles(item.files),
-  ])
+  ]) : [null, null]
 
   return (
     <BlockViewer highlightedFiles={highlightedFiles} item={item} tree={tree}

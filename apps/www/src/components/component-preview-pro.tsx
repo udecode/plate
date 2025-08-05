@@ -1,11 +1,10 @@
-'use client';
-
 import * as React from 'react';
 
-import { BlockViewer } from '@/components/block-viewer';
 import { Markdown } from '@/components/markdown';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
+
+import { BlockDisplay } from './block-display';
 
 interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
@@ -31,11 +30,11 @@ export function ComponentPreviewPro({
       {...props}
     >
       {description && <Markdown>{description}</Markdown>}
-
-      <BlockViewer
+123
+      <BlockDisplay
+        id={id}
+        name={name ?? ''}
         block={false}
-        dependencies={[]}
-        highlightedFiles={[]}
         item={{
           meta: {
             descriptionSrc: siteConfig.links.plateProExample(id),
@@ -45,7 +44,6 @@ export function ComponentPreviewPro({
           name: id,
           type: 'registry:example',
         }}
-        tree={[]}
       />
     </div>
   );
