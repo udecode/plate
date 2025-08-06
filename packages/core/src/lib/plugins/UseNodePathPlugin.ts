@@ -15,14 +15,14 @@ import {
   useEditorRef,
 } from 'platejs/react';
 
+const KEY = 'useNodePath';
+
 type Listener = {
   id: string;
   pathRef: PathRef;
   prevPath: PathRef['current'];
   fn: (path: PathRef['current']) => void;
 };
-
-const KEY = 'useNodePath';
 
 type UseNodePathConfig = PluginConfig<
   typeof KEY,
