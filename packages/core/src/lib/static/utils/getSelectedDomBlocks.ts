@@ -1,5 +1,5 @@
 /** Get the slate nodes from the DOM selection */
-/** @deprecated use getSelectedDomFragment instead */
+/** @deprecated Use getSelectedDomFragment instead */
 export const getSelectedDomBlocks = () => {
   const selection = window.getSelection();
 
