@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import { NodeApi } from '@platejs/slate';
 import { jsxt } from '@platejs/test-utils';
 
 jsxt;
@@ -293,6 +294,64 @@ describe('SlateExtensionPlugin', () => {
         prevText: 'test',
         text: 'testing',
       });
+    });
+  });
+
+  describe('performance optimization', () => {
+    it('should not capture state when no handlers are registered', () => {
+      const editor = createSlateEditor({
+        plugins: [SlateExtensionPlugin],
+        value: [
+          {
+            children: [{ text: 'test' }],
+            type: 'paragraph',
+          },
+        ],
+      });
+
+      // Spy on NodeApi.get to ensure it's not called
+      const getSpy = jest.spyOn(NodeApi, 'get');
+
+      // Insert text (no handlers registered)
+      editor.tf.insertText('hello');
+
+      // NodeApi.get should not be called for state capture
+      expect(getSpy).not.toHaveBeenCalled();
+
+      getSpy.mockRestore();
+    });
+
+    it('should capture state when handlers are registered', () => {
+      const onTextChange = jest.fn();
+
+      const editor = createSlateEditor({
+        autoSelect: 'end',
+        plugins: [
+          SlateExtensionPlugin.configure({
+            options: {
+              onTextChange,
+            },
+          }),
+        ],
+        value: [
+          {
+            children: [{ text: 'test' }],
+            type: 'paragraph',
+          },
+        ],
+      });
+
+      // Spy on NodeApi.get to ensure it IS called
+      const getSpy = jest.spyOn(NodeApi, 'get');
+
+      // Insert text (handler is registered)
+      editor.tf.insertText('hello');
+
+      // NodeApi.get should be called for state capture
+      expect(getSpy).toHaveBeenCalled();
+      expect(onTextChange).toHaveBeenCalled();
+
+      getSpy.mockRestore();
     });
   });
 });

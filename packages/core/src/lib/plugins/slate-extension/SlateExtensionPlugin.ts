@@ -63,13 +63,27 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
   resetBlock: bindFirst(resetBlock, editor),
   setValue: bindFirst(setValue, editor),
   apply(operation) {
+    // Performance optimization: skip state capture if no handlers are registered
+    const noop = () => {};
+    const hasNodeHandlers = 
+      editor.meta.pluginCache.handlers.onNodeChange.length > 0 ||
+      getOption('onNodeChange') !== noop;
+    const hasTextHandlers = 
+      editor.meta.pluginCache.handlers.onTextChange.length > 0 ||
+      getOption('onTextChange') !== noop;
+    
+    if (!hasNodeHandlers && !hasTextHandlers) {
+      apply(operation);
+      return;
+    }
+
     let prevNode: Descendant | undefined;
     let node: Descendant | undefined;
     let prevText: string | undefined;
     let text: string | undefined;
     let parentNode: Descendant | undefined;
 
-    if (OperationApi.isNodeOperation(operation)) {
+    if (OperationApi.isNodeOperation(operation) && hasNodeHandlers) {
       // Get node states BEFORE applying the operation
       switch (operation.type) {
         case 'insert_node': {
@@ -94,7 +108,7 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
           break;
         }
       }
-    } else if (OperationApi.isTextOperation(operation)) {
+    } else if (OperationApi.isTextOperation(operation) && hasTextHandlers) {
       // Get parent node that contains the text
       const parentPath = PathApi.parent(operation.path);
       parentNode = NodeApi.get<Descendant>(editor, parentPath);
@@ -108,7 +122,7 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
     apply(operation);
 
     // Get AFTER state for operations where node changes
-    if (OperationApi.isNodeOperation(operation)) {
+    if (OperationApi.isNodeOperation(operation) && hasNodeHandlers) {
       switch (operation.type) {
         case 'insert_node':
         case 'remove_node': {
@@ -166,7 +180,7 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
     }
 
     // Handle text operations
-    if (OperationApi.isTextOperation(operation)) {
+    if (OperationApi.isTextOperation(operation) && hasTextHandlers) {
       const textNodeAfter = NodeApi.get<TText>(editor, operation.path);
       if (textNodeAfter) {
         text = textNodeAfter.text;
