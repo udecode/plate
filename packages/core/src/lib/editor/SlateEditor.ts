@@ -57,6 +57,8 @@ export type BaseEditor = EditorBase & {
       decorate: string[];
       handlers: {
         onChange: string[];
+        onNodeChange: string[];
+        onTextChange: string[];
       };
       inject: {
         nodeProps: string[];

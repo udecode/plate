@@ -1,6 +1,6 @@
-import { type Descendant, ElementApi, NodeApi } from "@platejs/slate";
+import { type Descendant, ElementApi, NodeApi } from '@platejs/slate';
 
-import type { SlateEditor } from "../../editor";
+import type { SlateEditor } from '../../editor';
 
 export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
   const selection = window.getSelection();
@@ -16,7 +16,6 @@ export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
 
   const domBlocks = Array.from(_domBlocks);
 
-
   if (domBlocks.length === 0) return [];
 
   const nodes: Descendant[] = [];
@@ -26,17 +25,17 @@ export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
     const block = editor.api.node({ id: blockId, at: [] });
 
     // prevent inline elements like link and table cells.
-    if (!block || block[1].length !== 1) return
+    if (!block || block[1].length !== 1) return;
 
     /**
-     * If the selection don't cover the all first or last block, we
-     * need fallback to deserialize the block to get the correct
-     * fragment
+     * If the selection don't cover the all first or last block, we need
+     * fallback to deserialize the block to get the correct fragment
      */
     if (
       (index === 0 || index === domBlocks.length - 1) &&
-      node.textContent?.trim() !== NodeApi.string(block[0])
-      && ElementApi.isElement(block[0]) && !editor.api.isVoid(block[0])
+      node.textContent?.trim() !== NodeApi.string(block[0]) &&
+      ElementApi.isElement(block[0]) &&
+      !editor.api.isVoid(block[0])
     ) {
       const html = document.createElement('div');
       html.append(node);
@@ -46,7 +45,6 @@ export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
       nodes.push(block[0]);
     }
   });
-
 
   return nodes;
 };

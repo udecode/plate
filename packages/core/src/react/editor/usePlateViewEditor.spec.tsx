@@ -32,7 +32,9 @@ describe('usePlateViewEditor', () => {
       const { result } = renderHook(() => usePlateViewEditor());
 
       expect(result.current).toBeDefined();
-      expect(mockCreateStaticEditor).toHaveBeenCalledWith(expect.objectContaining({}));
+      expect(mockCreateStaticEditor).toHaveBeenCalledWith(
+        expect.objectContaining({})
+      );
     });
 
     it('should pass options to createStaticEditor', () => {
@@ -45,7 +47,9 @@ describe('usePlateViewEditor', () => {
       const { result } = renderHook(() => usePlateViewEditor(options));
 
       expect(result.current).toBeDefined();
-      expect(mockCreateStaticEditor).toHaveBeenCalledWith(expect.objectContaining(options));
+      expect(mockCreateStaticEditor).toHaveBeenCalledWith(
+        expect.objectContaining(options)
+      );
       expect(result.current.id).toBe('custom-id');
     });
 
@@ -285,14 +289,18 @@ describe('usePlateViewEditor', () => {
       const { result } = renderHook(() => usePlateViewEditor(complexOptions));
 
       expect(result.current).toBeDefined();
-      expect(mockCreateStaticEditor).toHaveBeenCalledWith(expect.objectContaining(complexOptions));
+      expect(mockCreateStaticEditor).toHaveBeenCalledWith(
+        expect.objectContaining(complexOptions)
+      );
     });
 
     it('should handle empty options object', () => {
       const { result } = renderHook(() => usePlateViewEditor({}));
 
       expect(result.current).toBeDefined();
-      expect(mockCreateStaticEditor).toHaveBeenCalledWith(expect.objectContaining({}));
+      expect(mockCreateStaticEditor).toHaveBeenCalledWith(
+        expect.objectContaining({})
+      );
     });
   });
 });

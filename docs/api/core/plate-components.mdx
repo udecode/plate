@@ -29,6 +29,28 @@ Callback called when the editor selection changes.
 <APIItem name="onValueChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
 Callback called when the editor value changes.
 </APIItem>
+<APIItem name="onNodeChange" type="(options: { editor: PlateEditor; node: Descendant; operation: NodeOperation; prevNode: Descendant }) => void" optional>
+Callback called whenever a node operation occurs (insert, remove, set, merge, split, move).
+
+**Parameters:**
+- `editor`: The Plate editor instance
+- `node`: The node after the operation
+- `operation`: The node operation that occurred
+- `prevNode`: The node before the operation
+
+**Note:** For `insert_node` and `remove_node` operations, both `node` and `prevNode` contain the same value to avoid null cases.
+</APIItem>
+<APIItem name="onTextChange" type="(options: { editor: PlateEditor; node: Descendant; operation: TextOperation; prevText: string; text: string }) => void" optional>
+Callback called whenever a text operation occurs (insert or remove text).
+
+**Parameters:**
+- `editor`: The Plate editor instance
+- `node`: The parent node (block or inline element) containing the text that changed
+- `operation`: The text operation that occurred (`insert_text` or `remove_text`)
+- `prevText`: The text content before the operation
+- `text`: The text content after the operation
+
+</APIItem>
 <APIItem name="primary" type="boolean" optional>
 Controls whether the editor is considered active by default when used with a PlateController.
 

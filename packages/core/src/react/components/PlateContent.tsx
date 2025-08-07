@@ -2,11 +2,13 @@ import React, { useRef } from 'react';
 
 import { useComposedRef } from '@udecode/react-utils';
 import { isDefined } from '@udecode/utils';
+import { useAtomStoreValue } from 'jotai-x';
 
 import type { EditableProps } from '../../lib/types/EditableProps';
 import type { PlateEditor } from '../editor';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import { SlateExtensionPlugin } from '../../lib';
 import { useEditableProps } from '../hooks';
 import { Editable } from '../slate-react';
 import {
@@ -178,6 +180,30 @@ function EditorStateEffect({
       store.setReadOnly(readOnly);
     }
   }, [disabled, editor.dom, readOnly, store]);
+
+  // Sync onNodeChange from store to SlateExtensionPlugin
+  const onNodeChange = useAtomStoreValue(store, 'onNodeChange');
+  React.useLayoutEffect(() => {
+    if (onNodeChange) {
+      editor.setOption(
+        SlateExtensionPlugin,
+        'onNodeChange',
+        onNodeChange as any
+      );
+    }
+  }, [editor, onNodeChange]);
+
+  // Sync onTextChange from store to SlateExtensionPlugin
+  const onTextChange = useAtomStoreValue(store, 'onTextChange');
+  React.useLayoutEffect(() => {
+    if (onTextChange) {
+      editor.setOption(
+        SlateExtensionPlugin,
+        'onTextChange',
+        onTextChange as any
+      );
+    }
+  }, [editor, onTextChange]);
 
   const prevReadOnly = React.useRef(readOnly);
 
