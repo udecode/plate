@@ -15,3 +15,5 @@ export * from './normalizeDescendantsToDocumentFragment';
 export * from './omitPluginContext';
 export * from './overridePluginsByKey';
 export * from './pipeInsertDataQuery';
+export * from './pipeOnNodeChange';
+export * from './pipeOnTextChange';

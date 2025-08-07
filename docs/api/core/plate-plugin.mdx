@@ -26,7 +26,49 @@ Extended properties used by the plugin as options.
 </APIItem>
 
 <APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
-Event handlers for various editor events, including `onChange`.
+Event handlers for various editor events.
+
+<APISubList>
+<APISubListItem parent="handlers" name="onChange" type="(editor: PlateEditor) => void" optional>
+Called whenever the editor content changes.
+</APISubListItem>
+<APISubListItem parent="handlers" name="onNodeChange" type="OnNodeChange" optional>
+Called whenever a node operation occurs (insert, remove, set, merge, split, move).
+
+```ts
+type OnNodeChange = (ctx: PlatePluginContext & {
+  node: Descendant;
+  operation: NodeOperation;
+  prevNode: Descendant;
+}) => HandlerReturnType;
+```
+
+**Parameters:**
+- `node`: The node after the operation
+- `operation`: The node operation that occurred
+- `prevNode`: The node before the operation
+
+**Note:** For `insert_node` and `remove_node` operations, both `node` and `prevNode` contain the same value to avoid null cases.
+</APISubListItem>
+<APISubListItem parent="handlers" name="onTextChange" type="OnTextChange" optional>
+Called whenever a text operation occurs (insert or remove text).
+
+```ts
+type OnTextChange = (ctx: PlatePluginContext & {
+  node: Descendant;
+  operation: TextOperation;
+  prevText: string;
+  text: string;
+}) => HandlerReturnType;
+```
+
+**Parameters:**
+- `node`: The parent node containing the text that changed
+- `operation`: The text operation that occurred (`insert_text` or `remove_text`)
+- `prevText`: The text content before the operation
+- `text`: The text content after the operation
+</APISubListItem>
+</APISubList>
 </APIItem>
 
 <APIItem name="inject" type="object">

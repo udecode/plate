@@ -1,4 +1,12 @@
-import type { NodeEntry, TRange, TSelection, ValueOf } from '@platejs/slate';
+import type {
+  Descendant,
+  NodeEntry,
+  NodeOperation,
+  TextOperation,
+  TRange,
+  TSelection,
+  ValueOf,
+} from '@platejs/slate';
 import type { Nullable } from '@udecode/utils';
 
 import type { EditableProps } from '../../../lib';
@@ -41,8 +49,23 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = Nullable<{
   versionValue: number;
   /** Controlled callback called when the editor state changes. */
   onChange: (options: { editor: E; value: ValueOf<E> }) => void;
+  /** Controlled callback called when a node operation is applied. */
+  onNodeChange: (options: {
+    editor: E;
+    node: Descendant;
+    operation: NodeOperation;
+    prevNode: Descendant;
+  }) => void;
   /** Controlled callback called when the editor.selection changes. */
   onSelectionChange: (options: { editor: E; selection: TSelection }) => void;
+  /** Controlled callback called when a text operation is applied. */
+  onTextChange: (options: {
+    editor: E;
+    node: Descendant;
+    operation: TextOperation;
+    prevText: string;
+    text: string;
+  }) => void;
   /** Controlled callback called when the editor.children changes. */
   onValueChange: (options: { editor: E; value: ValueOf<E> }) => void;
 }> & {

@@ -63,6 +63,48 @@ Controlled callback called when the editor.children changes.
 ```
 </APIItem>
 
+<APIItem name="onNodeChange" type="function" optional>
+Controlled callback called when a node operation occurs.
+
+```ts
+(options: { 
+  editor: PlateEditor; 
+  node: Descendant; 
+  operation: NodeOperation; 
+  prevNode: Descendant 
+}) => void
+```
+
+**Parameters:**
+- `editor`: The Plate editor instance
+- `node`: The node after the operation
+- `operation`: The node operation that occurred (insert, remove, set, merge, split, move)
+- `prevNode`: The node before the operation
+
+**Note:** For `insert_node` and `remove_node` operations, both `node` and `prevNode` contain the same value to avoid null cases.
+</APIItem>
+
+<APIItem name="onTextChange" type="function" optional>
+Controlled callback called when a text operation occurs.
+
+```ts
+(options: { 
+  editor: PlateEditor; 
+  node: Descendant; 
+  operation: TextOperation; 
+  prevText: string; 
+  text: string 
+}) => void
+```
+
+**Parameters:**
+- `editor`: The Plate editor instance
+- `node`: The parent node containing the text that changed
+- `operation`: The text operation that occurred (`insert_text` or `remove_text`)
+- `prevText`: The text content before the operation
+- `text`: The text content after the operation
+</APIItem>
+
 <APIItem name="primary" type="boolean" optional>
 Whether the editor is primary. If no editor is active, then PlateController will use the first-mounted primary editor.
 

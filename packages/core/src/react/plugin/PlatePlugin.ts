@@ -6,6 +6,8 @@ import type {
   EditorApi,
   EditorTransforms,
   NodeEntry,
+  NodeOperation,
+  TextOperation,
   Path,
   TElement,
   TText,
@@ -243,6 +245,31 @@ export type OnChange<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C> & { value: Value }
 ) => HandlerReturnType;
 
+/**
+ * Function called whenever a node operation occurs in the editor. Return `true`
+ * to prevent calling the next plugin handler.
+ */
+export type OnNodeChange<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: PlatePluginContext<C> & {
+    node: Descendant;
+    operation: NodeOperation;
+    prevNode: Descendant;
+  }
+) => HandlerReturnType;
+
+/**
+ * Function called whenever a text operation occurs in the editor. Return `true`
+ * to prevent calling the next plugin handler.
+ */
+export type OnTextChange<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: PlatePluginContext<C> & {
+    node: Descendant;
+    operation: TextOperation;
+    prevText: string;
+    text: string;
+  }
+) => HandlerReturnType;
+
 export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C>
 ) => {
@@ -333,6 +360,10 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         DOMHandlers<WithAnyKey<C>> & {
           /** @see {@link OnChange} */
           onChange?: OnChange<WithAnyKey<C>>;
+          /** @see {@link OnNodeChange} */
+          onNodeChange?: OnNodeChange<WithAnyKey<C>>;
+          /** @see {@link OnTextChange} */
+          onTextChange?: OnTextChange<WithAnyKey<C>>;
         }
       >;
       /** Plugin injection. */

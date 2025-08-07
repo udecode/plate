@@ -12,7 +12,9 @@ export interface PlateProps<E extends PlateEditor = PlateEditor>
       PlateStoreState<E>,
       | 'decorate'
       | 'onChange'
+      | 'onNodeChange'
       | 'onSelectionChange'
+      | 'onTextChange'
       | 'onValueChange'
       | 'primary'
       | 'readOnly'
@@ -40,7 +42,9 @@ function PlateInner({
   renderLeaf,
   scrollRef,
   onChange,
+  onNodeChange,
   onSelectionChange,
+  onTextChange,
   onValueChange,
 }: PlateProps & {
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -50,7 +54,9 @@ function PlateInner({
     <PlateStoreProvider
       readOnly={readOnly ?? editor?.dom.readOnly}
       onChange={onChange}
+      onNodeChange={onNodeChange}
       onSelectionChange={onSelectionChange}
+      onTextChange={onTextChange}
       onValueChange={onValueChange}
       containerRef={containerRef}
       decorate={decorate}

@@ -38,7 +38,9 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
   versionSelection = 1,
   versionValue = 1,
   onChange = null,
+  onNodeChange = null,
   onSelectionChange = null,
+  onTextChange = null,
   onValueChange = null,
   ...state
 }: Partial<PlateStoreState<E>> = {}) =>
@@ -61,7 +63,9 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
       versionSelection,
       versionValue,
       onChange,
+      onNodeChange,
       onSelectionChange,
+      onTextChange,
       onValueChange,
       ...state,
     } as PlateStoreState<E>,

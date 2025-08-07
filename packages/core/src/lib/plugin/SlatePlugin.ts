@@ -4,6 +4,8 @@ import type {
   EditorApi,
   EditorTransforms,
   NodeEntry,
+  NodeOperation,
+  TextOperation,
   Path,
   TElement,
   TText,
@@ -276,7 +278,23 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       normalizeInitialValue?: NormalizeInitialValue<WithAnyKey<C>>;
     }> &
     SlatePluginMethods<C> & {
-      handlers: Nullable<{}>;
+      handlers: Nullable<{
+        onNodeChange?: (
+          ctx: SlatePluginContext<C> & {
+            node: Descendant;
+            operation: NodeOperation;
+            prevNode: Descendant;
+          }
+        ) => HandlerReturnType;
+        onTextChange?: (
+          ctx: SlatePluginContext<C> & {
+            node: Descendant;
+            operation: TextOperation;
+            prevText: string;
+            text: string;
+          }
+        ) => HandlerReturnType;
+      }>;
       inject: Nullable<{
         nodeProps?: InjectNodeProps<WithAnyKey<C>>;
         plugins?: Record<string, PartialEditorPlugin<AnyPluginConfig>>;

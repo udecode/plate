@@ -33,6 +33,8 @@ export const resolvePlugins = (
     decorate: [],
     handlers: {
       onChange: [],
+      onNodeChange: [],
+      onTextChange: [],
     },
     inject: {
       nodeProps: [],
@@ -170,6 +172,12 @@ export const resolvePlugins = (
 
     if ((plugin as any).handlers?.onChange) {
       editor.meta.pluginCache.handlers.onChange.push(plugin.key);
+    }
+    if ((plugin as any).handlers?.onNodeChange) {
+      editor.meta.pluginCache.handlers.onNodeChange.push(plugin.key);
+    }
+    if ((plugin as any).handlers?.onTextChange) {
+      editor.meta.pluginCache.handlers.onTextChange.push(plugin.key);
     }
   });
 
