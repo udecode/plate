@@ -29,7 +29,11 @@ export const ParserPlugin = createSlatePlugin({
         for (const mimeType of mimeTypeList) {
           let data = dataTransfer.getData(mimeType);
 
-          if (!data) continue;
+          if (
+            (mimeType !== 'Files' && !data) ||
+            (mimeType === 'Files' && dataTransfer.files.length === 0)
+          )
+            continue;
           if (
             !pipeInsertDataQuery(editor, injectedPlugins, {
               data,
