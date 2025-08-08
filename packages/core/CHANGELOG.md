@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.2.9
+
+### Patch Changes
+
+- [#4553](https://github.com/udecode/plate/pull/4553) by [@delijah](https://github.com/delijah) – Allow to use either `format` OR `mimeTypes` option on `ParserPlugin` and also pass `File` mime type to parsers
+
 ## 49.2.8
 
 ### Patch Changes
