@@ -16,7 +16,7 @@ describe('onDropNode', () => {
   editor.tf.moveNodes = jest.fn();
   editor.tf.focus = jest.fn();
   editor.api.findPath = jest.fn();
-  const monitor = {} as DropTargetMonitor;
+  const monitor = { canDrop: () => true } as DropTargetMonitor;
   const nodeRef = {};
   const dragElement = { id: 'drag' } as unknown as TElement;
   const dragItem: DragItemNode = { id: 'drag', element: dragElement };
