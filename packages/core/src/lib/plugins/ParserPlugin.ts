@@ -18,10 +18,10 @@ export const ParserPlugin = createSlatePlugin({
         const injectedPlugins = getInjectedPlugins(editor, plugin);
         const { deserialize, format, mimeTypes } = parser;
 
-        if (!format) return false;
+        if (!format && !mimeTypes) return false;
 
         // Handle both string and string[] formats
-        const formats = Array.isArray(format) ? format : [format];
+        const formats = format && Array.isArray(format) ? format : [format];
         const mimeTypeList =
           mimeTypes ||
           formats.map((fmt) => (fmt.includes('/') ? fmt : `text/${fmt}`));
