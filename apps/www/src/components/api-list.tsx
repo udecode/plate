@@ -207,9 +207,8 @@ export function APIList({
 }: APIListProps) {
   const { name } = React.useContext(APIContext);
   const childCount = React.Children.count(children);
-  const hasItems = React.Children.toArray(children).some(
-    (child) => (child as any)?.type?._payload?.value?.displayName === 'APIItem'
-  );
+  // Always assume we have APIItems if we have children
+  const hasItems = childCount > 0;
   const newValues = Array.from(Array.from({ length: childCount }).keys()).map(
     (i) => i.toString()
   );
