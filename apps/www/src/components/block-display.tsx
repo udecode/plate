@@ -4,16 +4,21 @@ import type { RegistryItem, registryItemFileSchema } from "shadcn/registry"
 import type { z } from "zod"
 
 import { BlockViewer } from "@/components/block-viewer"
-import { ComponentPreview } from "@/components/component-preview"
+import { ComponentPreviewInternal } from "@/components/component-preview-internal"
 import { highlightCode } from "@/lib/highlight-code"
 import { createFileTreeForRegistryItemFiles, getRegistryItem } from "@/lib/rehype-utils"
 import { cn } from "@/lib/utils"
 
+export interface BlockDisplayProps {
+  item: RegistryItem
+  name: string
+  block?: boolean
+}
 
-export async function BlockDisplay({ item: itemProp, name, ...props }: { id: string, item: RegistryItem; name: string, block?: boolean, }) {
+export async function BlockDisplay({ block = true, item: itemProp, name }: BlockDisplayProps) {
   const item = itemProp ?? await getCachedRegistryItem(name)
 
-  if (!item?.files && !item.meta?.isPro) {
+  if (!item?.files && !item?.meta?.isPro) {
     return null
   }
 
@@ -23,9 +28,9 @@ export async function BlockDisplay({ item: itemProp, name, ...props }: { id: str
   ]) : [null, null]
 
   return (
-    <BlockViewer highlightedFiles={highlightedFiles} item={item} tree={tree}
+    <BlockViewer blocks={block} highlightedFiles={highlightedFiles} item={item} tree={tree}
     >
-      <ComponentPreview
+      <ComponentPreviewInternal
         name={item.name}
         className={cn(
           "my-0 **:[.preview]:h-auto **:[.preview]:p-4 **:[.preview>.p-6]:p-0",

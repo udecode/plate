@@ -13,7 +13,7 @@ import { notFound } from "next/navigation"
 
 import { DocContent } from "@/app/(app)/docs/[[...slug]]/doc-content"
 import { ComponentInstallation } from "@/components/component-installation"
-import { ComponentPreview } from "@/components/component-preview"
+import { ComponentPreviewInternal } from "@/components/component-preview-internal"
 import { DocsTableOfContents } from "@/components/docs-toc"
 import { mdxComponents } from "@/components/mdx-components"
 import { badgeVariants } from "@/components/ui/badge"
@@ -239,12 +239,8 @@ export default async function Page(props: DocPageProps) {
             usage={file.meta?.usage}
           />
         ) : (
-          <ComponentPreview
+          <ComponentPreviewInternal
             name={file.name}
-            dependencies={dependencies}
-            highlightedFiles={highlightedFiles}
-            item={item}
-            tree={tree}
           />
         )}
       </DocContent>

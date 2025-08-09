@@ -27,10 +27,12 @@ import Link from "next/link"
 
 import { Index } from "@/__registry__"
 import { getIconForLanguageExtension } from "@/components/icons"
+import { siteConfig } from "@/config/site"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { trackEvent } from "@/lib/events"
+import { cn } from "@/lib/utils"
 
-import { Button } from "./ui/button"
+import { Button, buttonVariants } from "./ui/button"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "./ui/resizable"
 import { Sidebar, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarProvider } from "./ui/sidebar"
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs"
@@ -49,6 +51,7 @@ type BlockViewerContext = {
   view: "code" | "preview"
   setActiveFile: (file: string) => void
   setView: (view: "code" | "preview") => void
+  blocks?: boolean
   iframeKey?: number
   setIframeKey?: React.Dispatch<React.SetStateAction<number>>
 }
@@ -64,11 +67,12 @@ function useBlockViewer() {
 }
 
 function BlockViewerProvider({
+  blocks,
   children,
   highlightedFiles,
   item,
   tree,
-}: Pick<BlockViewerContext, "highlightedFiles" | "item" | "tree"> & {
+}: Pick<BlockViewerContext, "blocks" | "highlightedFiles" | "item" | "tree"> & {
   children: React.ReactNode
 }) {
   const [view, setView] = React.useState<BlockViewerContext["view"]>("preview")
@@ -82,6 +86,7 @@ function BlockViewerProvider({
     <BlockViewerContext.Provider
       value={{
         activeFile,
+        blocks,
         highlightedFiles,
         iframeKey,
         item,
@@ -110,94 +115,142 @@ function BlockViewerProvider({
 }
 
 function BlockViewerToolbar() {
-  const { item, resizablePanelRef, setIframeKey, setView, view } =
+  const { blocks, item, resizablePanelRef, setIframeKey, setView, view } =
     useBlockViewer()
+
+
   const { copyToClipboard, isCopied } = useCopyToClipboard()
 
+  const isPro = item?.meta?.isPro
+
   return (
-    <div className="hidden w-full items-center gap-2 pl-2 md:pr-6 lg:flex">
+    <div className="hidden w-full items-center gap-2 pl-2 py-1 md:pr-6 lg:flex">
       <Tabs
         value={view}
         onValueChange={(value) => setView(value as "code" | "preview")}
       >
-        <TabsList className="grid h-8 grid-cols-2 items-center rounded-md p-1 *:data-[slot=tabs-trigger]:h-6 *:data-[slot=tabs-trigger]:rounded-sm *:data-[slot=tabs-trigger]:px-2 *:data-[slot=tabs-trigger]:text-xs">
+        <TabsList className={cn("grid h-8 items-center rounded-md p-1 *:data-[slot=tabs-trigger]:h-6 *:data-[slot=tabs-trigger]:rounded-sm *:data-[slot=tabs-trigger]:px-2 *:data-[slot=tabs-trigger]:text-xs",
+          isPro ? "grid-cols-1" : "grid-cols-2"
+        )}>
           <TabsTrigger value="preview">Preview</TabsTrigger>
-          <TabsTrigger value="code">Code</TabsTrigger>
+          {!isPro && <TabsTrigger value="code">Code</TabsTrigger>}
         </TabsList>
       </Tabs>
       <Separator orientation="vertical" className="mx-2 !h-4" />
-      <a
-        className="flex-1 text-center text-sm font-medium underline-offset-2 hover:underline md:flex-auto md:text-left"
-        href={`#${item.name}`}
-      >
-        {item.description?.replace(/\.$/, "")}
-      </a>
-      <div className="ml-auto flex items-center gap-2">
-        <div className="h-8 items-center gap-1.5 rounded-md border p-1 shadow-none">
-          <ToggleGroup
-            className="gap-1 *:data-[slot=toggle-group-item]:!size-6 *:data-[slot=toggle-group-item]:!rounded-sm"
-            defaultValue="100"
-            onValueChange={(value) => {
-              setView("preview")
-              if (resizablePanelRef?.current) {
-                resizablePanelRef.current.resize(Number.parseInt(value))
-              }
-            }}
-            type="single"
+
+      {
+        blocks && (
+          <a
+            className="flex-1 text-center text-sm font-medium underline-offset-2 hover:underline md:flex-auto md:text-left"
+            href={`#${item.name}`}
           >
-            <ToggleGroupItem value="100" title="Desktop">
-              <Monitor />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="60" title="Tablet">
-              <Tablet />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="30" title="Mobile">
-              <Smartphone />
-            </ToggleGroupItem>
-            <Separator orientation="vertical" className="!h-4" />
-            <Button
-              asChild
-              size="icon"
-              variant="ghost"
-              className="size-6 rounded-sm p-0"
-              title="Open in New Tab"
-            >
-              <Link href={`/blocks/${item.name}`} target="_blank">
-                <span className="sr-only">Open in New Tab</span>
-                <Fullscreen />
-              </Link>
-            </Button>
-            <Separator orientation="vertical" className="!h-4" />
-            <Button
-              size="icon"
-              variant="ghost"
-              className="size-6 rounded-sm p-0"
-              onClick={() => {
-                if (setIframeKey) {
-                  setIframeKey((k) => k + 1)
-                }
-              }}
-              title="Refresh Preview"
-            >
-              <RotateCw />
-              <span className="sr-only">Refresh Preview</span>
-            </Button>
-          </ToggleGroup>
-        </div>
-        <Separator orientation="vertical" className="mx-1 !h-4" />
-        <Button
-          size="sm"
-          variant="outline"
-          className="w-fit gap-1 px-2 shadow-none"
-          onClick={() => {
-            copyToClipboard(`npx shadcn@latest add ${item.name}`)
-          }}
+            {item.description?.replace(/\.$/, "")}
+          </a>
+        )
+      }
+
+      {isPro ? (
+        <Link
+          className={cn(
+            buttonVariants(),
+            'group relative flex justify-start gap-2 overflow-hidden rounded-sm whitespace-pre',
+            'dark:bg-muted dark:text-foreground',
+            'hover:ring-2 hover:ring-primary hover:ring-offset-2',
+            'transition-all duration-300 ease-out',
+            'h-[26px] px-2 text-xs'
+          )}
+          href={item.meta?.descriptionSrc ?? siteConfig.links.potionIframe}
+          target="_blank"
         >
-          {isCopied ? <Check /> : <Terminal />}
-          <span>npx shadcn@latest add {item.name}</span>
-        </Button>
-        <Separator orientation="vertical" className="mx-1 !h-4" />
-      </div>
+          <span
+            className={cn(
+              'absolute right-0 -mt-12 h-32 w-8 translate-x-12 rotate-12',
+              'bg-white opacity-10',
+              'transition-all duration-1000 ease-out'
+            )}
+          />
+          Get the code
+        </Link>
+      ) :
+        (
+          <div className="ml-auto flex items-center gap-2">
+            {
+              blocks && (
+                <React.Fragment>
+                  <div className="h-8 items-center gap-1.5 rounded-md border p-1 shadow-none">
+                    <ToggleGroup
+                      className="gap-1 *:data-[slot=toggle-group-item]:!size-6 *:data-[slot=toggle-group-item]:!rounded-sm"
+                      defaultValue="100"
+                      onValueChange={(value) => {
+                        setView("preview")
+                        if (resizablePanelRef?.current) {
+                          resizablePanelRef.current.resize(Number.parseInt(value))
+                        }
+                      }}
+                      type="single"
+                    >
+                      <ToggleGroupItem value="100" title="Desktop">
+                        <Monitor />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="60" title="Tablet">
+                        <Tablet />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="30" title="Mobile">
+                        <Smartphone />
+                      </ToggleGroupItem>
+                      <Separator orientation="vertical" className="!h-4" />
+                      <Button
+                        asChild
+                        size="icon"
+                        variant="ghost"
+                        className="size-6 rounded-sm p-0"
+                        title="Open in New Tab"
+                      >
+                        <Link href={`/blocks/${item.name}`} target="_blank">
+                          <span className="sr-only">Open in New Tab</span>
+                          <Fullscreen />
+                        </Link>
+                      </Button>
+                      <Separator orientation="vertical" className="!h-4" />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-6 rounded-sm p-0"
+                        onClick={() => {
+                          if (setIframeKey) {
+                            setIframeKey((k) => k + 1)
+                          }
+                        }}
+                        title="Refresh Preview"
+                      >
+                        <RotateCw />
+                        <span className="sr-only">Refresh Preview</span>
+                      </Button>
+                    </ToggleGroup>
+                  </div>
+                  <Separator orientation="vertical" className="mx-1 !h-4" />
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-fit gap-1 px-2 shadow-none"
+                    onClick={() => {
+                      copyToClipboard(`npx shadcn@latest add ${item.name}`)
+                    }}
+                  >
+                    {isCopied ? <Check /> : <Terminal />}
+                    <span>npx shadcn@latest add {item.name}</span>
+                  </Button>
+                  <Separator orientation="vertical" className="mx-1 !h-4" />
+                </React.Fragment>
+              )
+            }
+
+
+          </div>
+        )
+      }
+
     </div>
   )
 }
@@ -205,16 +258,13 @@ function BlockViewerToolbar() {
 function BlockViewerIframe() {
   const { iframeKey, item } = useBlockViewer()
 
-  console.log("🚀 ~ BlockViewerIframe ~ item:", item)
-
-
   const Preview = React.useMemo(() => {
 
-    if(item.meta?.isPro) return null
+    if (item.meta?.isPro) return null
 
     const Component = Index[item.name]?.component;
 
-    if (!Component ) {
+    if (!Component) {
       return (
         <p className="text-sm text-muted-foreground">
           Component{' '}
@@ -484,6 +534,7 @@ function BlockViewer({
 }) {
   return (
     <BlockViewerProvider
+      blocks={blocks}
       highlightedFiles={highlightedFiles}
       item={item}
       tree={tree}

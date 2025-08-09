@@ -30,7 +30,7 @@ export function ComponentPreviewPro({
       {...props}
     >
       {description && <Markdown>{description}</Markdown>}
-123
+      
       <BlockDisplay
         id={id}
         name={name ?? ''}
