@@ -103,7 +103,7 @@ function BlockViewerProvider({
         className="group/block-view-wrapper flex min-w-0 scroll-mt-24 flex-col-reverse items-stretch gap-4 overflow-hidden md:flex-col"
         style={
           {
-            "--height": item.meta?.iframeHeight ?? "930px",
+            "--height": item.meta?.iframeHeight ?? "650px",
           } as React.CSSProperties
         }
         data-view={view}
@@ -256,7 +256,7 @@ function BlockViewerToolbar() {
 }
 
 function BlockViewerIframe() {
-  const { iframeKey, item } = useBlockViewer()
+  const { blocks, iframeKey, item } = useBlockViewer()
 
   const Preview = React.useMemo(() => {
 
@@ -283,7 +283,7 @@ function BlockViewerIframe() {
   return (
     Preview ?? <iframe
       key={iframeKey}
-      className={cn('chunk-mode relative z-20 size-full bg-background', item.meta?.isPro && '!h-screen')}
+      className={cn('chunk-mode relative z-20 size-full bg-background min-h-(--height)', item.meta?.isPro && blocks && '!h-screen')}
       title={item.name}
       height={item.meta?.iframeHeight ?? '100%'}
       sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
@@ -296,7 +296,7 @@ function BlockViewerView() {
   const { blocks, resizablePanelRef } = useBlockViewer()
 
   return (
-    <div className={cn("hidden group-data-[view=code]/block-view-wrapper:hidden lg:flex !h-fit")}>
+    <div className={cn("hidden group-data-[view=code]/block-view-wrapper:hidden lg:flex")}>
       <div className="relative grid w-full gap-4">
         <div className="absolute inset-0 right-4 [background-image:radial-gradient(#d4d4d4_1px,transparent_1px)] [background-size:20px_20px] dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]"></div>
         <ResizablePanelGroup
@@ -305,7 +305,7 @@ function BlockViewerView() {
         >
           <ResizablePanel
             ref={resizablePanelRef}
-            className="bg-background relative !h-fit aspect-[4/2.5] overflow-hidden rounded-lg border md:aspect-auto md:rounded-xl z-10"
+            className="bg-background relative aspect-[4/2.5] overflow-hidden rounded-lg border md:aspect-auto md:rounded-xl z-10"
             defaultSize={100}
             minSize={30}
           >

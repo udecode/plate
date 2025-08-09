@@ -79,7 +79,8 @@ export function PotionLazyBlock() {
     <div ref={ref}>
       {shouldRender && (
         <BlockViewer
-          dependencies={[]}
+          // eslint-disable-next-line react/no-children-prop
+          children={null}
           highlightedFiles={[]}
           item={block}
           tree={[]}
