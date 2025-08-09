@@ -11,12 +11,13 @@ import { cn } from "@/lib/utils"
 
 export interface BlockDisplayProps {
   item: RegistryItem
-  name: string
   block?: boolean
+  name?: string
 }
 
 export async function BlockDisplay({ block = true, item: itemProp, name }: BlockDisplayProps) {
-  const item = itemProp ?? await getCachedRegistryItem(name)
+  const effectiveName = name ?? itemProp?.name ?? '';
+  const item = itemProp ?? await getCachedRegistryItem(effectiveName)
 
   if (!item?.files && !item?.meta?.isPro) {
     return null

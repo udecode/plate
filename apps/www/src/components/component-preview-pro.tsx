@@ -32,8 +32,6 @@ export function ComponentPreviewPro({
       {description && <Markdown>{description}</Markdown>}
       
       <BlockDisplay
-        id={id}
-        name={name ?? ''}
         block={false}
         item={{
           meta: {

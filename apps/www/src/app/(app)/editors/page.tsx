@@ -27,11 +27,11 @@ export default async function BlocksPage() {
     <div className="gap-3 md:flex md:flex-row-reverse md:items-start">
       <div className="grid flex-1 gap-12 md:gap-24 lg:gap-48">
         {blocks.map((block) => (
-          <BlockDisplay name={block.name} key={block.name} />
+          <BlockDisplay key={block.name} item={block} />
         ))}
 
         <div className="relative scroll-m-16 pb-48">
-          <BlockDisplay name={potionBlock.name} />
+          <BlockDisplay item={potionBlock} />
         </div>
       </div>
     </div>

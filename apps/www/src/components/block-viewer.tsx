@@ -78,7 +78,7 @@ function BlockViewerProvider({
   const [view, setView] = React.useState<BlockViewerContext["view"]>("preview")
   const [activeFile, setActiveFile] = React.useState<
     BlockViewerContext["activeFile"]
-  >(highlightedFiles?.[0].target ?? null)
+  >(highlightedFiles?.[0]?.target ?? null)
   const resizablePanelRef = React.useRef<ImperativePanelHandle>(null)
   const [iframeKey, setIframeKey] = React.useState(0)
 
@@ -283,7 +283,7 @@ function BlockViewerIframe() {
   return (
     Preview ?? <iframe
       key={iframeKey}
-      className="chunk-mode relative z-20 size-full bg-background"
+      className={cn('chunk-mode relative z-20 size-full bg-background', item.meta?.isPro && '!h-screen')}
       title={item.name}
       height={item.meta?.iframeHeight ?? '100%'}
       sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
@@ -293,10 +293,10 @@ function BlockViewerIframe() {
 }
 
 function BlockViewerView() {
-  const { resizablePanelRef } = useBlockViewer()
+  const { blocks, resizablePanelRef } = useBlockViewer()
 
   return (
-    <div className="hidden group-data-[view=code]/block-view-wrapper:hidden md:h-(--height) lg:flex">
+    <div className={cn("hidden group-data-[view=code]/block-view-wrapper:hidden lg:flex !h-fit")}>
       <div className="relative grid w-full gap-4">
         <div className="absolute inset-0 right-4 [background-image:radial-gradient(#d4d4d4_1px,transparent_1px)] [background-size:20px_20px] dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]"></div>
         <ResizablePanelGroup
@@ -305,7 +305,7 @@ function BlockViewerView() {
         >
           <ResizablePanel
             ref={resizablePanelRef}
-            className="bg-background relative aspect-[4/2.5] overflow-hidden rounded-lg border md:aspect-auto md:rounded-xl z-10"
+            className="bg-background relative !h-fit aspect-[4/2.5] overflow-hidden rounded-lg border md:aspect-auto md:rounded-xl z-10"
             defaultSize={100}
             minSize={30}
           >
