@@ -94,17 +94,14 @@ export async function highlightCode(code: string, language = 'tsx') {
         root(node) {
           // Wrap in figure element like rehype-pretty-code
           return {
-            type: 'root',
             children: [
               {
-                type: 'element',
-                tagName: 'figure',
-                properties: {
-                  'data-rehype-pretty-code-figure': '',
-                },
                 children: node.children as any,
+                tagName: 'figure',
+                type: 'element',
               },
             ],
+            type: 'root',
           } as any;
         },
       } as ShikiTransformer,

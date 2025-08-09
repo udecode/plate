@@ -413,7 +413,7 @@ export function BlockViewerFileTree() {
         <SidebarGroupLabel className="h-12 rounded-none border-b px-4 text-sm">
           Files
         </SidebarGroupLabel>
-        <SidebarGroup className="p-0">
+        <SidebarGroup className="p-0 overflow-y-auto">
           <SidebarGroupContent>
             <SidebarMenu className="translate-x-0 gap-1.5">
               {tree.map((file, index) => (
