@@ -1,5 +1,11 @@
 # @platejs/dnd
 
+## 49.2.10
+
+### Patch Changes
+
+- [#4555](https://github.com/udecode/plate/pull/4555) by [@delijah](https://github.com/delijah) – Respect `canDrop` option of `react-dnd`
+
 ## 49.2.7
 
 ### Patch Changes
