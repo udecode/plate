@@ -72,7 +72,7 @@ export const registryComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@ai-sdk/react', '@faker-js/faker'],
+    dependencies: ['@ai-sdk/react@1', '@faker-js/faker'],
     files: [
       {
         path: 'components/editor/use-chat.ts',
