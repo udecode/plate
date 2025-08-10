@@ -6,7 +6,7 @@ import { codeToHtml } from 'shiki';
 export async function highlightFiles(
   files?: z.infer<typeof registryItemFileSchema>[]
 ) {
-  if (!files) {
+  if (!files || files.length === 0) {
     return null;
   }
 

@@ -13,7 +13,7 @@ import { notFound } from "next/navigation"
 
 import { DocContent } from "@/app/(app)/docs/[[...slug]]/doc-content"
 import { ComponentInstallation } from "@/components/component-installation"
-import { ComponentPreviewInternal } from "@/components/component-preview-internal"
+import { ComponentPreview } from '@/components/component-preview'
 import { DocsTableOfContents } from "@/components/docs-toc"
 import { LLMCopyButton } from '@/components/llm-copy-button'
 import { mdxComponents } from "@/components/mdx-components"
@@ -44,6 +44,67 @@ export const dynamic = "force-static"
 export const dynamicParams = true
 
 const registryNames = new Set(registry.items.map((item) => item.name))
+
+// Helper function to filter page tree by locale
+function filterPageTreeByLocale(pageTree: any, isChinese: boolean): any {
+  if (!pageTree) return pageTree
+  
+  // Filter children array recursively
+  const filterChildren = (children: any[]): any[] => {
+    if (!children) return []
+    
+    return children
+      .map((node: any) => {
+        // Handle separator nodes
+        if (node.type === 'separator') {
+          return node
+        }
+        
+        // Handle folder nodes
+        if (node.type === 'folder') {
+          const filteredChildren = filterChildren(node.children)
+          // Only include folder if it has children after filtering
+          if (filteredChildren.length === 0 && !node.index) {
+            return null
+          }
+          
+          // Check if folder index should be filtered
+          if (node.index?.url) {
+            const isChineseNode = node.index.url.includes('.cn')
+            if (isChinese !== isChineseNode) {
+              // Filter out the index but keep the folder if it has other valid children
+              return {
+                ...node,
+                children: filteredChildren,
+                index: undefined
+              }
+            }
+          }
+          
+          return {
+            ...node,
+            children: filteredChildren
+          }
+        }
+        
+        // Handle page nodes
+        if (node.url) {
+          const isChineseNode = node.url.includes('.cn')
+          if (isChinese !== isChineseNode) {
+            return null
+          }
+        }
+        
+        return node
+      })
+      .filter(Boolean) // Remove null entries
+  }
+  
+  return {
+    ...pageTree,
+    children: filterChildren(pageTree.children)
+  }
+}
 
 export function generateStaticParams() {
   return docsSource.generateParams()
@@ -241,8 +302,9 @@ export default async function Page(props: DocPageProps) {
             usage={file.meta?.usage}
           />
         ) : (
-          <ComponentPreviewInternal
+          <ComponentPreview
             name={file.name}
+            item={item}
           />
         )}
       </DocContent>
@@ -251,7 +313,11 @@ export default async function Page(props: DocPageProps) {
 
   const doc = page.data
   const MDX = doc.body
-  const neighbours = findNeighbour(docsSource.pageTree, page.url)
+  
+  // Filter neighbors to only include same language pages
+  const isChinese = page.url.includes('.cn')
+  const filteredPageTree = filterPageTreeByLocale(docsSource.pageTree, isChinese)
+  const neighbours = findNeighbour(filteredPageTree, page.url)
 
   // Add description from docsMap if not present
   if (!doc.description) {
@@ -282,7 +348,8 @@ export default async function Page(props: DocPageProps) {
                 <h1 className="scroll-m-20 text-4xl font-semibold tracking-tight sm:text-3xl xl:text-4xl">
                   {doc.title}
                 </h1>
-                <div className="flex items-center gap-2 pt-1.5">
+                {/* TODO: FIX */}
+                {/* <div className="flex items-center gap-2 pt-1.5">
                   {neighbours.previous && (
                     <Button
                       asChild
@@ -309,7 +376,7 @@ export default async function Page(props: DocPageProps) {
                       </Link>
                     </Button>
                   )}
-                </div>
+                </div> */}
               </div>
               {doc.description && (
                 <p className="text-muted-foreground text-[1.05rem] text-balance sm:text-base">

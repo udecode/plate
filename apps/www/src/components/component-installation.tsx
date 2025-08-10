@@ -44,6 +44,7 @@ export async function ComponentInstallation({
   usage,
   ...props
 }: ComponentInstallationProps) {
+  // Special handling for API route items
   const dependencies =
     props.dependencies ?? getAllDependencies(name) ?? JSON.parse(__registryDependencies__);
 

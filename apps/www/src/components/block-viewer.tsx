@@ -555,7 +555,7 @@ function BlockViewer({
           <BlockViewerCode />
         </React.Fragment>
       }
-      <BlockViewerMobile>{children}</BlockViewerMobile>
+      {/* <BlockViewerMobile>{children}</BlockViewerMobile> */}
     </BlockViewerProvider>
   )
 }
