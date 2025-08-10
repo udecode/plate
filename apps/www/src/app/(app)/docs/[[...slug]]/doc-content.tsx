@@ -139,7 +139,7 @@ export function DocContent({
                 </p>
               )}
             </div>
-
+            
             {/* Copy Markdown and View Options */}
             {doc?.slug && doc?.body?.raw && (
               <div className="flex flex-row items-center gap-2">

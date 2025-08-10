@@ -69,13 +69,15 @@ function useBlockViewer() {
 function BlockViewerProvider({
   blocks,
   children,
+  codeOnly,
   highlightedFiles,
   item,
   tree,
 }: Pick<BlockViewerContext, "blocks" | "highlightedFiles" | "item" | "tree"> & {
   children: React.ReactNode
+  codeOnly?: boolean
 }) {
-  const [view, setView] = React.useState<BlockViewerContext["view"]>("preview")
+  const [view, setView] = React.useState<BlockViewerContext["view"]>(codeOnly ? "code" : "preview")
   const [activeFile, setActiveFile] = React.useState<
     BlockViewerContext["activeFile"]
   >(highlightedFiles?.[0]?.target ?? null)
@@ -124,7 +126,7 @@ function BlockViewerToolbar() {
   const isPro = item?.meta?.isPro
 
   return (
-    <div className="hidden w-full items-center gap-2 pl-2 py-1 md:pr-6 lg:flex">
+    <div className="hidden w-full items-center justify-between gap-2 pl-2 py-1 md:pr-6 lg:flex">
       <Tabs
         value={view}
         onValueChange={(value) => setView(value as "code" | "preview")}
@@ -522,27 +524,37 @@ function BlockCopyCodeButton() {
 function BlockViewer({
   blocks = true,
   children,
+  codeOnly = false,
   highlightedFiles,
   item,
   preview,
   tree,
   ...props
 }: Pick<BlockViewerContext, "highlightedFiles" | "item" | "tree"> & {
-  children: React.ReactNode
   blocks?: boolean
+  children?: React.ReactNode
+  codeOnly?: boolean
   preview?: React.ReactNode
 }) {
   return (
     <BlockViewerProvider
       blocks={blocks}
+      codeOnly={codeOnly}
       highlightedFiles={highlightedFiles}
       item={item}
       tree={tree}
       {...props}
     >
-      <BlockViewerToolbar />
-      <BlockViewerView />
-      <BlockViewerCode />
+      {codeOnly ?
+        <React.Fragment>
+          <BlockViewerCode />
+        </React.Fragment>
+        : <React.Fragment>
+          <BlockViewerToolbar />
+          <BlockViewerView />
+          <BlockViewerCode />
+        </React.Fragment>
+      }
       <BlockViewerMobile>{children}</BlockViewerMobile>
     </BlockViewerProvider>
   )

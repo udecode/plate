@@ -12,10 +12,11 @@ import { cn } from "@/lib/utils"
 export interface BlockDisplayProps {
   item: RegistryItem
   block?: boolean
+  codeOnly?: boolean
   name?: string
 }
 
-export async function BlockDisplay({ block = true, item: itemProp, name }: BlockDisplayProps) {
+export async function BlockDisplay({ block = true, codeOnly, item: itemProp, name }: BlockDisplayProps) {
   const effectiveName = name ?? itemProp?.name ?? '';
   const item = itemProp ?? await getCachedRegistryItem(effectiveName)
 
@@ -29,7 +30,7 @@ export async function BlockDisplay({ block = true, item: itemProp, name }: Block
   ]) : [null, null]
 
   return (
-    <BlockViewer blocks={block} highlightedFiles={highlightedFiles} item={item} tree={tree}
+    <BlockViewer blocks={block} codeOnly={codeOnly} highlightedFiles={highlightedFiles} item={item} tree={tree}
     >
       <ComponentPreviewInternal
         name={item.name}

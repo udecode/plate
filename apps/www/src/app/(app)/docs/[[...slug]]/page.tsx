@@ -15,9 +15,11 @@ import { DocContent } from "@/app/(app)/docs/[[...slug]]/doc-content"
 import { ComponentInstallation } from "@/components/component-installation"
 import { ComponentPreviewInternal } from "@/components/component-preview-internal"
 import { DocsTableOfContents } from "@/components/docs-toc"
+import { LLMCopyButton } from '@/components/llm-copy-button'
 import { mdxComponents } from "@/components/mdx-components"
 import { badgeVariants } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { ViewOptions } from '@/components/view-options'
 import { docsMap } from "@/config/docs"
 import { slugToCategory } from "@/config/docs-utils"
 import { siteConfig } from "@/config/site"
@@ -56,7 +58,7 @@ interface DocPageProps {
 async function getDocFromParams({ params, searchParams }: DocPageProps) {
   const locale = (await searchParams).locale
   const slugParam = (await params).slug
-  
+
   // Handle index page
   if (!slugParam || slugParam.length === 0) {
     if (locale === 'cn') {
@@ -94,7 +96,7 @@ export async function generateMetadata({
     title = doc.title
     description = doc.description
     slug = page.url
-    
+
     // Add locale param for Chinese
     const locale = (await searchParams).locale
     if (locale === 'cn') {
@@ -113,7 +115,7 @@ export async function generateMetadata({
       docName += '-demo'
       file = registryExamples.find((c) => c.name === docName)
     }
-    
+
     if (!docName || !file) {
       return {}
     }
@@ -170,7 +172,7 @@ export default async function Page(props: DocPageProps) {
     npm: '',
     source: '',
   }
-  
+
   if (!page) {
     // Handle component and example pages from registry when no MDX exists
     const slugParam = params.slug
@@ -183,7 +185,7 @@ export default async function Page(props: DocPageProps) {
       docName += '-demo'
       file = registryExamples.find((c) => c.name === docName)
     }
-    
+
     if (!docName || !file) {
       notFound()
     }
@@ -210,12 +212,12 @@ export default async function Page(props: DocPageProps) {
       getCachedFileTree(item.files),
       getCachedHighlightedFiles(item.files as any),
       file.meta?.examples
-        ? Promise.all(
-            file.meta.examples.map(
-              async (ex: string) => await getExampleCode(ex)
-            )
-          )
-        : undefined,
+      ? Promise.all(
+        file.meta.examples.map(
+          async (ex: string) => await getExampleCode(ex)
+        )
+      )
+      : undefined,
     ])
 
     return (
@@ -250,14 +252,14 @@ export default async function Page(props: DocPageProps) {
   const doc = page.data
   const MDX = doc.body
   const neighbours = findNeighbour(docsSource.pageTree, page.url)
-  
+
   // Add description from docsMap if not present
   if (!doc.description) {
     doc.description = docsMap[page.url]?.description
   }
 
   const toc = doc.toc || []
-  
+
   // Helper to add locale to URLs
   const addLocaleToUrl = (url: string) => {
     if (locale === 'cn') {
@@ -315,6 +317,20 @@ export default async function Page(props: DocPageProps) {
                 </p>
               )}
             </div>
+
+            <div className="flex flex-row items-center gap-2">
+              <LLMCopyButton
+                title={doc.title}
+                content={doc.content}
+                docUrl={`https://platejs.org${params.slug}`}
+              />
+              <ViewOptions
+                title={doc.title}
+                content={doc.content}
+                docUrl={`https://platejs.org${params.slug}`}
+              />
+            </div>
+
             {doc?.docs ? (
               <div className="flex flex-wrap items-center gap-1">
                 {/* {doc?.links?.doc && (
