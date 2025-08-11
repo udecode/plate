@@ -16,6 +16,7 @@ import {
   useEditorRef,
   useEditorSelector,
   useElement,
+  useFocusedLast,
   useReadOnly,
   useRemoveNodeButton,
   useSelected,
@@ -45,30 +46,32 @@ export function MediaToolbar({
   const editor = useEditorRef();
   const readOnly = useReadOnly();
   const selected = useSelected();
-
+  const isFocusedLast = useFocusedLast();
   const selectionCollapsed = useEditorSelector(
     (editor) => !editor.api.isExpanded(),
     []
   );
   const isImagePreviewOpen = useImagePreviewValue('isOpen', editor.id);
-  const isOpen =
-    !readOnly && selected && selectionCollapsed && !isImagePreviewOpen;
+  const open =
+    isFocusedLast &&
+    !readOnly &&
+    selected &&
+    selectionCollapsed &&
+    !isImagePreviewOpen;
   const isEditing = useFloatingMediaValue('isEditing');
 
   React.useEffect(() => {
-    if (!isOpen && isEditing) {
+    if (!open && isEditing) {
       FloatingMediaStore.set('isEditing', false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [open]);
 
   const element = useElement();
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
-  if (readOnly) return <>{children}</>;
-
   return (
-    <Popover open={isOpen} modal={false}>
+    <Popover open={open} modal={false}>
       <PopoverAnchor>{children}</PopoverAnchor>
 
       <PopoverContent

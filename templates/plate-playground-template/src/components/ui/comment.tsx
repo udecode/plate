@@ -431,7 +431,7 @@ export function CommentCreateForm({
         : '',
     [commentValue]
   );
-  const commentEditor = useCommentEditor({}, []);
+  const commentEditor = useCommentEditor();
 
   React.useEffect(() => {
     if (commentEditor && focusOnMount) {

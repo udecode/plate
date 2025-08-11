@@ -3,10 +3,10 @@
 import * as React from 'react';
 
 import type { VariantProps } from 'class-variance-authority';
-import type { PlateContentProps } from 'platejs/react';
+import type { PlateContentProps, PlateViewProps } from 'platejs/react';
 
 import { cva } from 'class-variance-authority';
-import { PlateContainer, PlateContent } from 'platejs/react';
+import { PlateContainer, PlateContent, PlateView } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
@@ -57,7 +57,7 @@ const editorVariants = cva(
     'group/editor',
     'relative w-full cursor-text overflow-x-hidden break-words whitespace-pre-wrap select-text',
     'rounded-md ring-offset-background focus-visible:outline-none',
-    'placeholder:text-muted-foreground/80 **:data-slate-placeholder:top-[auto_!important] **:data-slate-placeholder:text-muted-foreground/80 **:data-slate-placeholder:opacity-100!',
+    'placeholder:text-muted-foreground/80 **:data-slate-placeholder:!top-1/2 **:data-slate-placeholder:-translate-y-1/2 **:data-slate-placeholder:text-muted-foreground/80 **:data-slate-placeholder:opacity-100!',
     '[&_strong]:font-bold'
   ),
   {
@@ -112,3 +112,18 @@ export const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
 );
 
 Editor.displayName = 'Editor';
+
+export function EditorView({
+  className,
+  variant,
+  ...props
+}: PlateViewProps & VariantProps<typeof editorVariants>) {
+  return (
+    <PlateView
+      {...props}
+      className={cn(editorVariants({ variant }), className)}
+    />
+  );
+}
+
+EditorView.displayName = 'EditorView';

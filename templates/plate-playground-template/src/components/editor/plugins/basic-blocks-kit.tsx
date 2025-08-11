@@ -13,7 +13,14 @@ import {
 import { ParagraphPlugin } from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/ui/blockquote-node';
-import { H1Element, H2Element, H3Element, H4Element, H5Element, H6Element } from '@/components/ui/heading-node';
+import {
+  H1Element,
+  H2Element,
+  H3Element,
+  H4Element,
+  H5Element,
+  H6Element,
+} from '@/components/ui/heading-node';
 import { HrElement } from '@/components/ui/hr-node';
 import { ParagraphElement } from '@/components/ui/paragraph-node';
 
@@ -51,7 +58,7 @@ export const BasicBlocksKit = [
       component: H4Element,
     },
     rules: {
-      break: { empty: "reset" },
+      break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+4' } },
   }),
@@ -60,7 +67,7 @@ export const BasicBlocksKit = [
       component: H5Element,
     },
     rules: {
-      break: { empty: "reset" },
+      break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+5' } },
   }),
@@ -69,7 +76,7 @@ export const BasicBlocksKit = [
       component: H6Element,
     },
     rules: {
-      break: { empty: "reset" },
+      break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+6' } },
   }),

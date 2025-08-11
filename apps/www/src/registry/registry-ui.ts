@@ -5,7 +5,7 @@ export const uiComponents: Registry['items'] = [
     dependencies: [
       '@platejs/ai',
       '@platejs/selection',
-      'ai',
+      'ai@4.3.19',
       'cmdk',
       '@faker-js/faker',
     ],
@@ -1448,7 +1448,7 @@ export const uiNodes: Registry['items'] = [
     dependencies: [
       '@platejs/media',
       '@platejs/resizable',
-      'react-player',
+      'react-player@3.3.1',
       'react-lite-youtube-embed',
     ],
     description:

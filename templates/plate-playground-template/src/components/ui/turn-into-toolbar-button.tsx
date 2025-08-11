@@ -39,7 +39,7 @@ import {
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 
-const turnIntoItems = [
+export const turnIntoItems = [
   {
     icon: <PilcrowIcon />,
     keywords: ['paragraph'],
@@ -66,21 +66,21 @@ const turnIntoItems = [
   },
   {
     icon: <Heading4Icon />,
-    keywords: ["subtitle", "h4"],
-    label: "Heading 4",
-    value: "h4",
+    keywords: ['subtitle', 'h4'],
+    label: 'Heading 4',
+    value: 'h4',
   },
   {
     icon: <Heading5Icon />,
-    keywords: ["subtitle", "h5"],
-    label: "Heading 5",
-    value: "h5",
+    keywords: ['subtitle', 'h5'],
+    label: 'Heading 5',
+    value: 'h5',
   },
   {
     icon: <Heading6Icon />,
-    keywords: ["subtitle", "h6"],
-    label: "Heading 6",
-    value: "h6",
+    keywords: ['subtitle', 'h6'],
+    label: 'Heading 6',
+    value: 'h6',
   },
   {
     icon: <ListIcon />,

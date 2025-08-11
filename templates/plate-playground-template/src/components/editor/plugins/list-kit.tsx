@@ -16,6 +16,7 @@ export const ListKit = [
         KEYS.blockquote,
         KEYS.codeBlock,
         KEYS.toggle,
+        KEYS.img,
       ],
     },
     render: {

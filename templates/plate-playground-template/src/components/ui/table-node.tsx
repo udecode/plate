@@ -51,6 +51,7 @@ import {
   useEditorRef,
   useEditorSelector,
   useElement,
+  useFocusedLast,
   usePluginOption,
   useReadOnly,
   useRemoveNodeButton,
@@ -104,12 +105,13 @@ export const TableElement = withHOC(
       'isSelectionAreaVisible'
     );
     const hasControls = !readOnly && !isSelectionAreaVisible;
-    const selected = useSelected();
     const {
       isSelectingCell,
       marginLeft,
       props: tableProps,
     } = useTableElement();
+
+    const isSelectingTable = useBlockSelected(props.element.id as string);
 
     const content = (
       <PlateElement
@@ -130,11 +132,15 @@ export const TableElement = withHOC(
           >
             <tbody className="min-w-full">{children}</tbody>
           </table>
+
+          {isSelectingTable && (
+            <div className={blockSelectionVariants()} contentEditable={false} />
+          )}
         </div>
       </PlateElement>
     );
 
-    if (readOnly || !selected) {
+    if (readOnly) {
       return content;
     }
 
@@ -147,14 +153,22 @@ function TableFloatingToolbar({
   ...props
 }: React.ComponentProps<typeof PopoverContent>) {
   const { tf } = useEditorPlugin(TablePlugin);
+  const selected = useSelected();
   const element = useElement<TTableElement>();
   const { props: buttonProps } = useRemoveNodeButton({ element });
-  const collapsed = useEditorSelector((editor) => !editor.api.isExpanded(), []);
+  const collapsedInside = useEditorSelector(
+    (editor) => selected && editor.api.isCollapsed(),
+    [selected]
+  );
+  const isFocusedLast = useFocusedLast();
 
   const { canMerge, canSplit } = useTableMergeState();
 
   return (
-    <Popover open={canMerge || canSplit || collapsed} modal={false}>
+    <Popover
+      open={isFocusedLast && (canMerge || canSplit || collapsedInside)}
+      modal={false}
+    >
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
         asChild
@@ -201,7 +215,7 @@ function TableFloatingToolbar({
               </DropdownMenuPortal>
             </DropdownMenu>
 
-            {collapsed && (
+            {collapsedInside && (
               <ToolbarGroup>
                 <ToolbarButton tooltip="Delete table" {...buttonProps}>
                   <Trash2Icon />
@@ -210,7 +224,7 @@ function TableFloatingToolbar({
             )}
           </ToolbarGroup>
 
-          {collapsed && (
+          {collapsedInside && (
             <ToolbarGroup>
               <ToolbarButton
                 onClick={() => {
@@ -242,7 +256,7 @@ function TableFloatingToolbar({
             </ToolbarGroup>
           )}
 
-          {collapsed && (
+          {collapsedInside && (
             <ToolbarGroup>
               <ToolbarButton
                 onClick={() => {
@@ -507,10 +521,14 @@ export function TableCellElement({
   const readOnly = useReadOnly();
   const element = props.element;
 
+  const tableId = useElementSelector(([node]) => node.id as string, [], {
+    key: KEYS.table,
+  });
   const rowId = useElementSelector(([node]) => node.id as string, [], {
     key: KEYS.tr,
   });
-  const isSelectingRow = useBlockSelected(rowId);
+  const isSelectingTable = useBlockSelected(tableId);
+  const isSelectingRow = useBlockSelected(rowId) || isSelectingTable;
   const isSelectionAreaVisible = usePluginOption(
     BlockSelectionPlugin,
     'isSelectionAreaVisible'

@@ -44,18 +44,16 @@ import {
 
 type Group = {
   group: string;
-  items: Item[];
+  items: {
+    icon: React.ReactNode;
+    value: string;
+    onSelect: (editor: PlateEditor, value: string) => void;
+    className?: string;
+    focusEditor?: boolean;
+    keywords?: string[];
+    label?: string;
+  }[];
 };
-
-interface Item {
-  icon: React.ReactNode;
-  value: string;
-  onSelect: (editor: PlateEditor, value: string) => void;
-  className?: string;
-  focusEditor?: boolean;
-  keywords?: string[];
-  label?: string;
-}
 
 const groups: Group[] = [
   {
@@ -211,7 +209,7 @@ export function SlashInputElement(
   const { editor, element } = props;
 
   return (
-    <PlateElement {...props} as="span" data-slate-value={element.value}>
+    <PlateElement {...props} as="span">
       <InlineCombobox element={element} trigger="/">
         <InlineComboboxInput />
 

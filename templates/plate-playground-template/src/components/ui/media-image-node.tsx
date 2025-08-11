@@ -5,7 +5,6 @@ import * as React from 'react';
 import type { TImageElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
-
 import { useDraggable } from '@platejs/dnd';
 import { Image, ImagePlugin, useMediaState } from '@platejs/media/react';
 import { ResizableProvider, useResizableValue } from '@platejs/resizable';
@@ -54,7 +53,7 @@ export const ImageElement = withHOC(
                   focused && selected && 'ring-2 ring-ring ring-offset-2',
                   isDragging && 'opacity-50'
                 )}
-                alt={(props.attributes as { alt?: string }).alt}
+                alt={props.attributes.alt as string | undefined}
               />
               <ResizeHandle
                 className={mediaResizeHandleVariants({

@@ -3,7 +3,7 @@
 import type { PlateEditor } from 'platejs/react';
 
 import { insertCallout } from '@platejs/callout';
-import { insertCodeBlock } from '@platejs/code-block';
+import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { insertDate } from '@platejs/date';
 import { insertColumnGroup, toggleColumnGroup } from '@platejs/layout';
 import { triggerFloatingLink } from '@platejs/link/react';
@@ -128,6 +128,7 @@ const setBlockMap: Record<
   [KEYS.ol]: setList,
   [KEYS.ul]: setList,
   [ACTION_THREE_COLUMNS]: (editor) => toggleColumnGroup(editor, { columns: 3 }),
+  [KEYS.codeBlock]: (editor) => toggleCodeBlock(editor),
 };
 
 export const setBlockType = (
