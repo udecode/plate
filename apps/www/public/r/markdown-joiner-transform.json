@@ -3,7 +3,7 @@
   "name": "markdown-joiner-transform",
   "type": "registry:hook",
   "dependencies": [
-    "ai"
+    "ai@4.3.19"
   ],
   "files": [
     {

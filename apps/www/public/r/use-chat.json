@@ -3,7 +3,7 @@
   "name": "use-chat",
   "type": "registry:component",
   "dependencies": [
-    "@ai-sdk/react@1",
+    "@ai-sdk/react@1.2.12",
     "@faker-js/faker"
   ],
   "registryDependencies": [
