@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.2.11
+
+### Patch Changes
+
+- [#4560](https://github.com/udecode/plate/pull/4560) by [@delijah](https://github.com/delijah) – Accept components with props of type PlateElementProps
+
 ## 49.2.9
 
 ### Patch Changes
