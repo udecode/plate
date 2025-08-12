@@ -31,33 +31,69 @@ This option sets up a complete documentation site using Fumadocs, providing a se
 
 #### Create Fumadocs App
 
-Set up a [Fumadocs app](https://fumadocs.dev/docs/ui#automatic-installation). Fumadocs provides the Next.js-based framework for your documentation site.
+Set up a Fumadocs app which provides the Next.js-based framework for your documentation site:
 
 ```bash
 pnpm create fumadocs-app
 ```
 
-Name your documentation directory. This guide will assume it's `docs`.
+During setup:
+- **Name:** Enter `docs` when prompted
+- **Choose your preferred options** (defaults work well)
+- The wizard will create a `docs` directory with all necessary files
+
+Navigate to your newly created `docs` directory:
+
+```bash
+cd docs
+```
+
 For detailed Fumadocs setup, see the [Fumadocs UI documentation](https://fumadocs.dev/docs/ui).
 
 #### Create `components.json`
 
-Create the configuration file:
+In your docs directory, create a `components.json` file. You have two options:
+
+**Option A: Command line**
 
 ```bash
 echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "new-york",\n  "rsc": true,\n  "tsx": true,\n  "tailwind": {\n    "config": "",\n    "css": "app/global.css",\n    "baseColor": "neutral",\n    "cssVariables": true,\n    "prefix": ""\n  },\n  "aliases": {\n    "components": "@/components",\n    "utils": "@/lib/utils",\n    "ui": "@/components/ui",\n    "lib": "@/lib",\n    "hooks": "@/hooks"\n  },\n  "iconLibrary": "lucide"\n}' > components.json
 ```
 
-<Callout type="note">
-  Alternatively, you can run `npx shadcn@latest init -c docs` to customize the configuration.
-</Callout>
+**Option B: Copy and paste**
+
+Create a new file called `components.json` in your docs directory with this content:
+
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "app/global.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "iconLibrary": "lucide"
+}
+```
 
 #### Add Plate Documentation
 
-Use the shadcn CLI to fetch Plate documentation files and necessary MDX components.
+Now, fetch the Plate documentation files and necessary MDX components.
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/fumadocs -c docs
+npx shadcn@latest add https://platejs.org/r/fumadocs
 ```
 
 <Callout type="warning" title="Version-Specific Documentation">
@@ -69,17 +105,16 @@ npx shadcn@latest add https://platejs.org/r/fumadocs -c docs
   4.  Replace `https://platejs.org/r/` in the `shadcn` command with this URL.
 </Callout>
 
-This populates `content/docs/plate` and installs the required MDX components.
-
 #### Run Fumadocs App
 
-Navigate to the docs directory, then start the development server:
+Start the development server:
 
 ```bash
 pnpm run dev
 ```
 
-Access your local Plate documentation, typically at `http://localhost:3000/docs/plate`.
+Your documentation site will be available at:
+- Plate docs: `http://localhost:3000/docs/plate`
 
 #### Customize
 
@@ -89,16 +124,22 @@ Enhance your docs with [Fumadocs features](https://fumadocs.dev/docs/ui#writing-
 
 ### Option 2: MDX Files Only
 
-If you just want the documentation files without setting up a full site:
+If you just want the documentation files without setting up a full site, you can add them directly to your existing project:
 
 ```bash
+# Run from your project root (wherever you want the docs)
 npx shadcn@latest add https://platejs.org/r/docs
 ```
 
-This will install only the MDX documentation files in your project. You can:
-- Reference them directly in your codebase
-- Use them with your existing documentation setup
-- Make them available to AI tools for better context
+This will:
+- Install MDX documentation files in your project (typically in a `docs/` or similar directory)
+- Skip the Fumadocs setup entirely
+- Give you raw MDX files to use however you need
+
+Use cases:
+- Reference documentation directly in your codebase
+- Integrate with your existing documentation setup
+- Make docs available to AI tools for better context
 
 ## Advanced Integration
 
