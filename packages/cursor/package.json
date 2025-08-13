@@ -47,7 +47,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=49.2.11",
+    "platejs": ">=49.2.12",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
