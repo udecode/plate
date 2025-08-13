@@ -1,7 +1,7 @@
 import { pipeInsertFragment } from '../../internal/plugin/pipeInsertFragment';
 import { pipeTransformData } from '../../internal/plugin/pipeTransformData';
 import { pipeTransformFragment } from '../../internal/plugin/pipeTransformFragment';
-import { createSlatePlugin, getEditorPlugin } from '../plugin';
+import { createSlatePlugin, getEditorPlugin, Parser } from '../plugin';
 import { getInjectedPlugins } from '../utils';
 import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
 
@@ -11,7 +11,7 @@ export const ParserPlugin = createSlatePlugin({
   transforms: {
     insertData(dataTransfer: DataTransfer) {
       const inserted = [...editor.meta.pluginList].reverse().some((plugin) => {
-        const parser = plugin.parser;
+        const parser = plugin.parser as Parser | undefined;
 
         if (!parser) return false;
 
@@ -21,7 +21,7 @@ export const ParserPlugin = createSlatePlugin({
         if (!format && !mimeTypes) return false;
 
         // Handle both string and string[] formats
-        const formats = format && (Array.isArray(format) ? format : [format]);
+        const formats = Array.isArray(format) ? format : format ? [format] : [];
         const mimeTypeList =
           mimeTypes ||
           formats.map((fmt) => (fmt.includes('/') ? fmt : `text/${fmt}`));
