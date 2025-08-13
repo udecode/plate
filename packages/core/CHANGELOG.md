@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.2.12
+
+### Patch Changes
+
+- [#4563](https://github.com/udecode/plate/pull/4563) by [@delijah](https://github.com/delijah) – Fix parser formats
+
 ## 49.2.11
 
 ### Patch Changes
