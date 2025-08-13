@@ -21,7 +21,7 @@ export const ParserPlugin = createSlatePlugin({
         if (!format && !mimeTypes) return false;
 
         // Handle both string and string[] formats
-        const formats = format && Array.isArray(format) ? format : [format];
+        const formats = format && (Array.isArray(format) ? format : [format]);
         const mimeTypeList =
           mimeTypes ||
           formats.map((fmt) => (fmt.includes('/') ? fmt : `text/${fmt}`));
