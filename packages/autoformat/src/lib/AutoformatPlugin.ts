@@ -7,6 +7,8 @@ import { autoformatBlock, autoformatMark, autoformatText } from './transforms';
 export type AutoformatConfig = PluginConfig<
   'autoformat',
   {
+    /** Internal: Rules indexed by trigger character for performance */
+    _indexedRules?: Map<string, AutoformatRule[]>;
     enableUndoOnDelete?: boolean;
     /** A list of triggering rules. */
     rules?: AutoformatRule[];
@@ -18,6 +20,7 @@ export const AutoformatPlugin = createTSlatePlugin<AutoformatConfig>({
   key: KEYS.autoformat,
   editOnly: true,
   options: {
+    _indexedRules: undefined,
     rules: [],
   },
 }).overrideEditor(
@@ -104,7 +107,57 @@ export const AutoformatPlugin = createTSlatePlugin<AutoformatConfig>({
         insertText(text, options) {
           if (!editor.api.isCollapsed()) return insertText(text, options);
 
-          for (const rule of getOptions().rules!) {
+          const opts = getOptions();
+
+          // Initialize indexed rules on first use for performance
+          if (!opts._indexedRules && opts.rules) {
+            const indexedRules = new Map<string, AutoformatRule[]>();
+
+            for (const rule of opts.rules) {
+              // Get trigger characters for this rule
+              const triggers: string[] = [];
+
+              if (rule.trigger) {
+                const triggerArray = Array.isArray(rule.trigger)
+                  ? rule.trigger
+                  : [rule.trigger];
+                triggers.push(...triggerArray);
+              } else {
+                // Default trigger is the last character of the match
+                const match = rule.match;
+                if (typeof match === 'string') {
+                  triggers.push(match.at(-1));
+                } else if (Array.isArray(match)) {
+                  for (const m of match) {
+                    if (typeof m === 'string') {
+                      triggers.push(m.at(-1));
+                    } else if (m.end) {
+                      triggers.push(m.end.at(-1));
+                    }
+                  }
+                } else if ((match as any).end) {
+                  triggers.push(
+                    (match as any).end[(match as any).end.length - 1]
+                  );
+                }
+              }
+
+              // Index this rule by each of its trigger characters
+              for (const trigger of triggers) {
+                if (!indexedRules.has(trigger)) {
+                  indexedRules.set(trigger, []);
+                }
+                indexedRules.get(trigger)!.push(rule);
+              }
+            }
+
+            opts._indexedRules = indexedRules;
+          }
+
+          // Only check rules that could be triggered by this character
+          const rulesToCheck = opts._indexedRules?.get(text) || [];
+
+          for (const rule of rulesToCheck) {
             const { insertTrigger, mode = 'text', query } = rule;
 
             if (query && !query(editor as any, { ...rule, text })) continue;
