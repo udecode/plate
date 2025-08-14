@@ -35,6 +35,20 @@ export function SetupMCPDialog() {
     }
   }
 }`;
+  
+  const vscodeConfig = `{
+  "servers": {
+    "plate": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "shadcn@canary", "registry:mcp"],
+      "env": {
+        "REGISTRY_URL": "${siteConfig.registryUrl}registry.json"
+      }
+    }
+  },
+  "inputs": []
+}`;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -68,7 +82,7 @@ export function SetupMCPDialog() {
           <Tabs className="mt-2" defaultValue="cursor">
             <TabsList>
               <TabsTrigger value="cursor">Cursor</TabsTrigger>
-              <TabsTrigger value="windsurf">Windsurf</TabsTrigger>
+              <TabsTrigger value="vscode">VS Code</TabsTrigger>
             </TabsList>
             <TabsContent className="mt-0" value="cursor">
               <p>
@@ -80,14 +94,13 @@ export function SetupMCPDialog() {
                 language="json"
               />
             </TabsContent>
-            <TabsContent className="mt-0" value="windsurf">
+            <TabsContent className="mt-0" value="vscode">
               <p>
-                Copy and paste the code into{' '}
-                <Code>.codeium/windsurf/mcp_config.json</Code>
+                Copy and paste the code into <Code>.vscode/mcp.json</Code> in your workspace
               </p>
               <CodeBlock
                 className="mt-2 overflow-x-auto"
-                value={cursorConfig}
+                value={vscodeConfig}
                 language="json"
               />
             </TabsContent>
