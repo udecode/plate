@@ -8,6 +8,7 @@ import { createText } from './internals/creators';
 import { createHyperscript } from './internals/hyperscript';
 
 export { createEditor } from './internals/creators';
+export { createHyperscript };
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
