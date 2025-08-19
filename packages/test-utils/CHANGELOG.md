@@ -1,5 +1,11 @@
 # @platejs/test-utils
 
+## 49.2.13
+
+### Patch Changes
+
+- [#4573](https://github.com/udecode/plate/pull/4573) by [@delijah](https://github.com/delijah) – Export voidChildren, elements and createEditor from jsx, in order to create more customised jsx solutions
+
 ## 49.2.4
 
 ## 49.1.13
