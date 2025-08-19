@@ -7,6 +7,8 @@ import {
 import { createText } from './internals/creators';
 import { createHyperscript } from './internals/hyperscript';
 
+export { createEditor } from './internals/creators';
+
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
@@ -37,9 +39,9 @@ declare global {
   }
 }
 
-const voidChildren = [{ text: '' }];
+export const voidChildren = [{ text: '' }];
 
-const elements: HyperscriptShorthands = {
+export const elements: HyperscriptShorthands = {
   ha: { type: 'a' },
   haudio: { children: voidChildren, type: 'audio' },
   hblockquote: { type: 'blockquote' },
