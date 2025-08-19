@@ -22,7 +22,7 @@ export const markdownToSlateNodesSafely = (
 
   const [completeString, incompleteString] = result;
 
-  const incompleteNodes = deserializeInlineMd(editor, incompleteString, {
+  const incompleteNodes = markdownToSlateNodes(editor, incompleteString, {
     ...options,
     withoutMdx: true,
   });

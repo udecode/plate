@@ -849,7 +849,7 @@ describe('steamInsertChunk', () => {
     });
 
     it('streaming insert incomplete mdx tag', () => {
-      const chunks = ['**bold**, _italic_,', '<u>', 'underline', '</', 'u>'];
+      const chunks = ['**bold**, _italic_,', '<u>', 'underline', '</u>'];
 
       const { editor } = createTestEditor();
 
