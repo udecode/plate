@@ -2,4 +2,4 @@
 '@platejs/markdown': patch
 ---
 
-Revert
+Fix regex not matching MDX opening tags with attributes. 
