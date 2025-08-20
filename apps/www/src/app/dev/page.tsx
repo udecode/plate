@@ -1,6 +1,4 @@
-import { MarkdownStreamDemo } from "./markdownStreamDemo";
-
-
+import { MarkdownStreamDemo } from './markdownStreamDemo';
 
 export default async function DevPage() {
   return (

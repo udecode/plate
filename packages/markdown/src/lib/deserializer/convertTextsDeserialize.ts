@@ -13,16 +13,10 @@ export const convertTextsDeserialize = (
   options: DeserializeMdOptions
 ) => {
   return mdastNode.children.reduce((acc: any, n: any) => {
-    const key = mdastToPlate(options.editor!, mdastNode.type)
-    const type = getPluginType(options.editor!, key)
+    const key = mdastToPlate(options.editor!, mdastNode.type);
+    const type = getPluginType(options.editor!, key);
 
-    acc.push(
-      ...buildSlateNode(
-        n,
-        { ...deco, [type]: true },
-        options
-      )
-    );
+    acc.push(...buildSlateNode(n, { ...deco, [type]: true }, options));
     return acc;
   }, []);
 };

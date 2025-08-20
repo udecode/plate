@@ -35,7 +35,7 @@ export function SetupMCPDialog() {
     }
   }
 }`;
-  
+
   const vscodeConfig = `{
   "servers": {
     "plate": {
@@ -96,7 +96,8 @@ export function SetupMCPDialog() {
             </TabsContent>
             <TabsContent className="mt-0" value="vscode">
               <p>
-                Copy and paste the code into <Code>.vscode/mcp.json</Code> in your workspace
+                Copy and paste the code into <Code>.vscode/mcp.json</Code> in
+                your workspace
               </p>
               <CodeBlock
                 className="mt-2 overflow-x-auto"

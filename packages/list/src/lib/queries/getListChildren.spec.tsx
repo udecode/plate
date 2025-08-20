@@ -18,7 +18,8 @@ describe('getListChildren', () => {
       const input = (
         <fragment>
           <hp indent={1}>
-            not a list item<cursor />
+            not a list item
+            <cursor />
           </hp>
           <hp indent={2} listStyleType="disc">
             list item
@@ -40,7 +41,8 @@ describe('getListChildren', () => {
       const input = (
         <fragment>
           <hp listStyleType="disc">
-            no indent<cursor />
+            no indent
+            <cursor />
           </hp>
           <hp indent={1} listStyleType="disc">
             child
@@ -64,7 +66,8 @@ describe('getListChildren', () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
-            parent<cursor />
+            parent
+            <cursor />
           </hp>
           <hp indent={2} listStyleType="disc">
             child 1
@@ -106,7 +109,8 @@ describe('getListChildren', () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
-            parent<cursor />
+            parent
+            <cursor />
           </hp>
           <hp indent={2} listStyleType="disc">
             child
@@ -155,7 +159,8 @@ describe('getListChildren', () => {
       const input = (
         <fragment>
           <hp indent={2} listStyleType="disc">
-            parent<cursor />
+            parent
+            <cursor />
           </hp>
           <hp indent={3} listStyleType="disc">
             child 1
@@ -200,7 +205,8 @@ describe('getListChildren', () => {
       const input = (
         <fragment>
           <hp indent={3} listStyleType="disc">
-            parent<cursor />
+            parent
+            <cursor />
           </hp>
           <hp indent={4} listStyleType="disc">
             child 1
@@ -245,14 +251,13 @@ describe('getListChildren', () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
-            parent<cursor />
+            parent
+            <cursor />
           </hp>
           <hp indent={2} listStyleType="disc">
             child 1
           </hp>
-          <hp indent={2}>
-            not a list item (should stop here)
-          </hp>
+          <hp indent={2}>not a list item (should stop here)</hp>
           <hp indent={2} listStyleType="disc">
             not included
           </hp>
@@ -281,7 +286,8 @@ describe('getListChildren', () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
-            parent<cursor />
+            parent
+            <cursor />
           </hp>
           <hp indent={1} listStyleType="disc">
             sibling
@@ -306,7 +312,8 @@ describe('getListChildren', () => {
             item 1
           </hp>
           <hp indent={2} listStyleType="disc">
-            last item<cursor />
+            last item
+            <cursor />
           </hp>
         </fragment>
       ) as any as Descendant[];
@@ -325,7 +332,8 @@ describe('getListChildren', () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
-            parent<cursor />
+            parent
+            <cursor />
           </hp>
           <hp indent={2} listStyleType="decimal">
             ordered child 1
@@ -373,13 +381,14 @@ describe('getListChildren', () => {
     it('should work with todo lists', () => {
       const input = (
         <fragment>
-          <hp indent={1} listStyleType="disc" listChecked={false}>
-            parent todo<cursor />
+          <hp indent={1} listChecked={false} listStyleType="disc">
+            parent todo
+            <cursor />
           </hp>
-          <hp indent={2} listStyleType="disc" listChecked={true}>
+          <hp indent={2} listChecked={true} listStyleType="disc">
             checked child
           </hp>
-          <hp indent={2} listStyleType="disc" listChecked={false}>
+          <hp indent={2} listChecked={false} listStyleType="disc">
             unchecked child
           </hp>
           <hp indent={1} listStyleType="disc">
@@ -390,10 +399,10 @@ describe('getListChildren', () => {
 
       const output = (
         <fragment>
-          <hp indent={2} listStyleType="disc" listChecked={true}>
+          <hp indent={2} listChecked={true} listStyleType="disc">
             checked child
           </hp>
-          <hp indent={2} listStyleType="disc" listChecked={false}>
+          <hp indent={2} listChecked={false} listStyleType="disc">
             unchecked child
           </hp>
         </fragment>

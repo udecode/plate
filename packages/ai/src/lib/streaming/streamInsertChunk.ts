@@ -23,7 +23,7 @@ export interface SteamInsertChunkOptions {
 
 const getNextPath = (path: Path, length: number) => {
   let result = path;
-   
+
   for (let i = 0; i < length; i++) {
     result = PathApi.next(result);
   }
@@ -59,7 +59,6 @@ export function streamInsertChunk(
         select: true,
       });
 
-
       editor.setOption(AIChatPlugin, '_blockPath', getCurrentBlockPath(editor));
       editor.setOption(AIChatPlugin, '_blockChunks', chunk);
 
@@ -74,7 +73,9 @@ export function streamInsertChunk(
           select: true,
         });
 
-        const lastBlock = editor.api.node(getNextPath(nextPath, nextBlocks.length))!;
+        const lastBlock = editor.api.node(
+          getNextPath(nextPath, nextBlocks.length)
+        )!;
 
         editor.setOption(AIChatPlugin, '_blockPath', lastBlock[1]);
 

@@ -9,7 +9,7 @@ import { useMounted } from '@/registry/hooks/use-mounted';
 
 import { Icons } from './icons';
 
-const BlockExamples = new Set(['markdown-streaming-demo'])
+const BlockExamples = new Set(['markdown-streaming-demo']);
 
 interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string;

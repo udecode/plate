@@ -1,6 +1,12 @@
 /** @jsx jsxt */
 
-import { BulletedListPlugin, ListItemContentPlugin, ListItemPlugin, NumberedListPlugin, TaskListPlugin } from '@platejs/list-classic/react';
+import {
+  BulletedListPlugin,
+  ListItemContentPlugin,
+  ListItemPlugin,
+  NumberedListPlugin,
+  TaskListPlugin,
+} from '@platejs/list-classic/react';
 import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';

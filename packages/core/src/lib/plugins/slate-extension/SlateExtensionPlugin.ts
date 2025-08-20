@@ -65,13 +65,13 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
   apply(operation) {
     // Performance optimization: skip state capture if no handlers are registered
     const noop = () => {};
-    const hasNodeHandlers = 
+    const hasNodeHandlers =
       editor.meta.pluginCache.handlers.onNodeChange.length > 0 ||
       getOption('onNodeChange') !== noop;
-    const hasTextHandlers = 
+    const hasTextHandlers =
       editor.meta.pluginCache.handlers.onTextChange.length > 0 ||
       getOption('onTextChange') !== noop;
-    
+
     if (!hasNodeHandlers && !hasTextHandlers) {
       apply(operation);
       return;

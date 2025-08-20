@@ -21,4 +21,26 @@ exports[`fixures should deserialize image within list 1`] = `
 ]
 `;
 
+exports[`fixures should deserialize incomplete mdx with line breaks 1`] = `
+[
+  {
+    "children": [
+      {
+        "text": "<callout>
+Here are a few additional prompt ideas to expand on the existing ones:",
+      },
+      {
+        "children": [
+          {
+            "text": "Math Adventure Quest",
+          },
+        ],
+        "type": "p",
+      },
+    ],
+    "type": "p",
+  },
+]
+`;
+
 exports[`fixures when deserializing a empty value 1`] = `[]`;

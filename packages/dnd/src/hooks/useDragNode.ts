@@ -1,5 +1,10 @@
 import React from 'react';
-import { type ConnectDragPreview, type ConnectDragSource, type DragSourceHookSpec, useDrag } from 'react-dnd';
+import {
+  type ConnectDragPreview,
+  type ConnectDragSource,
+  type DragSourceHookSpec,
+  useDrag,
+} from 'react-dnd';
 
 import type { TElement } from 'platejs';
 import type { PlateEditor } from 'platejs/react';
@@ -34,14 +39,18 @@ export const useDragNode = (
   editor: PlateEditor,
   { element: staleElement, item, ...options }: UseDragNodeOptions
 ): [
-  { isAboutToDrag: boolean; isDragging: boolean; },
+  { isAboutToDrag: boolean; isDragging: boolean },
   ConnectDragSource,
-  ConnectDragPreview
+  ConnectDragPreview,
 ] => {
   const elementId = staleElement.id as string;
   const [isAboutToDrag, setIsAboutToDrag] = React.useState(false);
-  
-  const [collected, dragRef, preview] = useDrag<DragItemNode, unknown, { isDragging: boolean }>(
+
+  const [collected, dragRef, preview] = useDrag<
+    DragItemNode,
+    unknown,
+    { isDragging: boolean }
+  >(
     () => ({
       canDrag: () => {
         setIsAboutToDrag(true);
@@ -92,13 +101,13 @@ export const useDragNode = (
     }),
     [editor, elementId]
   );
-  
+
   // Reset isAboutToDrag when drag is cancelled (e.g., ESC key)
   React.useEffect(() => {
     if (!collected.isDragging && isAboutToDrag) {
       setIsAboutToDrag(false);
     }
   }, [collected.isDragging, isAboutToDrag]);
-  
+
   return [{ ...collected, isAboutToDrag }, dragRef, preview];
 };

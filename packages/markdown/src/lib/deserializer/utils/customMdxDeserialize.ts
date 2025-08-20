@@ -27,7 +27,7 @@ export const customMdxDeserialize = (
 
     if (nodeParserDeserialize)
       return nodeParserDeserialize(mdastNode, deco, options) as any;
-  } else {  
+  } else {
     console.warn(
       'This MDX node does not have a parser for deserialization',
       mdastNode
