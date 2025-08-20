@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 49.2.14
+
+### Patch Changes
+
+- [#4572](https://github.com/udecode/plate/pull/4572) by [@felixfeng33](https://github.com/felixfeng33) – Fix deserialize incomplete mdx tag with line breaks.
+
 ## 49.2.1
 
 ### Patch Changes
