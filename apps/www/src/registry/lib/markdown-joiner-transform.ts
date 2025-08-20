@@ -1,7 +1,9 @@
 import type { TextStreamPart, ToolSet } from 'ai';
 
 /**
- * Transform chunks like [**,bold,**] to [**bold**] make the md deserializer happy.
+ * Transform chunks like [**,bold,**] to [**bold**] make the md deserializer
+ * happy.
+ *
  * @experimental
  */
 export const markdownJoinerTransform =

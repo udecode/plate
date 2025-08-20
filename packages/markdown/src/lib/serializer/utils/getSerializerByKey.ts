@@ -8,8 +8,7 @@ export const getSerializerByKey = (
 ) => {
   const nodes = options.rules;
 
-
-  const rules = buildRules(options.editor!)
+  const rules = buildRules(options.editor!);
 
   return nodes?.[key]?.serialize === undefined
     ? rules[key]?.serialize

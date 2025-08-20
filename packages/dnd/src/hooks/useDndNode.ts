@@ -64,11 +64,14 @@ export const useDndNode = ({
 } => {
   const editor = useEditorRef();
 
-  const [{ isAboutToDrag, isDragging }, dragRef, preview] = useDragNode(editor, {
-    element,
-    type,
-    ...dragOptions,
-  });
+  const [{ isAboutToDrag, isDragging }, dragRef, preview] = useDragNode(
+    editor,
+    {
+      element,
+      type,
+      ...dragOptions,
+    }
+  );
 
   const [{ isOver }, drop] = useDropNode(editor, {
     accept: [type, NativeTypes.FILE],

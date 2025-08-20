@@ -1,7 +1,7 @@
 import { pipeInsertFragment } from '../../internal/plugin/pipeInsertFragment';
 import { pipeTransformData } from '../../internal/plugin/pipeTransformData';
 import { pipeTransformFragment } from '../../internal/plugin/pipeTransformFragment';
-import { createSlatePlugin, getEditorPlugin, Parser } from '../plugin';
+import { type Parser, createSlatePlugin, getEditorPlugin } from '../plugin';
 import { getInjectedPlugins } from '../utils';
 import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
 

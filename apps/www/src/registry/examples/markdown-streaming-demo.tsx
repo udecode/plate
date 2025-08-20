@@ -1,102 +1,114 @@
-'use client'
-import { type HTMLAttributes, useCallback, useReducer, useRef, useState } from "react";
+'use client';
+import {
+  type HTMLAttributes,
+  useCallback,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 
-import { streamInsertChunk } from "@platejs/ai";
-import { AIChatPlugin } from "@platejs/ai/react";
-import { deserializeMd } from "@platejs/markdown";
-import { ChevronFirstIcon, ChevronLastIcon, PauseIcon, PlayIcon, RotateCcwIcon } from "lucide-react";
-import { getPluginType, KEYS } from "platejs";
-import { Plate, usePlateEditor, usePlateViewEditor } from "platejs/react";
+import { streamInsertChunk } from '@platejs/ai';
+import { AIChatPlugin } from '@platejs/ai/react';
+import { deserializeMd } from '@platejs/markdown';
+import {
+  ChevronFirstIcon,
+  ChevronLastIcon,
+  PauseIcon,
+  PlayIcon,
+  RotateCcwIcon,
+} from 'lucide-react';
+import { getPluginType, KEYS } from 'platejs';
+import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { EditorKit } from "@/registry/components/editor/editor-kit";
-import { CopilotKit } from "@/registry/components/editor/plugins/copilot-kit";
-import { MarkdownJoiner } from "@/registry/lib/markdown-joiner-transform";
-import { Editor, EditorContainer, EditorView } from "@/registry/ui/editor";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { EditorKit } from '@/registry/components/editor/editor-kit';
+import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
+import { MarkdownJoiner } from '@/registry/lib/markdown-joiner-transform';
+import { Editor, EditorContainer, EditorView } from '@/registry/ui/editor';
 
-import { BaseEditorKit } from "../components/editor/editor-base-kit";
+import { BaseEditorKit } from '../components/editor/editor-base-kit';
 const testScenarios = {
   // Basic markdown with complete elements
   columns: [
-    "paragraph\n\n<column",
-    "_group",
-    ">\n",
-    " ",
-    " <",
-    "column",
-    " width",
-    "=\"",
-    "33",
-    ".",
-    "333",
-    "333",
-    "333",
-    "333",
-    "336",
-    "%\">\n",
-    "   ",
-    " ",
-    "1",
-    "\n",
-    " ",
-    " </",
-    "column",
-    ">\n",
-    " ",
-    " <",
-    "column",
-    " width",
-    "=\"",
-    "33",
-    ".",
-    "333",
-    "333",
-    "333",
-    "333",
-    "336",
-    "%\">\n",
-    "   ",
-    " ",
-    "2",
-    "\n",
-    " ",
-    " </",
-    "column",
-    ">\n",
-    " ",
-    " <",
-    "column",
-    " width",
-    "=\"",
-    "33",
-    ".",
-    "333",
-    "333",
-    "333",
-    "333",
-    "336",
-    "%\">\n",
-    "   ",
-    " ",
-    "3",
-    "\n",
-    " ",
-    " </",
-    "column",
-    ">\n",
-    "</",
-    "column",
-    "_group",
-    ">\n\nparagraph",
+    'paragraph\n\n<column',
+    '_group',
+    '>\n',
+    ' ',
+    ' <',
+    'column',
+    ' width',
+    '="',
+    '33',
+    '.',
+    '333',
+    '333',
+    '333',
+    '333',
+    '336',
+    '%">\n',
+    '   ',
+    ' ',
+    '1',
+    '\n',
+    ' ',
+    ' </',
+    'column',
+    '>\n',
+    ' ',
+    ' <',
+    'column',
+    ' width',
+    '="',
+    '33',
+    '.',
+    '333',
+    '333',
+    '333',
+    '333',
+    '336',
+    '%">\n',
+    '   ',
+    ' ',
+    '2',
+    '\n',
+    ' ',
+    ' </',
+    'column',
+    '>\n',
+    ' ',
+    ' <',
+    'column',
+    ' width',
+    '="',
+    '33',
+    '.',
+    '333',
+    '333',
+    '333',
+    '333',
+    '336',
+    '%">\n',
+    '   ',
+    ' ',
+    '3',
+    '\n',
+    ' ',
+    ' </',
+    'column',
+    '>\n',
+    '</',
+    'column',
+    '_group',
+    '>\n\nparagraph',
   ],
   links: [
-    "[Link ",
-    "to OpenA",
-    "I](https://www.openai.com)\n\n",
-    "[Link ",
-    "to Google",
-    "I](https://ww",
+    '[Link ',
+    'to OpenA',
+    'I](https://www.openai.com)\n\n',
+    '[Link ',
+    'to Google',
+    'I](https://ww',
     'w.google.com/1',
     '11',
     '22',
@@ -109,7 +121,7 @@ const testScenarios = {
     'dd',
     'ee',
     '33)\n\n',
-    "[False Positive",
+    '[False Positive',
     '11',
     '22',
     '33',
@@ -121,181 +133,172 @@ const testScenarios = {
     '99',
     '100',
   ],
-  lists: [
-    "1.",
-    ' number 1\n',
-    '- ',
-    "List B\n",
-    '-',
-    ' [x] ',
-    'Task C',
-  ],
+  lists: ['1.', ' number 1\n', '- ', 'List B\n', '-', ' [x] ', 'Task C'],
   listWithImage: [
-    "## ",
-    "Links ",
-    "and ",
-    "Images\n\n",
-    "- [Link ",
-    "to OpenA",
-    "I](https://www.openai.com)\n",
-    "- ![Sample Image](https://via.placeholder.com/150)\n\n",
+    '## ',
+    'Links ',
+    'and ',
+    'Images\n\n',
+    '- [Link ',
+    'to OpenA',
+    'I](https://www.openai.com)\n',
+    '- ![Sample Image](https://via.placeholder.com/150)\n\n',
   ],
   nestedStructureBlock: [
-    "```",
-    "javascript",
-    "\n",
-    "import",
-    " React",
-    " from",
+    '```',
+    'javascript',
+    '\n',
+    'import',
+    ' React',
+    ' from',
     " '",
-    "react",
+    'react',
     "';\n",
-    "import",
-    " {",
-    " Plate",
-    " }",
-    " from",
+    'import',
+    ' {',
+    ' Plate',
+    ' }',
+    ' from',
     " '@",
-    "ud",
-    "ecode",
-    "/",
-    "plate",
+    'ud',
+    'ecode',
+    '/',
+    'plate',
     "';\n\n",
-    "const",
-    " Basic",
-    "Editor",
-    " =",
-    " ()",
-    " =>",
-    " {\n",
-    " ",
-    " return",
-    " (\n",
-    "   ",
-    " <",
-    "Plate",
-    ">\n",
-    "     ",
-    " {/*",
-    " Add",
-    " your",
-    " plugins",
-    " and",
-    " components",
-    " here",
-    " */}\n",
-    "   ",
-    " </",
-    "Plate",
-    ">\n",
-    " ",
-    " );\n",
-    "};\n\n",
-    "export",
-    " default",
-    " Basic",
-    "Editor",
-    ";\n",
-    "```",
+    'const',
+    ' Basic',
+    'Editor',
+    ' =',
+    ' ()',
+    ' =>',
+    ' {\n',
+    ' ',
+    ' return',
+    ' (\n',
+    '   ',
+    ' <',
+    'Plate',
+    '>\n',
+    '     ',
+    ' {/*',
+    ' Add',
+    ' your',
+    ' plugins',
+    ' and',
+    ' components',
+    ' here',
+    ' */}\n',
+    '   ',
+    ' </',
+    'Plate',
+    '>\n',
+    ' ',
+    ' );\n',
+    '};\n\n',
+    'export',
+    ' default',
+    ' Basic',
+    'Editor',
+    ';\n',
+    '```',
   ],
   table: [
-    "| Feature          |",
-    " Plate",
-    ".js",
-    "                                     ",
-    " ",
-    "| Slate.js                                     ",
-    " ",
-    "|\n|------------------",
-    "|--------------------------------",
-    "---------------",
-    "|--------------------------------",
-    "---------------",
-    "|\n| Purpose         ",
-    " ",
-    "| Rich text editor framework",
-    "                   ",
-    " ",
-    "| Rich text editor framework",
-    "                   ",
-    " ",
-    "|\n| Flexibility     ",
-    " ",
-    "| Highly customizable",
-    " with",
-    " plugins",
-    "             ",
-    " ",
-    "| Highly customizable",
-    " with",
-    " plugins",
-    "             ",
-    " ",
-    "|\n| Community       ",
-    " ",
-    "| Growing community support",
-    "                    ",
-    " ",
-    "| Established community",
-    " support",
-    "                ",
-    " ",
-    "|\n| Documentation   ",
-    " ",
-    "| Comprehensive documentation",
-    " available",
-    "        ",
-    " ",
-    "| Comprehensive documentation",
-    " available",
-    "        ",
-    " ",
-    "|\n| Performance     ",
-    " ",
-    "| Optimized for performance",
-    " with",
-    " large",
-    " documents",
-    "| Good performance, but",
-    " may",
-    " require",
-    " optimization",
-    "|\n| Integration     ",
-    " ",
-    "| Easy integration with",
-    " React",
-    "                  ",
-    " ",
-    "| Easy integration with",
-    " React",
-    "                  ",
-    " ",
-    "|\n| Use Cases       ",
-    " ",
-    "| Suitable for complex",
-    " editing",
-    " needs",
-    "           ",
-    " ",
-    "| Suitable for complex",
-    " editing",
-    " needs",
-    "           ",
-    " ",
-    "\n\n",
+    '| Feature          |',
+    ' Plate',
+    '.js',
+    '                                     ',
+    ' ',
+    '| Slate.js                                     ',
+    ' ',
+    '|\n|------------------',
+    '|--------------------------------',
+    '---------------',
+    '|--------------------------------',
+    '---------------',
+    '|\n| Purpose         ',
+    ' ',
+    '| Rich text editor framework',
+    '                   ',
+    ' ',
+    '| Rich text editor framework',
+    '                   ',
+    ' ',
+    '|\n| Flexibility     ',
+    ' ',
+    '| Highly customizable',
+    ' with',
+    ' plugins',
+    '             ',
+    ' ',
+    '| Highly customizable',
+    ' with',
+    ' plugins',
+    '             ',
+    ' ',
+    '|\n| Community       ',
+    ' ',
+    '| Growing community support',
+    '                    ',
+    ' ',
+    '| Established community',
+    ' support',
+    '                ',
+    ' ',
+    '|\n| Documentation   ',
+    ' ',
+    '| Comprehensive documentation',
+    ' available',
+    '        ',
+    ' ',
+    '| Comprehensive documentation',
+    ' available',
+    '        ',
+    ' ',
+    '|\n| Performance     ',
+    ' ',
+    '| Optimized for performance',
+    ' with',
+    ' large',
+    ' documents',
+    '| Good performance, but',
+    ' may',
+    ' require',
+    ' optimization',
+    '|\n| Integration     ',
+    ' ',
+    '| Easy integration with',
+    ' React',
+    '                  ',
+    ' ',
+    '| Easy integration with',
+    ' React',
+    '                  ',
+    ' ',
+    '|\n| Use Cases       ',
+    ' ',
+    '| Suitable for complex',
+    ' editing',
+    ' needs',
+    '           ',
+    ' ',
+    '| Suitable for complex',
+    ' editing',
+    ' needs',
+    '           ',
+    ' ',
+    '\n\n',
     'Paragraph ',
     'should ',
-    "exist ",
-    "from ",
-    'table'
-  ]
+    'exist ',
+    'from ',
+    'table',
+  ],
 };
 
-
-
 export default function MarkdownStreamingDemo() {
-  const [selectedScenario, setSelectedScenario] = useState<keyof typeof testScenarios>('columns');
-  const [activeIndex, setActiveIndex] = useState<number>(0)
+  const [selectedScenario, setSelectedScenario] =
+    useState<keyof typeof testScenarios>('columns');
+  const [activeIndex, setActiveIndex] = useState<number>(0);
   const isPauseRef = useRef(false);
   const streamSessionRef = useRef(0);
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
@@ -303,19 +306,20 @@ export default function MarkdownStreamingDemo() {
   const [isPlateStatic, setIsPlateStatic] = useState(false);
   const [speed, setSpeed] = useState<number | null>(null);
 
-  const editor = usePlateEditor({
-    plugins: [
-      ...CopilotKit,
-      ...EditorKit,
-    ],
-    value: [],
-  }, []);
+  const editor = usePlateEditor(
+    {
+      plugins: [...CopilotKit, ...EditorKit],
+      value: [],
+    },
+    []
+  );
 
-  const editorStatic = usePlateViewEditor({
-    plugins: BaseEditorKit
-  }, [])
-
-
+  const editorStatic = usePlateViewEditor(
+    {
+      plugins: BaseEditorKit,
+    },
+    []
+  );
 
   const currentChunks = testScenarios[selectedScenario];
   const transformedCurrentChunks = transformedChunks(currentChunks);
@@ -336,16 +340,14 @@ export default function MarkdownStreamingDemo() {
     for (let i = 0; i < transformedCurrentChunks.length; i++) {
       while (isPauseRef.current) {
         if (sessionId !== streamSessionRef.current) return;
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       if (sessionId !== streamSessionRef.current) return;
 
       setActiveIndex(i + 1);
 
-      const chunk = transformedCurrentChunks[i]
-
-
+      const chunk = transformedCurrentChunks[i];
 
       streamInsertChunk(editor, chunk.chunk, {
         textProps: {
@@ -353,37 +355,37 @@ export default function MarkdownStreamingDemo() {
         },
       });
 
-      await new Promise(resolve => setTimeout(resolve, speed ?? chunk.delayInMs));
+      await new Promise((resolve) =>
+        setTimeout(resolve, speed ?? chunk.delayInMs)
+      );
 
       if (sessionId !== streamSessionRef.current) return;
     }
     setStreaming(false);
   }, [editor, transformedCurrentChunks, speed]);
 
-
   const onStreamingStatic = useCallback(async () => {
-    let output = ""
+    let output = '';
     setStreaming(true);
     streamSessionRef.current += 1;
 
     for (const chunk of transformedCurrentChunks) {
       output += chunk.chunk;
-      editorStatic.children = deserializeMd(editorStatic, output)
-      setActiveIndex(prev => prev + 1);
-      forceUpdate()
-      await new Promise(resolve => setTimeout(resolve, speed ?? chunk.delayInMs));
+      editorStatic.children = deserializeMd(editorStatic, output);
+      setActiveIndex((prev) => prev + 1);
+      forceUpdate();
+      await new Promise((resolve) =>
+        setTimeout(resolve, speed ?? chunk.delayInMs)
+      );
     }
     setStreaming(false);
-
-
   }, [editorStatic, speed, transformedCurrentChunks]);
-
 
   const onReset = useCallback(() => {
     setActiveIndex(0);
     if (isPlateStatic) {
-      editorStatic.children = []
-      forceUpdate()
+      editorStatic.children = [];
+      forceUpdate();
     } else {
       editor.tf.setValue([]);
       editor.setOption(AIChatPlugin, 'streaming', false);
@@ -392,50 +394,58 @@ export default function MarkdownStreamingDemo() {
     }
   }, [editor, editorStatic, isPlateStatic]);
 
-  const onNavigate = useCallback((targetIndex: number) => {
-    // Check if navigation is possible
-    if (targetIndex < 0 || targetIndex > transformedCurrentChunks.length) return;
+  const onNavigate = useCallback(
+    (targetIndex: number) => {
+      // Check if navigation is possible
+      if (targetIndex < 0 || targetIndex > transformedCurrentChunks.length)
+        return;
 
-    if (isPlateStatic) {
-      let output = ""
-      for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
-        output += chunk.chunk
+      if (isPlateStatic) {
+        let output = '';
+        for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
+          output += chunk.chunk;
+        }
+
+        editorStatic.children = deserializeMd(editorStatic, output);
+        setActiveIndex(targetIndex);
+        forceUpdate();
+      } else {
+        editor.tf.setValue([]);
+
+        editor.setOption(AIChatPlugin, 'streaming', false);
+        editor.setOption(AIChatPlugin, '_blockChunks', '');
+        editor.setOption(AIChatPlugin, '_blockPath', null);
+
+        for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
+          streamInsertChunk(editor, chunk.chunk, {
+            textProps: {
+              [getPluginType(editor, KEYS.ai)]: true,
+            },
+          });
+        }
+        setActiveIndex(targetIndex);
       }
+    },
+    [editor, editorStatic, isPlateStatic, transformedCurrentChunks]
+  );
 
-      editorStatic.children = deserializeMd(editorStatic, output)
-      setActiveIndex(targetIndex);
-      forceUpdate()
-
-    } else {
-      editor.tf.setValue([])
-
-      editor.setOption(AIChatPlugin, 'streaming', false);
-      editor.setOption(AIChatPlugin, '_blockChunks', '');
-      editor.setOption(AIChatPlugin, '_blockPath', null);
-
-      for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
-        streamInsertChunk(editor, chunk.chunk, {
-          textProps: {
-            [getPluginType(editor, KEYS.ai)]: true,
-          },
-        });
-      }
-      setActiveIndex(targetIndex);
-    }
-  }, [editor, editorStatic, isPlateStatic, transformedCurrentChunks]);
-
-  const onPrev = useCallback(() => onNavigate(activeIndex - 1), [onNavigate, activeIndex]);
-  const onNext = useCallback(() => onNavigate(activeIndex + 1), [onNavigate, activeIndex]);
-
+  const onPrev = useCallback(
+    () => onNavigate(activeIndex - 1),
+    [onNavigate, activeIndex]
+  );
+  const onNext = useCallback(
+    () => onNavigate(activeIndex + 1),
+    [onNavigate, activeIndex]
+  );
 
   return (
-    <section className="p-20 h-full overflow-y-auto">
-      <div className="mb-10 bg-gray-100 p-4 rounded">
+    <section className="h-full overflow-y-auto p-20">
+      <div className="mb-10 rounded bg-gray-100 p-4">
         {/* Scenario Selection */}
         <div className="mb-4">
-          <span className="block text-sm font-medium mb-2">Test Scenario:</span>
+          <span className="mb-2 block text-sm font-medium">Test Scenario:</span>
           <select
-            className="border rounded px-3 py-2 w-64"
+            className="w-64 rounded border px-3 py-2"
             value={selectedScenario}
             onChange={(e) => {
               setSelectedScenario(e.target.value as keyof typeof testScenarios);
@@ -445,140 +455,162 @@ export default function MarkdownStreamingDemo() {
           >
             {Object.entries(testScenarios).map(([key]) => (
               <option key={key} value={key}>
-                {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                {key
+                  .replace(/([A-Z])/g, ' $1')
+                  .replace(/^./, (str) => str.toUpperCase())}
               </option>
             ))}
           </select>
         </div>
 
         {/* Control Buttons */}
-        <div className="flex gap-2 mb-4 items-center">
-
-
+        <div className="mb-4 flex items-center gap-2">
           <Button onClick={onPrev}>
             <ChevronFirstIcon />
           </Button>
 
-          <Button onClick={() => {
-            if (streaming) {
-              isPauseRef.current = !isPauseRef.current;
-              forceUpdate();
-            } else {
-              if (isPlateStatic) {
-                onStreamingStatic();
+          <Button
+            onClick={() => {
+              if (streaming) {
+                isPauseRef.current = !isPauseRef.current;
+                forceUpdate();
               } else {
-                onStreaming();
+                if (isPlateStatic) {
+                  onStreamingStatic();
+                } else {
+                  onStreaming();
+                }
               }
-            }
-
-          }}>
+            }}
+          >
             {isPauseRef.current || !streaming ? <PlayIcon /> : <PauseIcon />}
           </Button>
-
 
           <Button onClick={onNext}>
             <ChevronLastIcon />
           </Button>
 
-
-          <Button
-            onClick={() => onReset()}>
+          <Button onClick={() => onReset()}>
             <RotateCcwIcon />
           </Button>
 
-          <Button onClick={() => {
-            setIsPlateStatic(!isPlateStatic);
-            onReset()
-          }}>
+          <Button
+            onClick={() => {
+              setIsPlateStatic(!isPlateStatic);
+              onReset();
+            }}
+          >
             Switch to {isPlateStatic ? 'Plate' : 'PlateStatic'}
           </Button>
-
         </div>
 
-        <div className="flex gap-2 mb-4 items-center">
+        <div className="mb-4 flex items-center gap-2">
           <span className="block text-sm font-medium">Speed:</span>
           <select
-            className="border rounded px-2 py-1"
+            className="rounded border px-2 py-1"
             value={speed ?? 'default'}
-            onChange={e => setSpeed(e.target.value === 'default' ? null : Number(e.target.value))}
+            onChange={(e) =>
+              setSpeed(
+                e.target.value === 'default' ? null : Number(e.target.value)
+              )
+            }
           >
-            {['default', 10, 100, 200].map(ms => (
+            {['default', 10, 100, 200].map((ms) => (
               <option key={ms} value={ms}>
-                {ms === 'default' ? 'Default' : ms === 10 ? 'Fast(10ms)' : ms === 100 ? 'Medium(100ms)' : ms === 200 ? 'Slow(200ms)' : `${ms}ms`}
+                {ms === 'default'
+                  ? 'Default'
+                  : ms === 10
+                    ? 'Fast(10ms)'
+                    : ms === 100
+                      ? 'Medium(100ms)'
+                      : ms === 200
+                        ? 'Slow(200ms)'
+                        : `${ms}ms`}
               </option>
             ))}
           </select>
-          <span className="text-sm text-muted-foreground">The default speed is 10ms, but it adjusts to 100ms when streaming a table or code block.</span>
+          <span className="text-sm text-muted-foreground">
+            The default speed is 10ms, but it adjusts to 100ms when streaming a
+            table or code block.
+          </span>
         </div>
 
-        <div className="w-full h-2 bg-gray-200 rounded my-4">
+        <div className="my-4 h-2 w-full rounded bg-gray-200">
           <div
-            className="h-2 bg-primary rounded transition-all duration-300"
+            className="h-2 rounded bg-primary transition-all duration-300"
             style={{
-              width: `${(activeIndex / (transformedCurrentChunks.length || 1)) * 100}%`
+              width: `${(activeIndex / (transformedCurrentChunks.length || 1)) * 100}%`,
             }}
           />
         </div>
 
-        <span className="text-sm text-muted-foreground">PlateStatic offers more robust and flawless performance.</span>
+        <span className="text-sm text-muted-foreground">
+          PlateStatic offers more robust and flawless performance.
+        </span>
       </div>
 
-      <div className="flex gap-10 my-2">
+      <div className="my-2 flex gap-10">
         <div className="w-1/2">
-          <h3 className="font-semibold mb-2">Transformed Chunks ({activeIndex}/{transformedCurrentChunks.length})</h3>
+          <h3 className="mb-2 font-semibold">
+            Transformed Chunks ({activeIndex}/{transformedCurrentChunks.length})
+          </h3>
           <Tokens
             activeIndex={activeIndex}
             chunkClick={onNavigate}
-            chunks={splitChunksByLinebreak(transformedCurrentChunks.map(c => c.chunk))} />
+            chunks={splitChunksByLinebreak(
+              transformedCurrentChunks.map((c) => c.chunk)
+            )}
+          />
         </div>
 
         <div className="w-1/2">
-          <h3 className="font-semibold mb-2">Editor Output</h3>
-          {
-            isPlateStatic ? (
-              <EditorView className="border rounded h-[500px] overflow-y-auto" editor={editorStatic} />
-            ) : (
-              <>
-                <Plate editor={editor}>
-                  <EditorContainer className="border rounded h-[500px] overflow-y-auto">
-                    <Editor
-                      variant="demo"
-                      className="pb-[20vh]"
-                      placeholder="Type something..."
-                      spellCheck={false}
-                    />
-                  </EditorContainer>
-                </Plate>
-              </>
-            )
-          }
-        </div >
-      </div >
+          <h3 className="mb-2 font-semibold">Editor Output</h3>
+          {isPlateStatic ? (
+            <EditorView
+              className="h-[500px] overflow-y-auto rounded border"
+              editor={editorStatic}
+            />
+          ) : (
+            <>
+              <Plate editor={editor}>
+                <EditorContainer className="h-[500px] overflow-y-auto rounded border">
+                  <Editor
+                    variant="demo"
+                    className="pb-[20vh]"
+                    placeholder="Type something..."
+                    spellCheck={false}
+                  />
+                </EditorContainer>
+              </Plate>
+            </>
+          )}
+        </div>
+      </div>
 
-      <h2 className="text-xl font-semibold mt-8 mb-4">Raw Token Comparison</h2>
-      <div className="flex gap-10 my-2">
+      <h2 className="mt-8 mb-4 text-xl font-semibold">Raw Token Comparison</h2>
+      <div className="my-2 flex gap-10">
         <div className="w-1/2">
-          <h3 className="font-semibold mb-2">Original Chunks</h3>
-          <Tokens activeIndex={0}
-            chunks={splitChunksByLinebreak(currentChunks)} />
+          <h3 className="mb-2 font-semibold">Original Chunks</h3>
+          <Tokens
+            activeIndex={0}
+            chunks={splitChunksByLinebreak(currentChunks)}
+          />
         </div>
 
         <div className="w-1/2">
-          <h3 className="font-semibold mb-2">Raw Markdown Text</h3>
+          <h3 className="mb-2 font-semibold">Raw Markdown Text</h3>
           <textarea
-            className={cn("w-full border rounded h-[500px] overflow-y-auto p-4 font-mono text-sm")}
+            className={cn(
+              'h-[500px] w-full overflow-y-auto rounded border p-4 font-mono text-sm'
+            )}
             readOnly
             value={currentChunks.join('')}
           />
         </div>
       </div>
-    </section >
+    </section>
   );
-};
-
-
-
-
+}
 
 type TChunks = {
   chunks: {
@@ -586,11 +618,11 @@ type TChunks = {
     text: string;
   }[];
   linebreaks: number;
-}
+};
 
 function splitChunksByLinebreak(chunks: string[]) {
   const result: TChunks[] = [];
-  let current: { index: number; text: string; }[] = [];
+  let current: { index: number; text: string }[] = [];
 
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
@@ -617,8 +649,7 @@ function splitChunksByLinebreak(chunks: string[]) {
   return result;
 }
 
-
-type TChunk = { chunk: string, delayInMs: number; }
+type TChunk = { chunk: string; delayInMs: number };
 const transformedChunks = (chunks: string[]): TChunk[] => {
   const result: TChunk[] = [];
   const joiner = new MarkdownJoiner();
@@ -634,34 +665,46 @@ const transformedChunks = (chunks: string[]): TChunk[] => {
     result.push({ chunk: remaining, delayInMs: joiner.delayInMs });
   }
   return result;
-}
+};
 
-
-const Tokens = ({ activeIndex, chunkClick, chunks, ...props }: { activeIndex: number; chunks: TChunks[], chunkClick?: (index: number) => void } & HTMLAttributes<HTMLDivElement>) => {
+const Tokens = ({
+  activeIndex,
+  chunkClick,
+  chunks,
+  ...props
+}: {
+  activeIndex: number;
+  chunks: TChunks[];
+  chunkClick?: (index: number) => void;
+} & HTMLAttributes<HTMLDivElement>) => {
   return (
-    <div className="bg-gray-100 h-[500px] overflow-y-auto my-1 p-4 rounded font-mono " {...props}>
-      {
-        chunks.map((chunk, index) => {
+    <div
+      className="my-1 h-[500px] overflow-y-auto rounded bg-gray-100 p-4 font-mono"
+      {...props}
+    >
+      {chunks.map((chunk, index) => {
+        return (
+          <div key={index} className="py-1">
+            {chunk.chunks.map((c, j) => {
+              const lineBreak = c.text.replaceAll('\n', '⤶');
+              const space = lineBreak.replaceAll(' ', '␣');
 
-          return <div key={index} className="py-1">
-            {
-              chunk.chunks.map((c, j) => {
-                const lineBreak = c.text.replaceAll('\n', '⤶')
-                const space = lineBreak.replaceAll(' ', '␣')
-
-                return (
-                  <span key={j}
-                    className={cn(
-                      "inline-block border p-1 mx-1 rounded",
-                      activeIndex && c.index < activeIndex && 'bg-amber-400'
-                    )}
-                    onClick={() => chunkClick && chunkClick(c.index + 1)}>{space}</span>
-                )
-              })
-            }
+              return (
+                <span
+                  key={j}
+                  className={cn(
+                    'mx-1 inline-block rounded border p-1',
+                    activeIndex && c.index < activeIndex && 'bg-amber-400'
+                  )}
+                  onClick={() => chunkClick && chunkClick(c.index + 1)}
+                >
+                  {space}
+                </span>
+              );
+            })}
           </div>
-        })
-      }
+        );
+      })}
     </div>
-  )
-}
+  );
+};

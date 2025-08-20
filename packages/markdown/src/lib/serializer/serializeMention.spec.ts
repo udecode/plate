@@ -51,7 +51,9 @@ describe('serializeMd - mention', () => {
     ];
 
     const markdown = serializeMd(editor);
-    expect(markdown).toBe('[bob](mention:bob) mentioned [charlie](mention:charlie) in the discussion\n');
+    expect(markdown).toBe(
+      '[bob](mention:bob) mentioned [charlie](mention:charlie) in the discussion\n'
+    );
   });
 
   it('should serialize mentions with spaces using link format', () => {
@@ -73,9 +75,7 @@ describe('serializeMd - mention', () => {
     ];
 
     const markdown = serializeMd(editor);
-    expect(markdown).toBe(
-      'Hey [John Doe](mention:john_doe) check this out\n'
-    );
+    expect(markdown).toBe('Hey [John Doe](mention:john_doe) check this out\n');
   });
 
   it('should use key for URL when both key and value are present', () => {

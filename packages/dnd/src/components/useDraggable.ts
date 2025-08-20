@@ -5,7 +5,10 @@ import { useEditorRef } from 'platejs/react';
 import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 
 export type DraggableState = {
-  /** True when the element is ready to be dragged (e.g., on mouse down but before drag starts) */
+  /**
+   * True when the element is ready to be dragged (e.g., on mouse down but
+   * before drag starts)
+   */
   isAboutToDrag: boolean;
   isDragging: boolean;
   /** The ref of the draggable element */

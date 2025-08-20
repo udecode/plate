@@ -5,9 +5,9 @@ import type {
   EditorTransforms,
   NodeEntry,
   NodeOperation,
-  TextOperation,
   Path,
   TElement,
+  TextOperation,
   TText,
   Value,
 } from '@platejs/slate';
