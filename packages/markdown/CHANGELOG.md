@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 49.2.15
+
+### Patch Changes
+
+- [#4577](https://github.com/udecode/plate/pull/4577) by [@felixfeng33](https://github.com/felixfeng33) – Fix regex not matching MDX opening tags with attributes.
+
 ## 49.2.14
 
 ### Patch Changes
