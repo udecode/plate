@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 49.2.15
+
+### Patch Changes
+
+- [#4577](https://github.com/udecode/plate/pull/4577) by [@felixfeng33](https://github.com/felixfeng33) – Fix `replaceSelectionAIChat` when selecting whole code block.
+
 ## 49.2.14
 
 ### Patch Changes
