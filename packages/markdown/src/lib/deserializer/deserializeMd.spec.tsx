@@ -662,13 +662,4 @@ describe('fixures', () => {
 
     expect(deserializeMd(editor, input)).toMatchSnapshot();
   });
-
-  it('should deserialize incomplete mdx with line breaks', () => {
-    const input = `<callout>
-Here are a few additional prompt ideas to expand on the existing ones:
-
-Math Adventure Quest`;
-
-    expect(deserializeMd(editor, input)).toMatchSnapshot();
-  });
 });

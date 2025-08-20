@@ -5,6 +5,7 @@ import {
   markdownToSlateNodes,
 } from '../deserializeMd';
 import { splitIncompleteMdx } from './splitIncompleteMdx';
+import { deserializeInlineMd } from './deserializeInlineMd';
 
 export const markdownToSlateNodesSafely = (
   editor: SlateEditor,
@@ -21,7 +22,7 @@ export const markdownToSlateNodesSafely = (
 
   const [completeString, incompleteString] = result;
 
-  const incompleteNodes = markdownToSlateNodes(editor, incompleteString, {
+  const incompleteNodes = deserializeInlineMd(editor, incompleteString, {
     ...options,
     withoutMdx: true,
   });

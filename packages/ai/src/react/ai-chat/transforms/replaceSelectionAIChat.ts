@@ -95,7 +95,17 @@ export const replaceSelectionAIChat = (
 
       if (!formattedBlocks) return;
 
-      editor.tf.insertFragment(formattedBlocks);
+      /** When user selection is cover the whole code block */
+      if (
+        firstBlock[0].type === KEYS.codeLine &&
+        sourceEditor.children[0].type === KEYS.codeBlock &&
+        sourceEditor.children.length === 1
+      ) {
+        editor.tf.insertFragment(formattedBlocks[0].children);
+      } else {
+        editor.tf.insertFragment(formattedBlocks);
+      }
+
       editor.tf.focus();
 
       return;
