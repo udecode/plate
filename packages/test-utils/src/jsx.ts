@@ -20,9 +20,38 @@ declare global {
       element: any;
       focus: any;
       fragment: any;
+      ha: any;
+      haudio: any;
+      hblockquote: any;
+      hcallout: any;
+      hcodeblock: any;
+      hcodeline: any;
+      hcolumn: any;
+      hcolumngroup: any;
+      hdate: any;
+      hdefault: any;
+      hequation: any;
+      hexcalidraw: any;
+      hfile: any;
+      hh1: any;
+      hh2: any;
+      hh3: any;
+      hh4: any;
+      hh5: any;
+      hh6: any;
+      himg: any;
+      hinlineequation: any;
       hli: any;
+      hlic: any;
+      hmediaembed: any;
+      hmention: any;
+      hmentioninput: any;
+      hnli: any;
       hol: any;
       hp: any;
+      hplaceholder: any;
+      htable: any;
+      htd: any;
       htext: {
         [key: string]: any;
         // These optional params will show up in the autocomplete!
@@ -32,8 +61,15 @@ declare global {
         italic?: boolean;
         underline?: boolean;
       };
+      hth: any;
+      htoc: any;
+      htodoli: any;
+      htoggle: any;
+      htr: any;
       hul: any;
+      hvideo: any;
       selection: any;
+      text: any;
     }
   }
 }
