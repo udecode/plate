@@ -7,8 +7,7 @@ import { AIChatPlugin } from '../../react';
 import { getChunkTrimmed } from './utils';
 import { escapeInput } from './utils/escapeInput';
 
-const statMdxTagRegex = /<([A-Za-z][A-Za-z0-9\-_]*)>/;
-
+const statMdxTagRegex = /<([A-Za-z][A-Za-z0-9._:-]*)(?:\s[^>]*)?>/;
 export const streamDeserializeMd = (
   editor: PlateEditor,
   data: string,
