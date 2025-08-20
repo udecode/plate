@@ -1,0 +1,5 @@
+---
+'@platejs/markdown': patch
+---
+
+Revert
