@@ -1,5 +1,11 @@
 # @platejs/test-utils
 
+## 49.2.16
+
+### Patch Changes
+
+- [#4578](https://github.com/udecode/plate/pull/4578) by [@delijah](https://github.com/delijah) – Remove overriding of index signature on `JSX.IntrinsicElements`, in order to avoid error messages on react jsx elements
+
 ## 49.2.13
 
 ### Patch Changes
