@@ -22,7 +22,7 @@ export const withList: OverrideEditor<BaseListConfig> = (ctx) => {
   const {
     editor,
     getOptions,
-    tf: { apply, resetBlock, insertData },
+    tf: { apply, resetBlock },
   } = ctx;
 
   return {
