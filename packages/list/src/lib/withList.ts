@@ -27,12 +27,6 @@ export const withList: OverrideEditor<BaseListConfig> = (ctx) => {
 
   return {
     transforms: {
-      insertData(data) {
-        const html = data.getData('text/html');
-        console.log('🚀 ~ insertData ~ html:', html);
-
-        return insertData(data);
-      },
       resetBlock(options) {
         if (editor.api.block(options)?.[0]?.[KEYS.listType]) {
           outdentList(editor);
