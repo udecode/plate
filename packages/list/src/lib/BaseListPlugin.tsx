@@ -67,7 +67,46 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
 
                 element.replaceChildren(...liChildren);
 
-                // TODO: recursive check on ul parents for indent
+                // Check for aria-level first (Google Docs uses this)
+                const ariaLevel = element.getAttribute('aria-level');
+                if (ariaLevel) {
+                  // aria-level takes precedence
+                  element.setAttribute('data-indent', ariaLevel);
+                } else {
+                  // Calculate indent level based on nested UL/OL parents
+                  let indent = 0;
+                  let parent = element.parentElement;
+                  while (parent && parent !== body) {
+                    if (parent.tagName === 'UL' || parent.tagName === 'OL') {
+                      indent++;
+                    }
+                    parent = parent.parentElement;
+                  }
+                  
+                  // Set indent level as data attribute
+                  if (indent > 0) {
+                    element.setAttribute('data-indent', String(indent));
+                  }
+                }
+                
+                // Set list style type from inline style or parent list type
+                const listStyleType = (element as HTMLElement).style.listStyleType;
+                if (listStyleType) {
+                  element.setAttribute('data-list-style-type', listStyleType);
+                } else {
+                  // Fallback to parent list type
+                  const listParent = element.closest('ul, ol');
+                  if (listParent) {
+                    const parentListStyleType = (listParent as HTMLElement).style.listStyleType;
+                    if (parentListStyleType) {
+                      element.setAttribute('data-list-style-type', parentListStyleType);
+                    } else if (listParent.tagName === 'UL') {
+                      element.setAttribute('data-list-style-type', 'disc');
+                    } else if (listParent.tagName === 'OL') {
+                      element.setAttribute('data-list-style-type', 'decimal');
+                    }
+                  }
+                }
 
                 return false;
               }
@@ -95,10 +134,18 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
           },
         ],
         parse: ({ editor, element, getOptions }) => {
+          // Get indent from data-indent or aria-level (gdoc)
+          const dataIndent = element.getAttribute('data-indent');
+          const ariaLevel = element.getAttribute('aria-level');
+          const indent = dataIndent ? Number(dataIndent) : Number(ariaLevel);
+          
+          // Get list style type from data attribute or use default
+          const dataListStyleType = element.getAttribute('data-list-style-type');
+          const listStyleType = dataListStyleType || getOptions().getListStyleType?.(element);
+          
           return {
-            // gdoc uses aria-level attribute
-            indent: Number(element.getAttribute('aria-level')),
-            listStyleType: getOptions().getListStyleType?.(element),
+            indent: indent || undefined,
+            listStyleType: listStyleType || undefined,
             type: editor.getType(KEYS.p),
           };
         },
