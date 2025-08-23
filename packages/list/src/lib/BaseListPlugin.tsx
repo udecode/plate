@@ -51,23 +51,107 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
             const document = new DOMParser().parseFromString(data, 'text/html');
             const { body } = document;
 
+            // First pass: flatten nested UL/OL that are inside LI elements
+            // We need to move them to be siblings of their parent LI
+            const lisWithNestedLists: {
+              li: Element;
+              nestedLists: Element[];
+            }[] = [];
+
             traverseHtmlElements(body, (element) => {
               if (element.tagName === 'LI') {
+                const nestedLists: Element[] = [];
+                // Find nested UL/OL elements
+                Array.from(element.children).forEach((child) => {
+                  if (child.tagName === 'UL' || child.tagName === 'OL') {
+                    nestedLists.push(child);
+                  }
+                });
+
+                if (nestedLists.length > 0) {
+                  lisWithNestedLists.push({ li: element, nestedLists });
+                }
+              }
+              return true;
+            });
+
+            // Move nested lists to be after their parent LI
+            lisWithNestedLists.forEach(({ li, nestedLists }) => {
+              nestedLists.forEach((nestedList) => {
+                // Remove the nested list from inside the LI
+                nestedList.remove();
+                // Insert it after the LI in the parent container
+                if (li.parentNode) {
+                  li.parentNode.insertBefore(nestedList, li.nextSibling);
+                }
+              });
+            });
+
+            // Second pass: process LI elements (now without nested lists inside them)
+            traverseHtmlElements(body, (element) => {
+              if (element.tagName === 'LI') {
+                const htmlElement = element as HTMLElement;
                 const { childNodes } = element;
 
-                // replace li block children (e.g. p) by their children
+                // Process li children and flatten block elements
                 const liChildren: Node[] = [];
+
                 childNodes.forEach((child) => {
-                  if (isHtmlBlockElement(child as Element)) {
-                    liChildren.push(...child.childNodes);
-                  } else {
-                    liChildren.push(child);
+                  if (child.nodeType === Node.ELEMENT_NODE) {
+                    const childElement = child as Element;
+                    if (isHtmlBlockElement(childElement)) {
+                      // Replace block elements (e.g. p) with their children
+                      liChildren.push(...childElement.childNodes);
+                      return;
+                    }
                   }
+                  liChildren.push(child);
                 });
 
                 element.replaceChildren(...liChildren);
 
-                // TODO: recursive check on ul parents for indent
+                // Check for aria-level first (Google Docs uses this)
+                const ariaLevel = element.getAttribute('aria-level');
+
+                if (ariaLevel) {
+                  // aria-level takes precedence
+                  htmlElement.dataset.indent = ariaLevel;
+                } else {
+                  // Calculate indent level based on nested UL/OL parents
+                  let indent = 0;
+                  let parent = element.parentElement;
+                  while (parent && parent !== body) {
+                    if (parent.tagName === 'UL' || parent.tagName === 'OL') {
+                      indent++;
+                    }
+                    parent = parent.parentElement;
+                  }
+
+                  // Set indent level as data attribute
+                  if (indent > 0) {
+                    htmlElement.dataset.indent = String(indent);
+                  }
+                }
+
+                // Set list style type from inline style or parent list type
+                const listStyleType = htmlElement.style.listStyleType;
+                if (listStyleType) {
+                  htmlElement.dataset.listStyleType = listStyleType;
+                } else {
+                  // Fallback to parent list type
+                  const listParent = element.closest('ul, ol');
+                  if (listParent) {
+                    const parentListStyleType = (listParent as HTMLElement)
+                      .style.listStyleType;
+                    if (parentListStyleType) {
+                      htmlElement.dataset.listStyleType = parentListStyleType;
+                    } else if (listParent.tagName === 'UL') {
+                      htmlElement.dataset.listStyleType = 'disc';
+                    } else if (listParent.tagName === 'OL') {
+                      htmlElement.dataset.listStyleType = 'decimal';
+                    }
+                  }
+                }
 
                 return false;
               }
@@ -95,10 +179,19 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
           },
         ],
         parse: ({ editor, element, getOptions }) => {
+          // Get indent from data-indent or aria-level (gdoc)
+          const dataIndent = element.dataset.indent;
+          const ariaLevel = element.getAttribute('aria-level');
+          const indent = dataIndent ? Number(dataIndent) : Number(ariaLevel);
+
+          // Get list style type from data attribute or use default
+          const dataListStyleType = element.dataset.listStyleType;
+          const listStyleType =
+            dataListStyleType || getOptions().getListStyleType?.(element);
+
           return {
-            // gdoc uses aria-level attribute
-            indent: Number(element.getAttribute('aria-level')),
-            listStyleType: getOptions().getListStyleType?.(element),
+            indent: indent || undefined,
+            listStyleType: listStyleType || undefined,
             type: editor.getType(KEYS.p),
           };
         },

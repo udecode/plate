@@ -30,7 +30,7 @@ const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   }) as any;
 
 describe('when insertData disc and decimal from gdocs', () => {
-  it('should ', () => {
+  it('should handle Google Docs nested lists', () => {
     const e = (
       <editor>
         <hp>
@@ -113,6 +113,98 @@ describe('when insertData disc and decimal from gdocs', () => {
         ],
         indent: 4,
         listStyleType: 'decimal',
+        type: 'p',
+      },
+    ]);
+  });
+});
+
+describe('when insertData with nested ul inside li', () => {
+  it('should handle li with nested ul correctly', () => {
+    const e = (
+      <editor>
+        <hp>
+          <cursor />
+        </hp>
+      </editor>
+    ) as any;
+    const editor = createPlateEditor({
+      plugins: [
+        ImagePlugin,
+        HorizontalRulePlugin,
+        LinkPlugin,
+        TablePlugin,
+        BasicBlocksPlugin,
+        BasicMarksPlugin,
+        TablePlugin,
+        LineHeightPlugin.extend(injectConfig),
+        TextAlignPlugin.extend(injectConfig),
+        IndentPlugin.extend(injectConfig),
+        BaseListPlugin,
+        DocxPlugin,
+        JuicePlugin,
+      ],
+      selection: e.selection,
+      value: e.children,
+    });
+
+    editor.tf.insertData(
+      createClipboardData(
+        `<ul>
+          <li>Item 1
+            <ul>
+              <li>Item 1.1
+                <ul>
+                  <li>Item 1.1.1</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>Item 2</li>
+        </ul>`
+      )
+    );
+
+    expect(editor.children).toEqual([
+      {
+        children: [
+          {
+            text: 'Item 1 ', // Note: trailing space from HTML
+          },
+        ],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            text: 'Item 1.1 ', // Note: trailing space from HTML
+          },
+        ],
+        indent: 2,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            text: 'Item 1.1.1',
+          },
+        ],
+        indent: 3,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            text: 'Item 2',
+          },
+        ],
+        indent: 1,
+        listStart: 2, // Second item in the list
+        listStyleType: 'disc',
         type: 'p',
       },
     ]);
