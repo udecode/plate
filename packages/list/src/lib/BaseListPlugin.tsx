@@ -90,6 +90,7 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
             // Second pass: process LI elements (now without nested lists inside them)
             traverseHtmlElements(body, (element) => {
               if (element.tagName === 'LI') {
+                const htmlElement = element as HTMLElement;
                 const { childNodes } = element;
 
                 // Process li children and flatten block elements
@@ -111,9 +112,10 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
 
                 // Check for aria-level first (Google Docs uses this)
                 const ariaLevel = element.getAttribute('aria-level');
+
                 if (ariaLevel) {
                   // aria-level takes precedence
-                  element.dataset.indent = ariaLevel;
+                  htmlElement.dataset.indent = ariaLevel;
                 } else {
                   // Calculate indent level based on nested UL/OL parents
                   let indent = 0;
@@ -127,15 +129,14 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
 
                   // Set indent level as data attribute
                   if (indent > 0) {
-                    element.dataset.indent = String(indent);
+                    htmlElement.dataset.indent = String(indent);
                   }
                 }
 
                 // Set list style type from inline style or parent list type
-                const listStyleType = (element as HTMLElement).style
-                  .listStyleType;
+                const listStyleType = htmlElement.style.listStyleType;
                 if (listStyleType) {
-                  element.dataset.listStyleType = listStyleType;
+                  htmlElement.dataset.listStyleType = listStyleType;
                 } else {
                   // Fallback to parent list type
                   const listParent = element.closest('ul, ol');
@@ -143,11 +144,11 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
                     const parentListStyleType = (listParent as HTMLElement)
                       .style.listStyleType;
                     if (parentListStyleType) {
-                      element.dataset.listStyleType = parentListStyleType;
+                      htmlElement.dataset.listStyleType = parentListStyleType;
                     } else if (listParent.tagName === 'UL') {
-                      element.dataset.listStyleType = 'disc';
+                      htmlElement.dataset.listStyleType = 'disc';
                     } else if (listParent.tagName === 'OL') {
-                      element.dataset.listStyleType = 'decimal';
+                      htmlElement.dataset.listStyleType = 'decimal';
                     }
                   }
                 }
