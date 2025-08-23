@@ -4,7 +4,12 @@ import type { AIChatPluginConfig } from '@platejs/ai/react';
 import type { UseChatOptions } from 'ai/react';
 
 import { streamInsertChunk, withAIBatch } from '@platejs/ai';
-import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
+import {
+  AIChatPlugin,
+  AIPlugin,
+  AIReviewPlugin,
+  useChatChunk,
+} from '@platejs/ai/react';
 import { getPluginType, KEYS, PathApi } from 'platejs';
 import { usePluginOption } from 'platejs/react';
 
@@ -95,6 +100,12 @@ export const AIKit = [
   ...MarkdownKit,
   AIPlugin.withComponent(AILeaf),
   aiChatPlugin,
+  // AIReviewPlugin.configure({
+  //   options: {
+  //     promptTemplate: () => AI_REVIEW_PROMPT_TEMPLATES.userComment,
+  //     systemTemplate: () => AI_REVIEW_PROMPT_TEMPLATES.systemComment,
+  //   },
+  // }),
 ];
 
 const systemCommon = `\
@@ -187,4 +198,39 @@ export const PROMPT_TEMPLATES = {
   userBlockSelecting,
   userDefault,
   userSelecting,
+};
+
+const systemComment = `\
+You are an advanced AI-powered note-taking assistant, designed to enhance productivity and creativity in note management.
+Respond directly to user prompts with clear, concise, and relevant content. Maintain a neutral, helpful tone.
+
+Rules:
+- <Document> is the entire note the user is working on.
+- <Reminder> is a reminder of how you should reply to INSTRUCTIONS. It does not apply to questions.
+- Anything else is the user prompt.
+- Your response should be tailored to the user's prompt, providing precise assistance to optimize note management.
+- For INSTRUCTIONS: Follow the <Reminder> exactly. Provide ONLY the content to be inserted or replaced. No explanations or comments.
+- For QUESTIONS: Provide a helpful and concise answer. You may include brief explanations if necessary.
+- CRITICAL: DO NOT remove or modify the following custom MDX tags: <u>, <callout>, <kbd>, <toc>, <sub>, <sup>, <mark>, <del>, <date>, <span>, <column>, <column_group>, <file>, <audio>, <video> in <Selection> unless the user explicitly requests this change.
+- CRITICAL: Distinguish between INSTRUCTIONS and QUESTIONS. Instructions typically ask you to modify or add content. Questions ask for information or clarification.
+- CRITICAL: when asked to write in markdown, do not start with \`\`\`markdown.
+- CRITICAL: When writing the column, such line breaks and indentation must be preserved.
+<column_group>
+  <column>
+    1
+  </column>
+  <column>
+    2
+  </column>
+  <column>
+    3
+  </column>
+</column_group>
+`;
+
+const userComment = `{editor}`;
+
+const AI_REVIEW_PROMPT_TEMPLATES = {
+  systemComment,
+  userComment,
 };
