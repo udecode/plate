@@ -53,28 +53,31 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
 
             // First pass: flatten nested UL/OL that are inside LI elements
             // We need to move them to be siblings of their parent LI
-            const lisWithNestedLists: Array<{li: Element, nestedLists: Element[]}> = [];
-            
+            const lisWithNestedLists: {
+              li: Element;
+              nestedLists: Element[];
+            }[] = [];
+
             traverseHtmlElements(body, (element) => {
               if (element.tagName === 'LI') {
                 const nestedLists: Element[] = [];
                 // Find nested UL/OL elements
-                Array.from(element.children).forEach(child => {
+                Array.from(element.children).forEach((child) => {
                   if (child.tagName === 'UL' || child.tagName === 'OL') {
                     nestedLists.push(child);
                   }
                 });
-                
+
                 if (nestedLists.length > 0) {
                   lisWithNestedLists.push({ li: element, nestedLists });
                 }
               }
               return true;
             });
-            
+
             // Move nested lists to be after their parent LI
             lisWithNestedLists.forEach(({ li, nestedLists }) => {
-              nestedLists.forEach(nestedList => {
+              nestedLists.forEach((nestedList) => {
                 // Remove the nested list from inside the LI
                 nestedList.remove();
                 // Insert it after the LI in the parent container
@@ -91,7 +94,7 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
 
                 // Process li children and flatten block elements
                 const liChildren: Node[] = [];
-                
+
                 childNodes.forEach((child) => {
                   if (child.nodeType === Node.ELEMENT_NODE) {
                     const childElement = child as Element;
@@ -110,7 +113,7 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
                 const ariaLevel = element.getAttribute('aria-level');
                 if (ariaLevel) {
                   // aria-level takes precedence
-                  element.setAttribute('data-indent', ariaLevel);
+                  element.dataset.indent = ariaLevel;
                 } else {
                   // Calculate indent level based on nested UL/OL parents
                   let indent = 0;
@@ -121,28 +124,30 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
                     }
                     parent = parent.parentElement;
                   }
-                  
+
                   // Set indent level as data attribute
                   if (indent > 0) {
-                    element.setAttribute('data-indent', String(indent));
+                    element.dataset.indent = String(indent);
                   }
                 }
-                
+
                 // Set list style type from inline style or parent list type
-                const listStyleType = (element as HTMLElement).style.listStyleType;
+                const listStyleType = (element as HTMLElement).style
+                  .listStyleType;
                 if (listStyleType) {
-                  element.setAttribute('data-list-style-type', listStyleType);
+                  element.dataset.listStyleType = listStyleType;
                 } else {
                   // Fallback to parent list type
                   const listParent = element.closest('ul, ol');
                   if (listParent) {
-                    const parentListStyleType = (listParent as HTMLElement).style.listStyleType;
+                    const parentListStyleType = (listParent as HTMLElement)
+                      .style.listStyleType;
                     if (parentListStyleType) {
-                      element.setAttribute('data-list-style-type', parentListStyleType);
+                      element.dataset.listStyleType = parentListStyleType;
                     } else if (listParent.tagName === 'UL') {
-                      element.setAttribute('data-list-style-type', 'disc');
+                      element.dataset.listStyleType = 'disc';
                     } else if (listParent.tagName === 'OL') {
-                      element.setAttribute('data-list-style-type', 'decimal');
+                      element.dataset.listStyleType = 'decimal';
                     }
                   }
                 }
@@ -174,14 +179,15 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
         ],
         parse: ({ editor, element, getOptions }) => {
           // Get indent from data-indent or aria-level (gdoc)
-          const dataIndent = element.getAttribute('data-indent');
+          const dataIndent = element.dataset.indent;
           const ariaLevel = element.getAttribute('aria-level');
           const indent = dataIndent ? Number(dataIndent) : Number(ariaLevel);
-          
+
           // Get list style type from data attribute or use default
-          const dataListStyleType = element.getAttribute('data-list-style-type');
-          const listStyleType = dataListStyleType || getOptions().getListStyleType?.(element);
-          
+          const dataListStyleType = element.dataset.listStyleType;
+          const listStyleType =
+            dataListStyleType || getOptions().getListStyleType?.(element);
+
           return {
             indent: indent || undefined,
             listStyleType: listStyleType || undefined,

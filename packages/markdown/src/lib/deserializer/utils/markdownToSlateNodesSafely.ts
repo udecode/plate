@@ -4,8 +4,8 @@ import {
   type DeserializeMdOptions,
   markdownToSlateNodes,
 } from '../deserializeMd';
-import { splitIncompleteMdx } from './splitIncompleteMdx';
 import { deserializeInlineMd } from './deserializeInlineMd';
+import { splitIncompleteMdx } from './splitIncompleteMdx';
 
 export const markdownToSlateNodesSafely = (
   editor: SlateEditor,
