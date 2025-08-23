@@ -1,5 +1,11 @@
 # @platejs/list
 
+## 49.2.17
+
+### Patch Changes
+
+- [#4582](https://github.com/udecode/plate/pull/4582) by [@felixfeng33](https://github.com/felixfeng33) – Fix copying list from notion
+
 ## 49.2.0
 
 ### Minor Changes
