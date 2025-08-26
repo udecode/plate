@@ -11,6 +11,7 @@ import {
 } from 'platejs';
 import { PlateEditor } from 'platejs/react';
 import { getAIReviewCommentKey } from '../utils/getAIReviewKey';
+import { distance } from 'fastest-levenshtein';
 
 /** @experimental */
 export const applyAIReview = (
@@ -31,6 +32,7 @@ export const applyAIReview = (
 
   let j = 0;
   let i = 0;
+
   while (i < aiNodes.length && j < editorNodes.length) {
     const currentEditorNode = editorNodes[j];
     const currentAiNode = aiNodes[i];
@@ -38,7 +40,10 @@ export const applyAIReview = (
     const currentAIBlock = [i];
     const currentEditorBlock = [j];
 
-    if (NodeApi.string(currentEditorNode) !== NodeApi.string(currentAiNode)) {
+    const currentBlockString = NodeApi.string(currentEditorNode);
+    const currentAiBlockString = NodeApi.string(currentAiNode);
+
+    if (distance(currentBlockString, currentAiBlockString) > 5) {
       if (i > j) {
         j++;
       } else {
