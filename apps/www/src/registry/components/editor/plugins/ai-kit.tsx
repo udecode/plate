@@ -4,7 +4,12 @@ import type { AIChatPluginConfig } from '@platejs/ai/react';
 import type { UseChatOptions } from 'ai/react';
 
 import { streamInsertChunk, withAIBatch } from '@platejs/ai';
-import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
+import {
+  AIChatPlugin,
+  AIPlugin,
+  AIReviewPlugin,
+  useChatChunk,
+} from '@platejs/ai/react';
 import { getPluginType, KEYS, PathApi } from 'platejs';
 import { usePluginOption } from 'platejs/react';
 
@@ -13,6 +18,7 @@ import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
 
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
+import { AIReviewPreview } from '@/registry/ui/ai-review-preview';
 
 export const aiChatPlugin = AIChatPlugin.extend({
   options: {
@@ -95,6 +101,15 @@ export const AIKit = [
   ...MarkdownKit,
   AIPlugin.withComponent(AILeaf),
   aiChatPlugin,
+  AIReviewPlugin.configure({
+    render: {
+      afterContainer: AIReviewPreview,
+    },
+    options: {
+      promptTemplate: () => AI_REVIEW_PROMPT_TEMPLATES.userComment,
+      systemTemplate: () => AI_REVIEW_PROMPT_TEMPLATES.systemComment,
+    },
+  }),
 ];
 
 const systemCommon = `\
@@ -187,4 +202,23 @@ export const PROMPT_TEMPLATES = {
   userBlockSelecting,
   userDefault,
   userSelecting,
+};
+
+const systemComment = `\
+You are an advanced document review bot used to add comments to documents. The user will send you the full document, 
+and you will provide comments by wrapping the original text with <comment value="your comment">original document text</comment>.
+
+Rules:
+- Do NOT make ANY formatting or text changes to the original document. You can only add <comment value="..."> </comment> MDX tags to provide comments.
+- Do NOT modify or comment on existing comments.
+- Can NOT comment on images, empty blocks, or other non-text elements like <toc>, <audio>, <video>, etc.
+- Each paragraph must have at least one comment.
+- CRITICAL: Comments must NOT contain any Markdown syntax. For example, <comment># heading</comment> is incorrect. The correct form is # <comment>heading</comment>.
+`;
+
+const userComment = `{editor}`;
+
+const AI_REVIEW_PROMPT_TEMPLATES = {
+  systemComment,
+  userComment,
 };

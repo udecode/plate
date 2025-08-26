@@ -50,13 +50,13 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
+    "@ai-sdk/react": "1.2.12",
     "@platejs/markdown": "49.2.15",
     "@platejs/selection": "49.2.4",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@platejs/combobox": "49.0.0",
-    "ai": "4.3.16"
+    "@platejs/combobox": "49.0.0"
   },
   "peerDependencies": {
     "platejs": ">=49.2.4",
