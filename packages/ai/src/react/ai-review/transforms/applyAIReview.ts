@@ -2,6 +2,7 @@ import {
   KEYS,
   NodeApi,
   PathApi,
+  Range,
   SlateEditor,
   TCommentText,
   TElement,
@@ -9,41 +10,23 @@ import {
   TextApi,
 } from 'platejs';
 import { PlateEditor } from 'platejs/react';
+import { getAIReviewCommentKey } from '../utils/getAIReviewKey';
 
-const hasAIComment = (node: TElement): boolean => {
-  return node.children.some((child: any) => {
-    if (child[KEYS.comment]) {
-      return true;
-    }
-    if (Array.isArray(child.children)) {
-      return hasAIComment(child as TElement);
-    }
-    return false;
-  });
-};
-
-const getCommentNodeSubStringCount = ({
-  commentNode,
-  commentText,
-}: {
-  commentNode: TCommentText;
-  commentText: string;
-}): number => {
-  let count = 0;
-  let idx = 0;
-  while ((idx = commentNode.text.indexOf(commentText, idx)) !== -1) {
-    count++;
-    idx += commentText.length;
-  }
-  return count;
-};
-
+/** @experimental */
 export const applyAIReview = (
   editor: PlateEditor,
-  aiPreviewEditor: SlateEditor
+  aiPreviewEditor: SlateEditor,
+  {
+    onComment,
+  }: {
+    onComment: (comment: {
+      text: string;
+      content: string;
+      range: Range;
+    }) => void;
+  }
 ) => {
   const aiNodes = aiPreviewEditor.children;
-
   const editorNodes = editor.children;
 
   let j = 0;
@@ -77,8 +60,9 @@ export const applyAIReview = (
 
     for (const [comment, commentPath] of aiComments) {
       const { text: CommentText, ...restCommentProps } = comment;
+
       const isDuplicate =
-        NodeApi.string(currentAiNode).indexOf(CommentText, 1) !== -1;
+        indexOfOccurrence(NodeApi.string(currentAiNode), CommentText, 1) !== -1;
 
       if (!isDuplicate) {
         const targetNodeEntry = editor.api.node<Text>({
@@ -100,7 +84,7 @@ export const applyAIReview = (
         const startIndex = text.indexOf(CommentText);
         const endIndex = startIndex + CommentText.length;
 
-        const targetRange = {
+        const targetRange: Range = {
           anchor: {
             path: targetPath,
             offset: startIndex,
@@ -111,17 +95,11 @@ export const applyAIReview = (
           },
         };
 
-        editor.tf.setNodes(
-          {
-            comment: true,
-            ...restCommentProps,
-          },
-          {
-            at: targetRange,
-            match: TextApi.isText,
-            split: true,
-          }
-        );
+        onComment({
+          text: CommentText,
+          content: restCommentProps[getAIReviewCommentKey()] as any,
+          range: targetRange,
+        });
       } else {
         // A low-probability scenario, for example, when we need to add a comment mark to "hello",
         // but there are multiple instances of "hello" in the paragraph.
@@ -177,7 +155,11 @@ export const applyAIReview = (
 
         const [targetNode, targetPath] = targetNodeEntry;
 
-        const startIndex = targetNode.text.indexOf(commentText, leftCount);
+        const startIndex = indexOfOccurrence(
+          targetNode.text,
+          commentText,
+          leftCount
+        );
 
         const endIndex = startIndex + commentText.length;
 
@@ -192,18 +174,72 @@ export const applyAIReview = (
           },
         };
 
-        editor.tf.setNodes(
-          {
-            comment: true,
-            ...restCommentProps,
-          },
-          {
-            at: targetRange,
-            match: TextApi.isText,
-            split: true,
-          }
-        );
+        onComment({
+          text: CommentText,
+          content: restCommentProps[getAIReviewCommentKey()] as any,
+          range: targetRange,
+        });
       }
     }
   }
+};
+
+const hasAIComment = (node: TElement): boolean => {
+  return node.children.some((child: any) => {
+    if (child[KEYS.comment]) {
+      return true;
+    }
+    if (Array.isArray(child.children)) {
+      return hasAIComment(child as TElement);
+    }
+    return false;
+  });
+};
+
+const getCommentNodeSubStringCount = ({
+  commentNode,
+  commentText,
+}: {
+  commentNode: TCommentText;
+  commentText: string;
+}): number => {
+  let count = 0;
+  let idx = 0;
+  while ((idx = commentNode.text.indexOf(commentText, idx)) !== -1) {
+    count++;
+    idx += commentText.length;
+  }
+  return count;
+};
+
+/**
+ * IndexOfOccurrence Find the index of the nth occurrence of a substring in a
+ * string.
+ *
+ * @param str - The original string
+ * @param searchValue - The substring to search for
+ * @param occurrence - Which occurrence to find (starting from 0)
+ * @returns The index, or -1 if not found
+ *
+ *   Example: indexOfOccurrence("xxhello,hello", "hello", 0) // => 2
+ *   indexOfOccurrence("xxhello,hello", "hello", 1) // => 8
+ *   indexOfOccurrence("xxhello,hello", "hello", 2) // => -1
+ */
+const indexOfOccurrence = (
+  str: string,
+  searchValue: string,
+  occurrence: number
+): number => {
+  if (occurrence < 0) return -1;
+
+  let index = -1;
+  let from = 0;
+
+  for (let i = 0; i <= occurrence; i++) {
+    index = str.indexOf(searchValue, from);
+    if (index === -1) return -1;
+    from = index + searchValue.length;
+  }
+
+  return index;
 };

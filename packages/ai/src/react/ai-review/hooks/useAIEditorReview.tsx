@@ -19,6 +19,7 @@ export function useAIEditorReview(previewEditor: SlateEditor, content: string) {
               deserialize: (mdastNode, deco, options) => {
                 const props = parseAttributes(mdastNode.attributes);
                 const aiCommentContent = props.value;
+
                 return convertChildrenDeserialize(
                   mdastNode.children,
                   {

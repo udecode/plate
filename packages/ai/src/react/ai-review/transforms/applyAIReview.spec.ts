@@ -1,5 +1,5 @@
 import { BaseEditorKit } from '../../../../../../apps/www/src/registry/components/editor/editor-base-kit';
-import { createSlateEditor, getPluginType, KEYS } from 'platejs';
+import { createSlateEditor, getPluginType, KEYS, TextApi } from 'platejs';
 import {
   convertChildrenDeserialize,
   deserializeMd,
@@ -7,6 +7,7 @@ import {
 } from '@platejs/markdown';
 import { applyAIReview } from './applyAIReview';
 import { getAIReviewCommentKey } from '../utils/getAIReviewKey';
+import { getCommentKey } from '@platejs/comment';
 
 function createPreviewEditor(value: string) {
   const previewEditor = createSlateEditor({
@@ -54,7 +55,21 @@ describe('applyAIReview', () => {
       ],
     });
 
-    applyAIReview(editor, previewEditor);
+    applyAIReview(editor, previewEditor, {
+      onComment: ({ range, content, text }) => {
+        editor.tf.setNodes(
+          {
+            [KEYS.comment]: true,
+            [getCommentKey('test')]: true,
+          },
+          {
+            at: range,
+            match: TextApi.isText,
+            split: true,
+          }
+        );
+      },
+    });
 
     expect(editor.children).toEqual([
       {
@@ -63,7 +78,7 @@ describe('applyAIReview', () => {
           { text: 'hello,' },
           {
             [KEYS.comment]: true,
-            [getAIReviewCommentKey()]: 'test',
+            [getCommentKey('test')]: true,
             text: 'hello',
           },
           { text: ',hello,hello.' },

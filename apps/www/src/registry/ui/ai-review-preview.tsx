@@ -5,6 +5,7 @@ import {
   applyAIReview,
   useEditorCompletion,
   useAIEditorReview,
+  getAIReviewCommentKey,
 } from '@platejs/ai/react';
 import { useMemo, useState, useEffect } from 'react';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -25,17 +26,15 @@ import {
   TElement,
   Text,
   TextApi,
+  nanoid,
+  type Value,
 } from 'platejs';
 import { EditorStatic } from './editor-static';
 import { EditorView } from './editor';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, Loader2Icon, XIcon } from 'lucide-react';
-
-// const completion = 'hello,<comment value="1">hello</comment>,hello,hello.';
-
-// const completion = `# <comment value="This is an introductory heading for the document.">Welcome to the Plate Playground!</comment>`;
-// const stop = () => {};
-// const isLoading = false;
+import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-kit';
+import { getCommentKey } from '@platejs/comment';
 
 export function AIReviewPreview() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -72,6 +71,8 @@ export function AIReviewPreview() {
   useEffect(() => {
     if (isFinished && isVisible) {
       setIsExpanded(true);
+
+      console.log('completion', completion);
     }
   }, [isFinished]);
 
@@ -92,7 +93,55 @@ export function AIReviewPreview() {
         <div className="flex items-center gap-3">
           {isFinished && (
             <Button
-              onClick={() => applyAIReview(editor, previewEditor)}
+              onClick={() =>
+                applyAIReview(editor, previewEditor, {
+                  onComment({ content, range, text }) {
+                    // 获取当前讨论数据
+                    const discussions = editor.getOption(discussionPlugin, 'discussions') || [];
+                    
+                    // 生成新的讨论ID
+                    const discussionId = nanoid();
+                      
+                    // 创建新的评论
+                    const comment = {
+                      id: nanoid(),
+                      contentRich: [{ type: 'p', children: [{ text: content }] }],
+                      createdAt: new Date(),
+                      discussionId,
+                      isEdited: false,
+                      userId: editor.getOption(discussionPlugin, 'currentUserId'),
+                    };
+
+                    // 创建新的讨论
+                    const newDiscussion = {
+                      id: discussionId,
+                      comments: [comment],
+                      createdAt: new Date(),
+                      documentContent: text,
+                      isResolved: false,
+                      userId: editor.getOption(discussionPlugin, 'currentUserId'),
+                    };
+
+                    // 更新讨论数据
+                    const updatedDiscussions = [...discussions, newDiscussion];
+                    editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
+
+
+                    // 在编辑器中应用评论标记
+                    editor.tf.setNodes(
+                      {
+                        [KEYS.comment]: true,
+                        [getCommentKey(newDiscussion.id)]: true,
+                      },
+                      {
+                        at: range,
+                        match: TextApi.isText,
+                        split: true,
+                      }
+                    );
+                  },
+                })
+              }
               size="sm"
               disabled={isLoading}
             >
