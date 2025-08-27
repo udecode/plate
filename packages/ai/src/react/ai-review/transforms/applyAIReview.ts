@@ -203,6 +203,8 @@ const getCommentNodeSubStringCount = ({
   commentNode: TCommentText;
   commentText: string;
 }): number => {
+  if (commentText.length === 0) return 0;
+
   let count = 0;
   let idx = 0;
   while ((idx = commentNode.text.indexOf(commentText, idx)) !== -1) {
