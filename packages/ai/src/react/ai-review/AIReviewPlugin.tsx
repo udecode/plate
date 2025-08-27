@@ -1,15 +1,16 @@
+import type { useCompletion } from '@ai-sdk/react';
+
 import { type PluginConfig, KEYS } from 'platejs';
 import { createTPlatePlugin } from 'platejs/react';
 
-import { EditorPromptParams, getEditorPrompt } from '../ai-chat';
-import { useCompletion } from '@ai-sdk/react';
+import { type EditorPromptParams, getEditorPrompt } from '../ai-chat';
 
 export type AIReviewPluginConfig = PluginConfig<
   'aiReview',
   {
+    completion: ReturnType<typeof useCompletion> | null;
     promptTemplate: (props: EditorPromptParams) => string;
     systemTemplate: (props: EditorPromptParams) => string | void;
-    completion: null | ReturnType<typeof useCompletion>;
   },
   {
     aiReview: {
@@ -21,9 +22,9 @@ export type AIReviewPluginConfig = PluginConfig<
 export const AIReviewPlugin = createTPlatePlugin<AIReviewPluginConfig>({
   key: KEYS.aiReview,
   options: {
+    completion: null,
     promptTemplate: () => '{prompt}',
     systemTemplate: () => {},
-    completion: null,
   },
 }).extendApi<AIReviewPluginConfig['api']['aiReview']>(
   ({ editor, getOption }) => ({

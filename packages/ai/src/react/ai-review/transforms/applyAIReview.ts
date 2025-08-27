@@ -1,33 +1,34 @@
+import type { PlateEditor } from 'platejs/react';
+
+import { distance } from 'fastest-levenshtein';
 import {
+  type Range,
+  type SlateEditor,
+  type TCommentText,
+  type Text,
+  type TNode,
+  type TText,
+  type Value,
   ElementApi,
   KEYS,
   NodeApi,
   PathApi,
-  Range,
-  SlateEditor,
-  TCommentText,
-  TElement,
-  Text,
   TextApi,
-  TNode,
-  TText,
-  Value,
 } from 'platejs';
-import { PlateEditor } from 'platejs/react';
+
 import { getAIReviewCommentKey } from '../utils/getAIReviewKey';
-import { distance } from 'fastest-levenshtein';
 
 /** @experimental */
 export const applyAIReview = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   aiPreviewEditor: SlateEditor,
   {
     onComment,
   }: {
     onComment: (comment: {
-      text: string;
       content: string;
       range: Range;
+      text: string;
     }) => void;
   }
 ) => {
@@ -67,43 +68,7 @@ export const applyAIReview = (
       const isDuplicate =
         indexOfOccurrence(currentEditorBlockString, CommentText, 1) !== -1;
 
-      if (!isDuplicate) {
-        const targetNodeEntry = editor.api.node<Text>({
-          at: currentEditorBlockPath,
-          mode: 'lowest',
-          match: (n) =>
-            !n[KEYS.comment] &&
-            TextApi.isText(n) &&
-            n.text.includes(CommentText),
-        });
-
-        if (!targetNodeEntry) {
-          continue;
-        }
-
-        const [targetNode, targetPath] = targetNodeEntry;
-
-        const text = targetNode.text;
-        const startIndex = text.indexOf(CommentText);
-        const endIndex = startIndex + CommentText.length;
-
-        const targetRange: Range = {
-          anchor: {
-            path: targetPath,
-            offset: startIndex,
-          },
-          focus: {
-            path: targetPath,
-            offset: endIndex,
-          },
-        };
-
-        onComment({
-          text: CommentText,
-          content: restCommentProps[getAIReviewCommentKey()] as any,
-          range: targetRange,
-        });
-      } else {
+      if (isDuplicate) {
         // A low-probability scenario, for example, when we need to add a comment mark to "hello",
         // but there are multiple instances of "hello" in the paragraph.
         const commentText = comment.text;
@@ -168,19 +133,55 @@ export const applyAIReview = (
 
         const targetRange = {
           anchor: {
-            path: targetPath,
             offset: startIndex,
+            path: targetPath,
           },
           focus: {
-            path: targetPath,
             offset: endIndex,
+            path: targetPath,
           },
         };
 
         onComment({
-          text: CommentText,
           content: restCommentProps[getAIReviewCommentKey()] as any,
           range: targetRange,
+          text: CommentText,
+        });
+      } else {
+        const targetNodeEntry = editor.api.node<Text>({
+          at: currentEditorBlockPath,
+          mode: 'lowest',
+          match: (n) =>
+            !n[KEYS.comment] &&
+            TextApi.isText(n) &&
+            n.text.includes(CommentText),
+        });
+
+        if (!targetNodeEntry) {
+          continue;
+        }
+
+        const [targetNode, targetPath] = targetNodeEntry;
+
+        const text = targetNode.text;
+        const startIndex = text.indexOf(CommentText);
+        const endIndex = startIndex + CommentText.length;
+
+        const targetRange: Range = {
+          anchor: {
+            offset: startIndex,
+            path: targetPath,
+          },
+          focus: {
+            offset: endIndex,
+            path: targetPath,
+          },
+        };
+
+        onComment({
+          content: restCommentProps[getAIReviewCommentKey()] as any,
+          range: targetRange,
+          text: CommentText,
         });
       }
     }
@@ -251,8 +252,8 @@ function lcsMatchIndexes(
   b: Value,
   equalFn = (x: TNode, y: TNode) => x === y
 ) {
-  const n = a.length,
-    m = b.length;
+  const m = b.length,
+    n = a.length;
   const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
 
   // 1. Build LCS length table

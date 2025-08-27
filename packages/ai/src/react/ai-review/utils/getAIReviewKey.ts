@@ -1,4 +1,3 @@
-import { KEYS } from 'platejs';
 import { AIChatPlugin } from '../../ai-chat';
 
 export const getAIReviewCommentKey = () => {

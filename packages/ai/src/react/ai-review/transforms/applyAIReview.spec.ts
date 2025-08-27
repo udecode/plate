@@ -1,20 +1,86 @@
-import { BaseEditorKit } from '../../../../../../apps/www/src/registry/components/editor/editor-base-kit';
-import { createSlateEditor, getPluginType, KEYS, TextApi } from 'platejs';
+/** @ts-nocheck */
+import { getCommentKey } from '@platejs/comment';
 import {
   convertChildrenDeserialize,
   deserializeMd,
   parseAttributes,
 } from '@platejs/markdown';
-import { applyAIReview } from './applyAIReview';
+import {
+  BaseParagraphPlugin,
+  createSlateEditor,
+  getPluginType,
+  KEYS,
+  TextApi,
+} from 'platejs';
+
 import { getAIReviewCommentKey } from '../utils/getAIReviewKey';
-import { getCommentKey } from '@platejs/comment';
+import { applyAIReview } from './applyAIReview';
+import {
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseHighlightPlugin,
+  BaseHorizontalRulePlugin,
+  BaseItalicPlugin,
+  BaseKbdPlugin,
+  BaseStrikethroughPlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
+  BaseUnderlinePlugin,
+} from '@platejs/basic-nodes';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodeSyntaxPlugin,
+} from '@platejs/code-block';
+import { BaseListPlugin } from '@platejs/list';
+import {
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+  BaseTableCellPlugin,
+  BaseTableCellHeaderPlugin,
+} from '@platejs/table';
+import { MarkdownKit } from '../../../../../../apps/www/src/registry/components/editor/plugins/markdown-kit';
+
+const BasePlugins = [
+  BaseParagraphPlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseBlockquotePlugin,
+  BaseHorizontalRulePlugin,
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodeSyntaxPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+  BaseTableCellPlugin,
+  BaseTableCellHeaderPlugin,
+  // BaseColumnPlugin,
+  // BaseColumnItemPlugin,
+  BaseBoldPlugin,
+  BaseItalicPlugin,
+  BaseUnderlinePlugin,
+  BaseCodePlugin,
+  BaseStrikethroughPlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
+  BaseHighlightPlugin,
+  BaseKbdPlugin,
+  BaseListPlugin,
+  ...MarkdownKit,
+];
 
 function createPreviewEditor(value: string) {
   const previewEditor = createSlateEditor({
-    plugins: BaseEditorKit,
+    plugins: BasePlugins,
   });
 
   previewEditor.children = deserializeMd(previewEditor, value, {
+    memoize: true,
     rules: {
       [KEYS.comment]: {
         mark: true,
@@ -24,8 +90,8 @@ function createPreviewEditor(value: string) {
           return convertChildrenDeserialize(
             mdastNode.children,
             {
-              [getPluginType(options.editor!, KEYS.comment)]: true,
               [getAIReviewCommentKey()]: aiCommentContent,
+              [getPluginType(options.editor!, KEYS.comment)]: true,
               ...deco,
             },
             options
@@ -33,7 +99,6 @@ function createPreviewEditor(value: string) {
         },
       },
     },
-    memoize: true,
   });
 
   return previewEditor;
@@ -46,21 +111,21 @@ describe('applyAIReview', () => {
     );
 
     const editor = createSlateEditor({
-      plugins: BaseEditorKit,
+      plugins: BasePlugins,
       value: [
         {
-          type: 'p',
           children: [{ text: 'hello,hello,hello,hello.' }],
+          type: 'p',
         },
       ],
     });
 
     applyAIReview(editor, previewEditor, {
-      onComment: ({ range, content, text }) => {
+      onComment: ({ content, range, text }) => {
         editor.tf.setNodes(
           {
-            [KEYS.comment]: true,
             [getCommentKey('test')]: true,
+            [KEYS.comment]: true,
           },
           {
             at: range,
@@ -73,16 +138,16 @@ describe('applyAIReview', () => {
 
     expect(editor.children).toEqual([
       {
-        type: 'p',
         children: [
           { text: 'hello,' },
           {
-            [KEYS.comment]: true,
             [getCommentKey('test')]: true,
+            [KEYS.comment]: true,
             text: 'hello',
           },
           { text: ',hello,hello.' },
         ],
+        type: 'p',
       },
     ]);
   });

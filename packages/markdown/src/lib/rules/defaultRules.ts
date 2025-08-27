@@ -34,7 +34,6 @@ import { convertNodesSerialize } from '../serializer';
 import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
-import { parseAttributes, propsToAttributes } from './utils';
 
 function isBoolean(value: any) {
   return (
@@ -224,6 +223,31 @@ export const defaultRules: MdRules = {
       };
     },
   },
+  comment: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      // const props = parseAttributes(mdastNode.attributes);
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        {
+          [getPluginType(options.editor!, KEYS.comment)]: true,
+          ...deco,
+          // ...props,
+        },
+        options
+      ) as any;
+    },
+    serialize(slateNode): MdMdxJsxTextElement {
+      // const { text, comment, ...rest } = slateNode;
+      return {
+        // attributes: propsToAttributes(rest),
+        attributes: [],
+        children: [{ type: 'text', value: slateNode.text }],
+        name: 'comment',
+        type: 'mdxJsxTextElement',
+      };
+    },
+  },
   date: {
     deserialize(mdastNode, deco, options) {
       const dateValue = (mdastNode.children?.[0] as any)?.value || '';
@@ -409,31 +433,6 @@ export const defaultRules: MdRules = {
     mark: true,
     deserialize: (mdastNode, deco, options) => {
       return convertTextsDeserialize(mdastNode, deco, options);
-    },
-  },
-  comment: {
-    mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      // const props = parseAttributes(mdastNode.attributes);
-      return convertChildrenDeserialize(
-        mdastNode.children,
-        {
-          [getPluginType(options.editor!, KEYS.comment)]: true,
-          ...deco,
-          // ...props,
-        },
-        options
-      ) as any;
-    },
-    serialize(slateNode): MdMdxJsxTextElement {
-      // const { text, comment, ...rest } = slateNode;
-      return {
-        // attributes: propsToAttributes(rest),
-        attributes: [],
-        children: [{ type: 'text', value: slateNode.text }],
-        name: 'comment',
-        type: 'mdxJsxTextElement',
-      };
     },
   },
   kbd: {

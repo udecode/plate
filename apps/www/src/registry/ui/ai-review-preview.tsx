@@ -1,47 +1,30 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { useEffect, useMemo, useState } from 'react';
+
 import {
   applyAIReview,
-  useEditorCompletion,
   useAIEditorReview,
-  getAIReviewCommentKey,
+  useEditorCompletion,
 } from '@platejs/ai/react';
-import { useMemo, useState, useEffect } from 'react';
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
-import { PlateEditor, useEditorRef, usePlateViewEditor } from 'platejs/react';
-import {
-  convertChildrenDeserialize,
-  MarkdownPlugin,
-  MdMdxJsxTextElement,
-  parseAttributes,
-} from '@platejs/markdown';
-import {
-  getPluginType,
-  KEYS,
-  NodeApi,
-  PathApi,
-  SlateEditor,
-  TCommentText,
-  TElement,
-  Text,
-  TextApi,
-  nanoid,
-  type Value,
-} from 'platejs';
-import { EditorStatic } from './editor-static';
-import { EditorView } from './editor';
-import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, Loader2Icon, XIcon } from 'lucide-react';
-import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-kit';
 import { getCommentKey } from '@platejs/comment';
+import { ChevronDown, ChevronUp, Loader2Icon, XIcon } from 'lucide-react';
+import { KEYS, nanoid, TextApi } from 'platejs';
+import { useEditorRef, usePlateViewEditor } from 'platejs/react';
+
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-kit';
+
+import { EditorView } from './editor';
 
 export function AIReviewPreview() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
   const editor = useEditorRef();
-  const { isLoading, completion, stop } = useEditorCompletion();
+  const { completion, isLoading, stop } = useEditorCompletion();
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
@@ -93,23 +76,31 @@ export function AIReviewPreview() {
         <div className="flex items-center gap-3">
           {isFinished && (
             <Button
+              size="sm"
+              disabled={isLoading}
               onClick={() =>
                 applyAIReview(editor, previewEditor, {
                   onComment({ content, range, text }) {
                     // 获取当前讨论数据
-                    const discussions = editor.getOption(discussionPlugin, 'discussions') || [];
-                    
+                    const discussions =
+                      editor.getOption(discussionPlugin, 'discussions') || [];
+
                     // 生成新的讨论ID
                     const discussionId = nanoid();
-                      
+
                     // 创建新的评论
                     const comment = {
                       id: nanoid(),
-                      contentRich: [{ type: 'p', children: [{ text: content }] }],
+                      contentRich: [
+                        { children: [{ text: content }], type: 'p' },
+                      ],
                       createdAt: new Date(),
                       discussionId,
                       isEdited: false,
-                      userId: editor.getOption(discussionPlugin, 'currentUserId'),
+                      userId: editor.getOption(
+                        discussionPlugin,
+                        'currentUserId'
+                      ),
                     };
 
                     // 创建新的讨论
@@ -119,19 +110,25 @@ export function AIReviewPreview() {
                       createdAt: new Date(),
                       documentContent: text,
                       isResolved: false,
-                      userId: editor.getOption(discussionPlugin, 'currentUserId'),
+                      userId: editor.getOption(
+                        discussionPlugin,
+                        'currentUserId'
+                      ),
                     };
 
                     // 更新讨论数据
                     const updatedDiscussions = [...discussions, newDiscussion];
-                    editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
-
+                    editor.setOption(
+                      discussionPlugin,
+                      'discussions',
+                      updatedDiscussions
+                    );
 
                     // 在编辑器中应用评论标记
                     editor.tf.setNodes(
                       {
-                        [KEYS.comment]: true,
                         [getCommentKey(newDiscussion.id)]: true,
+                        [KEYS.comment]: true,
                       },
                       {
                         at: range,
@@ -142,15 +139,13 @@ export function AIReviewPreview() {
                   },
                 })
               }
-              size="sm"
-              disabled={isLoading}
             >
               Accept
             </Button>
           )}
 
           {isFinished && (
-            <Button onClick={handleReject} size="sm" disabled={isLoading}>
+            <Button size="sm" disabled={isLoading} onClick={handleReject}>
               Reject
             </Button>
           )}
@@ -165,21 +160,22 @@ export function AIReviewPreview() {
 
         <div>
           <Button
-            variant="ghost"
             size="sm"
-            onClick={toggleExpanded}
+            variant="ghost"
             className="h-8 w-8 p-0 transition-all duration-200 hover:scale-105 hover:bg-muted/50"
+            onClick={toggleExpanded}
             aria-label={isExpanded ? 'Collapse preview' : 'Expand preview'}
           >
-            {!isExpanded ? (
-              <ChevronUp className="h-4 w-4 transition-transform duration-200" />
-            ) : (
+            {isExpanded ? (
               <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+            ) : (
+              <ChevronUp className="h-4 w-4 transition-transform duration-200" />
             )}
           </Button>
           <Button
-            variant="ghost"
             size="sm"
+            variant="ghost"
+            className="h-8 w-8 p-0 transition-all duration-200 hover:scale-105 hover:bg-muted/50"
             onClick={() => {
               if (isFinished) {
                 handleReject();
@@ -189,7 +185,6 @@ export function AIReviewPreview() {
                 setIsExpanded(false);
               }
             }}
-            className="h-8 w-8 p-0 transition-all duration-200 hover:scale-105 hover:bg-muted/50"
             aria-label={isExpanded ? 'Collapse preview' : 'Expand preview'}
           >
             <XIcon className="h-4 w-4 transition-transform duration-200" />

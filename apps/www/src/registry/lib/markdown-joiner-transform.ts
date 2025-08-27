@@ -43,11 +43,11 @@ const NEST_BLOCK_DELAY_IN_MS = 100;
 
 export class MarkdownJoiner {
   private buffer = '';
+  private documentCharacterCount = 0;
   private isBuffering = false;
   private streamingCodeBlock = false;
-  private streamingTable = false;
-  private documentCharacterCount = 0;
   private streamingLargeDocument = false;
+  private streamingTable = false;
   public delayInMs = DEFAULT_DELAY_IN_MS;
 
   private clearBuffer(): void {
@@ -99,10 +99,6 @@ export class MarkdownJoiner {
     return this.buffer.startsWith('|') && this.buffer.endsWith('|');
   }
 
-  private isLargeDocumentStart(): boolean {
-    return this.documentCharacterCount > 2500;
-  }
-
   private isFalsePositive(char: string): boolean {
     // when link is not complete, even if ths buffer is more than 30 characters, it is not a false positive
     if (this.buffer.startsWith('[') && this.buffer.includes('http')) {
@@ -110,6 +106,10 @@ export class MarkdownJoiner {
     }
 
     return char === '\n' || this.buffer.length > 30;
+  }
+
+  private isLargeDocumentStart(): boolean {
+    return this.documentCharacterCount > 2500;
   }
 
   private isListStartChar(char: string): boolean {

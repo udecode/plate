@@ -15,10 +15,10 @@ import { usePluginOption } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
 import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
+import { AIReviewPreview } from '@/registry/ui/ai-review-preview';
 
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
-import { AIReviewPreview } from '@/registry/ui/ai-review-preview';
 
 export const aiChatPlugin = AIChatPlugin.extend({
   options: {
@@ -102,12 +102,12 @@ export const AIKit = [
   AIPlugin.withComponent(AILeaf),
   aiChatPlugin,
   AIReviewPlugin.configure({
-    render: {
-      afterContainer: AIReviewPreview,
-    },
     options: {
       promptTemplate: () => AI_REVIEW_PROMPT_TEMPLATES.userComment,
       systemTemplate: () => AI_REVIEW_PROMPT_TEMPLATES.systemComment,
+    },
+    render: {
+      afterContainer: AIReviewPreview,
     },
   }),
 ];

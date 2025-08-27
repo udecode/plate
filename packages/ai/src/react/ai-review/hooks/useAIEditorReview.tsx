@@ -1,10 +1,12 @@
+import { useMemo } from 'react';
+
 import {
+  convertChildrenDeserialize,
   MarkdownPlugin,
   parseAttributes,
-  convertChildrenDeserialize,
 } from '@platejs/markdown';
-import { KEYS, SlateEditor, getPluginType } from 'platejs';
-import { useMemo } from 'react';
+import { type SlateEditor, getPluginType, KEYS } from 'platejs';
+
 import { getAIReviewCommentKey } from '../utils/getAIReviewKey';
 
 export function useAIEditorReview(previewEditor: SlateEditor, content: string) {
@@ -13,6 +15,7 @@ export function useAIEditorReview(previewEditor: SlateEditor, content: string) {
       return previewEditor
         .getApi(MarkdownPlugin)
         .markdown.deserialize(content, {
+          memoize: true,
           rules: {
             [KEYS.comment]: {
               mark: true,
@@ -23,8 +26,8 @@ export function useAIEditorReview(previewEditor: SlateEditor, content: string) {
                 return convertChildrenDeserialize(
                   mdastNode.children,
                   {
-                    [getPluginType(options.editor!, KEYS.comment)]: true,
                     [getAIReviewCommentKey()]: aiCommentContent,
+                    [getPluginType(options.editor!, KEYS.comment)]: true,
                     ...deco,
                   },
                   options
@@ -32,7 +35,6 @@ export function useAIEditorReview(previewEditor: SlateEditor, content: string) {
               },
             },
           },
-          memoize: true,
         });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

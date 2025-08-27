@@ -2,11 +2,10 @@
 
 import * as React from 'react';
 
-import { AIChatPlugin, AIReviewPlugin } from '@platejs/ai/react';
-import { useEditorPlugin, usePluginOption } from 'platejs/react';
+import { AIReviewPlugin } from '@platejs/ai/react';
+import { useEditorPlugin } from 'platejs/react';
 
 import { ToolbarButton } from './toolbar';
-import { useCompletion } from '@ai-sdk/react';
 
 export function AIReviewToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
