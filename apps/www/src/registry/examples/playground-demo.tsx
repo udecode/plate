@@ -20,7 +20,7 @@ export default function PlaygroundDemo({
   className?: string;
 }) {
   const locale = useLocale();
-  const value = getI18nValues(locale).basicBlocks;
+  const value = getI18nValues(locale).playground;
 
   const editor = usePlateEditor(
     {

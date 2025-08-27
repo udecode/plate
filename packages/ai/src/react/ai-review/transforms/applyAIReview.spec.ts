@@ -86,4 +86,30 @@ describe('applyAIReview', () => {
       },
     ]);
   });
+
+  // it.only('should apply the AI review to the editor', () => {
+  //   const previewEditor = createPreviewEditor('markdown string');
+
+  //   const editor = createSlateEditor({
+  //     plugins: BaseEditorKit,
+  //   });
+
+  //   editor.children = deserializeMd(editor, 'markdown string orginal');
+
+  //   applyAIReview(editor, previewEditor, {
+  //     onComment: ({ range, content, text }) => {
+  //       editor.tf.setNodes(
+  //         {
+  //           [KEYS.comment]: true,
+  //           [getCommentKey('test')]: true,
+  //         },
+  //         {
+  //           at: range,
+  //           match: TextApi.isText,
+  //           split: true,
+  //         }
+  //       );
+  //     },
+  //   });
+  // });
 });

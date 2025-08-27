@@ -1,4 +1,5 @@
 import {
+  ElementApi,
   KEYS,
   NodeApi,
   PathApi,
@@ -8,6 +9,9 @@ import {
   TElement,
   Text,
   TextApi,
+  TNode,
+  TText,
+  Value,
 } from 'platejs';
 import { PlateEditor } from 'platejs/react';
 import { getAIReviewCommentKey } from '../utils/getAIReviewKey';
@@ -30,31 +34,20 @@ export const applyAIReview = (
   const aiNodes = aiPreviewEditor.children;
   const editorNodes = editor.children;
 
-  let j = 0;
-  let i = 0;
+  const matchIndexes = lcsMatchIndexes(
+    editorNodes,
+    aiNodes,
+    (x, y) =>
+      x.type === y.type &&
+      hasAIComment(y) &&
+      distance(NodeApi.string(x), NodeApi.string(y)) < 5
+  );
 
-  while (i < aiNodes.length && j < editorNodes.length) {
-    const currentEditorNode = editorNodes[j];
-    const currentAiNode = aiNodes[i];
+  for (const [editorIndex, aiIndex] of matchIndexes) {
+    const currentAiNode = aiNodes[aiIndex];
 
-    const currentAIBlock = [i];
-    const currentEditorBlock = [j];
-
-    const currentBlockString = NodeApi.string(currentEditorNode);
-    const currentAiBlockString = NodeApi.string(currentAiNode);
-
-    if (distance(currentBlockString, currentAiBlockString) > 5) {
-      if (i > j) {
-        j++;
-      } else {
-        i++;
-      }
-      j++;
-      continue;
-    }
-
-    i++;
-    j++;
+    const currentEditorBlockPath = [editorIndex];
+    const currentAIBlock = [aiIndex];
 
     if (!hasAIComment(currentAiNode)) continue;
 
@@ -66,12 +59,17 @@ export const applyAIReview = (
     for (const [comment, commentPath] of aiComments) {
       const { text: CommentText, ...restCommentProps } = comment;
 
+      const currentEditorBlockString = NodeApi.string(currentAiNode);
+
+      if (currentEditorBlockString.length === 0 || CommentText.length === 0)
+        continue;
+
       const isDuplicate =
-        indexOfOccurrence(NodeApi.string(currentAiNode), CommentText, 1) !== -1;
+        indexOfOccurrence(currentEditorBlockString, CommentText, 1) !== -1;
 
       if (!isDuplicate) {
         const targetNodeEntry = editor.api.node<Text>({
-          at: currentEditorBlock,
+          at: currentEditorBlockPath,
           mode: 'lowest',
           match: (n) =>
             !n[KEYS.comment] &&
@@ -139,7 +137,7 @@ export const applyAIReview = (
         let leftCount = targeCommentIndex;
 
         const targetNodeEntry = editor.api.node<Text>({
-          at: currentEditorBlock,
+          at: currentEditorBlockPath,
           match: (n) => {
             if (TextApi.isText(n) && n.text.includes(commentText)) {
               const count = getCommentNodeSubStringCount({
@@ -189,16 +187,13 @@ export const applyAIReview = (
   }
 };
 
-const hasAIComment = (node: TElement): boolean => {
-  return node.children.some((child: any) => {
-    if (child[KEYS.comment]) {
-      return true;
-    }
-    if (Array.isArray(child.children)) {
-      return hasAIComment(child as TElement);
-    }
-    return false;
-  });
+const hasAIComment = (node: TNode): boolean => {
+  if (ElementApi.isElement(node)) {
+    return node.children.some((child) => hasAIComment(child));
+  } else {
+    // prevent ai comment empty blocks
+    return !!node[KEYS.comment] && (node as TText).text.length > 0;
+  }
 };
 
 const getCommentNodeSubStringCount = ({
@@ -248,3 +243,41 @@ const indexOfOccurrence = (
 
   return index;
 };
+
+function lcsMatchIndexes(
+  a: Value,
+  b: Value,
+  equalFn = (x: TNode, y: TNode) => x === y
+) {
+  const n = a.length,
+    m = b.length;
+  const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+
+  // 1. Build LCS length table
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      if (equalFn(a[i - 1], b[j - 1])) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+
+  // 2. Backtrack to get matching indexes
+  const matches = [];
+  let i = n,
+    j = m;
+  while (i > 0 && j > 0) {
+    if (equalFn(a[i - 1], b[j - 1])) {
+      matches.push([i - 1, j - 1]);
+      i--, j--;
+    } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+      i--;
+    } else {
+      j--;
+    }
+  }
+
+  return matches.reverse();
+}
