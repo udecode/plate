@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import type { Path, PluginConfig } from 'platejs';
 import type { DropTargetMonitor } from 'react-dnd';
@@ -67,9 +67,6 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       editor.setOption(plugin, '_isOver', true);
     },
     onDrop: ({ getOptions, setOption }) => {
-      setOption('_isOver', false);
-      setOption('dropTarget', undefined);
-
       return getOptions().isDragging;
     },
     onFocus: ({ editor, plugin }) => {
@@ -87,6 +84,36 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
     dropTarget: { id: null, line: '' },
     isDragging: false,
     multiplePreviewRef: null,
+  },
+  useHooks: ({ setOption }) => {
+    const handleDocumentDragLeave = useCallback(
+      (e: DragEvent) => {
+        if (!e.clientX && !e.clientY) {
+          setOption('dropTarget', undefined);
+        }
+      },
+      [setOption]
+    );
+
+    const handleDocumentDrop = useCallback(() => {
+      setOption('_isOver', false);
+      setOption('dropTarget', undefined);
+    }, [setOption]);
+
+    useEffect(() => {
+      document.addEventListener('dragleave', handleDocumentDragLeave, true);
+      document.addEventListener('drop', handleDocumentDrop, true);
+
+      return () => {
+        document.removeEventListener(
+          'dragleave',
+          handleDocumentDragLeave,
+          true
+        );
+
+        document.removeEventListener('drop', handleDocumentDrop, true);
+      };
+    }, [handleDocumentDragLeave, handleDocumentDrop]);
   },
 }).extend(({ getOptions }) => ({
   render: {
