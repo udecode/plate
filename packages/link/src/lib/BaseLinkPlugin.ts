@@ -1,11 +1,11 @@
+import type { EditorBeforeOptions } from '@platejs/slate';
+
 import {
-  type EditorBeforeOptions,
   type PluginConfig,
-  type TLinkElement,
   createTSlatePlugin,
-  isUrl,
-  KEYS,
-} from 'platejs';
+} from '@platejs/core';
+import { type TLinkElement, KEYS } from '@platejs/utils';
+import { isUrl } from '@udecode/utils';
 
 import { getLinkAttributes, validateUrl } from './utils/index';
 import { withLink } from './withLink';

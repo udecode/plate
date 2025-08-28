@@ -1,14 +1,14 @@
+import type { SlateEditor } from '@platejs/core';
+
 import {
   type InsertNodesOptions,
-  type SlateEditor,
-  type TLinkElement,
   type UnwrapNodesOptions,
   type WrapNodesOptions,
-  isDefined,
   NodeApi,
   RangeApi,
-} from 'platejs';
-import { KEYS } from 'platejs';
+} from '@platejs/slate';
+import { type TLinkElement, KEYS } from '@platejs/utils';
+import { isDefined } from '@udecode/utils';
 
 import { type CreateLinkNodeOptions, validateUrl } from '../utils';
 import { insertLink } from './insertLink';

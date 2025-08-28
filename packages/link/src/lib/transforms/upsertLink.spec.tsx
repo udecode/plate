@@ -1,12 +1,15 @@
-/** @jsx jsxt */
+/** @jsx jsx */
 
-import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import { jsx } from '@platejs/test-utils';
+import { createEditor } from '@platejs/slate';
+import { createSlateEditor } from '@platejs/core';
 
-import { type BaseLinkConfig, BaseLinkPlugin } from '../BaseLinkPlugin';
+import type { BaseLinkConfig } from '../BaseLinkPlugin';
+
+import { BaseLinkPlugin } from '../BaseLinkPlugin';
 import { upsertLink } from './upsertLink';
 
-jsxt;
+jsx;
 
 const url = 'http://google.com';
 const urlOutput = 'http://output.com';
@@ -182,9 +185,9 @@ describe('upsertLink', () => {
             <hp>
               .
               <ha url={url}>
-                <htext bold>
-                  insert <cursor /> link
-                </htext>
+                <htext bold>insert </htext>
+                <cursor />
+                <htext bold> link</htext>
               </ha>
               .
             </hp>
@@ -408,9 +411,9 @@ describe('upsertLink', () => {
           <editor>
             <hp>
               insert{' '}
-              <htext bold>
-                link <cursor /> here
-              </htext>
+              <htext bold>link </htext>
+              <cursor />
+              <htext bold> here</htext>
               .
             </hp>
           </editor>

@@ -1,4 +1,6 @@
-import { type OverrideEditor, PathApi } from 'platejs';
+import type { OverrideEditor } from '@platejs/core';
+
+import { PathApi } from '@platejs/slate';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
 

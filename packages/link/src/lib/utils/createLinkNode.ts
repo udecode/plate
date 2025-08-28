@@ -1,6 +1,7 @@
-import type { SlateEditor, TLinkElement, TText } from 'platejs';
+import type { SlateEditor } from '@platejs/core';
+import type { TText } from '@platejs/slate';
 
-import { KEYS } from 'platejs';
+import { type TLinkElement, KEYS } from '@platejs/utils';
 
 export interface CreateLinkNodeOptions {
   url: string;

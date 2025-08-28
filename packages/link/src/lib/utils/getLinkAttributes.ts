@@ -1,12 +1,10 @@
 import type React from 'react';
 
-import {
-  type SlateEditor,
-  type TLinkElement,
-  type UnknownObject,
-  KEYS,
-  sanitizeUrl,
-} from 'platejs';
+import type { SlateEditor } from '@platejs/core';
+import type { UnknownObject } from '@udecode/utils';
+
+import { type TLinkElement, KEYS } from '@platejs/utils';
+import { sanitizeUrl } from '@udecode/utils';
 
 import type { BaseLinkConfig } from '../BaseLinkPlugin';
 
