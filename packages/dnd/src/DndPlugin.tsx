@@ -88,6 +88,9 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
   useHooks: ({ setOption }) => {
     const handleDocumentDragLeave = useCallback(
       (e: DragEvent) => {
+        // This event fires for every element that receives a drag leave event. If `clientX` and `clientY` are both 0,
+        // it means the drag has left the viewport. Needed, if the drag did not start inside the editor, but for example
+        // by dragging a file from the filesystem
         if (!e.clientX && !e.clientY) {
           setOption('dropTarget', undefined);
         }
@@ -95,6 +98,10 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       [setOption]
     );
 
+    // We listen for the drop event on the document and not only inside the editor, because we want to
+    // remove the dropTarget, and therefore hide the drop line, also when the drop happened outside of
+    // the editor. Needed, if the drag did not start inside the editor, but for example by dragging a
+    // file from the filesystem
     const handleDocumentDrop = useCallback(() => {
       setOption('_isOver', false);
       setOption('dropTarget', undefined);
