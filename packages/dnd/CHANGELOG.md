@@ -1,5 +1,11 @@
 # @platejs/dnd
 
+## 49.2.18
+
+### Patch Changes
+
+- [#4592](https://github.com/udecode/plate/pull/4592) by [@delijah](https://github.com/delijah) – Hide drop line when user leaves document or drops (also besides editor)
+
 ## 49.2.10
 
 ### Patch Changes
