@@ -1,5 +1,11 @@
 # @platejs/dnd
 
+## 49.2.19
+
+### Patch Changes
+
+- [#4595](https://github.com/udecode/plate/pull/4595) by [@delijah](https://github.com/delijah) – Enable dnd between editors
+
 ## 49.2.18
 
 ### Patch Changes
