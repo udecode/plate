@@ -10,6 +10,7 @@ export interface ElementDragItemNode {
   /** Required to identify the node(s). */
   id: string[] | string;
   [key: string]: unknown;
+  editorId: string;
   element: TElement;
 }
 
