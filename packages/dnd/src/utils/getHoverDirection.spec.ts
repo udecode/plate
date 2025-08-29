@@ -17,7 +17,11 @@ describe('getHoverDirection', () => {
   } as unknown as DropTargetMonitor;
 
   const dragElement = { id: 'drag' } as unknown as TElement;
-  const dragItem: DragItemNode = { id: 'drag', element: dragElement };
+  const dragItem: DragItemNode = {
+    id: 'drag',
+    editorId: 'editor',
+    element: dragElement,
+  };
 
   const hoverElement = { id: 'hover' } as unknown as TElement;
 
