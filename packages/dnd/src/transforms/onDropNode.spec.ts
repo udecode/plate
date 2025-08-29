@@ -19,7 +19,11 @@ describe('onDropNode', () => {
   const monitor = { canDrop: () => true } as DropTargetMonitor;
   const nodeRef = {};
   const dragElement = { id: 'drag' } as unknown as TElement;
-  const dragItem: DragItemNode = { id: 'drag', element: dragElement };
+  const dragItem: DragItemNode = {
+    id: 'drag',
+    editorId: editor.id,
+    element: dragElement,
+  };
 
   const hoverElement = { id: 'hover' } as unknown as TElement;
 
