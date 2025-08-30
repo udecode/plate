@@ -1,7 +1,12 @@
+/** @jsx jsxt */
+
+import { jsxt } from '@platejs/test-utils';
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { testValue } from '../__tests__/testValue';
 import { serializeMd } from './serializeMd';
 const editor = createTestEditor();
+
+jsxt;
 
 describe('serializeMd', () => {
   it('should serialize a simple paragraph', () => {
@@ -298,4 +303,5 @@ describe('serializeMd', () => {
     });
     expect(resultWithSpread).toBe('1. 1\n\n2. 2\n');
   });
+
 });

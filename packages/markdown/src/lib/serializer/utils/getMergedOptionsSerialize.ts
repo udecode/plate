@@ -40,5 +40,6 @@ export const getMergedOptionsSerialize = (
     rules: mergedRules,
     spread: options?.spread,
     value: options?.value ?? editor.children,
+    withBlockId: options?.withBlockId ?? false,
   };
 };
