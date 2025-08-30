@@ -16,11 +16,9 @@ export const aiReviewToRange = (
   onComment: (commentWithRange: { comment: string; range: Range }) => void
 ) => {
   const { blockId, comment, content } = aiComment;
-  console.log("🚀 ~ aiReviewToRange ~ content:", content)
 
   const contentNodes = deserializeMd(editor, content);
   const texts = visitTextNodes(editor, contentNodes);
-  console.log('🚀 ~ aiReviewToRange ~ texts:', texts);
 
   // don't support void node
   if (texts.length === 0) return;
@@ -148,13 +146,6 @@ const findTextRangeAcrossBlocks = (
     at: findRange,
     match: (n: any) => TextApi.isText(n) && n.text.includes(lastText),
   })!;
-
-  console.log('🚀 ~ findTextRangeAcrossBlocks ~ lastText:', lastText);
-
-  console.log(
-    '🚀 ~ findTextRangeAcrossBlocks ~ targetNodeEntry2:',
-    targetNodeEntry2
-  );
 
   if (!targetNodeEntry2) {
     console.warn('targetNode not found');

@@ -18,6 +18,7 @@ import {
 } from 'platejs';
 
 import { useStreamObject } from '@/registry/hooks/useStreamObject';
+import { aiReviewPlugin } from '../components/editor/plugins/ai-kit';
 
 const system = `\
 You are a document review assistant.  
@@ -52,7 +53,7 @@ export function AIReviewToolbarButton(
 ) {
   const editor = useEditorRef();
 
-  const { streamObject, object, status, error, stop, comments } =
+  const { comments, streamObject, error, object, reset, status, stop } =
     useStreamObject({
       onError: (error) => {
         console.error('AI Review error:', error);
@@ -69,6 +70,10 @@ export function AIReviewToolbarButton(
         });
       },
     });
+
+  React.useEffect(() => {
+    editor.setOption(aiReviewPlugin, 'status', status);
+  }, [status]);
 
   return (
     <ToolbarButton

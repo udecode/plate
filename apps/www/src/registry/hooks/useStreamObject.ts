@@ -20,7 +20,7 @@ interface UseStreamObjectOptions {
   onNewComment?: (comment: AIReviewComment) => void;
 }
 
-interface UseStreamObjectReturn {
+export interface UseStreamObjectReturn {
   /** Stream an object with the given prompt and system */
   streamObject: (prompt: string, system: string) => Promise<void>;
   /** The current streamed object */

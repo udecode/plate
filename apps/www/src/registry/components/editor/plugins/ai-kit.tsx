@@ -11,7 +11,7 @@ import {
   useChatChunk,
 } from '@platejs/ai/react';
 import { getPluginType, KEYS, PathApi } from 'platejs';
-import { usePluginOption } from 'platejs/react';
+import { createPlatePlugin, usePluginOption } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
 import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
@@ -19,6 +19,15 @@ import { AIReviewPreview } from '@/registry/ui/ai-review-preview';
 
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
+import { UseStreamObjectReturn } from '@/registry/hooks/useStreamObject';
+
+export const aiReviewPlugin = createPlatePlugin({
+  key: 'aiReview',
+  options: {
+    status: null as UseStreamObjectReturn['status'] | null,
+  },
+  render: { afterContainer: AIReviewPreview },
+});
 
 export const aiChatPlugin = AIChatPlugin.extend({
   options: {
@@ -101,15 +110,7 @@ export const AIKit = [
   ...MarkdownKit,
   AIPlugin.withComponent(AILeaf),
   aiChatPlugin,
-  AIReviewPlugin.configure({
-    options: {
-      promptTemplate: () => AI_REVIEW_PROMPT_TEMPLATES.userComment,
-      systemTemplate: () => AI_REVIEW_PROMPT_TEMPLATES.systemComment,
-    },
-    render: {
-      afterContainer: AIReviewPreview,
-    },
-  }),
+  aiReviewPlugin,
 ];
 
 const systemCommon = `\
@@ -202,46 +203,4 @@ export const PROMPT_TEMPLATES = {
   userBlockSelecting,
   userDefault,
   userSelecting,
-};
-
-const systemComment = `\
-You are an intelligent document review assistant. When given a complete document, your task is to add helpful 
-comments by wrapping relevant portions of the original text with <comment value="your comment">original document text</comment>.
-Only add comment tags around parts of the original text. Do not alter, delete, or reformat anything else. After removing all comment tags, 
-the output must be exactly identical to the input.
-
-Rules:
-- You can only add <comment value="...">original document text</comment> MDX tags to provide comments.
-- Can NOT comment on images, empty blocks, or other non-text elements like <toc>, <audio>, <video>, etc.
-- Comments must NOT contain any Markdown syntax.
-- The <comment> tag must NOT be empty; it must contain some text elements.
-- Do NOT write self-closing <comment> tags.
-- Do NOT remove any line breaks and spaces.
-- Do NOT start with \`\`\`markdown.
-
-
-Correct examples:
-- # <comment>heading</comment>.
-- <comment value="...">Must include some text</comment>.
-
-INCORRECT EXAMPLES:
-- Comments must NOT contain any Markdown syntax.
-  <comment># heading</comment>
-  <comment>> blockquote</comment>
-  <comment>- list</comment>
-- Can NOT write empty <comment> tags.
-  <comment value="..."></comment>
-- Can NOT write self-closing <comment> tags.
-  <comment value="..." />
-- A comment can NOT span across multiple blocks or include multiple lines.
-  <comment value="The author sets specific daily goals for themselves.">1.list1
-  2.list2
-  3.list3</comment>
-`;
-
-const userComment = `{editor}`;
-
-const AI_REVIEW_PROMPT_TEMPLATES = {
-  systemComment,
-  userComment,
 };
