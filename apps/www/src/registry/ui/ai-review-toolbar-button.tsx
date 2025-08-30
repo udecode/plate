@@ -1,79 +1,91 @@
 'use client';
 
 import * as React from 'react';
-
 import { ToolbarButton } from './toolbar';
-import { useCompletion } from '@ai-sdk/react';
-import { getEditorPrompt } from '@platejs/ai/react';
-import { useEditorRef } from 'platejs/react';
+import { aiReviewToRange, getEditorPrompt } from '@platejs/ai/react';
+import { PlateEditor, useEditorRef } from 'platejs/react';
+import { deserializeMd } from '@platejs/markdown';
+
+import {
+  Descendant,
+  ElementApi,
+  KEYS,
+  NodeApi,
+  PathApi,
+  Range,
+  TextApi,
+  TText,
+} from 'platejs';
+
+import { useStreamObject } from '@/registry/hooks/useStreamObject';
 
 const system = `\
-You are an intelligent document review assistant. When given a complete document, your task is to add helpful 
-comments by wrapping relevant portions of the original text with <comment value="your comment">original document text</comment>.
-Only add comment tags around parts of the original text. Do not alter, delete, or reformat anything else. After removing all comment tags, 
-the output must be exactly identical to the input.
+You are a document review assistant.  
+You will receive an MDX document wrapped in <block id="..."> content </block> tags.  
 
-Rules:
-- You can only add <comment value="...">original document text</comment> MDX tags to provide comments.
-- Can NOT comment on images, empty blocks, or other non-text elements like <toc>, <audio>, <video>, etc.
-- Comments must NOT contain any Markdown syntax.
-- The <comment> tag must NOT be empty; it must contain some text elements.
-- Do NOT write self-closing <comment> tags.
-- Do NOT remove any line breaks and spaces.
-- Do NOT start with \`\`\`markdown.
+Your task:  
+- Read the content of all blocks and provide comments.  
+- For each comment, generate a JSON object:  
+  - blockId: The id of the block being commented on.
+  - content: The original document fragment to be commented on.
+  - comments: A brief comment or explanation for the fragment.
 
 
-Correct examples:
-- # <comment>heading</comment>.
-- <comment value="...">Must include some text</comment>.
-
-INCORRECT EXAMPLES:
-- Comments must NOT contain any Markdown syntax.
-  <comment># heading</comment>
-  <comment>> blockquote</comment>
-  <comment>- list</comment>
-- Can NOT write empty <comment> tags.
-  <comment value="..."></comment>
-- Can NOT write self-closing <comment> tags.
-  <comment value="..." />
-- A comment can NOT span across multiple blocks or include multiple lines.
-  <comment value="The author sets specific daily goals for themselves.">1.list1
-  2.list2
-  3.list3</comment>
+Important rules:
+- The content field must be the original content inside the block tag. The returned content must not include the block tags, but other MDX tags should be preserved.
+- Important: The content field can be the entire block, a small segment within a block, or span across multiple blocks. If spanning multiple blocks, separate them with two \n\n.
+- Important: If the comment spans multiple blocks, please use the **first** block's id.
 `;
 
-const prompt = `{editor}`;
+const prompt = `
+This test is to check whether the content is generated correctly, so please generate all three types of content:
+1. The entire block
+2. A small segment within a block
+3. Spanning multiple blocks
+
+
+{editor}
+`;
 
 export function AIReviewToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
   const editor = useEditorRef();
 
-  const { complete, completion } = useCompletion({
-    api: '/api/ai/review',
-  });
-
-  const promptText = getEditorPrompt(editor, {
-    prompt: prompt,
-  });
-
-  const systemText = getEditorPrompt(editor, {
-    promptTemplate: () => system,
-  });
+  const { streamObject, object, status, error, stop, comments } =
+    useStreamObject({
+      onError: (error) => {
+        console.error('AI Review error:', error);
+      },
+      onNewComment: (aiComment) => {
+        aiReviewToRange(editor, aiComment, ({ comment, range }) => {
+          editor.tf.setNodes(
+            {
+              [KEYS.comment]: true,
+              comment_ai: true,
+            },
+            { at: range, match: (n) => TextApi.isText(n), split: true }
+          );
+        });
+      },
+    });
 
   return (
     <ToolbarButton
       {...props}
-      onClick={() => {
-        complete(promptText!, {
-          body: {
-            system: systemText,
-          },
+      onClick={async () => {
+        const promptText = getEditorPrompt(editor, {
+          prompt,
+          options: { withBlockId: true },
         });
+
+        const systemText = getEditorPrompt(editor, {
+          promptTemplate: () => system,
+        });
+
+        await streamObject(promptText!, systemText!);
       }}
-      onMouseDown={(e) => {
-        e.preventDefault();
-      }}
+      onMouseDown={(e) => e.preventDefault()}
     />
   );
 }
