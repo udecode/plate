@@ -30,6 +30,7 @@ import {
   BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
+import { BaseMentionPlugin } from '@platejs/mention';
 import {
   BaseCodeBlockPlugin,
   BaseCodeLinePlugin,
@@ -67,6 +68,7 @@ const BasePlugins = [
   BaseStrikethroughPlugin,
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
+  BaseMentionPlugin,
   BaseHighlightPlugin,
   BaseKbdPlugin,
   BaseListPlugin,

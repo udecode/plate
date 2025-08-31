@@ -1,6 +1,7 @@
 import { findTextRangeInBlock } from './findTextRangeInBlock';
 import { createTestEditor } from './__tests__/createTestEditor';
 import { NodeApi } from 'platejs';
+import { deserializeMd } from '@platejs/markdown';
 
 describe('findTextRangeInBlock', () => {
   it('should find text in a simple nested inline node', () => {

@@ -4,11 +4,11 @@ import type { Plugin } from 'unified';
 import {
   type Descendant,
   type SlateEditor,
+  type TElement,
+  type Value,
   getPluginKey,
   KEYS,
-  TElement,
   TextApi,
-  Value,
 } from 'platejs';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';

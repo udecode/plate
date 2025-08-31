@@ -116,7 +116,7 @@ export function listToMdastTree(
 function processListWithBlockIds(
   nodes: TListElement[],
   options: SerializeMdOptions
-): { type: string; children: any[] } {
+): { children: any[]; type: string } {
   const fragments: any[] = [];
 
   // Process each node individually
@@ -170,7 +170,7 @@ function processListWithBlockIds(
 
   // Return a fragment containing all wrapped lists
   return {
-    type: 'fragment',
     children: fragments,
+    type: 'fragment',
   };
 }

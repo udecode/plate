@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
+
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { testValue } from '../__tests__/testValue';
 import { serializeMd } from './serializeMd';
@@ -303,5 +304,4 @@ describe('serializeMd', () => {
     });
     expect(resultWithSpread).toBe('1. 1\n\n2. 2\n');
   });
-
 });

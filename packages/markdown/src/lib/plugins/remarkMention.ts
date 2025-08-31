@@ -62,6 +62,10 @@ export const remarkMention: Plugin = function () {
       (node: Text, index: number, parent: Parent | undefined) => {
         if (!parent || typeof index !== 'number') return;
 
+        // Skip processing @mentions within link nodes
+        // Links should remain as links, not be converted to mentions
+        if (parent.type === 'link') return;
+
         // Pattern for @username mentions (no spaces)
         // Matches @username but excludes trailing punctuation
         const atMentionPattern = /(?:^|\s)@([a-zA-Z0-9_-]+)(?=[\s.,;:!?)]|$)/g;

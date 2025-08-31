@@ -248,31 +248,6 @@ export const defaultRules: MdRules = {
       };
     },
   },
-  suggestion: {
-    mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      // const props = parseAttributes(mdastNode.attributes);
-      return convertChildrenDeserialize(
-        mdastNode.children,
-        {
-          [getPluginType(options.editor!, KEYS.suggestion)]: true,
-          ...deco,
-          // ...props,
-        },
-        options
-      ) as any;
-    },
-    serialize(slateNode): MdMdxJsxTextElement {
-      // const { text, comment, ...rest } = slateNode;
-      return {
-        // attributes: propsToAttributes(rest),
-        attributes: [],
-        children: [{ type: 'text', value: slateNode.text }],
-        name: 'suggestion',
-        type: 'mdxJsxTextElement',
-      };
-    },
-  },
   date: {
     deserialize(mdastNode, deco, options) {
       const dateValue = (mdastNode.children?.[0] as any)?.value || '';
@@ -857,6 +832,31 @@ export const defaultRules: MdRules = {
         attributes: [],
         children: [{ type: 'text', value: slateNode.text }],
         name: 'sub',
+        type: 'mdxJsxTextElement',
+      };
+    },
+  },
+  suggestion: {
+    mark: true,
+    deserialize: (mdastNode, deco, options) => {
+      // const props = parseAttributes(mdastNode.attributes);
+      return convertChildrenDeserialize(
+        mdastNode.children,
+        {
+          [getPluginType(options.editor!, KEYS.suggestion)]: true,
+          ...deco,
+          // ...props,
+        },
+        options
+      ) as any;
+    },
+    serialize(slateNode): MdMdxJsxTextElement {
+      // const { text, comment, ...rest } = slateNode;
+      return {
+        // attributes: propsToAttributes(rest),
+        attributes: [],
+        children: [{ type: 'text', value: slateNode.text }],
+        name: 'suggestion',
         type: 'mdxJsxTextElement',
       };
     },

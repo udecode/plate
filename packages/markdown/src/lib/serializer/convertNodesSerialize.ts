@@ -65,14 +65,14 @@ export const convertNodesSerialize = (
           // Pass the original nodes and isBlock flag to listToMdastTree
           // so it can handle wrapping individual items with block IDs
           const result = listToMdastTree(listBlock as any, options, isBlock);
-          
+
           // Handle fragment type (used when list items have IDs)
           if (result.type === 'fragment') {
             mdastNodes.push(...result.children);
           } else {
             mdastNodes.push(result);
           }
-          
+
           listBlock.length = 0;
         }
       } else {

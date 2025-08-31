@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@platejs/test-utils';
+
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { serializeMd } from './serializeMd';
 import { wrapWithBlockId } from './wrapWithBlockId';
@@ -13,19 +14,17 @@ describe('wrapWithBlockId', () => {
   describe('unit tests', () => {
     it('should wrap a node with block element and ID attribute', () => {
       const mdastNode = {
-        type: 'paragraph',
         children: [{ type: 'text', value: 'Hello world' }],
+        type: 'paragraph',
       };
 
       const result = wrapWithBlockId(mdastNode, 'test-id');
 
       expect(result).toEqual({
-        type: 'mdxJsxFlowElement',
-        name: 'block',
         attributes: [
           {
-            type: 'mdxJsxAttribute',
             name: 'id',
+            type: 'mdxJsxAttribute',
             value: 'test-id',
           },
         ],
@@ -33,13 +32,15 @@ describe('wrapWithBlockId', () => {
         data: {
           _mdxExplicitJsx: true,
         },
+        name: 'block',
+        type: 'mdxJsxFlowElement',
       });
     });
 
     it('should convert numeric IDs to strings', () => {
       const mdastNode = {
-        type: 'paragraph',
         children: [{ type: 'text', value: 'Test' }],
+        type: 'paragraph',
       };
 
       const result = wrapWithBlockId(mdastNode, '123') as any;
@@ -52,9 +53,9 @@ describe('wrapWithBlockId', () => {
     it('should wrap nodes with IDs in block elements when withBlockId is true', () => {
       const slateNodes = [
         {
-          type: 'p',
           id: '123',
           children: [{ text: 'Hello world' }],
+          type: 'p',
         },
       ];
 
@@ -69,8 +70,8 @@ describe('wrapWithBlockId', () => {
     it('should not wrap nodes without IDs', () => {
       const slateNodes = [
         {
-          type: 'p',
           children: [{ text: 'No ID here' }],
+          type: 'p',
         },
       ];
 
@@ -85,15 +86,15 @@ describe('wrapWithBlockId', () => {
     it('should handle complex nested structures', () => {
       const slateNodes = [
         {
-          type: 'p',
           id: 'para-with-marks',
           children: [
             { text: 'Text with ' },
-            { text: 'bold', bold: true },
+            { bold: true, text: 'bold' },
             { text: ' and ' },
-            { text: 'italic', italic: true },
+            { italic: true, text: 'italic' },
             { text: ' marks' },
           ],
+          type: 'p',
         },
       ];
 
@@ -144,25 +145,25 @@ describe('wrapWithBlockId', () => {
     it('should wrap indent lists with IDs in block elements when withBlockId is true', () => {
       const slateNodes = [
         {
-          type: 'p',
           id: 'list-item-1',
-          indent: 1,
-          listStyleType: 'disc',
           children: [{ text: 'Item 1' }],
-        },
-        {
-          type: 'p',
-          id: 'list-item-2',
           indent: 1,
           listStyleType: 'disc',
-          children: [{ text: 'Item 2' }],
+          type: 'p',
         },
         {
+          id: 'list-item-2',
+          children: [{ text: 'Item 2' }],
+          indent: 1,
+          listStyleType: 'disc',
           type: 'p',
+        },
+        {
           id: 'list-item-3',
+          children: [{ text: 'Nested item' }],
           indent: 2,
           listStyleType: 'disc',
-          children: [{ text: 'Nested item' }],
+          type: 'p',
         },
       ];
 
@@ -177,18 +178,18 @@ describe('wrapWithBlockId', () => {
     it('should wrap ordered indent lists with IDs when withBlockId is true', () => {
       const slateNodes = [
         {
-          type: 'p',
           id: 'ordered-1',
+          children: [{ text: 'First' }],
           indent: 1,
           listStyleType: 'decimal',
-          children: [{ text: 'First' }],
+          type: 'p',
         },
         {
-          type: 'p',
           id: 'ordered-2',
+          children: [{ text: 'Second' }],
           indent: 1,
           listStyleType: 'decimal',
-          children: [{ text: 'Second' }],
+          type: 'p',
         },
       ];
 
