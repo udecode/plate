@@ -1,5 +1,11 @@
 # @platejs/dnd
 
+## 49.2.20
+
+### Patch Changes
+
+- [#4597](https://github.com/udecode/plate/pull/4597) by [@delijah](https://github.com/delijah) – Hide drop line, whenever drag happens outside the editor
+
 ## 49.2.19
 
 ### Patch Changes
