@@ -85,42 +85,43 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
     isDragging: false,
     multiplePreviewRef: null,
   },
-  useHooks: ({ setOption }) => {
-    const handleDocumentDragLeave = useCallback(
+  useHooks: ({ editor, setOption }) => {
+    const handleDragLeave = useCallback(
       (e: DragEvent) => {
-        // This event fires for every element that receives a drag leave event. If `clientX` and `clientY` are both 0,
-        // it means the drag has left the viewport. Needed, if the drag did not start inside the editor, but for example
-        // by dragging a file from the filesystem
-        if (!e.clientX && !e.clientY) {
-          setOption('dropTarget', undefined);
+        // This event fires for every element that receives a drag leave event. As soon as it is fired on the
+        // editable dom node, or above, we will unset the drop target, and therefore hide the drop line.
+        // In other words, whenever the drag is not happening inside the editor anymore, we will hide the
+        // drop line which makes sense, since a potential drop would not insert anything into the editor.
+        // This will also apply, if the user move the drag operation outside the document.
+        if (e.target instanceof Node) {
+          const editorDOMNode = editor.api.toDOMNode(editor);
+
+          if (editorDOMNode && !editorDOMNode.contains(e.target)) {
+            setOption('dropTarget', undefined);
+          }
         }
       },
-      [setOption]
+      [editor, setOption]
     );
 
     // We listen for the drop event on the document and not only inside the editor, because we want to
     // remove the dropTarget, and therefore hide the drop line, also when the drop happened outside of
     // the editor. Needed, if the drag did not start inside the editor, but for example by dragging a
     // file from the filesystem
-    const handleDocumentDrop = useCallback(() => {
+    const handleDrop = useCallback(() => {
       setOption('_isOver', false);
       setOption('dropTarget', undefined);
     }, [setOption]);
 
     useEffect(() => {
-      document.addEventListener('dragleave', handleDocumentDragLeave, true);
-      document.addEventListener('drop', handleDocumentDrop, true);
+      document.addEventListener('dragleave', handleDragLeave, true);
+      document.addEventListener('drop', handleDrop, true);
 
       return () => {
-        document.removeEventListener(
-          'dragleave',
-          handleDocumentDragLeave,
-          true
-        );
-
-        document.removeEventListener('drop', handleDocumentDrop, true);
+        document.removeEventListener('dragleave', handleDragLeave, true);
+        document.removeEventListener('drop', handleDrop, true);
       };
-    }, [handleDocumentDragLeave, handleDocumentDrop]);
+    }, [handleDragLeave, handleDrop]);
   },
 }).extend(({ getOptions }) => ({
   render: {
