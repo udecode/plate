@@ -35,7 +35,7 @@ describe('streamSerializeMd', () => {
   it('should without tailing line break', () => {
     const chunk = 'chunk1\n\n';
 
-    const lastBlock = streamDeserializeMd(editor, chunk).at(-1);
+    const lastBlock = streamDeserializeMd(editor, chunk).at(-1) as any;
 
     const output = streamSerializeMd(editor, { value: [lastBlock] }, chunk);
 

@@ -2,7 +2,6 @@ import type { NextRequest } from 'next/server';
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { streamObject } from 'ai';
-
 import { z } from 'zod';
 
 const schema = z.object({
@@ -15,14 +14,14 @@ const schema = z.object({
             .describe(
               'The id of the starting block. If the comment spans multiple blocks, use the id of the first block.'
             ),
+          comment: z
+            .string()
+            .describe('A brief comment or explanation for this fragment.'),
           content: z
             .string()
             .describe(
               'The original document fragment to be commented on. Do not modify it in any way.'
             ),
-          comment: z
-            .string()
-            .describe('A brief comment or explanation for this fragment.'),
         })
         .describe('A single comment object')
     )
@@ -43,10 +42,10 @@ export async function POST(req: NextRequest) {
   const openai = createOpenAI({ apiKey });
 
   const result = streamObject({
-    schema,
     maxTokens: 2048,
     model: openai('gpt-4o'),
     prompt,
+    schema,
     system,
   });
 
@@ -56,9 +55,9 @@ export async function POST(req: NextRequest) {
         for await (const e of result.fullStream) {
           controller.enqueue(JSON.stringify(e) + '\n');
         }
-      } catch (err) {
+      } catch (error) {
         controller.enqueue(
-          JSON.stringify({ type: 'error', error: String(err) }) + '\n'
+          JSON.stringify({ error: String(error), type: 'error' }) + '\n'
         );
       } finally {
         controller.close();

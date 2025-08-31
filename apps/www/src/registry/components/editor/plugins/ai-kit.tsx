@@ -1,15 +1,11 @@
 'use client';
 
+import type { UseStreamObjectReturn } from '@/registry/hooks/useStreamObject';
 import type { AIChatPluginConfig } from '@platejs/ai/react';
 import type { UseChatOptions } from 'ai/react';
 
 import { streamInsertChunk, withAIBatch } from '@platejs/ai';
-import {
-  AIChatPlugin,
-  AIPlugin,
-  AIReviewPlugin,
-  useChatChunk,
-} from '@platejs/ai/react';
+import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
 import { getPluginType, KEYS, PathApi } from 'platejs';
 import { createPlatePlugin, usePluginOption } from 'platejs/react';
 
@@ -19,7 +15,6 @@ import { AIReviewPreview } from '@/registry/ui/ai-review-preview';
 
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
-import { UseStreamObjectReturn } from '@/registry/hooks/useStreamObject';
 
 export const aiReviewPlugin = createPlatePlugin({
   key: 'aiReview',

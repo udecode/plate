@@ -1,11 +1,12 @@
 import { deserializeMd } from '@platejs/markdown';
 import {
-  Range,
-  SlateEditor,
+  type NodeEntry,
+  type Range,
+  type SlateEditor,
+  type TElement,
   NodeApi,
-  NodeEntry,
-  TElement,
 } from 'platejs';
+
 import { findTextRangeInBlock } from './findTextRangeInBlock';
 
 export const aiReviewToRange = (
@@ -19,7 +20,7 @@ export const aiReviewToRange = (
 
   let firstBlock: NodeEntry<TElement> | undefined;
 
-  let ranges: Range[] = [];
+  const ranges: Range[] = [];
   contentNodes.forEach((node, index) => {
     let currentBlock: NodeEntry<TElement> | undefined;
 

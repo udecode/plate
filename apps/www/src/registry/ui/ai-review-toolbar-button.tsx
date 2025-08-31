@@ -1,17 +1,18 @@
 'use client';
 
 import * as React from 'react';
-import { ToolbarButton } from './toolbar';
-import { aiReviewToRange, getEditorPrompt } from '@platejs/ai/react';
-import { useEditorRef } from 'platejs/react';
-import { deserializeMd } from '@platejs/markdown';
 
-import { KEYS, nanoid, NodeApi, TextApi, TNode } from 'platejs';
+import { aiReviewToRange, getEditorPrompt } from '@platejs/ai/react';
+import { getCommentKey } from '@platejs/comment';
+import { deserializeMd } from '@platejs/markdown';
+import { type TNode, KEYS, nanoid, NodeApi, TextApi } from 'platejs';
+import { useEditorRef } from 'platejs/react';
 
 import { useStreamObject } from '@/registry/hooks/useStreamObject';
+
 import { aiReviewPlugin } from '../components/editor/plugins/ai-kit';
 import { discussionPlugin } from '../components/editor/plugins/discussion-kit';
-import { getCommentKey } from '@platejs/comment';
+import { ToolbarButton } from './toolbar';
 
 const system = `\
 You are a document review assistant.  
@@ -108,8 +109,8 @@ export function AICommentToolbarButton(
       {...props}
       onClick={async () => {
         const promptText = getEditorPrompt(editor, {
-          prompt,
           options: { withBlockId: true },
+          prompt,
         });
 
         const systemText = getEditorPrompt(editor, {

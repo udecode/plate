@@ -1,10 +1,10 @@
+import type { SerializeMdOptions } from '@platejs/markdown';
 import type { PlateEditor } from 'platejs/react';
 
 import { isSelecting } from '@platejs/selection';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 
 import { getMarkdown } from './getMarkdown';
-import { SerializeMdOptions } from '@platejs/markdown';
 
 export type EditorPrompt =
   | ((params: EditorPromptParams) => string)
@@ -29,11 +29,11 @@ const replacePlaceholders = (
   editor: PlateEditor,
   text: string,
   {
-    prompt,
     options,
+    prompt,
   }: {
-    prompt?: string;
     options?: SerializeMdOptions;
+    prompt?: string;
   }
 ): string => {
   let result = text.replace('{prompt}', prompt || '');
@@ -71,13 +71,13 @@ const createPromptFromConfig = (
 export const getEditorPrompt = (
   editor: PlateEditor,
   {
+    options,
     prompt = '',
     promptTemplate = () => '{prompt}',
-    options,
   }: {
+    options?: SerializeMdOptions;
     prompt?: EditorPrompt;
     promptTemplate?: (params: EditorPromptParams) => string | void;
-    options?: SerializeMdOptions;
   } = {}
 ): string | undefined => {
   const params: EditorPromptParams = {
@@ -101,7 +101,7 @@ export const getEditorPrompt = (
   }
 
   return replacePlaceholders(editor, template, {
-    prompt: promptText,
     options,
+    prompt: promptText,
   });
 };

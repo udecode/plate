@@ -1,12 +1,11 @@
-import { findTextRangeInBlock } from './findTextRangeInBlock';
 import { createTestEditor } from './__tests__/createTestEditor';
-import { NodeApi } from 'platejs';
-import { deserializeMd } from '@platejs/markdown';
+import { findTextRangeInBlock } from './findTextRangeInBlock';
 
 describe('findTextRangeInBlock', () => {
   it('should find text in a simple nested inline node', () => {
     const editor = createTestEditor([
       {
+        id: '231asasd',
         children: [
           { text: 'a' },
           {
@@ -16,7 +15,6 @@ describe('findTextRangeInBlock', () => {
           },
         ],
         type: 'p',
-        id: '231asasd',
       },
     ]);
 
@@ -26,23 +24,23 @@ describe('findTextRangeInBlock', () => {
     });
 
     expect(range).toEqual({
-      anchor: { path: [0, 1, 0], offset: 0 },
-      focus: { path: [0, 1, 0], offset: 4 },
+      anchor: { offset: 0, path: [0, 1, 0] },
+      focus: { offset: 4, path: [0, 1, 0] },
     });
   });
 
   it('should find text spanning multiple styled nodes', () => {
     const editor = createTestEditor([
       {
+        id: 'gYBjGfssdm',
         children: [
           { text: 'This is a tes1texst' },
-          { text: 't', bold: true },
-          { text: 'e', italic: true },
-          { text: 's', comment: true },
-          { text: 't', kbd: true },
+          { bold: true, text: 't' },
+          { italic: true, text: 'e' },
+          { comment: true, text: 's' },
+          { kbd: true, text: 't' },
         ],
         type: 'p',
-        id: 'gYBjGfssdm',
       },
     ]);
 
@@ -53,17 +51,17 @@ describe('findTextRangeInBlock', () => {
 
     // "test" 出现在最后 4 个节点里 (t + e + s + t)
     expect(range).toEqual({
-      anchor: { path: [0, 1], offset: 0 },
-      focus: { path: [0, 4], offset: 1 },
+      anchor: { offset: 0, path: [0, 1] },
+      focus: { offset: 1, path: [0, 4] },
     });
   });
 
   it('should fallback to prefix when full text not found', () => {
     const editor = createTestEditor([
       {
+        id: 'block1',
         children: [{ text: 'This is a tes' }],
         type: 'p',
-        id: 'block1',
       },
     ]);
 
@@ -74,17 +72,17 @@ describe('findTextRangeInBlock', () => {
 
     // fallback → 匹配 'tes'
     expect(range).toEqual({
-      anchor: { path: [0, 0], offset: 10 },
-      focus: { path: [0, 0], offset: 13 },
+      anchor: { offset: 10, path: [0, 0] },
+      focus: { offset: 13, path: [0, 0] },
     });
   });
 
   it('should return null when neither full nor prefix found', () => {
     const editor = createTestEditor([
       {
+        id: 'block2',
         children: [{ text: 'abc' }],
         type: 'p',
-        id: 'block2',
       },
     ]);
 
@@ -99,6 +97,7 @@ describe('findTextRangeInBlock', () => {
   it('should correctly match text spanning multiple nodes with minor spacing differences', () => {
     const editor = createTestEditor([
       {
+        id: '-WVMecrPDQ',
         children: [
           { text: 'Structure your content with ' },
           { children: [{ text: 'headings' }], type: 'a', url: '/docs/heading' },
@@ -145,7 +144,6 @@ describe('findTextRangeInBlock', () => {
           { text: ' for H1).' },
         ],
         type: 'p',
-        id: '-WVMecrPDQ',
       },
     ]);
 
@@ -156,14 +154,15 @@ describe('findTextRangeInBlock', () => {
     });
 
     expect(range).toEqual({
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 26], offset: 9 },
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 9, path: [0, 26] },
     });
   });
 
   it('should not match text spanning multiple nodes when there are significant differences', () => {
     const editor = createTestEditor([
       {
+        id: '-WVMecrPDQ',
         children: [
           { text: 'Structure your content with ' },
           { children: [{ text: 'headings' }], type: 'a', url: '/docs/heading' },
@@ -210,7 +209,6 @@ describe('findTextRangeInBlock', () => {
           { text: ' for H1).' },
         ],
         type: 'p',
-        id: '-WVMecrPDQ',
       },
     ]);
 
@@ -221,8 +219,8 @@ describe('findTextRangeInBlock', () => {
     });
 
     expect(range).toEqual({
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 3, 0], offset: 2 },
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 2, path: [0, 3, 0] },
     });
   });
 });

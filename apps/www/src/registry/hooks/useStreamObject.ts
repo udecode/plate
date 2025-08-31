@@ -10,14 +10,14 @@ interface AIReviewObject {
   comments?: AIReviewComment[];
 }
 
-type StreamStatus = 'idle' | 'streaming' | 'success' | 'error';
+type StreamStatus = 'error' | 'idle' | 'streaming' | 'success';
 
 interface UseStreamObjectOptions {
   api?: string;
-  onFinish?: (object: AIReviewObject) => void;
   onError?: (error: Error) => void;
-  onStream?: (comment: AIReviewComment) => void;
+  onFinish?: (object: AIReviewObject) => void;
   onNewComment?: (comment: AIReviewComment) => void;
+  onStream?: (comment: AIReviewComment) => void;
 }
 
 export interface UseStreamObjectReturn {
@@ -40,7 +40,7 @@ export interface UseStreamObjectReturn {
 export function useStreamObject(
   options: UseStreamObjectOptions = {}
 ): UseStreamObjectReturn {
-  const { api = '/api/ai/review', onFinish, onError, onNewComment } = options;
+  const { api = '/api/ai/review', onError, onFinish, onNewComment } = options;
 
   const [object, setObject] = React.useState<AIReviewObject | undefined>(
     undefined
@@ -75,11 +75,11 @@ export function useStreamObject(
       if (status === 'streaming') {
         // During streaming, the last item is incomplete, so get the second-to-last
         if (object.comments.length >= 2) {
-          latestFinishedComment = object.comments[object.comments.length - 2];
+          latestFinishedComment = object.comments.at(-2);
         }
       } else if (status === 'success') {
         // When finished, the last item is complete
-        latestFinishedComment = object.comments[object.comments.length - 1];
+        latestFinishedComment = object.comments.at(-1);
       }
     }
 
@@ -108,9 +108,9 @@ export function useStreamObject(
         abortControllerRef.current = new AbortController();
 
         const response = await fetch(api, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt, system }),
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
           signal: abortControllerRef.current.signal,
         });
 
@@ -141,8 +141,8 @@ export function useStreamObject(
                       currentObject = event.object;
                       setObject(currentObject);
                     }
-                  } catch (e) {
-                    console.error('Failed to parse event:', e);
+                  } catch (error_) {
+                    console.error('Failed to parse event:', error_);
                   }
                 }
               }
@@ -169,22 +169,23 @@ export function useStreamObject(
                 currentObject = event.object;
                 setObject(currentObject);
               }
-            } catch (e) {
-              console.error('Failed to parse event:', e);
+            } catch (error_) {
+              console.error('Failed to parse event:', error_);
             }
           }
         }
 
         setStatus('success');
         onFinish?.(currentObject);
-      } catch (err) {
+      } catch (error_) {
         // Ignore abort errors
-        if (err instanceof Error && err.name === 'AbortError') {
+        if (error_ instanceof Error && error_.name === 'AbortError') {
           setStatus('idle');
           return;
         }
 
-        const error = err instanceof Error ? err : new Error('Unknown error');
+        const error =
+          error_ instanceof Error ? error_ : new Error('Unknown error');
         setError(error);
         setStatus('error');
         onError?.(error);
@@ -194,12 +195,12 @@ export function useStreamObject(
   );
 
   return {
-    streamObject,
-    object,
-    status,
-    error,
-    stop,
-    reset,
     comments,
+    error,
+    object,
+    reset,
+    status,
+    stop,
+    streamObject,
   };
 }

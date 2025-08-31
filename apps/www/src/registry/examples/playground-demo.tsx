@@ -54,10 +54,10 @@ export default function PlaygroundDemo({
 
   return (
     <Plate
-      editor={editor}
       onValueChange={({ value }) => {
         console.log('🚀 ~ value:', value);
       }}
+      editor={editor}
     >
       <EditorContainer className={className}>
         <Editor

@@ -1,6 +1,6 @@
 import type { PlateEditor } from 'platejs/react';
 
-import { serializeMd, SerializeMdOptions } from '@platejs/markdown';
+import { type SerializeMdOptions, serializeMd } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { type TElement, KEYS } from 'platejs';
 

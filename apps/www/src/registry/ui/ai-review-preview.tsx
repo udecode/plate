@@ -1,22 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { getCommentKey } from '@platejs/comment';
-import { ChevronDown, ChevronUp, Loader2Icon, XIcon } from 'lucide-react';
-import { KEYS, nanoid, TextApi } from 'platejs';
-import {
-  useEditorRef,
-  usePlateViewEditor,
-  usePluginOption,
-} from 'platejs/react';
+import { Loader2Icon } from 'lucide-react';
+import { useEditorRef, usePluginOption } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
-import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-kit';
 
-import { EditorView } from './editor';
 import { aiReviewPlugin } from '../components/editor/plugins/ai-kit';
 
 export function AIReviewPreview() {
@@ -24,7 +15,7 @@ export function AIReviewPreview() {
 
   const editor = useEditorRef();
 
-  const { comments, streamObject, error, object, reset, status, stop } =
+  const { comments, error, object, reset, status, stop, streamObject } =
     usePluginOption(aiReviewPlugin, 'streamObject') ?? {};
 
   const isLoading = status === 'streaming';
