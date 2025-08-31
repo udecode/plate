@@ -2,7 +2,6 @@ export const NODES = {
   a: 'a',
   ai: 'ai',
   aiChat: 'aiChat',
-  aiReview: 'aiReview',
   audio: 'audio',
   blockquote: 'blockquote',
   bold: 'bold',
