@@ -3190,7 +3190,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@platejs/ai@workspace:packages/ai"
   dependencies:
-    "@ai-sdk/react": "npm:1.2.12"
     "@platejs/combobox": "npm:49.0.0"
     "@platejs/markdown": "npm:49.2.15"
     "@platejs/selection": "npm:49.2.4"

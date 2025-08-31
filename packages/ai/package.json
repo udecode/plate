@@ -50,7 +50,6 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@ai-sdk/react": "1.2.12",
     "@platejs/markdown": "49.2.15",
     "@platejs/selection": "49.2.4",
     "fastest-levenshtein": "1.0.16",
