@@ -4,6 +4,7 @@ import { distance } from 'fastest-levenshtein';
 import { type Path, type Range, Node } from 'slate';
 
 function maxAllowedDistance(len: number): number {
+  if (len <= 2) return 0;
   if (len <= 5) return 1;
   if (len <= 10) return 2;
   if (len <= 20) return 3;

@@ -75,11 +75,11 @@ export function useStreamObject(
       if (status === 'streaming') {
         // During streaming, the last item is incomplete, so get the second-to-last
         if (object.comments.length >= 2) {
-          latestFinishedComment = object.comments.at(-2);
+          latestFinishedComment = object.comments.at(-2) ?? null;
         }
       } else if (status === 'success') {
         // When finished, the last item is complete
-        latestFinishedComment = object.comments.at(-1);
+        latestFinishedComment = object.comments.at(-1) ?? null;
       }
     }
 
