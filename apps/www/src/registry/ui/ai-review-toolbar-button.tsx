@@ -14,20 +14,20 @@ import { discussionPlugin } from '../components/editor/plugins/discussion-kit';
 import { getCommentKey } from '@platejs/comment';
 
 const system = `\
-你是一名文档审阅助手。  
-你将收到一个用 <block id="..."> 内容 </block> 标签包裹的 MDX 文档。  
+You are a document review assistant.  
+You will receive an MDX document wrapped in <block id="..."> content </block> tags.  
 
-你的任务：  
-- 阅读所有 block 的内容并提供评论。  
-- 对于每条评论，生成一个 JSON 对象：  
-  - blockId：被评论的 block 的 id。
-  - content：需要评论的原始文档片段。
-  - comments：对该片段的简要评论或说明。
+Your task:  
+- Read the content of all blocks and provide comments.  
+- For each comment, generate a JSON object:  
+  - blockId: the id of the block being commented on.
+  - content: the original document fragment that needs commenting.
+  - comments: a brief comment or explanation for that fragment.
 
-规则：
-- content 字段必须是 block 标签内的原始内容。返回的内容不能包含 block 标签，但应保留其他 MDX 标签。
-- content 字段可以是整个 block、block 内的一小段，或跨越多个 block。如果跨越多个 block，请用两个 \n\n 分隔。
-- 重要：如果评论跨越多个 block，请使用**第一个** block 的 id。
+Rules:
+- The content field must be the original content inside the block tag. The returned content must not include the block tags, but should retain other MDX tags.
+- The content field can be the entire block, a small part within a block, or span multiple blocks. If spanning multiple blocks, separate them with two \n\n.
+- Important: If a comment spans multiple blocks, use the id of the **first** block.
 `;
 
 const prompt = `
@@ -49,10 +49,10 @@ export function AICommentToolbarButton(
           const discussions =
             editor.getOption(discussionPlugin, 'discussions') || [];
 
-          // 生成新的讨论ID
+          // Generate a new discussion ID
           const discussionId = nanoid();
 
-          // 创建新的评论
+          // Create a new comment
           const newComment = {
             id: nanoid(),
             contentRich: [{ children: [{ text: comment }], type: 'p' }],
@@ -62,7 +62,7 @@ export function AICommentToolbarButton(
             userId: editor.getOption(discussionPlugin, 'currentUserId'),
           };
 
-          // 创建新的讨论
+          // Create a new discussion
           const newDiscussion = {
             id: discussionId,
             comments: [newComment],
@@ -74,11 +74,11 @@ export function AICommentToolbarButton(
             userId: editor.getOption(discussionPlugin, 'currentUserId'),
           };
 
-          // 更新讨论数据
+          // Update discussions
           const updatedDiscussions = [...discussions, newDiscussion];
           editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
 
-          // 在编辑器中应用评论标记
+          // Apply comment marks to the editor
           editor.tf.setNodes(
             {
               [getCommentKey(newDiscussion.id)]: true,
