@@ -11,7 +11,7 @@ import { createPlatePlugin, usePluginOption } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
 import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
-import { AIReviewPreview } from '@/registry/ui/ai-review-preview';
+import { AIReviewLoadingBar } from '@/registry/ui/ai-review-loading-bar';
 
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
@@ -19,9 +19,25 @@ import { MarkdownKit } from './markdown-kit';
 export const aiReviewPlugin = createPlatePlugin({
   key: 'aiReview',
   options: {
+    rejectCommentIds: [] as string[],
     streamObject: null as UseStreamObjectReturn | null,
   },
-  render: { afterContainer: AIReviewPreview },
+  render: { afterContainer: AIReviewLoadingBar },
+}).extendApi(({ getOption, setOption }) => {
+  return {
+    addRejectComment: (commentId: string) => {
+      setOption('rejectCommentIds', [
+        ...getOption('rejectCommentIds'),
+        commentId,
+      ]);
+    },
+    clearRejectComments: () => {
+      setOption('rejectCommentIds', []);
+    },
+    isRejectComment: (commentId: string) => {
+      return getOption('rejectCommentIds').includes(commentId);
+    },
+  };
 });
 
 export const aiChatPlugin = AIChatPlugin.extend({

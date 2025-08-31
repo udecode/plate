@@ -80,17 +80,23 @@ export function AICommentToolbarButton(
           editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
 
           // Apply comment marks to the editor
-          editor.tf.setNodes(
-            {
-              [getCommentKey(newDiscussion.id)]: true,
-              [KEYS.comment]: true,
-            },
-            {
-              at: range,
-              match: TextApi.isText,
-              split: true,
-            }
-          );
+          editor.tf.withMerging(() => {
+            editor.tf.setNodes(
+              {
+                [getCommentKey(newDiscussion.id)]: true,
+                [KEYS.comment]: true,
+              },
+              {
+                at: range,
+                match: TextApi.isText,
+                split: true,
+              }
+            );
+          });
+
+          editor
+            .getApi(aiReviewPlugin)
+            .aiReview.addRejectComment(newDiscussion.id);
         } else {
           console.warn('no range found');
         }
@@ -102,12 +108,15 @@ export function AICommentToolbarButton(
 
   React.useEffect(() => {
     editor.setOption(aiReviewPlugin, 'streamObject', streamObjectResult);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
   return (
     <ToolbarButton
       {...props}
       onClick={async () => {
+        editor.getApi(aiReviewPlugin).aiReview.clearRejectComments();
+
         const promptText = getEditorPrompt(editor, {
           options: { withBlockId: true },
           prompt,
