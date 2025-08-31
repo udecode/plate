@@ -4,5 +4,4 @@
 
 export * from './ai/index';
 export * from './ai-chat/index';
-export * from './ai-review/index';
 export * from './copilot/index';

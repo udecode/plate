@@ -24,7 +24,7 @@ import { UseStreamObjectReturn } from '@/registry/hooks/useStreamObject';
 export const aiReviewPlugin = createPlatePlugin({
   key: 'aiReview',
   options: {
-    status: null as UseStreamObjectReturn['status'] | null,
+    streamObject: null as UseStreamObjectReturn | null,
   },
   render: { afterContainer: AIReviewPreview },
 });

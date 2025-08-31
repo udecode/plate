@@ -3,3 +3,4 @@
  */
 
 export * from './aiReviewToRange';
+export * from './findTextRangeInBlock';

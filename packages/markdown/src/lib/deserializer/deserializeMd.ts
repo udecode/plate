@@ -6,7 +6,9 @@ import {
   type SlateEditor,
   getPluginKey,
   KEYS,
+  TElement,
   TextApi,
+  Value,
 } from 'platejs';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
@@ -53,7 +55,7 @@ export const markdownToSlateNodes = (
   editor: SlateEditor,
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
-) => {
+): Descendant[] => {
   // if using remarkMdx, we need to replace <br> with <br /> since <br /> is not supported in mdx.
   if (!options?.withoutMdx) {
     data = data.replaceAll('<br>', '<br />');
@@ -93,8 +95,8 @@ export const deserializeMd = (
   editor: SlateEditor,
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
-): any => {
-  let output = null;
+): Value => {
+  let output: Descendant[] | null = null;
 
   try {
     output = markdownToSlateNodes(editor, data, options);
@@ -106,13 +108,15 @@ export const deserializeMd = (
     }
   }
 
+  if (!output) return [];
+
   // when output is inline text, we need to wrap the text in a paragraph
-  return output?.map((item) =>
+  return output.map((item) =>
     TextApi.isText(item)
-      ? {
+      ? ({
           children: [item],
           type: getPluginKey(editor, KEYS.p) ?? KEYS.p,
-        }
+        } as TElement)
       : item
   );
 };
