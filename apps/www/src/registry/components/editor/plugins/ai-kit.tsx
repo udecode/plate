@@ -111,6 +111,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
         editor.setOption(AIChatPlugin, 'streaming', false);
         editor.setOption(AIChatPlugin, '_blockChunks', '');
         editor.setOption(AIChatPlugin, '_blockPath', null);
+        editor.setOption(AIChatPlugin, '_mdxName', null);
       },
     });
   },
