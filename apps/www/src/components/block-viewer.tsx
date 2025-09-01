@@ -11,7 +11,7 @@ import type {
   registryItemFileSchema,
   registryItemSchema,
 } from 'shadcn/registry';
-import type { z } from 'zod';
+import { z } from 'zod/v3';
 
 import {
   Check,

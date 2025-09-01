@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { streamObject } from 'ai';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 const schema = z.object({
   comments: z
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   const openai = createOpenAI({ apiKey });
 
   const result = streamObject({
-    maxTokens: 2048,
+    maxOutputTokens: 2048,
     model: openai('gpt-4o'),
     prompt,
     schema,

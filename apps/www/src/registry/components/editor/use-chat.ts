@@ -7,6 +7,7 @@ import { faker } from '@faker-js/faker';
 import { usePluginOption } from 'platejs/react';
 
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
+import { DefaultChatTransport } from 'ai';
 
 export const useChat = () => {
   const options = usePluginOption(aiChatPlugin, 'chatOptions');
@@ -22,45 +23,49 @@ export const useChat = () => {
 
   const chat = useBaseChat({
     id: 'editor',
-    // Mock the API response. Remove it when you implement the route /api/ai/command
-    fetch: async (input, init) => {
-      const res = await fetch(input, init);
+    transport: new DefaultChatTransport({
+      api: '/api/ai/command',
+      // Mock the API response. Remove it when you implement the route /api/ai/command
+      fetch: async (input, init) => {
+        const res = await fetch(input, init);
 
-      if (!res.ok) {
-        let sample: 'markdown' | 'mdx' | null = null;
+        if (!res.ok) {
+          let sample: 'markdown' | 'mdx' | null = null;
 
-        try {
-          const content = JSON.parse(init?.body as string).messages.at(
-            -1
-          ).content;
+          try {
+            const content = JSON.parse(init?.body as string)
+              .messages.at(-1)
+              .parts.find((p: any) => p.type === 'text')?.text;
 
-          if (content.includes('Generate a markdown sample')) {
-            sample = 'markdown';
-          } else if (content.includes('Generate a mdx sample')) {
-            sample = 'mdx';
+            if (content.includes('Generate a markdown sample')) {
+              sample = 'markdown';
+            } else if (content.includes('Generate a mdx sample')) {
+              sample = 'mdx';
+            }
+          } catch {
+            sample = null;
           }
-        } catch {
-          sample = null;
+
+          abortControllerRef.current = new AbortController();
+          await new Promise((resolve) => setTimeout(resolve, 400));
+
+          const stream = fakeStreamText({
+            sample,
+            signal: abortControllerRef.current.signal,
+          });
+
+          return new Response(stream, {
+            headers: {
+              Connection: 'keep-alive',
+              'Content-Type': 'text/plain',
+            },
+          });
         }
 
-        abortControllerRef.current = new AbortController();
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        return res;
+      },
+    }),
 
-        const stream = fakeStreamText({
-          sample,
-          signal: abortControllerRef.current.signal,
-        });
-
-        return new Response(stream, {
-          headers: {
-            Connection: 'keep-alive',
-            'Content-Type': 'text/plain',
-          },
-        });
-      }
-
-      return res;
-    },
     ...options,
   });
 
@@ -121,6 +126,23 @@ const fakeStreamText = ({
 
       signal?.addEventListener('abort', abortHandler);
 
+      // Generate a unique message ID
+      const messageId = `msg_${faker.string.alphanumeric(40)}`;
+
+      // Send initial stream events
+      controller.enqueue(encoder.encode('data: {"type":"start"}\n\n'));
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      controller.enqueue(encoder.encode('data: {"type":"start-step"}\n\n'));
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      controller.enqueue(
+        encoder.encode(
+          `data: {"type":"text-start","id":"${messageId}","providerMetadata":{"openai":{"itemId":"${messageId}"}}}\n\n`
+        )
+      );
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i];
 
@@ -128,34 +150,51 @@ const fakeStreamText = ({
         for (const chunk of block) {
           await new Promise((resolve) => setTimeout(resolve, chunk.delay));
 
-          if (streamProtocol === 'text') {
-            controller.enqueue(encoder.encode(chunk.texts));
-          } else {
-            controller.enqueue(
-              encoder.encode(`0:${JSON.stringify(chunk.texts)}\n`)
-            );
+          if (signal?.aborted) {
+            signal?.removeEventListener('abort', abortHandler);
+            return;
           }
+
+          // Properly escape the text for JSON
+          const escapedText = chunk.texts
+            .replace(/\\/g, '\\\\')  // Escape backslashes first
+            .replace(/"/g, '\\"')     // Escape quotes
+            .replace(/\n/g, '\\n')    // Escape newlines
+            .replace(/\r/g, '\\r')    // Escape carriage returns
+            .replace(/\t/g, '\\t');   // Escape tabs
+          
+          controller.enqueue(
+            encoder.encode(
+              `data: {"type":"text-delta","id":"${messageId}","delta":"${escapedText}"}\n\n`
+            )
+          );
         }
 
         // Add double newline after each block except the last one
         if (i < blocks.length - 1) {
-          if (streamProtocol === 'text') {
-            controller.enqueue(encoder.encode('\n\n'));
-          } else {
-            controller.enqueue(encoder.encode(`0:${JSON.stringify('\n\n')}\n`));
-          }
+          controller.enqueue(
+            encoder.encode(
+              `data: {"type":"text-delta","id":"${messageId}","delta":"\\n\\n"}\n\n`
+            )
+          );
         }
       }
 
-      if (streamProtocol === 'data') {
-        controller.enqueue(
-          `d:{"finishReason":"stop","usage":{"promptTokens":0,"completionTokens":${blocks.reduce(
-            (sum, block) => sum + block.length,
-            0
-          )}}}\n`
-        );
-      }
+      // Send end events
+      controller.enqueue(
+        encoder.encode(`data: {"type":"text-end","id":"${messageId}"}\n\n`)
+      );
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
+      controller.enqueue(encoder.encode('data: {"type":"finish-step"}\n\n'));
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      controller.enqueue(encoder.encode('data: {"type":"finish"}\n\n'));
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+
+      signal?.removeEventListener('abort', abortHandler);
       controller.close();
     },
   });

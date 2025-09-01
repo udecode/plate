@@ -5,7 +5,7 @@ import { useForm, useWatch } from 'react-hook-form';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckIcon, PlusIcon } from 'lucide-react';
-import * as z from 'zod';
+import * as z from 'zod/v3';
 
 import { Button } from '@/components/ui/button';
 import {

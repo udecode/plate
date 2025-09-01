@@ -2,7 +2,7 @@
 
 import type { UseStreamObjectReturn } from '@/registry/hooks/useStreamObject';
 import type { AIChatPluginConfig } from '@platejs/ai/react';
-import type { UseChatOptions } from 'ai/react';
+import type { UIMessage, UseChatOptions } from '@ai-sdk/react';
 
 import { streamInsertChunk, withAIBatch } from '@platejs/ai';
 import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
@@ -45,7 +45,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
     chatOptions: {
       api: '/api/ai/command',
       body: {},
-    } as UseChatOptions,
+    },
     promptTemplate: ({ isBlockSelecting, isSelecting }) => {
       return isBlockSelecting
         ? PROMPT_TEMPLATES.userBlockSelecting

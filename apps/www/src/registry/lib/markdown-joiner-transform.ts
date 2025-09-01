@@ -16,18 +16,18 @@ export const markdownJoinerTransform =
         const remaining = joiner.flush();
         if (remaining) {
           controller.enqueue({
-            textDelta: remaining,
+            text: remaining,
             type: 'text-delta',
           } as TextStreamPart<TOOLS>);
         }
       },
       async transform(chunk, controller) {
         if (chunk.type === 'text-delta') {
-          const processedText = joiner.processText(chunk.textDelta);
+          const processedText = joiner.processText(chunk.text);
           if (processedText) {
             controller.enqueue({
               ...chunk,
-              textDelta: processedText,
+              text: processedText,
             });
             await delay(joiner.delayInMs);
           }

@@ -1,5 +1,5 @@
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
-import type { UseChatHelpers } from 'ai/react';
+import type { UseChatHelpers } from '@ai-sdk/react';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
@@ -30,6 +30,7 @@ import {
 import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
+import { UIMessage } from 'ai';
 
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
@@ -40,7 +41,7 @@ export type AIChatPluginConfig = PluginConfig<
     _mdxName: string | null;
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
-    chat: Partial<UseChatHelpers>;
+    chat: Partial<UseChatHelpers<UIMessage>>;
     /** @deprecated Use api.aiChat.node({streaming:true}) instead */
     experimental_lastTextId: string | null;
     /**
@@ -163,7 +164,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
           editor.getTransforms(AIPlugin).ai.undo();
         }
 
-        void chat.reload?.({
+        void chat.regenerate?.({
           body: {
             system: getEditorPrompt(editor, {
               promptTemplate: getOptions().systemTemplate,

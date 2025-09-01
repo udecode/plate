@@ -2,16 +2,17 @@
 
 import { useEffect } from 'react';
 
-import type { UseChatHelpers } from 'ai/react';
+import type { UseChatHelpers } from '@ai-sdk/react';
 import type { NodeEntry } from 'platejs';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
+import { UIMessage } from 'ai';
 
 export type UseEditorChatOptions = {
-  chat: UseChatHelpers;
+  chat: UseChatHelpers<UIMessage>;
   onOpenBlockSelection?: (blocks: NodeEntry[]) => void;
   onOpenChange?: (open: boolean) => void;
   onOpenCursor?: () => void;
@@ -32,7 +33,7 @@ export const useEditorChat = ({
   useEffect(() => {
     setOption('chat', chat);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chat.input, chat.messages, chat.isLoading, chat.data, chat.error]);
+  }, [chat.messages, chat.status, chat.error]);
 
   useEffect(() => {
     onOpenChange?.(open);
