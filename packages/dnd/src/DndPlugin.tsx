@@ -96,7 +96,10 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
         if (e.target instanceof Node) {
           const editorDOMNode = editor.api.toDOMNode(editor);
 
-          if (editorDOMNode && !editorDOMNode.contains(e.target)) {
+          if (
+            editorDOMNode &&
+            !(e.target === editorDOMNode || editorDOMNode.contains(e.target))
+          ) {
             setOption('dropTarget', undefined);
           }
         }
