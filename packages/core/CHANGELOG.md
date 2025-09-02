@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 49.2.21
+
+### Patch Changes
+
+- [#4600](https://github.com/udecode/plate/pull/4600) by [@zbeyens](https://github.com/zbeyens) – slate 0.118
+
 ## 49.2.12
 
 ### Patch Changes
