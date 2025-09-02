@@ -223,7 +223,9 @@ export const NodeApi: {
   },
   fragment: (...args) => {
     try {
-      return SlateNode.fragment(...args);
+      const fragment = SlateNode.fragment as any;
+
+      return fragment(...args);
     } catch {
       return [];
     }
