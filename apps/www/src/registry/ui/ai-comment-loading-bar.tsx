@@ -8,22 +8,22 @@ import { useEditorRef, usePluginOption } from 'platejs/react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-import { aiReviewPlugin } from '../components/editor/plugins/ai-kit';
+import { aiCommentPlugin } from '../components/editor/plugins/ai-kit';
 import { commentPlugin } from '../components/editor/plugins/comment-kit';
+import { AIChatPlugin } from '@platejs/ai/react';
 
-export function AIReviewLoadingBar() {
+export function AICommentLoadingBar() {
   const [isVisible, setIsVisible] = useState(false);
 
   const editor = useEditorRef();
 
-  const { status, stop } =
-    usePluginOption(aiReviewPlugin, 'streamObject') ?? {};
+  const { status, stop } = usePluginOption(AIChatPlugin, 'chat');
 
   const isLoading = status === 'streaming';
 
   const handleReject = () => {
     const rejectCommentIds = editor.getOption(
-      aiReviewPlugin,
+      aiCommentPlugin,
       'rejectCommentIds'
     );
 

@@ -11,18 +11,18 @@ import { createPlatePlugin, usePluginOption } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
 import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
-import { AIReviewLoadingBar } from '@/registry/ui/ai-review-loading-bar';
 
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
+import { AICommentLoadingBar } from '@/registry/ui/ai-comment-loading-bar';
 
-export const aiReviewPlugin = createPlatePlugin({
+export const aiCommentPlugin = createPlatePlugin({
   key: 'aiReview',
   options: {
     rejectCommentIds: [] as string[],
     streamObject: null as UseStreamObjectReturn | null,
   },
-  render: { afterContainer: AIReviewLoadingBar },
+  render: { afterContainer: AICommentLoadingBar },
 }).extendApi(({ getOption, setOption }) => {
   return {
     addRejectComment: (commentId: string) => {
@@ -122,7 +122,7 @@ export const AIKit = [
   ...MarkdownKit,
   AIPlugin.withComponent(AILeaf),
   aiChatPlugin,
-  aiReviewPlugin,
+  aiCommentPlugin,
 ];
 
 const systemCommon = `\

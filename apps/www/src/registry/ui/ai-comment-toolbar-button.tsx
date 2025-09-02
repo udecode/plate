@@ -2,15 +2,15 @@
 
 import * as React from 'react';
 
-import { aiReviewToRange, getEditorPrompt } from '@platejs/ai/react';
+import { aiCommentToRange, getEditorPrompt } from '@platejs/ai/react';
 import { getCommentKey } from '@platejs/comment';
 import { deserializeMd } from '@platejs/markdown';
 import { type TNode, KEYS, nanoid, NodeApi, TextApi } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 
-import { useStreamObject } from '@/registry/hooks/useStreamObject';
+import { useEditorCommentChat } from '@/registry/components/editor/use-editor-comment-chat';
 
-import { aiReviewPlugin } from '../components/editor/plugins/ai-kit';
+import { aiCommentPlugin } from '../components/editor/plugins/ai-kit';
 import { discussionPlugin } from '../components/editor/plugins/discussion-kit';
 import { ToolbarButton } from './toolbar';
 
@@ -32,6 +32,11 @@ Rules:
 `;
 
 const prompt = `
+This is for testing purposes, so please include all three types of comments.
+1. Comment on the entire block.
+2. Comment on a small part of the block.
+3. Comment on multiple blocks of the document.
+
 {editor}
 `;
 
@@ -40,12 +45,9 @@ export function AICommentToolbarButton(
 ) {
   const editor = useEditorRef();
 
-  const streamObjectResult = useStreamObject({
-    onError: (error) => {
-      console.error('AI Review error:', error);
-    },
+  const { startCommentGeneration } = useEditorCommentChat({
     onNewComment: (aiComment) => {
-      aiReviewToRange(editor, aiComment, ({ comment, range }) => {
+      aiCommentToRange(editor, aiComment, ({ comment, range }) => {
         if (range) {
           const discussions =
             editor.getOption(discussionPlugin, 'discussions') || [];
@@ -95,7 +97,7 @@ export function AICommentToolbarButton(
           });
 
           editor
-            .getApi(aiReviewPlugin)
+            .getApi(aiCommentPlugin)
             .aiReview.addRejectComment(newDiscussion.id);
         } else {
           console.warn('no range found');
@@ -104,18 +106,12 @@ export function AICommentToolbarButton(
     },
   });
 
-  const { status, streamObject } = streamObjectResult;
-
-  React.useEffect(() => {
-    editor.setOption(aiReviewPlugin, 'streamObject', streamObjectResult);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
-
   return (
     <ToolbarButton
       {...props}
       onClick={async () => {
-        editor.getApi(aiReviewPlugin).aiReview.clearRejectComments();
+        // Clear previous state
+        editor.getApi(aiCommentPlugin).aiReview.clearRejectComments();
 
         const promptText = getEditorPrompt(editor, {
           options: { withBlockId: true },
@@ -126,7 +122,7 @@ export function AICommentToolbarButton(
           promptTemplate: () => system,
         });
 
-        await streamObject(promptText!, systemText!);
+        startCommentGeneration(promptText!, systemText!);
       }}
       onMouseDown={(e) => e.preventDefault()}
     >

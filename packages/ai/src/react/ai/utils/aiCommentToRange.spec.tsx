@@ -1,7 +1,7 @@
 import type { Range } from 'platejs';
 
 import { createTestEditor } from './__tests__/createTestEditor';
-import { aiReviewToRange } from './aiReviewToRange';
+import { aiCommentToRange } from './aiReviewToRange';
 
 describe('applyAIReview', () => {
   it('should apply the AI review to the editor', () => {
@@ -419,7 +419,7 @@ describe('applyAIReview', () => {
 
     const ranges: Range[] = [];
     comments.forEach((aiComment) =>
-      aiReviewToRange(editor, aiComment, ({ comment, range }) => {
+      aiCommentToRange(editor, aiComment, ({ comment, range }) => {
         ranges.push(range);
       })
     );

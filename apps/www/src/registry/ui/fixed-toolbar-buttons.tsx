@@ -17,7 +17,7 @@ import {
 import { KEYS } from 'platejs';
 import { useEditorReadOnly } from 'platejs/react';
 
-import { AICommentToolbarButton } from './ai-review-toolbar-button';
+import { AICommentToolbarButton } from './ai-comment-toolbar-button';
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignToolbarButton } from './align-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';

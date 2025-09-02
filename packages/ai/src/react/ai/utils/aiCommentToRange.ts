@@ -9,7 +9,7 @@ import {
 
 import { findTextRangeInBlock } from './findTextRangeInBlock';
 
-export const aiReviewToRange = (
+export const aiCommentToRange = (
   editor: SlateEditor,
   aiComment: { blockId: string; comment: string; content: string },
   onComment: (commentWithRange: { comment: string; range: Range }) => void
