@@ -1,5 +1,11 @@
 # @platejs/dnd
 
+## 49.2.22
+
+### Patch Changes
+
+- [#4603](https://github.com/udecode/plate/pull/4603) by [@delijah](https://github.com/delijah) – Fix: Drop line is not visible when hovering white space inside the editor
+
 ## 49.2.20
 
 ### Patch Changes
