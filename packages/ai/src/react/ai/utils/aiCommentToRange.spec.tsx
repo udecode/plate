@@ -1,7 +1,7 @@
 import type { Range } from 'platejs';
 
 import { createTestEditor } from './__tests__/createTestEditor';
-import { aiCommentToRange } from './aiReviewToRange';
+import { aiCommentToRange } from './aiCommentToRange';
 
 describe('applyAIReview', () => {
   it('should apply the AI review to the editor', () => {
