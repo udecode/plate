@@ -21,8 +21,6 @@ export function useEditorCommentChat({
   chat,
   onNewComment,
 }: UseEditorCommentChatOptions) {
-  const editor = useEditorRef();
-
   const processedCommentsRef = React.useRef<Set<string>>(new Set());
   const lastProcessedLengthRef = React.useRef(0);
 
