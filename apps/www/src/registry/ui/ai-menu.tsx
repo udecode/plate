@@ -49,13 +49,14 @@ import {
   PopoverContent,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { useChat } from '@/registry/components/editor/use-chat';
 
 import { AIChatEditor } from './ai-chat-editor';
+import { commentPlugin } from '../components/editor/plugins/comment-kit';
 
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
   const mode = usePluginOption(AIChatPlugin, 'mode');
+
   const streaming = usePluginOption(AIChatPlugin, 'streaming');
   const isSelecting = useIsSelecting();
   const isFocusedLast = useFocusedLast();
@@ -63,7 +64,8 @@ export function AIMenu() {
   const [value, setValue] = React.useState('');
 
   const [input, setInput] = React.useState('');
-  const chat = useChat();
+
+  const chat = usePluginOption(AIChatPlugin, 'chat');
 
   const { messages, status } = chat;
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
@@ -129,14 +131,14 @@ export function AIMenu() {
     api.aiChat.stop();
 
     // remove when you implement the route /api/ai/command
-    chat._abortFakeStream();
+    (chat as any)._abortFakeStream();
   });
 
   const isLoading = status === 'streaming' || status === 'submitted';
 
-  if (isLoading && mode === 'insert') {
-    return null;
-  }
+  if (isLoading && mode === 'insert') return null;
+
+  if (chat.choice === 'comment') return null;
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
@@ -524,39 +526,77 @@ export const AIMenuItems = ({
 };
 
 export function AILoadingBar() {
+  const editor = useEditorRef();
   const chat = usePluginOption(AIChatPlugin, 'chat');
   const mode = usePluginOption(AIChatPlugin, 'mode');
 
-  const { status } = chat;
+  const { status, choice, setMessages, setChoice } = chat;
 
   const { api } = useEditorPlugin(AIChatPlugin);
 
   const isLoading = status === 'streaming' || status === 'submitted';
 
-  const visible = isLoading && mode === 'insert';
+  const handleReject = () => {
+    api.aiChat.hide();
+    editor.getTransforms(commentPlugin).comment.unsetMark({ transient: true });
+    setMessages?.([]);
+    setChoice('generate');
+  };
 
-  if (!visible) return null;
+  const handleAccept = () => {
+    api.aiChat.hide();
+    setMessages?.([]);
+    setChoice('generate');
+  };
 
-  return (
-    <div
-      className={cn(
-        'absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-muted-foreground shadow-md transition-all duration-300'
-      )}
-    >
-      <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
-      <span>{status === 'submitted' ? 'Thinking...' : 'Writing...'}</span>
-      <Button
-        size="sm"
-        variant="ghost"
-        className="flex items-center gap-1 text-xs"
-        onClick={() => api.aiChat.stop()}
+  if (isLoading && (mode === 'insert' || choice === 'comment')) {
+    return (
+      <div
+        className={cn(
+          'absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-muted-foreground shadow-md transition-all duration-300'
+        )}
       >
-        <PauseIcon className="h-4 w-4" />
-        Stop
-        <kbd className="ml-1 rounded bg-border px-1 font-mono text-[10px] text-muted-foreground shadow-sm">
-          Esc
-        </kbd>
-      </Button>
-    </div>
-  );
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+        <span>{status === 'submitted' ? 'Thinking...' : 'Writing...'}</span>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="flex items-center gap-1 text-xs"
+          onClick={() => api.aiChat.stop()}
+        >
+          <PauseIcon className="h-4 w-4" />
+          Stop
+          <kbd className="ml-1 rounded bg-border px-1 font-mono text-[10px] text-muted-foreground shadow-sm">
+            Esc
+          </kbd>
+        </Button>
+      </div>
+    );
+  }
+
+  if (choice === 'comment' && status === 'ready') {
+    return (
+      <div
+        className={cn(
+          'absolute bottom-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-0 rounded-xl border border-border/50 bg-popover p-1 text-sm text-muted-foreground shadow-xl backdrop-blur-sm',
+          'p-3'
+        )}
+      >
+        {/* Header with controls */}
+        <div className="flex w-full items-center justify-between gap-3">
+          <div className="flex items-center gap-5">
+            <Button size="sm" disabled={isLoading} onClick={handleAccept}>
+              Accept
+            </Button>
+
+            <Button size="sm" disabled={isLoading} onClick={handleReject}>
+              Reject
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }

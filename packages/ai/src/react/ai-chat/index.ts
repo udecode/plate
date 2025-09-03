@@ -3,6 +3,7 @@
  */
 
 export * from './AIChatPlugin';
+export * from './types';
 export * from './withAIChat';
 export * from './hooks/index';
 export * from './transforms/index';

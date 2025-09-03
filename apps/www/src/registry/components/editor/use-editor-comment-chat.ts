@@ -2,10 +2,8 @@
 
 import * as React from 'react';
 
-import { useChat as useBaseChat } from '@ai-sdk/react';
-import { DefaultChatTransport, UIMessage } from 'ai';
 import { useEditorRef } from 'platejs/react';
-import { AIChatPlugin } from '@platejs/ai/react';
+import { AIChatPlugin, Chat } from '@platejs/ai/react';
 
 export interface AIComment {
   blockId: string;
@@ -15,17 +13,14 @@ export interface AIComment {
 
 interface UseEditorCommentChatOptions {
   onNewComment?: (comment: AIComment) => void;
-  onError?: (error: Error) => void;
-  onFinish?: () => void;
-  api?: string;
+  chat: Chat;
 }
 
-export function useEditorCommentChat(
-  options: UseEditorCommentChatOptions = {}
-) {
+export function useEditorCommentChat({
+  onNewComment,
+  chat,
+}: UseEditorCommentChatOptions) {
   const editor = useEditorRef();
-
-  const { onNewComment, onError, onFinish, api = '/api/ai/command' } = options;
 
   const processedCommentsRef = React.useRef<Set<string>>(new Set());
   const lastProcessedLengthRef = React.useRef(0);
@@ -69,30 +64,19 @@ export function useEditorCommentChat(
     [onNewComment]
   );
 
-  const chat = useBaseChat<UIMessage>({
-    transport: new DefaultChatTransport({
-      api,
-    }),
-    onFinish: () => {
-      processedCommentsRef.current.clear();
-      lastProcessedLengthRef.current = 0;
-      onFinish?.();
-    },
-    onError: (err) => {
-      onError?.(err);
-    },
-  });
-
   const { messages, sendMessage, status, error } = chat;
 
   React.useEffect(() => {
-    editor.setOption(AIChatPlugin, 'chat', chat);
-  }, [status]);
+    if (chat.choice !== 'comment') return;
 
-  React.useEffect(() => {
+    if (status === 'ready') {
+      processedCommentsRef.current.clear();
+      lastProcessedLengthRef.current = 0;
+    }
+
     if (status !== 'streaming') return;
 
-    const lastMessage = messages.findLast(
+    const lastMessage = messages?.findLast(
       (message) => message.role === 'assistant'
     );
 
@@ -110,16 +94,15 @@ export function useEditorCommentChat(
   }, [messages, status, parseStreamedComments]);
 
   const startCommentGeneration = React.useCallback(
-    (promptText: string, systemText: string) => {
+    ({ commentPrompt }: { commentPrompt: string }) => {
       processedCommentsRef.current.clear();
       lastProcessedLengthRef.current = 0;
 
-      sendMessage(
-        { text: promptText },
+      sendMessage?.(
+        { text: commentPrompt },
         {
           body: {
-            system: systemText,
-            prompt: promptText,
+            commentPrompt: commentPrompt,
           },
         }
       );

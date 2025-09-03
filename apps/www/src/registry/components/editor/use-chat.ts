@@ -4,12 +4,15 @@ import * as React from 'react';
 
 import { useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
-import { usePluginOption } from 'platejs/react';
+import { useEditorRef, usePluginOption } from 'platejs/react';
 
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
 import { DefaultChatTransport } from 'ai';
+import { AIChatPlugin, Chat, ChatMessage, Choice } from '@platejs/ai/react';
 
 export const useChat = () => {
+  const editor = useEditorRef();
+  const [choice, setChoice] = React.useState<Choice>('generate');
   const options = usePluginOption(aiChatPlugin, 'chatOptions');
 
   // remove when you implement the route /api/ai/command
@@ -21,7 +24,7 @@ export const useChat = () => {
     }
   };
 
-  const chat = useBaseChat({
+  const baseChat = useBaseChat<ChatMessage>({
     id: 'editor',
     transport: new DefaultChatTransport({
       api: '/api/ai/command',
@@ -65,11 +68,22 @@ export const useChat = () => {
         return res;
       },
     }),
+    onData(data) {
+      if (data.type === 'data-choice') {
+        setChoice(data.data);
+      }
+    },
 
     ...options,
   });
 
-  return { ...chat, _abortFakeStream };
+  const chat = { ...baseChat, _abortFakeStream, choice, setChoice } as Chat;
+
+  React.useEffect(() => {
+    editor.setOption(AIChatPlugin, 'chat', chat);
+  }, [chat.status, chat.messages, chat.choice, chat.error]);
+
+  return chat;
 };
 
 // Used for testing. Remove it after implementing useChat api.
@@ -157,12 +171,12 @@ const fakeStreamText = ({
 
           // Properly escape the text for JSON
           const escapedText = chunk.texts
-            .replace(/\\/g, '\\\\')  // Escape backslashes first
-            .replace(/"/g, '\\"')     // Escape quotes
-            .replace(/\n/g, '\\n')    // Escape newlines
-            .replace(/\r/g, '\\r')    // Escape carriage returns
-            .replace(/\t/g, '\\t');   // Escape tabs
-          
+            .replace(/\\/g, '\\\\') // Escape backslashes first
+            .replace(/"/g, '\\"') // Escape quotes
+            .replace(/\n/g, '\\n') // Escape newlines
+            .replace(/\r/g, '\\r') // Escape carriage returns
+            .replace(/\t/g, '\\t'); // Escape tabs
+
           controller.enqueue(
             encoder.encode(
               `data: {"type":"text-delta","id":"${messageId}","delta":"${escapedText}"}\n\n`

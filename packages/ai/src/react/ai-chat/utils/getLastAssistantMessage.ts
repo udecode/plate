@@ -11,5 +11,7 @@ export function getLastAssistantMessage(editor: PlateEditor) {
 export function useLastAssistantMessage() {
   const chat = usePluginOption(AIChatPlugin, 'chat');
 
+  if (chat.choice === 'comment') return;
+
   return chat.messages?.findLast((message) => message.role === 'assistant');
 }

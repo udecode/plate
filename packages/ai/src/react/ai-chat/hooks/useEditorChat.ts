@@ -8,11 +8,11 @@ import type { NodeEntry } from 'platejs';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
-import { AIChatPlugin } from '../AIChatPlugin';
-import { UIMessage } from 'ai';
+import { AIChatPlugin, Chat } from '../AIChatPlugin';
+import { ChatMessage } from '../types';
 
 export type UseEditorChatOptions = {
-  chat: UseChatHelpers<UIMessage>;
+  chat: Chat;
   onOpenBlockSelection?: (blocks: NodeEntry[]) => void;
   onOpenChange?: (open: boolean) => void;
   onOpenCursor?: () => void;
@@ -29,11 +29,11 @@ export const useEditorChat = ({
   const { editor, setOption } = useEditorPlugin(AIChatPlugin);
   const open = usePluginOption(AIChatPlugin, 'open');
 
-  // Sync useChat with AIChatPlugin
-  useEffect(() => {
-    setOption('chat', chat);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chat.messages, chat.status, chat.error]);
+  // // Sync useChat with AIChatPlugin
+  // useEffect(() => {
+  //   setOption('chat', chat);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [chat.messages, chat.status, chat.error]);
 
   useEffect(() => {
     onOpenChange?.(open);

@@ -30,7 +30,12 @@ import {
 import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
-import { UIMessage } from 'ai';
+import { ChatMessage, Choice } from './types';
+
+export type Chat = UseChatHelpers<ChatMessage> & {
+  choice: Choice;
+  setChoice: (choice: Choice) => void;
+};
 
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
@@ -41,7 +46,7 @@ export type AIChatPluginConfig = PluginConfig<
     _mdxName: string | null;
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
-    chat: Partial<UseChatHelpers<UIMessage>>;
+    chat: Chat;
     /** @deprecated Use api.aiChat.node({streaming:true}) instead */
     experimental_lastTextId: string | null;
     /**
@@ -70,6 +75,11 @@ export type AIChatPluginConfig = PluginConfig<
      * placeholders as `promptTemplate`.
      */
     systemTemplate: (props: EditorPromptParams) => string | void;
+    /**
+     * Template function for generating the comment prompt. Supports the same
+     * placeholders as `promptTemplate`.
+     */
+    commentPromptTemplate: (props: EditorPromptParams) => string | void;
   } & TriggerComboboxPluginOptions,
   {
     aiChat: {
@@ -114,6 +124,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     triggerPreviousCharPattern: /^\s?$/,
     promptTemplate: () => '{prompt}',
     systemTemplate: () => {},
+    commentPromptTemplate: () => {},
   },
 })
   .overrideEditor(withAIChat)

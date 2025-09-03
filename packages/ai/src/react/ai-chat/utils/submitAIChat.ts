@@ -31,7 +31,8 @@ export const submitAIChat = (
     }
   );
 
-  const { chat, promptTemplate, systemTemplate } = getOptions();
+  const { chat, promptTemplate, systemTemplate, commentPromptTemplate } =
+    getOptions();
 
   if (!prompt && input?.length === 0) {
     return;
@@ -48,6 +49,13 @@ export const submitAIChat = (
 
   setOption('mode', mode);
 
+  console.log(
+    getEditorPrompt(editor, {
+      prompt,
+      promptTemplate: commentPromptTemplate,
+    })
+  );
+
   void chat.sendMessage?.(
     {
       text:
@@ -58,6 +66,10 @@ export const submitAIChat = (
     },
     {
       body: {
+        commentPrompt: getEditorPrompt(editor, {
+          prompt,
+          promptTemplate: commentPromptTemplate,
+        }),
         system: getEditorPrompt(editor, {
           prompt: system,
           promptTemplate: systemTemplate,

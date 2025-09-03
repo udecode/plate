@@ -1,44 +1,20 @@
 'use client';
 
-import type { UseStreamObjectReturn } from '@/registry/hooks/useStreamObject';
 import type { AIChatPluginConfig } from '@platejs/ai/react';
-import type { UIMessage, UseChatOptions } from '@ai-sdk/react';
 
 import { streamInsertChunk, withAIBatch } from '@platejs/ai';
 import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
 import { getPluginType, KEYS, PathApi } from 'platejs';
-import { createPlatePlugin, usePluginOption } from 'platejs/react';
+import { usePluginOption } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
 import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
 
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
-import { AICommentLoadingBar } from '@/registry/ui/ai-comment-loading-bar';
-
-export const aiCommentPlugin = createPlatePlugin({
-  key: 'aiReview',
-  options: {
-    rejectCommentIds: [] as string[],
-    streamObject: null as UseStreamObjectReturn | null,
-  },
-  render: { afterContainer: AICommentLoadingBar },
-}).extendApi(({ getOption, setOption }) => {
-  return {
-    addRejectComment: (commentId: string) => {
-      setOption('rejectCommentIds', [
-        ...getOption('rejectCommentIds'),
-        commentId,
-      ]);
-    },
-    clearRejectComments: () => {
-      setOption('rejectCommentIds', []);
-    },
-    isRejectComment: (commentId: string) => {
-      return getOption('rejectCommentIds').includes(commentId);
-    },
-  };
-});
+import { useChat } from '../use-chat';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { MarkdownPlugin } from '@platejs/markdown';
 
 export const aiChatPlugin = AIChatPlugin.extend({
   options: {
@@ -60,6 +36,11 @@ export const aiChatPlugin = AIChatPlugin.extend({
           ? PROMPT_TEMPLATES.systemSelecting
           : PROMPT_TEMPLATES.systemDefault;
     },
+    commentPromptTemplate: ({ isBlockSelecting, isSelecting }) => {
+      return isBlockSelecting || isSelecting
+        ? PROMPT_TEMPLATES.commentSelecting
+        : PROMPT_TEMPLATES.commentDefault;
+    },
   },
   render: {
     afterContainer: AILoadingBar,
@@ -68,6 +49,8 @@ export const aiChatPlugin = AIChatPlugin.extend({
   },
   shortcuts: { show: { keys: 'mod+j' } },
   useHooks: ({ editor, getOption }) => {
+    useChat();
+
     const mode = usePluginOption(
       { key: KEYS.aiChat } as AIChatPluginConfig,
       'mode'
@@ -122,7 +105,6 @@ export const AIKit = [
   ...MarkdownKit,
   AIPlugin.withComponent(AILeaf),
   aiChatPlugin,
-  aiCommentPlugin,
 ];
 
 const systemCommon = `\
@@ -208,6 +190,16 @@ NEVER write <Block> or <Selection>.
 </Reminder>
 {prompt} about <Selection>`;
 
+const commentSelecting = `{prompt}:
+        
+{blockWithBlockId}
+`;
+
+const commentDefault = `{prompt}:
+        
+{editorWithBlockId}
+`;
+
 export const PROMPT_TEMPLATES = {
   systemBlockSelecting,
   systemDefault,
@@ -215,4 +207,6 @@ export const PROMPT_TEMPLATES = {
   userBlockSelecting,
   userDefault,
   userSelecting,
+  commentSelecting,
+  commentDefault,
 };

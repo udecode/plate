@@ -17,7 +17,12 @@ export interface EditorPromptParams {
   isSelecting: boolean;
 }
 
-export type MarkdownType = 'block' | 'editor' | 'selection';
+export type MarkdownType =
+  | 'block'
+  | 'editor'
+  | 'selection'
+  | 'editorWithBlockId'
+  | 'blockWithBlockId';
 
 export interface PromptConfig {
   default: string;
@@ -29,10 +34,8 @@ const replacePlaceholders = (
   editor: PlateEditor,
   text: string,
   {
-    options,
     prompt,
   }: {
-    options?: SerializeMdOptions;
     prompt?: string;
   }
 ): string => {
@@ -42,11 +45,13 @@ const replacePlaceholders = (
     '{block}': 'block',
     '{editor}': 'editor',
     '{selection}': 'selection',
+    '{editorWithBlockId}': 'editorWithBlockId',
+    '{blockWithBlockId}': 'blockWithBlockId',
   };
 
   Object.entries(placeholders).forEach(([placeholder, type]) => {
     if (result.includes(placeholder)) {
-      result = result.replace(placeholder, getMarkdown(editor, type, options));
+      result = result.replace(placeholder, getMarkdown(editor, type));
     }
   });
 
@@ -71,11 +76,9 @@ const createPromptFromConfig = (
 export const getEditorPrompt = (
   editor: PlateEditor,
   {
-    options,
     prompt = '',
     promptTemplate = () => '{prompt}',
   }: {
-    options?: SerializeMdOptions;
     prompt?: EditorPrompt;
     promptTemplate?: (params: EditorPromptParams) => string | void;
   } = {}
@@ -101,7 +104,6 @@ export const getEditorPrompt = (
   }
 
   return replacePlaceholders(editor, template, {
-    options,
     prompt: promptText,
   });
 };

@@ -89,6 +89,11 @@ export type BlockSelectionConfig = PluginConfig<
       getNodes: (options?: {
         collapseTableRows?: boolean;
         sort?: boolean;
+        /**
+         * If no nodes are selected by blockSelection, use the editor's original
+         * selection to get blocks
+         */
+        selectionFallback?: boolean;
       }) => NodeEntry<TIdElement>[];
       /** Check if a block is selected. */
       has: (id: string[] | string) => boolean;
@@ -276,6 +281,10 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
           });
 
           return collapsedNodes;
+        }
+
+        if (nodes.length === 0 && options?.selectionFallback) {
+          return editor.api.blocks({ mode: 'highest' });
         }
 
         return nodes;

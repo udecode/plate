@@ -7,24 +7,39 @@ import { type TElement, KEYS } from 'platejs';
 // Internal
 export const getMarkdown = (
   editor: PlateEditor,
-  type: 'block' | 'editor' | 'selection',
-  options?: SerializeMdOptions
+  type:
+    | 'block'
+    | 'editor'
+    | 'selection'
+    | 'editorWithBlockId'
+    | 'blockWithBlockId'
 ) => {
   if (type === 'editor') {
-    return serializeMd(editor, options);
+    return serializeMd(editor);
   }
+  if (type === 'editorWithBlockId') {
+    return serializeMd(editor, { withBlockId: true });
+  }
+
   if (type === 'block') {
-    const blocks = editor.getOption(BlockSelectionPlugin, 'isSelectingSome')
-      ? editor.getApi(BlockSelectionPlugin).blockSelection.getNodes()
-      : editor.api.nodes({
-          mode: 'highest',
-          match: (n) => editor.api.isBlock(n),
-        });
+    const blocks = editor
+      .getApi(BlockSelectionPlugin)
+      .blockSelection.getNodes({ sort: true, selectionFallback: true });
 
     const nodes = Array.from(blocks, (entry) => entry[0]);
 
-    return serializeMd(editor, { value: nodes, ...options });
+    return serializeMd(editor, { value: nodes });
   }
+
+  if (type === 'blockWithBlockId') {
+    const blocks = editor
+      .getApi(BlockSelectionPlugin)
+      .blockSelection.getNodes({ sort: true, selectionFallback: true });
+    const nodes = Array.from(blocks, (entry) => entry[0]);
+
+    return serializeMd(editor, { value: nodes, withBlockId: true });
+  }
+
   if (type === 'selection') {
     const fragment = editor.api.fragment<TElement>();
 
@@ -37,10 +52,10 @@ export const getMarkdown = (
         },
       ];
 
-      return serializeMd(editor, { value: modifiedFragment, ...options });
+      return serializeMd(editor, { value: modifiedFragment });
     }
 
-    return serializeMd(editor, { value: fragment, ...options });
+    return serializeMd(editor, { value: fragment });
   }
 
   return '';
