@@ -1,6 +1,6 @@
-import { UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
 
-export type Choice = 'generate' | 'edit' | 'comment';
+export type Choice = 'comment' | 'edit' | 'generate';
 
 export type MessageMetadata = {
   choice?: Choice;

@@ -2,23 +2,24 @@
 
 import * as React from 'react';
 
+import type { Chat } from '@platejs/ai/react';
+
 import { useEditorRef } from 'platejs/react';
-import { AIChatPlugin, Chat } from '@platejs/ai/react';
 
 export interface AIComment {
   blockId: string;
-  content: string;
   comment: string;
+  content: string;
 }
 
 interface UseEditorCommentChatOptions {
-  onNewComment?: (comment: AIComment) => void;
   chat: Chat;
+  onNewComment?: (comment: AIComment) => void;
 }
 
 export function useEditorCommentChat({
-  onNewComment,
   chat,
+  onNewComment,
 }: UseEditorCommentChatOptions) {
   const editor = useEditorRef();
 
@@ -26,10 +27,10 @@ export function useEditorCommentChat({
   const lastProcessedLengthRef = React.useRef(0);
 
   const parseStreamedComments = React.useCallback(
-    (content: string, fromIndex: number = 0) => {
+    (content: string, fromIndex = 0) => {
       if (!onNewComment) return;
 
-      const newContent = content.substring(fromIndex);
+      const newContent = content.slice(Math.max(0, fromIndex));
       if (!newContent.trim()) return;
 
       const lines = newContent.split('\n').filter((line) => line.trim());
@@ -45,8 +46,8 @@ export function useEditorCommentChat({
           ) {
             const aiComment: AIComment = {
               blockId: parsed.blockId,
-              content: parsed.content,
               comment: parsed.comment || parsed.comments,
+              content: parsed.content,
             };
 
             const commentKey = `${aiComment.blockId}-${aiComment.content}`;
@@ -56,7 +57,7 @@ export function useEditorCommentChat({
               onNewComment(aiComment);
             }
           }
-        } catch (e) {
+        } catch (error_) {
           console.debug('Skipping non-JSON line:', line);
         }
       }
@@ -64,7 +65,7 @@ export function useEditorCommentChat({
     [onNewComment]
   );
 
-  const { messages, sendMessage, status, error } = chat;
+  const { error, messages, sendMessage, status } = chat;
 
   React.useEffect(() => {
     if (chat.choice !== 'comment') return;
@@ -111,8 +112,8 @@ export function useEditorCommentChat({
   );
 
   return {
+    error,
     startCommentGeneration,
     status,
-    error,
   };
 }

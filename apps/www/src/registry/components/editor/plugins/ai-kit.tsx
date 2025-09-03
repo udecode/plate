@@ -10,17 +10,20 @@ import { usePluginOption } from 'platejs/react';
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
 import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
 
+import { useChat } from '../use-chat';
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
-import { useChat } from '../use-chat';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { MarkdownPlugin } from '@platejs/markdown';
 
 export const aiChatPlugin = AIChatPlugin.extend({
   options: {
     chatOptions: {
       api: '/api/ai/command',
       body: {},
+    },
+    commentPromptTemplate: ({ isBlockSelecting, isSelecting }) => {
+      return isBlockSelecting || isSelecting
+        ? PROMPT_TEMPLATES.commentSelecting
+        : PROMPT_TEMPLATES.commentDefault;
     },
     promptTemplate: ({ isBlockSelecting, isSelecting }) => {
       return isBlockSelecting
@@ -35,11 +38,6 @@ export const aiChatPlugin = AIChatPlugin.extend({
         : isSelecting
           ? PROMPT_TEMPLATES.systemSelecting
           : PROMPT_TEMPLATES.systemDefault;
-    },
-    commentPromptTemplate: ({ isBlockSelecting, isSelecting }) => {
-      return isBlockSelecting || isSelecting
-        ? PROMPT_TEMPLATES.commentSelecting
-        : PROMPT_TEMPLATES.commentDefault;
     },
   },
   render: {
@@ -201,12 +199,12 @@ const commentDefault = `{prompt}:
 `;
 
 export const PROMPT_TEMPLATES = {
+  commentDefault,
+  commentSelecting,
   systemBlockSelecting,
   systemDefault,
   systemSelecting,
   userBlockSelecting,
   userDefault,
   userSelecting,
-  commentSelecting,
-  commentDefault,
 };

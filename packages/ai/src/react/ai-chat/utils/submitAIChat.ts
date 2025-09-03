@@ -31,7 +31,7 @@ export const submitAIChat = (
     }
   );
 
-  const { chat, promptTemplate, systemTemplate, commentPromptTemplate } =
+  const { chat, commentPromptTemplate, promptTemplate, systemTemplate } =
     getOptions();
 
   if (!prompt && input?.length === 0) {

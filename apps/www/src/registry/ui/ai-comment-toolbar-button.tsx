@@ -8,22 +8,14 @@ import {
   getEditorPrompt,
 } from '@platejs/ai/react';
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
-import { deserializeMd, MarkdownPlugin } from '@platejs/markdown';
-import {
-  type TNode,
-  KEYS,
-  nanoid,
-  NodeApi,
-  SlateEditor,
-  TextApi,
-} from 'platejs';
-import { PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';
-
-import { useEditorCommentChat } from '@/registry/components/editor/use-editor-comment-chat';
+import { deserializeMd } from '@platejs/markdown';
+import { type TNode, KEYS, nanoid, NodeApi, TextApi } from 'platejs';
+import { useEditorRef, usePluginOption } from 'platejs/react';
 
 import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-kit';
+import { useEditorCommentChat } from '@/registry/components/editor/use-editor-comment-chat';
+
 import { ToolbarButton } from './toolbar';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 
 export function AICommentToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
@@ -73,9 +65,9 @@ export function AICommentToolbarButton(
           editor.tf.withMerging(() => {
             editor.tf.setNodes(
               {
-                [KEYS.comment]: true,
                 [getCommentKey(newDiscussion.id)]: true,
                 [getTransientCommentKey()]: true,
+                [KEYS.comment]: true,
               },
               {
                 at: range,

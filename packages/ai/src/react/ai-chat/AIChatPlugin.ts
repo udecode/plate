@@ -1,5 +1,5 @@
-import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
@@ -17,6 +17,7 @@ import {
 import { createTPlatePlugin } from 'platejs/react';
 
 import type { AIBatch } from '../../lib';
+import type { ChatMessage, Choice } from './types';
 
 import { AIPlugin } from '../ai/AIPlugin';
 import { removeAnchorAIChat } from './transforms';
@@ -30,7 +31,6 @@ import {
 import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
-import { ChatMessage, Choice } from './types';
 
 export type Chat = UseChatHelpers<ChatMessage> & {
   choice: Choice;
@@ -61,6 +61,11 @@ export type AIChatPluginConfig = PluginConfig<
     /** Whether the AI response is currently streaming. Cursor mode only. */
     streaming: boolean;
     /**
+     * Template function for generating the comment prompt. Supports the same
+     * placeholders as `promptTemplate`.
+     */
+    commentPromptTemplate: (props: EditorPromptParams) => string | void;
+    /**
      * Template function for generating the user prompt. Supports the following
      * placeholders:
      *
@@ -75,11 +80,6 @@ export type AIChatPluginConfig = PluginConfig<
      * placeholders as `promptTemplate`.
      */
     systemTemplate: (props: EditorPromptParams) => string | void;
-    /**
-     * Template function for generating the comment prompt. Supports the same
-     * placeholders as `promptTemplate`.
-     */
-    commentPromptTemplate: (props: EditorPromptParams) => string | void;
   } & TriggerComboboxPluginOptions,
   {
     aiChat: {
@@ -122,9 +122,9 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     streaming: false,
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,
+    commentPromptTemplate: () => {},
     promptTemplate: () => '{prompt}',
     systemTemplate: () => {},
-    commentPromptTemplate: () => {},
   },
 })
   .overrideEditor(withAIChat)

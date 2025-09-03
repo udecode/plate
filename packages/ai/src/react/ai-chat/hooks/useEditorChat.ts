@@ -2,14 +2,12 @@
 
 import { useEffect } from 'react';
 
-import type { UseChatHelpers } from '@ai-sdk/react';
 import type { NodeEntry } from 'platejs';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
-import { AIChatPlugin, Chat } from '../AIChatPlugin';
-import { ChatMessage } from '../types';
+import { type Chat, AIChatPlugin } from '../AIChatPlugin';
 
 export type UseEditorChatOptions = {
   chat: Chat;

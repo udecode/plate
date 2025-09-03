@@ -1,4 +1,3 @@
-import type { SerializeMdOptions } from '@platejs/markdown';
 import type { PlateEditor } from 'platejs/react';
 
 import { isSelecting } from '@platejs/selection';
@@ -19,10 +18,10 @@ export interface EditorPromptParams {
 
 export type MarkdownType =
   | 'block'
+  | 'blockWithBlockId'
   | 'editor'
-  | 'selection'
   | 'editorWithBlockId'
-  | 'blockWithBlockId';
+  | 'selection';
 
 export interface PromptConfig {
   default: string;
@@ -42,11 +41,11 @@ const replacePlaceholders = (
   let result = text.replace('{prompt}', prompt || '');
 
   const placeholders: Record<string, MarkdownType> = {
+    '{blockWithBlockId}': 'blockWithBlockId',
     '{block}': 'block',
+    '{editorWithBlockId}': 'editorWithBlockId',
     '{editor}': 'editor',
     '{selection}': 'selection',
-    '{editorWithBlockId}': 'editorWithBlockId',
-    '{blockWithBlockId}': 'blockWithBlockId',
   };
 
   Object.entries(placeholders).forEach(([placeholder, type]) => {

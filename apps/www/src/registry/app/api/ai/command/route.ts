@@ -1,20 +1,20 @@
+import type { ChatMessage, Choice } from '@platejs/ai/react';
 import type { NextRequest } from 'next/server';
 
 import { createOpenAI } from '@ai-sdk/openai';
 import {
   convertToModelMessages,
-  createUIMessageStreamResponse,
   createUIMessageStream,
-  streamText,
+  createUIMessageStreamResponse,
   generateObject,
   streamObject,
+  streamText,
 } from 'ai';
 import { NextResponse } from 'next/server';
-
-import { z } from 'zod/v3';
-import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 import { nanoid } from 'platejs';
-import { ChatMessage, Choice } from '@platejs/ai/react';
+import { z } from 'zod/v3';
+
+import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 const commentSystem = `\
 You are a document review assistant.  
@@ -34,7 +34,7 @@ Rules:
 `;
 
 export async function POST(req: NextRequest) {
-  const { apiKey: key, messages, system, commentPrompt } = await req.json();
+  const { apiKey: key, commentPrompt, messages, system } = await req.json();
 
   const apiKey = key || process.env.OPENAI_API_KEY;
 
@@ -55,9 +55,11 @@ export async function POST(req: NextRequest) {
         );
 
         const { object: choice } = await generateObject({
+          enum: ['generate', 'edit', 'comment'],
           model: openai('gpt-4o'),
           output: 'enum',
-          enum: ['generate', 'edit', 'comment'],
+          prompt: `User message:
+        ${JSON.stringify(lastUserMessage)}`,
           system: `
         You are a strict classifier. Classify the user's last request as "generate", "edit", or "comment".
         
@@ -68,13 +70,11 @@ export async function POST(req: NextRequest) {
         
         Return only one enum value with no explanation.
         `,
-          prompt: `User message:
-        ${JSON.stringify(lastUserMessage)}`,
         });
 
         writer.write({
-          type: 'data-choice',
           data: choice as Choice,
+          type: 'data-choice',
         });
 
         if (choice === 'generate') {
@@ -138,24 +138,24 @@ export async function POST(req: NextRequest) {
             if (isFirst) {
               // Send start event for the message
               writer.write({
-                type: 'text-start',
                 id: messageId,
+                type: 'text-start',
               });
               isFirst = false;
             }
 
             // Send each comment as a delta
             writer.write({
-              type: 'text-delta',
               id: messageId,
               delta: JSON.stringify(comment) + '\n',
+              type: 'text-delta',
             });
           }
 
           // Send end event
           writer.write({
-            type: 'text-end',
             id: messageId,
+            type: 'text-end',
           });
 
           return;

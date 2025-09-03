@@ -50,8 +50,8 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-import { AIChatEditor } from './ai-chat-editor';
 import { commentPlugin } from '../components/editor/plugins/comment-kit';
+import { AIChatEditor } from './ai-chat-editor';
 
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
@@ -200,9 +200,9 @@ export function AIMenu() {
           {!isLoading && (
             <CommandList>
               <AIMenuItems
-                setValue={setValue}
                 input={input}
                 setInput={setInput}
+                setValue={setValue}
               />
             </CommandList>
           )}
@@ -464,13 +464,13 @@ const menuStateItems: Record<
 };
 
 export const AIMenuItems = ({
+  input,
   setInput,
   setValue,
-  input,
 }: {
+  input: string;
   setInput: (value: string) => void;
   setValue: (value: string) => void;
-  input: string;
 }) => {
   const editor = useEditorRef();
   const { messages } = usePluginOption(AIChatPlugin, 'chat');
@@ -508,9 +508,9 @@ export const AIMenuItems = ({
               value={menuItem.value}
               onSelect={() => {
                 menuItem.onSelect?.({
-                  input,
                   aiEditor,
                   editor: editor,
+                  input,
                 });
                 setInput('');
               }}
@@ -530,7 +530,7 @@ export function AILoadingBar() {
   const chat = usePluginOption(AIChatPlugin, 'chat');
   const mode = usePluginOption(AIChatPlugin, 'mode');
 
-  const { status, choice, setMessages, setChoice } = chat;
+  const { choice, setChoice, setMessages, status } = chat;
 
   const { api } = useEditorPlugin(AIChatPlugin);
 

@@ -1,6 +1,7 @@
+import type { PlateEditor } from 'platejs/react';
+
 import { MarkdownPlugin } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { PlateEditor } from 'platejs/react';
 
 /** Get the document */
 export const getBlockDocument = (editor: PlateEditor, prompt: string) => {
@@ -8,7 +9,7 @@ export const getBlockDocument = (editor: PlateEditor, prompt: string) => {
     .getApi(BlockSelectionPlugin)
     .blockSelection.getNodes({ sort: true });
 
-  let selectionNodes =
+  const selectionNodes =
     blockSelection.length > 0
       ? blockSelection
       : editor.api.blocks({ mode: 'highest' });

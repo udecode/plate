@@ -4,11 +4,16 @@ import * as React from 'react';
 
 import { useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
+import {
+  type Chat,
+  type ChatMessage,
+  type Choice,
+  AIChatPlugin,
+} from '@platejs/ai/react';
+import { DefaultChatTransport } from 'ai';
 import { useEditorRef, usePluginOption } from 'platejs/react';
 
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
-import { DefaultChatTransport } from 'ai';
-import { AIChatPlugin, Chat, ChatMessage, Choice } from '@platejs/ai/react';
 
 export const useChat = () => {
   const editor = useEditorRef();
@@ -81,6 +86,7 @@ export const useChat = () => {
 
   React.useEffect(() => {
     editor.setOption(AIChatPlugin, 'chat', chat);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chat.status, chat.messages, chat.choice, chat.error]);
 
   return chat;
@@ -172,10 +178,10 @@ const fakeStreamText = ({
           // Properly escape the text for JSON
           const escapedText = chunk.texts
             .replace(/\\/g, '\\\\') // Escape backslashes first
-            .replace(/"/g, '\\"') // Escape quotes
-            .replace(/\n/g, '\\n') // Escape newlines
-            .replace(/\r/g, '\\r') // Escape carriage returns
-            .replace(/\t/g, '\\t'); // Escape tabs
+            .replace(/"/g, String.raw`\"`) // Escape quotes
+            .replace(/\n/g, String.raw`\n`) // Escape newlines
+            .replace(/\r/g, String.raw`\r`) // Escape carriage returns
+            .replace(/\t/g, String.raw`\t`); // Escape tabs
 
           controller.enqueue(
             encoder.encode(

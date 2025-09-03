@@ -1,6 +1,6 @@
 import type { PlateEditor } from 'platejs/react';
 
-import { type SerializeMdOptions, serializeMd } from '@platejs/markdown';
+import { serializeMd } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { type TElement, KEYS } from 'platejs';
 
@@ -9,10 +9,10 @@ export const getMarkdown = (
   editor: PlateEditor,
   type:
     | 'block'
-    | 'editor'
-    | 'selection'
-    | 'editorWithBlockId'
     | 'blockWithBlockId'
+    | 'editor'
+    | 'editorWithBlockId'
+    | 'selection'
 ) => {
   if (type === 'editor') {
     return serializeMd(editor);
@@ -24,7 +24,7 @@ export const getMarkdown = (
   if (type === 'block') {
     const blocks = editor
       .getApi(BlockSelectionPlugin)
-      .blockSelection.getNodes({ sort: true, selectionFallback: true });
+      .blockSelection.getNodes({ selectionFallback: true, sort: true });
 
     const nodes = Array.from(blocks, (entry) => entry[0]);
 
@@ -34,7 +34,7 @@ export const getMarkdown = (
   if (type === 'blockWithBlockId') {
     const blocks = editor
       .getApi(BlockSelectionPlugin)
-      .blockSelection.getNodes({ sort: true, selectionFallback: true });
+      .blockSelection.getNodes({ selectionFallback: true, sort: true });
     const nodes = Array.from(blocks, (entry) => entry[0]);
 
     return serializeMd(editor, { value: nodes, withBlockId: true });

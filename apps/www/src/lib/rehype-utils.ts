@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type { UnistNode } from '@/types/unist';
-import { z } from 'zod/v3';
+import type { z } from 'zod/v3';
 
 import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';

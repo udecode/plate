@@ -88,12 +88,12 @@ export type BlockSelectionConfig = PluginConfig<
        */
       getNodes: (options?: {
         collapseTableRows?: boolean;
-        sort?: boolean;
         /**
          * If no nodes are selected by blockSelection, use the editor's original
          * selection to get blocks
          */
         selectionFallback?: boolean;
+        sort?: boolean;
       }) => NodeEntry<TIdElement>[];
       /** Check if a block is selected. */
       has: (id: string[] | string) => boolean;
