@@ -149,8 +149,8 @@ export const useChat = () => {
   const chat = {
     ...baseChat,
     _abortFakeStream,
-    toolName,
     setToolName,
+    toolName,
   } as Chat;
 
   React.useEffect(() => {

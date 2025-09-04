@@ -529,6 +529,8 @@ export const AIMenuItems = ({
 
 export function AILoadingBar() {
   const editor = useEditorRef();
+
+  const { setOption } = useEditorPlugin(AIChatPlugin);
   const chat = usePluginOption(AIChatPlugin, 'chat');
   const mode = usePluginOption(AIChatPlugin, 'mode');
 
@@ -536,7 +538,7 @@ export function AILoadingBar() {
   const focusedEditorId = useEventEditorValue('focus');
   const focused = editorId === focusedEditorId;
 
-  const { toolName, setToolName, setMessages, status } = chat;
+  const { setMessages, setToolName, status, toolName } = chat;
 
   const { api } = useEditorPlugin(AIChatPlugin);
 
@@ -547,12 +549,14 @@ export function AILoadingBar() {
     editor.getTransforms(commentPlugin).comment.unsetMark({ transient: true });
     setMessages?.([]);
     setToolName('generate');
+    setOption('mode', 'insert');
   };
 
   const handleAccept = () => {
     api.aiChat.hide();
     setMessages?.([]);
     setToolName('generate');
+    setOption('mode', 'insert');
   };
 
   // OnBlur
@@ -573,7 +577,7 @@ export function AILoadingBar() {
     return (
       <div
         className={cn(
-          'absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-muted-foreground shadow-md transition-all duration-300'
+          'absolute bottom-4  left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-muted-foreground shadow-md transition-all duration-300'
         )}
       >
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
