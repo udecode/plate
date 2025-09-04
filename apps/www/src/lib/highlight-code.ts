@@ -1,5 +1,5 @@
 import type { registryItemFileSchema } from 'shadcn/registry';
-import type { z } from 'zod/v3';
+import type { z } from 'zod';
 
 import { codeToHtml } from 'shiki';
 

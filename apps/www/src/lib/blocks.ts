@@ -2,7 +2,7 @@
 
 import registry from 'registry';
 import { registryItemSchema } from 'shadcn/registry';
-import { z } from 'zod/v3';
+import { z } from 'zod';
 
 // SYNC
 

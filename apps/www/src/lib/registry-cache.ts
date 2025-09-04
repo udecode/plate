@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import type { registryItemFileSchema } from 'shadcn/registry';
-import type { z } from 'zod/v3';
+import type { z } from 'zod';
 
 import { highlightFiles } from './highlight-code';
 import {

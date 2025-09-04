@@ -8,7 +8,7 @@ import type {
 
 import { generateReactHelpers } from '@uploadthing/react';
 import { toast } from 'sonner';
-import { z } from 'zod/v3';
+import { z } from 'zod';
 
 export type UploadedFile<T = unknown> = ClientUploadedFileData<T>;
 

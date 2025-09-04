@@ -12,7 +12,7 @@ import {
 } from 'ai';
 import { NextResponse } from 'next/server';
 import { nanoid } from 'platejs';
-import { z } from 'zod/v3';
+import { z } from 'zod';
 
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 

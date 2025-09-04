@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod/v3';
+import { z } from 'zod';
 
 import { highlightFiles } from '@/lib/highlight-code';
 import { getRegistryItem } from '@/lib/rehype-utils';
