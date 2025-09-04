@@ -8,13 +8,13 @@ import {
 } from 'platejs';
 
 import { findTextRangeInBlock } from './findTextRangeInBlock';
+import { TComment } from '../../ai-chat/internal/types';
 
 export const aiCommentToRange = (
   editor: SlateEditor,
-  aiComment: { blockId: string; comment: string; content: string },
-  onComment: (commentWithRange: { comment: string; range: Range }) => void
-) => {
-  const { blockId, comment, content } = aiComment;
+  aiComment: TComment
+): Range | undefined => {
+  const { blockId, content } = aiComment;
 
   const contentNodes = deserializeMd(editor, content);
 
@@ -54,23 +54,13 @@ export const aiCommentToRange = (
     const startRange = ranges[0];
     const endRange = ranges.at(-1)!;
 
-    onComment({
-      comment: comment,
-      range: {
-        anchor: startRange.anchor,
-        focus: endRange.focus,
-      },
-    });
-
-    return;
+    return {
+      anchor: startRange.anchor,
+      focus: endRange.focus,
+    };
   }
 
   if (ranges.length === 1) {
-    onComment({
-      comment: comment,
-      range: ranges[0],
-    });
-
-    return;
+    return ranges[0];
   }
 };

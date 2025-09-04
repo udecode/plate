@@ -1,3 +1,4 @@
+import { UseChatHelpers } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
 
 export type ToolName = 'comment' | 'edit' | 'generate';
@@ -14,3 +15,8 @@ export type MessageDataPart = {
 };
 
 export type ChatMessage = UIMessage<{}, MessageDataPart>;
+
+export type Chat = UseChatHelpers<ChatMessage> & {
+  toolName: ToolName;
+  setToolName: (toolName: ToolName) => void;
+};

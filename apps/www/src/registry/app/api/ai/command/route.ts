@@ -1,4 +1,3 @@
-import type { ChatMessage, ToolName } from '@platejs/ai/react';
 import type { NextRequest } from 'next/server';
 
 import { createOpenAI } from '@ai-sdk/openai';
@@ -15,9 +14,18 @@ import { nanoid } from 'platejs';
 import { z } from 'zod';
 
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
+import { ChatMessage, ToolName } from '@/registry/components/editor/use-chat';
 
-const commentSystem = `\
-You are a document review assistant.  
+const choseToolSystem = `You are a strict classifier. Classify the user's last request as "generate", "edit", or "comment".
+
+Priority rules:
+1. Default is "generate". Any open question, idea request, or creation request → "generate".
+2. Only return "edit" if the user provides original text (or a selection of text) AND asks to change, rephrase, translate, or shorten it.
+3. Only return "comment" if the user explicitly asks for comments, feedback, annotations, or review. Do not infer "comment" implicitly.
+
+Return only one enum value with no explanation.`;
+
+const commentSystem = `You are a document review assistant.  
 You will receive an MDX document wrapped in <block id="..."> content </block> tags.  
 
 Your task:  
@@ -29,8 +37,10 @@ Your task:
 
 Rules:
 - The content field must be the original content inside the block tag. The returned content must not include the block tags, but should retain other MDX tags.
-- The content field can be the entire block, a small part within a block, or span multiple blocks. If spanning multiple blocks, separate them with two \n\n.
+- The content field can be the entire block, a small part within a block, or span multiple blocks. If spanning multiple blocks, separate them with two \\n\\n.
+- Important: DO NOT ALWAYS comment on an entire block.
 - Important: If a comment spans multiple blocks, use the id of the **first** block.
+
 `;
 
 export async function POST(req: NextRequest) {
@@ -60,16 +70,7 @@ export async function POST(req: NextRequest) {
           output: 'enum',
           prompt: `User message:
         ${JSON.stringify(lastUserMessage)}`,
-          system: `
-        You are a strict classifier. Classify the user's last request as "generate", "edit", or "comment".
-        
-        Priority rules:
-        1. Default is "generate". Any open question, idea request, or creation request → "generate".
-        2. Only return "edit" if the user provides original text (or a selection of text) AND asks to change, rephrase, translate, or shorten it.
-        3. Only return "comment" if the user explicitly asks for comments, feedback, annotations, or review. Do not infer "comment" implicitly.
-        
-        Return only one enum value with no explanation.
-        `,
+          system: choseToolSystem,
         });
 
         writer.write({
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
             experimental_transform: markdownJoinerTransform(),
             maxOutputTokens: 2048,
             messages: convertToModelMessages(messages),
-            model: openai('gpt-4o-mini'),
+            model: openai('gpt-4o'),
             system: system,
           });
 
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest) {
             experimental_transform: markdownJoinerTransform(),
             maxOutputTokens: 2048,
             messages: convertToModelMessages(messages),
-            model: openai('gpt-4o-mini'),
+            model: openai('gpt-4o'),
             system: system,
           });
 
@@ -103,9 +104,11 @@ export async function POST(req: NextRequest) {
         }
 
         if (toolName === 'comment') {
+          console.log('🚀 ~ POST ~ commentPrompt:', commentPrompt);
+          console.log('🚀 ~ POST ~ commentSystem:', commentSystem);
           const { elementStream } = streamObject({
             maxOutputTokens: 2048,
-            model: openai('gpt-4o-mini'),
+            model: openai('gpt-4o'),
             output: 'array',
             prompt: commentPrompt,
             schema: z
@@ -123,7 +126,7 @@ export async function POST(req: NextRequest) {
                 content: z
                   .string()
                   .describe(
-                    'The original document fragment to be commented on. Do not modify it in any way.'
+                    String.raw`The original document fragment to be commented on.It can be the entire block, a small part within a block, or span multiple blocks. If spanning multiple blocks, separate them with two \n\n.`
                   ),
               })
               .describe('A single comment object'),
