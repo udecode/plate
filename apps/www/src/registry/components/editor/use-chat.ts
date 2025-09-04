@@ -7,7 +7,7 @@ import { faker } from '@faker-js/faker';
 import {
   type Chat,
   type ChatMessage,
-  type Choice,
+  type ToolName,
   AIChatPlugin,
   aiCommentToRange,
 } from '@platejs/ai/react';
@@ -23,7 +23,7 @@ import { discussionPlugin } from './plugins/discussion-kit';
 
 export const useChat = () => {
   const editor = useEditorRef();
-  const [choice, setChoice] = React.useState<Choice>('generate');
+  const [toolName, setToolName] = React.useState<ToolName>('generate');
   const options = usePluginOption(aiChatPlugin, 'chatOptions');
 
   // remove when you implement the route /api/ai/command
@@ -80,8 +80,8 @@ export const useChat = () => {
       },
     }),
     onData(data) {
-      if (data.type === 'data-choice') {
-        setChoice(data.data);
+      if (data.type === 'data-toolName') {
+        setToolName(data.data);
       }
 
       if (data.type === 'data-comment' && data.data) {
@@ -146,12 +146,17 @@ export const useChat = () => {
     ...options,
   });
 
-  const chat = { ...baseChat, _abortFakeStream, choice, setChoice } as Chat;
+  const chat = {
+    ...baseChat,
+    _abortFakeStream,
+    toolName,
+    setToolName,
+  } as Chat;
 
   React.useEffect(() => {
     editor.setOption(AIChatPlugin, 'chat', chat);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chat.status, chat.messages, chat.choice, chat.error]);
+  }, [chat.status, chat.messages, chat.toolName, chat.error]);
 
   return chat;
 };

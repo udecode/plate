@@ -1,4 +1,4 @@
-import type { ChatMessage, Choice } from '@platejs/ai/react';
+import type { ChatMessage, ToolName } from '@platejs/ai/react';
 import type { NextRequest } from 'next/server';
 
 import { createOpenAI } from '@ai-sdk/openai';
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
           (message: any) => message.role === 'user'
         );
 
-        const { object: choice } = await generateObject({
+        const { object: toolName } = await generateObject({
           enum: ['generate', 'edit', 'comment'],
           model: openai('gpt-4o'),
           output: 'enum',
@@ -73,11 +73,11 @@ export async function POST(req: NextRequest) {
         });
 
         writer.write({
-          data: choice as Choice,
-          type: 'data-choice',
+          data: toolName as ToolName,
+          type: 'data-toolName',
         });
 
-        if (choice === 'generate') {
+        if (toolName === 'generate') {
           const gen = streamText({
             experimental_transform: markdownJoinerTransform(),
             maxOutputTokens: 2048,
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
           writer.merge(gen.toUIMessageStream({ sendFinish: false }));
         }
 
-        if (choice === 'edit') {
+        if (toolName === 'edit') {
           // TODO
           const edit = streamText({
             experimental_transform: markdownJoinerTransform(),
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
           writer.merge(edit.toUIMessageStream({ sendFinish: false }));
         }
 
-        if (choice === 'comment') {
+        if (toolName === 'comment') {
           const { elementStream } = streamObject({
             maxOutputTokens: 2048,
             model: openai('gpt-4o-mini'),
@@ -131,32 +131,17 @@ export async function POST(req: NextRequest) {
           });
 
           // Create a single message ID for the entire comment stream
-          const messageId = nanoid();
-          let isFirst = true;
 
           for await (const comment of elementStream) {
-            if (isFirst) {
-              // Send start event for the message
-              writer.write({
-                id: messageId,
-                type: 'text-start',
-              });
-              isFirst = false;
-            }
-
+            const commentDataId = nanoid();
             // Send each comment as a delta
+
             writer.write({
-              id: messageId,
-              delta: JSON.stringify(comment) + '\n',
-              type: 'text-delta',
+              id: commentDataId,
+              data: comment,
+              type: 'data-comment',
             });
           }
-
-          // Send end event
-          writer.write({
-            id: messageId,
-            type: 'text-end',
-          });
 
           return;
         }

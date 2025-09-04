@@ -1,6 +1,6 @@
 import type { UIMessage } from 'ai';
 
-export type Choice = 'comment' | 'edit' | 'generate';
+export type ToolName = 'comment' | 'edit' | 'generate';
 
 export type TComment = {
   blockId: string;
@@ -9,7 +9,7 @@ export type TComment = {
 };
 
 export type MessageDataPart = {
-  choice: Choice;
+  toolName: ToolName;
   comment?: TComment;
 };
 

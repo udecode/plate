@@ -17,7 +17,7 @@ import {
 import { createTPlatePlugin } from 'platejs/react';
 
 import type { AIBatch } from '../../lib';
-import type { ChatMessage, Choice } from './types';
+import type { ChatMessage, ToolName } from './types';
 
 import { AIPlugin } from '../ai/AIPlugin';
 import { removeAnchorAIChat } from './transforms';
@@ -34,8 +34,8 @@ import { submitAIComment } from './utils/submitAIComment';
 import { withAIChat } from './withAIChat';
 
 export type Chat = UseChatHelpers<ChatMessage> & {
-  choice: Choice;
-  setChoice: (choice: Choice) => void;
+  toolName: ToolName;
+  setToolName: (toolName: ToolName) => void;
 };
 
 export type AIChatPluginConfig = PluginConfig<
@@ -117,7 +117,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     _blockPath: null,
     _mdxName: null,
     aiEditor: null,
-    chat: { messages: [] } as any,
+    chat: { messages: [] } as unknown as Chat,
     experimental_lastTextId: null,
     mode: 'insert',
     open: false,

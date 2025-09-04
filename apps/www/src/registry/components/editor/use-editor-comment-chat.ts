@@ -64,7 +64,7 @@ export function useEditorCommentChat({
   const { error, messages, sendMessage, status } = chat;
 
   React.useEffect(() => {
-    if (chat.choice !== 'comment') return;
+    if (chat.toolName !== 'comment') return;
 
     if (status === 'ready') {
       processedCommentsRef.current.clear();

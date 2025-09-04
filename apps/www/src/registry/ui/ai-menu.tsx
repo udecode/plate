@@ -140,7 +140,7 @@ export function AIMenu() {
 
   if (isLoading && mode === 'insert') return null;
 
-  if (chat.choice === 'comment') return null;
+  if (chat.toolName === 'comment') return null;
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
@@ -536,7 +536,7 @@ export function AILoadingBar() {
   const focusedEditorId = useEventEditorValue('focus');
   const focused = editorId === focusedEditorId;
 
-  const { choice, setChoice, setMessages, status } = chat;
+  const { toolName, setToolName, setMessages, status } = chat;
 
   const { api } = useEditorPlugin(AIChatPlugin);
 
@@ -546,18 +546,18 @@ export function AILoadingBar() {
     api.aiChat.hide();
     editor.getTransforms(commentPlugin).comment.unsetMark({ transient: true });
     setMessages?.([]);
-    setChoice('generate');
+    setToolName('generate');
   };
 
   const handleAccept = () => {
     api.aiChat.hide();
     setMessages?.([]);
-    setChoice('generate');
+    setToolName('generate');
   };
 
   // OnBlur
   React.useEffect(() => {
-    if (choice === 'comment' && status === 'ready' && !focused) {
+    if (toolName === 'comment' && status === 'ready' && !focused) {
       handleReject();
     }
   }, [focused]);
@@ -569,7 +569,7 @@ export function AILoadingBar() {
     (chat as any)._abortFakeStream();
   });
 
-  if (isLoading && (mode === 'insert' || choice === 'comment')) {
+  if (isLoading && (mode === 'insert' || toolName === 'comment')) {
     return (
       <div
         className={cn(
@@ -594,7 +594,7 @@ export function AILoadingBar() {
     );
   }
 
-  if (choice === 'comment' && status === 'ready') {
+  if (toolName === 'comment' && status === 'ready') {
     return (
       <div
         className={cn(
