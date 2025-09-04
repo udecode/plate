@@ -29,7 +29,9 @@ import {
 } from 'lucide-react';
 import { type NodeEntry, type SlateEditor, isHotkey, NodeApi } from 'platejs';
 import {
+  useEditorId,
   useEditorPlugin,
+  useEventEditorValue,
   useFocusedLast,
   useHotkeys,
   usePluginOption,
@@ -530,6 +532,10 @@ export function AILoadingBar() {
   const chat = usePluginOption(AIChatPlugin, 'chat');
   const mode = usePluginOption(AIChatPlugin, 'mode');
 
+  const editorId = useEditorId();
+  const focusedEditorId = useEventEditorValue('focus');
+  const focused = editorId === focusedEditorId;
+
   const { choice, setChoice, setMessages, status } = chat;
 
   const { api } = useEditorPlugin(AIChatPlugin);
@@ -548,6 +554,20 @@ export function AILoadingBar() {
     setMessages?.([]);
     setChoice('generate');
   };
+
+  // OnBlur
+  React.useEffect(() => {
+    if (choice === 'comment' && status === 'ready' && !focused) {
+      handleReject();
+    }
+  }, [focused]);
+
+  useHotkeys('esc', () => {
+    api.aiChat.stop();
+
+    // remove when you implement the route /api/ai/command
+    (chat as any)._abortFakeStream();
+  });
 
   if (isLoading && (mode === 'insert' || choice === 'comment')) {
     return (

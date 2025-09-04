@@ -2,46 +2,24 @@
 
 import * as React from 'react';
 
-import { AIChatPlugin, getEditorPrompt } from '@platejs/ai/react';
-import { useEditorPlugin, useEditorRef, usePluginOption } from 'platejs/react';
+import { AIChatPlugin } from '@platejs/ai/react';
+import { useEditorPlugin, useEditorRef } from 'platejs/react';
 
 import { ToolbarButton } from './toolbar';
+
+export const commentPrompt = `Please comment on the following content and provide reasonable and meaningful feedback`;
 
 export function AICommentToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
   const editor = useEditorRef();
 
-  const { sendMessage } = usePluginOption(AIChatPlugin, 'chat');
-
   return (
     <ToolbarButton
       {...props}
-      onClick={async () => {
-        const commentPrompt = `
-          This is for testing purposes, so please include all three types of comments.
-          1. Comment on the entire block.
-          2. Comment on a small part of the block.
-          3. Comment on multiple blocks of the document.
-          `;
-
-        const aiCommentPrompt = getEditorPrompt(editor, {
-          prompt: commentPrompt,
-          promptTemplate: editor.getOption(
-            AIChatPlugin,
-            'commentPromptTemplate'
-          ),
-        })!;
-
-        sendMessage(
-          { text: aiCommentPrompt },
-          {
-            body: {
-              commentPrompt: aiCommentPrompt,
-            },
-          }
-        );
-      }}
+      onClick={() =>
+        editor.getApi(AIChatPlugin).aiChat.submitComment(commentPrompt)
+      }
       onMouseDown={(e) => e.preventDefault()}
     >
       <AICommentIcon />

@@ -30,6 +30,7 @@ import {
 } from './utils/getEditorPrompt';
 import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
+import { submitAIComment } from './utils/submitAIComment';
 import { withAIChat } from './withAIChat';
 
 export type Chat = UseChatHelpers<ChatMessage> & {
@@ -85,6 +86,7 @@ export type AIChatPluginConfig = PluginConfig<
     aiChat: {
       reset: OmitFirst<typeof resetAIChat>;
       submit: OmitFirst<typeof submitAIChat>;
+      submitComment: OmitFirst<typeof submitAIComment>;
       hide: () => void;
       node: (
         options?: EditorNodesOptions & { anchor?: boolean; streaming?: boolean }
@@ -117,7 +119,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     aiEditor: null,
     chat: { messages: [] } as any,
     experimental_lastTextId: null,
-    mode: 'chat',
+    mode: 'insert',
     open: false,
     streaming: false,
     trigger: ' ',
@@ -131,12 +133,13 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   .extendApi<
     Pick<
       AIChatPluginConfig['api']['aiChat'],
-      'node' | 'reset' | 'stop' | 'submit'
+      'node' | 'reset' | 'stop' | 'submit' | 'submitComment'
     >
   >(({ editor, getOption, getOptions, setOption, type }) => {
     return {
       reset: bindFirst(resetAIChat, editor),
       submit: bindFirst(submitAIChat, editor),
+      submitComment: bindFirst(submitAIComment, editor),
       node: (options = {}) => {
         const { anchor = false, streaming = false, ...rest } = options;
 

@@ -134,8 +134,6 @@ export function findTextRangeInBlock({
   const anchor = findPoint(matchStart, false);
   const focus = findPoint(matchEnd, true);
 
-  // console.log('🚀 ~ findTextRangeInBlock ~ fullText:', fullText);
-
   return {
     anchor,
     focus,

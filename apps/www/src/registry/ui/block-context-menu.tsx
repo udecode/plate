@@ -23,6 +23,8 @@ import {
 } from '@/components/ui/context-menu';
 import { useIsTouchDevice } from '@/registry/hooks/use-is-touch-device';
 
+import { commentPrompt } from './ai-toolbar-button';
+
 type Value = 'askAI' | null;
 
 export function BlockContextMenu({ children }: { children: React.ReactNode }) {
@@ -115,6 +117,13 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             Ask AI
           </ContextMenuItem>
           <ContextMenuItem
+            onClick={() =>
+              editor.getApi(AIChatPlugin).aiChat.submitComment(commentPrompt)
+            }
+          >
+            AI Comment
+          </ContextMenuItem>
+          <ContextMenuItem
             onClick={() => {
               editor
                 .getTransforms(BlockSelectionPlugin)
@@ -125,11 +134,11 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             Delete
           </ContextMenuItem>
           <ContextMenuItem
-            onClick={() => {
+            onClick={() =>
               editor
                 .getTransforms(BlockSelectionPlugin)
-                .blockSelection.duplicate();
-            }}
+                .blockSelection.duplicate()
+            }
           >
             Duplicate
             {/* <ContextMenuShortcut>⌘ + D</ContextMenuShortcut> */}
