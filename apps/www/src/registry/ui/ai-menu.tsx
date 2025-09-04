@@ -534,10 +534,6 @@ export function AILoadingBar() {
   const chat = usePluginOption(AIChatPlugin, 'chat');
   const mode = usePluginOption(AIChatPlugin, 'mode');
 
-  const editorId = useEditorId();
-  const focusedEditorId = useEventEditorValue('focus');
-  const focused = editorId === focusedEditorId;
-
   const { setMessages, setToolName, status, toolName } = chat;
 
   const { api } = useEditorPlugin(AIChatPlugin);
@@ -558,13 +554,6 @@ export function AILoadingBar() {
     setToolName('generate');
     setOption('mode', 'insert');
   };
-
-  // OnBlur
-  React.useEffect(() => {
-    if (toolName === 'comment' && status === 'ready' && !focused) {
-      handleReject();
-    }
-  }, [focused]);
 
   useHotkeys('esc', () => {
     api.aiChat.stop();

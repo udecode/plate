@@ -1,6 +1,8 @@
 import type { NextRequest } from 'next/server';
 
 import { createOpenAI } from '@ai-sdk/openai';
+
+import { google } from '@ai-sdk/google';
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -36,10 +38,13 @@ Your task:
   - comments: a brief comment or explanation for that fragment.
 
 Rules:
-- The content field must be the original content inside the block tag. The returned content must not include the block tags, but should retain other MDX tags.
-- The content field can be the entire block, a small part within a block, or span multiple blocks. If spanning multiple blocks, separate them with two \\n\\n.
-- Important: DO NOT ALWAYS comment on an entire block.
-- Important: If a comment spans multiple blocks, use the id of the **first** block.
+- IMPORTANT: If a comment spans multiple blocks, use the id of the **first** block.
+- The **content** field must be the original content inside the block tag. The returned content must not include the block tags, but should retain other MDX tags.
+- IMPORTANT: The **content** field must be flexible:
+  - It can cover one full block, only part of a block, or multiple blocks.  
+  - If multiple blocks are included, separate them with two \\n\\n.  
+  - Do NOT default to using the entire block—use the smallest relevant span instead.
+- At least one comment must be provided.
 
 `;
 
@@ -69,10 +74,11 @@ export async function POST(req: NextRequest) {
           model: openai('gpt-4o'),
           output: 'enum',
           prompt: `User message:
-        ${JSON.stringify(lastUserMessage)}`,
+          ${JSON.stringify(lastUserMessage)}`,
           system: choseToolSystem,
         });
 
+        console.log('🚀 ~ POST ~ toolName:', toolName);
         writer.write({
           data: toolName as ToolName,
           type: 'data-toolName',
@@ -83,7 +89,7 @@ export async function POST(req: NextRequest) {
             experimental_transform: markdownJoinerTransform(),
             maxOutputTokens: 2048,
             messages: convertToModelMessages(messages),
-            model: openai('gpt-4o'),
+            model: google('gemini-2.5-flash'),
             system: system,
           });
 
@@ -96,7 +102,7 @@ export async function POST(req: NextRequest) {
             experimental_transform: markdownJoinerTransform(),
             maxOutputTokens: 2048,
             messages: convertToModelMessages(messages),
-            model: openai('gpt-4o'),
+            model: google('gemini-2.5-flash'),
             system: system,
           });
 
@@ -104,8 +110,6 @@ export async function POST(req: NextRequest) {
         }
 
         if (toolName === 'comment') {
-          console.log('🚀 ~ POST ~ commentPrompt:', commentPrompt);
-          console.log('🚀 ~ POST ~ commentSystem:', commentSystem);
           const { elementStream } = streamObject({
             maxOutputTokens: 2048,
             model: openai('gpt-4o'),
@@ -129,7 +133,7 @@ export async function POST(req: NextRequest) {
                     String.raw`The original document fragment to be commented on.It can be the entire block, a small part within a block, or span multiple blocks. If spanning multiple blocks, separate them with two \n\n.`
                   ),
               })
-              .describe('A single comment object'),
+              .describe('A single comment'),
             system: commentSystem,
           });
 

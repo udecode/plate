@@ -40,6 +40,7 @@
     ]
   },
   "dependencies": {
+    "@ai-sdk/google": "2.0.11",
     "@ai-sdk/openai": "2.0.23",
     "@ai-sdk/react": "2.0.28",
     "@ariakit/react": "0.4.17",

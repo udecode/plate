@@ -24,6 +24,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/google@npm:2.0.11":
+  version: 2.0.11
+  resolution: "@ai-sdk/google@npm:2.0.11"
+  dependencies:
+    "@ai-sdk/provider": "npm:2.0.0"
+    "@ai-sdk/provider-utils": "npm:3.0.7"
+  peerDependencies:
+    zod: ^3.25.76 || ^4
+  checksum: 10c0/9660a1c6abac51b7c28f404f68ce5865b7ed8c5dbf045f667808cdbe106da537ab98cd497e551b4f41d725eb87e4117600ddd52dbe0f4af360f3da464be2f068
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/openai@npm:2.0.23":
   version: 2.0.23
   resolution: "@ai-sdk/openai@npm:2.0.23"
@@ -22059,6 +22071,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "www@workspace:apps/www"
   dependencies:
+    "@ai-sdk/google": "npm:2.0.11"
     "@ai-sdk/openai": "npm:2.0.23"
     "@ai-sdk/react": "npm:2.0.28"
     "@ariakit/react": "npm:0.4.17"
