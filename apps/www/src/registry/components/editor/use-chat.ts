@@ -9,11 +9,17 @@ import {
   type ChatMessage,
   type Choice,
   AIChatPlugin,
+  aiCommentToRange,
 } from '@platejs/ai/react';
+import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
+import { deserializeMd } from '@platejs/markdown';
 import { DefaultChatTransport } from 'ai';
+import { type TNode, KEYS, nanoid, NodeApi, TextApi } from 'platejs';
 import { useEditorRef, usePluginOption } from 'platejs/react';
 
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
+
+import { discussionPlugin } from './plugins/discussion-kit';
 
 export const useChat = () => {
   const editor = useEditorRef();
@@ -76,6 +82,64 @@ export const useChat = () => {
     onData(data) {
       if (data.type === 'data-choice') {
         setChoice(data.data);
+      }
+
+      if (data.type === 'data-comment' && data.data) {
+        const aiComment = data.data;
+        aiCommentToRange(editor, aiComment, ({ comment, range }) => {
+          if (!range) {
+            console.warn('no range found');
+            return;
+          }
+
+          const discussions =
+            editor.getOption(discussionPlugin, 'discussions') || [];
+
+          // Generate a new discussion ID
+          const discussionId = nanoid();
+
+          // Create a new comment
+          const newComment = {
+            id: nanoid(),
+            contentRich: [{ children: [{ text: comment }], type: 'p' }],
+            createdAt: new Date(),
+            discussionId,
+            isEdited: false,
+            userId: editor.getOption(discussionPlugin, 'currentUserId'),
+          };
+
+          // Create a new discussion
+          const newDiscussion = {
+            id: discussionId,
+            comments: [newComment],
+            createdAt: new Date(),
+            documentContent: deserializeMd(editor, aiComment.content)
+              .map((node: TNode) => NodeApi.string(node))
+              .join('\n'),
+            isResolved: false,
+            userId: editor.getOption(discussionPlugin, 'currentUserId'),
+          };
+
+          // Update discussions
+          const updatedDiscussions = [...discussions, newDiscussion];
+          editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
+
+          // Apply comment marks to the editor
+          editor.tf.withMerging(() => {
+            editor.tf.setNodes(
+              {
+                [getCommentKey(newDiscussion.id)]: true,
+                [getTransientCommentKey()]: true,
+                [KEYS.comment]: true,
+              },
+              {
+                at: range,
+                match: TextApi.isText,
+                split: true,
+              }
+            );
+          });
+        });
       }
     },
 

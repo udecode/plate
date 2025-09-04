@@ -4,8 +4,6 @@ import * as React from 'react';
 
 import type { Chat } from '@platejs/ai/react';
 
-import { useEditorRef } from 'platejs/react';
-
 export interface AIComment {
   blockId: string;
   comment: string;

@@ -2,12 +2,15 @@ import type { UIMessage } from 'ai';
 
 export type Choice = 'comment' | 'edit' | 'generate';
 
-export type MessageMetadata = {
-  choice?: Choice;
+export type TComment = {
+  blockId: string;
+  comment: string;
+  content: string;
 };
 
 export type MessageDataPart = {
   choice: Choice;
+  comment?: TComment;
 };
 
-export type ChatMessage = UIMessage<MessageMetadata, MessageDataPart>;
+export type ChatMessage = UIMessage<{}, MessageDataPart>;
