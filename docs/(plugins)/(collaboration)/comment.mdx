@@ -69,11 +69,7 @@ npm install @platejs/comment
 Create the comment plugin with extended configuration for state management:
 
 ```tsx
-import {
-  type ExtendConfig,
-  type Path,
-  isSlateString,
-} from 'platejs';
+import { type ExtendConfig, type Path, isSlateString } from 'platejs';
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
@@ -162,6 +158,7 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
 ```
 
 The click handler tracks which comment is currently active:
+
 - **Detects comment clicks**: Traverses DOM to find comment elements
 - **Sets active state**: Updates `activeId` when clicking on comments
 - **Clears state**: Unsets `activeId` when clicking outside comments
@@ -261,20 +258,21 @@ const editor = createPlateEditor({
 Plugin for creating and managing text comments with state tracking and discussion integration.
 
 <API name="CommentPlugin">
-<APIOptions>
-  <APIItem name="activeId" type="string | null">
-    Currently active comment ID for visual highlighting. Used internally to track state.
-  </APIItem>
-  <APIItem name="commentingBlock" type="Path | null">
-    Path of the block currently being commented on.
-  </APIItem>
-  <APIItem name="hoverId" type="string | null">
-    Currently hovered comment ID for hover effects.
-  </APIItem>
-  <APIItem name="uniquePathMap" type="Map<string, Path>">
-    Map tracking unique paths for comment resolution.
-  </APIItem>
-</APIOptions>
+  <APIOptions>
+    <APIItem name="activeId" type="string | null">
+      Currently active comment ID for visual highlighting. Used internally to
+      track state.
+    </APIItem>
+    <APIItem name="commentingBlock" type="Path | null">
+      Path of the block currently being commented on.
+    </APIItem>
+    <APIItem name="hoverId" type="string | null">
+      Currently hovered comment ID for hover effects.
+    </APIItem>
+    <APIItem name="uniquePathMap" type="Map<string, Path>">
+      Map tracking unique paths for comment resolution.
+    </APIItem>
+  </APIOptions>
 </API>
 
 ## API
@@ -284,14 +282,12 @@ Plugin for creating and managing text comments with state tracking and discussio
 Checks if a comment with the given ID exists in the editor.
 
 <API name="has">
-<APIParameters>
-  <APIItem name="options" type="{ id: string }">
-    Options containing the comment ID to check.
-  </APIItem>
-</APIParameters>
-<APIReturns type="boolean">
-  Whether the comment exists.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="options" type="{ id: string }">
+      Options containing the comment ID to check.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="boolean">Whether the comment exists.</APIReturns>
 </API>
 
 ### `api.comment.node`
@@ -299,12 +295,15 @@ Checks if a comment with the given ID exists in the editor.
 Gets a comment node entry.
 
 <API name="node">
-<APIOptions type="EditorNodesOptions & { id?: string; isDraft?: boolean }" optional>
-  Options for finding the node.
-</APIOptions>
-<APIReturns type="NodeEntry<TCommentText> | undefined">
-  The comment node entry if found.
-</APIReturns>
+  <APIOptions
+    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    optional
+  >
+    Options for finding the node.
+  </APIOptions>
+  <APIReturns type="NodeEntry<TCommentText> | undefined">
+    The comment node entry if found.
+  </APIReturns>
 </API>
 
 ### `api.comment.nodeId`
@@ -312,14 +311,12 @@ Gets a comment node entry.
 Gets the ID of a comment from a leaf node.
 
 <API name="nodeId">
-<APIParameters>
-  <APIItem name="leaf" type="TCommentText">
-    The comment leaf node.
-  </APIItem>
-</APIParameters>
-<APIReturns type="string | undefined">
-  The comment ID if found.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="leaf" type="TCommentText">
+      The comment leaf node.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="string | undefined">The comment ID if found.</APIReturns>
 </API>
 
 ### `api.comment.nodes`
@@ -327,12 +324,15 @@ Gets the ID of a comment from a leaf node.
 Gets all comment node entries matching the options.
 
 <API name="nodes">
-<APIOptions type="EditorNodesOptions & { id?: string; isDraft?: boolean }" optional>
-  Options for finding the nodes.
-</APIOptions>
-<APIReturns type="NodeEntry<TCommentText>[]">
-  Array of comment node entries.
-</APIReturns>
+  <APIOptions
+    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    optional
+  >
+    Options for finding the nodes.
+  </APIOptions>
+  <APIReturns type="NodeEntry<TCommentText>[]">
+    Array of comment node entries.
+  </APIReturns>
 </API>
 
 ## Transforms
@@ -348,9 +348,9 @@ Removes the comment mark from the current selection or a specified location.
 Sets a draft comment mark at the current selection.
 
 <API name="setDraft">
-<APIOptions type="SetNodesOptions" optional>
-  Options for setting the draft comment.
-</APIOptions>
+  <APIOptions type="SetNodesOptions" optional>
+    Options for setting the draft comment.
+  </APIOptions>
 </API>
 
 ### `tf.comment.unsetMark`
@@ -359,10 +359,20 @@ Unsets comment nodes with the specified ID from the editor.
 
 <API name="unsetMark">
 <APIParameters>
-  <APIItem name="options" type="{ id: string }">
-    Options containing the comment ID to unset.
+  <APIItem name="options" type="{ id: string; transient?: boolean }">
+    Options for unsetting comment marks.
   </APIItem>
 </APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="id" type="string">
+    The comment ID to unset.
+  </APIItem>
+  <APIItem name="transient" type="boolean" optional>
+    When true, removes all AI comments at once.
+    - **Default:** `false`
+  </APIItem>
+</APIOptions>
 </API>
 
 ## Utilities
@@ -372,14 +382,12 @@ Unsets comment nodes with the specified ID from the editor.
 Gets the count of non-draft comments in a comment node.
 
 <API name="getCommentCount">
-<APIParameters>
-  <APIItem name="node" type="TCommentText">
-    The comment node.
-  </APIItem>
-</APIParameters>
-<APIReturns type="number">
-  The count of comments.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="node" type="TCommentText">
+      The comment node.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="number">The count of comments.</APIReturns>
 </API>
 
 ### `getCommentKey`
@@ -387,14 +395,12 @@ Gets the count of non-draft comments in a comment node.
 Generates a comment key based on the provided ID.
 
 <API name="getCommentKey">
-<APIParameters>
-  <APIItem name="id" type="string">
-    The ID of the comment.
-  </APIItem>
-</APIParameters>
-<APIReturns type="string">
-  The generated comment key.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="id" type="string">
+      The ID of the comment.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="string">The generated comment key.</APIReturns>
 </API>
 
 ### `getCommentKeyId`
@@ -402,14 +408,12 @@ Generates a comment key based on the provided ID.
 Extracts the comment ID from a comment key.
 
 <API name="getCommentKeyId">
-<APIParameters>
-  <APIItem name="key" type="string">
-    The comment key.
-  </APIItem>
-</APIParameters>
-<APIReturns type="string">
-  The extracted comment ID.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="key" type="string">
+      The comment key.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="string">The extracted comment ID.</APIReturns>
 </API>
 
 ### `getCommentKeys`
@@ -417,14 +421,12 @@ Extracts the comment ID from a comment key.
 Returns an array of comment keys present in the given node.
 
 <API name="getCommentKeys">
-<APIParameters>
-  <APIItem name="node" type="TCommentText">
-    The node to check for comment keys.
-  </APIItem>
-</APIParameters>
-<APIReturns type="string[]">
-  Array of comment keys.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="node" type="TCommentText">
+      The node to check for comment keys.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="string[]">Array of comment keys.</APIReturns>
 </API>
 
 ### `getDraftCommentKey`
@@ -432,9 +434,7 @@ Returns an array of comment keys present in the given node.
 Gets the key used for draft comments.
 
 <API name="getDraftCommentKey">
-<APIReturns type="string">
-  The draft comment key.
-</APIReturns>
+  <APIReturns type="string">The draft comment key.</APIReturns>
 </API>
 
 ### `isCommentKey`
@@ -442,14 +442,12 @@ Gets the key used for draft comments.
 Checks if a given key is a comment key.
 
 <API name="isCommentKey">
-<APIParameters>
-  <APIItem name="key" type="string">
-    The key to check.
-  </APIItem>
-</APIParameters>
-<APIReturns type="boolean">
-  Whether the key is a comment key.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="key" type="string">
+      The key to check.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="boolean">Whether the key is a comment key.</APIReturns>
 </API>
 
 ### `isCommentNodeById`
@@ -457,17 +455,17 @@ Checks if a given key is a comment key.
 Checks if a given node is a comment with the specified ID.
 
 <API name="isCommentNodeById">
-<APIParameters>
-  <APIItem name="node" type="TNode">
-    The node to check.
-  </APIItem>
-  <APIItem name="id" type="string">
-    The ID of the comment.
-  </APIItem>
-</APIParameters>
-<APIReturns type="boolean">
-  Whether the node is a comment with the specified ID.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="node" type="TNode">
+      The node to check.
+    </APIItem>
+    <APIItem name="id" type="string">
+      The ID of the comment.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="boolean">
+    Whether the node is a comment with the specified ID.
+  </APIReturns>
 </API>
 
 ## Types
@@ -477,12 +475,13 @@ Checks if a given node is a comment with the specified ID.
 Text nodes that can contain comments.
 
 <API name="TCommentText">
-<APIAttributes>
-  <APIItem name="comment" type="boolean" optional>
-    Whether this text node contains comments.
-  </APIItem>
-  <APIItem name="comment_<id>" type="boolean" optional>
-    Comment data keyed by comment ID. Multiple comments can exist in one text node.
-  </APIItem>
-</APIAttributes>
+  <APIAttributes>
+    <APIItem name="comment" type="boolean" optional>
+      Whether this text node contains comments.
+    </APIItem>
+    <APIItem name="comment_<id>" type="boolean" optional>
+      Comment data keyed by comment ID. Multiple comments can exist in one text
+      node.
+    </APIItem>
+  </APIAttributes>
 </API>

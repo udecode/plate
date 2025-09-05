@@ -257,7 +257,7 @@ Rules:
     },
     // ...other options
   },
-}),
+});
 ```
 
 ### User Prompt
@@ -292,7 +292,7 @@ Continue or improve the content naturally.
     },
     // ...other options
   },
-}),
+});
 ```
 
 ### Add API Route
@@ -365,7 +365,6 @@ You can add [`AIToolbarButton`](/docs/components/ai-toolbar-button) to your [Too
 
 <ComponentPreview name="markdown-streaming-demo" />
 
-
 ## Plate Plus
 
 <ComponentPreviewPro name="ai-pro" />
@@ -436,15 +435,16 @@ const menuState = React.useMemo(() => {
   if (messages && messages.length > 0) {
     return isSelecting ? 'selectionSuggestion' : 'cursorSuggestion';
   }
-  
+
   // If no AI response yet, show command actions
   return isSelecting ? 'selectionCommand' : 'cursorCommand';
 }, [isSelecting, messages]);
 ```
 
 **Menu States:**
+
 - `cursorCommand`: No selection, no AI response → Show generation commands (Continue writing, Summarize, etc.)
-- `selectionCommand`: Text selected, no AI response → Show editing commands (Improve writing, Fix spelling, etc.)  
+- `selectionCommand`: Text selected, no AI response → Show editing commands (Improve writing, Fix spelling, etc.)
 - `cursorSuggestion`: No selection, AI responded → Show suggestion actions (Accept, Discard, Try again)
 - `selectionSuggestion`: Text selected, AI responded → Show replacement actions (Replace selection, Insert below, etc.)
 
@@ -487,7 +487,7 @@ export async function POST(req: NextRequest) {
   const { model = 'gpt-4o', provider = 'openai', ...rest } = await req.json();
 
   let aiProvider;
-  
+
   switch (provider) {
     case 'anthropic':
       aiProvider = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -516,7 +516,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
       api: '/api/ai/command',
       body: {
         model: 'gpt-4o-mini', // or 'claude-4-sonnet'
-        provider: 'openai',   // or 'anthropic'
+        provider: 'openai', // or 'anthropic'
       },
     },
     // ... other options
@@ -530,7 +530,7 @@ For more AI providers and models, see the [Vercel AI SDK documentation](https://
 
 Optimize streaming performance for specific content types with custom chunking strategies:
 
-```tsx title="app/api/ai/command/route.ts"
+````tsx title="app/api/ai/command/route.ts"
 const customChunking = (buffer: string) => {
   // Detect JSON content for slower chunking
   if (buffer.includes('{') && buffer.includes('}')) {
@@ -543,12 +543,16 @@ const customChunking = (buffer: string) => {
   // Detect code blocks for line-based chunking
   if (buffer.includes('```')) {
     const lineMatch = /\n+/m.exec(buffer);
-    return lineMatch ? buffer.slice(0, lineMatch.index + lineMatch[0].length) : null;
+    return lineMatch
+      ? buffer.slice(0, lineMatch.index + lineMatch[0].length)
+      : null;
   }
 
   // Default word chunking
   const wordMatch = /\S+\s+/m.exec(buffer);
-  return wordMatch ? buffer.slice(0, wordMatch.index + wordMatch[0].length) : null;
+  return wordMatch
+    ? buffer.slice(0, wordMatch.index + wordMatch[0].length)
+    : null;
 };
 
 // Use in your streamText configuration
@@ -562,7 +566,7 @@ const result = streamText({
   }),
   // ... other options
 });
-```
+````
 
 ### Security Considerations
 
@@ -578,7 +582,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Content length validation
-  const totalContent = messages.map(m => m.content).join('');
+  const totalContent = messages.map((m) => m.content).join('');
   if (totalContent.length > 50000) {
     return NextResponse.json({ error: 'Content too long' }, { status: 413 });
   }
@@ -594,8 +598,9 @@ export async function POST(req: NextRequest) {
 ```
 
 **Security Guidelines:**
+
 - **Validate Input**: Always validate and sanitize user prompts
-- **Rate Limiting**: Implement rate limiting on AI endpoints  
+- **Rate Limiting**: Implement rate limiting on AI endpoints
 - **Content Filtering**: Consider content filtering for responses
 - **API Key Security**: Never expose API keys client-side
 - **User Privacy**: Be mindful of data sent to AI models
@@ -607,13 +612,12 @@ export async function POST(req: NextRequest) {
 Core plugin that extends the editor with AI content management capabilities.
 
 <API name="AIPlugin">
-<APIOptions>
-  <APIItem name="node" type="object">
-    Node configuration for AI leaf elements.
-    - `isLeaf: true`: AI content is treated as leaf nodes
-    - `isDecoration: false`: Not used for decorations
-  </APIItem>
-</APIOptions>
+  <APIOptions>
+    <APIItem name="node" type="object">
+      Node configuration for AI leaf elements. - `isLeaf: true`: AI content is
+      treated as leaf nodes - `isDecoration: false`: Not used for decorations
+    </APIItem>
+  </APIOptions>
 </API>
 
 ### `AIChatPlugin`
@@ -621,45 +625,55 @@ Core plugin that extends the editor with AI content management capabilities.
 Main plugin that enables AI chat operations, streaming, and user interface interactions.
 
 <API name="AIChatPlugin">
-<APIOptions>
-  <APIItem name="chatOptions" type="UseChatOptions">
-    Configuration options for the Vercel AI SDK `useChat` hook.
-    - `api`: API endpoint for AI requests
-    - `body`: Additional request body parameters
-  </APIItem>
-  <APIItem name="mode" type="'chat' | 'insert'" optional>
-    Specifies how assistant messages are handled:
-    - `'chat'`: Shows preview with accept/reject options
-    - `'insert'`: Directly inserts content into editor
-    - **Default:** `'chat'`
-  </APIItem>
-  <APIItem name="open" type="boolean" optional>
-    Whether the AI chat interface is open.
-    - **Default:** `false`
-  </APIItem>
-  <APIItem name="streaming" type="boolean" optional>
-    Whether AI response is currently streaming.
-    - **Default:** `false`
-  </APIItem>
-  <APIItem name="promptTemplate" type="(props: EditorPromptParams) => string" optional>
-    Template for generating user prompts. Supports placeholders:
-    - `{block}`: Markdown of blocks in selection
-    - `{editor}`: Markdown of entire editor content
-    - `{selection}`: Markdown of current selection
-    - `{prompt}`: Actual user prompt
-    - **Default:** `'{prompt}'`
-  </APIItem>
-  <APIItem name="systemTemplate" type="(props: EditorPromptParams) => string | void" optional>
-    Template for system messages. Supports same placeholders as `promptTemplate`.
-  </APIItem>
-  <APIItem name="aiEditor" type="SlateEditor | null" optional>
-    The editor instance used to generate AI responses.
-    - **Default:** `null`
-  </APIItem>
-  <APIItem name="chat" type="Partial<UseChatHelpers>" optional>
-    Chat helpers returned by `useChat` hook.
-  </APIItem>
-</APIOptions>
+  <APIOptions>
+    <APIItem name="chatOptions" type="UseChatOptions">
+      Configuration options for the Vercel AI SDK `useChat` hook. - `api`: API
+      endpoint for AI requests - `body`: Additional request body parameters
+    </APIItem>
+    <APIItem name="mode" type="'chat' | 'insert'" optional>
+      Specifies how assistant messages are handled: - `'chat'`: Shows preview
+      with accept/reject options - `'insert'`: Directly inserts content into
+      editor - **Default:** `'chat'`
+    </APIItem>
+    <APIItem name="open" type="boolean" optional>
+      Whether the AI chat interface is open. - **Default:** `false`
+    </APIItem>
+    <APIItem name="streaming" type="boolean" optional>
+      Whether AI response is currently streaming. - **Default:** `false`
+    </APIItem>
+    <APIItem
+      name="promptTemplate"
+      type="(props: EditorPromptParams) => string"
+      optional
+    >
+      Template for generating user prompts. Supports placeholders: - `{block}`:
+      Markdown of blocks in selection - `{editor}`: Markdown of entire editor
+      content - `{selection}`: Markdown of current selection - `{prompt}`:
+      Actual user prompt - **Default:** `'{prompt}'`
+    </APIItem>
+    <APIItem
+      name="systemTemplate"
+      type="(props: EditorPromptParams) => string | void"
+      optional
+    >
+      Template for system messages. Supports same placeholders as
+      `promptTemplate`.
+    </APIItem>
+    <APIItem
+      name="commentPromptTemplate"
+      type="(props: EditorPromptParams) => string"
+      optional
+    >
+      Template for generating AI comment prompts. Supports same placeholders as
+      `promptTemplate`.
+    </APIItem>
+    <APIItem name="aiEditor" type="SlateEditor | null" optional>
+      The editor instance used to generate AI responses. - **Default:** `null`
+    </APIItem>
+    <APIItem name="chat" type="Partial<UseChatHelpers>" optional>
+      Chat helpers returned by `useChat` hook.
+    </APIItem>
+  </APIOptions>
 </API>
 
 ## API
@@ -667,6 +681,7 @@ Main plugin that enables AI chat operations, streaming, and user interface inter
 ### `api.aiChat.accept()`
 
 Accepts the current AI suggestion:
+
 - Removes AI marks from the content
 - Hides the AI chat interface
 - Focuses the editor
@@ -676,6 +691,7 @@ Accepts the current AI suggestion:
 Inserts AI-generated content below the current block.
 
 Handles both block selection and normal selection modes:
+
 - In block selection: Inserts after the last selected block, applying formatting from the last block
 - In normal selection: Inserts after the current block, applying formatting from the current block
 
@@ -705,6 +721,7 @@ Handles both block selection and normal selection modes:
 Replaces the current selection with AI-generated content.
 
 Handles different selection modes:
+
 - Single block selection: Replaces the selected block, applying its formatting to inserted content based on format option
 - Multiple block selection: Replaces all selected blocks
   - With `format: 'none'` or `'single'`: Preserves original formatting
@@ -735,6 +752,7 @@ Handles different selection modes:
 ### `api.aiChat.reset()`
 
 Resets the chat state:
+
 - Stops any ongoing generation
 - Clears chat messages
 - Removes all AI nodes from the editor
@@ -752,12 +770,11 @@ Gets the AI chat node entry.
 
 <APIOptions type="EditorNodesOptions & { anchor?: boolean; streaming?: boolean }">
   <APIItem name="anchor" type="boolean" optional>
-    When true, finds nodes with type matching the plugin type.
-    - **Default:** `false`
+    When true, finds nodes with type matching the plugin type. - **Default:**
+    `false`
   </APIItem>
   <APIItem name="streaming" type="boolean" optional>
-    When true, finds streaming AI nodes.
-    - **Default:** `false`
+    When true, finds streaming AI nodes. - **Default:** `false`
   </APIItem>
 </APIOptions>
 
@@ -769,12 +786,14 @@ Gets the AI chat node entry.
 ### `api.aiChat.reload()`
 
 Reloads the current AI chat:
+
 - In insert mode: Undoes previous AI changes
 - Reloads the chat with the current system prompt
 
 ### `api.aiChat.show()`
 
 Shows the AI chat interface:
+
 - Resets the chat state
 - Clears messages
 - Sets the open state to true
@@ -782,6 +801,7 @@ Shows the AI chat interface:
 ### `api.aiChat.hide()`
 
 Hides the AI chat interface:
+
 - Resets the chat state
 - Sets the open state to false
 - Focuses the editor
@@ -790,6 +810,7 @@ Hides the AI chat interface:
 ### `api.aiChat.stop()`
 
 Stops the current AI generation:
+
 - Sets streaming state to false
 - Calls the chat stop function
 
@@ -816,7 +837,89 @@ Submits a prompt to generate AI content.
   <APIItem name="system" type="string" optional>
     Custom system message for this request.
   </APIItem>
+  <APIItem name="toolName" type="string" optional>
+    Tool name for tracking AI tools used in submissions.
+  </APIItem>
 </APIOptions>
+</API>
+
+### `api.aiChat.submitComment()`
+
+Submits selected text for AI comment generation.
+
+<API name="submitComment">
+  <APIParameters>
+    <APIItem name="comment" type="string">
+      The comment prompt to send to AI.
+    </APIItem>
+  </APIParameters>
+</API>
+
+## Utilities
+
+### `aiCommentToRange`
+
+Converts AI comments to text ranges with proper block mapping for accurate comment positioning.
+
+<API name="aiCommentToRange">
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object">
+    Options for comment range conversion.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="blockId" type="string">
+    The ID of the block containing the text.
+  </APIItem>
+  <APIItem name="content" type="string">
+    The selected text content to find.
+  </APIItem>
+  <APIItem name="comment" type="string">
+    The AI-generated comment text.
+  </APIItem>
+</APIOptions>
+
+<APIReturns type="{ start: BasePoint; end: BasePoint } | null">
+  Text range with start and end points, or null if not found.
+</APIReturns>
+</API>
+
+### `findTextRangeInBlock`
+
+Finds text ranges within blocks for accurate comment positioning. Uses a Longest Common Subsequence (LCS) algorithm for fuzzy text matching.
+
+<API name="findTextRangeInBlock">
+<APIParameters>
+  <APIItem name="node" type="TNode">
+    The block node to search within.
+  </APIItem>
+  <APIItem name="searchText" type="string">
+    The text to find within the block.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="{ start: { path: Path; offset: number }; end: { path: Path; offset: number } } | null">
+  Text range with path and offset information, or null if not found.
+</APIReturns>
+</API>
+
+### `submitAIComment`
+
+Submits text for AI comment generation.
+
+<API name="submitAIComment">
+  <APIParameters>
+    <APIItem name="editor" type="PlateEditor">
+      The editor instance.
+    </APIItem>
+    <APIItem name="comment" type="string">
+      The comment prompt for AI to generate feedback on the selected text.
+    </APIItem>
+  </APIParameters>
 </API>
 
 ## Transforms
@@ -826,11 +929,11 @@ Submits a prompt to generate AI content.
 Removes the AI chat anchor node from the editor.
 
 <API name="removeAnchor">
-<APIParameters>
-  <APIItem name="options" type="EditorNodesOptions" optional>
-    Options for finding nodes to remove.
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="options" type="EditorNodesOptions" optional>
+      Options for finding nodes to remove.
+    </APIItem>
+  </APIParameters>
 </API>
 
 ### `tf.aiChat.accept()`
@@ -908,6 +1011,7 @@ Removes nodes that have the AI mark.
 ### `tf.ai.undo()`
 
 Special undo operation for AI changes:
+
 - Undoes the last operation if it was AI-generated
 - Removes the redo stack entry to prevent redoing AI operations
 
@@ -916,6 +1020,7 @@ Special undo operation for AI changes:
 ### Enhanced Empty Paragraph Handling
 
 The AI streaming system intelligently handles empty paragraphs:
+
 - Only removes truly empty paragraphs when starting to stream
 - Preserves paragraphs containing only whitespace or formatting marks
 - Prevents accidental content loss during streaming initialization
@@ -925,11 +1030,13 @@ The AI streaming system intelligently handles empty paragraphs:
 AI streaming seamlessly works within complex structures:
 
 **Tables:**
+
 - Streams directly into table cells without disrupting table structure
 - Maintains table formatting during streaming
 - Properly handles cell boundaries
 
 **Columns:**
+
 - Supports streaming into column layouts
 - Preserves column width and structure
 - Enables AI content generation within multi-column documents
@@ -937,6 +1044,7 @@ AI streaming seamlessly works within complex structures:
 ### MDX Tag Preservation
 
 During streaming, the system:
+
 - Detects and preserves custom MDX tags
 - Prevents MDX content from being incorrectly parsed as Markdown
 - Maintains proper nesting of MDX elements
@@ -963,8 +1071,7 @@ A hook that registers an editor in the AI chat plugin and deserializes markdown 
 
 <APIOptions type="object">
   <APIItem name="memoize" type="boolean" optional>
-    Enable block-level memoization with `_memo` property.
-    - **Default:** `true`
+    Enable block-level memoization with `_memo` property. - **Default:** `true`
   </APIItem>
   <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
     Options for the markdown token parser. Can filter out specific token types.
@@ -996,4 +1103,5 @@ const AIChatEditor = ({ content }: { content: string }) => {
   return <Editor editor={aiEditor} />;
 };
 ```
+
 </API>
