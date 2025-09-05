@@ -2,14 +2,13 @@
 "@platejs/ai": minor
 ---
 
-Added **AI Comment** functionality to provide AI-powered text feedback and suggestions.
+Added **AI Comment** functionality to provide AI-powered text feedback and suggestions.And upgrade to AI SDK 5.
 
 ### New Features:
 
 - **AI Comment Integration**: New utilities for AI-generated comments on selected text
   - `aiCommentToRange()` - Convert AI comments to text ranges with proper block mapping
   - `findTextRangeInBlock()` - Find text ranges within blocks for accurate comment positioning
-  - `getAICommentPrompt()` - Generate prompts for AI comment requests
   - `submitAIComment()` - Submit text for AI comment generation
 
 - **Enhanced AI Chat**: Improved chat functionality with comment support
@@ -29,11 +28,9 @@ Added **AI Comment** functionality to provide AI-powered text feedback and sugge
 submitAIComment(editor, 'Please provide feedback on this paragraph');
 
 // Convert AI comment to text range
-aiCommentToRange(editor, {
+const range = aiCommentToRange(editor, {
   blockId: 'block-1',
   content: 'Selected text',
   comment: 'Consider adding more detail here'
-}, (commentWithRange) => {
-  // Handle the comment with its text range
 });
 ```

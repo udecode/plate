@@ -2,10 +2,8 @@
 "@platejs/comment": patch
 ---
 
-Enhanced comment plugin to support AI-generated comments and improved draft comment key generation.
+Enhanced comment plugin to support AI-generated comments.
 
 ### Changes:
 
-- **AI Comment Support**: Added `isAI` option to `BaseCommentPlugin` for identifying AI-generated comments
-- **Improved Key Generation**: Enhanced `getDraftCommentKey()` to handle undefined values gracefully
-- **Better Type Support**: Improved TypeScript types for comment-related functionality
+- Added a `transient` option to `tf.unsetMark` to allow removing all AI comments at once.

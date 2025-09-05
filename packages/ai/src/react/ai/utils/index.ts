@@ -4,4 +4,3 @@
 
 export * from './aiCommentToRange';
 export * from './findTextRangeInBlock';
-export * from './getAICommentPrompt';
